@@ -1,281 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbYKRLBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbYKRLFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752497AbYKRLBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 06:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYKRLA7
+	id S1752549AbYKRLFw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 06:05:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYKRLFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 06:00:59 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:15115 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbYKRLA6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 06:00:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=dRnTOU2n6AqEfarGgabID/cMS7vMmYOWRvr/WCLudvHw5fZHes8PtInlB8fFrpVCX/
-         VoIM9OyycQqPXqwRqHYeiyGoUchZHE16FjvxON93Qxp/WSAeTVGZqfLxI1k1PhDyXLrw
-         2NfJlqv/aXqes50p5fM1saeD99U4NrybkAyew=
-Message-ID: <d36bb30d0811180300r77c3a13ld0a4881a8261a40@mail.gmail.com>
-Date: Tue, 18 Nov 2008 19:00:56 +0800
-From: "Yang Xi" <yangxilkm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.28-rc4]lock_stat: Add "con-hungry" to show that how many person-time fight for the ticket spinlock
-Cc: mingo@elte.hu
+	Tue, 18 Nov 2008 06:05:44 -0500
+Received: from styx.suse.cz ([82.119.242.94]:54232 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751879AbYKRLFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 06:05:43 -0500
+Date: Tue, 18 Nov 2008 12:05:42 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Luis Henriques <henrix@sapo.pt>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] using smp_processor_id() in preemptible
+Message-ID: <20081118110541.GA5336@dhcp35.suse.cz>
+References: <20081115233050.GA13439@hades> <20081116071059.GA19646@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081116071059.GA19646@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because the implementation of X86 spinlock adopts ticket lock, we can
-know how many threads are waiting for the lock when there is a
-contention on the spinlock. We add the number of these threads to the
-bounces[bounce_hungry] and name "bounces[bounce_hungry]" as
-"con-hungry". Finally, we can use this number to show that "the number
-of threads waiting for a spinlock/ a contention". From it, we can know
-that whether it is valuable to replace the spinlock  with more
-scalable spinlock since the design principle of scalability spinlock
-is to decrease the cache invalid cost, if the "con-hungry/contentions"
-is not high, we cannot benefit from more scalable spinlocks.
+On Sun 16-11-08 08:10:59, Ingo Molnar wrote:
+> 
+> * Luis Henriques <henrix@sapo.pt> wrote:
+> 
+> > Hi Ingo,
+> > 
+> > while running latencytop, got the following:
+> > 
+> > [  775.663239] BUG: using smp_processor_id() in preemptible [00000000] code: latencytop/6585
+> > [  775.663303] caller is native_sched_clock+0x3a/0x80
+> > [  775.663314] Pid: 6585, comm: latencytop Tainted: G        W 2.6.28-rc4-00355-g9c7c354 #1
+> > [  775.663322] Call Trace:
+> > [  775.663343]  [<ffffffff803a94e4>] debug_smp_processor_id+0xe4/0xf0
+> > [  775.663356]  [<ffffffff80213f7a>] native_sched_clock+0x3a/0x80
+> > [  775.663368]  [<ffffffff80213e19>] sched_clock+0x9/0x10
+> > [  775.663381]  [<ffffffff8024550d>] proc_sched_show_task+0x8bd/0x10e0
+> > [  775.663395]  [<ffffffff8034466e>] sched_show+0x3e/0x80
+> > [  775.663408]  [<ffffffff8031039b>] seq_read+0xdb/0x350
+> > [  775.663421]  [<ffffffff80368776>] ? security_file_permission+0x16/0x20
+> > [  775.663435]  [<ffffffff802f4198>] vfs_read+0xc8/0x170
+> > [  775.663447]  [<ffffffff802f4335>] sys_read+0x55/0x90
+> > [  775.663460]  [<ffffffff8020c67a>] system_call_fastpath+0x16/0x1b
+> > ...
+> > 
+> > I am running 2.6.28-rc4-00355-g9c7c354 and, after taking a look at 
+> > the code, it looks like the problem is in commit 
+> > 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5, where native_sched_clock 
+> > is modified to use __cycles_2_ns instead of cycles_2_ns.
+> 
+> indeed. Does the fix below work for you?
 
+Yes, it fixes problem on my end... (reported at
+http://www.gossamer-threads.com/lists/linux/kernel/997205).
 
-Signed-off-by: Yang Xi <hiyangxi@gmail.com>
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+> -------------->
+> From 29d7b90c15035741d15421b36000509212b3e135 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Sun, 16 Nov 2008 08:07:15 +0100
+> Subject: [PATCH] sched: fix kernel warning on /proc/sched_debug access
+> 
+> Luis Henriques reported that with CONFIG_PREEMPT=y + CONFIG_PREEMPT_DEBUG=y +
+> CONFIG_SCHED_DEBUG=y + CONFIG_LATENCYTOP=y enabled, the following warning
+> triggers when using latencytop:
+> 
+> > [  775.663239] BUG: using smp_processor_id() in preemptible [00000000] code: latencytop/6585
+> > [  775.663303] caller is native_sched_clock+0x3a/0x80
+> > [  775.663314] Pid: 6585, comm: latencytop Tainted: G        W 2.6.28-rc4-00355-g9c7c354 #1
+> > [  775.663322] Call Trace:
+> > [  775.663343]  [<ffffffff803a94e4>] debug_smp_processor_id+0xe4/0xf0
+> > [  775.663356]  [<ffffffff80213f7a>] native_sched_clock+0x3a/0x80
+> > [  775.663368]  [<ffffffff80213e19>] sched_clock+0x9/0x10
+> > [  775.663381]  [<ffffffff8024550d>] proc_sched_show_task+0x8bd/0x10e0
+> > [  775.663395]  [<ffffffff8034466e>] sched_show+0x3e/0x80
+> > [  775.663408]  [<ffffffff8031039b>] seq_read+0xdb/0x350
+> > [  775.663421]  [<ffffffff80368776>] ? security_file_permission+0x16/0x20
+> > [  775.663435]  [<ffffffff802f4198>] vfs_read+0xc8/0x170
+> > [  775.663447]  [<ffffffff802f4335>] sys_read+0x55/0x90
+> > [  775.663460]  [<ffffffff8020c67a>] system_call_fastpath+0x16/0x1b
+> > ...
+> 
+> This breakage was caused by me via:
+> 
+>   7cbaef9: sched: optimize sched_clock() a bit
+> 
+> Change the calls to cpu_clock().
+> 
+> Reported-by: Luis Henriques <henrix@sapo.pt>
 
+Tested-by: Michal Hocko <mhocko@suse.cz>
 
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 331e5f1..a71398e 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -136,6 +136,7 @@ enum bounce_type {
-        bounce_acquired_read,
-        bounce_contended_write,
-        bounce_contended_read,
-+       bounce_hungry,
-        nr_bounce_types,
+> ---
+>  kernel/sched_debug.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+> index 48ecc51..26ed8e3 100644
+> --- a/kernel/sched_debug.c
+> +++ b/kernel/sched_debug.c
+> @@ -423,10 +423,11 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
+>  #undef __P
+>  
+>  	{
+> +		unsigned int this_cpu = raw_smp_processor_id();
+>  		u64 t0, t1;
+>  
+> -		t0 = sched_clock();
+> -		t1 = sched_clock();
+> +		t0 = cpu_clock(this_cpu);
+> +		t1 = cpu_clock(this_cpu);
+>  		SEQ_printf(m, "%-35s:%21Ld\n",
+>  			   "clock-delta", (long long)(t1-t0));
+>  	}
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-        bounce_acquired = bounce_acquired_write,
-@@ -165,6 +166,7 @@ struct lockdep_map {
-        const char                      *name;
- #ifdef CONFIG_LOCK_STAT
-        int                             cpu;
-+       int                             isspinlock;
- #endif
- };
-
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 06e1571..b3314ed 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3000,6 +3000,20 @@ __lock_contended(struct lockdep_map *lock,
-unsigned long ip)
-        struct lock_class_stats *stats;
-        unsigned int depth;
-        int i, point;
-+       spinlock_t * lock_ptr;
-+       unsigned long hungry;
-+
-+       if (lock->isspinlock){
-+               lock_ptr = container_of(lock,spinlock_t,dep_map);
-+
-+#if (NR_CPUS < 256)
-+               hungry=(unsigned
-char)((lock_ptr->raw_lock.slock>>8&0xff)-(lock_ptr->raw_lock.slock&0xff));
-+
-+#else
-+               hungry=(unsigned
-short)((lock_ptr->raw_lock.slock>>16&0xffff)-(lock_ptr->raw_lock.slock&0xffff));
-+
-+#endif
-+       }
-
-        depth = curr->lockdep_depth;
-        if (DEBUG_LOCKS_WARN_ON(!depth))
-@@ -3030,9 +3044,13 @@ found_it:
-                stats->contention_point[point]++;
-        if (lock->cpu != smp_processor_id())
-                stats->bounces[bounce_contended + !!hlock->read]++;
-+       if (lock->isspinlock){
-+               stats->bounces[bounce_hungry]+=hungry+1;
-+       }
-        put_lock_stats(stats);
- }
-
-+
- static void
- __lock_acquired(struct lockdep_map *lock)
- {
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index 20dbcbf..2fc3ca0 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -534,7 +534,8 @@ static void seq_stats(struct seq_file *m, struct
-lock_stat_data *data)
-                else
-                        seq_printf(m, "%40s:", name);
-
--               seq_printf(m, "%14lu ", stats->bounces[bounce_contended_write]);
-+               seq_printf(m, "%14lu ",
-stats->bounces[bounce_contended_write]);
-+               seq_printf(m, "%14lu ", stats->bounces[bounce_hungry]);
-                seq_lock_time(m, &stats->write_waittime);
-                seq_printf(m, " %14lu ", stats->bounces[bounce_acquired_write]);
-                seq_lock_time(m, &stats->write_holdtime);
-@@ -584,10 +585,11 @@ static void seq_header(struct seq_file *m)
- {
-        seq_printf(m, "lock_stat version 0.2\n");
-        seq_line(m, '-', 0, 40 + 1 + 10 * (14 + 1));
--       seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s "
-+       seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s %14s "
-                        "%14s %14s\n",
-                        "class name",
-                        "con-bounces",
-+                       "con-hungry",
-                        "contentions",
-                        "waittime-min",
-                        "waittime-max",
-@@ -597,7 +599,7 @@ static void seq_header(struct seq_file *m)
-                        "holdtime-min",
-                        "holdtime-max",
-                        "holdtime-total");
--       seq_line(m, '-', 0, 40 + 1 + 10 * (14 + 1));
-+       seq_line(m, '-', 0, 40 + 1 + 11 * (14 + 1));
-        seq_printf(m, "\n");
- }
-
-diff --git a/lib/spinlock_debug.c b/lib/spinlock_debug.c
-index 9c4b025..2ec34ec 100644
---- a/lib/spinlock_debug.c
-+++ b/lib/spinlock_debug.c
-@@ -27,6 +27,10 @@ void __spin_lock_init(spinlock_t *lock, const char *name,
-        lock->magic = SPINLOCK_MAGIC;
-        lock->owner = SPINLOCK_OWNER_INIT;
-        lock->owner_cpu = -1;
-+       lock->dep_map.isspinlock = 0;
-+#if ((defined(CONFIG_X86) || defined(CONFIG_X86_64))&&
-defined(CONFIG_LOCK_STAT))
-+       lock->dep_map.isspinlock = 1;
-+#endif
- }
-
- EXPORT_SYMBOL(__spin_lock_init);
-coder@coder-desktop:~/work/linux/linux-2.6$ git diff -u -p
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 331e5f1..a71398e 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -136,6 +136,7 @@ enum bounce_type {
-        bounce_acquired_read,
-        bounce_contended_write,
-        bounce_contended_read,
-+       bounce_hungry,
-        nr_bounce_types,
-
-        bounce_acquired = bounce_acquired_write,
-@@ -165,6 +166,7 @@ struct lockdep_map {
-        const char                      *name;
- #ifdef CONFIG_LOCK_STAT
-        int                             cpu;
-+       int                             isspinlock;
- #endif
- };
-
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 06e1571..b3314ed 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3000,6 +3000,20 @@ __lock_contended(struct lockdep_map *lock,
-unsigned long ip)
-        struct lock_class_stats *stats;
-        unsigned int depth;
-        int i, point;
-+       spinlock_t * lock_ptr;
-+       unsigned long hungry;
-+
-+       if (lock->isspinlock){
-+               lock_ptr = container_of(lock,spinlock_t,dep_map);
-+
-+#if (NR_CPUS < 256)
-+               hungry=(unsigned
-char)((lock_ptr->raw_lock.slock>>8&0xff)-(lock_ptr->raw_lock.slock&0xff));
-+
-+#else
-+               hungry=(unsigned
-short)((lock_ptr->raw_lock.slock>>16&0xffff)-(lock_ptr->raw_lock.slock&0xffff));
-+
-+#endif
-+       }
-
-        depth = curr->lockdep_depth;
-        if (DEBUG_LOCKS_WARN_ON(!depth))
-@@ -3030,9 +3044,13 @@ found_it:
-                stats->contention_point[point]++;
-        if (lock->cpu != smp_processor_id())
-                stats->bounces[bounce_contended + !!hlock->read]++;
-+       if (lock->isspinlock){
-+               stats->bounces[bounce_hungry]+=hungry+1;
-+       }
-        put_lock_stats(stats);
- }
-
-+
- static void
- __lock_acquired(struct lockdep_map *lock)
- {
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index 20dbcbf..2fc3ca0 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -534,7 +534,8 @@ static void seq_stats(struct seq_file *m, struct
-lock_stat_data *data)
-                else
-                        seq_printf(m, "%40s:", name);
-
--               seq_printf(m, "%14lu ", stats->bounces[bounce_contended_write]);
-+               seq_printf(m, "%14lu ",
-stats->bounces[bounce_contended_write]);
-+               seq_printf(m, "%14lu ", stats->bounces[bounce_hungry]);
-                seq_lock_time(m, &stats->write_waittime);
-                seq_printf(m, " %14lu ", stats->bounces[bounce_acquired_write]);
-                seq_lock_time(m, &stats->write_holdtime);
-@@ -584,10 +585,11 @@ static void seq_header(struct seq_file *m)
- {
-        seq_printf(m, "lock_stat version 0.2\n");
-        seq_line(m, '-', 0, 40 + 1 + 10 * (14 + 1));
--       seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s "
-+       seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s %14s "
-                        "%14s %14s\n",
-                        "class name",
-                        "con-bounces",
-+                       "con-hungry",
-                        "contentions",
-                        "waittime-min",
-                        "waittime-max",
-@@ -597,7 +599,7 @@ static void seq_header(struct seq_file *m)
-                        "holdtime-min",
-                        "holdtime-max",
-                        "holdtime-total");
--       seq_line(m, '-', 0, 40 + 1 + 10 * (14 + 1));
-+       seq_line(m, '-', 0, 40 + 1 + 11 * (14 + 1));
-        seq_printf(m, "\n");
- }
-
-diff --git a/lib/spinlock_debug.c b/lib/spinlock_debug.c
-index 9c4b025..2ec34ec 100644
---- a/lib/spinlock_debug.c
-+++ b/lib/spinlock_debug.c
-@@ -27,6 +27,10 @@ void __spin_lock_init(spinlock_t *lock, const char *name,
-        lock->magic = SPINLOCK_MAGIC;
-        lock->owner = SPINLOCK_OWNER_INIT;
-        lock->owner_cpu = -1;
-+       lock->dep_map.isspinlock = 0;
-+#if ((defined(CONFIG_X86) || defined(CONFIG_X86_64))&&
-defined(CONFIG_LOCK_STAT))
-+       lock->dep_map.isspinlock = 1;
-+#endif
- }
-
- EXPORT_SYMBOL(__spin_lock_init);
+-- 
+Michal Hocko
+L3 team 
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic
