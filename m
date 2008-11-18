@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbYKRKSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbYKRKYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbYKRKSt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 05:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYKRKSk
+	id S1752425AbYKRKYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 05:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYKRKYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 05:18:40 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:31246 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYKRKSj (ORCPT
+	Tue, 18 Nov 2008 05:24:42 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:36405 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751361AbYKRKYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 05:18:39 -0500
-X-Greylist: delayed 1277 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Nov 2008 05:18:38 EST
-X-Spam-Flag: NO
-X-Spam-Score: -9.189
-Message-ID: <4922917E.8070201@tudelft.nl>
-Date: Tue, 18 Nov 2008 10:57:18 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <E.A.B.Piel@tudelft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Tue, 18 Nov 2008 05:24:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=hZAXzQXlP1HJjmaSH87zN3nbN3EV+duOrazfI5p0yJu64c5A4Az2geGOWm/WApF4imPKTQO1tNdTiPfT9NGuPeNNXo0/1SB5+4Sct2/CuTYrjLWowOzyzz4dpMNVMVr8l53zFmNHP3qQEtCCo2wobsX95Y91pw+H8KON9BgtgTk=  ;
+X-YMail-OSG: q.qK59AVM1nN1F39sjviEbodSBaBIgUoWCY6ixzNnWW2S5FBtyBKrsOw5S.9pCcUndq8r6nOpCwGTQoa0MwJP5iOLxIcEhLwEN5N0_XCTYti0EEcxcBLJMb8feUjo2..NRGjCfCm4El01MWofRhLpsVBPpoevyir7CUlO0uN
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+Date: Tue, 18 Nov 2008 21:24:32 +1100
+User-Agent: KMail/1.9.5
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <18722.2107.970887.768477@cargo.ozlabs.ibm.com> <alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-rc4: Resource map sanity check conflict between vesafb and
- intel X driver?
-Content-Type: multipart/mixed;
- boundary="------------010604070002020602030300"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811182124.33141.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010604070002020602030300
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Tuesday 18 November 2008 13:08, Linus Torvalds wrote:
+> On Tue, 18 Nov 2008, Paul Mackerras wrote:
+> > Also, you didn't respond to my comments about the purely software
+> > benefits of a larger page size.
+>
+> I realize that there are benefits. It's just that the downsides tend to
+> swamp the upsides.
+>
+> The fact is, Intel (and to a lesser degree, AMD) has shown how hardware
+> can do good TLB's with essentially gang lookups, giving almost effective
+> page sizes of 32kB with hardly any of the downsides. Couple that with
 
-Hello,
-
-Booting a nearly 2.6.28-rc5 kernel, I got this warning which I never had
-before (latest previous kernel being some 2.6.28-rc2). 
-
- resource map sanity check conflict: 0xd0000000 0xdfffffff 0xd0000000 0xd076ffff vesafb
- ------------[ cut here ]------------
- WARNING: at arch/x86/mm/ioremap.c:226 __ioremap_caller+0x329/0x370()
- Modules linked in: i915 drm usblp ipv6 microcode usbhid bluetooth binfmt_misc loop fuse cpufreq_conservative cpufreq_powersave acpi_cpufreq nvram hp_wmi af_packet rfkill_input snd_hda_intel snd_hwdep arc4 snd_seq_dummy ecb snd_seq_oss snd_seq_midi_event b43 snd_seq rfkill snd_seq_device rng_core snd_pcm_oss mac80211 sdhci_pci snd_pcm fan cfg80211 input_polldev ohci_hcd mmc_block snd_timer thermal ssb sdhci hp_accel processor tpm_infineon snd_page_alloc tpm ohci1394 yenta_socket rsrc_nonstatic pcmcia joydev serio_raw evdev sr_mod sg ehci_hcd iTCO_wdt ricoh_mmc mmc_core led_class snd_mixer_oss ieee1394 container video output tpm_bios uhci_hcd lis3lv02d wmi battery button e1000e pcmcia_core ac snd soundcore usbcore ext3 jbd [last unloaded: l2cap]
- Pid: 3413, comm: X Not tainted 2.6.28-rc4-git-eric #39
- Call Trace:
-  [<ffffffff8024515f>] warn_on_slowpath+0x5f/0x90
-  [<ffffffff8022e87a>] ? change_page_attr_set_clr+0xda/0x380
-  [<ffffffff8022ee82>] ? _set_memory_uc+0x22/0x30
-  [<ffffffff804ecec6>] ? _read_lock+0x16/0x30
-  [<ffffffff804ed141>] ? _read_unlock+0x11/0x40
-  [<ffffffff8022d689>] __ioremap_caller+0x329/0x370
-  [<ffffffffa04048fd>] ? i915_gem_entervt_ioctl+0x2fd/0x5d0 [i915]
-  [<ffffffff8022d816>] ioremap_wc+0x26/0x30
-  [<ffffffffa04048fd>] i915_gem_entervt_ioctl+0x2fd/0x5d0 [i915]
-  [<ffffffffa03e57ba>] drm_ioctl+0x10a/0x330 [drm]
-  [<ffffffffa0404600>] ? i915_gem_entervt_ioctl+0x0/0x5d0 [i915]
-  [<ffffffff802d690d>] vfs_ioctl+0x7d/0xa0
-  [<ffffffff802d69a4>] do_vfs_ioctl+0x74/0x470
-  [<ffffffff802d6dea>] sys_ioctl+0x4a/0x80
-  [<ffffffff8020c5ca>] system_call_fastpath+0x16/0x1b
- ---[ end trace f2aad082f0b30467 ]---
+It's much harder to do this with powerpc I think because they would need
+to calculate 8 hashes and touch 8 cachelines to prefill 8 translations,
+wouldn't they?
 
 
-If I remove the vesafb driver, the warning goes away. That seems to be a
-new warning. Probably is has always been happening on my laptop, how bad
-is that? My X intel driver is 2.5.0 . If one driver has to be fixed, which
-one: vesafb or intel?
+> low-latency fault handling (for not when you miss in the TLB, but when
+> something really isn't in the page tables), and it seems to be seldom the
+> biggest issue.
+>
+> (Don't get me wrong - TLB's are not unimportant on x86 either. But on x86,
+> things are generally much better).
 
-Regards,
-Eric
+The per-page processing costs are interesting too, but IMO there is more
+work that should be done to speed up order-0 pages. The patches I had to
+remove the sync instruction for smp_mb() in unlock_page sped up pagecache
+throughput (populate, write(2), reclaim) on my G5 by something really
+crazy like 50% (most of that's in, but I'm still sitting on that fancy
+unlock_page speedup to remove the final smp_mb).
 
---------------010604070002020602030300
-Content-Type: text/x-vcard; charset=utf-8;
- name="E_A_B_Piel.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="E_A_B_Piel.vcf"
-
-YmVnaW46dmNhcmQNCmZuO3F1b3RlZC1wcmludGFibGU6PUMzPTg5cmljIFBpZWwNCm47cXVv
-dGVkLXByaW50YWJsZTpQaWVsOz1DMz04OXJpYw0Kb3JnOlRlY2huaWNhbCBVbml2ZXJzaXR5
-IG9mIERlbGZ0O1NvZnR3YXJlIEVuZ2luZWVyaW5nIFJlc2VhcmNoIEdyb3VwDQphZHI6SEIg
-MDguMDgwOztNZWtlbHdlZyA0O0RlbGZ0OzsyNjI4IENEO1RoZSBOZXRoZXJsYW5kcw0KZW1h
-aWw7aW50ZXJuZXQ6RS5BLkIuUGllbEB0dWRlbGZ0Lm5sDQp0ZWw7d29yazorMzEgMTUgMjc4
-IDYzMzgNCnRlbDtjZWxsOiszMSA2IDI0MzcgOTEzNQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UN
-CnVybDpodHRwOi8vcGllbGVyaWMuZnJlZS5mcg0KdmVyc2lvbjoyLjENCmVuZDp2Y2FyZA0K
-DQo=
---------------010604070002020602030300--
+I suspect some of the costs are also in powerpc specific code to insert
+linux ptes into their hash table. I think some of the synchronisation for
+those could possibly be shared with generic code so you don't need the
+extra layer of locks there.
