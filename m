@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYKRQwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYKRQxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbYKRQwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYKRQwZ
+	id S1754391AbYKRQxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYKRQxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:52:25 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:9652 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050AbYKRQwZ convert rfc822-to-8bit (ORCPT
+	Tue, 18 Nov 2008 11:53:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55460 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYKRQxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:52:25 -0500
-Message-ID: <7a9e70560811180852y9eb2bf6s8682609dcb10fd9f@mail.gmail.com>
-Date: Tue, 18 Nov 2008 17:52:21 +0100
-From: "=?ISO-8859-1?Q?Fredrik_Markstr=F6m?=" 
-	<fredrik.markstrom@avalonenterprise.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: Developing non-commercial drivers ?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4922ED5A.3030808@shaw.ca>
+	Tue, 18 Nov 2008 11:53:09 -0500
+Date: Tue, 18 Nov 2008 11:53:06 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
+ field
+In-Reply-To: <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0811181151010.15003@gandalf.stny.rr.com>
+References: <20081117084923.GD28786@elte.hu> <20081118084755.GK17838@elte.hu>  <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>  <20081118145154.GC30358@elte.hu>  <alpine.DEB.1.10.0811181006010.15003@gandalf.stny.rr.com>  <20081118151326.GH30358@elte.hu>
+  <alpine.DEB.1.10.0811181020350.15003@gandalf.stny.rr.com>  <20081118155045.GJ30358@elte.hu>  <c62985530811180831n132ed6dep77aa2684ff59861@mail.gmail.com>  <20081118164019.GA18620@elte.hu> <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
-	 <4922ED5A.3030808@shaw.ca>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the prompt respons.
 
-I do agree that it would be better for everyone to release it under
-GPL and I have already expressed that to our customer.
+On Tue, 18 Nov 2008, Fr?d?ric Weisbecker wrote:
 
-At this point I feel that we have two possibilities, help our customer
-violate GPL or say no to the project. I'd prefer a third option where
-I could tell the customer that we can setup the project in a certain
-way (some "cleanroom" setup ?) to ensure that the results can not be
-considered derived work.
+> 2008/11/18 Ingo Molnar <mingo@elte.hu>:
+> > Would be nice to have the dynamic allocation straight away
+> 
+> 2008/11/18 Steven Rostedt <rostedt@goodmis.org>:
+> > I would recommend using a static array
+> 
+> :-)
 
-Is your short answer also the definite answer considering this ?
+How about a compromise, start off the patch series getting it working with 
+task struct static array, and then finish the series with the dynamic 
+array.
 
-/Fredrik
+This is my development model, because it lets me know where the bugs are 
+better. If we find some strange bug, this can help pin point via a bisect 
+if the bug is with the general code, or with the use of a dynamic array.
 
+Just my preference ;-)
 
+-- Steve
 
-
-2008/11/18 Robert Hancock <hancockr@shaw.ca>:
-> Fredrik Markström wrote:
->>
->> Linus, others...
->>
->> I'm working for as a consultant for a large hardware company porting
->> Linux to their new cpu-architecture and everything is pretty much
->> up and running. Now they want us to develop a closed-source (to
->> protect their IP) ethernet driver for their proprietary Ethernet MAC.
->>
->> My question is:    Is there a fair way to do this and still comply to
->> the intent and spirit of the Linux licensing ?
->>
->> If yes, how ?
->
-> In a word, I would say: no.
->
-> When developing a non-GPL kernel driver, one finds themselves on very shaky
-> legal ground. Unless one is 100% sure their code is not legally considered a
-> derived work from the kernel, it's likely a GPL violation.
->
-> One could point out the pile of other Ethernet drivers in the kernel from
-> the likes of Intel, Broadcom, etc. and ask why those companies did not feel
-> the need to "protect their IP" in this manner.. as well as the significant
-> advantages of having their driver in the mainline kernel, and the horrible
-> disadvantages of trying to manage closed-source drivers..
->
