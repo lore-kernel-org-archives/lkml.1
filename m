@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbYKREPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752248AbYKREeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbYKREPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 23:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYKREP2
+	id S1752248AbYKREeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 23:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYKREeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 23:15:28 -0500
-Received: from mail-gx0-f11.google.com ([209.85.217.11]:43002 "EHLO
-	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbYKREP1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 23:15:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=I5omN883Va0xqxRJFEmgFU55wIS7xTN82qVOaS7FBAYHcdJ5lFshC3ozf5y6NMJ8mb
-         ptuAI9cNPycNiO3bHm5FVDXCR1Ch5ZA0zyiks69EtLLhgFufMTj8gxj3DQy0dhEIKlrw
-         m0IIrTNuGD53vmEznk+d7erdunpmxwhGTl1hQ=
-Message-ID: <b9df5fa10811172015w3dfb955bq115180d9d0808d82@mail.gmail.com>
-Date: Tue, 18 Nov 2008 10:15:24 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kernel/profile.c: Fix section mismatch warning.
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Mon, 17 Nov 2008 23:34:07 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38465 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751371AbYKREeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 23:34:04 -0500
+Date: Tue, 18 Nov 2008 15:33:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: linux-next: cpu_alloc tree patch (Was: Re: next-20081106: undefined
+ reference to `__per_cpu_start')
+Message-Id: <20081118153346.62bf9c11.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0811071235040.5387@quilx.com>
+References: <20081106173645.e7e79071.sfr@canb.auug.org.au>
+	<20081106183939.GA26925@x200.localdomain>
+	<Pine.LNX.4.64.0811061310350.6009@quilx.com>
+	<20081107162114.2a41c623.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0811071235040.5387@quilx.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__18_Nov_2008_15_33_46_+1100_kXC4YmWP5Q.i567_"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Fix section mismatch warning in kernel/profile.c
+--Signature=_Tue__18_Nov_2008_15_33_46_+1100_kXC4YmWP5Q.i567_
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here, profile_nop function has been called from a non-init function
-create_hash_tables(void). Which generetes a section mismatch warning.
-Previously, create_hash_tables(void) was a init function. So, removing
-__init from create_hash_tables(void) requires profile_nop to be
-non-init. This patch makes profile_nop function inline and fixes the
-following warning:
+Hi Christoph,
 
-WARNING: vmlinux.o(.text+0x6ebb6): Section mismatch in reference from
-the function create_hash_tables() to the function
-.init.text:profile_nop()
-The function create_hash_tables() references
-the function __init profile_nop().
-This is often because create_hash_tables lacks a __init
-annotation or the annotation of profile_nop is wrong.
+On Fri, 7 Nov 2008 12:40:17 -0600 (CST) Christoph Lameter <cl@linux-foundat=
+ion.org> wrote:
+>
+> All of these have no invocation of the PERCPU macro from
+> asm-generic/vmlinus.lds.h in their arch vmlinux.lds.S. Thus the symbols
+> are missing. They are kind of irrelevant since we are only interested in
+> the difference between those...
+>=20
+> Either we add the PERCPU() macro invocations to each arches vmlinux.lds.S
+> file or we need to special case each time __per_cpu_end/__start is used.
+> The only use added for the cpu allocator is in include/linux/percpu.h
+>=20
+> Make it conditional on CONFIG_SMP
+>=20
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
+I have applied this to linux-next today.  It is not clear to me if this
+is a fix for the cpu_alloc tree or the zero-based per_cpu area patches or
+a combination of both.  If the first, please apply this to the cpu_alloc
+tree or I will have to drop the tree.  Otherwise, let me know where it
+belongs.
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+Also, considering the "discussions" between Rusty and yourself, I may
+need to drop the cpu_alloc tree until they are resolved.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---- linux-2.6-orig/kernel/profile.c	2008-11-17 20:30:42.000000000 +0600
-+++ linux-2.6/kernel/profile.c	2008-11-18 09:39:58.000000000 +0600
-@@ -544,7 +544,7 @@ static const struct file_operations proc
- };
+--Signature=_Tue__18_Nov_2008_15_33_46_+1100_kXC4YmWP5Q.i567_
+Content-Type: application/pgp-signature
 
- #ifdef CONFIG_SMP
--static void __init profile_nop(void *unused)
-+static inline void profile_nop(void *unused)
- {
- }
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkiRaoACgkQjjKRsyhoI8xJ4wCgplAd8nliX3IFFQVuJaO43BLg
+prgAoJxv/neUJ+RZVOCnfotcMucv40RX
+=42A4
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Nov_2008_15_33_46_+1100_kXC4YmWP5Q.i567_--
