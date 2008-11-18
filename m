@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYKRObH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbYKROcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbYKRObH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYKROaw
+	id S1752950AbYKROcg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYKROc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:30:52 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:18159 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYKROav (ORCPT
+	Tue, 18 Nov 2008 09:32:28 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37117 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYKROc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:30:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=iicgqBNLx9CvLZnwSexKVGBV1alpTa0IArFa0B8bbs/bJ/TMFyXkP7W5OcReyj6w6c
-         /Y8pJaqJbmHwKTaQtsR1QgJwecY1rp96ZeND2LbPeSAZXmho28U68QJQqbvBeqoHqJoH
-         wIW3SgR9KLvaCraMDTU3xvLVDr+pjWQME7UO0=
-Message-ID: <4922D195.9010505@tuffmail.co.uk>
-Date: Tue, 18 Nov 2008 14:30:45 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 18 Nov 2008 09:32:27 -0500
+Date: Tue, 18 Nov 2008 09:32:26 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: ftrace: preemptoff selftest not working
+In-Reply-To: <20081118135221.GE31146@elte.hu>
+Message-ID: <alpine.DEB.1.10.0811180931270.15003@gandalf.stny.rr.com>
+References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com> <20081118135221.GE31146@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jay Cliburn <jcliburn@gmail.com>
-CC: csnook@redhat.com, atl1-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [atl1-devel] atl2: don't mess up irq on suspend/resume (probably
- msi only)
-References: <49201401.1060600@tuffmail.co.uk>	<4921E574.3090602@tuffmail.co.uk> <20081117181336.1a270561@osprey.hogchain.net>
-In-Reply-To: <20081117181336.1a270561@osprey.hogchain.net>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> [adding netdev to cc list]
->
-> On Mon, 17 Nov 2008 21:43:16 +0000
-> Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
->
->
->   
->> Don't listen to me.  The problem went away because when I was testing
->> my patch, I plugged the ethernet in and actually used it.  My patch
->> doesn't seem to fix anything.
->>
->> So I now have the steps to reproduce this warning: remove the ethernet
->> cable and suspend.
->>
->> Also, I was speaking rubbish because the warning isn't on the resume
->> path.  It seems to be when network-manager re-opens the device on
->> resume.
->>
->> I'll have another look for possible culprits.  Hints appreciated :).
->>     
->
-> Does this help?
->   
 
-Ah! Yes, that fixes it, thanks.
+On Tue, 18 Nov 2008, Ingo Molnar wrote:
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > > Hence the trace buffer will be empty. The patch below makes the 
+> > > selftests working for me, since then they run in preemptible 
+> > > context. But it is ugly and I'm not proposing it for upstream ;)
+> > > 
+> > > Just wanted to make you aware that there is a bug.
+> > 
+> > Yep, this might be a better answer than what I put into linux-tip 
+> > (and my git repo).
+> > 
+> > See:
+> > 
+> >   ftrace: force pass of preemptoff selftest
+> > 
+> > The cause of the bug was the conversion of the BKL back to a 
+> > spinlock, and making it non preempt.  The initcall code is called 
+> > with the BKL applied which now means it can not preempt. This breaks 
+> > the preempt tracer selftest.
+> > 
+> > My solution was to just force a pass if this is detected. Perhaps 
+> > moving the test might be better.
+> 
+> it would be better to just drop the BKL in that selftest. (or in all 
+> selftests - an elevated preempt count will skew a number of things)
 
-> diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-> index f5bdc92..5b292f0 100644
-> --- a/drivers/net/atlx/atl2.c
-> +++ b/drivers/net/atlx/atl2.c
-> @@ -1690,10 +1690,6 @@ static int atl2_resume(struct pci_dev *pdev)
->  
->  	ATL2_WRITE_REG(&adapter->hw, REG_WOL_CTRL, 0);
->  
-> -	err = atl2_request_irq(adapter);
-> -	if (netif_running(netdev) && err)
-> -		return err;
-> -
-> 	atl2_reset_hw(&adapter->hw);
->  
-> 	if (netif_running(netdev))
->   
+I have no problem with that, but does the BKL play any role for being 
+held? I have no idea why it is taken in boot up, so I'm hestiant to touch 
+it.
+
+-- Steve
 
