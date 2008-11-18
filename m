@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYKRHtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYKRHve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796AbYKRHtn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 02:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYKRHtb
+	id S1752737AbYKRHve (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 02:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYKRHvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 02:49:31 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:56579 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYKRHt3 (ORCPT
+	Tue, 18 Nov 2008 02:51:22 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:57358 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYKRHvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 02:49:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RqkwQaKvA38iP0xZuM036Wu7hJoG4uJBdtqJGLrHCBv/U4Wc0L43mwdP/6CvTXrXmt
-         D+RDG0vTgxT6U+wczZMVPzRd2VI+zB8CVwlDMm7EB3srPPa8WVS7VTrSBsrxOvAbo1Q0
-         GLCzhOl2ueHK2885p+cN+LKnNzEEcDkE0yndQ=
-Date: Tue, 18 Nov 2008 07:49:22 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Ferenc Wagner <wferi@niif.hu>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] softirq: Use local_irq_save() in local_bh_enable()
-Message-ID: <20081118074922.GB4440@ff.dom.local>
-References: <20081117133548.GC6345@ff.dom.local> <1226931509.3902.16.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226931509.3902.16.camel@johannes.berg>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 18 Nov 2008 02:51:21 -0500
+X-IronPort-AV: E=Sophos;i="4.33,624,1220241600"; 
+   d="scan'208";a="62690389"
+From: Bryan Wu <cooloney@kernel.org>
+To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 02/16] Blackfin SPI Driver: Fix erroneous SPI Clock divisor calculation
+Date: Tue, 18 Nov 2008 15:52:26 +0800
+Message-Id: <1226994760-4301-3-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
+References: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 17, 2008 at 03:18:28PM +0100, Johannes Berg wrote:
-> On Mon, 2008-11-17 at 13:35 +0000, Jarek Poplawski wrote:
-> > This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2
-> > shows local_bh_enable() is used in the wrong context (irqs disabled).
-> > It happens when a usual network receive path is called by netconsole,
-> > which simply turns off irqs around this all. Probably this is wrong,
-> > but it worked like this long time, and it's not trivial to fix this.
-> 
-> Unfortunately my brain lacks the magic to decrypt x86 stack traces, so
-> I'm unable to read much from that report other than that it hit the
-> WARN_ON. That looks more like the TX path to me?
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-OK, this looks like both paths (which is probably common in networking).
+Fix erroneous SPI Clock divisor calculation. Make sure SPI_BAUD is
+always >= 2. Writing a value of 0 or 1 to the SPI_BAUD register disables
+the serial clock.
 
-> Anyway, my patch made
-> that trigger for everybody rather than just on NOPREEMPT/UP (or
-> something like that) and made the code easier to understand by removing
-> the flags that are pointless anyway if the API is used correctly.
-> 
-> You can find discussion around the patch at
-> http://lkml.org/lkml/2008/6/17/259
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ arch/blackfin/include/asm/bfin5xx_spi.h |    2 ++
+ drivers/spi/spi_bfin5xx.c               |    3 +++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-Yes, it's very interesting.
-
-> 
-> > Anyway, a commit 0f476b6d91a1395bda6464e653ce66ea9bea7167 "softirq:
-> > remove irqs_disabled warning from local_bh_enable" can break things
-> > after changing from local_irq_save() to local_irq_disable(). Before
-> > this commit there was only a warning, now a lockup is possible, so
-> > it could be treated as a regression. This patch reverts the change
-> > in irqs.
-> 
-> Do we have evidence of this actually hitting often? This is the first
-> report of anything going wrong that I've seen ever since a single one
-> right after this commit went into testing five months ago.
-> 
-> IFF we want to add this back (and I'm not in favour) then please add a
-> big comment that this is only to accomodate broken users.
-
-Yes, it seems there should be more such reports from netconsole users.
-But, I guess we kind of expect this if we still use WARN_ON and not
-BUG_ON here?
-
-Jarek P.
+diff --git a/arch/blackfin/include/asm/bfin5xx_spi.h b/arch/blackfin/include/asm/bfin5xx_spi.h
+index 9fa1915..b16c3cd 100644
+--- a/arch/blackfin/include/asm/bfin5xx_spi.h
++++ b/arch/blackfin/include/asm/bfin5xx_spi.h
+@@ -21,6 +21,8 @@
+ #ifndef _SPI_CHANNEL_H_
+ #define _SPI_CHANNEL_H_
+ 
++#define MIN_SPI_BAUD_VAL	2
++
+ #define SPI_READ              0
+ #define SPI_WRITE             1
+ 
+diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
+index e9b7366..a38106a 100644
+--- a/drivers/spi/spi_bfin5xx.c
++++ b/drivers/spi/spi_bfin5xx.c
+@@ -158,6 +158,9 @@ static u16 hz_to_spi_baud(u32 speed_hz)
+ 	if ((sclk % (2 * speed_hz)) > 0)
+ 		spi_baud++;
+ 
++	if (spi_baud < MIN_SPI_BAUD_VAL)
++		spi_baud = MIN_SPI_BAUD_VAL;
++
+ 	return spi_baud;
+ }
+ 
+-- 
+1.5.6.3
