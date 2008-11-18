@@ -1,208 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbYKRBJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbYKRBdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbYKRBJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 20:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYKRBJL
+	id S1752438AbYKRBdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 20:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYKRBdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 20:09:11 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44409 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbYKRBJK (ORCPT
+	Mon, 17 Nov 2008 20:33:40 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:2907 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbYKRBdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 20:09:10 -0500
-Date: Tue, 18 Nov 2008 10:08:25 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc4 mem_cgroup_charge_common panic
-Message-Id: <20081118100825.c3eac8bb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1226957408.17897.1.camel@badari-desktop>
-References: <1226353408.8805.12.camel@badari-desktop>
-	<20081111101440.f531021d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081111110934.d41fa8db.kamezawa.hiroyu@jp.fujitsu.com>
-	<1226527376.4835.8.camel@badari-desktop>
-	<20081113111702.9a5b6ce7.kamezawa.hiroyu@jp.fujitsu.com>
-	<1226602404.29381.6.camel@badari-desktop>
-	<20081114131058.8d538481.kamezawa.hiroyu@jp.fujitsu.com>
-	<1226957408.17897.1.camel@badari-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Nov 2008 20:33:39 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Cc: "Kernel Linux" <linux-kernel@vger.kernel.org>
+Subject: RE: size of swapped-out part of the process
+Date: Mon, 17 Nov 2008 17:33:27 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKENFBDAD.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <ab4346860811171142je64d197keeb984bf7299e951@mail.gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 17 Nov 2008 17:35:40 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 17 Nov 2008 17:35:41 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008 13:30:08 -0800
-Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-> On Fri, 2008-11-14 at 13:10 +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 13 Nov 2008 10:53:24 -0800
-> > Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> > > I tried mmtom + startpfn fix + this fix + notifier fix. Didn't help.
-> > > I am not using SLUB (using SLAB). Yes. I am testing "real" memory
-> > > remove (not just offline/online), since it executes more code of
-> > > freeing memmap etc.
-> > > 
-> > > Code that is panicing is list_add() in mem_cgroup_add_list().
-> > > I will debug it further.
-> > > 
-> > 
-> > Considering difference between "real" memory hotplug and logical ones,
-> > I found this. I hope this fixes the bug.
-> > But I myself can't do test this..
-> > 
-> > Thanks,
-> > -Kame
-> > 
-> 
-> Kame,
-> 
-> With this patch I am able to run tests without any issues.
-> 
-> Sorry for delayed response, I wanted to make sure test runs fine over
-> the weekend.
-> 
-> Tested-by: Badari Pulavarty <pbadari@us.ibm.com>
-> 
-Wow, Thank you!
+> On 11/17/08, Hugh Dickins <hugh@veritas.com> wrote:
 
--Kame
+> Can you possibly explain what types of pages create  "VSZ>>RSZ"
+> effect in total absence of swapping and plenty of free memory ?
 
+Rarely-used functions like 'malloc' and 'mmap' enlarge the virtual memory
+size but (often) have no effect on the resident set size.
 
-> Thanks,
-> Badari
-> 
-> 
-> > ==
-> > Fixes for memcg/memory hotplug.
-> > 
-> > 
-> > While memory hotplug allocate/free memmap, page_cgroup doesn't free
-> > page_cgroup at OFFLINE when page_cgroup is allocated via bootomem.
-> > (Because freeing bootmem requires special care.)
-> > 
-> > Then, if page_cgroup is allocated by bootmem and memmap is freed/allocated
-> > by memory hotplug, page_cgroup->page == page is no longer true and
-> > we have to update that.
-> > 
-> > But current MEM_ONLINE handler doesn't check it and update page_cgroup->page
-> > if it's not necessary to allocate page_cgroup.
-> > 
-> > And I noticed that MEM_ONLINE can be called against "part of section".
-> > So, freeing page_cgroup at CANCEL_ONLINE will cause trouble.
-> > (freeing used page_cgroup)
-> > Don't rollback at CANCEL. 
-> > 
-> > One more, current memory hotplug notifier is stopped by slub
-> > because it sets NOTIFY_STOP_MASK to return vaule. So, page_cgroup's callback
-> > never be called. (low priority than slub now.)
-> > 
-> > I think this slub's behavior is not intentional(BUG). and fixes it.
-> > 
-> > 
-> > Another way to be considered about page_cgroup allocation:
-> >   - free page_cgroup at OFFLINE even if it's from bootmem
-> >     and remove specieal handler. But it requires more changes.
-> > 
-> > 
-> > Signed-off-by: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > ---
-> >  mm/page_cgroup.c |   39 +++++++++++++++++++++++++++------------
-> >  mm/slub.c        |    6 ++++--
-> >  2 files changed, 31 insertions(+), 14 deletions(-)
-> > 
-> > Index: mmotm-2.6.28-Nov10/mm/page_cgroup.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov10.orig/mm/page_cgroup.c
-> > +++ mmotm-2.6.28-Nov10/mm/page_cgroup.c
-> > @@ -104,18 +104,30 @@ int __meminit init_section_page_cgroup(u
-> >  	unsigned long table_size;
-> >  	int nid, index;
-> > 
-> > -	if (section->page_cgroup)
-> > -		return 0;
-> > +	if (!section->page_cgroup) {
-> > 
-> > -	nid = page_to_nid(pfn_to_page(pfn));
-> > -	table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
-> > -	if (slab_is_available()) {
-> > -		base = kmalloc_node(table_size, GFP_KERNEL, nid);
-> > -		if (!base)
-> > -			base = vmalloc_node(table_size, nid);
-> > -	} else {
-> > -		base = __alloc_bootmem_node_nopanic(NODE_DATA(nid), table_size,
-> > +		nid = page_to_nid(pfn_to_page(pfn));
-> > +		table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
-> > +		if (slab_is_available()) {
-> > +			base = kmalloc_node(table_size, GFP_KERNEL, nid);
-> > +			if (!base)
-> > +				base = vmalloc_node(table_size, nid);
-> > +		} else {
-> > +			base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
-> > +				table_size,
-> >  				PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-> > +		}
-> > +	} else {
-> > +		/*
-> > + 		 * We don't have to allocate page_cgroup again, but
-> > +		 * address of memmap may be changed. So, we have to initialize
-> > +		 * again.
-> > +		 */
-> > +		base = section->page_cgroup + pfn;
-> > +		table_size = 0;
-> > +		/* check address of memmap is changed or not. */
-> > +		if (base->page == pfn_to_page(pfn))
-> > +			return 0;
-> >  	}
-> > 
-> >  	if (!base) {
-> > @@ -204,19 +216,22 @@ static int page_cgroup_callback(struct n
-> >  		ret = online_page_cgroup(mn->start_pfn,
-> >  				   mn->nr_pages, mn->status_change_nid);
-> >  		break;
-> > -	case MEM_CANCEL_ONLINE:
-> >  	case MEM_OFFLINE:
-> >  		offline_page_cgroup(mn->start_pfn,
-> >  				mn->nr_pages, mn->status_change_nid);
-> >  		break;
-> >  	case MEM_GOING_OFFLINE:
-> > +	case MEM_CANCEL_ONLINE:
-> >  		break;
-> >  	case MEM_ONLINE:
-> >  	case MEM_CANCEL_OFFLINE:
-> >  		break;
-> >  	}
-> > 
-> > -	ret = notifier_from_errno(ret);
-> > +	if (ret)
-> > +		ret = notifier_from_errno(ret);
-> > +	else
-> > +		ret = NOTIFY_OK;
-> > 
-> >  	return ret;
-> >  }
-> > Index: mmotm-2.6.28-Nov10/mm/slub.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov10.orig/mm/slub.c
-> > +++ mmotm-2.6.28-Nov10/mm/slub.c
-> > @@ -3220,8 +3220,10 @@ static int slab_memory_callback(struct n
-> >  	case MEM_CANCEL_OFFLINE:
-> >  		break;
-> >  	}
-> > -
-> > -	ret = notifier_from_errno(ret);
-> > +	if (ret)
-> > +		ret = notifier_from_errno(ret);
-> > +	else
-> > +		ret = NOTIFY_OK;
-> >  	return ret;
-> >  }
-> > 
-> > 
-> 
-> 
+DS
+
 
