@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752312AbYKRLfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbYKRLjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752312AbYKRLfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 06:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYKRLfX
+	id S1752523AbYKRLjA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 06:39:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYKRLiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 06:35:23 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:11719 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYKRLfW (ORCPT
+	Tue, 18 Nov 2008 06:38:52 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:49693 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbYKRLiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 06:35:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=wiEvy7+vEBVOC0UfcgYjmy0mEgubx8zo147IAe2hH7YpbM5/MUt9iG9ax234pIZRg4
-         wnduL4s+Mbg5TQwDy9TbGM7LRpszUCF1DU10qQif9d68ICxQQ7MdLfqe3QOFZapyNTtY
-         +4B332gAseKfDGLUD42P/9JGN+8zv+ciF7iMc=
-Message-ID: <4104961b0811180335j2f0506bmcef515e070b08f14@mail.gmail.com>
-Date: Tue, 18 Nov 2008 19:35:20 +0800
-From: "jidong xiao" <jidong.xiao@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: What's the difference between clear_page and clear_page_c?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 18 Nov 2008 06:38:51 -0500
+Message-Id: <20081118112827.927627788@linux.vnet.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Nov 2008 12:28:27 +0100
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PPC devel <linuxppc-dev@ozlabs.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Ryan S. Arnold" <rsa@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 0/1] hvc_console: fix: remove duplicate hp->ws winsize check
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All,
+Hello,
 
-I saw there are clear_page and clear_page_c defined in
-arch/x86/lib/clear_page_64.S, but what's the difference between these
-two function? In addition, look at below lines copied from
-linux-2.6.27-rc2, particularly line 16, is it a typo? I feel it should
-be ENDPROC(clear_page_c) other than ENDPROC(clear_page), isn't it??
+this patch fixes a hvc terminal resize problem by removing a duplicate
+winsize comparison.
 
-      4 /*
-      5  * Zero a page.
-      6  * rdi  page
-      7  */
-      8         ALIGN
-      9 clear_page_c:
-     10         CFI_STARTPROC
-     11         movl $4096/8,%ecx
-     12         xorl %eax,%eax
-     13         rep stosq
-     14         ret
-     15         CFI_ENDPROC
-     16 ENDPROC(clear_page)
-     17
-     18 ENTRY(clear_page)
-     19         CFI_STARTPROC
-     20         xorl   %eax,%eax
-     21         movl   $4096/64,%ecx
-     22         .p2align 4
-     23 .Lloop:
-     24         decl    %ecx
-     25 #define PUT(x) movq %rax,x*8(%rdi)
-     26         movq %rax,(%rdi)
-     27         PUT(1)
-     28         PUT(2)
-     29         PUT(3)
-     30         PUT(4)
-     31         PUT(5)
-     32         PUT(6)
-     33         PUT(7)
-     34         leaq    64(%rdi),%rdi
-     35         jnz     .Lloop
-     36         nop
-     37         ret
-     38         CFI_ENDPROC
-     39 .Lclear_page_end:
-     40 ENDPROC(clear_page)
+Ben, could you add this patch to your tree for 2.6.28-rc6 bug fixes?
 
-Regards
-Jason
+Thanks and regards,
+Hendrik
+
+-- 
+Hendrik Brueckner
+D/3303 Linux on System z Development
+eMail: brueckner@linux.vnet.ibm.com
+IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
+
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Geschaeftsfuehrung: Erich Baier
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
+
