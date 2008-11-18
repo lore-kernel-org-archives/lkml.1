@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYKRH47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYKRH5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbYKRH47 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 02:56:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYKRHvd
+	id S1753620AbYKRH5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 02:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYKRHw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 02:51:33 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:43724 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbYKRHv1 (ORCPT
+	Tue, 18 Nov 2008 02:52:56 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:6526 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbYKRHwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 02:51:27 -0500
-X-IronPort-AV: E=Sophos;i="4.33,624,1220241600"; 
-   d="scan'208";a="62690405"
-From: Bryan Wu <cooloney@kernel.org>
-To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Yi Li <yi.li@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 15/16] Blackfin SPI Driver: fix bug - spi controller driver does not assert/deassert CS correctly
-Date: Tue, 18 Nov 2008 15:52:39 +0800
-Message-Id: <1226994760-4301-16-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
+	Tue, 18 Nov 2008 02:52:55 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=g6kjS3c4dlEbWwgyenB+JEPC+p9HJe3RbEdh7ZECxeS3QmwCURGtoEwI5NsGCZhsm
+	2h+qmRrqwVewRhzpi7PIQ==
+MIME-Version: 1.0
+In-Reply-To: <b040c32a0811171204p4ce6d706j3ee2c018d0f33548@mail.gmail.com>
+References: <20081115011452.GA28135@google.com> <49218FB4.6090805@nortel.com>
+	 <b040c32a0811171204p4ce6d706j3ee2c018d0f33548@mail.gmail.com>
+Date: Mon, 17 Nov 2008 23:52:50 -0800
+Message-ID: <b040c32a0811172352n537ef2e1h9628a97fbb838292@mail.gmail.com>
+Subject: Re: busted CFS group load balancer?
+From: Ken Chen <kenchen@google.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yi Li <yi.li@analog.com>
+On Mon, Nov 17, 2008 at 7:37 AM, Chris Friesen wrote:
+>> It appears that the fair-group load balancer in 2.6.27 does not work
+>> properly.
+>
+> There was an issue fixed post 2.6.27 where the load balancer didn't work
+> properly if there was one task per group per cpu.  You might try
+> backporting commit 38736f4 and see if that helps.
 
-This bug can be observed when two SPI devices are sharing the spi bus:
-One device is set as SPI CS 7, another one is using SPI CS 4.
+On Mon, Nov 17, 2008 at 12:04 PM, Ken Chen wrote:
+> Tested git commit 38736f4, it doesn't fix the problem I'm seeing.
 
-In spi_bfin5xx.c: cs_active(), cs_deactive() are used to control SPI_FLG
-register. From the debug bellow:
+I would also like to mention that commit 38736f4 has stability
+problems.  I put a kernel with this commit on several test machines,
+and several of them had hard lockups within 2 hours of testing.  I
+wasn't doing anything fancy.  The workload was pure 'while (1)' loop.
+Though there are other background services running on those machines.
 
-cs_active: flag: 0x7f91, chip->flag: 0x7f80, cs: 7
-cs_active: flag: 0xef91, chip->flag: 0xef10, cs: 4
-
-When device A (cs_7) activate CS 7, SPI_FLG is set as 0x7f91 (however,
-SPI_FLG should be set as 0x7f80, or 0x6f91 if in broadcast mode).
-
-Due to some HW bug (very possibly), if SPI_FLG is set as 0x7f91,
-SPISSEL7 is asserted, however SPISSEL4 will be asserted too (I can see
-this using the scope). This is unreasonable according to HRM.
-
-Signed-off-by: Yi Li <yi.li@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/spi/spi_bfin5xx.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 9c602ad..8cf5d6e 100644
---- a/drivers/spi/spi_bfin5xx.c
-+++ b/drivers/spi/spi_bfin5xx.c
-@@ -189,6 +189,7 @@ static void cs_deactive(struct driver_data *drv_data, struct chip_data *chip)
- {
- 	u16 flag = read_FLAG(drv_data);
- 
-+	flag &= ~chip->flag;
- 	flag |= (chip->flag << 8);
- 
- 	write_FLAG(drv_data, flag);
-@@ -1032,7 +1033,6 @@ static int setup(struct spi_device *spi)
- 	struct bfin5xx_spi_chip *chip_info = NULL;
- 	struct chip_data *chip;
- 	struct driver_data *drv_data = spi_master_get_devdata(spi->master);
--	u8 spi_flg;
- 
- 	/* Abort device setup if requested features are not supported */
- 	if (spi->mode & ~(SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST)) {
-@@ -1115,8 +1115,7 @@ static int setup(struct spi_device *spi)
- 	 * SPI_BAUD, not the real baudrate
- 	 */
- 	chip->baud = hz_to_spi_baud(spi->max_speed_hz);
--	spi_flg = ~(1 << (spi->chip_select));
--	chip->flag = ((u16) spi_flg << 8) | (1 << (spi->chip_select));
-+	chip->flag = 1 << (spi->chip_select);
- 	chip->chip_select_num = spi->chip_select;
- 
- 	switch (chip->bits_per_word) {
--- 
-1.5.6.3
+- Ken
