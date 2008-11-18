@@ -1,118 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYKRQ73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYKRQ7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYKRQ73 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYKRQ6s
+	id S1754851AbYKRQ7w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYKRQ6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:58:48 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:49386 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725AbYKRQ6q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:58:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=TK0/9TOBam6uJ4+KJu+4Ll++V+Fg3kCnj50CtkNe9zgWqVAgAbNsXAvk5I4oKPrgdb
-         9D4iElCPSNnfIGVTd5lhkJ1LEA3Z2MzoTsZIC1Rrwc459XddbRqMOuhT6afCV/luDjPn
-         8c7nda2h2gLLqtvNkFZMCl7QKmKJ9fr8IDPiA=
-Message-ID: <4922F441.7020007@tuffmail.co.uk>
-Date: Tue, 18 Nov 2008 16:58:41 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 18 Nov 2008 11:58:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46018 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753785AbYKRQ6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:58:49 -0500
+Date: Tue, 18 Nov 2008 18:59:05 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] simplify sig_ignored() pathes
+Message-ID: <20081118175905.GA17142@redhat.com>
 MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: [ 11.333737] is this a ghost?
-References: <1227001038.3184.6.camel@LiNuX>	 <9b2b86520811180315u410019f0y7e6fab66b51a225e@mail.gmail.com> <1227025771.3161.6.camel@LiNuX>
-In-Reply-To: <1227025771.3161.6.camel@LiNuX>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> On Tue, 2008-11-18 at 11:15 +0000, Alan Jenkins wrote:
->   
->> On 11/18/08, Justin P. Mattock <justinmattock@gmail.com> wrote:
->>     
->>> in dmesg I see:
->>> [   11.333737]
->>> but nothing else.
->>>           ---------------(cut)-----------------
->>> [   11.247147] Monitor-Mwait will be used to enter C-1 state
->>> [   11.247151] Monitor-Mwait will be used to enter C-2 state
->>> [   11.247154] Monitor-Mwait will be used to enter C-3 state
->>> [   11.247671] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
->>> [   11.247996] processor ACPI_CPU:00: registered as cooling_device0
->>> [   11.248008] ACPI: Processor [CPU0] (supports 8 throttling states)
->>> [   11.306465] ACPI: SSDT 3FEB8F10, 0087 (r1 APPLE   Cpu1Ist     3000
->>> INTL 20050309)<7>power_supply ADP1: No power supply yet
->>>       
->> Look at this last line.  The "<7>" is a priority marker.  Normally it
->> marks the start of a line, and should be hidden.  So you seem to be
->> missing a line break just after "20050309)"...
->>
->>     
->>> [   11.306831] power_supply ADP1: power_supply_changed
->>> [   11.306839] ACPI: AC Adapter [ADP1] (on-line)
->>> [   11.333737]                         <------------what's with this!!!
->>>       
->> ...which seems to be delayed and reappears here?
->>
->>     
->>> [   11.342937] power_supply ADP1: power_supply_changed_work
->>> [   11.351901] power_supply ADP1: power_supply_update_gen_leds 1
->>> [   11.351916] ACPI: SSDT 3FEB7F10, 0085 (r1 APPLE   Cpu1Cst     3000
->>> INTL 20050309)
->>>       
->>> if you need to see the full dmesg I can attach..
->>> I've seen this happen on a random.
->>>       
->> I guess you have a multicore processor (or some other sort of SMP), right?
->>
->> I think kernel messages are not completely synchronized by design, for
->> reliability reasons.  (e.g. to make sure critical error messages /
->> backtraces can get through on a dying system).
->>     
->
->
-> Cool.
-> makes good sense to me, 
-> As long as it's not something that shouldn't be there,
-> or something that's broken. As for this happening again
-> looking at dmesg nothing, all synchronized.
-> Seems to randomly show itself.
->   
+The code which checks for ignored signals is a bit overcomplicated
+because tracehook_consider_ignored_signal() wants the "handler" arg.
+Can't we kill it? It is not used even with utrace, and even if it will
+be used later it is OK to read ->sighand again in the slow path.
 
-It's the ACPICA OS abstraction layer - it splits every message into
-multiple printk() calls.  Other subsystems don't do this... it probably
-could and should be fixed.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-drivers/acpi/utmisc.c:
+--- K-IS/include/linux/tracehook.h~2_SIG_IGNORED	2008-11-10 19:21:17.000000000 +0100
++++ K-IS/include/linux/tracehook.h	2008-11-17 22:01:28.000000000 +0100
+@@ -388,17 +388,14 @@ static inline void tracehook_signal_hand
+  * tracehook_consider_ignored_signal - suppress short-circuit of ignored signal
+  * @task:		task receiving the signal
+  * @sig:		signal number being sent
+- * @handler:		%SIG_IGN or %SIG_DFL
+  *
+  * Return zero iff tracing doesn't care to examine this ignored signal,
+  * so it can short-circuit normal delivery and never even get queued.
+- * Either @handler is %SIG_DFL and @sig's default is ignore, or it's %SIG_IGN.
+  *
+  * Called with @task->sighand->siglock held.
+  */
+ static inline int tracehook_consider_ignored_signal(struct task_struct *task,
+-						    int sig,
+-						    void __user *handler)
++						    int sig)
+ {
+ 	return (task_ptrace(task) & PT_PTRACED) != 0;
+ }
+--- K-IS/kernel/signal.c~2_SIG_IGNORED	2008-11-17 19:54:09.000000000 +0100
++++ K-IS/kernel/signal.c	2008-11-17 22:01:28.000000000 +0100
+@@ -41,44 +41,33 @@
+ 
+ static struct kmem_cache *sigqueue_cachep;
+ 
+-static void __user *sig_handler(struct task_struct *t, int sig)
++static int sig_task_ignored(struct task_struct *t, int sig)
+ {
+ 	void __user *h = t->sighand->action[sig - 1].sa.sa_handler;
+ 
+-	/* drop SIGKILL early to not confuse wait_xxx_killable/etc */
+-	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) && h == SIG_DFL)
+-		h = SIG_IGN;
+-
+-	return h;
+-}
+-
+-static int sig_handler_ignored(void __user *handler, int sig)
+-{
+-	/* Is it explicitly or implicitly ignored? */
+-	return handler == SIG_IGN ||
+-		(handler == SIG_DFL && sig_kernel_ignore(sig));
++	if (h == SIG_DFL) {
++		/* init drops SIGKILL early to not confuse xxx_killable/etc */
++		return sig_kernel_ignore(sig) ||
++			unlikely(t->signal->flags & SIGNAL_UNKILLABLE);
++	}
++	return h == SIG_IGN;
+ }
+ 
+ static int sig_ignored(struct task_struct *t, int sig)
+ {
+-	void __user *handler;
+-
+ 	/*
+ 	 * Blocked signals are never ignored, since the
+ 	 * signal handler may change by the time it is
+ 	 * unblocked.
+ 	 */
+-	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
+-		return 0;
+-
+-	handler = sig_handler(t, sig);
+-	if (!sig_handler_ignored(handler, sig))
++	if (sigismember(&t->blocked, sig) ||
++	    sigismember(&t->real_blocked, sig) ||
++	    !sig_task_ignored(t, sig))
+ 		return 0;
+-
+ 	/*
+ 	 * Tracers may want to know about even ignored signals.
+ 	 */
+-	return !tracehook_consider_ignored_signal(t, sig, handler);
++	return !tracehook_consider_ignored_signal(t, sig);
+ }
+ 
+ /*
+@@ -2338,7 +2327,7 @@ int do_sigaction(int sig, struct k_sigac
+ 		 *   (for example, SIGCHLD), shall cause the pending signal to
+ 		 *   be discarded, whether or not it is blocked"
+ 		 */
+-		if (sig_handler_ignored(sig_handler(t, sig), sig)) {
++		if (sig_task_ignored(t, sig)) {
+ 			sigemptyset(&mask);
+ 			sigaddset(&mask, sig);
+ 			rm_from_queue_full(&mask, &t->signal->shared_pending);
 
-    void ACPI_INTERNAL_VAR_XFACE
-    acpi_ut_info(const char *module_name, u32 line_number, const char
-    *format, ...)
-    {
-        va_list args;
-
-        /*
-         * Removed module_name, line_number, and acpica version, not needed
-         * for info output
-         */
-        acpi_os_printf("ACPI: ");
-
-        va_start(args, format);
-        acpi_os_vprintf(format, args);
-        acpi_os_printf("\n");
-        va_end(args);
-    }
-
-The alternative is to use the preprocessor, i.e. macros and string
-concatenation to generate a single printk().
-
-Alan
