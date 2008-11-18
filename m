@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYKRRME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYKRRMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbYKRRME (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 12:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYKRRLx
+	id S1754724AbYKRRMj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 12:12:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbYKRRMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 12:11:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47517 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbYKRRLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 12:11:52 -0500
-Date: Tue, 18 Nov 2008 12:11:23 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
-       Milan Broz <mbroz@redhat.com>
-Subject: Re: Active waiting with yield()
-In-Reply-To: <20081118144053.0072d54c@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0811181157260.13418@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
- <20081114190616.30dd273e@lxorguk.ukuu.org.uk>
- <Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
- <1226696221.7685.8148.camel@twins> <Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
- <1226789714.8172.0.camel@lappy.programming.kicks-ass.net>
- <Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
- <20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
- <Pine.LNX.4.64.0811180921450.12274@hs20-bc2-1.build.redhat.com>
- <20081118144053.0072d54c@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 18 Nov 2008 12:12:22 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:65262 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752824AbYKRRMT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 12:12:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=cc:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:mime-version:subject:date:references
+         :x-mailer;
+        b=KocYGvHF1XIlr7176QvT8jOwD9NfVsiFwa6lMm/ekU0zCYeXpU+t468E0XuHRprvXb
+         dmM0I3gNN/45bkeMgjcxL7hkEEZ1foN8pF6hjezNb5cKOhrihJnC6a7IH0fGSUXDZBoc
+         nFdD6YPPj4RTCFRq0H8XZ287yzjeH+Xs6fAUA=
+Cc: "Takashi Iwai" <tiwai@suse.de>, "Jaroslav Kysela" <perex@perex.cz>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <B39062E8-28BA-4701-A8A9-A25DA07482EA@gmail.com>
+From: Richard Holden <aciddeath@gmail.com>
+To: "Hannes Eder" <hannes@hanneseder.net>
+In-Reply-To: <154e089b0811180906r69099866vf0b80cd40d7e2cc7@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] sound: Fix warnings relating to ignored return value in snd_card_register
+Date: Tue, 18 Nov 2008 10:12:14 -0700
+References: <154e089b0811180759x4db4ba61k467fa2275710938f@mail.gmail.com> <s5hej19dn9o.wl%tiwai@suse.de> <154e089b0811180906r69099866vf0b80cd40d7e2cc7@mail.gmail.com>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008, Alan Cox wrote:
 
-> > You will touch the wait queue always when finishing the last pending 
-> > request --- just to find out that there is no one waiting on it.
-> 
-> Why ? If my fast path for this something like
-> 
-> 	if (unlikely(foo->unload_pending) && count == 0)
-> 		wake_up(..)
-> 
-> chances are that I can put unload_pending somewhere in a cache line with
-> other stuff (certainly for L2) and it will get predicted well.
+On Nov 18, 2008, at 10:06 AM, Hannes Eder wrote:
 
-This makes a code branch that is very rarely tested and a potential bug. 
-Every such rarely executed branch is a danger and even a silly typo in the 
-code can hide there for many years without being noticed.
+> Do not ignore the return of 'device_create_file' in
+> 'snd_card_register' and thereby fixing the following warnings:
+>
+> sound/core/init.c: In function 'snd_card_register':
+> sound/core/init.c:640: warning: ignoring return value of
+> 'device_create_file', declared with attribute warn_unused_result
+> sound/core/init.c:641: warning: ignoring return value of
+> 'device_create_file', declared with attribute warn_unused_result
+>
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>
+> On Tue, Nov 18, 2008 at 11:14 AM, Takashi Iwai <tiwai@suse.de> wrote:
+>> The changes look good, but please run checkpatch.pl to your patch and
+>> fix the coding style issues suggested there.
+>
+> I did not fix:
+>
+> "WARNING: line over 80 characters" as they a hardly longer than 80
+> characters and there are lines longer than this in the same file.
+>
+> "ERROR: do not use assignment in if condition" as this pattern seems
+> to be quite common.
+>
+> Comments? Should I fix them?
 
-These rare branches are inevitable at some places, I just don't see a 
-reason why make deliberately more of them.
+I would definitely fix the ERROR, I have seen messages from Linus with  
+really bad comments about using that construct. Most maintainers also  
+won't want to take a patch where checkpatch reports an error. Also  
+fixing the ERROR should also fix the warning.
 
-> > And besides cache line, there is coding and testing overhead with wait 
-> > queues.
-> 
-> If you want correctness you don't want busy waiting with yields - as Ingo
-> pointed out already thats a bug in itself with hard realtime.
-
-So, I say msleep(1) instead of yield(). What are the counterarguments to 
-msleep?
-
-> > So what are the reasons why you (and others) are against active waiting? 
-> > All you are saying is that my reasons are wrong, but you haven't single 
-> > example when active waiting causes trouble. If there is a workload when 
-> 
-> Untrue - I've given very clear reasons twice, and Ingo has given you
-> more. If you don't wish to accept the answers that is your problem not
-> mine, just expect such hacks to get a NAK and not make the kernel.
-
-If it is only a matter of coding style and there is no valid reason why 
-msleep(1) when unloading the driver would hurt. Just say it "we have this 
-coding policy, we want the code to look like a state machine independent 
-on the timer".
-
-But don't invent pseudoreasons, such that: the system boots 30 seconds, 
-shuts down in 5 seconds, and that 1ms-10ms sleep on shutdown is bad for 
-virtualization and power consumption and performance and whatever --- even 
-if it actually happens only to one user in a few years.
-
-Mikulas
-
-> Alan
-> --
-> "I can only provide the information, I can't make you hear it."
-> 		- Shelley Bainter
-> 
+-Richard Holden
