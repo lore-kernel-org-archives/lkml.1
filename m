@@ -1,105 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbYKRWoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYKRWpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbYKRWoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 17:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYKRWo2
+	id S1754094AbYKRWpq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 17:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYKRWpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 17:44:28 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50844 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752926AbYKRWo1 (ORCPT
+	Tue, 18 Nov 2008 17:45:38 -0500
+Received: from ihemail4.lucent.com ([135.245.0.39]:42744 "EHLO
+	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbYKRWpi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 17:44:27 -0500
-Date: Tue, 18 Nov 2008 14:42:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: srostedt@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/3] kernel/trace/trace.c: introduce missing kfree
-Message-Id: <20081118144217.34ffa4e1.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0811141904580.10023@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0811141904580.10023@pc-004.diku.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 17:45:38 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Devices going offline on Adaptec 29320 using driver AIC79XX after messages "Attempting to queue an ABORT message:CDB"
+Date: Tue, 18 Nov 2008 16:45:32 -0600
+Message-ID: <CA39D769C8FE694788CE376026984BAB010BFE0E@ILEXC1U01.ndc.lucent.com>
+In-Reply-To: <CA39D769C8FE694788CE376026984BAB010BFA89@ILEXC1U01.ndc.lucent.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Devices going offline on Adaptec 29320 using driver AIC79XX after messages "Attempting to queue an ABORT message:CDB"
+Thread-Index: AclJm44yen2YAdEYSmyTX2+p3oxdWgAG3kew
+References: <CA39D769C8FE694788CE376026984BAB010BFA89@ILEXC1U01.ndc.lucent.com>
+From: "Rhine, Jay \(Jay\)" <jrhine@alcatel-lucent.com>
+To: "Rhine, Jay \(Jay\)" <jrhine@alcatel-lucent.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Nov 2008 22:45:33.0536 (UTC) FILETIME=[5DABAE00:01C949CF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008 19:05:31 +0100 (CET)
-Julia Lawall <julia@diku.dk> wrote:
+>	I'm having a problem with the devices on my Adaptec 29320 cards.
+>My best guess is this a bug in the AIC79XX (and possible AIX7XXX)
+device driver, possibly releated to SMP.  However, I'm
+>not really sure how to determine if that is really the case.
+>
+>	Here's the scenario. I have an IBM System X 3400 server with 3
+Adaptec SCSI Cards - Adaptec 29320LPE PCIe Ultra320 
+> SCSI adapter, Adaptec 29320ALP PCIx Ultra320 SCSI adapter, and Adaptec
+2944 Ultra SCSI adapter (as well as some other
+> cards unrelated to this problem - an LSI SAS Card, Emulex Fiber
+Channel Card, an Intel SATA Controller, and an Intel 4
+> Port Ethernet card).  The system has 2 Intel E5405 2.00GHz Quad-Core
+processors.  I'm running Centos 5.2.  This system 
+>is running in SMP mode.  I've seen this problem on the most recent
+Centos5.2 kernels, 2.6.18-92.1.17.el5PAE and
+> 2.6.18-92.1.13.el5PAE.  As of this morning, I'm on
+2.6.18-92.1.18.el5PAE (so will see this issue there shortly).  The 
+>logs in this email are from the 2.6.18-92.1.13.el5PAE kernel.
 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Error handling code following a kzalloc should free the allocated data.
-> 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
-> 
-> (
-> if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
-> |
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> )
-> <... when != x
->      when != if (...) { <+...x...+> }
-> x->f = E
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> |
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  kernel/trace/trace.c          |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 697eda3..d86e325 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -1936,6 +1936,7 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
->  			ring_buffer_read_finish(iter->buffer_iter[cpu]);
->  	}
->  	mutex_unlock(&trace_types_lock);
-> +	kfree(iter);
->  
->  	return ERR_PTR(-ENOMEM);
->  }
+Okay, I just wanted to add that I've just verified that this problem
+also occurs in 2.6.27 and 2.6.28-rc5.  I did not try 2.6.27.6 as there
+are no changes in aic79xx driver between 2.6.27 and 2.6.27.6.  
 
-Nobody seems to have applied this to anything yet?
+Any thoughts?
 
-That function really needs help.  Sometimes it will return NULL and
-will set *ret.  Other times it will return ERR_PTR(-ENOMEM) and will
-fail to write anything to *ret.  One caller (tracing_open) ignores the
-return value.  Another caller (tracing_lt_open) tests the
-possibly-uninitialised `ret' and then blindly dereferences the
-possibly-IS_ERR return value.
+Thanks,
 
-Or something like that.  I looked at it long enough to convince myself
-that it needs fixing ;)
-
+Jay
 
