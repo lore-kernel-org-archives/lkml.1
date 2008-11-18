@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbYKRKwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbYKRKwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbYKRKwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 05:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYKRKwX
+	id S1752823AbYKRKwv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 05:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYKRKwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 05:52:23 -0500
-Received: from www.tglx.de ([62.245.132.106]:43875 "EHLO www.tglx.de"
+	Tue, 18 Nov 2008 05:52:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:43885 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbYKRKwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 05:52:22 -0500
-Message-ID: <49229E59.8040306@linutronix.de>
-Date: Tue, 18 Nov 2008 11:52:09 +0100
+	id S1752226AbYKRKwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 05:52:33 -0500
+Message-ID: <49229E64.2010907@linutronix.de>
+Date: Tue, 18 Nov 2008 11:52:20 +0100
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
 To: Bryan Wu <cooloney@kernel.org>
 CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH] USB/ISP1760: Add support for the generic platfrom device
- centralized driver model (v2)
-References: <1227000093-19034-1-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1227000093-19034-1-git-send-email-cooloney@kernel.org>
+Subject: Re: [PATCH] USB/ISP1760: Fix for unaligned exceptions
+References: <1227000131-19145-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1227000131-19145-1-git-send-email-cooloney@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,46 +28,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Bryan Wu wrote:
 > From: Michael Hennerich <michael.hennerich@analog.com>
-> 
-> v2-v1:
->  - cleanup style issue
->  - add Kconfig option CONFIG_USB_ISP1760_PDEV
->  - isp1760 interrupt is default setup TRIGGER_LOW
-Trigger low should be fine.
-
-> 
 > Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 > Signed-off-by: Bryan Wu <cooloney@kernel.org>
 > ---
->  drivers/usb/host/Kconfig      |    6 +++
->  drivers/usb/host/isp1760-if.c |   95 +++++++++++++++++++++++++++++++++++++++++
->  include/linux/usb/isp1760.h   |   19 ++++++++
->  3 files changed, 120 insertions(+), 0 deletions(-)
->  create mode 100644 include/linux/usb/isp1760.h
+>  drivers/usb/host/isp1760-hcd.c |   67 ++++++++++++++++++++++++++++-----------
+>  1 files changed, 48 insertions(+), 19 deletions(-)
 > 
-> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-> index 427b3ac..1e38e8a 100644
-> --- a/drivers/usb/host/Kconfig
-> +++ b/drivers/usb/host/Kconfig
-> @@ -123,6 +123,12 @@ config USB_ISP1760_HCD
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called isp1760.
+> diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+> index 8017f1c..00bece2 100644
+> --- a/drivers/usb/host/isp1760-hcd.c
+> +++ b/drivers/usb/host/isp1760-hcd.c
+> @@ -136,12 +136,21 @@ static void priv_read_copy(struct isp1760_hcd *priv, u32 *src,
+>  		return;
+>  	}
 >  
-> +config USB_ISP1760_PDEV
-> +	bool "Support for the generic platfrom device driver model"
-> +	depends on USB_ISP1760_HCD
-> +	---help---
-> +	  Enables support for the generic platfrom device centralized driver model
+> -	while (len >= 4) {
+> -		*src = __raw_readl(dst);
+> -		len -= 4;
+> -		src++;
+> -		dst++;
+> -	}
+> +	if (unlikely((u32)src & 0x3)) {
+> +		while (len >= 4) {
+> +			put_unaligned(__raw_readl(dst), src);
+> +			len -= 4;
+> +			src++;
+> +			dst++;
+> +		}
+> +	} else {
+> +		while (len >= 4) {
+> +			*src = __raw_readl(dst);
+> +			len -= 4;
+> +			src++;
+> +			dst++;
+> +		}
+> +	} 
+>  
+>  	if (!len)
+>  		return;
+> @@ -159,25 +168,45 @@ static void priv_read_copy(struct isp1760_hcd *priv, u32 *src,
+>  		len--;
+>  		buff8++;
+>  	}
 > +
+>  }
+>  
+>  static void priv_write_copy(const struct isp1760_hcd *priv, const u32 *src,
+>  		__u32 __iomem *dst, u32 len)
+>  {
+> -	while (len >= 4) {
+> -		__raw_writel(*src, dst);
+> -		len -= 4;
+> -		src++;
+> -		dst++;
+> -	}
+>  
+> -	if (!len)
+> -		return;
+> -	/* in case we have 3, 2 or 1 by left. The buffer is allocated and the
+> -	 * extra bytes should not be read by the HW
+> -	 */
+> -
+> -	__raw_writel(*src, dst);
+The link [1] you sent me reports an unaligned access which occurred here. 
+So I thing the access to *src should be either a get_unaligned helper or a 
+byte read loop like I did it in the read path.
+The r8a66597 is doing the same thing (as you suggest) for one SH machine. 
+However, I'm not convinced to fix it that way: The buffer should be 
+properly aligned by the driver. Unless there is HW which requires 
+unaligned data, I would prefer just to fix this unaligned access. 
+According to the thread in [1] a similar patch fixed it for the user until 
+he dropped into another bug.
 
-This is probably a misunderstanding. In the previous email I was refering 
-the patch [1] which removes the Kconfig entries and makes it 
-unconditional. Since platform device are always available we can get rid 
-of depend on PCI || OF in Kconfig and depend just on USB same like isp116x 
-does. The patch I am refering to is mainline so this won't apply, sorry.
-I'm fine with the other parts of the patch.
+> +	if (unlikely((u32)src & 0x3)) {
+> +		while (len >= 4) {
+> +			__raw_writel(get_unaligned(src), dst);
+> +			len -= 4;
+> +			src++;
+> +			dst++;
+> +		}
+> +	
+> +		if (!len)
+> +			return;
+> +		/* in case we have 3, 2 or 1 by left. The buffer is allocated and the
+> +		 * extra bytes should not be read by the HW
+> +		 */
+> +	
+> +		__raw_writel(get_unaligned(src), dst);
+> +	
+> +	} else{
+> +		while (len >= 4) {
+> +			__raw_writel(*src, dst);
+> +			len -= 4;
+> +			src++;
+> +			dst++;
+> +		}
+> +	
+> +		if (!len)
+> +			return;
+> +		/* in case we have 3, 2 or 1 by left. The buffer is allocated and the
+> +		 * extra bytes should not be read by the HW
+> +		 */
+> +	
+> +		__raw_writel(*src, dst);	
+> +	}
+>  }
+>  
+>  /* memory management of the 60kb on the chip from 0x1000 to 0xffff */
 
-[1] http://marc.info/?l=linux-usb&m=122563596420156&w=2
-
+[1] 
+http://blackfin.uclinux.org/gf/project/uclinux-dist/forum/?action=ForumBrowse&_forum_action=MessageReply&message_id=64889
 
 Sebastian
