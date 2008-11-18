@@ -1,112 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYKRTdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbYKRTrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYKRTdJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 14:33:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYKRTb1
+	id S1753113AbYKRTrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 14:47:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYKRTri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 14:31:27 -0500
-Received: from zbr.yandex.ru ([213.180.219.33]:50997 "EHLO gavana.yandex.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752470AbYKRTak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 14:30:40 -0500
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [5/5] POHMELFS: VFS changes and make/config files.
-Date: Tue, 18 Nov 2008 22:33:50 +0300
-Message-Id: <12270368313414-git-send-email-zbr@ioremap.net>
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12270368313997-git-send-email-zbr@ioremap.net>
-References: <12270368303809-git-send-email-zbr@ioremap.net>
- <12270368303340-git-send-email-zbr@ioremap.net>
- <12270368304071-git-send-email-zbr@ioremap.net>
- <12270368313854-git-send-email-zbr@ioremap.net>
- <12270368313997-git-send-email-zbr@ioremap.net>
+	Tue, 18 Nov 2008 14:47:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57229 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752292AbYKRTri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 14:47:38 -0500
+Date: Tue, 18 Nov 2008 14:47:01 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Fabio Checconi <fchecconi@gmail.com>, Nauman Rafique <nauman@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Divyesh Shah <dpshah@google.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081118194701.GC4283@redhat.com>
+References: <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com> <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081118191208.GJ26308@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+On Tue, Nov 18, 2008 at 08:12:08PM +0100, Jens Axboe wrote:
+> On Tue, Nov 18 2008, Fabio Checconi wrote:
+> > > From: Vivek Goyal <vgoyal@redhat.com>
+> > > Date: Tue, Nov 18, 2008 09:07:51AM -0500
+> > >
+> > > On Tue, Nov 18, 2008 at 01:05:08PM +0100, Fabio Checconi wrote:
+> > ...
+> > > > I have to think a little bit on how it would be possible to support
+> > > > an option for time-only budgets, coexisting with the current behavior,
+> > > > but I think it can be done.
+> > > > 
+> > > 
+> > > IIUC, bfq and cfq are different in following manner.
+> > > 
+> > > a. BFQ employs WF2Q+ for fairness and CFQ employes weighted round robin.
+> > > b. BFQ uses the budget (sector count) as notion of service and CFQ uses
+> > >    time slices.
+> > > c. BFQ supports hierarchical fair queuing and CFQ does not.  
+> > > 
+> > > We are looking forward for implementation of point C. Fabio seems to
+> > > thinking of supporting time slice as a service (B). It seems like
+> > > convergence of CFQ and BFQ except the point A (WF2Q+ vs weighted round
+> > > robin). 
+> > > 
+> > > It looks like WF2Q+ provides tighter service bound and bfq guys mention
+> > > that they have been able to ensure throughput while ensuring tighter 
+> > > bounds. If that's the case, does that mean BFQ is a replacement for CFQ
+> > > down the line?
+> > >   
+> > 
+> > BFQ started from CFQ, extending it in the way you correctly describe,
+> > so it is indeed very similar.  There are also some minor changes to
+> > locking, cic handling, hw_tag detection and to the CIC_SEEKY heuristic.
+> > 
+> > The two schedulers share similar goals, and in my opinion BFQ can be
+> > considered, in the long term, a CFQ replacement; *but* before talking
+> > about replacing CFQ we have to consider that:
+> > 
+> >   - it *needs* review and testing; we've done our best, but for sure
+> >     it's not enough; review and testing are never enough;
+> >   - the service domain fairness, which was one of our objectives, requires
+> >     some extra complexity; the mechanisms we used and the design choices
+> >     we've made may not fit all the needs, or may not be as generic as the
+> >     simpler CFQ's ones;
+> >   - CFQ has years of history behind and has been tuned for a wider
+> >     variety of environments than the ones we've been able to test.
+> > 
+> > If time-based fairness is considered more robust and the loss of
+> > service-domain fairness is not a problem, then the two schedulers can
+> > be made even more similar.
+> 
+> My preferred approach here would be, in order or TODO:
+> 
+> - Create and test the smallish patches for seekiness, hw_tag checking,
+>   and so on for CFQ.
+> - Create and test a WF2Q+ service dispatching patch for CFQ.
+> 
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index abccb5d..c1b2b32 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1557,6 +1557,8 @@ menuconfig NETWORK_FILESYSTEMS
- 
- if NETWORK_FILESYSTEMS
- 
-+source "fs/pohmelfs/Kconfig"
-+
- config NFS_FS
- 	tristate "NFS client support"
- 	depends on INET
-diff --git a/fs/Makefile b/fs/Makefile
-index a1482a5..56fe19c 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
- obj-$(CONFIG_DEBUG_FS)		+= debugfs/
- obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
- obj-$(CONFIG_GFS2_FS)           += gfs2/
-+obj-$(CONFIG_POHMELFS)		+= pohmelfs/
-diff --git a/fs/pohmelfs/Kconfig b/fs/pohmelfs/Kconfig
-new file mode 100644
-index 0000000..82d13ad
---- /dev/null
-+++ b/fs/pohmelfs/Kconfig
-@@ -0,0 +1,23 @@
-+config POHMELFS
-+	tristate "POHMELFS filesystem support"
-+	select CONNECTOR
-+	help
-+	  POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
-+	  This is a network filesystem which supports coherent caching of data and metadata
-+	  on clients.
-+
-+config POHMELFS_DEBUG
-+	bool "POHMELFS debugging"
-+	depends on POHMELFS
-+	default n
-+	help
-+	  Turns on excessive POHMELFS debugging facilities.
-+	  You usually do not want to slow things down noticebly and get really lots of kernel
-+	  messages in syslog.
-+
-+config POHMELFS_CRYPTO
-+	bool "POHMELFS crypto support"
-+	depends on CONFIG_CRYPTO_BLKCIPHER && CONFIG_CRYPTO_HASH
-+	help
-+	  This option allows to encrypt and/or protect with strong cryptographic hash all dataflow
-+	  between server and clients. Each config group can have own keys.
-diff --git a/fs/pohmelfs/Makefile b/fs/pohmelfs/Makefile
-new file mode 100644
-index 0000000..196561c
---- /dev/null
-+++ b/fs/pohmelfs/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_POHMELFS)	+= pohmelfs.o
-+
-+pohmelfs-y := inode.o config.o dir.o net.o path_entry.o trans.o crypto.o lock.o mcache.o
+Hi Jens,
 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 876bc59..016a00b 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -497,6 +497,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
- 		lru_cache_add(page);
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
- 
- #ifdef CONFIG_NUMA
- struct page *__page_cache_alloc(gfp_t gfp)
-@@ -614,6 +615,7 @@ int __lock_page_killable(struct page *page)
- 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
- 					sync_page_killable, TASK_KILLABLE);
- }
-+EXPORT_SYMBOL_GPL(__lock_page_killable);
- 
- /**
-  * __lock_page_nosync - get a lock on the page, without calling sync_page()
+What do you think about "hierarchical" and cgroup part of BFQ patch? Do 
+you intend to incorporate/include that piece also or do you think that's
+not the way to go for IO controller stuff.
+
+Thanks
+Vivek
+
+> and if there are leftovers after that, we could even conditionally
+> enable some of those if appropriate. I think the WF2Q+ is quite cool and
+> could be easily usable as the default, so it's definitely a viable
+> alternative.
+> 
+> My main goal here is basically avoiding addition of Yet Another IO
+> scheduler, especially one that is so closely tied to CFQ already.
+> 
+> I'll start things off by splitting cfq into a few files similar to what
+> bfq has done, as I think it makes a lot of sense. Fabio, if you could
+> create patches for the small behavioural changes you made, we can
+> discuss and hopefully merge those next.
+> 
+> -- 
+> Jens Axboe
