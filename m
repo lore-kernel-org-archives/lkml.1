@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbYKRLol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752098AbYKRLpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662AbYKRLol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 06:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYKRLod
+	id S1752098AbYKRLpF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 06:45:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYKRLox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 06:44:33 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35096 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751947AbYKRLoc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 06:44:32 -0500
-X-BigFish: VPS3(zzzzzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KAJ1XX-04-6R2-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Joerg Roedel <joerg.roedel@amd.com>, hawk@pld-linux.org,
-       stable@kernel.org
-Subject: [PATCH] x86: always select SWIOTLB on x86_64
-Date: Tue, 18 Nov 2008 12:44:21 +0100
-Message-ID: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-X-OriginalArrivalTime: 18 Nov 2008 11:44:21.0453 (UTC) FILETIME=[FF4437D0:01C94972]
+	Tue, 18 Nov 2008 06:44:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:39853 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752607AbYKRLow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 06:44:52 -0500
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18722.43694.861169.946743@cargo.ozlabs.ibm.com>
+Date: Tue, 18 Nov 2008 22:44:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <200811182124.33141.nickpiggin@yahoo.com.au>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<18722.2107.970887.768477@cargo.ozlabs.ibm.com>
+	<alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
+	<200811182124.33141.nickpiggin@yahoo.com.au>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fixes korg bugzilla 11980
+Nick Piggin writes:
 
-A kernel for a 64bit x86 system should always contain the swiotlb code
-in case it is booted on a machine without any hardware IOMMU supported
-by the kernel and more than 4GB of RAM. This patch changes Kconfig to
-always compile swiotlb into the kernel for x86_64.
+> It's much harder to do this with powerpc I think because they would need
+> to calculate 8 hashes and touch 8 cachelines to prefill 8 translations,
+> wouldn't they?
 
-Cc: hawk@pld-linux.org
-Cc: stable@kernel.org
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yeah, the hashed page table sucks.  Film at 11, as they say. :)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 93224b5..669c6d5 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -566,7 +566,7 @@ config AMD_IOMMU
- 
- # need this always selected by IOMMU for the VIA workaround
- config SWIOTLB
--	bool
-+	def_bool y if X86_64
- 	help
- 	  Support for software bounce buffers used on x86-64 systems
- 	  which don't have a hardware IOMMU (e.g. the current generation
--- 
-1.5.6.4
-
-
+Paul.
