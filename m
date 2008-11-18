@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYKRNwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYKRN4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753488AbYKRNwj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 08:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYKRNwa
+	id S1753136AbYKRN4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 08:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYKRN4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 08:52:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47109 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752233AbYKRNw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 08:52:29 -0500
-Date: Tue, 18 Nov 2008 14:52:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: ftrace: preemptoff selftest not working
-Message-ID: <20081118135221.GE31146@elte.hu>
-References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com>
+	Tue, 18 Nov 2008 08:56:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42342 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbYKRN4j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 08:56:39 -0500
+Date: Tue, 18 Nov 2008 08:56:38 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Paul Mackerras <paulus@samba.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+In-Reply-To: <alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
+References: <20081116212428.938752312@goodmis.org> <18720.42209.880409.297291@cargo.ozlabs.ibm.com> <alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Paul and Benjamin,
 
-> > Hence the trace buffer will be empty. The patch below makes the 
-> > selftests working for me, since then they run in preemptible 
-> > context. But it is ugly and I'm not proposing it for upstream ;)
-> > 
-> > Just wanted to make you aware that there is a bug.
-> 
-> Yep, this might be a better answer than what I put into linux-tip 
-> (and my git repo).
-> 
-> See:
-> 
->   ftrace: force pass of preemptoff selftest
-> 
-> The cause of the bug was the conversion of the BKL back to a 
-> spinlock, and making it non preempt.  The initcall code is called 
-> with the BKL applied which now means it can not preempt. This breaks 
-> the preempt tracer selftest.
-> 
-> My solution was to just force a pass if this is detected. Perhaps 
-> moving the test might be better.
+Can I add your Acked-by: to all these patches that I submitted? I'm going 
+to recommit them with a consistent subject (all lower case ppc), but I'm 
+not going to change the patches themselves.
 
-it would be better to just drop the BKL in that selftest. (or in all 
-selftests - an elevated preempt count will skew a number of things)
+Would you two be fine with that? Or at least one of you?
 
-	Ingo
+-- Steve
+
+
