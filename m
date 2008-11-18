@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYKRBHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbYKRBIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYKRBHo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 20:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYKRBHg
+	id S1752811AbYKRBIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 20:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYKRBIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 20:07:36 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60184 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbYKRBHg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 20:07:36 -0500
-Message-ID: <4922154E.4050108@zytor.com>
-Date: Mon, 17 Nov 2008 17:07:26 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Support always running TSC on Intel CPUs
-References: <20081118001137.GA12350@linux-os.sc.intel.com> <492208BE.2000001@zytor.com> <7E82351C108FA840AB1866AC776AEC464291B456@orsmsx505.amr.corp.intel.com> <492209C8.7040602@zytor.com> <20081118004918.GA19416@linux-os.sc.intel.com> <492211C5.7090302@zytor.com> <20081118010528.GA22044@linux-os.sc.intel.com>
-In-Reply-To: <20081118010528.GA22044@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Nov 2008 20:08:14 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58187 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751689AbYKRBIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 20:08:13 -0500
+From: Glauber Costa <glommer@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] always assign userspace_addr
+Date: Tue, 18 Nov 2008 01:04:22 -0200
+Message-Id: <1226977462-8086-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki Pallipadi wrote:
->>>
->> I was under the impression that C2 was invoked by the chipset on a
->> thermal condition, at least on older (P3-era) processors.  Is that no
->> longer true?  If what you say is above (HLT and MWAIT only), then *was*
->> it ever true?
-> 
-> I should also add io port based C-state to HLT and MWAIT. But, that again is
-> OS initiated.
-> 
-> I don't know of C2 invocation in thermal condition. Thermal condition, all
-> CPUs that I know of (P3 and beyond), use either clock modulation or frequency
-> changes. And on some such CPUs, where TSC runs at constant freq during such
-> modulation/freq change, we set CONSTANT_TSC bit based on model number check.
-> So, on CPUs earlier than those, we cannot use TSC or we have to scale TSC
-> based on freq. This patch shouldn't have any impact for those CPUs.
-> 
+Currently, kvm only sets new.userspace_addr in slots
+that were just allocated. This is not the intended behaviour,
+and actually breaks when we try to use the slots to implement
+aliases, for example.
 
-I believe there are CPUs -- again, in the P3-era range at least -- which 
-invoke C2 from the chipset on thermal conditions (and basically PWM the 
-CPU.)  I'd like to get that clarified so we don't trip up on that.
+Cirrus VGA aliases maps and address to a userspace address, and
+then keep mapping this same address to different locations
+until the whole screen is filled.
 
-	-hpa
+The solution is to assign new.userspace_addr no matter what,
+so we can be sure that whenever the guest changes this field,
+it sees the change being reflected in the code.
+
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ virt/kvm/kvm_main.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a87f45e..fc3abf0 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -762,15 +762,6 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 		memset(new.rmap, 0, npages * sizeof(*new.rmap));
+ 
+ 		new.user_alloc = user_alloc;
+-		/*
+-		 * hva_to_rmmap() serialzies with the mmu_lock and to be
+-		 * safe it has to ignore memslots with !user_alloc &&
+-		 * !userspace_addr.
+-		 */
+-		if (user_alloc)
+-			new.userspace_addr = mem->userspace_addr;
+-		else
+-			new.userspace_addr = 0;
+ 	}
+ 	if (npages && !new.lpage_info) {
+ 		int largepages = npages / KVM_PAGES_PER_HPAGE;
+@@ -791,6 +782,15 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 		if ((base_gfn+npages) % KVM_PAGES_PER_HPAGE)
+ 			new.lpage_info[largepages-1].write_count = 1;
+ 	}
++	/*
++	 * hva_to_rmmap() serialzies with the mmu_lock and to be
++	 * safe it has to ignore memslots with !user_alloc &&
++	 * !userspace_addr.
++	 */
++	if (npages && user_alloc)
++		new.userspace_addr = mem->userspace_addr;
++	else
++		new.userspace_addr = 0;
+ 
+ 	/* Allocate page dirty bitmap if needed */
+ 	if ((new.flags & KVM_MEM_LOG_DIRTY_PAGES) && !new.dirty_bitmap) {
+-- 
+1.5.6.5
 
