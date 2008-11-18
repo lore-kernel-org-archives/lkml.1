@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbYKRCuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbYKRCwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752439AbYKRCuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 21:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYKRCuI
+	id S1752589AbYKRCwn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 21:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYKRCwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 21:50:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37771 "EHLO hera.kernel.org"
+	Mon, 17 Nov 2008 21:52:35 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37825 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbYKRCuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 21:50:06 -0500
-Message-ID: <49222D24.5020601@kernel.org>
-Date: Mon, 17 Nov 2008 18:49:08 -0800
+	id S1751061AbYKRCwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 21:52:34 -0500
+Message-ID: <49222DB0.3070801@kernel.org>
+Date: Mon, 17 Nov 2008 18:51:28 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
@@ -19,110 +19,328 @@ CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2
-References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117173728.GA7384@elte.hu> <4921FC19.1080803@kernel.org> <20081117232837.GA10308@elte.hu>
-In-Reply-To: <20081117232837.GA10308@elte.hu>
+References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117173728.GA7384@elte.hu> <4921FC19.1080803@kernel.org> <20081117232837.GA10308@elte.hu> <49222D24.5020601@kernel.org>
+In-Reply-To: <49222D24.5020601@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+second one
+need to apply after
+[PATCH] x86: use update_genapic to update inquire_remote_apic
+
+YH
+
 ---
 
-[PATCH] x86: use update_genapic to update inquire_remote_apic
+[PATCH] x86: use update_genapic to get rid of ES7000_CLUSTERED_APIC
 
 Impact: clean up
 
-So don't can comparing in that func when debug is disabled.
+could autodetect those system that need cluster apic, and update genapic
+accordingly.
+also could remove wakeup.h for e7000, because it's default one is the same as
+overall default mach_wakecpu.h
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
 ---
- arch/x86/include/asm/es7000/wakecpu.h            |    3 +--
- arch/x86/include/asm/mach-default/mach_wakecpu.h |    3 +--
- arch/x86/kernel/es7000_32.c                      |   11 ++++++++++-
- arch/x86/kernel/setup.c                          |    9 +++++++++
- 4 files changed, 21 insertions(+), 5 deletions(-)
+ arch/x86/Kconfig                      |    4 -
+ arch/x86/include/asm/es7000/apic.h    |   76 +++++++++++++++++++++++-----------
+ arch/x86/include/asm/es7000/wakecpu.h |   36 ----------------
+ arch/x86/include/asm/genapic_32.h     |    1 
+ arch/x86/kernel/es7000_32.c           |   21 +++++----
+ arch/x86/mach-generic/es7000.c        |   14 +++++-
+ 6 files changed, 80 insertions(+), 72 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/mach-default/mach_wakecpu.h
+Index: linux-2.6/arch/x86/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mach-default/mach_wakecpu.h
-+++ linux-2.6/arch/x86/include/asm/mach-default/mach_wakecpu.h
-@@ -28,8 +28,7 @@ extern void __inquire_remote_apic(int ap
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -459,10 +459,6 @@ config X86_CYCLONE_TIMER
+ 	def_bool y
+ 	depends on X86_GENERICARCH
  
- static inline void inquire_remote_apic(int apicid)
- {
--	if (apic_verbosity >= APIC_DEBUG)
--		__inquire_remote_apic(apicid);
-+	__inquire_remote_apic(apicid);
+-config ES7000_CLUSTERED_APIC
+-	def_bool y
+-	depends on SMP && X86_ES7000 && MPENTIUMIII
+-
+ source "arch/x86/Kconfig.cpu"
+ 
+ config HPET_TIMER
+Index: linux-2.6/arch/x86/include/asm/es7000/apic.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/es7000/apic.h
++++ linux-2.6/arch/x86/include/asm/es7000/apic.h
+@@ -9,28 +9,27 @@ static inline int apic_id_registered(voi
+ 	        return (1);
  }
  
- #endif /* _ASM_X86_MACH_DEFAULT_MACH_WAKECPU_H */
+-static inline cpumask_t target_cpus(void)
++static inline cpumask_t target_cpus_cluster(void)
+ {
+-#if defined CONFIG_ES7000_CLUSTERED_APIC
+ 	return CPU_MASK_ALL;
+-#else
++}
++
++static inline cpumask_t target_cpus(void)
++{
+ 	return cpumask_of_cpu(smp_processor_id());
+-#endif
+ }
+ 
+-#if defined CONFIG_ES7000_CLUSTERED_APIC
+-#define APIC_DFR_VALUE		(APIC_DFR_CLUSTER)
+-#define INT_DELIVERY_MODE	(dest_LowestPrio)
+-#define INT_DEST_MODE		(1)    /* logical delivery broadcast to all procs */
+-#define NO_BALANCE_IRQ		(1)
+-#else
++#define APIC_DFR_VALUE_CLUSTER		(APIC_DFR_CLUSTER)
++#define INT_DELIVERY_MODE_CLUSTER	(dest_LowestPrio)
++#define INT_DEST_MODE_CLUSTER		(1) /* logical delivery broadcast to all procs */
++#define NO_BALANCE_IRQ_CLUSTER		(1)
++
+ #define APIC_DFR_VALUE		(APIC_DFR_FLAT)
+ #define INT_DELIVERY_MODE	(dest_Fixed)
+ #define INT_DEST_MODE		(0)    /* phys delivery to target procs */
+ #define NO_BALANCE_IRQ		(0)
+ #undef  APIC_DEST_LOGICAL
+ #define APIC_DEST_LOGICAL	0x0
+-#endif
+ 
+ static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
+ {
+@@ -57,6 +56,16 @@ static inline unsigned long calculate_ld
+  * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
+  * document number 292116).  So here it goes...
+  */
++static inline void init_apic_ldr_cluster(void)
++{
++	unsigned long val;
++	int cpu = smp_processor_id();
++
++	apic_write(APIC_DFR, APIC_DFR_VALUE_CLUSTER);
++	val = calculate_ldr(cpu);
++	apic_write(APIC_LDR, val);
++}
++
+ static inline void init_apic_ldr(void)
+ {
+ 	unsigned long val;
+@@ -67,10 +76,6 @@ static inline void init_apic_ldr(void)
+ 	apic_write(APIC_LDR, val);
+ }
+ 
+-#ifndef CONFIG_X86_GENERICARCH
+-extern void enable_apic_mode(void);
+-#endif
+-
+ extern int apic_version [MAX_APICS];
+ static inline void setup_apic_routing(void)
+ {
+@@ -141,7 +146,7 @@ static inline int check_phys_apicid_pres
+ 	return (1);
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++static inline unsigned int cpu_mask_to_apicid_cluster(cpumask_t cpumask)
+ {
+ 	int num_bits_set;
+ 	int cpus_found = 0;
+@@ -151,11 +156,7 @@ static inline unsigned int cpu_mask_to_a
+ 	num_bits_set = cpus_weight(cpumask);
+ 	/* Return id to all */
+ 	if (num_bits_set == NR_CPUS)
+-#if defined CONFIG_ES7000_CLUSTERED_APIC
+ 		return 0xFF;
+-#else
+-		return cpu_to_logical_apicid(0);
+-#endif
+ 	/*
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+@@ -168,11 +169,40 @@ static inline unsigned int cpu_mask_to_a
+ 			if (apicid_cluster(apicid) !=
+ 					apicid_cluster(new_apicid)){
+ 				printk ("%s: Not a valid mask!\n", __func__);
+-#if defined CONFIG_ES7000_CLUSTERED_APIC
+ 				return 0xFF;
+-#else
++			}
++			apicid = new_apicid;
++			cpus_found++;
++		}
++		cpu++;
++	}
++	return apicid;
++}
++
++static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++{
++	int num_bits_set;
++	int cpus_found = 0;
++	int cpu;
++	int apicid;
++
++	num_bits_set = cpus_weight(cpumask);
++	/* Return id to all */
++	if (num_bits_set == NR_CPUS)
++		return cpu_to_logical_apicid(0);
++	/*
++	 * The cpus in the mask must all be on the apic cluster.  If are not
++	 * on the same apicid cluster return default value of TARGET_CPUS.
++	 */
++	cpu = first_cpu(cpumask);
++	apicid = cpu_to_logical_apicid(cpu);
++	while (cpus_found < num_bits_set) {
++		if (cpu_isset(cpu, cpumask)) {
++			int new_apicid = cpu_to_logical_apicid(cpu);
++			if (apicid_cluster(apicid) !=
++					apicid_cluster(new_apicid)){
++				printk ("%s: Not a valid mask!\n", __func__);
+ 				return cpu_to_logical_apicid(0);
+-#endif
+ 			}
+ 			apicid = new_apicid;
+ 			cpus_found++;
+Index: linux-2.6/arch/x86/include/asm/es7000/wakecpu.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/es7000/wakecpu.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-#ifndef __ASM_ES7000_WAKECPU_H
+-#define __ASM_ES7000_WAKECPU_H
+-
+-#define TRAMPOLINE_PHYS_LOW (0x467)
+-#define TRAMPOLINE_PHYS_HIGH (0x469)
+-
+-static inline void wait_for_init_deassert(atomic_t *deassert)
+-{
+-#ifndef CONFIG_ES7000_CLUSTERED_APIC
+-	while (!atomic_read(deassert))
+-		cpu_relax();
+-#endif
+-	return;
+-}
+-
+-/* Nothing to do for most platforms, since cleared by the INIT cycle */
+-static inline void smp_callin_clear_local_apic(void)
+-{
+-}
+-
+-static inline void store_NMI_vector(unsigned short *high, unsigned short *low)
+-{
+-}
+-
+-static inline void restore_NMI_vector(unsigned short *high, unsigned short *low)
+-{
+-}
+-
+-extern void __inquire_remote_apic(int apicid);
+-
+-static inline void inquire_remote_apic(int apicid)
+-{
+-	__inquire_remote_apic(apicid);
+-}
+-
+-#endif /* __ASM_MACH_WAKECPU_H */
 Index: linux-2.6/arch/x86/kernel/es7000_32.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/es7000_32.c
 +++ linux-2.6/arch/x86/kernel/es7000_32.c
-@@ -181,14 +181,23 @@ static int wakeup_secondary_cpu_via_mip(
- 
- 	return 0;
+@@ -38,6 +38,7 @@
+ #include <asm/io.h>
+ #include <asm/nmi.h>
+ #include <asm/smp.h>
++#include <asm/atomic.h>
+ #include <asm/apicdef.h>
+ #include <mach_mpparse.h>
+ #include <asm/genapic.h>
+@@ -163,7 +164,6 @@ es7000_rename_gsi(int ioapic, int gsi)
+ 	return gsi;
  }
-+#endif
-+
-+static void noop_inquire(void)
-+{
-+}
  
- static int __init es7000_update_genapic(void)
+-#ifdef CONFIG_ES7000_CLUSTERED_APIC
+ static int wakeup_secondary_cpu_via_mip(int cpu, unsigned long eip)
  {
-+#ifdef CONFIG_ES7000_CLUSTERED_APIC
- 	genapic->wakeup_cpu = wakeup_secondary_cpu_via_mip;
-+#endif
-+
-+	if (apic_verbosity < APIC_DEBUG)
-+		genapic->inquire_remote_apic = noop_inquire;
+ 	unsigned long vect = 0, psaival = 0;
+@@ -181,17 +181,24 @@ static int wakeup_secondary_cpu_via_mip(
  
  	return 0;
  }
 -#endif
  
- void __init
- setup_unisys(void)
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -584,10 +584,19 @@ static int __init setup_elfcorehdr(char
- early_param("elfcorehdr", setup_elfcorehdr);
- #endif
- 
-+
-+#if defined(CONFIG_X86_GENERICARCH) || defined(CONFIG_X86_64)
+-static void noop_inquire(void)
 +static void noop_inquire(int apicid)
 +{
 +}
-+#endif
- static int __init default_update_genapic(void)
- {
- #if defined(CONFIG_X86_GENERICARCH) || defined(CONFIG_X86_64)
- 	genapic->wakeup_cpu = wakeup_secondary_cpu_via_nmi;
 +
-+	if (apic_verbosity < APIC_DEBUG)
-+		genapic->inquire_remote_apic = noop_inquire;
- #endif
- 
- 	return 0;
-Index: linux-2.6/arch/x86/include/asm/es7000/wakecpu.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/es7000/wakecpu.h
-+++ linux-2.6/arch/x86/include/asm/es7000/wakecpu.h
-@@ -30,8 +30,7 @@ extern void __inquire_remote_apic(int ap
- 
- static inline void inquire_remote_apic(int apicid)
++static void noop_wait_for_deassert(atomic_t *deassert_not_used)
  {
--	if (apic_verbosity >= APIC_DEBUG)
--		__inquire_remote_apic(apicid);
-+	__inquire_remote_apic(apicid);
  }
  
- #endif /* __ASM_MACH_WAKECPU_H */
+ static int __init es7000_update_genapic(void)
+ {
+-#ifdef CONFIG_ES7000_CLUSTERED_APIC
+-	genapic->wakeup_cpu = wakeup_secondary_cpu_via_mip;
+-#endif
++	/* MPENTIUMIII */
++	if (boot_cpu_data.x86 == 6 &&
++	    (boot_cpu_data.x86_model >= 7 || boot_cpu_data.x86_model <= 11)) {
++		es7000_update_genapic_to_cluster();
++		genapic->wait_for_init_deassert = noop_wait_for_deassert;
++		genapic->wakeup_cpu = wakeup_secondary_cpu_via_mip;
++	}
+ 
+ 	if (apic_verbosity < APIC_DEBUG)
+ 		genapic->inquire_remote_apic = noop_inquire;
+@@ -215,9 +222,7 @@ setup_unisys(void)
+ 		es7000_plat = ES7000_CLASSIC;
+ 	ioapic_renumber_irq = es7000_rename_gsi;
+ 
+-#ifdef CONFIG_ES7000_CLUSTERED_APIC
+ 	x86_quirks->update_genapic = es7000_update_genapic;
+-#endif
+ }
+ 
+ /*
+Index: linux-2.6/arch/x86/mach-generic/es7000.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mach-generic/es7000.c
++++ linux-2.6/arch/x86/mach-generic/es7000.c
+@@ -16,7 +16,19 @@
+ #include <asm/es7000/apic.h>
+ #include <asm/es7000/ipi.h>
+ #include <asm/es7000/mpparse.h>
+-#include <asm/es7000/wakecpu.h>
++#include <asm/mach-default/mach_wakecpu.h>
++
++void __init es7000_update_genapic_to_cluster(void)
++{
++	genapic->target_cpus = target_cpus_cluster;
++	genapic->int_delivery_mode = INT_DELIVERY_MODE_CLUSTER;
++	genapic->int_dest_mode = INT_DEST_MODE_CLUSTER;
++	genapic->no_balance_irq = NO_BALANCE_IRQ_CLUSTER;
++
++	genapic->init_apic_ldr = init_apic_ldr_cluster;
++
++	genapic->cpu_mask_to_apicid = cpu_mask_to_apicid_cluster;
++}
+ 
+ static int probe_es7000(void)
+ {
+Index: linux-2.6/arch/x86/include/asm/genapic_32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/genapic_32.h
++++ linux-2.6/arch/x86/include/asm/genapic_32.h
+@@ -131,6 +131,7 @@ struct genapic {
+ }
+ 
+ extern struct genapic *genapic;
++extern void es7000_update_genapic_to_cluster(void);
+ 
+ enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
+ #define get_uv_system_type()		UV_NONE
 
