@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYKRT3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYKRTbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbYKRT3n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 14:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYKRT3e
+	id S1753722AbYKRTbJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 14:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYKRTaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 14:29:34 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41674 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752319AbYKRT3d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 14:29:33 -0500
-Date: Tue, 18 Nov 2008 19:29:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Valdis.Kletnieks@vt.edu
-Cc: Fredrik =?ISO-8859-14?B?TWFya3N0cvZt?= 
-	<fredrik.markstrom@avalonenterprise.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Developing non-commercial drivers ?
-Message-ID: <20081118192942.3c676f0d@lxorguk.ukuu.org.uk>
-In-Reply-To: <63125.1227036333@turing-police.cc.vt.edu>
-References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
-	<63125.1227036333@turing-police.cc.vt.edu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 14:30:39 -0500
+Received: from zbr.yandex.ru ([213.180.219.33]:50987 "EHLO gavana.yandex.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752353AbYKRTai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 14:30:38 -0500
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [0/5] New POHMELFS release.
+Date: Tue, 18 Nov 2008 22:33:45 +0300
+Message-Id: <12270368303809-git-send-email-zbr@ioremap.net>
+X-Mailer: git-send-email 1.5.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> an entire CPU architecture and be OK on the GPL licensing of all the code
-> in arch/new-foo-cpu that exposes the IP of the cpu design, but they're worried
-> about the special sauce in a freakin' *ethernet controller*?
+Hello.
 
-Not entirely. There are several reasons this may occur
-- They could have something genuinely new - unlikely to be honest
-- They could think they have something genuinely new but don't
-- They may not yet have filed some relevant patent applications in which
-case they have to worry about secrecy
+This is a new release of the POHMEL filesystem.
+POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
 
-and other reasons.
+This is a high performance network filesystem with local coherent cache of data
+and metadata. Its main goal is distributed parallel processing of data.
+Network filesystem is a client transport.
 
-Probably they should talk to the Linux Foundation. I'm not sure that
-assuming they are clueless is the first step. Understanding the problem
-as they see it is more important and probably something the Linux
-Foundation can help with and under a business to business framework.
+POHMELFS protocol was proven to be superior to NFS in lots
+(if not all, then it is in a roadmap) operations.
+
+Basic POHMELFS features:
+
+    * Local coherent cache for data and metadata. (Byte-range) locking. Locks were 
+    	prepared to be byte-range, but since all Linux filesystems lock the whole
+	inode, it was decided to lock the whole object during writing. Actual messages
+	are being sent for locking/cache coherency protocol are byte-range, but because
+	the whole inode is locked, lock is cached, so range actually is equal to the
+	inode size. One can simultaneously write into the same page via different offsets
+	from different client, and every time file will be coherent on all clients which
+	do it and on the server itself.
+    * Completely async processing of all events (hard and symlinks are the only exceptions)
+    	including object creation and data reading and writing.
+    * Flexible object architecture optimized for network processing. Ability to create long
+    	pathes to object and remove arbitrary huge directories in single network command.
+    * High performance is one of the main design goals.
+    * Very fast and scalable multithreaded userspace server. Being in userspace it works
+    	with any underlying filesystem and still is much faster than async in-kernel NFS one.
+    * Transactions support. Full failover for all operations. Resending transactions to
+    	different servers on timeout or error.
+    * Client is able to switch between different servers
+    	(if one goes down, client automatically reconnects to second and so on).
+    * Client parallel extensions: ability to write to multiple servers and
+    	balance reading between them.
+    * Client dynamic server reconfiguration: ability to add/remove servers from
+    	working set in run-time.
+    * Strong authentification and possible data encryption in network channel.
+    * Extended attributes support.
+
+This release brings following features:
+
+    * combine locking with inode attribute changes
+    * add get/set attrbibute commands into cache coherency protocol
+    	(attributes are cached and flushed to the server at a writeback time or
+	on demand because of cache coherency protocol)
+    * crypto threads pool's cleanup
+    * 2.6.27 rebase
+    * optimize read/write locking and number of messages
+    	needed for cache coherency management
+    * debug cleanups
+    * bug fixes
+
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+
+1. POHMELFS homepage
+http://www.ioremap.net/projects/pohmelfs
+
+2. GIT trees.
+http://www.ioremap.net/cgi-bin/gitweb.cgi
