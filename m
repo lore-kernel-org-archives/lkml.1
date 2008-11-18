@@ -1,50 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbYKRShR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbYKRSlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbYKRShR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:37:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYKRShF
+	id S1752976AbYKRSlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 13:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYKRSlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:37:05 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36583 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbYKRShD (ORCPT
+	Tue, 18 Nov 2008 13:41:01 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:60278 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbYKRSlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:37:03 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49230B3A.2000509@s5r6.in-berlin.de>
-Date: Tue, 18 Nov 2008 19:36:42 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.17) Gecko/20081027 SeaMonkey/1.1.12
+	Tue, 18 Nov 2008 13:41:00 -0500
+Date: Tue, 18 Nov 2008 10:37:35 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
+Message-ID: <20081118183735.GA13517@us.ibm.com>
+References: <20081115212133.GA32140@us.ibm.com> <20081118175336.GA14178@redhat.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Can you add the staging tree to -next?
-References: <20081112235600.GA27554@kroah.com> <Pine.LNX.4.64.0811140825410.11953@anakin> <20081114173258.GC22980@kroah.com>
-In-Reply-To: <20081114173258.GC22980@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081118175336.GA14178@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote on November 14:
-> On Fri, Nov 14, 2008 at 08:42:48AM +0100, Geert Uytterhoeven wrote:
->> Apart from the patches you receive against -next, is there any other
->> advantage, giving staging is disabled?
-> 
-> That is a huge advantage, don't discount it.  My staging tree has over
-> 150 patches in it right now, and is quite diverged from what is in
-> Linus's tree.  I have been getting the same patches sent over and over
-> to fix the same thing that is already resolved in my tree, as the
-> developers are working against -next thinking that they were working
-> with the latest development tree.
+Oleg Nesterov [oleg@redhat.com] wrote:
+| On 11/15, Sukadev Bhattiprolu wrote:
+| >
+| > Subject: [PATCH] Define/use siginfo_from_ancestor_ns()
+| 
+| Imho, the main problem with this patch is that it tries to do many
+| different things at once, and each part is suboptimal/incomplete.
+| 
+| This needs several patches. Not only because this is easier to review,
+| but also because each part needs the good changelog.
 
-These people are missing that -next is not a development tree.
-(Unless final integration tests count still as development.)
--- 
-Stefan Richter
--=====-==--- =-== =--=-
-http://arcgraph.de/sr/
+I agree I sent this as an RFC to show the overall changes.
+I do plan to include the following two patches, which should address
+the issue of ->nsproxy being NULL.
+	https://lists.linux-foundation.org/pipermail/containers/2008-November/014187.html
+	https://lists.linux-foundation.org/pipermail/containers/2008-November/014188.html
+
+| 
+| Also. I don't think we should try do solve the "whole" problem right
+| now. For example, if we add/use siginfo_from_ancestor_ns(), we should
+| also change sys_sigaction(SIG_IGN). As I said, imho we should start
+| with:
+| 
+| 	- cinit can't be killed from its namespace
+| 
+| 	- the parent ns can always SIGKILL cinit
+| 
+| This solves most of problems, and this is very simple.
+
+Yes, I agree and am trying to solve only those two :-) I moved out
+changes to __do_notify() and others to separate patches, but maybe
+we can simplify this patch further.
+
+| 
+| As for .si_pid mangling, this again needs a separate patch.
+
+I thought we were going to use SIG_FROM_USER to decide if the siginfo
+does in fact have a ->si_pid (so we don't need the switch statement
+we had in an earlier patch).
+
+| 
+| Sukadev, I don't have a time today, I'll return tomorrow with more
+| comments on this...
+
+No problem. Thanks for the comments so far.
+
+| 
+| > +static int sig_ignored(struct task_struct *t, int sig, int same_ns)
+| >  {
+| >  	void __user *handler;
+| >
+| > @@ -68,6 +68,14 @@ static int sig_ignored(struct task_struct *t, int sig)
+| >  	handler = sig_handler(t, sig);
+| >  	if (!sig_handler_ignored(handler, sig))
+| >  		return 0;
+| > +	/*
+| > +	 * ignores SIGSTOP/SIGKILL signals to init from same namespace.
+| > +	 *
+| > +	 * TODO: Ignore unblocked SIG_DFL signals also here or drop them
+| > +	 * 	 in get_signal_to_deliver() ?
+| > +	 */
+| > +	if (is_container_init(t) && same_ns && sig_kernel_only(sig))
+| > +		return 1;
+| 
+| No, no. is_container_init() is slow and unneeded, same_ns is bogus,
+| the usage of sig_kernel_only() is suboptimal. The comment is not
+| right too...
+
+Maybe in a separate patch, but same_ns is needed to ensure container-init
+does not ignore signals from ancestor namespace - no ? 
+
+I was undecided between the above sig_kernel_only() check and 
+'handler == SIG_DFL' (hence the TODO).
+
+| 
+| As I already said, this problem is not namespace-specific, we need
+| some changes for the global init too.
+
+Right I used is_container_init() since it includes global init().
+Again, maybe it could have been separate patches for just global_init
+first.
+
+But I see from your patch that we could use SIGNAL_UNKILLABLE instead
+of is_container_init(). That is more efficient.
+
+| 
+| Actually, I already did the patch, I'll send it soon.
+
+Ok. I will review that.
+
+| 
+| >  static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+| >  			int group)
+| >  {
+| >  	struct sigpending *pending;
+| >  	struct sigqueue *q;
+| > +	int from_ancestor_ns;
+| > +
+| > +	from_ancestor_ns = 0;
+| > +	if (siginfo_from_user(info)) {
+| > +		/* if t can't see us we are from parent ns */
+| > +		if (task_pid_nr_ns(current, task_active_pid_ns(t)) == 0)
+|                                             ^^^^^^^^^^^^^^^^^^
+| 
+| ->nsproxy may be NULL, but we can use task_pid(t)->numbers[-1].ns
+
+Eric's patch of generalizing task_active_pid_ns() should fix this. It
+was reviewed several times, so I did not send it, but yes, I should
+have mentioned it.
+
+| 
+| > @@ -864,6 +902,9 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+| >  		 * and sent by user using something other than kill().
+| >  		 */
+| >  			return -EAGAIN;
+| > +
+| > +		if (from_ancestor_ns)
+| > +			return -ENOMEM;
+| 
+| This change alone needs a fat comment in changelog. But I don't think
+| we need it now. Until we change the dequeue path to check "from_ancestor_ns".
+
+Ok.
+
+| 
+| > +static inline int siginfo_from_ancestor_ns(siginfo_t *info)
+| > +{
+| > +	return SI_FROMUSER(info) && (info->si_pid == 0);
+| > +}
+| 
+| Yes, this is problem... I doubt we can rely on !si_pid here.
+| More on this later.
+| 
+| > @@ -2296,10 +2347,25 @@ sys_rt_sigqueueinfo(pid_t pid, int sig, siginfo_t __user *uinfo)
+| >  	   Nor can they impersonate a kill(), which adds source info.  */
+| >  	if (info.si_code >= 0)
+| >  		return -EPERM;
+| > -	info.si_signo = sig;
+| > +	info.si_signo = sig | SIG_FROM_USER;
+| >
+| >  	/* POSIX.1b doesn't mention process groups.  */
+| > -	return kill_proc_info(sig, &info, pid);
+| > +	rcu_read_lock();
+| > +	spid = find_vpid(pid);
+| > +	/* 
+| > +	 * A container-init (cinit) ignores/drops fatal signals unless sender
+| > +	 * is in an ancestor namespace.  Cinit uses 'si_pid == 0' to check if
+| > +	 * sender is an ancestor. See siginfo_from_ancestor_ns().
+| > +	 *
+| > +	 * If signalling a descendant cinit, set si_pid to 0 so it does not
+| > +	 * get ignored/dropped.
+| > +	 */
+| > +	if (!pid_nr_ns(spid, task_active_pid_ns(current)))
+| > +		info.si_pid = 0;
+| > +	error = kill_pid_info(sig, &info, spid);
+| 
+| Can't understand. We set SIG_FROM_USER, If signalling a descendant task
+| (not only cinit), send_signal() will clear .si_pid anyway?
+
+Good point. We had gone back and forth on this and I thought one of the
+emails mentioned this check. Maybe I misread that.
+
+But yes, its not needed since send_signal() does it.
+
