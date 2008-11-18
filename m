@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbYKRJFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753495AbYKRJGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbYKRJFt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 04:05:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYKRJEO
+	id S1753495AbYKRJGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 04:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYKRJET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 04:04:14 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:50304 "EHLO
+	Tue, 18 Nov 2008 04:04:19 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:31623 "EHLO
 	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbYKRJDw (ORCPT
+	with ESMTP id S1752546AbYKRJDz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 04:03:52 -0500
+	Tue, 18 Nov 2008 04:03:55 -0500
 X-IronPort-AV: E=Sophos;i="4.33,624,1220241600"; 
-   d="scan'208";a="62693726"
+   d="scan'208";a="62693728"
 From: Bryan Wu <cooloney@kernel.org>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org, mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, Graf Yang <graf.yang@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 2/5] Blackfin arch: SMP supporting patchset: Blackfin header files and machine common code
-Date: Tue, 18 Nov 2008 17:05:05 +0800
-Message-Id: <1226999108-13839-3-git-send-email-cooloney@kernel.org>
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 4/5] Blackfin arch: SMP supporting patchset: Blackfin kernel and memory management code
+Date: Tue, 18 Nov 2008 17:05:07 +0800
+Message-Id: <1226999108-13839-5-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1226999108-13839-1-git-send-email-cooloney@kernel.org>
 References: <1226999108-13839-1-git-send-email-cooloney@kernel.org>
@@ -31,2384 +31,1709 @@ From: Graf Yang <graf.yang@analog.com>
 Blackfin dual core BF561 processor can support SMP like features.
 https://docs.blackfin.uclinux.org/doku.php?id=linux-kernel:smp-like
 
-In this patch, we provide SMP extend to Blackfin header files
-and machine common code
+In this patch, we provide SMP extend to Blackfin kernel and memory management code
 
-Signed-off-by: Graf Yang <graf.yang@analog.com>
+Singed-off-by: Graf Yang <graf.yang@analog.com>
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- arch/blackfin/include/asm/atomic.h         |  124 ++++++--
- arch/blackfin/include/asm/bfin-global.h    |    5 +-
- arch/blackfin/include/asm/bitops.h         |  185 ++++++++----
- arch/blackfin/include/asm/cache.h          |   29 ++
- arch/blackfin/include/asm/cacheflush.h     |   20 +-
- arch/blackfin/include/asm/context.S        |    6 +-
- arch/blackfin/include/asm/cpu.h            |   42 +++
- arch/blackfin/include/asm/l1layout.h       |    3 +-
- arch/blackfin/include/asm/mutex-dec.h      |  112 +++++++
- arch/blackfin/include/asm/mutex.h          |   63 ++++
- arch/blackfin/include/asm/pda.h            |   70 ++++
- arch/blackfin/include/asm/percpu.h         |   12 +-
- arch/blackfin/include/asm/processor.h      |    7 +-
- arch/blackfin/include/asm/rwlock.h         |    6 +
- arch/blackfin/include/asm/smp.h            |   42 +++
- arch/blackfin/include/asm/spinlock.h       |   87 +++++-
- arch/blackfin/include/asm/spinlock_types.h |   22 ++
- arch/blackfin/include/asm/system.h         |  116 ++++++--
- arch/blackfin/mach-common/Makefile         |    1 +
- arch/blackfin/mach-common/cache.S          |   36 ++
- arch/blackfin/mach-common/entry.S          |   92 +++---
- arch/blackfin/mach-common/head.S           |   29 +-
- arch/blackfin/mach-common/ints-priority.c  |   41 +++-
- arch/blackfin/mach-common/smp.c            |  476 ++++++++++++++++++++++++++++
- arch/blackfin/oprofile/common.c            |    2 +-
- 25 files changed, 1437 insertions(+), 191 deletions(-)
- create mode 100644 arch/blackfin/include/asm/cpu.h
- create mode 100644 arch/blackfin/include/asm/mutex-dec.h
- create mode 100644 arch/blackfin/include/asm/pda.h
- create mode 100644 arch/blackfin/include/asm/rwlock.h
- create mode 100644 arch/blackfin/include/asm/smp.h
- create mode 100644 arch/blackfin/include/asm/spinlock_types.h
- create mode 100644 arch/blackfin/mach-common/smp.c
+ arch/blackfin/kernel/asm-offsets.c |   29 +++
+ arch/blackfin/kernel/bfin_ksyms.c  |   34 ++++
+ arch/blackfin/kernel/entry.S       |    1 +
+ arch/blackfin/kernel/irqchip.c     |   24 ++--
+ arch/blackfin/kernel/kgdb.c        |    4 +-
+ arch/blackfin/kernel/module.c      |   13 ++-
+ arch/blackfin/kernel/process.c     |   23 ++-
+ arch/blackfin/kernel/ptrace.c      |    8 +-
+ arch/blackfin/kernel/reboot.c      |   24 ++-
+ arch/blackfin/kernel/setup.c       |  163 ++++++++++++------
+ arch/blackfin/kernel/time.c        |  114 +++++++++----
+ arch/blackfin/kernel/traps.c       |   56 +++----
+ arch/blackfin/mm/init.c            |   60 +++++--
+ arch/blackfin/mm/sram-alloc.c      |  336 +++++++++++++++++++++---------------
+ 14 files changed, 580 insertions(+), 309 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/atomic.h b/arch/blackfin/include/asm/atomic.h
-index 7cf5087..8af0542 100644
---- a/arch/blackfin/include/asm/atomic.h
-+++ b/arch/blackfin/include/asm/atomic.h
-@@ -13,15 +13,83 @@
-  * Tony Kou (tonyko@lineo.ca)   Lineo Inc.   2001
-  */
+diff --git a/arch/blackfin/kernel/asm-offsets.c b/arch/blackfin/kernel/asm-offsets.c
+index 9bb85dd..b5df945 100644
+--- a/arch/blackfin/kernel/asm-offsets.c
++++ b/arch/blackfin/kernel/asm-offsets.c
+@@ -56,6 +56,9 @@ int main(void)
+ 	/* offsets into the thread struct */
+ 	DEFINE(THREAD_KSP, offsetof(struct thread_struct, ksp));
+ 	DEFINE(THREAD_USP, offsetof(struct thread_struct, usp));
++	DEFINE(THREAD_SR, offsetof(struct thread_struct, seqstat));
++	DEFINE(PT_SR, offsetof(struct thread_struct, seqstat));
++	DEFINE(THREAD_ESP0, offsetof(struct thread_struct, esp0));
+ 	DEFINE(THREAD_PC, offsetof(struct thread_struct, pc));
+ 	DEFINE(KERNEL_STACK_SIZE, THREAD_SIZE);
  
--typedef struct {
--	int counter;
--} atomic_t;
--#define ATOMIC_INIT(i)	{ (i) }
-+typedef struct { volatile int counter; } atomic_t;
+@@ -128,5 +131,31 @@ int main(void)
+ 	DEFINE(SIGSEGV, SIGSEGV);
+ 	DEFINE(SIGTRAP, SIGTRAP);
  
--#define atomic_read(v)		((v)->counter)
-+#define ATOMIC_INIT(i)	{ (i) }
- #define atomic_set(v, i)	(((v)->counter) = i)
- 
--static __inline__ void atomic_add(int i, atomic_t * v)
++	/* PDA management (in L1 scratchpad) */
++	DEFINE(PDA_SYSCFG, offsetof(struct blackfin_pda, syscfg));
 +#ifdef CONFIG_SMP
-+
-+#define atomic_read(v)	__raw_uncached_fetch_asm(&(v)->counter)
-+
-+asmlinkage int __raw_uncached_fetch_asm(const volatile int *ptr);
-+
-+asmlinkage int __raw_atomic_update_asm(volatile int *ptr, int value);
-+
-+asmlinkage int __raw_atomic_clear_asm(volatile int *ptr, int value);
-+
-+asmlinkage int __raw_atomic_set_asm(volatile int *ptr, int value);
-+
-+asmlinkage int __raw_atomic_xor_asm(volatile int *ptr, int value);
-+
-+asmlinkage int __raw_atomic_test_asm(const volatile int *ptr, int value);
-+
-+static inline void atomic_add(int i, atomic_t *v)
-+{
-+	__raw_atomic_update_asm(&v->counter, i);
-+}
-+
-+static inline void atomic_sub(int i, atomic_t *v)
-+{
-+	__raw_atomic_update_asm(&v->counter, -i);
-+}
-+
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+	return __raw_atomic_update_asm(&v->counter, i);
-+}
-+
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	return __raw_atomic_update_asm(&v->counter, -i);
-+}
-+
-+static inline void atomic_inc(volatile atomic_t *v)
-+{
-+	__raw_atomic_update_asm(&v->counter, 1);
-+}
-+
-+static inline void atomic_dec(volatile atomic_t *v)
-+{
-+	__raw_atomic_update_asm(&v->counter, -1);
-+}
-+
-+static inline void atomic_clear_mask(int mask, atomic_t *v)
-+{
-+	__raw_atomic_clear_asm(&v->counter, mask);
-+}
-+
-+static inline void atomic_set_mask(int mask, atomic_t *v)
-+{
-+	__raw_atomic_set_asm(&v->counter, mask);
-+}
-+
-+static inline int atomic_test_mask(int mask, atomic_t *v)
-+{
-+	return __raw_atomic_test_asm(&v->counter, mask);
-+}
-+
-+/* Atomic operations are already serializing */
-+#define smp_mb__before_atomic_dec()    barrier()
-+#define smp_mb__after_atomic_dec() barrier()
-+#define smp_mb__before_atomic_inc()    barrier()
-+#define smp_mb__after_atomic_inc() barrier()
-+
-+#else /* !CONFIG_SMP */
-+
-+#define atomic_read(v)	((v)->counter)
-+
-+static inline void atomic_add(int i, atomic_t *v)
- {
- 	long flags;
- 
-@@ -30,7 +98,7 @@ static __inline__ void atomic_add(int i, atomic_t * v)
- 	local_irq_restore(flags);
- }
- 
--static __inline__ void atomic_sub(int i, atomic_t * v)
-+static inline void atomic_sub(int i, atomic_t *v)
- {
- 	long flags;
- 
-@@ -40,7 +108,7 @@ static __inline__ void atomic_sub(int i, atomic_t * v)
- 
- }
- 
--static inline int atomic_add_return(int i, atomic_t * v)
-+static inline int atomic_add_return(int i, atomic_t *v)
- {
- 	int __temp = 0;
- 	long flags;
-@@ -54,8 +122,7 @@ static inline int atomic_add_return(int i, atomic_t * v)
- 	return __temp;
- }
- 
--#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
--static inline int atomic_sub_return(int i, atomic_t * v)
-+static inline int atomic_sub_return(int i, atomic_t *v)
- {
- 	int __temp = 0;
- 	long flags;
-@@ -68,7 +135,7 @@ static inline int atomic_sub_return(int i, atomic_t * v)
- 	return __temp;
- }
- 
--static __inline__ void atomic_inc(volatile atomic_t * v)
-+static inline void atomic_inc(volatile atomic_t *v)
- {
- 	long flags;
- 
-@@ -77,20 +144,7 @@ static __inline__ void atomic_inc(volatile atomic_t * v)
- 	local_irq_restore(flags);
- }
- 
--#define atomic_cmpxchg(v, o, n) ((int)cmpxchg(&((v)->counter), (o), (n)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
--
--#define atomic_add_unless(v, a, u)				\
--({								\
--	int c, old;						\
--	c = atomic_read(v);					\
--	while (c != (u) && (old = atomic_cmpxchg((v), c, c + (a))) != c) \
--		c = old;					\
--	c != (u);						\
--})
--#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
--
--static __inline__ void atomic_dec(volatile atomic_t * v)
-+static inline void atomic_dec(volatile atomic_t *v)
- {
- 	long flags;
- 
-@@ -99,7 +153,7 @@ static __inline__ void atomic_dec(volatile atomic_t * v)
- 	local_irq_restore(flags);
- }
- 
--static __inline__ void atomic_clear_mask(unsigned int mask, atomic_t * v)
-+static inline void atomic_clear_mask(unsigned int mask, atomic_t *v)
- {
- 	long flags;
- 
-@@ -108,7 +162,7 @@ static __inline__ void atomic_clear_mask(unsigned int mask, atomic_t * v)
- 	local_irq_restore(flags);
- }
- 
--static __inline__ void atomic_set_mask(unsigned int mask, atomic_t * v)
-+static inline void atomic_set_mask(unsigned int mask, atomic_t *v)
- {
- 	long flags;
- 
-@@ -123,9 +177,25 @@ static __inline__ void atomic_set_mask(unsigned int mask, atomic_t * v)
- #define smp_mb__before_atomic_inc()    barrier()
- #define smp_mb__after_atomic_inc() barrier()
- 
-+#endif /* !CONFIG_SMP */
-+
-+#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
- #define atomic_dec_return(v) atomic_sub_return(1,(v))
- #define atomic_inc_return(v) atomic_add_return(1,(v))
- 
-+#define atomic_cmpxchg(v, o, n) ((int)cmpxchg(&((v)->counter), (o), (n)))
-+#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+
-+#define atomic_add_unless(v, a, u)				\
-+({								\
-+	int c, old;						\
-+	c = atomic_read(v);					\
-+	while (c != (u) && (old = atomic_cmpxchg((v), c, c + (a))) != c) \
-+		c = old;					\
-+	c != (u);						\
-+})
-+#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
-+
- /*
-  * atomic_inc_and_test - increment and test
-  * @v: pointer of type atomic_t
-diff --git a/arch/blackfin/include/asm/bfin-global.h b/arch/blackfin/include/asm/bfin-global.h
-index 7729566..1dd0805 100644
---- a/arch/blackfin/include/asm/bfin-global.h
-+++ b/arch/blackfin/include/asm/bfin-global.h
-@@ -47,6 +47,9 @@
- # define DMA_UNCACHED_REGION (0)
- #endif
- 
-+extern void bfin_setup_caches(unsigned int cpu);
-+extern void bfin_setup_cpudata(unsigned int cpu);
-+
- extern unsigned long get_cclk(void);
- extern unsigned long get_sclk(void);
- extern unsigned long sclk_to_usecs(unsigned long sclk);
-@@ -58,8 +61,6 @@ extern void dump_bfin_trace_buffer(void);
- 
- /* init functions only */
- extern int init_arch_irq(void);
--extern void bfin_icache_init(void);
--extern void bfin_dcache_init(void);
- extern void init_exception_vectors(void);
- extern void program_IAR(void);
- 
-diff --git a/arch/blackfin/include/asm/bitops.h b/arch/blackfin/include/asm/bitops.h
-index b39a175..5872fb6 100644
---- a/arch/blackfin/include/asm/bitops.h
-+++ b/arch/blackfin/include/asm/bitops.h
-@@ -7,7 +7,6 @@
- 
- #include <linux/compiler.h>
- #include <asm/byteorder.h>	/* swab32 */
--#include <asm/system.h>		/* save_flags */
- 
- #ifdef __KERNEL__
- 
-@@ -20,36 +19,71 @@
- #include <asm-generic/bitops/sched.h>
- #include <asm-generic/bitops/ffz.h>
- 
--static __inline__ void set_bit(int nr, volatile unsigned long *addr)
-+#ifdef CONFIG_SMP
-+
-+#include <linux/linkage.h>
-+
-+asmlinkage int __raw_bit_set_asm(volatile unsigned long *addr, int nr);
-+
-+asmlinkage int __raw_bit_clear_asm(volatile unsigned long *addr, int nr);
-+
-+asmlinkage int __raw_bit_toggle_asm(volatile unsigned long *addr, int nr);
-+
-+asmlinkage int __raw_bit_test_set_asm(volatile unsigned long *addr, int nr);
-+
-+asmlinkage int __raw_bit_test_clear_asm(volatile unsigned long *addr, int nr);
-+
-+asmlinkage int __raw_bit_test_toggle_asm(volatile unsigned long *addr, int nr);
-+
-+asmlinkage int __raw_bit_test_asm(const volatile unsigned long *addr, int nr);
-+
-+static inline void set_bit(int nr, volatile unsigned long *addr)
- {
--	int *a = (int *)addr;
--	int mask;
--	unsigned long flags;
-+	volatile unsigned long *a = addr + (nr >> 5);
-+	__raw_bit_set_asm(a, nr & 0x1f);
-+}
- 
--	a += nr >> 5;
--	mask = 1 << (nr & 0x1f);
--	local_irq_save(flags);
--	*a |= mask;
--	local_irq_restore(flags);
-+static inline void clear_bit(int nr, volatile unsigned long *addr)
-+{
-+	volatile unsigned long *a = addr + (nr >> 5);
-+	__raw_bit_clear_asm(a, nr & 0x1f);
- }
- 
--static __inline__ void __set_bit(int nr, volatile unsigned long *addr)
-+static inline void change_bit(int nr, volatile unsigned long *addr)
- {
--	int *a = (int *)addr;
--	int mask;
-+	volatile unsigned long *a = addr + (nr >> 5);
-+	__raw_bit_toggle_asm(a, nr & 0x1f);
-+}
- 
--	a += nr >> 5;
--	mask = 1 << (nr & 0x1f);
--	*a |= mask;
-+static inline int test_bit(int nr, const volatile unsigned long *addr)
-+{
-+	volatile const unsigned long *a = addr + (nr >> 5);
-+	return __raw_bit_test_asm(a, nr & 0x1f) != 0;
- }
- 
--/*
-- * clear_bit() doesn't provide any barrier for the compiler.
-- */
--#define smp_mb__before_clear_bit()	barrier()
--#define smp_mb__after_clear_bit()	barrier()
-+static inline int test_and_set_bit(int nr, volatile unsigned long *addr)
-+{
-+	volatile unsigned long *a = addr + (nr >> 5);
-+	return __raw_bit_test_set_asm(a, nr & 0x1f);
-+}
- 
--static __inline__ void clear_bit(int nr, volatile unsigned long *addr)
-+static inline int test_and_clear_bit(int nr, volatile unsigned long *addr)
-+{
-+	volatile unsigned long *a = addr + (nr >> 5);
-+	return __raw_bit_test_clear_asm(a, nr & 0x1f);
-+}
-+
-+static inline int test_and_change_bit(int nr, volatile unsigned long *addr)
-+{
-+	volatile unsigned long *a = addr + (nr >> 5);
-+	return __raw_bit_test_toggle_asm(a, nr & 0x1f);
-+}
-+
-+#else /* !CONFIG_SMP */
-+
-+#include <asm/system.h>		/* save_flags */
-+
-+static inline void set_bit(int nr, volatile unsigned long *addr)
- {
- 	int *a = (int *)addr;
- 	int mask;
-@@ -57,21 +91,23 @@ static __inline__ void clear_bit(int nr, volatile unsigned long *addr)
- 	a += nr >> 5;
- 	mask = 1 << (nr & 0x1f);
- 	local_irq_save(flags);
--	*a &= ~mask;
-+	*a |= mask;
- 	local_irq_restore(flags);
- }
- 
--static __inline__ void __clear_bit(int nr, volatile unsigned long *addr)
-+static inline void clear_bit(int nr, volatile unsigned long *addr)
- {
- 	int *a = (int *)addr;
- 	int mask;
--
-+	unsigned long flags;
- 	a += nr >> 5;
- 	mask = 1 << (nr & 0x1f);
-+	local_irq_save(flags);
- 	*a &= ~mask;
-+	local_irq_restore(flags);
- }
- 
--static __inline__ void change_bit(int nr, volatile unsigned long *addr)
-+static inline void change_bit(int nr, volatile unsigned long *addr)
- {
- 	int mask, flags;
- 	unsigned long *ADDR = (unsigned long *)addr;
-@@ -83,17 +119,7 @@ static __inline__ void change_bit(int nr, volatile unsigned long *addr)
- 	local_irq_restore(flags);
- }
- 
--static __inline__ void __change_bit(int nr, volatile unsigned long *addr)
--{
--	int mask;
--	unsigned long *ADDR = (unsigned long *)addr;
--
--	ADDR += nr >> 5;
--	mask = 1 << (nr & 31);
--	*ADDR ^= mask;
--}
--
--static __inline__ int test_and_set_bit(int nr, void *addr)
-+static inline int test_and_set_bit(int nr, volatile unsigned long *addr)
- {
- 	int mask, retval;
- 	volatile unsigned int *a = (volatile unsigned int *)addr;
-@@ -109,19 +135,23 @@ static __inline__ int test_and_set_bit(int nr, void *addr)
- 	return retval;
- }
- 
--static __inline__ int __test_and_set_bit(int nr, volatile unsigned long *addr)
-+static inline int test_and_clear_bit(int nr, volatile unsigned long *addr)
- {
- 	int mask, retval;
- 	volatile unsigned int *a = (volatile unsigned int *)addr;
-+	unsigned long flags;
- 
- 	a += nr >> 5;
- 	mask = 1 << (nr & 0x1f);
-+	local_irq_save(flags);
- 	retval = (mask & *a) != 0;
--	*a |= mask;
-+	*a &= ~mask;
-+	local_irq_restore(flags);
-+
- 	return retval;
- }
- 
--static __inline__ int test_and_clear_bit(int nr, volatile unsigned long *addr)
-+static inline int test_and_change_bit(int nr, volatile unsigned long *addr)
- {
- 	int mask, retval;
- 	volatile unsigned int *a = (volatile unsigned int *)addr;
-@@ -131,13 +161,59 @@ static __inline__ int test_and_clear_bit(int nr, volatile unsigned long *addr)
- 	mask = 1 << (nr & 0x1f);
- 	local_irq_save(flags);
- 	retval = (mask & *a) != 0;
--	*a &= ~mask;
-+	*a ^= mask;
- 	local_irq_restore(flags);
--
- 	return retval;
- }
- 
--static __inline__ int __test_and_clear_bit(int nr, volatile unsigned long *addr)
-+/*
-+ * This routine doesn't need to go through raw atomic ops in UP
-+ * context.
-+ */
-+#define test_bit(nr,addr) \
-+(__builtin_constant_p(nr) ? \
-+ __constant_test_bit((nr), (addr)) : \
-+ __test_bit((nr), (addr)))
-+
-+#endif /* CONFIG_SMP */
-+
-+/*
-+ * clear_bit() doesn't provide any barrier for the compiler.
-+ */
-+#define smp_mb__before_clear_bit()	barrier()
-+#define smp_mb__after_clear_bit()	barrier()
-+
-+static inline void __set_bit(int nr, volatile unsigned long *addr)
-+{
-+	int *a = (int *)addr;
-+	int mask;
-+
-+	a += nr >> 5;
-+	mask = 1 << (nr & 0x1f);
-+	*a |= mask;
-+}
-+
-+static inline void __clear_bit(int nr, volatile unsigned long *addr)
-+{
-+	int *a = (int *)addr;
-+	int mask;
-+
-+	a += nr >> 5;
-+	mask = 1 << (nr & 0x1f);
-+	*a &= ~mask;
-+}
-+
-+static inline void __change_bit(int nr, volatile unsigned long *addr)
-+{
-+	int mask;
-+	unsigned long *ADDR = (unsigned long *)addr;
-+
-+	ADDR += nr >> 5;
-+	mask = 1 << (nr & 31);
-+	*ADDR ^= mask;
-+}
-+
-+static inline int __test_and_set_bit(int nr, volatile unsigned long *addr)
- {
- 	int mask, retval;
- 	volatile unsigned int *a = (volatile unsigned int *)addr;
-@@ -145,26 +221,23 @@ static __inline__ int __test_and_clear_bit(int nr, volatile unsigned long *addr)
- 	a += nr >> 5;
- 	mask = 1 << (nr & 0x1f);
- 	retval = (mask & *a) != 0;
--	*a &= ~mask;
-+	*a |= mask;
- 	return retval;
- }
- 
--static __inline__ int test_and_change_bit(int nr, volatile unsigned long *addr)
-+static inline int __test_and_clear_bit(int nr, volatile unsigned long *addr)
- {
- 	int mask, retval;
- 	volatile unsigned int *a = (volatile unsigned int *)addr;
--	unsigned long flags;
- 
- 	a += nr >> 5;
- 	mask = 1 << (nr & 0x1f);
--	local_irq_save(flags);
- 	retval = (mask & *a) != 0;
--	*a ^= mask;
--	local_irq_restore(flags);
-+	*a &= ~mask;
- 	return retval;
- }
- 
--static __inline__ int __test_and_change_bit(int nr,
-+static inline int __test_and_change_bit(int nr,
- 					    volatile unsigned long *addr)
- {
- 	int mask, retval;
-@@ -177,16 +250,13 @@ static __inline__ int __test_and_change_bit(int nr,
- 	return retval;
- }
- 
--/*
-- * This routine doesn't need to be atomic.
-- */
--static __inline__ int __constant_test_bit(int nr, const void *addr)
-+static inline int __constant_test_bit(int nr, const void *addr)
- {
- 	return ((1UL << (nr & 31)) &
- 		(((const volatile unsigned int *)addr)[nr >> 5])) != 0;
- }
- 
--static __inline__ int __test_bit(int nr, const void *addr)
-+static inline int __test_bit(int nr, const void *addr)
- {
- 	int *a = (int *)addr;
- 	int mask;
-@@ -196,11 +266,6 @@ static __inline__ int __test_bit(int nr, const void *addr)
- 	return ((mask & *a) != 0);
- }
- 
--#define test_bit(nr,addr) \
--(__builtin_constant_p(nr) ? \
-- __constant_test_bit((nr),(addr)) : \
-- __test_bit((nr),(addr)))
--
- #include <asm-generic/bitops/find.h>
- #include <asm-generic/bitops/hweight.h>
- #include <asm-generic/bitops/lock.h>
-diff --git a/arch/blackfin/include/asm/cache.h b/arch/blackfin/include/asm/cache.h
-index 023d721..8663781 100644
---- a/arch/blackfin/include/asm/cache.h
-+++ b/arch/blackfin/include/asm/cache.h
-@@ -12,6 +12,11 @@
- #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
- #define SMP_CACHE_BYTES	L1_CACHE_BYTES
- 
-+#ifdef CONFIG_SMP
-+#define __cacheline_aligned
-+#else
-+#define ____cacheline_aligned
-+
- /*
-  * Put cacheline_aliged data to L1 data memory
-  */
-@@ -21,9 +26,33 @@
- 		__section__(".data_l1.cacheline_aligned")))
- #endif
- 
++	DEFINE(PDA_IRQFLAGS, offsetof(struct blackfin_pda, imask));
 +#endif
-+
- /*
-  * largest L1 which this arch supports
-  */
- #define L1_CACHE_SHIFT_MAX	5
- 
-+#if defined(CONFIG_SMP) && \
-+    !defined(CONFIG_BFIN_CACHE_COHERENT) && \
-+    defined(CONFIG_BFIN_DCACHE)
-+#define __ARCH_SYNC_CORE_DCACHE
-+#ifndef __ASSEMBLY__
-+asmlinkage void __raw_smp_mark_barrier_asm(void);
-+asmlinkage void __raw_smp_check_barrier_asm(void);
-+
-+static inline void smp_mark_barrier(void)
-+{
-+	__raw_smp_mark_barrier_asm();
-+}
-+static inline void smp_check_barrier(void)
-+{
-+	__raw_smp_check_barrier_asm();
-+}
-+
-+void resync_core_dcache(void);
-+#endif
-+#endif
-+
-+
- #endif
-diff --git a/arch/blackfin/include/asm/cacheflush.h b/arch/blackfin/include/asm/cacheflush.h
-index 4403415..1b040f5 100644
---- a/arch/blackfin/include/asm/cacheflush.h
-+++ b/arch/blackfin/include/asm/cacheflush.h
-@@ -35,6 +35,7 @@ extern void blackfin_icache_flush_range(unsigned long start_address, unsigned lo
- extern void blackfin_dcache_flush_range(unsigned long start_address, unsigned long end_address);
- extern void blackfin_dcache_invalidate_range(unsigned long start_address, unsigned long end_address);
- extern void blackfin_dflush_page(void *page);
-+extern void blackfin_invalidate_entire_dcache(void);
- 
- #define flush_dcache_mmap_lock(mapping)		do { } while (0)
- #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
-@@ -44,12 +45,20 @@ extern void blackfin_dflush_page(void *page);
- #define flush_cache_vmap(start, end)		do { } while (0)
- #define flush_cache_vunmap(start, end)		do { } while (0)
- 
-+#ifdef CONFIG_SMP
-+#define flush_icache_range_others(start, end)	\
-+	smp_icache_flush_range_others((start), (end))
-+#else
-+#define flush_icache_range_others(start, end)	do { } while (0)
-+#endif
-+
- static inline void flush_icache_range(unsigned start, unsigned end)
- {
- #if defined(CONFIG_BFIN_DCACHE) && defined(CONFIG_BFIN_ICACHE)
- 
- # if defined(CONFIG_BFIN_WT)
- 	blackfin_icache_flush_range((start), (end));
-+	flush_icache_range_others(start, end);
- # else
- 	blackfin_icache_dcache_flush_range((start), (end));
- # endif
-@@ -58,6 +67,7 @@ static inline void flush_icache_range(unsigned start, unsigned end)
- 
- # if defined(CONFIG_BFIN_ICACHE)
- 	blackfin_icache_flush_range((start), (end));
-+	flush_icache_range_others(start, end);
- # endif
- # if defined(CONFIG_BFIN_DCACHE)
- 	blackfin_dcache_flush_range((start), (end));
-@@ -66,10 +76,12 @@ static inline void flush_icache_range(unsigned start, unsigned end)
- #endif
- }
- 
--#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
--do { memcpy(dst, src, len); \
--     flush_icache_range ((unsigned) (dst), (unsigned) (dst) + (len)); \
-+#define copy_to_user_page(vma, page, vaddr, dst, src, len)		\
-+do { memcpy(dst, src, len);						\
-+     flush_icache_range((unsigned) (dst), (unsigned) (dst) + (len));	\
-+     flush_icache_range_others((unsigned long) (dst), (unsigned long) (dst) + (len));\
- } while (0)
-+
- #define copy_from_user_page(vma, page, vaddr, dst, src, len)	memcpy(dst, src, len)
- 
- #if defined(CONFIG_BFIN_DCACHE)
-@@ -82,7 +94,7 @@ do { memcpy(dst, src, len); \
- # define flush_dcache_page(page)			blackfin_dflush_page(page_address(page))
- #else
- # define flush_dcache_range(start,end)		do { } while (0)
--# define flush_dcache_page(page)			do { } while (0)
-+# define flush_dcache_page(page)		do { } while (0)
- #endif
- 
- extern unsigned long reserved_mem_dcache_on;
-diff --git a/arch/blackfin/include/asm/context.S b/arch/blackfin/include/asm/context.S
-index c0e630e..40d20b4 100644
---- a/arch/blackfin/include/asm/context.S
-+++ b/arch/blackfin/include/asm/context.S
-@@ -303,9 +303,14 @@
- 	RETI = [sp++];
- 	RETS = [sp++];
- 
-+#ifdef CONFIG_SMP
-+	GET_PDA(p0, r0);
-+	r0 = [p0 + PDA_IRQFLAGS];
-+#else
- 	p0.h = _irq_flags;
- 	p0.l = _irq_flags;
- 	r0 = [p0];
-+#endif
- 	sti r0;
- 
- 	sp += 4;	/* Skip Reserved */
-@@ -352,4 +357,3 @@
- 	SYSCFG = [sp++];
- 	csync;
- .endm
--
-diff --git a/arch/blackfin/include/asm/cpu.h b/arch/blackfin/include/asm/cpu.h
-new file mode 100644
-index 0000000..9b7aefe
---- /dev/null
-+++ b/arch/blackfin/include/asm/cpu.h
-@@ -0,0 +1,42 @@
-+/*
-+ * File:         arch/blackfin/include/asm/cpu.h.
-+ * Author:       Philippe Gerum <rpm@xenomai.org>
-+ *
-+ *               Copyright 2007 Analog Devices Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#ifndef __ASM_BLACKFIN_CPU_H
-+#define __ASM_BLACKFIN_CPU_H
-+
-+#include <linux/percpu.h>
-+
-+struct task_struct;
-+
-+struct blackfin_cpudata {
-+	struct cpu cpu;
-+	struct task_struct *idle;
-+	unsigned long cclk;
-+	unsigned int imemctl;
-+	unsigned int dmemctl;
-+	unsigned long loops_per_jiffy;
-+	unsigned long dcache_invld_count;
-+};
-+
-+DECLARE_PER_CPU(struct blackfin_cpudata, cpu_data);
-+
-+#endif
-diff --git a/arch/blackfin/include/asm/l1layout.h b/arch/blackfin/include/asm/l1layout.h
-index c13ded7..06bb37f 100644
---- a/arch/blackfin/include/asm/l1layout.h
-+++ b/arch/blackfin/include/asm/l1layout.h
-@@ -24,7 +24,8 @@ struct l1_scratch_task_info
- };
- 
- /* A pointer to the structure in memory.  */
--#define L1_SCRATCH_TASK_INFO ((struct l1_scratch_task_info *)L1_SCRATCH_START)
-+#define L1_SCRATCH_TASK_INFO ((struct l1_scratch_task_info *)\
-+						get_l1_scratch_start())
- 
- #endif
- 
-diff --git a/arch/blackfin/include/asm/mutex-dec.h b/arch/blackfin/include/asm/mutex-dec.h
-new file mode 100644
-index 0000000..0134151
---- /dev/null
-+++ b/arch/blackfin/include/asm/mutex-dec.h
-@@ -0,0 +1,112 @@
-+/*
-+ * include/asm-generic/mutex-dec.h
-+ *
-+ * Generic implementation of the mutex fastpath, based on atomic
-+ * decrement/increment.
-+ */
-+#ifndef _ASM_GENERIC_MUTEX_DEC_H
-+#define _ASM_GENERIC_MUTEX_DEC_H
-+
-+/**
-+ *  __mutex_fastpath_lock - try to take the lock by moving the count
-+ *                          from 1 to a 0 value
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: function to call if the original value was not 1
-+ *
-+ * Change the count from 1 to a value lower than 1, and call <fail_fn> if
-+ * it wasn't 1 originally. This function MUST leave the value lower than
-+ * 1 even when the "1" assertion wasn't true.
-+ */
-+static inline void
-+__mutex_fastpath_lock(atomic_t *count, fastcall void (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(atomic_dec_return(count) < 0))
-+		fail_fn(count);
-+	else
-+		smp_mb();
-+}
-+
-+/**
-+ *  __mutex_fastpath_lock_retval - try to take the lock by moving the count
-+ *                                 from 1 to a 0 value
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: function to call if the original value was not 1
-+ *
-+ * Change the count from 1 to a value lower than 1, and call <fail_fn> if
-+ * it wasn't 1 originally. This function returns 0 if the fastpath succeeds,
-+ * or anything the slow path function returns.
-+ */
-+static inline int
-+__mutex_fastpath_lock_retval(atomic_t *count, fastcall int (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(atomic_dec_return(count) < 0))
-+		return fail_fn(count);
-+	else {
-+		smp_mb();
-+		return 0;
-+	}
-+}
-+
-+/**
-+ *  __mutex_fastpath_unlock - try to promote the count from 0 to 1
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: function to call if the original value was not 0
-+ *
-+ * Try to promote the count from 0 to 1. If it wasn't 0, call <fail_fn>.
-+ * In the failure case, this function is allowed to either set the value to
-+ * 1, or to set it to a value lower than 1.
-+ *
-+ * If the implementation sets it to a value of lower than 1, then the
-+ * __mutex_slowpath_needs_to_unlock() macro needs to return 1, it needs
-+ * to return 0 otherwise.
-+ */
-+static inline void
-+__mutex_fastpath_unlock(atomic_t *count, fastcall void (*fail_fn)(atomic_t *))
-+{
-+	smp_mb();
-+	if (unlikely(atomic_inc_return(count) <= 0))
-+		fail_fn(count);
-+}
-+
-+#define __mutex_slowpath_needs_to_unlock()		1
-+
-+/**
-+ * __mutex_fastpath_trylock - try to acquire the mutex, without waiting
-+ *
-+ *  @count: pointer of type atomic_t
-+ *  @fail_fn: fallback function
-+ *
-+ * Change the count from 1 to a value lower than 1, and return 0 (failure)
-+ * if it wasn't 1 originally, or return 1 (success) otherwise. This function
-+ * MUST leave the value lower than 1 even when the "1" assertion wasn't true.
-+ * Additionally, if the value was < 0 originally, this function must not leave
-+ * it to 0 on failure.
-+ *
-+ * If the architecture has no effective trylock variant, it should call the
-+ * <fail_fn> spinlock-based trylock variant unconditionally.
-+ */
-+static inline int
-+__mutex_fastpath_trylock(atomic_t *count, int (*fail_fn)(atomic_t *))
-+{
-+	/*
-+	 * We have two variants here. The cmpxchg based one is the best one
-+	 * because it never induce a false contention state.  It is included
-+	 * here because architectures using the inc/dec algorithms over the
-+	 * xchg ones are much more likely to support cmpxchg natively.
-+	 *
-+	 * If not we fall back to the spinlock based variant - that is
-+	 * just as efficient (and simpler) as a 'destructive' probing of
-+	 * the mutex state would be.
-+	 */
-+#ifdef __HAVE_ARCH_CMPXCHG
-+	if (likely(atomic_cmpxchg(count, 1, 0) == 1)) {
-+		smp_mb();
-+		return 1;
-+	}
-+	return 0;
-+#else
-+	return fail_fn(count);
-+#endif
-+}
-+
-+#endif
-diff --git a/arch/blackfin/include/asm/mutex.h b/arch/blackfin/include/asm/mutex.h
-index 458c1f7..5d39925 100644
---- a/arch/blackfin/include/asm/mutex.h
-+++ b/arch/blackfin/include/asm/mutex.h
-@@ -6,4 +6,67 @@
-  * implementation. (see asm-generic/mutex-xchg.h for details)
-  */
- 
-+#ifndef _ASM_MUTEX_H
-+#define _ASM_MUTEX_H
-+
-+#ifndef CONFIG_SMP
- #include <asm-generic/mutex-dec.h>
-+#else
-+
-+static inline void
-+__mutex_fastpath_lock(atomic_t *count, void (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(atomic_dec_return(count) < 0))
-+		fail_fn(count);
-+	else
-+		smp_mb();
-+}
-+
-+static inline int
-+__mutex_fastpath_lock_retval(atomic_t *count, int (*fail_fn)(atomic_t *))
-+{
-+	if (unlikely(atomic_dec_return(count) < 0))
-+		return fail_fn(count);
-+	else {
-+		smp_mb();
-+		return 0;
-+	}
-+}
-+
-+static inline void
-+__mutex_fastpath_unlock(atomic_t *count, void (*fail_fn)(atomic_t *))
-+{
-+	smp_mb();
-+	if (unlikely(atomic_inc_return(count) <= 0))
-+		fail_fn(count);
-+}
-+
-+#define __mutex_slowpath_needs_to_unlock()		1
-+
-+static inline int
-+__mutex_fastpath_trylock(atomic_t *count, int (*fail_fn)(atomic_t *))
-+{
-+	/*
-+	 * We have two variants here. The cmpxchg based one is the best one
-+	 * because it never induce a false contention state.  It is included
-+	 * here because architectures using the inc/dec algorithms over the
-+	 * xchg ones are much more likely to support cmpxchg natively.
-+	 *
-+	 * If not we fall back to the spinlock based variant - that is
-+	 * just as efficient (and simpler) as a 'destructive' probing of
-+	 * the mutex state would be.
-+	 */
-+#ifdef __HAVE_ARCH_CMPXCHG
-+	if (likely(atomic_cmpxchg(count, 1, 0) == 1)) {
-+		smp_mb();
-+		return 1;
-+	}
-+	return 0;
-+#else
-+	return fail_fn(count);
-+#endif
-+}
-+
-+#endif
-+
-+#endif
-diff --git a/arch/blackfin/include/asm/pda.h b/arch/blackfin/include/asm/pda.h
-new file mode 100644
-index 0000000..a24d130
---- /dev/null
-+++ b/arch/blackfin/include/asm/pda.h
-@@ -0,0 +1,70 @@
-+/*
-+ * File:         arch/blackfin/include/asm/pda.h
-+ * Author:       Philippe Gerum <rpm@xenomai.org>
-+ *
-+ *               Copyright 2007 Analog Devices Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#ifndef _ASM_BLACKFIN_PDA_H
-+#define _ASM_BLACKFIN_PDA_H
-+
-+#include <asm/mem_map.h>
-+
-+#ifndef __ASSEMBLY__
-+
-+struct blackfin_pda {			/* Per-processor Data Area */
-+	struct blackfin_pda *next;
-+
-+	unsigned long syscfg;
-+#ifdef CONFIG_SMP
-+	unsigned long imask;		/* Current IMASK value */
-+#endif
-+
-+	unsigned long *ipdt;		/* Start of switchable I-CPLB table */
-+	unsigned long *ipdt_swapcount;	/* Number of swaps in ipdt */
-+	unsigned long *dpdt;		/* Start of switchable D-CPLB table */
-+	unsigned long *dpdt_swapcount;	/* Number of swaps in dpdt */
-+
-+	/*
-+	 * Single instructions can have multiple faults, which
-+	 * need to be handled by traps.c, in irq5. We store
-+	 * the exception cause to ensure we don't miss a
-+	 * double fault condition
-+	 */
-+	unsigned long ex_iptr;
-+	unsigned long ex_optr;
-+	unsigned long ex_buf[4];
-+	unsigned long ex_imask;		/* Saved imask from exception */
-+	unsigned long *ex_stack;	/* Exception stack space */
-+
++	DEFINE(PDA_IPDT, offsetof(struct blackfin_pda, ipdt));
++	DEFINE(PDA_IPDT_SWAPCOUNT, offsetof(struct blackfin_pda, ipdt_swapcount));
++	DEFINE(PDA_DPDT, offsetof(struct blackfin_pda, dpdt));
++	DEFINE(PDA_DPDT_SWAPCOUNT, offsetof(struct blackfin_pda, dpdt_swapcount));
++	DEFINE(PDA_EXIPTR, offsetof(struct blackfin_pda, ex_iptr));
++	DEFINE(PDA_EXOPTR, offsetof(struct blackfin_pda, ex_optr));
++	DEFINE(PDA_EXBUF, offsetof(struct blackfin_pda, ex_buf));
++	DEFINE(PDA_EXIMASK, offsetof(struct blackfin_pda, ex_imask));
++	DEFINE(PDA_EXSTACK, offsetof(struct blackfin_pda, ex_stack));
 +#ifdef ANOMALY_05000261
-+	unsigned long last_cplb_fault_retx;
++	DEFINE(PDA_LFRETX, offsetof(struct blackfin_pda, last_cplb_fault_retx));
 +#endif
-+	unsigned long dcplb_fault_addr;
-+	unsigned long icplb_fault_addr;
-+	unsigned long retx;
-+	unsigned long seqstat;
-+};
-+
-+extern struct blackfin_pda cpu_pda[];
-+
-+void reserve_pda(void);
-+
-+#endif	/* __ASSEMBLY__ */
-+
-+#endif /* _ASM_BLACKFIN_PDA_H */
-diff --git a/arch/blackfin/include/asm/percpu.h b/arch/blackfin/include/asm/percpu.h
-index 78dd61f..797c0c1 100644
---- a/arch/blackfin/include/asm/percpu.h
-+++ b/arch/blackfin/include/asm/percpu.h
-@@ -3,4 +3,14 @@
- 
- #include <asm-generic/percpu.h>
- 
--#endif				/* __ARCH_BLACKFIN_PERCPU__ */
-+#ifdef CONFIG_MODULES
-+#define PERCPU_MODULE_RESERVE 8192
-+#else
-+#define PERCPU_MODULE_RESERVE 0
++	DEFINE(PDA_DCPLB, offsetof(struct blackfin_pda, dcplb_fault_addr));
++	DEFINE(PDA_ICPLB, offsetof(struct blackfin_pda, icplb_fault_addr));
++	DEFINE(PDA_RETX, offsetof(struct blackfin_pda, retx));
++	DEFINE(PDA_SEQSTAT, offsetof(struct blackfin_pda, seqstat));
++#ifdef CONFIG_SMP
++	/* Inter-core lock (in L2 SRAM) */
++	DEFINE(SIZEOF_CORELOCK, sizeof(struct corelock_slot));
 +#endif
 +
-+#define PERCPU_ENOUGH_ROOM \
-+	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
-+	 PERCPU_MODULE_RESERVE)
-+
-+#endif	/* __ARCH_BLACKFIN_PERCPU__ */
-diff --git a/arch/blackfin/include/asm/processor.h b/arch/blackfin/include/asm/processor.h
-index e3e9b41..30703c7 100644
---- a/arch/blackfin/include/asm/processor.h
-+++ b/arch/blackfin/include/asm/processor.h
-@@ -106,7 +106,8 @@ unsigned long get_wchan(struct task_struct *p);
- 	eip; })
- #define	KSTK_ESP(tsk)	((tsk) == current ? rdusp() : (tsk)->thread.usp)
- 
--#define cpu_relax()    	barrier()
-+#define cpu_relax()    	smp_mb()
-+
- 
- /* Get the Silicon Revision of the chip */
- static inline uint32_t __pure bfin_revid(void)
-@@ -137,7 +138,11 @@ static inline uint32_t __pure bfin_revid(void)
- static inline uint16_t __pure bfin_cpuid(void)
- {
- 	return (bfin_read_CHIPID() & CHIPID_FAMILY) >> 12;
-+}
- 
-+static inline uint32_t __pure bfin_dspid(void)
-+{
-+	return bfin_read_DSPID();
+ 	return 0;
  }
- 
- static inline uint32_t __pure bfin_compiled_revid(void)
-diff --git a/arch/blackfin/include/asm/rwlock.h b/arch/blackfin/include/asm/rwlock.h
-new file mode 100644
-index 0000000..4a724b3
---- /dev/null
-+++ b/arch/blackfin/include/asm/rwlock.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_BLACKFIN_RWLOCK_H
-+#define _ASM_BLACKFIN_RWLOCK_H
+diff --git a/arch/blackfin/kernel/bfin_ksyms.c b/arch/blackfin/kernel/bfin_ksyms.c
+index b66f1d4..763c315 100644
+--- a/arch/blackfin/kernel/bfin_ksyms.c
++++ b/arch/blackfin/kernel/bfin_ksyms.c
+@@ -68,3 +68,37 @@ EXPORT_SYMBOL(insw_8);
+ EXPORT_SYMBOL(outsl);
+ EXPORT_SYMBOL(insl);
+ EXPORT_SYMBOL(insl_16);
 +
-+#define RW_LOCK_BIAS	0x01000000
-+
++#ifdef CONFIG_SMP
++EXPORT_SYMBOL(__raw_atomic_update_asm);
++EXPORT_SYMBOL(__raw_atomic_clear_asm);
++EXPORT_SYMBOL(__raw_atomic_set_asm);
++EXPORT_SYMBOL(__raw_atomic_xor_asm);
++EXPORT_SYMBOL(__raw_atomic_test_asm);
++EXPORT_SYMBOL(__raw_xchg_1_asm);
++EXPORT_SYMBOL(__raw_xchg_2_asm);
++EXPORT_SYMBOL(__raw_xchg_4_asm);
++EXPORT_SYMBOL(__raw_cmpxchg_1_asm);
++EXPORT_SYMBOL(__raw_cmpxchg_2_asm);
++EXPORT_SYMBOL(__raw_cmpxchg_4_asm);
++EXPORT_SYMBOL(__raw_spin_is_locked_asm);
++EXPORT_SYMBOL(__raw_spin_lock_asm);
++EXPORT_SYMBOL(__raw_spin_trylock_asm);
++EXPORT_SYMBOL(__raw_spin_unlock_asm);
++EXPORT_SYMBOL(__raw_read_lock_asm);
++EXPORT_SYMBOL(__raw_read_trylock_asm);
++EXPORT_SYMBOL(__raw_read_unlock_asm);
++EXPORT_SYMBOL(__raw_write_lock_asm);
++EXPORT_SYMBOL(__raw_write_trylock_asm);
++EXPORT_SYMBOL(__raw_write_unlock_asm);
++EXPORT_SYMBOL(__raw_bit_set_asm);
++EXPORT_SYMBOL(__raw_bit_clear_asm);
++EXPORT_SYMBOL(__raw_bit_toggle_asm);
++EXPORT_SYMBOL(__raw_bit_test_asm);
++EXPORT_SYMBOL(__raw_bit_test_set_asm);
++EXPORT_SYMBOL(__raw_bit_test_clear_asm);
++EXPORT_SYMBOL(__raw_bit_test_toggle_asm);
++EXPORT_SYMBOL(__raw_uncached_fetch_asm);
++EXPORT_SYMBOL(__raw_smp_mark_barrier_asm);
++EXPORT_SYMBOL(__raw_smp_check_barrier_asm);
 +#endif
-diff --git a/arch/blackfin/include/asm/smp.h b/arch/blackfin/include/asm/smp.h
-new file mode 100644
-index 0000000..233cb8c
---- /dev/null
-+++ b/arch/blackfin/include/asm/smp.h
-@@ -0,0 +1,42 @@
-+/*
-+ * File:         arch/blackfin/include/asm/smp.h
-+ * Author:       Philippe Gerum <rpm@xenomai.org>
-+ *
-+ *               Copyright 2007 Analog Devices Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#ifndef __ASM_BLACKFIN_SMP_H
-+#define __ASM_BLACKFIN_SMP_H
-+
-+#include <linux/kernel.h>
-+#include <linux/threads.h>
-+#include <linux/cpumask.h>
-+#include <linux/cache.h>
-+#include <asm/blackfin.h>
-+#include <mach/smp.h>
-+
-+#define raw_smp_processor_id()  blackfin_core_id()
-+
-+struct corelock_slot {
-+	int lock;
-+};
-+
-+void smp_icache_flush_range_others(unsigned long start,
-+				   unsigned long end);
-+
-+#endif /* !__ASM_BLACKFIN_SMP_H */
-diff --git a/arch/blackfin/include/asm/spinlock.h b/arch/blackfin/include/asm/spinlock.h
-index 64e908a..0249ac3 100644
---- a/arch/blackfin/include/asm/spinlock.h
-+++ b/arch/blackfin/include/asm/spinlock.h
-@@ -1,6 +1,89 @@
- #ifndef __BFIN_SPINLOCK_H
- #define __BFIN_SPINLOCK_H
- 
--#error blackfin architecture does not support SMP spin lock yet
-+#include <asm/atomic.h>
- 
--#endif
-+asmlinkage int __raw_spin_is_locked_asm(volatile int *ptr);
-+asmlinkage void __raw_spin_lock_asm(volatile int *ptr);
-+asmlinkage int __raw_spin_trylock_asm(volatile int *ptr);
-+asmlinkage void __raw_spin_unlock_asm(volatile int *ptr);
-+asmlinkage void __raw_read_lock_asm(volatile int *ptr);
-+asmlinkage int __raw_read_trylock_asm(volatile int *ptr);
-+asmlinkage void __raw_read_unlock_asm(volatile int *ptr);
-+asmlinkage void __raw_write_lock_asm(volatile int *ptr);
-+asmlinkage int __raw_write_trylock_asm(volatile int *ptr);
-+asmlinkage void __raw_write_unlock_asm(volatile int *ptr);
-+
-+static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
-+{
-+	return __raw_spin_is_locked_asm(&lock->lock);
-+}
-+
-+static inline void __raw_spin_lock(raw_spinlock_t *lock)
-+{
-+	__raw_spin_lock_asm(&lock->lock);
-+}
-+
-+#define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
-+
-+static inline int __raw_spin_trylock(raw_spinlock_t *lock)
-+{
-+	return __raw_spin_trylock_asm(&lock->lock);
-+}
-+
-+static inline void __raw_spin_unlock(raw_spinlock_t *lock)
-+{
-+	__raw_spin_unlock_asm(&lock->lock);
-+}
-+
-+static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
-+{
-+	while (__raw_spin_is_locked(lock))
-+		cpu_relax();
-+}
-+
-+static inline int __raw_read_can_lock(raw_rwlock_t *rw)
-+{
-+	return __raw_uncached_fetch_asm(&rw->lock) > 0;
-+}
-+
-+static inline int __raw_write_can_lock(raw_rwlock_t *rw)
-+{
-+	return __raw_uncached_fetch_asm(&rw->lock) == RW_LOCK_BIAS;
-+}
-+
-+static inline void __raw_read_lock(raw_rwlock_t *rw)
-+{
-+	__raw_read_lock_asm(&rw->lock);
-+}
-+
-+static inline int __raw_read_trylock(raw_rwlock_t *rw)
-+{
-+	return __raw_read_trylock_asm(&rw->lock);
-+}
-+
-+static inline void __raw_read_unlock(raw_rwlock_t *rw)
-+{
-+	__raw_read_unlock_asm(&rw->lock);
-+}
-+
-+static inline void __raw_write_lock(raw_rwlock_t *rw)
-+{
-+	__raw_write_lock_asm(&rw->lock);
-+}
-+
-+static inline int __raw_write_trylock(raw_rwlock_t *rw)
-+{
-+	return __raw_write_trylock_asm(&rw->lock);
-+}
-+
-+static inline void __raw_write_unlock(raw_rwlock_t *rw)
-+{
-+	__raw_write_unlock_asm(&rw->lock);
-+}
-+
-+#define _raw_spin_relax(lock)  	cpu_relax()
-+#define _raw_read_relax(lock)	cpu_relax()
-+#define _raw_write_relax(lock)	cpu_relax()
-+
-+#endif /*  !__BFIN_SPINLOCK_H */
-diff --git a/arch/blackfin/include/asm/spinlock_types.h b/arch/blackfin/include/asm/spinlock_types.h
-new file mode 100644
-index 0000000..b1e3c4c
---- /dev/null
-+++ b/arch/blackfin/include/asm/spinlock_types.h
-@@ -0,0 +1,22 @@
-+#ifndef __ASM_SPINLOCK_TYPES_H
-+#define __ASM_SPINLOCK_TYPES_H
-+
-+#ifndef __LINUX_SPINLOCK_TYPES_H
-+# error "please don't include this file directly"
-+#endif
-+
-+#include <asm/rwlock.h>
-+
-+typedef struct {
-+	volatile unsigned int lock;
-+} raw_spinlock_t;
-+
-+#define __RAW_SPIN_LOCK_UNLOCKED	{ 0 }
-+
-+typedef struct {
-+	volatile unsigned int lock;
-+} raw_rwlock_t;
-+
-+#define __RAW_RW_LOCK_UNLOCKED		{ RW_LOCK_BIAS }
-+
-+#endif
-diff --git a/arch/blackfin/include/asm/system.h b/arch/blackfin/include/asm/system.h
-index 8f1627d..6b368fa 100644
---- a/arch/blackfin/include/asm/system.h
-+++ b/arch/blackfin/include/asm/system.h
-@@ -37,20 +37,16 @@
+diff --git a/arch/blackfin/kernel/entry.S b/arch/blackfin/kernel/entry.S
+index faea88e..c0c3fe8 100644
+--- a/arch/blackfin/kernel/entry.S
++++ b/arch/blackfin/kernel/entry.S
+@@ -30,6 +30,7 @@
  #include <linux/linkage.h>
- #include <linux/compiler.h>
- #include <mach/anomaly.h>
-+#include <asm/pda.h>
-+#include <asm/processor.h>
-+
-+/* Forward decl needed due to cdef inter dependencies */
-+static inline uint32_t __pure bfin_dspid(void);
-+#define blackfin_core_id() (bfin_dspid() & 0xff)
+ #include <asm/thread_info.h>
+ #include <asm/errno.h>
++#include <asm/blackfin.h>
+ #include <asm/asm-offsets.h>
+ 
+ #include <asm/context.S>
+diff --git a/arch/blackfin/kernel/irqchip.c b/arch/blackfin/kernel/irqchip.c
+index 07402f5..9eebb78 100644
+--- a/arch/blackfin/kernel/irqchip.c
++++ b/arch/blackfin/kernel/irqchip.c
+@@ -36,7 +36,7 @@
+ #include <linux/irq.h>
+ #include <asm/trace.h>
+ 
+-static unsigned long irq_err_count;
++static atomic_t irq_err_count;
+ static spinlock_t irq_controller_lock;
  
  /*
-  * Interrupt configuring macros.
+@@ -48,7 +48,7 @@ void dummy_mask_unmask_irq(unsigned int irq)
+ 
+ void ack_bad_irq(unsigned int irq)
+ {
+-	irq_err_count += 1;
++	atomic_inc(&irq_err_count);
+ 	printk(KERN_ERR "IRQ: spurious interrupt %d\n", irq);
+ }
+ EXPORT_SYMBOL(ack_bad_irq);
+@@ -72,7 +72,7 @@ static struct irq_desc bad_irq_desc = {
+ 
+ int show_interrupts(struct seq_file *p, void *v)
+ {
+-	int i = *(loff_t *) v;
++	int i = *(loff_t *) v, j;
+ 	struct irqaction *action;
+ 	unsigned long flags;
+ 
+@@ -80,19 +80,20 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		spin_lock_irqsave(&irq_desc[i].lock, flags);
+ 		action = irq_desc[i].action;
+ 		if (!action)
+-			goto unlock;
+-
+-		seq_printf(p, "%3d: %10u ", i, kstat_irqs(i));
++			goto skip;
++		seq_printf(p, "%3d: ", i);
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
++		seq_printf(p, " %8s", irq_desc[i].chip->name);
+ 		seq_printf(p, "  %s", action->name);
+ 		for (action = action->next; action; action = action->next)
+-			seq_printf(p, ", %s", action->name);
++			seq_printf(p, "  %s", action->name);
+ 
+ 		seq_putc(p, '\n');
+- unlock:
++ skip:
+ 		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
+-	} else if (i == NR_IRQS) {
+-		seq_printf(p, "Err: %10lu\n", irq_err_count);
+-	}
++	} else if (i == NR_IRQS)
++		seq_printf(p, "Err: %10u\n",  atomic_read(&irq_err_count));
+ 	return 0;
+ }
+ 
+@@ -101,7 +102,6 @@ int show_interrupts(struct seq_file *p, void *v)
+  * come via this function.  Instead, they should provide their
+  * own 'handler'
   */
 -
--extern unsigned long irq_flags;
--
--#define local_irq_enable() \
--	__asm__ __volatile__( \
--		"sti %0;" \
--		: \
--		: "d" (irq_flags) \
--	)
--
- #define local_irq_disable() \
- 	do { \
- 		int __tmp_dummy; \
-@@ -66,6 +62,18 @@ extern unsigned long irq_flags;
- # define NOP_PAD_ANOMALY_05000244
+ #ifdef CONFIG_DO_IRQ_L1
+ __attribute__((l1_text))
+ #endif
+diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
+index b795a20..ab40221 100644
+--- a/arch/blackfin/kernel/kgdb.c
++++ b/arch/blackfin/kernel/kgdb.c
+@@ -363,12 +363,12 @@ void kgdb_passive_cpu_callback(void *info)
+ 
+ void kgdb_roundup_cpus(unsigned long flags)
+ {
+-	smp_call_function(kgdb_passive_cpu_callback, NULL, 0, 0);
++	smp_call_function(kgdb_passive_cpu_callback, NULL, 0);
+ }
+ 
+ void kgdb_roundup_cpu(int cpu, unsigned long flags)
+ {
+-	smp_call_function_single(cpu, kgdb_passive_cpu_callback, NULL, 0, 0);
++	smp_call_function_single(cpu, kgdb_passive_cpu_callback, NULL, 0);
+ }
  #endif
  
-+#ifdef CONFIG_SMP
-+# define irq_flags cpu_pda[blackfin_core_id()].imask
-+#else
-+extern unsigned long irq_flags;
-+#endif
-+
-+#define local_irq_enable() \
-+	__asm__ __volatile__( \
-+		"sti %0;" \
-+		: \
-+		: "d" (irq_flags) \
-+	)
- #define idle_with_irq_disabled() \
- 	__asm__ __volatile__( \
- 		NOP_PAD_ANOMALY_05000244 \
-@@ -129,22 +137,85 @@ extern unsigned long irq_flags;
- #define rmb()  asm volatile (""   : : :"memory")
- #define wmb()  asm volatile (""   : : :"memory")
- #define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
+diff --git a/arch/blackfin/kernel/module.c b/arch/blackfin/kernel/module.c
+index e1bebc8..2e14cad 100644
+--- a/arch/blackfin/kernel/module.c
++++ b/arch/blackfin/kernel/module.c
+@@ -343,7 +343,13 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ 		pr_debug("location is %x, value is %x type is %d \n",
+ 			 (unsigned int) location32, value,
+ 			 ELF32_R_TYPE(rel[i].r_info));
 -
- #define read_barrier_depends() 		do { } while(0)
++#ifdef CONFIG_SMP
++		if ((unsigned long)location16 >= COREB_L1_DATA_A_START) {
++			printk(KERN_ERR "module %s: cannot relocate in L1: %u (SMP kernel)",
++				       mod->name, ELF32_R_TYPE(rel[i].r_info));
++			return -ENOEXEC;
++		}
++#endif
+ 		switch (ELF32_R_TYPE(rel[i].r_info)) {
  
- #ifdef CONFIG_SMP
--#define smp_mb()	mb()
--#define smp_rmb()	rmb()
--#define smp_wmb()	wmb()
--#define smp_read_barrier_depends()	read_barrier_depends()
-+asmlinkage unsigned long __raw_xchg_1_asm(volatile void *ptr, unsigned long value);
-+asmlinkage unsigned long __raw_xchg_2_asm(volatile void *ptr, unsigned long value);
-+asmlinkage unsigned long __raw_xchg_4_asm(volatile void *ptr, unsigned long value);
-+asmlinkage unsigned long __raw_cmpxchg_1_asm(volatile void *ptr,
-+					unsigned long new, unsigned long old);
-+asmlinkage unsigned long __raw_cmpxchg_2_asm(volatile void *ptr,
-+					unsigned long new, unsigned long old);
-+asmlinkage unsigned long __raw_cmpxchg_4_asm(volatile void *ptr,
-+					unsigned long new, unsigned long old);
-+
+ 		case R_pcrel24:
+@@ -436,6 +442,7 @@ module_finalize(const Elf_Ehdr * hdr,
+ {
+ 	unsigned int i, strindex = 0, symindex = 0;
+ 	char *secstrings;
++	long err = 0;
+ 
+ 	secstrings = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
+ 
+@@ -460,8 +467,10 @@ module_finalize(const Elf_Ehdr * hdr,
+ 		    (strcmp(".rela.l1.text", secstrings + sechdrs[i].sh_name) == 0) ||
+ 		    ((strcmp(".rela.text", secstrings + sechdrs[i].sh_name) == 0) &&
+ 			(hdr->e_flags & (EF_BFIN_CODE_IN_L1|EF_BFIN_CODE_IN_L2))))) {
+-			apply_relocate_add((Elf_Shdr *) sechdrs, strtab,
++			err = apply_relocate_add((Elf_Shdr *) sechdrs, strtab,
+ 					   symindex, i, mod);
++			if (err < 0)
++				return -ENOEXEC;
+ 		}
+ 	}
+ 	return 0;
+diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
+index 326e301..4359ea2 100644
+--- a/arch/blackfin/kernel/process.c
++++ b/arch/blackfin/kernel/process.c
+@@ -171,6 +171,13 @@ asmlinkage int bfin_clone(struct pt_regs *regs)
+ 	unsigned long clone_flags;
+ 	unsigned long newsp;
+ 
 +#ifdef __ARCH_SYNC_CORE_DCACHE
-+# define smp_mb()	do { barrier(); smp_check_barrier(); smp_mark_barrier(); } while (0)
-+# define smp_rmb()	do { barrier(); smp_check_barrier(); } while (0)
-+# define smp_wmb()	do { barrier(); smp_mark_barrier(); } while (0)
- #else
-+# define smp_mb()	barrier()
-+# define smp_rmb()	barrier()
-+# define smp_wmb()	barrier()
++	if (current->rt.nr_cpus_allowed == num_possible_cpus()) {
++		current->cpus_allowed = cpumask_of_cpu(smp_processor_id());
++		current->rt.nr_cpus_allowed = 1;
++	}
 +#endif
 +
-+static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
-+				   int size)
+ 	/* syscall2 puts clone_flags in r0 and usp in r1 */
+ 	clone_flags = regs->r0;
+ 	newsp = regs->r1;
+@@ -338,22 +345,22 @@ int _access_ok(unsigned long addr, unsigned long size)
+ 	if (addr >= (unsigned long)__init_begin &&
+ 	    addr + size <= (unsigned long)__init_end)
+ 		return 1;
+-	if (addr >= L1_SCRATCH_START
+-	    && addr + size <= L1_SCRATCH_START + L1_SCRATCH_LENGTH)
++	if (addr >= get_l1_scratch_start()
++	    && addr + size <= get_l1_scratch_start() + L1_SCRATCH_LENGTH)
+ 		return 1;
+ #if L1_CODE_LENGTH != 0
+-	if (addr >= L1_CODE_START + (_etext_l1 - _stext_l1)
+-	    && addr + size <= L1_CODE_START + L1_CODE_LENGTH)
++	if (addr >= get_l1_code_start() + (_etext_l1 - _stext_l1)
++	    && addr + size <= get_l1_code_start() + L1_CODE_LENGTH)
+ 		return 1;
+ #endif
+ #if L1_DATA_A_LENGTH != 0
+-	if (addr >= L1_DATA_A_START + (_ebss_l1 - _sdata_l1)
+-	    && addr + size <= L1_DATA_A_START + L1_DATA_A_LENGTH)
++	if (addr >= get_l1_data_a_start() + (_ebss_l1 - _sdata_l1)
++	    && addr + size <= get_l1_data_a_start() + L1_DATA_A_LENGTH)
+ 		return 1;
+ #endif
+ #if L1_DATA_B_LENGTH != 0
+-	if (addr >= L1_DATA_B_START + (_ebss_b_l1 - _sdata_b_l1)
+-	    && addr + size <= L1_DATA_B_START + L1_DATA_B_LENGTH)
++	if (addr >= get_l1_data_b_start() + (_ebss_b_l1 - _sdata_b_l1)
++	    && addr + size <= get_l1_data_b_start() + L1_DATA_B_LENGTH)
+ 		return 1;
+ #endif
+ #if L2_LENGTH != 0
+diff --git a/arch/blackfin/kernel/ptrace.c b/arch/blackfin/kernel/ptrace.c
+index 140bf00..4de44f3 100644
+--- a/arch/blackfin/kernel/ptrace.c
++++ b/arch/blackfin/kernel/ptrace.c
+@@ -220,8 +220,8 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 				break;
+ 			pr_debug("ptrace: user address is valid\n");
+ 
+-			if (L1_CODE_LENGTH != 0 && addr >= L1_CODE_START
+-			    && addr + sizeof(tmp) <= L1_CODE_START + L1_CODE_LENGTH) {
++			if (L1_CODE_LENGTH != 0 && addr >= get_l1_code_start()
++			    && addr + sizeof(tmp) <= get_l1_code_start() + L1_CODE_LENGTH) {
+ 				safe_dma_memcpy (&tmp, (const void *)(addr), sizeof(tmp));
+ 				copied = sizeof(tmp);
+ 
+@@ -300,8 +300,8 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 				break;
+ 			pr_debug("ptrace: user address is valid\n");
+ 
+-			if (L1_CODE_LENGTH != 0 && addr >= L1_CODE_START
+-			    && addr + sizeof(data) <= L1_CODE_START + L1_CODE_LENGTH) {
++			if (L1_CODE_LENGTH != 0 && addr >= get_l1_code_start()
++			    && addr + sizeof(data) <= get_l1_code_start() + L1_CODE_LENGTH) {
+ 				safe_dma_memcpy ((void *)(addr), &data, sizeof(data));
+ 				copied = sizeof(data);
+ 
+diff --git a/arch/blackfin/kernel/reboot.c b/arch/blackfin/kernel/reboot.c
+index ae97ca4..eeee8cb 100644
+--- a/arch/blackfin/kernel/reboot.c
++++ b/arch/blackfin/kernel/reboot.c
+@@ -21,7 +21,7 @@
+  * the core reset.
+  */
+ __attribute__((l1_text))
+-static void bfin_reset(void)
++static void _bfin_reset(void)
+ {
+ 	/* Wait for completion of "system" events such as cache line
+ 	 * line fills so that we avoid infinite stalls later on as
+@@ -66,6 +66,18 @@ static void bfin_reset(void)
+ 	}
+ }
+ 
++static void bfin_reset(void)
 +{
-+	unsigned long tmp;
-+
-+	switch (size) {
-+	case 1:
-+		tmp = __raw_xchg_1_asm(ptr, x);
-+		break;
-+	case 2:
-+		tmp = __raw_xchg_2_asm(ptr, x);
-+		break;
-+	case 4:
-+		tmp = __raw_xchg_4_asm(ptr, x);
-+		break;
-+	}
-+
-+	return tmp;
++	if (ANOMALY_05000353 || ANOMALY_05000386)
++		_bfin_reset();
++	else
++		/* the bootrom checks to see how it was reset and will
++		 * automatically perform a software reset for us when
++		 * it starts executing boot
++		 */
++		asm("raise 1;");
 +}
 +
-+/*
-+ * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-+ * store NEW in MEM.  Return the initial value in MEM.  Success is
-+ * indicated by comparing RETURN with OLD.
-+ */
-+static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	unsigned long tmp;
-+
-+	switch (size) {
-+	case 1:
-+		tmp = __raw_cmpxchg_1_asm(ptr, new, old);
-+		break;
-+	case 2:
-+		tmp = __raw_cmpxchg_2_asm(ptr, new, old);
-+		break;
-+	case 4:
-+		tmp = __raw_cmpxchg_4_asm(ptr, new, old);
-+		break;
-+	}
-+
-+	return tmp;
-+}
-+#define cmpxchg(ptr, o, n) \
-+	((__typeof__(*(ptr)))__cmpxchg((ptr), (unsigned long)(o), \
-+		(unsigned long)(n), sizeof(*(ptr))))
-+
-+#define smp_read_barrier_depends()	smp_check_barrier()
-+
-+#else /* !CONFIG_SMP */
-+
- #define smp_mb()	barrier()
- #define smp_rmb()	barrier()
- #define smp_wmb()	barrier()
- #define smp_read_barrier_depends()	do { } while(0)
--#endif
--
--#define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
+ __attribute__((weak))
+ void native_machine_restart(char *cmd)
+ {
+@@ -75,14 +87,10 @@ void machine_restart(char *cmd)
+ {
+ 	native_machine_restart(cmd);
+ 	local_irq_disable();
+-	if (ANOMALY_05000353 || ANOMALY_05000386)
+-		bfin_reset();
++	if (smp_processor_id())
++		smp_call_function((void *)bfin_reset, 0, 1);
+ 	else
+-		/* the bootrom checks to see how it was reset and will
+-		 * automatically perform a software reset for us when
+-		 * it starts executing boot
+-		 */
+-		asm("raise 1;");
++		bfin_reset();
+ }
  
- struct __xchg_dummy {
- 	unsigned long a[100];
-@@ -194,9 +265,12 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
- 			(unsigned long)(n), sizeof(*(ptr))))
- #define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
--#ifndef CONFIG_SMP
- #include <asm-generic/cmpxchg.h>
--#endif
-+
-+#endif /* !CONFIG_SMP */
-+
-+#define xchg(ptr, x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
-+#define tas(ptr) ((void)xchg((ptr), 1))
- 
- #define prepare_to_switch()     do { } while(0)
- 
-@@ -218,4 +292,4 @@ do {    \
- 	(last) = resume (prev, next);   \
- } while (0)
- 
--#endif				/* _BLACKFIN_SYSTEM_H */
-+#endif	/* _BLACKFIN_SYSTEM_H */
-diff --git a/arch/blackfin/mach-common/Makefile b/arch/blackfin/mach-common/Makefile
-index e6ed57c..9388b4a 100644
---- a/arch/blackfin/mach-common/Makefile
-+++ b/arch/blackfin/mach-common/Makefile
-@@ -10,3 +10,4 @@ obj-$(CONFIG_BFIN_ICACHE_LOCK) += lock.o
- obj-$(CONFIG_PM)          += pm.o dpmc_modes.o
- obj-$(CONFIG_CPU_FREQ)    += cpufreq.o
- obj-$(CONFIG_CPU_VOLTAGE) += dpmc.o
-+obj-$(CONFIG_SMP)         += smp.o
-diff --git a/arch/blackfin/mach-common/cache.S b/arch/blackfin/mach-common/cache.S
-index 3c98dac..1187512 100644
---- a/arch/blackfin/mach-common/cache.S
-+++ b/arch/blackfin/mach-common/cache.S
-@@ -97,3 +97,39 @@ ENTRY(_blackfin_dflush_page)
- 	P1 = 1 << (PAGE_SHIFT - L1_CACHE_SHIFT);
- 	jump .Ldfr;
- ENDPROC(_blackfin_dflush_page)
-+
-+/* Invalidate the Entire Data cache by
-+ * clearing DMC[1:0] bits
-+ */
-+ENTRY(_blackfin_invalidate_entire_dcache)
-+	[--SP] = ( R7:5);
-+
-+	P0.L = LO(DMEM_CONTROL);
-+	P0.H = HI(DMEM_CONTROL);
-+	R7 = [P0];
-+	R5 = R7;	/* Save DMEM_CNTR */
-+
-+	/* Clear the DMC[1:0] bits, All valid bits in the data
-+	 * cache are set to the invalid state
-+	 */
-+	BITCLR(R7,DMC0_P);
-+	BITCLR(R7,DMC1_P);
-+	CLI R6;
-+	SSYNC;		/* SSYNC required before writing to DMEM_CONTROL. */
-+	.align 8;
-+	[P0] = R7;
-+	SSYNC;
-+	STI R6;
-+
-+	/* Configures the data cache again */
-+
-+	CLI R6;
-+	SSYNC;		/* SSYNC required before writing to DMEM_CONTROL. */
-+	.align 8;
-+	[P0] = R5;
-+	SSYNC;
-+	STI R6;
-+
-+	( R7:5) = [SP++];
-+	RTS;
-+ENDPROC(_blackfin_invalidate_entire_dcache)
-diff --git a/arch/blackfin/mach-common/entry.S b/arch/blackfin/mach-common/entry.S
-index c6ae844..5531f49 100644
---- a/arch/blackfin/mach-common/entry.S
-+++ b/arch/blackfin/mach-common/entry.S
-@@ -36,6 +36,7 @@
- #include <linux/init.h>
- #include <linux/linkage.h>
- #include <linux/unistd.h>
-+#include <linux/threads.h>
+ __attribute__((weak))
+diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+index 71a9a8c..c644d23 100644
+--- a/arch/blackfin/kernel/setup.c
++++ b/arch/blackfin/kernel/setup.c
+@@ -26,11 +26,10 @@
  #include <asm/blackfin.h>
- #include <asm/errno.h>
+ #include <asm/cplbinit.h>
+ #include <asm/div64.h>
++#include <asm/cpu.h>
  #include <asm/fixed_code.h>
-@@ -75,11 +76,11 @@ ENTRY(_ex_workaround_261)
- 	 * handle it.
- 	 */
- 	P4 = R7;	/* Store EXCAUSE */
--	p5.l = _last_cplb_fault_retx;
--	p5.h = _last_cplb_fault_retx;
--	r7 = [p5];
-+
-+	GET_PDA(p5, r7);
-+	r7 = [p5 + PDA_LFRETX];
- 	r6 = retx;
--	[p5] = r6;
-+	[p5 + PDA_LFRETX] = r6;
- 	cc = r6 == r7;
- 	if !cc jump _bfin_return_from_exception;
- 	/* fall through */
-@@ -324,7 +325,9 @@ ENTRY(_ex_trap_c)
- 	[p4] = p5;
- 	csync;
+ #include <asm/early_printk.h>
  
-+	GET_PDA(p5, r6);
- #ifndef CONFIG_DEBUG_DOUBLEFAULT
-+
- 	/*
- 	 * Save these registers, as they are only valid in exception context
- 	 *  (where we are now - as soon as we defer to IRQ5, they can change)
-@@ -335,29 +338,25 @@ ENTRY(_ex_trap_c)
- 	p4.l = lo(DCPLB_FAULT_ADDR);
- 	p4.h = hi(DCPLB_FAULT_ADDR);
- 	r7 = [p4];
--	p5.h = _saved_dcplb_fault_addr;
--	p5.l = _saved_dcplb_fault_addr;
--	[p5] = r7;
-+	[p5 + PDA_DCPLB] = r7;
- 
--	r7 = [p4 + (ICPLB_FAULT_ADDR - DCPLB_FAULT_ADDR)];
--	p5.h = _saved_icplb_fault_addr;
--	p5.l = _saved_icplb_fault_addr;
--	[p5] = r7;
-+	p4.l = lo(ICPLB_FAULT_ADDR);
-+	p4.h = hi(ICPLB_FAULT_ADDR);
-+	r6 = [p4];
-+	[p5 + PDA_ICPLB] = r6;
- 
- 	r6 = retx;
--	p4.l = _saved_retx;
--	p4.h = _saved_retx;
--	[p4] = r6;
-+	[p5 + PDA_RETX] = r6;
- #endif
- 	r6 = SYSCFG;
--	[p4 + 4] = r6;
-+	[p5 + PDA_SYSCFG] = r6;
- 	BITCLR(r6, 0);
- 	SYSCFG = r6;
- 
- 	/* Disable all interrupts, but make sure level 5 is enabled so
- 	 * we can switch to that level.  Save the old mask.  */
- 	cli r6;
--	[p4 + 8] = r6;
-+	[p5 + PDA_EXIMASK] = r6;
- 
- 	p4.l = lo(SAFE_USER_INSTRUCTION);
- 	p4.h = hi(SAFE_USER_INSTRUCTION);
-@@ -424,17 +423,16 @@ ENDPROC(_double_fault)
- ENTRY(_exception_to_level5)
- 	SAVE_ALL_SYS
- 
--	p4.l = _saved_retx;
--	p4.h = _saved_retx;
--	r6 = [p4];
-+	GET_PDA(p4, r7);        /* Fetch current PDA */
-+	r6 = [p4 + PDA_RETX];
- 	[sp + PT_PC] = r6;
- 
--	r6 = [p4 + 4];
-+	r6 = [p4 + PDA_SYSCFG];
- 	[sp + PT_SYSCFG] = r6;
- 
- 	/* Restore interrupt mask.  We haven't pushed RETI, so this
- 	 * doesn't enable interrupts until we return from this handler.  */
--	r6 = [p4 + 8];
-+	r6 = [p4 + PDA_EXIMASK];
- 	sti r6;
- 
- 	/* Restore the hardware error vector.  */
-@@ -478,8 +476,8 @@ ENTRY(_trap) /* Exception: 4th entry into system event table(supervisor mode)*/
- 	 * scratch register (for want of a better option).
- 	 */
- 	EX_SCRATCH_REG = sp;
--	sp.l = _exception_stack_top;
--	sp.h = _exception_stack_top;
-+	GET_PDA_SAFE(sp);
-+	sp = [sp + PDA_EXSTACK]
- 	/* Try to deal with syscalls quickly.  */
- 	[--sp] = ASTAT;
- 	[--sp] = (R7:6,P5:4);
-@@ -501,27 +499,22 @@ ENTRY(_trap) /* Exception: 4th entry into system event table(supervisor mode)*/
- 	 * but they are not very interesting, so don't save them
- 	 */
- 
-+	GET_PDA(p5, r7);
- 	p4.l = lo(DCPLB_FAULT_ADDR);
- 	p4.h = hi(DCPLB_FAULT_ADDR);
- 	r7 = [p4];
--	p5.h = _saved_dcplb_fault_addr;
--	p5.l = _saved_dcplb_fault_addr;
--	[p5] = r7;
-+	[p5 + PDA_DCPLB] = r7;
- 
--	r7 = [p4 + (ICPLB_FAULT_ADDR - DCPLB_FAULT_ADDR)];
--	p5.h = _saved_icplb_fault_addr;
--	p5.l = _saved_icplb_fault_addr;
--	[p5] = r7;
-+	p4.l = lo(ICPLB_FAULT_ADDR);
-+	p4.h = hi(ICPLB_FAULT_ADDR);
-+	r7 = [p4];
-+	[p5 + PDA_ICPLB] = r7;
- 
--	p4.l = _saved_retx;
--	p4.h = _saved_retx;
- 	r6 = retx;
--	[p4] = r6;
-+	[p5 + PDA_RETX] = r6;
- 
- 	r7 = SEQSTAT;		/* reason code is in bit 5:0 */
--	p4.l = _saved_seqstat;
--	p4.h = _saved_seqstat;
--	[p4] = r7;
-+	[p5 + PDA_SEQSTAT] = r7;
- #else
- 	r7 = SEQSTAT;           /* reason code is in bit 5:0 */
- #endif
-@@ -546,11 +539,11 @@ ENTRY(_kernel_execve)
- 	p0 = sp;
- 	r3 = SIZEOF_PTREGS / 4;
- 	r4 = 0(x);
--0:
-+.Lclear_regs:
- 	[p0++] = r4;
- 	r3 += -1;
- 	cc = r3 == 0;
--	if !cc jump 0b (bp);
-+	if !cc jump .Lclear_regs (bp);
- 
- 	p0 = sp;
- 	sp += -16;
-@@ -558,7 +551,7 @@ ENTRY(_kernel_execve)
- 	call _do_execve;
- 	SP += 16;
- 	cc = r0 == 0;
--	if ! cc jump 1f;
-+	if ! cc jump .Lexecve_failed;
- 	/* Success.  Copy our temporary pt_regs to the top of the kernel
- 	 * stack and do a normal exception return.
- 	 */
-@@ -574,12 +567,12 @@ ENTRY(_kernel_execve)
- 	p0 = fp;
- 	r4 = [p0--];
- 	r3 = SIZEOF_PTREGS / 4;
--0:
-+.Lcopy_regs:
- 	r4 = [p0--];
- 	[p1--] = r4;
- 	r3 += -1;
- 	cc = r3 == 0;
--	if ! cc jump 0b (bp);
-+	if ! cc jump .Lcopy_regs (bp);
- 
- 	r0 = (KERNEL_STACK_SIZE - SIZEOF_PTREGS) (z);
- 	p1 = r0;
-@@ -591,7 +584,7 @@ ENTRY(_kernel_execve)
- 
- 	RESTORE_CONTEXT;
- 	rti;
--1:
-+.Lexecve_failed:
- 	unlink;
- 	rts;
- ENDPROC(_kernel_execve)
-@@ -925,9 +918,14 @@ _schedule_and_signal_from_int:
- 	p1 = rets;
- 	[sp + PT_RESERVED] = p1;
- 
-+#ifdef CONFIG_SMP
-+	GET_PDA(p0, r0); 	/* Fetch current PDA (can't migrate to other CPU here) */
-+	r0 = [p0 + PDA_IRQFLAGS];
-+#else
- 	p0.l = _irq_flags;
- 	p0.h = _irq_flags;
- 	r0 = [p0];
-+#endif
- 	sti r0;
- 
- 	r0 = sp;
-@@ -1539,12 +1537,6 @@ ENTRY(_sys_call_table)
- 	.endr
- END(_sys_call_table)
- 
--#if ANOMALY_05000261
--/* Used by the assembly entry point to work around an anomaly.  */
--_last_cplb_fault_retx:
--	.long 0;
--#endif
+-static DEFINE_PER_CPU(struct cpu, cpu_devices);
 -
- #ifdef CONFIG_EXCEPTION_L1_SCRATCH
- /* .section .l1.bss.scratch */
- .set _exception_stack_top, L1_SCRATCH_START + L1_SCRATCH_LENGTH
-@@ -1554,8 +1546,8 @@ _last_cplb_fault_retx:
+ u16 _bfin_swrst;
+ EXPORT_SYMBOL(_bfin_swrst);
+ 
+@@ -79,29 +78,76 @@ static struct change_member *change_point[2*BFIN_MEMMAP_MAX] __initdata;
+ static struct bfin_memmap_entry *overlap_list[BFIN_MEMMAP_MAX] __initdata;
+ static struct bfin_memmap_entry new_map[BFIN_MEMMAP_MAX] __initdata;
+ 
+-void __init bfin_cache_init(void)
+-{
++DEFINE_PER_CPU(struct blackfin_cpudata, cpu_data);
++
+ #if defined(CONFIG_BFIN_DCACHE) || defined(CONFIG_BFIN_ICACHE)
+-	generate_cplb_tables();
++void __init generate_cplb_tables(void)
++{
++	unsigned int cpu;
++
++	/* Generate per-CPU I&D CPLB tables */
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu)
++		generate_cplb_tables_cpu(cpu);
++}
+ #endif
+ 
++void __cpuinit bfin_setup_caches(unsigned int cpu)
++{
+ #ifdef CONFIG_BFIN_ICACHE
+-	bfin_icache_init();
+-	printk(KERN_INFO "Instruction Cache Enabled\n");
++#ifdef CONFIG_MPU
++	bfin_icache_init(icplb_tbl[cpu]);
++#else
++	bfin_icache_init(icplb_tables[cpu]);
++#endif
+ #endif
+ 
+ #ifdef CONFIG_BFIN_DCACHE
+-	bfin_dcache_init();
+-	printk(KERN_INFO "Data Cache Enabled"
++#ifdef CONFIG_MPU
++	bfin_dcache_init(dcplb_tbl[cpu]);
++#else
++	bfin_dcache_init(dcplb_tables[cpu]);
++#endif
++#endif
++
++	/*
++	 * In cache coherence emulation mode, we need to have the
++	 * D-cache enabled before running any atomic operation which
++	 * might invove cache invalidation (i.e. spinlock, rwlock).
++	 * So printk's are deferred until then.
++	 */
++#ifdef CONFIG_BFIN_ICACHE
++	printk(KERN_INFO "Instruction Cache Enabled for CPU%u\n", cpu);
++#endif
++#ifdef CONFIG_BFIN_DCACHE
++	printk(KERN_INFO "Data Cache Enabled for CPU%u"
+ # if defined CONFIG_BFIN_WB
+ 		" (write-back)"
+ # elif defined CONFIG_BFIN_WT
+ 		" (write-through)"
+ # endif
+-		"\n");
++		"\n", cpu);
+ #endif
+ }
+ 
++void __cpuinit bfin_setup_cpudata(unsigned int cpu)
++{
++	struct blackfin_cpudata *cpudata = &per_cpu(cpu_data, cpu);
++
++	cpudata->idle = current;
++	cpudata->loops_per_jiffy = loops_per_jiffy;
++	cpudata->cclk = get_cclk();
++	cpudata->imemctl = bfin_read_IMEM_CONTROL();
++	cpudata->dmemctl = bfin_read_DMEM_CONTROL();
++}
++
++void __init bfin_cache_init(void)
++{
++#if defined(CONFIG_BFIN_DCACHE) || defined(CONFIG_BFIN_ICACHE)
++	generate_cplb_tables();
++#endif
++	bfin_setup_caches(0);
++}
++
+ void __init bfin_relocate_l1_mem(void)
+ {
+ 	unsigned long l1_code_length;
+@@ -230,7 +276,7 @@ static int __init sanitize_memmap(struct bfin_memmap_entry *map, int *pnr_map)
+ 	/* record all known change-points (starting and ending addresses),
+ 	   omitting those that are for empty memory regions */
+ 	chgidx = 0;
+-	for (i = 0; i < old_nr; i++)	{
++	for (i = 0; i < old_nr; i++) {
+ 		if (map[i].size != 0) {
+ 			change_point[chgidx]->addr = map[i].addr;
+ 			change_point[chgidx++]->pentry = &map[i];
+@@ -238,13 +284,13 @@ static int __init sanitize_memmap(struct bfin_memmap_entry *map, int *pnr_map)
+ 			change_point[chgidx++]->pentry = &map[i];
+ 		}
+ 	}
+-	chg_nr = chgidx;    	/* true number of change-points */
++	chg_nr = chgidx;	/* true number of change-points */
+ 
+ 	/* sort change-point list by memory addresses (low -> high) */
+ 	still_changing = 1;
+-	while (still_changing)	{
++	while (still_changing) {
+ 		still_changing = 0;
+-		for (i = 1; i < chg_nr; i++)  {
++		for (i = 1; i < chg_nr; i++) {
+ 			/* if <current_addr> > <last_addr>, swap */
+ 			/* or, if current=<start_addr> & last=<end_addr>, swap */
+ 			if ((change_point[i]->addr < change_point[i-1]->addr) ||
+@@ -261,10 +307,10 @@ static int __init sanitize_memmap(struct bfin_memmap_entry *map, int *pnr_map)
+ 	}
+ 
+ 	/* create a new memmap, removing overlaps */
+-	overlap_entries = 0;	 /* number of entries in the overlap table */
+-	new_entry = 0;	 /* index for creating new memmap entries */
+-	last_type = 0;		 /* start with undefined memory type */
+-	last_addr = 0;		 /* start with 0 as last starting address */
++	overlap_entries = 0;	/* number of entries in the overlap table */
++	new_entry = 0;		/* index for creating new memmap entries */
++	last_type = 0;		/* start with undefined memory type */
++	last_addr = 0;		/* start with 0 as last starting address */
+ 	/* loop through change-points, determining affect on the new memmap */
+ 	for (chgidx = 0; chgidx < chg_nr; chgidx++) {
+ 		/* keep track of all overlapping memmap entries */
+@@ -286,14 +332,14 @@ static int __init sanitize_memmap(struct bfin_memmap_entry *map, int *pnr_map)
+ 			if (overlap_list[i]->type > current_type)
+ 				current_type = overlap_list[i]->type;
+ 		/* continue building up new memmap based on this information */
+-		if (current_type != last_type)	{
++		if (current_type != last_type) {
+ 			if (last_type != 0) {
+ 				new_map[new_entry].size =
+ 					change_point[chgidx]->addr - last_addr;
+ 				/* move forward only if the new size was non-zero */
+ 				if (new_map[new_entry].size != 0)
+ 					if (++new_entry >= BFIN_MEMMAP_MAX)
+-						break; 	/* no more space left for new entries */
++						break;	/* no more space left for new entries */
+ 			}
+ 			if (current_type != 0) {
+ 				new_map[new_entry].addr = change_point[chgidx]->addr;
+@@ -303,9 +349,9 @@ static int __init sanitize_memmap(struct bfin_memmap_entry *map, int *pnr_map)
+ 			last_type = current_type;
+ 		}
+ 	}
+-	new_nr = new_entry;   /* retain count for new entries */
++	new_nr = new_entry;	/* retain count for new entries */
+ 
+-	/* copy new  mapping into original location */
++	/* copy new mapping into original location */
+ 	memcpy(map, new_map, new_nr*sizeof(struct bfin_memmap_entry));
+ 	*pnr_map = new_nr;
+ 
+@@ -361,7 +407,6 @@ static __init int parse_memmap(char *arg)
+  *  - "memmap=XXX[KkmM][@][$]XXX[KkmM]" defines a memory region
+  *       @ from <start> to <start>+<mem>, type RAM
+  *       $ from <start> to <start>+<mem>, type RESERVED
+- *
+  */
+ static __init void parse_cmdline_early(char *cmdline_p)
+ {
+@@ -383,12 +428,10 @@ static __init void parse_cmdline_early(char *cmdline_p)
+ 					if (*to != ' ') {
+ 						if (*to == '$'
+ 						    || *(to + 1) == '$')
+-							reserved_mem_dcache_on =
+-							    1;
++							reserved_mem_dcache_on = 1;
+ 						if (*to == '#'
+ 						    || *(to + 1) == '#')
+-							reserved_mem_icache_on =
+-							    1;
++							reserved_mem_icache_on = 1;
+ 					}
+ 				}
+ 			} else if (!memcmp(to, "earlyprintk=", 12)) {
+@@ -417,9 +460,8 @@ static __init void parse_cmdline_early(char *cmdline_p)
+  *	[_ramend - DMA_UNCACHED_REGION,
+  *		_ramend]:			uncached DMA region
+  *  [_ramend, physical_mem_end]:	memory not managed by kernel
+- *
+  */
+-static __init void  memory_setup(void)
++static __init void memory_setup(void)
+ {
+ #ifdef CONFIG_MTD_UCLINUX
+ 	unsigned long mtd_phys = 0;
+@@ -436,7 +478,7 @@ static __init void  memory_setup(void)
+ 	memory_end = _ramend - DMA_UNCACHED_REGION;
+ 
+ #ifdef CONFIG_MPU
+-	/* Round up to multiple of 4MB.  */
++	/* Round up to multiple of 4MB */
+ 	memory_start = (_ramstart + 0x3fffff) & ~0x3fffff;
  #else
- .bss
- #endif
--_exception_stack:
--	.rept 1024
-+ENTRY(_exception_stack)
-+	.rept 1024 * NR_CPUS
- 	.long 0
- 	.endr
- _exception_stack_top:
-diff --git a/arch/blackfin/mach-common/head.S b/arch/blackfin/mach-common/head.S
-index c1dcaeb..a621ae4 100644
---- a/arch/blackfin/mach-common/head.S
-+++ b/arch/blackfin/mach-common/head.S
-@@ -13,6 +13,7 @@
- #include <asm/blackfin.h>
- #include <asm/thread_info.h>
- #include <asm/trace.h>
-+#include <asm/asm-offsets.h>
+ 	memory_start = PAGE_ALIGN(_ramstart);
+@@ -616,7 +658,7 @@ static __init void setup_bootmem_allocator(void)
+ 	end_pfn = memory_end >> PAGE_SHIFT;
  
- __INIT
- 
-@@ -111,33 +112,26 @@ ENTRY(__start)
- 	 * This happens here, since L1 gets clobbered
- 	 * below
+ 	/*
+-	 * give all the memory to the bootmap allocator,  tell it to put the
++	 * give all the memory to the bootmap allocator, tell it to put the
+ 	 * boot mem_map at the start of memory.
  	 */
--	p0.l = _saved_retx;
--	p0.h = _saved_retx;
-+	GET_PDA(p0, r0);
-+	r7 = [p0 + PDA_RETX];
- 	p1.l = _init_saved_retx;
- 	p1.h = _init_saved_retx;
--	r0 = [p0];
--	[p1] = r0;
-+	[p1] = r7;
- 
--	p0.l = _saved_dcplb_fault_addr;
--	p0.h = _saved_dcplb_fault_addr;
-+	r7 = [p0 + PDA_DCPLB];
- 	p1.l = _init_saved_dcplb_fault_addr;
- 	p1.h = _init_saved_dcplb_fault_addr;
--	r0 = [p0];
--	[p1] = r0;
-+	[p1] = r7;
- 
--	p0.l = _saved_icplb_fault_addr;
--	p0.h = _saved_icplb_fault_addr;
-+	r7 = [p0 + PDA_ICPLB];
- 	p1.l = _init_saved_icplb_fault_addr;
- 	p1.h = _init_saved_icplb_fault_addr;
--	r0 = [p0];
--	[p1] = r0;
-+	[p1] = r7;
- 
--	p0.l = _saved_seqstat;
--	p0.h = _saved_seqstat;
-+	r7 = [p0 + PDA_SEQSTAT];
- 	p1.l = _init_saved_seqstat;
- 	p1.h = _init_saved_seqstat;
--	r0 = [p0];
--	[p1] = r0;
-+	[p1] = r7;
+ 	bootmap_size = init_bootmem_node(NODE_DATA(0),
+@@ -791,7 +833,11 @@ void __init setup_arch(char **cmdline_p)
+ 	bfin_write_SWRST(_bfin_swrst | DOUBLE_FAULT);
  #endif
  
- 	/* Initialize stack pointer */
-@@ -255,6 +249,9 @@ ENTRY(_real_start)
- 	sp = sp + p1;
- 	usp = sp;
- 	fp = sp;
-+	sp += -12;
-+	call _init_pda
-+	sp += 12;
- 	jump.l _start_kernel;
- ENDPROC(_real_start)
- 
-diff --git a/arch/blackfin/mach-common/ints-priority.c b/arch/blackfin/mach-common/ints-priority.c
-index d45d0c5..eb8dfcf 100644
---- a/arch/blackfin/mach-common/ints-priority.c
-+++ b/arch/blackfin/mach-common/ints-priority.c
-@@ -55,6 +55,7 @@
-  * -
-  */
- 
-+#ifndef CONFIG_SMP
- /* Initialize this to an actual value to force it into the .data
-  * section so that we know it is properly initialized at entry into
-  * the kernel but before bss is initialized to zero (which is where
-@@ -63,6 +64,7 @@
-  */
- unsigned long irq_flags = 0x1f;
- EXPORT_SYMBOL(irq_flags);
-+#endif
- 
- /* The number of spurious interrupts */
- atomic_t num_spurious;
-@@ -163,6 +165,10 @@ static void bfin_internal_mask_irq(unsigned int irq)
- 	mask_bit = SIC_SYSIRQ(irq) % 32;
- 	bfin_write_SIC_IMASK(mask_bank, bfin_read_SIC_IMASK(mask_bank) &
- 			     ~(1 << mask_bit));
 +#ifdef CONFIG_SMP
-+	bfin_write_SICB_IMASK(mask_bank, bfin_read_SICB_IMASK(mask_bank) &
-+			     ~(1 << mask_bit));
++	if (_bfin_swrst & SWRST_DBL_FAULT_A) {
++#else
+ 	if (_bfin_swrst & RESET_DOUBLE) {
 +#endif
- #endif
+ 		printk(KERN_EMERG "Recovering from DOUBLE FAULT event\n");
+ #ifdef CONFIG_DEBUG_DOUBLEFAULT
+ 		/* We assume the crashing kernel, and the current symbol table match */
+@@ -835,7 +881,7 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Blackfin Linux support by http://blackfin.uclinux.org/\n");
+ 
+ 	printk(KERN_INFO "Processor Speed: %lu MHz core clock and %lu MHz System Clock\n",
+-	       cclk / 1000000,  sclk / 1000000);
++	       cclk / 1000000, sclk / 1000000);
+ 
+ 	if (ANOMALY_05000273 && (cclk >> 1) <= sclk)
+ 		printk("\n\n\nANOMALY_05000273: CCLK must be >= 2*SCLK !!!\n\n\n");
+@@ -867,18 +913,21 @@ void __init setup_arch(char **cmdline_p)
+ 	BUG_ON((char *)&safe_user_instruction - (char *)&fixed_code_start
+ 		!= SAFE_USER_INSTRUCTION - FIXED_CODE_START);
+ 
++#ifdef CONFIG_SMP
++	platform_init_cpus();
++#endif
+ 	init_exception_vectors();
+-	bfin_cache_init();
++	bfin_cache_init();	/* Initialize caches for the boot CPU */
  }
  
-@@ -177,6 +183,10 @@ static void bfin_internal_unmask_irq(unsigned int irq)
- 	mask_bit = SIC_SYSIRQ(irq) % 32;
- 	bfin_write_SIC_IMASK(mask_bank, bfin_read_SIC_IMASK(mask_bank) |
- 			     (1 << mask_bit));
-+#ifdef CONFIG_SMP
-+	bfin_write_SICB_IMASK(mask_bank, bfin_read_SICB_IMASK(mask_bank) |
-+			     (1 << mask_bit));
-+#endif
- #endif
- }
+ static int __init topology_init(void)
+ {
+-	int cpu;
++	unsigned int cpu;
++	/* Record CPU-private information for the boot processor. */
++	bfin_setup_cpudata(0);
  
-@@ -896,7 +906,7 @@ static struct irq_chip bfin_gpio_irqchip = {
+ 	for_each_possible_cpu(cpu) {
+-		struct cpu *c = &per_cpu(cpu_devices, cpu);
+-
+-		register_cpu(c, cpu);
++		register_cpu(&per_cpu(cpu_data, cpu).cpu, cpu);
+ 	}
+ 
+ 	return 0;
+@@ -983,15 +1032,15 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	char *cpu, *mmu, *fpu, *vendor, *cache;
+ 	uint32_t revid;
+ 
+-	u_long cclk = 0, sclk = 0;
++	u_long sclk = 0;
+ 	u_int icache_size = BFIN_ICACHESIZE / 1024, dcache_size = 0, dsup_banks = 0;
++	struct blackfin_cpudata *cpudata = &per_cpu(cpu_data, *(unsigned int *)v);
+ 
+ 	cpu = CPU;
+ 	mmu = "none";
+ 	fpu = "none";
+ 	revid = bfin_revid();
+ 
+-	cclk = get_cclk();
+ 	sclk = get_sclk();
+ 
+ 	switch (bfin_read_CHIPID() & CHIPID_MANUFACTURE) {
+@@ -1003,10 +1052,8 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		break;
+ 	}
+ 
+-	seq_printf(m, "processor\t: %d\n"
+-		"vendor_id\t: %s\n",
+-		*(unsigned int *)v,
+-		vendor);
++	seq_printf(m, "processor\t: %d\n" "vendor_id\t: %s\n",
++		*(unsigned int *)v, vendor);
+ 
+ 	if (CPUID == bfin_cpuid())
+ 		seq_printf(m, "cpu family\t: 0x%04x\n", CPUID);
+@@ -1016,7 +1063,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 
+ 	seq_printf(m, "model name\t: ADSP-%s %lu(MHz CCLK) %lu(MHz SCLK) (%s)\n"
+ 		"stepping\t: %d\n",
+-		cpu, cclk/1000000, sclk/1000000,
++		cpu, cpudata->cclk/1000000, sclk/1000000,
+ #ifdef CONFIG_MPU
+ 		"mpu on",
+ #else
+@@ -1025,16 +1072,16 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		revid);
+ 
+ 	seq_printf(m, "cpu MHz\t\t: %lu.%03lu/%lu.%03lu\n",
+-		cclk/1000000, cclk%1000000,
++		cpudata->cclk/1000000, cpudata->cclk%1000000,
+ 		sclk/1000000, sclk%1000000);
+ 	seq_printf(m, "bogomips\t: %lu.%02lu\n"
+ 		"Calibration\t: %lu loops\n",
+-		(loops_per_jiffy * HZ) / 500000,
+-		((loops_per_jiffy * HZ) / 5000) % 100,
+-		(loops_per_jiffy * HZ));
++		(cpudata->loops_per_jiffy * HZ) / 500000,
++		((cpudata->loops_per_jiffy * HZ) / 5000) % 100,
++		(cpudata->loops_per_jiffy * HZ));
+ 
+ 	/* Check Cache configutation */
+-	switch (bfin_read_DMEM_CONTROL() & (1 << DMC0_P | 1 << DMC1_P)) {
++	switch (cpudata->dmemctl & (1 << DMC0_P | 1 << DMC1_P)) {
+ 	case ACACHE_BSRAM:
+ 		cache = "dbank-A/B\t: cache/sram";
+ 		dcache_size = 16;
+@@ -1058,10 +1105,10 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	}
+ 
+ 	/* Is it turned on? */
+-	if ((bfin_read_DMEM_CONTROL() & (ENDCPLB | DMC_ENABLE)) != (ENDCPLB | DMC_ENABLE))
++	if ((cpudata->dmemctl & (ENDCPLB | DMC_ENABLE)) != (ENDCPLB | DMC_ENABLE))
+ 		dcache_size = 0;
+ 
+-	if ((bfin_read_IMEM_CONTROL() & (IMC | ENICPLB)) != (IMC | ENICPLB))
++	if ((cpudata->imemctl & (IMC | ENICPLB)) != (IMC | ENICPLB))
+ 		icache_size = 0;
+ 
+ 	seq_printf(m, "cache size\t: %d KB(L1 icache) "
+@@ -1086,8 +1133,13 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		   "dcache setup\t: %d Super-banks/%d Sub-banks/%d Ways, %d Lines/Way\n",
+ 		   dsup_banks, BFIN_DSUBBANKS, BFIN_DWAYS,
+ 		   BFIN_DLINES);
++#ifdef __ARCH_SYNC_CORE_DCACHE
++	seq_printf(m,
++		"SMP Dcache Flushes\t: %lu\n\n",
++		per_cpu(cpu_data, *(unsigned int *)v).dcache_invld_count);
++#endif
+ #ifdef CONFIG_BFIN_ICACHE_LOCK
+-	switch ((bfin_read_IMEM_CONTROL() >> 3) & WAYALL_L) {
++	switch ((cpudata->imemctl >> 3) & WAYALL_L) {
+ 	case WAY0_L:
+ 		seq_printf(m, "Way0 Locked-Down\n");
+ 		break;
+@@ -1137,6 +1189,12 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		seq_printf(m, "No Ways are locked\n");
+ 	}
  #endif
++	if (*(unsigned int *)v != NR_CPUS-1)
++		return 0;
++
++#if L2_LENGTH
++	seq_printf(m, "L2 SRAM\t\t: %dKB\n", L2_LENGTH/0x400);
++#endif
+ 	seq_printf(m, "board name\t: %s\n", bfin_board_name);
+ 	seq_printf(m, "board memory\t: %ld kB (0x%p -> 0x%p)\n",
+ 		 physical_mem_end >> 10, (void *)0, (void *)physical_mem_end);
+@@ -1144,6 +1202,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		((int)memory_end - (int)_stext) >> 10,
+ 		_stext,
+ 		(void *)memory_end);
++	seq_printf(m, "\n");
+ 
+ 	return 0;
+ }
+diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
+index eb23523..06de2ce 100644
+--- a/arch/blackfin/kernel/time.c
++++ b/arch/blackfin/kernel/time.c
+@@ -34,9 +34,11 @@
+ #include <linux/interrupt.h>
+ #include <linux/time.h>
+ #include <linux/irq.h>
++#include <linux/delay.h>
+ 
+ #include <asm/blackfin.h>
+ #include <asm/time.h>
++#include <asm/gptimers.h>
+ 
+ /* This is an NTP setting */
+ #define	TICK_SIZE (tick_nsec / 1000)
+@@ -46,11 +48,14 @@ static unsigned long gettimeoffset(void);
+ 
+ static struct irqaction bfin_timer_irq = {
+ 	.name = "BFIN Timer Tick",
++#ifdef CONFIG_IRQ_PER_CPU
++	.flags = IRQF_DISABLED  | IRQF_PERCPU,
++#else
+ 	.flags = IRQF_DISABLED
++#endif
  };
  
--void __init init_exception_vectors(void)
-+void __cpuinit init_exception_vectors(void)
+-static void
+-time_sched_init(irq_handler_t timer_routine)
++void setup_core_timer(void)
  {
- 	/* cannot program in software:
- 	 * evt0 - emulation (jtag)
-@@ -935,6 +945,10 @@ int __init init_arch_irq(void)
- # ifdef CONFIG_BF54x
- 	bfin_write_SIC_IMASK2(SIC_UNMASK_ALL);
- # endif
-+# ifdef CONFIG_SMP
-+	bfin_write_SICB_IMASK0(SIC_UNMASK_ALL);
-+	bfin_write_SICB_IMASK1(SIC_UNMASK_ALL);
-+# endif
- #else
- 	bfin_write_SIC_IMASK(SIC_UNMASK_ALL);
- #endif
-@@ -995,6 +1009,17 @@ int __init init_arch_irq(void)
+ 	u32 tcount;
  
- 			break;
- #endif
-+#ifdef CONFIG_TICK_SOURCE_SYSTMR0
-+		case IRQ_TIMER0:
-+			set_irq_handler(irq, handle_percpu_irq);
-+			break;
-+#endif
-+#ifdef CONFIG_SMP
-+		case IRQ_SUPPLE_0:
-+		case IRQ_SUPPLE_1:
-+			set_irq_handler(irq, handle_percpu_irq);
-+			break;
-+#endif
- 		default:
- 			set_irq_handler(irq, handle_simple_irq);
- 			break;
-@@ -1029,7 +1054,7 @@ int __init init_arch_irq(void)
- 	search_IAR();
+@@ -71,12 +76,41 @@ time_sched_init(irq_handler_t timer_routine)
+ 	CSYNC();
  
- 	/* Enable interrupts IVG7-15 */
--	irq_flags = irq_flags | IMASK_IVG15 |
-+	irq_flags |= IMASK_IVG15 |
- 	    IMASK_IVG14 | IMASK_IVG13 | IMASK_IVG12 | IMASK_IVG11 |
- 	    IMASK_IVG10 | IMASK_IVG9 | IMASK_IVG8 | IMASK_IVG7 | IMASK_IVGHW;
- 
-@@ -1070,8 +1095,16 @@ void do_irq(int vec, struct pt_regs *fp)
- 	|| defined(BF538_FAMILY) || defined(CONFIG_BF51x)
- 		unsigned long sic_status[3];
- 
--		sic_status[0] = bfin_read_SIC_ISR0() & bfin_read_SIC_IMASK0();
--		sic_status[1] = bfin_read_SIC_ISR1() & bfin_read_SIC_IMASK1();
-+		if (smp_processor_id()) {
-+#ifdef CONFIG_SMP
-+			/* This will be optimized out in UP mode. */
-+			sic_status[0] = bfin_read_SICB_ISR0() & bfin_read_SICB_IMASK0();
-+			sic_status[1] = bfin_read_SICB_ISR1() & bfin_read_SICB_IMASK1();
-+#endif
-+		} else {
-+			sic_status[0] = bfin_read_SIC_ISR0() & bfin_read_SIC_IMASK0();
-+			sic_status[1] = bfin_read_SIC_ISR1() & bfin_read_SIC_IMASK1();
-+		}
- #ifdef CONFIG_BF54x
- 		sic_status[2] = bfin_read_SIC_ISR2() & bfin_read_SIC_IMASK2();
- #endif
-diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
-new file mode 100644
-index 0000000..7aeeced
---- /dev/null
-+++ b/arch/blackfin/mach-common/smp.c
-@@ -0,0 +1,476 @@
-+/*
-+ * File:         arch/blackfin/kernel/smp.c
-+ * Author:       Philippe Gerum <rpm@xenomai.org>
-+ * IPI management based on arch/arm/kernel/smp.c.
-+ *
-+ *               Copyright 2007 Analog Devices Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/spinlock.h>
-+#include <linux/sched.h>
-+#include <linux/interrupt.h>
-+#include <linux/cache.h>
-+#include <linux/profile.h>
-+#include <linux/errno.h>
-+#include <linux/mm.h>
-+#include <linux/cpu.h>
-+#include <linux/smp.h>
-+#include <linux/seq_file.h>
-+#include <linux/irq.h>
-+#include <asm/atomic.h>
-+#include <asm/cacheflush.h>
-+#include <asm/mmu_context.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+#include <asm/processor.h>
-+#include <asm/ptrace.h>
-+#include <asm/cpu.h>
-+#include <linux/err.h>
-+
-+struct corelock_slot corelock __attribute__ ((__section__(".l2.bss")));
-+
-+void __cpuinitdata *init_retx_coreb, *init_saved_retx_coreb,
-+	*init_saved_seqstat_coreb, *init_saved_icplb_fault_addr_coreb,
-+	*init_saved_dcplb_fault_addr_coreb;
-+
-+cpumask_t cpu_possible_map;
-+EXPORT_SYMBOL(cpu_possible_map);
-+
-+cpumask_t cpu_online_map;
-+EXPORT_SYMBOL(cpu_online_map);
-+
-+#define BFIN_IPI_RESCHEDULE   0
-+#define BFIN_IPI_CALL_FUNC    1
-+#define BFIN_IPI_CPU_STOP     2
-+
-+struct blackfin_flush_data {
-+	unsigned long start;
-+	unsigned long end;
-+};
-+
-+void *secondary_stack;
-+
-+
-+struct smp_call_struct {
-+	void (*func)(void *info);
-+	void *info;
-+	int wait;
-+	cpumask_t pending;
-+	cpumask_t waitmask;
-+};
-+
-+static struct blackfin_flush_data smp_flush_data;
-+
-+static DEFINE_SPINLOCK(stop_lock);
-+
-+struct ipi_message {
-+	struct list_head list;
-+	unsigned long type;
-+	struct smp_call_struct call_struct;
-+};
-+
-+struct ipi_message_queue {
-+	struct list_head head;
-+	spinlock_t lock;
-+	unsigned long count;
-+};
-+
-+static DEFINE_PER_CPU(struct ipi_message_queue, ipi_msg_queue);
-+
-+static void ipi_cpu_stop(unsigned int cpu)
-+{
-+	spin_lock(&stop_lock);
-+	printk(KERN_CRIT "CPU%u: stopping\n", cpu);
-+	dump_stack();
-+	spin_unlock(&stop_lock);
-+
-+	cpu_clear(cpu, cpu_online_map);
-+
-+	local_irq_disable();
-+
-+	while (1)
-+		SSYNC();
+ 	bfin_write_TCNTL(7);
 +}
-+
-+static void ipi_flush_icache(void *info)
-+{
-+	struct blackfin_flush_data *fdata = info;
-+
-+	/* Invalidate the memory holding the bounds of the flushed region. */
-+	blackfin_dcache_invalidate_range((unsigned long)fdata,
-+					 (unsigned long)fdata + sizeof(*fdata));
-+
-+	blackfin_icache_flush_range(fdata->start, fdata->end);
-+}
-+
-+static void ipi_call_function(unsigned int cpu, struct ipi_message *msg)
-+{
-+	int wait;
-+	void (*func)(void *info);
-+	void *info;
-+	func = msg->call_struct.func;
-+	info = msg->call_struct.info;
-+	wait = msg->call_struct.wait;
-+	cpu_clear(cpu, msg->call_struct.pending);
-+	func(info);
-+	if (wait)
-+		cpu_clear(cpu, msg->call_struct.waitmask);
-+	else
-+		kfree(msg);
-+}
-+
-+static irqreturn_t ipi_handler(int irq, void *dev_instance)
-+{
-+	struct ipi_message *msg, *mg;
-+	struct ipi_message_queue *msg_queue;
-+	unsigned int cpu = smp_processor_id();
-+
-+	platform_clear_ipi(cpu);
-+
-+	msg_queue = &__get_cpu_var(ipi_msg_queue);
-+	msg_queue->count++;
-+
-+	spin_lock(&msg_queue->lock);
-+	list_for_each_entry_safe(msg, mg, &msg_queue->head, list) {
-+		list_del(&msg->list);
-+		switch (msg->type) {
-+		case BFIN_IPI_RESCHEDULE:
-+			/* That's the easiest one; leave it to
-+			 * return_from_int. */
-+			kfree(msg);
-+			break;
-+		case BFIN_IPI_CALL_FUNC:
-+			ipi_call_function(cpu, msg);
-+			break;
-+		case BFIN_IPI_CPU_STOP:
-+			ipi_cpu_stop(cpu);
-+			kfree(msg);
-+			break;
-+		default:
-+			printk(KERN_CRIT "CPU%u: Unknown IPI message \
-+			0x%lx\n", cpu, msg->type);
-+			kfree(msg);
-+			break;
-+		}
-+	}
-+	spin_unlock(&msg_queue->lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static void ipi_queue_init(void)
-+{
-+	unsigned int cpu;
-+	struct ipi_message_queue *msg_queue;
-+	for_each_possible_cpu(cpu) {
-+		msg_queue = &per_cpu(ipi_msg_queue, cpu);
-+		INIT_LIST_HEAD(&msg_queue->head);
-+		spin_lock_init(&msg_queue->lock);
-+		msg_queue->count = 0;
-+	}
-+}
-+
-+int smp_call_function(void (*func)(void *info), void *info, int wait)
-+{
-+	unsigned int cpu;
-+	cpumask_t callmap;
-+	unsigned long flags;
-+	struct ipi_message_queue *msg_queue;
-+	struct ipi_message *msg;
-+
-+	callmap = cpu_online_map;
-+	cpu_clear(smp_processor_id(), callmap);
-+	if (cpus_empty(callmap))
-+		return 0;
-+
-+	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	INIT_LIST_HEAD(&msg->list);
-+	msg->call_struct.func = func;
-+	msg->call_struct.info = info;
-+	msg->call_struct.wait = wait;
-+	msg->call_struct.pending = callmap;
-+	msg->call_struct.waitmask = callmap;
-+	msg->type = BFIN_IPI_CALL_FUNC;
-+
-+	for_each_cpu_mask(cpu, callmap) {
-+		msg_queue = &per_cpu(ipi_msg_queue, cpu);
-+		spin_lock_irqsave(&msg_queue->lock, flags);
-+		list_add(&msg->list, &msg_queue->head);
-+		spin_unlock_irqrestore(&msg_queue->lock, flags);
-+		platform_send_ipi_cpu(cpu);
-+	}
-+	if (wait) {
-+		while (!cpus_empty(msg->call_struct.waitmask))
-+			blackfin_dcache_invalidate_range(
-+				(unsigned long)(&msg->call_struct.waitmask),
-+				(unsigned long)(&msg->call_struct.waitmask));
-+		kfree(msg);
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(smp_call_function);
-+
-+int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
-+				int wait)
-+{
-+	unsigned int cpu = cpuid;
-+	cpumask_t callmap;
-+	unsigned long flags;
-+	struct ipi_message_queue *msg_queue;
-+	struct ipi_message *msg;
-+
-+	if (cpu_is_offline(cpu))
-+		return 0;
-+	cpus_clear(callmap);
-+	cpu_set(cpu, callmap);
-+
-+	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	INIT_LIST_HEAD(&msg->list);
-+	msg->call_struct.func = func;
-+	msg->call_struct.info = info;
-+	msg->call_struct.wait = wait;
-+	msg->call_struct.pending = callmap;
-+	msg->call_struct.waitmask = callmap;
-+	msg->type = BFIN_IPI_CALL_FUNC;
-+
-+	msg_queue = &per_cpu(ipi_msg_queue, cpu);
-+	spin_lock_irqsave(&msg_queue->lock, flags);
-+	list_add(&msg->list, &msg_queue->head);
-+	spin_unlock_irqrestore(&msg_queue->lock, flags);
-+	platform_send_ipi_cpu(cpu);
-+
-+	if (wait) {
-+		while (!cpus_empty(msg->call_struct.waitmask))
-+			blackfin_dcache_invalidate_range(
-+				(unsigned long)(&msg->call_struct.waitmask),
-+				(unsigned long)(&msg->call_struct.waitmask));
-+		kfree(msg);
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(smp_call_function_single);
-+
-+void smp_send_reschedule(int cpu)
-+{
-+	unsigned long flags;
-+	struct ipi_message_queue *msg_queue;
-+	struct ipi_message *msg;
-+
-+	if (cpu_is_offline(cpu))
-+		return;
-+
-+	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	memset(msg, 0, sizeof(msg));
-+	INIT_LIST_HEAD(&msg->list);
-+	msg->type = BFIN_IPI_RESCHEDULE;
-+
-+	msg_queue = &per_cpu(ipi_msg_queue, cpu);
-+	spin_lock_irqsave(&msg_queue->lock, flags);
-+	list_add(&msg->list, &msg_queue->head);
-+	spin_unlock_irqrestore(&msg_queue->lock, flags);
-+	platform_send_ipi_cpu(cpu);
-+
-+	return;
-+}
-+
-+void smp_send_stop(void)
-+{
-+	unsigned int cpu;
-+	cpumask_t callmap;
-+	unsigned long flags;
-+	struct ipi_message_queue *msg_queue;
-+	struct ipi_message *msg;
-+
-+	callmap = cpu_online_map;
-+	cpu_clear(smp_processor_id(), callmap);
-+	if (cpus_empty(callmap))
-+		return;
-+
-+	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	memset(msg, 0, sizeof(msg));
-+	INIT_LIST_HEAD(&msg->list);
-+	msg->type = BFIN_IPI_CPU_STOP;
-+
-+	for_each_cpu_mask(cpu, callmap) {
-+		msg_queue = &per_cpu(ipi_msg_queue, cpu);
-+		spin_lock_irqsave(&msg_queue->lock, flags);
-+		list_add(&msg->list, &msg_queue->head);
-+		spin_unlock_irqrestore(&msg_queue->lock, flags);
-+		platform_send_ipi_cpu(cpu);
-+	}
-+	return;
-+}
-+
-+int __cpuinit __cpu_up(unsigned int cpu)
-+{
-+	struct task_struct *idle;
-+	int ret;
-+
-+	idle = fork_idle(cpu);
-+	if (IS_ERR(idle)) {
-+		printk(KERN_ERR "CPU%u: fork() failed\n", cpu);
-+		return PTR_ERR(idle);
-+	}
-+
-+	secondary_stack = task_stack_page(idle) + THREAD_SIZE;
-+	smp_wmb();
-+
-+	ret = platform_boot_secondary(cpu, idle);
-+
-+	if (ret) {
-+		cpu_clear(cpu, cpu_present_map);
-+		printk(KERN_CRIT "CPU%u: processor failed to boot (%d)\n", cpu, ret);
-+		free_task(idle);
-+	} else
-+		cpu_set(cpu, cpu_online_map);
-+
-+	secondary_stack = NULL;
-+
-+	return ret;
-+}
-+
-+static void __cpuinit setup_secondary(unsigned int cpu)
-+{
-+#ifndef CONFIG_TICK_SOURCE_SYSTMR0
-+	struct irq_desc *timer_desc;
-+#endif
-+	unsigned long ilat;
-+
-+	bfin_write_IMASK(0);
-+	CSYNC();
-+	ilat = bfin_read_ILAT();
-+	CSYNC();
-+	bfin_write_ILAT(ilat);
-+	CSYNC();
-+
-+	/* Reserve the PDA space for the secondary CPU. */
-+	reserve_pda();
-+
-+	/* Enable interrupt levels IVG7-15. IARs have been already
-+	 * programmed by the boot CPU.  */
-+	irq_flags |= IMASK_IVG15 |
-+	    IMASK_IVG14 | IMASK_IVG13 | IMASK_IVG12 | IMASK_IVG11 |
-+	    IMASK_IVG10 | IMASK_IVG9 | IMASK_IVG8 | IMASK_IVG7 | IMASK_IVGHW;
 +
 +#ifdef CONFIG_TICK_SOURCE_SYSTMR0
++void setup_system_timer0(void)
++{
 +	/* Power down the core timer, just to play safe. */
 +	bfin_write_TCNTL(0);
 +
-+	/* system timer0 has been setup by CoreA. */
++	disable_gptimers(TIMER0bit);
++	set_gptimer_status(0, TIMER_STATUS_TRUN0);
++	while (get_gptimer_status(0) & TIMER_STATUS_TRUN0)
++		udelay(10);
++
++	set_gptimer_config(0, 0x59); /* IRQ enable, periodic, PWM_OUT, SCLKed, OUT PAD disabled */
++	set_gptimer_period(TIMER0_id, get_sclk() / HZ);
++	set_gptimer_pwidth(TIMER0_id, 1);
++	SSYNC();
++	enable_gptimers(TIMER0bit);
++}
++#endif
+ 
++static void
++time_sched_init(irqreturn_t(*timer_routine) (int, void *))
++{
++#ifdef CONFIG_TICK_SOURCE_SYSTMR0
++	setup_system_timer0();
 +#else
-+	timer_desc = irq_desc + IRQ_CORETMR;
 +	setup_core_timer();
-+	timer_desc->chip->enable(IRQ_CORETMR);
 +#endif
-+}
+ 	bfin_timer_irq.handler = (irq_handler_t)timer_routine;
+-	/* call setup_irq instead of request_irq because request_irq calls
+-	 * kmalloc which has not been initialized yet
+-	 */
++#ifdef CONFIG_TICK_SOURCE_SYSTMR0
++	setup_irq(IRQ_TIMER0, &bfin_timer_irq);
++#else
+ 	setup_irq(IRQ_CORETMR, &bfin_timer_irq);
++#endif
+ }
+ 
+ /*
+@@ -87,17 +121,23 @@ static unsigned long gettimeoffset(void)
+ 	unsigned long offset;
+ 	unsigned long clocks_per_jiffy;
+ 
++#ifdef CONFIG_TICK_SOURCE_SYSTMR0
++	clocks_per_jiffy =  bfin_read_TIMER0_PERIOD();
++	offset =  bfin_read_TIMER0_COUNTER() / \
++		(((clocks_per_jiffy + 1) * HZ) / USEC_PER_SEC);
 +
-+void __cpuinit secondary_start_kernel(void)
-+{
++	if ((get_gptimer_status(0) & TIMER_STATUS_TIMIL0) && offset < (100000 / HZ / 2))
++		offset += (USEC_PER_SEC / HZ);
++#else
+ 	clocks_per_jiffy = bfin_read_TPERIOD();
+-	offset =
+-	    (clocks_per_jiffy -
+-	     bfin_read_TCOUNT()) / (((clocks_per_jiffy + 1) * HZ) /
+-				    USEC_PER_SEC);
++	offset = (clocks_per_jiffy - bfin_read_TCOUNT()) / \
++		(((clocks_per_jiffy + 1) * HZ)  / USEC_PER_SEC);
+ 
+ 	/* Check if we just wrapped the counters and maybe missed a tick */
+ 	if ((bfin_read_ILAT() & (1 << IRQ_CORETMR))
+-	    && (offset < (100000 / HZ / 2)))
++		&& (offset < (100000 / HZ / 2)))
+ 		offset += (USEC_PER_SEC / HZ);
+-
++#endif
+ 	return offset;
+ }
+ 
+@@ -120,34 +160,38 @@ irqreturn_t timer_interrupt(int irq, void *dummy)
+ 	static long last_rtc_update;
+ 
+ 	write_seqlock(&xtime_lock);
+-
+-	do_timer(1);
+-
+-	profile_tick(CPU_PROFILING);
+-
+-	/*
+-	 * If we have an externally synchronized Linux clock, then update
+-	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
+-	 * called as close as possible to 500 ms before the new second starts.
+-	 */
+-
+-	if (ntp_synced() &&
+-	    xtime.tv_sec > last_rtc_update + 660 &&
+-	    (xtime.tv_nsec / NSEC_PER_USEC) >=
+-	    500000 - ((unsigned)TICK_SIZE) / 2
+-	    && (xtime.tv_nsec / NSEC_PER_USEC) <=
+-	    500000 + ((unsigned)TICK_SIZE) / 2) {
+-		if (set_rtc_mmss(xtime.tv_sec) == 0)
+-			last_rtc_update = xtime.tv_sec;
+-		else
+-			/* Do it again in 60s. */
+-			last_rtc_update = xtime.tv_sec - 600;
++#ifdef CONFIG_TICK_SOURCE_SYSTMR0
++	if (get_gptimer_status(0) & TIMER_STATUS_TIMIL0) {
++#endif
++		do_timer(1);
++
++
++		/*
++		 * If we have an externally synchronized Linux clock, then update
++		 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
++		 * called as close as possible to 500 ms before the new second starts.
++		 */
++
++		if (ntp_synced() &&
++		    xtime.tv_sec > last_rtc_update + 660 &&
++		    (xtime.tv_nsec / NSEC_PER_USEC) >=
++		    500000 - ((unsigned)TICK_SIZE) / 2
++		    && (xtime.tv_nsec / NSEC_PER_USEC) <=
++		    500000 + ((unsigned)TICK_SIZE) / 2) {
++			if (set_rtc_mmss(xtime.tv_sec) == 0)
++				last_rtc_update = xtime.tv_sec;
++			else
++				/* Do it again in 60s. */
++				last_rtc_update = xtime.tv_sec - 600;
++		}
++#ifdef CONFIG_TICK_SOURCE_SYSTMR0
++		set_gptimer_status(0, TIMER_STATUS_TIMIL0);
+ 	}
++#endif
+ 	write_sequnlock(&xtime_lock);
+ 
+-#ifndef CONFIG_SMP
+ 	update_process_times(user_mode(get_irq_regs()));
+-#endif
++	profile_tick(CPU_PROFILING);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
+index bef025b..af7cc43 100644
+--- a/arch/blackfin/kernel/traps.c
++++ b/arch/blackfin/kernel/traps.c
+@@ -75,16 +75,6 @@ void __init trap_init(void)
+ 	CSYNC();
+ }
+ 
+-/*
+- * Used to save the RETX, SEQSTAT, I/D CPLB FAULT ADDR
+- * values across the transition from exception to IRQ5.
+- * We put these in L1, so they are going to be in a valid
+- * location during exception context
+- */
+-__attribute__((l1_data))
+-unsigned long saved_retx, saved_seqstat,
+-	saved_icplb_fault_addr, saved_dcplb_fault_addr;
+-
+ static void decode_address(char *buf, unsigned long address)
+ {
+ #ifdef CONFIG_DEBUG_VERBOSE
+@@ -211,18 +201,18 @@ asmlinkage void double_fault_c(struct pt_regs *fp)
+ 	printk(KERN_EMERG "\n" KERN_EMERG "Double Fault\n");
+ #ifdef CONFIG_DEBUG_DOUBLEFAULT_PRINT
+ 	if (((long)fp->seqstat &  SEQSTAT_EXCAUSE) == VEC_UNCOV) {
++		unsigned int cpu = smp_processor_id();
+ 		char buf[150];
+-		decode_address(buf, saved_retx);
++		decode_address(buf, cpu_pda[cpu].retx);
+ 		printk(KERN_EMERG "While handling exception (EXCAUSE = 0x%x) at %s:\n",
+-			(int)saved_seqstat & SEQSTAT_EXCAUSE, buf);
+-		decode_address(buf, saved_dcplb_fault_addr);
++			(unsigned int)cpu_pda[cpu].seqstat & SEQSTAT_EXCAUSE, buf);
++		decode_address(buf, cpu_pda[cpu].dcplb_fault_addr);
+ 		printk(KERN_NOTICE "   DCPLB_FAULT_ADDR: %s\n", buf);
+-		decode_address(buf, saved_icplb_fault_addr);
++		decode_address(buf, cpu_pda[cpu].icplb_fault_addr);
+ 		printk(KERN_NOTICE "   ICPLB_FAULT_ADDR: %s\n", buf);
+ 
+ 		decode_address(buf, fp->retx);
+-		printk(KERN_NOTICE "The instruction at %s caused a double exception\n",
+-			buf);
++		printk(KERN_NOTICE "The instruction at %s caused a double exception\n", buf);
+ 	} else
+ #endif
+ 	{
+@@ -240,6 +230,9 @@ asmlinkage void trap_c(struct pt_regs *fp)
+ #ifdef CONFIG_DEBUG_BFIN_HWTRACE_ON
+ 	int j;
+ #endif
++#ifdef CONFIG_DEBUG_HUNT_FOR_ZERO
 +	unsigned int cpu = smp_processor_id();
-+	struct mm_struct *mm = &init_mm;
-+
-+	if (_bfin_swrst & SWRST_DBL_FAULT_B) {
-+		printk(KERN_EMERG "CoreB Recovering from DOUBLE FAULT event\n");
-+#ifdef CONFIG_DEBUG_DOUBLEFAULT
-+		printk(KERN_EMERG " While handling exception (EXCAUSE = 0x%x) at %pF\n",
-+			(int)init_saved_seqstat_coreb & SEQSTAT_EXCAUSE, init_saved_retx_coreb);
-+		printk(KERN_NOTICE "   DCPLB_FAULT_ADDR: %pF\n", init_saved_dcplb_fault_addr_coreb);
-+		printk(KERN_NOTICE "   ICPLB_FAULT_ADDR: %pF\n", init_saved_icplb_fault_addr_coreb);
 +#endif
-+		printk(KERN_NOTICE " The instruction at %pF caused a double exception\n",
-+			init_retx_coreb);
-+	}
+ 	int sig = 0;
+ 	siginfo_t info;
+ 	unsigned long trapnr = fp->seqstat & SEQSTAT_EXCAUSE;
+@@ -417,7 +410,7 @@ asmlinkage void trap_c(struct pt_regs *fp)
+ 		info.si_code = ILL_CPLB_MULHIT;
+ 		sig = SIGSEGV;
+ #ifdef CONFIG_DEBUG_HUNT_FOR_ZERO
+-		if (saved_dcplb_fault_addr < FIXED_CODE_START)
++		if (cpu_pda[cpu].dcplb_fault_addr < FIXED_CODE_START)
+ 			verbose_printk(KERN_NOTICE "NULL pointer access\n");
+ 		else
+ #endif
+@@ -471,7 +464,7 @@ asmlinkage void trap_c(struct pt_regs *fp)
+ 		info.si_code = ILL_CPLB_MULHIT;
+ 		sig = SIGSEGV;
+ #ifdef CONFIG_DEBUG_HUNT_FOR_ZERO
+-		if (saved_icplb_fault_addr < FIXED_CODE_START)
++		if (cpu_pda[cpu].icplb_fault_addr < FIXED_CODE_START)
+ 			verbose_printk(KERN_NOTICE "Jump to NULL address\n");
+ 		else
+ #endif
+@@ -960,6 +953,7 @@ void dump_bfin_process(struct pt_regs *fp)
+ 		else
+ 			verbose_printk(KERN_NOTICE "COMM= invalid\n");
+ 
++		printk(KERN_NOTICE "CPU = %d\n", current_thread_info()->cpu);
+ 		if (!((unsigned long)current->mm & 0x3) && (unsigned long)current->mm >= FIXED_CODE_START)
+ 			verbose_printk(KERN_NOTICE  "TEXT = 0x%p-0x%p        DATA = 0x%p-0x%p\n"
+ 				KERN_NOTICE " BSS = 0x%p-0x%p  USER-STACK = 0x%p\n"
+@@ -1053,6 +1047,7 @@ void show_regs(struct pt_regs *fp)
+ 	struct irqaction *action;
+ 	unsigned int i;
+ 	unsigned long flags;
++	unsigned int cpu = smp_processor_id();
+ 
+ 	verbose_printk(KERN_NOTICE "\n" KERN_NOTICE "SEQUENCER STATUS:\t\t%s\n", print_tainted());
+ 	verbose_printk(KERN_NOTICE " SEQSTAT: %08lx  IPEND: %04lx  SYSCFG: %04lx\n",
+@@ -1112,9 +1107,9 @@ unlock:
+ 
+ 	if (((long)fp->seqstat &  SEQSTAT_EXCAUSE) &&
+ 	    (((long)fp->seqstat & SEQSTAT_EXCAUSE) != VEC_HWERR)) {
+-		decode_address(buf, saved_dcplb_fault_addr);
++		decode_address(buf, cpu_pda[cpu].dcplb_fault_addr);
+ 		verbose_printk(KERN_NOTICE "DCPLB_FAULT_ADDR: %s\n", buf);
+-		decode_address(buf, saved_icplb_fault_addr);
++		decode_address(buf, cpu_pda[cpu].icplb_fault_addr);
+ 		verbose_printk(KERN_NOTICE "ICPLB_FAULT_ADDR: %s\n", buf);
+ 	}
+ 
+@@ -1153,20 +1148,21 @@ unlock:
+ asmlinkage int sys_bfin_spinlock(int *spinlock)__attribute__((l1_text));
+ #endif
+ 
+-asmlinkage int sys_bfin_spinlock(int *spinlock)
++static DEFINE_SPINLOCK(bfin_spinlock_lock);
 +
-+	/*
-+	 * We want the D-cache to be enabled early, in case the atomic
-+	 * support code emulates cache coherence (see
-+	 * __ARCH_SYNC_CORE_DCACHE).
++asmlinkage int sys_bfin_spinlock(int *p)
+ {
+-	int ret = 0;
+-	int tmp = 0;
++	int ret, tmp = 0;
+ 
+-	local_irq_disable();
+-	ret = get_user(tmp, spinlock);
+-	if (ret == 0) {
+-		if (tmp)
++	spin_lock(&bfin_spinlock_lock);	/* This would also hold kernel preemption. */
++	ret = get_user(tmp, p);
++	if (likely(ret == 0)) {
++		if (unlikely(tmp))
+ 			ret = 1;
+-		tmp = 1;
+-		put_user(tmp, spinlock);
++		else
++			put_user(1, p);
+ 	}
+-	local_irq_enable();
++	spin_unlock(&bfin_spinlock_lock);
+ 	return ret;
+ }
+ 
+diff --git a/arch/blackfin/mm/init.c b/arch/blackfin/mm/init.c
+index bc240ab..57d306b 100644
+--- a/arch/blackfin/mm/init.c
++++ b/arch/blackfin/mm/init.c
+@@ -31,7 +31,8 @@
+ #include <linux/bootmem.h>
+ #include <linux/uaccess.h>
+ #include <asm/bfin-global.h>
+-#include <asm/l1layout.h>
++#include <asm/pda.h>
++#include <asm/cplbinit.h>
+ #include "blackfin_sram.h"
+ 
+ /*
+@@ -53,6 +54,11 @@ static unsigned long empty_bad_page;
+ 
+ unsigned long empty_zero_page;
+ 
++extern unsigned long exception_stack[NR_CPUS][1024];
++
++struct blackfin_pda cpu_pda[NR_CPUS];
++EXPORT_SYMBOL(cpu_pda);
++
+ /*
+  * paging_init() continues the virtual memory environment setup which
+  * was begun by the code in arch/head.S.
+@@ -98,6 +104,42 @@ void __init paging_init(void)
+ 	}
+ }
+ 
++asmlinkage void init_pda(void)
++{
++	unsigned int cpu = raw_smp_processor_id();
++
++	/* Initialize the PDA fields holding references to other parts
++	   of the memory. The content of such memory is still
++	   undefined at the time of the call, we are only setting up
++	   valid pointers to it. */
++	memset(&cpu_pda[cpu], 0, sizeof(cpu_pda[cpu]));
++
++	cpu_pda[0].next = &cpu_pda[1];
++	cpu_pda[1].next = &cpu_pda[0];
++
++	cpu_pda[cpu].ex_stack = exception_stack[cpu + 1];
++
++#ifdef CONFIG_MPU
++#else
++	cpu_pda[cpu].ipdt = ipdt_tables[cpu];
++	cpu_pda[cpu].dpdt = dpdt_tables[cpu];
++#ifdef CONFIG_CPLB_INFO
++	cpu_pda[cpu].ipdt_swapcount = ipdt_swapcount_tables[cpu];
++	cpu_pda[cpu].dpdt_swapcount = dpdt_swapcount_tables[cpu];
++#endif
++#endif
++
++#ifdef CONFIG_SMP
++	cpu_pda[cpu].imask = 0x1f;
++#endif
++}
++
++void __cpuinit reserve_pda(void)
++{
++	printk(KERN_INFO "PDA for CPU%u reserved at %p\n", smp_processor_id(),
++					&cpu_pda[smp_processor_id()]);
++}
++
+ void __init mem_init(void)
+ {
+ 	unsigned int codek = 0, datak = 0, initk = 0;
+@@ -141,21 +183,13 @@ void __init mem_init(void)
+ 
+ static int __init sram_init(void)
+ {
+-	unsigned long tmp;
+-
+ 	/* Initialize the blackfin L1 Memory. */
+ 	bfin_sram_init();
+ 
+-	/* Allocate this once; never free it.  We assume this gives us a
+-	   pointer to the start of L1 scratchpad memory; panic if it
+-	   doesn't.  */
+-	tmp = (unsigned long)l1sram_alloc(sizeof(struct l1_scratch_task_info));
+-	if (tmp != (unsigned long)L1_SCRATCH_TASK_INFO) {
+-		printk(KERN_EMERG "mem_init(): Did not get the right address from l1sram_alloc: %08lx != %08lx\n",
+-			tmp, (unsigned long)L1_SCRATCH_TASK_INFO);
+-		panic("No L1, time to give up\n");
+-	}
+-
++	/* Reserve the PDA space for the boot CPU right after we
++	 * initialized the scratch memory allocator.
 +	 */
-+	init_exception_vectors();
-+
-+	bfin_setup_caches(cpu);
-+
-+	local_irq_disable();
-+
-+	/* Attach the new idle task to the global mm. */
-+	atomic_inc(&mm->mm_users);
-+	atomic_inc(&mm->mm_count);
-+	current->active_mm = mm;
-+	BUG_ON(current->mm);	/* Can't be, but better be safe than sorry. */
-+
-+	preempt_disable();
-+
-+	setup_secondary(cpu);
-+
-+	local_irq_enable();
-+
-+	platform_secondary_init(cpu);
-+
-+	cpu_idle();
-+}
-+
-+void __init smp_prepare_boot_cpu(void)
-+{
-+}
-+
-+void __init smp_prepare_cpus(unsigned int max_cpus)
-+{
-+	platform_prepare_cpus(max_cpus);
-+	ipi_queue_init();
-+	platform_request_ipi(&ipi_handler);
-+}
-+
-+void __init smp_cpus_done(unsigned int max_cpus)
-+{
-+	unsigned long bogosum = 0;
++	reserve_pda();
+ 	return 0;
+ }
+ pure_initcall(sram_init);
+diff --git a/arch/blackfin/mm/sram-alloc.c b/arch/blackfin/mm/sram-alloc.c
+index cc6f336..8f82b4c 100644
+--- a/arch/blackfin/mm/sram-alloc.c
++++ b/arch/blackfin/mm/sram-alloc.c
+@@ -41,8 +41,10 @@
+ #include <asm/blackfin.h>
+ #include "blackfin_sram.h"
+ 
+-static spinlock_t l1sram_lock, l1_data_sram_lock, l1_inst_sram_lock;
+-static spinlock_t l2_sram_lock;
++static DEFINE_PER_CPU(spinlock_t, l1sram_lock) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU(spinlock_t, l1_data_sram_lock) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU(spinlock_t, l1_inst_sram_lock) ____cacheline_aligned_in_smp;
++static spinlock_t l2_sram_lock ____cacheline_aligned_in_smp;
+ 
+ /* the data structure for L1 scratchpad and DATA SRAM */
+ struct sram_piece {
+@@ -52,18 +54,22 @@ struct sram_piece {
+ 	struct sram_piece *next;
+ };
+ 
+-static struct sram_piece free_l1_ssram_head, used_l1_ssram_head;
++static DEFINE_PER_CPU(struct sram_piece, free_l1_ssram_head);
++static DEFINE_PER_CPU(struct sram_piece, used_l1_ssram_head);
+ 
+ #if L1_DATA_A_LENGTH != 0
+-static struct sram_piece free_l1_data_A_sram_head, used_l1_data_A_sram_head;
++static DEFINE_PER_CPU(struct sram_piece, free_l1_data_A_sram_head);
++static DEFINE_PER_CPU(struct sram_piece, used_l1_data_A_sram_head);
+ #endif
+ 
+ #if L1_DATA_B_LENGTH != 0
+-static struct sram_piece free_l1_data_B_sram_head, used_l1_data_B_sram_head;
++static DEFINE_PER_CPU(struct sram_piece, free_l1_data_B_sram_head);
++static DEFINE_PER_CPU(struct sram_piece, used_l1_data_B_sram_head);
+ #endif
+ 
+ #if L1_CODE_LENGTH != 0
+-static struct sram_piece free_l1_inst_sram_head, used_l1_inst_sram_head;
++static DEFINE_PER_CPU(struct sram_piece, free_l1_inst_sram_head);
++static DEFINE_PER_CPU(struct sram_piece, used_l1_inst_sram_head);
+ #endif
+ 
+ #if L2_LENGTH != 0
+@@ -75,102 +81,115 @@ static struct kmem_cache *sram_piece_cache;
+ /* L1 Scratchpad SRAM initialization function */
+ static void __init l1sram_init(void)
+ {
+-	free_l1_ssram_head.next =
+-		kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
+-	if (!free_l1_ssram_head.next) {
+-		printk(KERN_INFO "Failed to initialize Scratchpad data SRAM\n");
+-		return;
 +	unsigned int cpu;
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu) {
++		per_cpu(free_l1_ssram_head, cpu).next =
++			kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
++		if (!per_cpu(free_l1_ssram_head, cpu).next) {
++			printk(KERN_INFO "Fail to initialize Scratchpad data SRAM.\n");
++			return;
++		}
 +
-+	for_each_online_cpu(cpu)
-+		bogosum += per_cpu(cpu_data, cpu).loops_per_jiffy;
++		per_cpu(free_l1_ssram_head, cpu).next->paddr = (void *)get_l1_scratch_start_cpu(cpu);
++		per_cpu(free_l1_ssram_head, cpu).next->size = L1_SCRATCH_LENGTH;
++		per_cpu(free_l1_ssram_head, cpu).next->pid = 0;
++		per_cpu(free_l1_ssram_head, cpu).next->next = NULL;
 +
-+	printk(KERN_INFO "SMP: Total of %d processors activated "
-+	       "(%lu.%02lu BogoMIPS).\n",
-+	       num_online_cpus(),
-+	       bogosum / (500000/HZ),
-+	       (bogosum / (5000/HZ)) % 100);
-+}
++		per_cpu(used_l1_ssram_head, cpu).next = NULL;
 +
-+void smp_icache_flush_range_others(unsigned long start, unsigned long end)
-+{
-+	smp_flush_data.start = start;
-+	smp_flush_data.end = end;
++		/* mutex initialize */
++		spin_lock_init(&per_cpu(l1sram_lock, cpu));
++		printk(KERN_INFO "Blackfin Scratchpad data SRAM: %d KB\n",
++			L1_SCRATCH_LENGTH >> 10);
+ 	}
+-
+-	free_l1_ssram_head.next->paddr = (void *)L1_SCRATCH_START;
+-	free_l1_ssram_head.next->size = L1_SCRATCH_LENGTH;
+-	free_l1_ssram_head.next->pid = 0;
+-	free_l1_ssram_head.next->next = NULL;
+-
+-	used_l1_ssram_head.next = NULL;
+-
+-	/* mutex initialize */
+-	spin_lock_init(&l1sram_lock);
+-
+-	printk(KERN_INFO "Blackfin Scratchpad data SRAM: %d KB\n",
+-	       L1_SCRATCH_LENGTH >> 10);
+ }
+ 
+ static void __init l1_data_sram_init(void)
+ {
++	unsigned int cpu;
+ #if L1_DATA_A_LENGTH != 0
+-	free_l1_data_A_sram_head.next =
+-		kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
+-	if (!free_l1_data_A_sram_head.next) {
+-		printk(KERN_INFO "Failed to initialize L1 Data A SRAM\n");
+-		return;
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu) {
++		per_cpu(free_l1_data_A_sram_head, cpu).next =
++			kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
++		if (!per_cpu(free_l1_data_A_sram_head, cpu).next) {
++			printk(KERN_INFO "Fail to initialize L1 Data A SRAM.\n");
++			return;
++		}
 +
-+	if (smp_call_function(&ipi_flush_icache, &smp_flush_data, 1))
-+		printk(KERN_WARNING "SMP: failed to run I-cache flush request on other CPUs\n");
-+}
-+EXPORT_SYMBOL_GPL(smp_icache_flush_range_others);
++		per_cpu(free_l1_data_A_sram_head, cpu).next->paddr =
++			(void *)get_l1_data_a_start_cpu(cpu) + (_ebss_l1 - _sdata_l1);
++		per_cpu(free_l1_data_A_sram_head, cpu).next->size =
++			L1_DATA_A_LENGTH - (_ebss_l1 - _sdata_l1);
++		per_cpu(free_l1_data_A_sram_head, cpu).next->pid = 0;
++		per_cpu(free_l1_data_A_sram_head, cpu).next->next = NULL;
 +
-+#ifdef __ARCH_SYNC_CORE_DCACHE
-+unsigned long barrier_mask __attribute__ ((__section__(".l2.bss")));
++		per_cpu(used_l1_data_A_sram_head, cpu).next = NULL;
 +
-+void resync_core_dcache(void)
-+{
-+	unsigned int cpu = get_cpu();
-+	blackfin_invalidate_entire_dcache();
-+	++per_cpu(cpu_data, cpu).dcache_invld_count;
-+	put_cpu();
-+}
-+EXPORT_SYMBOL(resync_core_dcache);
++		printk(KERN_INFO "Blackfin L1 Data A SRAM: %d KB (%d KB free)\n",
++			L1_DATA_A_LENGTH >> 10,
++			per_cpu(free_l1_data_A_sram_head, cpu).next->size >> 10);
+ 	}
+-
+-	free_l1_data_A_sram_head.next->paddr =
+-		(void *)L1_DATA_A_START + (_ebss_l1 - _sdata_l1);
+-	free_l1_data_A_sram_head.next->size =
+-		L1_DATA_A_LENGTH - (_ebss_l1 - _sdata_l1);
+-	free_l1_data_A_sram_head.next->pid = 0;
+-	free_l1_data_A_sram_head.next->next = NULL;
+-
+-	used_l1_data_A_sram_head.next = NULL;
+-
+-	printk(KERN_INFO "Blackfin L1 Data A SRAM: %d KB (%d KB free)\n",
+-		L1_DATA_A_LENGTH >> 10,
+-		free_l1_data_A_sram_head.next->size >> 10);
+ #endif
+ #if L1_DATA_B_LENGTH != 0
+-	free_l1_data_B_sram_head.next =
+-		kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
+-	if (!free_l1_data_B_sram_head.next) {
+-		printk(KERN_INFO "Failed to initialize L1 Data B SRAM\n");
+-		return;
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu) {
++		per_cpu(free_l1_data_B_sram_head, cpu).next =
++			kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
++		if (!per_cpu(free_l1_data_B_sram_head, cpu).next) {
++			printk(KERN_INFO "Fail to initialize L1 Data B SRAM.\n");
++			return;
++		}
++
++		per_cpu(free_l1_data_B_sram_head, cpu).next->paddr =
++			(void *)get_l1_data_b_start_cpu(cpu) + (_ebss_b_l1 - _sdata_b_l1);
++		per_cpu(free_l1_data_B_sram_head, cpu).next->size =
++			L1_DATA_B_LENGTH - (_ebss_b_l1 - _sdata_b_l1);
++		per_cpu(free_l1_data_B_sram_head, cpu).next->pid = 0;
++		per_cpu(free_l1_data_B_sram_head, cpu).next->next = NULL;
++
++		per_cpu(used_l1_data_B_sram_head, cpu).next = NULL;
++
++		printk(KERN_INFO "Blackfin L1 Data B SRAM: %d KB (%d KB free)\n",
++			L1_DATA_B_LENGTH >> 10,
++			per_cpu(free_l1_data_B_sram_head, cpu).next->size >> 10);
++		/* mutex initialize */
+ 	}
+-
+-	free_l1_data_B_sram_head.next->paddr =
+-		(void *)L1_DATA_B_START + (_ebss_b_l1 - _sdata_b_l1);
+-	free_l1_data_B_sram_head.next->size =
+-		L1_DATA_B_LENGTH - (_ebss_b_l1 - _sdata_b_l1);
+-	free_l1_data_B_sram_head.next->pid = 0;
+-	free_l1_data_B_sram_head.next->next = NULL;
+-
+-	used_l1_data_B_sram_head.next = NULL;
+-
+-	printk(KERN_INFO "Blackfin L1 Data B SRAM: %d KB (%d KB free)\n",
+-		L1_DATA_B_LENGTH >> 10,
+-		free_l1_data_B_sram_head.next->size >> 10);
+ #endif
+ 
+-	/* mutex initialize */
+-	spin_lock_init(&l1_data_sram_lock);
++#if L1_DATA_A_LENGTH != 0 || L1_DATA_B_LENGTH != 0
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu)
++		spin_lock_init(&per_cpu(l1_data_sram_lock, cpu));
 +#endif
-diff --git a/arch/blackfin/oprofile/common.c b/arch/blackfin/oprofile/common.c
-index 0f6d303..f34795a 100644
---- a/arch/blackfin/oprofile/common.c
-+++ b/arch/blackfin/oprofile/common.c
-@@ -130,7 +130,7 @@ int __init oprofile_arch_init(struct oprofile_operations *ops)
+ }
  
- 	mutex_init(&pfmon_lock);
+ static void __init l1_inst_sram_init(void)
+ {
+ #if L1_CODE_LENGTH != 0
+-	free_l1_inst_sram_head.next =
+-		kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
+-	if (!free_l1_inst_sram_head.next) {
+-		printk(KERN_INFO "Failed to initialize L1 Instruction SRAM\n");
+-		return;
++	unsigned int cpu;
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu) {
++		per_cpu(free_l1_inst_sram_head, cpu).next =
++			kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
++		if (!per_cpu(free_l1_inst_sram_head, cpu).next) {
++			printk(KERN_INFO "Failed to initialize L1 Instruction SRAM\n");
++			return;
++		}
++
++		per_cpu(free_l1_inst_sram_head, cpu).next->paddr =
++			(void *)get_l1_code_start_cpu(cpu) + (_etext_l1 - _stext_l1);
++		per_cpu(free_l1_inst_sram_head, cpu).next->size =
++			L1_CODE_LENGTH - (_etext_l1 - _stext_l1);
++		per_cpu(free_l1_inst_sram_head, cpu).next->pid = 0;
++		per_cpu(free_l1_inst_sram_head, cpu).next->next = NULL;
++
++		per_cpu(used_l1_inst_sram_head, cpu).next = NULL;
++
++		printk(KERN_INFO "Blackfin L1 Instruction SRAM: %d KB (%d KB free)\n",
++			L1_CODE_LENGTH >> 10,
++			per_cpu(free_l1_inst_sram_head, cpu).next->size >> 10);
++
++		/* mutex initialize */
++		spin_lock_init(&per_cpu(l1_inst_sram_lock, cpu));
+ 	}
+-
+-	free_l1_inst_sram_head.next->paddr =
+-		(void *)L1_CODE_START + (_etext_l1 - _stext_l1);
+-	free_l1_inst_sram_head.next->size =
+-		L1_CODE_LENGTH - (_etext_l1 - _stext_l1);
+-	free_l1_inst_sram_head.next->pid = 0;
+-	free_l1_inst_sram_head.next->next = NULL;
+-
+-	used_l1_inst_sram_head.next = NULL;
+-
+-	printk(KERN_INFO "Blackfin L1 Instruction SRAM: %d KB (%d KB free)\n",
+-		L1_CODE_LENGTH >> 10,
+-		free_l1_inst_sram_head.next->size >> 10);
+ #endif
+-
+-	/* mutex initialize */
+-	spin_lock_init(&l1_inst_sram_lock);
+ }
  
--	dspid = bfin_read_DSPID();
-+	dspid = bfin_dspid();
+ static void __init l2_sram_init(void)
+@@ -179,7 +198,7 @@ static void __init l2_sram_init(void)
+ 	free_l2_sram_head.next =
+ 		kmem_cache_alloc(sram_piece_cache, GFP_KERNEL);
+ 	if (!free_l2_sram_head.next) {
+-		printk(KERN_INFO "Failed to initialize L2 SRAM\n");
++		printk(KERN_INFO "Fail to initialize L2 SRAM.\n");
+ 		return;
+ 	}
  
- 	printk(KERN_INFO "Oprofile got the cpu id is 0x%x. \n", dspid);
+@@ -200,6 +219,7 @@ static void __init l2_sram_init(void)
+ 	/* mutex initialize */
+ 	spin_lock_init(&l2_sram_lock);
+ }
++
+ void __init bfin_sram_init(void)
+ {
+ 	sram_piece_cache = kmem_cache_create("sram_piece_cache",
+@@ -353,20 +373,20 @@ int sram_free(const void *addr)
+ {
  
+ #if L1_CODE_LENGTH != 0
+-	if (addr >= (void *)L1_CODE_START
+-		 && addr < (void *)(L1_CODE_START + L1_CODE_LENGTH))
++	if (addr >= (void *)get_l1_code_start()
++		 && addr < (void *)(get_l1_code_start() + L1_CODE_LENGTH))
+ 		return l1_inst_sram_free(addr);
+ 	else
+ #endif
+ #if L1_DATA_A_LENGTH != 0
+-	if (addr >= (void *)L1_DATA_A_START
+-		 && addr < (void *)(L1_DATA_A_START + L1_DATA_A_LENGTH))
++	if (addr >= (void *)get_l1_data_a_start()
++		 && addr < (void *)(get_l1_data_a_start() + L1_DATA_A_LENGTH))
+ 		return l1_data_A_sram_free(addr);
+ 	else
+ #endif
+ #if L1_DATA_B_LENGTH != 0
+-	if (addr >= (void *)L1_DATA_B_START
+-		 && addr < (void *)(L1_DATA_B_START + L1_DATA_B_LENGTH))
++	if (addr >= (void *)get_l1_data_b_start()
++		 && addr < (void *)(get_l1_data_b_start() + L1_DATA_B_LENGTH))
+ 		return l1_data_B_sram_free(addr);
+ 	else
+ #endif
+@@ -384,17 +404,20 @@ void *l1_data_A_sram_alloc(size_t size)
+ {
+ 	unsigned long flags;
+ 	void *addr = NULL;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1_data_sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1_data_sram_lock, cpu), flags);
+ 
+ #if L1_DATA_A_LENGTH != 0
+-	addr = _sram_alloc(size, &free_l1_data_A_sram_head,
+-			&used_l1_data_A_sram_head);
++	addr = _sram_alloc(size, &per_cpu(free_l1_data_A_sram_head, cpu),
++			&per_cpu(used_l1_data_A_sram_head, cpu));
+ #endif
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1_data_sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1_data_sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	pr_debug("Allocated address in l1_data_A_sram_alloc is 0x%lx+0x%lx\n",
+ 		 (long unsigned int)addr, size);
+@@ -407,19 +430,22 @@ int l1_data_A_sram_free(const void *addr)
+ {
+ 	unsigned long flags;
+ 	int ret;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1_data_sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1_data_sram_lock, cpu), flags);
+ 
+ #if L1_DATA_A_LENGTH != 0
+-	ret = _sram_free(addr, &free_l1_data_A_sram_head,
+-			&used_l1_data_A_sram_head);
++	ret = _sram_free(addr, &per_cpu(free_l1_data_A_sram_head, cpu),
++			&per_cpu(used_l1_data_A_sram_head, cpu));
+ #else
+ 	ret = -1;
+ #endif
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1_data_sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1_data_sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	return ret;
+ }
+@@ -430,15 +456,18 @@ void *l1_data_B_sram_alloc(size_t size)
+ #if L1_DATA_B_LENGTH != 0
+ 	unsigned long flags;
+ 	void *addr;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1_data_sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1_data_sram_lock, cpu), flags);
+ 
+-	addr = _sram_alloc(size, &free_l1_data_B_sram_head,
+-			&used_l1_data_B_sram_head);
++	addr = _sram_alloc(size, &per_cpu(free_l1_data_B_sram_head, cpu),
++			&per_cpu(used_l1_data_B_sram_head, cpu));
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1_data_sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1_data_sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	pr_debug("Allocated address in l1_data_B_sram_alloc is 0x%lx+0x%lx\n",
+ 		 (long unsigned int)addr, size);
+@@ -455,15 +484,18 @@ int l1_data_B_sram_free(const void *addr)
+ #if L1_DATA_B_LENGTH != 0
+ 	unsigned long flags;
+ 	int ret;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1_data_sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1_data_sram_lock, cpu), flags);
+ 
+-	ret = _sram_free(addr, &free_l1_data_B_sram_head,
+-			&used_l1_data_B_sram_head);
++	ret = _sram_free(addr, &per_cpu(free_l1_data_B_sram_head, cpu),
++			&per_cpu(used_l1_data_B_sram_head, cpu));
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1_data_sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1_data_sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	return ret;
+ #else
+@@ -509,15 +541,18 @@ void *l1_inst_sram_alloc(size_t size)
+ #if L1_CODE_LENGTH != 0
+ 	unsigned long flags;
+ 	void *addr;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1_inst_sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1_inst_sram_lock, cpu), flags);
+ 
+-	addr = _sram_alloc(size, &free_l1_inst_sram_head,
+-			&used_l1_inst_sram_head);
++	addr = _sram_alloc(size, &per_cpu(free_l1_inst_sram_head, cpu),
++			&per_cpu(used_l1_inst_sram_head, cpu));
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1_inst_sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1_inst_sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	pr_debug("Allocated address in l1_inst_sram_alloc is 0x%lx+0x%lx\n",
+ 		 (long unsigned int)addr, size);
+@@ -534,15 +569,18 @@ int l1_inst_sram_free(const void *addr)
+ #if L1_CODE_LENGTH != 0
+ 	unsigned long flags;
+ 	int ret;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1_inst_sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1_inst_sram_lock, cpu), flags);
+ 
+-	ret = _sram_free(addr, &free_l1_inst_sram_head,
+-			&used_l1_inst_sram_head);
++	ret = _sram_free(addr, &per_cpu(free_l1_inst_sram_head, cpu),
++			&per_cpu(used_l1_inst_sram_head, cpu));
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1_inst_sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1_inst_sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	return ret;
+ #else
+@@ -556,15 +594,18 @@ void *l1sram_alloc(size_t size)
+ {
+ 	unsigned long flags;
+ 	void *addr;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1sram_lock, cpu), flags);
+ 
+-	addr = _sram_alloc(size, &free_l1_ssram_head,
+-			&used_l1_ssram_head);
++	addr = _sram_alloc(size, &per_cpu(free_l1_ssram_head, cpu),
++			&per_cpu(used_l1_ssram_head, cpu));
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	return addr;
+ }
+@@ -574,15 +615,18 @@ void *l1sram_alloc_max(size_t *psize)
+ {
+ 	unsigned long flags;
+ 	void *addr;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1sram_lock, cpu), flags);
+ 
+-	addr = _sram_alloc_max(&free_l1_ssram_head,
+-			&used_l1_ssram_head, psize);
++	addr = _sram_alloc_max(&per_cpu(free_l1_ssram_head, cpu),
++			&per_cpu(used_l1_ssram_head, cpu), psize);
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	return addr;
+ }
+@@ -592,15 +636,18 @@ int l1sram_free(const void *addr)
+ {
+ 	unsigned long flags;
+ 	int ret;
++	unsigned int cpu;
+ 
++	cpu = get_cpu();
+ 	/* add mutex operation */
+-	spin_lock_irqsave(&l1sram_lock, flags);
++	spin_lock_irqsave(&per_cpu(l1sram_lock, cpu), flags);
+ 
+-	ret = _sram_free(addr, &free_l1_ssram_head,
+-			&used_l1_ssram_head);
++	ret = _sram_free(addr, &per_cpu(free_l1_ssram_head, cpu),
++			&per_cpu(used_l1_ssram_head, cpu));
+ 
+ 	/* add mutex operation */
+-	spin_unlock_irqrestore(&l1sram_lock, flags);
++	spin_unlock_irqrestore(&per_cpu(l1sram_lock, cpu), flags);
++	put_cpu();
+ 
+ 	return ret;
+ }
+@@ -761,33 +808,36 @@ static int sram_proc_read(char *buf, char **start, off_t offset, int count,
+ 		int *eof, void *data)
+ {
+ 	int len = 0;
++	unsigned int cpu;
+ 
+-	if (_sram_proc_read(buf, &len, count, "Scratchpad",
+-			&free_l1_ssram_head, &used_l1_ssram_head))
+-		goto not_done;
++	for (cpu = 0; cpu < num_possible_cpus(); ++cpu) {
++		if (_sram_proc_read(buf, &len, count, "Scratchpad",
++			&per_cpu(free_l1_ssram_head, cpu), &per_cpu(used_l1_ssram_head, cpu)))
++			goto not_done;
+ #if L1_DATA_A_LENGTH != 0
+-	if (_sram_proc_read(buf, &len, count, "L1 Data A",
+-			&free_l1_data_A_sram_head,
+-			&used_l1_data_A_sram_head))
+-		goto not_done;
++		if (_sram_proc_read(buf, &len, count, "L1 Data A",
++			&per_cpu(free_l1_data_A_sram_head, cpu),
++			&per_cpu(used_l1_data_A_sram_head, cpu)))
++			goto not_done;
+ #endif
+ #if L1_DATA_B_LENGTH != 0
+-	if (_sram_proc_read(buf, &len, count, "L1 Data B",
+-			&free_l1_data_B_sram_head,
+-			&used_l1_data_B_sram_head))
+-		goto not_done;
++		if (_sram_proc_read(buf, &len, count, "L1 Data B",
++			&per_cpu(free_l1_data_B_sram_head, cpu),
++			&per_cpu(used_l1_data_B_sram_head, cpu)))
++			goto not_done;
+ #endif
+ #if L1_CODE_LENGTH != 0
+-	if (_sram_proc_read(buf, &len, count, "L1 Instruction",
+-			&free_l1_inst_sram_head, &used_l1_inst_sram_head))
+-		goto not_done;
++		if (_sram_proc_read(buf, &len, count, "L1 Instruction",
++			&per_cpu(free_l1_inst_sram_head, cpu),
++			&per_cpu(used_l1_inst_sram_head, cpu)))
++			goto not_done;
+ #endif
++	}
+ #if L2_LENGTH != 0
+-	if (_sram_proc_read(buf, &len, count, "L2",
+-			&free_l2_sram_head, &used_l2_sram_head))
++	if (_sram_proc_read(buf, &len, count, "L2", &free_l2_sram_head,
++		&used_l2_sram_head))
+ 		goto not_done;
+ #endif
+-
+ 	*eof = 1;
+  not_done:
+ 	return len;
 -- 
 1.5.6.3
