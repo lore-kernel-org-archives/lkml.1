@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYKRHy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYKRHzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbYKRHy7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 02:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYKRHva
+	id S1753853AbYKRHzk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 02:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYKRHvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 02:51:30 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:57358 "EHLO
+	Tue, 18 Nov 2008 02:51:31 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:46413 "EHLO
 	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYKRHv0 (ORCPT
+	with ESMTP id S1751933AbYKRHv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Nov 2008 02:51:26 -0500
 X-IronPort-AV: E=Sophos;i="4.33,624,1220241600"; 
-   d="scan'208";a="62690400"
+   d="scan'208";a="62690404"
 From: Bryan Wu <cooloney@kernel.org>
 To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
        Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 11/16] Blackfin SPI Driver: remove duplicated MAX_SPI_SSEL and remove unnecessary array size
-Date: Tue, 18 Nov 2008 15:52:35 +0800
-Message-Id: <1226994760-4301-12-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 14/16] Blackfin SPI Driver: tweak magic spi dma sequence to get it working on BF54x
+Date: Tue, 18 Nov 2008 15:52:38 +0800
+Message-Id: <1226994760-4301-15-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
 References: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
@@ -31,30 +31,23 @@ From: Mike Frysinger <vapier.adi@gmail.com>
 Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/spi/spi_bfin5xx.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ drivers/spi/spi_bfin5xx.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 4343a92..fba77c2 100644
+index c2fc3a9..9c602ad 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -198,8 +198,6 @@ static void cs_deactive(struct driver_data *drv_data, struct chip_data *chip)
- 		udelay(chip->cs_chg_udelay);
- }
+@@ -858,8 +858,9 @@ static void pump_transfers(unsigned long data)
+ 		set_dma_start_addr(drv_data->dma_channel, dma_start_addr);
+ 		set_dma_config(drv_data->dma_channel, dma_config);
+ 		local_irq_save(flags);
+-		enable_dma(drv_data->dma_channel);
++		SSYNC();
+ 		write_CTRL(drv_data, cr);
++		enable_dma(drv_data->dma_channel);
+ 		dma_enable_irq(drv_data->dma_channel);
+ 		local_irq_restore(flags);
  
--#define MAX_SPI_SSEL	7
--
- /* stop controller and re-config current chip*/
- static void restore_state(struct driver_data *drv_data)
- {
-@@ -997,7 +995,7 @@ static int transfer(struct spi_device *spi, struct spi_message *msg)
- 
- #define MAX_SPI_SSEL	7
- 
--static u16 ssel[3][MAX_SPI_SSEL] = {
-+static u16 ssel[][MAX_SPI_SSEL] = {
- 	{P_SPI0_SSEL1, P_SPI0_SSEL2, P_SPI0_SSEL3,
- 	P_SPI0_SSEL4, P_SPI0_SSEL5,
- 	P_SPI0_SSEL6, P_SPI0_SSEL7},
 -- 
 1.5.6.3
