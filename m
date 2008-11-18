@@ -1,119 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYKRSYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYKRSek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbYKRSYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYKRSYZ
+	id S1752735AbYKRSek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 13:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYKRSeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:24:25 -0500
-Received: from mga09.intel.com ([134.134.136.24]:6367 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbYKRSYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:24:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,626,1220252400"; 
-   d="scan'208";a="361599260"
-Subject: Re: [PATCH 08/13] dmatest: convert to dma_request_channel
-From: Dan Williams <dan.j.williams@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
-       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
-       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
-In-Reply-To: <20081114221704.fe9ea599.akpm@linux-foundation.org>
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114213458.32354.58258.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114221704.fe9ea599.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 11:24:21 -0700
-Message-Id: <1227032661.15042.10.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 13:34:31 -0500
+Received: from mail91.analogic.com ([12.187.86.31]:38241 "EHLO
+	mail01.analogic.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751778AbYKRSea convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 13:34:30 -0500
+X-AuditID: 0a770115-a49debb000000e72-f8-49230ab4e4f6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 18 Nov 2008 18:34:14.0147 (UTC) FILETIME=[41A78530:01C949AC]
+Content-class: urn:content-classes:message
+Subject: Re: Developing non-commercial drivers ?
+Date: Tue, 18 Nov 2008 13:33:36 -0500
+Message-ID: <Pine.LNX.4.61.0811181325320.26812@chaos.analogic.com>
+In-Reply-To: <492305E7.9050906@nortel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: Developing non-commercial drivers ?
+thread-index: AclJrEHBIt9gWPaaSbyydfqCcasB2w==
+References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com> <4922ED5A.3030808@shaw.ca> <7a9e70560811180852y9eb2bf6s8682609dcb10fd9f@mail.gmail.com> <4922F8C4.80509@nortel.com> <1227031253.1817.20.camel@win2k.atr-labs.com> <492305E7.9050906@nortel.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Chris Friesen" <cfriesen@nortel.com>
+Cc: <rk@atr-labs.com>,
+       =?iso-8859-1?Q?Fredrik_Markstr=F6m?= 
+	<fredrik.markstrom@avalonenterprise.com>,
+       "Robert Hancock" <hancockr@shaw.ca>, <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 23:17 -0700, Andrew Morton wrote:
-> On Fri, 14 Nov 2008 14:34:58 -0700 Dan Williams <dan.j.williams@intel.com> wrote:
-> 
-> >  static int __init dmatest_init(void)
-> >  {
-> > -	dma_cap_set(DMA_MEMCPY, dmatest_client.cap_mask);
-> > -	dma_async_client_register(&dmatest_client);
-> > -	dma_async_client_chan_request(&dmatest_client);
-> > +	dma_cap_mask_t mask;
-> > +	struct dma_chan *chan;
-> > +
-> > +	dma_cap_zero(mask);
-> > +	dma_cap_set(DMA_MEMCPY, mask);
-> > +	for (;;) {
-> > +		chan = dma_request_channel(mask, filter, NULL);
-> > +		if (chan) {
-> > +			if (dmatest_add_channel(chan) == 0)
-> > +				continue;
-> 
-> hrm.  I trust this loop can't lock up the box.
-> 
+On Tue, 18 Nov 2008, Chris Friesen wrote:
 
-Only if the system has infinite channels, but we should break if
-dma_add_channel fails.
+> Radhakrishnan wrote:
+>
+>> Am I therefore right in assuming that this is a specific case where the
+>> open source nature of Linux is being used with great effect but the very
+>> nature of the licensing denies ANYONE ELSE from being a party to this
+>> transaction ?
+>
+> Actually, I think the GPL is still satisfied.  There's nothing that says
+> that changes need to be passed upstream, only downstream.
+>
+> 1) Presumably you won't be distributing the binary drivers to anyone
+> else, and you gave Organization A the code, so the license is satisfied.
+>
+> 2) Organization A has no other customers, so is not going to be
+> distributing the binaries to anyone else.
+>
+> 3) The end-user (the Navy) was provided the source code for the GPL'd
+> software that they purchased.
+>
+> As far as I can tell, this is all fully GPL-compliant.
+>
+> Chris
+> --
 
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index e0f9139..c77d47c 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -375,23 +375,27 @@ static int __init dmatest_init(void)
- {
- 	dma_cap_mask_t mask;
- 	struct dma_chan *chan;
-+	int err = 0;
- 
- 	dma_cap_zero(mask);
- 	dma_cap_set(DMA_MEMCPY, mask);
- 	for (;;) {
- 		chan = dma_request_channel(mask, filter, NULL);
- 		if (chan) {
--			if (dmatest_add_channel(chan) == 0)
-+			err = dmatest_add_channel(chan);
-+			if (err == 0)
- 				continue;
--			else
-+			else {
- 				dma_release_channel(chan);
-+				break; /* add_channel failed, punt */
-+			}
- 		} else
- 			break; /* no more channels available */
- 		if (max_channels && nr_channels >= max_channels)
- 			break; /* we have all we need */
- 	}
- 
--	return 0;
-+	return err;
- }
- /* when compiled-in wait for drivers to load first */
- late_initcall(dmatest_init);
+BTW, Bally, the slot-machine company uses Linux. I have
+watched the machines boot. It has driver(s) to interface
+with the reels (stepper motors) and the user-interface,
+(buttons, money entry, etc.) I'm fairly certain that
+if I asked them for the source-code for their drivers
+I would not get it. They could claim that, in their
+definition of the law, I am not a "qualified end-user."
 
----
+However, if a casino using the machines were to request
+the source-code it is likely that they would comply and
+provide it.
 
-Ok, so I now have:
-# git shortlog `stg id akpm-review-spell-fixes.patch`^..
-Dan Williams (6):
-      dmaengine review: spelling/grammar fixes
-      dmaengine review: dma_wait_for_async_tx clarification
-      dmaengine review: fix up kernel doc for dma_list_mutex usage
-      dmaengine review: propagate alloc_chan_resources error code
-      dmaengine review: return meaningful error code from initcall
-      dmaengine review: dmatest stop on dmatest_add_channel failure
+It is all about interpretation of law, based upon some
+theory claimed for that instant.
 
-May I add your Reviewed-by for these and the original 13.  I could fold
-these into the originals but perhaps it is better to document fixups
-when they are the result of review [1].
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.25.17 on an i686 machine (4787.11 BogoMips).
+My book : http://www.AbominableFirebug.com/
+.
 
-Thanks,
-Dan
 
-[1] http://lwn.net/Articles/306690/
+****************************************************************
+The information transmitted in this message is confidential and may be privileged. Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
+Thank you.
