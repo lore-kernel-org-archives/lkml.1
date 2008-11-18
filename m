@@ -1,128 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbYKRJVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbYKRJeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbYKRJVK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 04:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYKRJUp
+	id S1752389AbYKRJeW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 04:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYKRJeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 04:20:45 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:64292 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbYKRJUn (ORCPT
+	Tue, 18 Nov 2008 04:34:08 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59541 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYKRJeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 04:20:43 -0500
-X-IronPort-AV: E=Sophos;i="4.33,624,1220241600"; 
-   d="scan'208";a="62694870"
-From: Bryan Wu <cooloney@kernel.org>
-To: bigeasy@linutronix.de, linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] USB/ISP1760: Fix for unaligned exceptions
-Date: Tue, 18 Nov 2008 17:22:11 +0800
-Message-Id: <1227000131-19145-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Tue, 18 Nov 2008 04:34:05 -0500
+To: tj@kernel.org
+CC: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+In-reply-to: <4922373F.90105@kernel.org> (message from Tejun Heo on Tue, 18
+	Nov 2008 12:32:15 +0900)
+Subject: Re: [fuse-devel] [PATCHSET] FUSE: extend FUSE to support more	operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org>	<48F4568B.7000609@kernel.org>	<E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu>	<491BC87F.4050108@kernel.org>	<E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu>	<491C1588.2060907@kernel.org>	<E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu>	<E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu>	<491C2A63.1030804@kernel.org>	<E1L0cSz-0006xF-0O@pomaz-ex.szeredi.hu>	<491C39BD.8050108@kernel.org>	<E1L0dUS-00074L-Uz@pomaz-ex.szeredi.hu>	<491C436C.6060603@kernel.org>	<E1L0eUz-0007D0-Tp@pomaz-ex.szeredi.hu> <492136A8.5020908@kernel.org> <E1L219j-0006iL-AJ@pomaz-ex.szeredi.hu> <4922373F.90105@kernel.org>
+Message-Id: <E1L2Mxv-0000WL-Ix@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 18 Nov 2008 10:33:47 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Tue, 18 Nov 2008, Tejun Heo wrote:
+> Miklos Szeredi wrote:
+> > OK, lets do it with the original interface.  There's still room for
+> > optimization, though, because the _normal_ operation of poll() is
+> > absolutely asynchronous.
+> 
+> Hmm... I'm not sure I understand what you're saying but if you're
+> talking about optimizing async case where notification occurs while the
+> poller is sleeping, I don't think it really matters.  That could be
+> common but they're not performance sensitive path.  As select/poll users
+> become busy, ->poll operation becomes more and more synchronous.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/usb/host/isp1760-hcd.c |   67 ++++++++++++++++++++++++++++-----------
- 1 files changed, 48 insertions(+), 19 deletions(-)
+If poll does have to sleep (however short), then it's alwasy more
+synchronous than necessary.  It introduces an extra latency of two
+context switches per poll.  Yes, this means the performance hit will
+decrease as the sleep lengthens, but short sleep != no sleep.
 
-diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-index 8017f1c..00bece2 100644
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -136,12 +136,21 @@ static void priv_read_copy(struct isp1760_hcd *priv, u32 *src,
- 		return;
- 	}
- 
--	while (len >= 4) {
--		*src = __raw_readl(dst);
--		len -= 4;
--		src++;
--		dst++;
--	}
-+	if (unlikely((u32)src & 0x3)) {
-+		while (len >= 4) {
-+			put_unaligned(__raw_readl(dst), src);
-+			len -= 4;
-+			src++;
-+			dst++;
-+		}
-+	} else {
-+		while (len >= 4) {
-+			*src = __raw_readl(dst);
-+			len -= 4;
-+			src++;
-+			dst++;
-+		}
-+	} 
- 
- 	if (!len)
- 		return;
-@@ -159,25 +168,45 @@ static void priv_read_copy(struct isp1760_hcd *priv, u32 *src,
- 		len--;
- 		buff8++;
- 	}
-+
- }
- 
- static void priv_write_copy(const struct isp1760_hcd *priv, const u32 *src,
- 		__u32 __iomem *dst, u32 len)
- {
--	while (len >= 4) {
--		__raw_writel(*src, dst);
--		len -= 4;
--		src++;
--		dst++;
--	}
- 
--	if (!len)
--		return;
--	/* in case we have 3, 2 or 1 by left. The buffer is allocated and the
--	 * extra bytes should not be read by the HW
--	 */
--
--	__raw_writel(*src, dst);
-+	if (unlikely((u32)src & 0x3)) {
-+		while (len >= 4) {
-+			__raw_writel(get_unaligned(src), dst);
-+			len -= 4;
-+			src++;
-+			dst++;
-+		}
-+	
-+		if (!len)
-+			return;
-+		/* in case we have 3, 2 or 1 by left. The buffer is allocated and the
-+		 * extra bytes should not be read by the HW
-+		 */
-+	
-+		__raw_writel(get_unaligned(src), dst);
-+	
-+	} else{
-+		while (len >= 4) {
-+			__raw_writel(*src, dst);
-+			len -= 4;
-+			src++;
-+			dst++;
-+		}
-+	
-+		if (!len)
-+			return;
-+		/* in case we have 3, 2 or 1 by left. The buffer is allocated and the
-+		 * extra bytes should not be read by the HW
-+		 */
-+	
-+		__raw_writel(*src, dst);	
-+	}
- }
- 
- /* memory management of the 60kb on the chip from 0x1000 to 0xffff */
--- 
-1.5.6.3
+> If the client is using better interface like epoll, sending revents via
+> notification could help a bit but again the problem is that the ->poll
+> vfs interface is not ready for that.  e.g. How do you tell whether
+> ->poll is for epoll polling after the notification or an asynchronous
+> poll(2) being called after a read(2) after the notification arrived.
+> There simply isn't enough information to determine when the cached
+> revents (no matter how short the period of caching is) can be used or
+> not.  One thing we can do is to invalidate the received revents value on
+> every file operation and then reverting to synchronous call only when
+> cached revents is not available, but I don't really see good
+> justifications for such over complexity.
+
+It's an optimization, and not a very complex one at that.  But yes, we
+should leave that till later, when the simple interface prooved itself
+working.
+
+Miklos
