@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbYKQNZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbYKQNZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbYKQNZZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYKQNZL
+	id S1752762AbYKQNZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYKQNZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:25:11 -0500
-Received: from ozlabs.org ([203.10.76.45]:39397 "EHLO ozlabs.org"
+	Mon, 17 Nov 2008 08:25:12 -0500
+Received: from ozlabs.org ([203.10.76.45]:39400 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbYKQNZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751582AbYKQNZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 17 Nov 2008 08:25:10 -0500
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Mon Nov 17 23:47:44 CST 2008
 CC: akpm@linux-foundation.org
-Subject: [PATCH 1/3] Clean up alloc_percpu: make ip_rt_acct a normal percpu var
+Subject: [PATCH 2/3] Clean up alloc_percpu: add align argument to __alloc_percpu.
 Cc: Christoph Lameter <cl@linux-foundation.org>
-Message-Id: <20081117132509.361BEDDD0B@ozlabs.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: netdev@vger.kernel.org
+Message-Id: <20081117132509.757C5DDDE6@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There's no reason for this to be dynamically allocated: we panic if
-allocation fails anyway.
+This prepares for a real __alloc_percpu, by adding an alignment argument.
+Currently there are two files which use this, so fix them up too.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> 
 Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: netdev@vger.kernel.org
 ---
- include/net/route.h |    3 ++-
- net/ipv4/ip_input.c |    2 +-
- net/ipv4/route.c    |   10 ++--------
- 3 files changed, 5 insertions(+), 10 deletions(-)
+ block/blktrace.c       |    2 +-
+ include/linux/percpu.h |    5 +++--
+ net/ipv4/af_inet.c     |    4 ++--
+ 3 files changed, 6 insertions(+), 5 deletions(-)
 
-diff -r 643c2cdfdb62 include/net/route.h
---- a/include/net/route.h	Mon Nov 17 19:57:42 2008 +1030
-+++ b/include/net/route.h	Mon Nov 17 20:23:37 2008 +1030
-@@ -34,6 +34,7 @@
- #include <linux/ip.h>
- #include <linux/cache.h>
- #include <linux/security.h>
-+#include <linux/percpu.h>
+diff -r d7e495785ad1 block/blktrace.c
+--- a/block/blktrace.c	Mon Nov 17 20:23:37 2008 +1030
++++ b/block/blktrace.c	Mon Nov 17 20:56:22 2008 +1030
+@@ -389,7 +389,7 @@
+ 	if (!bt->sequence)
+ 		goto err;
  
- #ifndef __KERNEL__
- #warning This file is not supposed to be used outside of kernel.
-@@ -105,7 +106,7 @@
-         unsigned int out_hlist_search;
- };
+-	bt->msg_data = __alloc_percpu(BLK_TN_MAX_MSG);
++	bt->msg_data = __alloc_percpu(BLK_TN_MAX_MSG, __alignof__(char));
+ 	if (!bt->msg_data)
+ 		goto err;
  
--extern struct ip_rt_acct *ip_rt_acct;
-+DECLARE_PER_CPU(struct ip_rt_acct[256], ip_rt_acct);
+diff -r d7e495785ad1 include/linux/percpu.h
+--- a/include/linux/percpu.h	Mon Nov 17 20:23:37 2008 +1030
++++ b/include/linux/percpu.h	Mon Nov 17 20:56:22 2008 +1030
+@@ -112,9 +112,10 @@
  
- struct in_device;
- extern int		ip_rt_init(void);
-diff -r 643c2cdfdb62 net/ipv4/ip_input.c
---- a/net/ipv4/ip_input.c	Mon Nov 17 19:57:42 2008 +1030
-+++ b/net/ipv4/ip_input.c	Mon Nov 17 20:23:37 2008 +1030
-@@ -339,7 +339,7 @@
+ /* (legacy) interface for use without CPU hotplug handling */
  
- #ifdef CONFIG_NET_CLS_ROUTE
- 	if (unlikely(skb->dst->tclassid)) {
--		struct ip_rt_acct *st = per_cpu_ptr(ip_rt_acct, smp_processor_id());
-+		struct ip_rt_acct *st = __get_cpu_var(ip_rt_acct);
- 		u32 idx = skb->dst->tclassid;
- 		st[idx&0xFF].o_packets++;
- 		st[idx&0xFF].o_bytes+=skb->len;
-diff -r 643c2cdfdb62 net/ipv4/route.c
---- a/net/ipv4/route.c	Mon Nov 17 19:57:42 2008 +1030
-+++ b/net/ipv4/route.c	Mon Nov 17 20:23:37 2008 +1030
-@@ -541,7 +541,7 @@
- 			unsigned int j;
- 			u32 *src;
+-#define __alloc_percpu(size)	percpu_alloc_mask((size), GFP_KERNEL, \
++#define __alloc_percpu(size, align)	percpu_alloc_mask((size), GFP_KERNEL, \
+ 						  cpu_possible_map)
+-#define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type))
++#define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type), \
++						       __alignof__(type))
+ #define free_percpu(ptr)	percpu_free((ptr))
+ #define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
  
--			src = ((u32 *) per_cpu_ptr(ip_rt_acct, i)) + offset;
-+			src = ((u32 *)per_cpu(ip_rt_acct, i)) + offset;
- 			for (j = 0; j < length/4; j++)
- 				dst[j] += src[j];
- 		}
-@@ -3237,7 +3237,7 @@
- 
- 
- #ifdef CONFIG_NET_CLS_ROUTE
--struct ip_rt_acct *ip_rt_acct __read_mostly;
-+DEFINE_PER_CPU(struct ip_rt_acct[256], ip_rt_acct);
- #endif /* CONFIG_NET_CLS_ROUTE */
- 
- static __initdata unsigned long rhash_entries;
-@@ -3253,12 +3253,6 @@
- int __init ip_rt_init(void)
+diff -r d7e495785ad1 net/ipv4/af_inet.c
+--- a/net/ipv4/af_inet.c	Mon Nov 17 20:23:37 2008 +1030
++++ b/net/ipv4/af_inet.c	Mon Nov 17 20:56:22 2008 +1030
+@@ -1283,10 +1283,10 @@
+ int snmp_mib_init(void *ptr[2], size_t mibsize)
  {
- 	int rc = 0;
--
--#ifdef CONFIG_NET_CLS_ROUTE
--	ip_rt_acct = __alloc_percpu(256 * sizeof(struct ip_rt_acct));
--	if (!ip_rt_acct)
--		panic("IP: failed to allocate ip_rt_acct\n");
--#endif
- 
- 	ipv4_dst_ops.kmem_cachep =
- 		kmem_cache_create("ip_dst_cache", sizeof(struct rtable), 0,
+ 	BUG_ON(ptr == NULL);
+-	ptr[0] = __alloc_percpu(mibsize);
++	ptr[0] = __alloc_percpu(mibsize, __alignof__(unsigned long));
+ 	if (!ptr[0])
+ 		goto err0;
+-	ptr[1] = __alloc_percpu(mibsize);
++	ptr[1] = __alloc_percpu(mibsize, __alignof__(unsigned long));
+ 	if (!ptr[1])
+ 		goto err1;
+ 	return 0;
 
