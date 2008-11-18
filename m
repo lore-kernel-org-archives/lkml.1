@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYKRR12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYKRR2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754322AbYKRR12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 12:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbYKRR1U
+	id S1754873AbYKRR2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 12:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYKRR2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 12:27:20 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:55476 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbYKRR1T (ORCPT
+	Tue, 18 Nov 2008 12:28:15 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:29362 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbYKRR2O convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 12:27:19 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=Eoz7mxBZn9GNJk3mwdDeiPcCU/CJhd22bkfcuWN2fT+8Gt2br+GvLQPLALPBnSFt2
-	pAy+BhffyPOnGL167jbIw==
-MIME-Version: 1.0
-In-Reply-To: <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
-References: <20081115011452.GA28135@google.com> <49218FB4.6090805@nortel.com>
-	 <b040c32a0811171204p4ce6d706j3ee2c018d0f33548@mail.gmail.com>
-	 <4921DFD8.9060509@nortel.com>
-	 <1226985548.29743.6.camel@lappy.programming.kicks-ass.net>
-	 <b040c32a0811172333k5a89ccfy6438bf66d32dca5d@mail.gmail.com>
-	 <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
-Date: Tue, 18 Nov 2008 09:27:14 -0800
-Message-ID: <b040c32a0811180927r77e0a112s97a01d20d3cbe3d5@mail.gmail.com>
-Subject: Re: busted CFS group load balancer?
-From: Ken Chen <kenchen@google.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 12:28:14 -0500
+Message-Id: <4923096A.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 18 Nov 2008 17:28:58 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Zachary Amsden" <zach@vmware.com>
+Subject: Re: arch_flush_lazy_mmu_mode() in arch/x86/mm/highmem_32.c
+References: <4921428A.76E4.0078.0@novell.com>
+ <1226944387.9969.77.camel@bodhitayantram.eng.vmware.com>
+ <4921BA8E.60806@goop.org> <492284CE.76E4.0078.0@novell.com>
+ <4922F4EC.6050408@goop.org>
+In-Reply-To: <4922F4EC.6050408@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 4:30 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->> I'm also very troubled with this calculation in __update_group_shares_cpu():
->>
->>         shares = (sd_shares * rq_weight) / (sd_rq_weight + 1);
->>
->> Won't you have rounding problem here?  value 'shares' will gradually
->> decrease for each iteration of __update_group_shares_cpu()?
+>>> Jeremy Fitzhardinge <jeremy@goop.org> 18.11.08 18:01 >>>
+>Yes, it disables interrupts while its actually issuing the multicall.  I 
+>don't think that matters much, since the multicall itself can't be 
+>preempted (can it?) and the rest of the code is very short.  Originally 
+>it disabled interrupts for the entire lazy section, which is obviously 
+>worse.
+
+If an interrupt (event) comes in, a multicall could of course be 'preempted',
+in order to service the event. But of course that works only if event
+delivery isn't disabled.
+
+>> There's no reason to do any flush at all if you suppress batching temporarily.
+>> And it only needs (would need) explicit suppressing here because you can't
+>> easily recognize being in the context of a page fault handler from the
+>> batching functions (other than recognizing being in the context of an
+>> interrupt handler, which is what would allow removing the flush calls from
+>> highmem_32.c).
 >
-> Yes it will, however at the top of the sched-domain tree its reset.
->
->        if (!sd->parent || !(sd->parent->flags & SD_LOAD_BALANCE))
->                shares = tg->shares;
+>I'm not sure what your concern is here.  If batching is currently 
+>enabled, then the flush will push out anything pending immediately.  If 
+>batching is disabled, then the flush will be a noop and return immediately.
 
-Hmm?  it is only true mostly on flat smp machine, or on numa system
-where task is woken up across a sched-domain.
+Latency, as before. The page fault should have to take longer than it really
+needs, and the flushing of a pending batch clearly doesn't belong to the
+page fault itself.
 
-There is this code in try_to_wake_up():
+Jan
 
-                for_each_domain(this_cpu, sd) {
-                        if (cpu_isset(cpu, sd->span)) {
-                                update_shares(sd);
-                                break;
-                        }
-                }
-
-It doesn't iterate to the top half of the time on numa machine.
-
-- Ken
