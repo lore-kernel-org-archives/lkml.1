@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbYKROdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYKROel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbYKROdv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYKROdn
+	id S1753330AbYKROel (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYKROed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:33:43 -0500
-Received: from gv-out-0910.google.com ([216.239.58.191]:18684 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbYKROdm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:33:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=ej++4jc1evbkILssnYNbE3HB0lBFmUCaQiRHXmMxkmpcDl6tEDEEtQ59ltXw81Qez5
-         sLsDsy+o5fBmr8vhXeK044urB7LElqNiV1m+Bw1PxgYaumT56cnrF9v0OuZEOW/lu68D
-         UFpz2dnuRKwJcs21OKbveHfsBGe8ku07h0k7A=
-From: Eric Lacombe <goretux@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [x86] do_arch_prctl - bug?
-Date: Tue, 18 Nov 2008 15:33:32 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.5; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
+	Tue, 18 Nov 2008 09:34:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44706 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751147AbYKROed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 09:34:33 -0500
+Date: Tue, 18 Nov 2008 09:34:16 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: Active waiting with yield()
+In-Reply-To: <20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0811180921450.12274@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
+ <20081114190616.30dd273e@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
+ <1226696221.7685.8148.camel@twins> <Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
+ <1226789714.8172.0.camel@lappy.programming.kicks-ass.net>
+ <Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
+ <20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811181533.33108.goretux@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 17 Nov 2008, Alan Cox wrote:
 
-I would like to know why the ARCH_SET_GS action of sys_arch_prctl, write the 
-MSR MSR_KERNEL_GS_BASE and not the MSR MSR_GS_BASE when the variable "doit" 
-equals 1? Is that a bug?
+> > --- so if the driver processes more than 100000 requests between reboots, 
+> > wait queues actually slow things down.
+> 
+> Versus power consumption and virtualisation considerations. Plus your
+> numbers are wrong. You seem terribly keen to ignore the fact that the
+> true cost is a predicted branch and usually a predicted branch of a
+> cached variable and you'll only touch the wait queue in rare cases.
 
-In other words, why the following code :
-...
-	if (doit) {
-        	load_gs_index(0);
-                ret = checking_wrmsrl(MSR_KERNEL_GS_BASE, addr)
-	} 
-...
-is not the following one :
-...
-	if (doit) {
-		ret = checking_wrmsrl(MSR_GS_BASE, addr)
-        	load_gs_index(0);
-	} 
-...
+You will touch the wait queue always when finishing the last pending 
+request --- just to find out that there is no one waiting on it.
 
-I copy for clarity the beginning of the function "do_arch_prctl" :
+And besides cache line, there is coding and testing overhead with wait 
+queues. If the programmer forgets to decrement the number of pending 
+requests, he finds it out pretty quickly (the driver won't unload). If he 
+forgets to wake the queue up, the code can run with this bug long without 
+anyone noticing it --- unless someone tries to unload the driver at a 
+specific point --- I have seen this too.
 
-long do_arch_prctl(struct task_struct *task, int code, unsigned long addr)
-{ 
-        int ret = 0; 
-        int doit = task == current;
-        int cpu;
+> I'd also note as an aside modern drivers usually run off krefs so
+> destruction and thus closedown is refcounted and comes off the last kref
+> destruct.
+> 
+> Alan
 
-        switch (code) { 
-        case ARCH_SET_GS:
-                if (addr >= TASK_SIZE_OF(task))
-                        return -EPERM; 
-                cpu = get_cpu();
-                /* handle small bases via the GDT because that's faster to 
-                   switch. */
-                if (addr <= 0xffffffff) {  
-                        set_32bit_tls(task, GS_TLS, addr); 
-                        if (doit) { 
-                                load_TLS(&task->thread, cpu);
-                                load_gs_index(GS_TLS_SEL); 
-                        }
-                        task->thread.gsindex = GS_TLS_SEL; 
-                        task->thread.gs = 0;
-                } else { 
-                        task->thread.gsindex = 0;
-                        task->thread.gs = addr;
-                        if (doit) {
-                              load_gs_index(0);
-                              ret = checking_wrmsrl(MSR_KERNEL_GS_BASE, addr);
-                        } 
-                }
-                put_cpu();
-                break;
-[...]
+So what are the reasons why you (and others) are against active waiting? 
+All you are saying is that my reasons are wrong, but you haven't single 
+example when active waiting causes trouble. If there is a workload when 
+waiting 1ms-to-10ms with mdelay(1) on driver unload would cause discomfort 
+to the user, describe it.
 
-Regards,
-
-	Eric
+Mikulas
