@@ -1,107 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbYKRQHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbYKRQOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753134AbYKRQHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYKRQHD
+	id S1753866AbYKRQOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbYKRQNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:07:03 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:62339 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbYKRQHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:07:00 -0500
-Cc: linux-kernel Kernel <linux-kernel@vger.kernel.org>
-Message-Id: <07E85AE1-3F9B-45A0-BBFF-22B8DAD54158@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <200811190303.00474.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 18 Nov 2008 11:13:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57201 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbYKRQNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:13:53 -0500
+Message-ID: <4922E99B.8090604@kernel.org>
+Date: Tue, 18 Nov 2008 08:13:15 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2 - fix v2
+References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117173728.GA7384@elte.hu> <4921FC19.1080803@kernel.org> <20081117232837.GA10308@elte.hu> <20081118074346.GA21875@elte.hu>
+In-Reply-To: <20081118074346.GA21875@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: questions on how x86 uses IPI for tlb invalidates
-Date: Tue, 18 Nov 2008 10:06:55 -0600
-References: <6F2B69F5-7312-49AB-B86A-6AE6B753095B@freescale.com> <200811190244.52013.nickpiggin@yahoo.com.au> <7F4CB286-E739-4303-97FC-27AB7A202B25@freescale.com> <200811190303.00474.nickpiggin@yahoo.com.au>
-X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Nov 18, 2008, at 10:03 AM, Nick Piggin wrote:
+Impact: fix wakeup_secondary_cpu with hotplug
 
-> On Wednesday 19 November 2008 02:51, Kumar Gala wrote:
->> On Nov 18, 2008, at 9:44 AM, Nick Piggin wrote:
->>> On Wednesday 19 November 2008 02:20, Kumar Gala wrote:
->>>> I'm looking at adding some code into powerpc for doing tlb  
->>>> invalidate
->>>> broadcasts via IPI and am looking at the x86 code as a model.  I  
->>>> was
->>>> wondering how the x86 code ensures we aren't interrupted in the
->>>> process of doing something like flush_tlb_page().
->>>
->>> What's the problem with being interrupted?
->>
->> I'm in the middle of doing an invalidate, I get interrupted, in
->> processing the interrupt I cause another tlb invalidate while the
->> first one is still in progress and hasn't finished.
->>
->> For example I'm seeing in my code hacking:
->>
->> Freeing unused kernel memory: 208k init
->> BUG: soft lockup - CPU#1 stuck for 61s! [init:1]
->> Modules linked in:
->> NIP: c00649c4 LR: c00649a8 CTR: 00000000
->> REGS: ef82b750 TRAP: 0901   Not tainted  (2.6.28-rc5-00019-ge14c8bf-
->> dirty)
->> MSR: 00029000 <EE,ME>  CR: 44000428  XER: 00000000
->> TASK = ef830000[1] 'init' THREAD: ef82a000 CPU: 1
->> GPR00: 00000001 ef82b800 ef830000 c1002320 00029000 ef82b8f8 00000001
->> 00000000
->> GPR08: 00000002 00000001 00000000 00029000 84000422
->> NIP [c00649c4] generic_exec_single+0x84/0xb0
->> LR [c00649a8] generic_exec_single+0x68/0xb0
->> Call Trace:
->> [ef82b800] [c02f4084] dev_hard_start_xmit+0x324/0x3c0 (unreliable)
->> [ef82b830] [c0064afc] smp_call_function_single+0xdc/0x110
->> [ef82b870] [c0064ce8] smp_call_function_mask+0x1b8/0x250
->> [ef82b8f0] [c0015468] flush_tlb_page+0xa8/0xc0
->> [ef82b920] [c03a599c] xdr_partial_copy_from_skb+0x20c/0x2f0
->> [ef82b970] [c03a5ae8] csum_partial_copy_to_xdr+0x68/0x170
->> [ef82b990] [c03a8d60] xs_udp_data_ready+0x100/0x250
->> [ef82b9d0] [c02e8308] sock_queue_rcv_skb+0xf8/0x120
->> [ef82b9f0] [c033766c] __udp_queue_rcv_skb+0x1c/0x110
->> [ef82ba00] [c033897c] udp_queue_rcv_skb+0x28c/0x2e0
->> [ef82ba20] [c0338bf0] __udp4_lib_rcv+0x220/0x890
->> [ef82ba80] [c03136b0] ip_local_deliver+0xa0/0x240
->> [ef82baa0] [c03133ec] ip_rcv+0x3bc/0x5e0
->> [ef82bae0] [c02f3754] netif_receive_skb+0x284/0x310
->> [ef82bb10] [c0219c98] gfar_clean_rx_ring+0xd8/0x430
->> [ef82bb50] [c021a080] gfar_poll+0x90/0x170
->> [ef82bb70] [c02f1374] net_rx_action+0x104/0x200
->> [ef82bbc0] [c004166c] __do_softirq+0xbc/0x180
->> [ef82bc00] [c0004dc4] do_softirq+0x64/0x70
->> [ef82bc10] [c00410f4] irq_exit+0x54/0x70
->> [ef82bc20] [c0004f1c] do_IRQ+0x8c/0x140
->> [ef82bc40] [c00109cc] ret_from_except+0x0/0x18
->> [ef82bd00] [c0510e78] per_cpu____irq_regs+0x0/0x4
->> [ef82bd30] [c0064afc] smp_call_function_single+0xdc/0x110
->> [ef82bd70] [c0064ce8] smp_call_function_mask+0x1b8/0x250
->> [ef82bdf0] [c0015468] flush_tlb_page+0xa8/0xc0
->> [ef82be20] [c008c60c] handle_mm_fault+0x70c/0xa80
->> [ef82be80] [c0013df4] do_page_fault+0x274/0x510
->> [ef82bf40] [c00107b4] handle_page_fault+0xc/0x80
->> Instruction dump:
->> 913f0004 7c641b78 7f43d378 93e90000 4836226d 7c0004ac 7f9cc800  
->> 419e0030
->> 73c00001 40820008 48000010 a01f0010 <70090001> 4082fff8 80010034
->> bb010010
->
-> You can't do the broadcast TLB invalidates in kunmap_atomic.
-> All that's needed in that case is to just invalidate the local
-> CPU.
+We can not put that in x86_quirks, because that is __initdata.
+So try to move that to genapic, and add update_genapic in x86_quirks.
 
-Agreed, I was planning on fixing that.  I guess the high level  
-question is if a broadcast invalidate can occur in soft or hard irq  
-context.
+later we even could use that stub to
+1. autodetect CONFIG_ES7000_CLUSTERED_APIC
+2. more correct inquire_remote_apic with apic_verbosity setting.
 
-- k
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/genapic_32.h             |    1 +
+ arch/x86/include/asm/genapic_64.h             |    2 ++
+ arch/x86/include/asm/mach-default/mach_apic.h |    2 ++
+ arch/x86/include/asm/mach-generic/mach_apic.h |    1 +
+ arch/x86/include/asm/setup.h                  |    3 ++-
+ arch/x86/kernel/es7000_32.c                   |   11 ++++++++++-
+ arch/x86/kernel/genapic_64.c                  |    4 ++++
+ arch/x86/kernel/numaq_32.c                    |   11 +++++++++--
+ arch/x86/kernel/setup.c                       |   15 ++++++++++++++-
+ arch/x86/kernel/smpboot.c                     |   11 +----------
+ arch/x86/mach-generic/probe.c                 |    4 ++++
+ 11 files changed, 50 insertions(+), 15 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/genapic_32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/genapic_32.h
++++ linux-2.6/arch/x86/include/asm/genapic_32.h
+@@ -66,6 +66,7 @@ struct genapic {
+ 	void (*send_IPI_allbutself)(int vector);
+ 	void (*send_IPI_all)(int vector);
+ #endif
++	int (*wakeup_cpu)(int apicid, unsigned long start_eip);
+ 	int trampoline_phys_low;
+ 	int trampoline_phys_high;
+ 	void (*wait_for_init_deassert)(atomic_t *deassert);
+Index: linux-2.6/arch/x86/include/asm/genapic_64.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/genapic_64.h
++++ linux-2.6/arch/x86/include/asm/genapic_64.h
+@@ -32,6 +32,8 @@ struct genapic {
+ 	unsigned int (*get_apic_id)(unsigned long x);
+ 	unsigned long (*set_apic_id)(unsigned int id);
+ 	unsigned long apic_id_mask;
++	/* wakeup_secondary_cpu */
++	int (*wakeup_cpu)(int apicid, unsigned long start_eip);
+ };
+ 
+ extern struct genapic *genapic;
+Index: linux-2.6/arch/x86/include/asm/mach-default/mach_apic.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mach-default/mach_apic.h
++++ linux-2.6/arch/x86/include/asm/mach-default/mach_apic.h
+@@ -32,11 +32,13 @@ static inline cpumask_t target_cpus(void
+ #define vector_allocation_domain    (genapic->vector_allocation_domain)
+ #define read_apic_id()  (GET_APIC_ID(apic_read(APIC_ID)))
+ #define send_IPI_self (genapic->send_IPI_self)
++#define wakeup_secondary_cpu (genapic->wakeup_cpu)
+ extern void setup_apic_routing(void);
+ #else
+ #define INT_DELIVERY_MODE dest_LowestPrio
+ #define INT_DEST_MODE 1     /* logical delivery broadcast to all procs */
+ #define TARGET_CPUS (target_cpus())
++#define wakeup_secondary_cpu wakeup_secondary_cpu_via_init
+ /*
+  * Set up the logical destination ID.
+  *
+Index: linux-2.6/arch/x86/include/asm/mach-generic/mach_apic.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mach-generic/mach_apic.h
++++ linux-2.6/arch/x86/include/asm/mach-generic/mach_apic.h
+@@ -27,6 +27,7 @@
+ #define vector_allocation_domain (genapic->vector_allocation_domain)
+ #define enable_apic_mode (genapic->enable_apic_mode)
+ #define phys_pkg_id (genapic->phys_pkg_id)
++#define wakeup_secondary_cpu (genapic->wakeup_cpu)
+ 
+ extern void generic_bigsmp_probe(void);
+ 
+Index: linux-2.6/arch/x86/include/asm/setup.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/setup.h
++++ linux-2.6/arch/x86/include/asm/setup.h
+@@ -21,6 +21,7 @@ static inline int is_visws_box(void) { r
+ #endif
+ 
+ extern int wakeup_secondary_cpu_via_nmi(int apicid, unsigned long start_eip);
++extern int wakeup_secondary_cpu_via_init(int apicid, unsigned long start_eip);
+ /*
+  * Any setup quirks to be performed?
+  */
+@@ -44,7 +45,7 @@ struct x86_quirks {
+ 	void (*smp_read_mpc_oem)(struct mp_config_oemtable *oemtable,
+                                     unsigned short oemsize);
+ 	int (*setup_ioapic_ids)(void);
+-	int (*wakeup_secondary_cpu)(int apicid, unsigned long start_eip);
++	int (*update_genapic)(void);
+ };
+ 
+ extern struct x86_quirks *x86_quirks;
+Index: linux-2.6/arch/x86/kernel/es7000_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/es7000_32.c
++++ linux-2.6/arch/x86/kernel/es7000_32.c
+@@ -40,6 +40,7 @@
+ #include <asm/smp.h>
+ #include <asm/apicdef.h>
+ #include <mach_mpparse.h>
++#include <asm/genapic.h>
+ #include <asm/setup.h>
+ 
+ /*
+@@ -180,6 +181,13 @@ static int wakeup_secondary_cpu_via_mip(
+ 
+ 	return 0;
+ }
++
++static int __init es7000_update_genapic(void)
++{
++	genapic->wakeup_cpu = wakeup_secondary_cpu_via_mip;
++
++	return 0;
++}
+ #endif
+ 
+ void __init
+@@ -197,8 +205,9 @@ setup_unisys(void)
+ 	else
+ 		es7000_plat = ES7000_CLASSIC;
+ 	ioapic_renumber_irq = es7000_rename_gsi;
++
+ #ifdef CONFIG_ES7000_CLUSTERED_APIC
+-	x86_quirks->wakeup_secondary_cpu = wakeup_secondary_cpu_via_mip;
++	x86_quirks->update_genapic = es7000_update_genapic;
+ #endif
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/genapic_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genapic_64.c
++++ linux-2.6/arch/x86/kernel/genapic_64.c
+@@ -21,6 +21,7 @@
+ #include <asm/smp.h>
+ #include <asm/ipi.h>
+ #include <asm/genapic.h>
++#include <asm/setup.h>
+ 
+ extern struct genapic apic_flat;
+ extern struct genapic apic_physflat;
+@@ -53,6 +54,9 @@ void __init setup_apic_routing(void)
+ 			genapic = &apic_physflat;
+ 		printk(KERN_INFO "Setting APIC routing to %s\n", genapic->name);
+ 	}
++
++	if (x86_quirks->update_genapic)
++		x86_quirks->update_genapic();
+ }
+ 
+ /* Same for both flat and physical. */
+Index: linux-2.6/arch/x86/kernel/numaq_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/numaq_32.c
++++ linux-2.6/arch/x86/kernel/numaq_32.c
+@@ -31,7 +31,7 @@
+ #include <asm/numaq.h>
+ #include <asm/topology.h>
+ #include <asm/processor.h>
+-#include <asm/mpspec.h>
++#include <asm/genapic.h>
+ #include <asm/e820.h>
+ #include <asm/setup.h>
+ 
+@@ -235,6 +235,13 @@ static int __init numaq_setup_ioapic_ids
+ 	return 1;
+ }
+ 
++static int __init numaq_update_genapic(void)
++{
++	genapic->wakeup_cpu = wakeup_secondary_cpu_via_nmi;
++
++	return 0;
++}
++
+ static struct x86_quirks numaq_x86_quirks __initdata = {
+ 	.arch_pre_time_init	= numaq_pre_time_init,
+ 	.arch_time_init		= NULL,
+@@ -250,7 +257,7 @@ static struct x86_quirks numaq_x86_quirk
+ 	.mpc_oem_pci_bus	= mpc_oem_pci_bus,
+ 	.smp_read_mpc_oem	= smp_read_mpc_oem,
+ 	.setup_ioapic_ids	= numaq_setup_ioapic_ids,
+-	.wakeup_secondary_cpu	= wakeup_secondary_cpu_via_nmi,
++	.update_genapic		= numaq_update_genapic,
+ };
+ 
+ void numaq_mps_oem_check(struct mp_config_table *mpc, char *oem,
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -584,7 +584,20 @@ static int __init setup_elfcorehdr(char
+ early_param("elfcorehdr", setup_elfcorehdr);
+ #endif
+ 
+-static struct x86_quirks default_x86_quirks __initdata;
++static int __init default_update_genapic(void)
++{
++#ifdef CONFIG_X86_SMP
++# if defined(CONFIG_X86_GENERICARCH) || defined(CONFIG_X86_64)
++	genapic->wakeup_cpu = wakeup_secondary_cpu_via_init;
++# endif
++#endif
++
++	return 0;
++}
++
++static struct x86_quirks default_x86_quirks __initdata = {
++	.update_genapic         = default_update_genapic,
++};
+ 
+ struct x86_quirks *x86_quirks __initdata = &default_x86_quirks;
+ 
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -615,7 +615,7 @@ wakeup_secondary_cpu_via_nmi(int logical
+ 	return (send_status | accept_status);
+ }
+ 
+-static int __devinit
++int __devinit
+ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+ {
+ 	unsigned long send_status, accept_status = 0;
+@@ -736,15 +736,6 @@ wakeup_secondary_cpu_via_init(int phys_a
+ 	return (send_status | accept_status);
+ }
+ 
+-static int __devinit
+-wakeup_secondary_cpu(int apicid, unsigned long start_eip)
+-{
+-	if (x86_quirks->wakeup_secondary_cpu)
+-		return x86_quirks->wakeup_secondary_cpu(apicid, start_eip);
+-
+-	return wakeup_secondary_cpu_via_init(apicid, start_eip);
+-}
+-
+ struct create_idle {
+ 	struct work_struct work;
+ 	struct task_struct *idle;
+Index: linux-2.6/arch/x86/mach-generic/probe.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mach-generic/probe.c
++++ linux-2.6/arch/x86/mach-generic/probe.c
+@@ -15,6 +15,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ #include <asm/genapic.h>
++#include <asm/setup.h>
+ 
+ extern struct genapic apic_numaq;
+ extern struct genapic apic_summit;
+@@ -57,6 +58,9 @@ static int __init parse_apic(char *arg)
+ 		}
+ 	}
+ 
++	if (x86_quirks->update_genapic)
++		x86_quirks->update_genapic();
++
+ 	/* Parsed again by __setup for debug/verbose */
+ 	return 0;
+ }
