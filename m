@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbYKRNtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYKRNtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194AbYKRNtV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 08:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYKRNsw
+	id S1753330AbYKRNtg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 08:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYKRNtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 08:48:52 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54883 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752321AbYKRNsv (ORCPT
+	Tue, 18 Nov 2008 08:49:14 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38961 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYKRNtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 08:48:51 -0500
-X-Sasl-enc: 1qoWm2fpqn3u94OyjOFhmyRu4QMSYHvovtRxezFgqjqG 1227016129
-Date: Tue, 18 Nov 2008 11:48:47 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hpa@zytor.com, multinymous@gmail.com, jrm8005@gmail.com,
-       tpctl-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Tpctl-users] Inclusion of tp_smapi module into kernel?
-Message-ID: <20081118134847.GD18285@khazad-dum.debian.net>
-References: <200811171455.50039.hanno@hboeck.de> <49219DF5.5040404@zytor.com> <3aaafc130811170913o761ce43fg3a2738586ebd2396@mail.gmail.com> <41840b750811171035w63c794aepaa273bc55fbaf2@mail.gmail.com> <4921C425.7020806@zytor.com> <E1L2Aog-0007g9-94@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1L2Aog-0007g9-94@pomaz-ex.szeredi.hu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 18 Nov 2008 08:49:13 -0500
+Subject: Re: busted CFS group load balancer?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ken Chen <kenchen@google.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
+References: <20081115011452.GA28135@google.com>
+	 <49218FB4.6090805@nortel.com>
+	 <b040c32a0811171204p4ce6d706j3ee2c018d0f33548@mail.gmail.com>
+	 <4921DFD8.9060509@nortel.com>
+	 <1226985548.29743.6.camel@lappy.programming.kicks-ass.net>
+	 <b040c32a0811172333k5a89ccfy6438bf66d32dca5d@mail.gmail.com>
+	 <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 14:48:53 +0100
+Message-Id: <1227016133.29743.17.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008, Miklos Szeredi wrote:
-> On Mon, 17 Nov 2008, H. Peter Anvin wrote:
-> > Shem Multinymous wrote:
-> > > On Mon, Nov 17, 2008 at 12:13 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
-> > >> There are several utilities maintained by this author, and finding
-> > >> some way to merge the code has been tried more than once. If you look
-> > >> back far enough, Andrew asked to have another of the project's members
-> > >> sign off on the patch, and maybe that would be acceptable enough, but
-> > >> afaik the author has never responded directly to that idea.
-> > > 
-> > > We've discussed that in private at the time, and recently on LKML too.
-> > > In summary:
-> > > I'm fine with that, and so is everybody I talked to (including Linus),
-> > > except Greg KH who vetoed it since he believes the code is irrevocably
-> > > and contagiously evil.
-> > > 
+On Tue, 2008-11-18 at 13:30 +0100, Peter Zijlstra wrote:
+> On Mon, 2008-11-17 at 23:33 -0800, Ken Chen wrote:
+> > On Mon, Nov 17, 2008 at 9:19 PM, Peter Zijlstra wrote:
+> > > Note that with larger cpu count and/or lower group weight we'll quickly
+> > > run into numerical trouble...
+> > >
+> > > I would recommend trying this with the minimum weight in the order of
+> > > 8-16 times number of cpus on your system.
+> > >
+> > > There is only so much one can do with 10 bit fixed precision math :/
 > > 
-> > Signed-off-by is about copyright, it's not a review issue.  It means "I 
-> > certify that I know that the author had the rights to submit this code." 
-> >    Code quality is important but separate.
+> > That is probably one of the many problems.  I also found that the
+> > updates to the per-cpu task_group's sched_entity load weight
+> > (tg->se[cpu]->load.weight) is very problematic and very erratic.
+> > 
+> > The total rq_weight is calculated at one beginning of tg_shares_up(),
+> > 
+> >         for_each_cpu_mask(i, sd->span) {
+> >                 rq_weight += tg->cfs_rq[i]->load.weight;
+> >                 shares += tg->cfs_rq[i]->shares;
+> >         }
+> > 
+> > However, the scaling of per-cpu se->load.weight in function
+> > __update_group_shares_cpu() takes another lookup of
+> > tg->cfs_rq[cpu]->load.weight at a different time.
+> > cfs_rq[cpu].load.weight aren't always consistent across these two
+> > times.  Due to these inconsistency of value taken on per cpu cfs_rq,
+> > I've see tg->se[cpu]->load.weight jumping all over the place.  In our
+> > environment, the cpu loads are very dynamic.  Process
+> > queuing/dequeuing at high rate.
 > 
-> We've discussed this issue on the internal suse mailing lists, and
-> concluded that the solution is simple: someone from IBM, Lenovo or
-> whoever they license the technology from should sign off on the code.
-
-That would be nice, yes.
-
-> But implementing this got stuck at some stage.
+> Ok, if your load values are very unstable in the order of the
+> load-balance interval then you're hosed too, the same is true for the
+> normal smp load-balancer.
 > 
-> Can anybody help with info about who's responsible for this part of
-> the ThinkPad?
+> The cgroup load-balancer makes that even more problematic.
+> 
+> Again, there's just very little you can do about that, except increase
+> the coupling between cpus and thereby increase the overhead. Try
+> decreasing 
+> sysctl_sched_shares_ratelimit.
 
-SuSE has direct management-level and engineering-level contacts with the
-Lenovo team responsible for the ThinkPad.  IMO, the contact needs to be done
-through those channels (which are Linux-friendly).
 
-If SuSE decided not to do it, they must have had their reasons.  I wouldn't
-know them, but I can guess as much as anyone else, and my pet guess is that
-they are waiting for an opportune time.
+Also, lower sysctl_sched_shares_thresh to 1 or 0.
 
-If you work with SuSE, you could try to use your internal channels to find
-out what really is happening.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
