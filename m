@@ -1,144 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYKRWer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbYKRWoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbYKRWer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 17:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYKRWej
+	id S1753923AbYKRWoi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 17:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYKRWo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 17:34:39 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:25488 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753225AbYKRWei convert rfc822-to-8bit (ORCPT
+	Tue, 18 Nov 2008 17:44:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50844 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752926AbYKRWo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 17:34:38 -0500
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Bernhard Walle <bwalle@suse.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "wim@iguana.be" <wim@iguana.be>, "bwalle@suse.de" <bwalle@suse.de>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "Montgomery, Bob" <bob.montgomery@hp.com>
-Date: Tue, 18 Nov 2008 22:33:47 +0000
-Subject: RE: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space as
- executable
-Thread-Topic: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space
- as executable
-Thread-Index: AclJzT2iRs+5Ll2oSqOrZhtye6WvswAAExEA
-Message-ID: <183C1D5A376DE343AA8F94FC2A1EC1493AA5CEE59A@GVW1091EXB.americas.hpqcorp.net>
-References: <1226674023-5374-1-git-send-email-bwalle@suse.de>
- <20081118143015.72af31d3.akpm@linux-foundation.org>
-In-Reply-To: <20081118143015.72af31d3.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 18 Nov 2008 17:44:27 -0500
+Date: Tue, 18 Nov 2008 14:42:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: srostedt@redhat.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/3] kernel/trace/trace.c: introduce missing kfree
+Message-Id: <20081118144217.34ffa4e1.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0811141904580.10023@pc-004.diku.dk>
+References: <Pine.LNX.4.64.0811141904580.10023@pc-004.diku.dk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes. I agree with this fix. The HP ProLiant systems have an RBSU setting in the BIOS for the NX bit but we need to make certain we can execute as the default setting for this RBSU option may switch between enable/disable.
+On Fri, 14 Nov 2008 19:05:31 +0100 (CET)
+Julia Lawall <julia@diku.dk> wrote:
 
-
-Tom
-
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org]
-Sent: Tuesday, November 18, 2008 4:30 PM
-To: Bernhard Walle
-Cc: Mingarelli, Thomas; linux-kernel@vger.kernel.org; wim@iguana.be; bwalle@suse.de; stable@kernel.org
-Subject: Re: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space as executable
-
-On Fri, 14 Nov 2008 15:47:03 +0100
-Bernhard Walle <bwalle@suse.de> wrote:
-
-> The address provided by the SMBIOS/DMI CRU information is mapped via
-> ioremap() in the virtual address space. However, since the address
-> is executed (i.e. call'd), we need to set that pages as executable.
->
-> Without that, I get following oops on a HP ProLiant DL385 G2
-> machine with BIOS from 05/29/2008 when I trigger crashdump:
->
->     BUG: unable to handle kernel paging request at ffffc20011090c00
->     IP: [<ffffc20011090c00>] 0xffffc20011090c00
->     PGD 12f813067 PUD 7fe6a067 PMD 7effe067 PTE 80000000fffd3173
->     Oops: 0011 [1] SMP
->     last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
->     CPU 1
->     Modules linked in: autofs4 ipv6 af_packet cpufreq_conservative cpufreq_userspace
->      cpufreq_powersave powernow_k8 fuse loop dm_mod rtc_cmos ipmi_si sg rtc_core i2c
->     _piix4 ipmi_msghandler bnx2 sr_mod container button i2c_core hpilo joydev pcspkr
->      rtc_lib shpchp hpwdt cdrom pci_hotplug usbhid hid ff_memless ohci_hcd ehci_hcd
->     uhci_hcd usbcore edd ext3 mbcache jbd fan ide_pci_generic serverworks ide_core p
->     ata_serverworks pata_acpi cciss ata_generic libata scsi_mod dock thermal process
->     or thermal_sys hwmon
->     Supported: Yes
->     Pid: 0, comm: swapper Not tainted 2.6.27.5-HEAD_20081111100657-default #1
->     RIP: 0010:[<ffffc20011090c00>]  [<ffffc20011090c00>] 0xffffc20011090c00
->     RSP: 0018:ffff88012f6f9e68  EFLAGS: 00010046
->     RAX: 0000000000000d02 RBX: 0000000000000000 RCX: 0000000000000000
->     RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
->     RBP: ffff88012f6f9e98 R08: 666666666666660a R09: ffffffffa1006fc0
->     R10: 0000000000000000 R11: ffff88012f6f3ea8 R12: ffffc20011090c00
->     R13: ffff88012f6f9ee8 R14: 000000000000000e R15: 0000000000000000
->     FS:  00007ff70b29a6f0(0000) GS:ffff88012f6512c0(0000) knlGS:0000000000000000
->     CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->     CR2: ffffc20011090c00 CR3: 0000000000201000 CR4: 00000000000006e0
->     DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->     DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->     Process swapper (pid: 0, threadinfo ffff88012f6f2000, task ffff88007fa8a1c0)
->     Stack:  ffffffffa0f8502b 0000000000000002 ffffffff80738d50 0000000000000000
->      0000000000000046 0000000000000046 00000000fffffffe ffffffffa0f852ec
->      0000000000000000 ffffffff804ad9a6 0000000000000000 0000000000000000
->     Call Trace:
->     Inexact backtrace:
->
->      <NMI>  [<ffffffffa0f8502b>] ? asminline_call+0x2b/0x55 [hpwdt]
->      [<ffffffffa0f852ec>] hpwdt_pretimeout+0x3c/0xa0 [hpwdt]
->      [<ffffffff804ad9a6>] ? notifier_call_chain+0x29/0x4c
->      [<ffffffff802587e4>] ? notify_die+0x2d/0x32
->      [<ffffffff804abbdc>] ? default_do_nmi+0x53/0x1d9
->      [<ffffffff804abd90>] ? do_nmi+0x2e/0x43
->      [<ffffffff804ab552>] ? nmi+0xa2/0xd0
->      [<ffffffff80221ef9>] ? native_safe_halt+0x2/0x3
->      <<EOE>>  [<ffffffff8021345d>] ? default_idle+0x38/0x54
->      [<ffffffff8021359a>] ? c1e_idle+0x118/0x11c
->      [<ffffffff8020b3b5>] ? cpu_idle+0xa9/0xf1
->
->
->     Code: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff <55> 50 e8 00 00 00 00 58 48 2d 07 10 40 00 48 8b e8 58 e9 68 02
->     RIP  [<ffffc20011090c00>] 0xffffc20011090c00
->      RSP <ffff88012f6f9e68>
->     CR2: ffffc20011090c00
->     Kernel panic - not syncing: Fatal exception
->
->
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> From: Julia Lawall <julia@diku.dk>
+> 
+> Error handling code following a kzalloc should free the allocated data.
+> 
+> The semantic match that finds the problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> statement S;
+> expression E;
+> identifier f,l;
+> position p1,p2;
+> expression *ptr != NULL;
+> @@
+> 
+> (
+> if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
+> |
+> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+> ...
+> if (x == NULL) S
+> )
+> <... when != x
+>      when != if (...) { <+...x...+> }
+> x->f = E
+> ...>
+> (
+>  return \(0\|<+...x...+>\|ptr\);
+> |
+>  return@p2 ...;
+> )
+> 
+> @script:python@
+> p1 << r.p1;
+> p2 << r.p2;
+> @@
+> 
+> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 > ---
->  drivers/watchdog/hpwdt.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
-> index 9890dff..e83e1ac 100644
-> --- a/drivers/watchdog/hpwdt.c
-> +++ b/drivers/watchdog/hpwdt.c
-> @@ -40,6 +40,7 @@
->  #include <linux/bootmem.h>
->  #include <linux/slab.h>
->  #include <asm/desc.h>
-> +#include <asm/cacheflush.h>
->
->  #define PCI_BIOS32_SD_VALUE          0x5F32335F      /* "_32_" */
->  #define CRU_BIOS_SIGNATURE_VALUE     0x55524324
-> @@ -394,6 +395,8 @@ static void __devinit dmi_find_cru(const struct dmi_header *dm)
->                               smbios_cru64_ptr->double_offset;
->                       cru_rom_addr = ioremap(cru_physical_address,
->                               smbios_cru64_ptr->double_length);
-> +                     set_memory_x((unsigned long)cru_rom_addr & PAGE_MASK,
-> +                             smbios_cru64_ptr->double_length >> PAGE_SHIFT);
->               }
->       }
+>  kernel/trace/trace.c          |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 697eda3..d86e325 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -1936,6 +1936,7 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
+>  			ring_buffer_read_finish(iter->buffer_iter[cpu]);
+>  	}
+>  	mutex_unlock(&trace_types_lock);
+> +	kfree(iter);
+>  
+>  	return ERR_PTR(-ENOMEM);
 >  }
 
-This is also needed in 2.6.27.x, yes?
+Nobody seems to have applied this to anything yet?
+
+That function really needs help.  Sometimes it will return NULL and
+will set *ret.  Other times it will return ERR_PTR(-ENOMEM) and will
+fail to write anything to *ret.  One caller (tracing_open) ignores the
+return value.  Another caller (tracing_lt_open) tests the
+possibly-uninitialised `ret' and then blindly dereferences the
+possibly-IS_ERR return value.
+
+Or something like that.  I looked at it long enough to convince myself
+that it needs fixing ;)
+
+
