@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYKRRAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbYKRRBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbYKRRAw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 12:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYKRRAP
+	id S1754977AbYKRRBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 12:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYKRRBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 12:00:15 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:58285 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754878AbYKRRAM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 12:00:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i5F/Od6R/rU8p22okm8Qyl8QrXwAPwrRWJVIrc3baiRcMpj0ecI+jeC3ovUKqUZDs0
-         +tIUrdF4QMbY3cA1UOADCtTBNoAyCjg5Qmfvd2L6md44+/6CuiU+72SRmYjabDgSiml5
-         QA5V36n8ZoPlFVf2h2nRd+4vdCQb4F53VieL4=
-Message-ID: <c62985530811180900k8687deye092862bd04f467c@mail.gmail.com>
-Date: Tue, 18 Nov 2008 18:00:09 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun field
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530811180858u397fbac8h63f61b6d816abb46@mail.gmail.com>
+	Tue, 18 Nov 2008 12:01:35 -0500
+Received: from gw.goop.org ([64.81.55.164]:55973 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751058AbYKRRBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 12:01:34 -0500
+Message-ID: <4922F4EC.6050408@goop.org>
+Date: Tue, 18 Nov 2008 09:01:32 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20081117084923.GD28786@elte.hu>
-	 <alpine.DEB.1.10.0811181006010.15003@gandalf.stny.rr.com>
-	 <20081118151326.GH30358@elte.hu>
-	 <alpine.DEB.1.10.0811181020350.15003@gandalf.stny.rr.com>
-	 <20081118155045.GJ30358@elte.hu>
-	 <c62985530811180831n132ed6dep77aa2684ff59861@mail.gmail.com>
-	 <20081118164019.GA18620@elte.hu>
-	 <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
-	 <alpine.DEB.1.10.0811181151010.15003@gandalf.stny.rr.com>
-	 <c62985530811180858u397fbac8h63f61b6d816abb46@mail.gmail.com>
+To: Jan Beulich <jbeulich@novell.com>
+CC: Zachary Amsden <zach@vmware.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: arch_flush_lazy_mmu_mode() in arch/x86/mm/highmem_32.c
+References: <4921428A.76E4.0078.0@novell.com> <1226944387.9969.77.camel@bodhitayantram.eng.vmware.com> <4921BA8E.60806@goop.org> <492284CE.76E4.0078.0@novell.com>
+In-Reply-To: <492284CE.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/18 Frédéric Weisbecker <fweisbec@gmail.com>:
-> 2008/11/18 Steven Rostedt <rostedt@goodmis.org>:
->> How about a compromise, start off the patch series getting it working with
->> task struct static array, and then finish the series with the dynamic
->> array.
->>
->> This is my development model, because it lets me know where the bugs are
->> better. If we find some strange bug, this can help pin point via a bisect
->> if the bug is with the general code, or with the use of a dynamic array.
->>
->> Just my preference ;-)
+Jan Beulich wrote:
+>>>> Jeremy Fitzhardinge <jeremy@goop.org> 17.11.08 19:40 >>>
+>>>>         
+>> Zachary Amsden wrote:
+>>     
+>>> On Mon, 2008-11-17 at 01:08 -0800, Jan Beulich wrote:
+>>>       
+>>>> the batch should be prevented in asynchronous contexts altogether, or
+>>>> things should properly nest. As a positive side effect, disabling interrupts
+>>>> in the batch handling - in particular around the submission of the batch -
+>>>> could also be avoided, reducing interrupt latency (perhaps significantly
+>>>> in some case).
+>>>>     
+>>>>         
+>>> Jeremy already fixed that; we don't disable interrupts, the change he
+>>> made was to flush and then immediately restart the batching.
+>>>   
+>>>       
+>> Yes.  The Xen code only disables interrupts temporarily while actually 
+>> constructing a new multicall list member, to stop a half-constructed 
+>> multicall from being issued by a nested flush.  But that's very brief, 
+>> and cheap under Xen.
+>>     
 >
->
-> Ooh. I first agreed with Ingo's arguments about the fact that distros
-> can enable it whithout worrying.
-> But as I read your message, I guess that would be better to start with
-> static arrays to better find the bugs,
-> state by state...
->
-> Ingo, what do you think?
->
+> Where's that fixed? Even in the -tip tree I still see xen_mc_flush()
+> disabling interrupts (and multicalls.c didn't change for over two months)...
+>   
 
-And then a last state with dynamic arrays...
+Yes, it disables interrupts while its actually issuing the multicall.  I 
+don't think that matters much, since the multicall itself can't be 
+preempted (can it?) and the rest of the code is very short.  Originally 
+it disabled interrupts for the entire lazy section, which is obviously 
+worse.
+
+> There's no reason to do any flush at all if you suppress batching temporarily.
+> And it only needs (would need) explicit suppressing here because you can't
+> easily recognize being in the context of a page fault handler from the
+> batching functions (other than recognizing being in the context of an
+> interrupt handler, which is what would allow removing the flush calls from
+> highmem_32.c).
+
+I'm not sure what your concern is here.  If batching is currently 
+enabled, then the flush will push out anything pending immediately.  If 
+batching is disabled, then the flush will be a noop and return immediately.
+
+Making it so that the batching state can nest or have some way to push 
+unbatched updates past the current batch would work as mechanisms, but I 
+don't see what advantage there is to doing it, especially to offset the 
+increased complexity.
+
+    J
