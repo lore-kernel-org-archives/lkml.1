@@ -1,242 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbYKRGRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752081AbYKRGvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752073AbYKRGRm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 01:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYKRGRd
+	id S1752081AbYKRGvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 01:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYKRGuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 01:17:33 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44624 "EHLO smtps.tip.net.au"
+	Tue, 18 Nov 2008 01:50:51 -0500
+Received: from 1wt.eu ([62.212.114.60]:1279 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870AbYKRGRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 01:17:31 -0500
-Date: Tue, 18 Nov 2008 17:17:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 18
-Message-Id: <20081118171714.8c6d8512.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1751058AbYKRGut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 01:50:49 -0500
+Date: Tue, 18 Nov 2008 07:50:07 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Roger Heflin <rogerheflin@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
+Message-ID: <20081118065006.GC24654@1wt.eu>
+References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__18_Nov_2008_17_17_14_+1100_g.H52T+5.MK8mnbQ"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <491E49AA.60407@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__18_Nov_2008_17_17_14_+1100_g.H52T+5.MK8mnbQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-Hi all,
+On Fri, Nov 14, 2008 at 10:01:46PM -0600, Roger Heflin wrote:
+> Peter Zijlstra wrote:
+> >(netdev CC'ed)
+> >
+> >On Tue, 2008-11-11 at 03:48 -0600, Roger Heflin wrote:
+> >>I have duplicate this with kernel 2.6.27.2 and 2.6.27.5, no
+> >>extra modules, tg3 Gbit networking.   I have not yet tested
+> >>earlier kernels to see if this has been around for a while.
+> >
+> >How do more recent kernels do?
+> 
+> I did not try more recent kernels, more testing seems to indicate
+> that at the very least it the bug depends on a certain version of
+> either tg3 and/or firmware to happen, as my second tg3 port does not
+> have it happen.    More about this below.
 
-Changes since 20081117:
+I got the exact same one yesterday and wanted to fire a bug report,
+so yours is saving me some time :-)
 
-Dropped trees (temporarily):
-	lblnet (build problem)
-	userns (it depends on creds)
-	semaphore-removal (due to unfixed conflicts against Linus' tree)
-	firmware (unfixed build failure)
+It's on my notebook (HP nc8000, Pentium-M, no SMP, no HT). It was
+connected to a 100 Mbps switch and was sending nearly 100 Mbps of
+traffic. It had auto-negociated 100-full. I noticed long pauses
+on the other side, finally realizing that my notebook was ill.
+It's on 2.6.27.7-rc1. I have never had any such problem on this
+notebook with any earlier kernel up to 2.6.25.X. I've never run
+2.6.26 on it.
 
-The net tree gained a conflict against the net-current tree.
+My tg3 is just PCI-based, no PCIe in this beast. I can send more
+info when I turn it on. I don't think that the tg3 driver changes
+often, so most likely digging through the changes between 2.6.25
+and 2.6.27 should not take much time. I just don't know if I can
+reliably reproduce the issue right now.
 
-----------------------------------------------------------------------------
+> >>So far I have had this error happen 5 times (MTBF is maybe
+> >>12 hours), 4 of the 5 times resulted in the networking being
+> >>broken, one time things came back by itself without a reboot,
+> >>I believe in this case the hang was traffic coming into the
+> >>machine vs the other times going out of the machine.
+> >>
+> >>Unloading all of the network modules and reloading them did
+> >>not correct the problem.
+> >>
+> >>Searching google finds a couple of other people getting the
+> >>same error but they have a different network chipset (e1000
+> >>and a rt811C chipset), which makes me thing that there is
+> >>something interacting bad with the network.    Or does this
+> >>error truly mean that the network chipset for some unknown reason
+> >>locked itself up?
+> >>
+> >>http://www.google.com/url?sa=U&start=4&q=http://kerneltrap.org/mailarchive/linux-netdev/2008/8/6/2838184&ei=rU8ZScysAon8edz5xKgO&sig2=Wxp7IkUtdgORGZiflxvppg&usg=AFQjCNHzPwsCOmLGKmtX4q_FEpk6oubxxg
+> >>http://article.gmane.org/gmane.linux.network/110238
+> >>
+> >>The changes I made recently were to upgrade my MB (old
+> >>was E100 on a 100Mbit network,new is tg3 on a Gbit network,
+> >>cpu and memory are the same, MB chipset is a intel 955
+> >>chipset vs the old being a intel 915 chipset).
+> >>
+> >>Autoneg is turned on all around, the GBit switch is a
+> >>8-port Dlink switch.   The network seems to otherwise be working
+> >>correctly.
+> >>
+> >>I did test the network under decent load and the error did not
+> >>appear to be any more likely under load, and typically the network
+> >>is under very light load 2-3MB/second.
+> >>
+> >>The machine originally had 2 HT CPU's showing up, I turned off HT
+> >>so that only one cpu was showing, but this did not change the error.
+> >>
+> >>I am first turning off all offload capabilities on tg3 and going
+> >>to see if that changes anything.
+> 
+> This made no difference in the error.
+> 
+> >>
+> >>The next thing I am going to be doing is to turn of GB capability
+> >>on the networking and see if that does anything.
+> 
+> Did not try.
+> 
+> >>
+> >>I also have a second tg3 port that is slightly different, so I may
+> >>try that eventually.
+> 
+> I tried this, and with the second port I don't appear to be getting
+> the error.   The first port is a 5789-v3.29a and the second port is a
+> 5788-v3.04, I know the first port is faster (pcie-x1) than the second
+> port (pci bus-built-in, unknown exact connection).   The second port
+> will sustain about 50MB/second, were as the first port will get
+> >90MB/second.
+> 
+> It seems to me to likely be the firmware on the tg3, and it would seem
+> unlikely that the driver could do anything more than work around the
+> issue that is in the firmware, and currently my system works on the
+> second port, and the second port is fast enough for my needs.
+> 
+> If someone else runs into this issue, since I have 2 ports I would be
+> able to do some testing on it, right now my first port is locked up, and
+> the machine is running fine on the second port.
+> 
+> lspci -vvv for the first (bad) port:
+> 
+> 02:00.0 Ethernet controller: Broadcom Corporation NetLink BCM5789 Gigabit 
+> Ethernet PCI Express (rev 11)
+>         Subsystem: Foxconn International, Inc. Unknown device 0cc1
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
+> Stepping- SERR- FastB2B-
+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
+>         <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0, Cache Line Size: 32 bytes
+>         Interrupt: pin A routed to IRQ 19
+>         Region 0: Memory at fd8f0000 (64-bit, non-prefetchable) [size=64K]
+>         Expansion ROM at <ignored> [disabled]
+>         Capabilities: [48] Power Management version 2
+>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
+> PME(D0-,D1-,D2-,D3hot+,D3cold+)
+>                 Status: D3 PME-Enable- DSel=0 DScale=1 PME-
+>         Capabilities: [50] Vital Product Data
+>         Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ 
+>         Queue=0/3 Enable-
+>                 Address: 0101b8102a0f7b0c  Data: f21e
+>         Capabilities: [d0] Express Endpoint IRQ 0
+>                 Device: Supported: MaxPayload 128 bytes, PhantFunc 0, 
+>                 ExtTag+
+>                 Device: Latency L0s <4us, L1 unlimited
+>                 Device: AtnBtn- AtnInd- PwrInd-
+>                 Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+>                 Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+>                 Device: MaxPayload 128 bytes, MaxReadReq 4096 bytes
+>                 Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s, Port 0
+>                 Link: Latency L0s <2us, L1 <64us
+>                 Link: ASPM Disabled RCB 64 bytes CommClk+ ExtSynch-
+>                 Link: Speed 2.5Gb/s, Width x1
+>         Capabilities: [100] Advanced Error Reporting
+>         Capabilities: [13c] Virtual Channel
+> 
+> 
+> >>
+> >>Nov 11 00:44:39 computer kernel: ------------[ cut here ]------------
+> >>Nov 11 00:44:39 computer kernel: WARNING: at net/sched/sch_generic.c:219 
+> >>dev_watchdog+0xfe/0x17e()
+> >>Nov 11 00:44:39 computer kernel: NETDEV WATCHDOG: eth0 (tg3): transmit 
+> >>timed out
+> >>Nov 11 00:44:39 computer kernel: Modules linked in: nfsd auth_rpcgss 
+> >>exportfs w83627ehf hwmon_vid hwmon nfs lockd nfs_acl sunrpc ipv6 xfs 
+> >>raid456 async_xor async_memcpy async_tx xor video output sbs sbshc 
+> >>battery ac lgdt330x cx88_dvb wm8775 cx88_vp3054_i2c cx25840 tuner_simple 
+> >>tuner_types tda9887 tda8290 tuner mt2131 s5h1409 snd_hda_intel 
+> >>snd_seq_dummy ivtv cx8800 snd_seq_oss cx88_alsa cx8802 cx88xx cx23885 
+> >>snd_seq_midi_event snd_seq ir_common videodev v4l1_compat i2c_algo_bit 
+> >>cx2341x firewire_ohci iTCO_wdt snd_seq_device compat_ioctl32 videobuf_dvb 
+> >>i2c_i801 firewire_core tveeprom floppy iTCO_vendor_support v4l2_common 
+> >>snd_pcm_oss dvb_core pcspkr tg3 sata_sil i2c_core btcx_risc 
+> >>videobuf_dma_sg crc_itu_t snd_mixer_oss libphy videobuf_core snd_pcm 
+> >>parport_pc parport snd_timer snd soundcore button snd_page_alloc sg 
+> >>dm_snapshot dm_zero dm_mirror dm_log dm_mod ahci ata_piix ata_generic 
+> >>libata sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd [last 
+> >>unloaded: eeprom]
+> >>Nov 11 00:44:39 computer kernel: Pid: 0, comm: swapper Not tainted 
+> >>2.6.27.5 #2
+> >>Nov 11 00:44:39 computer kernel:  [<c042524f>] warn_slowpath+0x61/0x83
+> >>Nov 11 00:44:39 computer kernel:  [<c05663a4>] 
+> >>usb_hcd_submit_urb+0x75c/0x811
+> >>Nov 11 00:44:39 computer kernel:  [<c0594972>] hiddev_hid_event+0x0/0x64
+> >>Nov 11 00:44:39 computer kernel:  [<c058ce80>] hid_process_event+0x58/0x5f
+> >>Nov 11 00:44:39 computer kernel:  [<c04e13d6>] __next_cpu+0x12/0x21
+> >>Nov 11 00:44:39 computer kernel:  [<c041cbe3>] 
+> >>find_busiest_group+0x23e/0x672
+> >>Nov 11 00:44:39 computer kernel:  [<c0439d1e>] 
+> >>clocksource_get_next+0x39/0x3f
+> >>Nov 11 00:44:39 computer kernel:  [<c0438e51>] 
+> >>update_wall_time+0x567/0x70c
+> >>Nov 11 00:44:39 computer kernel:  [<c040783e>] read_tsc+0x6/0x22
+> >>Nov 11 00:44:39 computer kernel:  [<c04387e8>] getnstimeofday+0x37/0xc1
+> >>Nov 11 00:44:39 computer kernel:  [<f8829a83>] 
+> >>uhci_scan_schedule+0x11b/0x6b0 [uhci_hcd]
+> >>Nov 11 00:44:39 computer kernel:  [<c05b16ba>] dev_watchdog+0xfe/0x17e
+> >>Nov 11 00:44:39 computer kernel:  [<c042c66f>] __mod_timer+0x99/0xa3
+> >>Nov 11 00:44:39 computer kernel:  [<c05654b6>] rh_timer_func+0x0/0x5
+> >>Nov 11 00:44:39 computer kernel:  [<c05654ae>] 
+> >>usb_hcd_poll_rh_status+0x12b/0x133
+> >>Nov 11 00:44:39 computer kernel:  [<c043bca8>] 
+> >>tick_dev_program_event+0x1e/0x81
+> >>Nov 11 00:44:39 computer kernel:  [<c05b15bc>] dev_watchdog+0x0/0x17e
+> >>Nov 11 00:44:39 computer kernel:  [<c042c2b4>] 
+> >>run_timer_softirq+0x10e/0x167
+> >>Nov 11 00:44:39 computer kernel:  [<c05b15bc>] dev_watchdog+0x0/0x17e
+> >>Nov 11 00:44:39 computer kernel:  [<c0428d3e>] __do_softirq+0x5d/0xc1
+> >>Nov 11 00:44:39 computer kernel:  [<c0428dd4>] do_softirq+0x32/0x36
+> >>Nov 11 00:44:39 computer kernel:  [<c0412939>] 
+> >>smp_apic_timer_interrupt+0x6e/0x79
+> >>Nov 11 00:44:39 computer kernel:  [<c040431c>] 
+> >>apic_timer_interrupt+0x28/0x30
+> >>Nov 11 00:44:39 computer kernel:  [<c0408582>] mwait_idle+0x32/0x38
+> >>Nov 11 00:44:39 computer kernel:  [<c040255d>] cpu_idle+0xbd/0xd5
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+Willy
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 125 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging quilt/m68k
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-CONFLICT (content): Merge conflict in include/linux/kernel.h
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/isdn/i4l/isdn_net.c
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-Merging cifs/master
-CONFLICT (content): Merge conflict in fs/cifs/connect.c
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
-xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
-tree.
-$ git rm -f drivers/net/wan/syncppp.c
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-CONFLICT (content): Merge conflict in fs/cifs/misc.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
-Merging lblnet/master
-$ git reset --hard HEAD^
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in fs/devpts/inode.c
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cpu_alloc/cpu_alloc
-CONFLICT (content): Merge conflict in kernel/lockdep.c
-CONFLICT (content): Merge conflict in kernel/module.c
-Applying cpu_alloc: merge_fix_1
-Applying undefined reference to __per_cpu_start
-Merging cputime/cputime
-Merging perfmon3/master
-Merging osd/linux-next
-Merging fatfs/master
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Tue__18_Nov_2008_17_17_14_+1100_g.H52T+5.MK8mnbQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkiXeoACgkQjjKRsyhoI8x/pQCfUjTXG+T6H7+WgDmrkCXGrnjv
-GsQAn3n292NWNXy6xHDuOZA3h7c+VZUG
-=n9Tn
------END PGP SIGNATURE-----
-
---Signature=_Tue__18_Nov_2008_17_17_14_+1100_g.H52T+5.MK8mnbQ--
