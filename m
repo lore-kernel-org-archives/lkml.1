@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbYKRDks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbYKRDlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbYKRDks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 22:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYKRDjU
+	id S1753187AbYKRDlK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 22:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYKRDjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 22:39:20 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:34235 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbYKRDjT (ORCPT
+	Mon, 17 Nov 2008 22:39:22 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:23939 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbYKRDjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 22:39:19 -0500
+	Mon, 17 Nov 2008 22:39:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=l6APyZxJ0tqG+azXu/CUPJYv9KiiaP4onqz2yhQgWyM47BICFKUd9X6exLW6avy8Sp
-         GXADCIr3Td4tB0UCU0XSD5HOuuHVjdVVnQ3kIcDNT8BqSolCo87V/SozLBBZ2UUfEE0j
-         5apIBzN/YXVpDlD2DfTZDV517L+m3jXlLl9/I=
-Subject: [PATCH-mm 5/7] unaligned: pack the struct, not the struct members
+        b=jtRYhjpsCqJhfKDkakKs69XDqIVxceeNzqWI4jxpHIt1CfbL5QedtjGj1JV08MaBiL
+         1+kYJaoEDfoE/PZdQrH5zhWsjqoyzWwrORNI/VnNz+GjA+RPaCSkpb+NL+5QD7W6K7nz
+         7rYtwdn9jmYnjnnye/gO/RFcodD4qIHWhcNWs=
+Subject: [PATCH-mm 6/7] unaligned: move ARM, M32R, H8300 to the asm-generic
+ version
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -27,8 +28,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Hirokazu Takata <takata@linux-m32r.org>,
        Yoshinori Sato <ysato@users.sourceforge.jp>
 Content-Type: text/plain
-Date: Mon, 17 Nov 2008 19:39:12 -0800
-Message-Id: <1226979552.6150.270.camel@brick>
+Date: Mon, 17 Nov 2008 19:39:13 -0800
+Message-Id: <1226979553.6150.271.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -36,45 +37,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is safe for the arches that currently use this as gcc says that
-defining a struct as packed is equivalent to putting packed on each struct
-member.
-
-The reason this is needed is that there are some arches that define structs
-to be aligned to something greater than a byte...so even if the first member
-of the struct is marked as packed, gcc will still treat it as having the
-default stuct alignment which will allow it to choose _builtin_memcpy...
-see the comments in the memmove-using arches.  This also turned out to be
-the issue with ARM (needs confirmation) because _some_ ARM compilers
-have this alignment set to 4 bytes.
-
-If the struct _itself_ is marked as packed, the compiler cannot assume this default
-alignment and _must_ do the bytewise access in whatever way the arch does it.  By
-making this change, the last 3 arches could move to the new asm-generic version
-and the bits in linux/unaligned/ can be removed.
-
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-generic/unaligned.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm/include/asm/unaligned.h   |   15 +--------------
+ arch/h8300/include/asm/unaligned.h |    7 +------
+ include/asm-m32r/unaligned.h       |   14 +-------------
+ 3 files changed, 3 insertions(+), 33 deletions(-)
 
-diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index 8dfca50..ac23e04 100644
---- a/include/asm-generic/unaligned.h
-+++ b/include/asm-generic/unaligned.h
-@@ -68,9 +68,9 @@ static inline void put_unaligned_be64(u64 val, void *p)
+diff --git a/arch/arm/include/asm/unaligned.h b/arch/arm/include/asm/unaligned.h
+index 44593a8..c1bf50b 100644
+--- a/arch/arm/include/asm/unaligned.h
++++ b/arch/arm/include/asm/unaligned.h
+@@ -1,19 +1,6 @@
+ #ifndef _ASM_ARM_UNALIGNED_H
+ #define _ASM_ARM_UNALIGNED_H
  
- #else /* _UNALIGNED_ACCESS_OK */
+-#include <linux/unaligned/le_byteshift.h>
+-#include <linux/unaligned/be_byteshift.h>
+-#include <linux/unaligned/generic.h>
+-
+-/*
+- * Select endianness
+- */
+-#ifndef __ARMEB__
+-#define get_unaligned	__get_unaligned_le
+-#define put_unaligned	__put_unaligned_le
+-#else
+-#define get_unaligned	__get_unaligned_be
+-#define put_unaligned	__put_unaligned_be
+-#endif
++#include <asm-generic/unaligned.h>
  
--struct __una_u16 { u16 x __attribute__((packed)); };
--struct __una_u32 { u32 x __attribute__((packed)); };
--struct __una_u64 { u64 x __attribute__((packed)); };
-+struct __una_u16 { u16 x; } __attribute__((packed));
-+struct __una_u32 { u32 x; } __attribute__((packed));
-+struct __una_u64 { u64 x; } __attribute__((packed));
+ #endif /* _ASM_ARM_UNALIGNED_H */
+diff --git a/arch/h8300/include/asm/unaligned.h b/arch/h8300/include/asm/unaligned.h
+index b8d06c7..4d7c1f5 100644
+--- a/arch/h8300/include/asm/unaligned.h
++++ b/arch/h8300/include/asm/unaligned.h
+@@ -1,11 +1,6 @@
+ #ifndef _ASM_H8300_UNALIGNED_H
+ #define _ASM_H8300_UNALIGNED_H
  
- static inline u16 __get_le16_noalign(const u8 *p)
- {
+-#include <linux/unaligned/be_memmove.h>
+-#include <linux/unaligned/le_byteshift.h>
+-#include <linux/unaligned/generic.h>
+-
+-#define get_unaligned	__get_unaligned_be
+-#define put_unaligned	__put_unaligned_be
++#include <asm-generic/unaligned.h>
+ 
+ #endif /* _ASM_H8300_UNALIGNED_H */
+diff --git a/include/asm-m32r/unaligned.h b/include/asm-m32r/unaligned.h
+index 377eb20..14d2598 100644
+--- a/include/asm-m32r/unaligned.h
++++ b/include/asm-m32r/unaligned.h
+@@ -1,18 +1,6 @@
+ #ifndef _ASM_M32R_UNALIGNED_H
+ #define _ASM_M32R_UNALIGNED_H
+ 
+-#if defined(__LITTLE_ENDIAN__)
+-# include <linux/unaligned/le_memmove.h>
+-# include <linux/unaligned/be_byteshift.h>
+-# include <linux/unaligned/generic.h>
+-# define get_unaligned	__get_unaligned_le
+-# define put_unaligned	__put_unaligned_le
+-#else
+-# include <linux/unaligned/be_memmove.h>
+-# include <linux/unaligned/le_byteshift.h>
+-# include <linux/unaligned/generic.h>
+-# define get_unaligned	__get_unaligned_be
+-# define put_unaligned	__put_unaligned_be
+-#endif
++#include <asm-generic/unaligned.h>
+ 
+ #endif /* _ASM_M32R_UNALIGNED_H */
 -- 
 1.6.0.4.994.g16bd3e
 
