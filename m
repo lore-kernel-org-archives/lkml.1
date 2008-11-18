@@ -1,147 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYKRWXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbYKRWYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbYKRWXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 17:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYKRWXf
+	id S1754490AbYKRWYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 17:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYKRWYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 17:23:35 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:28482 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYKRWXf (ORCPT
+	Tue, 18 Nov 2008 17:24:23 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:12051 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752947AbYKRWYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 17:23:35 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=OHVXce1cbcIzyTZfCGF9lXD9iEdwTkWrn4repkIthhpeJ5MS5kyN07Z6pTb54/hs4
-	IYMRpO7I96m2D8RkV44BQ==
-MIME-Version: 1.0
-In-Reply-To: <492271EF.4050002@cn.fujitsu.com>
-References: <20081106153022.215696930@redhat.com>
-	 <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com>
-	 <20081113214642.GG7542@redhat.com>
-	 <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>
-	 <20081114160525.GE24624@redhat.com>
-	 <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>
-	 <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com>
-	 <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>
-	 <492271EF.4050002@cn.fujitsu.com>
-Date: Tue, 18 Nov 2008 14:23:29 -0800
-Message-ID: <e98e18940811181423y770cb6bay19dd520e5f010f33@mail.gmail.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Nauman Rafique <nauman@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Divyesh Shah <dpshah@google.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 17:24:22 -0500
+From: David Daney <ddaney@caviumnetworks.com>
+To: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
+       akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, David Daney <ddaney@caviumnetworks.com>,
+       Tomaso Paoletti <tpaoletti@caviumnetworks.com>
+Subject: [PATCH 23/26] Serial: UART driver changes for Cavium OCTEON.
+Date: Tue, 18 Nov 2008 14:24:17 -0800
+Message-Id: <1227047057-4911-5-git-send-email-ddaney@caviumnetworks.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <49233FDE.3010404@caviumnetworks.com>
+References: <49233FDE.3010404@caviumnetworks.com>
+X-OriginalArrivalTime: 18 Nov 2008 22:24:20.0853 (UTC) FILETIME=[6717AA50:01C949CC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 17, 2008 at 11:42 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Nauman Rafique wrote:
->> If we start with bfq patches, this is how plan would look like:
->>
->> 1 Start with BFQ take 2.
->> 2 Do the following to support proportional division:
->>  a) Expose the per device weight interface to user, instead of calculating
->>  from priority.
->>  b) Add support for disk time budgets, besides sector budget that is currently
->>  available (configurable option). (Fabio: Do you think we can just emulate
->> that using the existing code?). Another approach would be to give time slices
->> just like CFQ (discussing?)
->> 4 Do the following to support the goals of 2 level schedulers:
->>  a) Limit the request descriptors allocated to each cgroup by adding
->>  functionality to elv_may_queue()
->>  b) Add support for putting an absolute limit on IO consumed by a
->>  cgroup. Such support is provided by Andrea
->>  Righi's patches too.
->>  c) Add support (configurable option) to keep track of total disk
->> time/sectors/count
->>  consumed at each device, and factor that into scheduling decision
->>  (more discussion needed here)
->> 6 Incorporate an IO tracking approach which re-uses memory resource
->> controller code but is not dependent on it (may be biocgroup patches from
->> dm-ioband can be used here directly)
->
-> The newest bio_cgroup doesn't use much memcg code I think. The older biocgroup
-> tracks IO using mem_cgroup_charge(), and mem_cgroup_charge() remembers a struct page
-> owns by which cgroup. But now biocgroup changes to directly put some hooks in
-> __set_page_dirty() and some other places to track pages.
+Cavium UART implementation won't work with the standard 8250 driver
+as-is.  Define a new uart_config (PORT_OCTEON) and use it to enable
+special handling required by the OCTEON's serial port.  Two new bug
+types are defined.
 
-I did not look into latest biocgroup patches, so may be you are right.
-Nevertheless, bfq currently gets cgroup info out of io context and so
-would handle only synchronous reads. For this action item, we have to
-make the latest biocgroup patches to work with bfq.
+Signed-off-by: Tomaso Paoletti <tpaoletti@caviumnetworks.com>
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+---
+ drivers/serial/8250.c       |   16 +++++++++++++++-
+ drivers/serial/8250.h       |    2 ++
+ include/linux/serial_core.h |    3 ++-
+ include/linux/serial_reg.h  |    6 ++++++
+ 4 files changed, 25 insertions(+), 2 deletions(-)
 
->
->> 7 Start an offline email thread to keep track of progress on the above
->> goals.
->>
->> BFQ's support for hierarchy of cgroups means that its close to where
->> we want to get. Any comments on what approach looks better?
->>
->
-> Looks like a sane way :) . We are also trying to keep track of the discussion and
-> development of IO controller. I'll start to have a look into BFQ.
->
->> On Mon, Nov 17, 2008 at 6:02 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->>> Vivek Goyal wrote:
->>>> On Fri, Nov 14, 2008 at 02:44:22PM -0800, Nauman Rafique wrote:
->>>>> In an attempt to make sure that this discussion leads to
->>>>> something useful, we have summarized the points raised in this
->>>>> discussion and have come up with a strategy for future.
->>>>> The goal of this is to find common ground between all the approaches
->>>>> proposed on this mailing list.
->>>>>
->>>>> 1 Start with Satoshi's latest patches.
->>>> I have had a brief look at both Satoshi's patch and bfq. I kind of like
->>>> bfq's patches for keeping track of per cgroup, per queue data structures.
->>>> May be we can look there also.
->>>>
->>>>> 2 Do the following to support propotional division:
->>>>>  a) Give time slices in proportion to weights (configurable
->>>>>  option). We can support both priorities and weights by doing
->>>>>  propotional division between requests with same priorities.
->>>>> 3 Schedule time slices using WF2Q+ instead of round robin.
->>>>>  Test the performance impact (both throughput and jitter in latency).
->>>>> 4 Do the following to support the goals of 2 level schedulers:
->>>>>  a) Limit the request descriptors allocated to each cgroup by adding
->>>>>  functionality to elv_may_queue()
->>>>>  b) Add support for putting an absolute limit on IO consumed by a
->>>>>  cgroup. Such support exists in dm-ioband and is provided by Andrea
->>>>>  Righi's patches too.
->>>> Does dm-iobnd support abosolute limit? I think till last version they did
->>>> not. I have not check the latest version though.
->>>>
->>> No, dm-ioband still provides weight/share control only. Only Andrea Righi's
->>> patches support absolute limit.
->>
->> Thanks for the correction.
->>
->>>>>  c) Add support (configurable option) to keep track of total disk
->>>>> time/sectors/count
->>>>>  consumed at each device, and factor that into scheduling decision
->>>>>  (more discussion needed here)
->>>>> 5 Support multiple layers of cgroups to align IO controller behavior
->>>>>  with CPU scheduling behavior (more discussion?)
->>>>> 6 Incorporate an IO tracking approach which re-uses memory resource
->>>>> controller code but is not dependent on it (may be biocgroup patches from
->>>>> dm-ioband can be used here directly)
->>>>> 7 Start an offline email thread to keep track of progress on the above
->>>>> goals.
->>>>>
->>>>> Please feel free to add/modify items to the list
->>>>> when you respond back. Any comments/suggestions are more than welcome.
->>>>>
->>>
->>
->
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 4a8796f..e80b67e 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -279,6 +279,14 @@ static const struct serial8250_config uart_config[] = {
+ 		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
+ 		.flags		= UART_CAP_FIFO,
+ 	},
++	[PORT_OCTEON] = {
++		.name		= "OCTEON",
++		.fifo_size	= 64,
++		.tx_loadsz	= 64,
++		.bugs		= UART_BUG_TIMEOUT | UART_BUG_OCTEON_IIR,
++		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
++		.flags		= UART_CAP_FIFO,
++	},
+ };
+ 
+ #if defined (CONFIG_SERIAL_8250_AU1X00)
+@@ -1554,6 +1562,12 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
+ 		up = list_entry(l, struct uart_8250_port, list);
+ 
+ 		iir = serial_in(up, UART_IIR);
++		if ((up->bugs & UART_BUG_OCTEON_IIR) && (iir & 0xf) == 7) {
++			/* Busy interrupt */
++			serial_in(up, UART_OCTEON_USR);
++			iir = serial_in(up, UART_IIR);
++		}
++
+ 		if (!(iir & UART_IIR_NO_INT)) {
+ 			serial8250_handle_port(up);
+ 
+@@ -1714,7 +1728,7 @@ static void serial8250_timeout(unsigned long data)
+ 	unsigned int iir;
+ 
+ 	iir = serial_in(up, UART_IIR);
+-	if (!(iir & UART_IIR_NO_INT))
++	if (!(iir & UART_IIR_NO_INT) || (up->bugs & UART_BUG_TIMEOUT))
+ 		serial8250_handle_port(up);
+ 	mod_timer(&up->timer, jiffies + poll_timeout(up->port.timeout));
+ }
+diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+index c9b3002..56b3cb7 100644
+--- a/drivers/serial/8250.h
++++ b/drivers/serial/8250.h
+@@ -49,6 +49,8 @@ struct serial8250_config {
+ #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
+ #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
+ #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
++#define UART_BUG_TIMEOUT (1 << 4)	/* UART should always handle timeout */
++#define UART_BUG_OCTEON_IIR (1 << 5)	/* UART OCTEON IIR workaround */
+ 
+ #define PROBE_RSA	(1 << 0)
+ #define PROBE_ANY	(~0)
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 4a72a7b..e79409f 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -40,7 +40,8 @@
+ #define PORT_NS16550A	14
+ #define PORT_XSCALE	15
+ #define PORT_RM9000	16	/* PMC-Sierra RM9xxx internal UART */
+-#define PORT_MAX_8250	16	/* max port ID */
++#define PORT_OCTEON	17	/* Cavium OCTEON internal UART */
++#define PORT_MAX_8250	17	/* max port ID */
+ 
+ /*
+  * ARM specific type numbers.  These are not currently guaranteed
+diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
+index 96c0d93..a96bd50 100644
+--- a/include/linux/serial_reg.h
++++ b/include/linux/serial_reg.h
+@@ -324,5 +324,11 @@
+ #define UART_OMAP_SYSC		0x15	/* System configuration register */
+ #define UART_OMAP_SYSS		0x16	/* System status register */
+ 
++/*
++ * Extra serial register definitions for the internal UARTs in Cavium
++ * Networks OCTEON processors.
++ */
++#define UART_OCTEON_USR		0x27	/* UART Status Register */
++
+ #endif /* _LINUX_SERIAL_REG_H */
+ 
+-- 
+1.5.6.5
+
