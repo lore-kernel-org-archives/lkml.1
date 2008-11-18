@@ -1,112 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbYKRSMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbYKRSOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbYKRSMv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYKRSMn
+	id S1753219AbYKRSOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 13:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYKRSOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:12:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:29642 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844AbYKRSMm (ORCPT
+	Tue, 18 Nov 2008 13:14:08 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:57002 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbYKRSOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:12:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=XKsRapeuvuERgc0vx04zF/HXBmt0aZEi3o0eqZ9CWl8HyLyhAdawnr6OCjDKOkNJQl
-         SbEWbzHuXeebcnOPUZ122emboO6o+2OXdWpjSly9Uhi4h3wdWPlQHcvRCAmiGmwtD2mY
-         nw8+XSGS3Fl/Wy4+tWRLbc/ncwJMTRQb80Kck=
-Date: Tue, 18 Nov 2008 18:12:26 +0000
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Eric Biederman <ebiederm@xmision.com>
-Subject: [Patch] ipc/ipc_sysctl.c: move the definition of
-	ipc_auto_callback()
-Message-ID: <20081118181226.GG3185@hack.voiplan.pt>
+	Tue, 18 Nov 2008 13:14:08 -0500
+Message-ID: <492305E7.9050906@nortel.com>
+Date: Tue, 18 Nov 2008 12:13:59 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: rk@atr-labs.com
+CC: =?ISO-8859-1?Q?Fredrik_Markstr=F6m?= 
+	<fredrik.markstrom@avalonenterprise.com>,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Developing non-commercial drivers ?
+References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com> <4922ED5A.3030808@shaw.ca> <7a9e70560811180852y9eb2bf6s8682609dcb10fd9f@mail.gmail.com> <4922F8C4.80509@nortel.com> <1227031253.1817.20.camel@win2k.atr-labs.com>
+In-Reply-To: <1227031253.1817.20.camel@win2k.atr-labs.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Nov 2008 18:14:02.0293 (UTC) FILETIME=[6F554650:01C949A9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Radhakrishnan wrote:
 
-proc_ipcauto_dointvec_minmax() is the only user of ipc_auto_callback(),
-since the former function is protected by CONFIG_PROC_FS, so should be
-the latter one.
+> Am I therefore right in assuming that this is a specific case where the
+> open source nature of Linux is being used with great effect but the very
+> nature of the licensing denies ANYONE ELSE from being a party to this
+> transaction ?
 
-Just move its definition down.
+Actually, I think the GPL is still satisfied.  There's nothing that says 
+that changes need to be passed upstream, only downstream.
 
+1) Presumably you won't be distributing the binary drivers to anyone 
+else, and you gave Organization A the code, so the license is satisfied.
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Eric Biederman <ebiederm@xmision.com>
+2) Organization A has no other customers, so is not going to be 
+distributing the binaries to anyone else.
 
----
-diff --git a/ipc/ipc_sysctl.c b/ipc/ipc_sysctl.c
-index 0dfebc5..4a7a12c 100644
---- a/ipc/ipc_sysctl.c
-+++ b/ipc/ipc_sysctl.c
-@@ -26,29 +26,6 @@ static void *get_ipc(ctl_table *table)
- 	return which;
- }
- 
--/*
-- * Routine that is called when the file "auto_msgmni" has successfully been
-- * written.
-- * Two values are allowed:
-- * 0: unregister msgmni's callback routine from the ipc namespace notifier
-- *    chain. This means that msgmni won't be recomputed anymore upon memory
-- *    add/remove or ipc namespace creation/removal.
-- * 1: register back the callback routine.
-- */
--static void ipc_auto_callback(int val)
--{
--	if (!val)
--		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
--	else {
--		/*
--		 * Re-enable automatic recomputing only if not already
--		 * enabled.
--		 */
--		recompute_msgmni(current->nsproxy->ipc_ns);
--		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
--	}
--}
--
- #ifdef CONFIG_PROC_FS
- static int proc_ipc_dointvec(ctl_table *table, int write, struct file *filp,
- 	void __user *buffer, size_t *lenp, loff_t *ppos)
-@@ -94,6 +71,29 @@ static int proc_ipc_doulongvec_minmax(ctl_table *table, int write,
- 					lenp, ppos);
- }
- 
-+/*
-+ * Routine that is called when the file "auto_msgmni" has successfully been
-+ * written.
-+ * Two values are allowed:
-+ * 0: unregister msgmni's callback routine from the ipc namespace notifier
-+ *    chain. This means that msgmni won't be recomputed anymore upon memory
-+ *    add/remove or ipc namespace creation/removal.
-+ * 1: register back the callback routine.
-+ */
-+static void ipc_auto_callback(int val)
-+{
-+	if (!val)
-+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-+	else {
-+		/*
-+		 * Re-enable automatic recomputing only if not already
-+		 * enabled.
-+		 */
-+		recompute_msgmni(current->nsproxy->ipc_ns);
-+		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
-+	}
-+}
-+
- static int proc_ipcauto_dointvec_minmax(ctl_table *table, int write,
- 	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
- {
+3) The end-user (the Navy) was provided the source code for the GPL'd 
+software that they purchased.
 
+As far as I can tell, this is all fully GPL-compliant.
 
+Chris
