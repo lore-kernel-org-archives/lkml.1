@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbYKRNvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbYKRNwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbYKRNvl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 08:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYKRNvd
+	id S1753192AbYKRNwM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 08:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYKRNv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 08:51:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:28179 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbYKRNvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 08:51:32 -0500
-Message-ID: <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
-Date: Tue, 18 Nov 2008 11:51:30 -0200
-From: "Sergio Luis" <sergio@larces.uece.br>
-To: "Stian Jordet" <liste@jordet.net>
-Subject: Re: Slowness with new pc
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1226760254.5089.11.camel@chevrolet>
+	Tue, 18 Nov 2008 08:51:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46976 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752029AbYKRNvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 08:51:55 -0500
+Date: Tue, 18 Nov 2008 14:51:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       hawk@pld-linux.org, stable@kernel.org
+Subject: Re: [PATCH] x86: always select SWIOTLB on x86_64
+Message-ID: <20081118135105.GD31146@elte.hu>
+References: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1226760254.5089.11.camel@chevrolet>
+In-Reply-To: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 15, 2008 at 12:44 PM, Stian Jordet <liste@jordet.net> wrote:
-> Hi!
->
-> This fall I built myself a new computer. It's a dual cpu quad core xeon
-> (E5405) on a Supermicro X7DWA-N motherboard. It has 8GB 800mhz ram, and
-> a Supermicro AOC-USAS-S8iR RAID SAS controller, with a pair of Fujitsu
-> MBA3073RC disks in raid 0. Should be pretty fast, but it isn't. In daily
-> use it feels just about the same as my old Dual P3 1ghz with a single
-> SCSI disk. Has to wait a couple of seconds before the gnome menu appears
-> after I've clicked on it, for instance. But with operations involving
-> heavy disk use, it's extremely slow! For instance, unpacking the bzipped
-> 2.6.27.6 kernel takes 6:40 minutes, while compiling it takes a mere
-> 5:13. I thought I had a hardware problem (still not ruling that out), so
-> I tried to install Vista, and then everything was blazingly fast. I have
-> no clue where to look, but a static benchmark like hdparm gives me a
-> throughput of 235MB/s on the raid 0 array. Could it be
-> filesystem-related? I'm using XFS (always have)...
->
-> Please cc me on any replies.
->
-> Regards,
-> Stian
->
 
-Hello,
-please post your config and dmesg output. It might help people try to
-identify something wrong.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> Impact: fixes korg bugzilla 11980
+> 
+> A kernel for a 64bit x86 system should always contain the swiotlb code
+> in case it is booted on a machine without any hardware IOMMU supported
+> by the kernel and more than 4GB of RAM. This patch changes Kconfig to
+> always compile swiotlb into the kernel for x86_64.
+> 
+> Cc: hawk@pld-linux.org
+> Cc: stable@kernel.org
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+
+applied to tip/x86/iommu, thanks Joerg!
+
+	Ingo
