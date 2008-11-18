@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbYKQNZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbYKQN0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbYKQNZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:25:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYKQNZN
+	id S1752809AbYKQN0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYKQN0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:25:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:39402 "EHLO ozlabs.org"
+	Mon, 17 Nov 2008 08:26:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:39438 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbYKQNZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:25:10 -0500
+	id S1751582AbYKQN0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 08:26:31 -0500
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon Nov 17 23:47:44 CST 2008
+Date: Mon Nov 17 23:48:26 CST 2008
 CC: akpm@linux-foundation.org
-Subject: [PATCH 3/3] Clean up alloc_percpu: change percpu_ptr to per_cpu_ptr
-Cc: mingo@redhat.com
-Cc: lenb@kernel.org
-Cc: cpufreq@vger.kernel.org
-Message-Id: <20081117132509.AB4B3DDDF5@ozlabs.org>
+Subject: [PATCH 1/7] Improve alloc_percpu: make the per cpu reserve configurable and larger.
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Message-Id: <20081117132630.33F09DDDF5@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There are two allocated per-cpu accessor macros with almost identical
-spelling.  The original and far more popular is per_cpu_ptr, so change
-over the other four files.
+This is based on Christoph Lameter's "cpualloc: make the per cpu
+reserve configurable" patch, and his "Increase default reserve percpu
+area" patch.
+
+Christoph did the hard work of figuring out what the number should be
+(based on convering the slub allocator).
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: mingo@redhat.com
-Cc: lenb@kernel.org
-Cc: cpufreq@vger.kernel.org
+Cc: Christoph Lameter <cl@linux-foundation.org>
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
- drivers/acpi/processor_perflib.c           |    4 ++--
- kernel/sched.c                             |    6 +++---
- kernel/stop_machine.c                      |    2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ Documentation/kernel-parameters.txt |    7 +++++++
+ include/linux/percpu.h              |   10 ++--------
+ init/main.c                         |    2 ++
+ mm/allocpercpu.c                    |    5 +++++
+ 4 files changed, 16 insertions(+), 8 deletions(-)
 
-diff -r 4a008e8d6ea4 arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
---- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	Mon Nov 17 21:32:09 2008 +1030
-+++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	Mon Nov 17 21:33:07 2008 +1030
-@@ -581,7 +581,7 @@
- 	if (!data)
- 		return -ENOMEM;
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1704,6 +1704,13 @@
+ 			Format: { 0 | 1 }
+ 			See arch/parisc/kernel/pdc_chassis.c
  
--	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
-+	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
- 	per_cpu(drv_data, cpu) = data;
++	percpu=		[SMP] Configure the number of percpu bytes that can be
++			dynamically allocated. This is used for per cpu
++			variables of modules and other dynamic per cpu data
++			structures. Creation of per cpu structures after boot
++			may fail if this is set too low.
++			Default is 10k/20k for 32 or 64-bit systems.
++
+ 	pf.		[PARIDE]
+ 			See Documentation/blockdev/paride.txt.
  
- 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
-diff -r 4a008e8d6ea4 drivers/acpi/processor_perflib.c
---- a/drivers/acpi/processor_perflib.c	Mon Nov 17 21:32:09 2008 +1030
-+++ b/drivers/acpi/processor_perflib.c	Mon Nov 17 21:33:07 2008 +1030
-@@ -611,12 +611,12 @@
- 			continue;
- 		}
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -41,16 +41,10 @@
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+ #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
  
--		if (!performance || !percpu_ptr(performance, i)) {
-+		if (!performance || !per_cpu_ptr(performance, i)) {
- 			retval = -EINVAL;
- 			continue;
- 		}
+-/* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
+ #ifndef PERCPU_ENOUGH_ROOM
+-#ifdef CONFIG_MODULES
+-#define PERCPU_MODULE_RESERVE	8192
+-#else
+-#define PERCPU_MODULE_RESERVE	0
+-#endif
++extern unsigned int percpu_reserve;
  
--		pr->performance = percpu_ptr(performance, i);
-+		pr->performance = per_cpu_ptr(performance, i);
- 		cpu_set(i, pr->performance->shared_cpu_map);
- 		if (acpi_processor_get_psd(pr)) {
- 			retval = -EINVAL;
-diff -r 4a008e8d6ea4 kernel/sched.c
---- a/kernel/sched.c	Mon Nov 17 21:32:09 2008 +1030
-+++ b/kernel/sched.c	Mon Nov 17 21:33:07 2008 +1030
-@@ -9306,7 +9306,7 @@
- 	int i;
+-#define PERCPU_ENOUGH_ROOM						\
+-	(__per_cpu_end - __per_cpu_start + PERCPU_MODULE_RESERVE)
++#define PERCPU_ENOUGH_ROOM (__per_cpu_end - __per_cpu_start + percpu_reserve)
+ #endif	/* PERCPU_ENOUGH_ROOM */
+ 
+ /*
+diff --git a/init/main.c b/init/main.c
+--- a/init/main.c
++++ b/init/main.c
+@@ -401,6 +401,8 @@
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
+ 	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
++	printk(KERN_INFO "percpu area: %d bytes total, %d available.\n",
++		size, size - (__per_cpu_end - __per_cpu_start));
  
  	for_each_possible_cpu(i) {
--		u64 *cpuusage = percpu_ptr(ca->cpuusage, i);
-+		u64 *cpuusage = per_cpu_ptr(ca->cpuusage, i);
- 
- 		/*
- 		 * Take rq->lock to make 64-bit addition safe on 32-bit
-@@ -9333,7 +9333,7 @@
- 	}
- 
- 	for_each_possible_cpu(i) {
--		u64 *cpuusage = percpu_ptr(ca->cpuusage, i);
-+		u64 *cpuusage = per_cpu_ptr(ca->cpuusage, i);
- 
- 		spin_lock_irq(&cpu_rq(i)->lock);
- 		*cpuusage = 0;
-@@ -9370,7 +9370,7 @@
- 
- 	ca = task_ca(tsk);
- 	if (ca) {
--		u64 *cpuusage = percpu_ptr(ca->cpuusage, task_cpu(tsk));
-+		u64 *cpuusage = per_cpu_ptr(ca->cpuusage, task_cpu(tsk));
- 
- 		*cpuusage += cputime;
- 	}
-diff -r 4a008e8d6ea4 kernel/stop_machine.c
---- a/kernel/stop_machine.c	Mon Nov 17 21:32:09 2008 +1030
-+++ b/kernel/stop_machine.c	Mon Nov 17 21:33:07 2008 +1030
-@@ -130,7 +130,7 @@
- 	 * doesn't hit this CPU until we're ready. */
- 	get_cpu();
- 	for_each_online_cpu(i) {
--		sm_work = percpu_ptr(stop_machine_work, i);
-+		sm_work = per_cpu_ptr(stop_machine_work, i);
- 		INIT_WORK(sm_work, stop_cpu);
- 		queue_work_on(i, stop_machine_wq, sm_work);
- 	}
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
+diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
+--- a/mm/allocpercpu.c
++++ b/mm/allocpercpu.c
+@@ -141,3 +141,8 @@
+ 	kfree(__percpu_disguise(__pdata));
+ }
+ EXPORT_SYMBOL_GPL(percpu_free);
++
++/* A heuristic based on observation.  May need to increase. */
++unsigned int percpu_reserve = (sizeof(unsigned long) * 2500);
++
++core_param(percpu, percpu_reserve, uint, 0644);
 
