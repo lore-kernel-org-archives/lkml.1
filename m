@@ -1,410 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYKRDlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbYKRDmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbYKRDlg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 22:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYKRDja
+	id S1752340AbYKRDmW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 22:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYKRDmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 22:39:30 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:33618 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbYKRDj1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 22:39:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=voPYJoXbtHh72AYMldhSdHkrwfgLG6y6Xk8eyK/6OQsYGkFSFO4FaHWja22l0EohZL
-         jdvq38XQFwWwARLQmgnlpX8sALFqT+GVKN6ate46WQWjo+LRzKgKd33G1cdWIkxx5Wx/
-         Uguq7YshVLI2Om0tLGDHZU2T58ASxYfd9n4Ug=
-Subject: [PATCH-mm 7/7] unaligned: remove last bits of the unaligned access
- helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
+	Mon, 17 Nov 2008 22:42:08 -0500
+Received: from mga14.intel.com ([143.182.124.37]:60128 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918AbYKRDmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 22:42:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,622,1220252400"; 
+   d="scan'208";a="77816910"
+Subject: Re: [PATCH 03/13] dmaengine: up-level reference counting to the
+	module level
+From: Dan Williams <dan.j.williams@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Will Newton <will.newton@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+In-Reply-To: <20081114220842.482d56e5.akpm@linux-foundation.org>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114213432.32354.2427.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114220842.482d56e5.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 17 Nov 2008 19:39:14 -0800
-Message-Id: <1226979554.6150.272.camel@brick>
+Date: Mon, 17 Nov 2008 20:42:04 -0700
+Message-Id: <1226979724.25411.20.camel@dwillia2-linux.ch.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/linux/unaligned/be_byteshift.h |   70 --------------------------------
- include/linux/unaligned/be_memmove.h   |   36 ----------------
- include/linux/unaligned/generic.h      |   68 -------------------------------
- include/linux/unaligned/le_byteshift.h |   70 --------------------------------
- include/linux/unaligned/le_memmove.h   |   36 ----------------
- include/linux/unaligned/memmove.h      |   45 --------------------
- 6 files changed, 0 insertions(+), 325 deletions(-)
+Thanks for the review.
 
-diff --git a/include/linux/unaligned/be_byteshift.h b/include/linux/unaligned/be_byteshift.h
-deleted file mode 100644
-index 46dd12c..0000000
---- a/include/linux/unaligned/be_byteshift.h
-+++ /dev/null
-@@ -1,70 +0,0 @@
--#ifndef _LINUX_UNALIGNED_BE_BYTESHIFT_H
--#define _LINUX_UNALIGNED_BE_BYTESHIFT_H
--
--#include <linux/kernel.h>
--
--static inline u16 __get_unaligned_be16(const u8 *p)
--{
--	return p[0] << 8 | p[1];
--}
--
--static inline u32 __get_unaligned_be32(const u8 *p)
--{
--	return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
--}
--
--static inline u64 __get_unaligned_be64(const u8 *p)
--{
--	return (u64)__get_unaligned_be32(p) << 32 |
--	       __get_unaligned_be32(p + 4);
--}
--
--static inline void __put_unaligned_be16(u16 val, u8 *p)
--{
--	*p++ = val >> 8;
--	*p++ = val;
--}
--
--static inline void __put_unaligned_be32(u32 val, u8 *p)
--{
--	__put_unaligned_be16(val >> 16, p);
--	__put_unaligned_be16(val, p + 2);
--}
--
--static inline void __put_unaligned_be64(u64 val, u8 *p)
--{
--	__put_unaligned_be32(val >> 32, p);
--	__put_unaligned_be32(val, p + 4);
--}
--
--static inline u16 get_unaligned_be16(const void *p)
--{
--	return __get_unaligned_be16((const u8 *)p);
--}
--
--static inline u32 get_unaligned_be32(const void *p)
--{
--	return __get_unaligned_be32((const u8 *)p);
--}
--
--static inline u64 get_unaligned_be64(const void *p)
--{
--	return __get_unaligned_be64((const u8 *)p);
--}
--
--static inline void put_unaligned_be16(u16 val, void *p)
--{
--	__put_unaligned_be16(val, p);
--}
--
--static inline void put_unaligned_be32(u32 val, void *p)
--{
--	__put_unaligned_be32(val, p);
--}
--
--static inline void put_unaligned_be64(u64 val, void *p)
--{
--	__put_unaligned_be64(val, p);
--}
--
--#endif /* _LINUX_UNALIGNED_BE_BYTESHIFT_H */
-diff --git a/include/linux/unaligned/be_memmove.h b/include/linux/unaligned/be_memmove.h
-deleted file mode 100644
-index c2a76c5..0000000
---- a/include/linux/unaligned/be_memmove.h
-+++ /dev/null
-@@ -1,36 +0,0 @@
--#ifndef _LINUX_UNALIGNED_BE_MEMMOVE_H
--#define _LINUX_UNALIGNED_BE_MEMMOVE_H
--
--#include <linux/unaligned/memmove.h>
--
--static inline u16 get_unaligned_be16(const void *p)
--{
--	return __get_unaligned_memmove16((const u8 *)p);
--}
--
--static inline u32 get_unaligned_be32(const void *p)
--{
--	return __get_unaligned_memmove32((const u8 *)p);
--}
--
--static inline u64 get_unaligned_be64(const void *p)
--{
--	return __get_unaligned_memmove64((const u8 *)p);
--}
--
--static inline void put_unaligned_be16(u16 val, void *p)
--{
--	__put_unaligned_memmove16(val, p);
--}
--
--static inline void put_unaligned_be32(u32 val, void *p)
--{
--	__put_unaligned_memmove32(val, p);
--}
--
--static inline void put_unaligned_be64(u64 val, void *p)
--{
--	__put_unaligned_memmove64(val, p);
--}
--
--#endif /* _LINUX_UNALIGNED_LE_MEMMOVE_H */
-diff --git a/include/linux/unaligned/generic.h b/include/linux/unaligned/generic.h
-deleted file mode 100644
-index 02d97ff..0000000
---- a/include/linux/unaligned/generic.h
-+++ /dev/null
-@@ -1,68 +0,0 @@
--#ifndef _LINUX_UNALIGNED_GENERIC_H
--#define _LINUX_UNALIGNED_GENERIC_H
--
--/*
-- * Cause a link-time error if we try an unaligned access other than
-- * 1,2,4 or 8 bytes long
-- */
--extern void __bad_unaligned_access_size(void);
--
--#define __get_unaligned_le(ptr) ((__force typeof(*(ptr)))({			\
--	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
--	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_le16((ptr)),	\
--	__builtin_choose_expr(sizeof(*(ptr)) == 4, get_unaligned_le32((ptr)),	\
--	__builtin_choose_expr(sizeof(*(ptr)) == 8, get_unaligned_le64((ptr)),	\
--	__bad_unaligned_access_size()))));					\
--	}))
--
--#define __get_unaligned_be(ptr) ((__force typeof(*(ptr)))({			\
--	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
--	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_be16((ptr)),	\
--	__builtin_choose_expr(sizeof(*(ptr)) == 4, get_unaligned_be32((ptr)),	\
--	__builtin_choose_expr(sizeof(*(ptr)) == 8, get_unaligned_be64((ptr)),	\
--	__bad_unaligned_access_size()))));					\
--	}))
--
--#define __put_unaligned_le(val, ptr) ({					\
--	void *__gu_p = (ptr);						\
--	switch (sizeof(*(ptr))) {					\
--	case 1:								\
--		*(u8 *)__gu_p = (__force u8)(val);			\
--		break;							\
--	case 2:								\
--		put_unaligned_le16((__force u16)(val), __gu_p);		\
--		break;							\
--	case 4:								\
--		put_unaligned_le32((__force u32)(val), __gu_p);		\
--		break;							\
--	case 8:								\
--		put_unaligned_le64((__force u64)(val), __gu_p);		\
--		break;							\
--	default:							\
--		__bad_unaligned_access_size();				\
--		break;							\
--	}								\
--	(void)0; })
--
--#define __put_unaligned_be(val, ptr) ({					\
--	void *__gu_p = (ptr);						\
--	switch (sizeof(*(ptr))) {					\
--	case 1:								\
--		*(u8 *)__gu_p = (__force u8)(val);			\
--		break;							\
--	case 2:								\
--		put_unaligned_be16((__force u16)(val), __gu_p);		\
--		break;							\
--	case 4:								\
--		put_unaligned_be32((__force u32)(val), __gu_p);		\
--		break;							\
--	case 8:								\
--		put_unaligned_be64((__force u64)(val), __gu_p);		\
--		break;							\
--	default:							\
--		__bad_unaligned_access_size();				\
--		break;							\
--	}								\
--	(void)0; })
--
--#endif /* _LINUX_UNALIGNED_GENERIC_H */
-diff --git a/include/linux/unaligned/le_byteshift.h b/include/linux/unaligned/le_byteshift.h
-deleted file mode 100644
-index 59777e9..0000000
---- a/include/linux/unaligned/le_byteshift.h
-+++ /dev/null
-@@ -1,70 +0,0 @@
--#ifndef _LINUX_UNALIGNED_LE_BYTESHIFT_H
--#define _LINUX_UNALIGNED_LE_BYTESHIFT_H
--
--#include <linux/kernel.h>
--
--static inline u16 __get_unaligned_le16(const u8 *p)
--{
--	return p[0] | p[1] << 8;
--}
--
--static inline u32 __get_unaligned_le32(const u8 *p)
--{
--	return p[0] | p[1] << 8 | p[2] << 16 | p[3] << 24;
--}
--
--static inline u64 __get_unaligned_le64(const u8 *p)
--{
--	return (u64)__get_unaligned_le32(p + 4) << 32 |
--	       __get_unaligned_le32(p);
--}
--
--static inline void __put_unaligned_le16(u16 val, u8 *p)
--{
--	*p++ = val;
--	*p++ = val >> 8;
--}
--
--static inline void __put_unaligned_le32(u32 val, u8 *p)
--{
--	__put_unaligned_le16(val >> 16, p + 2);
--	__put_unaligned_le16(val, p);
--}
--
--static inline void __put_unaligned_le64(u64 val, u8 *p)
--{
--	__put_unaligned_le32(val >> 32, p + 4);
--	__put_unaligned_le32(val, p);
--}
--
--static inline u16 get_unaligned_le16(const void *p)
--{
--	return __get_unaligned_le16((const u8 *)p);
--}
--
--static inline u32 get_unaligned_le32(const void *p)
--{
--	return __get_unaligned_le32((const u8 *)p);
--}
--
--static inline u64 get_unaligned_le64(const void *p)
--{
--	return __get_unaligned_le64((const u8 *)p);
--}
--
--static inline void put_unaligned_le16(u16 val, void *p)
--{
--	__put_unaligned_le16(val, p);
--}
--
--static inline void put_unaligned_le32(u32 val, void *p)
--{
--	__put_unaligned_le32(val, p);
--}
--
--static inline void put_unaligned_le64(u64 val, void *p)
--{
--	__put_unaligned_le64(val, p);
--}
--
--#endif /* _LINUX_UNALIGNED_LE_BYTESHIFT_H */
-diff --git a/include/linux/unaligned/le_memmove.h b/include/linux/unaligned/le_memmove.h
-deleted file mode 100644
-index 269849b..0000000
---- a/include/linux/unaligned/le_memmove.h
-+++ /dev/null
-@@ -1,36 +0,0 @@
--#ifndef _LINUX_UNALIGNED_LE_MEMMOVE_H
--#define _LINUX_UNALIGNED_LE_MEMMOVE_H
--
--#include <linux/unaligned/memmove.h>
--
--static inline u16 get_unaligned_le16(const void *p)
--{
--	return __get_unaligned_memmove16((const u8 *)p);
--}
--
--static inline u32 get_unaligned_le32(const void *p)
--{
--	return __get_unaligned_memmove32((const u8 *)p);
--}
--
--static inline u64 get_unaligned_le64(const void *p)
--{
--	return __get_unaligned_memmove64((const u8 *)p);
--}
--
--static inline void put_unaligned_le16(u16 val, void *p)
--{
--	__put_unaligned_memmove16(val, p);
--}
--
--static inline void put_unaligned_le32(u32 val, void *p)
--{
--	__put_unaligned_memmove32(val, p);
--}
--
--static inline void put_unaligned_le64(u64 val, void *p)
--{
--	__put_unaligned_memmove64(val, p);
--}
--
--#endif /* _LINUX_UNALIGNED_LE_MEMMOVE_H */
-diff --git a/include/linux/unaligned/memmove.h b/include/linux/unaligned/memmove.h
-deleted file mode 100644
-index eeb5a77..0000000
---- a/include/linux/unaligned/memmove.h
-+++ /dev/null
-@@ -1,45 +0,0 @@
--#ifndef _LINUX_UNALIGNED_MEMMOVE_H
--#define _LINUX_UNALIGNED_MEMMOVE_H
--
--#include <linux/kernel.h>
--#include <linux/string.h>
--
--/* Use memmove here, so gcc does not insert a __builtin_memcpy. */
--
--static inline u16 __get_unaligned_memmove16(const void *p)
--{
--	u16 tmp;
--	memmove(&tmp, p, 2);
--	return tmp;
--}
--
--static inline u32 __get_unaligned_memmove32(const void *p)
--{
--	u32 tmp;
--	memmove(&tmp, p, 4);
--	return tmp;
--}
--
--static inline u64 __get_unaligned_memmove64(const void *p)
--{
--	u64 tmp;
--	memmove(&tmp, p, 8);
--	return tmp;
--}
--
--static inline void __put_unaligned_memmove16(u16 val, void *p)
--{
--	memmove(p, &val, 2);
--}
--
--static inline void __put_unaligned_memmove32(u32 val, void *p)
--{
--	memmove(p, &val, 4);
--}
--
--static inline void __put_unaligned_memmove64(u64 val, void *p)
--{
--	memmove(p, &val, 8);
--}
--
--#endif /* _LINUX_UNALIGNED_MEMMOVE_H */
--- 
-1.6.0.4.994.g16bd3e
+On Fri, 2008-11-14 at 23:08 -0700, Andrew Morton wrote: 
+> > +static struct module *dma_chan_to_owner(struct dma_chan *chan)
+> > +{
+> > +	return chan->device->dev->driver->owner;
+> > +}
+> 
+> Has this all been tested with CONFIG_MODULES=n?
+> 
+
+It works, the only thing that changes is that ->owner is always NULL. 
+
+> It looks like we have a lot of unneeded code if CONFIG_MODULES=n. 
+> However that might not be a case which is worth bothering about.
+
+We still need all the other reference counting machinery to identify
+busy channels.
+
+> 
+> > +/**
+> > + * balance_ref_count - catch up the channel reference count
+> > + */
+> > +static void balance_ref_count(struct dma_chan *chan)
+> 
+> Forgot to kerneldocument the argument.
+
+yup
+
+> 
+> > +{
+> > +	struct module *owner = dma_chan_to_owner(chan);
+> > +
+> > +	while (chan->client_count < dmaengine_ref_count) {
+> > +		__module_get(owner);
+> > +		chan->client_count++;
+> > +	}
+> > +}
+> 
+> The locking for ->client_count is undocumented.
+
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index dce6d00..9396891 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -129,6 +129,9 @@ static struct module *dma_chan_to_owner(struct dma_chan *chan)
+ 
+ /**
+  * balance_ref_count - catch up the channel reference count
++ * @chan - channel to balance ->client_count versus dmaengine_ref_count
++ *
++ * balance_ref_count must be called under dma_list_mutex
+  */
+ static void balance_ref_count(struct dma_chan *chan)
+ {
+
+
+> > +/**
+> > + * dma_chan_get - try to grab a dma channel's parent driver module
+> > + * @chan - channel to grab
+> > + */
+> > +static int dma_chan_get(struct dma_chan *chan)
+> > +{
+> > +	int err = -ENODEV;
+> > +	struct module *owner = dma_chan_to_owner(chan);
+> > +
+> > +	if (chan->client_count) {
+> > +		__module_get(owner);
+> > +		err = 0;
+> > +	} else if (try_module_get(owner))
+> > +		err = 0;
+> 
+> I wonder if try_module_get() could be used in both cases (migt not make
+> sense to do so though).
+
+Yes, but I like how it documents the assumption that the backing module
+has been referenced when client_count is non-zero.
+
+> 
+> > +	if (err == 0)
+> > +		chan->client_count++;
+> 
+> Locking for this?
+
+@@ -146,6 +146,8 @@ static void balance_ref_count(struct dma_chan *chan)
+ /**
+  * dma_chan_get - try to grab a dma channel's parent driver module
+  * @chan - channel to grab
++ *
++ * Must be called under dma_list_mutex
+  */
+ static int dma_chan_get(struct dma_chan *chan)
+ {
+
+> 
+> > +	/* allocate upon first client reference */
+> > +	if (chan->client_count == 1 && err == 0) {
+> > +		int desc = chan->device->device_alloc_chan_resources(chan, NULL);
+> > +
+> > +		if (desc < 0) {
+> > +			chan->client_count = 0;
+> > +			module_put(owner);
+> > +			err = -ENOMEM;
+> 
+> Shouldn't we just propagate the ->device_alloc_chan_resources() return value?
+> 
+
+Yes, this is broken.
+
+@@ -165,12 +165,11 @@ static int dma_chan_get(struct dma_chan *chan)
+ 
+ 	/* allocate upon first client reference */
+ 	if (chan->client_count == 1 && err == 0) {
+-		int desc = chan->device->device_alloc_chan_resources(chan);
++		err = chan->device->device_alloc_chan_resources(chan);
+ 
+-		if (desc < 0) {
++		if (err < 0) {
+ 			chan->client_count = 0;
+ 			module_put(owner);
+-			err = -ENOMEM;
+ 		} else if (!dma_has_cap(DMA_PRIVATE, chan->device->cap_mask))
+ 			balance_ref_count(chan);
+ 	}
+
+
+> > +		} else
+> > +			balance_ref_count(chan);
+> > +	}
+> > +
+> > +	return err;
+> > +}
+> > +
+> > +static void dma_chan_put(struct dma_chan *chan)
+> > +{
+> > +	if (!chan->client_count)
+> > +		return; /* this channel failed alloc_chan_resources */
+> 
+> Or we had a bug ;)
+
+...hopefully caught by the BUG_ON(dmaengine_ref_count < 0) in
+dmaengine_put().
+
+> 
+> > +	chan->client_count--;
+> 
+> Undocumented locking..
+
+@@ -178,6 +178,12 @@ static int dma_chan_get(struct dma_chan *chan)
+ 	return err;
+ }
+ 
++/**
++ * dma_chan_put - drop a reference to a dma channel's parent driver module
++ * @chan - channel to release
++ *
++ * Must be called under dma_list_mutex
++ */
+ static void dma_chan_put(struct dma_chan *chan)
+ {
+ 	if (!chan->client_count)
+
+
+Regards,
+Dan
 
