@@ -1,135 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbYKREoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbYKRFCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752328AbYKREoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 23:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYKREoH
+	id S1752080AbYKRFCH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 00:02:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYKRFBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 23:44:07 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:62848 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751868AbYKREoG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 23:44:06 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhIFAKPWIUlMQW5N/2dsb2JhbACBbc9Agnk
-Date: Mon, 17 Nov 2008 23:44:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/16] Markers auto enable tracepoints (new API :
-	trace_mark_tp())
-Message-ID: <20081118044403.GA32759@Krystal>
-References: <20081114224733.364965865@polymtl.ca> <20081114224948.134716055@polymtl.ca> <20081116075928.GB530@elte.hu>
+	Tue, 18 Nov 2008 00:01:54 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:44098 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbYKRFBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 00:01:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=S2L5zvPq6jM8e/XriAzt8YX1UbDQnm2zLu86SXx+Ofj9DD8OV9a6Myb+If9naBcVf
+	q29yRb1O6wcgRZhv9XOBQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20081116075928.GB530@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:39:31 up 1 day,  3:19,  3 users,  load average: 0.39, 0.12,
-	0.06
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <4922224A.5030502@cn.fujitsu.com>
+References: <20081106153022.215696930@redhat.com>
+	 <20081113.180558.519459540419535699.ryov@valinux.co.jp>
+	 <20081113155834.GE7542@redhat.com>
+	 <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com>
+	 <20081113214642.GG7542@redhat.com>
+	 <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>
+	 <20081114160525.GE24624@redhat.com>
+	 <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>
+	 <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com>
+Date: Mon, 17 Nov 2008 21:01:48 -0800
+Message-ID: <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+From: Nauman Rafique <nauman@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Divyesh Shah <dpshah@google.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
+       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Add a new API trace_mark_tp(), which declares a marker within a 
-> > tracepoint probe. When the marker is activated, the tracepoint is 
-> > automatically enabled.
-> > 
-> > No branch test is used at the marker site, because it would be a 
-> > duplicate of the branch already present in the tracepoint.
-> > 
-> > Impact: new API.
-> 
-> i dont know.
-> 
-> I was actually hoping for markers (the in-kernel API) to go away 
-> completely - and be replaced with tracepoints.
-> 
-> Markers are the wrong design on several levels. They couple the kernel 
-> dynamically with unknown (to the kernel) entities - and that is 
-> causing complexity all around the place, clearly expressed in these 
-> patches of yours.
-> 
-> Tracepoints are much more specific - typed and enumerated function 
-> call callback points in essence - with some politeness that allows 
-> external instrumentation entities to attach to those callbacks.
-> 
-> Is there any usecase of markers that should not be converted to either 
-> tracepoints or to ftrace_printk() ?
-> 
-> 	Ingo
+If we start with bfq patches, this is how plan would look like:
 
-I'll try to explain the common use-case I have in mind. I think starting
-from that we'll be able to better understand what pieces of tracepoints
-and markers are useful, and which purpose they fulfill. I have other
-use-cases in mind too, but for sake of clarity, let's begin with this
-subset.
+1 Start with BFQ take 2.
+2 Do the following to support proportional division:
+ a) Expose the per device weight interface to user, instead of calculating
+ from priority.
+ b) Add support for disk time budgets, besides sector budget that is currently
+ available (configurable option). (Fabio: Do you think we can just emulate
+that using the existing code?). Another approach would be to give time slices
+just like CFQ (discussing?)
+4 Do the following to support the goals of 2 level schedulers:
+ a) Limit the request descriptors allocated to each cgroup by adding
+ functionality to elv_may_queue()
+ b) Add support for putting an absolute limit on IO consumed by a
+ cgroup. Such support is provided by Andrea
+ Righi's patches too.
+ c) Add support (configurable option) to keep track of total disk
+time/sectors/count
+ consumed at each device, and factor that into scheduling decision
+ (more discussion needed here)
+6 Incorporate an IO tracking approach which re-uses memory resource
+controller code but is not dependent on it (may be biocgroup patches from
+dm-ioband can be used here directly)
+7 Start an offline email thread to keep track of progress on the above
+goals.
 
-Tracepoints instrument the kernel. They identify code locations and
-extract the state of pre-identified interesting variables at these
-locations. They are built into the kernel. They are closely tied to
-kernel internals, and hence only provide an in-kernel API.
+BFQ's support for hierarchy of cgroups means that its close to where
+we want to get. Any comments on what approach looks better?
 
-Markers identify the name (and therefore numeric ID) to attach to an
-"event" and the data types to export into trace buffers for this
-specific event type. These data types are fully expressed in a marker
-format-string table recorded in a "metadata" channel. The size of the
-various basic types and the endianness is recorded in the buffer header.
-Therefore, the binary trace buffers are self-described.
+On Mon, Nov 17, 2008 at 6:02 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> Vivek Goyal wrote:
+>> On Fri, Nov 14, 2008 at 02:44:22PM -0800, Nauman Rafique wrote:
+>>> In an attempt to make sure that this discussion leads to
+>>> something useful, we have summarized the points raised in this
+>>> discussion and have come up with a strategy for future.
+>>> The goal of this is to find common ground between all the approaches
+>>> proposed on this mailing list.
+>>>
+>>> 1 Start with Satoshi's latest patches.
+>>
+>> I have had a brief look at both Satoshi's patch and bfq. I kind of like
+>> bfq's patches for keeping track of per cgroup, per queue data structures.
+>> May be we can look there also.
+>>
+>>> 2 Do the following to support propotional division:
+>>>  a) Give time slices in proportion to weights (configurable
+>>>  option). We can support both priorities and weights by doing
+>>>  propotional division between requests with same priorities.
+>>> 3 Schedule time slices using WF2Q+ instead of round robin.
+>>>  Test the performance impact (both throughput and jitter in latency).
+>>> 4 Do the following to support the goals of 2 level schedulers:
+>>>  a) Limit the request descriptors allocated to each cgroup by adding
+>>>  functionality to elv_may_queue()
+>>>  b) Add support for putting an absolute limit on IO consumed by a
+>>>  cgroup. Such support exists in dm-ioband and is provided by Andrea
+>>>  Righi's patches too.
+>>
+>> Does dm-iobnd support abosolute limit? I think till last version they did
+>> not. I have not check the latest version though.
+>>
+>
+> No, dm-ioband still provides weight/share control only. Only Andrea Righi's
+> patches support absolute limit.
 
-Data is exported through binary trace buffers out of kernel-space,
-either by writing directly to disk, sending data over the network, crash
-dump extraction, etc.
+Thanks for the correction.
 
-User-space applications, which run on an architecture with potentially
-different endianness and different type sizes, reads the binary buffers.
-Therefore, those buffers must be fully self-described so the application
-can read them portably (or just on 32-bits userspace running under a
-64-bits kernel).
-
-In debug-mode tracing (where the developer wants to add
-ftrace_printk()-like statements in its kernel and recompile), the
-extracted information should be made available through the same binary
-buffers where the information extracted from the tracepoints is saved.
-Adding printk-like statements to the kernel should not suffer from the
-time and buffer space penality of expanding the raw data to text.
-However, ftrace_printk() requires to pretty-print the data in text.
-It would be too cumbersome to ask developer to deploy their own
-tracepoints whenever they want to create ad-hoc debug-style tracing
-statements. This is where trace_mark() statements do better than
-ftrace_printk() by allowing to dump the information to trace buffers in
-binary format through a simple to use format-string based macro. Note
-that each marker format string is dumped in the metadata table to
-identify the new event types.
-
-So that was my use-case which I think cannot be converted to tracepoints
-nor ftrace_print(). If things are not as clear as they should be, don't
-hesitate to ask for clarifications.
-
-I also think we might consider removing the "multiple callback support"
-from markers if we tie them more closely to the data extraction code,
-given this multiple-callback role is already fulfilled by tracepoints.
-OTOH, given my use-case can use markers as information source, thus
-bypassing tracepoints for debug-style tracing, we may still need to
-connect more than a single probe to the markers. I becomes very useful
-for use-cases such as : dumping the kernel or userspace stack, reading
-the performance counters and activating/de-activating the function
-tracer at specific instrumentation sites.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>
+>>>  c) Add support (configurable option) to keep track of total disk
+>>> time/sectors/count
+>>>  consumed at each device, and factor that into scheduling decision
+>>>  (more discussion needed here)
+>>> 5 Support multiple layers of cgroups to align IO controller behavior
+>>>  with CPU scheduling behavior (more discussion?)
+>>> 6 Incorporate an IO tracking approach which re-uses memory resource
+>>> controller code but is not dependent on it (may be biocgroup patches from
+>>> dm-ioband can be used here directly)
+>>> 7 Start an offline email thread to keep track of progress on the above
+>>> goals.
+>>>
+>>> Please feel free to add/modify items to the list
+>>> when you respond back. Any comments/suggestions are more than welcome.
+>>>
+>
+>
