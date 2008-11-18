@@ -1,81 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYKRNtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbYKRNt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbYKRNtg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 08:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYKRNtO
+	id S1753177AbYKRNt5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 08:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYKRNto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 08:49:14 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38961 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157AbYKRNtN (ORCPT
+	Tue, 18 Nov 2008 08:49:44 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39825 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbYKRNto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 08:49:13 -0500
-Subject: Re: busted CFS group load balancer?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ken Chen <kenchen@google.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
-References: <20081115011452.GA28135@google.com>
-	 <49218FB4.6090805@nortel.com>
-	 <b040c32a0811171204p4ce6d706j3ee2c018d0f33548@mail.gmail.com>
-	 <4921DFD8.9060509@nortel.com>
-	 <1226985548.29743.6.camel@lappy.programming.kicks-ass.net>
-	 <b040c32a0811172333k5a89ccfy6438bf66d32dca5d@mail.gmail.com>
-	 <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 14:48:53 +0100
-Message-Id: <1227016133.29743.17.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 08:49:44 -0500
+Date: Tue, 18 Nov 2008 08:49:41 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: ftrace: preemptoff selftest not working
+In-Reply-To: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com>
+References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-18 at 13:30 +0100, Peter Zijlstra wrote:
-> On Mon, 2008-11-17 at 23:33 -0800, Ken Chen wrote:
-> > On Mon, Nov 17, 2008 at 9:19 PM, Peter Zijlstra wrote:
-> > > Note that with larger cpu count and/or lower group weight we'll quickly
-> > > run into numerical trouble...
-> > >
-> > > I would recommend trying this with the minimum weight in the order of
-> > > 8-16 times number of cpus on your system.
-> > >
-> > > There is only so much one can do with 10 bit fixed precision math :/
-> > 
-> > That is probably one of the many problems.  I also found that the
-> > updates to the per-cpu task_group's sched_entity load weight
-> > (tg->se[cpu]->load.weight) is very problematic and very erratic.
-> > 
-> > The total rq_weight is calculated at one beginning of tg_shares_up(),
-> > 
-> >         for_each_cpu_mask(i, sd->span) {
-> >                 rq_weight += tg->cfs_rq[i]->load.weight;
-> >                 shares += tg->cfs_rq[i]->shares;
-> >         }
-> > 
-> > However, the scaling of per-cpu se->load.weight in function
-> > __update_group_shares_cpu() takes another lookup of
-> > tg->cfs_rq[cpu]->load.weight at a different time.
-> > cfs_rq[cpu].load.weight aren't always consistent across these two
-> > times.  Due to these inconsistency of value taken on per cpu cfs_rq,
-> > I've see tg->se[cpu]->load.weight jumping all over the place.  In our
-> > environment, the cpu loads are very dynamic.  Process
-> > queuing/dequeuing at high rate.
+
+On Tue, 18 Nov 2008, Heiko Carstens wrote:
+
+> Hi Steven,
 > 
-> Ok, if your load values are very unstable in the order of the
-> load-balance interval then you're hosed too, the same is true for the
-> normal smp load-balancer.
+> I was wondering why the preemptoff and preemptirqsoff tracer selftests
+> don't work on s390. After all its just that they get called from
+> non-preemptible context:
 > 
-> The cgroup load-balancer makes that even more problematic.
+> kernel_init() will execute all initcalls, however the first line in
+> kernel_init() is lock_kernel(), which causes the preempt_count to be
+> increased. Any later calls to add_preempt_count() (especially those
+> from the selftests) will therefore not result in a call to
+> trace_preempt_off() since the check below in add_preempt_count()
+> will be false:
 > 
-> Again, there's just very little you can do about that, except increase
-> the coupling between cpus and thereby increase the overhead. Try
-> decreasing 
-> sysctl_sched_shares_ratelimit.
+> 	if (preempt_count() == val)
+> 		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
+> 
+> Hence the trace buffer will be empty.
+> The patch below makes the selftests working for me, since then they run
+> in preemptible context. But it is ugly and I'm not proposing it for
+> upstream ;)
+> 
+> Just wanted to make you aware that there is a bug.
 
+Yep, this might be a better answer than what I put into linux-tip (and my 
+git repo).
 
-Also, lower sysctl_sched_shares_thresh to 1 or 0.
+See:
 
+  ftrace: force pass of preemptoff selftest
 
+The cause of the bug was the conversion of the BKL back to a spinlock, and 
+making it non preempt.  The initcall code is called with the BKL applied 
+which now means it can not preempt. This breaks the preempt tracer 
+selftest.
+
+My solution was to just force a pass if this is detected. Perhaps moving 
+the test might be better.
+
+-- Steve
+
+> 
+> ---
+>  init/main.c                  |    4 ++++
+>  kernel/trace/trace_irqsoff.c |    3 +--
+>  2 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/kernel/trace/trace_irqsoff.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/trace/trace_irqsoff.c
+> +++ linux-2.6/kernel/trace/trace_irqsoff.c
+> @@ -482,7 +482,7 @@ static struct tracer preemptirqsoff_trac
+>  # define register_preemptirqsoff(trace) do { } while (0)
+>  #endif
+>  
+> -__init static int init_irqsoff_tracer(void)
+> +int init_irqsoff_tracer(void)
+>  {
+>  	register_irqsoff(irqsoff_tracer);
+>  	register_preemptoff(preemptoff_tracer);
+> @@ -490,4 +490,3 @@ __init static int init_irqsoff_tracer(vo
+>  
+>  	return 0;
+>  }
+> -device_initcall(init_irqsoff_tracer);
+> Index: linux-2.6/init/main.c
+> ===================================================================
+> --- linux-2.6.orig/init/main.c
+> +++ linux-2.6/init/main.c
+> @@ -789,6 +789,8 @@ static void run_init_process(char *init_
+>  	kernel_execve(init_filename, argv_init, envp_init);
+>  }
+>  
+> +extern int init_irqsoff_tracer(void);
+> +
+>  /* This is a non __init function. Force it to be noinline otherwise gcc
+>   * makes it inline to init() and it becomes part of init.text section
+>   */
+> @@ -800,6 +802,8 @@ static int noinline init_post(void)
+>  	system_state = SYSTEM_RUNNING;
+>  	numa_default_policy();
+>  
+> +	init_irqsoff_tracer();
+> +
+>  	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
+>  		printk(KERN_WARNING "Warning: unable to open an initial console.\n");
+>  
+> 
+> 
