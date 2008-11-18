@@ -1,124 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbYKRQr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYKRQrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbYKRQr0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYKRQrS
+	id S1754119AbYKRQrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYKRQro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:47:18 -0500
-Received: from mga02.intel.com ([134.134.136.20]:24883 "EHLO mga02.intel.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751086AbYKRQrR convert rfc822-to-8bit (ORCPT
+	Tue, 18 Nov 2008 11:47:44 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:28104 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYKRQro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:47:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,626,1220252400"; 
-   d="scan'208";a="464515476"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Joe Korty <joe.korty@ccur.com>
-CC: H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Tue, 18 Nov 2008 08:47:35 -0800
-Subject: RE: [PATCH] x86: Support always running TSC on Intel CPUs
-Thread-Topic: [PATCH] x86: Support always running TSC on Intel CPUs
-Thread-Index: AclJl5BcekRub77oTbOSyx162kZK5AABCyBg
-Message-ID: <7E82351C108FA840AB1866AC776AEC464291BB4F@orsmsx505.amr.corp.intel.com>
-References: <20081118001137.GA12350@linux-os.sc.intel.com>
- <20081118080952.GE17838@elte.hu> <20081118145540.GA32082@tsunami.ccur.com>
- <20081118160542.GC8088@elte.hu>
-In-Reply-To: <20081118160542.GC8088@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 18 Nov 2008 11:47:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=j2ZvUo7yyP8O0dhDNWmaH4Tjy/I6UgIHcTFtt1Thpx+dMNTxeuB3Zr4TsGG2urdwTg
+         4UEez35+gnpA+T085n9TKtrkGacD3ZBWP/+dSGxdB4yQignP44CRFDyzU3sbztU9VMTm
+         DCSeL9D5L6ftZeebHOB9F532AEXJTc6lN/FdY=
+Message-ID: <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
+Date: Tue, 18 Nov 2008 17:47:42 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun field
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081118164019.GA18620@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081117084923.GD28786@elte.hu> <20081118084755.GK17838@elte.hu>
+	 <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>
+	 <20081118145154.GC30358@elte.hu>
+	 <alpine.DEB.1.10.0811181006010.15003@gandalf.stny.rr.com>
+	 <20081118151326.GH30358@elte.hu>
+	 <alpine.DEB.1.10.0811181020350.15003@gandalf.stny.rr.com>
+	 <20081118155045.GJ30358@elte.hu>
+	 <c62985530811180831n132ed6dep77aa2684ff59861@mail.gmail.com>
+	 <20081118164019.GA18620@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/11/18 Ingo Molnar <mingo@elte.hu>:
+> Would be nice to have the dynamic allocation straight away
 
+2008/11/18 Steven Rostedt <rostedt@goodmis.org>:
+> I would recommend using a static array
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Tuesday, November 18, 2008 8:06 AM
->To: Joe Korty
->Cc: Pallipadi, Venkatesh; H Peter Anvin; Thomas Gleixner; linux-kernel
->Subject: Re: [PATCH] x86: Support always running TSC on Intel CPUs
->
->
->* Joe Korty <joe.korty@ccur.com> wrote:
->
->> On Tue, Nov 18, 2008 at 09:09:52AM +0100, Ingo Molnar wrote:
->> >
->> > * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
->> >
->> > > +        if (c->x86_power & (1 << 8)) {
->> > >                  set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
->> > > +                set_cpu_cap(c, X86_FEATURE_NOSTOP_TSC);
->> > > +        }
->> >
->> > hm, the naming is a bit confusing. We now have 3 variants:
->> >
->> >   X86_FEATURE_TSC
->> >   X86_FEATURE_CONSTANT_TSC
->> >   X86_FEATURE_NOSTOP_TSC
->> >
->> > NOSTOP_TSC is basically what CONSTANT_TSC should have been
->to begin
->> > with ;-)
->> >
->> > i'd suggest to rename it to this:
->> >
->> >   X86_FEATURE_TSC
->> >   X86_FEATURE_CONSTANT_FREQ_TSC
->> >   X86_FEATURE_STABLE_TSC
->> >
->> > ... with CONSTANT_FREQ_TSC not having any real role in the
->long run.
->> > (it's similarly problematic to a completely unstable TSC)
->> >
->> > does this sound ok?
->>
->>
->> To me, the new naming has the same head-scratching potential
->> as the old....
->>
->> How about:
->>
->>      X86_FEATURE_TSC
->>      X86_FEATURE_STABLE_TSC_OBSOLETE
->>      X86_FEATURE_STABLE_TSC
->
->the _honest_ naming would be:
->
->       X86_FEATURE_TSC
->       X86_FEATURE_STABLE_TSC_BUT_NOT_ALWAYS
->       X86_FEATURE_STABLE_TSC
->
->;-)
->
->what's head-scratching about X86_FEATURE_CONSTANT_FREQ_TSC? It's a
->limited TSC variant: it follows a reference frequency that does not
->change with cpufreq changes, but it can stop at a whim in C states. So
->it's not "stable" nor really "constant" in the everyday sense.
->
-
-I don't like STABLE_TSC_OBSOLETE as it does not say anything
-descriptive about what it means and people have to look at the code
-to find out.
-
-My original intention was to split this into two features
-- P/T state invariant TSC which counts at constant rate
-- C-state invariant TSC that never stops
-Some CPUs will have only first feature. Others may have both.
-
-But, I agree it is confusing.
-
-How about?
-X86_FEATURE_FIXEDFREQ_MAYSTOP_TSC
-X86_FEATURE_ALWAYS_RUNNING_TSC
-
-Thanks,
-Venki
+:-)
