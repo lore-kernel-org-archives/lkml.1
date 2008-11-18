@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYKRN5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYKROEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbYKRN5p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 08:57:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYKRN5g
+	id S1753104AbYKROEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYKROEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 08:57:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36026 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbYKRN5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 08:57:35 -0500
-Subject: Re: [PATCH] physmap: Fix leak of memory returned by
-	parse_mtd_partitions
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <8bd0f97a0811120808p5858d5adleeef43b1d374bee1@mail.gmail.com>
-References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
-	 <20081113.005534.56563769.anemo@mba.ocn.ne.jp>
-	 <8bd0f97a0811120808p5858d5adleeef43b1d374bee1@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 13:57:27 +0000
-Message-Id: <1227016647.27728.398.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 18 Nov 2008 09:04:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33224 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752178AbYKROEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 09:04:11 -0500
+Date: Tue, 18 Nov 2008 15:03:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>, heukelum@fastmail.fm,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Glauber Costa <gcosta@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC,v2] x86_64: save_args out of line
+Message-ID: <20081118140349.GC23479@elte.hu>
+References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com> <20081118111633.GA21036@mailshack.com> <4922C863.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4922C863.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-12 at 11:08 -0500, Mike Frysinger wrote:
-> i wonder why we duplicate this same code block in so many places.  and
-> why does every driver have to declare its own list of parsers ?  cant
-> we unify all of these in one place ?
 
-Well, most boards only really want _one_ partition type; maybe two. And
-the probes can be quite expensive and have false positives, so we don't
-want to be doing all the probes for all devices.
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-It might make sense to just pass a bitmask indicating which partition
-probes to use. Assuming we can agree on an ordering, that is :)
+> >>> Alexander van Heukelum <heukelum@mailshack.com> 18.11.08 12:16 >>>
+> >> >Dwarf2-annotations are most probably wrong or missing at all.
+> >> 
+> >> Indeed - do you have intentions to address this?
+> >
+> > Yes, I'ld like to get it right. What do you use to check the 
+> > annotations?
+> 
+> No tool, if you mean that. Extensive changes I verify by looking at 
+> the dump, problems are usually found only when back traces don't 
+> come out right.
 
-Another complication is that some boards have registered the whole
-device first, while others have just registered the partitions.
+that's a fundamental weakness of all the CFI annotations.
 
-I suspect it might be better to take the simple bug-fix approach for
-now, given that we are planning a revamp of the MTD core API anyway --
-we can redo partitions properly at the point, so they aren't just an
-evil hack.
+It is outright wrong to waste humans on this mechanic task: as it is 
+abundantly clear to GAS where we change a stack pointer and by how 
+much - it could emit magic annotations automatically just as much.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+So if you care about it, please fix this in the tools space. The 
+entry_64.S impact of finegrained annotations is just too ugly for 
+things like this.
 
+One limited exception is for basic stack frames where we do syscalls 
+or call into other C code. (i.e. the patch proposed here would have to 
+do that limited annotation)
+
+But the per instruction annotations currently in that code are madness 
+and must either be cleaned up significantly via the use of GAS macros 
+(so that all stack pointer manipulations go via a single macro 
+invocation), or be completely auto-generated by GAS.
+
+	Ingo
