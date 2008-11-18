@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbYKRBik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbYKRBlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752604AbYKRBik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 20:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYKRBic
+	id S1752506AbYKRBlK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 20:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYKRBk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 20:38:32 -0500
-Received: from host2.marvell.com ([65.219.4.2]:54077 "EHLO maili.marvell.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752009AbYKRBib convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 20:38:31 -0500
-X-Greylist: delayed 1200 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Nov 2008 20:38:31 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 17 Nov 2008 20:40:57 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35062 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751552AbYKRBk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 20:40:56 -0500
+Message-ID: <49221D23.8040904@kernel.org>
+Date: Tue, 18 Nov 2008 10:40:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 2.6.28-rc5] mfd da903x: section fix
-Date: Mon, 17 Nov 2008 17:18:29 -0800
-Message-ID: <E913911567467945BBEB9277E27868B001494C8B@msiexch01.marvell.com>
-In-Reply-To: <200811171142.38587.david-b@pacbell.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 2.6.28-rc5] mfd da903x: section fix
-Thread-Index: AclI+SwoFgv4kBwfRI+B++f2uukWmgAIlCdQ
-References: <200811171142.38587.david-b@pacbell.net>
-From: "Eric Miao" <ymiao3@marvell.com>
-To: <dbrownell@users.sourceforge.net>, "Samuel Ortiz" <sameo@openedhand.com>
-Cc: "lkml" <linux-kernel@vger.kernel.org>,
-       "Mike Rapoport" <mike@compulab.co.il>
+To: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RESEND] char_dev: add cdev->release() and convert	cdev_alloc()
+ to use it
+References: <48B6D428.2020308@kernel.org> <20080828164741.GA17475@kroah.com> <48B6D8D0.6080506@kernel.org> <20080828173813.GC18097@kroah.com> <48B6E417.5030605@kernel.org> <20080828174807.GA18461@kroah.com> <48B6E69B.1090800@kernel.org> <20080828181720.GB23898@kroah.com> <491BEC4E.9030505@kernel.org> <492136F5.8010903@kernel.org> <20081117171717.GB31306@kroah.com> <49221CE8.1050402@kernel.org>
+In-Reply-To: <49221CE8.1050402@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 18 Nov 2008 01:40:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Indeed.
+(lkml was missing, adding it back and quoting whole body for reference)
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+Tejun Heo wrote:
+> Greg KH wrote:
+>> On Mon, Nov 17, 2008 at 06:18:45PM +0900, Tejun Heo wrote:
+>>> (this is a private message)
+>>>
+>>> PING.  :-)
+>> Heh.
+>>
+>> I've lost this out of my tree, as I didn't know you still wanted this
+>> applied.  If you need it for your char-fuse code, then I don't have an
+>> objection to it, and you can take it through your tree.
+>>
+>> Or do you want me to take it through mine?
+>>
+>> Your choice :)
+> 
+> I'll push it through Miklos' tree w/ your ACK then.
+> 
+> Thanks.  :-)
+> 
 
-Samuel, please consider merge, thanks.
 
------Original Message-----
-From: David Brownell [mailto:david-b@pacbell.net] 
-Sent: Tuesday, November 18, 2008 3:43 AM
-To: Samuel Ortiz
-Cc: lkml; Eric Miao; Mike Rapoport
-Subject: [patch 2.6.28-rc5] mfd da903x: section fix
-
-From: David Brownell <dbrownell@users.sourceforge.net>
-
-This fixes the following section warning:
-
-  WARNING: vmlinux.o(.devinit.text+0x3d36): Section mismatch in
-reference from the function 
-  da903x_add_subdevs() to the function
-.devexit.text:da903x_remove_subdevs()
-  The function __devinit da903x_add_subdevs() references
-  a function __devexit da903x_remove_subdevs().
-  This is often seen when error handling in the init function
-  uses functionality in the exit path.
-  The fix is often to remove the __devexit annotation of
-  da903x_remove_subdevs() so it may be used outside an exit section.
-
-It might be nice to have an "init and exit" section annotation for such
-cases; in this case the waste is only about 40 bytes (x86 test build).
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/mfd/da903x.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/drivers/mfd/da903x.c
-+++ b/drivers/mfd/da903x.c
-@@ -435,13 +435,13 @@ static const struct i2c_device_id da903x
- };
- MODULE_DEVICE_TABLE(i2c, da903x_id_table);
- 
--static int __devexit __remove_subdev(struct device *dev, void *unused)
-+static int __remove_subdev(struct device *dev, void *unused)
- {
- 	platform_device_unregister(to_platform_device(dev));
- 	return 0;
- }
- 
--static int __devexit da903x_remove_subdevs(struct da903x_chip *chip)
-+static int da903x_remove_subdevs(struct da903x_chip *chip)
- {
- 	return device_for_each_child(chip->dev, NULL, __remove_subdev);
- }
+-- 
+tejun
