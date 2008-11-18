@@ -1,73 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYKRHii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYKRHnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbYKRHii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 02:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYKRHi0
+	id S1752463AbYKRHnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 02:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYKRHnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 02:38:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:43590 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbYKRHiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 02:38:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UyQH3fc9auQACvt29lL6cVlndZHlkeL/gMO8jlFbDbL/LQ+/+dOhQi35yH5dW/3rvF
-         1u5rsdYhlRJkctxEi3URZLjoALxiiHisvuESz8QjlHS1FqYFrp7OguNWMx8r4dO9pvUa
-         3dPiFO/HDxDKz/ksBG9fCyHnTucqUk5VKuMMA=
-Date: Tue, 18 Nov 2008 07:38:19 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Miller <davem@davemloft.net>, Ferenc Wagner <wferi@niif.hu>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] softirq: Use local_irq_save() in local_bh_enable()
-Message-ID: <20081118073819.GA4440@ff.dom.local>
-References: <87y6zwwy5c.fsf@tac.ki.iif.hu> <20081117133548.GC6345@ff.dom.local> <20081117161617.GF12081@elte.hu>
+	Tue, 18 Nov 2008 02:43:03 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53266 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751201AbYKRHnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 02:43:00 -0500
+Message-ID: <492271EF.4050002@cn.fujitsu.com>
+Date: Tue, 18 Nov 2008 15:42:39 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117161617.GF12081@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Nauman Rafique <nauman@google.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, Divyesh Shah <dpshah@google.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
+       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+References: <20081106153022.215696930@redhat.com>	 <20081113.180558.519459540419535699.ryov@valinux.co.jp>	 <20081113155834.GE7542@redhat.com>	 <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com>	 <20081113214642.GG7542@redhat.com>	 <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>	 <20081114160525.GE24624@redhat.com>	 <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>	 <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>
+In-Reply-To: <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 17, 2008 at 05:16:17PM +0100, Ingo Molnar wrote:
+Nauman Rafique wrote:
+> If we start with bfq patches, this is how plan would look like:
 > 
-> * Jarek Poplawski <jarkao2@gmail.com> wrote:
+> 1 Start with BFQ take 2.
+> 2 Do the following to support proportional division:
+>  a) Expose the per device weight interface to user, instead of calculating
+>  from priority.
+>  b) Add support for disk time budgets, besides sector budget that is currently
+>  available (configurable option). (Fabio: Do you think we can just emulate
+> that using the existing code?). Another approach would be to give time slices
+> just like CFQ (discussing?)
+> 4 Do the following to support the goals of 2 level schedulers:
+>  a) Limit the request descriptors allocated to each cgroup by adding
+>  functionality to elv_may_queue()
+>  b) Add support for putting an absolute limit on IO consumed by a
+>  cgroup. Such support is provided by Andrea
+>  Righi's patches too.
+>  c) Add support (configurable option) to keep track of total disk
+> time/sectors/count
+>  consumed at each device, and factor that into scheduling decision
+>  (more discussion needed here)
+> 6 Incorporate an IO tracking approach which re-uses memory resource
+> controller code but is not dependent on it (may be biocgroup patches from
+> dm-ioband can be used here directly)
+
+The newest bio_cgroup doesn't use much memcg code I think. The older biocgroup
+tracks IO using mem_cgroup_charge(), and mem_cgroup_charge() remembers a struct page
+owns by which cgroup. But now biocgroup changes to directly put some hooks in
+__set_page_dirty() and some other places to track pages.
+
+> 7 Start an offline email thread to keep track of progress on the above
+> goals.
 > 
-> > This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2 
-> > shows local_bh_enable() is used in the wrong context (irqs 
-> > disabled). It happens when a usual network receive path is called by 
-> > netconsole, which simply turns off irqs around this all. Probably 
-> > this is wrong, but it worked like this long time, and it's not 
-> > trivial to fix this.
-> > 
-> > Anyway, a commit 0f476b6d91a1395bda6464e653ce66ea9bea7167 "softirq: 
-> > remove irqs_disabled warning from local_bh_enable" can break things 
-> > after changing from local_irq_save() to local_irq_disable(). Before 
-> > this commit there was only a warning, now a lockup is possible, so 
-> > it could be treated as a regression. This patch reverts the change 
-> > in irqs.
+> BFQ's support for hierarchy of cgroups means that its close to where
+> we want to get. Any comments on what approach looks better?
 > 
-> hm, but calling local_bh_enable() with hardirqs off is a bug. It might 
-> be a long-standing bug, but it can cause lockups even with that change 
-> reverted: when we process softirqs in local_bh_enable().
 
-I think it's what they call a regression: this is a long-standing bug,
-and this commit doesn't fix this, but can cause additional lockups.
+Looks like a sane way :) . We are also trying to keep track of the discussion and
+development of IO controller. I'll start to have a look into BFQ.
 
-> So why not 
-> fix the bug instead?
-
-It's not about instead: this bug could be fixed as well (if somebody
-knows how to do it "properly" without hacks like:
-	if (!in_irq())
-		local_bh_disable();
-etc.; but, I guess, the network code has more such bh disabling).
-
-Jarek P.
+> On Mon, Nov 17, 2008 at 6:02 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> Vivek Goyal wrote:
+>>> On Fri, Nov 14, 2008 at 02:44:22PM -0800, Nauman Rafique wrote:
+>>>> In an attempt to make sure that this discussion leads to
+>>>> something useful, we have summarized the points raised in this
+>>>> discussion and have come up with a strategy for future.
+>>>> The goal of this is to find common ground between all the approaches
+>>>> proposed on this mailing list.
+>>>>
+>>>> 1 Start with Satoshi's latest patches.
+>>> I have had a brief look at both Satoshi's patch and bfq. I kind of like
+>>> bfq's patches for keeping track of per cgroup, per queue data structures.
+>>> May be we can look there also.
+>>>
+>>>> 2 Do the following to support propotional division:
+>>>>  a) Give time slices in proportion to weights (configurable
+>>>>  option). We can support both priorities and weights by doing
+>>>>  propotional division between requests with same priorities.
+>>>> 3 Schedule time slices using WF2Q+ instead of round robin.
+>>>>  Test the performance impact (both throughput and jitter in latency).
+>>>> 4 Do the following to support the goals of 2 level schedulers:
+>>>>  a) Limit the request descriptors allocated to each cgroup by adding
+>>>>  functionality to elv_may_queue()
+>>>>  b) Add support for putting an absolute limit on IO consumed by a
+>>>>  cgroup. Such support exists in dm-ioband and is provided by Andrea
+>>>>  Righi's patches too.
+>>> Does dm-iobnd support abosolute limit? I think till last version they did
+>>> not. I have not check the latest version though.
+>>>
+>> No, dm-ioband still provides weight/share control only. Only Andrea Righi's
+>> patches support absolute limit.
+> 
+> Thanks for the correction.
+> 
+>>>>  c) Add support (configurable option) to keep track of total disk
+>>>> time/sectors/count
+>>>>  consumed at each device, and factor that into scheduling decision
+>>>>  (more discussion needed here)
+>>>> 5 Support multiple layers of cgroups to align IO controller behavior
+>>>>  with CPU scheduling behavior (more discussion?)
+>>>> 6 Incorporate an IO tracking approach which re-uses memory resource
+>>>> controller code but is not dependent on it (may be biocgroup patches from
+>>>> dm-ioband can be used here directly)
+>>>> 7 Start an offline email thread to keep track of progress on the above
+>>>> goals.
+>>>>
+>>>> Please feel free to add/modify items to the list
+>>>> when you respond back. Any comments/suggestions are more than welcome.
+>>>>
+>>
+> 
