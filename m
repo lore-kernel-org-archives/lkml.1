@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbYKRUXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYKRUXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606AbYKRUXc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 15:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbYKRUXE
+	id S1754049AbYKRUXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 15:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYKRUXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 15:23:04 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:15366 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbYKRUXB (ORCPT
+	Tue, 18 Nov 2008 15:23:25 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:55350 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754542AbYKRUXX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 15:23:01 -0500
+	Tue, 18 Nov 2008 15:23:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=NdQwevOc0FG5SJ5e7Tj982A+A0+Sbh8KgkyYgvHtjmsgtVREI2rPBAAEcuhD/4g1Mf
-         UoBQuvgKKCo7nSIXRaosbTNVZ7D8+jbJoxU4JbOU6f090zJKVo9OT8g3SDx8ZID9qz21
-         bXOn+zx49ahPJzq8yy4NlxSoCH657UkMyCeTs=
-Message-ID: <cfd18e0f0811181222y4cba081m18fc5cf86512b85f@mail.gmail.com>
-Date: Tue, 18 Nov 2008 15:22:59 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch] Fix type errors in inotify interfaces
-Cc: lkml <linux-kernel@vger.kernel.org>, "Robert Love" <rlove@google.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Michael Kerrisk" <mtk.manpages@gmail.com>
-In-Reply-To: <4923230D.8090301@gmail.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Rk5rpppAFykX+N5DOw+etAHXPhKxdQ4FbYUbVW5ajo/S2Peqr/3mn/rGUGypCU8yqB
+         AvtvuQ9we8zt/PtaTJ2eIaKMprmczO291ZBIfVsJbAX1ngYWpDZPzEoMmX6RxeabJO73
+         9P2LBPGqUZVnS++Vr9aJiVEKyuh86TLEJcDhc=
+Message-ID: <524f69650811181223s349300dcid686ed44f8af9715@mail.gmail.com>
+Date: Tue, 18 Nov 2008 14:23:21 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: third patch
+Cc: "Jeff Layton" <jlayton@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>
+In-Reply-To: <20081117233833.GA28435@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4923230D.8090301@gmail.com>
+References: <20081114185039.1f3af842@tleilax.poochiereds.net>
+	 <524f69650811141609n63f3631bn6493e2be76b1bed6@mail.gmail.com>
+	 <20081115063641.26003498@tleilax.poochiereds.net>
+	 <524f69650811161918i738ba50frd87666a58640b76f@mail.gmail.com>
+	 <20081117055603.GA1381@kroah.com>
+	 <524f69650811171506y1f518c3bnac03e4f557ba29fb@mail.gmail.com>
+	 <20081117233833.GA28435@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hope Robert doesn't mind if I drop a piece from our old offlist mail
-conversation into this thread, for some background.
+On Mon, Nov 17, 2008 at 5:38 PM, Greg KH <greg@kroah.com> wrote:
+>> > On Sun, Nov 16, 2008 at 09:18:43PM -0600, Steve French wrote:
+>> >> Jeff and I have worked on a series of patches to fix the oopses,
+>> >> memory corruption and mount failures due to races in various linked
+>> >> list handling relating to socket, session and tree connection when
+>> >> using the reproducer detailed here:
+>> >>
+>> >> https://bugzilla.samba.org/show_bug.cgi?id=5720
 
--------- Original Message --------
-Subject: Re: Use of uint32_t in inotify APIs
-Date: Tue, 20 Jun 2006 09:07:17 -0400
-From: Robert Love <rlove@rlove.org>
+> Well, if Linus takes them so late in the merge window, I'll consider
+> also adding them to -stable, as they do fix reported problems, and are
+> good to have in there for users who rely on cifs.
+>
+> thanks,
+>
+> greg k-h
 
-On 6/20/06, Michael Kerrisk wrote:
+Now merged into mainline
 
-Hi,
 
-> The use of uint32_t seems a little strange in at least some of the
-> above.  In particular, the watch descriptor returned by
-> inotify_add_watch() is an "int", as is the "wd" field of the
-> "inotify_event" structure, but in the prototype for inotify_rm_watch(),
-> "wd" is uint32_t.  Is there a reason for this, or is it just cruft?
 
-The unsigned parameter in inotify_rm_watch() is wrong.  I cannot think
-we that should be the case.  But the problem lies not with glibc --
-the function definition in the kernel is wrong, too.  It should be
-fixed; everywhere else a watch descriptor is an __s32.
+-- 
+Thanks,
 
-> Following on from this, is it really necessary that "mask" is uint32_t
-> in the prototype for inotify_rm_watch()?  In most other glibc
-> interfaces, bit masks are simply "int".
-
-I think masks should be unsigned.  This definitely makes sense.
-
-In the kernel, most of the inotify data types are __u32.
-
-[...]
-
-Also the 'wd' in the event structure should be 'int32_t' -- the kernel
-uses the type '__s32' -- but perhaps glibc developers prefer to use a
-straight 'int' since the types are identical.
-
-In that case, inotify_rm_watch()'s 'wd' should be changed to '__s32'
-in the kernel and 'int' in glibc.  Otherwise, '__s32' in the kernel
-and 'int32_t' in glibc.  Since this change will affect ABI, it needs
-to be made cautiously, but I don't see any issues.
-
-     Robert Love
+Steve
