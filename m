@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYKRIzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbYKRIzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753197AbYKRIzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 03:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYKRIyc
+	id S1752938AbYKRIzw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 03:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYKRIyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 03:54:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57599 "EHLO song.cn.fujitsu.com"
+	Tue, 18 Nov 2008 03:54:36 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57614 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbYKRIya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 03:54:30 -0500
-Message-ID: <49228208.4050106@cn.fujitsu.com>
-Date: Tue, 18 Nov 2008 16:51:20 +0800
+	id S1752603AbYKRIyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 03:54:35 -0500
+Message-ID: <4922820D.4000802@cn.fujitsu.com>
+Date: Tue, 18 Nov 2008 16:51:25 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
@@ -28,7 +28,7 @@ CC: Johannes Weiner <hannes@cmpxchg.org>, David Miller <davem@davemloft.net>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Nick Piggin <npiggin@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
        Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH V2 3/4] files: use kvmalloc()/kvfree()/kvfree_atomic()
+Subject: [PATCH V2 4/4] sysipc: use kvmalloc()/kvfree_atomic()
 References: <492162E4.9080902@cn.fujitsu.com> <20081117131440.GB29931@cmpxchg.org>
 In-Reply-To: <20081117131440.GB29931@cmpxchg.org>
 Content-Type: text/plain; charset=UTF-8
@@ -39,240 +39,175 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 RCU callback here use vfree()
-use kvmalloc()/kvfree()/kvfree_atomic() make it simple
+use kvmalloc()/kvfree_atomic() make it simple
+
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
- fs/file.c               |  122 +++++++-----------------------------------------
- include/linux/fdtable.h |    1
- 2 files changed, 19 insertions(+), 104 deletions(-)
-diff --git a/fs/file.c b/fs/file.c
-index f313314..a71fdf3 100644
---- a/fs/file.c
-+++ b/fs/file.c
-@@ -20,71 +20,13 @@
- #include <linux/rcupdate.h>
- #include <linux/workqueue.h>
- 
--struct fdtable_defer {
--	spinlock_t lock;
--	struct work_struct wq;
--	struct fdtable *next;
--};
--
- int sysctl_nr_open __read_mostly = 1024*1024;
- int sysctl_nr_open_min = BITS_PER_LONG;
- int sysctl_nr_open_max = 1024 * 1024; /* raised later */
+ util.c |  116 ++++++++++-------------------------------------------------------
+ 1 file changed, 19 insertions(+), 97 deletions(-)
+diff --git a/ipc/util.c b/ipc/util.c
+index 49b3ea6..3ecf04d 100644
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -468,51 +468,16 @@ void ipc_free(void* ptr, int size)
+ 		kfree(ptr);
+ }
  
 -/*
-- * We use this list to defer free fdtables that have vmalloced
-- * sets/arrays. By keeping a per-cpu list, we avoid having to embed
-- * the work_struct in fdtable itself which avoids a 64 byte (i386) increase in
-- * this per-task structure.
+- * rcu allocations:
+- * There are three headers that are prepended to the actual allocation:
+- * - during use: ipc_rcu_hdr.
+- * - during the rcu grace period: ipc_rcu_grace.
+- * - [only if vmalloc]: ipc_rcu_sched.
+- * Their lifetime doesn't overlap, thus the headers share the same memory.
+- * Unlike a normal union, they are right-aligned, thus some container_of
+- * forward/backward casting is necessary:
 - */
--static DEFINE_PER_CPU(struct fdtable_defer, fdtable_defer_list);
--
--static inline void * alloc_fdmem(unsigned int size)
--{
--	if (size <= PAGE_SIZE)
--		return kmalloc(size, GFP_KERNEL);
--	else
--		return vmalloc(size);
--}
--
--static inline void free_fdarr(struct fdtable *fdt)
--{
--	if (fdt->max_fds <= (PAGE_SIZE / sizeof(struct file *)))
--		kfree(fdt->fd);
--	else
--		vfree(fdt->fd);
--}
--
--static inline void free_fdset(struct fdtable *fdt)
--{
--	if (fdt->max_fds <= (PAGE_SIZE * BITS_PER_BYTE / 2))
--		kfree(fdt->open_fds);
--	else
--		vfree(fdt->open_fds);
--}
--
--static void free_fdtable_work(struct work_struct *work)
--{
--	struct fdtable_defer *f =
--		container_of(work, struct fdtable_defer, wq);
--	struct fdtable *fdt;
--
--	spin_lock_bh(&f->lock);
--	fdt = f->next;
--	f->next = NULL;
--	spin_unlock_bh(&f->lock);
--	while(fdt) {
--		struct fdtable *next = fdt->next;
--		vfree(fdt->fd);
--		free_fdset(fdt);
--		kfree(fdt);
--		fdt = next;
--	}
--}
--
- void free_fdtable_rcu(struct rcu_head *rcu)
+ struct ipc_rcu_hdr
  {
- 	struct fdtable *fdt = container_of(rcu, struct fdtable, rcu);
--	struct fdtable_defer *fddef;
- 
- 	BUG_ON(!fdt);
- 
-@@ -97,20 +39,9 @@ void free_fdtable_rcu(struct rcu_head *rcu)
- 				container_of(fdt, struct files_struct, fdtab));
- 		return;
- 	}
--	if (fdt->max_fds <= (PAGE_SIZE / sizeof(struct file *))) {
--		kfree(fdt->fd);
--		kfree(fdt->open_fds);
--		kfree(fdt);
--	} else {
--		fddef = &get_cpu_var(fdtable_defer_list);
--		spin_lock(&fddef->lock);
--		fdt->next = fddef->next;
--		fddef->next = fdt;
--		/* vmallocs are handled from the workqueue context */
--		schedule_work(&fddef->wq);
--		spin_unlock(&fddef->lock);
--		put_cpu_var(fdtable_defer_list);
--	}
-+	kvfree_atomic(fdt->fd);
-+	kvfree_atomic(fdt->open_fds);
-+	kfree(fdt);
- }
- 
- /*
-@@ -166,30 +97,36 @@ static struct fdtable * alloc_fdtable(unsigned int nr)
- 	if (!fdt)
- 		goto out;
- 	fdt->max_fds = nr;
--	data = alloc_fdmem(nr * sizeof(struct file *));
-+	data = kvmalloc(nr * sizeof(struct file *), GFP_KERNEL);
- 	if (!data)
- 		goto out_fdt;
- 	fdt->fd = (struct file **)data;
--	data = alloc_fdmem(max_t(unsigned int,
--				 2 * nr / BITS_PER_BYTE, L1_CACHE_BYTES));
-+	data = kvmalloc(max_t(unsigned int, 2 * nr / BITS_PER_BYTE,
-+			      L1_CACHE_BYTES), GFP_KERNEL);
- 	if (!data)
- 		goto out_arr;
- 	fdt->open_fds = (fd_set *)data;
- 	data += nr / BITS_PER_BYTE;
- 	fdt->close_on_exec = (fd_set *)data;
- 	INIT_RCU_HEAD(&fdt->rcu);
--	fdt->next = NULL;
- 
- 	return fdt;
- 
- out_arr:
--	free_fdarr(fdt);
-+	kvfree(fdt->fd);
- out_fdt:
- 	kfree(fdt);
- out:
- 	return NULL;
- }
- 
-+static void immediate_free_fdtable(struct fdtable *fdt)
-+{
-+	kvfree(fdt->fd);
-+	kvfree(fdt->open_fds);
-+	kfree(fdt);
-+}
-+
- /*
-  * Expand the file descriptor table.
-  * This function will allocate a new fdtable and both fd array and fdset, of
-@@ -213,9 +150,7 @@ static int expand_fdtable(struct files_struct *files, int nr)
- 	 * caller and alloc_fdtable().  Cheaper to catch it here...
- 	 */
- 	if (unlikely(new_fdt->max_fds <= nr)) {
--		free_fdarr(new_fdt);
--		free_fdset(new_fdt);
--		kfree(new_fdt);
-+		immediate_free_fdtable(new_fdt);
- 		return -EMFILE;
- 	}
- 	/*
-@@ -231,9 +166,7 @@ static int expand_fdtable(struct files_struct *files, int nr)
- 			free_fdtable(cur_fdt);
- 	} else {
- 		/* Somebody else expanded, so undo our attempt */
--		free_fdarr(new_fdt);
--		free_fdset(new_fdt);
--		kfree(new_fdt);
-+		immediate_free_fdtable(new_fdt);
- 	}
- 	return 1;
- }
-@@ -312,7 +245,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
- 	new_fdt->open_fds = (fd_set *)&newf->open_fds_init;
- 	new_fdt->fd = &newf->fd_array[0];
- 	INIT_RCU_HEAD(&new_fdt->rcu);
--	new_fdt->next = NULL;
- 
- 	spin_lock(&oldf->file_lock);
- 	old_fdt = files_fdtable(oldf);
-@@ -324,11 +256,8 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
- 	while (unlikely(open_files > new_fdt->max_fds)) {
- 		spin_unlock(&oldf->file_lock);
- 
--		if (new_fdt != &newf->fdtab) {
--			free_fdarr(new_fdt);
--			free_fdset(new_fdt);
--			kfree(new_fdt);
--		}
-+		if (new_fdt != &newf->fdtab)
-+			immediate_free_fdtable(new_fdt);
- 
- 		new_fdt = alloc_fdtable(open_files - 1);
- 		if (!new_fdt) {
-@@ -338,9 +267,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
- 
- 		/* beyond sysctl_nr_open; nothing to do */
- 		if (unlikely(new_fdt->max_fds < open_files)) {
--			free_fdarr(new_fdt);
--			free_fdset(new_fdt);
--			kfree(new_fdt);
-+			immediate_free_fdtable(new_fdt);
- 			*errorp = -EMFILE;
- 			goto out_release;
- 		}
-@@ -404,19 +331,8 @@ out:
- 	return NULL;
- }
- 
--static void __devinit fdtable_defer_list_init(int cpu)
--{
--	struct fdtable_defer *fddef = &per_cpu(fdtable_defer_list, cpu);
--	spin_lock_init(&fddef->lock);
--	INIT_WORK(&fddef->wq, free_fdtable_work);
--	fddef->next = NULL;
--}
+-	int refcount;
+-	int is_vmalloc;
+-	void *data[0];
+-};
 -
- void __init files_defer_init(void)
- {
--	int i;
--	for_each_possible_cpu(i)
--		fdtable_defer_list_init(i);
- 	sysctl_nr_open_max = min((size_t)INT_MAX, ~(size_t)0/sizeof(void *)) &
- 			     -BITS_PER_LONG;
- }
-diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
-index 4aab6f1..cacdae6 100644
---- a/include/linux/fdtable.h
-+++ b/include/linux/fdtable.h
-@@ -32,7 +32,6 @@ struct fdtable {
- 	fd_set *close_on_exec;
- 	fd_set *open_fds;
- 	struct rcu_head rcu;
--	struct fdtable *next;
+-
+-struct ipc_rcu_grace
+-{
+-	struct rcu_head rcu;
++	union {
++		int refcount;
++		struct rcu_head rcu;
++	};
+ 	/* "void *" makes sure alignment of following data is sane. */
+ 	void *data[0];
  };
  
- /*
+-struct ipc_rcu_sched
+-{
+-	struct work_struct work;
+-	/* "void *" makes sure alignment of following data is sane. */
+-	void *data[0];
+-};
+-
+-#define HDRLEN_KMALLOC		(sizeof(struct ipc_rcu_grace) > sizeof(struct ipc_rcu_hdr) ? \
+-					sizeof(struct ipc_rcu_grace) : sizeof(struct ipc_rcu_hdr))
+-#define HDRLEN_VMALLOC		(sizeof(struct ipc_rcu_sched) > HDRLEN_KMALLOC ? \
+-					sizeof(struct ipc_rcu_sched) : HDRLEN_KMALLOC)
+-
+-static inline int rcu_use_vmalloc(int size)
+-{
+-	/* Too big for a single page? */
+-	if (HDRLEN_KMALLOC + size > PAGE_SIZE)
+-		return 1;
+-	return 0;
+-}
+-
+ /**
+  *	ipc_rcu_alloc	-	allocate ipc and rcu space 
+  *	@size: size desired
+@@ -522,30 +487,18 @@ static inline int rcu_use_vmalloc(int size)
+  *	NULL is returned if the allocation fails. 
+  */
+  
+-void* ipc_rcu_alloc(int size)
++void *ipc_rcu_alloc(int size)
+ {
+-	void* out;
+ 	/* 
+-	 * We prepend the allocation with the rcu struct, and
+-	 * workqueue if necessary (for vmalloc). 
++	 * We prepend the allocation with the ipc_rcu_hdr
+ 	 */
+-	if (rcu_use_vmalloc(size)) {
+-		out = vmalloc(HDRLEN_VMALLOC + size);
+-		if (out) {
+-			out += HDRLEN_VMALLOC;
+-			container_of(out, struct ipc_rcu_hdr, data)->is_vmalloc = 1;
+-			container_of(out, struct ipc_rcu_hdr, data)->refcount = 1;
+-		}
+-	} else {
+-		out = kmalloc(HDRLEN_KMALLOC + size, GFP_KERNEL);
+-		if (out) {
+-			out += HDRLEN_KMALLOC;
+-			container_of(out, struct ipc_rcu_hdr, data)->is_vmalloc = 0;
+-			container_of(out, struct ipc_rcu_hdr, data)->refcount = 1;
+-		}
+-	}
++	struct ipc_rcu_hdr *hdr = kvmalloc(sizeof(struct ipc_rcu_hdr) + size,
++			GFP_KERNEL);
++	if (!hdr)
++		return NULL;
+ 
+-	return out;
++	hdr->refcount = 1;
++	return hdr->data;
+ }
+ 
+ void ipc_rcu_getref(void *ptr)
+@@ -553,56 +506,25 @@ void ipc_rcu_getref(void *ptr)
+ 	container_of(ptr, struct ipc_rcu_hdr, data)->refcount++;
+ }
+ 
+-static void ipc_do_vfree(struct work_struct *work)
+-{
+-	vfree(container_of(work, struct ipc_rcu_sched, work));
+-}
+-
+ /**
+- * ipc_schedule_free - free ipc + rcu space
++ * ipc_free_rcu - free ipc + ipc_rcu_hdr
+  * @head: RCU callback structure for queued work
+  * 
+  * Since RCU callback function is called in bh,
+- * we need to defer the vfree to schedule_work().
+- */
+-static void ipc_schedule_free(struct rcu_head *head)
+-{
+-	struct ipc_rcu_grace *grace;
+-	struct ipc_rcu_sched *sched;
+-
+-	grace = container_of(head, struct ipc_rcu_grace, rcu);
+-	sched = container_of(&(grace->data[0]), struct ipc_rcu_sched,
+-				data[0]);
+-
+-	INIT_WORK(&sched->work, ipc_do_vfree);
+-	schedule_work(&sched->work);
+-}
+-
+-/**
+- * ipc_immediate_free - free ipc + rcu space
+- * @head: RCU callback structure that contains pointer to be freed
+- *
+- * Free from the RCU callback context.
++ * we need to use kvfree_atomic().
+  */
+-static void ipc_immediate_free(struct rcu_head *head)
++static void ipc_free_rcu(struct rcu_head *head)
+ {
+-	struct ipc_rcu_grace *free =
+-		container_of(head, struct ipc_rcu_grace, rcu);
+-	kfree(free);
++	kvfree_atomic(container_of(head, struct ipc_rcu_hdr, rcu));
+ }
+ 
+ void ipc_rcu_putref(void *ptr)
+ {
+-	if (--container_of(ptr, struct ipc_rcu_hdr, data)->refcount > 0)
++	struct ipc_rcu_hdr *hdr = container_of(ptr, struct ipc_rcu_hdr, data);
++	if (--hdr->refcount > 0)
+ 		return;
+ 
+-	if (container_of(ptr, struct ipc_rcu_hdr, data)->is_vmalloc) {
+-		call_rcu(&container_of(ptr, struct ipc_rcu_grace, data)->rcu,
+-				ipc_schedule_free);
+-	} else {
+-		call_rcu(&container_of(ptr, struct ipc_rcu_grace, data)->rcu,
+-				ipc_immediate_free);
+-	}
++	call_rcu(&hdr->rcu, ipc_free_rcu);
+ }
+ 
+ /**
+
 
