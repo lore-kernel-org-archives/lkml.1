@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbYKRIuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYKRIyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752447AbYKRIuP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 03:50:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYKRIuC
+	id S1752476AbYKRIyb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 03:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYKRIyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 03:50:02 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:39410 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbYKRIuA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 03:50:00 -0500
-Message-ID: <4922818B.1020303@cosmosbay.com>
-Date: Tue, 18 Nov 2008 09:49:15 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
+	Tue, 18 Nov 2008 03:54:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52710 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750756AbYKRIyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 03:54:21 -0500
+Message-ID: <492281F7.3000107@cn.fujitsu.com>
+Date: Tue, 18 Nov 2008 16:51:03 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, shemminger@vyatta.com
-Subject: Re: eth_type_trans(): Re: [Bug #11308] tbench regression on each
- kernel release from 2.6.22 -&gt; 2.6.28
-References: <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu> <20081117212657.GH12020@elte.hu> <20081117.211645.193706814.davem@davemloft.net> <20081118083018.GI17838@elte.hu>
-In-Reply-To: <20081118083018.GI17838@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 18 Nov 2008 09:49:21 +0100 (CET)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Johannes Weiner <hannes@cmpxchg.org>, David Miller <davem@davemloft.net>,
+       Dave Airlie <airlied@gmail.com>, Paul Menage <menage@google.com>,
+       kamezawa.hiroyu@jp.fujitsu.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jan Kara <jack@suse.cz>,
+       Jes Sorensen <jes@sgi.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, dada1@cosmosbay.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nick Piggin <npiggin@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH V2 1/4] vmalloc: introduce vfree_atomic()
+References: <492162E4.9080902@cn.fujitsu.com> <20081117131440.GB29931@cmpxchg.org>
+In-Reply-To: <20081117131440.GB29931@cmpxchg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * David Miller <davem@davemloft.net> wrote:
-> 
->> From: Ingo Molnar <mingo@elte.hu>
->> Date: Mon, 17 Nov 2008 22:26:57 +0100
->>
->>> eth->h_proto access.
->> Yes, this is the first time a packet is touched on receive.
->>
->>> Given that this workload does localhost networking, my guess would be 
->>> that eth->h_proto is bouncing around between 16 CPUs? At minimum this 
->>> read-mostly field should be separated from the bouncing bits.
->> It's the packet contents, there is no way to "seperate it".
->>
->> And it should be unlikely bouncing on your system under tbench, the 
->> senders and receivers should hang out on the same cpu unless the 
->> something completely stupid is happening.
->>
->> That's why I like running tbench with a num_threads command line 
->> argument equal to the number of cpus, every cpu gets the two thread 
->> talking to eachother over the TCP socket.
-> 
-> yeah - and i posted the numbers for that too - it's the same 
-> throughput, within ~1% of noise.
 
-Thinking once again about loopback driver, I recall a previous attempt
-to call netif_receive_skb() instead of netif_rx() and pay the price
-of cache line ping-pongs between cpus.
+fdtable and sysipc use vfree() in RCU callback. this patch
+introduce vfree_atomic() for them.
 
-http://kerneltrap.org/mailarchive/linux-netdev/2008/2/21/939644
-
-Maybe we could do that, with a temporary percpu stack, like we do in softirq
-when CONFIG_4KSTACKS=y
-
-(arch/x86/kernel/irq_32.c  : call_on_stack(func, stack)
-
-And do this only if the current cpu doesnt already use its softirq_stack
-(think about loopback re-entering loopback xmit because of TCP ACK for example)
-
-Oh well... black magic, you are going to kill me :)
-
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+index 307b885..195379a 100644
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -60,6 +60,7 @@ extern void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot);
+ extern void *__vmalloc_area(struct vm_struct *area, gfp_t gfp_mask,
+ 				pgprot_t prot);
+ extern void vfree(const void *addr);
++extern void vfree_atomic(void *addr);
+ 
+ extern void *vmap(struct page **pages, unsigned int count,
+ 			unsigned long flags, pgprot_t prot);
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index ba6b0f5..39c164e 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -23,6 +23,7 @@
+ #include <linux/rbtree.h>
+ #include <linux/radix-tree.h>
+ #include <linux/rcupdate.h>
++#include <linux/workqueue.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/uaccess.h>
+@@ -1177,6 +1178,21 @@ void vfree(const void *addr)
+ }
+ EXPORT_SYMBOL(vfree);
+ 
++static void vfree_defer(struct work_struct *work)
++{
++	vfree(work);
++}
++
++void vfree_atomic(void *ptr)
++{
++	if (ptr) {
++		struct work_struct *work = ptr;
++		INIT_WORK(work, vfree_defer);
++		schedule_work(work);
++	}
++}
++EXPORT_SYMBOL_GPL(vfree_atomic);
++
+ /**
+  *	vunmap  -  release virtual mapping obtained by vmap()
+  *	@addr:		memory base address
 
