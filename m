@@ -1,152 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbYKRStc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYKRTAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927AbYKRStc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYKRStX
+	id S1752713AbYKRTAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 14:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYKRTA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:49:23 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:25416 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbYKRStW (ORCPT
+	Tue, 18 Nov 2008 14:00:27 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:63839 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbYKRTA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:49:22 -0500
+	Tue, 18 Nov 2008 14:00:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=Q9/0L7SMDZ14kBCcqxJRlwNo9wGNAZCB2STCIBgiWBvNpHrS6ZOqygMx0xTX2AvA2l
-         IZfJ4tnwCCjQ7PbH/3aOsW3cihJpD+y+Rq8JKSd+ChqQhiDL0W1F99HL0ATm+vYloUbV
-         LswM46opCAx3kosoUSOsLcYp7fXlwyTqwxQwI=
-Message-ID: <49230E2C.60101@tuffmail.co.uk>
-Date: Tue, 18 Nov 2008 18:49:16 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=lRFrbaOiBwEFzyF32yQMRS/9SLDiX7aiv7Ki8Q1WavSbCh63AwMVJZ5I8NdZz4kEYj
+         HaPhqhbYKN4pf4g5LT3yVayu3n/fJ+WDuhVJjsARspoOark7YOLRqqYSPLVqd+qrKRkF
+         F1R8o6jSggIGErRZHx/M5cTRc0Zh9wslbyzLQ=
+Message-ID: <e9c3a7c20811181100q27af85ey49823ba326e70a09@mail.gmail.com>
+Date: Tue, 18 Nov 2008 12:00:25 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Nicolas Ferre" <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller
+Cc: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Andrew Victor" <linux@maxim.org.za>
+In-Reply-To: <491DA8AC.5010703@atmel.com>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: "Justin P. Mattock" <justinmattock@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: [ 11.333737] is this a ghost?
-References: <1227001038.3184.6.camel@LiNuX>	 <9b2b86520811180315u410019f0y7e6fab66b51a225e@mail.gmail.com>	 <1227025771.3161.6.camel@LiNuX>  <4922F441.7020007@tuffmail.co.uk> <1227030114.3161.18.camel@LiNuX>
-In-Reply-To: <1227030114.3161.18.camel@LiNuX>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48F8B291.1060500@atmel.com>
+	 <1224530326.27425.25.camel@dwillia2-linux.ch.intel.com>
+	 <491DA8AC.5010703@atmel.com>
+X-Google-Sender-Auth: 8b2c390a603b30a3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> On Tue, 2008-11-18 at 16:58 +0000, Alan Jenkins wrote:
->   
->> Justin P. Mattock wrote:
->>     
->>> On Tue, 2008-11-18 at 11:15 +0000, Alan Jenkins wrote:
->>>   
->>>       
->>>> On 11/18/08, Justin P. Mattock <justinmattock@gmail.com> wrote:
->>>>     
->>>>         
->>>>> in dmesg I see:
->>>>> [   11.333737]
->>>>> but nothing else.
->>>>>           ---------------(cut)-----------------
->>>>> [   11.247147] Monitor-Mwait will be used to enter C-1 state
->>>>> [   11.247151] Monitor-Mwait will be used to enter C-2 state
->>>>> [   11.247154] Monitor-Mwait will be used to enter C-3 state
->>>>> [   11.247671] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
->>>>> [   11.247996] processor ACPI_CPU:00: registered as cooling_device0
->>>>> [   11.248008] ACPI: Processor [CPU0] (supports 8 throttling states)
->>>>> [   11.306465] ACPI: SSDT 3FEB8F10, 0087 (r1 APPLE   Cpu1Ist     3000
->>>>> INTL 20050309)<7>power_supply ADP1: No power supply yet
->>>>>       
->>>>>           
->>>> Look at this last line.  The "<7>" is a priority marker.  Normally it
->>>> marks the start of a line, and should be hidden.  So you seem to be
->>>> missing a line break just after "20050309)"...
->>>>
->>>>     
->>>>         
->>>>> [   11.306831] power_supply ADP1: power_supply_changed
->>>>> [   11.306839] ACPI: AC Adapter [ADP1] (on-line)
->>>>> [   11.333737]                         <------------what's with this!!!
->>>>>       
->>>>>           
->>>> ...which seems to be delayed and reappears here?
->>>>
->>>>     
->>>>         
->>>>> [   11.342937] power_supply ADP1: power_supply_changed_work
->>>>> [   11.351901] power_supply ADP1: power_supply_update_gen_leds 1
->>>>> [   11.351916] ACPI: SSDT 3FEB7F10, 0085 (r1 APPLE   Cpu1Cst     3000
->>>>> INTL 20050309)
->>>>>       
->>>>> if you need to see the full dmesg I can attach..
->>>>> I've seen this happen on a random.
->>>>>       
->>>>>           
->>>> I guess you have a multicore processor (or some other sort of SMP), right?
->>>>
->>>> I think kernel messages are not completely synchronized by design, for
->>>> reliability reasons.  (e.g. to make sure critical error messages /
->>>> backtraces can get through on a dying system).
->>>>     
->>>>         
->>> Cool.
->>> makes good sense to me, 
->>> As long as it's not something that shouldn't be there,
->>> or something that's broken. As for this happening again
->>> looking at dmesg nothing, all synchronized.
->>> Seems to randomly show itself.
->>>   
->>>       
->> It's the ACPICA OS abstraction layer - it splits every message into
->> multiple printk() calls.  Other subsystems don't do this... it probably
->> could and should be fixed.
+On Fri, Nov 14, 2008 at 9:34 AM, Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+>>>  include/linux/at_hdmac.h                |   26 +
 >>
->> drivers/acpi/utmisc.c:
->>
->>     void ACPI_INTERNAL_VAR_XFACE
->>     acpi_ut_info(const char *module_name, u32 line_number, const char
->>     *format, ...)
->>     {
->>         va_list args;
->>
->>         /*
->>          * Removed module_name, line_number, and acpica version, not needed
->>          * for info output
->>          */
->>         acpi_os_printf("ACPI: ");
->>
->>         va_start(args, format);
->>         acpi_os_vprintf(format, args);
->>         acpi_os_printf("\n");
->>         va_end(args);
->>     }
->>
->> The alternative is to use the preprocessor, i.e. macros and string
->> concatenation to generate a single printk().
->>
->> Alan
->>     
+>> ...this header should be moved somewhere under arch/arm/include.
 >
-> Maybe I'm missing a library or something.
-> The issue with this is the consistency.
-> one reboot I'll see it up higher in dmesg,
-> and then on another reboot nothing, then
-> maybe a few more reboots I'll see it down lower
-> in dmesg(like what I posted). As for fixing this
-> I'm not educated enough to go in and exactly know what
-> to change(one day hopefully, so I can contribute),
-> But I am willing to try a patch out to see if it resolves
-> the issue.
->   
+> This is where dw_dmac.h resides. Moreover, if one day this IP is implemented
+> on a different architecture, it will be good not to reach it through
+> arch/arm path.
 
-Right.  It's simple enough, I can write a patch.  Not sure what would be
-most acceptable though.
+Ok, I won't gate acceptance on this since dw_dmac already set the
+precedent, but shouldn't the header move after the IP has been
+duplicated?  Just my 2cents.
 
-Len, this sounds like a genuine bug.  Would you accept a patch changing
-ACPI_INFO(()) etc. to use GNU-style variadic macros?
+>>> +               memset(desc, 0, sizeof(struct at_desc));
+>>> +               dma_async_tx_descriptor_init(&desc->txd, chan);
+>>> +               async_tx_ack(&desc->txd);
+>>
+>> the DMA_CTRL_ACK bit is under control of the client.  It should be
+>> read-only to the driver (except for extra descriptors that the driver
+>> creates on behalf of the client).
+>
+> This is precisely where the descriptors are been created so, I thought it
+> should be ok to initialize this bit. Am I right ?
+>
 
-Thanks
-Alan
+They will be acknowledged by client code.  Calls like async_memcpy
+assume that the the ack bit is clear by default so they can specify
+some actions to run at completion time.  By setting it early, at
+descriptor allocation time, async_tx will get confused.
+
+>>> +/**
+>>> + * atc_alloc_chan_resources - allocate resources for DMA channel
+>>> + * @chan: allocate descriptor resources for this channel
+>>> + * @client: current client requesting the channel be ready for requests
+>>> + *
+>>> + * return - the number of allocated descriptors
+>>> + */
+>>> +static int atc_alloc_chan_resources(struct dma_chan *chan,
+>>> +                                   struct dma_client *client)
+>>> +{
+>>> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
+>>> +       struct at_dma           *atdma = to_at_dma(chan->device);
+>>> +       struct at_desc          *desc;
+>>> +       int                     i;
+>>> +       LIST_HEAD(tmp_list);
+>>> +
+>>> +       dev_vdbg(&chan->dev, "alloc_chan_resources\n");
+>>> +
+>
+> [TAG]
+>
+>>> +       /* ASSERT:  channel is idle */
+>>> +       if (atc_chan_is_enabled(atchan)) {
+>>> +               dev_dbg(&chan->dev, "DMA channel not idle ?\n");
+>>> +               return -EIO;
+>>> +       }
+>
+> [/TAG]
+>
+>>> +
+>>> +       /* have we already been set up? */
+>>> +       if (!list_empty(&atchan->free_list))
+>>> +               return atchan->descs_allocated;
+>>> +
+>>> +       /* Allocate initial pool of descriptors */
+>>> +       for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
+>>> +               desc = atc_alloc_descriptor(chan, GFP_KERNEL);
+>>> +               if (!desc) {
+>>> +                       dev_err(atdma->dma_common.dev,
+>>> +                               "Only %d initial descriptors\n", i);
+>>> +                       break;
+>>> +               }
+>>> +               list_add_tail(&desc->desc_node, &tmp_list);
+>>> +       }
+>>> +
+>>> +       spin_lock_bh(&atchan->lock);
+>>> +       atchan->descs_allocated = i;
+>>> +       list_splice(&tmp_list, &atchan->free_list);
+>>> +       atchan->completed_cookie = chan->cookie = 1;
+>>> +       spin_unlock_bh(&atchan->lock);
+>>> +
+>>> +       /* channel parameters */
+>>> +       channel_writel(atchan, CFG, ATC_DEFAULT_CFG);
+>>> +
+>>> +       tasklet_init(&atchan->tasklet, atc_tasklet, (unsigned
+>>> long)atchan);
+>>
+>> This routine may be called while the channel is already active,
+>> potentially causing tasklet_init() to be called while a tasklet is
+>> pending.  Can this move to at_dma_probe()?
+>
+> Oh, really ? In [TAG] above, I protect the call of this function when
+> channel is enabled. Is the code at [TAG] ok ?
+
+Yes, but it still feels like something that should be moved to the
+probe routine.  In any event with the dmaengine rework I posted
+recently [1] ->device_alloc_chan_resources() will no longer be called
+multiple times without a ->free_chan_resources() inbetween.
+
+> I will regenerate a new patch as soon as you acknowledge my comments.
+>
+> Thanks for your help, kind regards,
+
+Thanks Nicolas.
+
+Regards,
+Dan
+
+[1] http://marc.info/?l=linux-kernel&m=122669881026508&w=2
