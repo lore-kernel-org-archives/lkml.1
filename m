@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYKRQtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYKRQwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYKRQtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYKRQtJ
+	id S1754132AbYKRQwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYKRQwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:49:09 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:20421 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754028AbYKRQtH (ORCPT
+	Tue, 18 Nov 2008 11:52:25 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:9652 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbYKRQwZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:49:07 -0500
-Message-ID: <ac3eb2510811180849g7cb2f9d2n8603d02ca130b01c@mail.gmail.com>
-Date: Tue, 18 Nov 2008 17:49:05 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Yu Zhao" <yu.zhao@intel.com>
-Subject: Re: [PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-Cc: "Greg KH" <greg@kroah.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-In-Reply-To: <20081117080949.GA5247@yzhao12-linux.sh.intel.com>
+	Tue, 18 Nov 2008 11:52:25 -0500
+Message-ID: <7a9e70560811180852y9eb2bf6s8682609dcb10fd9f@mail.gmail.com>
+Date: Tue, 18 Nov 2008 17:52:21 +0100
+From: "=?ISO-8859-1?Q?Fredrik_Markstr=F6m?=" 
+	<fredrik.markstrom@avalonenterprise.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: Developing non-commercial drivers ?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4922ED5A.3030808@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
-	 <20081022084515.GO3773@yzhao12-linux.sh.intel.com>
-	 <20081106043318.GB30292@kroah.com> <20081106044613.GA30397@kroah.com>
-	 <4913AF89.2050504@intel.com> <20081107031837.GB30003@kroah.com>
-	 <20081113065024.GA3038@yzhao12-linux.sh.intel.com>
-	 <20081114005538.GA21161@kroah.com>
-	 <20081117080949.GA5247@yzhao12-linux.sh.intel.com>
+References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
+	 <4922ED5A.3030808@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 17, 2008 at 09:09, Yu Zhao <yu.zhao@intel.com> wrote:
-> On Fri, Nov 14, 2008 at 08:55:38AM +0800, Greg KH wrote:
+Thanks for the prompt respons.
 
->> There are also "conditional" attributes, which get only displayed if
->> some kind of condition is met, I think you want to use those.
->
-> The problem is the sysfs directory of the PCI device is created by the
-> kobject_add() in the device_add() as follows. And the static entries
-> bundled with the 'pci_bus_type' are created by the bus_add_device().
-> Between the kobject_add() and the kobject_uevent(), we don't have any
-> other choice to add the dynamic entries.
->
-> In device_add():
->
->        error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev->bus_id);
->        ...
->        error = bus_add_device(dev);
->        ...
->        kobject_uevent(&dev->kobj, KOBJ_ADD);
->
->
-> So looks like the only way is to make the dynamic entries bundled with
-> the 'pci_bus_type', which means they would become static no matter the
-> device supports the entries (i.e. corresponding capabilities) or not.
+I do agree that it would be better for everyone to release it under
+GPL and I have already expressed that to our customer.
 
-There is device_add_attrs() which is just called between the calls you
-mention above. Like Greg said, it can add groups, and groups have an
-is_visible() callback, which can be used to conditionally create
-attributes out of of predefined list.
+At this point I feel that we have two possibilities, help our customer
+violate GPL or say no to the project. I'd prefer a third option where
+I could tell the customer that we can setup the project in a certain
+way (some "cleanroom" setup ?) to ensure that the results can not be
+considered derived work.
 
-Kay
+Is your short answer also the definite answer considering this ?
+
+/Fredrik
+
+
+
+
+2008/11/18 Robert Hancock <hancockr@shaw.ca>:
+> Fredrik Markström wrote:
+>>
+>> Linus, others...
+>>
+>> I'm working for as a consultant for a large hardware company porting
+>> Linux to their new cpu-architecture and everything is pretty much
+>> up and running. Now they want us to develop a closed-source (to
+>> protect their IP) ethernet driver for their proprietary Ethernet MAC.
+>>
+>> My question is:    Is there a fair way to do this and still comply to
+>> the intent and spirit of the Linux licensing ?
+>>
+>> If yes, how ?
+>
+> In a word, I would say: no.
+>
+> When developing a non-GPL kernel driver, one finds themselves on very shaky
+> legal ground. Unless one is 100% sure their code is not legally considered a
+> derived work from the kernel, it's likely a GPL violation.
+>
+> One could point out the pile of other Ethernet drivers in the kernel from
+> the likes of Intel, Broadcom, etc. and ask why those companies did not feel
+> the need to "protect their IP" in this manner.. as well as the significant
+> advantages of having their driver in the mainline kernel, and the horrible
+> disadvantages of trying to manage closed-source drivers..
+>
