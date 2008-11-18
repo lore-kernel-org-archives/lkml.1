@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbYKRMSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbYKRM1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752748AbYKRMSP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 07:18:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYKRMR5
+	id S1752704AbYKRM1G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 07:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbYKRM0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 07:17:57 -0500
-Received: from nfitmail.nfit.au.dk ([130.225.31.129]:19636 "EHLO
-	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752029AbYKRMR4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 07:17:56 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug #11954] sysprof tracer ABI regression in 2.6.28rc1
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-	<Q7OAnAv0V3D.A.MbF.8AGIJB@chimera>
-	<ye8k5b2eetz.fsf@camel11.daimi.au.dk> <20081117162431.GG12081@elte.hu>
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 18 Nov 2008 13:17:53 +0100
-In-Reply-To: <20081117162431.GG12081@elte.hu>
-Message-ID: <ye8bpwd6xe6.fsf@camel04.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Tue, 18 Nov 2008 07:26:53 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:33957 "EHLO mail.linux-mips.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752027AbYKRM0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 07:26:52 -0500
+X-Greylist: delayed 581 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Nov 2008 07:26:51 EST
+Date: Tue, 18 Nov 2008 12:16:20 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hitoshi Mitake <h.mitake@gmail.com>, Hitoshi Mitake <mitake@clustcom.com>,
+       Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, ktaka@clustcom.com,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-ID: <20081118121620.GB8625@linux-mips.org>
+References: <20081105222911.d76e7e1c.mitake@clustcom.com> <413709.12821.qm@web50106.mail.re2.yahoo.com> <20081106164641.ed369060.akpm@linux-foundation.org> <20081107152830.a42766f3.mitake@clustcom.com> <20081106223122.8a255211.akpm@linux-foundation.org> <20081107153824.0ec934e6.mitake@clustcom.com> <20081106231102.aab83cd4.akpm@linux-foundation.org> <a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com> <20081109112646.97c594b5.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081109112646.97c594b5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Sun, Nov 09, 2008 at 11:26:46AM -0800, Andrew Morton wrote:
 
-> * Soeren Sandmann <sandmann@daimi.au.dk> wrote:
-> 
-> > There are no ABI guarantees for the sysprof tracer at this point, 
-> > given that it is in debugfs [...]
-> 
-> to avoid situations like this, it would be nice to print out the 
-> format string itself in the trace header, in printf format string 
-> style. That way if there's a trivial expansion in trace format, it can 
-> be detected (and even followed) by user-space - without some ugly 
-> version based API.
+> Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
+> disable these drivers on the architectures which don't provide
+> readq/writeq support.
 
-It's not clear to me that sysprof userspace could realistically do
-runtime detection. It would require (a) using sscanf() to parse the
-output and (b) that only the types changed, not the actual content or
-ordering. (a) is likely a non-starter performance-wise (the first
-version actually did this and it was too slow), and (b) means there
-are strict limits to what could be changed anyway.
+And we also need to define the exact semantics.  Questions coming to mind:
 
+  o are implementations performing 2 32-bit accesses acceptable?
+  o if so, what ordering for the two accesses is acceptable?
 
-Soren
+  Ralf
