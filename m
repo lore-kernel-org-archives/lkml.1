@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbYKRFVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbYKRFYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752182AbYKRFVo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 00:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbYKRFVg
+	id S1752246AbYKRFYE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 00:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYKRFXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 00:21:36 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53634 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750715AbYKRFVg (ORCPT
+	Tue, 18 Nov 2008 00:23:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46229
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750715AbYKRFXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 00:21:36 -0500
-Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Tejun Heo <tj@kernel.org>
-In-Reply-To: <20081117191532.c1c849f5.akpm@linux-foundation.org>
-References: <c384c5ea0811171354u5d6f5be6v857f92b1e75769c7@mail.gmail.com>
-	 <20081117191532.c1c849f5.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 14:21:29 +0900
-Message-Id: <1226985689.3403.20.camel@localhost.localdomain>
+	Tue, 18 Nov 2008 00:23:52 -0500
+Date: Mon, 17 Nov 2008 21:23:52 -0800 (PST)
+Message-Id: <20081117.212352.77940634.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: mingo@elte.hu, torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
+       shemminger@vyatta.com
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+ 2.6.22 -&gt; 2.6.28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4921ED16.9050307@cosmosbay.com>
+References: <20081117184951.GA5585@elte.hu>
+	<20081117220828.GB6398@elte.hu>
+	<4921ED16.9050307@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-17 at 19:15 -0800, Andrew Morton wrote:
-> (cc's added)
-> 
-> On Mon, 17 Nov 2008 22:54:33 +0100 "Leon Woestenberg" <leon.woestenberg@gmail.com> wrote:
-> 
-> > Hello,
-> > 
-> > pci_map_sg() does not coalesce the scattergather list for me on x86.
-> 
-> In which kernel version(s)?
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Mon, 17 Nov 2008 23:15:50 +0100
 
-Also which driver?  Some manually disable physical merging, so they will
-never coalesce adjacent pages.
+> Yes, I mentioned it later. But apparently you dont read my mails, so
+> I will just stop now.
 
-You need the flag QUEUE_FLAG_CLUSTER set for physical merging to take
-place.
-
-James
-
-
+Yeah I was going to mention this too :-/
