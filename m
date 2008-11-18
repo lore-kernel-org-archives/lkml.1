@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbYKRHWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbYKRH0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbYKRHWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 02:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYKRHWS
+	id S1752495AbYKRH0S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 02:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYKRH0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 02:22:18 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:42116 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbYKRHWR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 02:22:17 -0500
-X-IronPort-AV: E=Sophos;i="4.33,624,1220241600"; 
-   d="scan'208";a="62689172"
-From: Bryan Wu <cooloney@kernel.org>
-To: nico@cam.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] netdev/smc91x: unify Blackfin code a bit and use proper read/write functions
-Date: Tue, 18 Nov 2008 15:23:40 +0800
-Message-Id: <1226993020-31357-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Tue, 18 Nov 2008 02:26:06 -0500
+Received: from gate.crashing.org ([63.228.1.57]:58823 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751058AbYKRH0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 02:26:06 -0500
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+	 <1226963596.7178.254.camel@pasglop>
+	 <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 18:25:20 +1100
+Message-Id: <1226993120.7178.287.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/net/smc91x.h |   45 ++++++++++++---------------------------------
- 1 files changed, 12 insertions(+), 33 deletions(-)
+> > It makes some sort of sense I suppose on very static embedded workloads
+> > with no swap nor demand paging.
+> 
+> It makes perfect sense for anything that doesn't use any MMU. 
 
-diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
-index a07cc93..f6d6379 100644
---- a/drivers/net/smc91x.h
-+++ b/drivers/net/smc91x.h
-@@ -87,49 +87,28 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define RPC_LSA_DEFAULT		RPC_LED_100_10
- #define RPC_LSB_DEFAULT		RPC_LED_TX_RX
- 
--# if defined (CONFIG_BFIN561_EZKIT)
- #define SMC_CAN_USE_8BIT	0
- #define SMC_CAN_USE_16BIT	1
-+# if defined(CONFIG_BF561)
- #define SMC_CAN_USE_32BIT	1
--#define SMC_IO_SHIFT		0
--#define SMC_NOWAIT      	1
--#define SMC_USE_BFIN_DMA	0
--
--
--#define SMC_inw(a, r)       	readw((a) + (r))
--#define SMC_outw(v, a, r)   	writew(v, (a) + (r))
--#define SMC_inl(a, r)       	readl((a) + (r))
--#define SMC_outl(v, a, r)   	writel(v, (a) + (r))
--#define SMC_outsl(a, r, p, l)	outsl((unsigned long *)((a) + (r)), p, l)
--#define SMC_insl(a, r, p, l) 	insl ((unsigned long *)((a) + (r)), p, l)
- # else
--#define SMC_CAN_USE_8BIT	0
--#define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	0
-+# endif
- #define SMC_IO_SHIFT		0
- #define SMC_NOWAIT      	1
- #define SMC_USE_BFIN_DMA	0
- 
--
--#define SMC_inw(a, r)       	readw((a) + (r))
--#define SMC_outw(v, a, r)   	writew(v, (a) + (r))
--#define SMC_outsw(a, r, p, l)	outsw((unsigned long *)((a) + (r)), p, l)
--#define SMC_insw(a, r, p, l) 	insw ((unsigned long *)((a) + (r)), p, l)
-+#define SMC_inw(a, r)		readw((a) + (r))
-+#define SMC_outw(v, a, r)	writew(v, (a) + (r))
-+#define SMC_insw(a, r, p, l)	readsw((a) + (r), p, l)
-+#define SMC_outsw(a, r, p, l)	writesw((a) + (r), p, l)
-+# if SMC_CAN_USE_32BIT
-+#define SMC_inl(a, r)		readl((a) + (r))
-+#define SMC_outl(v, a, r)	writel(v, (a) + (r))
-+#define SMC_insl(a, r, p, l)	readsl((a) + (r), p, l)
-+#define SMC_outsl(a, r, p, l)	writesl((a) + (r), p, l)
- # endif
--/* check if the mac in reg is valid */
--#define SMC_GET_MAC_ADDR(lp, addr)				\
--	do {							\
--		unsigned int __v;				\
--		__v = SMC_inw(ioaddr, ADDR0_REG(lp));		\
--		addr[0] = __v; addr[1] = __v >> 8;		\
--		__v = SMC_inw(ioaddr, ADDR1_REG(lp));		\
--		addr[2] = __v; addr[3] = __v >> 8;		\
--		__v = SMC_inw(ioaddr, ADDR2_REG(lp));		\
--		addr[4] = __v; addr[5] = __v >> 8;		\
--		if (*(u32 *)(&addr[0]) == 0xFFFFFFFF) {		\
--			random_ether_addr(addr);		\
--		}						\
--	} while (0)
-+
- #elif defined(CONFIG_REDWOOD_5) || defined(CONFIG_REDWOOD_6)
- 
- /* We can only do 16-bit reads and writes in the static memory space. */
--- 
-1.5.6.3
+To a certain extent. There's two different aspects to having an MMU and
+in embedded space it's useful to have one and not the other, ie,
+protection & address space isolation vs. paging.
+
+Thus, it does make sense for those embedded devices with few files
+(mostly a statically linked busybox, a few /dev entries and some app
+stuff) to use large page sizes. Of course, as soon as they try to
+populate their ramfs with lots of small files they lose... but mostly,
+the idea is that the entire working set fits in the TLB and thus the
+cost of TLB miss becomes irrelevant.
+
+Now, regarding the shortcomings of the powerpc server MMU, well, we know
+them, we know your opinion and mostly share it, and until we can get the
+HW to change we are stuck with it.
+
+Cheers,
+Ben.
+
+
