@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753053AbYKRO6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYKRO7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753053AbYKRO6v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYKRO6m
+	id S1753476AbYKRO7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYKRO7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:58:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53629 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbYKRO6m (ORCPT
+	Tue, 18 Nov 2008 09:59:16 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46436 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbYKRO7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:58:42 -0500
-Date: Tue, 18 Nov 2008 09:58:39 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
- field
-In-Reply-To: <20081118144838.GB30358@elte.hu>
-Message-ID: <alpine.DEB.1.10.0811180951410.15003@gandalf.stny.rr.com>
-References: <4920D571.4050007@gmail.com> <20081117084923.GD28786@elte.hu> <alpine.DEB.1.10.0811180918480.15003@gandalf.stny.rr.com> <20081118144838.GB30358@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 18 Nov 2008 09:59:16 -0500
+Date: Tue, 18 Nov 2008 06:59:57 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: rjw@sisk.pl, torvalds@linux-foundation.org
+Subject: [PATCH] help kerneloops.org dianogse suspend_test_finish better
+Message-ID: <20081118065957.7769c8ba@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-On Tue, 18 Nov 2008, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > I was just looking at the stack tracer, and it pretty much gives us 
-> > the answer ;-) I'm hitting on max traces around 55, but some of 
-> > those are asm calls. We could do 50 or 60?  We probably want to make 
-> > sure that the two do not come close to hitting. That is, the bottom 
-> > of the stack to overwrite the saved return addresses.
-> 
-> does the stack tracer properly nest across IRQ entry boundaries 
-> already on x86? We used to have problems in that area.
+please apply this patch to the 2.6.28-rc series; it will help kerneloops.org
+to better diagnose the warning in suspend_test_finish(), which is currently
+very hot but is lacking the essential detail of which component is causing 
+the badness...
 
-Actually, because the stack tracer is in generic code, we punt on IRQ 
-stacks:
 
-	/* we do not handle interrupt stacks yet */
-	if (!object_is_on_stack(&this_size))
-		return;
 
-I check if the local variable "this_size" is on the current->stack and if 
-it is not then this means that we are using some other stack, and we do 
-not record it.
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Tue, 18 Nov 2008 06:56:51 -0800
+Subject: [PATCH] suspend: use WARN not WARN_ON to print the message
 
-What would be needed is to make a per-arch stack call. Perhaps have a:
+By using WARN(), kerneloops.org can collect which component is causing
+the delay and make statistics about that. suspend_test_finish() is
+currently the number 2 item but unless we can collect who's causing
+it we're not going to be able to fix the hot topic ones..
 
-   arch_check_stack(&this_size, &max_stack_trace, &max_stack_size);
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ kernel/power/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Where a weak function can be defined to return nothing. But the arch can 
-check which stack the "this_size" variable is on and run the stack tracer 
-against that stack.
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 19122cf..b8f7ce9 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -174,7 +174,7 @@ static void suspend_test_finish(const char *label)
+ 	 * has some performance issues.  The stack dump of a WARN_ON
+ 	 * is more likely to get the right attention than a printk...
+ 	 */
+-	WARN_ON(msec > (TEST_SUSPEND_SECONDS * 1000));
++	WARN(msec > (TEST_SUSPEND_SECONDS * 1000), "Component: %s\n", label);
+ }
+ 
+ #else
+-- 
+1.6.0.3
 
-Maybe we should have two stack traces, a stack_trace file and a 
-stack_trace_irq ?
 
-Because, some archs, like x86_64 have different size stacks. The thread 
-stack is 8K where as the IRQ stack is 4K.  We may want to see which IRQ 
-stack call is the worst, and not compare it to the thread stack call.
 
--- Steve
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
