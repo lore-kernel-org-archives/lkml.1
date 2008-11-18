@@ -1,53 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYKRQxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYKRQxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYKRQxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYKRQxJ
+	id S1754610AbYKRQxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYKRQxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:53:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55460 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbYKRQxJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:53:09 -0500
-Date: Tue, 18 Nov 2008 11:53:06 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
- field
-In-Reply-To: <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0811181151010.15003@gandalf.stny.rr.com>
-References: <20081117084923.GD28786@elte.hu> <20081118084755.GK17838@elte.hu>  <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>  <20081118145154.GC30358@elte.hu>  <alpine.DEB.1.10.0811181006010.15003@gandalf.stny.rr.com>  <20081118151326.GH30358@elte.hu>
-  <alpine.DEB.1.10.0811181020350.15003@gandalf.stny.rr.com>  <20081118155045.GJ30358@elte.hu>  <c62985530811180831n132ed6dep77aa2684ff59861@mail.gmail.com>  <20081118164019.GA18620@elte.hu> <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 18 Nov 2008 11:53:37 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49480 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751201AbYKRQxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:53:36 -0500
+Date: Tue, 18 Nov 2008 18:53:36 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
+Message-ID: <20081118175336.GA14178@redhat.com>
+References: <20081115212133.GA32140@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081115212133.GA32140@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/15, Sukadev Bhattiprolu wrote:
+>
+> Subject: [PATCH] Define/use siginfo_from_ancestor_ns()
 
-On Tue, 18 Nov 2008, Fr?d?ric Weisbecker wrote:
+Imho, the main problem with this patch is that it tries to do many
+different things at once, and each part is suboptimal/incomplete.
 
-> 2008/11/18 Ingo Molnar <mingo@elte.hu>:
-> > Would be nice to have the dynamic allocation straight away
-> 
-> 2008/11/18 Steven Rostedt <rostedt@goodmis.org>:
-> > I would recommend using a static array
-> 
-> :-)
+This needs several patches. Not only because this is easier to review,
+but also because each part needs the good changelog.
 
-How about a compromise, start off the patch series getting it working with 
-task struct static array, and then finish the series with the dynamic 
-array.
+Also. I don't think we should try do solve the "whole" problem right
+now. For example, if we add/use siginfo_from_ancestor_ns(), we should
+also change sys_sigaction(SIG_IGN). As I said, imho we should start
+with:
 
-This is my development model, because it lets me know where the bugs are 
-better. If we find some strange bug, this can help pin point via a bisect 
-if the bug is with the general code, or with the use of a dynamic array.
+	- cinit can't be killed from its namespace
 
-Just my preference ;-)
+	- the parent ns can always SIGKILL cinit
 
--- Steve
+This solves most of problems, and this is very simple.
+
+As for .si_pid mangling, this again needs a separate patch.
+
+Sukadev, I don't have a time today, I'll return tomorrow with more
+comments on this...
+
+> +static int sig_ignored(struct task_struct *t, int sig, int same_ns)
+>  {
+>  	void __user *handler;
+>
+> @@ -68,6 +68,14 @@ static int sig_ignored(struct task_struct *t, int sig)
+>  	handler = sig_handler(t, sig);
+>  	if (!sig_handler_ignored(handler, sig))
+>  		return 0;
+> +	/*
+> +	 * ignores SIGSTOP/SIGKILL signals to init from same namespace.
+> +	 *
+> +	 * TODO: Ignore unblocked SIG_DFL signals also here or drop them
+> +	 * 	 in get_signal_to_deliver() ?
+> +	 */
+> +	if (is_container_init(t) && same_ns && sig_kernel_only(sig))
+> +		return 1;
+
+No, no. is_container_init() is slow and unneeded, same_ns is bogus,
+the usage of sig_kernel_only() is suboptimal. The comment is not
+right too...
+
+As I already said, this problem is not namespace-specific, we need
+some changes for the global init too.
+
+Actually, I already did the patch, I'll send it soon.
+
+>  static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+>  			int group)
+>  {
+>  	struct sigpending *pending;
+>  	struct sigqueue *q;
+> +	int from_ancestor_ns;
+> +
+> +	from_ancestor_ns = 0;
+> +	if (siginfo_from_user(info)) {
+> +		/* if t can't see us we are from parent ns */
+> +		if (task_pid_nr_ns(current, task_active_pid_ns(t)) == 0)
+                                            ^^^^^^^^^^^^^^^^^^
+
+->nsproxy may be NULL, but we can use task_pid(t)->numbers[-1].ns
+
+> @@ -864,6 +902,9 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+>  		 * and sent by user using something other than kill().
+>  		 */
+>  			return -EAGAIN;
+> +
+> +		if (from_ancestor_ns)
+> +			return -ENOMEM;
+
+This change alone needs a fat comment in changelog. But I don't think
+we need it now. Until we change the dequeue path to check "from_ancestor_ns".
+
+> +static inline int siginfo_from_ancestor_ns(siginfo_t *info)
+> +{
+> +	return SI_FROMUSER(info) && (info->si_pid == 0);
+> +}
+
+Yes, this is problem... I doubt we can rely on !si_pid here.
+More on this later.
+
+> @@ -2296,10 +2347,25 @@ sys_rt_sigqueueinfo(pid_t pid, int sig, siginfo_t __user *uinfo)
+>  	   Nor can they impersonate a kill(), which adds source info.  */
+>  	if (info.si_code >= 0)
+>  		return -EPERM;
+> -	info.si_signo = sig;
+> +	info.si_signo = sig | SIG_FROM_USER;
+>
+>  	/* POSIX.1b doesn't mention process groups.  */
+> -	return kill_proc_info(sig, &info, pid);
+> +	rcu_read_lock();
+> +	spid = find_vpid(pid);
+> +	/* 
+> +	 * A container-init (cinit) ignores/drops fatal signals unless sender
+> +	 * is in an ancestor namespace.  Cinit uses 'si_pid == 0' to check if
+> +	 * sender is an ancestor. See siginfo_from_ancestor_ns().
+> +	 *
+> +	 * If signalling a descendant cinit, set si_pid to 0 so it does not
+> +	 * get ignored/dropped.
+> +	 */
+> +	if (!pid_nr_ns(spid, task_active_pid_ns(current)))
+> +		info.si_pid = 0;
+> +	error = kill_pid_info(sig, &info, spid);
+
+Can't understand. We set SIG_FROM_USER, If signalling a descendant task
+(not only cinit), send_signal() will clear .si_pid anyway?
+
+Oleg.
 
