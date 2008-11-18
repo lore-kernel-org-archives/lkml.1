@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYKRLPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbYKRLRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbYKRLPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 06:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYKRLPg
+	id S1752698AbYKRLRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 06:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYKRLRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 06:15:36 -0500
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:59017 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbYKRLPf (ORCPT
+	Tue, 18 Nov 2008 06:17:16 -0500
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:28751 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbYKRLRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 06:15:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=XVYdQIP09rXMCKdkUx6ZzGk3+5onBr8CrQyCjkaJSlNP2jm9+xpdZFI2mHkZ72Xvha
-         2F3OKIxCvZFcM4+f2U+B5Pe68E05gAtf0Q7BXkMELhBHT1NePuAXdYW2kPdQRW0HmdNk
-         TuLaxwxBEdKrxLRSS7XbsOktIiTUjp5stCIuA=
-Message-ID: <9b2b86520811180315u410019f0y7e6fab66b51a225e@mail.gmail.com>
-Date: Tue, 18 Nov 2008 11:15:33 +0000
-From: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [ 11.333737] is this a ghost?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1227001038.3184.6.camel@LiNuX>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Nov 2008 06:17:15 -0500
+Date: Tue, 18 Nov 2008 12:16:33 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Glauber Costa <gcosta@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       heukelum@fastmail.fm
+Subject: Re: [RFC,v2] x86_64: save_args out of line
+Message-ID: <20081118111633.GA21036@mailshack.com>
+References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1227001038.3184.6.camel@LiNuX>
-X-Google-Sender-Auth: f890f4309a59106c
+In-Reply-To: <49228648.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Tue, 18 Nov 2008 12:16:35 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.31; VDF: 7.1.0.98; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18/08, Justin P. Mattock <justinmattock@gmail.com> wrote:
-> in dmesg I see:
-> [   11.333737]
-> but nothing else.
->           ---------------(cut)-----------------
-> [   11.247147] Monitor-Mwait will be used to enter C-1 state
-> [   11.247151] Monitor-Mwait will be used to enter C-2 state
-> [   11.247154] Monitor-Mwait will be used to enter C-3 state
-> [   11.247671] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-> [   11.247996] processor ACPI_CPU:00: registered as cooling_device0
-> [   11.248008] ACPI: Processor [CPU0] (supports 8 throttling states)
-> [   11.306465] ACPI: SSDT 3FEB8F10, 0087 (r1 APPLE   Cpu1Ist     3000
-> INTL 20050309)<7>power_supply ADP1: No power supply yet
+On Tue, Nov 18, 2008 at 08:09:28AM +0000, Jan Beulich wrote:
+> >>> Alexander van Heukelum <heukelum@mailshack.com> 17.11.08 18:52 >>>
+> >The macro "interrupt" in entry_64.S generates a lot of code and it
+> >is used more and more often. This patch moves most of its contents
+> >into an external function. This saves anywhere between 500 and 2500
+> >bytes of text depending on the configuration.
+> 
+> Without numbers, I'd doubt that the code size reduction outweighs the
+> overhead of the extra call. Did you do any measurements?
 
-Look at this last line.  The "<7>" is a priority marker.  Normally it
-marks the start of a line, and should be hidden.  So you seem to be
-missing a line break just after "20050309)"...
+I have not measured yet. I'll see if I can highjack a machine. What
+kind of benchmark would you suggest?
 
-> [   11.306831] power_supply ADP1: power_supply_changed
-> [   11.306839] ACPI: AC Adapter [ADP1] (on-line)
-> [   11.333737]                         <------------what's with this!!!
+> >Dwarf2-annotations are most probably wrong or missing at all.
+> 
+> Indeed - do you have intentions to address this?
 
-...which seems to be delayed and reappears here?
+Yes, I'ld like to get it right. What do you use to check the
+annotations?
 
-> [   11.342937] power_supply ADP1: power_supply_changed_work
-> [   11.351901] power_supply ADP1: power_supply_update_gen_leds 1
-> [   11.351916] ACPI: SSDT 3FEB7F10, 0085 (r1 APPLE   Cpu1Cst     3000
-> INTL 20050309)
+Greetings,
+	Alexander
 
-> if you need to see the full dmesg I can attach..
-> I've seen this happen on a random.
-
-I guess you have a multicore processor (or some other sort of SMP), right?
-
-I think kernel messages are not completely synchronized by design, for
-reliability reasons.  (e.g. to make sure critical error messages /
-backtraces can get through on a dying system).
+> Jan
+> 
