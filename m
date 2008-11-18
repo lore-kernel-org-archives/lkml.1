@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYKROsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbYKROs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbYKROsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYKROsF
+	id S1753679AbYKROs6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYKROsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:48:05 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43674 "EHLO mx3.mail.elte.hu"
+	Tue, 18 Nov 2008 09:48:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38700 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751076AbYKROsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:48:03 -0500
-Date: Tue, 18 Nov 2008 15:47:51 +0100
+	id S1751076AbYKROsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 09:48:50 -0500
+Date: Tue, 18 Nov 2008 15:48:38 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: ftrace: preemptoff selftest not working
-Message-ID: <20081118144751.GA30358@elte.hu>
-References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com> <20081118135221.GE31146@elte.hu> <alpine.DEB.1.10.0811180931270.15003@gandalf.stny.rr.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
+	field
+Message-ID: <20081118144838.GB30358@elte.hu>
+References: <4920D571.4050007@gmail.com> <20081117084923.GD28786@elte.hu> <alpine.DEB.1.10.0811180918480.15003@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811180931270.15003@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0811180918480.15003@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,40 +41,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
 > 
-> On Tue, 18 Nov 2008, Ingo Molnar wrote:
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > > Hence the trace buffer will be empty. The patch below makes the 
-> > > > selftests working for me, since then they run in preemptible 
-> > > > context. But it is ugly and I'm not proposing it for upstream ;)
-> > > > 
-> > > > Just wanted to make you aware that there is a bug.
-> > > 
-> > > Yep, this might be a better answer than what I put into linux-tip 
-> > > (and my git repo).
-> > > 
-> > > See:
-> > > 
-> > >   ftrace: force pass of preemptoff selftest
-> > > 
-> > > The cause of the bug was the conversion of the BKL back to a 
-> > > spinlock, and making it non preempt.  The initcall code is called 
-> > > with the BKL applied which now means it can not preempt. This breaks 
-> > > the preempt tracer selftest.
-> > > 
-> > > My solution was to just force a pass if this is detected. Perhaps 
-> > > moving the test might be better.
-> > 
-> > it would be better to just drop the BKL in that selftest. (or in all 
-> > selftests - an elevated preempt count will skew a number of things)
+> On Mon, 17 Nov 2008, Ingo Molnar wrote:
 > 
-> I have no problem with that, but does the BKL play any role for 
-> being held? I have no idea why it is taken in boot up, so I'm 
-> hestiant to touch it.
+> > 
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > Impact: help to find the better depth of trace
+> > > 
+> > > We decided to arbitrary define the depth of function return trace as 
+> > > "20". Perhaps this is not enough. To help finding an optimal depth, 
+> > > we measure now the overrun: the number of functions that have been 
+> > > missed for the current thread. By default this is not displayed, we 
+> > > have to do set a particular flag on the return tracer: echo overrun 
+> > > > /debug/tracing/trace_options And the overrun will be printed on 
+> > > the right.
+> > > 
+> > > As the trace shows below, the current 20 depth is not enough.
+> > > 
+> > > update_wall_time+0x37f/0x8c0 -> update_xtime_cache (345 ns) (Overruns: 2838)
+> > > update_wall_time+0x384/0x8c0 -> clocksource_get_next (1141 ns) (Overruns: 2838)
+> > > do_timer+0x23/0x100 -> update_wall_time (3882 ns) (Overruns: 2838)
+> > 
+> > hm, interesting. Have you tried to figure out what a practical depth 
+> > limit would be?
+> > 
+> > With lockdep we made the experience that function call stacks can be 
+> > very deep - if we count IRQ contexts too it can be up to 100 in the 
+> > extreme cases. (but at that stage kernel stack limits start hitting 
+> > us)
+> > 
+> > I'd say 50 would be needed.
+> 
+> I was just looking at the stack tracer, and it pretty much gives us 
+> the answer ;-) I'm hitting on max traces around 55, but some of 
+> those are asm calls. We could do 50 or 60?  We probably want to make 
+> sure that the two do not come close to hitting. That is, the bottom 
+> of the stack to overwrite the saved return addresses.
 
-we can drop it in selected initcalls just fine. Its only role is 
-old-style init functions racing with other async contexts of 
-themselves.
+does the stack tracer properly nest across IRQ entry boundaries 
+already on x86? We used to have problems in that area.
 
 	Ingo
