@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYKRV6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYKRWBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbYKRV6q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 16:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYKRV6i
+	id S1753497AbYKRWBP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 17:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYKRWA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 16:58:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:47113 "EHLO
+	Tue, 18 Nov 2008 17:00:59 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:56649 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYKRV6h (ORCPT
+	with ESMTP id S1752359AbYKRWA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 16:58:37 -0500
+	Tue, 18 Nov 2008 17:00:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=SWHY8TQFEgDpHRXwg1pk9KB89LfOz9a0AVH0jKfQKRiFzAm1CtWMjgGRB01JZWxyVA
-         tjT4iLg2P6DbVUMxQ1lDHjWs58ZXltqlhMuzvPNZ7TKEy149YmhZKCtDdZbcteGWqw/e
-         0nGwfw1/VEW5inBX6LlIPCufInirjBvsbf3Uw=
-Date: Tue, 18 Nov 2008 23:58:51 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] kmemtrace: gfp_t is an unsigned int, not an unsigned
-	long
-Message-ID: <20081118215851.GA5246@localhost>
-References: <1227043903.13182.4.camel@brick>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=b0DTBL7//c25bS274OHfFUKMce14DS7rRdNMWo5nC30mejKM5lVAPe+eX2lIhL2FOl
+         R85K071mUp0TPMc+TQFrR+/Ewvyd5sOl543i62saPP5lovYeQIXppaz7VAUq1LYAPjX+
+         yuOgPU78GbZLsXTcmVUG5l9+MHJgREAsr26h8=
+Message-ID: <7c86c4470811181400r1fa56ef9o1931467ee10e4f52@mail.gmail.com>
+Date: Tue, 18 Nov 2008 23:00:56 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Markus Metzger" <markus.t.metzger@googlemail.com>
+Subject: Re: debugctl msr
+Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1226743286.6162.6.camel@raistlin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1227043903.13182.4.camel@brick>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
+	 <1226236327.6104.4.camel@raistlin>
+	 <7c86c4470811111411k754887a8ic9b63163928157a6@mail.gmail.com>
+	 <491A812D.9010208@gmail.com>
+	 <7c86c4470811120210j2ea5ccdcv59a654aadc32ebd2@mail.gmail.com>
+	 <029E5BE7F699594398CA44E3DDF5544402B1F123@swsmsx413.ger.corp.intel.com>
+	 <7c86c4470811130650j4192c63n1fa9800a0cdfb93c@mail.gmail.com>
+	 <029E5BE7F699594398CA44E3DDF5544402B595A3@swsmsx413.ger.corp.intel.com>
+	 <7c86c4470811141310h4fd3c5fbvc6357985cf2aed0e@mail.gmail.com>
+	 <1226743286.6162.6.camel@raistlin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 01:31:43PM -0800, Harvey Harrison wrote:
-> As a bonus, gets rid of all the sparse warnings as you are casting a
-> restricted type (gfp_t) without __force.
-> 
-> include/linux/kmemtrace.h:33:2: warning: cast from restricted gfp_t
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  include/linux/kmemtrace.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/kmemtrace.h b/include/linux/kmemtrace.h
-> index 5bea8ea..80e9a7a 100644
-> --- a/include/linux/kmemtrace.h
-> +++ b/include/linux/kmemtrace.h
-> @@ -31,10 +31,10 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
->  					     int node)
->  {
->  	trace_mark(kmemtrace_alloc, "type_id %d call_site %lu ptr %lu "
-> -		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
-> +		   "bytes_req %lu bytes_alloc %lu gfp_flags %u node %d",
->  		   type_id, call_site, (unsigned long) ptr,
->  		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
-> -		   (unsigned long) gfp_flags, node);
-> +		   gfp_flags, node);
->  }
->  
->  static inline void kmemtrace_mark_free(enum kmemtrace_type_id type_id,
-> -- 
-> 1.6.0.4.994.g16bd3e
-> 
->
+Markus,
 
-This is incomplete, because marker format also needs to be changed,
-along with va_arg stuff from the probe function.
+I think your definition for ds_cfg_64 is wrong. On Core, the PEBS
+record ALWAYS includes r8-r15 even on
+32 bits (zero filled). Also the DS_AREA has 9 fields, not 8.
+Consequently, I think the structure should be defined
+as follows:
 
-But thanks, I'll fix it and forward it to Pekka.
+static const struct ds_configuration ds_cfg_64 = {
+        .sizeof_ds    = 8 * 9,
+        .sizeof_field = 8,
+        .sizeof_rec[ds_bts]   = 8 * 3,
+        .sizeof_rec[ds_pebs]  = 8 * 18
+};
 
+Do you agree?
 
-	Cheers,
-	Eduard
-
+Thanks.
