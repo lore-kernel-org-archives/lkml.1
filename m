@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYKRCDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYKRCIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbYKRCDV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 21:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYKRCDN
+	id S1752566AbYKRCIu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 21:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYKRCIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 21:03:13 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52278 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751620AbYKRCDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 21:03:12 -0500
-Message-ID: <4922224A.5030502@cn.fujitsu.com>
-Date: Tue, 18 Nov 2008 10:02:50 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 17 Nov 2008 21:08:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38975 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751076AbYKRCIl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 21:08:41 -0500
+Date: Mon, 17 Nov 2008 18:08:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <18722.2107.970887.768477@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.LFD.2.00.0811171752450.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org> <1226963596.7178.254.camel@pasglop> <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
+ <18722.2107.970887.768477@cargo.ozlabs.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Nauman Rafique <nauman@google.com>, Divyesh Shah <dpshah@google.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-References: <20081106153022.215696930@redhat.com> <20081113.180558.519459540419535699.ryov@valinux.co.jp> <20081113155834.GE7542@redhat.com> <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com> <20081113214642.GG7542@redhat.com> <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com> <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com>
-In-Reply-To: <20081117142309.GA15564@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Fri, Nov 14, 2008 at 02:44:22PM -0800, Nauman Rafique wrote:
->> In an attempt to make sure that this discussion leads to
->> something useful, we have summarized the points raised in this
->> discussion and have come up with a strategy for future.
->> The goal of this is to find common ground between all the approaches
->> proposed on this mailing list.
->>
->> 1 Start with Satoshi's latest patches.
-> 
-> I have had a brief look at both Satoshi's patch and bfq. I kind of like
-> bfq's patches for keeping track of per cgroup, per queue data structures.
-> May be we can look there also.
-> 
->> 2 Do the following to support propotional division:
->>  a) Give time slices in proportion to weights (configurable
->>  option). We can support both priorities and weights by doing
->>  propotional division between requests with same priorities.
->> 3 Schedule time slices using WF2Q+ instead of round robin.
->>  Test the performance impact (both throughput and jitter in latency).
->> 4 Do the following to support the goals of 2 level schedulers:
->>  a) Limit the request descriptors allocated to each cgroup by adding
->>  functionality to elv_may_queue()
->>  b) Add support for putting an absolute limit on IO consumed by a
->>  cgroup. Such support exists in dm-ioband and is provided by Andrea
->>  Righi's patches too.
-> 
-> Does dm-iobnd support abosolute limit? I think till last version they did
-> not. I have not check the latest version though.
-> 
 
-No, dm-ioband still provides weight/share control only. Only Andrea Righi's
-patches support absolute limit.
 
->>  c) Add support (configurable option) to keep track of total disk
->> time/sectors/count
->>  consumed at each device, and factor that into scheduling decision
->>  (more discussion needed here)
->> 5 Support multiple layers of cgroups to align IO controller behavior
->>  with CPU scheduling behavior (more discussion?)
->> 6 Incorporate an IO tracking approach which re-uses memory resource
->> controller code but is not dependent on it (may be biocgroup patches from
->> dm-ioband can be used here directly)
->> 7 Start an offline email thread to keep track of progress on the above
->> goals.
->>
->> Please feel free to add/modify items to the list
->> when you respond back. Any comments/suggestions are more than welcome.
->>
+On Tue, 18 Nov 2008, Paul Mackerras wrote:
+> 
+> Also, you didn't respond to my comments about the purely software
+> benefits of a larger page size.
 
+I realize that there are benefits. It's just that the downsides tend to 
+swamp the upsides.
+
+The fact is, Intel (and to a lesser degree, AMD) has shown how hardware 
+can do good TLB's with essentially gang lookups, giving almost effective 
+page sizes of 32kB with hardly any of the downsides. Couple that with 
+low-latency fault handling (for not when you miss in the TLB, but when 
+something really isn't in the page tables), and it seems to be seldom the 
+biggest issue.
+
+(Don't get me wrong - TLB's are not unimportant on x86 either. But on x86, 
+things are generally much better).
+
+Yes, we could prefill the page tables and do other things, and ultimately 
+if you don't need to - by virtue of big pages, some loads will always 
+benefit from just making the page size larger.
+
+But the people who advocate large pages seem to never really face the 
+downsides. They talk about their single loads, and optimize for that and 
+nothing else. They don't seem to even acknowledge the fact that a 64kB 
+page size is simply NOT EVEN REMOTELY ACCEPTABLE for other loads!
+
+That's what gets to me. These absolute -idiots- talk about how they win 5% 
+on some (important, for them) benchmark by doing large pages, but then 
+ignore the fact that on other real-world loads they lose by sevaral 
+HUNDRED percent because of the memory fragmentation costs.
+
+(And btw, if they win more than 5%, it's because the hardware sucks really 
+badly).
+
+THAT is what irritates me.
+
+What also irritates me is the ".. but AIX" argument. The fact is, the AIX 
+memory management is very tightly tied to one particular broken MMU model. 
+Linux supports something like thirty architectures, and while PPC may be 
+one of the top ones, it is NOT EVEN CLOSE to be really relevant.
+
+So ".. but AIX" simply doesn't matter. The Linux VM has other priorities.
+
+And I _guarantee_ that in general, in the high-volume market (which is 
+what drives things, like it or not), page sizes will not be growing. In 
+that market, terabytes of RAM is not the primary case, and small files 
+that want mmap are one _very_ common case.
+
+To make things worse, the biggest performance market has another vendor 
+that hasn't been saying ".. but AIX" for the last decade, and that 
+actually listens to input. And, perhaps not incidentally, outperforms the 
+highest-performance ppc64 chips mostly by a huge margin - while selling 
+their chips for a fraction of the price.
+
+I realize that this may be hard to accept for some people. But somebody 
+who says "... but AIX" should be taking a damn hard look in the mirror, 
+and ask themselves some really tough questions. Because quite frankly, the 
+"..but AIX" market isn't the most interesting one.
+
+			Linus
