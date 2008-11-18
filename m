@@ -1,142 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYKRQxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbYKRQzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYKRQxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYKRQxh
+	id S1754433AbYKRQzI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKRQy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:53:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49480 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbYKRQxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:53:36 -0500
-Date: Tue, 18 Nov 2008 18:53:36 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
-Message-ID: <20081118175336.GA14178@redhat.com>
-References: <20081115212133.GA32140@us.ibm.com>
-MIME-Version: 1.0
+	Tue, 18 Nov 2008 11:54:56 -0500
+Received: from flusers.ccur.com ([12.192.68.2]:42297 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751617AbYKRQy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:54:56 -0500
+Date: Tue, 18 Nov 2008 11:54:33 -0500
+From: Joe Korty <joe.korty@ccur.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Support always running TSC on Intel CPUs
+Message-ID: <20081118165433.GA1511@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20081118001137.GA12350@linux-os.sc.intel.com> <20081118080952.GE17838@elte.hu> <20081118145540.GA32082@tsunami.ccur.com> <20081118160542.GC8088@elte.hu> <7E82351C108FA840AB1866AC776AEC464291BB4F@orsmsx505.amr.corp.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081115212133.GA32140@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC464291BB4F@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/15, Sukadev Bhattiprolu wrote:
->
-> Subject: [PATCH] Define/use siginfo_from_ancestor_ns()
+On Tue, Nov 18, 2008 at 11:47:35AM -0500, Pallipadi, Venkatesh wrote:
+> 
+>>-----Original Message-----
+>>From: Ingo Molnar [mailto:mingo@elte.hu]
+>>Sent: Tuesday, November 18, 2008 8:06 AM
+>>To: Joe Korty
+>>Cc: Pallipadi, Venkatesh; H Peter Anvin; Thomas Gleixner; linux-kernel
+>>Subject: Re: [PATCH] x86: Support always running TSC on Intel CPUs
+>>
+>>* Joe Korty <joe.korty@ccur.com> wrote:
+>>> On Tue, Nov 18, 2008 at 09:09:52AM +0100, Ingo Molnar wrote:
+>>>> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+>>>>
+>>>> > +        if (c->x86_power & (1 << 8)) {
+>>>> >                  set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+>>>> > +                set_cpu_cap(c, X86_FEATURE_NOSTOP_TSC);
+>>>> > +        }
+>>>>
+>>>> hm, the naming is a bit confusing. We now have 3 variants:
+>>>>
+>>>>   X86_FEATURE_TSC
+>>>>   X86_FEATURE_CONSTANT_TSC
+>>>>   X86_FEATURE_NOSTOP_TSC
+>>>>
+>>>> NOSTOP_TSC is basically what CONSTANT_TSC should have been
+>>to begin
+>>>> with ;-)
+>>>>
+>>>> i'd suggest to rename it to this:
+>>>>
+>>>>   X86_FEATURE_TSC
+>>>>   X86_FEATURE_CONSTANT_FREQ_TSC
+>>>>   X86_FEATURE_STABLE_TSC
+>>>>
+>>>> ... with CONSTANT_FREQ_TSC not having any real role in the long run.
+>>>> (it's similarly problematic to a completely unstable TSC)
+>>>>
+>>>> does this sound ok?
+>>>
+>>>
+>>> To me, the new naming has the same head-scratching potential
+>>> as the old....
+>>>
+>>> How about:
+>>>
+>>>      X86_FEATURE_TSC
+>>>      X86_FEATURE_STABLE_TSC_OBSOLETE
+>>>      X86_FEATURE_STABLE_TSC
+>>
+>>the _honest_ naming would be:
+>>
+>>       X86_FEATURE_TSC
+>>       X86_FEATURE_STABLE_TSC_BUT_NOT_ALWAYS
+>>       X86_FEATURE_STABLE_TSC
+>>
+>>;-)
+>>
+>>what's head-scratching about X86_FEATURE_CONSTANT_FREQ_TSC? It's a
+>>limited TSC variant: it follows a reference frequency that does not
+>>change with cpufreq changes, but it can stop at a whim in C states. So
+>>it's not "stable" nor really "constant" in the everyday sense.
+>>
+> 
+> I don't like STABLE_TSC_OBSOLETE as it does not say anything
+> descriptive about what it means and people have to look at the code
+> to find out.
+> 
+> My original intention was to split this into two features
+> - P/T state invariant TSC which counts at constant rate
+> - C-state invariant TSC that never stops
+> Some CPUs will have only first feature. Others may have both.
+> 
+> But, I agree it is confusing.
+> 
+> How about?
+> X86_FEATURE_FIXEDFREQ_MAYSTOP_TSC
+> X86_FEATURE_ALWAYS_RUNNING_TSC
+> 
+> Thanks,
+> Venki
 
-Imho, the main problem with this patch is that it tries to do many
-different things at once, and each part is suboptimal/incomplete.
 
-This needs several patches. Not only because this is easier to review,
-but also because each part needs the good changelog.
-
-Also. I don't think we should try do solve the "whole" problem right
-now. For example, if we add/use siginfo_from_ancestor_ns(), we should
-also change sys_sigaction(SIG_IGN). As I said, imho we should start
-with:
-
-	- cinit can't be killed from its namespace
-
-	- the parent ns can always SIGKILL cinit
-
-This solves most of problems, and this is very simple.
-
-As for .si_pid mangling, this again needs a separate patch.
-
-Sukadev, I don't have a time today, I'll return tomorrow with more
-comments on this...
-
-> +static int sig_ignored(struct task_struct *t, int sig, int same_ns)
->  {
->  	void __user *handler;
->
-> @@ -68,6 +68,14 @@ static int sig_ignored(struct task_struct *t, int sig)
->  	handler = sig_handler(t, sig);
->  	if (!sig_handler_ignored(handler, sig))
->  		return 0;
-> +	/*
-> +	 * ignores SIGSTOP/SIGKILL signals to init from same namespace.
-> +	 *
-> +	 * TODO: Ignore unblocked SIG_DFL signals also here or drop them
-> +	 * 	 in get_signal_to_deliver() ?
-> +	 */
-> +	if (is_container_init(t) && same_ns && sig_kernel_only(sig))
-> +		return 1;
-
-No, no. is_container_init() is slow and unneeded, same_ns is bogus,
-the usage of sig_kernel_only() is suboptimal. The comment is not
-right too...
-
-As I already said, this problem is not namespace-specific, we need
-some changes for the global init too.
-
-Actually, I already did the patch, I'll send it soon.
-
->  static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
->  			int group)
->  {
->  	struct sigpending *pending;
->  	struct sigqueue *q;
-> +	int from_ancestor_ns;
-> +
-> +	from_ancestor_ns = 0;
-> +	if (siginfo_from_user(info)) {
-> +		/* if t can't see us we are from parent ns */
-> +		if (task_pid_nr_ns(current, task_active_pid_ns(t)) == 0)
-                                            ^^^^^^^^^^^^^^^^^^
-
-->nsproxy may be NULL, but we can use task_pid(t)->numbers[-1].ns
-
-> @@ -864,6 +902,9 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
->  		 * and sent by user using something other than kill().
->  		 */
->  			return -EAGAIN;
-> +
-> +		if (from_ancestor_ns)
-> +			return -ENOMEM;
-
-This change alone needs a fat comment in changelog. But I don't think
-we need it now. Until we change the dequeue path to check "from_ancestor_ns".
-
-> +static inline int siginfo_from_ancestor_ns(siginfo_t *info)
-> +{
-> +	return SI_FROMUSER(info) && (info->si_pid == 0);
-> +}
-
-Yes, this is problem... I doubt we can rely on !si_pid here.
-More on this later.
-
-> @@ -2296,10 +2347,25 @@ sys_rt_sigqueueinfo(pid_t pid, int sig, siginfo_t __user *uinfo)
->  	   Nor can they impersonate a kill(), which adds source info.  */
->  	if (info.si_code >= 0)
->  		return -EPERM;
-> -	info.si_signo = sig;
-> +	info.si_signo = sig | SIG_FROM_USER;
->
->  	/* POSIX.1b doesn't mention process groups.  */
-> -	return kill_proc_info(sig, &info, pid);
-> +	rcu_read_lock();
-> +	spid = find_vpid(pid);
-> +	/* 
-> +	 * A container-init (cinit) ignores/drops fatal signals unless sender
-> +	 * is in an ancestor namespace.  Cinit uses 'si_pid == 0' to check if
-> +	 * sender is an ancestor. See siginfo_from_ancestor_ns().
-> +	 *
-> +	 * If signalling a descendant cinit, set si_pid to 0 so it does not
-> +	 * get ignored/dropped.
-> +	 */
-> +	if (!pid_nr_ns(spid, task_active_pid_ns(current)))
-> +		info.si_pid = 0;
-> +	error = kill_pid_info(sig, &info, spid);
-
-Can't understand. We set SIG_FROM_USER, If signalling a descendant task
-(not only cinit), send_signal() will clear .si_pid anyway?
-
-Oleg.
-
+Much nicer...
+Regards,
+Joe
