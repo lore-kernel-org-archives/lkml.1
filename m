@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbYKRSOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYKRSVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbYKRSOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYKRSOI
+	id S1752734AbYKRSVT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 13:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYKRSVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:14:08 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:57002 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbYKRSOI (ORCPT
+	Tue, 18 Nov 2008 13:21:04 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:23576 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbYKRSVC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:14:08 -0500
-Message-ID: <492305E7.9050906@nortel.com>
-Date: Tue, 18 Nov 2008 12:13:59 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 18 Nov 2008 13:21:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=Uaw/Wqe4Zy+vAg+dYMjPRplqTuUH7TmUJ3xLVhFcQBZf1R4bN+Tv/oNH79MbbvPwjj
+         scRurMqMGWXlKQbl3cJrFl3CT27KWjY0ed4KIOMIU/FQg5AKE8kb+NOo+TJGlSDADUmB
+         QHgDk0rqmfsvx/jZcLssu6VXgFWGt5x93xvwQ=
+Date: Tue, 18 Nov 2008 19:22:13 +0100
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] trace: introduce missing mutex_unlock()
+Message-ID: <20081118182213.GA5436@localhost.localdomain>
 MIME-Version: 1.0
-To: rk@atr-labs.com
-CC: =?ISO-8859-1?Q?Fredrik_Markstr=F6m?= 
-	<fredrik.markstrom@avalonenterprise.com>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Developing non-commercial drivers ?
-References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com> <4922ED5A.3030808@shaw.ca> <7a9e70560811180852y9eb2bf6s8682609dcb10fd9f@mail.gmail.com> <4922F8C4.80509@nortel.com> <1227031253.1817.20.camel@win2k.atr-labs.com>
-In-Reply-To: <1227031253.1817.20.camel@win2k.atr-labs.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Nov 2008 18:14:02.0293 (UTC) FILETIME=[6F554650:01C949A9]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Radhakrishnan wrote:
+>From 8a98729e7b3af032b798c36788095d955f0d7e79 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Tue, 18 Nov 2008 19:15:02 +0100
+Subject: [PATCH] trace: introduce missing mutex_unlock()
 
-> Am I therefore right in assuming that this is a specific case where the
-> open source nature of Linux is being used with great effect but the very
-> nature of the licensing denies ANYONE ELSE from being a party to this
-> transaction ?
+This error was spotted by this semantic patch:
 
-Actually, I think the GPL is still satisfied.  There's nothing that says 
-that changes need to be passed upstream, only downstream.
+http://www.emn.fr/x-info/coccinelle/mut.html
 
-1) Presumably you won't be distributing the binary drivers to anyone 
-else, and you gave Organization A the code, so the license is satisfied.
+It looks correct as far as I can tell. Please review.
 
-2) Organization A has no other customers, so is not going to be 
-distributing the binaries to anyone else.
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ kernel/trace/ring_buffer.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-3) The end-user (the Navy) was provided the source code for the GPL'd 
-software that they purchased.
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 036456c..f780e95 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -617,6 +617,7 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
+ 		list_del_init(&page->list);
+ 		free_buffer_page(page);
+ 	}
++	mutex_unlock(&buffer->mutex);
+ 	return -ENOMEM;
+ }
+ 
+-- 
+1.5.6.5
 
-As far as I can tell, this is all fully GPL-compliant.
-
-Chris
