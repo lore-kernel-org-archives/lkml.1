@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYKRQ3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYKRQ34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753736AbYKRQ3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYKRQ3d
+	id S1754127AbYKRQ34 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYKRQ3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:29:33 -0500
-Received: from main.gmane.org ([80.91.229.2]:51403 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751617AbYKRQ3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:29:33 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Developing non-commercial drivers ?
-Date: Tue, 18 Nov 2008 10:29:14 -0600
-Message-ID: <4922ED5A.3030808@shaw.ca>
-References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
+	Tue, 18 Nov 2008 11:29:37 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:32499 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbYKRQ3g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:29:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=QqjePYDDQlRGM0iKX+f5pp5nwaIjCWG4Xax3QYwGf4DawURjGnGzBceMKc435Z9qUe
+         qgLwfmyHg+aRK1PHdRbR1ro6uE2+RGTFApv0N060yNag4WzKzswbcXsaKvrApy00Z5vO
+         xJrO/KSHXrs+uZG2QetaEyZMzCjGGcwo/x2B0=
+Subject: Re: [ 11.333737] is this a ghost?
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9b2b86520811180315u410019f0y7e6fab66b51a225e@mail.gmail.com>
+References: <1227001038.3184.6.camel@LiNuX>
+	 <9b2b86520811180315u410019f0y7e6fab66b51a225e@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 08:29:31 -0800
+Message-Id: <1227025771.3161.6.camel@LiNuX>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-In-Reply-To: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fredrik Markström wrote:
-> Linus, others...
+On Tue, 2008-11-18 at 11:15 +0000, Alan Jenkins wrote:
+> On 11/18/08, Justin P. Mattock <justinmattock@gmail.com> wrote:
+> > in dmesg I see:
+> > [   11.333737]
+> > but nothing else.
+> >           ---------------(cut)-----------------
+> > [   11.247147] Monitor-Mwait will be used to enter C-1 state
+> > [   11.247151] Monitor-Mwait will be used to enter C-2 state
+> > [   11.247154] Monitor-Mwait will be used to enter C-3 state
+> > [   11.247671] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+> > [   11.247996] processor ACPI_CPU:00: registered as cooling_device0
+> > [   11.248008] ACPI: Processor [CPU0] (supports 8 throttling states)
+> > [   11.306465] ACPI: SSDT 3FEB8F10, 0087 (r1 APPLE   Cpu1Ist     3000
+> > INTL 20050309)<7>power_supply ADP1: No power supply yet
 > 
-> I'm working for as a consultant for a large hardware company porting
-> Linux to their new cpu-architecture and everything is pretty much
-> up and running. Now they want us to develop a closed-source (to
-> protect their IP) ethernet driver for their proprietary Ethernet MAC.
+> Look at this last line.  The "<7>" is a priority marker.  Normally it
+> marks the start of a line, and should be hidden.  So you seem to be
+> missing a line break just after "20050309)"...
 > 
-> My question is:    Is there a fair way to do this and still comply to
-> the intent and spirit of the Linux licensing ?
+> > [   11.306831] power_supply ADP1: power_supply_changed
+> > [   11.306839] ACPI: AC Adapter [ADP1] (on-line)
+> > [   11.333737]                         <------------what's with this!!!
 > 
-> If yes, how ?
+> ...which seems to be delayed and reappears here?
+> 
+> > [   11.342937] power_supply ADP1: power_supply_changed_work
+> > [   11.351901] power_supply ADP1: power_supply_update_gen_leds 1
+> > [   11.351916] ACPI: SSDT 3FEB7F10, 0085 (r1 APPLE   Cpu1Cst     3000
+> > INTL 20050309)
+> 
+> > if you need to see the full dmesg I can attach..
+> > I've seen this happen on a random.
+> 
+> I guess you have a multicore processor (or some other sort of SMP), right?
+> 
+> I think kernel messages are not completely synchronized by design, for
+> reliability reasons.  (e.g. to make sure critical error messages /
+> backtraces can get through on a dying system).
 
-In a word, I would say: no.
 
-When developing a non-GPL kernel driver, one finds themselves on very 
-shaky legal ground. Unless one is 100% sure their code is not legally 
-considered a derived work from the kernel, it's likely a GPL violation.
+Cool.
+makes good sense to me, 
+As long as it's not something that shouldn't be there,
+or something that's broken. As for this happening again
+looking at dmesg nothing, all synchronized.
+Seems to randomly show itself.
 
-One could point out the pile of other Ethernet drivers in the kernel 
-from the likes of Intel, Broadcom, etc. and ask why those companies did 
-not feel the need to "protect their IP" in this manner.. as well as the 
-significant advantages of having their driver in the mainline kernel, 
-and the horrible disadvantages of trying to manage closed-source drivers..
+regards;
+  
+-- 
+Justin P. Mattock <justinmattock@gmail.com>
 
