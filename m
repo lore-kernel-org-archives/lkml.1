@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYKSTnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbYKSToU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753695AbYKSTnl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 14:43:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYKSTnb
+	id S1752074AbYKSToU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 14:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYKSToI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 14:43:31 -0500
-Received: from smarthost02.mail.zen.net.uk ([212.23.3.141]:48739 "EHLO
-	smarthost02.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751223AbYKSTna (ORCPT
+	Wed, 19 Nov 2008 14:44:08 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:52478 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752136AbYKSToG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 14:43:30 -0500
-Subject: Re: linux-next: Tree for November 19 (mtd build error)
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-net-drivers@solarflare.com
-In-Reply-To: <1227122696.27728.625.camel@macbook.infradead.org>
-References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
-	 <20081119105321.477e618a.randy.dunlap@oracle.com>
-	 <1227121104.27728.618.camel@macbook.infradead.org>
-	 <492463A1.3000306@oracle.com>  <1227122287.3052.7.camel@achroite>
-	 <1227122696.27728.625.camel@macbook.infradead.org>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Wed, 19 Nov 2008 19:43:25 +0000
-Message-Id: <1227123805.3052.10.camel@achroite>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-Originating-Smarthost02-IP: [82.69.137.158]
+	Wed, 19 Nov 2008 14:44:06 -0500
+Date: Wed, 19 Nov 2008 13:43:12 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from 2.6.22
+ -&gt; 2.6.28
+In-Reply-To: <20081117090648.GG28786@elte.hu>
+Message-ID: <Pine.LNX.4.64.0811191341570.23502@quilx.com>
+References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera>
+ <20081117090648.GG28786@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-19 at 19:24 +0000, David Woodhouse wrote:
-> On Wed, 2008-11-19 at 19:18 +0000, Ben Hutchings wrote:
-> > So does the dependency need to be something like
-> > "depends on SFC && MTD && !(SFC=y && MTD=m)"?
-> 
-> If it's a separate driver, perhaps it's sufficient just to make it a
-> tristate and make it depend on SFC && MTD?
+On Mon, 17 Nov 2008, Ingo Molnar wrote:
 
-It's not a separate driver.
+> Christoph, as per the recent analysis of Mike:
+>
+>  http://fixunix.com/kernel/556867-regression-benchmark-throughput-loss-a622cf6-f7160c7-pull.html
+>
+> all scheduler components of this regression have been eliminated.
+>
+> In fact his numbers show that scheduler speedups since 2.6.22 have
+> offset and hidden most other sources of tbench regression. (i.e. the
+> scheduler portion got 5% faster, hence it was able to offset a
+> slowdown of 5% in other areas of the kernel that tbench triggers)
 
-Ben.
+Ok will rerun the tests tomorrow. Just got back from SC08 need some time
+to catch up.
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Looks like a lot of work was done on this issue. Thanks!
 
