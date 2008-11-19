@@ -1,39 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYKSQXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYKSQ0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYKSQXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 11:23:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbYKSQXW
+	id S1754042AbYKSQ0V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 11:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYKSQ0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 11:23:22 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45928 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751733AbYKSQXW (ORCPT
+	Wed, 19 Nov 2008 11:26:12 -0500
+Received: from web52506.mail.re2.yahoo.com ([206.190.48.189]:48673 "HELO
+	web52506.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750853AbYKSQ0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 11:23:22 -0500
-Date: Wed, 19 Nov 2008 16:23:31 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Fred ." <eldmannen@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Compiler warnings
-Message-ID: <20081119162331.5421a67b@lxorguk.ukuu.org.uk>
-In-Reply-To: <f188924b0811190816g2301b38ap814f64824055cd59@mail.gmail.com>
-References: <f188924b0811190816g2301b38ap814f64824055cd59@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 11:26:11 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 11:26:10 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=ComkaQDIpzgpfSJ9/X+0t7TJESjS8oXbKwMVVDBW2kjyHHfD5yToIMgctw1cGh7UjqkE37Wwt1QRqbHDQlsfok/VS58GutVjztUHmp/ZQ8yXx/iaCYAysQtNYNvKSvLjDigc+hMdk0hYpcZvkbS4YVP6XRjJjG0I8mCOTssjyf4=;
+X-YMail-OSG: 06sjhOMVM1lNFodR49YN9P5fioew8HPjchDU5YjecWMVCMMl37UhU3ojosqbynY9P8nhR8.KGW3A_afNolGnwkeJl2AAaMJd4wMJT4NxxohYFeVoV.0JpRYscQXHgfL3XcmnYwkLMFKenT91C9Zed9FgZ6AnhCNh5GIAsIk-
+X-Mailer: YahooMailRC/1155.32 YahooMailWebService/0.7.260.1
+Date: Wed, 19 Nov 2008 08:19:29 -0800 (PST)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: OT - Software Router for Linux
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <440333.97119.qm@web52506.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008 17:16:14 +0100
-"Fred ." <eldmannen@gmail.com> wrote:
 
-> I compiled the Linux 2.6.27.6 kernel on Ubuntu 8.10 with gcc (Ubuntu
-> 4.3.2-1ubuntu11) 4.3.2.
 
-Your compiler appears to be faulty. You should report this to Ubuntu
+ I'm looking for a way to turn a Linux computer into a router as a front end for a small web hosting / spam filtering operation. Part of this is just educational for me. I want it to be web based controls and easy to use and install is the most important feature. I want to run it under Fedora so RPM based install would be great.
 
+Suggestions?
+
+
+      
