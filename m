@@ -1,96 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYKSMNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYKSMN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbYKSMNY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 07:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYKSMJs
+	id S1754666AbYKSMN5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 07:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYKSMKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 07:09:48 -0500
-Received: from mga09.intel.com ([134.134.136.24]:34262 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752769AbYKSMJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 07:09:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,631,1220252400"; 
-   d="scan'208";a="361907288"
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Patrick Ohly <patrick.ohly@intel.com>
-Subject: [RFC PATCH 07/11] igb: stub support for SIOCSHWTSTAMP
-Date: Wed, 19 Nov 2008 13:08:44 +0100
-Message-Id: <1227096528-24150-8-git-send-email-patrick.ohly@intel.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1227096528-24150-7-git-send-email-patrick.ohly@intel.com>
-References: <1227096528-24150-1-git-send-email-patrick.ohly@intel.com>
- <1227096528-24150-2-git-send-email-patrick.ohly@intel.com>
- <1227096528-24150-3-git-send-email-patrick.ohly@intel.com>
- <1227096528-24150-4-git-send-email-patrick.ohly@intel.com>
- <1227096528-24150-5-git-send-email-patrick.ohly@intel.com>
- <1227096528-24150-6-git-send-email-patrick.ohly@intel.com>
- <1227096528-24150-7-git-send-email-patrick.ohly@intel.com>
+	Wed, 19 Nov 2008 07:10:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44040 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbYKSMKG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 07:10:06 -0500
+Date: Wed, 19 Nov 2008 07:10:02 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+In-Reply-To: <20081119105719.GA21533@elte.hu>
+Message-ID: <alpine.DEB.1.10.0811190650460.20272@gandalf.stny.rr.com>
+References: <20081116212428.938752312@goodmis.org> <18720.42209.880409.297291@cargo.ozlabs.ibm.com> <alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com> <alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com> <18723.31762.522696.647294@cargo.ozlabs.ibm.com>
+ <alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com> <20081119092723.GC22309@elte.hu> <18723.60578.179210.736789@cargo.ozlabs.ibm.com> <20081119105719.GA21533@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- drivers/net/igb/igb_main.c |   30 ++++++++++++++++++++++++++++++
- 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index 89ffc07..be8e2b8 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -34,6 +34,7 @@
- #include <linux/ipv6.h>
- #include <net/checksum.h>
- #include <net/ip6_checksum.h>
-+#include <net/timestamping.h>
- #include <linux/mii.h>
- #include <linux/ethtool.h>
- #include <linux/if_vlan.h>
-@@ -4115,6 +4116,33 @@ static int igb_mii_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
- }
- 
- /**
-+ * igb_hwtstamp_ioctl - control hardware time stamping
-+ * @netdev:
-+ * @ifreq:
-+ * @cmd:
-+ *
-+ * Currently cannot enable any kind of hardware time stamping, but
-+ * supports SIOCSHWTSTAMP in general.
-+ **/
-+static int igb_hwtstamp_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
-+{
-+	struct hwtstamp_config config;
-+
-+	if (copy_from_user(&config, ifr->ifr_data, sizeof(config)))
-+		return -EFAULT;
-+
-+	/* reserved for future extensions */
-+	if (config.flags)
-+		return -EINVAL;
-+
-+	if (config.tx_type == HWTSTAMP_TX_OFF &&
-+		config.rx_filter_type == HWTSTAMP_FILTER_NONE)
-+		return 0;
-+
-+	return -ERANGE;
-+}
-+
-+/**
-  * igb_ioctl -
-  * @netdev:
-  * @ifreq:
-@@ -4127,6 +4155,8 @@ static int igb_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
- 	case SIOCGMIIREG:
- 	case SIOCSMIIREG:
- 		return igb_mii_ioctl(netdev, ifr, cmd);
-+	case SIOCSHWTSTAMP:
-+		return igb_hwtstamp_ioctl(netdev, ifr, cmd);
- 	default:
- 		return -EOPNOTSUPP;
- 	}
--- 
-1.6.0.4
+On Wed, 19 Nov 2008, Ingo Molnar wrote:
+> 
+> Maybe Steve could do the following trick: create a Linus -git based 
+> branch that uses the new APIs but marks ppc's ftrace as "depends 0" in 
+> the powerpc Kconfig. (the new ftrace.c wont build)
+
+There's only two generic commits that need to be added for the PowerPC 
+code to work.
+
+  ftrace: pass module struct to arch dynamic ftrace functions
+  ftrace: allow NULL pointers in mcount_loc
+
+I've already ported them to mainline to test PowerPC there.
+Paul could use these two versions and keep ftrace in a separate branch in 
+his tree. This way all the PowerPC code will be there, and actually can be 
+tested. They may still hit the same bugs that we have fixed in tip, but 
+those should all be minor, since any major bug is already in mainline or 
+on its way.
+
+> 
+> You could pull that tree into the powerpc tree and everything should 
+> still work fine in PPC - sans ftrace.
+> 
+> In tip/tracing we'd merge it too (these commits will never be 
+> rebased), and we'd also remove the depends 0 from the powerpc Kconfig. 
+> That sole change wont conflict with anything powerpc.
+> 
+> It would all play out just fine in linux-next: we'd have both the 
+> latest powerpc bits and the latest ftrace bits on powerpc. You could 
+> test the non-ftrace impact of Steve's changes in the powerpc tree as 
+> well and have it all part of your usual workflow.
+> 
+> The 2.6.29 merge window would be trouble-free as well: since the 
+> sha1's are the same, any of the trees can be merged upstream without 
+> having to wait for the other one and without creating conflicts or 
+> other trouble for the other one.
+> 
+> Hm?
+
+If Paul uses the ported two generic commits, then he would need to keep 
+that in a separate branch that will never go upstream. He could pull in 
+the other PowerPC patches and do as you said, keep the depend off.
+
+I can make two branches that Paul could pull from. One would have this 
+code disabled in the config, and just be the PowerPC port. Although, we 
+would need to figure out the best way to keep it disabled. Disable it 
+after the patches? The patches themselve enable it.
+
+And then I could make another branch with the back port of the two commits 
+that Paul would never push upstream. This would allow for the PowerPC guys 
+to test the code in their tree without waiting for it. We just need to 
+trust that Paul will not push those commits ;-)
+
+Actually, I can change the subject of those commits to have at the 
+beginning:
+
+   NOT FOR UPSTREAM ftrace: ....
+
+What do you guys think?
+
+-- Steve
 
