@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYKSP3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYKSPgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbYKSP3M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYKSP25
+	id S1753997AbYKSPgr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 10:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYKSPgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:28:57 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:33383 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752561AbYKSP25 (ORCPT
+	Wed, 19 Nov 2008 10:36:37 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:59634 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753487AbYKSPgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:28:57 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 19 Nov 2008 20:58:42 +0530
-Message-Id: <20081119152842.10651.31873.sendpatchset@balbir-laptop>
-Subject: [mm][PATCH] Memory cgroup fix hierarchy selector
+	Wed, 19 Nov 2008 10:36:36 -0500
+Date: Wed, 19 Nov 2008 10:36:35 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+       "Hommel, Thomas (GE EntSol, Intelligent Platforms)" 
+	<Thomas.Hommel@gefanuc.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: ISP1760 driver crashes
+In-Reply-To: <20081119150010.GK26308@kernel.dk>
+Message-ID: <Pine.LNX.4.44L0.0811191027540.2418-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 19 Nov 2008, Jens Axboe wrote:
+
+> On Wed, Nov 19 2008, Alan Stern wrote:
+> > On Wed, 19 Nov 2008, Sebastian Andrzej Siewior wrote:
+> > 
+> > > Hommel, Thomas (GE EntSol, Intelligent Platforms) wrote:
+> > > 
+> > > > I indeed have HIGHMEM enabled in my configuration.
+> > > > I recompiled the kernel without HIGHMEM and it works. I don't think that
+> > > > this a satisfying solution for a board with up to 2GB of RAM and
+> > > > considerable amount of VMALLOC space, but at least this works.
+> > > > If you have any more ideas how to circumvent this, please let me know.
+> > > Sure, this is not a sollution but atleast now I know what happens:
+> > > - The kernel allocates memory for transfer
+> > > - the memory is highmem and not in kernel so the buffer is NULL
+> > > - we don't have a dma-mask and therefore the dma address is 0
+> > > - boom
+> > > 
+> > > The sollution would be probably to prevent the usb-storage core to 
+> > > allocate memory from HIGHMEM.
+> > 
+> > usb-storage doesn't allocate the memory.  The memory is allocated by 
+> > the block layer or the filesystem.
+> > 
+> > > Now I don't if there is a flag for something 
+> > > like that and I am not using that. On the other hand this may be broken 
+> > > for a long time and you are the first one which has that much memory with 
+> > > no DMA-capable USB controller.
+> > 
+> > Jens, is there any way to tell the kernel that a device uses PIO and 
+> > therefore its buffers shouldn't be allocated in high memory?  For 
+> > example, shouldn't a NULL dma_mask do this?
+> 
+> Sure, just use blk_queue_bounce_limit(q, BLK_BOUNCE_HIGH), then you are
+> certain that you will always have a virtual mapping for the IO you
+> receive.
+> 
+> Or you can use the bio kmap/kunmap helpers to get such a mapping
+> temporarily if you wish. But if your pio condition is permanent, you may
+> as well just use bouncing.
+
+Thank you.
+
+Thomas, the blk_queue_bounce_limit() routine is called in 
+drivers/scsi/scsi_lib.c:__scsi_alloc_queue().  The value it passes is 
+computed by scsi_calculate_bounce_limit(), and in that routine 
+host_dev->dma_mask should be NULL (since isp1760-hcd sets the mask to 
+NULL).  Therefore the bounce limit should be 0xffffffff.
+
+Now maybe this value isn't correct.  You can try the patch below to see 
+if it helps.  If it doesn't, add a printk in __scsi_alloc_queue() to 
+see what bounce limit value is getting used.
+
+Alan Stern
 
 
-Andrew and Li reviewed and found that we need to check for val being 1 or 0
-for the root container as well. use_hierarchy's type is changed to bool.
-We still continue to use the ease of write_X64 for writing to it and then
-check if the values are sane.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- mm/memcontrol.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff -puN mm/memcontrol.c~memcg-fix-add-hierarchy-selector mm/memcontrol.c
---- linux-2.6.28-rc4/mm/memcontrol.c~memcg-fix-add-hierarchy-selector	2008-11-19 11:07:21.000000000 +0530
-+++ linux-2.6.28-rc4-balbir/mm/memcontrol.c	2008-11-19 14:11:56.000000000 +0530
-@@ -151,7 +151,7 @@ struct mem_cgroup {
- 	/*
- 	 * Should the accounting and control be hierarchical, per subtree?
- 	 */
--	unsigned long use_hierarchy;
-+	bool use_hierarchy;
+Index: usb-2.6/drivers/scsi/scsi_lib.c
+===================================================================
+--- usb-2.6.orig/drivers/scsi/scsi_lib.c
++++ usb-2.6/drivers/scsi/scsi_lib.c
+@@ -1684,7 +1684,7 @@ static void scsi_request_fn(struct reque
+ u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
+ {
+ 	struct device *host_dev;
+-	u64 bounce_limit = 0xffffffff;
++	u64 bounce_limit = BLK_BOUNCE_HIGH;
  
- 	int		obsolete;
- 	atomic_t	refcnt;
-@@ -1556,8 +1556,8 @@ static int mem_cgroup_hierarchy_write(st
- 	 * For the root cgroup, parent_mem is NULL, we allow value to be
- 	 * set if there are no children.
- 	 */
--	if (!parent_mem || (!parent_mem->use_hierarchy &&
--				(val == 1 || val == 0))) {
-+	if ((!parent_mem || !parent_mem->use_hierarchy) &&
-+				(val == 1 || val == 0)) {
- 		if (list_empty(&cont->children))
- 			mem->use_hierarchy = val;
- 		else
-_
+ 	if (shost->unchecked_isa_dma)
+ 		return BLK_BOUNCE_ISA;
 
--- 
-	Balbir
