@@ -1,59 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYKSKGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYKSKK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbYKSKGQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:06:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKSKF7
+	id S1753470AbYKSKK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 05:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYKSKKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:05:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49453 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752621AbYKSKF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:05:59 -0500
-Message-ID: <4923E4D5.4070202@kernel.org>
-Date: Wed, 19 Nov 2008 19:05:09 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@hansenpartnership.com
-Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
-References: <20081119142016E.fujita.tomonori@lab.ntt.co.jp>	 <c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>	 <20081119155847U.fujita.tomonori@lab.ntt.co.jp>	 <20081119165915A.fujita.tomonori@lab.ntt.co.jp> <c384c5ea0811190145y78803fbboecfcf6ebd652ee03@mail.gmail.com>
-In-Reply-To: <c384c5ea0811190145y78803fbboecfcf6ebd652ee03@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Nov 2008 05:10:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56173
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752517AbYKSKKp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 05:10:45 -0500
+Date: Wed, 19 Nov 2008 02:10:45 -0800 (PST)
+Message-Id: <20081119.021045.222679286.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: jeff@garzik.org, mingo@elte.hu, johannes@sipsolutions.net, wferi@niif.hu,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netconsole: Disable softirqs in write_msg()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081119084106.GA6699@ff.dom.local>
+References: <87y6zwwy5c.fsf@tac.ki.iif.hu>
+	<20081119084106.GA6699@ff.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Nov 2008 10:05:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Leon Woestenberg wrote:
-> Hello,
-> 
-> On Wed, Nov 19, 2008 at 8:58 AM, FUJITA Tomonori
-> <fujita.tomonori@lab.ntt.co.jp> wrote:
->> On Wed, 19 Nov 2008 15:58:12 +0900
->> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
->>> On Wed, 19 Nov 2008 07:22:31 +0100
->> - pci_map_sg/dma_map_sg are used with a scatter gather list that
->> doesn't come from the block layer (e.g. some network drivers do).
->>
-> This is the point I then want to make: we have pci_map_sg() users in
-> other system than the block layer, the network and v4l2 subsystems,
-> why cannot they benefit from coalescing?
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Wed, 19 Nov 2008 08:41:06 +0000
 
-Because pci_map_sg() doesn't know the memory access limits of the
-controller as block layer does.
+> This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2
+> shows local_bh_enable() is used in the wrong context (irqs disabled).
+> It happens when a usual network path is called by netconsole, which
+> simply turns off hardirqs around this all.
 
-> Should they copy the block layer coalescing implementation, or should
-> that implementation be made more generic and live outside the block
-> sub system?
+This backtrace call path is anything but "usual".
 
-The latter sounds like a good idea to me.
+There is a UDP send, and a local_bh_enable() done there triggers
+softirqs, which processes device (I would guess loopback, or
+some non-NAPI device) backlog processing.
 
-Thanks.
+This triggers an input netfilter ipt_LOG rule, which triggers a
+printk over netconsole.
 
--- 
-tejun
+netpoll finds the TX queue of the tg3 device (which is NAPI)
+full, so it invokes ->poll() to try and free up some TX queue
+space.
+
+This in turn triggers a packet receive, which hits bridging netfilter,
+which does a conntrack lookup, which does the BH disable/enable which
+triggers the warning.
+
+I mean, this is just a very crazy trace :-)
+
+I see an easy way around this.  We should just punt on non-netpoll
+RX packets that try to get processed during a netconsole ->poll()
+run.
+
+Wait a second, this is _supposed_ to be already happening.  Perhaps
+the tests in netpoll_rx() are screwed up.
+
+net/core/netpoll.c'd poll_one_napi() explicitly sets NETPOLL_RX_DROP
+in npinfo->rx_flags as well as increment "trapped", and that is
+supposed to make netpoll_rx() return non-zero which tells the caller
+to ignore and drop all RX packets.
+
+What isn't that happening?
+
+netpoll_rx()'s test is:
+
+	if (!npinfo || (!npinfo->rx_np && !npinfo->rx_flags))
+		return 0;
+
+which looks perfectly fine.  npinfo will be non-NULL by definition
+because we are doing netpoll for netconsole on this device, and
+->rx_flags are non-zero by the above mentioned code.
+
+So we get to __netpoll_rx() by the next bit of code.
+
+	if (npinfo->rx_flags && __netpoll_rx(skb))
+		ret = 1;
+
+And __netpoll_rx() says:
+
+	struct netpoll *np = npi->rx_np;
+
+	if (!np)
+		goto out;
+
+this should trigger because a netpoll RX agent shouldn't be attached,
+then:
+
+out:
+	if (atomic_read(&trapped)) {
+		kfree_skb(skb);
+		return 1;
+	}
+
+	return 0;
+
+which should trigger because trapped is non-zero, thus we free the SKB
+and return 1.
+
+We need to figure out why this isn't working properly.  Maybe it's some
+bug we fixed, or some weird change in the SUSE Xen mods this used has
+applied.
+
+I also took a quick look at 2.6.26.6 and I don't see any bugs in this
+area there.
