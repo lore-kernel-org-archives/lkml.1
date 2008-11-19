@@ -1,33 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYKSQze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYKSQ6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbYKSQze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 11:55:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYKSQzU
+	id S1753727AbYKSQ6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 11:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYKSQ6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 11:55:20 -0500
-Received: from qmta07.emeryville.ca.mail.comcast.net ([76.96.30.64]:37063 "EHLO
-	QMTA07.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751310AbYKSQzT (ORCPT
+	Wed, 19 Nov 2008 11:58:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49968 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310AbYKSQ6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 11:55:19 -0500
-X-Authority-Analysis: v=1.0 c=1 a=n-_EF0tFy-QA:10 a=zn7U-nhvGoYA:10
- a=2iNgh9swn-kA:10 a=6mZUngIx__VxyQp7SbwA:9 a=zhamlz3z4jv2qLuym0EA:7
- a=K0Y4TiqFQf2hZZjUxgwDtnSIku8A:4 a=d4CUUju0HPYA:10 a=LY0hPdMaydYA:10
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
-	protocol
-From: Jim Gettys <jg@laptop.org>
-Reply-To: jg@laptop.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Henrik Rydberg <rydberg@euromail.se>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
-References: <49142351.9080805@euromail.se>
-	 <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
+	Wed, 19 Nov 2008 11:58:14 -0500
+Subject: Re: [patch] sched: add locking when update the task_group's
+	cfs_rq[]  array.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ken Chen <kenchen@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
+References: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
 Content-Type: text/plain
-Organization: One Laptop Per Child
-Date: Wed, 19 Nov 2008 11:54:59 -0500
-Message-Id: <1227113699.7181.103.camel@jg-vaio>
+Date: Wed, 19 Nov 2008 17:54:22 +0100
+Message-Id: <1227113662.29743.46.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -35,86 +28,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-19 at 11:37 -0500, Dmitry Torokhov wrote:
-> Hi Henrik,
+On Tue, 2008-11-18 at 22:48 -0800, Ken Chen wrote:
+> add locking when update the task_group's cfs_rq[] array.  tg_shares_up()
+> can be potentially executed concurrently on multiple CPUs with overlaping
+> cpu mask depending on where task_cpu() was when a task got woken up.  Lack
+> of any locking while redistribute tg->shares over cfs_rq[] array opens up
+> a large window for conflict updates and utimately cause corruptions to the
+> integrity of per cpu cfs_rq shares. Add a tg_lock to protect the operations.
+
+I see why you want to do this, but introducing a global lock makes me
+sad :/
+
+Let me ponder this a while...
+
+> Signed-off-by: Ken Chen <kenchen@google.com>
 > 
-> On Fri, Nov 07, 2008 at 12:15:29PM +0100, Henrik Rydberg wrote:
-> > In order to utilize the full power of the new multi-touch devices, a
-> > way to report detailed finger data to user space is needed. This patch
-> > adds a multi-touch (MT) protocol which allows drivers to report details
-> > for an arbitrary number of fingers.
-> > 
-> > BTN_MT_REPORT_PACKET
-> > 
-> > The driver presses this button to indicate the start of a packet of
-> > finger data. The button is released after the whole packet has been
-> > reported.
-> > 
-> > BTN_MT_REPORT_FINGER
-> > 
-> > The driver presses this button to indicate the start of a new
-> > finger. The button is released when the finger has been reported.
-> > 
-> > In order to stay compatible with existing applications, the data
-> > reported in a finger packet must not be recognized as single-touch
-> > events. Therefore, a specific set of ABS_MT events is used instead.
-> > 
-> > Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-> > ---
-> >  include/linux/input.h |   12 ++++++++++++
-> >  1 files changed, 12 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/input.h b/include/linux/input.h
-> > index b86fb55..c82dd42 100644
-> > --- a/include/linux/input.h
-> > +++ b/include/linux/input.h
-> > @@ -590,6 +590,9 @@ struct input_absinfo {
-> >  #define KEY_NUMERIC_STAR	0x20a
-> >  #define KEY_NUMERIC_POUND	0x20b
-> > 
-> > +#define BTN_MT_REPORT_PACKET	0x210	/* report multitouch packet data */
-> > +#define BTN_MT_REPORT_FINGER	0x211	/* report multitouch finger data */
-> > +
-> >  /* We avoid low common keys in module aliases so they don't get huge. */
-> >  #define KEY_MIN_INTERESTING	KEY_MUTE
-> >  #define KEY_MAX			0x2ff
-> > @@ -642,6 +645,15 @@ struct input_absinfo {
-> >  #define ABS_TOOL_WIDTH		0x1c
-> >  #define ABS_VOLUME		0x20
-> >  #define ABS_MISC		0x28
-> > +#define ABS_MT_TOUCH		0x30	/* Diameter of touching circle */
-> > +#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
-> > +#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis of touching ellipse */
-> > +#define ABS_MT_WIDTH		0x32	/* Diameter of approaching circle */
-> > +#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
-> > +#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis of approaching ellipse */
-> > +#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
-> > +#define ABS_MT_POSITION_X	0x35	/* Center X ellipse position */
-> > +#define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
-> >  #define ABS_MAX			0x3f
-> >  #define ABS_CNT			(ABS_MAX+1)
-> > 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 1ff78b6..907a44e 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -267,6 +267,8 @@ struct task_group {
+>  	/* runqueue "owned" by this group on each cpu */
+>  	struct cfs_rq **cfs_rq;
+>  	unsigned long shares;
+> +	/* protect integrity of per-cpu cfs_rq[i]->shares */
+> +	spinlock_t tg_lock;
+>  #endif
 > 
-> Sorry for the long silence. I don't think utilizing button events for
-> this is a good idea. I'd rather just start reporting extended touch
-> events for a finger and signal end of sub-packet with something like
-> EV_SYN/SYN_MT_REPORT.
-
-I agree.
-
-Also, I'm still concerned about using elipses. I doubt very much any
-hardware will ever be reporting elipses; more likely are parallelograms,
-or trapezoids, other simple geometric figures, rather than a center with
-size and orientation.
-
-There are reasons Cairo uses aligned traps internally when tessellating
-figures....
-                                 - Jim
-
-
-
+>  #ifdef CONFIG_RT_GROUP_SCHED
+> @@ -1493,13 +1495,11 @@ update_group_shares_cpu
+>  	if (abs(shares - tg->se[cpu]->load.weight) >
+>  			sysctl_sched_shares_thresh) {
+>  		struct rq *rq = cpu_rq(cpu);
+> -		unsigned long flags;
 > 
--- 
-Jim Gettys <jg@laptop.org>
-One Laptop Per Child
+> -		spin_lock_irqsave(&rq->lock, flags);
+> +		spin_lock(&rq->lock);
+>  		tg->cfs_rq[cpu]->shares = shares;
+> -
+>  		__set_se_shares(tg->se[cpu], shares);
+> -		spin_unlock_irqrestore(&rq->lock, flags);
+> +		spin_unlock(&rq->lock);
+>  	}
+>  }
+> 
+> @@ -1513,8 +1513,12 @@ static int tg_shares_up
+>  	unsigned long weight, rq_weight = 0;
+>  	unsigned long shares = 0;
+>  	struct sched_domain *sd = data;
+> +	unsigned long flags;
+>  	int i;
+> 
+> +	if (!spin_trylock_irqsave(&tg->tg_lock, flags))
+> +		return 0;
+> +
+>  	for_each_cpu_mask(i, sd->span) {
+>  		/*
+>  		 * If there are currently no tasks on the cpu pretend there
+> @@ -1539,6 +1543,7 @@ static int tg_shares_up
+>  	for_each_cpu_mask(i, sd->span)
+>  		update_group_shares_cpu(tg, i, shares, rq_weight);
+> 
+> +	spin_unlock_irqrestore(&tg->tg_lock, flags);
+>  	return 0;
+>  }
+> 
+> @@ -8195,6 +8200,10 @@ void __init sched_init(void)
+>  	list_add(&init_task_group.list, &task_groups);
+>  	INIT_LIST_HEAD(&init_task_group.children);
+> 
+> +#ifdef CONFIG_FAIR_GROUP_SCHED
+> +	spin_lock_init(&init_task_group.tg_lock);
+> +#endif /* CONFIG_FAIR_GROUP_SCHED */
+> +
+>  #ifdef CONFIG_USER_SCHED
+>  	INIT_LIST_HEAD(&root_task_group.children);
+>  	init_task_group.parent = &root_task_group;
+> @@ -8491,6 +8500,10 @@ int alloc_fair_sched_group
+> 
+>  	tg->shares = NICE_0_LOAD;
+> 
+> +#ifdef CONFIG_FAIR_GROUP_SCHED
+> +	spin_lock_init(&tg->tg_lock);
+> +#endif /* CONFIG_FAIR_GROUP_SCHED */
+> +
+>  	for_each_possible_cpu(i) {
+>  		rq = cpu_rq(i);
 
