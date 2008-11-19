@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbYKSHxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbYKSHx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbYKSHxl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 02:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYKSHxb
+	id S1753023AbYKSHx6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 02:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYKSHxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 02:53:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41519 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbYKSHxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 02:53:31 -0500
-Date: Wed, 19 Nov 2008 08:53:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] sched: add locking when update the task_group's
-	cfs_rq[] array.
-Message-ID: <20081119075319.GA1078@elte.hu>
-References: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Wed, 19 Nov 2008 02:53:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57977 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752377AbYKSHxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 02:53:34 -0500
+Date: Tue, 18 Nov 2008 23:53:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [Patch] hostfs: fix a duplicated global function name
+Message-Id: <20081118235323.85dd277d.akpm@linux-foundation.org>
+In-Reply-To: <20081118180003.GF3185@hack.voiplan.pt>
+References: <20081118180003.GF3185@hack.voiplan.pt>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 18 Nov 2008 18:00:03 +0000 Am__rico Wang <xiyou.wangcong@gmail.com> wrote:
 
-* Ken Chen <kenchen@google.com> wrote:
-
-> @@ -1513,8 +1513,12 @@ static int tg_shares_up
->  	unsigned long weight, rq_weight = 0;
->  	unsigned long shares = 0;
->  	struct sched_domain *sd = data;
-> +	unsigned long flags;
->  	int i;
 > 
-> +	if (!spin_trylock_irqsave(&tg->tg_lock, flags))
-> +		return 0;
+> fs/hostfs/hostfs_user.c defines do_readlink() as non-static,
+> and so does fs/xfs/linux-2.6/xfs_ioctl.c when CONFIG_XFS_DEBUG=y.
+> So rename do_readlink() in hostfs to hostfs_do_readlink().
 
-hm, why trylock?
+heh, yes, it's not a great choice of identifier.
 
-	Ingo
+> I think it's better if XFS guys will also rename their do_readlink(),
+> it's not necessary to use such a general name.
+> 
+> Compile test only.
+>
+> ...
+>
+> diff --git a/fs/hostfs/hostfs.h b/fs/hostfs/hostfs.h
+> index 6ae9011..2f34f8f 100644
+> --- a/fs/hostfs/hostfs.h
+> +++ b/fs/hostfs/hostfs.h
+> @@ -81,7 +81,7 @@ extern int do_rmdir(const char *file);
+>  extern int do_mknod(const char *file, int mode, unsigned int major,
+>  		    unsigned int minor);
+>  extern int link_file(const char *from, const char *to);
+> -extern int do_readlink(char *file, char *buf, int size);
+> +extern int hostfs_do_readlink(char *file, char *buf, int size);
+>  extern int rename_file(char *from, char *to);
+>  extern int do_statfs(char *root, long *bsize_out, long long *blocks_out,
+>  		     long long *bfree_out, long long *bavail_out,
+> diff --git a/fs/hostfs/hostfs_kern.c b/fs/hostfs/hostfs_kern.c
+> index 7f34f43..3a31451 100644
+> --- a/fs/hostfs/hostfs_kern.c
+> +++ b/fs/hostfs/hostfs_kern.c
+> @@ -168,7 +168,7 @@ static char *follow_link(char *link)
+>  		if (name == NULL)
+>  			goto out;
+>  
+> -		n = do_readlink(link, name, len);
+> +		n = hostfs_do_readlink(link, name, len);
+>  		if (n < len)
+>  			break;
+>  		len *= 2;
+> @@ -943,7 +943,7 @@ int hostfs_link_readpage(struct file *file, struct page *page)
+>  	name = inode_name(page->mapping->host, 0);
+>  	if (name == NULL)
+>  		return -ENOMEM;
+> -	err = do_readlink(name, buffer, PAGE_CACHE_SIZE);
+> +	err = hostfs_do_readlink(name, buffer, PAGE_CACHE_SIZE);
+>  	kfree(name);
+>  	if (err == PAGE_CACHE_SIZE)
+>  		err = -E2BIG;
+> diff --git a/fs/hostfs/hostfs_user.c b/fs/hostfs/hostfs_user.c
+> index 53fd0a6..b79424f 100644
+> --- a/fs/hostfs/hostfs_user.c
+> +++ b/fs/hostfs/hostfs_user.c
+> @@ -377,7 +377,7 @@ int link_file(const char *to, const char *from)
+>  	return 0;
+>  }
+>  
+> -int do_readlink(char *file, char *buf, int size)
+> +int hostfs_do_readlink(char *file, char *buf, int size)
+>  {
+>  	int n;
+
+Thanks, I'll send this in for 2.6.28 unless someone stops me soon.
