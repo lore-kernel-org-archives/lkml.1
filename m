@@ -1,135 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYKSMgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYKSMhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbYKSMgT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 07:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYKSMgJ
+	id S1753598AbYKSMhb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 07:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYKSMhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 07:36:09 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51752 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbYKSMgI (ORCPT
+	Wed, 19 Nov 2008 07:37:22 -0500
+Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:3947 "EHLO
+	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbYKSMhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 07:36:08 -0500
-Message-ID: <56006.10.75.179.61.1227098164.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <200811190744.mAJ7iRVn021314@imap1.linux-foundation.org>
-References: <200811190744.mAJ7iRVn021314@imap1.linux-foundation.org>
-Date: Wed, 19 Nov 2008 21:36:04 +0900 (JST)
-Subject: Re: + memcg-swap-cgroup-for-remembering-usage-fix-4.patch added to 
-     -mm tree
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 19 Nov 2008 07:37:20 -0500
+Date: Wed, 19 Nov 2008 13:37:17 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
 To: linux-kernel@vger.kernel.org
-Cc: hugh@veritas.com, nishimura@mxp.nes.nec.co.jp
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+Subject: [2.6.28-rc5] RCU detected CPU 0 stall (t=4294893165/750 jiffies)
+Message-ID: <20081119123717.GE24427@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Thu Nov 20 11:27:06 CET 2008
+X-Message-Flag: www.unixexpert.nl
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org said:
+During the boot-process of a 2.6.28-RC5 kernel I got the followin on
+the console:
 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
->
-> The current -mm tree may be found at
-> http://userweb.kernel.org/~akpm/mmotm/
->
-> ------------------------------------------------------
-> Subject: memcg: avoid using buggy kmap at swap_cgroup
-> From: Hugh Dickins <hugh@veritas.com>
->
-> swap_cgroup's kmap logic conflicts shmem's kmap logic.
-> avoid to use HIGHMEM for now and revisit this later.
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Acked-by: Hugh Dickins <hugh@veritas.com>
+- [    3.479998] RCU detected CPU 0 stall (t=4294893165/750 jiffies)
+! [    3.480004] Pid: 1, comm: swapper Not tainted 2.6.28-rc5-custom2 #1
+! [    3.480004] Call Trace:
+! [    3.480004]  [<c0300c33>] ? printk+0xf/0x14
+! [    3.480004]  [<c0166f15>] __rcu_pending+0x53/0x189
+! [    3.480004]  [<c0167067>] rcu_pending+0x1c/0x47
+! [    3.480004]  [<c0132aa4>] update_process_times+0x2b/0x4e
+! [    3.480004]  [<c0144c8d>] tick_sched_timer+0x6d/0x9b
+! [    3.480004]  [<c0144c20>] ? tick_sched_timer+0x0/0x9b
+! [    3.480004]  [<c013e0cc>] __run_hrtimer+0x60/0x97
+! [    3.480004]  [<c013eb35>] hrtimer_interrupt+0xfe/0x166
+! [    3.480004]  [<c0112eea>] smp_apic_timer_interrupt+0x6c/0x7f
+! [    3.480004]  [<c0104829>] apic_timer_interrupt+0x2d/0x34
+! [    3.480004]  [<c043c454>] ? inflate_codes+0x272/0x3bc
+! [    3.480004]  [<c043cf22>] inflate_dynamic+0x4c0/0x4f0
+! [    3.480004]  [<c043d775>] unpack_to_rootfs+0x524/0x975
+! [    3.480004]  [<c0147eaf>] ? debug_check_no_locks_freed+0x1a/0x123
+! [    3.480004]  [<c043e202>] ? populate_rootfs+0x0/0xcd
+! [    3.480004]  [<c043e202>] ? populate_rootfs+0x0/0xcd
+! [    3.480004]  [<c043e278>] populate_rootfs+0x76/0xcd
+! [    3.480004]  [<c0101130>] _stext+0x48/0x11e
+! [    3.480004]  [<c0206830>] ? ida_get_new_above+0x157/0x171
+! [    3.480004]  [<c0218a08>] ? _raw_spin_lock+0x53/0xfa
+! [    3.480004]  [<c02189b1>] ? _raw_spin_unlock+0x74/0x78
+! [    3.480004]  [<c0303759>] ? _spin_unlock+0x1d/0x20
+! [    3.480004]  [<c01c1ab1>] ? proc_register+0x146/0x157
+! [    3.480004]  [<c01c1bda>] ? create_proc_entry+0x7b/0x91
+! [    3.480004]  [<c0166600>] ? register_irq_proc+0x7b/0x9b
+! [    3.480004]  [<c0166666>] ? init_irq_proc+0x46/0x59
+! [    3.480004]  [<c04392ee>] kernel_init+0x102/0x150
+! [    3.480004]  [<c04391ec>] ? kernel_init+0x0/0x150
+! [    3.480004]  [<c0104987>] kernel_thread_helper+0x7/0x10
++ [    4.773412] Freeing initrd memory: 53252k freed
 
-Sorry for inconvenience but I'm out of office until Friday.
-I met Nishimura and disccussed to post rework patch.
-(means unififed patch of original+fix1,2,3,4 + consider about lock again)
-
-Thank you for handling.
-
-Regards,
--Kame
-
-> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Pavel Emelyanov <xemul@openvz.org>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  mm/page_cgroup.c |    8 +++-----
->  1 file changed, 3 insertions(+), 5 deletions(-)
->
-> diff -puN mm/page_cgroup.c~memcg-swap-cgroup-for-remembering-usage-fix-4
-> mm/page_cgroup.c
-> --- a/mm/page_cgroup.c~memcg-swap-cgroup-for-remembering-usage-fix-4
-> +++ a/mm/page_cgroup.c
-> @@ -305,7 +305,7 @@ static int swap_cgroup_prepare(int type)
->  	ctrl = &swap_cgroup_ctrl[type];
->
->  	for (idx = 0; idx < ctrl->length; idx++) {
-> -		page = alloc_page(GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO);
-> +		page = alloc_page(GFP_KERNEL | __GFP_ZERO);
->  		if (!page)
->  			goto not_enough_page;
->  		ctrl->map[idx] = page;
-> @@ -346,11 +346,10 @@ struct mem_cgroup *swap_cgroup_record(sw
->
->  	mappage = ctrl->map[idx];
->  	spin_lock_irqsave(&ctrl->lock, flags);
-> -	sc = kmap_atomic(mappage, KM_USER0);
-> +	sc = page_address(mappage);
->  	sc += pos;
->  	old = sc->val;
->  	sc->val = mem;
-> -	kunmap_atomic((void *)sc, KM_USER0);
->  	spin_unlock_irqrestore(&ctrl->lock, flags);
->  	return old;
->  }
-> @@ -381,10 +380,9 @@ struct mem_cgroup *lookup_swap_cgroup(sw
->  	mappage = ctrl->map[idx];
->
->  	spin_lock_irqsave(&ctrl->lock, flags);
-> -	sc = kmap_atomic(mappage, KM_USER0);
-> +	sc = page_address(mappage);
->  	sc += pos;
->  	ret = sc->val;
-> -	kunmap_atomic((void *)sc, KM_USER0);
->  	spin_unlock_irqrestore(&ctrl->lock, flags);
->  	return ret;
->  }
-> _
->
-> Patches currently in -mm which might be from hugh@veritas.com are
->
-> lib-scatterlistc-fix-kunmap-argument-in-sg_miter_stop.patch
-> sprint_symbol-use-less-stack.patch
-> migration-fix-writepage-error.patch
-> vmscan-let-gfp_nofs-go-to-swap-again.patch
-> dont-unlink-an-active-swapfile.patch
-> linux-next.patch
-> mm-dont-mark_page_accessed-in-shmem_fault.patch
-> mm-apply_to_range-call-pte-function-with-lazy-updates.patch
-> memcg-handle-swap-caches.patch
-> memcg-handle-swap-caches-build-fix.patch
-> memcg-swap-cgroup-for-remembering-usage-fix-2.patch
-> memcg-swap-cgroup-for-remembering-usage-fix-3.patch
-> memcg-swap-cgroup-for-remembering-usage-fix-4.patch
-> memcg-memswap-controller-core.patch
-> memcg-memswap-controller-core-make-resize-limit-hold-mutex.patch
-> prio_tree-debugging-patch.patch
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+This is a P4 with hyperthreading. 0.5GB ram. IDE disk.
 
 
+Folkert van Heusden
+
+-- 
+MultiTail na wan makriki wrokosani fu tan luku den logfile nanga san
+den commando spiti puru. Piki puru spesrutu sani, wroko nanga difrenti
+kroru, tya kon makandra, nanga wan lo moro.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
