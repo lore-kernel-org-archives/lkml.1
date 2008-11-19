@@ -1,144 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYKSWag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYKSWbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbYKSWag (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 17:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYKSWa1
+	id S1753426AbYKSWbU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 17:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbYKSWbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 17:30:27 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:22704 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbYKSWa0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 17:30:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=V1ehaMJbirCagcgYq2Lq4nQLT+cbS02JE/F21AoCZibVHPXqV/n7eOpKNJ9ncu01cB
-         vKiDg+ebxXDlXDRmHlwW/VhIhIUj+C8+4nU0wPv+GQLHiJAPDpfnIn1kF7WAnEsaR8Vx
-         w4hVshFFyG14tEbxPYBUl78kpZb3mN2WCQ0xI=
-Message-ID: <cfd18e0f0811191430u761e58f3i98b169f6e8d09bc9@mail.gmail.com>
-Date: Wed, 19 Nov 2008 17:30:24 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: CLONE_IO documentation
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org
-In-Reply-To: <20080414171330.GP12774@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Nov 2008 17:31:10 -0500
+Received: from mail-out2.uio.no ([129.240.10.58]:40426 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751092AbYKSWbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 17:31:08 -0500
+Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Max Kellermann <max@duempel.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+In-Reply-To: <20081117123536.GA16539@squirrel.roonstrasse.net>
+References: <20081022091207.GA12996@squirrel.roonstrasse.net>
+	 <20081023123628.GA18549@squirrel.roonstrasse.net>
+	 <1224773745.7625.4.camel@localhost>
+	 <20081024083913.GA15197@squirrel.roonstrasse.net>
+	 <1224871763.22672.33.camel@localhost>
+	 <20081027095843.GA10937@squirrel.roonstrasse.net>
+	 <1225122503.14242.12.camel@heimdal.trondhjem.org>
+	 <20081117123536.GA16539@squirrel.roonstrasse.net>
+Content-Type: text/plain
+Date: Wed, 19 Nov 2008 17:31:01 -0500
+Message-Id: <1227133861.28898.26.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cfd18e0f0804140540i1c6f035o259a7c4635194f54@mail.gmail.com>
-	 <20080414171330.GP12774@kernel.dk>
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 252FC67014880D524B1122B855461AE84D400838
+X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 208 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Mon, 2008-11-17 at 13:35 +0100, Max Kellermann wrote:
+> On 2008/10/27 16:48, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > OK. That points a finger at the garbage collector. Does the following
+> > patch help at all?
+> 
+> Hi Trond,
+> 
+> the server's load seems to be a little bit lower with 2.6.27.6 plus
+> your patch, but OProfile still gives me 45% in
+> rpcauth_lookup_credcache().  See:
+> 
+> 1060627  45.1474  (no location information)   rpcauth_lookup_credcache
+> 289362   12.3172  auth_generic.c:0            generic_match
+> 31886     1.3573  page_alloc.c:0              get_page_from_freelist
+> 23932     1.0187  (no location information)   page_fault
+> 22176     0.9440  (no location information)   schedule
+> 14613     0.6220  (no location information)   __d_lookup
+> [...]
+> 
+> Max
 
-Following up after a long time on this:
+Looking at the above, it seems that you're spending an inordinate amount
+of time in generic_match too.
+Could you see if the following patch helps?
 
-On Mon, Apr 14, 2008 at 12:13 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Mon, Apr 14 2008, Michael Kerrisk wrote:
->> Hi Jens,
->>
->> Could you supply some text describing CLONE_IO suitable for inclusion
->> in the clone.2 man page?
->> ( http://www.kernel.org/doc/man-pages/online/pages/man2/clone.2.html
->> ).  In that text it would be helpful to explain what an "I/O context"
->> is.
->
-> Sure, I'll see if I can come up with something. Or perhaps you can help
-> me a bit, being the writer ;-)
->
-> If the CLONE_IO flag is set, the process will share the same io context.
-> The I/O context is the I/O scope of the disk scheduler. So if you think
-> of the I/O context as what the I/O scheduler uses to map to a process,
-> when CLONE_IO is set multiple processes will map to the same I/O context
-> and will be treated as one by the I/O scheduler. What this means is that
-> they get to share disk time. For the anticipatory and CFQ scheduler, if
-> process A and process B share I/O context, they will be allowed to
-> interleave their disk access. So if you have several threads doing I/O
-> on behalf of the same process (aio_read(), for instance), they should
-> set CLONE_IO to get better I/O performance with CFQ and AS.
->
-> A man page should not mention the specific schedulers, just mention that
-> it'll improve the information available to the kernel and the
-> performance of the app for the scenario described. In practice, it'll
-> only really apply to CFQ and AS. For deadline and noop, they'll be
-> essentially zero difference as they have no concept of I/O contexts.
+Cheers
+  Trond
 
-I took your text as a base but did some reworking, so *please check
-the following carefully*,  and let me know if there are things to
-change and/or add:
+-------------------------------------------------------------------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+SUNRPC: Fix up generic_match()
 
-       CLONE_IO (since Linux 2.4.25)
-              If  CLONE_IO  is set, then the new process shares an I/O
-              context with the calling process.  If this flag  is  not
-              set,  then (as with fork(2)) the new process has its own
-              I/O context.
+Cut down on the number of similar copies of group_info.
 
-              The I/O context is the I/O scope of the  disk  scheduler
-              (i.e, what the I/O scheduler uses to model scheduling of
-              a process's I/O).  If processes share the same I/O  con-
-              text,  they are treated as one by the I/O scheduler.  As
-              a consequence, they get to share disk  time.   For  some
-              I/O  schedulers,  if two processes share an I/O context,
-              they will be allowed to interleave  their  disk  access.
-              If  several  threads are doing I/O on behalf of the same
-              process (aio_read(3), for instance), they should  employ
-              CLONE_IO to get better I/O performance.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-              If  the  kernel  is not configured with the CONFIG_BLOCK
-              option, this flag is a no-op.
-
-The patch against clone.2 is below.
-
-Thanks,
-
-Michael
+ net/sunrpc/auth_generic.c |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
 
 
---- a/man2/clone.2
-+++ b/man2/clone.2
-@@ -224,6 +223,36 @@ Calls to
- .BR umask (2)
- performed later by one of the processes do not affect the other process.
- .TP
-+.BR CLONE_IO " (since Linux 2.4.25)"
-+If
-+.B CLONE_IO
-+is set, then the new process shares an I/O context with
-+the calling process.
-+If this flag is not set, then (as with
-+.BR fork (2))
-+the new process has its own I/O context.
+diff --git a/net/sunrpc/auth_generic.c b/net/sunrpc/auth_generic.c
+index 744b79f..4028502 100644
+--- a/net/sunrpc/auth_generic.c
++++ b/net/sunrpc/auth_generic.c
+@@ -133,13 +133,29 @@ static int
+ generic_match(struct auth_cred *acred, struct rpc_cred *cred, int flags)
+ {
+ 	struct generic_cred *gcred = container_of(cred, struct generic_cred, gc_base);
++	int i;
+ 
+ 	if (gcred->acred.uid != acred->uid ||
+ 	    gcred->acred.gid != acred->gid ||
+-	    gcred->acred.group_info != acred->group_info ||
+ 	    gcred->acred.machine_cred != acred->machine_cred)
+-		return 0;
++		goto out_nomatch;
 +
-+.\" The following based on text from Jens Axboe
-+The I/O context is the I/O scope of the disk scheduler (i.e,
-+what the I/O scheduler uses to model scheduling of a process's I/O).
-+If processes share the same I/O context,
-+they are treated as one by the I/O scheduler.
-+As a consequence, they get to share disk time.
-+For some I/O schedulers,
-+.\" the anticipatory and CFQ scheduler
-+if two processes share an I/O context,
-+they will be allowed to interleave their disk access.
-+If several threads are doing I/O on behalf of the same process
-+.RB ( aio_read (3),
-+for instance), they should employ
-+.BR CLONE_IO
-+to get better I/O performance.
-+.\" with CFQ and AS.
++	/* Optimisation in the case where pointers are identical... */
++	if (gcred->acred.group_info == acred->group_info)
++		goto out_match;
 +
-+If the kernel is not configured with the
-+.B CONFIG_BLOCK
-+option, this flag is a no-op.
-+.TP
- .BR CLONE_NEWIPC " (since Linux 2.4.19)"
- If
- .B CLONE_NEWIPC
++	/* Slow path... */
++	if (gcred->acred.group_info->ngroups != acred->group_info->ngroups)
++		goto out_nomatch;
++	for (i = 0; i < gcred->acred.group_info->ngroups; i++) {
++		if (GROUP_AT(gcred->acred.group_info, i) !=
++				GROUP_AT(acred->group_info, i))
++			goto out_nomatch;
++	}
++out_match:
+ 	return 1;
++out_nomatch:
++	return 0;
+ }
+ 
+ void __init rpc_init_generic_auth(void)
+
+
