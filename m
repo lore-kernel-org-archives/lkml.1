@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbYKSXaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbYKSXbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752741AbYKSXaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 18:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYKSXae
+	id S1753092AbYKSXbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 18:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYKSXbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 18:30:34 -0500
-Received: from ozlabs.org ([203.10.76.45]:35867 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbYKSXad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 18:30:33 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 1/2] cpumask: centralize cpu_online_map and cpu_possible_map
-Date: Thu, 20 Nov 2008 10:00:29 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
-       ink@jurassic.park.msu.ru, starvik@axis.com, tony.luck@intel.com,
-       takata@linux-m32r.org, ralf@linux-mips.org, grundler@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       wli@holomorphy.com, davem@davemloft.net, jdike@addtoit.com,
-       mingo@redhat.com
-References: <200811200107.18162.rusty@rustcorp.com.au> <20081119181743.GA31357@flint.arm.linux.org.uk>
-In-Reply-To: <20081119181743.GA31357@flint.arm.linux.org.uk>
+	Wed, 19 Nov 2008 18:31:37 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:47073 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751531AbYKSXbg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 18:31:36 -0500
+Message-ID: <4924A1CF.1050703@euromail.se>
+Date: Thu, 20 Nov 2008 00:31:27 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
+ protocol
+References: <49142351.9080805@euromail.se> <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811201000.30862.rusty@rustcorp.com.au>
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1L2wWF-0004DQ-3g.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1L2wWF-0004DQ-3g d0eb1dc7779b643f7d164e5b1f336110
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 November 2008 04:47:44 Russell King wrote:
-> On Thu, Nov 20, 2008 at 01:07:16AM +1030, Rusty Russell wrote:
-> > diff -r c8ab7f6fc5e8 kernel/cpu.c
-> > --- a/kernel/cpu.c	Fri Oct 31 10:48:30 2008 +1100
-> > +++ b/kernel/cpu.c	Fri Oct 31 11:22:29 2008 +1100
-> > @@ -24,19 +24,20 @@ cpumask_t cpu_present_map __read_mostly;
-> >  cpumask_t cpu_present_map __read_mostly;
-> >  EXPORT_SYMBOL(cpu_present_map);
-> >
-> > -#ifndef CONFIG_SMP
-> > -
-> >  /*
-> >   * Represents all cpu's that are currently online.
-> >   */
-> > -cpumask_t cpu_online_map __read_mostly = CPU_MASK_ALL;
-> > +cpumask_t cpu_online_map __read_mostly;
->
-> Just a question: in the uniprocessor case, does this mean that
-> cpu_online_map becomes zero or do we mark cpu0 as online somewhere?
-> I couldn't see it in this patch.
->
-> I'm just wondering from a review point of view whether this change
-> of initialization could have undesirable side effects.
+Dmitry Torokhov wrote:
+> Hi Henrik,
+> 
+> On Fri, Nov 07, 2008 at 12:15:29PM +0100, Henrik Rydberg wrote:
+>> In order to utilize the full power of the new multi-touch devices, a
+>> way to report detailed finger data to user space is needed. This patch
+>> adds a multi-touch (MT) protocol which allows drivers to report details
+>> for an arbitrary number of fingers.
+>>
+[...]
+> 
+> Sorry for the long silence. I don't think utilizing button events for
+> this is a good idea. I'd rather just start reporting extended touch
+> events for a finger and signal end of sub-packet with something like
+> EV_SYN/SYN_MT_REPORT.
+> 
 
-Just checked; we actually set it in boot_cpu_init() already (init/main.c).
-Note that all the cpu iterators on UP ignore the mask anyway.
+Long time no see :-)
 
-So I think a worthwhile cleanup.
+Yes, there has been quite a bit of feedback on this patch, and using
+EV_SYN the way you suggest came up. Thanks - will redo.
 
-Thanks,
-Rusty.
+Henrik
+
