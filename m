@@ -1,88 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYKSPzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYKSQAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183AbYKSPzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYKSPzS
+	id S1754176AbYKSQAl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 11:00:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYKSQA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:55:18 -0500
-Received: from qb-out-0506.google.com ([72.14.204.237]:48040 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbYKSPzQ (ORCPT
+	Wed, 19 Nov 2008 11:00:29 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46778 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752418AbYKSQA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:55:16 -0500
-Message-ID: <492436DE.2080906@codemonkey.ws>
-Date: Wed, 19 Nov 2008 09:55:10 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] always assign userspace_addr
-References: <1226977462-8086-1-git-send-email-glommer@redhat.com>
-In-Reply-To: <1226977462-8086-1-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Nov 2008 11:00:28 -0500
+Date: Wed, 19 Nov 2008 08:01:06 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, x86@vger.kernel.org, tytso@mit.edu,
+       linux-ide@vger.kernel.org
+Subject: Oops/Warning report for the week of November 19th, 2008
+Message-ID: <20081119080106.23943160@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> Currently, kvm only sets new.userspace_addr in slots
-> that were just allocated. This is not the intended behaviour,
-> and actually breaks when we try to use the slots to implement
-> aliases, for example.
->
-> Cirrus VGA aliases maps and address to a userspace address, and
-> then keep mapping this same address to different locations
-> until the whole screen is filled.
->
-> The solution is to assign new.userspace_addr no matter what,
-> so we can be sure that whenever the guest changes this field,
-> it sees the change being reflected in the code.
->
-> Signed-off-by: Glauber Costa <glommer@redhat.com>
->   
 
-I think this is masking a much bigger problem.
+This week, a total of 4488 oopses and warnings have been reported,
+compared to 3926 reports in the previous week.
+(Reports prior to 2.6.26 have been omitted in collecting the top 10)
+
+I'd like to point specifically at numbers 7 and 8 this week, they are new in 
+the top 10 out of nowhere...
 
 
-> ---
->  virt/kvm/kvm_main.c |   18 +++++++++---------
->  1 files changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index a87f45e..fc3abf0 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -762,15 +762,6 @@ int __kvm_set_memory_region(struct kvm *kvm,
->  		memset(new.rmap, 0, npages * sizeof(*new.rmap));
->  
->  		new.user_alloc = user_alloc;
-> -		/*
-> -		 * hva_to_rmmap() serialzies with the mmu_lock and to be
-> -		 * safe it has to ignore memslots with !user_alloc &&
-> -		 * !userspace_addr.
-> -		 */
-> -		if (user_alloc)
-> -			new.userspace_addr = mem->userspace_addr;
-> -		else
-> -			new.userspace_addr = 0;
->   
+Per file statistics
+463	external/virtualbox/module
+399	kernel/power/main.c
+324	drivers/net/r8169.c
+235	fs/jbd/journal.c
+164	drivers/net/sis900.c
+152	drivers/parport/procfs.c
+150	drivers/ata/libata-sff.c
+99	drivers/net/wireless/iwlwifi/iwl-tx.c
+97	drivers/base/power/main.c
+90	net/sched/sch_generic.c
+77	drivers/net/wireless/iwlwifi/iwl-3945-rs.c
+75	kernel/timer.c
 
-This is guarded in:
 
->     if (npages && !new.rmap) {
+Fix availble
+------------
+Rank 4: journal_update_superblock (warning)
+	Reported 239 times (6187 total reports)
+	Likely caused by the user removing a USB stick while mounted
+	Fix available in the -mm tree
+	This warning was last seen in version 2.6.27.5, and first seen in 2.6.24-rc6-git1.
+	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
 
-In this case, npages > 0 but !new.rmap is already allocated.  But this 
-is a new slot?  The problem is that when we delete the slot, the rmap 
-never gets freed.  This means that if we delete a slot, then create a 
-new slot which happens to be a different size, we use the old rmap and 
-potentially overrun that buffer.
+Rank 6: parport_device_proc_register (warning)
+	Reported 143 times (5957 total reports)
+	Duplicate /proc registration in the parport driver
+	Alan has a patch that fixes most cases
+	This warning was last seen in version 2.6.27-rc7-git1, and first seen in 2.6.24-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=parport_device_proc_register
 
-So I think we need a fix that properly frees the rmap when the slot is 
-destroyed.
+Rank 14: ext3_commit_super (warning)
+	Reported 45 times (1555 total reports)
+	Likely caused by the user removing a USB stick while mounted
+	A fix for this issue is in the -mm tree
+	This warning was last seen in version 2.6.27.6, and first seen in 2.6.24.
+	More info: http://www.kerneloops.org/searchweek.php?search=ext3_commit_super
 
-Regards,
+Not yet fixed
+-------------
+Rank 1: VBoxDrvLinuxIOCtl (warning)
+	Reported 460 times (747 total reports)
+	[external] bug in the VirtualBox drivers
+	This warning was last seen in version 2.6.28-rc3, and first seen in 2.6.25.11.
+	More info: http://www.kerneloops.org/searchweek.php?search=VBoxDrvLinuxIOCtl
 
-Anthony Liguori
+Rank 2: suspend_test_finish (warning)
+	Suspend resume test finds drivers that take too long.
+	Linus merged a patch to show which driver it was recently.
+	Reported 408 times (874 total reports)
+	This warning was last seen in version 2.6.28-rc1, and first seen in 2.6.27-rc0-git14.
+	More info: http://www.kerneloops.org/searchweek.php?search=suspend_test_finish
 
+Rank 3: dev_watchdog(r8169) (network timeout)
+	Reported 326 times (1113 total reports)
+	This driver has been consistently high in the reports
+	This timeout was last seen in version 2.6.28-rc2-git7, and first seen in 2.6.26.6.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
+
+Rank 5: dev_watchdog(sis900) (warning)
+	Reported 166 times (1337 total reports)
+	This warning was last seen in version 2.6.27.5, and first seen in 2.6.26-rc4-git2.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(sis900)
+
+Rank 7: __atapi_pio_bytes (warning)
+	Reported 108 times
+	This is a new entry this week that started showing up
+	This warning was last seen in version 2.6.27.5, and first seen in 2.6.27.4.
+	More info: http://www.kerneloops.org/searchweek.php?search=__atapi_pio_bytes
+
+Rank 8: iwl_tx_cmd_complete (warning)
+	Reported 99 times (240 total reports)
+	This appears to be a recent regression in the iwlwifi driver
+	This warning was last seen in version 2.6.28-rc4, and first seen in 2.6.27-rc9.
+	More info: http://www.kerneloops.org/searchweek.php?search=iwl_tx_cmd_complete
+
+Rank 10: rs_get_rate (warning)
+	Reported 78 times (894 total reports)
+	Bug in the Intel IWL wireless drivers
+	This warning was last seen in version 2.6.27.5, and first seen in 2.6.25-rc2-git5.
+	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
+
+Rank 11: run_timer_softirq (soft lockup)
+	Reported 62 times (834 total reports)
+	The hope is that the timer rework in 2.6.28 fixes these
+	This oops was last seen in version 2.6.27.5, and first seen in 2.6.25.
+	More info: http://www.kerneloops.org/searchweek.php?search=run_timer_softirq
+
+Rank 12: device_pm_add (warning)
+	Reported 61 times (840 total reports)
+	This got "fixed" by removing the warning
+	This warning was last seen in version 2.6.27-rc4, and first seen in 2.6.26-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=device_pm_add
+
+Rank 13: dev_watchdog(cdc_ether) (oops)
+	Reported 59 times (206 total reports)
+	This oops was last seen in version 2.6.27.6, and first seen in 2.6.26.6.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(cdc_ether)
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
