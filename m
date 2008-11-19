@@ -1,68 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbYKSW32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYKSWag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbYKSW32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 17:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYKSW3S
+	id S1753183AbYKSWag (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 17:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYKSWa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 17:29:18 -0500
-Received: from ox1.aei.mpg.de ([194.94.224.6]:35501 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbYKSW3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 17:29:17 -0500
-Date: Wed, 19 Nov 2008 23:29:40 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: reinette chatre <reinette.chatre@intel.com>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-Subject: Re: iwlagn driver segfault in 2.6.28-rc3
-Message-ID: <20081119222940.GA30846@localhost.aei.mpg.de>
-References: <20081111143410.GA4401@ics.muni.cz> <1226560041.1115.945.camel@rc-desk> <20081116120621.GA3937@localhost.aei.mpg.de> <1ba2fa240811160429ld8cc080s7e023b0398eeda08@mail.gmail.com> <20081116125148.GA16746@localhost.aei.mpg.de> <1ba2fa240811161554r45d98ae7h3a37ae78c332a4dd@mail.gmail.com> <20081117003941.GA21367@localhost.aei.mpg.de> <20081119204524.GA30179@localhost.aei.mpg.de> <1ba2fa240811191406j5a116ad2h91873749cc96ab97@mail.gmail.com>
+	Wed, 19 Nov 2008 17:30:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:22704 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751538AbYKSWa0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 17:30:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=V1ehaMJbirCagcgYq2Lq4nQLT+cbS02JE/F21AoCZibVHPXqV/n7eOpKNJ9ncu01cB
+         vKiDg+ebxXDlXDRmHlwW/VhIhIUj+C8+4nU0wPv+GQLHiJAPDpfnIn1kF7WAnEsaR8Vx
+         w4hVshFFyG14tEbxPYBUl78kpZb3mN2WCQ0xI=
+Message-ID: <cfd18e0f0811191430u761e58f3i98b169f6e8d09bc9@mail.gmail.com>
+Date: Wed, 19 Nov 2008 17:30:24 -0500
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: CLONE_IO documentation
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-man@vger.kernel.org
+In-Reply-To: <20080414171330.GP12774@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1ba2fa240811191406j5a116ad2h91873749cc96ab97@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <cfd18e0f0804140540i1c6f035o259a7c4635194f54@mail.gmail.com>
+	 <20080414171330.GP12774@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 20.Nov'08 at  0:06:05 +0200, Tomas Winkler wrote:
-> >
-> > I don't if the situation leading to the WARN() in your patch is the same
-> > one which used to kill my wireless connection before (with the oops
-> > in iwl_eeprom_query16 that started this thread), but the fact is
-> > that my wifi is still working.
-> 
-> The second removal of invalid key corrupt the eeprom pointer
-> in this line
-> 
->       if (!test_and_clear_bit(priv->stations[sta_id].sta.key.key_offset,
->                  &priv->ucode_key_table))
-> 
-> as discovered by Yi so this patch also fix the immediate failure
-> We are just not sure in what flow the key is removed second time and maybe
-> there is an other issue behind it.
+Hi Jens,
 
-Ok, thanks for the explanation!
+Following up after a long time on this:
 
-> The full log will be appreciated  but you've already helped a lot
-> Thanks for your time
+On Mon, Apr 14, 2008 at 12:13 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Apr 14 2008, Michael Kerrisk wrote:
+>> Hi Jens,
+>>
+>> Could you supply some text describing CLONE_IO suitable for inclusion
+>> in the clone.2 man page?
+>> ( http://www.kernel.org/doc/man-pages/online/pages/man2/clone.2.html
+>> ).  In that text it would be helpful to explain what an "I/O context"
+>> is.
+>
+> Sure, I'll see if I can come up with something. Or perhaps you can help
+> me a bit, being the writer ;-)
+>
+> If the CLONE_IO flag is set, the process will share the same io context.
+> The I/O context is the I/O scope of the disk scheduler. So if you think
+> of the I/O context as what the I/O scheduler uses to map to a process,
+> when CLONE_IO is set multiple processes will map to the same I/O context
+> and will be treated as one by the I/O scheduler. What this means is that
+> they get to share disk time. For the anticipatory and CFQ scheduler, if
+> process A and process B share I/O context, they will be allowed to
+> interleave their disk access. So if you have several threads doing I/O
+> on behalf of the same process (aio_read(), for instance), they should
+> set CLONE_IO to get better I/O performance with CFQ and AS.
+>
+> A man page should not mention the specific schedulers, just mention that
+> it'll improve the information available to the kernel and the
+> performance of the app for the scenario described. In practice, it'll
+> only really apply to CFQ and AS. For deadline and noop, they'll be
+> essentially zero difference as they have no concept of I/O contexts.
 
-I thank you too for taking care of it, and now at least my wifi does not
-die as before.
+I took your text as a base but did some reworking, so *please check
+the following carefully*,  and let me know if there are things to
+change and/or add:
 
-I uploaded the dmesg here
+       CLONE_IO (since Linux 2.4.25)
+              If  CLONE_IO  is set, then the new process shares an I/O
+              context with the calling process.  If this flag  is  not
+              set,  then (as with fork(2)) the new process has its own
+              I/O context.
 
-http://www.aei.mpg.de/~crmafra/dmesg-iwlwifi.txt
+              The I/O context is the I/O scope of the  disk  scheduler
+              (i.e, what the I/O scheduler uses to model scheduling of
+              a process's I/O).  If processes share the same I/O  con-
+              text,  they are treated as one by the I/O scheduler.  As
+              a consequence, they get to share disk  time.   For  some
+              I/O  schedulers,  if two processes share an I/O context,
+              they will be allowed to interleave  their  disk  access.
+              If  several  threads are doing I/O on behalf of the same
+              process (aio_read(3), for instance), they should  employ
+              CLONE_IO to get better I/O performance.
 
-it contains the warnings including the first (not tainted), 
-but the beginning of the log is missing because it was too big I guess.
+              If  the  kernel  is not configured with the CONFIG_BLOCK
+              option, this flag is a no-op.
 
-But the boot messages are probably the same as the other dmesg
-I've sent already in this thread.
+The patch against clone.2 is below.
+
+Thanks,
+
+Michael
 
 
+--- a/man2/clone.2
++++ b/man2/clone.2
+@@ -224,6 +223,36 @@ Calls to
+ .BR umask (2)
+ performed later by one of the processes do not affect the other process.
+ .TP
++.BR CLONE_IO " (since Linux 2.4.25)"
++If
++.B CLONE_IO
++is set, then the new process shares an I/O context with
++the calling process.
++If this flag is not set, then (as with
++.BR fork (2))
++the new process has its own I/O context.
++
++.\" The following based on text from Jens Axboe
++The I/O context is the I/O scope of the disk scheduler (i.e,
++what the I/O scheduler uses to model scheduling of a process's I/O).
++If processes share the same I/O context,
++they are treated as one by the I/O scheduler.
++As a consequence, they get to share disk time.
++For some I/O schedulers,
++.\" the anticipatory and CFQ scheduler
++if two processes share an I/O context,
++they will be allowed to interleave their disk access.
++If several threads are doing I/O on behalf of the same process
++.RB ( aio_read (3),
++for instance), they should employ
++.BR CLONE_IO
++to get better I/O performance.
++.\" with CFQ and AS.
++
++If the kernel is not configured with the
++.B CONFIG_BLOCK
++option, this flag is a no-op.
++.TP
+ .BR CLONE_NEWIPC " (since Linux 2.4.19)"
+ If
+ .B CLONE_NEWIPC
