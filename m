@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYKSSc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYKSSdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbYKSSc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYKSScS
+	id S1754638AbYKSSdK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYKSScz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:32:18 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37113 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753441AbYKSScS (ORCPT
+	Wed, 19 Nov 2008 13:32:55 -0500
+Received: from cuda1.bluetone.cz ([212.158.128.5]:46966 "EHLO
+	cuda1.bluetone.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753769AbYKSScz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:32:18 -0500
-Date: Wed, 19 Nov 2008 19:32:16 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: jdike@addtoit.com
-Subject: uml: using hostfs as rootfs is not working
-Message-ID: <alpine.LNX.1.10.0811191930090.4486@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 19 Nov 2008 13:32:55 -0500
+Message-ID: <49245C1C.2030801@slax.org>
+Date: Wed, 19 Nov 2008 19:34:04 +0100
+From: Tomas M <tomas@slax.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] loop file resizable
+References: <492120DC.1070407@slax.org> <20081118164207.137e92be.akpm@linux-foundation.org> <16149.1227066661@jrobl>
+In-Reply-To: <16149.1227066661@jrobl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+hooanon05@yahoo.co.jp wrote:
+> Here is the updated one.
+> - new function loop_set_capacity().
+> - return an error when the backend file is not set.
 
+Thank you very much.
+Andrew, would you please consider merging this, it's short and working well.
 
-as per Documentation/uml/*txt, I issued the following to get a direct 
-hostfs:
+Thank you.
 
-	./linux ubd0=/tftpboot/linux
-
-(/tftpboot/linux/sbin/init exists), but the UM kernel only gives:
-
-Failed to open '/home/tftpboot/linux', errno = 21
-ubda: Can't open "/home/tftpboot/linux": errno = 21
-List of all partitions:
-6200               4 ubda driver: uml-blkdev
-
-So either UML lost some functionality sometime, or the documentation is 
-incorrect.
+Tomas M
