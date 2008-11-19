@@ -1,112 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYKSKK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYKSKOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYKSKK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYKSKKq
+	id S1753670AbYKSKOA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 05:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKSKNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:10:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56173
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752517AbYKSKKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:10:45 -0500
-Date: Wed, 19 Nov 2008 02:10:45 -0800 (PST)
-Message-Id: <20081119.021045.222679286.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: jeff@garzik.org, mingo@elte.hu, johannes@sipsolutions.net, wferi@niif.hu,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netconsole: Disable softirqs in write_msg()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081119084106.GA6699@ff.dom.local>
-References: <87y6zwwy5c.fsf@tac.ki.iif.hu>
-	<20081119084106.GA6699@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 19 Nov 2008 05:13:51 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:35176 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752679AbYKSKNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 05:13:50 -0500
+Date: Wed, 19 Nov 2008 11:17:01 +0100
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081119101701.GA20915@gandalf.sssup.it>
+References: <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <4923716A.5090104@gelato.unsw.edu.au>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4923716A.5090104@gelato.unsw.edu.au>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Wed, 19 Nov 2008 08:41:06 +0000
+> From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+> Date: Wed, Nov 19, 2008 12:52:42PM +1100
+>
+> Fabio Checconi wrote:
+> >   - To detect hw tagging in BFQ we consider a sample valid iff the
+> >     number of requests that the scheduler could have dispatched (given
+> >     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
+> >     the scheduler plus the ones into the driver) is higher than the
+> >     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
+> >     during testing, but the way CFQ uses now seems a little bit
+> >     strange.
+> 
+> BFQ's tag detection logic is broken in the same way that CFQ's used to
+> be.  Explanation is in this patch:
+> 
 
-> This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2
-> shows local_bh_enable() is used in the wrong context (irqs disabled).
-> It happens when a usual network path is called by netconsole, which
-> simply turns off hardirqs around this all.
+If you look at bfq_update_hw_tag(), the logic introduced by the patch
+you mention is still there; BFQ starts with ->hw_tag = 1, and updates it
+every 32 valid samples.  What changed WRT your patch, apart from the
+number of samples, is that the condition for a sample to be valid is:
 
-This backtrace call path is anything but "usual".
+  bfqd->rq_in_driver + bfqd->queued >= 5
 
-There is a UDP send, and a local_bh_enable() done there triggers
-softirqs, which processes device (I would guess loopback, or
-some non-NAPI device) backlog processing.
+while in your patch it is:
 
-This triggers an input netfilter ipt_LOG rule, which triggers a
-printk over netconsole.
+  cfqd->rq_queued > 5 || cfqd->rq_in_driver > 5
 
-netpoll finds the TX queue of the tg3 device (which is NAPI)
-full, so it invokes ->poll() to try and free up some TX queue
-space.
+We preferred the first one because that sum better reflects the number
+of requests that could have been dispatched, and I don't think that this
+is wrong.
 
-This in turn triggers a packet receive, which hits bridging netfilter,
-which does a conntrack lookup, which does the BH disable/enable which
-triggers the warning.
+There is a problem, but it's not within the tag detection logic itself.
+>From some quick experiments, what happens is that when a process starts,
+CFQ considers it seeky (*), BFQ doesn't.  As a side effect BFQ does not
+always dispatch enough requests to correctly detect tagging.
 
-I mean, this is just a very crazy trace :-)
+At the first seek you cannot tell if the process is going to bee seeky
+or not, and we have chosen to consider it sequential because it improved
+fairness in some sequential workloads (the CIC_SEEKY heuristic is used
+also to determine the idle_window length in [bc]fq_arm_slice_timer()).
 
-I see an easy way around this.  We should just punt on non-netpoll
-RX packets that try to get processed during a netconsole ->poll()
-run.
+Anyway, we're dealing with heuristics, and they tend to favor some
+workload over other ones.  If recovering this thoughput loss is more
+important than a transient unfairness due to short idling windows assigned
+to sequential processes when they start, I've no problems in switching
+the CIC_SEEKY logic to consider a process seeky when it starts.
 
-Wait a second, this is _supposed_ to be already happening.  Perhaps
-the tests in netpoll_rx() are screwed up.
+Thank you for testing and for pointing out this issue, we missed it
+in our testing.
 
-net/core/netpoll.c'd poll_one_napi() explicitly sets NETPOLL_RX_DROP
-in npinfo->rx_flags as well as increment "trapped", and that is
-supposed to make netpoll_rx() return non-zero which tells the caller
-to ignore and drop all RX packets.
 
-What isn't that happening?
-
-netpoll_rx()'s test is:
-
-	if (!npinfo || (!npinfo->rx_np && !npinfo->rx_flags))
-		return 0;
-
-which looks perfectly fine.  npinfo will be non-NULL by definition
-because we are doing netpoll for netconsole on this device, and
-->rx_flags are non-zero by the above mentioned code.
-
-So we get to __netpoll_rx() by the next bit of code.
-
-	if (npinfo->rx_flags && __netpoll_rx(skb))
-		ret = 1;
-
-And __netpoll_rx() says:
-
-	struct netpoll *np = npi->rx_np;
-
-	if (!np)
-		goto out;
-
-this should trigger because a netpoll RX agent shouldn't be attached,
-then:
-
-out:
-	if (atomic_read(&trapped)) {
-		kfree_skb(skb);
-		return 1;
-	}
-
-	return 0;
-
-which should trigger because trapped is non-zero, thus we free the SKB
-and return 1.
-
-We need to figure out why this isn't working properly.  Maybe it's some
-bug we fixed, or some weird change in the SUSE Xen mods this used has
-applied.
-
-I also took a quick look at 2.6.26.6 and I don't see any bugs in this
-area there.
+(*) to be correct, the initial classification depends on the position
+    of the first accessed sector.
