@@ -1,117 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYKSQ6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYKSRAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbYKSQ6X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 11:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYKSQ6P
+	id S1753990AbYKSRAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 12:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYKSRAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 11:58:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49968 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbYKSQ6O (ORCPT
+	Wed, 19 Nov 2008 12:00:40 -0500
+Received: from qb-out-0506.google.com ([72.14.204.226]:54846 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbYKSRAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 11:58:14 -0500
-Subject: Re: [patch] sched: add locking when update the task_group's
-	cfs_rq[]  array.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ken Chen <kenchen@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
-References: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 17:54:22 +0100
-Message-Id: <1227113662.29743.46.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 19 Nov 2008 12:00:39 -0500
+Message-ID: <ac3eb2510811190900k62b1333aj9816e462601b4d0c@mail.gmail.com>
+Date: Wed, 19 Nov 2008 18:00:37 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "rae l" <crquan@gmail.com>
+Subject: Re: [PATCH] kobject_add: use constant strings directly as fmt strings
+Cc: "Greg KH" <gregkh@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <91b13c310811190817s31522a0et744ca7df2782cf27@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1227110059-12529-1-git-send-email-crquan@gmail.com>
+	 <20081119155736.GA5072@suse.de>
+	 <91b13c310811190817s31522a0et744ca7df2782cf27@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-18 at 22:48 -0800, Ken Chen wrote:
-> add locking when update the task_group's cfs_rq[] array.  tg_shares_up()
-> can be potentially executed concurrently on multiple CPUs with overlaping
-> cpu mask depending on where task_cpu() was when a task got woken up.  Lack
-> of any locking while redistribute tg->shares over cfs_rq[] array opens up
-> a large window for conflict updates and utimately cause corruptions to the
-> integrity of per cpu cfs_rq shares. Add a tg_lock to protect the operations.
+On Wed, Nov 19, 2008 at 17:17, rae l <crquan@gmail.com> wrote:
+> On Wed, Nov 19, 2008 at 11:57 PM, Greg KH <gregkh@suse.de> wrote:
+>>>       ret = kobject_add(&q->kobj, kobject_get(&disk_to_dev(disk)->kobj),
+>>> -                       "%s", "queue");
+>>> +                       "queue");
+>>
+>> Why?  What does this change buy us?
+>
+> Dropping one parameter makes the function call a little faster, doesn't it?
+>
+> The results are the same,
 
-I see why you want to do this, but introducing a global lock makes me
-sad :/
+Not that we should be able to measure it, but it should save some
+cycles parsing the format character and retrieving the string pointer
+from the stack, yes.
 
-Let me ponder this a while...
+> so if the string is constant, why not use it directly as the fmt string?
 
-> Signed-off-by: Ken Chen <kenchen@google.com>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 1ff78b6..907a44e 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -267,6 +267,8 @@ struct task_group {
->  	/* runqueue "owned" by this group on each cpu */
->  	struct cfs_rq **cfs_rq;
->  	unsigned long shares;
-> +	/* protect integrity of per-cpu cfs_rq[i]->shares */
-> +	spinlock_t tg_lock;
->  #endif
-> 
->  #ifdef CONFIG_RT_GROUP_SCHED
-> @@ -1493,13 +1495,11 @@ update_group_shares_cpu
->  	if (abs(shares - tg->se[cpu]->load.weight) >
->  			sysctl_sched_shares_thresh) {
->  		struct rq *rq = cpu_rq(cpu);
-> -		unsigned long flags;
-> 
-> -		spin_lock_irqsave(&rq->lock, flags);
-> +		spin_lock(&rq->lock);
->  		tg->cfs_rq[cpu]->shares = shares;
-> -
->  		__set_se_shares(tg->se[cpu], shares);
-> -		spin_unlock_irqrestore(&rq->lock, flags);
-> +		spin_unlock(&rq->lock);
->  	}
->  }
-> 
-> @@ -1513,8 +1513,12 @@ static int tg_shares_up
->  	unsigned long weight, rq_weight = 0;
->  	unsigned long shares = 0;
->  	struct sched_domain *sd = data;
-> +	unsigned long flags;
->  	int i;
-> 
-> +	if (!spin_trylock_irqsave(&tg->tg_lock, flags))
-> +		return 0;
-> +
->  	for_each_cpu_mask(i, sd->span) {
->  		/*
->  		 * If there are currently no tasks on the cpu pretend there
-> @@ -1539,6 +1543,7 @@ static int tg_shares_up
->  	for_each_cpu_mask(i, sd->span)
->  		update_group_shares_cpu(tg, i, shares, rq_weight);
-> 
-> +	spin_unlock_irqrestore(&tg->tg_lock, flags);
->  	return 0;
->  }
-> 
-> @@ -8195,6 +8200,10 @@ void __init sched_init(void)
->  	list_add(&init_task_group.list, &task_groups);
->  	INIT_LIST_HEAD(&init_task_group.children);
-> 
-> +#ifdef CONFIG_FAIR_GROUP_SCHED
-> +	spin_lock_init(&init_task_group.tg_lock);
-> +#endif /* CONFIG_FAIR_GROUP_SCHED */
-> +
->  #ifdef CONFIG_USER_SCHED
->  	INIT_LIST_HEAD(&root_task_group.children);
->  	init_task_group.parent = &root_task_group;
-> @@ -8491,6 +8500,10 @@ int alloc_fair_sched_group
-> 
->  	tg->shares = NICE_0_LOAD;
-> 
-> +#ifdef CONFIG_FAIR_GROUP_SCHED
-> +	spin_lock_init(&tg->tg_lock);
-> +#endif /* CONFIG_FAIR_GROUP_SCHED */
-> +
->  	for_each_possible_cpu(i) {
->  		rq = cpu_rq(i);
+It should be fine for strings, where you can be sure they can never
+contain a '%', sure.
 
+Thanks,
+Kay
