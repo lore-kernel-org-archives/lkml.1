@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYKSJmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbYKSJpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbYKSJmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 04:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYKSJmX
+	id S1753800AbYKSJpZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 04:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYKSJpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 04:42:23 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57644
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751818AbYKSJmW (ORCPT
+	Wed, 19 Nov 2008 04:45:13 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:65350 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752508AbYKSJpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 04:42:22 -0500
-Date: Wed, 19 Nov 2008 01:42:22 -0800 (PST)
-Message-Id: <20081119.014222.193698982.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: jarkao2@gmail.com, jeff@garzik.org, johannes@sipsolutions.net,
-       wferi@niif.hu, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netconsole: Disable softirqs in write_msg()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081119093004.GD22309@elte.hu>
-References: <87y6zwwy5c.fsf@tac.ki.iif.hu>
-	<20081119084106.GA6699@ff.dom.local>
-	<20081119093004.GD22309@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 19 Nov 2008 04:45:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XkSJ/Vp7VT+vmgZECXkebybkiXp3su9MaMVXgWwYDDkqxhvZ30eTleoMBvzFoXbzNO
+         3xj1H6JEgg1Y9cCWCMUytqS0OuHuYYZl34i8nUOl6dvdsGGBhP4ECnIVGmSGrTV6b4Ui
+         redl82jJAV5lqfR8xz05WOgh/4JDvKDh7gx7U=
+Message-ID: <c384c5ea0811190145y78803fbboecfcf6ebd652ee03@mail.gmail.com>
+Date: Wed, 19 Nov 2008 10:45:09 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
+Cc: jens.axboe@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       tj@kernel.org
+In-Reply-To: <20081119165915A.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081119142016E.fujita.tomonori@lab.ntt.co.jp>
+	 <c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>
+	 <20081119155847U.fujita.tomonori@lab.ntt.co.jp>
+	 <20081119165915A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 19 Nov 2008 10:30:04 +0100
+Hello,
 
-> * Jarek Poplawski <jarkao2@gmail.com> wrote:
-> 
-> > diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-> > index d304d38..f6ecad8 100644
-> > --- a/drivers/net/netconsole.c
-> > +++ b/drivers/net/netconsole.c
-> > @@ -702,6 +702,8 @@ static void write_msg(struct console *con, const char *msg, unsigned int len)
-> >  	if (list_empty(&target_list))
-> >  		return;
-> >  
-> > +	/* Avoid enabling softirqs with hardirqs disabled */
-> > +	local_bh_disable();
-> >  	spin_lock_irqsave(&target_list_lock, flags);
-> >  	list_for_each_entry(nt, &target_list, list) {
-> >  		netconsole_target_get(nt);
-> > @@ -723,6 +725,7 @@ static void write_msg(struct console *con, const char *msg, unsigned int len)
-> >  		netconsole_target_put(nt);
-> >  	}
-> >  	spin_unlock_irqrestore(&target_list_lock, flags);
-> > +	local_bh_enable();
-> 
-> but netconsole can be triggered from printk - and printk can be called 
-> from hardirqs-off sections - so this doesnt really fix the bug. 
-> Netconsole should not do BH processing.
+On Wed, Nov 19, 2008 at 8:58 AM, FUJITA Tomonori
+<fujita.tomonori@lab.ntt.co.jp> wrote:
+> On Wed, 19 Nov 2008 15:58:12 +0900
+> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>> On Wed, 19 Nov 2008 07:22:31 +0100
+>
+> - pci_map_sg/dma_map_sg are used with a scatter gather list that
+> doesn't come from the block layer (e.g. some network drivers do).
+>
+This is the point I then want to make: we have pci_map_sg() users in
+other system than the block layer, the network and v4l2 subsystems,
+why cannot they benefit from coalescing?
 
-Well, it sort of "has to".  It calls the NAPI ->poll() method of the
-driver to try and make forward progress with TX reclaim so it can
-send new messages.
+Should they copy the block layer coalescing implementation, or should
+that implementation be made more generic and live outside the block
+sub system?
 
-It is very careful not to recursively invoke into ->poll() and other
-nasty situations.
+My intended use case is as follows. See the sg_write() call for the code flow.
 
-Didn't you write some of this code Ingo a very long time ago? :-)))
+http://www.sidebranch.com/leon/user_dma_sg.c
 
-Anyways, I'll look more closely at this and the original report,
-this never was a problem before.
+
+Thanks,
+-- 
+Leon
