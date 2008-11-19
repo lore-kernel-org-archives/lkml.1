@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYKSJXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbYKSJYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbYKSJXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 04:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYKSJXX
+	id S1752802AbYKSJYO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 04:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYKSJX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 04:23:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:17204 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbYKSJXV convert rfc822-to-8bit (ORCPT
+	Wed, 19 Nov 2008 04:23:58 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:47674 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbYKSJX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 04:23:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=tIbBbbhFEdxI3II+mCcsnztI3RESFD3ikxk98bD4375Hn1hwNYpKJiOdKae5NPWXb6
-         9vD0aeQwIjA92eUAowCKlEz1txiqGNl3yxn3JdNTLzQqkRZticTGWdPM0XeSJCFMCoLS
-         m1qZ63TZFsNc/tvijGGE92Z2vZu5tlFOg0xuY=
-From: Eric Lacombe <goretux@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [x86] do_arch_prctl - bug?
-Date: Wed, 19 Nov 2008 10:23:16 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.5; KDE/4.1.3; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-References: <200811181835.07360.goretux@gmail.com> <200811190044.11566.goretux@gmail.com> <492366CB.8020905@goop.org>
-In-Reply-To: <492366CB.8020905@goop.org>
+	Wed, 19 Nov 2008 04:23:57 -0500
+Date: Wed, 19 Nov 2008 10:23:54 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: ftrace: preemptoff selftest not working
+Message-ID: <20081119092354.GA5305@osiris.boeblingen.de.ibm.com>
+References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com> <20081118135221.GE31146@elte.hu> <alpine.DEB.1.10.0811180931270.15003@gandalf.stny.rr.com> <20081118144751.GA30358@elte.hu> <20081118170635.GB4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811181220530.15003@gandalf.stny.rr.com> <20081118205558.GA6243@elte.hu> <20081119090223.GA25282@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811191023.16358.goretux@gmail.com>
+In-Reply-To: <20081119090223.GA25282@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mercredi 19 novembre 2008 02:07:23 Jeremy Fitzhardinge, vous avez écrit :
-> Eric Lacombe wrote:
-> > I look at the Intel docs (vol. 3A) again, and see that in 64 bits mode
-> > the hidden field gs.base are physically mapped to the MSR, so it seems
-> > that in order to load gs.base we don't need to load gs (like in 32 bits
-> > mode), but rather we only need to load the MSR.
-> >
-> > So I don't understand the purpose of load_gs_index in that context :
-> >
-> > if (doit) {
-> > 	load_gs_index(0);
-> > 	ret = checking_wrmsrl(MSR_KERNEL_GS_BASE, addr);
-> > }
-> >
-> > Why don't we only load the MSR ?
-> > What is the purpose of calling load_gs_index with 0 as parameter ?
->
-> Because %gs of 0 means "base too large, go to MSR".  If you have a
-> 32-bit base, then loading it into the gdt and loading %gs with the right
-> selector is faster.  wrmsr/rdmsr are slow instructions.
+On Wed, Nov 19, 2008 at 10:02:23AM +0100, Ingo Molnar wrote:
+> 
+> >  #ifdef CONFIG_FTRACE_STARTUP_TEST
+> > +	/*
+> > +	 * When this gets called we hold the BKL which means that preemption
+> > +	 * is disabled. Various trace selftests however need to disable
+> > +	 * and enable preemption for successful tests. So we drop the BKL here
+> > +	 * and grab it after the tests again.
+> > +	 */
+> > +	unlock_kernel();
+> >  	if (type->selftest) {
+> >  		struct tracer *saved_tracer = current_trace;
+> >  		struct trace_array *tr = &global_trace;
+> > @@ -562,6 +569,7 @@ int register_tracer(struct tracer *type)
+> >  		}
+> >  		printk(KERN_CONT "PASSED\n");
+> >  	}
+> > +	lock_kernel();
+> 
+> dropping the BKL was a good idea, but the code flow was not 
+> investigated thoroughly enough, which caused this crash to trigger in 
+> -tip testing:
 
-Ok, thanks, so I suppose now that only doing :
-asm volatile("movl %0,%%gs" :: "r" (0));
-could corrupt the address of the PDA that resides actually in the MSR_GS_BASE. 
-And that's why load_gs_index is used as it contains "swapgs" before and after 
-the "mov to gs".
+Yes, I came to the same conlcusion this morning after reading the patch
+again and wanted to send a follow-up patch. But you were faster ;)
 
-Is that correct?
+Anyway, what bothers me more is the question if the idea to drop the BKL
+in register_tracer is good. It's probably just a question of time until
+the first tracers come in modules. And then the unlock_kernel()/lock_kernel()
+sequence would be broken.
+So it probably might make more sense to drop and grab the BKL in the
+init functions that register a tracer?
 
-Regards,
-
-	Eric
+But.. maybe the BKL is gone until this is an issue ;)
