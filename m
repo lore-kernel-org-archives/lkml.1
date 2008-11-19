@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbYKSTQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYKSTRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbYKSTQk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 14:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYKSTQb
+	id S1754897AbYKSTRr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 14:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYKSTRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 14:16:31 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:37102 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754050AbYKSTQa convert rfc822-to-8bit (ORCPT
+	Wed, 19 Nov 2008 14:17:39 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:37143 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754061AbYKSTRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 14:16:30 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Date: Wed, 19 Nov 2008 19:15:46 +0000
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Index: AclKbJyG7Db0vmkhTxO2zpoWByOHvwADmb2w
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net>
-References: <48DBF583.3050307@oracle.com>
- <20080925134000.9b133f8c.randy.dunlap@oracle.com>
- <0F5B06BAB751E047AB5C87D1F77A77884BFF5D1F76@GVW0547EXC.americas.hpqcorp.net>
- <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net>
- <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk>
- <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net>
- <49244B69.80903@oracle.com>
- <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net>
- <20081119172919.GT26308@kernel.dk>
-In-Reply-To: <20081119172919.GT26308@kernel.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 19 Nov 2008 14:17:38 -0500
+Date: Wed, 19 Nov 2008 11:15:56 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, jaharkes@cs.cmu.edu,
+       dhowells@redhat.com
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH] coda: fix creds reference
+Message-Id: <20081119111556.b20c9895.randy.dunlap@oracle.com>
+In-Reply-To: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.492465F2.0149:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens wrote:
 
->
-> Yeah, kexec is definitely a clue. My guess is that we got
-> some sort of left over completion. Regardless of the status
-> of this particular bug or not, I think it would be a good
-> idea to add some checks for when a command is attempted
-> removed from a queue it isn't currently on.
->
+I guess that Stephen carried this patch for a few weeks, but now
+he has stopped carrying linux-next build patches.
+Still broken.
 
-I agree, I'll fix.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--- mikem
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Needs a header file for credentials struct:
+
+linux-next-20081023/fs/coda/file.c:177: error: dereferencing pointer to incomplete type
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Jan Harkes <jaharkes@cs.cmu.edu>
+---
+ fs/coda/file.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20081119.orig/fs/coda/file.c
++++ linux-next-20081119/fs/coda/file.c
+@@ -13,6 +13,7 @@
+ #include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/stat.h>
++#include <linux/cred.h>
+ #include <linux/errno.h>
+ #include <linux/smp_lock.h>
+ #include <linux/string.h>
