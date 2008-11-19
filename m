@@ -1,116 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYKSPry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYKSPs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbYKSPry (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYKSPrq
+	id S1754236AbYKSPs7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 10:48:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYKSPsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:47:46 -0500
-Received: from mga09.intel.com ([134.134.136.24]:54220 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbYKSPrq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:47:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,631,1220252400"; 
-   d="scan'208";a="464925486"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "eranian@gmail.com" <eranian@gmail.com>
-CC: Markus Metzger <markus.t.metzger@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Nov 2008 15:47:39 +0000
-Subject: RE: debugctl msr
-Thread-Topic: debugctl msr
-Thread-Index: AclKRq9MHkmkftoHQqKUjTEzXoM12wAEGonw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E08F10CB1@irsmsx504.ger.corp.intel.com>
-References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
-	 <491A812D.9010208@gmail.com>
-	 <7c86c4470811120210j2ea5ccdcv59a654aadc32ebd2@mail.gmail.com>
-	 <029E5BE7F699594398CA44E3DDF5544402B1F123@swsmsx413.ger.corp.intel.com>
-	 <7c86c4470811130650j4192c63n1fa9800a0cdfb93c@mail.gmail.com>
-	 <029E5BE7F699594398CA44E3DDF5544402B595A3@swsmsx413.ger.corp.intel.com>
-	 <7c86c4470811141310h4fd3c5fbvc6357985cf2aed0e@mail.gmail.com>
-	 <1226743286.6162.6.camel@raistlin>
-	 <7c86c4470811181400r1fa56ef9o1931467ee10e4f52@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F10AAA@irsmsx504.ger.corp.intel.com>
- <7c86c4470811190459y5996f51bp24ab38c9e856c2eb@mail.gmail.com>
-In-Reply-To: <7c86c4470811190459y5996f51bp24ab38c9e856c2eb@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Wed, 19 Nov 2008 10:48:51 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:48311 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752566AbYKSPsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 10:48:50 -0500
+Date: Wed, 19 Nov 2008 16:52:11 +0100
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Divyesh Shah <dpshah@google.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081119155211.GE20915@gandalf.sssup.it>
+References: <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <20081119143006.GI26308@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081119143006.GI26308@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: stephane eranian [mailto:eranian@googlemail.com] 
->Sent: Mittwoch, 19. November 2008 14:00
->To: Metzger, Markus T
->Cc: Markus Metzger; Ingo Molnar; Andi Kleen; Andrew Morton; 
->linux-kernel@vger.kernel.org
->Subject: Re: debugctl msr
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Wed, Nov 19, 2008 03:30:07PM +0100
 >
+> On Tue, Nov 18 2008, Fabio Checconi wrote:
+...
+> >   - In cfq_exit_single_io_context() and in changed_ioprio(), cic->key
+> >     is dereferenced without holding any lock.  As I reported in [1]
+> >     this seems to be a problem when an exit() races with a cfq_exit_queue()
+> >     and in a few other cases.  In BFQ we used a somehow involved
+> >     mechanism to avoid that, abusing rcu (of course we'll have to wait
+> >     the patch to talk about it :) ), but given my lack of understanding
+> >     of some parts of the block layer, I'd be interested in knowing if
+> >     the race is possible and/or if there is something more involved
+> >     going on that can cause the same effects.
+> 
+> OK, I'm assuming this is where Nikanth got his idea for the patch from?
 
->I had to hack ds.c some more to make forward progress with PEBS. First
->of all my PEBS code is
->in a kernel module, so all PEBS functions have to be exported.
->Furhtermore, I need a
->ds_get_pebs_thres() and ds_set_pebs_thres() calls.
-
-I'm having a deja vu. We had this discussion before. You reported those
-issues and I fixed them. Same for the PEBS size; and Andi Kleen asked
-to exclude ds.c from the build instead of guarding the .c file and to
-use the mm semaphore in ds_allocate_buffer().
-
-That thread ended in the multiplexing discussion and my fixes never got in.
-I'll send a patch covering those problems next week.
-
-
-Regarding access to the interrupt threshold, we never completed
-our discussion.
-If we look towards multiplexing, ds.c has to handle interrupts and
-copy the trace to the various users - at least for BTS.
-I will pull some of the BTS handling from ptrace into ds.c - ds.c needs
-to be able to disable BTS recording for overflow handling and we would
-not want this knowledge in two different places.
-
-I would add those functions now to proceed with the perfmon2 adaptation
-and later remove them again and put overflow handling into ds.c
-
-I'll send a separate patch for those.
+I think so.
 
 
->But the one key problem is ds_validate_access(). I had to disable this
->function.
+> It does seem racy in spots, we can definitely proceed on getting that
+> tightened up some more.
+> 
+> >   - set_task_ioprio() in fs/ioprio.c doesn't seem to have a write
+> >     memory barrier to pair with the dependent read one in
+> >     cfq_get_io_context().
+> 
+> Agree, that needs fixing.
+> 
+> >   - CFQ_MIN_TT is 2ms, this can result, depending on the value of
+> >     HZ in timeouts of one jiffy, that may expire too early, so we are
+> >     just wasting time and do not actually wait for the task to present
+> >     its new request.  Dealing with seeky traffic we've seen a lot of
+> >     early timeouts due to one jiffy timers expiring too early, is
+> >     it worth fixing or can we live with that?
+> 
+> We probably just need to enfore a '2 jiffies minimum' rule for that.
+> 
+> >   - To detect hw tagging in BFQ we consider a sample valid iff the
+> >     number of requests that the scheduler could have dispatched (given
+> >     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
+> >     the scheduler plus the ones into the driver) is higher than the
+> >     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
+> >     during testing, but the way CFQ uses now seems a little bit
+> >     strange.
+> 
+> Not sure this matters a whole lot, but your approach makes sense. Have
+> you seen the later change to the CFQ logic from Aaron?
+> 
 
-I agree that this is too ptrace centric.
-
-It works fine for the ptrace bts extenstion since ptrace has similar
-restrictions, already.
-
-A better choice would be to return an opaque handle.
+Yes, we started from his code.  As Aaron reported, on BFQ our change
+to the CIC_SEEKY logic has a bad interaction with the hw tag detection
+on some workloads, but that problem should be easy to solve (test patch
+posted in http://lkml.org/lkml/2008/11/19/100).
 
 
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+> >   - Initially, cic->last_request_pos is zero, so the sdist charged
+> >     to a task for its first seek depends on the position on the disk
+> >     that is accessed first, independently from its seekiness.  Even
+> >     if there is a cap on that value, we choose to not charge the first
+> >     seek to processes; that resulted in less wrong predictions for
+> >     purely sequential loads.
+> 
+> Agreed, that's is definitely off.
+> 
+> >   - From my understanding, with shared I/O contexts, two different
+> >     tasks may concurrently lookup for a cfqd into the same ioc.
+> >     This may result in cfq_drop_dead_cic() being called two times
+> >     for the same cic.  Am I missing something that prevents that from
+> >     happening?
+> 
+> That also looks problematic. I guess we need to recheck that under the
+> lock when in cfq_drop_dead_cic().
+> 
+> > Regarding the code splitup, do you think you'll go for the CFS(BFQ) way,
+> > using a single compilation unit and including the .c files, or a layout
+> > with different compilation units (like the ll_rw_blk.c splitup)?
+> 
+> Different compilation units would be my preferred choice.
+> 
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Ok, thank you, I'll try to put together and test some patches, and to
+post them for discussion in the next few days.
