@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYKSAEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbYKSAIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYKSAEW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 19:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYKSAEO
+	id S1752973AbYKSAIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 19:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYKSAIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 19:04:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:30483 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbYKSAEN (ORCPT
+	Tue, 18 Nov 2008 19:08:06 -0500
+Received: from 173-8-135-49-SFBA.hfc.comcastbusiness.net ([173.8.135.49]:47488
+	"EHLO sandall.us" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbYKSAIG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 19:04:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=EuoA4RerOhvMOHUuC0rTMXJ93sXLbfDva8xmk+el3GzUkRV3MsD8a1fWxerD4KupuS
-         U3i7chsRz8kz1niUzEsr+Cz7mlbezylfIy1s2V2U/cb8Hj8Z2DFKwhf2Ya4Xa7zikypq
-         fCZyRWigrpU9Vqr29LJnKusJnq0ypeb3j8/So=
-Date: Wed, 19 Nov 2008 03:07:49 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, containers@lists.osdl.org
-Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task
-	directories
-Message-ID: <20081119000749.GA2912@x200.localdomain>
-References: <m1ej1p2l6u.fsf@frodo.ebiederm.org> <m1abcd2kqk.fsf@frodo.ebiederm.org> <20081106172617.dd51d0af.akpm@linux-foundation.org> <m1abccxpc5.fsf@frodo.ebiederm.org> <20081106184945.179c248a.akpm@linux-foundation.org> <m1iqr0urb8.fsf@frodo.ebiederm.org> <20081106202822.a1af8a6e.akpm@linux-foundation.org> <m1d4h7v8jf.fsf@frodo.ebiederm.org> <20081107080529.6f4de3ad.akpm@linux-foundation.org> <m1zlk3kxfj.fsf@frodo.ebiederm.org>
+	Tue, 18 Nov 2008 19:08:06 -0500
+Message-ID: <20081118160802.1451918y5om1qy8z@mail.sandall.us>
+Date: Tue, 18 Nov 2008 16:08:03 -0800
+From: "Eric Sandall" <eric@sandall.us>
+To: "Grant Coady" <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
+       "Jean Schurger" <jean@schurger.org>
+Subject: Re: Linux 2.6.27.6
+References: <20081113185350.GA3765@kroah.com>
+	<20081118092051.53d1fcc2@sandall.us>
+	<8dl6i41eobduef8djn8bj7d1sih07tga47@4ax.com>
+In-Reply-To: <8dl6i41eobduef8djn8bj7d1sih07tga47@4ax.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-In-Reply-To: <m1zlk3kxfj.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 03:39:44PM -0800, Eric W. Biederman wrote:
-> On this patchset it looks like the conversation has wound down with no
-> real objects except that some very simple pieces of the code appear
-> magic.
-> 
-> 
-> What looks to be the best path for getting this set of patches merged
-> into /proc?
+Quoting "Grant Coady" <gcoady.lk@gmail.com>:
 
-Al's ACK minimum.
+> On Tue, 18 Nov 2008 09:20:51 -0800, you wrote:
+>
+>> On Thu, 13 Nov 2008 10:53:50 -0800
+>> Greg KH <gregkh@suse.de> wrote:
+>>> We (the -stable team) are announcing the release of the 2.6.27.6
+>>> kernel.
+>>>
+>>> It contains a wide range of bugfixes, and all users of the 2.6.27
+>>> kernel series are strongly encouraged to upgrade.
+>>>
+>>> I'll also be replying to this message with a copy of the patch between
+>>> 2.6.27.5 and 2.6.27.6
+>>> Francois Romieu (3):
+>>>       r8169: get ethtool settings through the generic mii helper
+>>>       r8169: fix RxMissed register access
+>>>       r8169: wake up the PHY of the 8168
+>>
+>> My r8169 no longer compiles:
+>> ...
+>>  Building modules, stage 2.
+>>  MODPOST 243 modules
+>> ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
+>> make[1]: *** [__modpost] Error 1
+>> make: *** [modules] Error 2
+>>
+>> Attached my .config. Also tried witht he following changed, with the
+>> same results:
+>> +CONFIG_NET_ETHERNET=y
+>> +CONFIG_MII=m
+>
+> r8169 works fine here, from dmesg:
+>
+> r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> r8169 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> r8169 0000:04:00.0: setting latency timer to 64
+> eth0: RTL8168b/8111b at 0xffffc200100b8000, 00:1d:7d:03:5e:98, XID  
+> 38000000 IRQ 378
+> ...
+> r8169: eth0: link up
+>
+> See: http://bugsplatter.id.au/kernel/boxen/pooh64/ for dmesg + config
+>
+> Grant.
 
-> Alexy will you pick this up in your /proc tree as Andrew suggested?
+Mine works fine as well, on 2.6.27.5. It does not even *compile* on  
+2.6.27.6. Jean Schurger just sent an e-mail  
+(http://marc.info/?l=linux-kernel&m=122703112423031) with the same  
+issue, but was kind enough to provide a patch (which I have not tested).
 
-Yep, doing it right now.
+-sandalle
 
-> Do I need to keep my own tree?
+-- 
+Eric Sandall                     |  Source Mage GNU/Linux Developer
+eric@sandall.us PGP: 0xA8EFDD61  |  http://www.sourcemage.org/
+http://eric.sandall.us/          |  http://counter.li.org/  #196285
 
-No need.
-
-> Can I have some clear guidance on which hurdles to jump through to
-> make forward progress?
