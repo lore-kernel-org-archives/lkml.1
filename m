@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYKSHyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYKSH66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYKSHyj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 02:54:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYKSHya
+	id S1752817AbYKSH66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 02:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbYKSH6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 02:54:30 -0500
-Received: from smtp2.sms.unimo.it ([155.185.44.12]:53425 "EHLO
-	spostino.sms.unimo.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752026AbYKSHy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 02:54:29 -0500
-X-Greylist: delayed 2684 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 02:54:29 EST
-Message-ID: <4923BBA2.1070609@unimore.it>
-Date: Wed, 19 Nov 2008 08:09:22 +0100
-From: Paolo Valente <paolo.valente@unimore.it>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Nauman Rafique <nauman@google.com>
-CC: Fabio Checconi <fchecconi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Divyesh Shah <dpshah@google.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-References: <20081113.180558.519459540419535699.ryov@valinux.co.jp>	 <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com>	 <20081113214642.GG7542@redhat.com>	 <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>	 <20081114160525.GE24624@redhat.com>	 <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>	 <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com>	 <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>	 <20081118120508.GD15268@gandalf.sssup.it> <e98e18940811181433o4bb5a147i1e0b9c1baf495ae2@mail.gmail.com>
-In-Reply-To: <e98e18940811181433o4bb5a147i1e0b9c1baf495ae2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Nov 2008 02:58:50 -0500
+Received: from sh.osrg.net ([192.16.179.4]:51249 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751245AbYKSH6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 02:58:50 -0500
+Date: Wed, 19 Nov 2008 16:58:30 +0900
+To: jens.axboe@oracle.com
+Cc: leon.woestenberg@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       tj@kernel.org
+Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081119155847U.fujita.tomonori@lab.ntt.co.jp>
+References: <20081119142016E.fujita.tomonori@lab.ntt.co.jp>
+	<c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>
+	<20081119155847U.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081119165915A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nauman Rafique ha scritto:
->
->
-> I think "time only budget" vs "sector budget" is dependent on the
-> definition of fairness: do you want to be fair in the time that is
-> given to each cgroup or fair in total number of sectors transferred.
-> And the appropriate definition of fairness depends on how/where the IO
-> scheduler is used. ...
->
->   
-Just a general note: as Fabio already said, switching back to time 
-budgets in BFQ would be (conceptually) straightforward.
-However, we will never get fairness in bandwidth distribution if we work 
-(only) in the time domain.
+On Wed, 19 Nov 2008 15:58:12 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+
+> On Wed, 19 Nov 2008 07:22:31 +0100
+> "Leon Woestenberg" <leon.woestenberg@gmail.com> wrote:
+> 
+> > Hello,
+> > 
+> > On Wed, Nov 19, 2008 at 6:19 AM, FUJITA Tomonori
+> > <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > On Mon, 17 Nov 2008 19:15:32 -0800
+> > >> > pci_map_sg() does not coalesce the scattergather list for me on x86.
+> > >> [ Marked as Bogus Report ]
+> > >>
+> > >> > Is this expected? Documentation mentions that coalescing is typically
+> > >> > done by pci_map_sg().
+> > >
+> > > Hm, what document did you read? We might need to fix it.
+> > >
+> > http://lxr.linux.no/linux+v2.6.27.6/Documentation/DMA-API.txt
+> > 
+> >  316        pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg,
+> >  317                int nents, int direction)
+> >  318
+> >  319Maps a scatter gather list from the block layer.
+> >  320
+> >  321Returns: the number of physical segments mapped (this may be shorter
+> >  322than <nents> passed in if the block layer determines that some
+> >  323elements of the scatter/gather list are physically adjacent and thus
+> >  324may be mapped with a single entry).
+> 
+> Hmm, the description looks confusing. The block layer coalesces
+> physically adjacent entries before pci_map_sg(). pci_map_sg() could
+> coalesces physically or virtually adjacent entries.
+
+How about this?
+
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] fix pci_map_sg/dma_map_sg scatterlists handling in DMA-API.txt
+
+- pci_map_sg/dma_map_sg are used with a scatter gather list that
+doesn't come from the block layer (e.g. some network drivers do).
+
+- how IOMMUs merge adjacent elements of the scatter/gather list is
+independent of how the block layer determines sees elements.
 
 
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ Documentation/DMA-API.txt |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index b8e8646..b462bb1 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -316,12 +316,10 @@ reduce current DMA mapping usage or delay and try again later).
+ 	pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg,
+ 		int nents, int direction)
+ 
+-Maps a scatter gather list from the block layer.
+-
+ Returns: the number of physical segments mapped (this may be shorter
+-than <nents> passed in if the block layer determines that some
+-elements of the scatter/gather list are physically adjacent and thus
+-may be mapped with a single entry).
++than <nents> passed in if some elements of the scatter/gather list are
++physically or virtually adjacent and an IOMMU maps them with a single
++entry).
+ 
+ Please note that the sg cannot be mapped again if it has been mapped once.
+ The mapping process is allowed to destroy information in the sg.
 -- 
------------------------------------------------------------
-| Paolo Valente              |                            |
-| Algogroup                  |                            |
-| Dip. Ing. Informazione     | tel:   +39 059 2056318     |
-| Via Vignolese 905/b	     | fax:   +39 059 2056199     |
-| 41100 Modena               | 				  |
-|     home:  http://algo.ing.unimo.it/people/paolo/       |
------------------------------------------------------------
+1.5.5.GIT
 
