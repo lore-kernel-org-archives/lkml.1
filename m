@@ -1,72 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYKSPCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYKSPC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYKSPCQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbYKSPCA
+	id S1754183AbYKSPC5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 10:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYKSPCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:02:00 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:32874 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753417AbYKSPB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:01:59 -0500
-Date: Wed, 19 Nov 2008 16:00:10 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-       "Hommel, Thomas (GE EntSol, Intelligent Platforms)" 
-	<Thomas.Hommel@gefanuc.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: ISP1760 driver crashes
-Message-ID: <20081119150010.GK26308@kernel.dk>
-References: <4923F120.6000303@linutronix.de> <Pine.LNX.4.44L0.0811190951570.2418-100000@iolanthe.rowland.org>
+	Wed, 19 Nov 2008 10:02:49 -0500
+Received: from styx.suse.cz ([82.119.242.94]:46090 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753432AbYKSPCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 10:02:49 -0500
+Date: Wed, 19 Nov 2008 16:02:48 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rafi Rubin <rafi@seas.upenn.edu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] n-trig digitizer quirks
+In-Reply-To: <49242617.7000500@seas.upenn.edu>
+Message-ID: <alpine.LNX.1.10.0811191602320.19853@jikos.suse.cz>
+References: <Pine.LNX.4.61.0811141207210.12963@minus.seas.upenn.edu> <alpine.LNX.1.10.0811181525490.19853@jikos.suse.cz> <49232910.2030309@seas.upenn.edu> <alpine.LNX.1.10.0811191355280.19853@jikos.suse.cz> <492417D4.4090103@seas.upenn.edu>
+ <alpine.LNX.1.10.0811191451000.19853@jikos.suse.cz> <49241D02.6020602@seas.upenn.edu> <alpine.LNX.1.10.0811191505340.19853@jikos.suse.cz> <49242617.7000500@seas.upenn.edu>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0811190951570.2418-100000@iolanthe.rowland.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19 2008, Alan Stern wrote:
-> On Wed, 19 Nov 2008, Sebastian Andrzej Siewior wrote:
-> 
-> > Hommel, Thomas (GE EntSol, Intelligent Platforms) wrote:
-> > 
-> > > I indeed have HIGHMEM enabled in my configuration.
-> > > I recompiled the kernel without HIGHMEM and it works. I don't think that
-> > > this a satisfying solution for a board with up to 2GB of RAM and
-> > > considerable amount of VMALLOC space, but at least this works.
-> > > If you have any more ideas how to circumvent this, please let me know.
-> > Sure, this is not a sollution but atleast now I know what happens:
-> > - The kernel allocates memory for transfer
-> > - the memory is highmem and not in kernel so the buffer is NULL
-> > - we don't have a dma-mask and therefore the dma address is 0
-> > - boom
-> > 
-> > The sollution would be probably to prevent the usb-storage core to 
-> > allocate memory from HIGHMEM.
-> 
-> usb-storage doesn't allocate the memory.  The memory is allocated by 
-> the block layer or the filesystem.
-> 
-> > Now I don't if there is a flag for something 
-> > like that and I am not using that. On the other hand this may be broken 
-> > for a long time and you are the first one which has that much memory with 
-> > no DMA-capable USB controller.
-> 
-> Jens, is there any way to tell the kernel that a device uses PIO and 
-> therefore its buffers shouldn't be allocated in high memory?  For 
-> example, shouldn't a NULL dma_mask do this?
+On Wed, 19 Nov 2008, Rafi Rubin wrote:
 
-Sure, just use blk_queue_bounce_limit(q, BLK_BOUNCE_HIGH), then you are
-certain that you will always have a virtual mapping for the IO you
-receive.
+> Added quirks for the N-Trig digitizer.
+> Signed-off-by: Rafi Rubin <rafi@seas.upenn.edu>
 
-Or you can use the bio kmap/kunmap helpers to get such a mapping
-temporarily if you wish. But if your pio condition is permanent, you may
-as well just use bouncing.
+Applied, thanks Rafi!
 
 -- 
-Jens Axboe
-
+Jiri Kosina
+SUSE Labs
