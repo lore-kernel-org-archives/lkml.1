@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYKSVR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYKSVWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbYKSVR3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYKSVRU
+	id S1754202AbYKSVWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYKSVWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:17:20 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:8554 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbYKSVRT (ORCPT
+	Wed, 19 Nov 2008 16:22:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35250 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753187AbYKSVWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 16:17:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=cc:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:mime-version:subject:date:references
-         :x-mailer;
-        b=gCOT3g9dfSV9do2q84LyEdi53Yua9A3fGnlZLcp2Ig2/45mfiQ+EaGIY3tzU9I0Pb0
-         qvRaFsO4hRmGNmHiC2874fZDZdlj4n1/TV6GM62trwakUz+Yy+SXesKFtqApyaj449Ej
-         Hax19zBpQjzPFqRHukPb3cIOIG5suHG65VhI8=
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Message-Id: <FF8068EB-1E4F-4D84-93B3-520922C5C1D4@gmail.com>
-From: Richard Holden <aciddeath@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: linux-next: Tree for November 19 (section mismatche fpu_init)
-Date: Wed, 19 Nov 2008 14:17:15 -0700
-References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
-X-Mailer: Apple Mail (2.929.2)
+	Wed, 19 Nov 2008 16:22:03 -0500
+Date: Wed, 19 Nov 2008 15:22:02 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 0/2 v3] SGI RTC: add clocksource/clockevent driver and generic timer vector
+Message-ID: <20081119212202.GA3377@sgi.com>
+References: <20081023163041.GA14574@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023163041.GA14574@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x1d6): Section  
-mismatch in reference from the function fpu_init() to the  
-function .init.text:init_thread_xstate()
-The function __cpuinit fpu_init() references
-a function __init init_thread_xstate().
-If init_thread_xstate is only used by fpu_init then
-annotate init_thread_xstate with a matching annotation.
+The following patches provide a driver for synchronized RTC clocksource and
+clockevents for SGI systems, as well as a generic timer system interrupt.
 
-appears in arch/x86/kernel/built-in.o
+With these patches, a module can be installed that registers the system-wide
+synchronized RTC clocksource and timers as both a clocksource and clockevents
+device running in high resolution mode.
 
--Richard Holden
+
+[PATCH 1/2 v3] SGI RTC: add clocksource driver
+[PATCH 2/2 v3] SGI RTC: add generic timer system interrupt
+
