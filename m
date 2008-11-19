@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYKSRWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYKSRXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753942AbYKSRWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 12:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYKSRVv
+	id S1754107AbYKSRXY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 12:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbYKSRXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 12:21:51 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:10846 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbYKSRVu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 12:21:50 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=xSotNcI73rBhunSDXMeCSHmfdlDJsQP83TZs0oaTt5kA+mp00PHdq7Wo1FI8ioxlE
-	wSIbC9i8Z4Pj6rZ+FWkMQ==
+	Wed, 19 Nov 2008 12:23:15 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37593 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752762AbYKSRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 12:23:14 -0500
+Date: Wed, 19 Nov 2008 18:21:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+       "Hommel, Thomas (GE EntSol, Intelligent Platforms)" 
+	<Thomas.Hommel@gefanuc.com>,
+       USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       James.Bottomley@HansenPartnership.com
+Subject: Re: ISP1760 driver crashes
+Message-ID: <20081119172125.GS26308@kernel.dk>
+References: <20081119153923.GR26308@kernel.dk> <Pine.LNX.4.44L0.0811191131320.2418-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <1227113662.29743.46.camel@lappy.programming.kicks-ass.net>
-References: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>
-	 <1227113662.29743.46.camel@lappy.programming.kicks-ass.net>
-Date: Wed, 19 Nov 2008 09:21:46 -0800
-Message-ID: <b040c32a0811190921g557edc4dy4725fb86107c2c54@mail.gmail.com>
-Subject: Re: [patch] sched: add locking when update the task_group's cfs_rq[] 
-	array.
-From: Ken Chen <kenchen@google.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0811191131320.2418-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 8:54 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Tue, 2008-11-18 at 22:48 -0800, Ken Chen wrote:
->> add locking when update the task_group's cfs_rq[] array.  tg_shares_up()
->> can be potentially executed concurrently on multiple CPUs with overlaping
->> cpu mask depending on where task_cpu() was when a task got woken up.  Lack
->> of any locking while redistribute tg->shares over cfs_rq[] array opens up
->> a large window for conflict updates and utimately cause corruptions to the
->> integrity of per cpu cfs_rq shares. Add a tg_lock to protect the operations.
->
-> I see why you want to do this, but introducing a global lock makes me
-> sad :/
+On Wed, Nov 19 2008, Alan Stern wrote:
+> On Wed, 19 Nov 2008, Jens Axboe wrote:
+> 
+> > > --- usb-2.6.orig/drivers/scsi/scsi_lib.c
+> > > +++ usb-2.6/drivers/scsi/scsi_lib.c
+> > > @@ -1684,7 +1684,7 @@ static void scsi_request_fn(struct reque
+> > >  u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
+> > >  {
+> > >  	struct device *host_dev;
+> > > -	u64 bounce_limit = 0xffffffff;
+> > > +	u64 bounce_limit = BLK_BOUNCE_HIGH;
+> > >  
+> > >  	if (shost->unchecked_isa_dma)
+> > >  		return BLK_BOUNCE_ISA;
+> > > 
+> > 
+> > The best solution is probably to either provide a "doesn't do highmem"
+> > in the scsi host template, or provide an appropriate DMA mask for the
+> > pci device to indicate it through that setting instead.
+> 
+> The DMA mask is currently set to NULL.  Is that not appropriate for a 
+> device that can't do DMA?  If not, then what would be appropriate?
 
-I wholly agree on the scalability.  The bigger the system, the more it
-needs to protect the integrity of cfs_rq[]->shares that the sum still
-adds up to tg->shares.  Otherwise, the share distributed on each CPU's
-cfs_rq might go wildly and indirectly leads to fluctuation of
-effective total tg->shares.  However, I have the same doubt that this
-will scale on large CPU system.  Does CFS really have to iterate the
-whole task_group tree?
+It's changing behaviour. There's no current rule that says if you don't
+have a dma mask set, we only do PIO (even if such a rule DOES make
+sense). Additionally, you don't HAVE to bounce for PIO. As I wrote
+earlier, it's perfectly feasible to use bio kmap'ings to do the
+transfer.
 
-- Ken
+> Also, is the patch above not correct?
+
+It'll certainly work in the sense that if you don't have a dma_mask set,
+you only get lowmem pages. Whether the new behaviour is something we
+want, not sure. Check with James what he thinks, it's his domain.
+
+-- 
+Jens Axboe
+
