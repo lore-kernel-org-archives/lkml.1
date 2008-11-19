@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYKSVYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYKSVY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYKSVYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYKSVXj
+	id S1754982AbYKSVY4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYKSVXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 19 Nov 2008 16:23:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56381 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:58919 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbYKSVXf (ORCPT
+	with ESMTP id S1752361AbYKSVXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Nov 2008 16:23:35 -0500
-Message-Id: <20081119212334.093013344@goodmis.org>
+Message-Id: <20081119212333.052756846@goodmis.org>
 References: <20081119212204.318400312@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 19 Nov 2008 16:22:10 -0500
+Date: Wed, 19 Nov 2008 16:22:05 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -21,101 +21,67 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Milton Miller <miltonm@bga.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
+       Matt Fleming <matthew.fleming@imgtec.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 6/9] powerpc: ftrace, use probe_kernel API to modify code
-Content-Disposition: inline; filename=0006-powerpc-ftrace-use-probe_kernel-API-to-modify-code.patch
+Subject: [PATCH 1/9] ftrace: align __mcount_loc sections
+Content-Disposition: inline; filename=0001-ftrace-align-__mcount_loc-sections.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use cleaner probe_kernel API over assembly
+Impact: add alignment option for recordmcount.pl script
 
-Using probe_kernel_read/write interface is a much cleaner approach
-than the current assembly version.
+Align the __mcount_loc sections so that architectures with strict
+alignment requirements need not worry about performing unaligned
+accesses.
 
+This fixes an issue where I was seeing unaligned accesses, which are not
+supported on our architecture (the results of an unaligned access are
+undefined).
+
+Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/powerpc/kernel/ftrace.c |   53 ++++++++++++++++-------------------------
- 1 files changed, 21 insertions(+), 32 deletions(-)
+ scripts/recordmcount.pl |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 24c023a..1adfbb2 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -9,6 +9,7 @@
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 6b9fe3e..eeac71c 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -134,6 +134,7 @@ my $section_regex;	# Find the start of a section
+ my $function_regex;	# Find the name of a function
+ 			#    (return offset and func name)
+ my $mcount_regex;	# Find the call site to mcount (return offset)
++my $alignment;         # The .align value to use for $mcount_section
  
- #include <linux/spinlock.h>
- #include <linux/hardirq.h>
-+#include <linux/uaccess.h>
- #include <linux/ftrace.h>
- #include <linux/percpu.h>
- #include <linux/init.h>
-@@ -72,45 +73,33 @@ static int
- ftrace_modify_code(unsigned long ip, unsigned char *old_code,
- 		   unsigned char *new_code)
- {
--	unsigned replaced;
--	unsigned old = *(unsigned *)old_code;
--	unsigned new = *(unsigned *)new_code;
--	int faulted = 0;
-+	unsigned char replaced[MCOUNT_INSN_SIZE];
+ if ($arch eq "x86") {
+     if ($bits == 64) {
+@@ -148,6 +149,7 @@ if ($arch eq "x86_64") {
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
+     $type = ".quad";
++    $alignment = 8;
  
- 	/*
- 	 * Note: Due to modules and __init, code can
- 	 *  disappear and change, we need to protect against faulting
--	 *  as well as code changing.
-+	 *  as well as code changing. We do this by using the
-+	 *  probe_kernel_* functions.
- 	 *
- 	 * No real locking needed, this code is run through
--	 * kstop_machine.
-+	 * kstop_machine, or before SMP starts.
- 	 */
--	asm volatile (
--		"1: lwz		%1, 0(%2)\n"
--		"   cmpw	%1, %5\n"
--		"   bne		2f\n"
--		"   stwu	%3, 0(%2)\n"
--		"2:\n"
--		".section .fixup, \"ax\"\n"
--		"3:	li %0, 1\n"
--		"	b 2b\n"
--		".previous\n"
--		".section __ex_table,\"a\"\n"
--		_ASM_ALIGN "\n"
--		_ASM_PTR "1b, 3b\n"
--		".previous"
--		: "=r"(faulted), "=r"(replaced)
--		: "r"(ip), "r"(new),
--		  "0"(faulted), "r"(old)
--		: "memory");
--
--	if (replaced != old && replaced != new)
--		faulted = 2;
--
--	if (!faulted)
--		flush_icache_range(ip, ip + 8);
--
--	return faulted;
-+
-+	/* read the text we want to modify */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	/* Make sure it is what we expect it to be */
-+	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
-+		return -EINVAL;
-+
-+	/* replace the text with the new text */
-+	if (probe_kernel_write((void *)ip, new_code, MCOUNT_INSN_SIZE))
-+		return -EPERM;
-+
-+	flush_icache_range(ip, ip + 8);
-+
-+	return 0;
- }
+     # force flags for this arch
+     $ld .= " -m elf_x86_64";
+@@ -160,6 +162,7 @@ if ($arch eq "x86_64") {
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+     $type = ".long";
++    $alignment = 4;
  
- static int test_24bit_addr(unsigned long ip, unsigned long addr)
+     # force flags for this arch
+     $ld .= " -m elf_i386";
+@@ -288,6 +291,7 @@ sub update_funcs
+ 	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
+ 	    $opened = 1;
+ 	    print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
++	    print FILE "\t.align $alignment\n";
+ 	}
+ 	printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
+     }
 -- 
 1.5.6.5
 
