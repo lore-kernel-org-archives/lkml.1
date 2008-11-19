@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYKSXLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYKSXMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbYKSXLz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 18:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYKSXLl
+	id S1753337AbYKSXMn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 18:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYKSXMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 18:11:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46501
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753104AbYKSXLi (ORCPT
+	Wed, 19 Nov 2008 18:12:34 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45848 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751436AbYKSXMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 18:11:38 -0500
-Date: Wed, 19 Nov 2008 15:11:38 -0800 (PST)
-Message-Id: <20081119.151138.93409143.davem@davemloft.net>
-To: hawk@diku.dk
-Cc: jdb@comx.dk, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: NIU driver: Sun x8 Express Quad Gigabit Ethernet Adapter (perf
- + regression IRQs)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0811192333130.30818@ask.diku.dk>
-References: <1226572171.6834.87.camel@localhost.localdomain>
-	<20081113.141513.116537651.davem@davemloft.net>
-	<Pine.LNX.4.64.0811192333130.30818@ask.diku.dk>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 19 Nov 2008 18:12:33 -0500
+Date: Thu, 20 Nov 2008 00:22:24 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, "Zhang, Rui" <rui.zhang@intel.com>,
+       linux-acpi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org
+Subject: Re: AE_ERROR, ACPI thermal trip point state changed
+Message-ID: <20081119232224.GR6703@one.firstfloor.org>
+References: <47CF96E2.9020302@freemail.hu> <1204757373.10256.179.camel@acpi-hp-zz.sh.intel.com> <823A93EED437D048963A3697DB0E35DE0129BB78@pdsmsx414.ccr.corp.intel.com> <47D0E694.5050102@freemail.hu> <1204874686.10256.185.camel@acpi-hp-zz.sh.intel.com> <47D24341.5070908@freemail.hu> <1205113940.10256.191.camel@acpi-hp-zz.sh.intel.com> <48ABDF1E.3010101@freemail.hu> <8763pwypf5.fsf@basil.nowhere.org> <49249121.6050304@freemail.hu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49249121.6050304@freemail.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Dangaard Brouer <hawk@diku.dk>
-Date: Wed, 19 Nov 2008 23:58:12 +0100 (CET)
+On Wed, Nov 19, 2008 at 11:20:17PM +0100, Németh Márton wrote:
+> Hi,
+> 
+> Andi Kleen wrote:
+> > Németh Márton <nm127@freemail.hu> writes:
+> >> As of 2.6.27-rc3 the patch is still not included in the mainstream. I
+> >> hope that this patch was not forgotten completely.
+> > 
+> > It's already in Linus' tree, will be in rc4.
+> 
+> I compiled and tried 2.6.28-rc5. In the dmesg I get the following message:
+> 
+> [   63.589603] ACPI Exception (thermal-0538): AE_ERROR, ACPI thermal trip point state changed
+> [   63.589669] Please send acpidump to linux-acpi@vger.kernel.org
+> [   63.589805]  [20080926]
+> 
+> The original patch still applies for 2.6.28-rc5 (with some offsets). This patch
+> is not included in 2.6.28-rc5, yet. The "AE_ERROR..." message does not appear
+> any more if I apply the patch. I attached this original patch for easier reference.
 
-> Well that was not the real cause of the performance loss.  Because
-> on kernel 2.6.27 I get really good performance (900-1200kpps)
-> compared to 2.6.28 (git net-2.6).
->
-> The cause of this problem (tracked down together with Robert Olsson)
-> is that on 2.6.28 I have a lot less IRQs available.  It seems max 34
-> IRQs.
->
-> Due the reduced number of IRQs the NIU driver cannot get enough IRQs
-> to the interfaces, and starts to use "IO-APIC" based IRQs.
+Hmm sorry I must have confused it with some other patch back then.
+Anyways Len Brown is handling ACPI again now, so he'll have to sort
+it out. cc'ed (the original patch is on linux-acpi)
 
-This is almost certainly related to the driver unload bug.
-
-I know you ran into unbuildable/unbootable kernels during a bisect,
-but you really need to track down this regression.
-
-There were a lot of IRQ changes, especially on x86.  The sequence is
-something like:
-
-1) dyn irqs
-2) APIC/IO_APIC handling integration
-3) by-hand REVERT of dyn irqs, it was done by hand in order to not
-   lose the #2 changes
-4) interrupt remapping support
+-Andi
 
