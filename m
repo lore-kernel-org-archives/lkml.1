@@ -1,87 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbYKSIBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYKSIEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbYKSIBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 03:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbYKSIBg
+	id S1752917AbYKSIEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 03:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYKSIE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 03:01:36 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41432 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbYKSIBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 03:01:36 -0500
-Date: Wed, 19 Nov 2008 09:01:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] ftrace updates to tip/core/urgent
-Message-ID: <20081119080124.GB1078@elte.hu>
-References: <20081119053449.282336740@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081119053449.282336740@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Wed, 19 Nov 2008 03:04:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57290 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750780AbYKSIE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 03:04:26 -0500
+Date: Wed, 19 Nov 2008 00:03:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Robert Love <rlove@google.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: Re: [patch] Fix type errors in inotify interfaces
+Message-Id: <20081119000342.05b2de85.akpm@linux-foundation.org>
+In-Reply-To: <4923230D.8090301@gmail.com>
+References: <4923230D.8090301@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 18 Nov 2008 15:18:21 -0500 Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> Andrew,
+> 
+> Vegard reminded me of an issue with the inotify interface
+> that I raised quite a while ago, offlist, with Robert; Robert
+> acknowledged that things should be fixed, but then neither of
+> us actually did anything :-{.
+> 
+> The problems lie in the types used for some inotify interfaces, both
+> at the kernel level and at the glibc level.  This mail addresses the
+> kernel problem.  I will follow up with some suggestions for glibc
+> changes.
+> 
+> For the sys_inotify_rm_watch() interface, the type of the 'wd' argument
+> is currently 'u32', it should be '__s32' .  That is Robert's suggestion,
+> and is consistent with the other declarations of watch descriptors in
+> the kernel source, in particular, the inotify_event structure in
+> include/linux/inotify.h:
+> 
+> struct inotify_event {
+>         __s32           wd;             /* watch descriptor */
+>         __u32           mask;           /* watch mask */
+>         __u32           cookie;         /* cookie to synchronize two events */
+>         __u32           len;            /* length (including nulls) of name */
+>         char            name[0];        /* stub for possible name */
+> };
+> 
+> The patch below makes the changes needed for inotify_rm_watch().
+> 
+> Thanks
+> 
+> Michael
+> 
+> 
+> diff --git a/fs/inotify_user.c b/fs/inotify_user.c
+> index d367e9b..a71f764 100644
+> --- a/fs/inotify_user.c
+> +++ b/fs/inotify_user.c
+> @@ -704,7 +704,7 @@ fput_and_out:
+>  	return ret;
+>  }
+>  
+> -asmlinkage long sys_inotify_rm_watch(int fd, u32 wd)
+> +asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
+>  {
+>  	struct file *filp;
+>  	struct inotify_device *dev;
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index d6ff145..36983a5 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -550,7 +550,7 @@ asmlinkage long sys_inotify_init(void);
+>  asmlinkage long sys_inotify_init1(int flags);
+>  asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
+>  					u32 mask);
+> -asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
+> +asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd);
+>  
+>  asmlinkage long sys_spu_run(int fd, __u32 __user *unpc,
+>  				 __u32 __user *ustatus);
 
-> Ingo,
-> 
-> I ported the following patches to tip/core/urgent since they are 
-> candidates for 2.6.28.
-> 
-> The first two are trivial, short, and should not be an issue. The 
-> first two handle the printing of the set_ftrace_filter file 
-> correctly.
-> 
-> The third is a bigger patch "108 lines changed" and is actually a 
-> clean up and fix.  The difference is that the current logic to 
-> determine if a function should be enabled or not is incorrect. With 
-> different combinations of using set_ftrace_filter and 
-> set_ftrace_notrace, incorrect functions may be traced, or not 
-> traced.
-> 
-> But this bug that the patch fixes is not a critical bug. It should 
-> not cause any stability problems with the kernel. The bug will only 
-> produce undesirable traces.
-> 
-> But on the other hand, adding that last patch should not cause any 
-> stability issues as well. And it makes the complex function cleaner 
-> and more importantly, by coupling the ENABLED flag of the record 
-> with the enabling (or disabling) of the tracing of the function the 
-> record represents, makes the code more robust.
+hrm.  I see no sane reason why a watch descriptor should take on
+negative values, so in some ways the u32 was logical.  (Ditto file
+descriptors, but I don't think I want to change that ;))
 
-ok, agreed.
+otoh, the system call via which one _obtains_ watch descriptors most
+certainly wants to return -ve nunmbers, to signify errors.
 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->       branch: tip/urgent
-> 
-> 
-> Steven Rostedt (3):
->       ftrace: fix set_ftrace_filter
->       ftrace: make filtered functions effective on setting
->       ftrace: fix dyn ftrace filter selection
-> 
-> ----
->  kernel/trace/ftrace.c |  113 +++++++++++++++++++++++-------------------------
->  1 files changed, 54 insertions(+), 59 deletions(-)
-
-pulled into tip/tracing/urgent, thanks Steve!
-
-	Ingo
+All too hard.  I think I'll stop thinking about it and merge the patch ;)
