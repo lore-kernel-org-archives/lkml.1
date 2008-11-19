@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYKSURT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbYKSURu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYKSURT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYKSURI
+	id S1754514AbYKSURu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYKSURl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:17:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55835 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752807AbYKSURG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:17:06 -0500
-Date: Wed, 19 Nov 2008 21:16:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Jan Beulich <jbeulich@novell.com>, Glauber Costa <gcosta@redhat.com>,
-       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH/RFC] Move entry_64.S register saving out of the macros
-Message-ID: <20081119201637.GC4765@elte.hu>
-References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <20081119001811.GA23237@mailshack.com> <492452CF.9080700@zytor.com>
+	Wed, 19 Nov 2008 15:17:41 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:22588 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbYKSURk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 15:17:40 -0500
+X-IronPort-AV: E=McAfee;i="5100,188,5439"; a="13281112"
+Message-ID: <49247462.4030101@qualcomm.com>
+Date: Wed, 19 Nov 2008 12:17:38 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492452CF.9080700@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Dimitri Sivanich <sivanich@sgi.com>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
+ no load balance
+References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <20081119195517.GB662@sgi.com>
+In-Reply-To: <20081119195517.GB662@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> All of this qualify as "tweaking", which means we need to be very 
-> careful so we don't end up burning more performance than we gain, 
-> but all in all, I think this is a good idea.
+Dimitri Sivanich wrote:
+> On Wed, Nov 19, 2008 at 11:49:36AM -0800, Max Krasnyansky wrote:
+>> I think the idea is that we want to make balancer a noop on those processors.
+> 
+> Ultimately, making the balancer a noop on processors with load balancing turned off would be the best solution.
+Yes. I forgot to point out that if we do change cpusets to generate sched
+domain per cpu we want to make sure that balancer is still a noop just like it
+is today with the null sched domain.
 
-okay - will queue it up in tip/x86/irq, lets see how it goes.
+>> We could change cpusets code to create a root sched domain for each cpu I
+>> guess. But can we maybe scale cpupri some other way ?
+> 
+> It doesn't make sense to me that they'd have a root domain attached that spans more of the the system than that cpu.
+I think 'root' in this case is a bit of a misnomer. What I meant is that each
+non-balanced cpu would be in a separate sched domain.
 
-	Ingo
+Max
