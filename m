@@ -1,138 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYKSUvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYKSUvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYKSUvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYKSUvH
+	id S1753345AbYKSUvf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:51:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYKSUvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:51:07 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44447 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYKSUvG (ORCPT
+	Wed, 19 Nov 2008 15:51:21 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:56219 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754341AbYKSUvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:51:06 -0500
-Subject: Re: [patch] sched: fix inconsistency when redistribute per-cpu
-	tg->cfs_rq  shares.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ken Chen <kenchen@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <b040c32a0811182241r3cf5e7c7l25d3627c2265ead2@mail.gmail.com>
-References: <b040c32a0811182241r3cf5e7c7l25d3627c2265ead2@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 20:19:19 +0100
-Message-Id: <1227122359.29743.54.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 19 Nov 2008 15:51:20 -0500
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <03314DAD-B8AF-4F81-8C48-68B64C477B3C@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Trent Piepho <tpiepho@freescale.com>
+In-Reply-To: <1227122070-6835-1-git-send-email-tpiepho@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Better setup of boot page TLB entry
+Date: Wed, 19 Nov 2008 14:51:10 -0600
+References: <1227122070-6835-1-git-send-email-tpiepho@freescale.com>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-18 at 22:41 -0800, Ken Chen wrote:
 
-It just occurred to me that you lost the boost stuff.
+On Nov 19, 2008, at 1:14 PM, Trent Piepho wrote:
 
-The issue with the boost flag is that we have a different
-  tg->cfs_rq[cpu]->shares
-than the actual
-  tg->cfs_se[cpu]->load.weight
+> The initial TLB mapping for the kernel boot didn't set the memory  
+> coherent
+> attribute, MAS2[M], in SMP mode.
+>
+> If this code supported booting a secondary processor, which it  
+> doesn't yet,
+> but suppose it did, then when a secondary processor boots, it would  
+> have
+> probably signaled the primary processor by setting a variable called
+> something like __secondary_hold_acknowledge.  However, due to the  
+> lack of
+> the M bit, the primary processor would not have snooped the  
+> transaction
+> (even if a transaction were broadcast).  If primary CPU's L1 D-cache  
+> had a
+> copy, it would not have been flushed and the CPU would have never  
+> seen the
+> ack.  Which would have resulted in the primary CPU spinning for a long
+> time, perhaps a full second before it would have given up, while it  
+> would
+> have waited for the ack from the secondary CPU that it wouldn't have  
+> been
+> able to see because of the stale cache.
+>
+> The value of MAS2 for the boot page TLB1 entry is a compile time  
+> constant,
+> so there is no need to calculate it in powerpc assembly language.
+>
+> Also, from the MPC8572 manual section 6.12.5.3, "Bits that represent
+> offsets within a page are ignored and should be cleared." Existing  
+> code
+> didn't clear them, this code does.
+>
+> The same when the page of KERNELBASE is found; we don't need to use  
+> asm to
+> mask the lower 12 bits off.
+>
+> In the code that computes the address to rfi from, don't hard code the
+> offset to 24 bytes, but have the assembler figure that out for us.
+>
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> arch/powerpc/include/asm/mmu-fsl-booke.h |    2 ++
+> arch/powerpc/kernel/head_fsl_booke.S     |   22 +++++++++++++---------
+> 2 files changed, 15 insertions(+), 9 deletions(-)
 
-So that the starvation shares don't count towards the total distributed
-shares.
+applied to next.
 
-I guess this is an overestimate vs underestimate issue, you now
-underestimate possibly pessimising your actual bandwidth.
-
-
-
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 9b1e793..1ff78b6 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -1473,27 +1473,13 @@ static void
->  update_group_shares_cpu(struct task_group *tg, int cpu,
->  			unsigned long sd_shares, unsigned long sd_rq_weight)
->  {
-> -	int boost = 0;
->  	unsigned long shares;
->  	unsigned long rq_weight;
-> 
->  	if (!tg->se[cpu])
->  		return;
-> 
-> -	rq_weight = tg->cfs_rq[cpu]->load.weight;
-> -
-> -	/*
-> -	 * If there are currently no tasks on the cpu pretend there is one of
-> -	 * average load so that when a new task gets to run here it will not
-> -	 * get delayed by group starvation.
-> -	 */
-> -	if (!rq_weight) {
-> -		boost = 1;
-> -		rq_weight = NICE_0_LOAD;
-> -	}
-> -
-> -	if (unlikely(rq_weight > sd_rq_weight))
-> -		rq_weight = sd_rq_weight;
-> +	rq_weight = tg->cfs_rq[cpu]->rq_weight;
-> 
->  	/*
->  	 *           \Sum shares * rq_weight
-> @@ -1501,7 +1487,7 @@ update_group_shares_cpu
->  	 *               \Sum rq_weight
->  	 *
->  	 */
-> -	shares = (sd_shares * rq_weight) / (sd_rq_weight + 1);
-> +	shares = (sd_shares * rq_weight) / sd_rq_weight;
->  	shares = clamp_t(unsigned long, shares, MIN_SHARES, MAX_SHARES);
-> 
->  	if (abs(shares - tg->se[cpu]->load.weight) >
-> @@ -1510,11 +1496,7 @@ update_group_shares_cpu
->  		unsigned long flags;
-> 
->  		spin_lock_irqsave(&rq->lock, flags);
-> -		/*
-> -		 * record the actual number of shares, not the boosted amount.
-> -		 */
-> -		tg->cfs_rq[cpu]->shares = boost ? 0 : shares;
-> -		tg->cfs_rq[cpu]->rq_weight = rq_weight;
-> +		tg->cfs_rq[cpu]->shares = shares;
-> 
->  		__set_se_shares(tg->se[cpu], shares);
->  		spin_unlock_irqrestore(&rq->lock, flags);
-> @@ -1528,13 +1510,23 @@ update_group_shares_cpu
->   */
->  static int tg_shares_up(struct task_group *tg, void *data)
->  {
-> -	unsigned long rq_weight = 0;
-> +	unsigned long weight, rq_weight = 0;
->  	unsigned long shares = 0;
->  	struct sched_domain *sd = data;
->  	int i;
-> 
->  	for_each_cpu_mask(i, sd->span) {
-> -		rq_weight += tg->cfs_rq[i]->load.weight;
-> +		/*
-> +		 * If there are currently no tasks on the cpu pretend there
-> +		 * is one of average load so that when a new task gets to
-> +		 * run here it will not get delayed by group starvation.
-> +		 */
-> +		weight = tg->cfs_rq[i]->load.weight;
-> +		if (!weight)
-> +			weight = NICE_0_LOAD;
-> +
-> +		tg->cfs_rq[i]->rq_weight = weight;
-> +		rq_weight += weight;
->  		shares += tg->cfs_rq[i]->shares;
->  	}
-> 
-> @@ -1544,9 +1536,6 @@ static int tg_shares_up
->  	if (!sd->parent || !(sd->parent->flags & SD_LOAD_BALANCE))
->  		shares = tg->shares;
-> 
-> -	if (!rq_weight)
-> -		rq_weight = cpus_weight(sd->span) * NICE_0_LOAD;
-> -
->  	for_each_cpu_mask(i, sd->span)
->  		update_group_shares_cpu(tg, i, shares, rq_weight);
-
+- k
