@@ -1,53 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYKSUVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYKSUVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYKSUVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbYKSUVL
+	id S1753154AbYKSUVk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYKSUV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:21:11 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:45824 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752343AbYKSUVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:21:10 -0500
-Date: Wed, 19 Nov 2008 14:21:09 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
+	Wed, 19 Nov 2008 15:21:29 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:49397 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbYKSUV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 15:21:28 -0500
+Message-ID: <4924762B.8000108@novell.com>
+Date: Wed, 19 Nov 2008 15:25:15 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
 To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <peterz@infradead.org>,
+CC: Dimitri Sivanich <sivanich@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and no load balance
-Message-ID: <20081119202109.GA2383@sgi.com>
-References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <20081119195517.GB662@sgi.com> <49247462.4030101@qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49247462.4030101@qualcomm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
+ no load balance
+References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com>
+In-Reply-To: <49246DD0.3010509@qualcomm.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7F5CFF9763A16BE85CB48402"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 12:17:38PM -0800, Max Krasnyansky wrote:
-> 
-> 
-> Dimitri Sivanich wrote:
-> > On Wed, Nov 19, 2008 at 11:49:36AM -0800, Max Krasnyansky wrote:
-> >> I think the idea is that we want to make balancer a noop on those processors.
-> > 
-> > Ultimately, making the balancer a noop on processors with load balancing turned off would be the best solution.
-> Yes. I forgot to point out that if we do change cpusets to generate sched
-> domain per cpu we want to make sure that balancer is still a noop just like it
-> is today with the null sched domain.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7F5CFF9763A16BE85CB48402
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Sorry, I meant root_domain per cpu, not sched domain.  Having NULL sched domains for these cpus is fine.
+Max Krasnyansky wrote:
+> Gregory Haskins wrote:
+>  =20
+>> If you tried creating different cpusets and it still had them all end =
+up
+>> in the def_root_domain, something is very broken indeed.  I will take =
+a
+>> look.
+>>    =20
+>
+> I beleive that's the intended behaviour.
+Heh...well, as the guy that wrote root-domans, I can definitively say
+that is not the behavior that I personally intended ;)
 
-> 
-> >> We could change cpusets code to create a root sched domain for each cpu I
-> >> guess. But can we maybe scale cpupri some other way ?
-> > 
-> > It doesn't make sense to me that they'd have a root domain attached that spans more of the the system than that cpu.
-> I think 'root' in this case is a bit of a misnomer. What I meant is that each
-> non-balanced cpu would be in a separate sched domain.
 
-I think a NULL sched domain, as it is now, is fine.
+
+>  We always put cpus that are not
+> balanced into null sched domains. This was done since day one (ie when
+> cpuisol=3D option was introduced) and cpusets just followed the same co=
+nvention.
+>  =20
+
+It sounds like the problem with my code is that "null sched domain"
+translates into "default root-domain" which is understandably unexpected
+by Dimitri (and myself).  Really I intended root-domains to become
+associated with each exclusive/disjoint cpuset that is created.  In a
+way, non-balanced/isolated cpus could be modeled as an exclusive cpuset
+with one member, but that is somewhat beyond the scope of the
+root-domain code as it stands today.  My primary concern was that
+Dimitri reports that even creating a disjoint cpuset per cpu does not
+yield an isolated root-domain per cpu.  Rather they all end up in the
+default root-domain, and this is not what I intended at all.
+
+However, as a secondary goal it would be nice to somehow directly
+support the "no-load-balance" option without requiring explicit
+exclusive per-cpu cpusets to do it.  The proper mechanism (IMHO) to
+scope the scheduler to a subset of cpus (including only "self") is
+root-domains so I would prefer to see the solution based on that.=20
+However, today there is a rather tight coupling of root-domains and
+cpusets, so this coupling would likely have to be relaxed a little bit
+to get there.
+
+There are certainly other ways to solve the problem as well.  But seeing
+as how I intended root-domains to represent the effective partition
+scope of the scheduler, this seems like a natural fit in my mind until
+its proven to me otherwise.
+
+Regards,
+-Greg
+
+
+
+--------------enig7F5CFF9763A16BE85CB48402
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkkkdisACgkQlOSOBdgZUxnHVgCgjBwhVi+xIKfesvUlD5H5oquN
+cpgAnisFweg1IstIN8b5G8pkh7qBf7Bz
+=a6If
+-----END PGP SIGNATURE-----
+
+--------------enig7F5CFF9763A16BE85CB48402--
