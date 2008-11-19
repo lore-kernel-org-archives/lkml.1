@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbYKSPya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYKSPyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102AbYKSPya (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKSPyV
+	id S1753885AbYKSPyr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 10:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKSPyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:54:21 -0500
-Received: from styx.suse.cz ([82.119.242.94]:48396 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752805AbYKSPyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:54:20 -0500
-Date: Wed, 19 Nov 2008 16:54:18 +0100
-From: Jan Kara <jack@suse.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] udf: reduce stack usage of udf_get_filename
-Message-ID: <20081119155418.GC29820@duck.suse.cz>
-References: <20081116180240.GB6282@joi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081116180240.GB6282@joi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 19 Nov 2008 10:54:35 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:3182 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbYKSPye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 10:54:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=mzV42E4gflUoO/ZSG007XzMTjokuJvtA66Ais7RH4Gm4sphtrx2NTRhbcjI9U/RSVc
+         eO44mgTsBDxJ6o7o8Fnh4qK/yhT54zK51y1D89Q7mqHjkwDS4HLmq4xHJLyOsQap3MJ6
+         hF5u/SMPqnoQNeEz4uLSyuOlCis1Zxwc1fJhE=
+From: crquan@gmail.com
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] kobject_add: use constant strings directly as fmt strings
+Date: Wed, 19 Nov 2008 23:54:19 +0800
+Message-Id: <1227110059-12529-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 16-11-08 19:02:45, Marcin Slusarz wrote:
-> Allocate strings with kmalloc.
-> 
-> Checkstack output:
-> Before: udf_get_filename:          600
-> After:  udf_get_filename:          136
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Jan Kara <jack@suse.cz>
-  Both patches look fine. Thanks Martin. I've merged them to my UDF tree.
+From: Cheng Renquan <crquan@gmail.com>
 
-										Honza
+Signed-off-by: Cheng Renquan <crquan@gmail.com>
+---
+ block/blk-sysfs.c |    2 +-
+ block/elevator.c  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> ---
->  fs/udf/unicode.c |   41 +++++++++++++++++++++++++----------------
->  1 files changed, 25 insertions(+), 16 deletions(-)
-> 
-> diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
-> index 9fdf8c9..a3bbdbd 100644
-> --- a/fs/udf/unicode.c
-> +++ b/fs/udf/unicode.c
-> @@ -324,34 +324,43 @@ try_again:
->  int udf_get_filename(struct super_block *sb, uint8_t *sname, uint8_t *dname,
->  		     int flen)
->  {
-> -	struct ustr filename, unifilename;
-> -	int len;
-> +	struct ustr *filename, *unifilename;
-> +	int len = 0;
->  
-> -	if (udf_build_ustr_exact(&unifilename, sname, flen))
-> +	filename = kmalloc(sizeof(struct ustr), GFP_NOFS);
-> +	if (!filename)
->  		return 0;
->  
-> +	unifilename = kmalloc(sizeof(struct ustr), GFP_NOFS);
-> +	if (!unifilename)
-> +		goto out1;
-> +
-> +	if (udf_build_ustr_exact(unifilename, sname, flen))
-> +		goto out2;
-> +
->  	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UTF8)) {
-> -		if (!udf_CS0toUTF8(&filename, &unifilename)) {
-> +		if (!udf_CS0toUTF8(filename, unifilename)) {
->  			udf_debug("Failed in udf_get_filename: sname = %s\n",
->  				  sname);
-> -			return 0;
-> +			goto out2;
->  		}
->  	} else if (UDF_QUERY_FLAG(sb, UDF_FLAG_NLS_MAP)) {
-> -		if (!udf_CS0toNLS(UDF_SB(sb)->s_nls_map, &filename,
-> -				  &unifilename)) {
-> +		if (!udf_CS0toNLS(UDF_SB(sb)->s_nls_map, filename,
-> +				  unifilename)) {
->  			udf_debug("Failed in udf_get_filename: sname = %s\n",
->  				  sname);
-> -			return 0;
-> +			goto out2;
->  		}
->  	} else
-> -		return 0;
-> -
-> -	len = udf_translate_to_linux(dname, filename.u_name, filename.u_len,
-> -				     unifilename.u_name, unifilename.u_len);
-> -	if (len)
-> -		return len;
-> -
-> -	return 0;
-> +		goto out2;
-> +
-> +	len = udf_translate_to_linux(dname, filename->u_name, filename->u_len,
-> +				     unifilename->u_name, unifilename->u_len);
-> +out2:
-> +	kfree(unifilename);
-> +out1:
-> +	kfree(filename);
-> +	return len;
->  }
->  
->  int udf_put_filename(struct super_block *sb, const uint8_t *sname,
-> -- 
-> 1.5.6.4
-> 
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index 21e275d..0b189e9 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -342,7 +342,7 @@ int blk_register_queue(struct gendisk *disk)
+ 		return 0;
+ 
+ 	ret = kobject_add(&q->kobj, kobject_get(&disk_to_dev(disk)->kobj),
+-			  "%s", "queue");
++			  "queue");
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/block/elevator.c b/block/elevator.c
+index 9ac82dd..9a39f27 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -1005,7 +1005,7 @@ int elv_register_queue(struct request_queue *q)
+ 	elevator_t *e = q->elevator;
+ 	int error;
+ 
+-	error = kobject_add(&e->kobj, &q->kobj, "%s", "iosched");
++	error = kobject_add(&e->kobj, &q->kobj, "iosched");
+ 	if (!error) {
+ 		struct elv_fs_entry *attr = e->elevator_type->elevator_attrs;
+ 		if (attr) {
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.6.0.4.758.g36c05
+
