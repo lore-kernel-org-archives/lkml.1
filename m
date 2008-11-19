@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbYKSIOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYKSIPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbYKSIOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 03:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYKSIO0
+	id S1753250AbYKSIPU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 03:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYKSIPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 03:14:26 -0500
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:46462 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751308AbYKSIOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 03:14:25 -0500
-Date: Wed, 19 Nov 2008 08:13:59 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Re: linux-m68k.git
-Message-ID: <20081119081359.GB794@linux-mips.org>
-References: <Pine.LNX.4.64.0811182136060.27671@anakin>
+	Wed, 19 Nov 2008 03:15:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62512 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751187AbYKSIPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 03:15:06 -0500
+Message-ID: <4923CAF1.1020404@cn.fujitsu.com>
+Date: Wed, 19 Nov 2008 16:14:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811182136060.27671@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] cgroups: fix a serious bug in cgroupstats
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 09:49:01PM +0100, Geert Uytterhoeven wrote:
+Try this, and you'll get oops immediately:
+ # cd Documentation/accounting/
+ # gcc -o getdelays getdelays.c
+ # mount -t cgroup -o debug xxx /mnt
+ # ./getdelays -C /mnt/tasks
 
-> (Finally) I created an experimental git tree for Linux/m68k:
-> http://git.kernel.org/?p=linux/kernel/git/geert/linux-m68k.git
-> 
-> It contains more or less all patches I had in my quilt series at
-> http://www.kernel.org/pub/linux/kernel/people/geert/linux-m68k-patches-2.6/
-> A notable exception is m68k-PRIVATE-m68k-changes.diff, which hardcoded ARCH to
-> m68k.
-> 
-> As suggested by David Woodhouse, I grouped the commits by topic. But unlike
-> David's suggestion, I used topic branches, not topic repositories. Oh well,
-> we'll see...
+Because a normal file's dentry->d_fsdata is a pointer to struct cftype,
+not struct cgroup.
 
-That's easy enough to undo if the need should arise.
+After the patch, it returns EINVAL if we try to get cgroupstats
+from a normal file.
 
-> I also created for-next and for-linus branches. Do they look OK?
-> 
-> If I did something wrong, please let me know.
-> This is still experimental stuff, which may be rebased if needed.
-> 
-> In addition, one day I may pull from Ralf's repository that reflects the state
-> of Linux/m68k CVS a few commits before our server died...
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/cgroup.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-It's CVS that must die, not the poor server ;-)  If you're actually going
-to pull the old CVS stuff into the new git repository and you happen to have
-a newer snapshot than the one which I've converted I can re-run my converter.
-
-  Ralf
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 358e775..f6f5219 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2039,10 +2039,13 @@ int cgroupstats_build(struct cgroupstats *stats, struct dentry *dentry)
+ 	struct cgroup *cgrp;
+ 	struct cgroup_iter it;
+ 	struct task_struct *tsk;
++
+ 	/*
+-	 * Validate dentry by checking the superblock operations
++	 * Validate dentry by checking the superblock operations,
++	 * and make sure it's a directory.
+ 	 */
+-	if (dentry->d_sb->s_op != &cgroup_ops)
++	if (dentry->d_sb->s_op != &cgroup_ops ||
++	    !S_ISDIR(dentry->d_inode->i_mode))
+ 		 goto err;
+ 
+ 	ret = 0;
+-- 
+1.5.4.rc3
