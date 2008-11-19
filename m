@@ -1,134 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYKSK57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYKSLDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbYKSK57 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:57:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYKSK5u
+	id S1752737AbYKSLDs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 06:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYKSLDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:57:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40348 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbYKSK5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:57:49 -0500
-Date: Wed, 19 Nov 2008 11:57:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
-Message-ID: <20081119105719.GA21533@elte.hu>
-References: <20081116212428.938752312@goodmis.org> <18720.42209.880409.297291@cargo.ozlabs.ibm.com> <alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com> <alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com> <18723.31762.522696.647294@cargo.ozlabs.ibm.com> <alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com> <20081119092723.GC22309@elte.hu> <18723.60578.179210.736789@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
+	Wed, 19 Nov 2008 06:03:38 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:43648 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751307AbYKSLDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 06:03:38 -0500
+Date: Wed, 19 Nov 2008 12:06:55 +0100
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081119110655.GC20915@gandalf.sssup.it>
+References: <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <4923716A.5090104@gelato.unsw.edu.au> <20081119101701.GA20915@gandalf.sssup.it>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18723.60578.179210.736789@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <20081119101701.GA20915@gandalf.sssup.it>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar writes:
-> 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> From: Fabio Checconi <fchecconi@gmail.com>
+> Date: Wed, Nov 19, 2008 11:17:01AM +0100
+>
+> > From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+> > Date: Wed, Nov 19, 2008 12:52:42PM +1100
+> >
+> > Fabio Checconi wrote:
+> > >   - To detect hw tagging in BFQ we consider a sample valid iff the
+> > >     number of requests that the scheduler could have dispatched (given
+> > >     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
+> > >     the scheduler plus the ones into the driver) is higher than the
+> > >     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
+> > >     during testing, but the way CFQ uses now seems a little bit
+> > >     strange.
 > > 
-> > > On Wed, 19 Nov 2008, Paul Mackerras wrote:
-> > > 
-> > > > Steven Rostedt writes:
-> > > > 
-> > > > > Can I add your Acked-by: to all these patches that I submitted? I'm going 
-> > > > > to recommit them with a consistent subject (all lower case ppc), but I'm 
-> > > > > not going to change the patches themselves.
-> > > > > 
-> > > > > Would you two be fine with that? Or at least one of you?
-> > > > 
-> > > > My preference would be for the patches to go through the powerpc tree
-> > > > unless there is a good reason for them to go via another tree.
-> > > 
-> > > I have no problem with that. The only thing is that we have a lot of 
-> > > pending work still in the linux-tip tree, which you may need to pull 
-> > > in to get these patches working. Well, there's two or three commits 
-> > > in the generic code that I know the PPC code is dependent on.
-> > > 
-> > > I could give you a list of commits in tip that need to go mainline 
-> > > first before we can pull in the PPC changes. Then you could wait 
-> > > till those changes make it into 29 and then you could push the PPC 
-> > > modifications in from your tree.
+> > BFQ's tag detection logic is broken in the same way that CFQ's used to
+> > be.  Explanation is in this patch:
 > > 
-> > note that this inserts a lot of (unnecessary) serialization and a 
-> > window of non-testing - by all likelyhood this will delay ppc ftrace 
-> > to v2.6.30 or later kernels.
 > 
-> Well, note that I said "unless there is a good reason".  If it does 
-> need to go via your tree, it can, though I don't see that it will 
-> get much testing on powerpc there, and having it there will make it 
-> harder to manage any conflicts with the other stuff I have queued 
-> up.
+> If you look at bfq_update_hw_tag(), the logic introduced by the patch
+> you mention is still there; BFQ starts with ->hw_tag = 1, and updates it
+> every 32 valid samples.  What changed WRT your patch, apart from the
+> number of samples, is that the condition for a sample to be valid is:
+> 
+>   bfqd->rq_in_driver + bfqd->queued >= 5
+> 
+> while in your patch it is:
+> 
+>   cfqd->rq_queued > 5 || cfqd->rq_in_driver > 5
+> 
+> We preferred the first one because that sum better reflects the number
+> of requests that could have been dispatched, and I don't think that this
+> is wrong.
+> 
+> There is a problem, but it's not within the tag detection logic itself.
+> From some quick experiments, what happens is that when a process starts,
+> CFQ considers it seeky (*), BFQ doesn't.  As a side effect BFQ does not
+> always dispatch enough requests to correctly detect tagging.
+> 
+> At the first seek you cannot tell if the process is going to bee seeky
+> or not, and we have chosen to consider it sequential because it improved
+> fairness in some sequential workloads (the CIC_SEEKY heuristic is used
+> also to determine the idle_window length in [bc]fq_arm_slice_timer()).
+> 
+> Anyway, we're dealing with heuristics, and they tend to favor some
+> workload over other ones.  If recovering this thoughput loss is more
+> important than a transient unfairness due to short idling windows assigned
+> to sequential processes when they start, I've no problems in switching
+> the CIC_SEEKY logic to consider a process seeky when it starts.
+> 
+> Thank you for testing and for pointing out this issue, we missed it
+> in our testing.
+> 
+> 
+> (*) to be correct, the initial classification depends on the position
+>     of the first accessed sector.
 
-this is the diffstat:
+Sorry, I forgot the patch...  This seems to solve the problem with
+your workload here, does it work for you?
 
- arch/powerpc/Kconfig              |    2 +
- arch/powerpc/include/asm/ftrace.h |   14 +-
- arch/powerpc/include/asm/module.h |   16 ++-
- arch/powerpc/kernel/ftrace.c      |  460 +++++++++++++++++++++++++++++++++---
- arch/powerpc/kernel/idle.c        |    5 +
- arch/powerpc/kernel/module_32.c   |   10 +
- arch/powerpc/kernel/module_64.c   |   13 +
- scripts/recordmcount.pl           |   18 ++-
- 8 files changed, 495 insertions(+), 43 deletions(-)
+[ The magic number would not appear in a definitive fix... ]
 
-90% of it creates new code that shouldnt be collision-happy.
 
-it does not "need" to go via tip/tracing, i just pointed out the 
-effects of the proposed workflow and i'm just trying to find a more 
-efficient workflow for it - while not impacting yours either. I think 
-it can be done - git gives us tons of tools to do this intelligently.
-
-> How much generic stuff that's not upstream do the powerpc ftrace 
-> patches depend on?
-
-a lot:
-
-   66 files changed, 3266 insertions(+), 985 deletions(-)
-
-and it's all in flux (we are in the middle of the development cycle), 
-so i dont think it would be a good idea for you to pull those bits 
-into the powerpc tree.
-
-Maybe Steve could do the following trick: create a Linus -git based 
-branch that uses the new APIs but marks ppc's ftrace as "depends 0" in 
-the powerpc Kconfig. (the new ftrace.c wont build)
-
-You could pull that tree into the powerpc tree and everything should 
-still work fine in PPC - sans ftrace.
-
-In tip/tracing we'd merge it too (these commits will never be 
-rebased), and we'd also remove the depends 0 from the powerpc Kconfig. 
-That sole change wont conflict with anything powerpc.
-
-It would all play out just fine in linux-next: we'd have both the 
-latest powerpc bits and the latest ftrace bits on powerpc. You could 
-test the non-ftrace impact of Steve's changes in the powerpc tree as 
-well and have it all part of your usual workflow.
-
-The 2.6.29 merge window would be trouble-free as well: since the 
-sha1's are the same, any of the trees can be merged upstream without 
-having to wait for the other one and without creating conflicts or 
-other trouble for the other one.
-
-Hm?
-
-	Ingo
+---
+diff --git a/block/bfq-iosched.c b/block/bfq-iosched.c
+index 83e90e9..e9b010f 100644
+--- a/block/bfq-iosched.c
++++ b/block/bfq-iosched.c
+@@ -1322,10 +1322,12 @@ static void bfq_update_io_seektime(struct bfq_data *bfqd,
+ 
+ 	/*
+ 	 * Don't allow the seek distance to get too large from the
+-	 * odd fragment, pagein, etc.
++	 * odd fragment, pagein, etc.  The first request is not
++	 * really a seek, but we consider a cic seeky on creation
++	 * to make the hw_tag detection logic work better.
+ 	 */
+-	if (cic->seek_samples == 0) /* first request, not really a seek */
+-		sdist = 0;
++	if (cic->seek_samples == 0)
++		sdist = 8 * 1024 + 1;
+ 	else if (cic->seek_samples <= 60) /* second&third seek */
+ 		sdist = min(sdist, (cic->seek_mean * 4) + 2*1024*1024);
+ 	else
