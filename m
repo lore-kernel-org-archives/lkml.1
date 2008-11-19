@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbYKSGR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbYKSGU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbYKSGR2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 01:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYKSGRU
+	id S1752165AbYKSGU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 01:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYKSGUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 01:17:20 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60640 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbYKSGRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 01:17:20 -0500
-Date: Wed, 19 Nov 2008 17:17:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: [PATCH] cirrusfb: remove unused variables
-Message-Id: <20081119171708.0c0c4d23.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Wed, 19 Nov 2008 01:20:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52988 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750834AbYKSGUP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 01:20:15 -0500
+Date: Tue, 18 Nov 2008 22:19:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rakib Mullick" <rakib.mullick@gmail.com>
+Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] kernel/profile.c: Fix section mismatch warning.
+Message-Id: <20081118221942.384ebefd.akpm@linux-foundation.org>
+In-Reply-To: <b9df5fa10811172015w3dfb955bq115180d9d0808d82@mail.gmail.com>
+References: <b9df5fa10811172015w3dfb955bq115180d9d0808d82@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -25,39 +27,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Silences:
+On Tue, 18 Nov 2008 10:15:24 +0600 "Rakib Mullick" <rakib.mullick@gmail.com> wrote:
 
-drivers/video/cirrusfb.c: In function 'cirrusfb_setup':
-drivers/video/cirrusfb.c:2466: warning: unused variable 'i'
-drivers/video/cirrusfb.c:2465: warning: unused variable 's'
+> Impact: Fix section mismatch warning in kernel/profile.c
+> 
+> Here, profile_nop function has been called from a non-init function
+> create_hash_tables(void). Which generetes a section mismatch warning.
+> Previously, create_hash_tables(void) was a init function. So, removing
+> __init from create_hash_tables(void) requires profile_nop to be
+> non-init. This patch makes profile_nop function inline and fixes the
+> following warning:
+> 
+> WARNING: vmlinux.o(.text+0x6ebb6): Section mismatch in reference from
+> the function create_hash_tables() to the function
+> .init.text:profile_nop()
+> The function create_hash_tables() references
+> the function __init profile_nop().
+> This is often because create_hash_tables lacks a __init
+> annotation or the annotation of profile_nop is wrong.
+> 
+> 
+> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> 
+> --- linux-2.6-orig/kernel/profile.c	2008-11-17 20:30:42.000000000 +0600
+> +++ linux-2.6/kernel/profile.c	2008-11-18 09:39:58.000000000 +0600
+> @@ -544,7 +544,7 @@ static const struct file_operations proc
+>  };
+> 
+>  #ifdef CONFIG_SMP
+> -static void __init profile_nop(void *unused)
+> +static inline void profile_nop(void *unused)
+>  {
+>  }
 
-introduced by commit a1d35a7a50d01b445e29d87f479f8c055a414f7e "cirrusfb:
-use modedb and add mode_option parameter" which removed the uses of
-these variables.
+Thanks.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/video/cirrusfb.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+There's no point in declaring this as inline, since it is always called
+indirectly, via on_each_cpu().
 
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 8a87602..a2aa6dd 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -2462,8 +2462,7 @@ static int __init cirrusfb_init(void)
+There would be a teeny point in inlining an on_each_cpu() function in
+uniprocessor code, because in that case it _would_ be inlined.  But a)
+that's a bit dopey and b) this code you're patching is SMP-only.
+
+So...
+
+--- a/kernel/profile.c~kernel-profilec-fix-section-mismatch-warning-fix
++++ a/kernel/profile.c
+@@ -544,7 +544,7 @@ static const struct file_operations proc
+ };
  
- #ifndef MODULE
- static int __init cirrusfb_setup(char *options) {
--	char *this_opt, s[32];
--	int i;
-+	char *this_opt;
+ #ifdef CONFIG_SMP
+-static inline void profile_nop(void *unused)
++static void profile_nop(void *unused)
+ {
+ }
  
- 	DPRINTK("ENTER\n");
- 
--- 
-1.5.6.5
+_
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
