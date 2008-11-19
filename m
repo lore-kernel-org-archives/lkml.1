@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYKSRkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYKSRpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYKSRkM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 12:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYKSRkA
+	id S1754125AbYKSRpU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 12:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYKSRpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 12:40:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34121 "EHLO mx2.mail.elte.hu"
+	Wed, 19 Nov 2008 12:45:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43939 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752107AbYKSRj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 12:39:59 -0500
-Date: Wed, 19 Nov 2008 18:39:46 +0100
+	id S1752857AbYKSRpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 12:45:05 -0500
+Date: Wed, 19 Nov 2008 18:44:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] sched: fix inconsistency when redistribute per-cpu
-	tg->cfs_rq  shares.
-Message-ID: <20081119173946.GA31560@elte.hu>
-References: <b040c32a0811182241r3cf5e7c7l25d3627c2265ead2@mail.gmail.com> <1227113269.29743.43.camel@lappy.programming.kicks-ass.net>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Nish Aravamudan <nish.aravamudan@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Using cpusets for configuration/isolation [Was Re: RT sched:
+	cpupri_vec lock contention with def_root_domain and no load balance]
+Message-ID: <20081119174448.GB31560@elte.hu>
+References: <29495f1d0811071123x37d910a8w6c1604b8159954ec@mail.gmail.com> <4923731E.7010601@qualcomm.com> <20081119125135.GB20475@elte.hu> <49243F7C.9090109@qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1227113269.29743.43.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <49243F7C.9090109@qualcomm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,36 +41,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* Max Krasnyansky <maxk@qualcomm.com> wrote:
 
-> On Tue, 2008-11-18 at 22:41 -0800, Ken Chen wrote:
-> > In the update_shares() path leading to tg_shares_up(), the calculation of
-> > per-cpu cfs_rq shares is rather erratic even under moderate task wake up
-> > rate.  The problem is that the per-cpu tg->cfs_rq load weight used in the
-> > sd_rq_weight aggregation and actual redistribution of the cfs_rq->shares
-> > are collected at different time.  Under moderate system load, we've seen
-> > quite a bit of variation on the cfs_rq->shares and ultimately wildly
-> > affects sched_entity's load weight.
-> 
-> Another thing we could possibly do is put a low-pass filter on the
-> per-cpu load values so that we smooth out the fluctuations, hmm?
-> 
-> > This patch caches the result of initial per-cpu load weight when doing the
-> > sum calculation, and then pass it down to update_group_shares_cpu() for
-> > redistributing per-cpu cfs_rq shares.  This allows consistent total cfs_rq
-> > shares across all CPUs. It also simplifies the rounding and zero load
-> > weight check.
+> Ingo Molnar wrote:
+> > * Max Krasnyansky <maxk@qualcomm.com> wrote:
 > > 
-> > Signed-off-by: Ken Chen <kenchen@google.com>
+> >> What you described is almost exactly what I did in my original 
+> >> cpu isolation patch, which did get NAKed :). Basically I used 
+> >> global cpu_isolated_map and exposed 'isolated' bit, etc.
+> > 
+> > Please extend cpusets according to the plan outlined by PeterZ a 
+> > few months ago - that's the right place to do partitioning.
 > 
-> This does indeed look much better, the cleanup factor alone makes it 
-> a worthwhile patch, he fact that is improves behaviour makes it even 
-> better :-)
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> Thanks Ken!
+> Already did. It's all in mainline. The part you quoted was just 
+> pointing out that the original approach was not correct.
 
-applied to tip/sched/core (for v2.6.29), thanks guys!
+Yeah, we have bits of it (i merged them, and i still remember them ;-) 
+- but we still dont have the "system set" concept suggested by Peter 
+though. We could go further and make it really easy to partition all 
+scheduling and irq aspects of the system via cpusets.
 
 	Ingo
