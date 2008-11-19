@@ -1,94 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYKSO2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbYKSOcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbYKSO2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 09:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYKSO2E
+	id S1753737AbYKSOcO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 09:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYKSOb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 09:28:04 -0500
-Received: from ns0.wincor-nixdorf.com ([80.154.98.130]:50796 "EHLO
-	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753235AbYKSO2B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 09:28:01 -0500
-X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 09:28:01 EST
-Message-ID: <4924201B.8010301@wincor-nixdorf.com>
-Date: Wed, 19 Nov 2008 15:18:03 +0100
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Wed, 19 Nov 2008 09:31:58 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35725 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753206AbYKSOb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 09:31:57 -0500
+Date: Wed, 19 Nov 2008 15:30:07 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Divyesh Shah <dpshah@google.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081119143006.GI26308@kernel.dk>
+References: <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it>
 MIME-Version: 1.0
-To: sfr@canb.auug.org.au, linux-laptop@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] apm: Remove CONFIG_APM_REAL_MODE_POWER_OFF in favor of kernel
- parameter
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Nov 2008 14:20:16.0690 (UTC) FILETIME=[F1D5D920:01C94A51]
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081118211442.GG15268@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove CONFIG_APM_REAL_MODE_POWER_OFF like CONFIG_APM_POWER_OFF which
-has been done for linux-2.2.14pre8 (http://lkml.org/lkml/1999/11/23/3).
+On Tue, Nov 18 2008, Fabio Checconi wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Date: Tue, Nov 18, 2008 08:12:08PM +0100
+> >
+> > On Tue, Nov 18 2008, Fabio Checconi wrote:
+> > > BFQ started from CFQ, extending it in the way you correctly describe,
+> > > so it is indeed very similar.  There are also some minor changes to
+> > > locking, cic handling, hw_tag detection and to the CIC_SEEKY heuristic.
+> > > 
+> ...
+> > My preferred approach here would be, in order or TODO:
+> > 
+> > - Create and test the smallish patches for seekiness, hw_tag checking,
+> >   and so on for CFQ.
+> > - Create and test a WF2Q+ service dispatching patch for CFQ.
+> > 
+> > and if there are leftovers after that, we could even conditionally
+> > enable some of those if appropriate. I think the WF2Q+ is quite cool and
+> > could be easily usable as the default, so it's definitely a viable
+> > alternative.
+> > 
+> > My main goal here is basically avoiding addition of Yet Another IO
+> > scheduler, especially one that is so closely tied to CFQ already.
+> > 
+> > I'll start things off by splitting cfq into a few files similar to what
+> > bfq has done, as I think it makes a lot of sense. Fabio, if you could
+> > create patches for the small behavioural changes you made, we can
+> > discuss and hopefully merge those next.
+> > 
+> 
+> Ok, I can do that, I need just a little bit of time to organize
+> the work.
+> 
+> About these small (some of them are really small) changes, a mixed list
+> of things that they will touch and/or things that I'd like to have clear
+> before starting to write the patches (maybe we can start another thread
+> for them):
+> 
+>   - In cfq_exit_single_io_context() and in changed_ioprio(), cic->key
+>     is dereferenced without holding any lock.  As I reported in [1]
+>     this seems to be a problem when an exit() races with a cfq_exit_queue()
+>     and in a few other cases.  In BFQ we used a somehow involved
+>     mechanism to avoid that, abusing rcu (of course we'll have to wait
+>     the patch to talk about it :) ), but given my lack of understanding
+>     of some parts of the block layer, I'd be interested in knowing if
+>     the race is possible and/or if there is something more involved
+>     going on that can cause the same effects.
 
-Re-introducing CONFIG_APM_POWER_OFF got nack-ed. Stephen didn't bother
-to remove CONFIG_APM_REAL_MODE_POWER_OFF, let's get rid of it now.
-	Reference: http://lkml.org/lkml/2008/5/7/97
+OK, I'm assuming this is where Nikanth got his idea for the patch from?
+It does seem racy in spots, we can definitely proceed on getting that
+tightened up some more.
 
-Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+>   - set_task_ioprio() in fs/ioprio.c doesn't seem to have a write
+>     memory barrier to pair with the dependent read one in
+>     cfq_get_io_context().
 
----
- arch/x86/Kconfig         |    7 -------
- arch/x86/kernel/apm_32.c |    4 ----
- 2 files changed, 0 insertions(+), 11 deletions(-)
+Agree, that needs fixing.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 93224b5..d0b9ef7 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1629,13 +1629,6 @@ config APM_ALLOW_INTS
- 	  many of the newer IBM Thinkpads.  If you experience hangs when you
- 	  suspend, try setting this to Y.  Otherwise, say N.
- 
--config APM_REAL_MODE_POWER_OFF
--	bool "Use real mode APM BIOS call to power off"
--	help
--	  Use real mode APM BIOS calls to switch off the computer. This is
--	  a work-around for a number of buggy BIOSes. Switch this option on if
--	  your computer crashes instead of powering off properly.
--
- endif # APM
- 
- source "arch/x86/kernel/cpu/cpufreq/Kconfig"
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 5145a6e..3a26525 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -391,11 +391,7 @@ static int power_off;
- #else
- static int power_off = 1;
- #endif
--#ifdef CONFIG_APM_REAL_MODE_POWER_OFF
--static int realmode_power_off = 1;
--#else
- static int realmode_power_off;
--#endif
- #ifdef CONFIG_APM_ALLOW_INTS
- static int allow_ints = 1;
- #else
+>   - CFQ_MIN_TT is 2ms, this can result, depending on the value of
+>     HZ in timeouts of one jiffy, that may expire too early, so we are
+>     just wasting time and do not actually wait for the task to present
+>     its new request.  Dealing with seeky traffic we've seen a lot of
+>     early timeouts due to one jiffy timers expiring too early, is
+>     it worth fixing or can we live with that?
 
+We probably just need to enfore a '2 jiffies minimum' rule for that.
+
+>   - To detect hw tagging in BFQ we consider a sample valid iff the
+>     number of requests that the scheduler could have dispatched (given
+>     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
+>     the scheduler plus the ones into the driver) is higher than the
+>     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
+>     during testing, but the way CFQ uses now seems a little bit
+>     strange.
+
+Not sure this matters a whole lot, but your approach makes sense. Have
+you seen the later change to the CFQ logic from Aaron?
+
+>   - Initially, cic->last_request_pos is zero, so the sdist charged
+>     to a task for its first seek depends on the position on the disk
+>     that is accessed first, independently from its seekiness.  Even
+>     if there is a cap on that value, we choose to not charge the first
+>     seek to processes; that resulted in less wrong predictions for
+>     purely sequential loads.
+
+Agreed, that's is definitely off.
+
+>   - From my understanding, with shared I/O contexts, two different
+>     tasks may concurrently lookup for a cfqd into the same ioc.
+>     This may result in cfq_drop_dead_cic() being called two times
+>     for the same cic.  Am I missing something that prevents that from
+>     happening?
+
+That also looks problematic. I guess we need to recheck that under the
+lock when in cfq_drop_dead_cic().
+
+> Regarding the code splitup, do you think you'll go for the CFS(BFQ) way,
+> using a single compilation unit and including the .c files, or a layout
+> with different compilation units (like the ll_rw_blk.c splitup)?
+
+Different compilation units would be my preferred choice.
 
 -- 
-WINCOR NIXDORF International GmbH 
-Sitz der Gesellschaft: Paderborn 
-Registergericht Paderborn HRB 3507
-Geschäftsführer: Eckard Heidloff (Vorsitzender), Stefan Auerbach, Dr. Jürgen Wunram
-Vorsitzender des Aufsichtsrats: Karl-Heinz Stiller 
-Steuernummer: 339/5884/0020 - Ust-ID Nr.: DE812927716 - WEEE-Reg.-Nr. DE44477193
-
-Diese E-Mail enthält vertrauliche Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und vernichten Sie diese E-Mail. Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser E-Mail ist nicht gestattet.
-
-This e-mail may contain confidential information. If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail. Any unauthorised copying, disclosure or distribution of the material in this e-mail is strictly forbidden. 
+Jens Axboe
 
