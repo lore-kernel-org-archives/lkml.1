@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbYKSEcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbYKSEcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752328AbYKSEcA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 23:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYKSEbv
+	id S1752709AbYKSEcj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 23:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYKSEcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 23:31:51 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:35652 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751538AbYKSEbu (ORCPT
+	Tue, 18 Nov 2008 23:32:31 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:35168 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbYKSEc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 23:31:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZVXqqNaefLleW2s2NyqkdCha/x6ne6KGWXBRYx7jnM09ta7I9asBwDGJOCRz58qQFUZSARHkNardnE/EhWN5g/TwDsvaAIuYLoVXwzgTl+pETqrm9fhDVWLFzSOYI4iGXmefixOGSX8DU6PmveXMQ8FyeEfqCvhWdt64+B0XLdQ=  ;
-X-YMail-OSG: H_wFC9IVM1nWZAy0VmRqpiX_CEaH4ldKV6.jLUAf5B5MX.Id8FvjWeSQQrvPfm69m3LoKzCtq4VSKhxB9NGbTujVq14rd0cj9xv9aw80jYu52OgDobDEIQCfckZesNhNXGaSOYLF1zUAo_xPDWHJGgQ_Apca2UD1_FNA46iuTMf2IDD6ZfLnWyZpVaQh
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #11308] tbench regression on each kernel release from 2.6.22 -&gt; 2.6.28
-Date: Wed, 19 Nov 2008 15:31:41 +1100
-User-Agent: KMail/1.9.5
-Cc: David Miller <davem@davemloft.net>, mingo@elte.hu, dada1@cosmosbay.com,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, shemminger@vyatta.com
-References: <alpine.LFD.2.00.0811171149100.18283@nehalem.linux-foundation.org> <200811182044.11055.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0811180731480.18283@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811180731480.18283@nehalem.linux-foundation.org>
+	Tue, 18 Nov 2008 23:32:29 -0500
+Date: Wed, 19 Nov 2008 10:01:21 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       anil.s.keshavamurthy@intel.com, Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] bugfix: pass aggr_kprobe to arch_remove_kprobe
+Message-ID: <20081119043121.GB4053@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <200811140028.mAE0SppC021444@imap1.linux-foundation.org> <4922ED4D.8070201@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811191531.41652.nickpiggin@yahoo.com.au>
+In-Reply-To: <4922ED4D.8070201@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 November 2008 02:58, Linus Torvalds wrote:
-> On Tue, 18 Nov 2008, Nick Piggin wrote:
-> > On Tuesday 18 November 2008 07:58, David Miller wrote:
-> > > From: Linus Torvalds <torvalds@linux-foundation.org>
-> > >
-> > > > Ok. It could easily be something like a cache footprint issue. And
-> > > > while I don't know my sparc cpu's very well, I think the
-> > > > Ultrasparc-IIIi is super- scalar but does no out-of-order and
-> > > > speculation, no?
-> > >
-> > > I does only very simple speculation, but you're description is
-> > > accurate.
-> >
-> > Surely it would do branch prediction, but maybe not indirect branch?
->
-> That would be "branch target prediction" (and a BTB - "Branch Target
-> Buffer" to hold it), and no, I don't think Sparc does that. You can
-> certainly do it for in-order machines too, but I think it's fairly rare.
->
-> It's sufficiently different from the regular "pick up the address from the
-> static instruction stream, and also yank the kill-chain on mispredicted
-> direction" to be real work to do. Unlike a compare or test instruction,
-> it's not at all likely that you can resolve the final address in just a
-> single pipeline stage, and without that, it's usually too late to yank the
-> kill-chain.
->
-> (And perhaps equally importantly, indirect branches are relatively rare on
-> old-style Unix benchmarks - ie SpecInt/FP - or in databases. So it's not
-> something that Sparc would necessarily have spent the effort on.)
->
-> There is obviously one very special indirect jump: "ret". That's the one
-> that is common, and that tends to have a special branch target buffer that
-> is a pure stack. And for that, there is usually a special branch target
-> register that needs to be set up 'x' cycles before the ret in order to
-> avoid the stall (then the predition is checking that register against the
-> branch target stack, which is somewhat akin to a regular conditional
-> branch comparison).
->
-> So I strongly suspect that an indirect (non-ret) branch flushes the
-> pipeline on sparc. It is possible that there is a "prepare to jump"
-> instruction that prepares the indirect branch stack (kind of a "push
-> prediction information"). I suspect Java sees a lot more indirect
-> branches than traditional Unix loads, so maybe Sun did do that.
+On Tue, Nov 18, 2008 at 11:29:01AM -0500, Masami Hiramatsu wrote:
+> Hi Andrew,
+> 
+> akpm@linux-foundation.org wrote:
+> > The patch titled
+> >      kprobes: support probing module __exit function
+> > has been added to the -mm tree.  Its filename is
+> >      kprobes-support-probing-module-__exit-function.patch
+> 
+> I found that one bug was still alive. Here is the bugfix.
+> 
+> Thank you,
+> 
+> Call arch_remove_kprobe() with aggr_kprobe instead of user specific kprobe,
+> because the user specific kprobe on the gone or reused aggr_kprobe may have
+> invalid arch_specific_insn.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-Probably true. OTOH, I've seen indirect branches get compiled to direct
-branches or the common-case special cased into a direct branch
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-if (object->fn == default_object_fn)
-  default_object_fn();
-
-That might be an easy way to test suspicions about CPU scheduler
-slowdowns... (adding a likely() there, and using likely profiling would
-help ensure you got the defualt case right).
+> ---
+>  kernel/kprobes.c |   14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
+> 
+> Index: 2.6-rc/kernel/kprobes.c
+> ===================================================================
+> --- 2.6-rc.orig/kernel/kprobes.c
+> +++ 2.6-rc/kernel/kprobes.c
+> @@ -766,14 +766,14 @@ static void __kprobes __unregister_kprob
+>  {
+>  	struct kprobe *old_p;
+> 
+> -	if (list_empty(&p->list) || list_is_singular(&p->list)) {
+> -		if (!list_empty(&p->list)) {
+> -			/* "p" is the last child of an aggr_kprobe */
+> -			old_p = list_entry(p->list.next, struct kprobe, list);
+> -			list_del(&p->list);
+> -			kfree(old_p);
+> -		}
+> +	if (list_empty(&p->list))
+>  		arch_remove_kprobe(p);
+> +	else if (list_is_singular(&p->list)) {
+> +		/* "p" is the last child of an aggr_kprobe */
+> +		old_p = list_entry(p->list.next, struct kprobe, list);
+> +		list_del(&p->list);
+> +		arch_remove_kprobe(old_p);
+> +		kfree(old_p);
+>  	}
+>  }
+> 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
