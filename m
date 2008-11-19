@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYKSJzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYKSJ7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbYKSJzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 04:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYKSJz3
+	id S1753298AbYKSJ7w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 04:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYKSJ7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 04:55:29 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44394 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbYKSJz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 04:55:29 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] Exiting queue and task might race to free cic
-Date: Wed, 19 Nov 2008 15:27:17 +0530
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: linux-kernel@vger.kernel.org, Fabio Checconi <fchecconi@gmail.com>
+	Wed, 19 Nov 2008 04:59:44 -0500
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:2102 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537AbYKSJ7n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 04:59:43 -0500
+Date: Wed, 19 Nov 2008 10:59:41 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Subject: kobject: 'vcs1' (d2172ad8): kobject_add_internal: parent: 'vc',
+	set: 'devices'
+Message-ID: <20081119095934.GF4370@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200811191527.18539.knikanth@suse.de>
+Content-Transfer-Encoding: 8bit
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Sat Nov 15 16:05:58 CET 2008
+X-Message-Flag: www.unixexpert.nl
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens
+Hi,
 
-Looking at the bug reported here
-http://thread.gmane.org/gmane.linux.kernel/722539
-it looks like an exiting queue can race with an exiting task.
+What switch is responsible for this logging:
+[   94.025172] kobject: 'vcsa1': free name
+[   94.025231] kobject: 'vcs1' (d2172ad8): kobject_add_internal: parent: 'vc', set: 'devices'
+[   94.025308] kobject: 'vcs1' (d2172ad8): kobject_uevent_env
+[   94.025315] kobject: 'vcs1' (d2172ad8): fill_kobj_path: path = '/class/vc/vcs1'
+[   94.025352] kobject: 'vcsa1' (d23f00d8): kobject_add_internal: parent: 'vc', set: 'devices'
+[   94.025398] kobject: 'vcsa1' (d23f00d8): kobject_uevent_env
 
-When a queue exits the queue lock is taken and cfq_exit_queue() would free all 
-the cic's associated with the queue.
-
-But when a task exits, cfq_exit_io_context() gets cic one by one and then 
-locks the associated queue to call __cfq_exit_single_io_context. It looks like 
-between getting a cic from the ioc and locking the queue, the queue might have 
-exited on another cpu. Isn't this possible?
-
-If possible, either verifying whether cic->key is still not null or q->flags 
-does not have QUEUE_FLAG_DEAD set would fix this.
-
-Thanks
-Nikanth Karthikesan
-
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-
----
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 6a062ee..b9b627a 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1318,7 +1318,12 @@ static void cfq_exit_single_io_context(struct 
-io_context *ioc,
- 		unsigned long flags;
- 
- 		spin_lock_irqsave(q->queue_lock, flags);
--		__cfq_exit_single_io_context(cfqd, cic);
-+		/*
-+		 * cic might have been already exited when an exiting task
-+		 * races with an exiting queue.
-+		 */
-+		if (likely(cic->key))
-+			__cfq_exit_single_io_context(cfqd, cic);
- 		spin_unlock_irqrestore(q->queue_lock, flags);
- 	}
- }
-
-Or this would also work
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 6a062ee..7a068bd 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1318,7 +1318,11 @@ static void cfq_exit_single_io_context(struct 
-io_context *ioc,
- 		unsigned long flags;
- 
- 		spin_lock_irqsave(q->queue_lock, flags);
--		__cfq_exit_single_io_context(cfqd, cic);
-+		/*
-+		 * Make sure the queue is not dead.
-+		 */
-+		if (likely(!test_bit(QUEUE_FLAG_DEAD, &q->queue_flags)))
-+			__cfq_exit_single_io_context(cfqd, cic);
- 		spin_unlock_irqrestore(q->queue_lock, flags);
- 	}
- }
+I can't find it and it removes an oops from dmesg before i can capture it.
 
 
+Folkert van Heusden
+
+-- 
+MultiTail är en flexibel redskap för att fälja logfilar, utför av
+commandoer, filtrera, ge färg, sammanfoga, o.s.v. följa.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
