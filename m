@@ -1,73 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYKSMLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbYKSMMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYKSMLw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 07:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYKSMJV
+	id S1754144AbYKSMMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 07:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYKSMJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 07:09:21 -0500
-Received: from mga09.intel.com ([134.134.136.24]:34262 "EHLO mga09.intel.com"
+	Wed, 19 Nov 2008 07:09:22 -0500
+Received: from mga09.intel.com ([134.134.136.24]:18063 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752695AbYKSMJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 07:09:04 -0500
+	id S1752805AbYKSMJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 07:09:09 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,631,1220252400"; 
-   d="scan'208";a="361907278"
+   d="scan'208";a="361907293"
 From: Patrick Ohly <patrick.ohly@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
        Patrick Ohly <patrick.ohly@intel.com>
-Subject: [RFC PATCH 06/11] net: pass new SIOCSHWTSTAMP through to device drivers
-Date: Wed, 19 Nov 2008 13:08:43 +0100
-Message-Id: <1227096528-24150-7-git-send-email-patrick.ohly@intel.com>
+Subject: [RFC PATCH 08/11] clocksource: allow usage independent of timekeeping.c
+Date: Wed, 19 Nov 2008 13:08:45 +0100
+Message-Id: <1227096528-24150-9-git-send-email-patrick.ohly@intel.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1227096528-24150-6-git-send-email-patrick.ohly@intel.com>
+In-Reply-To: <1227096528-24150-8-git-send-email-patrick.ohly@intel.com>
 References: <1227096528-24150-1-git-send-email-patrick.ohly@intel.com>
  <1227096528-24150-2-git-send-email-patrick.ohly@intel.com>
  <1227096528-24150-3-git-send-email-patrick.ohly@intel.com>
  <1227096528-24150-4-git-send-email-patrick.ohly@intel.com>
  <1227096528-24150-5-git-send-email-patrick.ohly@intel.com>
  <1227096528-24150-6-git-send-email-patrick.ohly@intel.com>
+ <1227096528-24150-7-git-send-email-patrick.ohly@intel.com>
+ <1227096528-24150-8-git-send-email-patrick.ohly@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- fs/compat_ioctl.c |    1 +
- net/core/dev.c    |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+So far struct clocksource acted as the interface between time/timekeeping
+and hardware. This patch generalizes the concept so that the same
+interface can also be used in other contexts.
 
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 5235c67..a5001a6 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -2555,6 +2555,7 @@ HANDLE_IOCTL(SIOCSIFMAP, dev_ifsioc)
- HANDLE_IOCTL(SIOCGIFADDR, dev_ifsioc)
- HANDLE_IOCTL(SIOCSIFADDR, dev_ifsioc)
- HANDLE_IOCTL(SIOCSIFHWBROADCAST, dev_ifsioc)
-+HANDLE_IOCTL(SIOCSHWTSTAMP, dev_ifsioc)
+The only change as far as kernel/time/timekeeping is concerned is that
+the hardware access can be done either with or without passing
+the clocksource pointer as context. This is necessary in those
+cases when there is more than one instance of the hardware.
+
+The extensions in this patch add code which turns the raw cycle count
+provided by hardware into a continously increasing time value. This
+reuses fields also used by timekeeping.c. Because of slightly different
+semantic (__get_nsec_offset does not update cycle_last, clocksource_read_ns
+does that transparently) timekeeping.c was not modified to use the
+generalized code.
+
+The new code does no locking of the clocksource. This is the responsibility
+of the caller.
+---
+ include/linux/clocksource.h |  119 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 118 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index f88d32f..5435bd2 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -24,6 +24,9 @@ struct clocksource;
+ /**
+  * struct clocksource - hardware abstraction for a free running counter
+  *	Provides mostly state-free accessors to the underlying hardware.
++ *      Also provides utility functions which convert the underlying
++ *      hardware cycle values into a non-decreasing count of nanoseconds
++ *      ("time").
+  *
+  * @name:		ptr to clocksource name
+  * @list:		list head for registration
+@@ -43,6 +46,9 @@ struct clocksource;
+  *				The ideal clocksource. A must-use where
+  *				available.
+  * @read:		returns a cycle value
++ * @read_clock:         alternative to read which gets a pointer to the clock
++ *                      source so that the same code can read different clocks;
++ *                      either read or read_clock must be set
+  * @mask:		bitmask for two's complement
+  *			subtraction of non 64 bit counters
+  * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
+@@ -62,6 +68,7 @@ struct clocksource {
+ 	struct list_head list;
+ 	int rating;
+ 	cycle_t (*read)(void);
++	cycle_t (*read_clock)(struct clocksource *cs);
+ 	cycle_t mask;
+ 	u32 mult;
+ 	u32 mult_orig;
+@@ -170,7 +177,7 @@ static inline u32 clocksource_hz2mult(u32 hz, u32 shift_constant)
+  */
+ static inline cycle_t clocksource_read(struct clocksource *cs)
+ {
+-	return cs->read();
++	return (cs->read ? cs->read() : cs->read_clock(cs));
+ }
  
- /* ioctls used by appletalk ddp.c */
- HANDLE_IOCTL(SIOCATALKDIFADDR, dev_ifsioc)
-diff --git a/net/core/dev.c b/net/core/dev.c
-index b4b8eb8..4f61f5e 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3650,6 +3650,7 @@ static int dev_ifsioc(struct net *net, struct ifreq *ifr, unsigned int cmd)
- 			    cmd == SIOCSMIIREG ||
- 			    cmd == SIOCBRADDIF ||
- 			    cmd == SIOCBRDELIF ||
-+			    cmd == SIOCSHWTSTAMP ||
- 			    cmd == SIOCWANDEV) {
- 				err = -EOPNOTSUPP;
- 				if (dev->do_ioctl) {
-@@ -3805,6 +3806,7 @@ int dev_ioctl(struct net *net, unsigned int cmd, void __user *arg)
- 		case SIOCBONDCHANGEACTIVE:
- 		case SIOCBRADDIF:
- 		case SIOCBRDELIF:
-+		case SIOCSHWTSTAMP:
- 			if (!capable(CAP_NET_ADMIN))
- 				return -EPERM;
- 			/* fall through */
+ /**
+@@ -190,6 +197,116 @@ static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
+ }
+ 
+ /**
++ * clocksource_read_ns - get nanoseconds since last call of this function
++ *                       (never negative)
++ * @cs:         Pointer to clocksource
++ *
++ * When the underlying cycle counter runs over, this will be handled
++ * correctly as long as it does not run over more than once between
++ * calls.
++ *
++ * The first call to this function for a new clock source initializes
++ * the time tracking and returns bogus results.
++ */
++static inline s64 clocksource_read_ns(struct clocksource *cs)
++{
++	cycle_t cycle_now, cycle_delta;
++	s64 ns_offset;
++
++	/* read clocksource: */
++	cycle_now = clocksource_read(cs);
++
++	/* calculate the delta since the last clocksource_read_ns: */
++	cycle_delta = (cycle_now - cs->cycle_last) & cs->mask;
++
++	/* convert to nanoseconds: */
++	ns_offset = cyc2ns(cs, cycle_delta);
++
++	/* update time stamp of clocksource_read_ns call: */
++	cs->cycle_last = cycle_now;
++
++	return ns_offset;
++}
++
++/**
++ * clocksource_init_time - initialize a clock source for use with
++ *                         %clocksource_read_time() and
++ *                         %clocksource_cyc2time()
++ * @cs:            Pointer to clocksource.
++ * @start_tstamp:  Arbitrary initial time stamp.
++ *
++ * After this call the current cycle register (roughly) corresponds to
++ * the initial time stamp. Every call to %clocksource_read_time()
++ * increments the time stamp counter by the number of elapsed
++ * nanoseconds.
++ */
++static inline void clocksource_init_time(struct clocksource *cs,
++					u64 start_tstamp)
++{
++	cs->cycle_last = clocksource_read(cs);
++	cs->xtime_nsec = start_tstamp;
++}
++
++/**
++ * clocksource_read_time - return nanoseconds since %clocksource_init_time()
++ *                         plus the initial time stamp
++ * @cs:          Pointer to clocksource.
++ *
++ * In other words, keeps track of time since the same epoch as
++ * the function which generated the initial time stamp. Don't mix
++ * with calls to %clocksource_read_ns()!
++ */
++static inline u64 clocksource_read_time(struct clocksource *cs)
++{
++	u64 nsec;
++
++	/* increment time by nanoseconds since last call */
++	nsec = clocksource_read_ns(cs);
++	nsec += cs->xtime_nsec;
++	cs->xtime_nsec = nsec;
++
++	return nsec;
++}
++
++/**
++ * clocksource_cyc2time - convert an absolute cycle time stamp to same
++ *                        time base as values returned by
++ *                        %clocksource_read_time()
++ * @cs:            Pointer to clocksource.
++ * @cycle_tstamp:  a value returned by cs->read()
++ *
++ * Cycle time stamps that are converted correctly as long as they
++ * fall into the time interval [-1/2 max cycle count, 1/2 cycle count],
++ * with "max cycle count" == cs->mask+1.
++ *
++ * This avoids situations where a cycle time stamp is generated, the
++ * current cycle counter is updated, and then when transforming the
++ * time stamp the value is treated as if it was in the future. Always
++ * updating the cycle counter would also work, but incurr additional
++ * overhead.
++ */
++static inline u64 clocksource_cyc2time(struct clocksource *cs,
++				cycle_t cycle_tstamp)
++{
++	u64 cycle_delta = (cycle_tstamp - cs->cycle_last) & cs->mask;
++	u64 nsec;
++
++	/*
++	 * Instead of always treating cycle_tstamp as more recent
++	 * than cs->cycle_last, detect when it is too far in the
++	 * future and treat it as old time stamp instead.
++	 */
++	if (cycle_delta > cs->mask / 2) {
++		cycle_delta = (cs->cycle_last - cycle_tstamp) & cs->mask;
++		nsec = cs->xtime_nsec - cyc2ns(cs, cycle_delta);
++	} else {
++		nsec = cyc2ns(cs, cycle_delta) + cs->xtime_nsec;
++	}
++
++	return nsec;
++}
++
++/**
+  * clocksource_calculate_interval - Calculates a clocksource interval struct
+  *
+  * @c:		Pointer to clocksource.
 -- 
 1.6.0.4
 
