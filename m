@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752065AbYKSBej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752334AbYKSBxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752065AbYKSBej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 20:34:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYKSBe1
+	id S1752334AbYKSBxz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 20:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbYKSBxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 20:34:27 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:39193 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbYKSBe0 (ORCPT
+	Tue, 18 Nov 2008 20:53:46 -0500
+Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:37707 "EHLO
+	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751709AbYKSBxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 20:34:26 -0500
-Subject: Re: pull request: wireless-2.6 2008-11-18
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sfr@canb.auug.org.au
-In-Reply-To: <20081119000719.GA19756@tuxdriver.com> (sfid-20081119_014629_475391_D51592F4)
-References: <20081119000719.GA19756@tuxdriver.com>
-	 (sfid-20081119_014629_475391_D51592F4)
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 02:33:38 +0100
-Message-Id: <1227058418.4014.99.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 18 Nov 2008 20:53:45 -0500
+From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+To: Fabio Checconi <fchecconi@gmail.com>
+Date: Wed, 19 Nov 2008 12:52:42 +1100
+Message-ID: <4923716A.5090104@gelato.unsw.edu.au>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081027)
+MIME-Version: 1.0
+CC: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+References: <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com> <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it>
+In-Reply-To: <20081118211442.GG15268@gandalf.sssup.it>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> and a final one fixes some mysterious DMA alignment problems
-> that have been plaguing iwlwifi for some time.
+Fabio Checconi wrote:
+>   - To detect hw tagging in BFQ we consider a sample valid iff the
+>     number of requests that the scheduler could have dispatched (given
+>     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
+>     the scheduler plus the ones into the driver) is higher than the
+>     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
+>     during testing, but the way CFQ uses now seems a little bit
+>     strange.
+
+BFQ's tag detection logic is broken in the same way that CFQ's used to
+be.  Explanation is in this patch:
+
+============================x8============================
+commit 45333d5a31296d0af886d94f1d08f128231cab8e
+Author: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Date:   Tue Aug 26 15:52:36 2008 +0200
+
+    cfq-iosched: fix queue depth detection
+    
+    CFQ's detection of queueing devices assumes a non-queuing device and detects
+    if the queue depth reaches a certain threshold.  Under some workloads (e.g.
+    synchronous reads), CFQ effectively forces a unit queue depth, thus defeating
+    the detection logic.  This leads to poor performance on queuing hardware,
+    since the idle window remains enabled.
+    
+    This patch inverts the sense of the logic: assume a queuing-capable device,
+    and detect if the depth does not exceed the threshold.
+============================x8=============================
 
 
-> The following changes since commit 5f9021cfdc3524a4c5e3d7ae2d049eb7adcd6776:
->   Johannes Berg (1):
->         rtnetlink: propagate error from dev_change_flags in do_setlink()
+BFQ seems better than CFQ at avoiding this problem though.  Using the following fio
+job, I can routinely trigger it for 10s or so before BFQ detects queuing.
 
-heh.
 
->      iwlagn: fix RX skb alignment
+============================x8=============================
+[global]
+direct=1
+ioengine=sync
+norandommap
+randrepeat=0
+filename=/dev/sdb
+bs=16k
+runtime=200
+time_based
 
-So Luis pointed out a bug in that, it might be useful to squish in this
-patch: http://marc.info/?l=linux-wireless&m=122705425425763&w=2
+[reader]
+rw=randread
+numjobs=128
+============================x8=============================
 
-(also below for reference)
-
-But we can also just add it on top, whichever way you prefer.
-
-johannes
----
- drivers/net/wireless/iwlwifi/iwl-agn.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- everything.orig/drivers/net/wireless/iwlwifi/iwl-agn.c	2008-11-19 01:16:12.000000000 +0100
-+++ everything/drivers/net/wireless/iwlwifi/iwl-agn.c	2008-11-19 01:19:13.000000000 +0100
-@@ -1229,9 +1229,11 @@ void iwl_rx_handle(struct iwl_priv *priv
- 
- 		rxq->queue[i] = NULL;
- 
--		pci_dma_sync_single_for_cpu(priv->pci_dev, rxb->aligned_dma_addr,
--					    priv->hw_params.rx_buf_size,
--					    PCI_DMA_FROMDEVICE);
-+		dma_sync_single_range_for_cpu(
-+				&priv->pci_dev->dev, rxb->real_dma_addr,
-+				rxb->aligned_dma_addr - rxb->real_dma_addr,
-+				priv->hw_params.rx_buf_size,
-+				PCI_DMA_FROMDEVICE);
- 		pkt = (struct iwl_rx_packet *)rxb->skb->data;
- 
- 		/* Reclaim a command buffer only if this packet is a response
 
 
