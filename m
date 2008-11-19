@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYKSMZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbYKSMZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419AbYKSMZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 07:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYKSMZX
+	id S1752806AbYKSMZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 07:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYKSMZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 07:25:23 -0500
-Received: from dedihh.fuckner.net ([81.209.183.161]:60180 "EHLO
-	dedihh.fuckner.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbYKSMZW (ORCPT
+	Wed, 19 Nov 2008 07:25:40 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:39040 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752698AbYKSMZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 07:25:22 -0500
-X-Greylist: delayed 502 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 07:25:22 EST
-Message-ID: <492403B8.5090007@fuckner.net>
-Date: Wed, 19 Nov 2008 13:16:56 +0100
-From: Michael Fuckner <michael@fuckner.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
+	Wed, 19 Nov 2008 07:25:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=agv1DMt/Ob+F0Iiwa3uGhgHGi7KigNyeXUmtiOnXPDZ9jFfSoSNpi3+x3zFJ+SZljP
+         X+KJ5XloP/nwV2L1sPQesFEiKaUUrwwlDblZNRNOqqVyNrF2x6DYZXe1tceKt44Q4wP5
+         lo1Cm6LslNfCAI0pRaU6oPHFaXtGysdjKE7Mo=
+Message-ID: <ca35ce500811190425i221a1fcapaaaf1cd9cae0a011@mail.gmail.com>
+Date: Wed, 19 Nov 2008 13:25:38 +0100
+From: mikie <mikie.pl@gmail.com>
+To: "Duncan Sands" <duncan.sands@math.u-psud.fr>, linux-kernel@vger.kernel.org
+Subject: Re: understanding firmware loader for speedtouch (kernel 2.6.21.5)
+In-Reply-To: <200707250103.54477.duncan.sands@math.u-psud.fr>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Performance issues with Areca 1680 SAS Controllers
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ca35ce500707060554v71ebdca3k8ef18e4c0a44c9cb@mail.gmail.com>
+	 <ca35ce500707110955t44d9b998r769c02df3e29e00a@mail.gmail.com>
+	 <ca35ce500707190324ncc7fbc0r4f05e00c74186dcc@mail.gmail.com>
+	 <200707250103.54477.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jul 25, 2007 at 12:03 AM, Duncan Sands
+<duncan.sands@math.u-psud.fr> wrote:
 
-I am using an Areca 1680-SAS-Controller with 16 SAS-HDD (Seagate 1TB
-ST31000640SS). I set up a Raid6 with all 16 disks and formatted it with
-XFS. The Controller has 512MB RAM and a BBU. The OS is installed to
-another disk attached to the onboard AHCI controller.
+>> Do you have any news regarding my case of slow transfers via
+>> Speedtouch USB modem on linux ?
+>
+> I found my old speedtouch modem and tested here.  I got 2.1 Mbaud
+> bulk downspeed, and 3 Mbaud isoc downspeed.  This last is half the
+> speed my line supports, so something is wrong [*].  Unfortunately
+> I'm not very motivated to try to find out what, because I don't
+> use this modem myself anymore.  It looks like someone needs to do
+> some more reverse engineering work on the windows driver.
 
-After doing some IO, the areca raidset is slower compared to the rate 
-directly
-after boot.
-
-
-[root@storage ~]# dd if=/dev/sdb1 of=/dev/null bs=1M count=50k iflag=direct
-51200+0 records in
-51200+0 records out
-53687091200 bytes (54 GB) copied, 59.6494 seconds, 900 MB/s
-[root@storage ~]# mount /dev/sdb1 /data
-[root@storage ~]# cd /data/
-[root@storage data]# ./iozone -i 0 -i 1 -s 32g -r 16m -S 6144 -t 8 -+r
--o  >raid6_sync_t8.log
-[root@storage data]# cd
-[root@storage ~]# umount /data/
-[root@storage ~]# dd if=/dev/sdb1 of=/dev/null bs=1M count=50k iflag=direct
-51200+0 records in
-51200+0 records out
-53687091200 bytes (54 GB) copied, 76.4036 seconds, 703 MB/s
-
-I tested different Versions of Linux (Centos 5.2, OpenSUSE 11, Debian
-Lenny) and Vanilla kernels 2.6.22-2.6.27, all show this behaviour.
-
-Idea why the device slows down after IO- or better: how to keep the high
-rate? Is this reproducible foer Areca SATA Controllers (Type 11XX and 12XX)
+Duncan, as you remember we discussed 1 year ago speed issues with
+Speedtouch driver. Please let me know if the driver has been fixed to
+support higher speeds? Or is it still limited to 3Mbaud top ?
 
 Regards,
-   Michael!
+MK
