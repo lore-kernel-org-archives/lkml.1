@@ -1,40 +1,40 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbYKRVFx (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 18 Nov 2008 16:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYKRVFn
+	id S1752747AbYKSEz5 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 18 Nov 2008 23:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYKSEzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 16:05:43 -0500
-Received: from eastrmmtao106.cox.net ([68.230.240.48]:57836 "EHLO
-	eastrmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYKRVFn convert rfc822-to-8bit (ORCPT
+	Tue, 18 Nov 2008 23:55:33 -0500
+Received: from po-out-1718.google.com ([72.14.252.156]:25437 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751875AbYKSEzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 16:05:43 -0500
-X-Authority-Analysis: v=1.0 c=1 a=HWL0FhNKirWTw3c9qakbMw==:17
- a=1jk36ATDM7WOCB3bKnwA:9 a=mE_SeVF6u4792lnNGIXcR7JTFIQA:4 a=oGkfJ8sdwJ8A:10
-X-CM-Score: 0.00
-Message-ID: <20081118160543.FUMLL.182075.imail@eastrmwml36>
-Date: Tue, 18 Nov 2008 16:05:42 -0500
-From: OXFAM <kirklandhi1@cox.net>
-Reply-To: terrywilliams79@jmail.co.za
-Subject: LUCKY WINNER!
+	Tue, 18 Nov 2008 23:55:32 -0500
+Message-ID: <2c8408720811182055j56083490h902202097b6a5f26@mail.gmail.com>
+Date: Wed, 19 Nov 2008 12:55:30 +0800
+From: "=?BIG5?B?qVCozqxG?=" <u1zm0q2u30p2s@gmail.com>
+To: linno@tror.com.tw
+Subject: =?BIG5?B?UEhQwcqqq6iuuOquxq53uvSvuLFNrtc=?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=BIG5
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754341AbYKRVFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752747AbYKSEz5@vger.kernel.org>
 
-
-You have been awarded =C3=82=C2=A3850,000 from the OXFAM GB - UK the ca=
-sh/grant donation Promo Contact Dr.Terry Williams. E-mail (terrywilliam=
-s79@jmail.co.za)Qualification Number(OG/N231/E101/BDB)
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+pHPgvqzsp9669K22s12tcAoKoa+n2q3MqrqpdqauoUeryKThqrqoQ6O4pfOkcKjGsaGhQbOjrE+k
+c+C+qrqkaqjGsaEKCqG7p9qtzKZiscClWKX4t36nzrZIuvSvuKVdp3SrZaV4uvSttqz8pHUrq+Gl
+eLresnq1e6ahCgqh16HXra2uya2ttnGxTa7Xu/kgpXWtbiQyOSw5MDAKCqH4KKZisGWjuKZ+MTAw
+TUKko62trHm2cbr0r7iqxbahKQoKofin2q3MsLWquqSjpXWsT7r0r7ihQabTrE+xeqX4t36quqRK
+pGYKCqHAo7it06Zuqrql+Ld+uvSvuLjqrsanWa7Jp/O3c6q6s3Sr16xPq9ytq61uqroKCqH4pfi3
+fqLtpMaqurCqq3696LnOtqShQaW0s3mxeqq6uvS49Kr5rbEKCqHvv+++3KRz4L6mqLROsXqqurna
+t1EKCqHjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeMK
+UFM6IL11pFfByqqruvSvuKfarczB2aVptKOo0ajqpWS+96juoUEKoUChQLtQvXWkV6ZDpkyxYrPm
+pf6s2bZXsNMrtmynvcO6tk8uLi4uLi61par3rHmqQbDIvveo7gqh46HjoeOh46HjoeOh46HjoeOh
+46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjCgrFd6rvqNO5cayiuN+2wLFNrfuhXVNh
+baFeoUcwOTgwMTE5ODEyIC8gMDkzODc2NDM5NQoKoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh
+46HjoeOh46HjoeOh46HjoeOh46HjoeOh4wqlu6S9pXGldKV+tKOo0cP2weSmclNFT7HGp8eqQbDI
+CqtPw9KxTrF6qrq69K+4pmJZeCAvIEd4IC4uLrHGpmKyxKRArbYKoUChQKFAoUChQKFAoUChQKFA
+oUChQKFAoUChQKFAoUChQKFAIMV3qu+o07lxuN+w3SEhIQqh46HjoeOh46HjoeOh46HjoeOh46Hj
+oeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjCg==
