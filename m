@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbYKSFoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbYKSGP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbYKSFoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 00:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYKSFoE
+	id S1752145AbYKSGP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 01:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYKSGPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 00:44:04 -0500
-Received: from sh.osrg.net ([192.16.179.4]:33403 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbYKSFoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 00:44:02 -0500
-Date: Wed, 19 Nov 2008 14:41:53 +0900
+	Wed, 19 Nov 2008 01:15:50 -0500
+Received: from mfo10.iij4u.or.jp ([210.138.174.80]:44925 "EHLO
+	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbYKSGPt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 01:15:49 -0500
+X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 01:15:49 EST
+Date: Wed, 19 Nov 2008 15:05:24 +0900
 To: joerg.roedel@amd.com
-Cc: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, hawk@pld-linux.org, stable@kernel.org
-Subject: Re: [PATCH] x86: always select SWIOTLB on x86_64
+Cc: mingo@redhat.com, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28-rc5
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
-References: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <20081118154322.GX13394@amd.com>
+References: <20081118154322.GX13394@amd.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081119144238W.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20081119150504G.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008 12:44:21 +0100
+On Tue, 18 Nov 2008 16:43:22 +0100
 Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> Impact: fixes korg bugzilla 11980
+> Joerg Roedel (4):
+>       AMD IOMMU: add parameter to disable device isolation
+>       AMD IOMMU: enable device isolation per default
+>       AMD IOMMU: fix fullflush comparison length
+>       AMD IOMMU: check for next_bit also in unmapped area
 > 
-> A kernel for a 64bit x86 system should always contain the swiotlb code
-> in case it is booted on a machine without any hardware IOMMU supported
-> by the kernel and more than 4GB of RAM. This patch changes Kconfig to
-> always compile swiotlb into the kernel for x86_64.
-
-Yeah, as I wrote in a different thread, I think that it makes sense to
-enable SWIOTLB at all times:
-
-http://marc.info/?l=linux-kernel&m=122593287501949&w=2
-
-An option asking an user if he has more than 4GB RAM or not, doesn't
-make sense much.
-
-BTW, you can also remove the help description, right?
- 
-> ---
->  arch/x86/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  Documentation/kernel-parameters.txt |    4 +++-
+>  arch/x86/kernel/amd_iommu.c         |    2 +-
+>  arch/x86/kernel/amd_iommu_init.c    |    6 ++++--
+>  3 files changed, 8 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 93224b5..669c6d5 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -566,7 +566,7 @@ config AMD_IOMMU
->  
->  # need this always selected by IOMMU for the VIA workaround
->  config SWIOTLB
-> -	bool
-> +	def_bool y if X86_64
->  	help
->  	  Support for software bounce buffers used on x86-64 systems
->  	  which don't have a hardware IOMMU (e.g. the current generation
-> -- 
-> 1.5.6.4
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> As the most important change these patches enable device isolation per
+> default. Tests have shown that there are drivers which have bugs and do
+> double-freeing of DMA memory.
+
+What drivers? We need to fix them if they are mainline drivers.
+
+
+> This can lead to data corruption with a
+> hardware IOMMU when multiple devices share the same protection domain.
+> Therefore device isolation should be enabled by default.
+
+Hmm, the change is just because of the bug workaround? If so, I'm not
+sure it's a good idea. We need to fix the buggy drivers anyway. And
+device isolation is not free; e.g. use more memory rather than sharing
+a protection domain. I guess that more people prefer sharing a
+protection domain by default. It had been the default option for AMD
+IOMMU until you hit the bugs. IIRC, VT-d also shares a protection
+domain by default. It would be nice to avoid surprising users if the
+two virtualization IOMMUs works in the similar way.
