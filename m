@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbYKSN0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYKSNi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbYKSN0B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 08:26:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYKSNZw
+	id S1753456AbYKSNi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 08:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYKSNiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 08:25:52 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:54795 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752946AbYKSNZu (ORCPT
+	Wed, 19 Nov 2008 08:38:18 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:13983 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752948AbYKSNiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 08:25:50 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, containers@lists.osdl.org
-References: <m1abcd2kqk.fsf@frodo.ebiederm.org>
-	<20081106172617.dd51d0af.akpm@linux-foundation.org>
-	<m1abccxpc5.fsf@frodo.ebiederm.org>
-	<20081106184945.179c248a.akpm@linux-foundation.org>
-	<m1iqr0urb8.fsf@frodo.ebiederm.org>
-	<20081106202822.a1af8a6e.akpm@linux-foundation.org>
-	<m1d4h7v8jf.fsf@frodo.ebiederm.org>
-	<20081107080529.6f4de3ad.akpm@linux-foundation.org>
-	<m1zlk3kxfj.fsf@frodo.ebiederm.org>
-	<20081119000749.GA2912@x200.localdomain>
-	<20081119023507.GA5888@x200.localdomain>
-Date: Wed, 19 Nov 2008 05:20:21 -0800
-In-Reply-To: <20081119023507.GA5888@x200.localdomain> (Alexey Dobriyan's
-	message of "Wed, 19 Nov 2008 05:35:07 +0300")
-Message-ID: <m1r657j1ii.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 19 Nov 2008 08:38:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eVmPZkXNHSy2/+qka7tzPyj73FmYXD1jQkYSCCu3CLf/Iz1j2I1Z9IYHSuMfcdFuap
+         j6vPX1izXmP0psPpIjeMUund/OBoo2bkkcvdObBI5soJBFVwoEop3WX3FKGi6i+1jnuh
+         P0UYf7LNoTqSf/EqIJ6TJyDg9hBo4X9jJ3RbI=
+Message-ID: <8bd0f97a0811190538k21e64ce5gf466400d798b643b@mail.gmail.com>
+Date: Wed, 19 Nov 2008 08:38:15 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] genrtc: disable genrtc on Blackfin systems
+Cc: "Bryan Wu" <cooloney@kernel.org>, a.zummo@towertech.it,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20081118222633.2cf8e231.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: adobriyan@gmail.com, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alexey Dobriyan <adobriyan@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0027]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task directories
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1226991615-30268-1-git-send-email-cooloney@kernel.org>
+	 <20081118222633.2cf8e231.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@gmail.com> writes:
+On Wed, Nov 19, 2008 at 01:26, Andrew Morton wrote:
+> On Tue, 18 Nov 2008 15:00:15 +0800 Bryan Wu wrote:
+>
+>> From: Mike Frysinger <vapier.adi@gmail.com>
+>>
+>> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+>> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>
+> What is the reason for this change?
 
-> OK, I fixed some small issues and pushed out to proc.git so it starts
-> propagate to -next.
-
-Thanks.
-
-Eric
-
+if it doesnt work on a platform, then it shouldnt be available.  the
+arch list kind of implies that this is like x86 specific anyways ...
+-mike
