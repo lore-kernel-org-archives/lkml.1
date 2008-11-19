@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbYKRX4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbYKSACw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbYKRX4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 18:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYKRX4g
+	id S1752988AbYKSACw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 19:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYKSACo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 18:56:36 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:49475 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbYKRX4f (ORCPT
+	Tue, 18 Nov 2008 19:02:44 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35379 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbYKSACn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 18:56:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:organization:message-id:references
-         :in-reply-to:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=ulKiCQItd49ktxLkLgB2LXquf9j+Vwpc2xLg+J/D/W10HZrFP/tm+FoeF/TJB0HwXk
-         gsUKL0tw0CjgpR8ZGvomlYvYNxDeut4JaifULQB0o6CdNaUCtBPDIR/zANwt+XkNZTHJ
-         AdjjVJA3NeDZO7w+w9IxzjzRtDPa9cPxsWfqQ=
-From: Grant Coady <gcoady.lk@gmail.com>
-To: Eric Sandall <eric@sandall.us>
-Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
-Subject: Re: Linux 2.6.27.6
-Date: Wed, 19 Nov 2008 10:56:11 +1100
-Organization: scattered
-Message-ID: <8dl6i41eobduef8djn8bj7d1sih07tga47@4ax.com>
-References: <20081113185350.GA3765@kroah.com> <20081118092051.53d1fcc2@sandall.us>
-In-Reply-To: <20081118092051.53d1fcc2@sandall.us>
-X-Mailer: Forte Agent 4.2/32.1118
+	Tue, 18 Nov 2008 19:02:43 -0500
+Message-ID: <49235759.7070109@zytor.com>
+Date: Tue, 18 Nov 2008 16:01:29 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andi Kleen <andi@firstfloor.org>
+CC: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jan Beulich <jbeulich@novell.com>, heukelum@fastmail.fm,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Glauber Costa <gcosta@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC,v2] x86_64: save_args out of line
+References: <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com> <20081118111633.GA21036@mailshack.com> <4922C863.76E4.0078.0@novell.com> <20081118140349.GC23479@elte.hu> <4922E4D4.76E4.0078.0@novell.com> <20081118150024.GD30358@elte.hu> <20081118225336.60FFA1544EB@magilla.localdomain> <20081118233552.GP6703@one.firstfloor.org> <20081118234511.80C4F1544F1@magilla.localdomain> <20081119000605.GQ6703@one.firstfloor.org>
+In-Reply-To: <20081119000605.GQ6703@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008 09:20:51 -0800, you wrote:
+Andi Kleen wrote:
+> 
+> Hmm, but if the assembler cannot auto generate it how should the assembler
+> writer know if he should use the macro or the direct instruction without
+> understanding CFI?
+> 
+> Also what will the assembler reader do? Do they first have to understand
+> CFI to understand everything? I personally would probably just
+> resort to objdump -S in this situation.
+> 
+> I think you're saying that for the user the macros would be just
+> equivalent, but if that's true they could be just auto generated 
+> by the assembler. But it's obviously not, so you'll end up
+> with the Linux magic asm dialect (and its maintenance disadvantages)
+> and you'll still require CFI knowledge to understand/write everything 
+> anyways.
+> 
 
->On Thu, 13 Nov 2008 10:53:50 -0800
->Greg KH <gregkh@suse.de> wrote:
->> We (the -stable team) are announcing the release of the 2.6.27.6
->> kernel.
->> 
->> It contains a wide range of bugfixes, and all users of the 2.6.27
->> kernel series are strongly encouraged to upgrade.
->> 
->> I'll also be replying to this message with a copy of the patch between
->> 2.6.27.5 and 2.6.27.6
->> Francois Romieu (3):
->>       r8169: get ethtool settings through the generic mii helper
->>       r8169: fix RxMissed register access
->>       r8169: wake up the PHY of the 8168
->
->My r8169 no longer compiles:
->...
->  Building modules, stage 2.
->  MODPOST 243 modules
->ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
->make[1]: *** [__modpost] Error 1
->make: *** [modules] Error 2
->
->Attached my .config. Also tried witht he following changed, with the
->same results:
->+CONFIG_NET_ETHERNET=y
->+CONFIG_MII=m
+We already have a "Linux magic asm dialect" which require CFI knowledge. 
+  Nothing can change that other than dumping the requirement that we 
+have valid CFI data.  However, the current code is hard to read and easy 
+to trip up on.  We can at least make it easier, especially to read -- 
+and making it easier to read will help writers, too.
 
-r8169 works fine here, from dmesg:
-
-r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-r8169 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-r8169 0000:04:00.0: setting latency timer to 64
-eth0: RTL8168b/8111b at 0xffffc200100b8000, 00:1d:7d:03:5e:98, XID 38000000 IRQ 378
-...
-r8169: eth0: link up
-
-See: http://bugsplatter.id.au/kernel/boxen/pooh64/ for dmesg + config
-
-Grant.
--- 
-http://bugsplatter.id.au
+	-hpa
