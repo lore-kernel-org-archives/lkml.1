@@ -1,43 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYKSVvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbYKSVzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbYKSVvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:51:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbYKSVu5
+	id S1752741AbYKSVzd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:55:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYKSVzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:50:57 -0500
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:45989 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747AbYKSVu4 (ORCPT
+	Wed, 19 Nov 2008 16:55:19 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:11893 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbYKSVzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 16:50:56 -0500
-Message-ID: <49248A35.4080401@nortel.com>
-Date: Wed, 19 Nov 2008 15:50:45 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Wed, 19 Nov 2008 16:55:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=T/Div+aqobLUwj52o0G+u1iSxYZIg11veAkfXPcE76xdhZg58K9DKuHcTk5UlRQhjx
+         QT6BNYGPShN94TPhdclsbn3pGAFrgVI2UIF9y+/PnAofYLI5ZGad383hYtoOUgkp5W3p
+         ssq9LbkwPDGcYioYJM0qX/L95j+u3Z3YCqcAg=
+Message-ID: <1ba2fa240811191355p7218dd84j8517d9ff4bab4e0b@mail.gmail.com>
+Date: Wed, 19 Nov 2008 23:55:15 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2008-11-18
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au
+In-Reply-To: <20081119185340.GC3485@tuxdriver.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ken Chen <kenchen@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [patch] sched: add locking when update the task_group's	cfs_rq[]
-  array.
-References: <b040c32a0811182248s1174c82avf44c720ae2d14804@mail.gmail.com>	 <1227113662.29743.46.camel@lappy.programming.kicks-ass.net>	 <b040c32a0811190921g557edc4dy4725fb86107c2c54@mail.gmail.com> <1227128331.29743.61.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1227128331.29743.61.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Nov 2008 21:50:49.0089 (UTC) FILETIME=[E2669710:01C94A90]
+Content-Disposition: inline
+References: <20081119000719.GA19756@tuxdriver.com>
+	 <1ba2fa240811182246m17a6baf0ybde19af030a65819@mail.gmail.com>
+	 <1ba2fa240811190134u7974a840i532e8ed0e18f8c72@mail.gmail.com>
+	 <20081119143919.GA3485@tuxdriver.com>
+	 <1ba2fa240811190851i5dda6734w10d38b0f27e5ac97@mail.gmail.com>
+	 <20081119185340.GC3485@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+On Wed, Nov 19, 2008 at 8:53 PM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> On Wed, Nov 19, 2008 at 06:51:49PM +0200, Tomas Winkler wrote:
+>> On Wed, Nov 19, 2008 at 4:39 PM, John W. Linville
+>> <linville@tuxdriver.com> wrote:
+>> > On Wed, Nov 19, 2008 at 11:34:37AM +0200, Tomas Winkler wrote:
+>> >> On Wed, Nov 19, 2008 at 8:46 AM, Tomas Winkler <tomasw@gmail.com> wrote:
+>> >> > On Wed, Nov 19, 2008 at 2:07 AM, John W. Linville
+>> >> > <linville@tuxdriver.com> wrote:
+>> >
+>> >> >>      mac80211: remove ieee80211_notify_mac
+>> >> >>      iwlagn: fix RX skb alignment
+>> >> >
+>> >> > IMHO its premature pushing ttese 2 patches up, they came in yestrday
+>> >> > and nobody here has run tthe code
+>> >
+>> > Well, thanks for your opinion.  Here is mine:
+>> >
+>> > The iwlwifi drivers have been hitting these problems for months,
+>> > and I have seen no effort by your team to address the problems.
+>>
+>> There is a lot of effort to solve this I'm not sure what mailing list
+>> are u reading.
+>> We even presented test patches with alignment issues as Johannes few
+>> month ago but
+>> we didn't get the feedback that it hit anything. So you are totally off here.
+>
+> Citation needed.  All I see is Johannes' patch followed by your FUD.
+>
 
-> Will it scale, half-way, I'd say. It races a little, but should
-> converge. The biggest issue is that we're running with 10 bit fixed
-> point math, and on large cpu machines you get into granularity problems.
+http://marc.info/?l=linux-wireless&m=122549613209468&w=2,
+there is Yi's patch also mentioned int in the Johannes commit.
+unfortunately there was a programming typo in it.
 
-Is there any way to get higher resolution math on 64-bit machines?  (I'm 
-assuming that most larger SMP boxes will be 64-bit capable.)
+There is  named 'iwlwifi: get some more information about command
+failure' in your pull request you've just issued!!!
 
-Chris
+>> > It is possible that your team is working on them behind closed doors
+>> > and will eventually throw something over the wall to us.  I'm tired
+>> > of waiting for that, and I imagine that hordes of iwlagn users are
+>> > tired of waiting as well.
+>>
+>> This is embarrassing also for us that we cannot locate this specific
+>> problem but it not like we are not doing anything.Not sure there are
+>> other examples that we are not addressing bugs promptly.
+>>
+>> > Johannes has presented us with plausible fixes, and people are
+>> > reporting that the patches work for them.
+>>
+>> I'm not against merging these patches to wireless-testing but pushing
+>> them upstream before testing them
+>> is just plainly wrong and all I asked for to test them. You are
+>> presenting here double standards here.
+>
+> Others have tested it already.
+
+You cannot be serious about 5 minute testing.  We already have reports
+that it  doesn't solve the issue completely.
+
+>
+>>  I can merge these patches,
+>> > or wait/hope/pray for some to come from your team.  Experience suggests
+>> > that if fixes do come from your team that they will either be buried
+>> > in some monster patch that largely addresses something else, or
+>> > that the patches will arrive with a changelog that is terse and/or
+>> > unintelligble.  Subsequently, I am not optimistic about waiting.
+>>
+>> I've believe that we are addressing all the complains above and
+>> currently  if you are not seeing this I'm really sorry.
+>
+> I'm not seeing i
+
+I've resubmitted  every patch you've had an issue with readability of
+the commit message so you should be first to see it.
+
+>
+>> > I think Johannes cited four different bugzilla.kernel.org entries
+>> > between those two patches.  What is your team doing to address
+>> > those bugs?
+>>
+>> Again you are not reading the mailing list and not the bugs logs.
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=11731
+> http://bugzilla.kernel.org/show_bug.cgi?id=11818
+> http://bugzilla.kernel.org/show_bug.cgi?id=11923
+> http://bugzilla.kernel.org/show_bug.cgi?id=11983
+> http://bugzilla.kernel.org/show_bug.cgi?id=12017
+> http://bugzilla.kernel.org/show_bug.cgi?id=12044
+> http://bugzilla.kernel.org/show_bug.cgi?id=12046
+>
+All of those are actively tracked by Yi as far as I can say.
+
+> Those are only the ones not assigned to a specific person.  Yet, each
+> of them has a member of your team CC'ed.  Also, I made no effort to
+> track-down the ones in vendor bugzillas.
+
+
+
+>> > Obviously, I still think that those patches should be merged.
+>>
+>> I'm not against just give it day or two to run it.  We have for
+>> example nightly regression builds with publicly available results why
+>> you cannot wait till we can run?  I think you've hurried to push it up
+>> just as a statement forgetting of possible regressions.
+>
+> I merely did not wait for your blessing, mostly because I have no
+> idea when it might come.
+
+This just prove you are doing  statements.
+
+>
+>> >> Just checked our bug database,  the ieee80211_notify_mac was
+>> >> introduced mainly to overcome HW bug when
+>> >> receiver become deaf  in heavy traffic such as ftp in noisy
+>> >> environment. Otherwise reconnection was too slow to keep ftp going. We
+>> >> need to check whether we are still hitting this before applying
+>> >> removal this function
+>> >
+>> > You are welcome to submit patches that address your hardware issue
+>> > and which do not introduce locking problems.
+>>
+>> That was my suggestion that we fix it and I believe  we have normal
+>> discussion about it till you took your eager pushing steps. Replacing
+>> one regression with another is just not sane.
+>
+> ieee80211_notify_mac is creating locking problems.  I'd rather hit
+> a few disconnects than endure locking problems.
+>
+> Now, if you could put as much energy into fixing these issues as you
+> are putting into arguing with me or anyone else contradicting you...
+
+I'm not a yes man and if I think differently I say so. It's legitimate
+to have another opinion and I'm really trying to keep it technical and
+I'm not ashamed to say if I'm wrong, but you people are so hostile
+from some unknown reason I just hope somebody in anthropology is
+making his doctoral thesis of it to explain it to me.
+
+Tomas
