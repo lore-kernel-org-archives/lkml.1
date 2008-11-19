@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYKSSkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYKSSli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbYKSSkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYKSSkd
+	id S1754569AbYKSSli (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYKSSla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:40:33 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:54711 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbYKSSkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:40:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=QGl2nxswlcmZxg5Iost50N5ZsHnogKEc6gzC/QRcB0Z4/XpenbWysasSMuO3M8KS3j
-         sJu1LrGhu2FFQjq4DXh4t0bSAFVWV9n+hzHp6oUOtgqeYn2GzyZXIsd2thBCUs4MGSI/
-         AjiPaI/nheSYG2EpKrlFb2HNMPk14hqT77qHQ=
-Date: Wed, 19 Nov 2008 18:40:14 +0000
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Am??rico Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] uml: fix undeclared variables
-Message-ID: <20081119184014.GD22898@hack.voiplan.pt>
-References: <20081118174250.GE3185@hack.voiplan.pt> <20081118192626.GU28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081118192626.GU28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 19 Nov 2008 13:41:30 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:38504 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752485AbYKSSla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 13:41:30 -0500
+Date: Wed, 19 Nov 2008 19:41:27 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       sdhci-devel@list.drzeus.cx
+Subject: Re: [patch 6/7] SDHCI: Check DMA for overruns at end of transfer
+Message-ID: <20081119194127.34204891@mjolnir.drzeus.cx>
+In-Reply-To: <20081116000508.GE9161@fluff.org.uk>
+References: <20081103200944.099353331@fluff.org.uk>
+	<20081103201010.820070757@fluff.org.uk>
+	<20081114230026.18513b8a@mjolnir.drzeus.cx>
+	<20081116000508.GE9161@fluff.org.uk>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 07:26:26PM +0000, Al Viro wrote:
->On Tue, Nov 18, 2008 at 05:42:51PM +0000, Am??rico Wang wrote:
->> 
->> Fix three compile errors about undeclared variables in
->> arch/um/kernel/mem.c.
->
->And what, pray tell, would initialize it?
+On Sun, 16 Nov 2008 00:05:08 +0000
+Ben Dooks <ben-linux@fluff.org> wrote:
 
-Sorry, I can't fully understand you. I got the following error:
+> On Fri, Nov 14, 2008 at 11:00:26PM +0100, Pierre Ossman wrote:
+> > 
+> > I'm sorry, but I don't see how this is anywhere near acceptable. This
+> > should be a panic at the very least, and until this can be sorted out
+> > and avoided the driver should avoid using DMA on these chips.
+> 
+> A panic won't help get the debug logs out of the kernel.
 
-arch/um/kernel/mem.c: In function ‘init_highmem’:
-arch/um/kernel/mem.c:177: error: ‘pkmap_page_table’ undeclared (first
-use in this function)
-arch/um/kernel/mem.c:177: error: (Each undeclared identifier is
-reported only once
-arch/um/kernel/mem.c:177: error: for each function it appears in.)
+Indeed, but it will avoid corrupting the system.
 
-Thanks.
+> This only
+> turned up whilst debugging the controller, I got the timeout clock
+> calculation wrong and thus ended up timing out pretty much all the
+> CMD25s and seeing this problem.
+> 
 
+Just because you had to provoke it doesn't mean it won't appear under
+"normal" circumstances for others.
+
+Until this problem is fully understood I think DMA should be turned off
+(or possibly needs to be explicitly forced on using Kconfig or a module
+parameter).
+
+Do you have any contacts at Samsung that can help out here?
+
+Rgds
 -- 
-"Sometimes the only way to stay sane is to go a little crazy."
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
