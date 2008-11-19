@@ -1,501 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbYKSV1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYKSV1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbYKSV1N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbYKSVXy
+	id S1755105AbYKSV1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbYKSV0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:23:54 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:45877 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754544AbYKSVXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 16:23:52 -0500
-Date: Wed, 19 Nov 2008 15:23:50 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 1/2 v3] SGI RTC: add clocksource driver
-Message-ID: <20081119212350.GB3377@sgi.com>
-References: <20081023163041.GA14574@sgi.com> <20081119212202.GA3377@sgi.com>
+	Wed, 19 Nov 2008 16:26:20 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:48502 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755229AbYKSV0R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 16:26:17 -0500
+Message-ID: <49248560.1020501@novell.com>
+Date: Wed, 19 Nov 2008 16:30:08 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081119212202.GA3377@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Dimitri Sivanich <sivanich@sgi.com>
+CC: Max Krasnyansky <maxk@qualcomm.com>, Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
+ no load balance
+References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com> <20081119203340.GC2383@sgi.com>
+In-Reply-To: <20081119203340.GC2383@sgi.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig78BE9FC0641A7C88E3FF2FAF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides a driver for SGI RTC clocks and timers.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig78BE9FC0641A7C88E3FF2FAF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This provides a high resolution clock and timer source using the SGI
-system-wide synchronized RTC clock/timer hardware.
+Dimitri Sivanich wrote:
+> On Wed, Nov 19, 2008 at 03:25:15PM -0500, Gregory Haskins wrote:
+>  =20
+>> It sounds like the problem with my code is that "null sched domain"
+>> translates into "default root-domain" which is understandably unexpect=
+ed
+>> by Dimitri (and myself).  Really I intended root-domains to become
+>> associated with each exclusive/disjoint cpuset that is created.  In a
+>> way, non-balanced/isolated cpus could be modeled as an exclusive cpuse=
+t
+>> with one member, but that is somewhat beyond the scope of the
+>>    =20
+>
+> Actually, at one time, that is how things were setup.  Setting the
+> cpu_exclusive bit on a single cpu cpuset would isolate that cpu from
+> load balancing.
+>  =20
+Do you know if this was pre or post the root-domain code?  Here is a
+reference to the commit:
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dco=
+mmit;h=3D57d885fea0da0e9541d7730a9e1dcf734981a173
 
----
+A bisection that shows when this last worked for you would be very
+appreciated if you have the time, Dimitri.
 
- drivers/clocksource/Makefile |    1 
- drivers/clocksource/rtc_uv.c |  399 +++++++++++++++++++++++++++++++++++++++
- drivers/misc/Kconfig         |    9 
- kernel/time/clockevents.c    |    1 
- kernel/time/clocksource.c    |    1 
- 5 files changed, 411 insertions(+)
+Regards,
+-Greg
 
-Index: linux/drivers/clocksource/Makefile
-===================================================================
---- linux.orig/drivers/clocksource/Makefile	2008-11-19 15:08:01.000000000 -0600
-+++ linux/drivers/clocksource/Makefile	2008-11-19 15:09:54.000000000 -0600
-@@ -2,3 +2,4 @@ obj-$(CONFIG_ATMEL_TCB_CLKSRC)	+= tcb_cl
- obj-$(CONFIG_X86_CYCLONE_TIMER)	+= cyclone.o
- obj-$(CONFIG_X86_PM_TIMER)	+= acpi_pm.o
- obj-$(CONFIG_SCx200HR_TIMER)	+= scx200_hrt.o
-+obj-$(CONFIG_SGI_RTC_TIMER)	+= rtc_uv.o
-Index: linux/drivers/misc/Kconfig
-===================================================================
---- linux.orig/drivers/misc/Kconfig	2008-11-19 15:08:01.000000000 -0600
-+++ linux/drivers/misc/Kconfig	2008-11-19 15:09:54.000000000 -0600
-@@ -498,6 +498,15 @@ config SGI_GRU_DEBUG
- 	This option enables addition debugging code for the SGI GRU driver. If
- 	you are unsure, say N.
- 
-+config SGI_RTC_TIMER
-+	tristate "SGI RTC driver"
-+	depends on GENERIC_CLOCKEVENTS_BUILD
-+	depends on (X86_64 || IA64_SGI_UV || IA64_GENERIC) && SMP
-+	default m
-+	---help---
-+	This option enables RTC event handling and adds the systemwide RTC
-+	as a high resolution clock source for SGI systems.
-+
- source "drivers/misc/c2port/Kconfig"
- 
- endif # MISC_DEVICES
-Index: linux/drivers/clocksource/rtc_uv.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/drivers/clocksource/rtc_uv.c	2008-11-19 15:09:54.000000000 -0600
-@@ -0,0 +1,399 @@
-+/*
-+ * SGI RTC clock/timer routines.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Dimitri Sivanich
-+ */
-+#include <linux/module.h>
-+#include <linux/clocksource.h>
-+#include <linux/clockchips.h>
-+#include <asm/genapic.h>
-+#include <asm/uv/bios.h>
-+#include <asm/uv/uv_mmrs.h>
-+#include <asm/uv/uv_hub.h>
-+
-+MODULE_LICENSE("GPL");
-+
-+#define RTC_NAME		"sgi_rtc"
-+#define cpu_to_pnode(_c_) \
-+		uv_apicid_to_pnode(per_cpu(x86_cpu_to_apicid, (_c_)))
-+
-+static cycle_t uv_read_rtc(void);
-+static int uv_rtc_next_event(unsigned long, struct clock_event_device *);
-+static void uv_rtc_timer_setup(enum clock_event_mode,
-+				struct clock_event_device *);
-+static void uv_rtc_timer_broadcast(cpumask_t);
-+
-+
-+static struct clocksource clocksource_uv = {
-+	.name		= RTC_NAME,
-+	.rating		= 400,
-+	.read		= uv_read_rtc,
-+	.mask		= (cycle_t)UVH_RTC_REAL_TIME_CLOCK_MASK,
-+	.shift		= 0,
-+	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+static struct clock_event_device clock_event_device_uv = {
-+	.name		= RTC_NAME,
-+	.features	= CLOCK_EVT_FEAT_ONESHOT,
-+	.shift		= 10,
-+	.rating		= 400,
-+	.irq		= -1,
-+	.set_next_event	= uv_rtc_next_event,
-+	.set_mode	= uv_rtc_timer_setup,
-+	.event_handler	= NULL,
-+	.broadcast	= uv_rtc_timer_broadcast
-+};
-+
-+static DEFINE_PER_CPU(struct clock_event_device, cpu_ced);
-+
-+struct uv_rtc_timer_head {
-+	spinlock_t lock;
-+	int fcpu;
-+	int cpus;
-+	u64 next_cpu;	/* local cpu on this node */
-+	u64 expires[];
-+};
-+
-+static DEFINE_PER_CPU(struct uv_rtc_timer_head *, rtc_timer_head);
-+
-+
-+/*
-+ * Hardware interface routines
-+ */
-+
-+/* Send IPIs to another node */
-+static void
-+uv_rtc_send_IPI(int cpu, int vector)
-+{
-+	unsigned long val, apicid, lapicid;
-+	int pnode;
-+
-+	apicid = per_cpu(x86_cpu_to_apicid, cpu);
-+	lapicid = apicid & 0x3f;
-+	pnode = uv_apicid_to_pnode(apicid);
-+
-+	val = (1UL << UVH_IPI_INT_SEND_SHFT) | (lapicid <<
-+						UVH_IPI_INT_APIC_ID_SHFT) |
-+		(vector << UVH_IPI_INT_VECTOR_SHFT);
-+	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
-+}
-+
-+/* Check for an RTC interrupt pending */
-+static int
-+uv_intr_pending(int pnode)
-+{
-+	if (uv_read_global_mmr64(pnode, UVH_EVENT_OCCURRED0) &
-+			UVH_EVENT_OCCURRED0_RTC1_MASK)
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static void
-+uv_clr_intr_pending(int pnode)
-+{
-+	uv_write_global_mmr64(pnode, UVH_EVENT_OCCURRED0_ALIAS,
-+		UVH_EVENT_OCCURRED0_RTC1_MASK);
-+}
-+
-+static void
-+uv_setup_intr(int cpu, u64 expires)
-+{
-+	u64 val;
-+	int pnode = cpu_to_pnode(cpu);
-+
-+	uv_write_global_mmr64(pnode, UVH_RTC1_INT_CONFIG,
-+		UVH_RTC1_INT_CONFIG_M_MASK);
-+	uv_write_global_mmr64(pnode, UVH_INT_CMPB, -1L);
-+
-+	uv_clr_intr_pending(pnode);
-+
-+	val = ((u64)GENERIC_TIMER_VECTOR << UVH_RTC1_INT_CONFIG_VECTOR_SHFT) |
-+		((u64)cpu_physical_id(cpu) << UVH_RTC1_INT_CONFIG_APIC_ID_SHFT);
-+	/* Set configuration */
-+	uv_write_global_mmr64(pnode, UVH_RTC1_INT_CONFIG, val);
-+	/* Initialize comparator value */
-+	uv_write_global_mmr64(pnode, UVH_INT_CMPB, expires);
-+}
-+
-+
-+/*
-+ * Per-cpu timer tracking routines
-+ */
-+
-+/* Allocate per-node list of cpu timer expiration times. */
-+static void
-+uv_rtc_allocate_timers(void)
-+{
-+	struct uv_rtc_timer_head *head = NULL;
-+	int cpu;
-+	int max = 0;
-+	int pnode = -1;
-+	int i = 0;
-+
-+	/* Determine max possible hyperthreads/pnode for allocation */
-+	for_each_present_cpu(cpu) {
-+		if (pnode != cpu_to_pnode(cpu)) {
-+			i = 0;
-+			pnode = cpu_to_pnode(cpu);
-+		}
-+		if (max < ++i)
-+			max = i;
-+	}
-+
-+	pnode = -1;
-+	for_each_present_cpu(cpu) {
-+		if (pnode != cpu_to_pnode(cpu)) {
-+			i = 0;
-+			pnode = cpu_to_pnode(cpu);
-+			head = kmalloc_node(sizeof(struct uv_rtc_timer_head) +
-+					(max * sizeof(u64)),
-+					GFP_KERNEL, pnode);
-+			spin_lock_init(&head->lock);
-+			head->fcpu = cpu;
-+			head->cpus = 0;
-+			head->next_cpu = -1;
-+		}
-+		head->cpus++;
-+		head->expires[i++] = ULLONG_MAX;
-+		per_cpu(rtc_timer_head, cpu) = head;
-+	}
-+}
-+
-+/* Find and set the next expiring timer.  */
-+static void
-+uv_rtc_find_next_timer(struct uv_rtc_timer_head *head, int pnode)
-+{
-+	u64 exp;
-+	u64 lowest = ULLONG_MAX;
-+	int cpu = -1;
-+	int c;
-+
-+	head->next_cpu = -1;
-+	for (c = 0; c < head->cpus; c++) {
-+		exp = head->expires[c];
-+		if (exp < lowest) {
-+			cpu = c;
-+			lowest = exp;
-+		}
-+	}
-+	if (cpu >= 0) {
-+		head->next_cpu = cpu;
-+		c = head->fcpu + cpu;
-+		uv_setup_intr(c, lowest);
-+		/* If we didn't set it up in time, trigger */
-+		if (lowest < uv_read_rtc() && !uv_intr_pending(pnode))
-+			uv_rtc_send_IPI(c, GENERIC_TIMER_VECTOR);
-+	} else
-+		uv_write_global_mmr64(pnode, UVH_RTC1_INT_CONFIG,
-+			UVH_RTC1_INT_CONFIG_M_MASK);
-+}
-+
-+/*
-+ * Set expiration time for current cpu.
-+ *
-+ * Returns 1 if we missed the expiration time.
-+ */
-+static int
-+uv_rtc_set_timer(int cpu, u64 expires)
-+{
-+	int pnode = cpu_to_pnode(cpu);
-+	struct uv_rtc_timer_head *head = per_cpu(rtc_timer_head, cpu);
-+	int local_cpu = cpu - head->fcpu;
-+	u64 *t = &head->expires[local_cpu];
-+	unsigned long flags;
-+	int next_cpu;
-+
-+	spin_lock_irqsave(&head->lock, flags);
-+
-+	next_cpu = head->next_cpu;
-+	*t = expires;
-+
-+	/* Will this one be next to go off? */
-+	if (expires < head->expires[next_cpu]) {
-+		head->next_cpu = cpu;
-+		uv_setup_intr(cpu, expires);
-+		if (expires <= uv_read_rtc() && !uv_intr_pending(pnode)) {
-+			*t = ULLONG_MAX;
-+			uv_rtc_find_next_timer(head, pnode);
-+			spin_unlock_irqrestore(&head->lock, flags);
-+			return 1;
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&head->lock, flags);
-+	return 0;
-+}
-+
-+/*
-+ * Unset expiration time for current cpu.
-+ *
-+ * Returns 1 if this timer was pending.
-+ */
-+static int
-+uv_rtc_unset_timer(int cpu)
-+{
-+	int pnode = cpu_to_pnode(cpu);
-+	struct uv_rtc_timer_head *head = per_cpu(rtc_timer_head, cpu);
-+	int local_cpu = cpu - head->fcpu;
-+	u64 *t = &head->expires[local_cpu];
-+	unsigned long flags;
-+	int rc = 0;
-+
-+	spin_lock_irqsave(&head->lock, flags);
-+
-+	if (head->next_cpu == cpu && uv_read_rtc() >= *t)
-+		rc = 1;
-+
-+	*t = ULLONG_MAX;
-+	/* Was the hardware setup for this timer? */
-+	if (head->next_cpu == cpu)
-+		uv_rtc_find_next_timer(head, pnode);
-+
-+	spin_unlock_irqrestore(&head->lock, flags);
-+	return rc;
-+}
-+
-+
-+
-+/*
-+ * Kernel interface routines.
-+ */
-+
-+/*
-+ * Read the RTC.
-+ */
-+static cycle_t
-+uv_read_rtc(void)
-+{
-+	return (cycle_t)uv_read_local_mmr(UVH_RTC);
-+}
-+
-+/*
-+ * Program the next event, relative to now
-+ */
-+static int
-+uv_rtc_next_event(unsigned long delta, struct clock_event_device *ced)
-+{
-+	int ced_cpu = first_cpu(ced->cpumask);
-+
-+	return uv_rtc_set_timer(ced_cpu, delta + uv_read_rtc());
-+}
-+
-+/*
-+ * Setup the RTC timer in oneshot mode
-+ */
-+static void
-+uv_rtc_timer_setup(enum clock_event_mode mode, struct clock_event_device *evt)
-+{
-+	unsigned long flags;
-+	int ced_cpu = first_cpu(evt->cpumask);
-+
-+	local_irq_save(flags);
-+
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+	case CLOCK_EVT_MODE_ONESHOT:
-+	case CLOCK_EVT_MODE_RESUME:
-+		/* Nothing to do here yet */
-+		break;
-+	case CLOCK_EVT_MODE_UNUSED:
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		uv_rtc_unset_timer(ced_cpu);
-+		break;
-+	}
-+
-+	local_irq_restore(flags);
-+}
-+
-+/*
-+ * Local APIC timer broadcast function
-+ */
-+static void
-+uv_rtc_timer_broadcast(cpumask_t mask)
-+{
-+	int cpu;
-+	for_each_cpu_mask(cpu, mask)
-+		uv_rtc_send_IPI(cpu, GENERIC_TIMER_VECTOR);
-+}
-+
-+static void
-+uv_rtc_interrupt(void)
-+{
-+	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
-+	unsigned long flags;
-+	int cpu = smp_processor_id();
-+
-+	local_irq_save(flags);
-+	if (!ced || !ced->event_handler || !uv_rtc_unset_timer(cpu)) {
-+		local_irq_restore(flags);
-+		printk(KERN_WARNING
-+			"Spurious uv_rtc timer interrupt on cpu %d\n",
-+				smp_processor_id());
-+		return;
-+	}
-+	local_irq_restore(flags);
-+	ced->event_handler(ced);
-+}
-+
-+static __init void
-+uv_rtc_register_clockevents(void *data)
-+{
-+	struct clock_event_device *ced = &__get_cpu_var(cpu_ced);
-+
-+	memcpy(ced, &clock_event_device_uv, sizeof(clock_event_device_uv));
-+	cpus_clear(ced->cpumask);
-+	cpu_set(smp_processor_id(), ced->cpumask);
-+	clockevents_register_device(ced);
-+}
-+
-+static __init int
-+uv_rtc_setup_clock(void)
-+{
-+	int rc;
-+
-+	if (!is_uv_system() || generic_timer_reg_extension(uv_rtc_interrupt))
-+		return -ENODEV;
-+
-+	clocksource_uv.mult = clocksource_hz2mult(sn_rtc_cycles_per_second,
-+				clocksource_uv.shift);
-+
-+	rc = clocksource_register(&clocksource_uv);
-+	if (rc) {
-+		generic_timer_unreg_extension();
-+		return rc;
-+	}
-+
-+	/* Setup and register clockevents */
-+	uv_rtc_allocate_timers();
-+
-+	clock_event_device_uv.mult = div_sc(sn_rtc_cycles_per_second,
-+				NSEC_PER_SEC, clock_event_device_uv.shift);
-+
-+	clock_event_device_uv.min_delta_ns = NSEC_PER_SEC /
-+						sn_rtc_cycles_per_second;
-+	clock_event_device_uv.max_delta_ns = clocksource_uv.mask *
-+				(NSEC_PER_SEC / sn_rtc_cycles_per_second);
-+
-+	smp_call_function(uv_rtc_register_clockevents, NULL, 0);
-+	uv_rtc_register_clockevents(NULL);
-+
-+	return 0;
-+}
-+module_init(uv_rtc_setup_clock);
-Index: linux/kernel/time/clockevents.c
-===================================================================
---- linux.orig/kernel/time/clockevents.c	2008-11-19 15:08:01.000000000 -0600
-+++ linux/kernel/time/clockevents.c	2008-11-19 15:09:54.000000000 -0600
-@@ -183,6 +183,7 @@ void clockevents_register_device(struct 
- 
- 	spin_unlock(&clockevents_lock);
- }
-+EXPORT_SYMBOL_GPL(clockevents_register_device);
- 
- /*
-  * Noop handler when we shut down an event device
-Index: linux/kernel/time/clocksource.c
-===================================================================
---- linux.orig/kernel/time/clocksource.c	2008-11-19 15:08:01.000000000 -0600
-+++ linux/kernel/time/clocksource.c	2008-11-19 15:09:54.000000000 -0600
-@@ -369,6 +369,7 @@ void clocksource_unregister(struct clock
- 	next_clocksource = select_clocksource();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
- }
-+EXPORT_SYMBOL(clocksource_unregister);
- 
- #ifdef CONFIG_SYSFS
- /**
+
+
+--------------enig78BE9FC0641A7C88E3FF2FAF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkkkhWAACgkQlOSOBdgZUxmbkgCghFJthdhcF4AiuJ7JzqjNYLdA
+YZ4AnA1M0m2Kd2/7Pmux8M7edxKyzKB+
+=PxmA
+-----END PGP SIGNATURE-----
+
+--------------enig78BE9FC0641A7C88E3FF2FAF--
