@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYKSKAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYKSKGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbYKSKAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKSKAj
+	id S1753426AbYKSKGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 05:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKSKF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:00:39 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:50150 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbYKSKAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:00:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=rnP/Mulltl2cFevQ3ag/jocMyS2+ASbVxioQpEcGXmpH5dclCahwY4H9B9nasldTCy
-         oBbe9Ri1Ju4FoxpeVhGfomAUcHS3SrJMsX9milxkUkO7UpG+MjSRrb0NnGrKb7r9VOgJ
-         IYWszuzzYDVQGJcYq+6eb9+ffKXE3Db4WzXrs=
-Message-ID: <386072610811190200l576d7735rb0188ab53f5185fa@mail.gmail.com>
-Date: Wed, 19 Nov 2008 18:00:36 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: [Question] Can I open a substream in kernel space without attach to a file pointer?
-Cc: "ALSA devel" <alsa-devel@alsa-project.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 19 Nov 2008 05:05:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49453 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752621AbYKSKF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 05:05:59 -0500
+Message-ID: <4923E4D5.4070202@kernel.org>
+Date: Wed, 19 Nov 2008 19:05:09 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@hansenpartnership.com
+Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
+References: <20081119142016E.fujita.tomonori@lab.ntt.co.jp>	 <c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>	 <20081119155847U.fujita.tomonori@lab.ntt.co.jp>	 <20081119165915A.fujita.tomonori@lab.ntt.co.jp> <c384c5ea0811190145y78803fbboecfcf6ebd652ee03@mail.gmail.com>
+In-Reply-To: <c384c5ea0811190145y78803fbboecfcf6ebd652ee03@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: cc7b45d44ed46d43
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Nov 2008 10:05:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Takashi,
+Leon Woestenberg wrote:
+> Hello,
+> 
+> On Wed, Nov 19, 2008 at 8:58 AM, FUJITA Tomonori
+> <fujita.tomonori@lab.ntt.co.jp> wrote:
+>> On Wed, 19 Nov 2008 15:58:12 +0900
+>> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>>> On Wed, 19 Nov 2008 07:22:31 +0100
+>> - pci_map_sg/dma_map_sg are used with a scatter gather list that
+>> doesn't come from the block layer (e.g. some network drivers do).
+>>
+> This is the point I then want to make: we have pci_map_sg() users in
+> other system than the block layer, the network and v4l2 subsystems,
+> why cannot they benefit from coalescing?
 
-I am developing a USB gadget driver compliant to USB Audio Class Spec 2.0.
-So I want to open a PCM substream and do some playback of capture,
-then close them?
+Because pci_map_sg() doesn't know the memory access limits of the
+controller as block layer does.
 
-I found snd_pcm_open_substream() is for opening a substream and attach
-it to a file.
-But in my application, there is no need to open a file before opening
-a substream.
+> Should they copy the block layer coalescing implementation, or should
+> that implementation be made more generic and live outside the block
+> sub system?
 
-- Is there any interface for me to open a substream in kernel space
-without attach to a file?
-- How to playback and capture in kernel space, use snd_pcm_lib_write
-and snd_pcm_lib_read?
-- How to get the snd_pcm_hardware struct from low level driver,
-because I have to get the hardware configuration of the snd pcm
-device?
+The latter sounds like a good idea to me.
 
-And I am reading the code of OSS emulator in ALSA. It provides some
-info about the kernel space sound card programming.
+Thanks.
 
-Thanks a lot
--Bryan
+-- 
+tejun
