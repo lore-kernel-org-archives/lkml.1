@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYKSVYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYKSVYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbYKSVYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYKSVXi
+	id S1754863AbYKSVYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYKSVXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:23:38 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41333 "EHLO
+	Wed, 19 Nov 2008 16:23:39 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56381 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbYKSVXf (ORCPT
+	with ESMTP id S1752157AbYKSVXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Nov 2008 16:23:35 -0500
-Message-Id: <20081119212333.878359312@goodmis.org>
+Message-Id: <20081119212334.093013344@goodmis.org>
 References: <20081119212204.318400312@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 19 Nov 2008 16:22:09 -0500
+Date: Wed, 19 Nov 2008 16:22:10 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -22,96 +22,100 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 5/9] powerpc/ppc64: ftrace, mcount record powerpc port
-Content-Disposition: inline; filename=0005-powerpc-ppc64-ftrace-mcount-record-powerpc-port.patch
+Subject: [PATCH 6/9] powerpc: ftrace, use probe_kernel API to modify code
+Content-Disposition: inline; filename=0006-powerpc-ftrace-use-probe_kernel-API-to-modify-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: 64 bit PowerPC port of dynamic ftrace
+Impact: use cleaner probe_kernel API over assembly
 
-This patch converts 64 bit PowerPC to use the mcount location section.
-
-Currently, modules will be ignored by the converter.
+Using probe_kernel_read/write interface is a much cleaner approach
+than the current assembly version.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/Kconfig    |    2 ++
- scripts/recordmcount.pl |   13 +++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/ftrace.c |   53 ++++++++++++++++-------------------------
+ 1 files changed, 21 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 525c13a..9675e95 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -108,6 +108,8 @@ config ARCH_NO_VIRT_TO_BUS
- config PPC
- 	bool
- 	default y
-+	select HAVE_FTRACE_MCOUNT_RECORD if PPC64
-+	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_IDE
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index eeac71c..7acbe17 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -130,6 +130,7 @@ my %weak;		# List of weak functions
- my %convert;		# List of local functions used that needs conversion
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 24c023a..1adfbb2 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -9,6 +9,7 @@
  
- my $type;
-+my $nm_regex;		# Find the local functions (return function)
- my $section_regex;	# Find the start of a section
- my $function_regex;	# Find the name of a function
- 			#    (return offset and func name)
-@@ -145,6 +146,7 @@ if ($arch eq "x86") {
+ #include <linux/spinlock.h>
+ #include <linux/hardirq.h>
++#include <linux/uaccess.h>
+ #include <linux/ftrace.h>
+ #include <linux/percpu.h>
+ #include <linux/init.h>
+@@ -72,45 +73,33 @@ static int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+-	unsigned replaced;
+-	unsigned old = *(unsigned *)old_code;
+-	unsigned new = *(unsigned *)new_code;
+-	int faulted = 0;
++	unsigned char replaced[MCOUNT_INSN_SIZE];
+ 
+ 	/*
+ 	 * Note: Due to modules and __init, code can
+ 	 *  disappear and change, we need to protect against faulting
+-	 *  as well as code changing.
++	 *  as well as code changing. We do this by using the
++	 *  probe_kernel_* functions.
+ 	 *
+ 	 * No real locking needed, this code is run through
+-	 * kstop_machine.
++	 * kstop_machine, or before SMP starts.
+ 	 */
+-	asm volatile (
+-		"1: lwz		%1, 0(%2)\n"
+-		"   cmpw	%1, %5\n"
+-		"   bne		2f\n"
+-		"   stwu	%3, 0(%2)\n"
+-		"2:\n"
+-		".section .fixup, \"ax\"\n"
+-		"3:	li %0, 1\n"
+-		"	b 2b\n"
+-		".previous\n"
+-		".section __ex_table,\"a\"\n"
+-		_ASM_ALIGN "\n"
+-		_ASM_PTR "1b, 3b\n"
+-		".previous"
+-		: "=r"(faulted), "=r"(replaced)
+-		: "r"(ip), "r"(new),
+-		  "0"(faulted), "r"(old)
+-		: "memory");
+-
+-	if (replaced != old && replaced != new)
+-		faulted = 2;
+-
+-	if (!faulted)
+-		flush_icache_range(ip, ip + 8);
+-
+-	return faulted;
++
++	/* read the text we want to modify */
++	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
++		return -EFAULT;
++
++	/* Make sure it is what we expect it to be */
++	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
++		return -EINVAL;
++
++	/* replace the text with the new text */
++	if (probe_kernel_write((void *)ip, new_code, MCOUNT_INSN_SIZE))
++		return -EPERM;
++
++	flush_icache_range(ip, ip + 8);
++
++	return 0;
  }
  
- if ($arch eq "x86_64") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
-@@ -158,6 +160,7 @@ if ($arch eq "x86_64") {
-     $cc .= " -m64";
- 
- } elsif ($arch eq "i386") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-@@ -170,6 +173,12 @@ if ($arch eq "x86_64") {
-     $objcopy .= " -O elf32-i386";
-     $cc .= " -m32";
- 
-+} elsif ($arch eq "powerpc") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
-+    $section_regex = "Disassembly of section\\s+(\\S+):";
-+    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
-+    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
-+    $type = ".quad";
- } else {
-     die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
- }
-@@ -239,7 +248,7 @@ if (!$found_version) {
- #
- open (IN, "$nm $inputfile|") || die "error running $nm";
- while (<IN>) {
--    if (/^[0-9a-fA-F]+\s+t\s+(\S+)/) {
-+    if (/$nm_regex/) {
- 	$locals{$1} = 1;
-     } elsif (/^[0-9a-fA-F]+\s+([wW])\s+(\S+)/) {
- 	$weak{$2} = $1;
-@@ -291,7 +300,7 @@ sub update_funcs
- 	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
- 	    $opened = 1;
- 	    print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
--	    print FILE "\t.align $alignment\n";
-+	    print FILE "\t.align $alignment\n" if (defined($alignment));
- 	}
- 	printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
-     }
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
 -- 
 1.5.6.5
 
