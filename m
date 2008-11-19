@@ -1,160 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbYKSFLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbYKSFOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752023AbYKSFLa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 00:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYKSFLV
+	id S1752157AbYKSFOa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 00:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYKSFOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 00:11:21 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:38027 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbYKSFLU (ORCPT
+	Wed, 19 Nov 2008 00:14:22 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:30108 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYKSFOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 00:11:20 -0500
-Message-ID: <49239E68.20002@linux.vnet.ibm.com>
-Date: Wed, 19 Nov 2008 10:34:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Wed, 19 Nov 2008 00:14:21 -0500
+X-IronPort-AV: E=McAfee;i="5300,2777,5438"; a="13286447"
+Message-ID: <4923A0A8.5050009@qualcomm.com>
+Date: Tue, 18 Nov 2008 21:14:16 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, yamamoto@valinux.co.jp, menage@google.com,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       nickpiggin@yahoo.com.au, rientjes@google.com, xemul@openvz.org,
-       dhaval@linux.vnet.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [mm] [PATCH 4/4] Memory cgroup hierarchy feature selector (v4)
-References: <20081116081034.25166.7586.sendpatchset@balbir-laptop> <20081116081105.25166.54820.sendpatchset@balbir-laptop> <20081118152833.98125cdd.akpm@linux-foundation.org>
-In-Reply-To: <20081118152833.98125cdd.akpm@linux-foundation.org>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Using cpusets for configuration/isolation [Was Re: RT sched:
+ cpupri_vec lock contention with def_root_domain and no load balance]
+References: <29495f1d0811071123x37d910a8w6c1604b8159954ec@mail.gmail.com>	 <4923731E.7010601@qualcomm.com> <29495f1d0811181811r1a7476ceyb5cb4a86e11e7651@mail.gmail.com>
+In-Reply-To: <29495f1d0811181811r1a7476ceyb5cb4a86e11e7651@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sun, 16 Nov 2008 13:41:05 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Nish Aravamudan wrote:
+> On Tue, Nov 18, 2008 at 5:59 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>> I do not see how 'partfs' that you described would be different from
+>> 'cpusets' that we have now. Just ignore 'tasks' files in the cpusets and you
+>> already have your 'partfs'. You do _not_ have to use cpuset for assigning
+>> tasks if you do not want to. Just use them to define sets of cpus and keep
+>> all the tasks in the 'root' set. You can then explicitly pin your threads
+>> down with pthread_set_affinity().
 > 
->> Don't enable multiple hierarchy support by default. This patch introduces
->> a features element that can be set to enable the nested depth hierarchy
->> feature. This feature can only be enabled when the cgroup for which the
->> feature this is enabled, has no children.
->>
->> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->> ---
->>
->>  mm/memcontrol.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
->>  1 file changed, 57 insertions(+), 4 deletions(-)
->>
->> diff -puN mm/memcontrol.c~memcg-add-hierarchy-selector mm/memcontrol.c
->> --- linux-2.6.28-rc4/mm/memcontrol.c~memcg-add-hierarchy-selector	2008-11-16 13:19:33.000000000 +0530
->> +++ linux-2.6.28-rc4-balbir/mm/memcontrol.c	2008-11-16 13:19:33.000000000 +0530
->> @@ -148,6 +148,10 @@ struct mem_cgroup {
->>  	 * reclaimed from. Protected by cgroup_lock()
->>  	 */
->>  	struct mem_cgroup *last_scanned_child;
->> +	/*
->> +	 * Should the accounting and control be hierarchical, per subtree?
->> +	 */
->> +	unsigned long use_hierarchy;
+> I guess you're right. It still feels a bit kludgy, but that is probably just me.
 > 
-> This field is a boolean, but it is declared as an unsigned long and is
-> accessed from userspace via an API which returns a u64.  This all seems
-> ripe for a cleanup..
-> 
+> I have wondered, though, if it makes sense to provide an "isolated"
+> file in /sys/devices/system/cpu/cpuX/ to do most of the offline
+> sequence, break sched_domains and remove a CPU from the load balancer
+> (rather than turning the load balancer off), rather than requiring a
+> user to explicitly do an offline/online. 
+I do not see any benefits in exposing a special 'isolated' bit and have it do
+the same thing that the cpu hotplug already does. As I explained in other
+threads cpu hotplug is a _perfect_ fit for the isolation purposes. In order to
+isolate a CPU dynamically (ie at runtime) we need to flush pending work, flush
+chaches, move tasks and timers, etc. Which is _exactly_ what cpu hotplug code
+does when it brings CPU down. There is no point in reimplementing it.
 
-Hmm.. Yes. I initially had a file called features that I intended to use for
-enabling features. I'll change/fix this and the write routine.
+btw It sounds like you misunderstood the meaning of the
+cpuset.sched_load_balance flag. It's does not turn really turn load balancer
+off, it simply causes cpus in different cpusets to be put into separate sched
+domains. In other words it already does exactly what you're asking for.
 
->>  	int		obsolete;
->>  	atomic_t	refcnt;
->> @@ -1527,6 +1531,44 @@ int mem_cgroup_force_empty_write(struct 
->>  }
->>  
->>  
->> +static u64 mem_cgroup_hierarchy_read(struct cgroup *cont, struct cftype *cft)
->> +{
->> +	return mem_cgroup_from_cont(cont)->use_hierarchy;
->> +}
->> +
->> +static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
->> +					u64 val)
->> +{
->> +	int retval = 0;
->> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
->> +	struct cgroup *parent = cont->parent;
->> +	struct mem_cgroup *parent_mem = NULL;
->> +
->> +	if (parent)
->> +		parent_mem = mem_cgroup_from_cont(parent);
->> +
->> +	cgroup_lock();
->> +	/*
->> +	 * If parent's use_hiearchy is set, we can't make any modifications
->> +	 * in the child subtrees. If it is unset, then the change can
->> +	 * occur, provided the current cgroup has no children.
->> +	 *
->> +	 * For the root cgroup, parent_mem is NULL, we allow value to be
->> +	 * set if there are no children.
->> +	 */
->> +	if (!parent_mem || (!parent_mem->use_hierarchy &&
->> +				(val == 1 || val == 0))) {
-> 
-> One part of this test permits any value, but the other part restricts
-> values to 0 or 1.
-> 
+> I guess it can all be rather
+> transparently masked via a userspace tool, but we don't have a common
+> one yet.
+I do :). It's called 'syspart'
+	http://git.kernel.org/?p=linux/kernel/git/maxk/syspart.git;a=summary
+I'll push an updated version in a couple of days.
 
-Thanks, will fix!
+> I do have a question, though: is your recommendation to just turn the
+> load balancer off in the cpuset you create that has the isolated CPUs?
+> I guess the conceptual issue I was having was that the root cpuset (I
+> think) always contains all CPUs and all memory nodes. So even if you
+> put some CPUs in a cpuset under the root one, and isolate them using
+> hotplug + disabling the load balancer in that cpuset, those CPUs are
+> still available to tasks in the root cpuset? Maybe I'm just missing a
+> step in the configuration, but it seems like as long as the global
+> (root cpuset) load balancer is on, a CPU can't be guaranteed to stay
+> isolated?
+Take a look at what 'syspart' does. In short yes, of course we need to set
+sched_load_balance flag in root cpuset to 0.
 
->> +		if (list_empty(&cont->children))
->> +			mem->use_hierarchy = val;
->> +		else
->> +			retval = -EBUSY;
->> +	} else
->> +		retval = -EINVAL;
->> +	cgroup_unlock();
->> +
->> +	return retval;
->> +}
->> +
->>  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
->>  {
->>  	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
->> @@ -1690,6 +1732,11 @@ static struct cftype mem_cgroup_files[] 
->>  		.name = "force_empty",
->>  		.trigger = mem_cgroup_force_empty_write,
->>  	},
->> +	{
->> +		.name = "use_hierarchy",
->> +		.write_u64 = mem_cgroup_hierarchy_write,
->> +		.read_u64 = mem_cgroup_hierarchy_read,
->> +	},
->>  };
->>  
->>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->> @@ -1865,12 +1912,18 @@ mem_cgroup_create(struct cgroup_subsys *
->>  	if (cont->parent == NULL) {
->>  		enable_swap_cgroup();
->>  		parent = NULL;
->> -	} else
->> +	} else {
->>  		parent = mem_cgroup_from_cont(cont->parent);
->> +		mem->use_hierarchy = parent->use_hierarchy;
->> +	}
->>  
->> - 	res_counter_init(&mem->res, parent ? &parent->res : NULL);
->> -	res_counter_init(&mem->memsw, parent ? &parent->memsw : NULL);
->> -
->> +	if (parent && parent->use_hierarchy) {
->> +		res_counter_init(&mem->res, &parent->res);
->> +		res_counter_init(&mem->memsw, &parent->memsw);
->> +	} else {
->> +		res_counter_init(&mem->res, NULL);
->> +		res_counter_init(&mem->memsw, NULL);
->> +	}
-> 
+Max
 
-Thanks for the review!
 
--- 
-	Balbir
+
+
+
