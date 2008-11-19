@@ -1,118 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYKSTZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYKSTZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYKSTZE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 14:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYKSTYx
+	id S1754059AbYKSTZZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 14:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYKSTZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 14:24:53 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:29919 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbYKSTYx (ORCPT
+	Wed, 19 Nov 2008 14:25:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46550 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754553AbYKSTZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 14:24:53 -0500
-Message-ID: <cfec22b10811191124g7fcafbdbx827311c04c0fae3f@mail.gmail.com>
-Date: Wed, 19 Nov 2008 11:24:51 -0800
-From: "John McCutchan" <john@johnmccutchan.com>
-To: mtk.manpages@gmail.com
-Subject: Re: [patch] Fix type errors in inotify interfaces
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Robert Love" <rlove@google.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Ulrich Drepper" <drepper@redhat.com>
-In-Reply-To: <cfd18e0f0811191110t792cc9a4i5869bee0fb3d759c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 19 Nov 2008 14:25:04 -0500
+Subject: Re: linux-next: Tree for November 19 (mtd build error)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-net-drivers@solarflare.com
+In-Reply-To: <1227122287.3052.7.camel@achroite>
+References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+	 <20081119105321.477e618a.randy.dunlap@oracle.com>
+	 <1227121104.27728.618.camel@macbook.infradead.org>
+	 <492463A1.3000306@oracle.com>  <1227122287.3052.7.camel@achroite>
+Content-Type: text/plain
+Date: Wed, 19 Nov 2008 19:24:56 +0000
+Message-Id: <1227122696.27728.625.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4923230D.8090301@gmail.com>
-	 <20081119000342.05b2de85.akpm@linux-foundation.org>
-	 <cfd18e0f0811191110t792cc9a4i5869bee0fb3d759c@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 11:10 AM, Michael Kerrisk
-<mtk.manpages@googlemail.com> wrote:
-> (Would be nice to see an Aacked-by from Robert or John on this patch.)
->
-> On Wed, Nov 19, 2008 at 3:03 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
->> On Tue, 18 Nov 2008 15:18:21 -0500 Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
->>
->>> Andrew,
->>>
->>> Vegard reminded me of an issue with the inotify interface
->>> that I raised quite a while ago, offlist, with Robert; Robert
->>> acknowledged that things should be fixed, but then neither of
->>> us actually did anything :-{.
->>>
->>> The problems lie in the types used for some inotify interfaces, both
->>> at the kernel level and at the glibc level.  This mail addresses the
->>> kernel problem.  I will follow up with some suggestions for glibc
->>> changes.
->>>
->>> For the sys_inotify_rm_watch() interface, the type of the 'wd' argument
->>> is currently 'u32', it should be '__s32' .  That is Robert's suggestion,
->>> and is consistent with the other declarations of watch descriptors in
->>> the kernel source, in particular, the inotify_event structure in
->>> include/linux/inotify.h:
->>>
->>> struct inotify_event {
->>>         __s32           wd;             /* watch descriptor */
->>>         __u32           mask;           /* watch mask */
->>>         __u32           cookie;         /* cookie to synchronize two events */
->>>         __u32           len;            /* length (including nulls) of name */
->>>         char            name[0];        /* stub for possible name */
->>> };
->>>
->>> The patch below makes the changes needed for inotify_rm_watch().
->>>
->>> Thanks
->>>
->>> Michael
->>>
->>>
->>> diff --git a/fs/inotify_user.c b/fs/inotify_user.c
->>> index d367e9b..a71f764 100644
->>> --- a/fs/inotify_user.c
->>> +++ b/fs/inotify_user.c
->>> @@ -704,7 +704,7 @@ fput_and_out:
->>>       return ret;
->>>  }
->>>
->>> -asmlinkage long sys_inotify_rm_watch(int fd, u32 wd)
->>> +asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
->>>  {
->>>       struct file *filp;
->>>       struct inotify_device *dev;
->>> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
->>> index d6ff145..36983a5 100644
->>> --- a/include/linux/syscalls.h
->>> +++ b/include/linux/syscalls.h
->>> @@ -550,7 +550,7 @@ asmlinkage long sys_inotify_init(void);
->>>  asmlinkage long sys_inotify_init1(int flags);
->>>  asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
->>>                                       u32 mask);
->>> -asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
->>> +asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd);
->>>
->>>  asmlinkage long sys_spu_run(int fd, __u32 __user *unpc,
->>>                                __u32 __user *ustatus);
->>
->
-> Yes -- there is no sane reason for a negative watch descriptor to
-> inotify_rm_watch(); this change is mainly about consistency.  (The
-> glibc change is probably more important.)
->
->> otoh, the system call via which one _obtains_ watch descriptors most
->> certainly wants to return -ve nunmbers, to signify errors.
->>
->> All too hard.  I think I'll stop thinking about it and merge the patch ;)
->
+On Wed, 2008-11-19 at 19:18 +0000, Ben Hutchings wrote:
+> So does the dependency need to be something like
+> "depends on SFC && MTD && !(SFC=y && MTD=m)"?
 
-Seems sane enough.
-
-Acked-by: John McCutchan <john@johnmccutchan.com>
+If it's a separate driver, perhaps it's sufficient just to make it a
+tristate and make it depend on SFC && MTD?
 
 -- 
-John McCutchan <john@johnmccutchan.com>
+dwmw2
+
