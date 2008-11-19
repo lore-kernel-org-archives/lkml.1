@@ -1,208 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYKSUs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYKSUvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYKSUs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbYKSUsQ
+	id S1754236AbYKSUvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYKSUvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:48:16 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42837 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753137AbYKSUsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:48:14 -0500
-Date: Wed, 19 Nov 2008 21:46:25 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-Message-ID: <20081119204624.GW26308@kernel.dk>
-References: <0F5B06BAB751E047AB5C87D1F77A77884BFF5D1F76@GVW0547EXC.americas.hpqcorp.net> <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net> <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net> <49244B69.80903@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net> <20081119172919.GT26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net>
+	Wed, 19 Nov 2008 15:51:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44447 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbYKSUvG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 15:51:06 -0500
+Subject: Re: [patch] sched: fix inconsistency when redistribute per-cpu
+	tg->cfs_rq  shares.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ken Chen <kenchen@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <b040c32a0811182241r3cf5e7c7l25d3627c2265ead2@mail.gmail.com>
+References: <b040c32a0811182241r3cf5e7c7l25d3627c2265ead2@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 19 Nov 2008 20:19:19 +0100
+Message-Id: <1227122359.29743.54.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19 2008, Miller, Mike (OS Dev) wrote:
-> Jens wrote:
+On Tue, 2008-11-18 at 22:41 -0800, Ken Chen wrote:
+
+It just occurred to me that you lost the boost stuff.
+
+The issue with the boost flag is that we have a different
+  tg->cfs_rq[cpu]->shares
+than the actual
+  tg->cfs_se[cpu]->load.weight
+
+So that the starvation shares don't count towards the total distributed
+shares.
+
+I guess this is an overestimate vs underestimate issue, you now
+underestimate possibly pessimising your actual bandwidth.
+
+
+
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 9b1e793..1ff78b6 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1473,27 +1473,13 @@ static void
+>  update_group_shares_cpu(struct task_group *tg, int cpu,
+>  			unsigned long sd_shares, unsigned long sd_rq_weight)
+>  {
+> -	int boost = 0;
+>  	unsigned long shares;
+>  	unsigned long rq_weight;
 > 
-> >
-> > Yeah, kexec is definitely a clue. My guess is that we got
-> > some sort of left over completion. Regardless of the status
-> > of this particular bug or not, I think it would be a good
-> > idea to add some checks for when a command is attempted
-> > removed from a queue it isn't currently on.
-> >
+>  	if (!tg->se[cpu])
+>  		return;
 > 
-> I agree, I'll fix.
-
-I'd propose just converting it to list_head instead of doing it
-manually. Heck, that should be a 5 minute job, let me just do it...
-
-OK, here it is, totally untested (it compiles, must be golden...)
-
- 3 files changed, 24 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 12de1fd..d2923de 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -215,30 +215,17 @@ static struct block_device_operations cciss_fops = {
- /*
-  * Enqueuing and dequeuing functions for cmdlists.
-  */
--static inline void addQ(CommandList_struct **Qptr, CommandList_struct *c)
-+static inline void addQ(struct list_head *list, CommandList_struct *c)
- {
--	if (*Qptr == NULL) {
--		*Qptr = c;
--		c->next = c->prev = c;
--	} else {
--		c->prev = (*Qptr)->prev;
--		c->next = (*Qptr);
--		(*Qptr)->prev->next = c;
--		(*Qptr)->prev = c;
--	}
-+	list_add(&c->list, list);
- }
- 
--static inline CommandList_struct *removeQ(CommandList_struct **Qptr,
--					  CommandList_struct *c)
-+static inline CommandList_struct *removeQ(CommandList_struct *c)
- {
--	if (c && c->next != c) {
--		if (*Qptr == c)
--			*Qptr = c->next;
--		c->prev->next = c->next;
--		c->next->prev = c->prev;
--	} else {
--		*Qptr = NULL;
--	}
-+	if (WARN_ON(list_empty(&c->list)))
-+		return NULL;
-+
-+	list_del_init(&c->list);
- 	return c;
- }
- 
-@@ -506,6 +493,7 @@ static CommandList_struct *cmd_alloc(ctlr_info_t *h, int get_from_pool)
- 		c->cmdindex = i;
- 	}
- 
-+	INIT_LIST_HEAD(&c->list);
- 	c->busaddr = (__u32) cmd_dma_handle;
- 	temp64.val = (__u64) err_dma_handle;
- 	c->ErrDesc.Addr.lower = temp64.val32.lower;
-@@ -2543,7 +2531,8 @@ static void start_io(ctlr_info_t *h)
- {
- 	CommandList_struct *c;
- 
--	while ((c = h->reqQ) != NULL) {
-+	while (!list_empty(&h->reqQ)) {
-+		c = list_entry(h->reqQ.next, CommandList_struct, list);
- 		/* can't do anything if fifo is full */
- 		if ((h->access.fifo_full(h))) {
- 			printk(KERN_WARNING "cciss: fifo full\n");
-@@ -2551,7 +2540,7 @@ static void start_io(ctlr_info_t *h)
- 		}
- 
- 		/* Get the first entry from the Request Q */
--		removeQ(&(h->reqQ), c);
-+		removeQ(c);
- 		h->Qdepth--;
- 
- 		/* Tell the controller execute command */
-@@ -2981,15 +2970,8 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
- 
- 			} else {
- 				a &= ~3;
--				if ((c = h->cmpQ) == NULL) {
--					printk(KERN_WARNING
--					       "cciss: Completion of %08x ignored\n",
--					       a1);
--					continue;
--				}
--				while (c->busaddr != a) {
--					c = c->next;
--					if (c == h->cmpQ)
-+				list_for_each_entry(c, &h->cmpQ, list) {
-+					if (c->busaddr == a)
- 						break;
- 				}
- 			}
-@@ -2998,7 +2980,7 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
- 			 * completion Q and free it
- 			 */
- 			if (c->busaddr == a) {
--				removeQ(&h->cmpQ, c);
-+				removeQ(c);
- 				if (c->cmd_type == CMD_RWREQ) {
- 					complete_command(h, c, 0);
- 				} else if (c->cmd_type == CMD_IOCTL_PEND) {
-@@ -3417,6 +3399,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 		return -1;
- 
- 	hba[i]->busy_initializing = 1;
-+	INIT_LIST_HEAD(&hba[i]->cmpQ);
-+	INIT_LIST_HEAD(&hba[i]->reqQ);
- 
- 	if (cciss_pci_init(hba[i], pdev) != 0)
- 		goto clean1;
-@@ -3724,15 +3708,16 @@ static void fail_all_cmds(unsigned long ctlr)
- 	pci_disable_device(h->pdev);	/* Make sure it is really dead. */
- 
- 	/* move everything off the request queue onto the completed queue */
--	while ((c = h->reqQ) != NULL) {
--		removeQ(&(h->reqQ), c);
-+	while (!list_empty(&h->reqQ)) {
-+		c = list_entry(h->reqQ.next, CommandList_struct, list);
-+		removeQ(c);
- 		h->Qdepth--;
- 		addQ(&(h->cmpQ), c);
- 	}
- 
- 	/* Now, fail everything on the completed queue with a HW error */
--	while ((c = h->cmpQ) != NULL) {
--		removeQ(&h->cmpQ, c);
-+	while (!list_empty(&h->cmpQ)) {
-+		removeQ(c);
- 		c->err_info->CommandStatus = CMD_HARDWARE_ERR;
- 		if (c->cmd_type == CMD_RWREQ) {
- 			complete_command(h, c, 0);
-diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
-index 24a7efa..5a9806a 100644
---- a/drivers/block/cciss.h
-+++ b/drivers/block/cciss.h
-@@ -89,8 +89,8 @@ struct ctlr_info
- 	struct access_method access;
- 
- 	/* queue and queue Info */ 
--	CommandList_struct *reqQ;
--	CommandList_struct  *cmpQ;
-+	struct list_head reqQ;
-+	struct list_head cmpQ;
- 	unsigned int Qdepth;
- 	unsigned int maxQsinceinit;
- 	unsigned int maxSG;
-diff --git a/drivers/block/cciss_cmd.h b/drivers/block/cciss_cmd.h
-index 43bf559..899cc0e 100644
---- a/drivers/block/cciss_cmd.h
-+++ b/drivers/block/cciss_cmd.h
-@@ -265,8 +265,7 @@ typedef struct _CommandList_struct {
-   int			   ctlr;
-   int			   cmd_type; 
-   long			   cmdindex;
--  struct _CommandList_struct *prev;
--  struct _CommandList_struct *next;
-+  struct list_head list;
-   struct request *	   rq;
-   struct completion *waiting;
-   int	 retry_count;
- 
-
--- 
-Jens Axboe
+> -	rq_weight = tg->cfs_rq[cpu]->load.weight;
+> -
+> -	/*
+> -	 * If there are currently no tasks on the cpu pretend there is one of
+> -	 * average load so that when a new task gets to run here it will not
+> -	 * get delayed by group starvation.
+> -	 */
+> -	if (!rq_weight) {
+> -		boost = 1;
+> -		rq_weight = NICE_0_LOAD;
+> -	}
+> -
+> -	if (unlikely(rq_weight > sd_rq_weight))
+> -		rq_weight = sd_rq_weight;
+> +	rq_weight = tg->cfs_rq[cpu]->rq_weight;
+> 
+>  	/*
+>  	 *           \Sum shares * rq_weight
+> @@ -1501,7 +1487,7 @@ update_group_shares_cpu
+>  	 *               \Sum rq_weight
+>  	 *
+>  	 */
+> -	shares = (sd_shares * rq_weight) / (sd_rq_weight + 1);
+> +	shares = (sd_shares * rq_weight) / sd_rq_weight;
+>  	shares = clamp_t(unsigned long, shares, MIN_SHARES, MAX_SHARES);
+> 
+>  	if (abs(shares - tg->se[cpu]->load.weight) >
+> @@ -1510,11 +1496,7 @@ update_group_shares_cpu
+>  		unsigned long flags;
+> 
+>  		spin_lock_irqsave(&rq->lock, flags);
+> -		/*
+> -		 * record the actual number of shares, not the boosted amount.
+> -		 */
+> -		tg->cfs_rq[cpu]->shares = boost ? 0 : shares;
+> -		tg->cfs_rq[cpu]->rq_weight = rq_weight;
+> +		tg->cfs_rq[cpu]->shares = shares;
+> 
+>  		__set_se_shares(tg->se[cpu], shares);
+>  		spin_unlock_irqrestore(&rq->lock, flags);
+> @@ -1528,13 +1510,23 @@ update_group_shares_cpu
+>   */
+>  static int tg_shares_up(struct task_group *tg, void *data)
+>  {
+> -	unsigned long rq_weight = 0;
+> +	unsigned long weight, rq_weight = 0;
+>  	unsigned long shares = 0;
+>  	struct sched_domain *sd = data;
+>  	int i;
+> 
+>  	for_each_cpu_mask(i, sd->span) {
+> -		rq_weight += tg->cfs_rq[i]->load.weight;
+> +		/*
+> +		 * If there are currently no tasks on the cpu pretend there
+> +		 * is one of average load so that when a new task gets to
+> +		 * run here it will not get delayed by group starvation.
+> +		 */
+> +		weight = tg->cfs_rq[i]->load.weight;
+> +		if (!weight)
+> +			weight = NICE_0_LOAD;
+> +
+> +		tg->cfs_rq[i]->rq_weight = weight;
+> +		rq_weight += weight;
+>  		shares += tg->cfs_rq[i]->shares;
+>  	}
+> 
+> @@ -1544,9 +1536,6 @@ static int tg_shares_up
+>  	if (!sd->parent || !(sd->parent->flags & SD_LOAD_BALANCE))
+>  		shares = tg->shares;
+> 
+> -	if (!rq_weight)
+> -		rq_weight = cpus_weight(sd->span) * NICE_0_LOAD;
+> -
+>  	for_each_cpu_mask(i, sd->span)
+>  		update_group_shares_cpu(tg, i, shares, rq_weight);
 
