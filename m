@@ -1,42 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752377AbYKSAMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbYKSAUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752377AbYKSAMS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 19:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYKSAMH
+	id S1752084AbYKSAUa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 19:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYKSAUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 19:12:07 -0500
-Received: from ozlabs.org ([203.10.76.45]:37551 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbYKSAMG convert rfc822-to-8bit (ORCPT
+	Tue, 18 Nov 2008 19:20:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60635 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750907AbYKSAUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 19:12:06 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Subject: Re: [Patch] MODULE_UNLOAD should depend on PROC_FS
-Date: Wed, 19 Nov 2008 10:41:53 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-References: <20081118184052.GA24453@hack.voiplan.pt>
-In-Reply-To: <20081118184052.GA24453@hack.voiplan.pt>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200811191041.53716.rusty@rustcorp.com.au>
+	Tue, 18 Nov 2008 19:20:15 -0500
+Date: Tue, 18 Nov 2008 16:19:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: jack@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] udf: reduce stack usage of udf_get_filename
+Message-Id: <20081118161938.e415c6bc.akpm@linux-foundation.org>
+In-Reply-To: <20081116180240.GB6282@joi>
+References: <20081116180240.GB6282@joi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 November 2008 05:10:52 Américo Wang wrote:
-> The feature controlled by MODULE_UNLOAD uses proc interface, so it
-> should depend on PROC_FS.
+On Sun, 16 Nov 2008 19:02:45 +0100
+Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-Hi Wang,
+> +	filename = kmalloc(sizeof(struct ustr), GFP_NOFS);
 
-   This patch looks wrong to me; you can remove modules without /proc.  Does 
-it not compile with CONFIG_MODULE_UNLOAD=y and CONFIG_PROC_FS=n?
-
-Thanks,
-Rusty.
+I suspect that we could have used the superior GFP_KERNEL everywhere in
+both these patches.  But I'll let Jan worry about that ;)
 
