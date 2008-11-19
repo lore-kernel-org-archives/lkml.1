@@ -1,130 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYKSG7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYKSG7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbYKSG7O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 01:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYKSG67
+	id S1753425AbYKSG7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 01:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbYKSG7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 01:58:59 -0500
-Received: from sh.osrg.net ([192.16.179.4]:51066 "EHLO sh.osrg.net"
+	Wed, 19 Nov 2008 01:59:37 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60590 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751761AbYKSG67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 01:58:59 -0500
-Date: Wed, 19 Nov 2008 15:58:12 +0900
-To: leon.woestenberg@gmail.com
-Cc: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
-       tj@kernel.org
-Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>
-References: <20081117191532.c1c849f5.akpm@linux-foundation.org>
-	<20081119142016E.fujita.tomonori@lab.ntt.co.jp>
-	<c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>
+	id S1751913AbYKSG7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 01:59:34 -0500
+Date: Wed, 19 Nov 2008 17:59:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 19
+Message-Id: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081119155847U.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__19_Nov_2008_17_59_17_+1100_rUf7yZ5gTst5=4E9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008 07:22:31 +0100
-"Leon Woestenberg" <leon.woestenberg@gmail.com> wrote:
+--Signature=_Wed__19_Nov_2008_17_59_17_+1100_rUf7yZ5gTst5=4E9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hello,
-> 
-> On Wed, Nov 19, 2008 at 6:19 AM, FUJITA Tomonori
-> <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > On Mon, 17 Nov 2008 19:15:32 -0800
-> >> > pci_map_sg() does not coalesce the scattergather list for me on x86.
-> >> [ Marked as Bogus Report ]
-> >>
-> >> > Is this expected? Documentation mentions that coalescing is typically
-> >> > done by pci_map_sg().
-> >
-> > Hm, what document did you read? We might need to fix it.
-> >
-> http://lxr.linux.no/linux+v2.6.27.6/Documentation/DMA-API.txt
-> 
->  316        pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg,
->  317                int nents, int direction)
->  318
->  319Maps a scatter gather list from the block layer.
->  320
->  321Returns: the number of physical segments mapped (this may be shorter
->  322than <nents> passed in if the block layer determines that some
->  323elements of the scatter/gather list are physically adjacent and thus
->  324may be mapped with a single entry).
+Hi all,
 
-Hmm, the description looks confusing. The block layer coalesces
-physically adjacent entries before pci_map_sg(). pci_map_sg() could
-coalesces physically or virtually adjacent entries.
+Changes since 20081118:
 
+New tree:
+	m68k-current
 
-> Also it is mentioned elsewhere, such a Linux Device Driver 3rd
-> Edition, page 451.
-> 
-> > pci_map_sg() is not a typical place to coalesce the entries of the sg
-> > list are physically adjacent. The block layer is the typical place.
-> >
-> Hmmm, why not?
-> 
-> In my case I am using the following flow:
-> 
-> virtual user buffer -> scatterlist -> pci_map_sg -> device specific
-> scatterlist table
+Changed tree:
+	m86k is now a git tree
 
-If you follow what the block does now, you build coalesced
-scatterlists from virtual user buffers.
+Undropped trees:
+	firmware
+	lblnet
 
+Dropped trees (temporarily):
+	driver-core (build problem)
+	usb (depends on driver-core)
+	userns (it depends on creds)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	staging (depends on usb)
 
-> Of course, I could write my own (tm) and map my pages into PCI using
-> pci_map_single, but I thought I was being the good kid by using what
-> was there.
+The sched tree gained a conflict against Linus' tree.
 
-I don't think it's not a good place. What pci_map_single should do is
-mapping a virtual address to a dma-capable address.
+The net tree picked up a conflict from the cifs tree.
 
-IOMMU dma operations maps a virtual address to an I/O address and
-non-IOMMU dma operations do nothing. As you said below, some IOMMU
-operations do coalescing but it's virtual mapping (probably their code
-can handle physical coalescing too though but the block layer does
-physical coalescing before that though). And the virtual mapping is
-optional. Not all the IOMMU operations do. As I said, x86 IOMMUs
-(VT-d, AMD, and Calgary) except for GART does not do coalescing. Any
-non-IOMMU dma operations don't do something complicated.
+The rr tree lost its conflict.
 
-If you add physical coalescing code into pci_map_sg, block-layer
-drivers go though physical coalescing code twice, the block layer and
-pci_map_sg meaninglessly. It's not the right approach.
+The block tree gained a conflict against Linus' tree.
 
+The security-testing tree lost a conflict.
 
-> > The dma operations are free to coalesce the entries that physically
-> > and virtually adjacent but there are not many that does.
-> >
-> > For example, by default, on x86, only AMD GART (x86_64) dma operation
-> > coalesces such entries.
-> >
-> 
-> > What's kinda of your driver? If it's a SCSI (or block) driver, you
-> > don't need this trick.
-> >
-> Not a block driver.
-> 
-> A data acquisition driver through PCI Express.
+----------------------------------------------------------------------------
 
-Hmm, what location will your driver live under drivers/?
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
 
-> > I don't think that inventing a homegrown function to coalesce sg
-> > entries in a driver is a good idea. If you really need this, it's
-> > would be better to have a generic function to coalesce sg entries and
-> > modify the block layer to use it (and your driver can use it too).
-> >
-> +1 for this idea, *iff* it does not belong in pci_map_sg.
-> 
-> However, I think it *does* belong in pci_map_sg, because pci_map_sg
-> can perform virtual coalescing exploiting IOMMU's if I am not
-> mistaken.
+Below is a summary of the state of the merge.
 
-As I wrote above, it's not the right approach.
+We are up to 126 trees (counting Linus' and 15 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+CONFLICT (content): Merge conflict in include/linux/kernel.h
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+$ git reset --hard HEAD^
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+CONFLICT (content): Merge conflict in kernel/Makefile
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/isdn/i4l/isdn_net.c
+CONFLICT (content): Merge conflict in fs/cifs/connect.c
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/block/xen-blkfront.c
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
+xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
+tree.
+$ git rm -f drivers/net/wan/syncppp.c
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in fs/devpts/inode.c
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cpu_alloc/cpu_alloc
+CONFLICT (content): Merge conflict in kernel/lockdep.c
+CONFLICT (content): Merge conflict in kernel/module.c
+Applying cpu_alloc: merge_fix_1
+Applying undefined reference to __per_cpu_start
+Merging cputime/cputime
+Merging perfmon3/master
+Merging osd/linux-next
+Merging fatfs/master
+Merging quilt/staging
+$ git reset --hard HEAD^
+Merging scsi-post-merge/master
+
+--Signature=_Wed__19_Nov_2008_17_59_17_+1100_rUf7yZ5gTst5=4E9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkjuUUACgkQjjKRsyhoI8yMJgCfZQEexrRFuDwHg0PF4KE3b2bI
+/ZQAoIwuzrw5W0RkqNPaGt2yiMkgG7rc
+=uSgl
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__19_Nov_2008_17_59_17_+1100_rUf7yZ5gTst5=4E9--
