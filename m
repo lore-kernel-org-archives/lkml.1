@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYKSPVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbYKSPWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYKSPVY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:21:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYKSPVM
+	id S1754120AbYKSPWq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 10:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYKSPWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:21:12 -0500
-Received: from mga09.intel.com ([134.134.136.24]:24288 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753630AbYKSPVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:21:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,631,1220252400"; 
-   d="scan'208";a="464919355"
-Subject: Re: [RFC PATCH 03/11] net: infrastructure for hardware time
-	stamping
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <1227096528-24150-4-git-send-email-patrick.ohly@intel.com>
-References: <1227096528-24150-1-git-send-email-patrick.ohly@intel.com>
-	 <1227096528-24150-2-git-send-email-patrick.ohly@intel.com>
-	 <1227096528-24150-3-git-send-email-patrick.ohly@intel.com>
-	 <1227096528-24150-4-git-send-email-patrick.ohly@intel.com>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 16:21:03 +0100
-Message-Id: <1227108063.16263.107.camel@ecld0pohly>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 10:22:38 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:33292 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752909AbYKSPWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 10:22:38 -0500
+Message-ID: <49242F3A.9000007@sgi.com>
+Date: Wed, 19 Nov 2008 16:22:34 +0100
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [patch] docbook build fix, update include path
+Content-Type: multipart/mixed;
+ boundary="------------070800070402030105080905"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-19 at 12:08 +0000, Ohly, Patrick wrote:
-> +       struct sock_exterr_skb *serr;
-[...]
-> +       memset(serr, 0, sizeof(serr));
+This is a multi-part message in MIME format.
+--------------070800070402030105080905
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Before someone else mentions it: this was meant to be "sizeof(*serr)" of
-course.
+Hi
 
--- 
-Best Regards, Patrick Ohly
+Build fix for kerneldoc
 
-The content of this message is my personal opinion only and although
-I am an employee of Intel, the statements I make here in no way
-represent Intel's position on the issue, nor am I authorized to speak
-on behalf of Intel on this matter.
+Jes
 
+--------------070800070402030105080905
+Content-Type: text/plain;
+ name="0000-fix-docbook-build.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0000-fix-docbook-build.patch"
+
+Fix include path for mca_dma.h to match arch/x86/include path
+
+Signed-off-by: Jes Sorensen <jes@sgi.com>
+
+---
+ Documentation/DocBook/mcabook.xml |   36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
+
+Index: linux-2.6.git/Documentation/DocBook/mcabook.xml
+===================================================================
+--- linux-2.6.git.orig/Documentation/DocBook/mcabook.xml
++++ linux-2.6.git/Documentation/DocBook/mcabook.xml
+@@ -569,7 +569,7 @@
+ 
+   <chapter id="dmafunctions">
+      <title>DMA Functions Provided</title>
+-<!-- include/asm-x86/mca_dma.h -->
++<!-- arch/x86/include/asm/mca_dma.h -->
+ <refentry id="API-mca-enable-dma">
+ <refentryinfo>
+  <title>LINUX</title>
+
+--------------070800070402030105080905--
