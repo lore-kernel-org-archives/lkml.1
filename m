@@ -1,142 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752377AbYKSDvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbYKSEIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752377AbYKSDvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 22:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYKSDvO
+	id S1752344AbYKSEIP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 23:08:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYKSEH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 22:51:14 -0500
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:57299 "EHLO
-	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbYKSDvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 22:51:14 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [PATCH] loop file resizable 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tomas M <tomas@slax.org>, linux-kernel@vger.kernel.org,
-       Akinobu Mita <akinobu.mita@gmail.com>
-In-Reply-To: <20081118164207.137e92be.akpm@linux-foundation.org>
-References: <492120DC.1070407@slax.org> <20081118164207.137e92be.akpm@linux-foundation.org>
-Date: Wed, 19 Nov 2008 12:51:01 +0900
-Message-ID: <16149.1227066661@jrobl>
+	Tue, 18 Nov 2008 23:07:58 -0500
+Received: from sh.osrg.net ([192.16.179.4]:44808 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751408AbYKSEH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 23:07:57 -0500
+Date: Wed, 19 Nov 2008 13:07:47 +0900
+To: jpk@sgi.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ia64: SN specific version of dma_get_required_mask()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081117162454.169426.74531.sendpatchset@attica.americas.sgi.com>
+References: <20081117162454.169426.74531.sendpatchset@attica.americas.sgi.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081119130841E.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 17 Nov 2008 10:24:54 -0600
+John Keller <jpk@sgi.com> wrote:
 
-Andrew Morton:
-> > --- linux-2.6.27/drivers/block/loop.c	7 Nov 2008 13:07:06 -0000	1.1
-> > +++ linux-2.6.27/drivers/block/loop.c	8 Nov 2008 03:29:47 -0000
-> > @@ -1142,6 +1142,8 @@ static int lo_ioctl(struct inode * inode
-> >  {
-> >  	struct loop_device *lo = inode->i_bdev->bd_disk->private_data;
-> >  	int err;
-> > +	sector_t sec;
-> > +	loff_t sz;
-> >  
-> >  	mutex_lock(&lo->lo_ctl_mutex);
-> >  	switch (cmd) {
-> > @@ -1166,6 +1168,16 @@ static int lo_ioctl(struct inode * inode
-> >  	case LOOP_GET_STATUS64:
-> >  		err = loop_get_status64(lo, (struct loop_info64 __user *) arg);
-> >  		break;
-> > +	case LOOP_SET_CAPACITY:
-> > +		err = figure_loop_size(lo);
-> > +		if (!err) {
+> Create a platform specific version of dma_get_required_mask()
+> for ia64 SN Altix. All SN Altix platforms support 64 bit DMA
+> addressing regardless of the size of system memory.
+> Create a ia64 machvec for dma_get_required_mask, with the
+> SN version unconditionally returning DMA_64BIT_MASK.
 > 
-> It would be neater to declare `sec' and `sz' here.
+> 
+> Signed-off-by: John Keller <jpk@sgi.com>
+> ---
+> 
+>  Documentation/DMA-API.txt            |    9 ++++-----
+>  arch/ia64/include/asm/dma-mapping.h  |    3 +++
+>  arch/ia64/include/asm/machvec.h      |    7 +++++++
+>  arch/ia64/include/asm/machvec_init.h |    1 +
+>  arch/ia64/include/asm/machvec_sn2.h  |    2 ++
+>  arch/ia64/pci/pci.c                  |   21 +++++++++++++++++++++
+>  arch/ia64/sn/pci/pci_dma.c           |    6 ++++++
+>  include/linux/dma-mapping.h          |    2 ++
+>  8 files changed, 46 insertions(+), 5 deletions(-)
 
-Here is the updated one.
-- new function loop_set_capacity().
-- return an error when the backend file is not set.
+(snip)
+
+>  static int __init pcibios_init(void)
+>  {
+>  	set_pci_cacheline_size();
+> Index: linux-2.6/include/linux/dma-mapping.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/dma-mapping.h	2008-11-17 08:38:07.740451313 -0600
+> +++ linux-2.6/include/linux/dma-mapping.h	2008-11-17 08:39:50.573284674 -0600
+> @@ -70,7 +70,9 @@ static inline u64 dma_get_mask(struct de
+>  	return DMA_32BIT_MASK;
+>  }
+>  
+> +#ifndef CONFIG_IA64
+>  extern u64 dma_get_required_mask(struct device *dev);
+> +#endif
+
+I think that adding CONFIG_IA64 to include/linux/dma-mapping.h is
+wrong. I also think that you don't need to ifndef this extern.
+
+If you need this trick with only CONFIG_IA64_SGI_SN2, how about
+something like this? It's simple and we can avoid duplicate the
+generic dma_get_required_mask in arch/ia64/pci/pci.c
 
 
-J. R. Okajima
-
-----------------------------------------------------------------------
-
-The following patch against loop.c adds ability to 'resize' the loop device on the fly.
-This may be practically very useful.
-
-One practical application is a loop file with XFS filesystem, already mounted:
-You can easily enlarge the file (append some bytes) and then call
-ioctl(fd, LOOP_SET_CAPACITY, new);
-The loop driver will learn about the new size and you can use xfs_growfs
-later on, which will allow you to use full capacity of the loop
-file without the need to unmount.
-
-Please include it in mainline kernel.
-
-Hope you like it.
-
-Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Signed-off-by: Tomas Matejicek <tomas@slax.org>
-
-Index: linux-2.6.27/drivers/block/loop.c
-===================================================================
-retrieving revision 1.1
-retrieving revision 1.3
-diff -u -p -r1.1 -r1.3
---- linux-2.6.27/drivers/block/loop.c	7 Nov 2008 13:07:06 -0000	1.1
-+++ linux-2.6.27/drivers/block/loop.c	19 Nov 2008 03:42:54 -0000	1.3
-@@ -1137,6 +1137,28 @@ loop_get_status64(struct loop_device *lo
- 	return err;
+diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+index bbab7e2..4ffbd18 100644
+--- a/arch/ia64/include/asm/dma-mapping.h
++++ b/arch/ia64/include/asm/dma-mapping.h
+@@ -144,6 +144,13 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
+ 	return dma_ops;
  }
  
-+static int loop_set_capacity(struct loop_device *lo, struct block_device *bdev)
+-
++#ifdef CONFIG_IA64_SGI_SN2
++#define ARCH_HAS_DMA_GET_REQUIRED_MASK
++static inline u64 dma_get_required_mask(struct device *dev)
 +{
-+	int err;
-+	sector_t sec;
-+	loff_t sz;
-+
-+	err = -ENXIO;
-+	if (lo->lo_state != Lo_bound)
-+		goto out;
-+	err = figure_loop_size(lo);
-+	if (err)
-+		goto out;
-+	sec = get_capacity(lo->lo_disk);
-+	sz = sec << 9;
-+	mutex_lock(&bdev->bd_mutex);
-+	bd_set_size(bdev, sz);
-+	mutex_unlock(&bdev->bd_mutex);
-+
-+ out:
-+	return err;
++	return DMA_64BIT_MASK;
 +}
-+
- static int lo_ioctl(struct inode * inode, struct file * file,
- 	unsigned int cmd, unsigned long arg)
- {
-@@ -1166,6 +1188,9 @@ static int lo_ioctl(struct inode * inode
- 	case LOOP_GET_STATUS64:
- 		err = loop_get_status64(lo, (struct loop_info64 __user *) arg);
- 		break;
-+	case LOOP_SET_CAPACITY:
-+		err = loop_set_capacity(lo, inode->i_bdev);
-+		break;
- 	default:
- 		err = lo->ioctl ? lo->ioctl(lo, cmd, arg) : -EINVAL;
- 	}
-@@ -1311,6 +1336,7 @@ static long lo_compat_ioctl(struct file 
- 			lo, (struct compat_loop_info __user *) arg);
- 		mutex_unlock(&lo->lo_ctl_mutex);
- 		break;
-+	case LOOP_SET_CAPACITY:
- 	case LOOP_CLR_FD:
- 	case LOOP_GET_STATUS64:
- 	case LOOP_SET_STATUS64:
-Index: linux-2.6.27/include/linux/loop.h
-===================================================================
-retrieving revision 1.1
-retrieving revision 1.2
-diff -u -p -r1.1 -r1.2
---- linux-2.6.27/include/linux/loop.h	7 Nov 2008 13:05:58 -0000	1.1
-+++ linux-2.6.27/include/linux/loop.h	8 Nov 2008 04:47:20 -0000	1.2
-@@ -160,5 +160,6 @@ int loop_unregister_transfer(int number)
- #define LOOP_SET_STATUS64	0x4C04
- #define LOOP_GET_STATUS64	0x4C05
- #define LOOP_CHANGE_FD		0x4C06
-+#define LOOP_SET_CAPACITY	0x4C07
++EXPORT_SYMBOL_GPL(dma_get_required_mask);
++#endif
  
- #endif
+ #endif /* _ASM_IA64_DMA_MAPPING_H */
