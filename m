@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbYKSCbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbYKSCbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbYKSCbg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 21:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYKSCb2
+	id S1752855AbYKSCbz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 21:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYKSCbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 21:31:28 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:50697 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbYKSCb1 (ORCPT
+	Tue, 18 Nov 2008 21:31:44 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55267 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbYKSCbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 21:31:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RPizFMc5GEF3nK1++m/sBL2FlylZ3IMK8vbVSLgDPW1IbB/Xcv5U9LkgZQWl8fJSgj
-         /5+Vch3o5FLk+brPTzQZbE+UrvWJljYfmVdcKAK9e/f3AXNicwLjKrKxlp2wiCyYcibX
-         bhooU6u1HuVaEdDgHcWRbrwPPZNuqLpt74xUA=
-Date: Wed, 19 Nov 2008 05:35:07 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, containers@lists.osdl.org
-Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task
-	directories
-Message-ID: <20081119023507.GA5888@x200.localdomain>
-References: <m1abcd2kqk.fsf@frodo.ebiederm.org> <20081106172617.dd51d0af.akpm@linux-foundation.org> <m1abccxpc5.fsf@frodo.ebiederm.org> <20081106184945.179c248a.akpm@linux-foundation.org> <m1iqr0urb8.fsf@frodo.ebiederm.org> <20081106202822.a1af8a6e.akpm@linux-foundation.org> <m1d4h7v8jf.fsf@frodo.ebiederm.org> <20081107080529.6f4de3ad.akpm@linux-foundation.org> <m1zlk3kxfj.fsf@frodo.ebiederm.org> <20081119000749.GA2912@x200.localdomain>
+	Tue, 18 Nov 2008 21:31:43 -0500
+Date: Tue, 18 Nov 2008 18:28:17 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com
+Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
+Message-ID: <20081119022817.GA20290@us.ibm.com>
+References: <20081115212133.GA32140@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081119000749.GA2912@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081115212133.GA32140@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 03:07:49AM +0300, Alexey Dobriyan wrote:
-> On Thu, Nov 13, 2008 at 03:39:44PM -0800, Eric W. Biederman wrote:
-> > On this patchset it looks like the conversation has wound down with no
-> > real objects except that some very simple pieces of the code appear
-> > magic.
-> > 
-> > 
-> > What looks to be the best path for getting this set of patches merged
-> > into /proc?
-> 
-> Al's ACK minimum.
-> 
-> > Alexy will you pick this up in your /proc tree as Andrew suggested?
-> 
-> Yep, doing it right now.
-> 
-> > Do I need to keep my own tree?
-> 
-> No need.
-> 
-> > Can I have some clear guidance on which hurdles to jump through to
-> > make forward progress?
+| @@ -864,6 +902,9 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+|  		 * and sent by user using something other than kill().
+|  		 */
+|  			return -EAGAIN;
+| +
+| +		if (from_ancestor_ns)
+| +			return -ENOMEM;
+|  	}
+| 
+|  out_set:
 
-OK, I fixed some small issues and pushed out to proc.git so it starts
-propagate to -next.
+We had wanted to start with a check like above and improve later.
+
+But if sender is from ancestor namespace, we must post the signal even if
+we don't have the siginfo right ?  Otherwise, a SIGKILL from ancestor may
+get the -ENOMEM ?
+
+Conversely, if a signal from same namespace is being posted to cinit, and
+we don't have siginfo, ->si_pid would be 0 and get_signal_to_deliver()
+would mistake that the sender is an ancestor ns and process the signal
+(which should have been ignored).
+
+So, maybe we should start with the reverse check ?
+
+	if (same_ns && (t->signal->flags & SIGNAL_UNKILLABLE))
+		return -ENOMEM;
+
+Sukadev
