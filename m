@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYKSJac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYKSJcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbYKSJac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 04:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYKSJaS
+	id S1753499AbYKSJcv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 04:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYKSJcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 04:30:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49443 "EHLO mx3.mail.elte.hu"
+	Wed, 19 Nov 2008 04:32:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48387 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523AbYKSJaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 04:30:16 -0500
-Date: Wed, 19 Nov 2008 10:30:04 +0100
+	id S1752524AbYKSJci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 04:32:38 -0500
+Date: Wed, 19 Nov 2008 10:32:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Ferenc Wagner <wferi@niif.hu>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netconsole: Disable softirqs in write_msg()
-Message-ID: <20081119093004.GD22309@elte.hu>
-References: <87y6zwwy5c.fsf@tac.ki.iif.hu> <20081119084106.GA6699@ff.dom.local>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Miller <davem@davemloft.net>, Ferenc Wagner <wferi@niif.hu>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] softirq: Fix warnings triggered by netconsole
+Message-ID: <20081119093224.GE22309@elte.hu>
+References: <87y6zwwy5c.fsf@tac.ki.iif.hu> <20081119084125.GB6699@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081119084106.GA6699@ff.dom.local>
+In-Reply-To: <20081119084125.GB6699@ff.dom.local>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,42 +40,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jarek Poplawski <jarkao2@gmail.com> wrote:
 
-> This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2
-> shows local_bh_enable() is used in the wrong context (irqs disabled).
-> It happens when a usual network path is called by netconsole, which
-> simply turns off hardirqs around this all.
-> 
-> This patch additionally disables softirqs to avoid possibility of
-> enabling bh and calling do_softirq() with hardirqs disabled.
+> Consider netconsole case as special in local_bh_enable()/_disable().
+> This patch skips in_irq() and irqs_disabled() warnings for NETPOLL
+> configs when it's safe wrt. do_softirq().
 > 
 > Reported-by: Ferenc Wagner <wferi@niif.hu>
 > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 > ---
+> [apply on top of my first softirq patch in this thread]
 > 
->  drivers/net/netconsole.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-> index d304d38..f6ecad8 100644
-> --- a/drivers/net/netconsole.c
-> +++ b/drivers/net/netconsole.c
-> @@ -702,6 +702,8 @@ static void write_msg(struct console *con, const char *msg, unsigned int len)
->  	if (list_empty(&target_list))
->  		return;
+> diff -Nurp a/kernel/softirq.c b/kernel/softirq.c
+> --- a/kernel/softirq.c	2008-11-19 07:33:23.000000000 +0000
+> +++ b/kernel/softirq.c	2008-11-19 07:26:28.000000000 +0000
+> @@ -76,7 +76,12 @@ static void __local_bh_disable(unsigned 
+>  {
+>  	unsigned long flags;
 >  
-> +	/* Avoid enabling softirqs with hardirqs disabled */
-> +	local_bh_disable();
->  	spin_lock_irqsave(&target_list_lock, flags);
->  	list_for_each_entry(nt, &target_list, list) {
->  		netconsole_target_get(nt);
-> @@ -723,6 +725,7 @@ static void write_msg(struct console *con, const char *msg, unsigned int len)
->  		netconsole_target_put(nt);
->  	}
->  	spin_unlock_irqrestore(&target_list_lock, flags);
-> +	local_bh_enable();
+> +#ifdef CONFIG_NETPOLL
+> +	if (!softirq_count())
+> +		WARN_ON_ONCE(in_irq());
+> +#else
+>  	WARN_ON_ONCE(in_irq());
+> +#endif
+>  
+>  	raw_local_irq_save(flags);
+>  	add_preempt_count(SOFTIRQ_OFFSET);
+> @@ -138,7 +143,16 @@ static inline void _local_bh_enable_ip(u
+>  #ifdef CONFIG_TRACE_IRQFLAGS
+>  	unsigned long flags;
+>  #endif
+> +#ifdef CONFIG_NETPOLL
+> +	/*
+> +	 * Special-case - netconsole runs network code with all interrupts
+> +	 * disabled. Warn only if it can be really dangerous:
+> +	 */
+> +	if (softirq_count() == SOFTIRQ_OFFSET)
+> +		WARN_ON_ONCE(in_irq() || irqs_disabled());
+> +#else
+>  	WARN_ON_ONCE(in_irq() || irqs_disabled());
+> +#endif
+>  #ifdef CONFIG_TRACE_IRQFLAGS
+>  	local_irq_save(flags);
+>  #endif
 
-but netconsole can be triggered from printk - and printk can be called 
-from hardirqs-off sections - so this doesnt really fix the bug. 
-Netconsole should not do BH processing.
+this is a very ugly patch, not really acceptable.
+
+printk methods should not be doing softirq processing - period.
 
 	Ingo
