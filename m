@@ -1,137 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYKSO0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYKSO2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbYKSO0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 09:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbYKSO0n
+	id S1753841AbYKSO2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 09:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYKSO2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 09:26:43 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37092 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752809AbYKSO0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 09:26:40 -0500
-Date: Wed, 19 Nov 2008 15:24:46 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Fabio Checconi <fchecconi@gmail.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Divyesh Shah <dpshah@google.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
-       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081119142446.GH26308@kernel.dk>
-References: <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <e98e18940811181507t6b1473act2efa23df21dab270@mail.gmail.com>
+	Wed, 19 Nov 2008 09:28:04 -0500
+Received: from ns0.wincor-nixdorf.com ([80.154.98.130]:50796 "EHLO
+	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753235AbYKSO2B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 09:28:01 -0500
+X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 09:28:01 EST
+Message-ID: <4924201B.8010301@wincor-nixdorf.com>
+Date: Wed, 19 Nov 2008 15:18:03 +0100
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: sfr@canb.auug.org.au, linux-laptop@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] apm: Remove CONFIG_APM_REAL_MODE_POWER_OFF in favor of kernel
+ parameter
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Nov 2008 14:20:16.0690 (UTC) FILETIME=[F1D5D920:01C94A51]
 Content-Disposition: inline
-In-Reply-To: <e98e18940811181507t6b1473act2efa23df21dab270@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18 2008, Nauman Rafique wrote:
-> On Tue, Nov 18, 2008 at 11:12 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Tue, Nov 18 2008, Fabio Checconi wrote:
-> >> > From: Vivek Goyal <vgoyal@redhat.com>
-> >> > Date: Tue, Nov 18, 2008 09:07:51AM -0500
-> >> >
-> >> > On Tue, Nov 18, 2008 at 01:05:08PM +0100, Fabio Checconi wrote:
-> >> ...
-> >> > > I have to think a little bit on how it would be possible to support
-> >> > > an option for time-only budgets, coexisting with the current behavior,
-> >> > > but I think it can be done.
-> >> > >
-> >> >
-> >> > IIUC, bfq and cfq are different in following manner.
-> >> >
-> >> > a. BFQ employs WF2Q+ for fairness and CFQ employes weighted round robin.
-> >> > b. BFQ uses the budget (sector count) as notion of service and CFQ uses
-> >> >    time slices.
-> >> > c. BFQ supports hierarchical fair queuing and CFQ does not.
-> >> >
-> >> > We are looking forward for implementation of point C. Fabio seems to
-> >> > thinking of supporting time slice as a service (B). It seems like
-> >> > convergence of CFQ and BFQ except the point A (WF2Q+ vs weighted round
-> >> > robin).
-> >> >
-> >> > It looks like WF2Q+ provides tighter service bound and bfq guys mention
-> >> > that they have been able to ensure throughput while ensuring tighter
-> >> > bounds. If that's the case, does that mean BFQ is a replacement for CFQ
-> >> > down the line?
-> >> >
-> >>
-> >> BFQ started from CFQ, extending it in the way you correctly describe,
-> >> so it is indeed very similar.  There are also some minor changes to
-> >> locking, cic handling, hw_tag detection and to the CIC_SEEKY heuristic.
-> >>
-> >> The two schedulers share similar goals, and in my opinion BFQ can be
-> >> considered, in the long term, a CFQ replacement; *but* before talking
-> >> about replacing CFQ we have to consider that:
-> >>
-> >>   - it *needs* review and testing; we've done our best, but for sure
-> >>     it's not enough; review and testing are never enough;
-> >>   - the service domain fairness, which was one of our objectives, requires
-> >>     some extra complexity; the mechanisms we used and the design choices
-> >>     we've made may not fit all the needs, or may not be as generic as the
-> >>     simpler CFQ's ones;
-> >>   - CFQ has years of history behind and has been tuned for a wider
-> >>     variety of environments than the ones we've been able to test.
-> >>
-> >> If time-based fairness is considered more robust and the loss of
-> >> service-domain fairness is not a problem, then the two schedulers can
-> >> be made even more similar.
-> >
-> > My preferred approach here would be, in order or TODO:
-> >
-> > - Create and test the smallish patches for seekiness, hw_tag checking,
-> >  and so on for CFQ.
-> > - Create and test a WF2Q+ service dispatching patch for CFQ.
-> >
-> > and if there are leftovers after that, we could even conditionally
-> > enable some of those if appropriate. I think the WF2Q+ is quite cool and
-> > could be easily usable as the default, so it's definitely a viable
-> > alternative.
-> 
-> 1 Merge BFQ into CFQ (Jens and Fabio). I am assuming that this would
-> result in time slices being scheduled using WF2Q+
+Remove CONFIG_APM_REAL_MODE_POWER_OFF like CONFIG_APM_POWER_OFF which
+has been done for linux-2.2.14pre8 (http://lkml.org/lkml/1999/11/23/3).
 
-Yep, at least that is my preference.
+Re-introducing CONFIG_APM_POWER_OFF got nack-ed. Stephen didn't bother
+to remove CONFIG_APM_REAL_MODE_POWER_OFF, let's get rid of it now.
+	Reference: http://lkml.org/lkml/2008/5/7/97
 
-> 2 Do the following to support proportional division:
->  a) Expose the per device weight interface to user, instead of calculating
->  from priority.
->  b) Add support for scheduling bandwidth among a hierarchy of cgroups
-> (besides threads)
-> 3 Do the following to support the goals of 2 level schedulers:
->  a) Limit the request descriptors allocated to each cgroup by adding
->  functionality to elv_may_queue()
->  b) Add support for putting an absolute limit on IO consumed by a
->  cgroup. Such support is provided by Andrea
->  Righi's patches too.
->  c) Add support (configurable option) to keep track of total disk
-> time/sectors/count
->  consumed at each device, and factor that into scheduling decision
->  (more discussion needed here)
-> 6 Incorporate an IO tracking approach which can allow tracking cgroups
-> for asynchronous reads/writes.
-> 7 Start an offline email thread to keep track of progress on the above
-> goals.
-> 
-> Jens, what is your opinion everything beyond (1) in the above list?
-> 
-> It would be great if work on (1) and (2)-(7) can happen in parallel so
-> that we can see "proportional division of IO bandwidth to cgroups" in
-> tree sooner than later.
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-Sounds feasible, I'd like to see the cgroups approach get more traction.
-My primary concern is just that I don't want to merge it into specific
-IO schedulers. As you mention, we can hook into the may queue logic for
-that subset of the problem, that avoids touching the io scheduler. If we
-can get this supported 'generically', then I'd be happy to help out.
+---
+ arch/x86/Kconfig         |    7 -------
+ arch/x86/kernel/apm_32.c |    4 ----
+ 2 files changed, 0 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 93224b5..d0b9ef7 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1629,13 +1629,6 @@ config APM_ALLOW_INTS
+ 	  many of the newer IBM Thinkpads.  If you experience hangs when you
+ 	  suspend, try setting this to Y.  Otherwise, say N.
+ 
+-config APM_REAL_MODE_POWER_OFF
+-	bool "Use real mode APM BIOS call to power off"
+-	help
+-	  Use real mode APM BIOS calls to switch off the computer. This is
+-	  a work-around for a number of buggy BIOSes. Switch this option on if
+-	  your computer crashes instead of powering off properly.
+-
+ endif # APM
+ 
+ source "arch/x86/kernel/cpu/cpufreq/Kconfig"
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 5145a6e..3a26525 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -391,11 +391,7 @@ static int power_off;
+ #else
+ static int power_off = 1;
+ #endif
+-#ifdef CONFIG_APM_REAL_MODE_POWER_OFF
+-static int realmode_power_off = 1;
+-#else
+ static int realmode_power_off;
+-#endif
+ #ifdef CONFIG_APM_ALLOW_INTS
+ static int allow_ints = 1;
+ #else
+
 
 -- 
-Jens Axboe
+WINCOR NIXDORF International GmbH 
+Sitz der Gesellschaft: Paderborn 
+Registergericht Paderborn HRB 3507
+Geschäftsführer: Eckard Heidloff (Vorsitzender), Stefan Auerbach, Dr. Jürgen Wunram
+Vorsitzender des Aufsichtsrats: Karl-Heinz Stiller 
+Steuernummer: 339/5884/0020 - Ust-ID Nr.: DE812927716 - WEEE-Reg.-Nr. DE44477193
+
+Diese E-Mail enthält vertrauliche Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und vernichten Sie diese E-Mail. Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser E-Mail ist nicht gestattet.
+
+This e-mail may contain confidential information. If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail. Any unauthorised copying, disclosure or distribution of the material in this e-mail is strictly forbidden. 
 
