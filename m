@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbYKSXgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbYKSXiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbYKSXgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 18:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYKSXgD
+	id S1753016AbYKSXiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 18:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYKSXim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 18:36:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:19041 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbYKSXgC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 18:36:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=BNtXUhCo2OIq73mOdnzIsFSSB3pt0LGokjd7uzBsNXqKl98ylh3mf9KkdV2NYxcyk8
-         S1AZUjDemcl96ZCY9g7PNsVRxzXqDMrqcgvMHdK6xATg4SeEykItl/XgkpNYm5HIqrie
-         nxjKQRY7SjuwwwDcRsdaJ9pLz4kLSQgxgz+CU=
-From: Eric Lacombe <goretux@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [x86] do_arch_prctl
-Date: Thu, 20 Nov 2008 00:35:57 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.5; KDE/4.1.3; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-References: <200811181835.07360.goretux@gmail.com> <200811191023.16358.goretux@gmail.com> <49247FC6.8080201@goop.org>
-In-Reply-To: <49247FC6.8080201@goop.org>
+	Wed, 19 Nov 2008 18:38:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:32920 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752018AbYKSXil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 18:38:41 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATCH 1/1] cpumask: smp_call_function_many()
+Date: Thu, 20 Nov 2008 10:08:31 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, npiggin@suse.de,
+       axboe@kernel.dk
+References: <20081119144710.59CA1DDDDB@ozlabs.org> <492475BF.6090502@ct.jp.nec.com>
+In-Reply-To: <492475BF.6090502@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811200035.57509.goretux@gmail.com>
+Message-Id: <200811201008.31978.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your answer, I've got one last question ;)
-In the ARCH_GET_GS, can you explain the line 834 to 838?
+On Thursday 20 November 2008 06:53:27 Hiroshi Shimamoto wrote:
+> Rusty Russell wrote:
+> > +	/* Fastpath: do that cpu by itself. */
+> > +	if (next_cpu >= nr_cpu_ids)
+> > +		smp_call_function_single(cpu, func, info, wait);
+>
+> Hi Rusty,
+>
+> I think, return is needed here. If not func will be called twice.
 
-In fact, at first sight I thought that just the line 836 was sufficient, but I 
-obviously miss the case where MSR_KERNEL_GS_BASE does not reflect the value 
-requested, hence my question.
+Indeed, thanks!
 
-828 case ARCH_GET_GS: {
-829                 unsigned long base;
-830                 unsigned gsindex;
-831                 if (task->thread.gsindex == GS_TLS_SEL)
-832                         base = read_32bit_tls(task, GS_TLS);
-833                 else if (doit) {
-834                         asm("movl %%gs,%0" : "=r" (gsindex));
-835                         if (gsindex)
-836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
-837                         else
-838                                 base = task->thread.gs;
-839                 }
-840                 else
-841                         base = task->thread.gs;
-
-Thanks,
-
-	Eric
-
+Fixed,
+Rusty.
 
