@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbYKSVZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbYKSV0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbYKSVZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYKSVXl
+	id S1754411AbYKSV0F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:26:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYKSVXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:23:41 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57100 "EHLO
+	Wed, 19 Nov 2008 16:23:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56385 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbYKSVXg (ORCPT
+	with ESMTP id S1752467AbYKSVXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Nov 2008 16:23:36 -0500
-Message-Id: <20081119212334.535779903@goodmis.org>
+Message-Id: <20081119212333.694929188@goodmis.org>
 References: <20081119212204.318400312@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 19 Nov 2008 16:22:12 -0500
+Date: Wed, 19 Nov 2008 16:22:08 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -22,53 +22,153 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 8/9] powerpc/ppc32: ftrace, enabled dynamic ftrace
-Content-Disposition: inline; filename=0008-powerpc-ppc32-ftrace-enabled-dynamic-ftrace.patch
+Subject: [PATCH 4/9] powerpc: ftrace, convert to new dynamic ftrace arch API
+Content-Disposition: inline; filename=0004-powerpc-ftrace-convert-to-new-dynamic-ftrace-arch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Port 32 bit PowerPC dynamic ftrace
+Impact: update to PowerPC ftrace arch API
 
-This patch adds the necessary hooks to get PPC32 dynamic ftrace working.
-It does not handle modules. They are ignored by this patch.
+This patch converts PowerPC to use the new dynamic ftrace arch API.
+
+Thanks to Paul Mackennas for pointing out the mistakes of my original
+test_24bit_addr function.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/Kconfig    |    2 +-
- scripts/recordmcount.pl |    7 ++++++-
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/ftrace.h |   14 +++++++-
+ arch/powerpc/kernel/ftrace.c      |   67 ++++++++++++++++++++++++++++++++++---
+ 2 files changed, 75 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9675e95..d64b629 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -108,7 +108,7 @@ config ARCH_NO_VIRT_TO_BUS
- config PPC
- 	bool
- 	default y
--	select HAVE_FTRACE_MCOUNT_RECORD if PPC64
-+	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 7acbe17..48609e9 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -178,7 +178,12 @@ if ($arch eq "x86_64") {
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
--    $type = ".quad";
-+    if ($bits == 64) {
-+	$type = ".quad";
-+    } else {
-+	$type = ".long";
-+    }
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index b298f7a..17efecc 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -7,7 +7,19 @@
+ 
+ #ifndef __ASSEMBLY__
+ extern void _mcount(void);
+-#endif
 +
- } else {
-     die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
++#ifdef CONFIG_DYNAMIC_FTRACE
++static inline unsigned long ftrace_call_adjust(unsigned long addr)
++{
++       /* reloction of mcount call site is the same as the address */
++       return addr;
++}
++
++struct dyn_arch_ftrace {
++	/* nothing yet */
++};
++#endif /*  CONFIG_DYNAMIC_FTRACE */
++#endif /* __ASSEMBLY__ */
+ 
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index f4b006e..24c023a 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -33,12 +33,12 @@ static unsigned int ftrace_calc_offset(long ip, long addr)
+ 	return (int)(addr - ip);
+ }
+ 
+-unsigned char *ftrace_nop_replace(void)
++static unsigned char *ftrace_nop_replace(void)
+ {
+ 	return (char *)&ftrace_nop;
+ }
+ 
+-unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ {
+ 	static unsigned int op;
+ 
+@@ -68,7 +68,7 @@ unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ # define _ASM_PTR	" .long "
+ #endif
+ 
+-int
++static int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+@@ -113,6 +113,62 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 	return faulted;
+ }
+ 
++static int test_24bit_addr(unsigned long ip, unsigned long addr)
++{
++	long diff;
++
++	/*
++	 * Can we get to addr from ip in 24 bits?
++	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
++	 */
++	diff = addr - ip;
++
++	/*
++	 * Return true if diff is less than 1 << 25
++	 *  and greater than -1 << 26.
++	 */
++	return (diff < (1 << 25)) && (diff > (-1 << 26));
++}
++
++int ftrace_make_nop(struct module *mod,
++		    struct dyn_ftrace *rec, unsigned long addr)
++{
++	unsigned char *old, *new;
++
++	/*
++	 * If the calling address is more that 24 bits away,
++	 * then we had to use a trampoline to make the call.
++	 * Otherwise just update the call site.
++	 */
++	if (test_24bit_addr(rec->ip, addr)) {
++		/* within range */
++		old = ftrace_call_replace(rec->ip, addr);
++		new = ftrace_nop_replace();
++		return ftrace_modify_code(rec->ip, old, new);
++	}
++
++	return 0;
++}
++
++int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
++{
++	unsigned char *old, *new;
++
++	/*
++	 * If the calling address is more that 24 bits away,
++	 * then we had to use a trampoline to make the call.
++	 * Otherwise just update the call site.
++	 */
++	if (test_24bit_addr(rec->ip, addr)) {
++		/* within range */
++		old = ftrace_nop_replace();
++		new = ftrace_call_replace(rec->ip, addr);
++		return ftrace_modify_code(rec->ip, old, new);
++	}
++
++	return 0;
++}
++
+ int ftrace_update_ftrace_func(ftrace_func_t func)
+ {
+ 	unsigned long ip = (unsigned long)(&ftrace_call);
+@@ -128,9 +184,10 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
+ 
+ int __init ftrace_dyn_arch_init(void *data)
+ {
+-	/* This is running in kstop_machine */
++	/* caller expects data to be zero */
++	unsigned long *p = data;
+ 
+-	ftrace_mcount_set(data);
++	*p = 0;
+ 
+ 	return 0;
  }
 -- 
 1.5.6.5
