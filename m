@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYKSUdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYKSUnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYKSUdu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYKSUdl
+	id S1753972AbYKSUnr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYKSUni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:33:41 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33880 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752773AbYKSUdl (ORCPT
+	Wed, 19 Nov 2008 15:43:38 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60009 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbYKSUnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:33:41 -0500
-Date: Wed, 19 Nov 2008 14:33:40 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Max Krasnyansky <maxk@qualcomm.com>, Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and no load balance
-Message-ID: <20081119203340.GC2383@sgi.com>
-References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com>
-MIME-Version: 1.0
+	Wed, 19 Nov 2008 15:43:37 -0500
+Date: Wed, 19 Nov 2008 20:43:15 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Naval Saini <navalnovel@gmail.com>, linux-arch@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       naval.saini@nxp.com
+Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline kernel (specifically arm in our case)
+Message-ID: <20081119204315.GB17209@flint.arm.linux.org.uk>
+References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com> <200811191740.23638.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4924762B.8000108@novell.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200811191740.23638.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 03:25:15PM -0500, Gregory Haskins wrote:
-> It sounds like the problem with my code is that "null sched domain"
-> translates into "default root-domain" which is understandably unexpected
-> by Dimitri (and myself).  Really I intended root-domains to become
-> associated with each exclusive/disjoint cpuset that is created.  In a
-> way, non-balanced/isolated cpus could be modeled as an exclusive cpuset
-> with one member, but that is somewhat beyond the scope of the
-
-Actually, at one time, that is how things were setup.  Setting the
-cpu_exclusive bit on a single cpu cpuset would isolate that cpu from
-load balancing.
-
-> root-domain code as it stands today.  My primary concern was that
-> Dimitri reports that even creating a disjoint cpuset per cpu does not
-> yield an isolated root-domain per cpu.  Rather they all end up in the
-> default root-domain, and this is not what I intended at all.
+On Wed, Nov 19, 2008 at 05:40:23PM +1100, Nick Piggin wrote:
+> It would be interesting to know exactly what problem you are seeing.
 > 
-> However, as a secondary goal it would be nice to somehow directly
-> support the "no-load-balance" option without requiring explicit
-> exclusive per-cpu cpusets to do it.  The proper mechanism (IMHO) to
-> scope the scheduler to a subset of cpus (including only "self") is
-> root-domains so I would prefer to see the solution based on that. 
-> However, today there is a rather tight coupling of root-domains and
-> cpusets, so this coupling would likely have to be relaxed a little bit
-> to get there.
-> 
-> There are certainly other ways to solve the problem as well.  But seeing
-> as how I intended root-domains to represent the effective partition
-> scope of the scheduler, this seems like a natural fit in my mind until
-> its proven to me otherwise.
->
+> ARM I think is supposed to handle aliasing problems by flushing
+> caches at appropriate points. It would be nice to know what's going
+> wrong and whether we can cover those holes.
 
-Agreed. 
+I think there's a problem here: the existing cache handling API is
+designed around the MM's manipulation of page tables.  It is generally
+not designed to handle aliasing between multiple mappings of the same
+page, except with one exception: page cache pages mmap'd into userspace,
+which is handled via flush_dcache_page().
+
+O_DIRECT on ARM is probably completely untested for the most part.  It's
+not something that is encountered very often, and as such gets zero
+testing.  I've certainly never had the tools to be able to test it out,
+so even on VIVT it's probably completely buggy.  Bear in mind that most
+of my modern platforms use MTD (either cramfs or in the rare case jffs2)
+so I'm not sure that I could sensibly even test O_DIRECT - isn't O_DIRECT
+for use with proper block devices?
+
+As it's probably clear, I've no clue of the O_DIRECT implementation or
+how it's supposed to work.  At a guess, it probably needs a new cache
+handling API to be designed, since the existing flush_cache_(range|page)
+are basically no-ops on VIPT.  Or maybe we need some way to mark the
+userspace pages as being write-through or uncacheable depending on the
+features we have available on the processor.  Or something.  Don't know.
+
+So, what is O_DIRECT, and where can I find some information about it?
+I don't see anything in Documentation/ describing it.
