@@ -1,106 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbYKSKeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYKSKim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbYKSKeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYKSKef
+	id S1753785AbYKSKim (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 05:38:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYKSKid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:34:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46241 "EHLO mx3.mail.elte.hu"
+	Wed, 19 Nov 2008 05:38:33 -0500
+Received: from ozlabs.org ([203.10.76.45]:53137 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752830AbYKSKef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:34:35 -0500
-Date: Wed, 19 Nov 2008 11:34:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jan Beulich <jbeulich@novell.com>, heukelum@fastmail.fm,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Glauber Costa <gcosta@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC,v2] x86_64: save_args out of line
-Message-ID: <20081119103415.GA16516@elte.hu>
-References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com> <20081118111633.GA21036@mailshack.com> <4922C863.76E4.0078.0@novell.com> <20081118140349.GC23479@elte.hu> <4922E4D4.76E4.0078.0@novell.com> <20081118150024.GD30358@elte.hu> <20081118225336.60FFA1544EB@magilla.localdomain>
+	id S1752626AbYKSKid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 05:38:33 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081118225336.60FFA1544EB@magilla.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Transfer-Encoding: 7bit
+Message-ID: <18723.60578.179210.736789@cargo.ozlabs.ibm.com>
+Date: Wed, 19 Nov 2008 21:38:26 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
+In-Reply-To: <20081119092723.GC22309@elte.hu>
+References: <20081116212428.938752312@goodmis.org>
+	<18720.42209.880409.297291@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
+	<18723.31762.522696.647294@cargo.ozlabs.ibm.com>
+	<alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com>
+	<20081119092723.GC22309@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar writes:
 
-* Roland McGrath <roland@redhat.com> wrote:
-
-> > but that's the exception. Most of the annotations could be
-> > auto-generated.
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> Not really.  An implicit .cfi_undefined can be auto-generated for an 
-> unannotated instruction with an output register.  An implicit 
-> .cfi_register can be auto-generated for an unannotated 
-> register-to-register move.  An implicit .cfi_same_value can be 
-> auto-generated when you can tell a register is being written with 
-> the register or stack slot tha the current CFI state says holds the 
-> caller's value of that register.  Beyond that, it gets into either 
-> assumptions or hairy analysis of how stack slots are being used and 
-> so forth.
+> > On Wed, 19 Nov 2008, Paul Mackerras wrote:
+> > 
+> > > Steven Rostedt writes:
+> > > 
+> > > > Can I add your Acked-by: to all these patches that I submitted? I'm going 
+> > > > to recommit them with a consistent subject (all lower case ppc), but I'm 
+> > > > not going to change the patches themselves.
+> > > > 
+> > > > Would you two be fine with that? Or at least one of you?
+> > > 
+> > > My preference would be for the patches to go through the powerpc tree
+> > > unless there is a good reason for them to go via another tree.
+> > 
+> > I have no problem with that. The only thing is that we have a lot of 
+> > pending work still in the linux-tip tree, which you may need to pull 
+> > in to get these patches working. Well, there's two or three commits 
+> > in the generic code that I know the PPC code is dependent on.
+> > 
+> > I could give you a list of commits in tip that need to go mainline 
+> > first before we can pull in the PPC changes. Then you could wait 
+> > till those changes make it into 29 and then you could push the PPC 
+> > modifications in from your tree.
+> 
+> note that this inserts a lot of (unnecessary) serialization and a 
+> window of non-testing - by all likelyhood this will delay ppc ftrace 
+> to v2.6.30 or later kernels.
 
-i dont buy that argument at all.
+Well, note that I said "unless there is a good reason".  If it does
+need to go via your tree, it can, though I don't see that it will get
+much testing on powerpc there, and having it there will make it harder
+to manage any conflicts with the other stuff I have queued up.
 
-Yes, of course full "no changes to the current code at all" automation 
-is hard.
+How much generic stuff that's not upstream do the powerpc ftrace
+patches depend on?
 
-But _at minimum_ GAS should automate a large part of this and help us 
-out syntactically: make it really easy to human-annotate instructions 
-in a _minimal way_. Also, automate the easy bits while at it. Plus 
-warn about missing annotations - nesting errors, etc. etc.
-
-there's a ton of easy things GAS could do here that it does not do. 
-
-> [...] Explicit (but simple) macros in the assembly is what I favor.
-
-Yeah. This is the second-best option - but has some limitations. Still 
-it is much better than what we have now.
-
-What _clearly_ sucks is the current mess of:
-
-        CFI_ADJUST_CFA_OFFSET   8
-        /*CFI_REL_OFFSET        ss,0*/
-        pushq %rax /* rsp */
-        CFI_ADJUST_CFA_OFFSET   8
-        CFI_REL_OFFSET  rsp,0
-        pushq $(1<<9) /* eflags - interrupts on */
-        CFI_ADJUST_CFA_OFFSET   8
-        /*CFI_REL_OFFSET        rflags,0*/
-        pushq $__KERNEL_CS /* cs */
-        CFI_ADJUST_CFA_OFFSET   8
-        /*CFI_REL_OFFSET        cs,0*/
-        pushq \child_rip /* rip */
-        CFI_ADJUST_CFA_OFFSET   8
-        CFI_REL_OFFSET  rip,0
-        pushq   %rax /* orig rax */
-        CFI_ADJUST_CFA_OFFSET   8
-
-Compared to what we could have (stupid mockup):
-
-        pushq_cf1 %rax			/* rsp */
-        pushq_cf1 $(1<<9)		/* eflags - interrupts on */
-        pushq_cf1 $__KERNEL_CS		/* cs */
-        pushq_cf2 \child_rip		/* rip */
-        pushq_cf1 %rax			/* orig rax */
-
-Whoever claims that this cannot be automated in _large_ part isnt 
-thinking it through really. Those CFI annotations should never have 
-been added in this form.
-
-	Ingo
+Paul.
