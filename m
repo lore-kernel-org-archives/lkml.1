@@ -1,118 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYKSTMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbYKSTNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYKSTMt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 14:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYKSTMk
+	id S1754433AbYKSTNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 14:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYKSTNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 14:12:40 -0500
-Received: from rn-out-0910.google.com ([64.233.170.189]:62364 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958AbYKSTMj (ORCPT
+	Wed, 19 Nov 2008 14:13:11 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:47742 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753929AbYKSTNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 14:12:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
-         :content-transfer-encoding:from;
-        b=DzatzyAxuHamDlGzLmyDafC5tZIdypxfrDFZdT+SyuXebRvGW9bMq9/BmLhg5wfYxt
-         AoXwGGQuWtXYLtRT6hFw0x17ucL2RpaWc+9grOWw0ZapNsgotvBTz7rgy5w9SeQNMZP8
-         M9YIa+3q/UzTcN386swq0b+ReLGDpmcbAWc80=
-Message-ID: <4924651C.4080909@gmail.com>
-Date: Wed, 19 Nov 2008 14:12:28 -0500
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 19 Nov 2008 14:13:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=OKj+H6ZnpYAQ47LUCuXH+WzErsWZ/z/35wBw9NVl+Asz81d7EouJmydlcb5q7UklT
+	yxff45H5kpb1a+eramiFg==
 MIME-Version: 1.0
-To: Kirill Korotaev <dev@openvz.org>, Pavel Emelianov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Cedric Le Goater <clg@fr.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org
-Subject: CLONE_NEWIPC documentation
+In-Reply-To: <cfd18e0f0811191110t792cc9a4i5869bee0fb3d759c@mail.gmail.com>
+References: <4923230D.8090301@gmail.com>
+	 <20081119000342.05b2de85.akpm@linux-foundation.org>
+	 <cfd18e0f0811191110t792cc9a4i5869bee0fb3d759c@mail.gmail.com>
+Date: Wed, 19 Nov 2008 14:13:06 -0500
+Message-ID: <21c5ff280811191113p7fd4ec2aof34bd9eec1fbdea@mail.gmail.com>
+Subject: Re: [patch] Fix type errors in inotify interfaces
+From: Robert Love <rlove@google.com>
+To: mtk.manpages@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>, john@johnmccutchan.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill, Pavel,
+On Wed, Nov 19, 2008 at 2:10 PM, Michael Kerrisk
+<mtk.manpages@googlemail.com> wrote:
+> (Would be nice to see an Aacked-by from Robert or John on this patch.)
 
-Below is a patch to document the CLONE_NEWIPC flag that was
-added in 2.6.19.
+I hesitate because I haven't looked at glibc in ages to see what it
+and other userland consumers are doing with inotify.
 
-Could you please review and let me know of improvements
-or inaccuracies?
+But my original analysis still seems correct, and whatever we do we
+currently have inconsistencies, so this looks good to me.
 
-Cheers,
+Acked-by: Robert Love <rlove@rlove.org>
 
-Michael
-
---- a/man2/clone.2
-+++ b/man2/clone.2
-@@ -225,6 +224,36 @@ Calls to
- .BR umask (2)
- performed later by one of the processes do not affect the other process.
- .TP
-+.BR CLONE_NEWIPC " (since Linux 2.4.19)"
-+If
-+.B CLONE_NEWIPC
-+is set, then create the process in a new IPC namespace.
-+If this flag is not set, then (as with
-+.BR fork (2)),
-+the process is created in the same IPC namespace as
-+the calling process.
-+This flag is intended for the implementation of control groups.
-+
-+An IPC namespace consistes of the set of identifiers for
-+System V IPC objects.
-+(These objects are created using
-+.BR msgctl (2),
-+.BR semctl (2),
-+and
-+.BR shmctl (2)).
-+Objects created in an IPC namespace are visible to other processes
-+that are members of that namespace,
-+but are not visible to processes in other IPC namespaces.
-+
-+Use of this flag requires: a kernel configured with the
-+.B CONFIG_SYSVIPC
-+and
-+.B CONFIG_IPC_NS
-+configuration options and that the process be privileged
-+.RB ( CAP_SYS_ADMIN ).
-+This flag can't be specified in conjunction with
-+.BR CLONE_SYSVSEM .
-+.TP
- .BR CLONE_NEWNS " (since Linux 2.4.19)"
- Start the child in a new namespace.
-
-@@ -729,6 +758,14 @@ were specified in
- .TP
- .B EINVAL
- Both
-+.B CLONE_NEWIPC
-+and
-+.B CLONE_SYSVSEM
-+were specified in
-+.IR flags .
-+.TP
-+.B EINVAL
-+Both
- .BR CLONE_NEWPID
- and
- .BR CLONE_THREAD
-@@ -742,6 +779,16 @@ when a zero value is specified for
- .IR child_stack .
- .TP
- .B EINVAL
-+.BR CLONE_NEWIPC
-+was specified in
-+.IR flags ,
-+but the kernel was not configured with the
-+.B CONFIG_SYSVIPC
-+and
-+.BR CONFIG_IPC_NS
-+options.
-+.TP
-+.B EINVAL
- .BR CLONE_NEWPID
- was specified in
- .IR flags ,
+        Robert
