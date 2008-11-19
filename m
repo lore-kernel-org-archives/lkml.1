@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbYKSS2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYKSSc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbYKSS2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbYKSS1o
+	id S1754509AbYKSSc1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYKSScS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:27:44 -0500
-Received: from waste.org ([66.93.16.53]:55996 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754606AbYKSS1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:27:39 -0500
-Subject: Re: next-20081117: kernel freezes with netconsole enabled
-From: Matt Mackall <mpm@selenic.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, satyam.sharma@gmail.com
-In-Reply-To: <20081119175740.GE12456@orion>
-References: <20081119175740.GE12456@orion>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 12:27:31 -0600
-Message-Id: <1227119251.3149.57.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 13:32:18 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37113 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbYKSScS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 13:32:18 -0500
+Date: Wed, 19 Nov 2008 19:32:16 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: jdike@addtoit.com
+Subject: uml: using hostfs as rootfs is not working
+Message-ID: <alpine.LNX.1.10.0811191930090.4486@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-19 at 20:57 +0300, Alexander Beregalov wrote:
-> Hi 
-> 
-> It is x86_64 SMP
-> The kernel freezes while transferring kernel log through netconsole,
-> SysRq does not work at that moment.
+Hi,
 
-Does it survive if you boot with 'quiet'? Is this new behavior or have
-you successfully used netconsole before?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+as per Documentation/uml/*txt, I issued the following to get a direct 
+hostfs:
 
+	./linux ubd0=/tftpboot/linux
+
+(/tftpboot/linux/sbin/init exists), but the UM kernel only gives:
+
+Failed to open '/home/tftpboot/linux', errno = 21
+ubda: Can't open "/home/tftpboot/linux": errno = 21
+List of all partitions:
+6200               4 ubda driver: uml-blkdev
+
+So either UML lost some functionality sometime, or the documentation is 
+incorrect.
