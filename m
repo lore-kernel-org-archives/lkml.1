@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbYKSFgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbYKSFgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbYKSFgR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 00:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYKSFgE
+	id S1752815AbYKSFgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 00:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYKSFgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 00:36:04 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50469 "EHLO
+	Wed, 19 Nov 2008 00:36:05 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61137 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYKSFgE (ORCPT
+	with ESMTP id S1750716AbYKSFgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Nov 2008 00:36:04 -0500
-Message-Id: <20081119053449.282336740@goodmis.org>
+Message-Id: <20081119053602.883951293@goodmis.org>
+References: <20081119053449.282336740@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 19 Nov 2008 00:34:49 -0500
+Date: Wed, 19 Nov 2008 00:34:50 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/3] ftrace updates to tip/core/urgent
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/3] ftrace: fix set_ftrace_filter
+Content-Disposition: inline; filename=0001-ftrace-fix-set_ftrace_filter.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  Lets try that again. My series file was nuked.
-]
+Impact: fix of output of set_ftrace_filter
 
-Ingo,
+The commit "ftrace: do not show freed records in
+             available_filter_functions"
 
-I ported the following patches to tip/core/urgent since they are candidates
-for 2.6.28.
+Removed a bit too much from the set_ftrace_filter code, where we now see
+all functions in the set_ftrace_filter file even when we set a filter.
 
-The first two are trivial, short, and should not be an issue. The first
-two handle the printing of the set_ftrace_filter file correctly.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/trace/ftrace.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-The third is a bigger patch "108 lines changed" and is actually a
-clean up and fix.  The difference is that the current logic to
-determine if a function should be enabled or not is incorrect.
-With different combinations of using set_ftrace_filter and
-set_ftrace_notrace, incorrect functions may be traced, or not traced.
-
-But this bug that the patch fixes is not a critical bug. It should not
-cause any stability problems with the kernel. The bug will only
-produce undesirable traces.
-
-But on the other hand, adding that last patch should not cause any
-stability issues as well. And it makes the complex function cleaner
-and more importantly, by coupling the ENABLED flag of the record
-with the enabling (or disabling) of the tracing of the function
-the record represents, makes the code more robust.
-
-
-The following patches are in:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-
-      branch: tip/urgent
-
-
-Steven Rostedt (3):
-      ftrace: fix set_ftrace_filter
-      ftrace: make filtered functions effective on setting
-      ftrace: fix dyn ftrace filter selection
-
-----
- kernel/trace/ftrace.c |  113 +++++++++++++++++++++++-------------------------
- 1 files changed, 54 insertions(+), 59 deletions(-)
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 4a39d24..dcac741 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -738,6 +738,9 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
+ 		    ((iter->flags & FTRACE_ITER_FAILURES) &&
+ 		     !(rec->flags & FTRACE_FL_FAILED)) ||
+ 
++		    ((iter->flags & FTRACE_ITER_FILTER) &&
++		     !(rec->flags & FTRACE_FL_FILTER)) ||
++
+ 		    ((iter->flags & FTRACE_ITER_NOTRACE) &&
+ 		     !(rec->flags & FTRACE_FL_NOTRACE))) {
+ 			rec = NULL;
+-- 
+1.5.6.5
 
 -- 
