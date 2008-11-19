@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYKSRhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYKSRkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbYKSRhs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 12:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYKSRhk
+	id S1754130AbYKSRkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 12:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYKSRkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 12:37:40 -0500
-Received: from gv-out-0910.google.com ([216.239.58.187]:32059 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbYKSRhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 12:37:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DshIDaMEiAXBOFHHcdseJc/1eb0DMCM14ltcx+uAXs8rMU0tFccvUuGNxIUB2MXpZW
-         xC71bcsVff+jf/7c//DHVyx2/Sjtah+CNnhCIjyeLNffkAiRGEq4feYjDuRS66HjUwY6
-         4escIlTSrQTq9zv6OxpJ/QIgMXIb4d5cVutdg=
-Message-ID: <91b13c310811190937ob9eddal28ef0d69ed32445c@mail.gmail.com>
-Date: Thu, 20 Nov 2008 01:37:36 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] kobject_add: use constant strings directly as fmt strings
-Cc: "Greg KH" <gregkh@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ac3eb2510811190900k62b1333aj9816e462601b4d0c@mail.gmail.com>
+	Wed, 19 Nov 2008 12:40:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34121 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752107AbYKSRj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 12:39:59 -0500
+Date: Wed, 19 Nov 2008 18:39:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ken Chen <kenchen@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] sched: fix inconsistency when redistribute per-cpu
+	tg->cfs_rq  shares.
+Message-ID: <20081119173946.GA31560@elte.hu>
+References: <b040c32a0811182241r3cf5e7c7l25d3627c2265ead2@mail.gmail.com> <1227113269.29743.43.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1227110059-12529-1-git-send-email-crquan@gmail.com>
-	 <20081119155736.GA5072@suse.de>
-	 <91b13c310811190817s31522a0et744ca7df2782cf27@mail.gmail.com>
-	 <ac3eb2510811190900k62b1333aj9816e462601b4d0c@mail.gmail.com>
+In-Reply-To: <1227113269.29743.43.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 1:00 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> Not that we should be able to measure it, but it should save some
-> cycles parsing the format character and retrieving the string pointer
-> from the stack, yes.
 
-I'm sure it does work, one another as:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-*** drivers/net/iseries_veth.c:
-veth_probe_one[1088]           if (0 != kobject_add(&port->kobject,
-&dev->dev.kobj, "veth_port"))
+> On Tue, 2008-11-18 at 22:41 -0800, Ken Chen wrote:
+> > In the update_shares() path leading to tg_shares_up(), the calculation of
+> > per-cpu cfs_rq shares is rather erratic even under moderate task wake up
+> > rate.  The problem is that the per-cpu tg->cfs_rq load weight used in the
+> > sd_rq_weight aggregation and actual redistribution of the cfs_rq->shares
+> > are collected at different time.  Under moderate system load, we've seen
+> > quite a bit of variation on the cfs_rq->shares and ultimately wildly
+> > affects sched_entity's load weight.
+> 
+> Another thing we could possibly do is put a low-pass filter on the
+> per-cpu load values so that we smooth out the fluctuations, hmm?
+> 
+> > This patch caches the result of initial per-cpu load weight when doing the
+> > sum calculation, and then pass it down to update_group_shares_cpu() for
+> > redistributing per-cpu cfs_rq shares.  This allows consistent total cfs_rq
+> > shares across all CPUs. It also simplifies the rounding and zero load
+> > weight check.
+> > 
+> > Signed-off-by: Ken Chen <kenchen@google.com>
+> 
+> This does indeed look much better, the cleanup factor alone makes it 
+> a worthwhile patch, he fact that is improves behaviour makes it even 
+> better :-)
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> Thanks Ken!
 
->> so if the string is constant, why not use it directly as the fmt string?
->
-> It should be fine for strings, where you can be sure they can never
-> contain a '%', sure.
-And I have searched all places kobject_add called, only these two
-places in block/blk-sysfs.c
-and block/elevator.c have constant strings. So this patch is the whole
-kobject_add constant string
-optmization patch.
+applied to tip/sched/core (for v2.6.29), thanks guys!
 
->
-> Thanks,
-> Kay
-
--- 
-Cheng Renquan, Shenzhen, China
-Fred Allen  - "An associate producer is the only guy in Hollywood who
-will associate with a producer."
+	Ingo
