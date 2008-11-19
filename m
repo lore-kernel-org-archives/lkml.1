@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbYKSH2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYKSHf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752726AbYKSH2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 02:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYKSH2V
+	id S1752585AbYKSHf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 02:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbYKSHfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 02:28:21 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:37199 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbYKSH2U (ORCPT
+	Wed, 19 Nov 2008 02:35:18 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:42785 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383AbYKSHfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 02:28:20 -0500
+	Wed, 19 Nov 2008 02:35:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=cD4Yv2/mdZoOCO1rNGuv9tUbsCKisDNyzR4lAJyINA7BlnUvVbfDlDqYoh9sJPpagt
-         Pw+ZdIQxpKG31N01DSjKgc4DHc58rW9Gkd54Ozr1RaN315rl9tWVNSNoF83FOpCD+85l
-         YIrTYGwo2t3m8lnBeL9K0YZpPAfJSFCIl1IpU=
-Message-ID: <386072610811182328u3b1f7ad0u161c56690150fba2@mail.gmail.com>
-Date: Wed, 19 Nov 2008 15:28:19 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/5] Blackfin SMP like patchset
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <386072610811182327x72df4615od53679b19cf49ed0@mail.gmail.com>
+         :references;
+        b=ZEvNdrLE/l5pCBrbmEw9vEAN5b2SB64SlFWnfV51NWHGSZgPZGlrVSBiO5XYoo0A/e
+         qgN6wO7DX4zUr/XxvHzjI7OiUXVTNnie9brvzz53aU4iigtghmbZjFzbiqaJXskNZ6X1
+         A+aZ24gElGNBUsA/+byRM5hnPWyU4/lhR4vcA=
+Message-ID: <c62985530811182335i4b5ab4ddhd3bf9ddac0e2cd00@mail.gmail.com>
+Date: Wed, 19 Nov 2008 08:35:15 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun field
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081118210344.GC11490@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1226999108-13839-1-git-send-email-cooloney@kernel.org>
-	 <20081118225621.540416ae.akpm@linux-foundation.org>
-	 <386072610811182327x72df4615od53679b19cf49ed0@mail.gmail.com>
-X-Google-Sender-Auth: 5bf25f03780186ee
+References: <20081118084755.GK17838@elte.hu> <20081118145154.GC30358@elte.hu>
+	 <alpine.DEB.1.10.0811181006010.15003@gandalf.stny.rr.com>
+	 <20081118151326.GH30358@elte.hu>
+	 <alpine.DEB.1.10.0811181020350.15003@gandalf.stny.rr.com>
+	 <20081118155045.GJ30358@elte.hu>
+	 <c62985530811180831n132ed6dep77aa2684ff59861@mail.gmail.com>
+	 <20081118164019.GA18620@elte.hu>
+	 <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
+	 <20081118210344.GC11490@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for forgetting linux-arch. post again.
+2008/11/18 Ingo Molnar <mingo@elte.hu>:
+> it's your call really, either way is fine as long as the end result
+> works! :-)
+>
+> Generally it's indeed much easier to do as small steps as possible,
+> and to validate every step in practice.
+>
+>        Ingo
+>
 
--Bryan
 
-On Wed, Nov 19, 2008 at 3:27 PM, Bryan Wu <cooloney@kernel.org> wrote:
-> On Wed, Nov 19, 2008 at 2:56 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
->> On Tue, 18 Nov 2008 17:05:03 +0800 Bryan Wu <cooloney@kernel.org> wrote:
->>
->>>
->>> Hi folks,
->>>
->>> We provide the SMP like functions for our Blackfin dual core processor
->>> BF561 for almost 1 year. And after a long time developing, debugging and
->>> internal review, we'd like to post them to LKML for other maintainer
->>> review.
->>>
->>> Please find our wiki page about this SMP like patches:
->>> http://docs.blackfin.uclinux.org/doku.php?id=linux-kernel:smp-like
->>
->> Would prefer that changelogs be self-contained, please.  Kernel
->> changelogs are for ever, and I doubt if that page will be there in 20
->> years time.
->>
+That's right, I will start with a static array first and end with
+dynamic allocation.
+I'm not sure if it will be ready for merge window of 2.6.29 but that
+doesn't really matter.
+
+
+> hey, look at the bright side of it: whichever variant you pick, if it
+> goes wrong, you'll always have someone else to blame for that
+> unbelievably stupid suggestion ;-)
 >
-> I guess Graf started this wiki recently although the patch exists for
-> a long time.
-> And Graf gave a presentation about this SMP on BF561 in AKA 2008 Linux kernel
-> developer conference. If I found the link of this presentation, I will
-> post it again.
+>        Ingo
 >
->> Particularly when that page must be read to learn fundamental things such as
->>
->>  The SMP support in certain Blackfin processors is describe as `SMP
->>  Like' rather than just `SMP' due to the lack of hardware cache
->>  coherency.  A true SMP system would have support for cache coherency
->>  in hardware.
->>
->>  On all `SMP Like' setups, cache coherency is maintained via
->>  software mechanisms
->>
->> Interesting!
->>
->
-> Exactly, SMP means hardware cache coherency. But BF561 dual core
-> processor was designed almost 8 years ago.
-> we have to do some workaround in software side. Fortunately, BF561
-> provides a L2 memory shared by both CoreA and CoreB.
-> We did some trick in this L2 memory and our Scratchpad memory.
->
-> 'SMP Like' is software aided SMP solution on Blackfin dual core BF561 processor.
-> Please enjoy -:)
->
-> -Bryan
->
+
+Hehe! Indeed :-)
