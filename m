@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYKSSD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYKSSNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYKSSD3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYKSSDN
+	id S1754032AbYKSSNJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYKSSMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:03:13 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38529 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbYKSSDM (ORCPT
+	Wed, 19 Nov 2008 13:12:55 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:58150 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753044AbYKSSMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:03:12 -0500
-Date: Wed, 19 Nov 2008 12:28:23 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       kaszak@gmail.com, lcostantino@gmail.com, linux-wireless@vger.kernel.org
-Subject: Re: w35und wifi driver for linux-staging
-Message-ID: <20081119112823.GD21876@elf.ucw.cz>
-References: <20081001123656.GA30942@elf.ucw.cz> <20081001125248.GA29661@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001125248.GA29661@infradead.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 19 Nov 2008 13:12:55 -0500
+Date: Wed, 19 Nov 2008 10:12:38 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Folkert van Heusden <folkert@vanheusden.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kobject: 'vcs1' (d2172ad8): kobject_add_internal: parent: 'vc',
+ set: 'devices'
+Message-Id: <20081119101238.c46ad0cd.randy.dunlap@oracle.com>
+In-Reply-To: <20081119095934.GF4370@vanheusden.com>
+References: <20081119095934.GF4370@vanheusden.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4924571C.004C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-10-01 08:52:48, Christoph Hellwig wrote:
-> On Wed, Oct 01, 2008 at 02:36:56PM +0200, Pavel Machek wrote:
-> > +source "drivers/net/wireless/winbond/Kconfig"
-> 
-> winbond is a little too generic, please use the same name as the driver
-> name for the directory.
-> 
-> > @@ -0,0 +1,6 @@
-> > +config W35UND
-> > +	tristate "Winbond driver"
-> > +	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL && !4KSTACKS
-> > +	---help---
-> > +	  This is highly experimental driver for winbond wifi card on some Kohjinsha notebooks
-> > +	  Check http://code.google.com/p/winbondport/ for new version
-> 
-> Again, please give the option a useful name, and a useful description
-> including mentioning the actual chip name in there.
-> 
-> Also the !4KSTACKS dependency looks rather odd.
+On Wed, 19 Nov 2008 10:59:41 +0100 Folkert van Heusden wrote:
 
-Fixed now, will sent patch shortly.
+> Hi,
+> 
+> What switch is responsible for this logging:
+> [   94.025172] kobject: 'vcsa1': free name
+> [   94.025231] kobject: 'vcs1' (d2172ad8): kobject_add_internal: parent: 'vc', set: 'devices'
+> [   94.025308] kobject: 'vcs1' (d2172ad8): kobject_uevent_env
+> [   94.025315] kobject: 'vcs1' (d2172ad8): fill_kobj_path: path = '/class/vc/vcs1'
+> [   94.025352] kobject: 'vcsa1' (d23f00d8): kobject_add_internal: parent: 'vc', set: 'devices'
+> [   94.025398] kobject: 'vcsa1' (d23f00d8): kobject_uevent_env
+> 
+> I can't find it and it removes an oops from dmesg before i can capture it.
 
-> No comments on the code now, I don't think I want to look at it..
+Those prints use pr_debug() from include/linux/kernel.h, which was changed
+most recently in
 
-No, you don't want to :-).
-								Pavel
+commit d091c2f58ba32029495a933b721e8e02fbd12caa
+Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Date:   Wed Nov 12 21:16:43 2008 +0100
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+    Add 'pr_fmt()' format modifier to pr_xyz macros.
+
+Do you have CONFIG_DYNAMIC_PRINTK_DEBUG enabled?  That could affect the
+kernel log output.
+
+---
+~Randy
