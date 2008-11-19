@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYKSVPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYKSVR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122AbYKSVPS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYKSVPG
+	id S1754303AbYKSVR3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYKSVRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:15:06 -0500
-Received: from www.tglx.de ([62.245.132.106]:52469 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbYKSVPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 16:15:05 -0500
-Date: Wed, 19 Nov 2008 13:14:37 -0800 (PST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: next-20081119: general protection fault:
- get_next_timer_interrupt()
-In-Reply-To: <a4423d670811190714k13721ae8s125e63d520892440@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0811191308030.3119@localhost.localdomain>
-References: <a4423d670811190714k13721ae8s125e63d520892440@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 19 Nov 2008 16:17:20 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:8554 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753129AbYKSVRT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 16:17:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=cc:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:mime-version:subject:date:references
+         :x-mailer;
+        b=gCOT3g9dfSV9do2q84LyEdi53Yua9A3fGnlZLcp2Ig2/45mfiQ+EaGIY3tzU9I0Pb0
+         qvRaFsO4hRmGNmHiC2874fZDZdlj4n1/TV6GM62trwakUz+Yy+SXesKFtqApyaj449Ej
+         Hax19zBpQjzPFqRHukPb3cIOIG5suHG65VhI8=
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Message-Id: <FF8068EB-1E4F-4D84-93B3-520922C5C1D4@gmail.com>
+From: Richard Holden <aciddeath@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: linux-next: Tree for November 19 (section mismatche fpu_init)
+Date: Wed, 19 Nov 2008 14:17:15 -0700
+References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander,
+WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x1d6): Section  
+mismatch in reference from the function fpu_init() to the  
+function .init.text:init_thread_xstate()
+The function __cpuinit fpu_init() references
+a function __init init_thread_xstate().
+If init_thread_xstate is only used by fpu_init then
+annotate init_thread_xstate with a matching annotation.
 
-On Wed, 19 Nov 2008, Alexander Beregalov wrote:
-> 
-> It is 4way X86_64
-> The kernel does not boot.
- 
-> RIP: 0010:[<ffffffff80240061>]  [<ffffffff80240061>]
-> get_next_timer_interrupt+0x11b/0x1f0
+appears in arch/x86/kernel/built-in.o
 
-Can you please enable:
-
-CONFIG_DEBUG_OBJECTS=y
-CONFIG_DEBUG_OBJECTS_FREE=y
-CONFIG_DEBUG_OBJECTS_TIMERS=Y
-
-and add "debug_objects" to the kernel command line ?
-
-Thanks,
-
-	tglx
-
+-Richard Holden
