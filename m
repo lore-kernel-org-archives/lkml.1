@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYKSOJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYKSORb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbYKSOJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 09:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYKSOJq
+	id S1753718AbYKSORb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 09:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYKSORV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 09:09:46 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:36114 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbYKSOJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 09:09:46 -0500
-Date: Wed, 19 Nov 2008 14:09:33 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Luca Tiburzio <luca.tiburzio@gmail.com>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: PHYLIB dependency in kernel 2.6.27.6
-In-Reply-To: <a278970e0811161427r2f941e10jafbc8ab1d425d64e@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0811191359170.22228@ftp.linux-mips.org>
-References: <a278970e0811161427r2f941e10jafbc8ab1d425d64e@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 19 Nov 2008 09:17:21 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43958 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752809AbYKSORU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 09:17:20 -0500
+Date: Wed, 19 Nov 2008 15:15:31 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: linux-kernel@vger.kernel.org, Fabio Checconi <fchecconi@gmail.com>
+Subject: Re: [PATCH] Exiting queue and task might race to free cic
+Message-ID: <20081119141531.GG26308@kernel.dk>
+References: <200811191527.18539.knikanth@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811191527.18539.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008, Luca Tiburzio wrote:
-
-> in make process of linux 2.6.27.6 the PHYLIB depends on
+On Wed, Nov 19 2008, Nikanth Karthikesan wrote:
+> Hi Jens
 > 
-> NETDEVICES && !S390 && NET_ETHERNET
+> Looking at the bug reported here
+> http://thread.gmane.org/gmane.linux.kernel/722539
+> it looks like an exiting queue can race with an exiting task.
 > 
-> but if I enable only
+> When a queue exits the queue lock is taken and cfq_exit_queue() would free all 
+> the cic's associated with the queue.
 > 
-> Ethernet (1000 Mbit) (NETDEV_1000)
-> i loose visibility of PHYLIB
+> But when a task exits, cfq_exit_io_context() gets cic one by one and then 
+> locks the associated queue to call __cfq_exit_single_io_context. It looks like 
+> between getting a cic from the ioc and locking the queue, the queue might have 
+> exited on another cpu. Isn't this possible?
 > 
-> it should be better that  PHYLIB depends on:
-> NETDEVICES && !S390 && (NET_ETHERNET || NETDEV_1000)
+> If possible, either verifying whether cic->key is still not null or q->flags 
+> does not have QUEUE_FLAG_DEAD set would fix this.
+> 
+> Thanks
+> Nikanth Karthikesan
+> 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
+> ---
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 6a062ee..b9b627a 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1318,7 +1318,12 @@ static void cfq_exit_single_io_context(struct 
+> io_context *ioc,
+>  		unsigned long flags;
+>  
+>  		spin_lock_irqsave(q->queue_lock, flags);
+> -		__cfq_exit_single_io_context(cfqd, cic);
+> +		/*
+> +		 * cic might have been already exited when an exiting task
+> +		 * races with an exiting queue.
+> +		 */
+> +		if (likely(cic->key))
+> +			__cfq_exit_single_io_context(cfqd, cic);
+>  		spin_unlock_irqrestore(q->queue_lock, flags);
+>  	}
+>  }
 
- Well, practice shows selecting PHYLIB via a reverse dependency is 
-probably the most reasonable approach, but given the option is enabled for 
-explicit selection otherwise for legacy Ethernet devices, it may make 
-sense to do so for Gigabit devices too.  Not sure about 10Gb, but here is 
-a patch from my pile I prepared a while ago, but haven't submitted it 
-yet.  Feel free to push it further if you find it useful.  Please note 
-netdev is the right list for networking matters.
+Not sure this is enough, we probably need to copy the key to ensure that
+we get a fresh value. How does this look?
 
-  Maciej
+Did you actually trigger this, or is it just from code inspection?
 
----
- Make PHYLIB available for selection for NETDEV_1000 too.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 6a062ee..560cd1c 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1318,7 +1318,14 @@ static void cfq_exit_single_io_context(struct io_context *ioc,
+ 		unsigned long flags;
+ 
+ 		spin_lock_irqsave(q->queue_lock, flags);
+-		__cfq_exit_single_io_context(cfqd, cic);
++
++		/*
++		 * Ensure we get a fresh copy of the ->key to prevent
++		 * race between exiting task and queue
++		 */
++		smp_read_barrier_depends();
++		if (cic->key)
++			__cfq_exit_single_io_context(cfqd, cic);
+ 		spin_unlock_irqrestore(q->queue_lock, flags);
+ 	}
+ }
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-patch-2.6.26-rc1-20080505-phy-1000-1
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/net/phy/Kconfig linux-2.6.26-rc1-20080505/drivers/net/phy/Kconfig
---- linux-2.6.26-rc1-20080505.macro/drivers/net/phy/Kconfig	2008-05-17 05:57:43.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/net/phy/Kconfig	2008-05-17 06:09:49.000000000 +0000
-@@ -5,7 +5,7 @@
- menuconfig PHYLIB
- 	tristate "PHY Device support and infrastructure"
- 	depends on !S390
--	depends on NET_ETHERNET
-+	depends on NET_ETHERNET || NETDEV_1000
- 	help
- 	  Ethernet controllers are usually attached to PHY
- 	  devices.  This option provides infrastructure for
+-- 
+Jens Axboe
+
