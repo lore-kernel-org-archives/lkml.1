@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbYKSGP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbYKSGR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145AbYKSGP7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 01:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYKSGPu
+	id S1752517AbYKSGR2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 01:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYKSGRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 01:15:50 -0500
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:44925 "EHLO
-	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbYKSGPt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 01:15:49 -0500
-X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 01:15:49 EST
-Date: Wed, 19 Nov 2008 15:05:24 +0900
-To: joerg.roedel@amd.com
-Cc: mingo@redhat.com, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28-rc5
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081118154322.GX13394@amd.com>
-References: <20081118154322.GX13394@amd.com>
+	Wed, 19 Nov 2008 01:17:20 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60640 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbYKSGRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 01:17:20 -0500
+Date: Wed, 19 Nov 2008 17:17:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: [PATCH] cirrusfb: remove unused variables
+Message-Id: <20081119171708.0c0c4d23.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081119150504G.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008 16:43:22 +0100
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+Silences:
 
-> Joerg Roedel (4):
->       AMD IOMMU: add parameter to disable device isolation
->       AMD IOMMU: enable device isolation per default
->       AMD IOMMU: fix fullflush comparison length
->       AMD IOMMU: check for next_bit also in unmapped area
-> 
->  Documentation/kernel-parameters.txt |    4 +++-
->  arch/x86/kernel/amd_iommu.c         |    2 +-
->  arch/x86/kernel/amd_iommu_init.c    |    6 ++++--
->  3 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> As the most important change these patches enable device isolation per
-> default. Tests have shown that there are drivers which have bugs and do
-> double-freeing of DMA memory.
+drivers/video/cirrusfb.c: In function 'cirrusfb_setup':
+drivers/video/cirrusfb.c:2466: warning: unused variable 'i'
+drivers/video/cirrusfb.c:2465: warning: unused variable 's'
 
-What drivers? We need to fix them if they are mainline drivers.
+introduced by commit a1d35a7a50d01b445e29d87f479f8c055a414f7e "cirrusfb:
+use modedb and add mode_option parameter" which removed the uses of
+these variables.
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/video/cirrusfb.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-> This can lead to data corruption with a
-> hardware IOMMU when multiple devices share the same protection domain.
-> Therefore device isolation should be enabled by default.
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 8a87602..a2aa6dd 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -2462,8 +2462,7 @@ static int __init cirrusfb_init(void)
+ 
+ #ifndef MODULE
+ static int __init cirrusfb_setup(char *options) {
+-	char *this_opt, s[32];
+-	int i;
++	char *this_opt;
+ 
+ 	DPRINTK("ENTER\n");
+ 
+-- 
+1.5.6.5
 
-Hmm, the change is just because of the bug workaround? If so, I'm not
-sure it's a good idea. We need to fix the buggy drivers anyway. And
-device isolation is not free; e.g. use more memory rather than sharing
-a protection domain. I guess that more people prefer sharing a
-protection domain by default. It had been the default option for AMD
-IOMMU until you hit the bugs. IIRC, VT-d also shares a protection
-domain by default. It would be nice to avoid surprising users if the
-two virtualization IOMMUs works in the similar way.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
