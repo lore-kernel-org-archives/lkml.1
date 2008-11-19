@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYKSPlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYKSPnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbYKSPlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 10:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbYKSPlN
+	id S1754188AbYKSPnH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 10:43:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbYKSPmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 10:41:13 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58544 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753574AbYKSPlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 10:41:12 -0500
-Date: Wed, 19 Nov 2008 16:39:23 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-       "Hommel, Thomas (GE EntSol, Intelligent Platforms)" 
-	<Thomas.Hommel@gefanuc.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: ISP1760 driver crashes
-Message-ID: <20081119153923.GR26308@kernel.dk>
-References: <20081119150010.GK26308@kernel.dk> <Pine.LNX.4.44L0.0811191027540.2418-100000@iolanthe.rowland.org>
+	Wed, 19 Nov 2008 10:42:51 -0500
+Received: from rn-out-0910.google.com ([64.233.170.186]:36722 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753566AbYKSPmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 10:42:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=KZvIvyYEztETWONDl0ZODZgMNRiu5cf2HJ5qT1Bniyqe7JRo/iDTnWaRrgt8vdDHzc
+         A+TC0d/uGsNRCy9/HApYSJwY3rn1Sgwn1DuwRP+YJrwqUXNQeVDb9jhVTTuu56eXg3Gc
+         Cm0g3SA5uamypoUJJU/ODVYYbS5JMHCG7ilTM=
+Message-ID: <386072610811190742ycab0dbasc585376dc6ac47db@mail.gmail.com>
+Date: Wed, 19 Nov 2008 23:42:48 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [Question] Can I open a substream in kernel space without attach to a file pointer?
+Cc: "ALSA devel" <alsa-devel@alsa-project.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5h63mjddvj.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0811191027540.2418-100000@iolanthe.rowland.org>
+References: <386072610811190200l576d7735rb0188ab53f5185fa@mail.gmail.com>
+	 <s5h63mjddvj.wl%tiwai@suse.de>
+X-Google-Sender-Auth: aee329e9f82951f0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19 2008, Alan Stern wrote:
-> On Wed, 19 Nov 2008, Jens Axboe wrote:
-> 
-> > On Wed, Nov 19 2008, Alan Stern wrote:
-> > > On Wed, 19 Nov 2008, Sebastian Andrzej Siewior wrote:
-> > > 
-> > > > Hommel, Thomas (GE EntSol, Intelligent Platforms) wrote:
-> > > > 
-> > > > > I indeed have HIGHMEM enabled in my configuration.
-> > > > > I recompiled the kernel without HIGHMEM and it works. I don't think that
-> > > > > this a satisfying solution for a board with up to 2GB of RAM and
-> > > > > considerable amount of VMALLOC space, but at least this works.
-> > > > > If you have any more ideas how to circumvent this, please let me know.
-> > > > Sure, this is not a sollution but atleast now I know what happens:
-> > > > - The kernel allocates memory for transfer
-> > > > - the memory is highmem and not in kernel so the buffer is NULL
-> > > > - we don't have a dma-mask and therefore the dma address is 0
-> > > > - boom
-> > > > 
-> > > > The sollution would be probably to prevent the usb-storage core to 
-> > > > allocate memory from HIGHMEM.
-> > > 
-> > > usb-storage doesn't allocate the memory.  The memory is allocated by 
-> > > the block layer or the filesystem.
-> > > 
-> > > > Now I don't if there is a flag for something 
-> > > > like that and I am not using that. On the other hand this may be broken 
-> > > > for a long time and you are the first one which has that much memory with 
-> > > > no DMA-capable USB controller.
-> > > 
-> > > Jens, is there any way to tell the kernel that a device uses PIO and 
-> > > therefore its buffers shouldn't be allocated in high memory?  For 
-> > > example, shouldn't a NULL dma_mask do this?
-> > 
-> > Sure, just use blk_queue_bounce_limit(q, BLK_BOUNCE_HIGH), then you are
-> > certain that you will always have a virtual mapping for the IO you
-> > receive.
-> > 
-> > Or you can use the bio kmap/kunmap helpers to get such a mapping
-> > temporarily if you wish. But if your pio condition is permanent, you may
-> > as well just use bouncing.
-> 
-> Thank you.
-> 
-> Thomas, the blk_queue_bounce_limit() routine is called in 
-> drivers/scsi/scsi_lib.c:__scsi_alloc_queue().  The value it passes is 
-> computed by scsi_calculate_bounce_limit(), and in that routine 
-> host_dev->dma_mask should be NULL (since isp1760-hcd sets the mask to 
-> NULL).  Therefore the bounce limit should be 0xffffffff.
-> 
-> Now maybe this value isn't correct.  You can try the patch below to see 
-> if it helps.  If it doesn't, add a printk in __scsi_alloc_queue() to 
-> see what bounce limit value is getting used.
-> 
-> Alan Stern
-> 
-> 
-> 
-> Index: usb-2.6/drivers/scsi/scsi_lib.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/scsi/scsi_lib.c
-> +++ usb-2.6/drivers/scsi/scsi_lib.c
-> @@ -1684,7 +1684,7 @@ static void scsi_request_fn(struct reque
->  u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
->  {
->  	struct device *host_dev;
-> -	u64 bounce_limit = 0xffffffff;
-> +	u64 bounce_limit = BLK_BOUNCE_HIGH;
->  
->  	if (shost->unchecked_isa_dma)
->  		return BLK_BOUNCE_ISA;
-> 
+On Wed, Nov 19, 2008 at 9:49 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Wed, 19 Nov 2008 18:00:36 +0800,
+> Bryan Wu wrote:
+>>
+>> Hi Takashi,
+>>
+>> I am developing a USB gadget driver compliant to USB Audio Class Spec 2.0.
+>> So I want to open a PCM substream and do some playback of capture,
+>> then close them?
+>>
+>> I found snd_pcm_open_substream() is for opening a substream and attach
+>> it to a file.
+>> But in my application, there is no need to open a file before opening
+>> a substream.
+>>
+>> - Is there any interface for me to open a substream in kernel space
+>> without attach to a file?
+>> - How to playback and capture in kernel space, use snd_pcm_lib_write
+>> and snd_pcm_lib_read?
+>> - How to get the snd_pcm_hardware struct from low level driver,
+>> because I have to get the hardware configuration of the snd pcm
+>> device?
+>>
+>> And I am reading the code of OSS emulator in ALSA. It provides some
+>> info about the kernel space sound card programming.
+>
+> Yes, OSS emulation code handles the PCM in the kernel.
+> But, basically I don't recommend you to do this -- it's not the job of
+> the sound card driver.  The whole PCM stuff is handled by the PCM
+> middle layer, not the driver itself.
 
-The best solution is probably to either provide a "doesn't do highmem"
-in the scsi host template, or provide an appropriate DMA mask for the
-pci device to indicate it through that setting instead.
+No, my plan is not a sound card driver. It is an USB gadget audio driver.
+When an embedded system for example Blackfin board connects to a USB host (PC),
+PC will recognize this USB device as a USB Audio Class device.
 
--- 
-Jens Axboe
+Generally, there should be a sound card on the embedded system. Our
+Blackfin board
+has an AD1980 ALSA sound card. The USB gadget audio driver will open this sound
+card and export this device to USB host PC by some USB audio class specific
+descriptors. Then the PC can playback some audio stream by USB cable, USB gadget
+audio driver will receive this stream and playback the data by AD1980
+ALSA playback
+substream. Capture is the similar.
 
+> Any reason why you handle the PCM stuff completely in your driver
+> code?
+>
+
+There is USB gadget MIDI driver in kernel. But it asked the user to
+use aconnect tool to
+connect the virtual MIDI card to a real one. I don't want travel to
+user space and it should
+be more efficient in kernel space to handle all things including PCM
+open/release/read/write
+and Mixer control.
+
+Any hints about this? I really need some help from ALSA guru, cause
+I'm not familiar the internal
+things here.
+
+Thanks a lot
+-Bryan
