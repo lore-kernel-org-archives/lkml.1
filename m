@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYKSKOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbYKSKPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbYKSKOA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKSKNv
+	id S1753799AbYKSKPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 05:15:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKSKO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:13:51 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:35176 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752679AbYKSKNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:13:50 -0500
-Date: Wed, 19 Nov 2008 11:17:01 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
-       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081119101701.GA20915@gandalf.sssup.it>
-References: <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <4923716A.5090104@gelato.unsw.edu.au>
-Mime-Version: 1.0
+	Wed, 19 Nov 2008 05:14:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39315 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752709AbYKSKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 05:14:56 -0500
+Date: Wed, 19 Nov 2008 11:14:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: jarkao2@gmail.com, jeff@garzik.org, johannes@sipsolutions.net,
+       wferi@niif.hu, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netconsole: Disable softirqs in write_msg()
+Message-ID: <20081119101441.GB6184@elte.hu>
+References: <87y6zwwy5c.fsf@tac.ki.iif.hu> <20081119084106.GA6699@ff.dom.local> <20081119093004.GD22309@elte.hu> <20081119.014222.193698982.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4923716A.5090104@gelato.unsw.edu.au>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20081119.014222.193698982.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-> Date: Wed, Nov 19, 2008 12:52:42PM +1100
->
-> Fabio Checconi wrote:
-> >   - To detect hw tagging in BFQ we consider a sample valid iff the
-> >     number of requests that the scheduler could have dispatched (given
-> >     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
-> >     the scheduler plus the ones into the driver) is higher than the
-> >     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
-> >     during testing, but the way CFQ uses now seems a little bit
-> >     strange.
+
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Wed, 19 Nov 2008 10:30:04 +0100
 > 
-> BFQ's tag detection logic is broken in the same way that CFQ's used to
-> be.  Explanation is in this patch:
+> > * Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > 
+> > > diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+> > > index d304d38..f6ecad8 100644
+> > > --- a/drivers/net/netconsole.c
+> > > +++ b/drivers/net/netconsole.c
+> > > @@ -702,6 +702,8 @@ static void write_msg(struct console *con, const char *msg, unsigned int len)
+> > >  	if (list_empty(&target_list))
+> > >  		return;
+> > >  
+> > > +	/* Avoid enabling softirqs with hardirqs disabled */
+> > > +	local_bh_disable();
+> > >  	spin_lock_irqsave(&target_list_lock, flags);
+> > >  	list_for_each_entry(nt, &target_list, list) {
+> > >  		netconsole_target_get(nt);
+> > > @@ -723,6 +725,7 @@ static void write_msg(struct console *con, const char *msg, unsigned int len)
+> > >  		netconsole_target_put(nt);
+> > >  	}
+> > >  	spin_unlock_irqrestore(&target_list_lock, flags);
+> > > +	local_bh_enable();
+> > 
+> > but netconsole can be triggered from printk - and printk can be called 
+> > from hardirqs-off sections - so this doesnt really fix the bug. 
+> > Netconsole should not do BH processing.
 > 
+> Well, it sort of "has to".  It calls the NAPI ->poll() method of the 
+> driver to try and make forward progress with TX reclaim so it can 
+> send new messages.
+> 
+> It is very careful not to recursively invoke into ->poll() and other 
+> nasty situations.
+> 
+> Didn't you write some of this code Ingo a very long time ago? :-)))
 
-If you look at bfq_update_hw_tag(), the logic introduced by the patch
-you mention is still there; BFQ starts with ->hw_tag = 1, and updates it
-every 32 valid samples.  What changed WRT your patch, apart from the
-number of samples, is that the condition for a sample to be valid is:
+it is causing problems, so i'd like to distance myself from that 
+careless mistake of my youth! [ And once it starts working again i'd 
+like to take credit for having started that brilliant piece of 
+innovation. ]
 
-  bfqd->rq_in_driver + bfqd->queued >= 5
+> Anyways, I'll look more closely at this and the original report, 
+> this never was a problem before.
 
-while in your patch it is:
+Thanks! We strengthened/cleaned up the bh checks a tiny bit recently, 
+maybe that caused this to pop up. It might explain some netconsole 
+lockups perhaps? Or, the new warning might be bogus. It's a bit of a 
+maze.
 
-  cfqd->rq_queued > 5 || cfqd->rq_in_driver > 5
-
-We preferred the first one because that sum better reflects the number
-of requests that could have been dispatched, and I don't think that this
-is wrong.
-
-There is a problem, but it's not within the tag detection logic itself.
->From some quick experiments, what happens is that when a process starts,
-CFQ considers it seeky (*), BFQ doesn't.  As a side effect BFQ does not
-always dispatch enough requests to correctly detect tagging.
-
-At the first seek you cannot tell if the process is going to bee seeky
-or not, and we have chosen to consider it sequential because it improved
-fairness in some sequential workloads (the CIC_SEEKY heuristic is used
-also to determine the idle_window length in [bc]fq_arm_slice_timer()).
-
-Anyway, we're dealing with heuristics, and they tend to favor some
-workload over other ones.  If recovering this thoughput loss is more
-important than a transient unfairness due to short idling windows assigned
-to sequential processes when they start, I've no problems in switching
-the CIC_SEEKY logic to consider a process seeky when it starts.
-
-Thank you for testing and for pointing out this issue, we missed it
-in our testing.
-
-
-(*) to be correct, the initial classification depends on the position
-    of the first accessed sector.
+	Ingo
