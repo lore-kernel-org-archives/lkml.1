@@ -1,86 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbYKSGU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYKSGWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752165AbYKSGU1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 01:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYKSGUQ
+	id S1752596AbYKSGWp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 01:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYKSGWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 01:20:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52988 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750834AbYKSGUP (ORCPT
+	Wed, 19 Nov 2008 01:22:34 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:35008 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbYKSGWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 01:20:15 -0500
-Date: Tue, 18 Nov 2008 22:19:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rakib Mullick" <rakib.mullick@gmail.com>
-Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] kernel/profile.c: Fix section mismatch warning.
-Message-Id: <20081118221942.384ebefd.akpm@linux-foundation.org>
-In-Reply-To: <b9df5fa10811172015w3dfb955bq115180d9d0808d82@mail.gmail.com>
-References: <b9df5fa10811172015w3dfb955bq115180d9d0808d82@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Nov 2008 01:22:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=btc+HQ2Hfh0rHAK2aZQmJHIHP1kWvekxQqsY0yj65gMjnxdxD2l/Lcmw+q9G+fRn1P
+         j/w4V9OMxmH3GJxrvU4IMQwojl5VK/tOxwja1LOqsw5aeJBUwnJ8M+qUXuFUK8wdNjQZ
+         0AeBIhHorPn2NAluxf3VEU6KMgXM6vZXdTxfg=
+Message-ID: <c384c5ea0811182222l7f0e3131tc1cc20ffba5175c@mail.gmail.com>
+Date: Wed, 19 Nov 2008 07:22:31 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@hansenpartnership.com, tj@kernel.org
+In-Reply-To: <20081119142016E.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c384c5ea0811171354u5d6f5be6v857f92b1e75769c7@mail.gmail.com>
+	 <20081117191532.c1c849f5.akpm@linux-foundation.org>
+	 <20081119142016E.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008 10:15:24 +0600 "Rakib Mullick" <rakib.mullick@gmail.com> wrote:
+Hello,
 
-> Impact: Fix section mismatch warning in kernel/profile.c
-> 
-> Here, profile_nop function has been called from a non-init function
-> create_hash_tables(void). Which generetes a section mismatch warning.
-> Previously, create_hash_tables(void) was a init function. So, removing
-> __init from create_hash_tables(void) requires profile_nop to be
-> non-init. This patch makes profile_nop function inline and fixes the
-> following warning:
-> 
-> WARNING: vmlinux.o(.text+0x6ebb6): Section mismatch in reference from
-> the function create_hash_tables() to the function
-> .init.text:profile_nop()
-> The function create_hash_tables() references
-> the function __init profile_nop().
-> This is often because create_hash_tables lacks a __init
-> annotation or the annotation of profile_nop is wrong.
-> 
-> 
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-> 
-> --- linux-2.6-orig/kernel/profile.c	2008-11-17 20:30:42.000000000 +0600
-> +++ linux-2.6/kernel/profile.c	2008-11-18 09:39:58.000000000 +0600
-> @@ -544,7 +544,7 @@ static const struct file_operations proc
->  };
-> 
->  #ifdef CONFIG_SMP
-> -static void __init profile_nop(void *unused)
-> +static inline void profile_nop(void *unused)
->  {
->  }
+On Wed, Nov 19, 2008 at 6:19 AM, FUJITA Tomonori
+<fujita.tomonori@lab.ntt.co.jp> wrote:
+> On Mon, 17 Nov 2008 19:15:32 -0800
+>> > pci_map_sg() does not coalesce the scattergather list for me on x86.
+>> [ Marked as Bogus Report ]
+>>
+>> > Is this expected? Documentation mentions that coalescing is typically
+>> > done by pci_map_sg().
+>
+> Hm, what document did you read? We might need to fix it.
+>
+http://lxr.linux.no/linux+v2.6.27.6/Documentation/DMA-API.txt
 
-Thanks.
+ 316        pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg,
+ 317                int nents, int direction)
+ 318
+ 319Maps a scatter gather list from the block layer.
+ 320
+ 321Returns: the number of physical segments mapped (this may be shorter
+ 322than <nents> passed in if the block layer determines that some
+ 323elements of the scatter/gather list are physically adjacent and thus
+ 324may be mapped with a single entry).
 
-There's no point in declaring this as inline, since it is always called
-indirectly, via on_each_cpu().
+Also it is mentioned elsewhere, such a Linux Device Driver 3rd
+Edition, page 451.
 
-There would be a teeny point in inlining an on_each_cpu() function in
-uniprocessor code, because in that case it _would_ be inlined.  But a)
-that's a bit dopey and b) this code you're patching is SMP-only.
+> pci_map_sg() is not a typical place to coalesce the entries of the sg
+> list are physically adjacent. The block layer is the typical place.
+>
+Hmmm, why not?
 
-So...
+In my case I am using the following flow:
 
---- a/kernel/profile.c~kernel-profilec-fix-section-mismatch-warning-fix
-+++ a/kernel/profile.c
-@@ -544,7 +544,7 @@ static const struct file_operations proc
- };
- 
- #ifdef CONFIG_SMP
--static inline void profile_nop(void *unused)
-+static void profile_nop(void *unused)
- {
- }
- 
-_
+virtual user buffer -> scatterlist -> pci_map_sg -> device specific
+scatterlist table
 
+Of course, I could write my own (tm) and map my pages into PCI using
+pci_map_single, but I thought I was being the good kid by using what
+was there.
+
+> The dma operations are free to coalesce the entries that physically
+> and virtually adjacent but there are not many that does.
+>
+> For example, by default, on x86, only AMD GART (x86_64) dma operation
+> coalesces such entries.
+>
+
+> What's kinda of your driver? If it's a SCSI (or block) driver, you
+> don't need this trick.
+>
+Not a block driver.
+
+A data acquisition driver through PCI Express.
+
+> I don't think that inventing a homegrown function to coalesce sg
+> entries in a driver is a good idea. If you really need this, it's
+> would be better to have a generic function to coalesce sg entries and
+> modify the block layer to use it (and your driver can use it too).
+>
++1 for this idea, *iff* it does not belong in pci_map_sg.
+
+However, I think it *does* belong in pci_map_sg, because pci_map_sg
+can perform virtual coalescing exploiting IOMMU's if I am not
+mistaken.
+
+Regards,
+-- 
+Leon
