@@ -1,85 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYKSV1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYKSV1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbYKSV1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 16:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbYKSV0U
+	id S1755569AbYKSV1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 16:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYKSV0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 16:26:20 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:48502 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755229AbYKSV0R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 16:26:17 -0500
-Message-ID: <49248560.1020501@novell.com>
-Date: Wed, 19 Nov 2008 16:30:08 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Wed, 19 Nov 2008 16:26:33 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:46014 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755039AbYKSV0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 16:26:32 -0500
+Date: Wed, 19 Nov 2008 15:26:31 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 2/2 v3] SGI RTC: add generic timer system interrupt
+Message-ID: <20081119212631.GC3377@sgi.com>
+References: <20081023163041.GA14574@sgi.com> <20081119212202.GA3377@sgi.com> <20081119212350.GB3377@sgi.com>
 MIME-Version: 1.0
-To: Dimitri Sivanich <sivanich@sgi.com>
-CC: Max Krasnyansky <maxk@qualcomm.com>, Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
- no load balance
-References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com> <20081119203340.GC2383@sgi.com>
-In-Reply-To: <20081119203340.GC2383@sgi.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig78BE9FC0641A7C88E3FF2FAF"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081119212350.GB3377@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig78BE9FC0641A7C88E3FF2FAF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch allocates a system interrupt vector for platform specific use
+in implementing timer interrupts.
 
-Dimitri Sivanich wrote:
-> On Wed, Nov 19, 2008 at 03:25:15PM -0500, Gregory Haskins wrote:
->  =20
->> It sounds like the problem with my code is that "null sched domain"
->> translates into "default root-domain" which is understandably unexpect=
-ed
->> by Dimitri (and myself).  Really I intended root-domains to become
->> associated with each exclusive/disjoint cpuset that is created.  In a
->> way, non-balanced/isolated cpus could be modeled as an exclusive cpuse=
-t
->> with one member, but that is somewhat beyond the scope of the
->>    =20
->
-> Actually, at one time, that is how things were setup.  Setting the
-> cpu_exclusive bit on a single cpu cpuset would isolate that cpu from
-> load balancing.
->  =20
-Do you know if this was pre or post the root-domain code?  Here is a
-reference to the commit:
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dco=
-mmit;h=3D57d885fea0da0e9541d7730a9e1dcf734981a173
+---
 
-A bisection that shows when this last worked for you would be very
-appreciated if you have the time, Dimitri.
+Refreshing this to use 0xed as the vector.  Have repackaged it to be more
+generic.
 
-Regards,
--Greg
+ arch/x86/include/asm/hw_irq.h      |    1 
+ arch/x86/include/asm/irq.h         |    2 +
+ arch/x86/include/asm/irq_vectors.h |    5 +++
+ arch/x86/kernel/entry_64.S         |    4 ++
+ arch/x86/kernel/irqinit_64.c       |   45 +++++++++++++++++++++++++++++++++
+ 5 files changed, 57 insertions(+)
 
-
-
---------------enig78BE9FC0641A7C88E3FF2FAF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkkkhWAACgkQlOSOBdgZUxmbkgCghFJthdhcF4AiuJ7JzqjNYLdA
-YZ4AnA1M0m2Kd2/7Pmux8M7edxKyzKB+
-=PxmA
------END PGP SIGNATURE-----
-
---------------enig78BE9FC0641A7C88E3FF2FAF--
+Index: linux/arch/x86/kernel/entry_64.S
+===================================================================
+--- linux.orig/arch/x86/kernel/entry_64.S	2008-11-19 14:59:15.000000000 -0600
++++ linux/arch/x86/kernel/entry_64.S	2008-11-19 15:02:16.000000000 -0600
+@@ -865,6 +865,10 @@ ENTRY(apic_timer_interrupt)
+ 	apicinterrupt LOCAL_TIMER_VECTOR,smp_apic_timer_interrupt
+ END(apic_timer_interrupt)
+ 
++ENTRY(generic_timer_interrupt)
++	apicinterrupt GENERIC_TIMER_VECTOR,smp_generic_timer_interrupt
++END(generic_timer_interrupt)
++
+ ENTRY(uv_bau_message_intr1)
+ 	apicinterrupt 220,uv_bau_message_interrupt
+ END(uv_bau_message_intr1)
+Index: linux/arch/x86/kernel/irqinit_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/irqinit_64.c	2008-11-19 14:59:15.000000000 -0600
++++ linux/arch/x86/kernel/irqinit_64.c	2008-11-19 15:09:36.000000000 -0600
+@@ -23,6 +23,7 @@
+ #include <asm/desc.h>
+ #include <asm/apic.h>
+ #include <asm/i8259.h>
++#include <asm/idle.h>
+ 
+ /*
+  * Common place to define all x86 IRQ vectors
+@@ -161,6 +162,47 @@ void __init init_ISA_irqs(void)
+ 
+ void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+ 
++
++/* Function pointer for generic timer interrupt handling */
++static void (*generic_timer_interrupt_extension)(void);
++
++int
++generic_timer_reg_extension(void (*fn)(void))
++{
++	if (generic_timer_interrupt_extension)
++		return 1;
++
++	generic_timer_interrupt_extension = fn;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(generic_timer_reg_extension);
++
++void
++generic_timer_unreg_extension(void)
++{
++	if (generic_timer_interrupt_extension)
++		generic_timer_interrupt_extension = NULL;
++}
++EXPORT_SYMBOL_GPL(generic_timer_unreg_extension);
++
++void smp_generic_timer_interrupt(struct pt_regs *regs)
++{
++	struct pt_regs *old_regs = set_irq_regs(regs);
++
++	ack_APIC_irq();
++
++	exit_idle();
++
++	irq_enter();
++
++	if (generic_timer_interrupt_extension)
++		generic_timer_interrupt_extension();
++
++	irq_exit();
++
++	set_irq_regs(old_regs);
++}
++
+ static void __init smp_intr_init(void)
+ {
+ #ifdef CONFIG_SMP
+@@ -202,6 +244,9 @@ static void __init apic_intr_init(void)
+ 	/* self generated IPI for local APIC timer */
+ 	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
+ 
++	/* IPI for platform specific timers */
++	alloc_intr_gate(GENERIC_TIMER_VECTOR, generic_timer_interrupt);
++
+ 	/* IPI vectors for APIC spurious and error interrupts */
+ 	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
+ 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
+Index: linux/arch/x86/include/asm/irq_vectors.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/irq_vectors.h	2008-11-19 14:59:15.000000000 -0600
++++ linux/arch/x86/include/asm/irq_vectors.h	2008-11-19 15:02:16.000000000 -0600
+@@ -92,6 +92,11 @@
+ #define LOCAL_PERFMON_VECTOR	0xee
+ 
+ /*
++ * Generic timer vector for platform specific use
++ */
++#define GENERIC_TIMER_VECTOR	0xed
++
++/*
+  * First APIC vector available to drivers: (vectors 0x30-0xee) we
+  * start at 0x31(0x41) to spread out vectors evenly between priority
+  * levels. (0x80 is the syscall vector)
+Index: linux/arch/x86/include/asm/hw_irq.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/hw_irq.h	2008-11-19 14:59:15.000000000 -0600
++++ linux/arch/x86/include/asm/hw_irq.h	2008-11-19 15:02:16.000000000 -0600
+@@ -29,6 +29,7 @@
+ 
+ /* Interrupt handlers registered during init_IRQ */
+ extern void apic_timer_interrupt(void);
++extern void generic_timer_interrupt(void);
+ extern void error_interrupt(void);
+ extern void spurious_interrupt(void);
+ extern void thermal_interrupt(void);
+Index: linux/arch/x86/include/asm/irq.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/irq.h	2008-11-19 14:59:15.000000000 -0600
++++ linux/arch/x86/include/asm/irq.h	2008-11-19 15:02:16.000000000 -0600
+@@ -38,6 +38,8 @@ extern void fixup_irqs(cpumask_t map);
+ 
+ extern unsigned int do_IRQ(struct pt_regs *regs);
+ extern void init_IRQ(void);
++extern int generic_timer_reg_extension(void (*fn)(void));
++extern void generic_timer_unreg_extension(void);
+ extern void native_init_IRQ(void);
+ 
+ /* Interrupt vector management */
