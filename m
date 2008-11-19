@@ -1,119 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYKSLDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbYKSLIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbYKSLDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 06:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYKSLDi
+	id S1752767AbYKSLIP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 06:08:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYKSLH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 06:03:38 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:43648 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751307AbYKSLDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 06:03:38 -0500
-Date: Wed, 19 Nov 2008 12:06:55 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
-       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081119110655.GC20915@gandalf.sssup.it>
-References: <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <4923716A.5090104@gelato.unsw.edu.au> <20081119101701.GA20915@gandalf.sssup.it>
-Mime-Version: 1.0
+	Wed, 19 Nov 2008 06:07:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:49971 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbYKSLH5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 06:07:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LJRNd4YLNY94UGy2hEBeUrMaXGMhwnnsgmlTEA331TPosQyjr0kQWuzItnVcUEMC5Q
+         /y9c3mOV4GCFBTTIvty8gCccHMwLlcAzq85VaCKTEpiI7FCDfm9w+d+sCgwNB+1/8tp7
+         xw6zZb8eITm9UAEC2nWnN8wFjyCg8h66rv71k=
+Date: Wed, 19 Nov 2008 11:07:48 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Miller <davem@davemloft.net>, Ferenc Wagner <wferi@niif.hu>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] softirq: Fix warnings triggered by netconsole
+Message-ID: <20081119110748.GA7557@ff.dom.local>
+References: <87y6zwwy5c.fsf@tac.ki.iif.hu> <20081119084125.GB6699@ff.dom.local> <20081119093224.GE22309@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081119101701.GA20915@gandalf.sssup.it>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20081119093224.GE22309@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Fabio Checconi <fchecconi@gmail.com>
-> Date: Wed, Nov 19, 2008 11:17:01AM +0100
->
-> > From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-> > Date: Wed, Nov 19, 2008 12:52:42PM +1100
-> >
-> > Fabio Checconi wrote:
-> > >   - To detect hw tagging in BFQ we consider a sample valid iff the
-> > >     number of requests that the scheduler could have dispatched (given
-> > >     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
-> > >     the scheduler plus the ones into the driver) is higher than the
-> > >     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
-> > >     during testing, but the way CFQ uses now seems a little bit
-> > >     strange.
+On Wed, Nov 19, 2008 at 10:32:24AM +0100, Ingo Molnar wrote:
+> 
+> * Jarek Poplawski <jarkao2@gmail.com> wrote:
+> 
+> > Consider netconsole case as special in local_bh_enable()/_disable().
+> > This patch skips in_irq() and irqs_disabled() warnings for NETPOLL
+> > configs when it's safe wrt. do_softirq().
 > > 
-> > BFQ's tag detection logic is broken in the same way that CFQ's used to
-> > be.  Explanation is in this patch:
+> > Reported-by: Ferenc Wagner <wferi@niif.hu>
+> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> > ---
+> > [apply on top of my first softirq patch in this thread]
 > > 
+> > diff -Nurp a/kernel/softirq.c b/kernel/softirq.c
+> > --- a/kernel/softirq.c	2008-11-19 07:33:23.000000000 +0000
+> > +++ b/kernel/softirq.c	2008-11-19 07:26:28.000000000 +0000
+> > @@ -76,7 +76,12 @@ static void __local_bh_disable(unsigned 
+> >  {
+> >  	unsigned long flags;
+> >  
+> > +#ifdef CONFIG_NETPOLL
+> > +	if (!softirq_count())
+> > +		WARN_ON_ONCE(in_irq());
+> > +#else
+> >  	WARN_ON_ONCE(in_irq());
+> > +#endif
+> >  
+> >  	raw_local_irq_save(flags);
+> >  	add_preempt_count(SOFTIRQ_OFFSET);
+> > @@ -138,7 +143,16 @@ static inline void _local_bh_enable_ip(u
+> >  #ifdef CONFIG_TRACE_IRQFLAGS
+> >  	unsigned long flags;
+> >  #endif
+> > +#ifdef CONFIG_NETPOLL
+> > +	/*
+> > +	 * Special-case - netconsole runs network code with all interrupts
+> > +	 * disabled. Warn only if it can be really dangerous:
+> > +	 */
+> > +	if (softirq_count() == SOFTIRQ_OFFSET)
+> > +		WARN_ON_ONCE(in_irq() || irqs_disabled());
+> > +#else
+> >  	WARN_ON_ONCE(in_irq() || irqs_disabled());
+> > +#endif
+> >  #ifdef CONFIG_TRACE_IRQFLAGS
+> >  	local_irq_save(flags);
+> >  #endif
 > 
-> If you look at bfq_update_hw_tag(), the logic introduced by the patch
-> you mention is still there; BFQ starts with ->hw_tag = 1, and updates it
-> every 32 valid samples.  What changed WRT your patch, apart from the
-> number of samples, is that the condition for a sample to be valid is:
-> 
->   bfqd->rq_in_driver + bfqd->queued >= 5
-> 
-> while in your patch it is:
-> 
->   cfqd->rq_queued > 5 || cfqd->rq_in_driver > 5
-> 
-> We preferred the first one because that sum better reflects the number
-> of requests that could have been dispatched, and I don't think that this
-> is wrong.
-> 
-> There is a problem, but it's not within the tag detection logic itself.
-> From some quick experiments, what happens is that when a process starts,
-> CFQ considers it seeky (*), BFQ doesn't.  As a side effect BFQ does not
-> always dispatch enough requests to correctly detect tagging.
-> 
-> At the first seek you cannot tell if the process is going to bee seeky
-> or not, and we have chosen to consider it sequential because it improved
-> fairness in some sequential workloads (the CIC_SEEKY heuristic is used
-> also to determine the idle_window length in [bc]fq_arm_slice_timer()).
-> 
-> Anyway, we're dealing with heuristics, and they tend to favor some
-> workload over other ones.  If recovering this thoughput loss is more
-> important than a transient unfairness due to short idling windows assigned
-> to sequential processes when they start, I've no problems in switching
-> the CIC_SEEKY logic to consider a process seeky when it starts.
-> 
-> Thank you for testing and for pointing out this issue, we missed it
-> in our testing.
-> 
-> 
-> (*) to be correct, the initial classification depends on the position
->     of the first accessed sector.
+> this is a very ugly patch, not really acceptable.
 
-Sorry, I forgot the patch...  This seems to solve the problem with
-your workload here, does it work for you?
+Well, it's a question of taste. Anyway, this patch is only about
+warnings, so no big deal. But I still think the first patch reverting
+local_irq_save() -> local_irq_disable() change should be applied.
+There is no need to give users any additional lockups risk while we
+know there are unsolved issues.
 
-[ The magic number would not appear in a definitive fix... ]
+BTW, the current situation with: local_irq_disable() in
+_local_bh_enable() and local_irq_save() in do_softirq() doesn't make
+much sense. I know, there is local_irq_disable() in __do_softirq()
+again, but it can be often skipped on this path because of
+in_interrupt() test (and there is soon this local_irq_restore()
+in do_softirq()).
 
-
----
-diff --git a/block/bfq-iosched.c b/block/bfq-iosched.c
-index 83e90e9..e9b010f 100644
---- a/block/bfq-iosched.c
-+++ b/block/bfq-iosched.c
-@@ -1322,10 +1322,12 @@ static void bfq_update_io_seektime(struct bfq_data *bfqd,
- 
- 	/*
- 	 * Don't allow the seek distance to get too large from the
--	 * odd fragment, pagein, etc.
-+	 * odd fragment, pagein, etc.  The first request is not
-+	 * really a seek, but we consider a cic seeky on creation
-+	 * to make the hw_tag detection logic work better.
- 	 */
--	if (cic->seek_samples == 0) /* first request, not really a seek */
--		sdist = 0;
-+	if (cic->seek_samples == 0)
-+		sdist = 8 * 1024 + 1;
- 	else if (cic->seek_samples <= 60) /* second&third seek */
- 		sdist = min(sdist, (cic->seek_mean * 4) + 2*1024*1024);
- 	else
+Jarek P.
