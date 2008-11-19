@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYKSOHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYKSOJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbYKSOHv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 09:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYKSOHm
+	id S1753878AbYKSOJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 09:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYKSOJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 09:07:42 -0500
-Received: from styx.suse.cz ([82.119.242.94]:43537 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753191AbYKSOHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 09:07:42 -0500
-Date: Wed, 19 Nov 2008 15:07:40 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Rafi Rubin <rafi@seas.upenn.edu>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] n-trig digitizer quirks
-In-Reply-To: <49241D02.6020602@seas.upenn.edu>
-Message-ID: <alpine.LNX.1.10.0811191505340.19853@jikos.suse.cz>
-References: <Pine.LNX.4.61.0811141207210.12963@minus.seas.upenn.edu> <alpine.LNX.1.10.0811181525490.19853@jikos.suse.cz> <49232910.2030309@seas.upenn.edu> <alpine.LNX.1.10.0811191355280.19853@jikos.suse.cz> <492417D4.4090103@seas.upenn.edu>
- <alpine.LNX.1.10.0811191451000.19853@jikos.suse.cz> <49241D02.6020602@seas.upenn.edu>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 19 Nov 2008 09:09:46 -0500
+Received: from ftp.linux-mips.org ([213.58.128.207]:36114 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185AbYKSOJq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 09:09:46 -0500
+Date: Wed, 19 Nov 2008 14:09:33 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Luca Tiburzio <luca.tiburzio@gmail.com>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: PHYLIB dependency in kernel 2.6.27.6
+In-Reply-To: <a278970e0811161427r2f941e10jafbc8ab1d425d64e@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0811191359170.22228@ftp.linux-mips.org>
+References: <a278970e0811161427r2f941e10jafbc8ab1d425d64e@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008, Rafi Rubin wrote:
+On Sun, 16 Nov 2008, Luca Tiburzio wrote:
 
-> >> Also, if you do prefer using driver data like that, is the probe 
-> >> function necessary to make it work?
-> > Probe function is necesary, you need to parse the report descriptor 
-> > (hid_parse()), activate the hardware (hid_hw_start()), etc.
-> Just to confirm then, its not necessary if I'm not checking the driver 
-> data for the quirk?
+> in make process of linux 2.6.27.6 the PHYLIB depends on
+> 
+> NETDEVICES && !S390 && NET_ETHERNET
+> 
+> but if I enable only
+> 
+> Ethernet (1000 Mbit) (NETDEV_1000)
+> i loose visibility of PHYLIB
+> 
+> it should be better that  PHYLIB depends on:
+> NETDEVICES && !S390 && (NET_ETHERNET || NETDEV_1000)
 
-Correct; if you don't need to do anything special in the _probe function, 
-the HID core will do everything necessary (descriptor parsing, 
-low-level hardware initialization) for you.
+ Well, practice shows selecting PHYLIB via a reverse dependency is 
+probably the most reasonable approach, but given the option is enabled for 
+explicit selection otherwise for legacy Ethernet devices, it may make 
+sense to do so for Gigabit devices too.  Not sure about 10Gb, but here is 
+a patch from my pile I prepared a while ago, but haven't submitted it 
+yet.  Feel free to push it further if you find it useful.  Please note 
+netdev is the right list for networking matters.
 
--- 
-Jiri Kosina
-SUSE Labs
+  Maciej
+
+---
+ Make PHYLIB available for selection for NETDEV_1000 too.
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+patch-2.6.26-rc1-20080505-phy-1000-1
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/net/phy/Kconfig linux-2.6.26-rc1-20080505/drivers/net/phy/Kconfig
+--- linux-2.6.26-rc1-20080505.macro/drivers/net/phy/Kconfig	2008-05-17 05:57:43.000000000 +0000
++++ linux-2.6.26-rc1-20080505/drivers/net/phy/Kconfig	2008-05-17 06:09:49.000000000 +0000
+@@ -5,7 +5,7 @@
+ menuconfig PHYLIB
+ 	tristate "PHY Device support and infrastructure"
+ 	depends on !S390
+-	depends on NET_ETHERNET
++	depends on NET_ETHERNET || NETDEV_1000
+ 	help
+ 	  Ethernet controllers are usually attached to PHY
+ 	  devices.  This option provides infrastructure for
