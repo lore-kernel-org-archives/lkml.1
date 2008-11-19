@@ -1,84 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYKSQv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbYKSQwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYKSQv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 11:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYKSQvS
+	id S1752855AbYKSQwL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 11:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYKSQvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 11:51:18 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:64865 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751373AbYKSQvR (ORCPT
+	Wed, 19 Nov 2008 11:51:53 -0500
+Received: from rn-out-0910.google.com ([64.233.170.187]:39800 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbYKSQvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 11:51:17 -0500
-X-Greylist: delayed 1511 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Nov 2008 11:51:17 EST
-Subject: Possible memory leak via slub kmem_cache_create
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 19 Nov 2008 16:25:54 +0000
-Message-Id: <1227111954.27162.28.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 19 Nov 2008 11:51:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bQrcemtEU4eZiQLzLvW0JscGDwN7dwXQuMsbU4Z4Mug1PxMnUsXqlJpyzvLz4EEq5i
+         vNGD/4FgDjVyD5vssrLdfLGCymDKSQXG9816g5qMM5YoAB8PEdf/elmJDboF55CavsBc
+         bStX8pmXWPlN/RiL/D68ZkoZ1daaSp+M/4h/I=
+Message-ID: <1ba2fa240811190851i5dda6734w10d38b0f27e5ac97@mail.gmail.com>
+Date: Wed, 19 Nov 2008 18:51:49 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2008-11-18
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au
+In-Reply-To: <20081119143919.GA3485@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Nov 2008 16:25:55.0175 (UTC) FILETIME=[7F1F5F70:01C94A63]
+Content-Disposition: inline
+References: <20081119000719.GA19756@tuxdriver.com>
+	 <1ba2fa240811182246m17a6baf0ybde19af030a65819@mail.gmail.com>
+	 <1ba2fa240811190134u7974a840i532e8ed0e18f8c72@mail.gmail.com>
+	 <20081119143919.GA3485@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Cristoph,
+On Wed, Nov 19, 2008 at 4:39 PM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> On Wed, Nov 19, 2008 at 11:34:37AM +0200, Tomas Winkler wrote:
+>> On Wed, Nov 19, 2008 at 8:46 AM, Tomas Winkler <tomasw@gmail.com> wrote:
+>> > On Wed, Nov 19, 2008 at 2:07 AM, John W. Linville
+>> > <linville@tuxdriver.com> wrote:
+>
+>> >>      mac80211: remove ieee80211_notify_mac
+>> >>      iwlagn: fix RX skb alignment
+>> >
+>> > IMHO its premature pushing ttese 2 patches up, they came in yestrday
+>> > and nobody here has run tthe code
+>
+> Well, thanks for your opinion.  Here is mine:
+>
+> The iwlwifi drivers have been hitting these problems for months,
+> and I have seen no effort by your team to address the problems.
 
-I've recently worked on reviving kmemleak (to be posted on LKML this
-week) and tried the slub allocator. I got the following report of orphan
-objects:
+There is a lot of effort to solve this I'm not sure what mailing list
+are u reading.
+We even presented test patches with alignment issues as Johannes few
+month ago but
+we didn't get the feedback that it hit anything. So you are totally off here.
 
-unreferenced object 0xdf80f180 (size 32):                                       
-  comm "swapper", pid 1, jiffies 4294937343                                     
-  backtrace:                                                                    
-    [<c0082f44>] memleak_alloc                                                  
-    [<c0080ff0>] __kmalloc                                                      
-    [<c019edac>] proto_register                                                 
-    [<c001640c>] inet_init                                                      
-    [<c001e30c>] do_one_initcall                                                
-    [<c0008400>] kernel_init                                                    
-    [<c0035aa8>] do_exit                                                        
-    [<ffffffff>]                                                                
-unreferenced object 0xdf800840 (size 16):                                       
-  comm "swapper", pid 1, jiffies 4294937343                                     
-  backtrace:                                                                    
-    [<c0082f44>] memleak_alloc                                                  
-    [<c0080ff0>] __kmalloc                                                      
-    [<c019ee3c>] proto_register                                                 
-    [<c001640c>] inet_init                                                      
-    [<c001e30c>] do_one_initcall                                                
-    [<c0008400>] kernel_init                                                    
-    [<c0035aa8>] do_exit                                                        
-    [<ffffffff>]                                                                
+> It is possible that your team is working on them behind closed doors
+> and will eventually throw something over the wall to us.  I'm tired
+> of waiting for that, and I imagine that hordes of iwlagn users are
+> tired of waiting as well.
 
-The proto_register() function in net/core/sock.c allocates
-request_sock_slab_name and timewait_sock_slab_name to generate the cache
-names passed to kmem_cache_create(). However, this function in mm/slub.c
-goes on the find_mergeable() route and doesn't update s->name to the
-previously allocated pointers. Therefore, kmemleak reports them as
-orphan.
+This is embarrassing also for us that we cannot locate this specific
+problem but it not like we are not doing anything.Not sure there are
+other examples that we are not addressing bugs promptly.
 
-It could be worse since proto_unregister() tries to free these pointers
-but they don't actually point to the allocated blocks because of the
-merging.
+> Johannes has presented us with plausible fixes, and people are
+> reporting that the patches work for them.
 
-A solution could be to pass one of the SLUB_NEVER_MERGE bits to
-kmem_cache_create in proto_register(), though none of them has any
-meaning for this situation. Otherwise, maybe defining another bit like
-SLAB_ALLOCATED_NAME to ensure that kmem_cache_name() returns the same
-value.
+I'm not against merging these patches to wireless-testing but pushing
+them upstream before testing them
+is just plainly wrong and all I asked for to test them. You are
+presenting here double standards here.
 
-Or just simplify proto_register() to no longer allocate memory for these
-names and it should be stated somewhere that kmem_cache_create() doesn't
-necessarily saves the pointer to the name.
+ I can merge these patches,
+> or wait/hope/pray for some to come from your team.  Experience suggests
+> that if fixes do come from your team that they will either be buried
+> in some monster patch that largely addresses something else, or
+> that the patches will arrive with a changelog that is terse and/or
+> unintelligble.  Subsequently, I am not optimistic about waiting.
 
-Thanks.
+I've believe that we are addressing all the complains above and
+currently  if you are not seeing this I'm really sorry.
 
--- 
-Catalin
+> I think Johannes cited four different bugzilla.kernel.org entries
+> between those two patches.  What is your team doing to address
+> those bugs?
 
+Again you are not reading the mailing list and not the bugs logs.
+
+>
+> Obviously, I still think that those patches should be merged.
+
+I'm not against just give it day or two to run it.  We have for
+example nightly regression builds with publicly available results why
+you cannot wait till we can run?  I think you've hurried to push it up
+just as a statement forgetting of possible regressions.
+
+>
+>> Just checked our bug database,  the ieee80211_notify_mac was
+>> introduced mainly to overcome HW bug when
+>> receiver become deaf  in heavy traffic such as ftp in noisy
+>> environment. Otherwise reconnection was too slow to keep ftp going. We
+>> need to check whether we are still hitting this before applying
+>> removal this function
+>
+> You are welcome to submit patches that address your hardware issue
+> and which do not introduce locking problems.
+
+That was my suggestion that we fix it and I believe  we have normal
+discussion about it till you took your eager pushing steps. Replacing
+one regression with another is just not sane.
+
+Thanks
+Tomas
