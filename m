@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYKSSiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYKSSkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYKSSiu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbYKSSij
+	id S1753986AbYKSSkl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYKSSkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:38:39 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:51339 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753100AbYKSSij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:38:39 -0500
-Date: Wed, 19 Nov 2008 19:38:36 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       sdhci-devel@list.drzeus.cx
-Subject: Re: [patch 5/7] SDHCI: Samsung SDHCI (HSMMC) driver
-Message-ID: <20081119193836.74cc2ee8@mjolnir.drzeus.cx>
-In-Reply-To: <20081116000302.GD9161@fluff.org.uk>
-References: <20081103200944.099353331@fluff.org.uk>
-	<20081103201010.652101443@fluff.org.uk>
-	<20081114224813.063017d7@mjolnir.drzeus.cx>
-	<20081116000302.GD9161@fluff.org.uk>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 13:40:33 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:54711 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752132AbYKSSkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 13:40:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=QGl2nxswlcmZxg5Iost50N5ZsHnogKEc6gzC/QRcB0Z4/XpenbWysasSMuO3M8KS3j
+         sJu1LrGhu2FFQjq4DXh4t0bSAFVWV9n+hzHp6oUOtgqeYn2GzyZXIsd2thBCUs4MGSI/
+         AjiPaI/nheSYG2EpKrlFb2HNMPk14hqT77qHQ=
+Date: Wed, 19 Nov 2008 18:40:14 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Am??rico Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [Patch] uml: fix undeclared variables
+Message-ID: <20081119184014.GD22898@hack.voiplan.pt>
+References: <20081118174250.GE3185@hack.voiplan.pt> <20081118192626.GU28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081118192626.GU28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 00:03:02 +0000
-Ben Dooks <ben-linux@fluff.org> wrote:
+On Tue, Nov 18, 2008 at 07:26:26PM +0000, Al Viro wrote:
+>On Tue, Nov 18, 2008 at 05:42:51PM +0000, Am??rico Wang wrote:
+>> 
+>> Fix three compile errors about undeclared variables in
+>> arch/um/kernel/mem.c.
+>
+>And what, pray tell, would initialize it?
 
-> On Fri, Nov 14, 2008 at 10:48:13PM +0100, Pierre Ossman wrote:
-> > On Mon, 03 Nov 2008 20:09:49 +0000
-> > Ben Dooks <ben-linux@fluff.org> wrote:
-> > > +	if (pdata->cfg_card)
-> > > +		pdata->cfg_card(ourhost->pdev, host->ioaddr,
-> > > +				ios, host->mmc->card);
-> > 
-> > What's the deal here? Hosts shouldn't know more about the card than the
-> > MMC core tells them.
-> 
-> Depending on exactly which version, there's a number of configurations
-> in the extra configuration registers that get changed, such as delays
-> used for clock feedback which are meant to be chnaged when the speed
-> of the card is changed. Unfortunately this changes depending on the
-> chip model and possibly also on the board it is on.
-> 
-> The other is that it is possible that depending on the chip and board
-> combination things like the GPIO driver-strength controls will need to
-> be changed.
+Sorry, I can't fully understand you. I got the following error:
 
-I don't see where knowledge about the card gets into the picture here.
-All of this sounds like information that is gathered from platform data
-and/or ios information.
+arch/um/kernel/mem.c: In function ‘init_highmem’:
+arch/um/kernel/mem.c:177: error: ‘pkmap_page_table’ undeclared (first
+use in this function)
+arch/um/kernel/mem.c:177: error: (Each undeclared identifier is
+reported only once
+arch/um/kernel/mem.c:177: error: for each function it appears in.)
+
+Thanks.
 
 -- 
-     -- Pierre Ossman
+"Sometimes the only way to stay sane is to go a little crazy."
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
