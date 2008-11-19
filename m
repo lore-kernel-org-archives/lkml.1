@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYKSSp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbYKSStS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYKSSp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYKSSpV
+	id S1754315AbYKSStS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYKSStB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:45:21 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:59690 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752672AbYKSSpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:45:20 -0500
-Date: Wed, 19 Nov 2008 19:45:17 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, peterz@infradead.org,
-       Ingo Molnar <mingo@elte.hu>, Russell King <rmk@arm.linux.org.uk>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [patch 2.6.28-rc2] at91_mci: workaround lockdep
-Message-ID: <20081119194517.2b73d74f@mjolnir.drzeus.cx>
-In-Reply-To: <4921394E.2000901@atmel.com>
-References: <200810271426.27110.david-b@pacbell.net>
-	<4921394E.2000901@atmel.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 13:49:01 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:40058 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYKSStA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 13:49:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=c0dPlYY+uCosfpVaCzEyrvhxRsTgI6AlGhBdTgUOoeS79+hlBoOREbRaj5riiMf7NU
+         JzxXIH3gmCv3UOVFsl8YqzmrQZYvGfp8fO5A/HsDBsuWQxEP2dS8XXjqwYosF24+8jys
+         ODoEBs/pvCd+xhaHlp6WHmpUALwq0INabLGf0=
+Date: Wed, 19 Nov 2008 18:48:44 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch] MODULE_UNLOAD should depend on PROC_FS
+Message-ID: <20081119184844.GE22898@hack.voiplan.pt>
+References: <20081118184052.GA24453@hack.voiplan.pt> <200811191041.53716.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200811191041.53716.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008 10:28:46 +0100
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+On Wed, Nov 19, 2008 at 10:41:53AM +1030, Rusty Russell wrote:
+>On Wednesday 19 November 2008 05:10:52 Américo Wang wrote:
+>> The feature controlled by MODULE_UNLOAD uses proc interface, so it
+>> should depend on PROC_FS.
+>
+>Hi Wang,
+>
+>   This patch looks wrong to me; you can remove modules without /proc.  Does 
+>it not compile with CONFIG_MODULE_UNLOAD=y and CONFIG_PROC_FS=n?
+>
 
-> 
-> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> 
+Thank you, Rusty and Alan!
 
-Any side-effects besides from dmesg noise? IOW should I push for .28?
+I think I was wrong. It is compiled fine with the above config, just tested.
+
 
 -- 
-     -- Pierre Ossman
+"Sometimes the only way to stay sane is to go a little crazy."
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
