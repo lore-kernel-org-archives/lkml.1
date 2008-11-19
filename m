@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbYKSACw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYKSAEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752988AbYKSACw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 19:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYKSACo
+	id S1753425AbYKSAEW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 19:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYKSAEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 19:02:44 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35379 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbYKSACn (ORCPT
+	Tue, 18 Nov 2008 19:04:14 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:30483 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbYKSAEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 19:02:43 -0500
-Message-ID: <49235759.7070109@zytor.com>
-Date: Tue, 18 Nov 2008 16:01:29 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 18 Nov 2008 19:04:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EuoA4RerOhvMOHUuC0rTMXJ93sXLbfDva8xmk+el3GzUkRV3MsD8a1fWxerD4KupuS
+         U3i7chsRz8kz1niUzEsr+Cz7mlbezylfIy1s2V2U/cb8Hj8Z2DFKwhf2Ya4Xa7zikypq
+         fCZyRWigrpU9Vqr29LJnKusJnq0ypeb3j8/So=
+Date: Wed, 19 Nov 2008 03:07:49 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, containers@lists.osdl.org
+Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task
+	directories
+Message-ID: <20081119000749.GA2912@x200.localdomain>
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org> <m1abcd2kqk.fsf@frodo.ebiederm.org> <20081106172617.dd51d0af.akpm@linux-foundation.org> <m1abccxpc5.fsf@frodo.ebiederm.org> <20081106184945.179c248a.akpm@linux-foundation.org> <m1iqr0urb8.fsf@frodo.ebiederm.org> <20081106202822.a1af8a6e.akpm@linux-foundation.org> <m1d4h7v8jf.fsf@frodo.ebiederm.org> <20081107080529.6f4de3ad.akpm@linux-foundation.org> <m1zlk3kxfj.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jan Beulich <jbeulich@novell.com>, heukelum@fastmail.fm,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Glauber Costa <gcosta@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC,v2] x86_64: save_args out of line
-References: <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com> <20081118111633.GA21036@mailshack.com> <4922C863.76E4.0078.0@novell.com> <20081118140349.GC23479@elte.hu> <4922E4D4.76E4.0078.0@novell.com> <20081118150024.GD30358@elte.hu> <20081118225336.60FFA1544EB@magilla.localdomain> <20081118233552.GP6703@one.firstfloor.org> <20081118234511.80C4F1544F1@magilla.localdomain> <20081119000605.GQ6703@one.firstfloor.org>
-In-Reply-To: <20081119000605.GQ6703@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zlk3kxfj.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+On Thu, Nov 13, 2008 at 03:39:44PM -0800, Eric W. Biederman wrote:
+> On this patchset it looks like the conversation has wound down with no
+> real objects except that some very simple pieces of the code appear
+> magic.
 > 
-> Hmm, but if the assembler cannot auto generate it how should the assembler
-> writer know if he should use the macro or the direct instruction without
-> understanding CFI?
 > 
-> Also what will the assembler reader do? Do they first have to understand
-> CFI to understand everything? I personally would probably just
-> resort to objdump -S in this situation.
-> 
-> I think you're saying that for the user the macros would be just
-> equivalent, but if that's true they could be just auto generated 
-> by the assembler. But it's obviously not, so you'll end up
-> with the Linux magic asm dialect (and its maintenance disadvantages)
-> and you'll still require CFI knowledge to understand/write everything 
-> anyways.
-> 
+> What looks to be the best path for getting this set of patches merged
+> into /proc?
 
-We already have a "Linux magic asm dialect" which require CFI knowledge. 
-  Nothing can change that other than dumping the requirement that we 
-have valid CFI data.  However, the current code is hard to read and easy 
-to trip up on.  We can at least make it easier, especially to read -- 
-and making it easier to read will help writers, too.
+Al's ACK minimum.
 
-	-hpa
+> Alexy will you pick this up in your /proc tree as Andrew suggested?
+
+Yep, doing it right now.
+
+> Do I need to keep my own tree?
+
+No need.
+
+> Can I have some clear guidance on which hurdles to jump through to
+> make forward progress?
