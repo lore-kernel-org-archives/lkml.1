@@ -1,116 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYKSWbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYKSWbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbYKSWbU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 17:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbYKSWbK
+	id S1753837AbYKSWbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 17:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYKSWbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 17:31:10 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:40426 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbYKSWbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 17:31:08 -0500
-Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Max Kellermann <max@duempel.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-In-Reply-To: <20081117123536.GA16539@squirrel.roonstrasse.net>
-References: <20081022091207.GA12996@squirrel.roonstrasse.net>
-	 <20081023123628.GA18549@squirrel.roonstrasse.net>
-	 <1224773745.7625.4.camel@localhost>
-	 <20081024083913.GA15197@squirrel.roonstrasse.net>
-	 <1224871763.22672.33.camel@localhost>
-	 <20081027095843.GA10937@squirrel.roonstrasse.net>
-	 <1225122503.14242.12.camel@heimdal.trondhjem.org>
-	 <20081117123536.GA16539@squirrel.roonstrasse.net>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 17:31:01 -0500
-Message-Id: <1227133861.28898.26.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 19 Nov 2008 17:31:36 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:48768 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbYKSWbf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 17:31:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=YLdVPNXevpyhD5LJRvkKxDh+PfBnG0hUc2KXtEyeSsB1/hpBE6O8DKlQC4jYrPxUc
+	h49dyxoFbgO1Rn8YA58TA==
+MIME-Version: 1.0
+In-Reply-To: <4923CAF1.1020404@cn.fujitsu.com>
+References: <4923CAF1.1020404@cn.fujitsu.com>
+Date: Wed, 19 Nov 2008 14:31:30 -0800
+Message-ID: <6599ad830811191431k1994017dr5a08bb4811eb7466@mail.gmail.com>
+Subject: Re: [PATCH] cgroups: fix a serious bug in cgroupstats
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 252FC67014880D524B1122B855461AE84D400838
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 208 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-17 at 13:35 +0100, Max Kellermann wrote:
-> On 2008/10/27 16:48, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > OK. That points a finger at the garbage collector. Does the following
-> > patch help at all?
-> 
-> Hi Trond,
-> 
-> the server's load seems to be a little bit lower with 2.6.27.6 plus
-> your patch, but OProfile still gives me 45% in
-> rpcauth_lookup_credcache().  See:
-> 
-> 1060627  45.1474  (no location information)   rpcauth_lookup_credcache
-> 289362   12.3172  auth_generic.c:0            generic_match
-> 31886     1.3573  page_alloc.c:0              get_page_from_freelist
-> 23932     1.0187  (no location information)   page_fault
-> 22176     0.9440  (no location information)   schedule
-> 14613     0.6220  (no location information)   __d_lookup
-> [...]
-> 
-> Max
+On Wed, Nov 19, 2008 at 12:14 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> Try this, and you'll get oops immediately:
+>  # cd Documentation/accounting/
+>  # gcc -o getdelays getdelays.c
+>  # mount -t cgroup -o debug xxx /mnt
+>  # ./getdelays -C /mnt/tasks
+>
+> Because a normal file's dentry->d_fsdata is a pointer to struct cftype,
+> not struct cgroup.
+>
+> After the patch, it returns EINVAL if we try to get cgroupstats
+> from a normal file.
+>
+> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Looking at the above, it seems that you're spending an inordinate amount
-of time in generic_match too.
-Could you see if the following patch helps?
+Good catch, thanks.
 
-Cheers
-  Trond
-
--------------------------------------------------------------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-SUNRPC: Fix up generic_match()
-
-Cut down on the number of similar copies of group_info.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- net/sunrpc/auth_generic.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
+Acked-by: Paul Menage <menage@google.com>
 
 
-diff --git a/net/sunrpc/auth_generic.c b/net/sunrpc/auth_generic.c
-index 744b79f..4028502 100644
---- a/net/sunrpc/auth_generic.c
-+++ b/net/sunrpc/auth_generic.c
-@@ -133,13 +133,29 @@ static int
- generic_match(struct auth_cred *acred, struct rpc_cred *cred, int flags)
- {
- 	struct generic_cred *gcred = container_of(cred, struct generic_cred, gc_base);
-+	int i;
- 
- 	if (gcred->acred.uid != acred->uid ||
- 	    gcred->acred.gid != acred->gid ||
--	    gcred->acred.group_info != acred->group_info ||
- 	    gcred->acred.machine_cred != acred->machine_cred)
--		return 0;
-+		goto out_nomatch;
-+
-+	/* Optimisation in the case where pointers are identical... */
-+	if (gcred->acred.group_info == acred->group_info)
-+		goto out_match;
-+
-+	/* Slow path... */
-+	if (gcred->acred.group_info->ngroups != acred->group_info->ngroups)
-+		goto out_nomatch;
-+	for (i = 0; i < gcred->acred.group_info->ngroups; i++) {
-+		if (GROUP_AT(gcred->acred.group_info, i) !=
-+				GROUP_AT(acred->group_info, i))
-+			goto out_nomatch;
-+	}
-+out_match:
- 	return 1;
-+out_nomatch:
-+	return 0;
- }
- 
- void __init rpc_init_generic_auth(void)
 
-
+> ---
+>  kernel/cgroup.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 358e775..f6f5219 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2039,10 +2039,13 @@ int cgroupstats_build(struct cgroupstats *stats, struct dentry *dentry)
+>        struct cgroup *cgrp;
+>        struct cgroup_iter it;
+>        struct task_struct *tsk;
+> +
+>        /*
+> -        * Validate dentry by checking the superblock operations
+> +        * Validate dentry by checking the superblock operations,
+> +        * and make sure it's a directory.
+>         */
+> -       if (dentry->d_sb->s_op != &cgroup_ops)
+> +       if (dentry->d_sb->s_op != &cgroup_ops ||
+> +           !S_ISDIR(dentry->d_inode->i_mode))
+>                 goto err;
+>
+>        ret = 0;
+> --
+> 1.5.4.rc3
+>
