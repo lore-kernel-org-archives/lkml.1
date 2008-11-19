@@ -1,81 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYKSUvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYKSUvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYKSUvf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYKSUvV
+	id S1754708AbYKSUvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYKSUvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:51:21 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:56219 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341AbYKSUvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:51:20 -0500
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-Id: <03314DAD-B8AF-4F81-8C48-68B64C477B3C@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1227122070-6835-1-git-send-email-tpiepho@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: Better setup of boot page TLB entry
-Date: Wed, 19 Nov 2008 14:51:10 -0600
-References: <1227122070-6835-1-git-send-email-tpiepho@freescale.com>
-X-Mailer: Apple Mail (2.929.2)
+	Wed, 19 Nov 2008 15:51:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47698 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754542AbYKSUv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 15:51:29 -0500
+Date: Wed, 19 Nov 2008 18:53:32 -0200
+From: Glauber Costa <glommer@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] always assign userspace_addr
+Message-ID: <20081119205332.GA27378@poweredge.glommer>
+References: <1226977462-8086-1-git-send-email-glommer@redhat.com> <492436DE.2080906@codemonkey.ws> <20081119184357.GB25917@poweredge.glommer> <49246014.5000001@codemonkey.ws>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="7AUc2qLy4jB3hD7Z"
+Content-Disposition: inline
+In-Reply-To: <49246014.5000001@codemonkey.ws>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Nov 19, 2008, at 1:14 PM, Trent Piepho wrote:
+--7AUc2qLy4jB3hD7Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> The initial TLB mapping for the kernel boot didn't set the memory  
-> coherent
-> attribute, MAS2[M], in SMP mode.
+On Wed, Nov 19, 2008 at 12:51:00PM -0600, Anthony Liguori wrote:
 >
-> If this code supported booting a secondary processor, which it  
-> doesn't yet,
-> but suppose it did, then when a secondary processor boots, it would  
-> have
-> probably signaled the primary processor by setting a variable called
-> something like __secondary_hold_acknowledge.  However, due to the  
-> lack of
-> the M bit, the primary processor would not have snooped the  
-> transaction
-> (even if a transaction were broadcast).  If primary CPU's L1 D-cache  
-> had a
-> copy, it would not have been flushed and the CPU would have never  
-> seen the
-> ack.  Which would have resulted in the primary CPU spinning for a long
-> time, perhaps a full second before it would have given up, while it  
-> would
-> have waited for the ack from the secondary CPU that it wouldn't have  
-> been
-> able to see because of the stale cache.
+> But the problem still exists even with this code.  I checked.
 >
-> The value of MAS2 for the boot page TLB1 entry is a compile time  
-> constant,
-> so there is no need to calculate it in powerpc assembly language.
+> So if you have something working without modifying the kernel, can you  
+> post it?
 >
-> Also, from the MPC8572 manual section 6.12.5.3, "Bits that represent
-> offsets within a page are ignored and should be cleared." Existing  
-> code
-> didn't clear them, this code does.
+> Regards,
 >
-> The same when the page of KERNELBASE is found; we don't need to use  
-> asm to
-> mask the lower 12 bits off.
->
-> In the code that computes the address to rfi from, don't hard code the
-> offset to 24 bytes, but have the assembler figure that out for us.
->
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> arch/powerpc/include/asm/mmu-fsl-booke.h |    2 ++
-> arch/powerpc/kernel/head_fsl_booke.S     |   22 +++++++++++++---------
-> 2 files changed, 15 insertions(+), 9 deletions(-)
+> Anthony Liguori
 
-applied to next.
+Ok, how do you feel about this one?
 
-- k
+My proposal is to always delete a memslot before reusing the space,
+but controlling this behaviour by a flag, so we can maintain backwards
+compatibility with people using older versions of the interface.
+
+
+
+--7AUc2qLy4jB3hD7Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="interface.patch"
+
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f18b86f..66ee286 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -39,6 +39,7 @@ struct kvm_userspace_memory_region {
+ 
+ /* for kvm_memory_region::flags */
+ #define KVM_MEM_LOG_DIRTY_PAGES  1UL
++#define KVM_MEM_FREE_BEFORE_ALLOC 2UL
+ 
+ 
+ /* for KVM_IRQ_LINE */
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 4c39d4f..41f5666 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -735,24 +735,31 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 	base_gfn = mem->guest_phys_addr >> PAGE_SHIFT;
+ 	npages = mem->memory_size >> PAGE_SHIFT;
+ 
+-	if (!npages)
+-		mem->flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
++
++	r = kvm_check_overlap(kvm, base_gfn, npages, memslot);
++	if (r)
++		goto out_free;
++
+ 
+ 	new = old = *memslot;
+ 
+-	new.base_gfn = base_gfn;
+-	new.npages = npages;
+-	new.flags = mem->flags;
++	if (!npages)
++		mem->flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
+ 
+-	/* Disallow changing a memory slot's size. */
+-	r = -EINVAL;
+-	if (npages && old.npages && npages != old.npages)
+-		goto out_free;
+ 
+-	r = kvm_check_overlap(kvm, base_gfn, npages, memslot);
+-	if (r)
++	if (mem->flags & KVM_MEM_FREE_BEFORE_ALLOC)
++		kvm_free_physmem_slot(&new, NULL);
++
++	else {
++		/* Disallow changing a memory slot's size. */
++		r = -EINVAL;
++		if (npages && old.npages && npages != old.npages)
+ 		goto out_free;
++	}
+ 
++	new.base_gfn = base_gfn;
++	new.flags = mem->flags;
++	new.npages = npages;
+ 
+ 	/* Free page dirty bitmap if unneeded */
+ 	if (!(new.flags & KVM_MEM_LOG_DIRTY_PAGES))
+@@ -771,6 +778,15 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 		memset(new.rmap, 0, npages * sizeof(*new.rmap));
+ 
+ 		new.user_alloc = user_alloc;
++		/*
++		 * hva_to_rmmap() serialzies with the mmu_lock and to be
++		 * safe it has to ignore memslots with !user_alloc &&
++		 * !userspace_addr.
++		 */
++		if (user_alloc)
++			new.userspace_addr = mem->userspace_addr;
++		else
++			new.userspace_addr = 0;
+ 	}
+ 	if (npages && !new.lpage_info) {
+ 		int largepages = npages / KVM_PAGES_PER_HPAGE;
+@@ -791,15 +807,6 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 		if ((base_gfn+npages) % KVM_PAGES_PER_HPAGE)
+ 			new.lpage_info[largepages-1].write_count = 1;
+ 	}
+-	/*
+-	 * hva_to_rmmap() serialzies with the mmu_lock and to be
+-	 * safe it has to ignore memslots with !user_alloc &&
+-	 * !userspace_addr.
+-	 */
+-	if (npages && user_alloc)
+-		new.userspace_addr = mem->userspace_addr;
+-	else
+-		new.userspace_addr = 0;
+ 
+ 	/* Allocate page dirty bitmap if needed */
+ 	if ((new.flags & KVM_MEM_LOG_DIRTY_PAGES) && !new.dirty_bitmap) {
+@@ -830,7 +837,9 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 		goto out_free;
+ 	}
+ 
+-	kvm_free_physmem_slot(&old, &new);
++	
++	if (!(mem->flags & KVM_MEM_FREE_BEFORE_ALLOC)) 
++		kvm_free_physmem_slot(&old, &new);
+ #ifdef CONFIG_DMAR
+ 	/* map the pages in iommu page table */
+ 	r = kvm_iommu_map_pages(kvm, base_gfn, npages);
+@@ -840,7 +849,9 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 	return 0;
+ 
+ out_free:
+-	kvm_free_physmem_slot(&new, &old);
++
++	if (!(mem->flags & KVM_MEM_FREE_BEFORE_ALLOC)) 
++		kvm_free_physmem_slot(&new, &old);
+ out:
+ 	return r;
+ 
+
+--7AUc2qLy4jB3hD7Z--
