@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYKSIlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbYKSIoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbYKSIlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 03:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYKSIlc
+	id S1753184AbYKSIoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 03:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbYKSIoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 03:41:32 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:22871 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753120AbYKSIlb (ORCPT
+	Wed, 19 Nov 2008 03:44:10 -0500
+Received: from winston.telenet-ops.be ([195.130.137.75]:52028 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbYKSIoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 03:41:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:x-mutt-fcc:user-agent;
-        b=n2vk9dQbR44Oebm8zHs4U+gUGThMi684Cx4kWHwcPIkn25jzXIDLDLuKbBAbHTC0VM
-         1sqErRKqnJoANkD0oWDLRQEdW8F7IRyL8XYEDkdLa5q+lQLIURkixQqvFkf+l6AvCOw2
-         HAUyPZpzRJcIIWVDE1NEMgFJq6w4K/4oJWRWE=
-Date: Wed, 19 Nov 2008 08:41:26 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Miller <davem@davemloft.net>, Ferenc Wagner <wferi@niif.hu>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] softirq: Fix warnings triggered by netconsole
-Message-ID: <20081119084125.GB6699@ff.dom.local>
+	Wed, 19 Nov 2008 03:44:09 -0500
+Date: Wed, 19 Nov 2008 09:44:03 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org
+Subject: Re: linux-m68k.git
+In-Reply-To: <20081119081951.a1a33403.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0811190942490.27671@anakin>
+References: <Pine.LNX.4.64.0811182136060.27671@anakin>
+ <20081119081951.a1a33403.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87y6zwwy5c.fsf@tac.ki.iif.hu>
-X-Mutt-Fcc: =outbox
-X-Mutt-Fcc: =outbox
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Consider netconsole case as special in local_bh_enable()/_disable().
-This patch skips in_irq() and irqs_disabled() warnings for NETPOLL
-configs when it's safe wrt. do_softirq().
+	Hi Stephen,
 
-Reported-by: Ferenc Wagner <wferi@niif.hu>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
----
-[apply on top of my first softirq patch in this thread]
+On Wed, 19 Nov 2008, Stephen Rothwell wrote:
+> On Tue, 18 Nov 2008 21:49:01 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > (Finally) I created an experimental git tree for Linux/m68k:
+> > http://git.kernel.org/?p=linux/kernel/git/geert/linux-m68k.git
+> > 
+> > It contains more or less all patches I had in my quilt series at
+> > http://www.kernel.org/pub/linux/kernel/people/geert/linux-m68k-patches-2.6/
+> > A notable exception is m68k-PRIVATE-m68k-changes.diff, which hardcoded ARCH to
+> > m68k.
+> > 
+> > I also created for-next and for-linus branches. Do they look OK?
+> 
+> They look good.  I have added the for-linus branch as my m68k-current
 
-diff -Nurp a/kernel/softirq.c b/kernel/softirq.c
---- a/kernel/softirq.c	2008-11-19 07:33:23.000000000 +0000
-+++ b/kernel/softirq.c	2008-11-19 07:26:28.000000000 +0000
-@@ -76,7 +76,12 @@ static void __local_bh_disable(unsigned 
- {
- 	unsigned long flags;
- 
-+#ifdef CONFIG_NETPOLL
-+	if (!softirq_count())
-+		WARN_ON_ONCE(in_irq());
-+#else
- 	WARN_ON_ONCE(in_irq());
-+#endif
- 
- 	raw_local_irq_save(flags);
- 	add_preempt_count(SOFTIRQ_OFFSET);
-@@ -138,7 +143,16 @@ static inline void _local_bh_enable_ip(u
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	unsigned long flags;
- #endif
-+#ifdef CONFIG_NETPOLL
-+	/*
-+	 * Special-case - netconsole runs network code with all interrupts
-+	 * disabled. Warn only if it can be really dangerous:
-+	 */
-+	if (softirq_count() == SOFTIRQ_OFFSET)
-+		WARN_ON_ONCE(in_irq() || irqs_disabled());
-+#else
- 	WARN_ON_ONCE(in_irq() || irqs_disabled());
-+#endif
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	local_irq_save(flags);
- #endif
+What's the purpose of your m68k-current tree? There should not be anything
+in m68k#for-linus that's not in m68k#for-next.
+
+> tree and changed my m68k tree over to the for-next branch.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
