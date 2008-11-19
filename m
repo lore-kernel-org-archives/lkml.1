@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYKSSNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYKSSPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbYKSSNJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYKSSMz
+	id S1754156AbYKSSPj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYKSSPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:12:55 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:58150 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753044AbYKSSMz (ORCPT
+	Wed, 19 Nov 2008 13:15:30 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:24766 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbYKSSP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:12:55 -0500
-Date: Wed, 19 Nov 2008 10:12:38 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kobject: 'vcs1' (d2172ad8): kobject_add_internal: parent: 'vc',
- set: 'devices'
-Message-Id: <20081119101238.c46ad0cd.randy.dunlap@oracle.com>
-In-Reply-To: <20081119095934.GF4370@vanheusden.com>
-References: <20081119095934.GF4370@vanheusden.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4924571C.004C:SCFSTAT928724,ss=1,fgs=0
+	Wed, 19 Nov 2008 13:15:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LdJTWIJ+4HM5oX9fvTQCk+VyhCdAzN8o0tgQdUEvKR1+32h62f+HcdFLCY2satSUTa
+         GFHXgm7r7SljswK0zUDze3UP3vDqDleM9zFp8ol4RA+YvdoQysSKpq2WaeSJwUnY6WLT
+         xNyqkxgSvu/C13zJkuq7H8bNoklVPYd/gEYpU=
+Date: Wed, 19 Nov 2008 19:14:57 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udf: implement mode and dmode mounting options
+Message-ID: <20081119181427.GA29507@joi>
+References: <20081116195129.GA5920@joi> <20081118162205.bc61e2b4.akpm@linux-foundation.org> <20081119151605.GA29820@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081119151605.GA29820@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008 10:59:41 +0100 Folkert van Heusden wrote:
+On Wed, Nov 19, 2008 at 04:16:06PM +0100, Jan Kara wrote:
+> On Tue 18-11-08 16:22:05, Andrew Morton wrote:
+> > On Sun, 16 Nov 2008 20:52:19 +0100
+> > Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> > 
+> > > "dmode" allows overriding permissions of directories and
+> > > "mode" allows overriding permissions of files.
+> > > 
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > Cc: Jan Kara <jack@suse.cz>
+> > > ---
+> > >  Documentation/filesystems/udf.txt |    2 ++
+> > >  fs/udf/inode.c                    |   11 +++++++++--
+> > >  fs/udf/super.c                    |   31 ++++++++++++++++++++++++++++++-
+> > >  fs/udf/udf_sb.h                   |    2 ++
+> > >  4 files changed, 43 insertions(+), 3 deletions(-)
+> > > 
+> > > diff --git a/Documentation/filesystems/udf.txt b/Documentation/filesystems/udf.txt
+> > > index fde829a..902b95d 100644
+> > > --- a/Documentation/filesystems/udf.txt
+> > > +++ b/Documentation/filesystems/udf.txt
+> > > @@ -24,6 +24,8 @@ The following mount options are supported:
+> > >  
+> > >  	gid=		Set the default group.
+> > >  	umask=		Set the default umask.
+> > > +	mode=		Set the default file permissions.
+> > > +	dmode=		Set the default directory permissions.
+> > 
+> > Can we give these the same names and usage as their fatfs equivalents?
+>   Yes, making these options dmask and fmask would be more consistent I
+> think. Martin?
 
-> Hi,
-> 
-> What switch is responsible for this logging:
-> [   94.025172] kobject: 'vcsa1': free name
-> [   94.025231] kobject: 'vcs1' (d2172ad8): kobject_add_internal: parent: 'vc', set: 'devices'
-> [   94.025308] kobject: 'vcs1' (d2172ad8): kobject_uevent_env
-> [   94.025315] kobject: 'vcs1' (d2172ad8): fill_kobj_path: path = '/class/vc/vcs1'
-> [   94.025352] kobject: 'vcsa1' (d23f00d8): kobject_add_internal: parent: 'vc', set: 'devices'
-> [   94.025398] kobject: 'vcsa1' (d23f00d8): kobject_uevent_env
-> 
-> I can't find it and it removes an oops from dmesg before i can capture it.
+You can't add permissions by umask/fmask/dmask. I have one DVD with top
+level dir permissions set to 0000 and there's no way to read it now (as
+an user) and adding mask options wouldn't change it.
 
-Those prints use pr_debug() from include/linux/kernel.h, which was changed
-most recently in
+I should mention in a changelog that the names and semantics of these
+options are copied from isofs.
 
-commit d091c2f58ba32029495a933b721e8e02fbd12caa
-Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Date:   Wed Nov 12 21:16:43 2008 +0100
+I can create a second patch which adds mask options but I think modes are
+needed too. What do you think?
 
-    Add 'pr_fmt()' format modifier to pr_xyz macros.
-
-Do you have CONFIG_DYNAMIC_PRINTK_DEBUG enabled?  That could affect the
-kernel log output.
-
----
-~Randy
+Marcin
