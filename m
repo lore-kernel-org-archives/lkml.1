@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYKSR7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYKSSD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbYKSR7t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 12:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYKSR7l
+	id S1754146AbYKSSD3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYKSSDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 12:59:41 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55653 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbYKSR7l (ORCPT
+	Wed, 19 Nov 2008 13:03:13 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38529 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbYKSSDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 12:59:41 -0500
-To: tj@kernel.org
-CC: bharrosh@panasas.com, greg@kroah.com, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu
-In-reply-to: <4922E622.50401@kernel.org> (message from Tejun Heo on Wed, 19
-	Nov 2008 00:58:26 +0900)
-Subject: Re: [PATCH RESEND] char_dev: add cdev->release() and convert	cdev_alloc()
- to use it
-References: <48B6D428.2020308@kernel.org> <20080828164741.GA17475@kroah.com> <48B6D8D0.6080506@kernel.org> <20080828173813.GC18097@kroah.com> <48B6E417.5030605@kernel.org> <20080828174807.GA18461@kroah.com> <48B6E69B.1090800@kernel.org> <20080828181720.GB23898@kroah.com> <491BEC4E.9030505@kernel.org> <492136F5.8010903@kernel.org> <20081117171717.GB31306@kroah.com> <49221CE8.1050402@kernel.org> <49221D23.8040904@kernel.org> <4922C6BB.5020203@panasas.com> <4922E622.50401@kernel.org>
-Message-Id: <E1L2rKn-0003Un-AO@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 19 Nov 2008 18:59:25 +0100
+	Wed, 19 Nov 2008 13:03:12 -0500
+Date: Wed, 19 Nov 2008 12:28:23 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       kaszak@gmail.com, lcostantino@gmail.com, linux-wireless@vger.kernel.org
+Subject: Re: w35und wifi driver for linux-staging
+Message-ID: <20081119112823.GD21876@elf.ucw.cz>
+References: <20081001123656.GA30942@elf.ucw.cz> <20081001125248.GA29661@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081001125248.GA29661@infradead.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008, Tejun Heo wrote:
-> Hmmm... if you can use this change, I think you can push it through
-> whatever tree you push patches through, things can be taken care of when
-> merging or we can put it in Greg's tree and ask Miklos to pull from the
-> tree first but Greg doesn't keep a stable tree.  Hmm... if your patches
-> are gonna go through some public tree, I think we can ask Miklos pull
-> from the tree too.  Guys, what do you think?
+On Wed 2008-10-01 08:52:48, Christoph Hellwig wrote:
+> On Wed, Oct 01, 2008 at 02:36:56PM +0200, Pavel Machek wrote:
+> > +source "drivers/net/wireless/winbond/Kconfig"
+> 
+> winbond is a little too generic, please use the same name as the driver
+> name for the directory.
+> 
+> > @@ -0,0 +1,6 @@
+> > +config W35UND
+> > +	tristate "Winbond driver"
+> > +	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL && !4KSTACKS
+> > +	---help---
+> > +	  This is highly experimental driver for winbond wifi card on some Kohjinsha notebooks
+> > +	  Check http://code.google.com/p/winbondport/ for new version
+> 
+> Again, please give the option a useful name, and a useful description
+> including mentioning the actual chip name in there.
+> 
+> Also the !4KSTACKS dependency looks rather odd.
 
-Sure, since this is not fuse specific, it better not go through my
-tree anyway.
+Fixed now, will sent patch shortly.
 
-Thanks,
-Miklos
+> No comments on the code now, I don't think I want to look at it..
+
+No, you don't want to :-).
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
