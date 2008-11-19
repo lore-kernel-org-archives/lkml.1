@@ -1,127 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYKSTKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYKSTMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbYKSTKs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 14:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYKSTKa
+	id S1754837AbYKSTMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 14:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbYKSTMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 14:10:30 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:28933 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200AbYKSTK3 (ORCPT
+	Wed, 19 Nov 2008 14:12:08 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:30340 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754054AbYKSTMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 14:10:29 -0500
+	Wed, 19 Nov 2008 14:12:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=s8bkSFHzMns7FyXzhwxQdcEMWUvPVCcpamSxoTA1klZJzRODviktolNRvlqS1jUwmB
-         FkZ0mPmvC8R2yS916n50aPojL3WAX8iURnI9qXsn9vDWbwFAbwzLB6uk7p9Z5NKWb/Qr
-         VuKNhUrWs9lKSU7TmR/r4IYmv9CQM4eQjJw+Y=
-Message-ID: <cfd18e0f0811191110t792cc9a4i5869bee0fb3d759c@mail.gmail.com>
-Date: Wed, 19 Nov 2008 14:10:26 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch] Fix type errors in inotify interfaces
-Cc: lkml <linux-kernel@vger.kernel.org>, "Robert Love" <rlove@google.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Ulrich Drepper" <drepper@redhat.com>, john@johnmccutchan.com
-In-Reply-To: <20081119000342.05b2de85.akpm@linux-foundation.org>
+        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
+         :content-transfer-encoding:from;
+        b=RMEpW830r/bUB78EuNsWbwktj8q0NvoBGE2hHghpVReH6wMwuQL3oiI+j7oCvzgNZm
+         ys15nxjDFajpgLEHZhHlCQ8oljmx22HI/8SuLhw+eROMzCftPAHmL5V+oprkzbbikn6Y
+         Jx8sIhP8AOu7Nac5S0Mm8gAuZPfswCJA6YB7k=
+Message-ID: <492464F8.8070101@gmail.com>
+Date: Wed, 19 Nov 2008 14:11:52 -0500
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+CC: lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
+       Kirill Korotaev <dev@openvz.org>, Herbert Poetzl <herbert@13thfloor.at>,
+       Andrey Savochkin <saw@sw.ru>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>
+Subject: CLONE_NEWUTS documentation
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4923230D.8090301@gmail.com>
-	 <20081119000342.05b2de85.akpm@linux-foundation.org>
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Would be nice to see an Aacked-by from Robert or John on this patch.)
+Serge, Eric,
 
-On Wed, Nov 19, 2008 at 3:03 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 18 Nov 2008 15:18:21 -0500 Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
->
->> Andrew,
->>
->> Vegard reminded me of an issue with the inotify interface
->> that I raised quite a while ago, offlist, with Robert; Robert
->> acknowledged that things should be fixed, but then neither of
->> us actually did anything :-{.
->>
->> The problems lie in the types used for some inotify interfaces, both
->> at the kernel level and at the glibc level.  This mail addresses the
->> kernel problem.  I will follow up with some suggestions for glibc
->> changes.
->>
->> For the sys_inotify_rm_watch() interface, the type of the 'wd' argument
->> is currently 'u32', it should be '__s32' .  That is Robert's suggestion,
->> and is consistent with the other declarations of watch descriptors in
->> the kernel source, in particular, the inotify_event structure in
->> include/linux/inotify.h:
->>
->> struct inotify_event {
->>         __s32           wd;             /* watch descriptor */
->>         __u32           mask;           /* watch mask */
->>         __u32           cookie;         /* cookie to synchronize two events */
->>         __u32           len;            /* length (including nulls) of name */
->>         char            name[0];        /* stub for possible name */
->> };
->>
->> The patch below makes the changes needed for inotify_rm_watch().
->>
->> Thanks
->>
->> Michael
->>
->>
->> diff --git a/fs/inotify_user.c b/fs/inotify_user.c
->> index d367e9b..a71f764 100644
->> --- a/fs/inotify_user.c
->> +++ b/fs/inotify_user.c
->> @@ -704,7 +704,7 @@ fput_and_out:
->>       return ret;
->>  }
->>
->> -asmlinkage long sys_inotify_rm_watch(int fd, u32 wd)
->> +asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
->>  {
->>       struct file *filp;
->>       struct inotify_device *dev;
->> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
->> index d6ff145..36983a5 100644
->> --- a/include/linux/syscalls.h
->> +++ b/include/linux/syscalls.h
->> @@ -550,7 +550,7 @@ asmlinkage long sys_inotify_init(void);
->>  asmlinkage long sys_inotify_init1(int flags);
->>  asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
->>                                       u32 mask);
->> -asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
->> +asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd);
->>
->>  asmlinkage long sys_spu_run(int fd, __u32 __user *unpc,
->>                                __u32 __user *ustatus);
->
+Below is a patch to document the CLONE_NEWUTS flag that was
+added in 2.6.19.
 
-Yes -- there is no sane reason for a negative watch descriptor to
-inotify_rm_watch(); this change is mainly about consistency.  (The
-glibc change is probably more important.)
+Could you please review and let me know of improvements
+or inaccuracies?
 
-> otoh, the system call via which one _obtains_ watch descriptors most
-> certainly wants to return -ve nunmbers, to signify errors.
->
-> All too hard.  I think I'll stop thinking about it and merge the patch ;)
+By the way, does anyone know where the UTS name in the uname()
+API comes from? My best guess is that it's from Unix Timesharing
+System, but I don't know this for sure.
 
-Thanks.
+Cheers,
 
 Michael
 
+diff --git a/man2/clone.2 b/man2/clone.2
+index 7212332..80f9caf 100644
+--- a/man2/clone.2
++++ b/man2/clone.2
+@@ -341,6 +340,33 @@ configuration option and that the process be privileged
+ This flag can't be specified in conjunction with
+ .BR CLONE_THREAD .
+ .TP
++.BR CLONE_NEWUTS " (since Linux 2.6.19)"
++If
++.B CLONE_NEWUTS
++is set, then create the process in a new UTS namespace.
++If this flag is not set, then (as with
++.BR fork (2)),
++the process is created in the same UTS namespace as
++the calling process.
++This flag is intended for the implementation of control groups.
++
++A UTS namespace is the set of identifiers returned by
++.BR uname (2);
++among these, the domain name and the host name can be modified by
++.BR setdomainname (2)
++and
++.BR
++.BR sethostname (2),
++respectively.
++Changes made to these identifiers in one UTS namespace
++are visible to other processes in the same namespace,
++but are not visible to processes in other UTS namespaces.
++
++Use of this flag requires: a kernel configured with the
++.B CONFIG_UTS_NS
++configuration option and that the process be privileged
++.RB ( CAP_SYS_ADMIN ).
++.TP
+ .BR CLONE_PARENT " (since Linux 2.3.12)"
+ If
+ .B CLONE_PARENT
+@@ -723,15 +749,24 @@ but the kernel was not configured with the
+ .B CONFIG_PID_NS
+ option.
+ .TP
++.B EINVAL
++.BR CLONE_NEWUTS
++was specified in
++.IR flags ,
++but the kernel was not configured with the
++.B CONFIG_UTS
++option.
++.TP
+ .B ENOMEM
+ Cannot allocate sufficient memory to allocate a task structure for the
+ child, or to copy those parts of the caller's context that need to be
+ copied.
+ .TP
+ .B EPERM
+-.B CLONE_NEWNS
++.BR CLONE_NEWNS ,
++.BR CLONE_NEWPID ,
+ or
+-.B CLONE_NEWPID
++.BR CLONE_NEWUTS
+ was specified by a non-root process (process without \fBCAP_SYS_ADMIN\fP).
+ .TP
+ .B EPERM
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+
