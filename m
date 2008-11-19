@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYKSOGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYKSOHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYKSOGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 09:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYKSOG3
+	id S1753850AbYKSOHv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 09:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYKSOHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 09:06:29 -0500
-Received: from mo32.po.2iij.NET ([210.128.50.17]:2563 "EHLO mo32.po.2iij.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753217AbYKSOG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 09:06:28 -0500
-Date: Wed, 19 Nov 2008 23:06:19 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: yoichi_yuasa@tripeaks.co.jp,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] led: fix Cobalt Raq LED dependency
-Message-Id: <20081119230619.546af573.yoichi_yuasa@tripeaks.co.jp>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 09:07:42 -0500
+Received: from styx.suse.cz ([82.119.242.94]:43537 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753191AbYKSOHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 09:07:42 -0500
+Date: Wed, 19 Nov 2008 15:07:40 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Rafi Rubin <rafi@seas.upenn.edu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] n-trig digitizer quirks
+In-Reply-To: <49241D02.6020602@seas.upenn.edu>
+Message-ID: <alpine.LNX.1.10.0811191505340.19853@jikos.suse.cz>
+References: <Pine.LNX.4.61.0811141207210.12963@minus.seas.upenn.edu> <alpine.LNX.1.10.0811181525490.19853@jikos.suse.cz> <49232910.2030309@seas.upenn.edu> <alpine.LNX.1.10.0811191355280.19853@jikos.suse.cz> <492417D4.4090103@seas.upenn.edu>
+ <alpine.LNX.1.10.0811191451000.19853@jikos.suse.cz> <49241D02.6020602@seas.upenn.edu>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cobalt Raq LEDs require LEDS_CLASS=y.
+On Wed, 19 Nov 2008, Rafi Rubin wrote:
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> >> Also, if you do prefer using driver data like that, is the probe 
+> >> function necessary to make it work?
+> > Probe function is necesary, you need to parse the report descriptor 
+> > (hid_parse()), activate the hardware (hid_hw_start()), etc.
+> Just to confirm then, its not necessary if I'm not checking the driver 
+> data for the quirk?
 
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/leds/Kconfig linux/drivers/leds/Kconfig
---- linux-orig/drivers/leds/Kconfig	2008-11-10 10:13:15.609846727 +0900
-+++ linux/drivers/leds/Kconfig	2008-11-10 11:22:43.602680128 +0900
-@@ -77,7 +77,7 @@ config LEDS_COBALT_QUBE
- 
- config LEDS_COBALT_RAQ
- 	bool "LED Support for the Cobalt Raq series"
--	depends on LEDS_CLASS && MIPS_COBALT
-+	depends on LEDS_CLASS=y && MIPS_COBALT
- 	select LEDS_TRIGGERS
- 	help
- 	  This option enables support for the Cobalt Raq series LEDs.
+Correct; if you don't need to do anything special in the _probe function, 
+the HID core will do everything necessary (descriptor parsing, 
+low-level hardware initialization) for you.
+
+-- 
+Jiri Kosina
+SUSE Labs
