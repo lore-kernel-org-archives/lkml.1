@@ -1,54 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYKSRAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYKSRB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbYKSRAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 12:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYKSRAk
+	id S1754188AbYKSRB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 12:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbYKSRBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 12:00:40 -0500
-Received: from qb-out-0506.google.com ([72.14.204.226]:54846 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbYKSRAj (ORCPT
+	Wed, 19 Nov 2008 12:01:44 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:46645 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbYKSRBn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 12:00:39 -0500
-Message-ID: <ac3eb2510811190900k62b1333aj9816e462601b4d0c@mail.gmail.com>
-Date: Wed, 19 Nov 2008 18:00:37 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "rae l" <crquan@gmail.com>
-Subject: Re: [PATCH] kobject_add: use constant strings directly as fmt strings
-Cc: "Greg KH" <gregkh@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <91b13c310811190817s31522a0et744ca7df2782cf27@mail.gmail.com>
+	Wed, 19 Nov 2008 12:01:43 -0500
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>, Randy Dunlap <randy.dunlap@oracle.com>
+CC: scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Date: Wed, 19 Nov 2008 17:00:57 +0000
+Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
+Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
+Thread-Index: AclKJGgqgV3tNmJ4SI2e84uM60UTogAQqvOA
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net>
+References: <0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
+ <48C013D9.7060309@oracle.com>
+ <0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
+ <20080905092838.GS20055@kernel.dk> <48DBF583.3050307@oracle.com>
+ <20080925134000.9b133f8c.randy.dunlap@oracle.com>
+ <0F5B06BAB751E047AB5C87D1F77A77884BFF5D1F76@GVW0547EXC.americas.hpqcorp.net>
+ <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net>
+ <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk>
+In-Reply-To: <20081119085227.GQ26308@kernel.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1227110059-12529-1-git-send-email-crquan@gmail.com>
-	 <20081119155736.GA5072@suse.de>
-	 <91b13c310811190817s31522a0et744ca7df2782cf27@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 17:17, rae l <crquan@gmail.com> wrote:
-> On Wed, Nov 19, 2008 at 11:57 PM, Greg KH <gregkh@suse.de> wrote:
->>>       ret = kobject_add(&q->kobj, kobject_get(&disk_to_dev(disk)->kobj),
->>> -                       "%s", "queue");
->>> +                       "queue");
->>
->> Why?  What does this change buy us?
+
+
+> -----Original Message-----
+> From: Jens Axboe [mailto:jens.axboe@oracle.com]
+> Sent: Wednesday, November 19, 2008 2:52 AM
+> To: Randy Dunlap
+> Cc: scsi; Miller, Mike (OS Dev); James Bottomley; lkml; akpm
+> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
 >
-> Dropping one parameter makes the function call a little faster, doesn't it?
+> On Tue, Nov 18 2008, Randy Dunlap wrote:
+> > Randy Dunlap wrote:
+> > > Randy Dunlap wrote:
+> > >> Miller, Mike (OS Dev) wrote:
+> > >>>> -----Original Message-----
+> > >>>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
+> > >>>> Sent: Thursday, September 25, 2008 3:40 PM
+> > >>>> To: scsi
+> > >>>> Cc: Jens Axboe; Miller, Mike (OS Dev); James Bottomley; lkml;
+> > >>>> akpm
+> > >>>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+> > >>>>
+> > >>>> On Thu, 25 Sep 2008 13:33:07 -0700 Randy Dunlap wrote:
+> > >>>>
+> > >>>>> Jens Axboe wrote:
+> > >>>>>> On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
+> > >>>>>>>>>>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
+> > >>>>>>>>>>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
+> > >>>>>>>>>>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e
+> > >>>> <do_cciss_intr+2509>
+> > >>>>>>>>>>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627
+> > >>>>>>>>>>> SA5_fifo_full
+> > >>>>>>>>>>>
+> > >>>>
+> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:
+> > >>>> 2
+> > >>>>>>>> 06
+> > >>>>>>>>>> OK ...that's confusing.  It seems to be saying that
+> > >>>> ctrlr_info_t
+> > >>>>>>>>>> * was NULL.  However, I can't see a way of
+> getting into the
+> > >>>>>>>> fifo_full
+> > >>>>>>>>>> callback from do_cciss_intr ..
+> > >>>>>>>>>> especially not with an NULL host.
+> > >>>>>>>>>>
+> > >>>>>>>>>> James
+> > >>>>>>>>> That is weird. Even if we could get there
+> fifo_full doesn't
+> > >>>>>>>> do anything but wait for a bit.
+> > >>>>>>>>
+> > >>>>>>>> Hi,
+> > >>>>>>>>
+> > >>>>>>>> This just happened again.  This time it's on
+> 2.6.27-rc5-git3.
+> > >>>>>>>>
+> > >>>>>>>> ~Randy
+> > >>>>>>> Thanks Randy. I think. :)
+> > >>>>>>>
+> > >>>>>>> I'll try to recreate in my lab.
+> > >>>>>> This looks somewhat strange, mostly like 'c' is NULL
+> and it's
+> > >>>>>> oopsing in in removeQ (I don't think Randy's analysis is
+> > >>>> correct in
+> > >>>>>> assuming it's 'h' and it's in fifo_full). Given that 'c'
+> > >>>> cannot be
+> > >>>>>> NULL, it's c->prev or c->next that are NULL.
+> > >> This BUG: has happened (now) 5 times today.  Higher
+> frequency than
+> > >> usual for some reason.
+> > >>
+> > >> I enabled CCISS_DEBUG and added one printk in removeQ().  On the
+> > >> first call
+> > >
+> > > s/first/second/
+> > >
+> > >
+> > >> to removeQ(), both c->next and c->prev are NULL.
+> > >>
+> > >> Here's the kernel log output from cciss:
+> >
+> > I added a printk() in addQ() as well.  Here's the new output:
+> >
+> > HP CISS Driver (v 3.6.20)
+> > ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss
+> 0000:42:08.0:
+> > PCI INT A -> Link[LNKA] -> GSI 54 (level, high) -> IRQ 54 command =
+> > 147 irq = 36 board_id = 3211103c cciss 0000:42:08.0: irq 87 for
+> > MSI/MSI-X address 0 = fdf80000 cfg base address = 10 cfg
+> base address
+> > index = 0 cfg offset = 400 Controller Configuration information
+> > ------------------------------------
+> >    Signature = CISS
+> >    Spec Number = 1
+> >    Transport methods supported = 0x6
+> >    Transport methods active = 0x3
+> >    Requested transport Method = 0x0
+> >    Coalesce Interrupt Delay = 0x0
+> >    Coalesce Interrupt Count = 0x1
+> >    Max outstanding commands = 0x256
+> >    Bus Types = 0x200000
+> >    Server Name =
+> >    Heartbeat Counter = 0x1672
+> >
+> >
+> > Trying to put board into Simple mode
+> > I counter got to 1 0
+> > Controller Configuration information
+> > ------------------------------------
+> >    Signature = CISS
+> >    Spec Number = 1
+> >    Transport methods supported = 0x6
+> >    Transport methods active = 0x3
+> >    Requested transport Method = 0x0
+> >    Coalesce Interrupt Delay = 0x0
+> >    Coalesce Interrupt Count = 0x1
+> >    Max outstanding commands = 0x256
+> >    Bus Types = 0x200000
+> >    Server Name =
+> >    Heartbeat Counter = 0x1672
+> >
+> >
+> > cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 87 using DAC
+> > cciss: intr_pending 8
+> > cciss: addQ: Qptr=ffff88027e0100b8, c=ffff88007f83e000
+> > cciss: removeQ: Qptr=ffff88027e0100b8, c=ffff88007f83e000,
+> > next=ffff88007f83e000, prev=ffff88007f83e000 Sending
+> 7f83e000 - down
+> > to controller
+> > cciss: addQ: Qptr=ffff88027e0100c0, c=ffff88007f83e000
+> > cciss: intr_pending 8
+> > cciss:  Read 4 back from board
+> > cciss: removeQ: Qptr=ffff88027e0100c0, c=ffff88007f840000,
+> > next=0000000000000000, prev=0000000000000000
+> > BUG: unable to handle kernel NULL pointer dereference at
+> > 0000000000000248
 >
-> The results are the same,
+> Randy, can you post the debug patch you used? The above goes
+> boom when it attempts to remove a command that isn't on the
+> list, the Qptr in the last example should be empty, hence the
+> oops. So I'd be interested in seeing what removeQ() calls
+> this is, I'm assuming it's this bit in
+> do_cciss_intr():
+>
+>       ...
+>               while (c->busaddr != a) {
+>                        c = c->next;
+>                        if (c == h->cmpQ)
+>                                break;
+>                }
+>        }
+>        /*
+>         * If we've found the command, take it off the
+>         * completion Q and free it
+>         */
+>        if (c->busaddr == a) {
+>                removeQ(&h->cmpQ, c);
+>                if (c->cmd_type == CMD_RWREQ) {
+>                        complete_command(h, c, 0);
+>                         ...
+>
+> If so, what part of the c lookup are you hitting - the on that does:
+>
+>         c = h->cmd_pool + a2;
+>
+> or the c->busaddr check that his shown above?
+>
+> --
+Randy,
+I still can't reproduce this bug. I have your config file on a BL465c w/e200i. Just to confirm, you only see this at init time, correct?
+Please post your debug patch as Jens requested.
 
-Not that we should be able to measure it, but it should save some
-cycles parsing the format character and retrieving the string pointer
-from the stack, yes.
-
-> so if the string is constant, why not use it directly as the fmt string?
-
-It should be fine for strings, where you can be sure they can never
-contain a '%', sure.
-
-Thanks,
-Kay
+-- mikem
