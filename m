@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYKSSgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYKSSiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYKSSgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 13:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYKSSgm
+	id S1754670AbYKSSiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 13:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbYKSSiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 13:36:42 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:49687 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753919AbYKSSgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 13:36:41 -0500
-Date: Wed, 19 Nov 2008 19:36:31 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Ben Dooks <ben-linux@fluff.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
-Subject: Re: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
-Message-ID: <20081119193631.448ae25e@mjolnir.drzeus.cx>
-In-Reply-To: <491C3D16.1050501@atmel.com>
-References: <491C0C05.6040301@atmel.com>
-	<20081113134818.GA9161@fluff.org.uk>
-	<491C3D16.1050501@atmel.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-8867-1227119797-0001-2"
+	Wed, 19 Nov 2008 13:38:12 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35016 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753460AbYKSSiL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 13:38:11 -0500
+Date: Wed, 19 Nov 2008 13:38:09 -0500
+To: Fredrik Markstr?m <fredrik.markstrom@avalonenterprise.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Developing non-commercial drivers ?
+Message-ID: <20081119183809.GF5682@csclub.uwaterloo.ca>
+References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tue, Nov 18, 2008 at 05:16:44PM +0100, Fredrik Markstr?m wrote:
+> Linus, others...
+> 
+> I'm working for as a consultant for a large hardware company porting
+> Linux to their new cpu-architecture and everything is pretty much
+> up and running. Now they want us to develop a closed-source (to
+> protect their IP) ethernet driver for their proprietary Ethernet MAC.
 
---=_freyr.drzeus.cx-8867-1227119797-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Ethernet MACs are a commodity these days.  Who is dumb enough to think
+their ethernet MAC needs to be protected these days?
 
-On Thu, 13 Nov 2008 15:43:34 +0100
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+You make an ethernet MAC... good for you.  You have not invented
+anything new and amazing that needs protecting.  Really.  Get over it,
+you are not that special. :)
 
-> Ben Dooks :
-> >=20
-> > Would people object to putting this in include/linux/mmc/atmel.h
-> > to avoid making include/linux abound with device/subsystem/machine
-> > specific header files?
->=20
-> I tend to agree *but* it seems that header files in include/linux/mmc
-> are mostly sd/mmc subsystem core files (I mean, not driver ones).
-> Although, a bunch of atmel-a_driver.h files are already in include/linux.=
-..
->=20
-> Pierre, a comment ?
->=20
+> My question is:    Is there a fair way to do this and still comply to
+> the intent and spirit of the Linux licensing ?
+> 
+> If yes, how ?
 
-I'd prefer if include/linux/mmc could stay clean and just have core
-stuff since the header files are basically the reference documentation
-for the subsystem. But if you can't find any other way...
+Probably not, but I think the real issue is the previous one.
 
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-8867-1227119797-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkkkXLUACgkQ7b8eESbyJLhzXwCfSy7x0WlXmnEvwawT/ulYVGIB
-BMAAoJ7pldzsyn3IISniBuke5W9ZiX0c
-=KSA1
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-8867-1227119797-0001-2--
+-- 
+Len Sorensen
