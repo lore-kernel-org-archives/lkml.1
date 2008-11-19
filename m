@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYKSKim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbYKSK4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbYKSKim (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 05:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYKSKid
+	id S1753200AbYKSK4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 05:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYKSK4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 05:38:33 -0500
-Received: from ozlabs.org ([203.10.76.45]:53137 "EHLO ozlabs.org"
+	Wed, 19 Nov 2008 05:56:11 -0500
+Received: from www.tglx.de ([62.245.132.106]:56409 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbYKSKid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 05:38:33 -0500
+	id S1751099AbYKSK4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 05:56:10 -0500
+Message-ID: <4923F08A.3020702@linutronix.de>
+Date: Wed, 19 Nov 2008 11:55:06 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+CC: Bryan Wu <cooloney@kernel.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Frysinger, Michael" <Michael.Frysinger@analog.com>
+Subject: Re: [PATCH] USB/ISP1760: Fix for unaligned exceptions
+References: <1227000131-19145-1-git-send-email-cooloney@kernel.org> <49229E64.2010907@linutronix.de> <8A42379416420646B9BFAC9682273B6D06966B66@limkexm3.ad.analog.com> <20081119091853.GA26629@www.tglx.de> <8A42379416420646B9BFAC9682273B6D069B15C2@limkexm3.ad.analog.com>
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D069B15C2@limkexm3.ad.analog.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18723.60578.179210.736789@cargo.ozlabs.ibm.com>
-Date: Wed, 19 Nov 2008 21:38:26 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/7] Porting dynmaic ftrace to PowerPC
-In-Reply-To: <20081119092723.GC22309@elte.hu>
-References: <20081116212428.938752312@goodmis.org>
-	<18720.42209.880409.297291@cargo.ozlabs.ibm.com>
-	<alpine.DEB.1.10.0811171035530.2919@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0811180853390.15003@gandalf.stny.rr.com>
-	<18723.31762.522696.647294@cargo.ozlabs.ibm.com>
-	<alpine.DEB.1.10.0811182150530.14914@gandalf.stny.rr.com>
-	<20081119092723.GC22309@elte.hu>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
-
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+Hennerich, Michael wrote:
+> I know the issue is originated in either RTL8150 set_registers or
+> get_registers. We get some unaligned address from the stack to the
+> ISP1760 priv_read/wite_copy.
 > 
-> > On Wed, 19 Nov 2008, Paul Mackerras wrote:
-> > 
-> > > Steven Rostedt writes:
-> > > 
-> > > > Can I add your Acked-by: to all these patches that I submitted? I'm going 
-> > > > to recommit them with a consistent subject (all lower case ppc), but I'm 
-> > > > not going to change the patches themselves.
-> > > > 
-> > > > Would you two be fine with that? Or at least one of you?
-> > > 
-> > > My preference would be for the patches to go through the powerpc tree
-> > > unless there is a good reason for them to go via another tree.
-> > 
-> > I have no problem with that. The only thing is that we have a lot of 
-> > pending work still in the linux-tip tree, which you may need to pull 
-> > in to get these patches working. Well, there's two or three commits 
-> > in the generic code that I know the PPC code is dependent on.
-> > 
-> > I could give you a list of commits in tip that need to go mainline 
-> > first before we can pull in the PPC changes. Then you could wait 
-> > till those changes make it into 29 and then you could push the PPC 
-> > modifications in from your tree.
+> The RTL8150 driver does something like this:
 > 
-> note that this inserts a lot of (unnecessary) serialization and a 
-> window of non-testing - by all likelyhood this will delay ppc ftrace 
-> to v2.6.30 or later kernels.
+> 	u8 data[3], tmp;
+> 
+> 	data[0] = phy;
+> 	data[1] = data[2] = 0;
+> 	tmp = indx | PHY_READ | PHY_GO;
+> 	i = 0;
+> 
+> 	set_registers(dev, PHYADD, sizeof(data), data);
 
-Well, note that I said "unless there is a good reason".  If it does
-need to go via your tree, it can, though I don't see that it will get
-much testing on powerpc there, and having it there will make it harder
-to manage any conflicts with the other stuff I have queued up.
+ach. So that's wrong anyway. There are arches which can't DMA stack 
+memory. So fixing this properly does not fix just your arch.
 
-How much generic stuff that's not upstream do the powerpc ftrace
-patches depend on?
+>>> I wonder if it's only us (NOMMU) seeing these odd aligned buffers?
+>> Not sure. The only problem I have with this patch is that you might
+>> cover bugs in drivers and you don't notice it anymore since you choose
+>> "voluntary" the slow path.
+> 
+> Well here I disagree, but I agree with the fact that there are buggy
+> drivers.
+> 
+> Since most processors running Linux do have unaligned access handling,
+> this issue goes unnoticed for all of them. Believe me the penalty taken
+> by any Processor doing this automatically and unnoticed is typically
+> much higher than using get/put_unaligned.
+Okay. A packed struct with a u8 followed by u16 which is required by the 
+spec can't be fixed. unaligned helper is the only solution. I agree here. 
+Allocating memory on the stack for a dma transfer is wrong.
+On PowerPC and X86 get_unaligned() does not behave any different than a 
+normal dereference. So I doubt that there is a performance improvement.
 
-Paul.
+> I'm tiered fixing all unaligned issues in drivers. It's a hassle getting
+> them merged, since most people don't care. Having a workaround in a
+> single place, the hcd driver is much easier.
+
+Having a fixup in the exception handler like sparc does is probably little 
+slower than the fixup here. On the other hand you would not have to fix 
+unaligned access anymore.
+
+>>> -Michael
+
+Sebastian
