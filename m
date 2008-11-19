@@ -1,114 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKSUpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYKSUs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYKSUpT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 15:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYKSUpE
+	id S1754082AbYKSUs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 15:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbYKSUsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 15:45:04 -0500
-Received: from ox1.aei.mpg.de ([194.94.224.6]:58024 "EHLO ox1.aei.mpg.de"
+	Wed, 19 Nov 2008 15:48:16 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42837 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbYKSUpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 15:45:01 -0500
-Date: Wed, 19 Nov 2008 21:45:24 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: reinette chatre <reinette.chatre@intel.com>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-Subject: Re: iwlagn driver segfault in 2.6.28-rc3
-Message-ID: <20081119204524.GA30179@localhost.aei.mpg.de>
-References: <20081111143410.GA4401@ics.muni.cz> <1226560041.1115.945.camel@rc-desk> <20081116120621.GA3937@localhost.aei.mpg.de> <1ba2fa240811160429ld8cc080s7e023b0398eeda08@mail.gmail.com> <20081116125148.GA16746@localhost.aei.mpg.de> <1ba2fa240811161554r45d98ae7h3a37ae78c332a4dd@mail.gmail.com> <20081117003941.GA21367@localhost.aei.mpg.de>
+	id S1753137AbYKSUsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 15:48:14 -0500
+Date: Wed, 19 Nov 2008 21:46:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+Message-ID: <20081119204624.GW26308@kernel.dk>
+References: <0F5B06BAB751E047AB5C87D1F77A77884BFF5D1F76@GVW0547EXC.americas.hpqcorp.net> <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net> <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net> <49244B69.80903@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net> <20081119172919.GT26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081117003941.GA21367@localhost.aei.mpg.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 17.Nov'08 at  1:39:41 +0100, Carlos R. Mafra wrote:
-> On Mon 17.Nov'08 at  1:54:16 +0200, Tomas Winkler wrote:
-> [...]
-> > Can you please try this one (might be white space broken, just pasted in)
+On Wed, Nov 19 2008, Miller, Mike (OS Dev) wrote:
+> Jens wrote:
 > 
-> Sure, I've already applied it by hand and will start testing it right away.
+> >
+> > Yeah, kexec is definitely a clue. My guess is that we got
+> > some sort of left over completion. Regardless of the status
+> > of this particular bug or not, I think it would be a good
+> > idea to add some checks for when a command is attempted
+> > removed from a queue it isn't currently on.
+> >
 > 
-> But it will take many days until I can report back about it, because
-> this oops happened only two times in one month or so.
+> I agree, I'll fix.
 
-Ok, the WARN() in your patch from Sunday (quoted below) appeared in my logs.
-I've just noticed now (but it is the 3rd or 4th time already in dmesg, that
-is why it appears "Tainted")
+I'd propose just converting it to list_head instead of doing it
+manually. Heck, that should be a 5 minute job, let me just do it...
 
-I don't if the situation leading to the WARN() in your patch is the same
-one which used to kill my wireless connection before (with the oops
-in iwl_eeprom_query16 that started this thread), but the fact is
-that my wifi is still working.
+OK, here it is, totally untested (it compiles, must be golden...)
 
-Here is the log: 
+ 3 files changed, 24 insertions(+), 40 deletions(-)
 
-[ I have the full dmesg from sunday up to now, with
-lots of s2ram cycles in the middle. I can send it if needed ]
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 12de1fd..d2923de 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -215,30 +215,17 @@ static struct block_device_operations cciss_fops = {
+ /*
+  * Enqueuing and dequeuing functions for cmdlists.
+  */
+-static inline void addQ(CommandList_struct **Qptr, CommandList_struct *c)
++static inline void addQ(struct list_head *list, CommandList_struct *c)
+ {
+-	if (*Qptr == NULL) {
+-		*Qptr = c;
+-		c->next = c->prev = c;
+-	} else {
+-		c->prev = (*Qptr)->prev;
+-		c->next = (*Qptr);
+-		(*Qptr)->prev->next = c;
+-		(*Qptr)->prev = c;
+-	}
++	list_add(&c->list, list);
+ }
+ 
+-static inline CommandList_struct *removeQ(CommandList_struct **Qptr,
+-					  CommandList_struct *c)
++static inline CommandList_struct *removeQ(CommandList_struct *c)
+ {
+-	if (c && c->next != c) {
+-		if (*Qptr == c)
+-			*Qptr = c->next;
+-		c->prev->next = c->next;
+-		c->next->prev = c->prev;
+-	} else {
+-		*Qptr = NULL;
+-	}
++	if (WARN_ON(list_empty(&c->list)))
++		return NULL;
++
++	list_del_init(&c->list);
+ 	return c;
+ }
+ 
+@@ -506,6 +493,7 @@ static CommandList_struct *cmd_alloc(ctlr_info_t *h, int get_from_pool)
+ 		c->cmdindex = i;
+ 	}
+ 
++	INIT_LIST_HEAD(&c->list);
+ 	c->busaddr = (__u32) cmd_dma_handle;
+ 	temp64.val = (__u64) err_dma_handle;
+ 	c->ErrDesc.Addr.lower = temp64.val32.lower;
+@@ -2543,7 +2531,8 @@ static void start_io(ctlr_info_t *h)
+ {
+ 	CommandList_struct *c;
+ 
+-	while ((c = h->reqQ) != NULL) {
++	while (!list_empty(&h->reqQ)) {
++		c = list_entry(h->reqQ.next, CommandList_struct, list);
+ 		/* can't do anything if fifo is full */
+ 		if ((h->access.fifo_full(h))) {
+ 			printk(KERN_WARNING "cciss: fifo full\n");
+@@ -2551,7 +2540,7 @@ static void start_io(ctlr_info_t *h)
+ 		}
+ 
+ 		/* Get the first entry from the Request Q */
+-		removeQ(&(h->reqQ), c);
++		removeQ(c);
+ 		h->Qdepth--;
+ 
+ 		/* Tell the controller execute command */
+@@ -2981,15 +2970,8 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
+ 
+ 			} else {
+ 				a &= ~3;
+-				if ((c = h->cmpQ) == NULL) {
+-					printk(KERN_WARNING
+-					       "cciss: Completion of %08x ignored\n",
+-					       a1);
+-					continue;
+-				}
+-				while (c->busaddr != a) {
+-					c = c->next;
+-					if (c == h->cmpQ)
++				list_for_each_entry(c, &h->cmpQ, list) {
++					if (c->busaddr == a)
+ 						break;
+ 				}
+ 			}
+@@ -2998,7 +2980,7 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
+ 			 * completion Q and free it
+ 			 */
+ 			if (c->busaddr == a) {
+-				removeQ(&h->cmpQ, c);
++				removeQ(c);
+ 				if (c->cmd_type == CMD_RWREQ) {
+ 					complete_command(h, c, 0);
+ 				} else if (c->cmd_type == CMD_IOCTL_PEND) {
+@@ -3417,6 +3399,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 		return -1;
+ 
+ 	hba[i]->busy_initializing = 1;
++	INIT_LIST_HEAD(&hba[i]->cmpQ);
++	INIT_LIST_HEAD(&hba[i]->reqQ);
+ 
+ 	if (cciss_pci_init(hba[i], pdev) != 0)
+ 		goto clean1;
+@@ -3724,15 +3708,16 @@ static void fail_all_cmds(unsigned long ctlr)
+ 	pci_disable_device(h->pdev);	/* Make sure it is really dead. */
+ 
+ 	/* move everything off the request queue onto the completed queue */
+-	while ((c = h->reqQ) != NULL) {
+-		removeQ(&(h->reqQ), c);
++	while (!list_empty(&h->reqQ)) {
++		c = list_entry(h->reqQ.next, CommandList_struct, list);
++		removeQ(c);
+ 		h->Qdepth--;
+ 		addQ(&(h->cmpQ), c);
+ 	}
+ 
+ 	/* Now, fail everything on the completed queue with a HW error */
+-	while ((c = h->cmpQ) != NULL) {
+-		removeQ(&h->cmpQ, c);
++	while (!list_empty(&h->cmpQ)) {
++		removeQ(c);
+ 		c->err_info->CommandStatus = CMD_HARDWARE_ERR;
+ 		if (c->cmd_type == CMD_RWREQ) {
+ 			complete_command(h, c, 0);
+diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
+index 24a7efa..5a9806a 100644
+--- a/drivers/block/cciss.h
++++ b/drivers/block/cciss.h
+@@ -89,8 +89,8 @@ struct ctlr_info
+ 	struct access_method access;
+ 
+ 	/* queue and queue Info */ 
+-	CommandList_struct *reqQ;
+-	CommandList_struct  *cmpQ;
++	struct list_head reqQ;
++	struct list_head cmpQ;
+ 	unsigned int Qdepth;
+ 	unsigned int maxQsinceinit;
+ 	unsigned int maxSG;
+diff --git a/drivers/block/cciss_cmd.h b/drivers/block/cciss_cmd.h
+index 43bf559..899cc0e 100644
+--- a/drivers/block/cciss_cmd.h
++++ b/drivers/block/cciss_cmd.h
+@@ -265,8 +265,7 @@ typedef struct _CommandList_struct {
+   int			   ctlr;
+   int			   cmd_type; 
+   long			   cmdindex;
+-  struct _CommandList_struct *prev;
+-  struct _CommandList_struct *next;
++  struct list_head list;
+   struct request *	   rq;
+   struct completion *waiting;
+   int	 retry_count;
+ 
 
-
-------------[ cut here ]------------
-WARNING: at drivers/net/wireless/iwlwifi/iwl-sta.c:738 iwl_remove_dynamic_key+0x212/0x220()
-Removing wrong key 1 0x410a
-Modules linked in: xt_comment xt_policy xt_tcpmss xt_pkttype xt_owner xt_NFQUEUE xt_NFLOG xt_multiport xt_MARK xt_mark xt_mac xt_limit xt_length xt_ipra                     nge xt_hashlimit xt_dscp xt_dccp xt_CLASSIFY snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss nvram uvcvideo snd_hda_inte                     l snd_pcm compat_ioctl32 ohci1394 i2c_i801 videodev snd_timer ieee1394 v4l1_compat iwlagn snd_page_alloc evdev sg sky2 snd_hwdep sr_mod ata_piix ahci li                     bata sd_mod scsi_mod uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: scsi_wait_scan]
-Pid: 9, comm: events/0 Tainted: G        W  2.6.28-rc5-tomas-iwlagn-00019-ge14c8bf-dirty #21
-Call Trace:
- [<ffffffff80239947>] warn_slowpath+0xb7/0xe0
- [<ffffffff80213420>] ? nommu_map_single+0x0/0x70
- [<ffffffff80213420>] ? nommu_map_single+0x0/0x70
- [<ffffffff803df221>] ? iwl_enqueue_hcmd+0x271/0x430
- [<ffffffff803d9edf>] ? iwl_send_cmd+0xf/0x20
- [<ffffffff803e1624>] ? iwl_send_add_sta+0x84/0x180
- [<ffffffff803e2c42>] iwl_remove_dynamic_key+0x212/0x220
- [<ffffffffa00ed2ba>] iwl4965_mac_set_key+0x27a/0x410 [iwlagn]
- [<ffffffff804be29d>] ieee80211_key_disable_hw_accel+0x9d/0xf0
- [<ffffffff8030e94b>] ? crypto_free_tfm+0x5b/0x70
- [<ffffffff804be470>] __ieee80211_key_todo+0x180/0x1f0
- [<ffffffff804be640>] ? key_todo+0x0/0x10
- [<ffffffff804be62e>] ieee80211_key_todo+0xe/0x20
- [<ffffffff804be649>] key_todo+0x9/0x10
- [<ffffffff8024afdb>] run_workqueue+0xbb/0x150
- [<ffffffff8024bc63>] worker_thread+0xa3/0x110
- [<ffffffff8024eff0>] ? autoremove_wake_function+0x0/0x40
- [<ffffffff8024bbc0>] ? worker_thread+0x0/0x110
- [<ffffffff8024eb1d>] kthread+0x4d/0x80
- [<ffffffff8020d0e9>] child_rip+0xa/0x11
- [<ffffffff8024ead0>] ? kthread+0x0/0x80
- [<ffffffff8020d0df>] ? child_rip+0x0/0x11
----[ end trace 504c57ff44d53cd9 ]---
-
-
-
-
-> > diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c
-> > b/drivers/net/wireless/iwlwifi/iwl-sta.c
-> > index 61797f3..d848c63 100644
-> > --- a/drivers/net/wireless/iwlwifi/iwl-sta.c
-> > +++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
-> > @@ -734,6 +734,12 @@ int iwl_remove_dynamic_key(struct iwl_priv *priv,
-> >                 return 0;
-> >         }
-> > 
-> > +       if (WARN(priv->stations[sta_id].sta.key.key_offset ==
-> > WEP_INVALID_OFFSET,
-> > +               "Removing wrong key %d 0x%x\n", keyconf->keyidx, key_flags)) {
-> > +               spin_unlock_irqrestore(&priv->sta_lock, flags);
-> > +               return 0;
-> > +       }
-> > +
-> >         if (!test_and_clear_bit(priv->stations[sta_id].sta.key.key_offset,
-> >                 &priv->ucode_key_table))
-> >                 IWL_ERROR("index %d not used in uCode key table.\n",
-> > 
-> > Thanks
-> > Tomas
-> > 
+-- 
+Jens Axboe
 
