@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbYKTFiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYKTFlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbYKTFiP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 00:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYKTFh5
+	id S1754004AbYKTFlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 00:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYKTFlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 00:37:57 -0500
-Received: from 1wt.eu ([62.212.114.60]:1307 "EHLO 1wt.eu"
+	Thu, 20 Nov 2008 00:41:08 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60822 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbYKTFh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 00:37:56 -0500
-Date: Thu, 20 Nov 2008 06:37:47 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081120053746.GB15168@1wt.eu>
-References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com> <20081118065006.GC24654@1wt.eu> <20081120031101.GD26448@xw6200.broadcom.net>
+	id S1752110AbYKTFlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 00:41:06 -0500
+Date: Thu, 20 Nov 2008 14:40:32 +0900
+To: jens.axboe@oracle.com
+Cc: stern@rowland.harvard.edu, bigeasy@linutronix.de,
+       Thomas.Hommel@gefanuc.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com
+Subject: Re: ISP1760 driver crashes
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081119172125.GS26308@kernel.dk>
+References: <20081119153923.GR26308@kernel.dk>
+	<Pine.LNX.4.44L0.0811191131320.2418-100000@iolanthe.rowland.org>
+	<20081119172125.GS26308@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081120031101.GD26448@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081120144125P.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Matt,
+On Wed, 19 Nov 2008 18:21:25 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Wed, Nov 19, 2008 at 07:11:01PM -0800, Matt Carlson wrote:
-> > My tg3 is just PCI-based, no PCIe in this beast. I can send more
-> > info when I turn it on. I don't think that the tg3 driver changes
-> > often, so most likely digging through the changes between 2.6.25
-> > and 2.6.27 should not take much time. I just don't know if I can
-> > reliably reproduce the issue right now.
+> On Wed, Nov 19 2008, Alan Stern wrote:
+> > On Wed, 19 Nov 2008, Jens Axboe wrote:
+> > 
+> > > > --- usb-2.6.orig/drivers/scsi/scsi_lib.c
+> > > > +++ usb-2.6/drivers/scsi/scsi_lib.c
+> > > > @@ -1684,7 +1684,7 @@ static void scsi_request_fn(struct reque
+> > > >  u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
+> > > >  {
+> > > >  	struct device *host_dev;
+> > > > -	u64 bounce_limit = 0xffffffff;
+> > > > +	u64 bounce_limit = BLK_BOUNCE_HIGH;
+> > > >  
+> > > >  	if (shost->unchecked_isa_dma)
+> > > >  		return BLK_BOUNCE_ISA;
+> > > > 
+> > > 
+> > > The best solution is probably to either provide a "doesn't do highmem"
+> > > in the scsi host template, or provide an appropriate DMA mask for the
+> > > pci device to indicate it through that setting instead.
+> > 
+> > The DMA mask is currently set to NULL.  Is that not appropriate for a 
+> > device that can't do DMA?  If not, then what would be appropriate?
 > 
-> Willy, this problem description sounds a little different than the
-> original report.  There was a bug where the driver would wait 2.5
-> seconds for a firmware event that would never get serviced.  That
-> fix has already landed in the 2.6.27 tree though.
+> It's changing behaviour. There's no current rule that says if you don't
+> have a dma mask set, we only do PIO (even if such a rule DOES make
+> sense). Additionally, you don't HAVE to bounce for PIO. As I wrote
+> earlier, it's perfectly feasible to use bio kmap'ings to do the
+> transfer.
 > 
-> I glanced over the changes between 2.6.25 and 2.6.27.6.  There are quite
-> a few changes related to phylib support for an upcoming device, but not
-> so many changes that affect older devices.  What device are you using?
+> > Also, is the patch above not correct?
+> 
+> It'll certainly work in the sense that if you don't have a dma_mask set,
+> you only get lowmem pages. Whether the new behaviour is something we
+> want, not sure. Check with James what he thinks, it's his domain.
 
-I think it's a 5704, but I will check this this morning when I'm at
-work. I also want to try to reliably reproduce the problem. After
-that, I see only 29 patches which differ from the two kernels, it
-should be pretty easy to spot the culprit.
+We have been used 4GB for long time if dma_mask is zero (I guess we
+use 4GB as kinda the default dma address limit at several places). The
+majority of drivers (such as pci) sets properly dev->dma_mask so the
+patch might not change anything but suddenly changing the
+long-standing rule in an odd way (use BLK_BOUNCE_HIGH if dma_mask is
+zero) doesn't sound a good idea to me.
 
-If you think it's a different bug than original report (though I
-really thought it was the same), I'll post my findings in a separate
-thread not to mix investigations.
-
-Thanks,
-Willy
-
+Why not calling blk_queue_bounce_limit() in the slave_configure hook?
+I think that it's the common way for SCSI LLDs with odd bounce limit.
