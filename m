@@ -1,92 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYKTB0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbYKTBhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYKTB0Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 20:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYKTBZ4
+	id S1753417AbYKTBhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 20:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYKTBhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 20:25:56 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:35208 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbYKTBZy (ORCPT
+	Wed, 19 Nov 2008 20:37:21 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:35057 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752561AbYKTBhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 20:25:54 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org, Kirill Korotaev <dev@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Andrey Savochkin <saw@sw.ru>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>
-References: <492464F8.8070101@gmail.com>
-Date: Wed, 19 Nov 2008 17:21:56 -0800
-In-Reply-To: <492464F8.8070101@gmail.com> (Michael Kerrisk's message of "Wed,
-	19 Nov 2008 14:11:52 -0500")
-Message-ID: <m1y6zfgpjf.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Michael Kerrisk <mtk.manpages@googlemail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4319]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: CLONE_NEWUTS documentation
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 19 Nov 2008 20:37:19 -0500
+X-YMail-OSG: a8WnVvQVM1mHz5t803gsiqP4eIEhCVgC.wxnNPShTg9Nh.edaEW3_BFMOBFUwWgS1i.d0AtcIQ._ATAhufGdyuDPG.RjqEvaNf5LrOGtjJqXUsOhQ3hrba5j5Gs7W7T2rYGC.z3OVbqx1JbTBgZJCqwhhJMUUec3MICiVmM5oQWmsw5KXS4EBO3xP58-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] Allow $STORAGE_OBJECT/attrib/queue_depth for virtual
+	subsystem plugins (RAMDISK, IBLOCK, FILEIO) beyond default hardcoded value.
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 19 Nov 2008 17:37:11 -0800
+Message-Id: <1227145031.4192.316.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk <mtk.manpages@googlemail.com> writes:
+>From 17e6a1e8dac7fceb2507ccd690206564b5bdf08a Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Wed, 19 Nov 2008 11:52:44 -0800
+Subject: [PATCH] Allow $STORAGE_OBJECT/attrib/queue_depth for virtual subsystem plugins (RAMDISK, IBLOCK, FILEIO)
+ beyond default hardcoded value.
 
-> Serge, Eric,
->
-> Below is a patch to document the CLONE_NEWUTS flag that was
-> added in 2.6.19.
->
-> Could you please review and let me know of improvements
-> or inaccuracies?
->
-> By the way, does anyone know where the UTS name in the uname()
-> API comes from? My best guess is that it's from Unix Timesharing
-> System, but I don't know this for sure.
->
-> Cheers,
->
-> Michael
->
-> diff --git a/man2/clone.2 b/man2/clone.2
-> index 7212332..80f9caf 100644
-> --- a/man2/clone.2
-> +++ b/man2/clone.2
-> @@ -341,6 +340,33 @@ configuration option and that the process be privileged
->  This flag can't be specified in conjunction with
->  .BR CLONE_THREAD .
->  .TP
-> +.BR CLONE_NEWUTS " (since Linux 2.6.19)"
-> +If
-> +.B CLONE_NEWUTS
-> +is set, then create the process in a new UTS namespace.
-> +If this flag is not set, then (as with
-> +.BR fork (2)),
-> +the process is created in the same UTS namespace as
-> +the calling process.
+Previously, /sys/kernel/config/target/core/$PLUGIN_HBA/$STORAGE_OBJECT/attrib/queue_depth
+was only able to change the value below the return of se_subsystem_api_t->get_queue_depth().
+This patch changes se_dev_set_queue_depth() to allow all non TRANSPORT_PLUGIN_PHBA_PDEV type
+plugins (eg: non PSCSI) to increase the device object's queue_depth up to
+se_subsystem_api_t->get_max_queue_depth().
 
-> +This flag is intended for the implementation of control groups.
+This patch also adds the se_subsystem_api_t->get_max_queue_depth() to RAMDISK, IBLOCK and FILEIO
+subsystem plugins.
 
-See my previous email about containers vs control groups.
+Forward port to v3.0 Target_Core_Mod/ConfigFS from v2.9-STABLE r404
 
-There are some corner cases with NFS usage in the kernel that still
-need to be resolved but otherwise the uts namespace is considered correct
-and complete.
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_device.c    |   28 +++++++++++++++++++++++-----
+ drivers/lio-core/target_core_file.c      |    5 +++++
+ drivers/lio-core/target_core_file.h      |    3 +++
+ drivers/lio-core/target_core_iblock.c    |    5 +++++
+ drivers/lio-core/target_core_iblock.h    |    3 +++
+ drivers/lio-core/target_core_rd.c        |    5 +++++
+ drivers/lio-core/target_core_rd.h        |    4 ++++
+ drivers/lio-core/target_core_transport.h |    4 ++++
+ 8 files changed, 52 insertions(+), 5 deletions(-)
 
-Eric
+diff --git a/drivers/lio-core/target_core_device.c b/drivers/lio-core/target_core_device.c
+index 77462a9..974574a 100644
+--- a/drivers/lio-core/target_core_device.c
++++ b/drivers/lio-core/target_core_device.c
+@@ -461,11 +461,29 @@ extern int se_dev_set_queue_depth (se_device_t *dev, u32 queue_depth)
+ 		TRACE_ERROR("dev[%p]: Illegal ZERO value for queue_depth\n", dev);
+ 		return(-1);
+ 	}
+-	if (queue_depth > TRANSPORT(dev)->get_queue_depth(dev)) {
+-		TRACE_ERROR("dev[%p]: Passed queue_depth: %u exceeds"
+-			" LIO-Core/SE_Device TCQ: %u\n", dev, queue_depth,
+-			TRANSPORT(dev)->get_queue_depth(dev));
+-		return(-1);
++	
++	if (TRANSPORT(dev)->transport_type == TRANSPORT_PLUGIN_PHBA_PDEV) {
++		if (queue_depth > TRANSPORT(dev)->get_queue_depth(dev)) {
++			TRACE_ERROR("dev[%p]: Passed queue_depth: %u exceeds"
++				" LIO-Core/SE_Device TCQ: %u\n", dev, queue_depth,
++				TRANSPORT(dev)->get_queue_depth(dev));
++			return(-1);
++		}
++	} else {
++		if (queue_depth > TRANSPORT(dev)->get_queue_depth(dev)) {
++			if (!(TRANSPORT(dev)->get_max_queue_depth)) {
++				TRACE_ERROR("dev[%p]: Unable to locate "
++					"get_max_queue_depth() function"
++					" pointer\n", dev);
++				return(-1);
++			}
++			if (queue_depth > TRANSPORT(dev)->get_max_queue_depth(dev)) {
++				TRACE_ERROR("dev[%p]: Passed queue_depth: %u exceeds"
++				" LIO-Core/SE_Device MAX TCQ: %u\n", dev, queue_depth,
++					TRANSPORT(dev)->get_max_queue_depth(dev));
++				return(-1);
++			}
++		}
+ 	}
+ 		
+ 	DEV_ATTRIB(dev)->queue_depth = dev->queue_depth = queue_depth;
+diff --git a/drivers/lio-core/target_core_file.c b/drivers/lio-core/target_core_file.c
+index 9bd83d4..8c7c202 100644
+--- a/drivers/lio-core/target_core_file.c
++++ b/drivers/lio-core/target_core_file.c
+@@ -1251,6 +1251,11 @@ extern u32 fd_get_queue_depth (se_device_t *dev)
+ 	return(FD_DEVICE_QUEUE_DEPTH);
+ }
+ 
++extern u32 fd_get_max_queue_depth (se_device_t *dev)
++{
++	return(FD_MAX_DEVICE_QUEUE_DEPTH);
++}
++
+ /*	fd_get_non_SG(): (Part of se_subsystem_api_t template)
+  *
+  *
+diff --git a/drivers/lio-core/target_core_file.h b/drivers/lio-core/target_core_file.h
+index aba8f2d..7b7f59d 100644
+--- a/drivers/lio-core/target_core_file.h
++++ b/drivers/lio-core/target_core_file.h
+@@ -35,6 +35,7 @@
+ #define FD_MAX_DEV_NAME		256
+ #define FD_HBA_QUEUE_DEPTH	256		/* Maximum queuedepth for the FILEIO HBA */
+ #define FD_DEVICE_QUEUE_DEPTH	32
++#define FD_MAX_DEVICE_QUEUE_DEPTH 128
+ #define FD_BLOCKSIZE		512
+ #define FD_MAX_SECTORS		1024
+ 
+@@ -80,6 +81,7 @@ extern u32 fd_get_device_type (se_device_t *);
+ extern u32 fd_get_dma_length (u32, se_device_t *);
+ extern u32 fd_get_max_sectors (se_device_t *);
+ extern u32 fd_get_queue_depth (se_device_t *);
++extern u32 fd_get_max_queue_depth (se_device_t *);
+ extern unsigned char *fd_get_non_SG (se_task_t *);
+ extern struct scatterlist *fd_get_SG (se_task_t *);
+ extern u32 fd_get_SG_count (se_task_t *);
+@@ -193,6 +195,7 @@ se_subsystem_spc_t fileio_template_spc = ISCSI_FILEIO_SPC;
+ 	get_evpd_sn:		fd_get_evpd_sn,			\
+ 	get_max_sectors:	fd_get_max_sectors,		\
+ 	get_queue_depth:	fd_get_queue_depth,		\
++	get_max_queue_depth:	fd_get_max_queue_depth,		\
+ 	get_non_SG:		fd_get_non_SG,			\
+ 	get_SG:			fd_get_SG,			\
+ 	get_SG_count:		fd_get_SG_count,		\
+diff --git a/drivers/lio-core/target_core_iblock.c b/drivers/lio-core/target_core_iblock.c
+index 5ae04d1..1794806 100644
+--- a/drivers/lio-core/target_core_iblock.c
++++ b/drivers/lio-core/target_core_iblock.c
+@@ -901,6 +901,11 @@ extern u32 iblock_get_queue_depth (se_device_t *dev)
+ 	return(IBLOCK_DEVICE_QUEUE_DEPTH);
+ }
+ 
++extern u32 iblock_get_max_queue_depth (se_device_t *dev)
++{
++	return(IBLOCK_MAX_DEVICE_QUEUE_DEPTH);
++}
++
+ extern unsigned char *iblock_get_non_SG (se_task_t *task)
+ {
+ 	return((unsigned char *)task->iscsi_cmd->t_task->t_task_buf);
+diff --git a/drivers/lio-core/target_core_iblock.h b/drivers/lio-core/target_core_iblock.h
+index d0d8da1..3a2b910 100644
+--- a/drivers/lio-core/target_core_iblock.h
++++ b/drivers/lio-core/target_core_iblock.h
+@@ -34,6 +34,7 @@
+ #define IBLOCK_MAX_SECTORS	128
+ #define IBLOCK_HBA_QUEUE_DEPTH	512
+ #define IBLOCK_DEVICE_QUEUE_DEPTH	32
++#define IBLOCK_MAX_DEVICE_QUEUE_DEPTH	128
+ #define IBLOCK_MAX_CDBS		16
+ #define IBLOCK_LBA_SHIFT	9
+ 
+@@ -76,6 +77,7 @@ extern u32 iblock_get_device_type (se_device_t *);
+ extern u32 iblock_get_dma_length (u32, se_device_t *);
+ extern u32 iblock_get_max_sectors (se_device_t *);
+ extern u32 iblock_get_queue_depth (se_device_t *);
++extern u32 iblock_get_max_queue_depth (se_device_t *);
+ extern unsigned char *iblock_get_non_SG (se_task_t *);
+ extern struct scatterlist *iblock_get_SG (se_task_t *);
+ extern u32 iblock_get_SG_count (se_task_t *);
+@@ -168,6 +170,7 @@ se_subsystem_spc_t iblock_template_spc = ISCSI_IBLOCK_SPC;
+ 	get_evpd_sn:		iblock_get_evpd_sn,		\
+ 	get_max_sectors:	iblock_get_max_sectors,		\
+ 	get_queue_depth:	iblock_get_queue_depth,		\
++	get_max_queue_depth:	iblock_get_max_queue_depth,	\
+ 	get_non_SG:		iblock_get_non_SG,		\
+ 	get_SG:			iblock_get_SG,			\
+ 	get_SG_count:		iblock_get_SG_count,		\
+diff --git a/drivers/lio-core/target_core_rd.c b/drivers/lio-core/target_core_rd.c
+index 135999c..3c268ca 100644
+--- a/drivers/lio-core/target_core_rd.c
++++ b/drivers/lio-core/target_core_rd.c
+@@ -1382,6 +1382,11 @@ extern u32 rd_get_queue_depth (se_device_t *dev)
+ 	return(RD_DEVICE_QUEUE_DEPTH);
+ }
+ 
++extern u32 rd_get_max_queue_depth (se_device_t *dev)
++{
++	return(RD_MAX_DEVICE_QUEUE_DEPTH);
++}
++
+ /*	rd_get_non_SG(): (Part of se_subsystem_api_t template)
+  *
+  *
+diff --git a/drivers/lio-core/target_core_rd.h b/drivers/lio-core/target_core_rd.h
+index 829c568..165ecad 100644
+--- a/drivers/lio-core/target_core_rd.h
++++ b/drivers/lio-core/target_core_rd.h
+@@ -37,6 +37,7 @@
+ #define RD_MAX_ALLOCATION_SIZE	65536		/* Largest piece of memory kmalloc can allocate */
+ #define RD_HBA_QUEUE_DEPTH	256		/* Maximum queuedepth for the Ramdisk HBA */
+ #define RD_DEVICE_QUEUE_DEPTH	32
++#define RD_MAX_DEVICE_QUEUE_DEPTH 128
+ #define RD_BLOCKSIZE		512
+ #define RD_MAX_SECTORS		1024
+ 
+@@ -88,6 +89,7 @@ extern u32 rd_get_device_type (se_device_t *);
+ extern u32 rd_get_dma_length (u32, se_device_t *);
+ extern u32 rd_get_max_sectors (se_device_t *);
+ extern u32 rd_get_queue_depth (se_device_t *);
++extern u32 rd_get_max_queue_depth (se_device_t *);
+ extern unsigned char *rd_get_non_SG (se_task_t *);
+ extern struct scatterlist *rd_get_SG (se_task_t *);
+ extern u32 rd_get_SG_count (se_task_t *);
+@@ -188,6 +190,7 @@ se_subsystem_spc_t rd_template_spc = ISCSI_RD_SPC;
+ 	get_evpd_sn:		rd_get_evpd_sn,			\
+ 	get_max_sectors:	rd_get_max_sectors,		\
+ 	get_queue_depth:	rd_get_queue_depth,		\
++	get_max_queue_depth:	rd_get_max_queue_depth,		\
+ 	do_se_mem_map:		rd_DIRECT_do_se_mem_map,	\
+ 	get_non_SG:		rd_get_non_SG,			\
+ 	get_SG:			rd_get_SG,			\
+@@ -231,6 +234,7 @@ se_subsystem_api_t rd_dr_template = ISCSI_RD_DR;
+ 	get_evpd_sn:		rd_get_evpd_sn,			\
+ 	get_max_sectors:	rd_get_max_sectors,		\
+ 	get_queue_depth:	rd_get_queue_depth,		\
++	get_max_queue_depth:	rd_get_max_queue_depth,		\
+ 	get_non_SG:		rd_get_non_SG,			\
+ 	get_SG:			rd_get_SG,			\
+ 	get_SG_count:		rd_get_SG_count,		\
+diff --git a/drivers/lio-core/target_core_transport.h b/drivers/lio-core/target_core_transport.h
+index 909050e..c2fd11a 100644
+--- a/drivers/lio-core/target_core_transport.h
++++ b/drivers/lio-core/target_core_transport.h
+@@ -405,6 +405,10 @@ typedef struct se_subsystem_api_s {
+ 	 */
+ 	__u32 (*get_queue_depth)(se_device_t *);
+ 	/*
++	 * get_max_queue_depth():
++	 */
++	__u32 (*get_max_queue_depth)(se_device_t *);
++	/*
+ 	 * do_se_mem_map():
+ 	 */
+ 	int (*do_se_mem_map)(se_task_t *, struct list_head *, void *, se_mem_t *, se_mem_t **, u32 *, u32 *);
+-- 
+1.5.4.1
+
+
+
