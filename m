@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYKTO5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYKTOyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbYKTO5e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbYKTOpI
+	id S1758196AbYKTOyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756225AbYKTOok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:45:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41177 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:44:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41133 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756344AbYKTOpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:45:01 -0500
+	id S1756253AbYKTOoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:44:20 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 38/45] NFS: Add some new I/O counters for FS-Cache doing
-	things for NFS [ver #41]
+Subject: [PATCH 30/45] NFS: Add FS-Cache option bit and debug bit [ver #41]
 To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:44:55 +0000
-Message-ID: <20081120144455.10667.58420.stgit@warthog.procyon.org.uk>
+Date: Thu, 20 Nov 2008 14:44:14 +0000
+Message-ID: <20081120144414.10667.77048.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,110 +30,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some new NFS I/O counters for FS-Cache doing things for NFS.  A new line is
-emitted into /proc/pid/mountstats if caching is enabled that looks like:
+Add FS-Cache option bit to nfs_server struct.  This is set to indicate local
+on-disk caching is enabled for a particular superblock.
 
-	fsc: <rok> <rfl> <wok> <wfl> <unc>
-
-Where <rok> is the number of pages read successfully from the cache, <rfl> is
-the number of failed page reads against the cache, <wok> is the number of
-successful page writes to the cache, <wfl> is the number of failed page writes
-to the cache, and <unc> is the number of NFS pages that have been disconnected
-from the cache.
+Also add debug bit for local caching operations.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/iostat.h            |   18 ++++++++++++++++++
- fs/nfs/super.c             |   11 +++++++++++
- include/linux/nfs_iostat.h |   12 ++++++++++++
- 3 files changed, 41 insertions(+), 0 deletions(-)
+ include/linux/nfs_fs.h    |    1 +
+ include/linux/nfs_fs_sb.h |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/nfs/iostat.h b/fs/nfs/iostat.h
-index a369528..a2ab252 100644
---- a/fs/nfs/iostat.h
-+++ b/fs/nfs/iostat.h
-@@ -16,6 +16,9 @@
+diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+index 4eaa834..9400333 100644
+--- a/include/linux/nfs_fs.h
++++ b/include/linux/nfs_fs.h
+@@ -586,6 +586,7 @@ extern void * nfs_root_data(void);
+ #define NFSDBG_CALLBACK		0x0100
+ #define NFSDBG_CLIENT		0x0200
+ #define NFSDBG_MOUNT		0x0400
++#define NFSDBG_FSCACHE		0x0800
+ #define NFSDBG_ALL		0xFFFF
  
- struct nfs_iostats {
- 	unsigned long long	bytes[__NFSIOS_BYTESMAX];
-+#ifdef CONFIG_NFS_FSCACHE
-+	unsigned long long	fscache[__NFSIOS_FSCACHEMAX];
-+#endif
- 	unsigned long		events[__NFSIOS_COUNTSMAX];
- } ____cacheline_aligned;
+ #ifdef __KERNEL__
+diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
+index 4e477ae..6fd68d5 100644
+--- a/include/linux/nfs_fs_sb.h
++++ b/include/linux/nfs_fs_sb.h
+@@ -102,6 +102,8 @@ struct nfs_server {
+ 	unsigned int		acdirmin;
+ 	unsigned int		acdirmax;
+ 	unsigned int		namelen;
++	unsigned int		options;	/* extra options enabled by mount */
++#define NFS_OPTION_FSCACHE	0x00000001	/* - local caching enabled */
  
-@@ -57,6 +60,21 @@ static inline void nfs_add_stats(const struct inode *inode,
- 	nfs_add_server_stats(NFS_SERVER(inode), stat, addend);
- }
- 
-+#ifdef CONFIG_NFS_FSCACHE
-+static inline void nfs_add_fscache_stats(struct inode *inode,
-+					 enum nfs_stat_fscachecounters stat,
-+					 unsigned long addend)
-+{
-+	struct nfs_iostats *iostats;
-+	int cpu;
-+
-+	cpu = get_cpu();
-+	iostats = per_cpu_ptr(NFS_SERVER(inode)->io_stats, cpu);
-+	iostats->fscache[stat] += addend;
-+	put_cpu_no_resched();
-+}
-+#endif
-+
- static inline struct nfs_iostats *nfs_alloc_iostats(void)
- {
- 	return alloc_percpu(struct nfs_iostats);
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 70a49c5..acf328f 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -640,6 +640,10 @@ static int nfs_show_stats(struct seq_file *m, struct vfsmount *mnt)
- 			totals.events[i] += stats->events[i];
- 		for (i = 0; i < __NFSIOS_BYTESMAX; i++)
- 			totals.bytes[i] += stats->bytes[i];
-+#ifdef CONFIG_NFS_FSCACHE
-+		for (i = 0; i < __NFSIOS_FSCACHEMAX; i++)
-+			totals.fscache[i] += stats->fscache[i];
-+#endif
- 
- 		preempt_enable();
- 	}
-@@ -650,6 +654,13 @@ static int nfs_show_stats(struct seq_file *m, struct vfsmount *mnt)
- 	seq_printf(m, "\n\tbytes:\t");
- 	for (i = 0; i < __NFSIOS_BYTESMAX; i++)
- 		seq_printf(m, "%Lu ", totals.bytes[i]);
-+#ifdef CONFIG_NFS_FSCACHE
-+	if (nfss->options & NFS_OPTION_FSCACHE) {
-+		seq_printf(m, "\n\tfsc:\t");
-+		for (i = 0; i < __NFSIOS_FSCACHEMAX; i++)
-+			seq_printf(m, "%Lu ", totals.bytes[i]);
-+	}
-+#endif
- 	seq_printf(m, "\n");
- 
- 	rpc_print_iostats(m, nfss->client);
-diff --git a/include/linux/nfs_iostat.h b/include/linux/nfs_iostat.h
-index 1cb9a3f..68b10f5 100644
---- a/include/linux/nfs_iostat.h
-+++ b/include/linux/nfs_iostat.h
-@@ -116,4 +116,16 @@ enum nfs_stat_eventcounters {
- 	__NFSIOS_COUNTSMAX,
- };
- 
-+/*
-+ * NFS local caching servicing counters
-+ */
-+enum nfs_stat_fscachecounters {
-+	NFSIOS_FSCACHE_PAGES_READ_OK,
-+	NFSIOS_FSCACHE_PAGES_READ_FAIL,
-+	NFSIOS_FSCACHE_PAGES_WRITTEN_OK,
-+	NFSIOS_FSCACHE_PAGES_WRITTEN_FAIL,
-+	NFSIOS_FSCACHE_PAGES_UNCACHED,
-+	__NFSIOS_FSCACHEMAX,
-+};
-+
- #endif	/* _LINUX_NFS_IOSTAT */
+ 	struct nfs_fsid		fsid;
+ 	__u64			maxfilesize;	/* maximum file size */
 
