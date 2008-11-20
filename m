@@ -1,134 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbYKTV1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYKTV1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757227AbYKTV1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 16:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbYKTV1A
+	id S1757409AbYKTV1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 16:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYKTV1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 16:27:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35785 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753480AbYKTV07 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 16:26:59 -0500
-Date: Thu, 20 Nov 2008 13:26:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: hooanon05@yahoo.co.jp
-Cc: tomas@slax.org, linux-kernel@vger.kernel.org, akinobu.mita@gmail.com,
-       util-linux-ng@vger.kernel.org
-Subject: Re: [PATCH] loop file resizable
-Message-Id: <20081120132654.4c649eb0.akpm@linux-foundation.org>
-In-Reply-To: <16149.1227066661@jrobl>
-References: <492120DC.1070407@slax.org>
-	<20081118164207.137e92be.akpm@linux-foundation.org>
-	<16149.1227066661@jrobl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 20 Nov 2008 16:27:10 -0500
+Received: from 1wt.eu ([62.212.114.60]:1324 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756071AbYKTV1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 16:27:08 -0500
+Date: Thu, 20 Nov 2008 22:26:37 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Roger Heflin <rogerheflin@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
+Message-ID: <20081120212637.GB23844@1wt.eu>
+References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com> <20081118065006.GC24654@1wt.eu> <20081120031101.GD26448@xw6200.broadcom.net> <20081120053746.GB15168@1wt.eu> <20081120184310.GB27712@xw6200.broadcom.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120184310.GB27712@xw6200.broadcom.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008 12:51:01 +0900
-hooanon05@yahoo.co.jp wrote:
-
-> The following patch against loop.c adds ability to 'resize' the loop device on the fly.
-> This may be practically very useful.
+On Thu, Nov 20, 2008 at 10:43:10AM -0800, Matt Carlson wrote:
+> On Wed, Nov 19, 2008 at 09:37:47PM -0800, Willy Tarreau wrote:
+> > Hello Matt,
+> > 
+> > On Wed, Nov 19, 2008 at 07:11:01PM -0800, Matt Carlson wrote:
+> > > > My tg3 is just PCI-based, no PCIe in this beast. I can send more
+> > > > info when I turn it on. I don't think that the tg3 driver changes
+> > > > often, so most likely digging through the changes between 2.6.25
+> > > > and 2.6.27 should not take much time. I just don't know if I can
+> > > > reliably reproduce the issue right now.
+> > > 
+> > > Willy, this problem description sounds a little different than the
+> > > original report.  There was a bug where the driver would wait 2.5
+> > > seconds for a firmware event that would never get serviced.  That
+> > > fix has already landed in the 2.6.27 tree though.
+> > > 
+> > > I glanced over the changes between 2.6.25 and 2.6.27.6.  There are quite
+> > > a few changes related to phylib support for an upcoming device, but not
+> > > so many changes that affect older devices.  What device are you using?
+> > 
+> > I think it's a 5704, but I will check this this morning when I'm at
+> > work. I also want to try to reliably reproduce the problem. After
+> > that, I see only 29 patches which differ from the two kernels, it
+> > should be pretty easy to spot the culprit.
 > 
-> One practical application is a loop file with XFS filesystem, already mounted:
-> You can easily enlarge the file (append some bytes) and then call
-> ioctl(fd, LOOP_SET_CAPACITY, new);
-> The loop driver will learn about the new size and you can use xfs_growfs
-> later on, which will allow you to use full capacity of the loop
-> file without the need to unmount.
-> 
-> Please include it in mainline kernel.
-> 
-> Hope you like it.
-> 
-> Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
-> Signed-off-by: Tomas Matejicek <tomas@slax.org>
-> 
-> Index: linux-2.6.27/drivers/block/loop.c
-> ===================================================================
-> retrieving revision 1.1
-> retrieving revision 1.3
-> diff -u -p -r1.1 -r1.3
-> --- linux-2.6.27/drivers/block/loop.c	7 Nov 2008 13:07:06 -0000	1.1
-> +++ linux-2.6.27/drivers/block/loop.c	19 Nov 2008 03:42:54 -0000	1.3
-> @@ -1137,6 +1137,28 @@ loop_get_status64(struct loop_device *lo
->  	return err;
->  }
->  
-> +static int loop_set_capacity(struct loop_device *lo, struct block_device *bdev)
-> +{
-> +	int err;
-> +	sector_t sec;
-> +	loff_t sz;
-> +
-> +	err = -ENXIO;
-> +	if (lo->lo_state != Lo_bound)
-> +		goto out;
-> +	err = figure_loop_size(lo);
-> +	if (err)
-> +		goto out;
-> +	sec = get_capacity(lo->lo_disk);
-> +	sz = sec << 9;
-> +	mutex_lock(&bdev->bd_mutex);
-> +	bd_set_size(bdev, sz);
-> +	mutex_unlock(&bdev->bd_mutex);
-> +
-> + out:
-> +	return err;
-> +}
-> +
->  static int lo_ioctl(struct inode * inode, struct file * file,
->  	unsigned int cmd, unsigned long arg)
->  {
-> @@ -1166,6 +1188,9 @@ static int lo_ioctl(struct inode * inode
->  	case LOOP_GET_STATUS64:
->  		err = loop_get_status64(lo, (struct loop_info64 __user *) arg);
->  		break;
-> +	case LOOP_SET_CAPACITY:
-> +		err = loop_set_capacity(lo, inode->i_bdev);
-> +		break;
->  	default:
->  		err = lo->ioctl ? lo->ioctl(lo, cmd, arg) : -EINVAL;
->  	}
-> @@ -1311,6 +1336,7 @@ static long lo_compat_ioctl(struct file 
->  			lo, (struct compat_loop_info __user *) arg);
->  		mutex_unlock(&lo->lo_ctl_mutex);
->  		break;
-> +	case LOOP_SET_CAPACITY:
->  	case LOOP_CLR_FD:
->  	case LOOP_GET_STATUS64:
->  	case LOOP_SET_STATUS64:
-> Index: linux-2.6.27/include/linux/loop.h
-> ===================================================================
-> retrieving revision 1.1
-> retrieving revision 1.2
-> diff -u -p -r1.1 -r1.2
-> --- linux-2.6.27/include/linux/loop.h	7 Nov 2008 13:05:58 -0000	1.1
-> +++ linux-2.6.27/include/linux/loop.h	8 Nov 2008 04:47:20 -0000	1.2
-> @@ -160,5 +160,6 @@ int loop_unregister_transfer(int number)
->  #define LOOP_SET_STATUS64	0x4C04
->  #define LOOP_GET_STATUS64	0x4C05
->  #define LOOP_CHANGE_FD		0x4C06
-> +#define LOOP_SET_CAPACITY	0x4C07
->  
->  #endif
+> O.K.  Let me know how it goes.
 
-Well if we're going to do this then I guess we'll need to tell the
-util-linux people about it, as users will be needing some tool with
-which to access the new fucntionality.
+Today, with the notebook connected to a gig switch, I could not reproduce
+the problem, even after one hour of approximately the same workload. I'll
+retry with the original 100 Mbps switch on monday.
 
-Presumably that would be some enhancement to losetup, or perhaps a new
-tool.  Could the util-linux people please have a think about this and
-comment?
+> Could we clarify something though?  In your previous email, you said you
+> didn't have any problems on pre-2.6.25 kernels.  I'm wondering if the
+> problem goes back further than 2.6.25.  From 2.6.24 to 2.6.25, there was a
+> significant set of flow control changes that took place.  I suspect that
+> might have something to do with Roger's problem, and it may have
+> something to do with your problem too.  So, is it true that 2.6.25 works
+> for you?  If not, can you try disabling flow control and see if that
+> helps?
 
-Also, I'm not sure that the user interface is terribly good.  The user
-must extend the file size and then we tell the loop driver to use all
-of the new file size.  it would be better (more flexible) to allow
-userspace to explicitly pass in the new size for the loop device.
+It works fine till 2.6.25.18 included. I have not tried any 2.6.26 on this
+machine. Just 2.6.27.7-rc1 (with a few patches, none of which affect tg3).
+My goal is 1) to reproduce with the exact same kernel on the original switch,
+2) confirm that 2.6.25.18 does not exhibit the problem on the same switch,
+3) to switch to plain 2.6.27.x to ease troubleshooting, and 4) to find which
+of the 29 tg3 patches between 2.6.25.18 and 2.6.27.x brings the issue.
 
-But I'm not sure that this is worth bothering about.
+> > If you think it's a different bug than original report (though I
+> > really thought it was the same), I'll post my findings in a separate
+> > thread not to mix investigations.
+> 
+> Right now, I think it is premature to say, so let's continue as if they
+> were the same problem.  We can always break it out into a separate
+> discussion later.
+
+OK that's fine for me.
+
+Thanks Matt!
+Willy
+
