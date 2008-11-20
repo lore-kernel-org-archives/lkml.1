@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbYKTRwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYKTRw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbYKTRwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 12:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYKTRwW
+	id S1756912AbYKTRw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 12:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYKTRwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 12:52:22 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50994 "EHLO pasmtpA.tele.dk"
+	Thu, 20 Nov 2008 12:52:46 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41433 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752505AbYKTRwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 12:52:22 -0500
-Date: Thu, 20 Nov 2008 18:50:30 +0100
+	id S1754891AbYKTRwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 12:52:45 -0500
+Date: Thu, 20 Nov 2008 18:50:53 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-Message-ID: <20081120175029.GM26308@kernel.dk>
-References: <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net> <49244B69.80903@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net> <20081119172919.GT26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net> <20081119204624.GW26308@kernel.dk> <20081120091303.GF26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB79F52@GVW0547EXC.americas.hpqcorp.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bigeasy@linutronix.de,
+       Thomas.Hommel@gefanuc.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com
+Subject: Re: ISP1760 driver crashes
+Message-ID: <20081120175053.GN26308@kernel.dk>
+References: <20081120144125P.fujita.tomonori@lab.ntt.co.jp> <Pine.LNX.4.44L0.0811201026280.2447-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884EACB79F52@GVW0547EXC.americas.hpqcorp.net>
+In-Reply-To: <Pine.LNX.4.44L0.0811201026280.2447-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20 2008, Miller, Mike (OS Dev) wrote:
-> Jens wrote:
+On Thu, Nov 20 2008, Alan Stern wrote:
+> On Thu, 20 Nov 2008, FUJITA Tomonori wrote:
 > 
-> > >
-> > > I'd propose just converting it to list_head instead of doing it
-> > > manually. Heck, that should be a 5 minute job, let me just do it...
-> > >
-> > > OK, here it is, totally untested (it compiles, must be golden...)
-> >
-> > It was missing a list_entry() in fail_all_cmds(), apart from
-> > that it was fine. I changed it to use hlist instead, as that
-> > is more appropriate and similar to how it worked before. It
-> > also means there's no extra space usage in the controller
-> > structure. I've tested it and it works fine for me.
-> >
-> > Mike, can you give this a look-over and give me a Reviewed-by
-> > or similar? As an extra bonus, it also gets rid of some code.
-> >
-> >  3 files changed, 33 insertions(+), 46 deletions(-)
-> >
-> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=e303054
-> > e55acd1b6478b8859a5f8648bfaf69a44
+> > We have been used 4GB for long time if dma_mask is zero (I guess we
+> > use 4GB as kinda the default dma address limit at several places). The
+> > majority of drivers (such as pci) sets properly dev->dma_mask so the
+> > patch might not change anything but suddenly changing the
+> > long-standing rule in an odd way (use BLK_BOUNCE_HIGH if dma_mask is
+> > zero) doesn't sound a good idea to me.
+> > 
+> > Why not calling blk_queue_bounce_limit() in the slave_configure hook?
+> > I think that it's the common way for SCSI LLDs with odd bounce limit.
 > 
-> That works for me. :)
+> Thomas, here's a patch to do what Tomonori suggests.  Try replacing the 
+> old patch with this one.
 > 
-> Acked-by: Mike Miller <mike.miller@hp.com>
+> Alan Stern
+> 
+> 
+> Index: usb-2.6/drivers/usb/storage/scsiglue.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/storage/scsiglue.c
+> +++ usb-2.6/drivers/usb/storage/scsiglue.c
+> @@ -129,6 +129,14 @@ static int slave_configure(struct scsi_d
+>  					      max_sectors);
+>  	}
+>  
+> +	/* Some USB host controllers can't do DMA; they have to use PIO.
+> +	 * They indicate this by setting their dma_mask to NULL.  For
+> +	 * such controllers we need to make sure the block layer sets
+> +	 * up bounce buffers in addressable memory.
+> +	 */
+> +	if (!us->pusb_dev->bus->controller->dma_mask)
+> +		blk_queue_bounce_limit(sdev->request_queue, BLK_BOUNCE_HIGH);
+> +
+>  	/* We can't put these settings in slave_alloc() because that gets
+>  	 * called before the device type is known.  Consequently these
+>  	 * settings can't be overridden via the scsi devinfo mechanism. */
+> 
 
-Excellent, thanks Mike. If you could run it through a cycle or so of
-your regular testing, I'd feel 100% confident in it.
+That looks like a good fix. You can add my Acked-by: to that, if you
+wish.
 
 -- 
 Jens Axboe
