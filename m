@@ -1,91 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYKTU0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbYKTUgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbYKTU0L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 15:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYKTUZ4
+	id S1756311AbYKTUgK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 15:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbYKTUfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 15:25:56 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:55584 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYKTUZz (ORCPT
+	Thu, 20 Nov 2008 15:35:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52807 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642AbYKTUfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 15:25:55 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-References: <patchbomb.1226603398@abulafia.goop.org>
-	<d103c0da2fa147ac31af.1226603428@abulafia.goop.org>
-	<20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org>
-Date: Thu, 20 Nov 2008 12:22:33 -0800
-In-Reply-To: <492597B9.8070506@goop.org> (Jeremy Fitzhardinge's message of
-	"Thu, 20 Nov 2008 09:00:41 -0800")
-Message-ID: <m1y6ze87w6.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0494]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Thu, 20 Nov 2008 15:35:53 -0500
+Message-Id: <20081120203552.112676000@goodmis.org>
+References: <20081120203415.251344054@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 20 Nov 2008 15:34:18 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
+       Matt Fleming <mjf@gentoo.org>, Jim Radford <radford@galvanix.net>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 3/3] ftrace: create default variables for archs in recordmcount.pl
+Content-Disposition: inline; filename=0003-ftrace-create-default-variables-for-archs-in-record.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+From: Steven Rostedt <srostedt@redhat.com>
 
-> Ingo Molnar wrote:
->> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>
->>
->>> Writes to the IO APIC are paravirtualized via hypercalls, so implement
->>> the appropriate operations.
->>>
->>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->>> ---
->>>  arch/x86/xen/Makefile    |    3 +-
->>> arch/x86/xen/apic.c | 66 ++++++++++++++++++++++++++++++++++++++++++++++
->>>  arch/x86/xen/enlighten.c |    2 +
->>>  arch/x86/xen/xen-ops.h   |    2 +
->>>  4 files changed, 72 insertions(+), 1 deletion(-)
->>>
->>
->> hm, why is the ioapic used as the API here, and not an irqchip?
->>
->
-> In essence, the purpose of the series is to break the 1:1 relationship between
-> Linux irqs and hardware GSIs.
+Impact: cleanup of recordmcount.pl
 
-Bad idea (I think).  We have a 1:1 relationship between the linux irq number and
-the GSI because it makes the code dramatically simpler, and it took significant
-work to get there.  The concept of an intermediate mapping layer sounds nasty.
-But I haven't yet read the patch.
+Now that more architectures are being ported to the MCOUNT_RECORD
+method, there is no reason to have each declare their own arch
+specific variable if most of them share the same value. This patch
+creates a set of default values for the arch specific variables
+based off of i386.
 
-> If the x86 interrupt layer in general decouples irqs from GSIs, then I can
-> probably make use of that to clean things up.  A general irq allocator along
-> with some way of attaching interrupt-source-specific information to each irq
-> would get me a long way, I think.  I'd still need hooks to paravirtualize the
-> actual ioapic writes, but at least I wouldn't need to have quite so much
-> delicate hooking.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ scripts/recordmcount.pl |   27 +++++++++++----------------
+ 1 files changed, 11 insertions(+), 16 deletions(-)
 
-I know that is where I thought the sparse irq code was going.
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 7ec032e..c5c58ac 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -145,10 +145,17 @@ if ($arch eq "x86") {
+     }
+ }
+ 
++#
++# We base the defaults off of i386, the other archs may
++# feel free to change them in the below if statements.
++#
++$nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
++$section_regex = "Disassembly of section\\s+(\\S+):";
++$function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
++$mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
++$type = ".long";
++
+ if ($arch eq "x86_64") {
+-    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+-    $section_regex = "Disassembly of section\\s+(\\S+):";
+-    $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
+     $type = ".quad";
+     $alignment = 8;
+@@ -160,11 +167,6 @@ if ($arch eq "x86_64") {
+     $cc .= " -m64";
+ 
+ } elsif ($arch eq "i386") {
+-    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+-    $section_regex = "Disassembly of section\\s+(\\S+):";
+-    $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+-    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+-    $type = ".long";
+     $alignment = 4;
+ 
+     # force flags for this arch
+@@ -174,11 +176,6 @@ if ($arch eq "x86_64") {
+     $cc .= " -m32";
+ 
+ } elsif ($arch eq "sh") {
+-    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
+-    $section_regex = "Disassembly of section\\s+(\\S+):";
+-    $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+-    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+-    $type = ".long";
+ 
+     # force flags for this arch
+     $ld .= " -m shlelf_linux";
+@@ -187,13 +184,11 @@ if ($arch eq "x86_64") {
+ 
+ } elsif ($arch eq "powerpc") {
+     $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
+-    $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
++
+     if ($bits == 64) {
+ 	$type = ".quad";
+-    } else {
+-	$type = ".long";
+     }
+ 
+ } else {
+-- 
+1.5.6.5
 
-Eric
-
+-- 
