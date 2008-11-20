@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYKTO0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYKTO1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbYKTO0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYKTOZe
+	id S1756141AbYKTO1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYKTOZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:25:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40368 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755425AbYKTOZb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:25:31 -0500
-Subject: Re: [PATCH] intel-iommu: make init_dmars() static
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mark McLoughlin <markmc@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-In-Reply-To: <1227190873.3739.24.camel@blaa>
-References: <1227190873.3739.24.camel@blaa>
-Content-Type: text/plain
-Date: Thu, 20 Nov 2008 14:25:25 +0000
-Message-Id: <1227191125.4901.22.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 20 Nov 2008 09:25:49 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:37265 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756163AbYKTOZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:25:48 -0500
+Message-ID: <4925734E.1060606@atmel.com>
+Date: Thu, 20 Nov 2008 15:25:18 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+CC: Ben Dooks <ben-linux@fluff.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: Re: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
+References: <491C0C05.6040301@atmel.com>	<20081113134818.GA9161@fluff.org.uk>	<491C3D16.1050501@atmel.com> <20081119193631.448ae25e@mjolnir.drzeus.cx>
+In-Reply-To: <20081119193631.448ae25e@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 14:21 +0000, Mark McLoughlin wrote:
-> init_dmars() is not used outside of drivers/pci/intel-iommu.c
+Pierre Ossman :
+> On Thu, 13 Nov 2008 15:43:34 +0100
+> Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 > 
-> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+>> Ben Dooks :
+>>> Would people object to putting this in include/linux/mmc/atmel.h
+>>> to avoid making include/linux abound with device/subsystem/machine
+>>> specific header files?
+>> I tend to agree *but* it seems that header files in include/linux/mmc
+>> are mostly sd/mmc subsystem core files (I mean, not driver ones).
+>> Although, a bunch of atmel-a_driver.h files are already in include/linux...
+>>
+>> Pierre, a comment ?
+>>
+> 
+> I'd prefer if include/linux/mmc could stay clean and just have core
+> stuff since the header files are basically the reference documentation
+> for the subsystem. But if you can't find any other way...
 
-Applied; thank you.
+I agree with both of you Pierre and Antonio.
+Haavard, I submit a patch which also fix the mimc200 board very soon now.
 
+Bye,
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Nicolas Ferre
 
