@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYKTFlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYKTFlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbYKTFlU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 00:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYKTFlI
+	id S1753201AbYKTFlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 00:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYKTFlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 00:41:08 -0500
-Received: from sh.osrg.net ([192.16.179.4]:60822 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbYKTFlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 00:41:06 -0500
-Date: Thu, 20 Nov 2008 14:40:32 +0900
-To: jens.axboe@oracle.com
-Cc: stern@rowland.harvard.edu, bigeasy@linutronix.de,
-       Thomas.Hommel@gefanuc.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com
-Subject: Re: ISP1760 driver crashes
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081119172125.GS26308@kernel.dk>
-References: <20081119153923.GR26308@kernel.dk>
-	<Pine.LNX.4.44L0.0811191131320.2418-100000@iolanthe.rowland.org>
-	<20081119172125.GS26308@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081120144125P.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 20 Nov 2008 00:41:24 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:35530 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754031AbYKTFlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 00:41:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
+        b=vTDL0951jJ60aCJOzdJJpb70HHlxlx7cmhDJxAGd01eY+9Z2kwgV4Q0NIMtyCRuxq3
+         spzlWTpqgobFdSr9M+2slBLtN2JIjt3ZitYylyzCT5Ry2r5TdzCC7JrsbGdjONjeMmJN
+         Bf1FjTbqdGCro+knKLOuiLK5YLSrKww67ytDw=
+To: <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Subject: [PATCH 1/3] ide-cd: move debug defines into header
+Date: Thu, 20 Nov 2008 06:41:21 +0100
+Message-Id: <1227159683-2487-2-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.6.0.3
+In-Reply-To: <1227159683-2487-1-git-send-email-petkovbb@gmail.com>
+References: <1227159683-2487-1-git-send-email-petkovbb@gmail.com>
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Nov 2008 18:21:25 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-cd.c |    8 --------
+ drivers/ide/ide-cd.h |    8 ++++++++
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-> On Wed, Nov 19 2008, Alan Stern wrote:
-> > On Wed, 19 Nov 2008, Jens Axboe wrote:
-> > 
-> > > > --- usb-2.6.orig/drivers/scsi/scsi_lib.c
-> > > > +++ usb-2.6/drivers/scsi/scsi_lib.c
-> > > > @@ -1684,7 +1684,7 @@ static void scsi_request_fn(struct reque
-> > > >  u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
-> > > >  {
-> > > >  	struct device *host_dev;
-> > > > -	u64 bounce_limit = 0xffffffff;
-> > > > +	u64 bounce_limit = BLK_BOUNCE_HIGH;
-> > > >  
-> > > >  	if (shost->unchecked_isa_dma)
-> > > >  		return BLK_BOUNCE_ISA;
-> > > > 
-> > > 
-> > > The best solution is probably to either provide a "doesn't do highmem"
-> > > in the scsi host template, or provide an appropriate DMA mask for the
-> > > pci device to indicate it through that setting instead.
-> > 
-> > The DMA mask is currently set to NULL.  Is that not appropriate for a 
-> > device that can't do DMA?  If not, then what would be appropriate?
-> 
-> It's changing behaviour. There's no current rule that says if you don't
-> have a dma mask set, we only do PIO (even if such a rule DOES make
-> sense). Additionally, you don't HAVE to bounce for PIO. As I wrote
-> earlier, it's perfectly feasible to use bio kmap'ings to do the
-> transfer.
-> 
-> > Also, is the patch above not correct?
-> 
-> It'll certainly work in the sense that if you don't have a dma_mask set,
-> you only get lowmem pages. Whether the new behaviour is something we
-> want, not sure. Check with James what he thinks, it's his domain.
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 5daa4dd..65e5513 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -53,14 +53,6 @@
+ 
+ #include "ide-cd.h"
+ 
+-#define IDECD_DEBUG_LOG		1
+-
+-#if IDECD_DEBUG_LOG
+-#define ide_debug_log(lvl, fmt, args...) __ide_debug_log(lvl, fmt, args)
+-#else
+-#define ide_debug_log(lvl, fmt, args...) do {} while (0)
+-#endif
+-
+ static DEFINE_MUTEX(idecd_ref_mutex);
+ 
+ static void ide_cd_release(struct kref *);
+diff --git a/drivers/ide/ide-cd.h b/drivers/ide/ide-cd.h
+index d5ce336..389faa4 100644
+--- a/drivers/ide/ide-cd.h
++++ b/drivers/ide/ide-cd.h
+@@ -8,6 +8,14 @@
+ #include <linux/cdrom.h>
+ #include <asm/byteorder.h>
+ 
++#define IDECD_DEBUG_LOG		0
++
++#if IDECD_DEBUG_LOG
++#define ide_debug_log(lvl, fmt, args...) __ide_debug_log(lvl, fmt, args)
++#else
++#define ide_debug_log(lvl, fmt, args...) do {} while (0)
++#endif
++
+ /*
+  * typical timeout for packet command
+  */
+-- 
+1.6.0.4
 
-We have been used 4GB for long time if dma_mask is zero (I guess we
-use 4GB as kinda the default dma address limit at several places). The
-majority of drivers (such as pci) sets properly dev->dma_mask so the
-patch might not change anything but suddenly changing the
-long-standing rule in an odd way (use BLK_BOUNCE_HIGH if dma_mask is
-zero) doesn't sound a good idea to me.
-
-Why not calling blk_queue_bounce_limit() in the slave_configure hook?
-I think that it's the common way for SCSI LLDs with odd bounce limit.
