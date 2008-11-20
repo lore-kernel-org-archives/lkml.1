@@ -1,21 +1,20 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbYKTHCh (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 20 Nov 2008 02:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYKTHC2
+	id S1754479AbYKTHl7 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 20 Nov 2008 02:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYKTHlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 02:02:28 -0500
-Received: from same02.sameservers.com ([72.29.85.15]:49942 "EHLO
+	Thu, 20 Nov 2008 02:41:49 -0500
+Received: from same02.sameservers.com ([72.29.85.15]:26409 "EHLO
 	same02.sameservers.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbYKTHC1 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751589AbYKTHlt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 02:02:27 -0500
-X-Greylist: delayed 66567 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 02:02:27 EST
-Date: Thu, 20 Nov 2008 14:26:55 -0800
+	Thu, 20 Nov 2008 02:41:49 -0500
+Date: Thu, 20 Nov 2008 15:05:48 -0800
 Mime-version: 1.0
 Subject: HELLO
 From: Oliver UK <mariosslm@hotmail.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
-Message-Id: <11201426.BGNYOTEW@hotmail.com>
+Message-Id: <1120155.YONIOMDQ@hotmail.com>
 Reply-To: mariosslm@hotmail.com
 Content-Type: text/plain; charset=US-ASCII;
 	format=flowed
@@ -31,7 +30,7 @@ X-Source-Dir:
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754458AbYKTHCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754479AbYKTHl7@vger.kernel.org>
 
 FROM: MR MARIO OLIVER SOLOMON.
 OLIVEX LTD.ADDRESS: No: 24 ARRAN DRIVE ,
