@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbYKTOqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYKTOr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506AbYKTOqK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:46:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbYKTOm0
+	id S1756889AbYKTOr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbYKTOmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:42:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40999 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:42:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41022 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755695AbYKTOmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:42:21 -0500
+	id S1755788AbYKTOms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:42:48 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 05/45] FS-Cache: Release page->private after failed readahead
-	[ver #41]
+Subject: [PATCH 12/45] FS-Cache: Root index definition [ver #41]
 To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:42:05 +0000
-Message-ID: <20081120144205.10667.290.stgit@warthog.procyon.org.uk>
+Date: Thu, 20 Nov 2008 14:42:41 +0000
+Message-ID: <20081120144241.10667.24102.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,94 +30,218 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The attached patch causes read_cache_pages() to release page-private data on a
-page for which add_to_page_cache() fails or the filler function fails. This
-permits pages with caching references associated with them to be cleaned up.
+Add a description of the root index of the cache for later patches to make use
+of.
 
-The invalidatepage() address space op is called (indirectly) to do the honours.
+The root index is owned by FS-Cache itself.  When a netfs requests caching
+facilities, FS-Cache will, if one doesn't already exist, create an entry in
+the root index with the key being the name of the netfs ("AFS" for example),
+and the auxiliary data holding the index structure version supplied by the
+netfs:
+
+				     FSDEF
+				       |
+				 +-----------+
+				 |           |
+				NFS         AFS
+			       [v=1]       [v=1]
+
+If an entry with the appropriate name does already exist, the version is
+compared.  If the version is different, the entire subtree from that entry
+will be discarded and a new entry created.
+
+The new entry will be an index, and a cookie referring to it will be passed to
+the netfs.  This is then the root handle by which the netfs accesses the
+cache.  It can create whatever objects it likes in that index, including
+further indices.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/page-flags.h |    2 +-
- mm/readahead.c             |   39 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 38 insertions(+), 3 deletions(-)
+ fs/fscache/Makefile       |    1 
+ fs/fscache/fsc-fsdef.c    |  144 +++++++++++++++++++++++++++++++++++++++++++++
+ fs/fscache/fsc-internal.h |    6 ++
+ 3 files changed, 151 insertions(+), 0 deletions(-)
+ create mode 100644 fs/fscache/fsc-fsdef.c
 
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index b12f93a..74b9d90 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -180,7 +180,7 @@ static inline int TestClearPage##uname(struct page *page) { return 0; }
+diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
+index ba55ab1..8fb7bcc 100644
+--- a/fs/fscache/Makefile
++++ b/fs/fscache/Makefile
+@@ -3,6 +3,7 @@
+ #
  
- struct page;	/* forward declaration */
- 
--TESTPAGEFLAG(Locked, locked)
-+TESTPAGEFLAG(Locked, locked) TESTSETFLAG(Locked, locked)
- PAGEFLAG(Error, error)
- PAGEFLAG(Referenced, referenced) TESTCLEARFLAG(Referenced, referenced)
- PAGEFLAG(Dirty, dirty) TESTSCFLAG(Dirty, dirty) __CLEARPAGEFLAG(Dirty, dirty)
-diff --git a/mm/readahead.c b/mm/readahead.c
-index bec83c1..a3366f3 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -44,6 +44,41 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
- 
- #define list_to_page(head) (list_entry((head)->prev, struct page, lru))
- 
-+/*
-+ * see if a page needs releasing upon read_cache_pages() failure
-+ * - the caller of read_cache_pages() may have set PG_private before calling,
-+ *   such as the NFS fs marking pages that are cached locally on disk, thus we
-+ *   need to give the fs a chance to clean up in the event of an error
+ fscache-y := \
++	fsc-fsdef.o \
+ 	fsc-main.o \
+ 	fsc-proc.o \
+ 	fsc-stats.o
+diff --git a/fs/fscache/fsc-fsdef.c b/fs/fscache/fsc-fsdef.c
+new file mode 100644
+index 0000000..f408684
+--- /dev/null
++++ b/fs/fscache/fsc-fsdef.c
+@@ -0,0 +1,144 @@
++/* Filesystem index definition
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
-+static void read_cache_pages_invalidate_page(struct address_space *mapping,
-+					     struct page *page)
++
++#define FSCACHE_DEBUG_LEVEL CACHE
++#include <linux/module.h>
++#include "fsc-internal.h"
++
++static uint16_t fscache_fsdef_netfs_get_key(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax);
++
++static uint16_t fscache_fsdef_netfs_get_aux(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax);
++
++static
++enum fscache_checkaux fscache_fsdef_netfs_check_aux(void *cookie_netfs_data,
++						    const void *data,
++						    uint16_t datalen);
++
++/*
++ * The root index is owned by FS-Cache itself.
++ *
++ * When a netfs requests caching facilities, FS-Cache will, if one doesn't
++ * already exist, create an entry in the root index with the key being the name
++ * of the netfs ("AFS" for example), and the auxiliary data holding the index
++ * structure version supplied by the netfs:
++ *
++ *				     FSDEF
++ *				       |
++ *				 +-----------+
++ *				 |           |
++ *				NFS         AFS
++ *			       [v=1]       [v=1]
++ *
++ * If an entry with the appropriate name does already exist, the version is
++ * compared.  If the version is different, the entire subtree from that entry
++ * will be discarded and a new entry created.
++ *
++ * The new entry will be an index, and a cookie referring to it will be passed
++ * to the netfs.  This is then the root handle by which the netfs accesses the
++ * cache.  It can create whatever objects it likes in that index, including
++ * further indices.
++ */
++static struct fscache_cookie_def fscache_fsdef_index_def = {
++	.name		= ".FS-Cache",
++	.type		= FSCACHE_COOKIE_TYPE_INDEX,
++};
++
++struct fscache_cookie fscache_fsdef_index = {
++	.usage		= ATOMIC_INIT(1),
++	.lock		= __SPIN_LOCK_UNLOCKED(fscache_fsdef_index.lock),
++	.backing_objects = HLIST_HEAD_INIT,
++	.def		= &fscache_fsdef_index_def,
++};
++EXPORT_SYMBOL(fscache_fsdef_index);
++
++/*
++ * Definition of an entry in the root index.  Each entry is an index, keyed to
++ * a specific netfs and only applicable to a particular version of the index
++ * structure used by that netfs.
++ */
++struct fscache_cookie_def fscache_fsdef_netfs_def = {
++	.name		= "FSDEF.netfs",
++	.type		= FSCACHE_COOKIE_TYPE_INDEX,
++	.get_key	= fscache_fsdef_netfs_get_key,
++	.get_aux	= fscache_fsdef_netfs_get_aux,
++	.check_aux	= fscache_fsdef_netfs_check_aux,
++};
++
++/*
++ * get the key data for an FSDEF index record - this is the name of the netfs
++ * for which this entry is created
++ */
++static uint16_t fscache_fsdef_netfs_get_key(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax)
 +{
-+	if (PagePrivate(page)) {
-+		if (TestSetPageLocked(page))
-+			BUG();
-+		page->mapping = mapping;
-+		do_invalidatepage(page, 0);
-+		page->mapping = NULL;
-+		unlock_page(page);
-+	}
-+	page_cache_release(page);
++	const struct fscache_netfs *netfs = cookie_netfs_data;
++	unsigned klen;
++
++	_enter("{%s.%u},", netfs->name, netfs->version);
++
++	klen = strlen(netfs->name);
++	if (klen > bufmax)
++		return 0;
++
++	memcpy(buffer, netfs->name, klen);
++	return klen;
 +}
 +
 +/*
-+ * release a list of pages, invalidating them first if need be
++ * get the auxiliary data for an FSDEF index record - this is the index
++ * structure version number of the netfs for which this version is created
 + */
-+static void read_cache_pages_invalidate_pages(struct address_space *mapping,
-+					      struct list_head *pages)
++static uint16_t fscache_fsdef_netfs_get_aux(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax)
 +{
-+	struct page *victim;
++	const struct fscache_netfs *netfs = cookie_netfs_data;
++	unsigned dlen;
 +
-+	while (!list_empty(pages)) {
-+		victim = list_to_page(pages);
-+		list_del(&victim->lru);
-+		read_cache_pages_invalidate_page(mapping, victim);
-+	}
++	_enter("{%s.%u},", netfs->name, netfs->version);
++
++	dlen = sizeof(uint32_t);
++	if (dlen > bufmax)
++		return 0;
++
++	memcpy(buffer, &netfs->version, dlen);
++	return dlen;
 +}
 +
- /**
-  * read_cache_pages - populate an address space with some pages & start reads against them
-  * @mapping: the address_space
-@@ -65,14 +100,14 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 		list_del(&page->lru);
- 		if (add_to_page_cache_lru(page, mapping,
- 					page->index, GFP_KERNEL)) {
--			page_cache_release(page);
-+			read_cache_pages_invalidate_page(mapping, page);
- 			continue;
- 		}
- 		page_cache_release(page);
++/*
++ * check that the index structure version number stored in the auxiliary data
++ * matches the one the netfs gave us
++ */
++static enum fscache_checkaux fscache_fsdef_netfs_check_aux(
++	void *cookie_netfs_data,
++	const void *data,
++	uint16_t datalen)
++{
++	struct fscache_netfs *netfs = cookie_netfs_data;
++	uint32_t version;
++
++	_enter("{%s},,%hu", netfs->name, datalen);
++
++	if (datalen != sizeof(version)) {
++		_leave(" = OBSOLETE [dl=%d v=%zu]", datalen, sizeof(version));
++		return FSCACHE_CHECKAUX_OBSOLETE;
++	}
++
++	memcpy(&version, data, sizeof(version));
++	if (version != netfs->version) {
++		_leave(" = OBSOLETE [ver=%x net=%x]", version, netfs->version);
++		return FSCACHE_CHECKAUX_OBSOLETE;
++	}
++
++	_leave(" = OKAY");
++	return FSCACHE_CHECKAUX_OKAY;
++}
+diff --git a/fs/fscache/fsc-internal.h b/fs/fscache/fsc-internal.h
+index 4ada505..5ff611a 100644
+--- a/fs/fscache/fsc-internal.h
++++ b/fs/fscache/fsc-internal.h
+@@ -28,6 +28,12 @@
+ #define FSCACHE_MAX_THREADS	32
  
- 		ret = filler(data, page);
- 		if (unlikely(ret)) {
--			put_pages_list(pages);
-+			read_cache_pages_invalidate_pages(mapping, pages);
- 			break;
- 		}
- 		task_io_account_read(PAGE_CACHE_SIZE);
+ /*
++ * fsc-fsdef.c
++ */
++extern struct fscache_cookie fscache_fsdef_index;
++extern struct fscache_cookie_def fscache_fsdef_netfs_def;
++
++/*
+  * fsc-main.c
+  */
+ extern unsigned fscache_defer_lookup;
 
