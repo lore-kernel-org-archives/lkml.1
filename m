@@ -1,141 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYKTQHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYKTQK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYKTQHY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 11:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbYKTQHK
+	id S1755343AbYKTQK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 11:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYKTQKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 11:07:10 -0500
-Received: from ik-out-1112.google.com ([66.249.90.179]:19099 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbYKTQHI (ORCPT
+	Thu, 20 Nov 2008 11:10:15 -0500
+Received: from mailbackup.inode.at ([213.229.60.24]:38987 "EHLO
+	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbYKTQKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 11:07:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bS5plNGUVPcBLOuyw3ArdGhDbVZ4pmjsxOV/9wfhiWBs9jwfd0CBWUqxW/DrLd35zY
-         P1dBUV9hr0bv8PGvQTl3L1/IoG1vjKdnuRv2TouLlF3bbvQR8qr73mkYRxAV3NXMFBke
-         ZKcRPefnb9cg+PfaSh9pOO0rqxWVKhs5nZ0Ic=
-Date: Thu, 20 Nov 2008 19:07:02 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Beulich <jbeulich@novell.com>, Glauber Costa <gcosta@redhat.com>,
-       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] x86: clean up after: move entry_64.S register saving
-	out of the macros
-Message-ID: <20081120160702.GB7363@localhost>
-References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <20081119001811.GA23237@mailshack.com> <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081120155744.GA4130@mailshack.com>
+	Thu, 20 Nov 2008 11:10:13 -0500
+X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 11:10:13 EST
+Date: Thu, 20 Nov 2008 17:00:23 +0100
+From: Sascha Biberhofer <biberhofer@inode.at>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.27.5] kernel panic (unable to handle paging request)
+Message-ID: <20081120160023.GA1019@aeris>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
 Content-Disposition: inline
-In-Reply-To: <20081120155744.GA4130@mailshack.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Alexander van Heukelum - Thu, Nov 20, 2008 at 04:57:44PM +0100]
-| On Thu, Nov 20, 2008 at 04:39:54PM +0100, Ingo Molnar wrote:
-| > 
-| > * Alexander van Heukelum <heukelum@mailshack.com> wrote:
-| > 
-| > > On Thu, Nov 20, 2008 at 04:04:12PM +0100, Ingo Molnar wrote:
-| > > > 
-| > > > * Alexander van Heukelum <heukelum@mailshack.com> wrote:
-| > > > 
-| > > > > This add-on patch to x86: move entry_64.S register saving out of the 
-| > > > > macros visually cleans up the appearance of the code by introducing 
-| > > > > some basic helper macro's. It also adds some cfi annotations which 
-| > > > > were missing.
-| > > > > 
-| > > > > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-| > > > > ---
-| > > > >  arch/x86/kernel/entry_64.S |  220 ++++++++++++++++++++++----------------------
-| > > > >  1 files changed, 112 insertions(+), 108 deletions(-)
-| > > > > 
-| > > > > Hello Ingo,
-| > > > > 
-| > > > > This patch improves the CFI-situation in entry_64.S, but restricted 
-| > > > > mostly to the areas touched by "x86: move entry_64.S register saving 
-| > > > > out of the macros". I'm sure there will be some small errors 
-| > > > > somewhere, but it compiles and runs fine.
-| > > > 
-| > > > very nice cleanup! This is exactly what should be done. Applied to 
-| > > > tip/x86/irq.
-| > > > 
-| > > > Note, i did a small rename:
-| > > > 
-| > > >     cfi_pushq  =>  pushq_cfi
-| > > >     cfi_popq   =>  popq_cfi
-| > > >     cfi_store  =>  movq_cfi
-| 
-| Does not work... But if you are attached to the underscores, I
-| think we can force it to work by using CPP to convert it to
-| something the assembler does parse right:
-| 
-| #define pushq_cfi pushq.cfi
-| 
-| etc?
-| 
-| Or is that just too ugly?
-| 
-| Alexander
-| 
-| > > > as the goal is to have the actual source code read mostly as regular 
-| > > > assembly code. The fact that the macro is equivalent to a 
-| > > > default-annotated pushq/popq/movq instruction is much more important 
-| > > > than the fact that it also does CFI annotations.
-| > > > 
-| > > > Also, while cfi_store is correct as well, the usual x86 assembly term 
-| > > > (and instruction used here) is movq.
-| > > 
-| > > Now I have a little problem with my next patch... I wanted to 
-| > > introduce cfi_load. Guess what assembly instruction that maps to ;).
-| > 
-| > heh ;-)
-| > 
-| > the restore direction could be named movq_cfi_restore, and have the same 
-| > order of arguments as the regular movq that it replaces. I.e.:
-| > 
-| >         movq 8(%rsp),%r11
-| >         CFI_RESTORE r11
-| > 
-| > would map to:
-| > 
-| > 	movq_cfi_restore 8, r11
-| > 
-| > or so.
-| > 
-| > cfi_store has really a bad name: it's confusing whether it's the CFI 
-| > info we are storing/registering (which we are), or a 'store' instruction 
-| > (which this is too).
-| > 
-| > If then we should name it movq_cfi_store or movq_cfi_register - but 
-| > that's too long.
-| > 
-| > movq_cfi for the frame construction direction and movq_cfi_restore for 
-| > the frame deconstruction phase sounds like a good naming compromise, hm?
-| > 
-| > 	Ingo
-| 
-| -- 
-| Alexander van Heukelum
-| 
 
-Hi,
+--SLDf9lqlvOQaIe6s
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I didn't check if it possible but maybe just put these CFI
-annotations on right side like
+When running 2.6.27.5 I'm experiencing kernel panics after some random
+amount of time. I'm not quite sure what triggers them, the first time it
+happened after 5 days uptime, the second time after 1 day, always doing
+the same random stuff. I've copied the Oops message from screen by hand=20
+(at least the readable part of it):
 
-	movq 8(%rsp),%r11		; CFI_RESTORE r11
+  [<c03c7339>] schedule+0x149/0x270
+  [<c02f8967>] sys_send+0x37/0x40
+  [<c02f9aa8>] sys_socketcall+0x1d8/0x2c0
+  [<c0221c60>] copy_to_user+0x30/0x60
+  [<c0102f01>] sysenter_do_call+0x12/0x25
 
-Hmm? Yes I know -- it will not make 'auto' cfi annotations
-but *anyway* if say I'm to write this kind of code I _have_
-to know how CFI works (or at least read some specs about)
-I guess.
+Code: 24 10 89 d6 89 5c 24 08 89 6c 24 14 89 c7 8b 4c 24 18 9c 5b fa 8b
+90 80 00 00 00 8b a8 90 00 00 00 85 d2 74 35 8b 80 8c 00 00 00 <8b> 04
+82 89 87 80 00 00 00 53 9d 31 c0 c1 ee 0f 85 d2 0f 95 c0
 
-		- Cyrill -
+EIP: [<c015a6b4>] kmem_cache_alloc+0x34/0xa0 SS:ESP 0068:d7013a00
+---[ end trace 629cc3bb84dd2447 ]---
+
+Fixing recursive fault but reboot is needed!
+BUG: unable to handle kernel paging request at ff9f9042
+IP: [<c015b525>] __kmalloc_track_caller+0x45/0xf0
+*pde=3D00000000
+Oops: 0000 [#3]
+Pid: 0, comm: swapper Tainted: G     D  (2.6.27.5 #0)
+EIP: 0060:[<c015b525>] EFLAGS: 00010086 CPU: 0
+EIP is at __kmalloc_track_caller+0x45/0xf0
+EAX: 00000000 EBX: 00000286 ECX: 0000000b EDX: ff9f9042
+ESI: 00000020 EDI: c0498fde EBP: 00000800 ESP: c04a1ea0
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process swapper (pid: 0, ti=3Dc04a0000 task=3Dc0470300 task.ti=3Dc04a0000)
+Stack: 00000282 df8849c0 c02fed79 df89f3c0 00000680 00000020 c0498aa8
+       c02fea05 00000000 8000061c df823360 df823360 0000003c c02fed79
+       ffffffff c027204e 00000000 df9520f8 8000061c df8849c0 df823360
+       0000003c c02731a3 d5c8df60
+
+Call Trace:
+  [<c02fed79>] dev_alloc_skb+0x19/0x30
+  [<c02fea05>] __alloc_skb+0x55/0x120
+  [<c02fed79>] dev_alloc_skb+0x19/0x30
+  [<c027204e>] nv_alloc_rx+0x3e/0x170
+  [<c02731a3>] nv_napi_poll+0x403/0x603
+  [<c030596f>] net_rx_action+0x5f/0xf0
+  [<c011fe22>] __do_softirq+0x42/0x90
+  [<c011fe97>] do_doftirq+0x27/0x30
+  [<c0120185>] irq_exit+0x45/0x60
+  [<c010f0d0>] smp_apic_timer_interrupt+0x40/0x80
+  [<c01038fc>] apic_timer_interrupt+0x28/0x30
+  [<c0118f61>] finish_task_switch+0x21/0x70
+  [<c03c7339>] schedule+0x149/0x270
+  [<c0134f7d>] tick_nohz_restart_sched_tick+0xd/0x150
+  [<c0101b27>] cpu_idle+0x67/0x70
+
+Code: 89 4c 24 08 77 70 e8 f2 ff ff 89 c7 83 ff 10 76 34 9c 5b fa 8b 97
+80 00 00 00 8b af 90 00 00 00 85 d2 74 8b 87 8c 00 00 00 <8b> 04 82 89
+87 80 00 00 00 53 9d 31 c0 cd ee 0f 85 d2 0f 95 c0
+
+EIP: [<c015b525>] __kmalloc_track_caller+0x45/0xf0 SS:ESP 0068:c04a1ea0
+Kernel panic - not syncing: Fatal exception in interrupt.
+
+
+It looks like many things are going wrong at once.
+I'm now back running 2.6.27.4 which is and has been runing fine.=20
+The machine itself is an AMD Athlon XP 2000+ with an ASUS A7N8X (having
+an nfroce2 chipset) with 512 MB RAM and some Geforce TI 4800 iirc.=20
+Any help with this issue is really appreciated.=20
+
+greetings
+ Sascha Biberhofer
+
+--SLDf9lqlvOQaIe6s
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkliZcACgkQUl9z1ZMnRN4s5gCfcCJXJOoyGPF+5xMAgtYq6MDp
+TYEAn12KUponJ5xAbpapb3z9TPyQDJII
+=th4C
+-----END PGP SIGNATURE-----
+
+--SLDf9lqlvOQaIe6s--
