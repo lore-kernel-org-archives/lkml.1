@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYKTMWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYKTM0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbYKTMWz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 07:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYKTMWq
+	id S1755177AbYKTM0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 07:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbYKTM0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 07:22:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34499 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751663AbYKTMWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 07:22:45 -0500
-Date: Thu, 20 Nov 2008 13:22:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28-rc5 00/11] Kernel memory leak detector (updated)
-Message-ID: <20081120122241.GH20724@elte.hu>
-References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
+	Thu, 20 Nov 2008 07:26:14 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:52104 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbYKTM0N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 07:26:13 -0500
+Message-ID: <4925575D.8060704@fr.ibm.com>
+Date: Thu, 20 Nov 2008 13:26:05 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: mtk.manpages@gmail.com
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Kirill Korotaev <dev@openvz.org>, Pavel Emelianov <xemul@openvz.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
+Subject: Re: CLONE_NEWIPC documentation
+References: <4924651C.4080909@gmail.com> <m163mji4cz.fsf@frodo.ebiederm.org> <49252174.7080709@fr.ibm.com> <cfd18e0f0811200328g643c1bdq46a48bac3a1ea744@mail.gmail.com>
+In-Reply-To: <cfd18e0f0811200328g643c1bdq46a48bac3a1ea744@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
-
-> The main changes (for those who remember the original features):
+Michael Kerrisk wrote:
+> Cedric,
 > 
-> - it now uses a priority search tree to make it easier for looking up
->   intervals rather than just fixed values (the initial implementation
->   was with radix tree and changed to hash array because of
->   kmem_cache_alloc calls in the former)
-> - internal memory allocator to avoid recursive calls into
->   kmemleak. This is a simple lock-free, per-cpu allocator using
->   pages. The number of pages allocated is bounded, though there could
->   be (very unlikely) situations on SMP systems where page occupation
->   isn't optimal
-> - support for all three memory allocators - slab, slob and slub
-> - finer-grained locking - there is no global lock held during memory
->   scanning
-> - more information reported for leaked objects - current task's
->   command line and pid, jiffies and the stack trace
-
-these are very nice improvements! In particular the sharp reduction in 
-false positives and annotations is encouraging.
-
-I'd like to try it in the -tip automated testing setup, provided the 
-few details i just commented on are solved, and provided that these 
-things are addressed as well:
-
-> Things still to be done:
+> On Thu, Nov 20, 2008 at 3:36 AM, Cedric Le Goater <clg@fr.ibm.com> wrote:
+>> Eric W. Biederman wrote:
+>>> Michael Kerrisk <mtk.manpages@googlemail.com> writes:
+>>>
+>>>> Kirill, Pavel,
+>>>>
+>>>> Below is a patch to document the CLONE_NEWIPC flag that was
+>>>> added in 2.6.19.
+>>>>
+>>>> Could you please review and let me know of improvements
+>>>> or inaccuracies?
+>> I would also add that an interesting effect of the sysvipc namespace is
+>> the automatic cleanup of sysvipc objects when the namespace is destroyed.
 > 
-> - kernel thread to scan and report leaked objects periodically
->   (currently done only when reading the /sys/kernel/debug/memleak
->   file)
-> - run-time and boot-time configuration like task stacks scanning,
->   disabling kmemleak, enabling/disabling the automatic scanning
+> And the namespace is destroyed, when the last proces in the namespace
+> terminates, right?
 
-the .config driven automatic "report currently known/suspected leaks 
-60 seconds after bootup" feature would be nice to have. Should be 
-fairly easy to add, right? Otherwise i'd have no good way of getting a 
-leak report out of it, in an automated way.
+exactly.
 
-	Ingo
+Thanks,
+
+C.
