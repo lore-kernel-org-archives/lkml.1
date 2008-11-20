@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbYKTTaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbYKTTab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757092AbYKTTaJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 14:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYKTT3z
+	id S1757091AbYKTTab (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 14:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbYKTTaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 14:29:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44411 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754680AbYKTT3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 14:29:55 -0500
-Message-ID: <4925BA86.7000409@kernel.org>
-Date: Thu, 20 Nov 2008 11:29:10 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Thu, 20 Nov 2008 14:30:11 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:51276 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757079AbYKTTaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 14:30:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=f+PZc81R+YCvH95Cxqn/EIH/MpoyQgjYM/ebW25b1zdF17NnA841YEqa7yAfh/kOt5
+         axBQS/rLLYQT3fmkS9Lq++RWm5LhaxERn88fIU5AiO1JeLebaT0jKo/hlS4v/RuTxsHM
+         WFGVVa25BVifhC3XySgTS0OuzXcU6d1IQF/Ic=
+Message-ID: <84144f020811201130y2de91d03q7e6557e4086147ad@mail.gmail.com>
+Date: Thu, 20 Nov 2008 21:30:08 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Catalin Marinas" <catalin.marinas@arm.com>
+Subject: Re: [PATCH 2.6.28-rc5 03/11] kmemleak: Add the memory allocation/freeing hooks
+Cc: linux-kernel@vger.kernel.org, "Matt Mackall" <mpm@selenic.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>
+In-Reply-To: <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
-References: <patchbomb.1226603398@abulafia.goop.org> <d103c0da2fa147ac31af.1226603428@abulafia.goop.org> <20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org> <20081120192218.GF3955@elte.hu>
-In-Reply-To: <20081120192218.GF3955@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
+	 <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+X-Google-Sender-Auth: 71763d807a0d1a1d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+Hi Catalin,
 
-> 
-> it certainly looks thin enough to me although i'm really not sure we 
-> want to virtualize at the IO-APIC level. Peter, what's your 
-> opinion/preference?
-> 
+On Thu, Nov 20, 2008 at 1:30 PM, Catalin Marinas
+<catalin.marinas@arm.com> wrote:
+> This patch adds the callbacks to memleak_(alloc|free) functions from
+> kmalloc/kfree, kmem_cache_(alloc|free), vmalloc/vfree etc.
+>
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 
-relative fixed mapping, always make it simple and tracked easily.
-like irq nr == gsi nr...
+[snip]
 
-YH
+> @@ -2610,6 +2611,9 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
+>                /* Slab management obj is off-slab. */
+>                slabp = kmem_cache_alloc_node(cachep->slabp_cache,
+>                                              local_flags & ~GFP_THISNODE, nodeid);
+> +               /* only scan the list member to avoid false negatives */
+> +               memleak_scan_area(slabp, offsetof(struct slab, list),
+> +                                 sizeof(struct list_head));
+
+I find this comment somewhat confusing. Does it mean we _must_ scan
+the list members to avoid false negatives (i.e. leaks that happened
+but were not reported) or that if we scan the whole of struct slab, we
+get false negatives?
+
+>                if (!slabp)
+>                        return NULL;
+>        } else {
+
+Other than that, the SLAB, SLUB, and SLOB hooks look good to me. You
+might want to split up the patch a bit and CC Matt for the SLOB and
+Christoph for the SLUB hooks and me for all of the three.
