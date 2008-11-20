@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYKTADT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbYKTAHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYKTADT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 19:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYKTADL
+	id S1753187AbYKTAHx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 19:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYKTAHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 19:03:11 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58203 "EHLO smtps.tip.net.au"
+	Wed, 19 Nov 2008 19:07:45 -0500
+Received: from gw.goop.org ([64.81.55.164]:51210 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752010AbYKTADK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 19:03:10 -0500
-Date: Thu, 20 Nov 2008 11:02:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for November 19 (v4l2 warnings)
-Message-Id: <20081120110253.c0f2e80b.sfr@canb.auug.org.au>
-In-Reply-To: <20081119105100.26de5ff0.randy.dunlap@oracle.com>
-References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
-	<20081119105100.26de5ff0.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU"
+	id S1751021AbYKTAHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 19:07:44 -0500
+Message-ID: <4924AA4E.4090001@goop.org>
+Date: Wed, 19 Nov 2008 16:07:42 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: Eric Lacombe <goretux@gmail.com>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [x86] do_arch_prctl
+References: <200811181835.07360.goretux@gmail.com> <200811191023.16358.goretux@gmail.com> <49247FC6.8080201@goop.org> <200811200035.57509.goretux@gmail.com>
+In-Reply-To: <200811200035.57509.goretux@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Mauro,
-
-On Wed, 19 Nov 2008 10:51:00 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
+Eric Lacombe wrote:
+> Thanks for your answer, I've got one last question ;)
+> In the ARCH_GET_GS, can you explain the line 834 to 838?
 >
-> On Wed, 19 Nov 2008 17:59:17 +1100 Stephen Rothwell wrote:
+> In fact, at first sight I thought that just the line 836 was sufficient, but I 
+> obviously miss the case where MSR_KERNEL_GS_BASE does not reflect the value 
+> requested, hence my question.
+>   
 
-(Randy, I didn't really ...)
+I think the rationale is that rdmsr is slow, so reading the value from 
+the task context is faster where possible.
 
-> drivers/media/video/v4l2-ioctl.c:1819: warning: format '%d' expects type =
-'int', but argument 3 has type 'struct v4l2_fract'
-> drivers/media/video/v4l2-ioctl.c:1819: warning: format '%d' expects type =
-'int', but argument 4 has type 'struct v4l2_fract'
-> drivers/media/video/v4l2-ioctl.c:1819: warning: format '%d' expects type =
-'int', but argument 5 has type 'struct v4l2_fract'
+It's not a very pretty part of the architecture :/
 
-Introduced in commit b35e0c6035369de9f3273b6a3fbb1c67f830cf49 "4L/DVB
-(9578): v4l core: add support for enumerating frame sizes and intervals"
-and been there for some time now.
+    J
 
-Mauro, please fix this.
+> 828 case ARCH_GET_GS: {
+> 829                 unsigned long base;
+> 830                 unsigned gsindex;
+> 831                 if (task->thread.gsindex == GS_TLS_SEL)
+> 832                         base = read_32bit_tls(task, GS_TLS);
+> 833                 else if (doit) {
+> 834                         asm("movl %%gs,%0" : "=r" (gsindex));
+> 835                         if (gsindex)
+> 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
+> 837                         else
+> 838                                 base = task->thread.gs;
+> 839                 }
+> 840                 else
+> 841                         base = task->thread.gs;
+>
+> Thanks,
+>
+> 	Eric
+>
+>
+>   
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkkqS0ACgkQjjKRsyhoI8z3PwCgjbRalkdjjqLsULyZGncp78FD
-6F8An1SktKaIgWvWeM+yKLL0v8BsMdkI
-=wSC7
------END PGP SIGNATURE-----
-
---Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU--
