@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYKTOYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYKTOY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbYKTOYF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYKTOXe
+	id S1756103AbYKTOY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754879AbYKTOXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 20 Nov 2008 09:23:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46410 "EHLO hera.kernel.org"
+Received: from hera.kernel.org ([140.211.167.34]:46411 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754797AbYKTOXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:23:32 -0500
+	id S1754760AbYKTOXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:23:33 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
        miklos@szeredi.hu, akpm@linux-foundation.org, greg@kroah.com
-Subject: [PATCHSET] CUSE: implement CUSE, take #2
-Date: Thu, 20 Nov 2008 23:22:58 +0900
-Message-Id: <1227190983-5820-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 4/5] FUSE: add fuse_conn->release()
+Date: Thu, 20 Nov 2008 23:23:02 +0900
+Message-Id: <1227190983-5820-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.6
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:23:12 +0000 (UTC)
+In-Reply-To: <1227190983-5820-1-git-send-email-tj@kernel.org>
+References: <1227190983-5820-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:23:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add fuse_conn->release() so that fuse_conn can be embedded in other
+structures.  If unspecified, the original action - kfree() - is done.
 
-This is the second take of implement-CUSE patchset.  Changes from the
-last take[L] are...
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ fs/fuse/fuse_i.h |    3 +++
+ fs/fuse/inode.c  |    6 +++++-
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
-* hotplug_info stuff (uevent info overriding) dropped
+diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
+index c4164b2..23df478 100644
+--- a/fs/fuse/fuse_i.h
++++ b/fs/fuse/fuse_i.h
+@@ -465,6 +465,9 @@ struct fuse_conn {
+ 
+ 	/** Version counter for attribute changes */
+ 	u64 attr_version;
++
++	/** Called on final put.  If implemented, should free the connection */
++	void (*release)(struct fuse_conn *);
+ };
+ 
+ static inline struct fuse_conn *get_fuse_conn_super(struct super_block *sb)
+diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+index 068e0f2..eae4ff9 100644
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -544,7 +544,11 @@ void fuse_conn_put(struct fuse_conn *fc)
+ 			fuse_request_free(fc->destroy_req);
+ 		mutex_destroy(&fc->inst_mutex);
+ 		bdi_destroy(&fc->bdi);
+-		kfree(fc);
++
++		if (fc->release)
++			fc->release(fc);
++		else
++			kfree(fc);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(fuse_conn_put);
+-- 
+1.5.6
 
-* a lot more comments
-
-* now uses CUSE_MINOR which is 230 and also added module alias for it
-
-This patchset is consisted of the following five patches.
-
-  0001-FUSE-add-fuse_-prefix-to-several-functions.patch
-  0002-FUSE-export-symbols-to-be-used-by-CUSE.patch
-  0003-FUSE-separate-out-fuse_conn_init-from-new_conn.patch
-  0004-FUSE-add-fuse_conn-release.patch
-  0005-CUSE-implement-CUSE-Character-device-in-Userspace.patch
-
-0001-0004 prepares FUSE for CUSE addition and 0005 implements CUSE.
-Corresponding libfuse changes will be posted separately.
-
-This patchset is on top of...
-
-  master (ee2f6cc7f9ea2542ad46070ed62ba7aa04d08871)
-+ [1] poll-allow-f_op_poll-to-sleep-take-2
-+ [2] add-cdev_release-and-convert-cdev_alloc-to-use-it
-+ [3] extend-FUSE patchset, take #2
-
-and is also available in the following git tree.
-
- http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=cuse
- git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git cuse
-
-and contains the following changes.
-
- fs/Kconfig                 |   10 
- fs/fuse/Makefile           |    1 
- fs/fuse/cuse.c             |  720 +++++++++++++++++++++++++++++++++++++++++++++
- fs/fuse/dev.c              |   32 +-
- fs/fuse/dir.c              |   34 +-
- fs/fuse/file.c             |   61 ++-
- fs/fuse/fuse_i.h           |   45 ++
- fs/fuse/inode.c            |  145 +++++----
- include/linux/cuse.h       |   47 ++
- include/linux/fuse.h       |    2 
- include/linux/magic.h      |    5 
- include/linux/miscdevice.h |    1 
- 12 files changed, 979 insertions(+), 124 deletions(-)
-
-Thanks.
-
---
-tejun
-
-[L] http://thread.gmane.org/gmane.comp.file-systems.fuse.devel/6818
-[1] http://lkml.org/lkml/2008/11/20/161
-[2] http://article.gmane.org/gmane.linux.kernel/727133
-[3] http://lkml.org/lkml/2008/11/20/171
