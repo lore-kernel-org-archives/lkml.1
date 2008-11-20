@@ -1,88 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYKTOGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYKTOIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYKTOGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYKTOGP
+	id S1755485AbYKTOIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbYKTOId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:06:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33557 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754696AbYKTOGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:06:14 -0500
-Subject: [PATCH] intel-iommu: remove some unused struct intel_iommu fields
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Content-Type: text/plain
-Date: Thu, 20 Nov 2008 14:04:20 +0000
-Message-Id: <1227189860.3739.21.camel@blaa>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 09:08:33 -0500
+Received: from smtp3.netcologne.de ([194.8.194.66]:35829 "EHLO
+	smtp3.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754794AbYKTOIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:08:32 -0500
+Date: Thu, 20 Nov 2008 15:08:30 +0100
+From: Max Kellermann <max@duempel.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
+Message-ID: <20081120140830.GA23697@squirrel.roonstrasse.net>
+Mail-Followup-To: Trond Myklebust <trond.myklebust@fys.uio.no>,
+	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+References: <20081022091207.GA12996@squirrel.roonstrasse.net> <20081023123628.GA18549@squirrel.roonstrasse.net> <1224773745.7625.4.camel@localhost> <20081024083913.GA15197@squirrel.roonstrasse.net> <1224871763.22672.33.camel@localhost> <20081027095843.GA10937@squirrel.roonstrasse.net> <1225122503.14242.12.camel@heimdal.trondhjem.org> <20081117123536.GA16539@squirrel.roonstrasse.net> <1227133861.28898.26.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227133861.28898.26.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The seg, saved_msg and sysdev fields appear to be unused since
-before the code was first merged.
+On 2008/11/19 23:31, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> Looking at the above, it seems that you're spending an inordinate amount
+> of time in generic_match too.
+> Could you see if the following patch helps?
 
-linux/msi.h is not needed in linux/intel-iommu.h anymore since
-there is no longer a reference to struct msi_msg. The MSI code
-in drivers/pci/intel-iommu.c still has linux/msi.h included
-via linux/dmar.h.
+That fixes the problem.  The first kernel symbol in oprofile is the
+tg3 network driver at 2%.
 
-linux/sysdev.h isn't needed because there is no reference to
-struct sys_device.
-
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
----
- drivers/pci/intel-iommu.c   |    1 -
- include/linux/intel-iommu.h |    5 -----
- 2 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index a269272..271f869 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -27,7 +27,6 @@
- #include <linux/slab.h>
- #include <linux/irq.h>
- #include <linux/interrupt.h>
--#include <linux/sysdev.h>
- #include <linux/spinlock.h>
- #include <linux/pci.h>
- #include <linux/dmar.h>
-diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index 3d017cf..1bff7bf 100644
---- a/include/linux/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -23,8 +23,6 @@
- #define _INTEL_IOMMU_H_
- 
- #include <linux/types.h>
--#include <linux/msi.h>
--#include <linux/sysdev.h>
- #include <linux/iova.h>
- #include <linux/io.h>
- #include <linux/dma_remapping.h>
-@@ -289,7 +287,6 @@ struct intel_iommu {
- 	void __iomem	*reg; /* Pointer to hardware regs, virtual addr */
- 	u64		cap;
- 	u64		ecap;
--	int		seg;
- 	u32		gcmd; /* Holds TE, EAFL. Don't need SRTP, SFL, WBF */
- 	spinlock_t	register_lock; /* protect register handling */
- 	int		seq_id;	/* sequence id of the iommu */
-@@ -302,8 +299,6 @@ struct intel_iommu {
- 
- 	unsigned int irq;
- 	unsigned char name[7];    /* Device Name */
--	struct msi_msg saved_msg;
--	struct sys_device sysdev;
- 	struct iommu_flush flush;
- #endif
- 	struct q_inval  *qi;            /* Queued invalidation info */
--- 
-1.6.0.3
-
+Max
