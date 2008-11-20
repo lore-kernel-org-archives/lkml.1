@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYKTTMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYKTTMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbYKTTMF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 14:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYKTTLw
+	id S1756030AbYKTTMY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 14:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbYKTTLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 14:11:52 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51616 "EHLO
+	Thu, 20 Nov 2008 14:11:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50262 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754141AbYKTTLv (ORCPT
+	with ESMTP id S1754433AbYKTTLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Nov 2008 14:11:51 -0500
-Message-Id: <20081120191149.518690949@goodmis.org>
+Message-Id: <20081120191149.285359258@goodmis.org>
 References: <20081120190948.057007623@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Nov 2008 14:09:51 -0500
+Date: Thu, 20 Nov 2008 14:09:50 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,102 +21,156 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
        Milton Miller <miltonm@bga.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/5] powerpc: ftrace, use probe_kernel API to modify code
-Content-Disposition: inline; filename=0003-powerpc-ftrace-use-probe_kernel-API-to-modify-code.patch
+Subject: [PATCH 2/5] powerpc: ftrace, convert to new dynamic ftrace arch API
+Content-Disposition: inline; filename=0002-powerpc-ftrace-convert-to-new-dynamic-ftrace-arch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: use cleaner probe_kernel API over assembly
+Impact: update to PowerPC ftrace arch API
 
-Using probe_kernel_read/write interface is a much cleaner approach
-than the current assembly version.
+This patch converts PowerPC to use the new dynamic ftrace arch API.
+
+Thanks to Paul Mackennas for pointing out the mistakes of my original
+test_24bit_addr function.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/kernel/ftrace.c |   53 ++++++++++++++++-------------------------
- 1 files changed, 21 insertions(+), 32 deletions(-)
+ arch/powerpc/include/asm/ftrace.h |   14 +++++++-
+ arch/powerpc/kernel/ftrace.c      |   67 ++++++++++++++++++++++++++++++++++---
+ 2 files changed, 75 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index b298f7a..17efecc 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -7,7 +7,19 @@
+ 
+ #ifndef __ASSEMBLY__
+ extern void _mcount(void);
+-#endif
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++static inline unsigned long ftrace_call_adjust(unsigned long addr)
++{
++       /* reloction of mcount call site is the same as the address */
++       return addr;
++}
++
++struct dyn_arch_ftrace {
++	/* nothing yet */
++};
++#endif /*  CONFIG_DYNAMIC_FTRACE */
++#endif /* __ASSEMBLY__ */
+ 
+ #endif
+ 
 diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 24c023a..1adfbb2 100644
+index f4b006e..24c023a 100644
 --- a/arch/powerpc/kernel/ftrace.c
 +++ b/arch/powerpc/kernel/ftrace.c
-@@ -9,6 +9,7 @@
+@@ -33,12 +33,12 @@ static unsigned int ftrace_calc_offset(long ip, long addr)
+ 	return (int)(addr - ip);
+ }
  
- #include <linux/spinlock.h>
- #include <linux/hardirq.h>
-+#include <linux/uaccess.h>
- #include <linux/ftrace.h>
- #include <linux/percpu.h>
- #include <linux/init.h>
-@@ -72,45 +73,33 @@ static int
+-unsigned char *ftrace_nop_replace(void)
++static unsigned char *ftrace_nop_replace(void)
+ {
+ 	return (char *)&ftrace_nop;
+ }
+ 
+-unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ {
+ 	static unsigned int op;
+ 
+@@ -68,7 +68,7 @@ unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ # define _ASM_PTR	" .long "
+ #endif
+ 
+-int
++static int
  ftrace_modify_code(unsigned long ip, unsigned char *old_code,
  		   unsigned char *new_code)
  {
--	unsigned replaced;
--	unsigned old = *(unsigned *)old_code;
--	unsigned new = *(unsigned *)new_code;
--	int faulted = 0;
-+	unsigned char replaced[MCOUNT_INSN_SIZE];
- 
- 	/*
- 	 * Note: Due to modules and __init, code can
- 	 *  disappear and change, we need to protect against faulting
--	 *  as well as code changing.
-+	 *  as well as code changing. We do this by using the
-+	 *  probe_kernel_* functions.
- 	 *
- 	 * No real locking needed, this code is run through
--	 * kstop_machine.
-+	 * kstop_machine, or before SMP starts.
- 	 */
--	asm volatile (
--		"1: lwz		%1, 0(%2)\n"
--		"   cmpw	%1, %5\n"
--		"   bne		2f\n"
--		"   stwu	%3, 0(%2)\n"
--		"2:\n"
--		".section .fixup, \"ax\"\n"
--		"3:	li %0, 1\n"
--		"	b 2b\n"
--		".previous\n"
--		".section __ex_table,\"a\"\n"
--		_ASM_ALIGN "\n"
--		_ASM_PTR "1b, 3b\n"
--		".previous"
--		: "=r"(faulted), "=r"(replaced)
--		: "r"(ip), "r"(new),
--		  "0"(faulted), "r"(old)
--		: "memory");
--
--	if (replaced != old && replaced != new)
--		faulted = 2;
--
--	if (!faulted)
--		flush_icache_range(ip, ip + 8);
--
--	return faulted;
-+
-+	/* read the text we want to modify */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	/* Make sure it is what we expect it to be */
-+	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
-+		return -EINVAL;
-+
-+	/* replace the text with the new text */
-+	if (probe_kernel_write((void *)ip, new_code, MCOUNT_INSN_SIZE))
-+		return -EPERM;
-+
-+	flush_icache_range(ip, ip + 8);
-+
-+	return 0;
+@@ -113,6 +113,62 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 	return faulted;
  }
  
- static int test_24bit_addr(unsigned long ip, unsigned long addr)
++static int test_24bit_addr(unsigned long ip, unsigned long addr)
++{
++	long diff;
++
++	/*
++	 * Can we get to addr from ip in 24 bits?
++	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
++	 */
++	diff = addr - ip;
++
++	/*
++	 * Return true if diff is less than 1 << 25
++	 *  and greater than -1 << 26.
++	 */
++	return (diff < (1 << 25)) && (diff > (-1 << 26));
++}
++
++int ftrace_make_nop(struct module *mod,
++		    struct dyn_ftrace *rec, unsigned long addr)
++{
++	unsigned char *old, *new;
++
++	/*
++	 * If the calling address is more that 24 bits away,
++	 * then we had to use a trampoline to make the call.
++	 * Otherwise just update the call site.
++	 */
++	if (test_24bit_addr(rec->ip, addr)) {
++		/* within range */
++		old = ftrace_call_replace(rec->ip, addr);
++		new = ftrace_nop_replace();
++		return ftrace_modify_code(rec->ip, old, new);
++	}
++
++	return 0;
++}
++
++int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
++{
++	unsigned char *old, *new;
++
++	/*
++	 * If the calling address is more that 24 bits away,
++	 * then we had to use a trampoline to make the call.
++	 * Otherwise just update the call site.
++	 */
++	if (test_24bit_addr(rec->ip, addr)) {
++		/* within range */
++		old = ftrace_nop_replace();
++		new = ftrace_call_replace(rec->ip, addr);
++		return ftrace_modify_code(rec->ip, old, new);
++	}
++
++	return 0;
++}
++
+ int ftrace_update_ftrace_func(ftrace_func_t func)
+ {
+ 	unsigned long ip = (unsigned long)(&ftrace_call);
+@@ -128,9 +184,10 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
+ 
+ int __init ftrace_dyn_arch_init(void *data)
+ {
+-	/* This is running in kstop_machine */
++	/* caller expects data to be zero */
++	unsigned long *p = data;
+ 
+-	ftrace_mcount_set(data);
++	*p = 0;
+ 
+ 	return 0;
+ }
 -- 
 1.5.6.5
 
