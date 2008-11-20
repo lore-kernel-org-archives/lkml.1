@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYKTLdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbYKTLdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbYKTLdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbYKTLbR
+	id S1755426AbYKTLdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYKTLbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:31:17 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47391 "EHLO
+	Thu, 20 Nov 2008 06:31:23 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47399 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755417AbYKTLbQ (ORCPT
+	by vger.kernel.org with ESMTP id S1755441AbYKTLbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:31:16 -0500
-Subject: [PATCH 2.6.28-rc5 08/11] kmemleak: Enable the building of the memory
-	leak detector
+	Thu, 20 Nov 2008 06:31:22 -0500
+Subject: [PATCH 2.6.28-rc5 09/11] kmemleak: Keep the __init functions after
+	initialization
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Thu, 20 Nov 2008 11:31:13 +0000
-Message-ID: <20081120113113.16607.59694.stgit@pc1117.cambridge.arm.com>
+Date: Thu, 20 Nov 2008 11:31:18 +0000
+Message-ID: <20081120113118.16607.98533.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
 References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.14.3.286.g8983
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Nov 2008 11:31:13.0696 (UTC) FILETIME=[7E8D8A00:01C94B03]
+X-OriginalArrivalTime: 20 Nov 2008 11:31:19.0258 (UTC) FILETIME=[81DE3BA0:01C94B03]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Kconfig.debug and Makefile entries needed for
-building kmemleak into the kernel.
+This patch adds the CONFIG_DEBUG_KEEP_INIT option which preserves the
+.init.text section after initialization. Memory leaks happening during this
+phase can be more easily tracked.
 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- lib/Kconfig.debug |   23 +++++++++++++++++++++++
- mm/Makefile       |    1 +
- 2 files changed, 24 insertions(+), 0 deletions(-)
+ include/linux/init.h |    6 ++++++
+ lib/Kconfig.debug    |   12 ++++++++++++
+ 2 files changed, 18 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 68cb026..41321ad 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -40,9 +40,15 @@
+ 
+ /* These are for everybody (although not all archs will actually
+    discard it in modules) */
++#ifdef CONFIG_DEBUG_KEEP_INIT
++#define __init
++#define __initdata
++#define __initconst
++#else
+ #define __init		__section(.init.text) __cold notrace
+ #define __initdata	__section(.init.data)
+ #define __initconst	__section(.init.rodata)
++#endif
+ #define __exitdata	__section(.exit.data)
+ #define __exit_call	__used __section(.exitcall.exit)
+ 
 diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index b0f239e..1e59827 100644
+index 1e59827..72cde77 100644
 --- a/lib/Kconfig.debug
 +++ b/lib/Kconfig.debug
-@@ -290,6 +290,29 @@ config SLUB_STATS
- 	  out which slabs are relevant to a particular load.
- 	  Try running: slabinfo -DA
+@@ -313,6 +313,18 @@ config DEBUG_MEMLEAK
+ 	  In order to access the memleak file, debugfs needs to be
+ 	  mounted (usually at /sys/kernel/debug).
  
-+config DEBUG_MEMLEAK
-+	bool "Kernel memory leak detector"
++config DEBUG_KEEP_INIT
++	bool "Do not free the __init code/data"
 +	default n
-+	depends on EXPERIMENTAL
-+	select DEBUG_SLAB if SLAB
-+	select SLUB_DEBUG if SLUB
-+	select DEBUG_FS
-+	select STACKTRACE
-+	select FRAME_POINTER
-+	select KALLSYMS
++	depends on DEBUG_MEMLEAK
 +	help
-+	  Say Y here if you want to enable the memory leak
-+	  detector. The memory allocation/freeing is traced in a way
-+	  similar to the Boehm's conservative garbage collector, the
-+	  difference being that the orphan objects are not freed but
-+	  only shown in /sys/kernel/debug/memleak. Enabling this
-+	  feature will introduce an overhead to memory
-+	  allocations. See Documentation/kmemleak.txt for more
-+	  details.
++	  This option moves the __init code/data out of the
++	  .init.text/.init.data sections. It is useful for identifying
++	  memory leaks happening during the kernel or modules
++	  initialization.
 +
-+	  In order to access the memleak file, debugfs needs to be
-+	  mounted (usually at /sys/kernel/debug).
++	  If unsure, say N.
 +
  config DEBUG_PREEMPT
  	bool "Debug preemptible kernel"
  	depends on DEBUG_KERNEL && PREEMPT && (TRACE_IRQFLAGS_SUPPORT || PPC64)
-diff --git a/mm/Makefile b/mm/Makefile
-index c06b45a..3e43536 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -34,3 +34,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
-+obj-$(CONFIG_DEBUG_MEMLEAK) += memleak.o
 
