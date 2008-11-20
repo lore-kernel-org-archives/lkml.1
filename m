@@ -1,48 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbYKTPCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbYKTO5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbYKTPCy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 10:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbYKTOxL
+	id S1758329AbYKTO5R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbYKTOpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:53:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58682 "EHLO hera.kernel.org"
+	Thu, 20 Nov 2008 09:45:06 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41175 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757027AbYKTOxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:53:09 -0500
-From: Tejun Heo <tj@kernel.org>
-To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu, akpm@linux-foundation.org, npiggin@suse.de
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 2/6] fdtable: export alloc_fd()
-Date: Thu, 20 Nov 2008 23:52:16 +0900
-Message-Id: <1227192740-10532-3-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1227192740-10532-1-git-send-email-tj@kernel.org>
-References: <1227192740-10532-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:52:30 +0000 (UTC)
+	id S1756071AbYKTOo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:44:58 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 35/45] NFS: Define and create inode-level cache objects [ver
+	#41]
+To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
+Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Date: Thu, 20 Nov 2008 14:44:39 +0000
+Message-ID: <20081120144439.10667.41303.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
+References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export alloc_fd().  Will be used by FUSE.
+Define and create inode-level cache data storage objects (as managed by
+nfs_inode structs).
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
+Each inode-level object is created in a superblock-level index object and is
+itself a data storage object into which pages from the inode are stored.
+
+The inode object key is the NFS file handle for the inode.
+
+The inode object is given coherency data to carry in the auxiliary data
+permitted by the cache.  This is a sequence made up of:
+
+ (1) i_mtime from the NFS inode.
+
+ (2) i_ctime from the NFS inode.
+
+ (3) i_size from the NFS inode.
+
+ (4) change_attr from the NFSv4 attribute data.
+
+As the cache is a persistent cache, the auxiliary data is checked when a new
+NFS in-memory inode is set up that matches an already existing data storage
+object in the cache.  If the coherency data is the same, the on-disk object is
+retained and used; if not, it is scrapped and a new one created.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
- fs/file.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/file.c b/fs/file.c
-index f313314..806b3ad 100644
---- a/fs/file.c
-+++ b/fs/file.c
-@@ -487,6 +487,7 @@ out:
- 	spin_unlock(&files->file_lock);
- 	return error;
- }
-+EXPORT_SYMBOL_GPL(alloc_fd);
+ fs/nfs/fscache-index.c |  123 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nfs/fscache.h       |    1 
+ 2 files changed, 124 insertions(+), 0 deletions(-)
+
+
+diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
+index a824050..7bc54ac 100644
+--- a/fs/nfs/fscache-index.c
++++ b/fs/nfs/fscache-index.c
+@@ -146,3 +146,126 @@ const struct fscache_cookie_def nfs_fscache_super_index_def = {
+ 	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
+ 	.get_key	= nfs_super_get_key,
+ };
++
++/*
++ * Definition of the auxiliary data attached to NFS inode storage objects
++ * within the cache.
++ *
++ * The contents of this struct are recorded in the on-disk local cache in the
++ * auxiliary data attached to the data storage object backing an inode.  This
++ * permits coherency to be managed when a new inode binds to an already extant
++ * cache object.
++ */
++struct nfs_fscache_inode_auxdata {
++	struct timespec	mtime;
++	struct timespec	ctime;
++	loff_t		size;
++	u64		change_attr;
++};
++
++/*
++ * Generate a key to describe an NFS inode in an NFS server's index
++ */
++static uint16_t nfs_fscache_inode_get_key(const void *cookie_netfs_data,
++					  void *buffer, uint16_t bufmax)
++{
++	const struct nfs_inode *nfsi = cookie_netfs_data;
++	uint16_t nsize;
++
++	/* use the inode's NFS filehandle as the key */
++	nsize = nfsi->fh.size;
++	memcpy(buffer, nfsi->fh.data, nsize);
++	return nsize;
++}
++
++/*
++ * Get certain file attributes from the netfs data
++ * - This function can be absent for an index
++ * - Not permitted to return an error
++ * - The netfs data from the cookie being used as the source is presented
++ */
++static void nfs_fscache_inode_get_attr(const void *cookie_netfs_data,
++				       uint64_t *size)
++{
++	const struct nfs_inode *nfsi = cookie_netfs_data;
++
++	*size = nfsi->vfs_inode.i_size;
++}
++
++/*
++ * Get the auxiliary data from netfs data
++ * - This function can be absent if the index carries no state data
++ * - Should store the auxiliary data in the buffer
++ * - Should return the amount of amount stored
++ * - Not permitted to return an error
++ * - The netfs data from the cookie being used as the source is presented
++ */
++static uint16_t nfs_fscache_inode_get_aux(const void *cookie_netfs_data,
++					  void *buffer, uint16_t bufmax)
++{
++	struct nfs_fscache_inode_auxdata auxdata;
++	const struct nfs_inode *nfsi = cookie_netfs_data;
++
++	memset(&auxdata, 0, sizeof(auxdata));
++	auxdata.size = nfsi->vfs_inode.i_size;
++	auxdata.mtime = nfsi->vfs_inode.i_mtime;
++	auxdata.ctime = nfsi->vfs_inode.i_ctime;
++
++	if (NFS_SERVER(&nfsi->vfs_inode)->nfs_client->rpc_ops->version == 4)
++		auxdata.change_attr = nfsi->change_attr;
++
++	if (bufmax > sizeof(auxdata))
++		bufmax = sizeof(auxdata);
++
++	memcpy(buffer, &auxdata, bufmax);
++	return bufmax;
++}
++
++/*
++ * Consult the netfs about the state of an object
++ * - This function can be absent if the index carries no state data
++ * - The netfs data from the cookie being used as the target is
++ *   presented, as is the auxiliary data
++ */
++static
++enum fscache_checkaux nfs_fscache_inode_check_aux(void *cookie_netfs_data,
++						  const void *data,
++						  uint16_t datalen)
++{
++	struct nfs_fscache_inode_auxdata auxdata;
++	struct nfs_inode *nfsi = cookie_netfs_data;
++
++	if (datalen != sizeof(auxdata))
++		return FSCACHE_CHECKAUX_OBSOLETE;
++
++	memset(&auxdata, 0, sizeof(auxdata));
++	auxdata.size = nfsi->vfs_inode.i_size;
++	auxdata.mtime = nfsi->vfs_inode.i_mtime;
++	auxdata.ctime = nfsi->vfs_inode.i_ctime;
++
++	if (NFS_SERVER(&nfsi->vfs_inode)->nfs_client->rpc_ops->version == 4)
++		auxdata.change_attr = nfsi->change_attr;
++
++	if (memcmp(data, &auxdata, datalen) != 0)
++		return FSCACHE_CHECKAUX_OBSOLETE;
++
++	return FSCACHE_CHECKAUX_OKAY;
++}
++
++/*
++ * Define the inode object for FS-Cache.  This is used to describe an inode
++ * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
++ * an inode.
++ *
++ * Coherency is managed by comparing the copies of i_size, i_mtime and i_ctime
++ * held in the cache auxiliary data for the data storage object with those in
++ * the inode struct in memory.
++ */
++const struct fscache_cookie_def nfs_fscache_inode_object_def = {
++	.name		= "NFS.fh",
++	.type		= FSCACHE_COOKIE_TYPE_DATAFILE,
++	.get_key	= nfs_fscache_inode_get_key,
++	.get_attr	= nfs_fscache_inode_get_attr,
++	.get_aux	= nfs_fscache_inode_get_aux,
++	.check_aux	= nfs_fscache_inode_check_aux,
++};
+diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
+index 22b971e..d21b590 100644
+--- a/fs/nfs/fscache.h
++++ b/fs/nfs/fscache.h
+@@ -62,6 +62,7 @@ struct nfs_fscache_key {
+ extern struct fscache_netfs nfs_fscache_netfs;
+ extern const struct fscache_cookie_def nfs_fscache_server_index_def;
+ extern const struct fscache_cookie_def nfs_fscache_super_index_def;
++extern const struct fscache_cookie_def nfs_fscache_inode_object_def;
  
- int get_unused_fd(void)
- {
--- 
-1.5.6
+ extern int nfs_fscache_register(void);
+ extern void nfs_fscache_unregister(void);
 
