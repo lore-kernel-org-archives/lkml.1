@@ -1,179 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYKTPYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYKTP1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbYKTPYe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 10:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYKTPYH
+	id S1756140AbYKTP1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbYKTP1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 10:24:07 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:50726 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756107AbYKTPYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 10:24:04 -0500
-Message-ID: <49257B40.8020807@atmel.com>
-Date: Thu, 20 Nov 2008 15:59:12 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Thu, 20 Nov 2008 10:27:38 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:55997 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754921AbYKTP1h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 10:27:37 -0500
+Date: Thu, 20 Nov 2008 08:27:19 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org, Naval Saini <navalnovel@gmail.com>,
+       linux-arch@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, naval.saini@nxp.com,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline kernel (specifically arm in our case)
+Message-ID: <20081120152719.GS1617@parisc-linux.org>
+References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com> <200811201759.01039.nickpiggin@yahoo.com.au> <b647ffbd0811200428u2b41b108ifb02872563c871ab@mail.gmail.com> <200811210025.39568.nickpiggin@yahoo.com.au> <20081120135558.GB24308@linux-mips.org>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: Ben Dooks <ben-linux@fluff.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
-Subject: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
-References: <491C0C05.6040301@atmel.com>	<20081113134818.GA9161@fluff.org.uk>	<491C3D16.1050501@atmel.com> <20081119193631.448ae25e@mjolnir.drzeus.cx>
-In-Reply-To: <20081119193631.448ae25e@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120135558.GB24308@linux-mips.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Needed to use the atmel-mci driver in an architecture
-independant maner.
+On Thu, Nov 20, 2008 at 01:55:58PM +0000, Ralf Baechle wrote:
+> It's better to avoid aliases than dealing with them by flushing.  A way to
+> avoid aliases whenever a page is mapped to userspace, one creates a mapping
+> at a carefully choosen address that doesn't alias.  On architectures with
+> software reload TLBs such as MIPS that's very cheap and the entire
+> cacheflush with all it's associated pains can go away.  Right now MIPS uses
+> such a mechanism:
+> 
+>   void *kmap_coherent(struct page *page, unsigned long addr);
+>   void kunmap_coherent(void);
+> 
+> within the architecture private implementation but it could be use beyond
+> that, probably on all architectures though I know that there would be some
+> solvable issues on PARISC.  Lightweight, no ordering constraints between
+> kernel and userspace accesses, so also no locking needed.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
-V2: add mimc200 board.
-Beware: embeds a git mv of atmel-mci.h
+I'm not quite sure why you need kmap_coherent().  If a page is mapped into
+userspace, you can find what address it's mapped to from
+page->mapping->i_mmap and page->index.  OTOH, that's potentially
+expensive since you need to grab the spinlock, and unless you have all
+user addresses coherent with each other (like parisc does), you need to
+figure out which process to be coherent with.
 
- arch/avr32/boards/atngw100/setup.c                 |    2 +-
- arch/avr32/boards/atstk1000/atstk1002.c            |    2 +-
- arch/avr32/boards/atstk1000/atstk1003.c            |    2 +-
- arch/avr32/boards/atstk1000/atstk1004.c            |    2 +-
- arch/avr32/boards/mimc200/setup.c                  |    2 +-
- arch/avr32/mach-at32ap/at32ap700x.c                |    2 +-
- drivers/mmc/host/atmel-mci.c                       |    2 +-
- .../include/asm => include/linux}/atmel-mci.h      |    6 +++---
- 8 files changed, 10 insertions(+), 10 deletions(-)
+I know James Bottomley did an experiment (and did an OLS presentation
+...) on unmapping the entire page cache and greatly expanding the kmap
+area to do just this kind of thing.  I think he even got a speedup.
 
-diff --git a/arch/avr32/boards/atngw100/setup.c b/arch/avr32/boards/atngw100/setup.c
-index 32fb9ba..05d3722 100644
---- a/arch/avr32/boards/atngw100/setup.c
-+++ b/arch/avr32/boards/atngw100/setup.c
-@@ -19,8 +19,8 @@
- #include <linux/types.h>
- #include <linux/leds.h>
- #include <linux/spi/spi.h>
-+#include <linux/atmel-mci.h>
- 
--#include <asm/atmel-mci.h>
- #include <asm/io.h>
- #include <asm/setup.h>
- 
-diff --git a/arch/avr32/boards/atstk1000/atstk1002.c b/arch/avr32/boards/atstk1000/atstk1002.c
-index 5c5cdf3..6d94f74 100644
---- a/arch/avr32/boards/atstk1000/atstk1002.c
-+++ b/arch/avr32/boards/atstk1000/atstk1002.c
-@@ -16,12 +16,12 @@
- #include <linux/types.h>
- #include <linux/spi/spi.h>
- #include <linux/spi/at73c213.h>
-+#include <linux/atmel-mci.h>
- 
- #include <video/atmel_lcdc.h>
- 
- #include <asm/io.h>
- #include <asm/setup.h>
--#include <asm/atmel-mci.h>
- 
- #include <mach/at32ap700x.h>
- #include <mach/board.h>
-diff --git a/arch/avr32/boards/atstk1000/atstk1003.c b/arch/avr32/boards/atstk1000/atstk1003.c
-index 134b566..db2038c 100644
---- a/arch/avr32/boards/atstk1000/atstk1003.c
-+++ b/arch/avr32/boards/atstk1000/atstk1003.c
-@@ -17,9 +17,9 @@
- 
- #include <linux/spi/at73c213.h>
- #include <linux/spi/spi.h>
-+#include <linux/atmel-mci.h>
- 
- #include <asm/setup.h>
--#include <asm/atmel-mci.h>
- 
- #include <mach/at32ap700x.h>
- #include <mach/board.h>
-diff --git a/arch/avr32/boards/atstk1000/atstk1004.c b/arch/avr32/boards/atstk1000/atstk1004.c
-index cb32eb8..29b35ac 100644
---- a/arch/avr32/boards/atstk1000/atstk1004.c
-+++ b/arch/avr32/boards/atstk1000/atstk1004.c
-@@ -17,11 +17,11 @@
- 
- #include <linux/spi/at73c213.h>
- #include <linux/spi/spi.h>
-+#include <linux/atmel-mci.h>
- 
- #include <video/atmel_lcdc.h>
- 
- #include <asm/setup.h>
--#include <asm/atmel-mci.h>
- 
- #include <mach/at32ap700x.h>
- #include <mach/board.h>
-diff --git a/arch/avr32/boards/mimc200/setup.c b/arch/avr32/boards/mimc200/setup.c
-index 397cbb8..811d730 100644
---- a/arch/avr32/boards/mimc200/setup.c
-+++ b/arch/avr32/boards/mimc200/setup.c
-@@ -24,7 +24,7 @@ extern struct atmel_lcdfb_info mimc200_lcdc_data;
- #include <video/atmel_lcdc.h>
- #include <linux/fb.h>
- 
--#include <asm/atmel-mci.h>
-+#include <linux/atmel-mci.h>
- #include <linux/io.h>
- #include <asm/setup.h>
- 
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index 0c6e02f..bc95ba7 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -15,8 +15,8 @@
- #include <linux/gpio.h>
- #include <linux/spi/spi.h>
- #include <linux/usb/atmel_usba_udc.h>
-+#include <linux/atmel-mci.h>
- 
--#include <asm/atmel-mci.h>
- #include <asm/io.h>
- #include <asm/irq.h>
- 
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 7a3f243..1e97916 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -25,8 +25,8 @@
- #include <linux/stat.h>
- 
- #include <linux/mmc/host.h>
-+#include <linux/atmel-mci.h>
- 
--#include <asm/atmel-mci.h>
- #include <asm/io.h>
- #include <asm/unaligned.h>
- 
-diff --git a/arch/avr32/include/asm/atmel-mci.h b/include/linux/atmel-mci.h
-similarity index 91%
-rename from arch/avr32/include/asm/atmel-mci.h
-rename to include/linux/atmel-mci.h
-index 59f3fad..2a2213e 100644
---- a/arch/avr32/include/asm/atmel-mci.h
-+++ b/include/linux/atmel-mci.h
-@@ -1,5 +1,5 @@
--#ifndef __ASM_AVR32_ATMEL_MCI_H
--#define __ASM_AVR32_ATMEL_MCI_H
-+#ifndef __LINUX_ATMEL_MCI_H
-+#define __LINUX_ATMEL_MCI_H
- 
- #define ATMEL_MCI_MAX_NR_SLOTS	2
- 
-@@ -36,4 +36,4 @@ struct mci_platform_data {
- 	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
- };
- 
--#endif /* __ASM_AVR32_ATMEL_MCI_H */
-+#endif /* __LINUX_ATMEL_MCI_H */
 -- 
-1.5.3.7
-
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
