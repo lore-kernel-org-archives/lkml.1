@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYKTQsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYKTQtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbYKTQsf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 11:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbYKTQs0
+	id S1756864AbYKTQtP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 11:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYKTQs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 11:48:26 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:56240 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbYKTQsZ (ORCPT
+	Thu, 20 Nov 2008 11:48:59 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58616 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753529AbYKTQs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 11:48:25 -0500
-Date: Thu, 20 Nov 2008 10:47:24 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] Allocate module.ref array dynamically
-In-Reply-To: <200811161030.34054.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0811201038580.19948@quilx.com>
-References: <s5htzaekp6o.wl%tiwai@suse.de> <200811141019.49493.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0811131759250.7010@quilx.com> <200811161030.34054.rusty@rustcorp.com.au>
+	Thu, 20 Nov 2008 11:48:58 -0500
+Date: Thu, 20 Nov 2008 17:50:39 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Simon Holm Th?gersen <account@cs.aau.dk>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: Crash during suspend to disk
+Message-ID: <20081120165039.GC23522@elf.ucw.cz>
+References: <1227184916.4855.31.camel@odie.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227184916.4855.31.camel@odie.local>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008, Rusty Russell wrote:
+Hi!
 
-> > And other flags can become necessary if percpu areas gain the ability of
-> > being dynamically extended.
->
-> And other flags become impossible, eg. GFP_ATOMIC.
+> I hope this information is sufficient to debug my problem, though it
+> unfortunately is somewhat incomplete. I took two pictures of the OOPS
+> with my mobile phone, but unfortunately the picture of the upper part is
+> so blurred that it is unreadable. Apparently I have to be in a hurry
+> getting out of the door for this to happen. Here is what I got from the
+> lower part
 
-There are other flags that may become relevant like GFP_THISNODE, reclaim
-settings (counter allocation from filesystem context) etc.
+> 
+> Call Trace:
+>   __blkdev_put
+>   swsusp_write
+>   hibernate
+>   state_store
+>   state_store
+>   state_store
+>   kobj_attr_store
+>   sysfs_write_file
+>   sysfs_write_file
+>   vfs_write
+>   sys_write
+>   sysenter_do_call
+> Code: ......
+> EIP: [<...>] iput
+> ---[ end trace ........................... ]---
 
-> The strange indirection was from someone's failed experiment at only
-> allocating only online cpus.  We should kill that as a separate patch.
+Hmm, I'm afraid this is not enough, not even if the blanks are filled.
 
-I fully agree.
+> I believe I've seen the same crash before with a 2.6.27 or earlier
+> kernel, but I was in a hurry getting out of the door back then as I was
+> here. Circumstances was the same though, with already successful suspend
+> to disk and the crash appearing during second or third attempt to
+> suspend to disk in quick succession.
+> 
+> I guess I should be able to reproduce the crash with some efforts, but
+> I'd like to hear your thoughts on this before I do that.
 
-> There are several seperate things here (this is to make sure my head is
-> straight and to clarify for others skimming):
->
-> 1) Make the dynamic percpu allocator use the static percpu system.
->    - Agreed, always the aim, never quite happened.
-
-Ack.
-
-> 2) Make zeroing optional
->    - Disagree, adds API complexity for corner case with no gain.  Using
->      gfp_t for it is even worse, since it implies GFP_ATOMIC is valid or
->      sensible.
-
-It does not imply that. Various allocations limit the type of flags that
-can be passed. Also there may be situations in which GFP_ATOMIC will make
-sense in the future f.e. if a percpu counter structure has to be allocated
-from an interrupt context.
-
-GFP_FS, GFP_IO, GFP_NOFAIL GFP_ZERO GFP_NOMEMALLOC GFP_THISNODE and
-GFP_HARDWALL could all be relevant for a dynamically extending percpu
-allocator since memory reclaim could be triggered.
-
-> 3) Change API to use CAPS for macros
->    - Strongly disagree, Linus doesn't use CAPS for type-taking macros
->      (list_entry, container_of, min_t), it's ugly, and status-quo wins.
-
-That is the cause for many problems because people assume these can be
-handled like a function.
-
-> 4) Get rid of unused "online-only" percpu allocators.
->    - Agree, and will simplify implementation and macro tangle.
-
-Ack.
-
-> 5) Make dynamic percpu var access more efficient.
->    - Agree, obviously.  x86 for the moment, the rest can follow (or not).
-
-Ack.
->
-> 6) Use percpu allocations more widely.
->    - Definitely, I have some other patches which use it too.  And makes even
->      more sense once (5) is done.
-
-Ack.
-
-> 7) Make percpu area grow dynamically.
->    - Yes, but a thorny tangle esp. with IA64.  The cmdline hack is probably
->      sufficient meanwhile, and parallels can be drawn with vmalloc.
-
-Allright. Please check with David Miller who wants to allocate thousands
-of network interfaces which all need a MIB block.
-
+If you can reproduce that, we can probably debug it...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
