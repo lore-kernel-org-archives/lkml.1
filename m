@@ -1,63 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbYKTLTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYKTLTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754402AbYKTLTI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYKTLSx
+	id S1755285AbYKTLTu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYKTLTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:18:53 -0500
-Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:29128 "EHLO
-	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755084AbYKTLSw (ORCPT
+	Thu, 20 Nov 2008 06:19:38 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:27733 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754267AbYKTLTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:18:52 -0500
-X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 06:18:52 EST
-X-IronPort-AV: E=Sophos;i="4.33,639,1220220000"; 
-   d="scan'208";a="20168005"
-Message-ID: <4925453B.5010400@loria.fr>
-Date: Thu, 20 Nov 2008 12:08:43 +0100
-From: Jens Gustedt <jens.gustedt@loria.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080925 Lightning/0.9 Thunderbird/2.0.0.17 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Reg Clemens <reg@dwf.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Problem with 2.6.27.5 kernel (wont load)
-References: <200811200937.mAK9b3Hq005271@deneb.dwf.com>
-In-Reply-To: <200811200937.mAK9b3Hq005271@deneb.dwf.com>
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAAXNSR0IArs4c6QAAACFQTFRF
- AAAAHBYVRBwdOS4reSQltSksozs7gEhFYVFKzlxarIiBkD01owAAAAF0Uk5TAEDm2GYAAAABYktH
- RACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2AcHFSUs3YgN1AAAAhNJREFUOMu1
- k89r2zAUxzWyQ5ZTXwWb6c2qiU1PU3XxctqC67LcZcitMEthObVeidud6hhWs7s9cnPoIGn+yknp
- mO3Y1wlswfvo+57eDyH0P9Yb9Q12LfNAcFk+Cz5vAc4LGQoetEEupbwQ08p0K/iVisA5DyQP+NVr
- P/y4BxfKVKKF+heK5Wr3KhBavlYUYprzKfcmf6MqEIqg8JxH63OuPc5rQIYecRM21O7CvQLtQUks
- 3zPhmJzlXMqXGCKYXaMefevZ0dlCjne+CK/3oNBbj/34ZEXEn8S73SKucukDux/bSzIj904j71cM
- f1iFN8uYiG8PdfBE4TyOEogtab6vgxQwUCeF2J+BUQfLFBMSR5hYJoPK1+9cTmz5dTU+MQ2MoTqv
- CjhXtSjGhglqVYpnVQZd1K2r7XBUdVtXhQex4+KmAq1US4PAcV2qCK5dqk/0SmANB4q+Okcxg7V2
- dYIagJye/nzCzdgKYHj3C1KXpqyZeB+O/eIyymiWwKhRXUpk4N9lJKNGo4aopyTjlLlZcoQOADw6
- TsoyWh5MKMC5urFLR61pB50H63gdqaGulHWAQbmjRveL2mK3054xxh66XFGgoy5fzGDM2Gxbmj5j
- NMObO+cQJJhhZnx3UnooWHzBNxSWaaOzCK2t0LTViKpxg0aYZDgz7fil5fW6r/FwY97GxATd3LoA
- hpcLUUQO/TclfwCdcJu31IbsiAAAAABJRU5ErkJggg==
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 06:19:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=WOmgJIpz32C3cuWFl3sdKec0k1pGY1PJZmHsoTMtJszGHLTMGGvoy+IZCQTrV2w04L
+         0p1s/XGWSgzmNLm41m9u5N7mi69KSDEaln42J8Cc7qq+vjSnJaRIzSLbjv1RCtTcrwpb
+         oLCI/vBUPIoyl6eFegPx2KtkXNRBG/M4zScxE=
+From: crquan@gmail.com
+To: NeilBrown <neilb@suse.de>, linux-raid@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       wshen_gfkd@163.com
+Subject: [PATCH] md_print_devices: use le{32,64}_to_cpu to access data correctly
+Date: Thu, 20 Nov 2008 19:19:57 +0800
+Message-Id: <1227179997-6394-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.6.0.4.757.g6d002.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Cheng Renquan <crquan@gmail.com>
 
-Reg Clemens schrieb:
-> I have built the 2.6.27.5 kernel with and without the PPS changes,
-> and in both cases the kernel build with no obvious errors, but when
-> you try to load it, you get about a half dozen lines of output, and then
-> 
-> 	<clip>
-> 	Unable to access resume device (/dev/sda5)
-> 	mount: could not find filesystem '/dev/root'
-> 	<clip>
+The previous direct accessing have endian problems,
+Sorry for that lacking of thoughtful consideration.
 
-looks that you compiled your filesystems as modules (why?) and didn't 
-update your initramfs for your
-new kernel
+At the same time define a MASK value to get the seconds
+value of time conveniently.
 
-Jens
+Signed-off-by: Cheng Renquan <crquan@gmail.com>
+---
+This patch can be applied on git://neil.brown.name/md for-next branch.
 
+ drivers/md/md.c           |   38 +++++++++++++++++++++++---------------
+ include/linux/raid/md_p.h |    2 ++
+ 2 files changed, 25 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index ffc63be..058cf34 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -1664,37 +1664,45 @@ static void print_sb_1(struct mdp_superblock_1 *sb)
+ 	__u8 *uuid;
+ 
+ 	uuid = sb->set_uuid;
+-	printk(KERN_INFO "md:  SB: (V:%d) (F:%x) Array-ID:<%02x%02x%02x%02x"
++	printk(KERN_INFO "md:  SB: (V:%u) (F:0x%08x) Array-ID:<%02x%02x%02x%02x"
+ 			":%02x%02x:%02x%02x:%02x%02x:%02x%02x%02x%02x%02x%02x>\n"
+ 	       KERN_INFO "md:    Name: \"%s\" CT:%Lu\n",
+-		sb->major_version, sb->feature_map,
++		le32_to_cpu(sb->major_version),
++		le32_to_cpu(sb->feature_map),
+ 		uuid[0], uuid[1], uuid[2], uuid[3],
+ 		uuid[4], uuid[5], uuid[6], uuid[7],
+ 		uuid[8], uuid[9], uuid[10], uuid[11],
+ 		uuid[12], uuid[13], uuid[14], uuid[15],
+ 		sb->set_name,
+-		sb->ctime & 0xffffffffffLL);
++		le64_to_cpu(sb->ctime) & MD_SUPERBLOCK_1_TIME_SEC_MASK);
+ 
+ 	uuid = sb->device_uuid;
+-	printk(KERN_INFO "md:       L%d SZ%Ld RD:%d LO:%d CS:%d DO:%Ld DS:%Ld SO:%Ld"
+-			" RO:%Ld\n"
++	printk(KERN_INFO "md:       L%u SZ%Lu RD:%u LO:%u CS:%u DO:%Lu DS:%Lu SO:%Lu"
++			" RO:%Lu\n"
+ 	       KERN_INFO "md:     Dev:%08x UUID: %02x%02x%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+ 			":%02x%02x%02x%02x%02x%02x\n"
+-	       KERN_INFO "md:       (F:%d) UT:%Lu Events:%Ld ResyncOffset:%Ld CSUM:%08x\n"
+-	       KERN_INFO "md:         (MaxDev:%d) \n",
+-		sb->level, sb->size, sb->raid_disks,
+-		sb->layout, sb->chunksize,
+-		sb->data_offset, sb->data_size,
+-		sb->super_offset, sb->recovery_offset,
+-		sb->dev_number,
++	       KERN_INFO "md:       (F:0x%08x) UT:%Lu Events:%Lu ResyncOffset:%Lu CSUM:0x%08x\n"
++	       KERN_INFO "md:         (MaxDev:%u) \n",
++		le32_to_cpu(sb->level),
++		le64_to_cpu(sb->size),
++		le32_to_cpu(sb->raid_disks),
++		le32_to_cpu(sb->layout),
++		le32_to_cpu(sb->chunksize),
++		le64_to_cpu(sb->data_offset),
++		le64_to_cpu(sb->data_size),
++		le64_to_cpu(sb->super_offset),
++		le64_to_cpu(sb->recovery_offset),
++		le32_to_cpu(sb->dev_number),
+ 		uuid[0], uuid[1], uuid[2], uuid[3],
+ 		uuid[4], uuid[5], uuid[6], uuid[7],
+ 		uuid[8], uuid[9], uuid[10], uuid[11],
+ 		uuid[12], uuid[13], uuid[14], uuid[15],
+ 		sb->devflags,
+-		sb->utime, sb->events,
+-		sb->resync_offset,
+-		sb->sb_csum, sb->max_dev
++		le64_to_cpu(sb->utime) & MD_SUPERBLOCK_1_TIME_SEC_MASK,
++		le64_to_cpu(sb->events),
++		le64_to_cpu(sb->resync_offset),
++		le32_to_cpu(sb->sb_csum),
++		le32_to_cpu(sb->max_dev)
+ 		);
+ }
+ 
+diff --git a/include/linux/raid/md_p.h b/include/linux/raid/md_p.h
+index 8b4de4a..269e147 100644
+--- a/include/linux/raid/md_p.h
++++ b/include/linux/raid/md_p.h
+@@ -194,6 +194,8 @@ static inline __u64 md_event(mdp_super_t *sb) {
+ 	return (ev<<32)| sb->events_lo;
+ }
+ 
++#define MD_SUPERBLOCK_1_TIME_SEC_MASK ((1UL<<40) - 1)
++
+ /*
+  * The version-1 superblock :
+  * All numeric fields are little-endian.
+-- 
+1.6.0.4.757.g6d002.dirty
+
+Cheng Renquan, Shenzhen, China
