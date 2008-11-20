@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYKTJOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYKTJPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYKTJOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbYKTJOV
+	id S1754453AbYKTJPv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYKTJO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:14:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37326 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 04:14:56 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53905 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbYKTJOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:14:18 -0500
-Message-ID: <49252A54.6010602@redhat.com>
-Date: Thu, 20 Nov 2008 11:13:56 +0200
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	id S1753968AbYKTJOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 04:14:54 -0500
+Date: Thu, 20 Nov 2008 10:13:03 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+Message-ID: <20081120091303.GF26308@kernel.dk>
+References: <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net> <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net> <49244B69.80903@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net> <20081119172919.GT26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net> <20081119204624.GW26308@kernel.dk>
 MIME-Version: 1.0
-To: Ryota OZAKI <ozaki.ryota@gmail.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
-       chrisw@redhat.com, avi@redhat.com, dlaor@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com, cl@linux-foundation.org, corbet@lwn.net
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
-References: <1226888432-3662-1-git-send-email-ieidus@redhat.com> <5e93dcec0811192344l3813867egcc6b5a3c666142b9@mail.gmail.com> <492527DF.1080602@redhat.com>
-In-Reply-To: <492527DF.1080602@redhat.com>
-Content-Type: multipart/mixed;
- boundary="------------090500050002060706000102"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081119204624.GW26308@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090500050002060706000102
-Content-Type: text/plain; charset=windows-1255; format=flowed
-Content-Transfer-Encoding: 8bit
+On Wed, Nov 19 2008, Jens Axboe wrote:
+> On Wed, Nov 19 2008, Miller, Mike (OS Dev) wrote:
+> > Jens wrote:
+> > 
+> > >
+> > > Yeah, kexec is definitely a clue. My guess is that we got
+> > > some sort of left over completion. Regardless of the status
+> > > of this particular bug or not, I think it would be a good
+> > > idea to add some checks for when a command is attempted
+> > > removed from a queue it isn't currently on.
+> > >
+> > 
+> > I agree, I'll fix.
+> 
+> I'd propose just converting it to list_head instead of doing it
+> manually. Heck, that should be a 5 minute job, let me just do it...
+> 
+> OK, here it is, totally untested (it compiles, must be golden...)
 
-φιθεθ Izik Eidus:
-> φιθεθ Ryota OZAKI:
->> Hi Izik,
->>
->> I've tried your patch set, but ksm doesn't work in my machine.
->>
->> I compiled linux patched with the four patches and configured with KSM
->> and KVM enabled. After boot with the linux, I run two VMs running linux
->> using QEMU with a patch in your mail and started KSM scanner with your
->> script, then the host linux caused panic with the following oops.
->>   
->
-> Yes you are right, we are missing pte_unmap(pte); in get_pte()!
-> that will effect just 32bits with highmem so this why you see it
-> thanks for the reporting, i will fix it for v3
->
-> below patch should fix it (i cant test it now, will test it for v3)
->
-> can you report if it fix your problem? thanks
->
-Thinking about what i just did, it is wrong,
-this patch is the right one (still wasnt tested), but if you are going 
-to apply something then use this one.
+It was missing a list_entry() in fail_all_cmds(), apart from that it was
+fine. I changed it to use hlist instead, as that is more appropriate and
+similar to how it worked before. It also means there's no extra space
+usage in the controller structure. I've tested it and it works fine for
+me.
 
-thanks
+Mike, can you give this a look-over and give me a Reviewed-by or
+similar? As an extra bonus, it also gets rid of some code.
 
---------------090500050002060706000102
-Content-Type: text/plain;
- name="fix_highmem_2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix_highmem_2"
+ 3 files changed, 33 insertions(+), 46 deletions(-)
 
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 707be52..c842c29 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -569,14 +569,16 @@ out:
- static int is_present_pte(struct mm_struct *mm, unsigned long addr)
- {
- 	pte_t *ptep;
-+	int r;
- 
- 	ptep = get_pte(mm, addr);
- 	if (!ptep)
- 		return 0;
- 
--	if (pte_present(*ptep))
--		return 1;
--	return 0;
-+	r = pte_present(*ptep);
-+	pte_unmap(ptep);
-+
-+	return r;
- }
- 
- #define PAGEHASH_LEN 128
-@@ -669,6 +671,7 @@ static int try_to_merge_one_page(struct mm_struct *mm,
- 	if (!orig_ptep)
- 		goto out_unlock;
- 	orig_pte = *orig_ptep;
-+	pte_unmap(orig_ptep);
- 	if (!pte_present(orig_pte))
- 		goto out_unlock;
- 	if (page_to_pfn(oldpage) != pte_pfn(orig_pte))
+http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=e303054e55acd1b6478b8859a5f8648bfaf69a44
 
---------------090500050002060706000102--
+-- 
+Jens Axboe
+
