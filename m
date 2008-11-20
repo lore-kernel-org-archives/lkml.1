@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYKTQGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYKTQGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbYKTQGJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 11:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbYKTQFy
+	id S1755389AbYKTQGb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 11:06:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYKTQGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 11:05:54 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56806 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754891AbYKTQFx (ORCPT
+	Thu, 20 Nov 2008 11:06:16 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:25274 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756104AbYKTQGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 11:05:53 -0500
-Subject: Re: [PATCH 1/8] intel-iommu: move DMA_32/64BIT_PFN into
-	intel-iommu.c
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mark McLoughlin <markmc@redhat.com>
-Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       x86@kernel.org
-In-Reply-To: <1227196190-488-1-git-send-email-markmc@redhat.com>
-References: <1227191861.4901.24.camel@macbook.infradead.org>
-	 <1227196190-488-1-git-send-email-markmc@redhat.com>
-Content-Type: text/plain
-Date: Thu, 20 Nov 2008 16:05:50 +0000
-Message-Id: <1227197150.4901.28.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 20 Nov 2008 11:06:14 -0500
+Message-ID: <49258AC4.7010800@oracle.com>
+Date: Thu, 20 Nov 2008 08:05:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jes Sorensen <jes@sgi.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] docbook build fix, update include path
+References: <49242F3A.9000007@sgi.com> <20081119080708.ac702f9d.randy.dunlap@oracle.com> <49252A79.1050702@sgi.com>
+In-Reply-To: <49252A79.1050702@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.49258AC9.001A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All 8 patches committed and pushed to the iommu-2.6.git tree; thanks.
+Jes Sorensen wrote:
+> Randy Dunlap wrote:
+>> On Wed, 19 Nov 2008 16:22:34 +0100 Jes Sorensen wrote:
+>>> Build fix for kerneldoc
+>>
+>> <attachment :( >
+>>
+>> Hi Jes,
+>> Is your git tree up-to-date?  This should already be fixed.
+> 
+> Hi Randy,
+> 
+> I did a git pull right before running into the problem. Still haven't
+> gotten the %$#$%# thing to build though, but this got it a little
+> further.
+> 
+> If you can tell me how to make kerneldoc build on Fedora I would much
+> appreciate it (maybe in a seperate thread/email).
+
+BTW, I use "make htmldocs".  Both "make psdocs" and "make pdfdocs"
+have toolchain failures (AFAIK) and I don't know what to do about them.
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+~Randy
