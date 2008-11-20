@@ -1,131 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbYKTAfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYKTAlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbYKTAfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 19:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYKTAev
+	id S1753285AbYKTAlq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 19:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYKTAlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 19:34:51 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:55021 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751929AbYKTAet (ORCPT
+	Wed, 19 Nov 2008 19:41:37 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:60278 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752297AbYKTAlh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 19:34:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=P8fGCX6CnqFwhNeXqUKzdCEEVde2tP/Kr2A+ohiuDkbsg3YPjJ3+QjE6h4xb+PT/iv
-         Bf4bAz9QMjIqKxKfjwgXvafCq9tVc2oUB3cp0cLZKq+ejDuZwstoud+3bqxZ3VzcvkDN
-         mWMQlIwmV6ruKraTtU64CMTc631/fBhh+/esw=
-Date: Wed, 19 Nov 2008 18:34:43 -0600
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: atl1-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: atl2: don't mess up irq on suspend/resume (probably msi only)
-Message-ID: <20081119183443.7ca1cf23@osprey.hogchain.net>
-In-Reply-To: <49231CCB.8010900@tuffmail.co.uk>
-References: <49201401.1060600@tuffmail.co.uk>
-	<4921E574.3090602@tuffmail.co.uk>
-	<20081117181336.1a270561@osprey.hogchain.net>
-	<4922D195.9010505@tuffmail.co.uk>
-	<4922FD09.2070007@tuffmail.co.uk>
-	<49231CCB.8010900@tuffmail.co.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Nov 2008 19:41:37 -0500
+Message-ID: <4924B23C.6050300@euromail.se>
+Date: Thu, 20 Nov 2008 01:41:32 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hid: Complete support for the new unibody macbooks
+References: <49109C91.6090207@euromail.se> <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz> <4919C979.3000501@euromail.se> <alpine.LNX.1.10.0811112347260.24889@jikos.suse.cz> <20081119113753.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.10.0811191803320.19853@jikos.suse.cz> <49249431.9040104@euromail.se> <alpine.LNX.1.10.0811192339560.19853@jikos.suse.cz> <49249CCB.7060807@euromail.se> <alpine.LNX.1.10.0811200056240.19853@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0811200056240.19853@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1L2xby-0002XL-4d.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1L2xby-0002XL-4d fb7fa9b4d72a11d524234b4be3e78902
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can someone tell before I submit this patch if the description is sane?
+Jiri Kosina wrote:
+> On Thu, 20 Nov 2008, Henrik Rydberg wrote:
+> 
+>>> Therefore my memory must have been wrong -- I thought that you told me 
+>>> when I was merging f89bd95c5c that the devices are not standard HID 
+>>> devices at all, and therefore they can be safely ignored by the driver 
+>>> right away, as they can't be driven by HID driver anyway.
+>> These usb devices provide several different functions through the same
+>> interface. By default, it looks like a regular mouse interface, which
+>> HID will claim. This is why we need the quirks.
+> 
+> That I fully understand. But I though that the device is so much HID 
+> standard non-compliant, that even basic functionality is not possible with 
+> the generic HID driver, and therefore blacklisting it immediately can't do 
+> any harm. That's what I understood previously. But if this is wrong, and 
+> the HID code can get at least basic functionality from the device, I will 
+> revert the blacklist addition.
 
-atl2: don't request irq on resume if netif running
+Basic functionality is possible with the generic HID driver.
 
-If the device is suspended with the cable disconnected, then
-resumed with the cable connected, dev->open is called before
-resume. During resume, we request an IRQ, but the IRQ was
-already assigned during dev->open, resulting in the warning
-shown below.
+Thanks,
+Henrik
 
-Don't request an IRQ if the device is running.
-
-Call Trace:
- [<c011b89a>] warn_on_slowpath+0x40/0x59
- [<c023df15>] raw_pci_read+0x4d/0x55
- [<c023dff3>] pci_read+0x1c/0x21
- [<c01bcd81>] __pci_find_next_cap_ttl+0x44/0x70
- [<c01bce86>] __pci_find_next_cap+0x1a/0x1f
- [<c01bcef9>] pci_find_capability+0x28/0x2c
- [<c01c4144>] pci_msi_check_device+0x53/0x62
- [<c01c49c2>] pci_enable_msi+0x3a/0x1cd
- [<e019f17b>] atl2_write_phy_reg+0x40/0x5f [atl2]
- [<c01061b1>] dma_generic_alloc_coherent+0x0/0xd7
- [<e019f107>] atl2_request_irq+0x15/0x49 [atl2]
- [<e01a1481>] atl2_open+0x20b/0x297 [atl2]
- [<c024a35c>] dev_open+0x62/0x91
- [<c0248b9a>] dev_change_flags+0x93/0x141
- [<c024f308>] do_setlink+0x238/0x2d5
- [<c02501b2>] rtnl_setlink+0xa9/0xbf
- [<c0297f0c>] mutex_lock+0xb/0x19
- [<c024ffa7>] rtnl_dump_ifinfo+0x0/0x69
- [<c0250109>] rtnl_setlink+0x0/0xbf
- [<c024fe42>] rtnetlink_rcv_msg+0x185/0x19f
- [<c0240fd1>] sock_rmalloc+0x23/0x57
- [<c024fcbd>] rtnetlink_rcv_msg+0x0/0x19f
- [<c0259457>] netlink_rcv_skb+0x2d/0x71
- [<c024fcb7>] rtnetlink_rcv+0x14/0x1a
- [<c025929e>] netlink_unicast+0x184/0x1e4
- [<c025992a>] netlink_sendmsg+0x233/0x240
- [<c023f405>] sock_sendmsg+0xb7/0xd0
- [<c0129131>] autoremove_wake_function+0x0/0x2b
- [<c0129131>] autoremove_wake_function+0x0/0x2b
- [<c0147796>] mempool_alloc+0x2d/0x9e
- [<c020c923>] scsi_pool_alloc_command+0x35/0x4f
- [<c0297f0c>] mutex_lock+0xb/0x19
- [<c028e867>] unix_stream_recvmsg+0x357/0x3e2
- [<c01b81c9>] copy_from_user+0x23/0x4f
- [<c02452ea>] verify_iovec+0x3e/0x6c
- [<c023f5ab>] sys_sendmsg+0x18d/0x1f0
- [<c023ffa8>] sys_recvmsg+0x146/0x1c8
- [<c0240016>] sys_recvmsg+0x1b4/0x1c8
- [<c0118f48>] __wake_up+0xf/0x15
- [<c02586cd>] netlink_table_ungrab+0x17/0x19
- [<c01b83ba>] copy_to_user+0x25/0x3b
- [<c023fe4a>] move_addr_to_user+0x50/0x68
- [<c0240266>] sys_getsockname+0x6f/0x9a
- [<c0240280>] sys_getsockname+0x89/0x9a
- [<c015046a>] do_wp_page+0x3ae/0x41a
- [<c0151525>] handle_mm_fault+0x4c5/0x540
- [<c02405d0>] sys_socketcall+0x176/0x1b0
- [<c010376d>] sysenter_do_call+0x12/0x21
-
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Signed-off-by: Jay Cliburn <jcliburn@gmail.com>
----
- drivers/net/atlx/atl2.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-index f5bdc92..8571e8c 100644
---- a/drivers/net/atlx/atl2.c
-+++ b/drivers/net/atlx/atl2.c
-@@ -1690,9 +1690,11 @@ static int atl2_resume(struct pci_dev *pdev)
- 
- 	ATL2_WRITE_REG(&adapter->hw, REG_WOL_CTRL, 0);
- 
--	err = atl2_request_irq(adapter);
--	if (netif_running(netdev) && err)
--		return err;
-+	if (netif_running(netdev)) {
-+		err = atl2_request_irq(adapter);
-+		if (err)
-+			return err;
-+	}
- 
- 	atl2_reset_hw(&adapter->hw);
- 
--- 
-1.5.6.5
