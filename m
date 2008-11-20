@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYKTMBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYKTMDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbYKTMBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 07:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYKTMBF
+	id S1755284AbYKTMDc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 07:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYKTMDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 07:01:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53430 "EHLO mx2.mail.elte.hu"
+	Thu, 20 Nov 2008 07:03:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53957 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754433AbYKTMBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 07:01:04 -0500
-Date: Thu, 20 Nov 2008 13:00:54 +0100
+	id S1754000AbYKTMDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 07:03:24 -0500
+Date: Thu, 20 Nov 2008 13:03:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Catalin Marinas <catalin.marinas@arm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28-rc5 03/11] kmemleak: Add the memory
-	allocation/freeing hooks
-Message-ID: <20081120120054.GB20724@elte.hu>
-References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com> <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+Subject: Re: [PATCH 2.6.28-rc5 04/11] kmemleak: Add modules support
+Message-ID: <20081120120314.GC20724@elte.hu>
+References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com> <20081120113050.16607.67335.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20081120113050.16607.67335.stgit@pc1117.cambridge.arm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,46 +34,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
+small nit:
 
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -112,6 +112,7 @@
->  #include	<linux/rtmutex.h>
->  #include	<linux/reciprocal_div.h>
->  #include	<linux/debugobjects.h>
-> +#include	<linux/memleak.h>
+> +#else
+> +static inline void memleak_load_module(struct module *mod, Elf_Ehdr *hdr,
+> +				       Elf_Shdr *sechdrs, char *secstrings)
+> +{ }
+> +#endif
 
-please move this line up 5-7 lines so that it auto-merges fine with 
-the kmemcheck-next tree.
+this looks nicer:
 
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -24,6 +24,7 @@
->  #include <linux/kallsyms.h>
->  #include <linux/memory.h>
->  #include <linux/math64.h>
-> +#include <linux/memleak.h>
+static inline void
+memleak_load_module(struct module *mod, Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
+		    char *secstrings)
+{
+}
+
+We dont use "{ }" in other places in the kernel, so lets not invent a 
+new style if possible.
+
+> +	/* the pointer to this block is stored in the module structure
+> +	 * which is inside the block. Just mark it as not being a
+> +	 * leak */
+
+Comment style.
+
+> +	/* the pointer to this block is stored in the module structure
+> +	 * which is inside the block. This block doesn't need to be
+> +	 * scanned as it contains data and code that will be freed
+> +	 * after the module is initialized */
 
 ditto.
 
-> -	return __vmalloc_area_node(area, gfp_mask, prot, -1,
-> -					__builtin_return_address(0));
-> +	void *addr = __vmalloc_area_node(area, gfp_mask, prot, -1,
-> +					 __builtin_return_address(0));
-> +
-> +	/* this needs ref_count = 2 since vm_struct also contains a
-> +	 * pointer to this address. The guard page is also subtracted
-> +	 * from the size */
-> +	memleak_alloc(addr, area->size - PAGE_SIZE, 2);
-
-please use the customary comment style:
-
-  /*
-   * Comment .....
-   * ...... goes here:
-   */
-
 Thanks,
 
-        Ingo
+	Ingo
