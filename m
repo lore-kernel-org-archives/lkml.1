@@ -1,160 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYKTJqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYKTJwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbYKTJqo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYKTJqf
+	id S1754692AbYKTJwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYKTJwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:46:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37186 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753897AbYKTJqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:46:34 -0500
-Date: Thu, 20 Nov 2008 10:46:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2
-Message-ID: <20081120094621.GD6885@elte.hu>
-References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117173728.GA7384@elte.hu> <4921FC19.1080803@kernel.org> <4924E0C7.8000003@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4924E0C7.8000003@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Thu, 20 Nov 2008 04:52:04 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:39225 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751788AbYKTJwB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 04:52:01 -0500
+Subject: Re: Possible memory leak via slub kmem_cache_create
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+In-Reply-To: <Pine.LNX.4.64.0811191319360.23084@quilx.com>
+References: <1227111954.27162.28.camel@pc1117.cambridge.arm.com>
+	 <Pine.LNX.4.64.0811191319360.23084@quilx.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 20 Nov 2008 09:51:50 +0000
+Message-Id: <1227174711.5784.9.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Nov 2008 09:51:51.0920 (UTC) FILETIME=[9D0EB700:01C94AF5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-11-19 at 13:22 -0600, Christoph Lameter wrote:
+> proto_register could add another field somewhere and store the pointer to
+> the name there? Then free the string on proto_unregister.
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+The patch below fixes this issue for proto_register. There is another
+similar case in net/dccp/ccid.c. I cc'ed the person who added the
+original proto_register code and he also seems to be the DCCP
+maintainer.
 
-> Yinghai Lu wrote:
-> > Ingo Molnar wrote:
-> >> hm, one of my testboxes is rather unhappy about your patch:
-> > 
-> > 
-> > please check
-> > 
-> > if you agree, will update update_genapic to autodetect other functions or etc.
-> > 
-> > YH
-> > 
-> > ---
-> > 
-> > [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2 - fix
-> > 
-> > Impact: fix wakeup_secondary_cpu with hotplug
-> > 
-> > We can not put that in x86_quirks, because that is __initdata.
-> > So try to move that to genapic, and add update_genapic in x86_quirks.
-> > 
-> > later we even could use that stub to
-> > 1. autodetect CONFIG_ES7000_CLUSTERED_APIC
-> > 2. more correct inquire_remote_apic with apic_verbosity setting.
-> 
-> Hi,
-> 
-> I encountered boot failure on x86_32 box.
-> I think setting wakeup_cpu is missing.
-> 
-> --------
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Subject: [PATCH] x86: genapic: fix missing wakeup_cpu setup
-> 
-> Impact: fix boot failure
-> 
-> There is no way to setup wakeup_cpu when boot parameter apic= is not passed.
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  arch/x86/mach-generic/probe.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+My point is that the API is slightly different when slub is used since
+kmem_cache_name is no longer guaranteed to return the same pointer
+passed to kmem_cache_create. Maybe a documentation update:
 
-thanks - i've applied the wider fix from Yinghai - see it below.
+diff --git a/mm/slab.c b/mm/slab.c
+index ea76bcb..9723a72 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2124,6 +2124,8 @@ static int __init_refok setup_cpu_cache(struct kmem_cache 
+  *
+  * @name must be valid until the cache is destroyed. This implies that
+  * the module calling this has to destroy the cache before getting unloaded.
++ * Note that kmem_cache_name() is not guaranteed to return the same pointer,
++ * therefore applications must manage it themselves.
+  *
+  * The flags are
+  *
 
-i'm wondering why my tests didnt trigger this boot crash. What makes 
-your system or .config special to trigger it?
+And the proto_register fix below (if it looks alright, I'll submit it
+separately):
 
-	Ingo
 
--------------->
->From 87f7606591aea6a8a38ea4c8911b5eeeee2740b8 Mon Sep 17 00:00:00 2001
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Wed, 19 Nov 2008 20:50:53 -0800
-Subject: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2 - call ->update_genapic()
+Fix memory leak in the proto_register function
 
-Impact: fix boot crash on 32-bit
+From: Catalin Marinas <catalin.marinas@arm.com>
 
-Hiroshi Shimamoto reported a boot failure on 32-bit x86.
+If the slub allocator is used, kmem_cache_create() may merge two or more
+kmem_cache's into one but the cache name pointer is not updated and
+kmem_cache_name() is no longer guaranteed to return the pointer passed
+to the former function. This patch stores the kmalloc'ed pointers in the
+corresponding request_sock_ops and timewait_sock_ops structures.
 
-The setting of x86_quirks.wakeup_cpu is missing (when
-not passing in an explicit apic= boot parameter).
-
-Reported-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/x86/mach-generic/probe.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+ include/net/request_sock.h  |    1 +
+ include/net/timewait_sock.h |    1 +
+ net/core/sock.c             |   31 ++++++++++++-------------------
+ 3 files changed, 14 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/mach-generic/probe.c b/arch/x86/mach-generic/probe.c
-index 90b134f..c346d9d 100644
---- a/arch/x86/mach-generic/probe.c
-+++ b/arch/x86/mach-generic/probe.c
-@@ -76,12 +76,15 @@ void __init generic_bigsmp_probe(void)
- 	 * - we find more than 8 CPUs in acpi LAPIC listing with xAPIC support
- 	 */
+diff --git a/include/net/request_sock.h b/include/net/request_sock.h
+index cac811e..c719084 100644
+--- a/include/net/request_sock.h
++++ b/include/net/request_sock.h
+@@ -31,6 +31,7 @@ struct request_sock_ops {
+ 	int		family;
+ 	int		obj_size;
+ 	struct kmem_cache	*slab;
++	char		*slab_name;
+ 	int		(*rtx_syn_ack)(struct sock *sk,
+ 				       struct request_sock *req);
+ 	void		(*send_ack)(struct sock *sk, struct sk_buff *skb,
+diff --git a/include/net/timewait_sock.h b/include/net/timewait_sock.h
+index 1e1ee32..97c3b14 100644
+--- a/include/net/timewait_sock.h
++++ b/include/net/timewait_sock.h
+@@ -16,6 +16,7 @@
  
--	if (!cmdline_apic && genapic == &apic_default)
-+	if (!cmdline_apic && genapic == &apic_default) {
- 		if (apic_bigsmp.probe()) {
- 			genapic = &apic_bigsmp;
-+			if (x86_quirks->update_genapic)
-+				x86_quirks->update_genapic();
- 			printk(KERN_INFO "Overriding APIC driver with %s\n",
- 			       genapic->name);
- 		}
-+	}
- #endif
- }
+ struct timewait_sock_ops {
+ 	struct kmem_cache	*twsk_slab;
++	char		*twsk_slab_name;
+ 	unsigned int	twsk_obj_size;
+ 	int		(*twsk_unique)(struct sock *sk,
+ 				       struct sock *sktw, void *twp);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 5e2a313..b7300af 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -2037,9 +2037,6 @@ static inline void release_proto_idx(struct proto *prot)
  
-@@ -98,6 +101,9 @@ void __init generic_apic_probe(void)
- 		/* Not visible without early console */
- 		if (!apic_probe[i])
- 			panic("Didn't find an APIC driver");
-+
-+		if (x86_quirks->update_genapic)
-+			x86_quirks->update_genapic();
+ int proto_register(struct proto *prot, int alloc_slab)
+ {
+-	char *request_sock_slab_name = NULL;
+-	char *timewait_sock_slab_name;
+-
+ 	if (alloc_slab) {
+ 		prot->slab = kmem_cache_create(prot->name, prot->obj_size, 0,
+ 					       SLAB_HWCACHE_ALIGN, NULL);
+@@ -2053,12 +2050,12 @@ int proto_register(struct proto *prot, int alloc_slab)
+ 		if (prot->rsk_prot != NULL) {
+ 			static const char mask[] = "request_sock_%s";
+ 
+-			request_sock_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
+-			if (request_sock_slab_name == NULL)
++			prot->rsk_prot->slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
++			if (prot->rsk_prot->slab_name == NULL)
+ 				goto out_free_sock_slab;
+ 
+-			sprintf(request_sock_slab_name, mask, prot->name);
+-			prot->rsk_prot->slab = kmem_cache_create(request_sock_slab_name,
++			sprintf(prot->rsk_prot->slab_name, mask, prot->name);
++			prot->rsk_prot->slab = kmem_cache_create(prot->rsk_prot->slab_name,
+ 								 prot->rsk_prot->obj_size, 0,
+ 								 SLAB_HWCACHE_ALIGN, NULL);
+ 
+@@ -2072,14 +2069,14 @@ int proto_register(struct proto *prot, int alloc_slab)
+ 		if (prot->twsk_prot != NULL) {
+ 			static const char mask[] = "tw_sock_%s";
+ 
+-			timewait_sock_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
++			prot->twsk_prot->twsk_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
+ 
+-			if (timewait_sock_slab_name == NULL)
++			if (prot->twsk_prot->twsk_slab_name == NULL)
+ 				goto out_free_request_sock_slab;
+ 
+-			sprintf(timewait_sock_slab_name, mask, prot->name);
++			sprintf(prot->twsk_prot->twsk_slab_name, mask, prot->name);
+ 			prot->twsk_prot->twsk_slab =
+-				kmem_cache_create(timewait_sock_slab_name,
++				kmem_cache_create(prot->twsk_prot->twsk_slab_name,
+ 						  prot->twsk_prot->twsk_obj_size,
+ 						  0, SLAB_HWCACHE_ALIGN,
+ 						  NULL);
+@@ -2095,14 +2092,14 @@ int proto_register(struct proto *prot, int alloc_slab)
+ 	return 0;
+ 
+ out_free_timewait_sock_slab_name:
+-	kfree(timewait_sock_slab_name);
++	kfree(prot->twsk_prot->twsk_slab_name);
+ out_free_request_sock_slab:
+ 	if (prot->rsk_prot && prot->rsk_prot->slab) {
+ 		kmem_cache_destroy(prot->rsk_prot->slab);
+ 		prot->rsk_prot->slab = NULL;
  	}
- 	printk(KERN_INFO "Using APIC driver %s\n", genapic->name);
+ out_free_request_sock_slab_name:
+-	kfree(request_sock_slab_name);
++	kfree(prot->rsk_prot->slab_name);
+ out_free_sock_slab:
+ 	kmem_cache_destroy(prot->slab);
+ 	prot->slab = NULL;
+@@ -2125,18 +2122,14 @@ void proto_unregister(struct proto *prot)
+ 	}
+ 
+ 	if (prot->rsk_prot != NULL && prot->rsk_prot->slab != NULL) {
+-		const char *name = kmem_cache_name(prot->rsk_prot->slab);
+-
+ 		kmem_cache_destroy(prot->rsk_prot->slab);
+-		kfree(name);
++		kfree(prot->rsk_prot->slab_name);
+ 		prot->rsk_prot->slab = NULL;
+ 	}
+ 
+ 	if (prot->twsk_prot != NULL && prot->twsk_prot->twsk_slab != NULL) {
+-		const char *name = kmem_cache_name(prot->twsk_prot->twsk_slab);
+-
+ 		kmem_cache_destroy(prot->twsk_prot->twsk_slab);
+-		kfree(name);
++		kfree(prot->twsk_prot->twsk_slab_name);
+ 		prot->twsk_prot->twsk_slab = NULL;
+ 	}
  }
-@@ -112,6 +118,8 @@ int __init mps_oem_check(struct mp_config_table *mpc, char *oem,
- 		if (apic_probe[i]->mps_oem_check(mpc, oem, productid)) {
- 			if (!cmdline_apic) {
- 				genapic = apic_probe[i];
-+				if (x86_quirks->update_genapic)
-+					x86_quirks->update_genapic();
- 				printk(KERN_INFO "Switched to APIC driver `%s'.\n",
- 				       genapic->name);
- 			}
-@@ -128,6 +136,8 @@ int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 		if (apic_probe[i]->acpi_madt_oem_check(oem_id, oem_table_id)) {
- 			if (!cmdline_apic) {
- 				genapic = apic_probe[i];
-+				if (x86_quirks->update_genapic)
-+					x86_quirks->update_genapic();
- 				printk(KERN_INFO "Switched to APIC driver `%s'.\n",
- 				       genapic->name);
- 			}
+
+
+-- 
+Catalin
+
