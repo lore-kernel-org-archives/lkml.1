@@ -1,35 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYKTRGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbYKTRH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYKTRGj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 12:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbYKTRGV
+	id S1756964AbYKTRH4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 12:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYKTRHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 12:06:21 -0500
-Received: from web32007.mail.mud.yahoo.com ([68.142.207.104]:29376 "HELO
-	web32007.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757028AbYKTRGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 12:06:20 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 12:06:20 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=AHINR5zrco6Z87QXyNBu2Ywo1tvIX30PXNMOqF/vLTbVg74ZT151UqusSurVoS2lB8yc5QxZJjiG06oK98hsN0jBT+rc3X7fN7ANOxIXkLatwtQcthheCJd2HTtsmjpAT0thvTE4MD0l8okjX1eZ1HGVEguh7SvjsKtOqGmL8IQ=;
-X-YMail-OSG: JjDRrBQVM1kMxwEYtS4qSly51ZzT7qENs3QXf0vYCEbWncHRwRY0YIB1K8XjQNf3DOcD62tIKXxboGQ5FGyaaDO6t.2msZz1t_YC1MW2dYruHNbhHd.Z9pAN2kYLdLxdg1PcYJujod6l8ajA9UZ8jfiK1xbKlDeC5o7Fsjc-
-X-Mailer: YahooMailRC/1155.32 YahooMailWebService/0.7.260.1
-Date: Thu, 20 Nov 2008 08:59:40 -0800 (PST)
-From: Calin Iaru <calin_iaru@yahoo.com>
-Subject: preparing for kernel debugging
-To: linux-kernel@vger.kernel.org
+	Thu, 20 Nov 2008 12:07:47 -0500
+Received: from gw.goop.org ([64.81.55.164]:53000 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753702AbYKTRHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 12:07:47 -0500
+Message-ID: <49259961.1030309@goop.org>
+Date: Thu, 20 Nov 2008 09:07:45 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <700798.8300.qm@web32007.mail.mud.yahoo.com>
+To: Simon Horman <horms@verge.net.au>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>
+Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
+References: <patchbomb.1226603398@abulafia.goop.org> <d103c0da2fa147ac31af.1226603428@abulafia.goop.org> <20081120083329.GA13996@verge.net.au>
+In-Reply-To: <20081120083329.GA13996@verge.net.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I cannot use the kdb or kgdb with 2.6.27.6. Is there a tutorial that is actually working? I spent the last days only preparing for this, but it just does not work.
+Simon Horman wrote:
+> Hi,
+>
+> it seems that if CONFIG_XEN is set by CONFIG_XEN_DOM0 is not set,
+> then the call to xen_init_apic() in xen_start_kernel() causes the
+> build to fail.
+>
+> One possible soluion to this is to provide a dummy
+> version of xen_init_apic() in the !CONFIG_XEN_DOM0 case.
+>
+> Another possible solution would be to add #ifdef CONFIG_XEN_DOM0
+> inside xen_start_kernel()
+>   
 
+Ah, OK, will fix that up.
 
-
-      
+    J
