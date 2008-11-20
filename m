@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbYKTUhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYKTUiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757208AbYKTUhi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 15:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbYKTUhK
+	id S1757422AbYKTUiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 15:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYKTUiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 15:37:10 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:55383 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755724AbYKTUhJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 15:37:09 -0500
-Date: Thu, 20 Nov 2008 21:36:37 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mikael Starvik <mikael.starvik@axis.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: headers-y for machines
-Message-ID: <20081120203637.GA21308@uranus.ravnborg.org>
-References: <4BEA3FF3CAA35E408EA55C7BE2E61D053B05D40823@xmail3.se.axis.com> <20081120190819.GA15838@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081120190819.GA15838@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 20 Nov 2008 15:38:03 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45654 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754638AbYKTUiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 15:38:01 -0500
+From: "NeilBrown" <neilb@suse.de>
+To: "Pawel Sikora" <pluto@agmk.net>
+Date: Fri, 21 Nov 2008 07:37:53 +1100 (EST)
+Message-ID: <396a0d3a836fa9fea13e7a255d098123.squirrel@neil.brown.name>
+In-Reply-To: <5rbJChma.1227184936.9802590.pluto@agmk.net>
+References: <5rbJChma.1227184936.9802590.pluto@agmk.net>
+Subject: Re: [2.6.27.6] jfs on raid1 => attempt to access beyond end of 
+     device.
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 08:08:19PM +0100, Sam Ravnborg wrote:
-> Hi Mikael.
-> 
-> On Thu, Nov 20, 2008 at 09:48:45AM +0100, Mikael Starvik wrote:
-> > Lets say you have arch/arm/mach-xx/include/mach/myfile.h and want to add myfile.h to header-y. How do you do that?
-> > 
-> > I tried to add 
-> > 
-> > header-y += ../../maxh-xx/
-> > 
-> > in arch/arm/include/asm/Kbuild
-> > 
-> > and then
-> > header-y += myfile.h in arch/arm/mach-xx/include/mach/Kbuild
-> 
-> When we did the header file rearrange I had not foreseen that we would export header files
-> located anywhere else than include/* and arch/$ARCH/include so there is
-> no way to properly export files located in arch/$ARCH/mach-foo/...
-> 
-> Do we really want to export files form this location to userspace?
+On Thu, November 20, 2008 11:42 pm, Pawe³ Sikora wrote:
+> 20/11/2008, "Neil Brown" <neilb@suse.de> napisa³/a:
 
-One way to support this could be to add the possibility to specify where
-to install the header files.
-Like this patch:
+> failing raid1 device:
+>
+> # fsck.jfs -f -n -v /dev/md/0
+> fsck.jfs version 1.1.13, 17-Jul-2008
+> processing started: 11/20/2008 13.34.54
+>
+> /dev/md/0 is mounted and the file system is not type JFS.
 
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 612dc13..1760113 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -14,6 +14,8 @@ _dst := $(if $(dst),$(dst),$(obj))
- kbuild-file := $(srctree)/$(obj)/Kbuild
- include $(kbuild-file)
+Try
+    grep md /proc/mounts
+and
+    fsck.ext3 -f -n /dev/md/0
 
-+_dst := $(if $(header-dest-y),$(header-dest-y),$(_dst))
-+
- include scripts/Kbuild.include
+I looked again at the logs and there is evidence that it is an
+ext3 filesystem that was triggering those errors.
+Maybe you never did a mkfs after creating the raid1???
 
- install       := $(INSTALL_HDR_PATH)/$(_dst)
+NeilBrown
 
 
-With this you could add:
-header-dest-y := include/mach-foo
-
-to the Kbuild file despite having it located somewhere else in the tree.
-
-	Sam
