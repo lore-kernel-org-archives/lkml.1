@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbYKTLNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYKTLOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbYKTLNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbYKTLM4
+	id S1754974AbYKTLOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYKTLOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:12:56 -0500
-Received: from mx2.suse.de ([195.135.220.15]:51873 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754315AbYKTLMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:12:55 -0500
-Date: Thu, 20 Nov 2008 12:12:53 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, axboe@kernel.dk
-Subject: Re: [PATCH 1/1] cpumask: smp_call_function_many()
-Message-ID: <20081120111253.GA3288@wotan.suse.de>
-References: <20081119144710.59CA1DDDDB@ozlabs.org> <200811201514.09511.rusty@rustcorp.com.au> <200811201757.07726.nickpiggin@yahoo.com.au> <200811202138.05232.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811202138.05232.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.9i
+	Thu, 20 Nov 2008 06:14:01 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:65154 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753962AbYKTLOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 06:14:00 -0500
+Message-ID: <492545CC.6000909@cn.fujitsu.com>
+Date: Thu, 20 Nov 2008 19:11:08 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Andrea Righi <righi.andrea@gmail.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Hirokazu Takahashi <taka@valinux.co.jp>
+CC: menage@google.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 3/7] Introduction for new feature
+References: <4925445C.10302@cn.fujitsu.com>
+In-Reply-To: <4925445C.10302@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 09:38:04PM +1030, Rusty Russell wrote:
-> On Thursday 20 November 2008 17:27:07 Nick Piggin wrote:
-> > On Thursday 20 November 2008 15:44, Rusty Russell wrote:
-> > > I can prepare a separate patch which just changes this over, rather than
-> > > doing it as part of the smp_call_function_many() conversion, but I
-> > > couldn't stomach touching that quiescing code :(
-> >
-> > What's wrong with it? It's well commented and I would have thought pretty
-> > simple. A bit ugly, but straightforward. I still don't really see why it
-> > needs changing.
-> 
-> Ah, sorry if I was unclear.  The point of this 150+ patch series is to get 
-> cpumasks off the stack.
-> 
-> Here's the problem:
-> 
-> struct call_function_data {
-> 	struct call_single_data csd;
-> 	spinlock_t lock;
-> 	unsigned int refs;
-> 	cpumask_t cpumask;
-> 	struct rcu_head rcu_head;
-> };
-> ...
-> 
-> static void smp_call_function_mask_quiesce_stack(cpumask_t mask)
-> {
-> 	struct call_single_data data;
-> ...
-> 
-> So, it's far simpler just to fix the code to do the "dumb" thing.
+Documentation of using bio-cgroup in io-throttle.
 
-Ah, OK. That's a pretty good reason, so fine by me then.
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ Documentation/controllers/io-throttle.txt |   29 ++++++++++++++++++++++++++++-
+ 1 files changed, 28 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
+index 2a3bbd1..d3510ae 100644
+--- a/Documentation/controllers/io-throttle.txt
++++ b/Documentation/controllers/io-throttle.txt
+@@ -223,7 +223,34 @@ $ cat /proc/$$/io-throttle-stat
+    \ \_______global bandwidth sleep (clock ticks)
+     \________global bandwidth counter
+ 
+-2.4. Examples
++2.4. Buffered-io tracking
++bio-cgroup can be used to track buffered-io(in delay-write condition) and for 
++proper throttling. You can directly mount io-throttle and bio-cgroup together 
++to track buffered-io. An alternative choice is making use of bio-cgroup id. An 
++association between a given io-throttle cgroup and a given bio-cgroup cgroup can 
++be built by echo a bio-cgroup id to the file blockio.bio_id. This file is exported 
++for the purpose of associating io-throttle and bio-cgroup groups. If you'd like to 
++create an association, you must ensure the io-throttle group is empty, that is, 
++there are no tasks in this group. otherwise, association creating will fail. If an 
++association is successfully built, task moving in this group will be denied. Of 
++course, you can remove an association, just echo an negative number into 
++blockio.bio_id.
++
++Example:
++* Create an association between a given io-throttle group and a given bio-cgroup 
++group.
++$ mount -t cgroup -o bio bio-cgroup /mnt/bio-cgroup/
++$ cd /mnt/bio-cgroup/
++$ mkdir bio-grp
++$ cat bio-grp/bio.id
++1
++
++$ mount -t cgroup -o blockio blockio /mnt/throttle
++$ cd /mnt/throttle
++$ mkdir foo
++$ echo 1 > foo/blockio.bio_id
++
++2.5. Examples
+ 
+ * Mount the cgroup filesystem (blockio subsystem):
+   # mkdir /mnt/cgroup
+-- 1.5.4.rc3 
 
