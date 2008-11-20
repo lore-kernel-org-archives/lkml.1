@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYKTTOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYKTTP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbYKTTOX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 14:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbYKTTNe
+	id S1756668AbYKTTP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 14:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYKTTPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 14:13:34 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:34912 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756742AbYKTTNc convert rfc822-to-8bit (ORCPT
+	Thu, 20 Nov 2008 14:15:47 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59700 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754413AbYKTTPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 14:13:32 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Date: Thu, 20 Nov 2008 19:12:36 +0000
-Subject: RE: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Topic: in 2.6.23-rc3-git7 in do_cciss_intr
-Thread-Index: AclLOL0uPwvwkZTKQwitOUyy8i97gAACsshA
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884EACB7A11D@GVW0547EXC.americas.hpqcorp.net>
-References: <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk>
- <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net>
- <49244B69.80903@oracle.com>
- <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net>
- <20081119172919.GT26308@kernel.dk>
- <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net>
- <20081119204624.GW26308@kernel.dk> <20081120091303.GF26308@kernel.dk>
- <0F5B06BAB751E047AB5C87D1F77A77884EACB79F52@GVW0547EXC.americas.hpqcorp.net>
- <20081120175029.GM26308@kernel.dk>
-In-Reply-To: <20081120175029.GM26308@kernel.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 20 Nov 2008 14:15:46 -0500
+Date: Thu, 20 Nov 2008 14:15:45 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: linux-kernel@vger.kernel.org
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
+       Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 0/5] powerpc: dynamic ftrace port
+In-Reply-To: <20081120190948.057007623@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0811201412230.3378@gandalf.stny.rr.com>
+References: <20081120190948.057007623@goodmis.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Thu, 20 Nov 2008, Steven Rostedt wrote:
+> 
+>  1) I removed the changes to recordmcount.pl.  This is not a PowerPC
+>     change, although PowerPC needs it for dynamic ftrace. But
+>     the changes here can go via linux-tip.
 
-> -----Original Message-----
-> From: Jens Axboe [mailto:jens.axboe@oracle.com]
-> Sent: Thursday, November 20, 2008 11:51 AM
-> To: Miller, Mike (OS Dev)
-> Cc: Randy Dunlap; scsi; James Bottomley; lkml; akpm
-> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
->
-> On Thu, Nov 20 2008, Miller, Mike (OS Dev) wrote:
-> > Jens wrote:
-> >
-> > > >
-> > > > I'd propose just converting it to list_head instead of doing it
-> > > > manually. Heck, that should be a 5 minute job, let me
-> just do it...
-> > > >
-> > > > OK, here it is, totally untested (it compiles, must be
-> golden...)
-> > >
-> > > It was missing a list_entry() in fail_all_cmds(), apart
-> from that it
-> > > was fine. I changed it to use hlist instead, as that is more
-> > > appropriate and similar to how it worked before. It also means
-> > > there's no extra space usage in the controller structure. I've
-> > > tested it and it works fine for me.
-> > >
-> > > Mike, can you give this a look-over and give me a Reviewed-by or
-> > > similar? As an extra bonus, it also gets rid of some code.
-> > >
-> > >  3 files changed, 33 insertions(+), 46 deletions(-)
-> > >
-> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=e303054
-> > > e55acd1b6478b8859a5f8648bfaf69a44
-> >
-> > That works for me. :)
-> >
-> > Acked-by: Mike Miller <mike.miller@hp.com>
->
-> Excellent, thanks Mike. If you could run it through a cycle
-> or so of your regular testing, I'd feel 100% confident in it.
+Ingo,
 
-Jens,
-I'm porting the changes into our build environment so they will go thru the full QA cycle. I'm also testing in my lab before giving the changes to QA.
+I found that the recordmcount.pl change conflicts with a commit
+in linux-next, which is not in tip nor mainline. The commit is:
 
-Thanks for the quick fix.
+   11ebca4a3f8337de2f4d1300bd307851d1191d53
+   sh: dynamic ftrace support.
 
--- mikem
+Seems that this change came in through the sh repo. I have already
+resolved the conflicts with my updates for PowerPC with this commit.
+I can put this in a separate branch against linux-next if you like.
+
+I would like to get the changes to recordmcount.pl for PowerPC
+in linux-next soon, so I can also add a small clean up of this code.
+Jim Radfort has some updates as well for his port to arm.
+
+-- Steve
+
