@@ -1,120 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbYKTLOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYKTLPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbYKTLOs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:14:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYKTLOk
+	id S1755041AbYKTLPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbYKTLPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:14:40 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:61558 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754141AbYKTLOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:14:39 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.28-rc5] mbp_nvidia_bl.o build fails.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Message-Id: <200811202014.GID18744.VMQSOFJLHOtFFO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 20 Nov 2008 20:14:34 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Nov 2008 06:15:19 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52196 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754152AbYKTLPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 06:15:17 -0500
+Message-ID: <49254617.2090409@cn.fujitsu.com>
+Date: Thu, 20 Nov 2008 19:12:23 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Andrea Righi <righi.andrea@gmail.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Hirokazu Takahashi <taka@valinux.co.jp>
+CC: menage@google.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 4/7] enables bio-cgroup in io-throttle, have to mount together
+References: <4925445C.10302@cn.fujitsu.com>
+In-Reply-To: <4925445C.10302@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks like compiler version dependent problem.
+This patch enables bio-cgroup in io-throttle, but you have to mount them together.
 
----------- gcc 3.3 ----------
-# tar -jxf linux-2.6.28-rc5.tar.bz2
-# cd linux-2.6.28-rc5
-# wget -O .config http://I-love.SAKURA.ne.jp/tmp/config-2.6.28-rc5
-# make drivers/video/backlight/mbp_nvidia_bl.o
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  HOSTCC  scripts/basic/hash
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTCC  scripts/kconfig/kxgettext.o
-  SHIPPED scripts/kconfig/zconf.tab.c
-  SHIPPED scripts/kconfig/lex.zconf.c
-  SHIPPED scripts/kconfig/zconf.hash.c
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CC      kernel/bounds.s
-  GEN     include/linux/bounds.h
-  CC      arch/x86/kernel/asm-offsets.s
-  GEN     include/asm/asm-offsets.h
-  CALL    scripts/checksyscalls.sh
-  CC      scripts/mod/empty.o
-  HOSTCC  scripts/mod/mk_elfconfig
-  MKELF   scripts/mod/elfconfig.h
-  HOSTCC  scripts/mod/file2alias.o
-  HOSTCC  scripts/mod/modpost.o
-  HOSTCC  scripts/mod/sumversion.o
-  HOSTLD  scripts/mod/modpost
-  HOSTCC  scripts/selinux/mdp/mdp
-  HOSTCC  scripts/kallsyms
-  HOSTCC  scripts/pnmtologo
-  HOSTCC  scripts/conmakehash
-  CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
-drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size of `__mod_dmi_device_table' isn't known
-make[1]: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 1
-make: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 2
-# gcc --version
-gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
-Copyright (C) 2003 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Signed-of-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/blk-io-throttle.c    |    7 +++++--
+ include/linux/biotrack.h   |    2 ++
+ include/linux/memcontrol.h |    3 ---
+ init/Kconfig               |    2 +-
+ mm/biotrack.c              |   35 +++++++++++++++++++++++++++++++++++
+ mm/memcontrol.c            |   30 ------------------------------
+ 6 files changed, 43 insertions(+), 36 deletions(-)
 
----------- gcc 4.3 ----------
-# tar -jxf linux-2.6.28-rc5.tar.bz2
-# cd linux-2.6.28-rc5
-# wget -O .config http://I-love.SAKURA.ne.jp/tmp/config-2.6.28-rc5
-# make drivers/video/backlight/mbp_nvidia_bl.o
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  HOSTCC  scripts/basic/hash
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTCC  scripts/kconfig/kxgettext.o
-  SHIPPED scripts/kconfig/zconf.tab.c
-  SHIPPED scripts/kconfig/lex.zconf.c
-  SHIPPED scripts/kconfig/zconf.hash.c
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CC      kernel/bounds.s
-  GEN     include/linux/bounds.h
-  CC      arch/x86/kernel/asm-offsets.s
-  GEN     include/asm/asm-offsets.h
-  CALL    scripts/checksyscalls.sh
-  CC      scripts/mod/empty.o
-  HOSTCC  scripts/mod/mk_elfconfig
-  MKELF   scripts/mod/elfconfig.h
-  HOSTCC  scripts/mod/file2alias.o
-  HOSTCC  scripts/mod/modpost.o
-  HOSTCC  scripts/mod/sumversion.o
-  HOSTLD  scripts/mod/modpost
-  HOSTCC  scripts/selinux/mdp/mdp
-  HOSTCC  scripts/kallsyms
-  HOSTCC  scripts/pnmtologo
-  HOSTCC  scripts/conmakehash
-  CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
-# gcc --version
-gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
-Copyright (C) 2008 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
+index bb27587..e6a0a03 100644
+--- a/block/blk-io-throttle.c
++++ b/block/blk-io-throttle.c
+@@ -22,7 +22,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/res_counter.h>
+-#include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/slab.h>
+ #include <linux/gfp.h>
+ #include <linux/err.h>
+@@ -649,7 +649,10 @@ static struct iothrottle *get_iothrottle_from_page(struct page *page)
+ 	if (!cgrp)
+ 		return NULL;
+ 	iot = cgroup_to_iothrottle(cgrp);
+-	css_get(&iot->css);
++	if (iot)
++		css_get(&iot->css);
++	else
++		return NULL;
+ 	put_cgroup_from_page(page);
+ 
+ 	return iot;
+diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
+index d352abd..371d263 100644
+--- a/include/linux/biotrack.h
++++ b/include/linux/biotrack.h
+@@ -21,6 +21,8 @@ static inline void __init_bio_page_cgroup(struct page_cgroup *pc)
+ {
+ 	pc->bio_cgroup_id = 0;
+ }
++extern struct cgroup *get_cgroup_from_page(struct page *page);
++extern void put_cgroup_from_page(struct page *page);
+ 
+ static inline int bio_cgroup_disabled(void)
+ {
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 009e5e4..a7e3dc2 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -49,9 +49,6 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+ 
+ extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
+ 
+-extern struct cgroup *get_cgroup_from_page(struct page *page);
+-extern void put_cgroup_from_page(struct page *page);
+-
+ #define mm_match_cgroup(mm, cgroup)	\
+ 	((cgroup) == mem_cgroup_from_task((mm)->owner))
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index 06649c5..4082e8e 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -315,7 +315,7 @@ config CGROUP_DEVICE
+ 
+ config CGROUP_IO_THROTTLE
+ 	bool "Enable cgroup I/O throttling (EXPERIMENTAL)"
+-	depends on CGROUPS && CGROUP_MEM_RES_CTLR && RESOURCE_COUNTERS && EXPERIMENTAL
++	depends on CGROUPS && CGROUP_BIO && RESOURCE_COUNTERS && EXPERIMENTAL
+ 	help
+ 	  This allows to limit the maximum I/O bandwidth for specific
+ 	  cgroup(s).
+diff --git a/mm/biotrack.c b/mm/biotrack.c
+index 1af5910..ba6b45b 100644
+--- a/mm/biotrack.c
++++ b/mm/biotrack.c
+@@ -213,6 +213,41 @@ static struct bio_cgroup *find_bio_cgroup(int id)
+ 	return biog;
+ }
+ 
++struct cgroup *get_cgroup_from_page(struct page *page)
++{
++	struct page_cgroup *pc;
++	struct bio_cgroup *biog;
++	struct cgroup *cgrp = NULL;
++
++	pc = lookup_page_cgroup(page);
++	if (pc) {
++		lock_page_cgroup(pc);
++		biog = find_bio_cgroup(pc->bio_cgroup_id);
++		if (biog) {
++			css_get(&biog->css);
++			cgrp = biog->css.cgroup;
++		}
++		unlock_page_cgroup(pc);
++	}
++
++	return cgrp;
++}
++
++void put_cgroup_from_page(struct page *page)
++{
++	struct bio_cgroup *biog;
++	struct page_cgroup *pc;
++
++	pc = lookup_page_cgroup(page);
++	if (pc) {
++		lock_page_cgroup(pc);
++		biog = find_bio_cgroup(pc->bio_cgroup_id);
++		if (biog)
++			css_put(&biog->css);
++		unlock_page_cgroup(pc);
++	}
++}
++
+ /* Determine the bio-cgroup id of a given bio. */
+ int get_bio_cgroup_id(struct bio *bio)
+ {
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 097278c..95048fe 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -241,36 +241,6 @@ struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
+ 				struct mem_cgroup, css);
+ }
+ 
+-struct cgroup *get_cgroup_from_page(struct page *page)
+-{
+-	struct page_cgroup *pc;
+-	struct cgroup *cgrp = NULL;
+-
+-	pc = lookup_page_cgroup(page);
+-	if (pc) {
+-		lock_page_cgroup(pc);
+-		if(pc->mem_cgroup) {
+-			css_get(&pc->mem_cgroup->css);
+-			cgrp = pc->mem_cgroup->css.cgroup;
+-		}
+-		unlock_page_cgroup(pc);
+-	}
+-
+-	return cgrp;
+-}
+-
+-void put_cgroup_from_page(struct page *page)
+-{
+-	struct page_cgroup *pc;
+-
+-	pc = lookup_page_cgroup(page);
+-	if (pc) {
+-		lock_page_cgroup(pc);
+-		css_put(&pc->mem_cgroup->css);
+-		unlock_page_cgroup(pc);
+-	}
+-}
+-
+ static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
+ 			struct page_cgroup *pc)
+ {
+-- 1.5.4.rc3 
 
-----------
-
-Regards.
