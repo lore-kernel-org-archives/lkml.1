@@ -1,40 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYKTWUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYKTWeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYKTWUG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 17:20:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYKTWTy
+	id S1755123AbYKTWeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 17:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYKTWeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 17:19:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36206 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418AbYKTWTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 17:19:53 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <154e089b0811201400w6b5d249eyc21ebb9a76133d08@mail.gmail.com>
-References: <154e089b0811201400w6b5d249eyc21ebb9a76133d08@mail.gmail.com>
-To: "Hannes Eder" <hannes@hanneseder.net>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] CRED: fix compilation warning in function 'get_cred'
-Date: Thu, 20 Nov 2008 22:19:31 +0000
-Message-ID: <11321.1227219571@redhat.com>
+	Thu, 20 Nov 2008 17:34:15 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:34631 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbYKTWeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 17:34:14 -0500
+Message-ID: <cfec22b10811201434v2230d11dvc9797018e433fd20@mail.gmail.com>
+Date: Thu, 20 Nov 2008 14:34:11 -0800
+From: "John McCutchan" <john@johnmccutchan.com>
+To: "Evgeniy Polyakov" <zbr@ioremap.net>
+Subject: Re: [take 3] Use pid in inotify events.
+Cc: mtk.manpages@gmail.com, "Christoph Hellwig" <hch@lst.de>,
+       "Robert Love" <rlove@rlove.org>, linux-api@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081119145351.GA2652@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
+	 <20081116232450.GA13547@ioremap.net>
+	 <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
+	 <20081118131937.GC16944@lst.de> <20081119140500.GA25968@ioremap.net>
+	 <cfd18e0f0811190634g276b4a2dm5b3d5de25a5c9222@mail.gmail.com>
+	 <20081119145351.GA2652@ioremap.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Eder <hannes@hanneseder.net> wrote:
+On Wed, Nov 19, 2008 at 6:53 AM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
+> Hi Michael.
+>
+> On Wed, Nov 19, 2008 at 09:34:46AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
+>> > So effectively you propose to have second generation of the inotify
+>> > which will have additional pid field, which will be unused by all but
+>> > the same uid events?
+>>
+>> I susepect that Christoph wants the same thing as I do: some thinking
+>> towards a future-proof design, rather than a quick hack to address the needs
+>> of a single application.
+>
+> So far the only real need is a pid. That will solve the cases I'm
+> working on and it may be interesting for other applications. It is
+> possible to extend read/write IO with offset and size parameters though.
+>
+> Do you see any other possible extensions?
+>
+>> > If you want to return -EPERM, than it will be _always_ returned for non
+>> > sysadmin capable user, which effectively makes it unusable.
+>> >
+>> Again, appropriate flags in inotify_init1() could fix this -- e.g., only
+>> fill the field (and give an error if no perms) if a flag is set.
+>
+> Um, hmm... Permission is _always_ denied for 'alien' IO, as it was
+> pointed by Robert, at init time there is no way to know, will there be
+> alien IO (i.e. originated by the process with different uid) or not.
+> More on this: inotify initialization is just a memory allocation in
+> the kernel, nothing more.
+>
+> We can argue about object insertion into inotify queue though. But
+> again, we check already that it has read permissions, and if so, we are
+> allowed to receive notificatons about IO against given target, since if
+> new code will return for whatever reason -EPERM, people will use old
+> code.
+>
+> So, putting PID/whatever else into event can be flag-driven, but there
+> is no way to return EPERM anywhere in the call chain not breaking
+> backward compatibility of the whole idea.
 
-> Fix to following warning by introducing a temporary variable:
-> 
-> include/linux/cred.h: In function 'get_cred':
-> include/linux/cred.h:187: warning: passing argument 1 of
-> 'get_new_cred' discards qualifiers from pointer target type
 
-Interesting.  I believe that's a compiler bug.  Explicitly casting away the
-const should avoid this warning.
+I really don't like the idea of overloading the cookie field to store
+the pid for only the events that don't already use the cookie field.
 
-David
+Coming into this late, maybe I missed it but can you explain why you
+need the pid that caused the event?
+
+-- 
+John McCutchan <john@johnmccutchan.com>
