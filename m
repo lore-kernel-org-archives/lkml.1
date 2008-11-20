@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbYKTPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYKTPhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756609AbYKTPha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 10:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYKTPhO
+	id S1755825AbYKTPhu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbYKTPhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 10:37:14 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:55956 "EHLO
+	Thu, 20 Nov 2008 10:37:38 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:42916 "EHLO
 	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755368AbYKTPhM (ORCPT
+	with ESMTP id S1755479AbYKTPhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 10:37:12 -0500
-Date: Thu, 20 Nov 2008 15:37:08 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+	Thu, 20 Nov 2008 10:37:37 -0500
+Date: Thu, 20 Nov 2008 15:37:34 +0000
+From: Matthew Garrett <mjg@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
        Corentin Chary <corentin.chary@gmail.com>, ecc@cmu.edu,
        linux acpi <linux-acpi@vger.kernel.org>
-Subject: [PATCH v2 2/3] eeepc-laptop: Check return values from rfkill_register
-Message-ID: <2147b3d5605abb42f46c35709fede3a80d91d455.1227194932.git.mjg@redhat.com>
+Subject: [PATCH v2 3/3] eeepc-laptop: Implement rfkill hotplugging in eeepc-laptop
+Message-ID: <521f4c8461bc12c46c3b501585ac423a6aa76fce.1227194932.git.mjg@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -30,112 +30,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Error out if rfkill registration fails, and also set the default system state
-appropriately on boot
+The Eee implements rfkill by logically unplugging the wireless card from the
+PCI bus. Despite sending ACPI notifications, this does not appear to be
+implemented using standard ACPI hotplug - nor does the firmware provide the
+_OSC method required to support native PCIe hotplug. The only sensible choice
+appears to be to handle the hotplugging directly in the eeepc-laptop driver.
+Tested successfully on a 700, 900 and 901.
 
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
 ---
-
-Includes Alan's suggested cleanup for the failure path
-
- drivers/misc/eeepc-laptop.c |   51 +++++++++++++++++++++++++++++++-----------
- 1 files changed, 37 insertions(+), 14 deletions(-)
+ drivers/misc/eeepc-laptop.c |   83 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 83 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/misc/eeepc-laptop.c b/drivers/misc/eeepc-laptop.c
-index e81ef18..3de44fb 100644
+index 3de44fb..1dcf637 100644
 --- a/drivers/misc/eeepc-laptop.c
 +++ b/drivers/misc/eeepc-laptop.c
-@@ -562,7 +562,7 @@ static int eeepc_hotk_add(struct acpi_device *device)
- 	ehotk->device = device;
- 	result = eeepc_hotk_check();
- 	if (result)
--		goto end;
-+		goto ehotk_fail;
- 	status = acpi_install_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
- 					     eeepc_hotk_notify, ehotk);
- 	if (ACPI_FAILURE(status))
-@@ -573,18 +573,25 @@ static int eeepc_hotk_add(struct acpi_device *device)
- 							   RFKILL_TYPE_WLAN);
+@@ -30,6 +30,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/input.h>
+ #include <linux/rfkill.h>
++#include <linux/pci.h>
  
- 		if (!ehotk->eeepc_wlan_rfkill)
--			goto end;
-+			goto wlan_fail;
+ #define EEEPC_LAPTOP_VERSION	"0.1"
  
- 		ehotk->eeepc_wlan_rfkill->name = "eeepc-wlan";
- 		ehotk->eeepc_wlan_rfkill->toggle_radio = eeepc_wlan_rfkill_set;
- 		ehotk->eeepc_wlan_rfkill->get_state = eeepc_wlan_rfkill_state;
--		if (get_acpi(CM_ASL_WLAN) == 1)
-+		if (get_acpi(CM_ASL_WLAN) == 1) {
- 			ehotk->eeepc_wlan_rfkill->state =
- 				RFKILL_STATE_UNBLOCKED;
--		else
-+			rfkill_set_default(RFKILL_TYPE_WLAN,
-+					   RFKILL_STATE_UNBLOCKED);
-+		} else {
- 			ehotk->eeepc_wlan_rfkill->state =
- 				RFKILL_STATE_SOFT_BLOCKED;
--		rfkill_register(ehotk->eeepc_wlan_rfkill);
-+			rfkill_set_default(RFKILL_TYPE_WLAN,
-+					   RFKILL_STATE_SOFT_BLOCKED);
-+		}
-+		result = rfkill_register(ehotk->eeepc_wlan_rfkill);
-+		if (result)
-+			goto wlan_fail;
- 	}
- 
- 	if (get_acpi(CM_ASL_BLUETOOTH) != -1) {
-@@ -592,27 +599,43 @@ static int eeepc_hotk_add(struct acpi_device *device)
- 			rfkill_allocate(&device->dev, RFKILL_TYPE_BLUETOOTH);
- 
- 		if (!ehotk->eeepc_bluetooth_rfkill)
--			goto end;
-+			goto bluetooth_fail;
- 
- 		ehotk->eeepc_bluetooth_rfkill->name = "eeepc-bluetooth";
- 		ehotk->eeepc_bluetooth_rfkill->toggle_radio =
- 			eeepc_bluetooth_rfkill_set;
- 		ehotk->eeepc_bluetooth_rfkill->get_state =
- 			eeepc_bluetooth_rfkill_state;
--		if (get_acpi(CM_ASL_BLUETOOTH) == 1)
-+		if (get_acpi(CM_ASL_BLUETOOTH) == 1) {
- 			ehotk->eeepc_bluetooth_rfkill->state =
- 				RFKILL_STATE_UNBLOCKED;
--		else
-+			rfkill_set_default(RFKILL_TYPE_BLUETOOTH,
-+					   RFKILL_STATE_UNBLOCKED);
-+		} else {
- 			ehotk->eeepc_bluetooth_rfkill->state =
- 				RFKILL_STATE_SOFT_BLOCKED;
--		rfkill_register(ehotk->eeepc_bluetooth_rfkill);
-+			rfkill_set_default(RFKILL_TYPE_BLUETOOTH,
-+					   RFKILL_STATE_SOFT_BLOCKED);
-+		}
-+		
-+		result = rfkill_register(ehotk->eeepc_bluetooth_rfkill);
-+		if (result)
-+			goto bluetooth_fail;
- 	}
-+	return 0;
-+
-+ bluetooth_fail:
-+	if (ehotk->eeepc_bluetooth_rfkill)
-+		rfkill_free(ehotk->eeepc_bluetooth_rfkill);
-+	rfkill_unregister(ehotk->eeepc_wlan_rfkill);
-+	ehotk->eeepc_wlan_rfkill = NULL;
-+ wlan_fail:
-+	if (ehotk->eeepc_wlan_rfkill)
-+		rfkill_free(ehotk->eeepc_wlan_rfkill);
-+ ehotk_fail:
-+	kfree(ehotk);
-+	ehotk = NULL;
- 
-- end:
--	if (result) {
--		kfree(ehotk);
--		ehotk = NULL;
--	}
- 	return result;
+@@ -517,6 +518,41 @@ static void notify_brn(void)
+ 	bd->props.brightness = read_brightness(bd);
  }
  
++static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
++{
++	struct pci_dev *dev;
++	struct pci_bus *bus = pci_find_bus(0, 1);
++
++	if (event != ACPI_NOTIFY_BUS_CHECK)
++		return;
++
++	if (!bus) {
++		printk(EEEPC_WARNING "Unable to find PCI bus 1?\n");
++		return;
++	}
++
++	if (get_acpi(CM_ASL_WLAN) == 1) {
++		dev = pci_get_slot(bus, 0);
++		if (dev) {
++			/* Device already present */
++			pci_dev_put(dev);
++			return;
++		}
++		dev = pci_scan_single_device(bus, 0);
++		if (dev) {
++			pci_bus_assign_resources(bus);
++			if (pci_bus_add_device(dev))
++				printk(EEEPC_ERR "Unable to hotplug wifi\n");
++		}
++	} else {
++		dev = pci_get_slot(bus, 0);
++		if (dev) {
++			pci_remove_bus_device(dev);
++			pci_dev_put(dev);
++		}
++	}
++}
++
+ static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+ {
+ 	static struct key_entry *key;
+@@ -543,6 +579,45 @@ static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+ 	}
+ }
+ 
++static int eeepc_register_rfkill_notifier(char *node)
++{
++	acpi_status status = AE_OK;
++	acpi_handle handle;
++
++	status = acpi_get_handle(NULL, node, &handle);
++
++	if (ACPI_SUCCESS(status)) {
++		status = acpi_install_notify_handler(handle,
++						     ACPI_SYSTEM_NOTIFY,
++						     eeepc_rfkill_notify,
++						     NULL);
++		if (ACPI_FAILURE(status))
++			printk(EEEPC_WARNING
++			       "Failed to register notify on %s\n", node);
++	} else
++		return -ENODEV;
++
++	return 0;
++}
++
++static void eeepc_unregister_rfkill_notifier(char *node)
++{
++	acpi_status status = AE_OK;
++	acpi_handle handle;
++
++	status = acpi_get_handle(NULL, node, &handle);
++
++	if (ACPI_SUCCESS(status)) {
++		status = acpi_remove_notify_handler(handle,
++						     ACPI_SYSTEM_NOTIFY,
++						     eeepc_rfkill_notify);
++		if (ACPI_FAILURE(status))
++			printk(EEEPC_ERR
++			       "Error removing rfkill notify handler %s\n",
++				node);
++	}
++}
++
+ static int eeepc_hotk_add(struct acpi_device *device)
+ {
+ 	acpi_status status = AE_OK;
+@@ -622,6 +697,10 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 		if (result)
+ 			goto bluetooth_fail;
+ 	}
++
++	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
++	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
++
+ 	return 0;
+ 
+  bluetooth_fail:
+@@ -649,6 +728,10 @@ static int eeepc_hotk_remove(struct acpi_device *device, int type)
+ 					    eeepc_hotk_notify);
+ 	if (ACPI_FAILURE(status))
+ 		printk(EEEPC_ERR "Error removing notify handler\n");
++
++	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
++	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
++
+ 	kfree(ehotk);
+ 	return 0;
+ }
+
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
