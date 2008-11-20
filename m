@@ -1,91 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYKTV5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYKTV6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbYKTV5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 16:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbYKTV5O
+	id S1757376AbYKTV6A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 16:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYKTV5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 16:57:14 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:46000 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755697AbYKTV5N (ORCPT
+	Thu, 20 Nov 2008 16:57:51 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54554 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752005AbYKTV5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 16:57:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lQop0wVbSmS/IYTblfKMWn+CRGrtTQ7hACQnSMIn1+vTieJJMfRYOmM/StOqAcuWpr
-         O3CLJizw+BxZaC+bgk4lmGT0S4UrxHXXuPsbOzR1ox+YU6OsFW3guYYJxuHmU8F7rU/G
-         93Zx1UYYAyaSVzYtli3NOPo9lFNmVnIlQrrdY=
-Message-ID: <8bd0f97a0811201357g1ffeb7d3pfad6e178fb20050e@mail.gmail.com>
-Date: Thu, 20 Nov 2008 16:57:12 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH 01/16] Blackfin SPI Driver: ensure cache coherency before doing DMA
-Cc: "Bryan Wu" <cooloney@kernel.org>, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, "Vitja Makarov" <vitja.makarov@gmail.com>
-In-Reply-To: <200811201347.46355.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
-	 <200811201224.15493.david-b@pacbell.net>
-	 <8bd0f97a0811201258j14dfcf46vce1655632bb12e2@mail.gmail.com>
-	 <200811201347.46355.david-b@pacbell.net>
+	Thu, 20 Nov 2008 16:57:50 -0500
+Message-Id: <20081120215541.489725873@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 20 Nov 2008 16:55:41 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/1] powerpc: make mcount a stub for dynamic ftrace
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 16:47, David Brownell wrote:
-> On Thursday 20 November 2008, Mike Frysinger wrote:
->> On Thu, Nov 20, 2008 at 15:24, David Brownell wrote:
->> > On Monday 17 November 2008, Bryan Wu wrote:
->> >>                         /* set transfer mode, and enable SPI */
->> >>                         dev_dbg(&drv_data->pdev->dev, "doing DMA in.\n");
->> >>
->> >> +                       /* invalidate caches, if needed */
->> >> +                       if (bfin_addr_dcachable((unsigned long) drv_data->rx))
->> >> +                               invalidate_dcache_range((unsigned long) drv_data->rx,
->> >> +                                                       (unsigned long) (drv_data->rx +
->> >> +                                                       drv_data->len));
->> >
->> > As a rule, you should use the standard kernel interfaces
->> > for such stuff instead of platform-specific calls like
->> > those two.  There are a LOT more developers who can find
->> > and fix bugs that way.
->>
->> could you elaborate on the common calls that would replace these ?
->
-> See Documentation/DMA-(mapping,API}.txt ... the "mapping"
-> document's section on what memory may be used for DMA is
-> not otherwise replicated in the description of the "generic"
-> versions of those API calls.
->
-> Basically, dma_map_single(), dma_unmap_single() ... and
-> remember that the caller may have done the mappings for
-> you already.
+Paul,
 
-these arent required to provide coherent memory right ?  if that's the
-case, i can take a look at getting things updated.
+I have one more patch. I added it to the end of the ppc/ftrace branch.
+The new way of handling the finding of mcounts means we do not need
+to do anything in the mcount call itself. It should just be a stub
+and when ftrace is enabled, it will change the caller sites to call
+something other than mcount.
 
->> > Also, this patch affects the "not full duplex" branch of
->> > this routine.  DMA here seems unusually convoluted ... but
->> > if you didn't invalidate the cache (RX path) before
->> > flushing it (TX path) and instead did it the other way
->> > aroound, would you actually *need* separate branches?
->>
->> it's convoluted because the hardware sucks.  it cant do full duplex
->> with DMA.  full duplex only works in the non-DMA case.
->
-> Ah, ok.  Sucky hardware -- been there, done that, still doing.  ;)
->
-> It'd be nice if one of patches snuck in a comment on that
-> point:  "Full duplex only works for non-DMA transfers."
-> Same rationale:  you may know this hardware inside out,
-> but the next person won't.
+The following patches are in:
 
-well, hopefully if they dont know they wont be touching the driver ;).
- i'll add a comment in this code chunk.  thanks for the feedback.
--mike
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: ppc/ftrace
+
+
+Steven Rostedt (1):
+      powerpc: ftrace, do nothing in mcount call for dyn ftrace
+
+----
+ arch/powerpc/kernel/entry_32.S |   35 +----------------------------------
+ arch/powerpc/kernel/entry_64.S |   12 ------------
+ 2 files changed, 1 insertions(+), 46 deletions(-)
