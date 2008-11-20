@@ -1,104 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYKTEvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYKTEyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYKTEvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 23:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYKTEvl
+	id S1754052AbYKTEyv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 23:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYKTEyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 23:51:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59417 "EHLO hera.kernel.org"
+	Wed, 19 Nov 2008 23:54:41 -0500
+Received: from sh.osrg.net ([192.16.179.4]:55774 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbYKTEvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 23:51:40 -0500
-Message-ID: <4924ECAD.7080603@kernel.org>
-Date: Wed, 19 Nov 2008 20:50:53 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2 - fix v2
-References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117173728.GA7384@elte.hu> <4921FC19.1080803@kernel.org> <20081117232837.GA10308@elte.hu> <20081118074346.GA21875@elte.hu> <4922E99B.8090604@kernel.org> <20081118211413.GE11490@elte.hu>
-In-Reply-To: <20081118211413.GE11490@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752841AbYKTEyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 23:54:40 -0500
+Date: Thu, 20 Nov 2008 13:49:27 +0900
+To: jpk@sgi.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ia64: SN specific version of dma_get_required_mask()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200811191612.mAJGCNCJ040231@fcbayern.americas.sgi.com>
+References: <200811191612.mAJGCNCJ040231@fcbayern.americas.sgi.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081120135023M.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> Impact: fix wakeup_secondary_cpu with hotplug
->>
->> We can not put that in x86_quirks, because that is __initdata.
->> So try to move that to genapic, and add update_genapic in x86_quirks.
->>
->> later we even could use that stub to
->> 1. autodetect CONFIG_ES7000_CLUSTERED_APIC
->> 2. more correct inquire_remote_apic with apic_verbosity setting.
-> 
-> thanks - this patch and the next one did the trick to stabilize the 
-> tip/x86/quirks topic tree - no more hotplug crashes and no more build 
-> failures either. The lineup is:
-> 
->  b5fe363: x86: use update_genapic to get rid of ES7000_CLUSTERED_APIC v2
->  f632ddc: x86: fix wakeup_cpu with numaq/es7000, v2, fix #2
->  54ac14a: x86: fix wakeup_cpu with numaq/es7000, v2, fix
->  569712b: x86: fix wakeup_cpu with numaq/es7000, v2
-> 
-> and i've merged them into tip/master as well.
-> 
+On Wed, 19 Nov 2008 10:12:23 -0600 (CST)
+John Keller <jpk@sgi.com> wrote:
 
-need more update_genapic calling
+> On Tue, 18 Nov 2008
+> Fujita Tomonori wrote:
+> 
+> > On Mon, 17 Nov 2008 10:24:54 -0600
+> > John Keller <jpk@sgi.com> wrote:
+> 
+> > > Create a platform specific version of dma_get_required_mask()
+> > > for ia64 SN Altix. All SN Altix platforms support 64 bit DMA
+> > > addressing regardless of the size of system memory.
+> > > Create a ia64 machvec for dma_get_required_mask, with the
+> > > SN version unconditionally returning DMA_64BIT_MASK.
+> > > 
+> > > 
+> > > Signed-off-by: John Keller <jpk@sgi.com>
+> > > ---
+> > > 
+> > >  Documentation/DMA-API.txt            |    9 ++++-----
+> > >  arch/ia64/include/asm/dma-mapping.h  |    3 +++
+> > >  arch/ia64/include/asm/machvec.h      |    7 +++++++
+> > >  arch/ia64/include/asm/machvec_init.h |    1 +
+> > >  arch/ia64/include/asm/machvec_sn2.h  |    2 ++
+> > >  arch/ia64/pci/pci.c                  |   21 +++++++++++++++++++++
+> > >  arch/ia64/sn/pci/pci_dma.c           |    6 ++++++
+> > >  include/linux/dma-mapping.h          |    2 ++
+> > >  8 files changed, 46 insertions(+), 5 deletions(-)
+> > 
+> > (snip)
+> > 
+> > >  static int __init pcibios_init(void)
+> > >  {
+> > >  	set_pci_cacheline_size();
+> > > Index: linux-2.6/include/linux/dma-mapping.h
+> > > ===================================================================
+> > > --- linux-2.6.orig/include/linux/dma-mapping.h	2008-11-17 08:38:07.740451313 -0600
+> > > +++ linux-2.6/include/linux/dma-mapping.h	2008-11-17 08:39:50.573284674 -0600
+> > > @@ -70,7 +70,9 @@ static inline u64 dma_get_mask(struct de
+> > >  	return DMA_32BIT_MASK;
+> > >  }
+> > >  
+> > > +#ifndef CONFIG_IA64
+> > >  extern u64 dma_get_required_mask(struct device *dev);
+> > > +#endif
+> > 
+> > I think that adding CONFIG_IA64 to include/linux/dma-mapping.h is
+> > wrong. I also think that you don't need to ifndef this extern.
+> 
+> Without this change ia64 would not build for me.
 
-diff --git a/arch/x86/mach-generic/probe.c b/arch/x86/mach-generic/probe.c
-index 90b134f..c346d9d 100644
---- a/arch/x86/mach-generic/probe.c
-+++ b/arch/x86/mach-generic/probe.c
-@@ -76,12 +76,15 @@ void __init generic_bigsmp_probe(void)
- 	 * - we find more than 8 CPUs in acpi LAPIC listing with xAPIC support
- 	 */
- 
--	if (!cmdline_apic && genapic == &apic_default)
-+	if (!cmdline_apic && genapic == &apic_default) {
- 		if (apic_bigsmp.probe()) {
- 			genapic = &apic_bigsmp;
-+			if (x86_quirks->update_genapic)
-+				x86_quirks->update_genapic();
- 			printk(KERN_INFO "Overriding APIC driver with %s\n",
- 			       genapic->name);
- 		}
-+	}
- #endif
- }
- 
-@@ -98,6 +101,9 @@ void __init generic_apic_probe(void)
- 		/* Not visible without early console */
- 		if (!apic_probe[i])
- 			panic("Didn't find an APIC driver");
-+
-+		if (x86_quirks->update_genapic)
-+			x86_quirks->update_genapic();
- 	}
- 	printk(KERN_INFO "Using APIC driver %s\n", genapic->name);
- }
-@@ -112,6 +118,8 @@ int __init mps_oem_check(struct mp_config_table *mpc, char *oem,
- 		if (apic_probe[i]->mps_oem_check(mpc, oem, productid)) {
- 			if (!cmdline_apic) {
- 				genapic = apic_probe[i];
-+				if (x86_quirks->update_genapic)
-+					x86_quirks->update_genapic();
- 				printk(KERN_INFO "Switched to APIC driver `%s'.\n",
- 				       genapic->name);
- 			}
-@@ -128,6 +136,8 @@ int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 		if (apic_probe[i]->acpi_madt_oem_check(oem_id, oem_table_id)) {
- 			if (!cmdline_apic) {
- 				genapic = apic_probe[i];
-+				if (x86_quirks->update_genapic)
-+					x86_quirks->update_genapic();
- 				printk(KERN_INFO "Switched to APIC driver `%s'.\n",
- 				       genapic->name);
- 			}
+Odd. It works for me. Can you send your .config?
+
+
+> > If you need this trick with only CONFIG_IA64_SGI_SN2, how about
+> > something like this? It's simple and we can avoid duplicate the
+> > generic dma_get_required_mask in arch/ia64/pci/pci.c
+> 
+> Actually I need it for CONFIG_IA64_GENERIC and CONFIG_IA64_SGI_SN2.
+
+Hmm, but your patch puts sn_dma_get_required_mask in
+arch/ia64/sn/pci/pci_dma.c. arch/ia64/sn/pci/pci_dma.c is compiled
+only with CONFIG_IA64_SGI_SN2?
+
+
+> But, even so, unfortunately your suggestion doesn't build.
+> 
+> I see numerous errors such as these:
+> 
+> kernel/fork.o: In function `__crc_dma_get_required_mask':
+> fork.c:(*ABS*+0xb0339303): multiple definition of `__crc_dma_get_required_mask'
+> kernel/exit.o: In function `__crc_dma_get_required_mask':
+> exit.c:(*ABS*+0x4a7c4115): multiple definiti  CC      fs/sysfs/group.o
+> on of `__crc_dma_get_required_mask'
+
+Odd, it works for me. Looks that #define
+ARCH_HAS_DMA_GET_REQUIRED_MASK doesn't work. I'll try this with your
+.config.
+
+Thanks,
+
+
+> > 
+> > 
+> > diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+> > index bbab7e2..4ffbd18 100644
+> > --- a/arch/ia64/include/asm/dma-mapping.h
+> > +++ b/arch/ia64/include/asm/dma-mapping.h
+> > @@ -144,6 +144,13 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
+> > 	return dma_ops;
+> > }
+> > 
+> > -
+> > +#ifdef CONFIG_IA64_SGI_SN2
+> > +#define ARCH_HAS_DMA_GET_REQUIRED_MASK
+> > +static inline u64 dma_get_required_mask(struct device *dev)
+> > +{
+> > +	return DMA_64BIT_MASK;
+> > +}
+> > +EXPORT_SYMBOL_GPL(dma_get_required_mask);
+> > +#endif
+> >  
+> > #endif /* _ASM_IA64_DMA_MAPPING_H */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
