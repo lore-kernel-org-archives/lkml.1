@@ -1,79 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYKTLOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbYKTLOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbYKTLOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYKTLOB
+	id S1755160AbYKTLOs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYKTLOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:14:01 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65154 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753962AbYKTLOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:14:00 -0500
-Message-ID: <492545CC.6000909@cn.fujitsu.com>
-Date: Thu, 20 Nov 2008 19:11:08 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Hirokazu Takahashi <taka@valinux.co.jp>
-CC: menage@google.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH 3/7] Introduction for new feature
-References: <4925445C.10302@cn.fujitsu.com>
-In-Reply-To: <4925445C.10302@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 06:14:40 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:61558 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754141AbYKTLOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 06:14:39 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.28-rc5] mbp_nvidia_bl.o build fails.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Message-Id: <200811202014.GID18744.VMQSOFJLHOtFFO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 20 Nov 2008 20:14:34 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation of using bio-cgroup in io-throttle.
+Looks like compiler version dependent problem.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- Documentation/controllers/io-throttle.txt |   29 ++++++++++++++++++++++++++++-
- 1 files changed, 28 insertions(+), 1 deletions(-)
+---------- gcc 3.3 ----------
+# tar -jxf linux-2.6.28-rc5.tar.bz2
+# cd linux-2.6.28-rc5
+# wget -O .config http://I-love.SAKURA.ne.jp/tmp/config-2.6.28-rc5
+# make drivers/video/backlight/mbp_nvidia_bl.o
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  HOSTCC  scripts/basic/hash
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/lex.zconf.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+scripts/kconfig/conf -s arch/x86/Kconfig
+  CHK     include/linux/version.h
+  UPD     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CC      kernel/bounds.s
+  GEN     include/linux/bounds.h
+  CC      arch/x86/kernel/asm-offsets.s
+  GEN     include/asm/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/file2alias.o
+  HOSTCC  scripts/mod/modpost.o
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTLD  scripts/mod/modpost
+  HOSTCC  scripts/selinux/mdp/mdp
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/pnmtologo
+  HOSTCC  scripts/conmakehash
+  CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
+drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size of `__mod_dmi_device_table' isn't known
+make[1]: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 1
+make: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 2
+# gcc --version
+gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
+Copyright (C) 2003 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
-index 2a3bbd1..d3510ae 100644
---- a/Documentation/controllers/io-throttle.txt
-+++ b/Documentation/controllers/io-throttle.txt
-@@ -223,7 +223,34 @@ $ cat /proc/$$/io-throttle-stat
-    \ \_______global bandwidth sleep (clock ticks)
-     \________global bandwidth counter
- 
--2.4. Examples
-+2.4. Buffered-io tracking
-+bio-cgroup can be used to track buffered-io(in delay-write condition) and for 
-+proper throttling. You can directly mount io-throttle and bio-cgroup together 
-+to track buffered-io. An alternative choice is making use of bio-cgroup id. An 
-+association between a given io-throttle cgroup and a given bio-cgroup cgroup can 
-+be built by echo a bio-cgroup id to the file blockio.bio_id. This file is exported 
-+for the purpose of associating io-throttle and bio-cgroup groups. If you'd like to 
-+create an association, you must ensure the io-throttle group is empty, that is, 
-+there are no tasks in this group. otherwise, association creating will fail. If an 
-+association is successfully built, task moving in this group will be denied. Of 
-+course, you can remove an association, just echo an negative number into 
-+blockio.bio_id.
-+
-+Example:
-+* Create an association between a given io-throttle group and a given bio-cgroup 
-+group.
-+$ mount -t cgroup -o bio bio-cgroup /mnt/bio-cgroup/
-+$ cd /mnt/bio-cgroup/
-+$ mkdir bio-grp
-+$ cat bio-grp/bio.id
-+1
-+
-+$ mount -t cgroup -o blockio blockio /mnt/throttle
-+$ cd /mnt/throttle
-+$ mkdir foo
-+$ echo 1 > foo/blockio.bio_id
-+
-+2.5. Examples
- 
- * Mount the cgroup filesystem (blockio subsystem):
-   # mkdir /mnt/cgroup
--- 1.5.4.rc3 
+---------- gcc 4.3 ----------
+# tar -jxf linux-2.6.28-rc5.tar.bz2
+# cd linux-2.6.28-rc5
+# wget -O .config http://I-love.SAKURA.ne.jp/tmp/config-2.6.28-rc5
+# make drivers/video/backlight/mbp_nvidia_bl.o
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  HOSTCC  scripts/basic/hash
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/lex.zconf.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+scripts/kconfig/conf -s arch/x86/Kconfig
+  CHK     include/linux/version.h
+  UPD     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CC      kernel/bounds.s
+  GEN     include/linux/bounds.h
+  CC      arch/x86/kernel/asm-offsets.s
+  GEN     include/asm/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/file2alias.o
+  HOSTCC  scripts/mod/modpost.o
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTLD  scripts/mod/modpost
+  HOSTCC  scripts/selinux/mdp/mdp
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/pnmtologo
+  HOSTCC  scripts/conmakehash
+  CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
+# gcc --version
+gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
+Copyright (C) 2008 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+----------
+
+Regards.
