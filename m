@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYKTJGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYKTJIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYKTJGY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYKTJGJ
+	id S1754682AbYKTJIE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYKTJHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:06:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35370
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752145AbYKTJGG (ORCPT
+	Thu, 20 Nov 2008 04:07:46 -0500
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:43959 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753071AbYKTJHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:06:06 -0500
-Date: Thu, 20 Nov 2008 01:06:06 -0800 (PST)
-Message-Id: <20081120.010606.67799718.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, dada1@cosmosbay.com,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, shemminger@vyatta.com
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
- 2.6.22 -&gt; 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200811182044.11055.nickpiggin@yahoo.com.au>
-References: <alpine.LFD.2.00.0811171218470.18283@nehalem.linux-foundation.org>
-	<20081117.125826.193693115.davem@davemloft.net>
-	<200811182044.11055.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 04:07:45 -0500
+Date: Thu, 20 Nov 2008 09:07:37 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>
+Subject: Re: gitwatch: RSS feed of checkpatch+coccinelle against new
+	commits in mainline
+Message-ID: <20081120090737.GE14274@shadowen.org>
+References: <19f34abd0811181420i2b582fd2jcaa685b0cbb5c979@mail.gmail.com> <20081120082639.GC14274@shadowen.org> <19f34abd0811200057n73cfae6va5efc1d91bc438e4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0811200057n73cfae6va5efc1d91bc438e4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Tue, 18 Nov 2008 20:44:10 +1100
-
-> On Tuesday 18 November 2008 07:58, David Miller wrote:
-> > From: Linus Torvalds <torvalds@linux-foundation.org>
-> > Date: Mon, 17 Nov 2008 12:30:00 -0800 (PST)
+On Thu, Nov 20, 2008 at 09:57:14AM +0100, Vegard Nossum wrote:
+> On Thu, Nov 20, 2008 at 9:26 AM, Andy Whitcroft <apw@shadowen.org> wrote:
+> > On Tue, Nov 18, 2008 at 11:20:48PM +0100, Vegard Nossum wrote:
+> >> I've written a script that follows the mainline git repository and
+> >> runs checkpatch against all new commits. The result is available as an
+> >> RSS stream:
+> >>
+> >>     http://kernel.org/~vegard/gitwatch.rss
+> >>
+> >> Only commits with warnings or errors are shown. Files that change are
+> >> also searched for known/frequent coding errors using Coccinelle and a
+> >> selection of the semantic patches found on the Coccinelle website.
 > >
-> > > On Mon, 17 Nov 2008, David Miller wrote:
-> > > > It's on my workstation which is a much simpler 2 processor
-> > > > UltraSPARC-IIIi (1.5Ghz) system.
-> > >
-> > > Ok. It could easily be something like a cache footprint issue. And while
-> > > I don't know my sparc cpu's very well, I think the Ultrasparc-IIIi is
-> > > super- scalar but does no out-of-order and speculation, no?
-> >
-> > I does only very simple speculation, but you're description is accurate.
+> > Thats pretty intresting.  Looking at some of the cochinelle output I am
+> > a little confused as to what its saying.  Am I right in thinking that
+> > for those reports that a proposed patch is printed, after the comment
+> > for the original patch?  If so it might be helpful to say something like
+> > 'proposed modificiation' just before the patchlet.
 > 
-> Surely it would do branch prediction, but maybe not indirect branch?
+> You are correct, those are the modifications that would have been made
+> by the semantic patch. I agree, it might look like the log text
+> belongs to the patch below, which is wrong. We are also planning to
+> add a description to each of the semantic patches so that a better
+> explanation is given for the change.
 
-Right.
+Yes a "You should use NULL not 0" before the patch would make it clearer
+for sure.
+
+> > Also which version of checkpatch is this output being generated with?
+> > The one at the head of the git tree or something else?  I see a couple
+> > of false positives in there that I know I have fixed already.
+> 
+> Yes, it's a copy of the one in linux-2.6.git (after v2.6.28-rc4). The
+> file itself says 0.24. Which false positives were you thinking about?
+
+There are a couple in there, one is a comment tracking issue and there
+is one on ':' tracking for things of this form:
+
+	int foo:1,
+	    bar:2,
+	    baz:1;
+
+Fixes for these are in my tree, not sure if Andrew has them yet.  I am
+a little behind and intending on rolling up a new block of changes this
+week.
+
+-apw
