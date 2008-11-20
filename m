@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYKTUXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYKTUXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbYKTUXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 15:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYKTUXO
+	id S1756955AbYKTUXy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 15:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYKTUXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 15:23:14 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49247 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYKTUXN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 15:23:13 -0500
-To: tj@kernel.org
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu
-In-reply-to: <1227190298-4585-1-git-send-email-tj@kernel.org> (message from
-	Tejun Heo on Thu, 20 Nov 2008 23:11:33 +0900)
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations, take #2
-References: <1227190298-4585-1-git-send-email-tj@kernel.org>
-Message-Id: <E1L3G3Q-0006SJ-Uc@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 20 Nov 2008 21:23:08 +0100
+	Thu, 20 Nov 2008 15:23:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55964 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754921AbYKTUXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 15:23:43 -0500
+Date: Thu, 20 Nov 2008 22:24:18 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] protect /sbin/init from unwanted signals more
+Message-ID: <20081120212418.GA29345@redhat.com>
+References: <20081118175901.GA17134@redhat.com> <20081119185148.DC1D31544EB@magilla.localdomain> <20081120152039.GB3325@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120152039.GB3325@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
+On 11/20, Oleg Nesterov wrote:
+>
+> On 11/19, Roland McGrath wrote:
+> >
+> > The effect is fine, but that seems like a kludgey way to do it.
+>
+> Agreed, that is why I did the next patch to kill the ugliness.
+>
+> > I really don't think the sigaction case matters--certainly it will never
+> > come up with SIGKILL.
+>
+> Yes. This patch doesn't affect sigaction, the next one adds a very
 
-On Thu, 20 Nov 2008, Tejun Heo wrote:
-> This patchset is the second take of extend-FUSE patchset.  Changes
-> from the last take[L] are...
+(this one, not the next one)
 
-I managed to review and apply this and the libfuse patches up to the
-ioctl support.  After swithing _IOC_READ with _IOC_WRITE in the kernel
-the example program actually worked :)
+> minor side effect: init drops pending !sig_kernel_ignore() signals
+> if it does sigaction(SIG_IGN). But this has nothing to do with SIGKILL
+> of course.
 
-I removed ->unrestricted_ioctl() and associated code because it really
-doesn't make any sense: the high level lib won't be used for CUSE
-stuff, otherwise unrestrited ioctls are not allowed (and the interface
-is rather horrible anyway).
+Ah sorry, now I see I misunderstood you...
 
-The poll patches look OK at a first glance too, I'll review them
-tomorrow.
+You mean, we shouldn't touch the sigaction() path. Now I am wondering
+if it is really OK to drop signals if init does sigaction(SIG_DFL),
+perhaps you are right.
 
-Thanks,
-Miklos
+Oleg.
+
