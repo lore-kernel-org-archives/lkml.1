@@ -1,50 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYKTTiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbYKTTjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYKTTiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 14:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYKTTiK
+	id S1756665AbYKTTjE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 14:39:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbYKTTix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 14:38:10 -0500
-Received: from gw.goop.org ([64.81.55.164]:55624 "EHLO mail.goop.org"
+	Thu, 20 Nov 2008 14:38:53 -0500
+Received: from sing.entic.net ([208.64.63.147]:34671 "EHLO mail.q-ag.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbYKTTiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 14:38:09 -0500
-Message-ID: <4925BC9E.9010006@goop.org>
-Date: Thu, 20 Nov 2008 11:38:06 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
-References: <patchbomb.1226603398@abulafia.goop.org> <d103c0da2fa147ac31af.1226603428@abulafia.goop.org> <20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org> <20081120192218.GF3955@elte.hu>
-In-Reply-To: <20081120192218.GF3955@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751827AbYKTTiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 14:38:52 -0500
+X-Greylist: delayed 2112 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 14:38:52 EST
+Message-Id: <200811201903.mAKJ3Fqu016272@mail.q-ag.de>
+From: Manfred Spraul <manfred@colorfullife.com>
+To: akpm@linux-foundation.org
+Cc: Nadia.Derbey@bull.net
+Cc: cboulte@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Date: Thu, 20 Nov 2008 19:55:47 +0100
+Subject: [PATCH] lib/idr.c: Fix rcu related race with idr_find
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> it certainly looks thin enough to me although i'm really not sure we 
-> want to virtualize at the IO-APIC level. Peter, what's your 
-> opinion/preference?
->   
+2nd part of the fixes needed for
+http://bugzilla.kernel.org/show_bug.cgi?id=11796.
 
-Given that Xen's requirements here are pretty Xen-specific (I don't 
-imagine that any other virtualization system would work in the same 
-way), I didn't bother trying to come up with a general "virtualization" 
-layer at this level - that's why I was pretty blunt about putting xen_* 
-calls in without any indirection.  But the code could certainly be 
-restructured in a way which would make it simpler to hook Xen as a 
-side-effect, so long as it was achieving some other goal as well 
-(general cleanup, big iron architecture support, better msi handling, 
-whatever...).
+When the idr tree is either grown or shrunk, then the update to the
+number of layers and the top pointer were not atomic.
+This race caused crashes.
 
-    J
+The attached patch fixes that by replicating the layers counter in
+each layer, thus idr_find doesn't need idp->layers anymore.
+
+Andrew - could you add it to -mm? It survived some simple tests.
+In the long run, it's something for the stable kernel, but it needs
+more testing.
+
+Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+---
+ include/linux/idr.h |    3 ++-
+ lib/idr.c           |   14 ++++++++++++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/idr.h b/include/linux/idr.h
+index fa035f9..dd846df 100644
+--- a/include/linux/idr.h
++++ b/include/linux/idr.h
+@@ -52,13 +52,14 @@ struct idr_layer {
+ 	unsigned long		 bitmap; /* A zero bit means "space here" */
+ 	struct idr_layer	*ary[1<<IDR_BITS];
+ 	int			 count;	 /* When zero, we can release it */
++	int			 layer;	 /* distance from leaf */
+ 	struct rcu_head		 rcu_head;
+ };
+ 
+ struct idr {
+ 	struct idr_layer *top;
+ 	struct idr_layer *id_free;
+-	int		  layers;
++	int		  layers; /* only valid without concurrent changes */
+ 	int		  id_free_cnt;
+ 	spinlock_t	  lock;
+ };
+diff --git a/lib/idr.c b/lib/idr.c
+index e728c7f..7a785a0 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -185,6 +185,7 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+ 			new = get_from_free_list(idp);
+ 			if (!new)
+ 				return -1;
++			new->layer = l-1;
+ 			rcu_assign_pointer(p->ary[m], new);
+ 			p->count++;
+ 		}
+@@ -210,6 +211,7 @@ build_up:
+ 	if (unlikely(!p)) {
+ 		if (!(p = get_from_free_list(idp)))
+ 			return -1;
++		p->layer = 0;
+ 		layers = 1;
+ 	}
+ 	/*
+@@ -237,6 +239,7 @@ build_up:
+ 		}
+ 		new->ary[0] = p;
+ 		new->count = 1;
++		new->layer = layers-1;
+ 		if (p->bitmap == IDR_FULL)
+ 			__set_bit(0, &new->bitmap);
+ 		p = new;
+@@ -493,17 +496,21 @@ void *idr_find(struct idr *idp, int id)
+ 	int n;
+ 	struct idr_layer *p;
+ 
+-	n = idp->layers * IDR_BITS;
+ 	p = rcu_dereference(idp->top);
++	if (!p)
++		return NULL;
++	n = (p->layer+1) * IDR_BITS;
+ 
+ 	/* Mask off upper bits we don't use for the search. */
+ 	id &= MAX_ID_MASK;
+ 
+ 	if (id >= (1 << n))
+ 		return NULL;
++	BUG_ON(n == 0);
+ 
+ 	while (n > 0 && p) {
+ 		n -= IDR_BITS;
++		BUG_ON(n != p->layer*IDR_BITS);
+ 		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+ 	}
+ 	return((void *)p);
+@@ -582,8 +589,11 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
+ 	int n;
+ 	struct idr_layer *p, *old_p;
+ 
+-	n = idp->layers * IDR_BITS;
+ 	p = idp->top;
++	if (!p)
++		return ERR_PTR(-EINVAL);
++
++	n = (p->layer+1) * IDR_BITS;
+ 
+ 	id &= MAX_ID_MASK;
+ 
+-- 
+1.5.6.5
+
