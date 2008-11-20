@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbYKTOZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYKTO0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756482AbYKTOZv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYKTOXz
+	id S1756589AbYKTO0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbYKTOZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:23:55 -0500
-Received: from mtl.rackplans.net ([69.90.0.18]:47467 "EHLO mtl.rackplans.net"
+	Thu, 20 Nov 2008 09:25:33 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39444 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755984AbYKTOXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:23:53 -0500
-Date: Thu, 20 Nov 2008 09:24:45 -0500 (EST)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.26.x and 2.6.27.x 2.6.27-rc* regression: ssh and tun/tap
- problem.
-In-Reply-To: <alpine.DEB.1.10.0811131133560.11705@mtl.rackplans.net>
-Message-ID: <alpine.DEB.1.10.0811200916400.31851@mtl.rackplans.net>
-References: <alpine.DEB.1.10.0811131133560.11705@mtl.rackplans.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756367AbYKTOZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:25:31 -0500
+Subject: Re: [PATCH] intel-iommu: make init_dmars() static
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       iommu@lists.linux-foundation.org
+In-Reply-To: <1227190873.3739.24.camel@blaa>
+References: <1227190873.3739.24.camel@blaa>
+Content-Type: text/plain
+Date: Thu, 20 Nov 2008 14:24:09 +0000
+Message-Id: <1227191049.3739.28.camel@blaa>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-11-20 at 14:21 +0000, Mark McLoughlin wrote:
+> init_dmars() is not used outside of drivers/pci/intel-iommu.c
 
-I have a series of gateways using ssh tunnels and I have discovered that 
-they stop working if I upgrade them past kernel 2.6.25.  This seems to 
-happen regardless of the reciving end's kernel version.
+Note, most of linux/dma_remapping.h is only needed by intel-iommu.c
 
-About 20 to 30 seconds after the tunnel comes up the interface stops 
-recieving packets with no errors show on the remote side and the local 
-side showing a single dropped packet.  If I tcpdump a ping it shows that 
-the remote side is getting packets and is replying but the local side is 
-only sending.  This problem is only cleared by resetting the tunnel but 
-then it only works for another 20 to 30 seconds.
+Any objections into moving all of that into intel-iommu.c?
 
-None of the other interfaces show any errors and traffic flows over them 
-without problem.
+Cheers,
+Mark.
 
-Anyone have any idea what has gone wrong?
-
-tun0      Link encap:UNSPEC  HWaddr 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
-           inet addr:172.16.1.2  P-t-P:172.16.1.1  Mask:255.255.255.252
-           UP POINTOPOINT RUNNING NOARP MULTICAST  MTU:1500  Metric:1
-           RX packets:0 errors:0 dropped:1 overruns:0 frame:0
-           TX packets:23 errors:0 dropped:0 overruns:0 carrier:0
-           collisions:0 txqueuelen:500
-           RX bytes:0 (0.0 B)  TX bytes:1884 (1.8 KiB)
- 
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
