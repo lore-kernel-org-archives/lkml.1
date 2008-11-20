@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbYKTV6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYKTWAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbYKTV6j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 16:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757396AbYKTV6H
+	id S1757354AbYKTWAa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 17:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbYKTWAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 16:58:07 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:35479 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756352AbYKTV6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 16:58:06 -0500
-Subject: Re: [patch 2.6.28-rc5] regulator: enable/disable refcounting
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: dbrownell@users.sourceforge.net
-Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
-In-Reply-To: <200811191412.41259.david-b@pacbell.net>
-References: <200811161144.46582.david-b@pacbell.net>
-	 <1227129996.585.22.camel@vega.slimlogic.co.uk>
-	 <200811191412.41259.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Thu, 20 Nov 2008 21:58:00 +0000
-Message-Id: <1227218280.585.40.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 20 Nov 2008 17:00:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:57572 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755730AbYKTWAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 17:00:19 -0500
+Message-ID: <154e089b0811201400w6b5d249eyc21ebb9a76133d08@mail.gmail.com>
+Date: Thu, 20 Nov 2008 23:00:17 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: "David Howells" <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] CRED: fix compilation warning in function 'get_cred'
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-19 at 14:12 -0800, David Brownell wrote:
-> On Wednesday 19 November 2008, Liam Girdwood wrote:
-> > Both -rc5 patches applied.
-> 
-> How about the other two which seemed non-controversial?
-> 
->   http://marc.info/?l=linux-kernel&m=122645403604873&w=2 (code shrink)
->   http://marc.info/?l=linux-kernel&m=122645416305013&w=2 (attribute shrink)
-> 
-> Those were sent against RC4.
+Fix to following warning by introducing a temporary variable:
 
-Both applied.
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:187: warning: passing argument 1 of
+'get_new_cred' discards qualifiers from pointer target type
 
-Thanks
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+With -O2 the same code as for the original function is generated.
 
-Liam
+ include/linux/cred.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index 26c1ab1..2ab8cf7 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -184,7 +184,8 @@ static inline struct cred *get_new_cred(struct cred *cred)
+  */
+ static inline const struct cred *get_cred(const struct cred *cred)
+ {
+-	return get_new_cred((struct cred *) cred);
++	struct cred *non_const_cred = (struct cred *) cred;
++	return get_new_cred(non_const_cred);
+ }
+
+ /**
