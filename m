@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYKTSnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYKTSpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbYKTSnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 13:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYKTSnU
+	id S1756219AbYKTSpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 13:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYKTSpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 13:43:20 -0500
-Received: from mms3.broadcom.com ([216.31.210.19]:3955 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbYKTSnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 13:43:19 -0500
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Date: Thu, 20 Nov 2008 10:43:10 -0800
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Willy Tarreau" <w@1wt.eu>
-cc: "Matthew Carlson" <mcarlson@broadcom.com>,
-       "Roger Heflin" <rogerheflin@gmail.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219
- dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081120184310.GB27712@xw6200.broadcom.net>
-References: <491954E1.2050002@gmail.com>
- <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com>
- <20081118065006.GC24654@1wt.eu>
- <20081120031101.GD26448@xw6200.broadcom.net>
- <20081120053746.GB15168@1wt.eu>
+	Thu, 20 Nov 2008 13:45:22 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:6077 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbYKTSpV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 13:45:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=dCyZRQ5k6klVIZOt/GeZICIgWxyzDADPeRtqmdXYoBVt/BN5iw8Y60WueZdTtVeClj
+         lfWxkxd4EbUtET7HIJh3haEZggYM1+6zTp/FLBbS0Op/H9ZXAeo2WpwF9mBVBXulwPRi
+         NcYwElI0eKV9qo3dpBBlUUxQZSDdbmaAxDL7E=
+Message-ID: <84144f020811201045w27d4d751h771276eb5fd8beda@mail.gmail.com>
+Date: Thu, 20 Nov 2008 20:45:19 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Catalin Marinas" <catalin.marinas@arm.com>
+Subject: Re: Possible memory leak via slub kmem_cache_create
+Cc: "Christoph Lameter" <cl@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
+In-Reply-To: <1227174711.5784.9.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-In-Reply-To: <20081120053746.GB15168@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Nov 2008 18:43:10.0696 (UTC)
- FILETIME=[D649E680:01C94B3F]
-X-WSS-ID: 653B704A37G19112460-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1227111954.27162.28.camel@pc1117.cambridge.arm.com>
+	 <Pine.LNX.4.64.0811191319360.23084@quilx.com>
+	 <1227174711.5784.9.camel@pc1117.cambridge.arm.com>
+X-Google-Sender-Auth: f387002be7ea2589
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 09:37:47PM -0800, Willy Tarreau wrote:
-> Hello Matt,
-> 
-> On Wed, Nov 19, 2008 at 07:11:01PM -0800, Matt Carlson wrote:
-> > > My tg3 is just PCI-based, no PCIe in this beast. I can send more
-> > > info when I turn it on. I don't think that the tg3 driver changes
-> > > often, so most likely digging through the changes between 2.6.25
-> > > and 2.6.27 should not take much time. I just don't know if I can
-> > > reliably reproduce the issue right now.
-> > 
-> > Willy, this problem description sounds a little different than the
-> > original report.  There was a bug where the driver would wait 2.5
-> > seconds for a firmware event that would never get serviced.  That
-> > fix has already landed in the 2.6.27 tree though.
-> > 
-> > I glanced over the changes between 2.6.25 and 2.6.27.6.  There are quite
-> > a few changes related to phylib support for an upcoming device, but not
-> > so many changes that affect older devices.  What device are you using?
-> 
-> I think it's a 5704, but I will check this this morning when I'm at
-> work. I also want to try to reliably reproduce the problem. After
-> that, I see only 29 patches which differ from the two kernels, it
-> should be pretty easy to spot the culprit.
+Hi Catalin,
 
-O.K.  Let me know how it goes.
+On Thu, Nov 20, 2008 at 11:51 AM, Catalin Marinas
+<catalin.marinas@arm.com> wrote:
+> My point is that the API is slightly different when slub is used since
+> kmem_cache_name is no longer guaranteed to return the same pointer
+> passed to kmem_cache_create. Maybe a documentation update:
+>
+> diff --git a/mm/slab.c b/mm/slab.c
+> index ea76bcb..9723a72 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -2124,6 +2124,8 @@ static int __init_refok setup_cpu_cache(struct kmem_cache
+>  *
+>  * @name must be valid until the cache is destroyed. This implies that
+>  * the module calling this has to destroy the cache before getting unloaded.
+> + * Note that kmem_cache_name() is not guaranteed to return the same pointer,
+> + * therefore applications must manage it themselves.
 
-Could we clarify something though?  In your previous email, you said you
-didn't have any problems on pre-2.6.25 kernels.  I'm wondering if the
-problem goes back further than 2.6.25.  From 2.6.24 to 2.6.25, there was a
-significant set of flow control changes that took place.  I suspect that
-might have something to do with Roger's problem, and it may have
-something to do with your problem too.  So, is it true that 2.6.25 works
-for you?  If not, can you try disabling flow control and see if that
-helps?
+Yes, makes sense. Care to send a patch I can apply?
 
-> If you think it's a different bug than original report (though I
-> really thought it was the same), I'll post my findings in a separate
-> thread not to mix investigations.
-
-Right now, I think it is premature to say, so let's continue as if they
-were the same problem.  We can always break it out into a separate
-discussion later.
-
-
+                         Pekka
