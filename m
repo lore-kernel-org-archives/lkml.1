@@ -1,223 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYKUNve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYKUN5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbYKUNve (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 08:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYKUNvB
+	id S1755923AbYKUN5k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 08:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYKUN5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 08:51:01 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53060 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955AbYKUNu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 08:50:58 -0500
-X-BigFish: VPS-10(zz936eQ4015M4cd6kzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KAORSG-01-YS8-01
-Date: Fri, 21 Nov 2008 14:49:25 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, cpufreq@vger.kernel.org,
-       stable@kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       linux-kernel@vger.kernel.org, davej@redhat.com
-Subject: [PATCH v2] x86: powernow-k8: ignore out-of-range PstateStatus value
-Message-ID: <20081121134925.GB10975@alberich.amd.com>
-References: <20081107150811.GI15390@alberich.amd.com> <20081121080841.GD10940@alberich.amd.com> <20081121082346.GK16242@elte.hu>
+	Fri, 21 Nov 2008 08:57:30 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33983 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753779AbYKUN53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 08:57:29 -0500
+Date: Thu, 20 Nov 2008 14:09:03 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: mtk.manpages@gmail.com, Robert Love <rlove@rlove.org>,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [take 3] Use pid in inotify events.
+Message-ID: <20081120130902.GA1408@ucw.cz>
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com> <20081117171508.GA564@ioremap.net> <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com> <20081117175212.GA2224@ioremap.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081121082346.GK16242@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 21 Nov 2008 13:50:43.0000 (UTC) FILETIME=[2575BB80:01C94BE0]
+In-Reply-To: <20081117175212.GA2224@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A workaround for AMD CPU family 11h erratum 311 might cause that the
-P-state Status Register shows a "current P-state" which is larger than
-the "current P-state limit" in P-state Current Limit Register. For the
-wrong P-state value there is no ACPI _PSS object defined and
-powernow-k8/cpufreq can't determine the proper CPU frequency for that
-state.
+On Mon 2008-11-17 20:52:12, Evgeniy Polyakov wrote:
+> On Mon, Nov 17, 2008 at 12:23:01PM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
+> > > Cookie was created to store information used to somehow connect events to
+> > > each other. PID does that from another angle than rename.
+> > 
+> > Yes, but it does it in an inconsistent, incomplete way.
+> 
+> It was not my decision, I can not argue if it could be good, bad, perfect
+> or shine. It is what we have, and I'm trying to extend it not breaking
+> other things up.
+> 
+> > > Extending
+> > > (rewriting userspace event processing part) events is a solution for the
+> > > new project,
+> > 
+> > Not quite sure of your point here.  Whatever change is made, userspace
+> > apps will need to be trained to understand the interface.
+> 
+> I mean kernel event generation side will have to be rewritten: new
+> event structures, new members, new field usage scenario and so on.
+> 
+> > > while existing patch (where all security concerns are
+> > > resolved) is a minimum functionality extension.
+> > 
+> > It is a minimum functionality extension that serves the needs of one
+> > or a few projects, while dirtying the design for all users.
+> 
+> Yes, this is a minimum functionality extension, which breaks nothing.
+> That's why it is a good idea, but I agree that there may be better than
+> just a good idea and implementation :)
 
-As a consequence this can cause a panic during boot (potentially with
-all recent kernel versions -- at least I have reproduced it with
-various 2.6.27 kernels and with the current .28 series), as an
-example:
+Breaks nothing?!
 
-powernow-k8: Found 1 AMD Turion(tm)X2 Ultra DualCore Mobile ZM-82 processors (2 \
-)
-powernow-k8:    0 : pstate 0 (2200 MHz)
-powernow-k8:    1 : pstate 1 (1100 MHz)
-powernow-k8:    2 : pstate 2 (600 MHz)
-BUG: unable to handle kernel paging request at ffff88086e7528b8
-IP: [<ffffffff80486361>] cpufreq_stats_update+0x4a/0x5f
-PGD 202063 PUD 0
-Oops: 0002 [#1] SMP
-last sysfs file:
-CPU 1
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.28-rc3-dirty #16
-RIP: 0010:[<ffffffff80486361>]  [<ffffffff80486361>] cpufreq_stats_update+0x4a/0\
-f
-Synaptics claims to have extended capabilities, but I'm not able to read them.<6\
-6
-RAX: 0000000000000000 RBX: 0000000000000001 RCX: ffff88006e7528c0
-RDX: 00000000ffffffff RSI: ffff88006e54af00 RDI: ffffffff808f056c
-RBP: 00000000fffee697 R08: 0000000000000003 R09: ffff88006e73f080
-R10: 0000000000000001 R11: 00000000002191c0 R12: ffff88006fb83c10
-R13: 00000000ffffffff R14: 0000000000000001 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff88006fb50740(0000) knlGS:0000000000000000
-Unable to initialize Synaptics hardware.
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: ffff88086e7528b8 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 1, threadinfo ffff88006fb82000, task ffff88006fb816d0)
-Stack:
- ffff88006e74da50 0000000000000000 ffff88006e54af00 ffffffff804863c7
- ffff88006e74da50 0000000000000000 00000000ffffffff 0000000000000000
- ffff88006fb83c10 ffffffff8024b46c ffffffff808f0560 ffff88006fb83c10
-Call Trace:
- [<ffffffff804863c7>] ? cpufreq_stat_notifier_trans+0x51/0x83
- [<ffffffff8024b46c>] ? notifier_call_chain+0x29/0x4c
- [<ffffffff8024b561>] ? __srcu_notifier_call_chain+0x46/0x61
- [<ffffffff8048496d>] ? cpufreq_notify_transition+0x93/0xa9
- [<ffffffff8021ab8d>] ? powernowk8_target+0x1e8/0x5f3
- [<ffffffff80486687>] ? cpufreq_governor_performance+0x1b/0x20
- [<ffffffff80484886>] ? __cpufreq_governor+0x71/0xa8
- [<ffffffff80484b21>] ? __cpufreq_set_policy+0x101/0x13e
- [<ffffffff80485bcd>] ? cpufreq_add_dev+0x3f0/0x4cd
- [<ffffffff8048577a>] ? handle_update+0x0/0x8
- [<ffffffff803c2062>] ? sysdev_driver_register+0xb6/0x10d
- [<ffffffff8056592c>] ? powernowk8_init+0x0/0x7e
- [<ffffffff8048604c>] ? cpufreq_register_driver+0x8f/0x140
- [<ffffffff80209056>] ? _stext+0x56/0x14f
- [<ffffffff802c2234>] ? proc_register+0x122/0x17d
- [<ffffffff802c23a0>] ? create_proc_entry+0x73/0x8a
- [<ffffffff8025c259>] ? register_irq_proc+0x92/0xaa
- [<ffffffff8025c2c8>] ? init_irq_proc+0x57/0x69
- [<ffffffff807fc85f>] ? kernel_init+0x116/0x169
- [<ffffffff8020cc79>] ? child_rip+0xa/0x11
- [<ffffffff807fc749>] ? kernel_init+0x0/0x169
- [<ffffffff8020cc6f>] ? child_rip+0x0/0x11
-Code: 05 c5 83 36 00 48 c7 c2 48 5d 86 80 48 8b 04 d8 48 8b 40 08 48 8b 34 02 48\
+Introducing ugly hack with broken permission check we have to maintain
+forever seems like way too much breakage for 14 lines.
 
-RIP  [<ffffffff80486361>] cpufreq_stats_update+0x4a/0x5f
- RSP <ffff88006fb83b20>
-CR2: ffff88086e7528b8
----[ end trace 0678bac75e67a2f7 ]---
-Kernel panic - not syncing: Attempted to kill init!
+> And I actually answered, that this may be a good idea for the new
+> project. Although if things work right now no one will ever try to
+> change it. It does not work in my case, so I need to invent as simple
+> as possible way to fix it.
 
-In short, aftereffect of the wrong P-state is that
-cpufreq_stats_update() uses "-1" as index for some array in
+'as simple diff as possible' is pretty bad criterium for kernel
+merges.
 
-cpufreq_stats_update (unsigned int cpu)
-{
-...
-     if (stat->time_in_state)
-                stat->time_in_state[stat->last_index] =
-                        cputime64_add(stat->time_in_state[stat->last_index],
-                                      cputime_sub(cur_time, stat->last_time));
-...
-}
-
-Fortunately, the wrong P-state value is returned only if the core is
-in P-state 0. This fix solves the problem by detecting the
-out-of-range P-state, ignoring it, and using "0" instead.
-
-Cc: Mark Langsdorf <mark.langsdorf@amd.com>
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   18 +++++++++++++++---
- arch/x86/kernel/cpu/cpufreq/powernow-k8.h |   17 ++++++++++++++++-
- 2 files changed, 31 insertions(+), 4 deletions(-)
-
-Ingo,
-
-New patch -- addressing your comments.
-
-Will you apply it, or will Linus do it?
-(In the end it's important that it goes into .28.)
-
-
-Thanks,
-
-Andreas
-
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-index d3dcd58..7f05f44 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -115,9 +115,20 @@ static int query_current_values_with_pending_wait(struct powernow_k8_data *data)
- 	u32 i = 0;
- 
- 	if (cpu_family == CPU_HW_PSTATE) {
--		rdmsr(MSR_PSTATE_STATUS, lo, hi);
--		i = lo & HW_PSTATE_MASK;
--		data->currpstate = i;
-+		if (data->currpstate == HW_PSTATE_INVALID) {
-+			/* read (initial) hw pstate if not yet set */
-+			rdmsr(MSR_PSTATE_STATUS, lo, hi);
-+			i = lo & HW_PSTATE_MASK;
-+
-+			/*
-+			 * a workaround for family 11h erratum 311 might cause
-+			 * an "out-of-range Pstate if the core is in Pstate-0
-+			 */
-+			if (i >= data->numps)
-+				data->currpstate = HW_PSTATE_0;
-+			else
-+				data->currpstate = i;
-+		}
- 		return 0;
- 	}
- 	do {
-@@ -1121,6 +1132,7 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
- 	}
- 
- 	data->cpu = pol->cpu;
-+	data->currpstate = HW_PSTATE_INVALID;
- 
- 	if (powernow_k8_cpu_init_acpi(data)) {
- 		/*
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-index ab48cfe..65cfb5d 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-@@ -5,6 +5,19 @@
-  *  http://www.gnu.org/licenses/gpl.html
-  */
- 
-+
-+enum pstate {
-+	HW_PSTATE_INVALID = 0xff,
-+	HW_PSTATE_0 = 0,
-+	HW_PSTATE_1 = 1,
-+	HW_PSTATE_2 = 2,
-+	HW_PSTATE_3 = 3,
-+	HW_PSTATE_4 = 4,
-+	HW_PSTATE_5 = 5,
-+	HW_PSTATE_6 = 6,
-+	HW_PSTATE_7 = 7,
-+};
-+
- struct powernow_k8_data {
- 	unsigned int cpu;
- 
-@@ -23,7 +36,9 @@ struct powernow_k8_data {
-         u32 exttype; /* extended interface = 1 */
- 
- 	/* keep track of the current fid / vid or pstate */
--	u32 currvid, currfid, currpstate;
-+	u32 currvid;
-+	u32 currfid;
-+	enum pstate currpstate;
- 
- 	/* the powernow_table includes all frequency and vid/fid pairings:
- 	 * fid are the lower 8 bits of the index, vid are the upper 8 bits.
+									Pavel
 -- 
-1.6.0.4
-
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
