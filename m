@@ -1,62 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYKTTLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYKTTMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbYKTTLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 14:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYKTTLW
+	id S1756576AbYKTTMF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 14:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYKTTLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 14:11:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38317 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbYKTTLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 14:11:22 -0500
-Date: Thu, 20 Nov 2008 20:10:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark McLoughlin <markmc@redhat.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, x86@kernel.org
-Subject: Re: [PATCH 4/8] intel-iommu: move DMA PTE defs out of
-	dma_remapping.h
-Message-ID: <20081120191053.GA3955@elte.hu>
-References: <1227191861.4901.24.camel@macbook.infradead.org> <1227196190-488-1-git-send-email-markmc@redhat.com> <1227196190-488-2-git-send-email-markmc@redhat.com> <1227196190-488-3-git-send-email-markmc@redhat.com> <1227196190-488-4-git-send-email-markmc@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227196190-488-4-git-send-email-markmc@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Thu, 20 Nov 2008 14:11:52 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51616 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbYKTTLv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 14:11:51 -0500
+Message-Id: <20081120191149.518690949@goodmis.org>
+References: <20081120190948.057007623@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 20 Nov 2008 14:09:51 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
+       Milton Miller <miltonm@bga.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 3/5] powerpc: ftrace, use probe_kernel API to modify code
+Content-Disposition: inline; filename=0003-powerpc-ftrace-use-probe_kernel-API-to-modify-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-* Mark McLoughlin <markmc@redhat.com> wrote:
+Impact: use cleaner probe_kernel API over assembly
 
-> +struct dma_pte {
-> +	u64 val;
-> +};
-> +#define dma_clear_pte(p)	do {(p).val = 0;} while (0)
-> +
-> +#define dma_set_pte_readable(p) do {(p).val |= DMA_PTE_READ;} while (0)
-> +#define dma_set_pte_writable(p) do {(p).val |= DMA_PTE_WRITE;} while (0)
-> +#define dma_set_pte_prot(p, prot) \
-> +		do {(p).val = ((p).val & ~3) | ((prot) & 3); } while (0)
-> +#define dma_pte_addr(p) ((p).val & VTD_PAGE_MASK)
-> +#define dma_set_pte_addr(p, addr) do {\
-> +		(p).val |= ((addr) & VTD_PAGE_MASK); } while (0)
-> +#define dma_pte_present(p) (((p).val & 3) != 0)
+Using probe_kernel_read/write interface is a much cleaner approach
+than the current assembly version.
 
-If you touch this, please also clean this up to use proper inlines, 
-not CPP macros.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/powerpc/kernel/ftrace.c |   53 ++++++++++++++++-------------------------
+ 1 files changed, 21 insertions(+), 32 deletions(-)
 
-Thanks,
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 24c023a..1adfbb2 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/spinlock.h>
+ #include <linux/hardirq.h>
++#include <linux/uaccess.h>
+ #include <linux/ftrace.h>
+ #include <linux/percpu.h>
+ #include <linux/init.h>
+@@ -72,45 +73,33 @@ static int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+-	unsigned replaced;
+-	unsigned old = *(unsigned *)old_code;
+-	unsigned new = *(unsigned *)new_code;
+-	int faulted = 0;
++	unsigned char replaced[MCOUNT_INSN_SIZE];
+ 
+ 	/*
+ 	 * Note: Due to modules and __init, code can
+ 	 *  disappear and change, we need to protect against faulting
+-	 *  as well as code changing.
++	 *  as well as code changing. We do this by using the
++	 *  probe_kernel_* functions.
+ 	 *
+ 	 * No real locking needed, this code is run through
+-	 * kstop_machine.
++	 * kstop_machine, or before SMP starts.
+ 	 */
+-	asm volatile (
+-		"1: lwz		%1, 0(%2)\n"
+-		"   cmpw	%1, %5\n"
+-		"   bne		2f\n"
+-		"   stwu	%3, 0(%2)\n"
+-		"2:\n"
+-		".section .fixup, \"ax\"\n"
+-		"3:	li %0, 1\n"
+-		"	b 2b\n"
+-		".previous\n"
+-		".section __ex_table,\"a\"\n"
+-		_ASM_ALIGN "\n"
+-		_ASM_PTR "1b, 3b\n"
+-		".previous"
+-		: "=r"(faulted), "=r"(replaced)
+-		: "r"(ip), "r"(new),
+-		  "0"(faulted), "r"(old)
+-		: "memory");
+-
+-	if (replaced != old && replaced != new)
+-		faulted = 2;
+-
+-	if (!faulted)
+-		flush_icache_range(ip, ip + 8);
+-
+-	return faulted;
++
++	/* read the text we want to modify */
++	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
++		return -EFAULT;
++
++	/* Make sure it is what we expect it to be */
++	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
++		return -EINVAL;
++
++	/* replace the text with the new text */
++	if (probe_kernel_write((void *)ip, new_code, MCOUNT_INSN_SIZE))
++		return -EPERM;
++
++	flush_icache_range(ip, ip + 8);
++
++	return 0;
+ }
+ 
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
+-- 
+1.5.6.5
 
-	Ingo
+-- 
