@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYKTVJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYKTVOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757108AbYKTVJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 16:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbYKTVJu
+	id S1756719AbYKTVOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 16:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbYKTVOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 16:09:50 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:48156 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755467AbYKTVJu (ORCPT
+	Thu, 20 Nov 2008 16:14:44 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:37722 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752743AbYKTVOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 16:09:50 -0500
-Date: Thu, 20 Nov 2008 14:09:33 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: Fix interrupt leak due to migration
-Message-ID: <20081120210932.GW1617@parisc-linux.org>
+	Thu, 20 Nov 2008 16:14:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=dpaWaWp7w8AYPKEeQ2cO6RcdPr4mpqb36u9ftaXDWP0IwE1MVMJRtWKY/sM9TlzVxd
+         5gEOj2kTPU6HEvDccquO3Ca/kzKQCPDn2kZoY2dGXa6GAXEU0uVcDbeA6HfprWKB3TJZ
+         CDZo97IfiY6hPyzXv4+vY4vMkH56AOL05Yhv8=
+Message-ID: <7c86c4470811201314q564b64c0i99f3d9865d9cc8f0@mail.gmail.com>
+Date: Thu, 20 Nov 2008 22:14:40 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Markus Metzger" <markus.t.metzger@googlemail.com>
+Subject: Re: [patch] x86, bts: fix unlock problem in ds.c
+Cc: lkml <linux-kernel@vger.kernel.org>, work <markus.t.metzger@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1226743217.6162.4.camel@raistlin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1226743217.6162.4.camel@raistlin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Markus,
 
-When we migrate an interrupt from one CPU to another, we set the
-move_in_progress flag and clean up the vectors later once they're not
-being used.  If you're unlucky and call destroy_irq() before the vectors
-become un-used, the move_in_progress flag is never cleared, which causes
-the interrupt to become unusable.
+I think this patch is not quite right. You don't want to go out via out_unlock
+because you're going to call ds_put_context)() when you did not invoke the
+matching ds_get_context() (hidden in ds_alloc_context). It happens later in
+the ds_request() function.
 
-This was discovered by Jesse Brandeburg for whom it manifested as an
-MSI-X device refusing to use MSI-X mode when the driver was unloaded
-and reloaded repeatedly.
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 7a3f202..c9513e1 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -1140,6 +1140,20 @@ static void __clear_irq_vector(int irq)
- 
- 	cfg->vector = 0;
- 	cpus_clear(cfg->domain);
-+
-+	if (likely(!cfg->move_in_progress))
-+		return;
-+	cpus_and(mask, cfg->old_domain, cpu_online_map);
-+	for_each_cpu_mask_nr(cpu, mask) {
-+		for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS;
-+								vector++) {
-+			if (per_cpu(vector_irq, cpu)[vector] != irq)
-+				continue;
-+			per_cpu(vector_irq, cpu)[vector] = -1;
-+			break;
-+		}
-+	}
-+	cfg->move_in_progress = 0;
- }
- 
- void __setup_vector_irq(int cpu)
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+On Sat, Nov 15, 2008 at 11:00 AM, Markus Metzger
+<markus.t.metzger@googlemail.com> wrote:
+> Fix a problem where ds_request() returned an error without releasing the
+> ds lock.
+>
+> Reported-by: Stephane Eranian <eranian@gmail.com>
+> Signed-off-by: Markus Metzger <markus.t.metzger@gmail.com>
+> ---
+>
+> Index: gits/arch/x86/kernel/ds.c
+> ===================================================================
+> --- gits.orig/arch/x86/kernel/ds.c      2008-11-15 10:51:51.000000000 +0100
+> +++ gits/arch/x86/kernel/ds.c   2008-11-15 10:53:43.000000000 +0100
+> @@ -384,8 +384,9 @@
+>
+>        spin_lock(&ds_lock);
+>
+> +       error = -EPERM;
+>        if (!check_tracer(task))
+> -               return -EPERM;
+> +               goto out_unlock;
+>
+>        error = -ENOMEM;
+>        context = ds_alloc_context(task);
+>
+>
+>
