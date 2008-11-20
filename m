@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYKTN0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYKTNdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYKTN0K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 08:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbYKTNZw
+	id S1755279AbYKTNdo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 08:33:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYKTNdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 08:25:52 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:22119 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754238AbYKTNZu (ORCPT
+	Thu, 20 Nov 2008 08:33:35 -0500
+Received: from mga06.intel.com ([134.134.136.21]:18182 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754715AbYKTNdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 08:25:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VzD0LgCr279kBy/30fuOZfapF2D07MPkw6wvL9t9yGPVV2l0m5rVoWdiKlongB1ElqDP+gQyI5/NbLslKeX6Enjeo5A8MWuff5S/QA7rOJBGC0gX092SHNla/KbCzgqoMhuX67BtMsAyKTrt4kOue8NvuOeuLsA5FvuL5uJXT5Q=  ;
-X-YMail-OSG: 9_X39KgVM1lOD5WF3n5TRY0jfClBc1._LOznyiuGH5s6cGPvfGPls5gtwYWp3CGV7UjwBfkPV5ATeL4pfUyjkPAVmLg3OSSS4QrGBBY6VZ.2LSlZUenO8wm7jq6QBOpP3zLEOkJmTum1tjvMq7TX.t5UZKduHuY3AtPszAcTfQTNqtlQ8BMSGCFLAcQs
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline kernel (specifically arm in our case)
-Date: Fri, 21 Nov 2008 00:25:39 +1100
-User-Agent: KMail/1.9.5
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       linux-fsdevel@vger.kernel.org, "Naval Saini" <navalnovel@gmail.com>,
-       linux-arch@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org, naval.saini@nxp.com,
-       "Ralf Baechle" <ralf@linux-mips.org>
-References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com> <200811201759.01039.nickpiggin@yahoo.com.au> <b647ffbd0811200428u2b41b108ifb02872563c871ab@mail.gmail.com>
-In-Reply-To: <b647ffbd0811200428u2b41b108ifb02872563c871ab@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 20 Nov 2008 08:33:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,639,1220252400"; 
+   d="scan'208";a="465277881"
+Subject: Re: [PATCH] led: simplify led_trigger_register_simple
+From: Richard Purdie <rpurdie@linux.intel.com>
+To: me@felipebalbi.com
+Cc: linux-kernel@vger.kernel.org, Felipe Balbi <felipe.balbi@nokia.com>,
+       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       Greg KH <greg@kroah.com>, Pierre Ossman <drzeus@drzeus.cx>
+In-Reply-To: <20081113191046.GA25855@frodo>
+References: <1226545753-6640-1-git-send-email-me@felipebalbi.com>
+	 <1226579912.5402.21.camel@dax.rpnet.com> <20081113181407.GC17166@frodo>
+	 <20081113191046.GA25855@frodo>
+Content-Type: text/plain
+Date: Thu, 20 Nov 2008 13:33:28 +0000
+Message-Id: <1227188008.22263.9.camel@ted>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811210025.39568.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 November 2008 23:28, Dmitry Adamushko wrote:
-> 2008/11/20 Nick Piggin <nickpiggin@yahoo.com.au>:
-> > [ ... ]
-> >
-> > - The page is sent to the block layer, which stores into the page. Some
-> >  block devices like 'brd' will potentially store via the kernel linear
-> > map here, and they probably don't do enough cache flushing.
->
-> btw., if someone is curious, here is another case of what may happen
-> on VIPT systems when someone uses a "virtual" block device (like
-> 'brd') as, heh, a swap :-)
->
-> http://www.linux-mips.org/archives/linux-mips/2008-11/msg00038.html
+On Thu, 2008-11-13 at 21:10 +0200, Felipe Balbi wrote:
+> On Thu, Nov 13, 2008 at 08:14:16PM +0200, Felipe Balbi wrote:
+> > On Thu, Nov 13, 2008 at 12:38:32PM +0000, Richard Purdie wrote:
+> > > The simple triggers were designed to cause minimum interference to the
+> > > usually external subsystem code they were added into. As an example this
+> > > meant things like errors were just handled gracefully with a printk
+> > > warning and did not take down the whole subsystem. I therefore don't
+> > > regard this patch as a simplification, more a complication.
+> > 
+> > That's a matter of changing the return ERR_PTR(err); back to a printk.
+> 
+> And here you are. I still think we should at least kfree(trigger) in
+> case of error, though.
 
-Right... Now I'm lacking knowledge when it comes to devices, but I
-think it is probably reasonable for the block device layer to ensure
-the physical memory is uptodate after it signals request completion.
+This patch now just changes the calling convention of the function which
+doesn't seem to serve much purpose.
 
-That is, there shouldn't be any potentially aliasing dirty lines.
-Block devices which do any writeout via the kernel linear address
-(eg. brd) should do a flush_dcache_page.
+In answer to your question about kfree, I agree it needs to be called
+upon error. The callers should just be calling
+led_trigger_unregister_simple() in their failure paths though which
+should take care of all problems? I know we used to register the simple
+triggers late in paths so no error handling was needed to keep the code
+simple and minimise the LED triggers impact on those systems.
+
+Cheers,
+
+Richard
 
