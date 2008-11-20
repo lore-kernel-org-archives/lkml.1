@@ -1,137 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYKTGxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYKTG51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYKTGxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 01:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYKTGxK
+	id S1754176AbYKTG51 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 01:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYKTG5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 01:53:10 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:55312 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750738AbYKTGxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 01:53:09 -0500
-Date: Thu, 20 Nov 2008 07:56:32 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
-       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081120065632.GB23647@gandalf.sssup.it>
-References: <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <4923716A.5090104@gelato.unsw.edu.au> <20081119101701.GA20915@gandalf.sssup.it> <20081119110655.GC20915@gandalf.sssup.it> <4924EB4E.7050600@gelato.unsw.edu.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Nov 2008 01:57:19 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:47395 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751248AbYKTG5S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 01:57:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mj+Cn3XAUV3Cxrrbovww6p5t15fg+pxBiLqxacRIpNIDPHrivJCFa/V42wohkYvg2Rv+0XWsT66HCeVTps8pwssdzoEH/91CM5iXp8oWK9uRgYztfmImYRRdzHeR2jUHQABxPWFVvM0o3ZmB0XajWIdZ45OQXYoMqrV4wmkf8HI=  ;
+X-YMail-OSG: 9d3ibH4VM1k3dBAd4QJnOg4sf5Cj.NLylLld8pvundEfnl8Oy39eOwttQX7zSNzjPd5L.bK5LxGdxEBVUwJBZbHn3klXU7Ty_a3IwGmFQWQFOX448KY8K8rZ0BaXPWCY4Gt5ZVoR8_o0Xm_Z92pg9QZ31t2GtCwY5n_PlZlL
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/1] cpumask: smp_call_function_many()
+Date: Thu, 20 Nov 2008 17:57:07 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, npiggin@suse.de, axboe@kernel.dk
+References: <20081119144710.59CA1DDDDB@ozlabs.org> <200811201421.50518.nickpiggin@yahoo.com.au> <200811201514.09511.rusty@rustcorp.com.au>
+In-Reply-To: <200811201514.09511.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4924EB4E.7050600@gelato.unsw.edu.au>
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200811201757.07726.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-> Date: Thu, Nov 20, 2008 03:45:02PM +1100
+On Thursday 20 November 2008 15:44, Rusty Russell wrote:
+> On Thursday 20 November 2008 13:51:49 Nick Piggin wrote:
+> > I don't like changing of this whole smp_call_function_many scheme
+> > with no justification or even hint of it in the changelog.
 >
-> Fabio Checconi wrote:
-> >>> Fabio Checconi wrote:
-> >>>>   - To detect hw tagging in BFQ we consider a sample valid iff the
-> >>>>     number of requests that the scheduler could have dispatched (given
-> >>>>     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
-> >>>>     the scheduler plus the ones into the driver) is higher than the
-> >>>>     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
-> >>>>     during testing, but the way CFQ uses now seems a little bit
-> >>>>     strange.
-> >>> BFQ's tag detection logic is broken in the same way that CFQ's used to
-> >>> be.  Explanation is in this patch:
-> >>>
-> >> If you look at bfq_update_hw_tag(), the logic introduced by the patch
-> >> you mention is still there; BFQ starts with ->hw_tag = 1, and updates it
-> 
-> Yes, I missed that.  So which part of CFQ's hw_tag detection is strange?
-> 
+> Hi Nick,
+>
+> Hmm, it said "if allocation fails we fallback to smp_call_function_single
+> rather than using the baroque quiescing code."
+>
+> More words would have been far less polite :)
 
-I just think that is rather counterintuitive to consider invalid
-a sample when you have, say, rq_in_driver = 1,2,3 or 4 and other
-4 queued requests.  Considering the actual number of requests that
-could have been dispatched seemed more straightforward than
-considering the two values separately.
-
-Anyway I think the validity of the samples is a minor issue, while the
-throughput loss you experienced was a more serious one.
+Hmm, OK I missed that.
 
 
-> >> every 32 valid samples.  What changed WRT your patch, apart from the
-> >> number of samples, is that the condition for a sample to be valid is:
-> >>
-> >>   bfqd->rq_in_driver + bfqd->queued >= 5
-> >>
-> >> while in your patch it is:
-> >>
-> >>   cfqd->rq_queued > 5 || cfqd->rq_in_driver > 5
-> >>
-> >> We preferred the first one because that sum better reflects the number
-> >> of requests that could have been dispatched, and I don't think that this
-> >> is wrong.
-> 
-> I think it's fine too.  CFQ's condition accounts for a few rare situations,
-> such as the device stalling or hw_tag being updated right after a bunch of
-> requests are queued.  They are probably irrelevant, but can't hurt.
-> 
-> >> There is a problem, but it's not within the tag detection logic itself.
-> >> From some quick experiments, what happens is that when a process starts,
-> >> CFQ considers it seeky (*), BFQ doesn't.  As a side effect BFQ does not
-> >> always dispatch enough requests to correctly detect tagging.
-> >>
-> >> At the first seek you cannot tell if the process is going to bee seeky
-> >> or not, and we have chosen to consider it sequential because it improved
-> >> fairness in some sequential workloads (the CIC_SEEKY heuristic is used
-> >> also to determine the idle_window length in [bc]fq_arm_slice_timer()).
-> >>
-> >> Anyway, we're dealing with heuristics, and they tend to favor some
-> >> workload over other ones.  If recovering this thoughput loss is more
-> >> important than a transient unfairness due to short idling windows assigned
-> >> to sequential processes when they start, I've no problems in switching
-> >> the CIC_SEEKY logic to consider a process seeky when it starts.
-> >>
-> >> Thank you for testing and for pointing out this issue, we missed it
-> >> in our testing.
-> >>
-> >>
-> >> (*) to be correct, the initial classification depends on the position
-> >>     of the first accessed sector.
-> > 
-> > Sorry, I forgot the patch...  This seems to solve the problem with
-> > your workload here, does it work for you?
-> 
-> Yes, it works fine now :)
-> 
+> > Of course it is obvious that smp_call_function_mask can be implemented
+> > with multiple call singles. But some architectures that can do
+> > broadcast IPIs (or otherwise a little extra work eg. in programming
+> > the interrupt controller) will lose here.
+> >
+> > Also the locking and cacheline behaviour is probably actually worse.
+>
+> Dude, we've failed kmalloc.  To paraphrase Monty Python, the parrot is
+> fucked. By this stage the disks are churning, the keyboard isn't responding
+> and the OOM killer is killing the mission-critical database and other vital
+> apps. Everything else is failing on random syscalls like unlink().  Admins
+> wondering how long it'll take to fsck if they just hit the big red switch
+> now.
 
-Thank you very much for trying it.
+Oh no it happens. It's a GFP_ATOMIC allocation isn't it? But yeah it's not
+performance critical.
 
 
-> However, hw_tag detection (in CFQ and BFQ) is still broken in a few ways:
->   * If you go from queue_depth=1 to queue_depth=large, it's possible that
->     the detection logic fails.  This could happen if setting queue_depth
->     to a larger value at boot, which seems a reasonable situation.
+> OK, maybe it's not that bad, but worrying about cacheline behaviour?  I'd
+> worry about how recently that failure path has been tested.
+>
+> I can prepare a separate patch which just changes this over, rather than
+> doing it as part of the smp_call_function_many() conversion, but I couldn't
+> stomach touching that quiescing code :(
 
-I think that the transition of hw_tag from 1 to 0 can be quite easy, and
-may depend only on the workload, while getting back to 1 is more difficult,
-because when hw_tag is 0 there may be too few dispatches to detect queueing...
-
-
->   * It depends too much on the hardware.  If you have a seekly load on a
->     fast disk with a unit queue depth, idling sucks for performance (I
->     imagine this is particularly bad on SSDs).  If you have any disk with
->     a deep queue, not idling sucks for fairness.
-
-Agreed.  This fairness vs. throughput conflict is very workload
-dependent too.
-
-
-> I suppose CFQ's slice_resid is supposed to help here, but as far as I can
-> tell, it doesn't do a thing.
-> 
+What's wrong with it? It's well commented and I would have thought pretty
+simple. A bit ugly, but straightforward. I still don't really see why it
+needs changing.
