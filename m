@@ -1,103 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYKTCuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYKTCw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbYKTCuw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 21:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKTCuo
+	id S1753505AbYKTCw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 21:52:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKTCwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 21:50:44 -0500
-Received: from mga03.intel.com ([143.182.124.21]:29660 "EHLO mga03.intel.com"
+	Wed, 19 Nov 2008 21:52:50 -0500
+Received: from mms1.broadcom.com ([216.31.210.17]:4228 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbYKTCuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 21:50:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,637,1220252400"; 
-   d="scan'208";a="79168332"
-From: "Yang, Sheng" <sheng.yang@intel.com>
-Organization: Intel Opensource Technology Center
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH] x86: add REQUIRED_MASK8
-Date: Thu, 20 Nov 2008 10:47:01 +0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27-7-generic; KDE/4.1.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "trivial@kernel.org" <trivial@kernel.org>
-References: <491DEB90.9010509@simon.arlott.org.uk>
-In-Reply-To: <491DEB90.9010509@simon.arlott.org.uk>
+	id S1751818AbYKTCwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 21:52:49 -0500
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Date: Wed, 19 Nov 2008 18:52:36 -0800
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: "Roger Heflin" <rogerheflin@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at net/sched/sch_generic.c:219
+ dev_watchdog+0xfe/0x17e() with tg3 network
+Message-ID: <20081120025236.GB26448@xw6200.broadcom.net>
+References: <491954E1.2050002@gmail.com>
 MIME-Version: 1.0
+In-Reply-To: <491954E1.2050002@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Nov 2008 02:52:36.0196 (UTC)
+ FILETIME=[0B13DA40:01C94ABB]
+X-WSS-ID: 653A0F7E61S14515775-01-01
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811201047.01533.sheng.yang@intel.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 November 2008 05:20:16 Simon Arlott wrote:
-> commit e38e05a85828dac23540cd007df5f20985388afc increased NCAPINTS to 9
-> but didn't add REQUIRED_MASK8 resulting in the following sparse warnings:
->
-> arch/x86/boot/cpustr.h:311:5: warning: undefined preprocessor identifier
-> 'REQUIRED_MASK8' arch/x86/boot/cpustr.h:314:5: warning: undefined
-> preprocessor identifier 'REQUIRED_MASK8' arch/x86/boot/cpustr.h:317:5:
-> warning: undefined preprocessor identifier 'REQUIRED_MASK8'
-> arch/x86/boot/cpustr.h:320:5: warning: undefined preprocessor identifier
-> 'REQUIRED_MASK8' arch/x86/boot/cpustr.h:323:5: warning: undefined
-> preprocessor identifier 'REQUIRED_MASK8'
+On Tue, Nov 11, 2008 at 01:48:17AM -0800, Roger Heflin wrote:
+> I have duplicate this with kernel 2.6.27.2 and 2.6.27.5, no
+> extra modules, tg3 Gbit networking.   I have not yet tested
+> earlier kernels to see if this has been around for a while.
+> 
+> So far I have had this error happen 5 times (MTBF is maybe
+> 12 hours), 4 of the 5 times resulted in the networking being
+> broken, one time things came back by itself without a reboot,
+> I believe in this case the hang was traffic coming into the
+> machine vs the other times going out of the machine.
+> 
+> Unloading all of the network modules and reloading them did
+> not correct the problem.
+> 
+> Searching google finds a couple of other people getting the
+> same error but they have a different network chipset (e1000
+> and a rt811C chipset), which makes me thing that there is
+> something interacting bad with the network.    Or does this
+> error truly mean that the network chipset for some unknown reason
+> locked itself up?
+> 
+> http://www.google.com/url?sa=U&start=4&q=http://kerneltrap.org/mailarchive/linux-netdev/2008/8/6/2838184&ei=rU8ZScysAon8edz5xKgO&sig2=Wxp7IkUtdgORGZiflxvppg&usg=AFQjCNHzPwsCOmLGKmtX4q_FEpk6oubxxg
+> http://article.gmane.org/gmane.linux.network/110238
+> 
+> The changes I made recently were to upgrade my MB (old
+> was E100 on a 100Mbit network,new is tg3 on a Gbit network,
+> cpu and memory are the same, MB chipset is a intel 955
+> chipset vs the old being a intel 915 chipset).
+> 
+> Autoneg is turned on all around, the GBit switch is a
+> 8-port Dlink switch.   The network seems to otherwise be working
+> correctly.
+> 
+> I did test the network under decent load and the error did not
+> appear to be any more likely under load, and typically the network
+> is under very light load 2-3MB/second.
+> 
+> The machine originally had 2 HT CPU's showing up, I turned off HT
+> so that only one cpu was showing, but this did not change the error.
+> 
+> I am first turning off all offload capabilities on tg3 and going
+> to see if that changes anything.
+> 
+> The next thing I am going to be doing is to turn of GB capability
+> on the networking and see if that does anything.
+> 
+> I also have a second tg3 port that is slightly different, so I may
+> try that eventually.
+> 
+> What else can I look at?
 
-Thanks for the fixing! :)
->
-> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
-> Cc: Sheng Yang <sheng.yang@intel.com>
+Can you cut-and-paste the driver sign-on message and the output of
+lspci -vvv -xxx, and 'ethtool -i eth0'?  Can you also obtain a register
+dump via ethtool when the problem happens?
 
-Reviewed-by: Sheng Yang <sheng.yang@intel.com>
 
--- 
-regards
-Yang, Sheng
-
-> ---
->  arch/x86/boot/cpucheck.c                 |    1 +
->  arch/x86/include/asm/cpufeature.h        |    3 ++-
->  arch/x86/include/asm/required-features.h |    1 +
->  3 files changed, 4 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/boot/cpucheck.c b/arch/x86/boot/cpucheck.c
-> index 4d3ff03..41559bf 100644
-> --- a/arch/x86/boot/cpucheck.c
-> +++ b/arch/x86/boot/cpucheck.c
-> @@ -44,6 +44,7 @@ static const u32 req_flags[NCAPINTS] =
->  	0, /* REQUIRED_MASK5 not implemented in this file */
->  	REQUIRED_MASK6,
->  	0, /* REQUIRED_MASK7 not implemented in this file */
-> +	0 /* REQUIRED_MASK8 not implemented in this file */
->  };
->
->  #define A32(a, b, c, d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
-> diff --git a/arch/x86/include/asm/cpufeature.h
-> b/arch/x86/include/asm/cpufeature.h index cfdf8c2..9761800 100644
-> --- a/arch/x86/include/asm/cpufeature.h
-> +++ b/arch/x86/include/asm/cpufeature.h
-> @@ -178,7 +178,8 @@ extern const char * const x86_power_flags[32];
->  	   (((bit)>>5)==4 && (1UL<<((bit)&31) & REQUIRED_MASK4)) ||	\
->  	   (((bit)>>5)==5 && (1UL<<((bit)&31) & REQUIRED_MASK5)) ||	\
->  	   (((bit)>>5)==6 && (1UL<<((bit)&31) & REQUIRED_MASK6)) ||	\
-> -	   (((bit)>>5)==7 && (1UL<<((bit)&31) & REQUIRED_MASK7)) )	\
-> +	   (((bit)>>5)==7 && (1UL<<((bit)&31) & REQUIRED_MASK7)) ||	\
-> +	   (((bit)>>5)==8 && (1UL<<((bit)&31) & REQUIRED_MASK8)) )	\
->  	  ? 1 :								\
->  	 test_cpu_cap(c, bit))
->
-> diff --git a/arch/x86/include/asm/required-features.h
-> b/arch/x86/include/asm/required-features.h index d5cd6c5..0baa45d 100644
-> --- a/arch/x86/include/asm/required-features.h
-> +++ b/arch/x86/include/asm/required-features.h
-> @@ -78,5 +78,6 @@
->  #define REQUIRED_MASK5	0
->  #define REQUIRED_MASK6	0
->  #define REQUIRED_MASK7	0
-> +#define REQUIRED_MASK8	0
->
->  #endif /* _ASM_X86_REQUIRED_FEATURES_H */
+> Nov 11 00:44:39 computer kernel: ------------[ cut here ]------------
+> Nov 11 00:44:39 computer kernel: WARNING: at net/sched/sch_generic.c:219 
+> dev_watchdog+0xfe/0x17e()
+> Nov 11 00:44:39 computer kernel: NETDEV WATCHDOG: eth0 (tg3): transmit timed out
+> Nov 11 00:44:39 computer kernel: Modules linked in: nfsd auth_rpcgss exportfs 
+> w83627ehf hwmon_vid hwmon nfs lockd nfs_acl sunrpc ipv6 xfs raid456 async_xor 
+> async_memcpy async_tx xor video output sbs sbshc battery ac lgdt330x cx88_dvb 
+> wm8775 cx88_vp3054_i2c cx25840 tuner_simple tuner_types tda9887 tda8290 tuner 
+> mt2131 s5h1409 snd_hda_intel snd_seq_dummy ivtv cx8800 snd_seq_oss cx88_alsa 
+> cx8802 cx88xx cx23885 snd_seq_midi_event snd_seq ir_common videodev v4l1_compat 
+> i2c_algo_bit cx2341x firewire_ohci iTCO_wdt snd_seq_device compat_ioctl32 
+> videobuf_dvb i2c_i801 firewire_core tveeprom floppy iTCO_vendor_support 
+> v4l2_common snd_pcm_oss dvb_core pcspkr tg3 sata_sil i2c_core btcx_risc 
+> videobuf_dma_sg crc_itu_t snd_mixer_oss libphy videobuf_core snd_pcm parport_pc 
+> parport snd_timer snd soundcore button snd_page_alloc sg dm_snapshot dm_zero 
+> dm_mirror dm_log dm_mod ahci ata_piix ata_generic libata sd_mod scsi_mod ext3 
+> jbd mbcache ehci_hcd ohci_hcd uhci_hcd [last unloaded: eeprom]
+> Nov 11 00:44:39 computer kernel: Pid: 0, comm: swapper Not tainted 2.6.27.5 #2
+> Nov 11 00:44:39 computer kernel:  [<c042524f>] warn_slowpath+0x61/0x83
+> Nov 11 00:44:39 computer kernel:  [<c05663a4>] usb_hcd_submit_urb+0x75c/0x811
+> Nov 11 00:44:39 computer kernel:  [<c0594972>] hiddev_hid_event+0x0/0x64
+> Nov 11 00:44:39 computer kernel:  [<c058ce80>] hid_process_event+0x58/0x5f
+> Nov 11 00:44:39 computer kernel:  [<c04e13d6>] __next_cpu+0x12/0x21
+> Nov 11 00:44:39 computer kernel:  [<c041cbe3>] find_busiest_group+0x23e/0x672
+> Nov 11 00:44:39 computer kernel:  [<c0439d1e>] clocksource_get_next+0x39/0x3f
+> Nov 11 00:44:39 computer kernel:  [<c0438e51>] update_wall_time+0x567/0x70c
+> Nov 11 00:44:39 computer kernel:  [<c040783e>] read_tsc+0x6/0x22
+> Nov 11 00:44:39 computer kernel:  [<c04387e8>] getnstimeofday+0x37/0xc1
+> Nov 11 00:44:39 computer kernel:  [<f8829a83>] uhci_scan_schedule+0x11b/0x6b0 
+> [uhci_hcd]
+> Nov 11 00:44:39 computer kernel:  [<c05b16ba>] dev_watchdog+0xfe/0x17e
+> Nov 11 00:44:39 computer kernel:  [<c042c66f>] __mod_timer+0x99/0xa3
+> Nov 11 00:44:39 computer kernel:  [<c05654b6>] rh_timer_func+0x0/0x5
+> Nov 11 00:44:39 computer kernel:  [<c05654ae>] usb_hcd_poll_rh_status+0x12b/0x133
+> Nov 11 00:44:39 computer kernel:  [<c043bca8>] tick_dev_program_event+0x1e/0x81
+> Nov 11 00:44:39 computer kernel:  [<c05b15bc>] dev_watchdog+0x0/0x17e
+> Nov 11 00:44:39 computer kernel:  [<c042c2b4>] run_timer_softirq+0x10e/0x167
+> Nov 11 00:44:39 computer kernel:  [<c05b15bc>] dev_watchdog+0x0/0x17e
+> Nov 11 00:44:39 computer kernel:  [<c0428d3e>] __do_softirq+0x5d/0xc1
+> Nov 11 00:44:39 computer kernel:  [<c0428dd4>] do_softirq+0x32/0x36
+> Nov 11 00:44:39 computer kernel:  [<c0412939>] smp_apic_timer_interrupt+0x6e/0x79
+> Nov 11 00:44:39 computer kernel:  [<c040431c>] apic_timer_interrupt+0x28/0x30
+> Nov 11 00:44:39 computer kernel:  [<c0408582>] mwait_idle+0x32/0x38
+> Nov 11 00:44:39 computer kernel:  [<c040255d>] cpu_idle+0xbd/0xd5
 > --
-> 1.6.0.3
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
 
