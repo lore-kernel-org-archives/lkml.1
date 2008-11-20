@@ -1,139 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYKTO73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758344AbYKTPBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbYKTO73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYKTOpc
+	id S1758344AbYKTPBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbYKTOra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:45:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41212 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756568AbYKTOpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:45:25 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 43/45] NFS: Store pages from an NFS inode into a local cache
-	[ver #41]
-To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
-Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:45:20 +0000
-Message-ID: <20081120144520.10667.55813.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Thu, 20 Nov 2008 09:47:30 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:55907 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756669AbYKTOr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:47:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=bzBgRaE1/OnuYAG7KgMT73dKyeCG+hPXqf58z7GWGbd90mhIKT89NibdnPfdOImCTx
+         azkBiek2FmUPyrXe15grf4sJkv2JU7OOtvN1gyEFA+0PVzwHdpPAgJuIMONGGtocRudN
+         LGDuE9ya7YLDJdAyW7V7CpuoMgNWQ8RAQpn58=
+Message-ID: <87a5b0800811200647i69360d29v8304e290c9fd9cf0@mail.gmail.com>
+Date: Thu, 20 Nov 2008 14:47:26 +0000
+From: "Will Newton" <will.newton@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] drivers/char/tty_io.c: Avoid panic when no console is configured.
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_71200_14691654.1227192446134"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Store pages from an NFS inode into the cache data storage object associated
-with that inode.
+------=_Part_71200_14691654.1227192446134
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+When no console is configured tty_open tries to call kref_get on a NULL
+pointer, return ENODEV instead.
+
+Signed-off-by: Will Newton <will.newton@gmail.com>
 ---
+ drivers/char/tty_io.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
 
- fs/nfs/fscache.c |   28 ++++++++++++++++++++++++++++
- fs/nfs/fscache.h |   16 ++++++++++++++++
- fs/nfs/read.c    |    5 +++++
- 3 files changed, 49 insertions(+), 0 deletions(-)
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 59f4721..1412a8d 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1795,12 +1795,15 @@ retry_open:
+ 	}
+ #endif
+ 	if (device == MKDEV(TTYAUX_MAJOR, 1)) {
+-		driver = tty_driver_kref_get(console_device(&index));
+-		if (driver) {
+-			/* Don't let /dev/console block */
+-			filp->f_flags |= O_NONBLOCK;
+-			noctty = 1;
+-			goto got_driver;
++		struct tty_driver *console_driver = console_device(&index);
++		if (console_driver) {
++			driver = tty_driver_kref_get(console_driver);
++			if (driver) {
++				/* Don't let /dev/console block */
++				filp->f_flags |= O_NONBLOCK;
++				noctty = 1;
++				goto got_driver;
++			}
+ 		}
+ 		mutex_unlock(&tty_mutex);
+ 		return -ENODEV;
+-- 
+1.5.5.2
 
+------=_Part_71200_14691654.1227192446134
+Content-Type: text/x-patch;
+ name=0001-drivers-char-tty_io.c-Avoid-panic-when-no-console-i.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fnrinb8d0
+Content-Disposition: attachment;
+ filename=0001-drivers-char-tty_io.c-Avoid-panic-when-no-console-i.patch
 
-diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-index fcabfdc..968cf5d 100644
---- a/fs/nfs/fscache.c
-+++ b/fs/nfs/fscache.c
-@@ -491,3 +491,31 @@ int __nfs_readpages_from_fscache(struct nfs_open_context *ctx,
- 
- 	return ret;
- }
-+
-+/*
-+ * Store a newly fetched page in fscache
-+ * - PG_fscache must be set on the page
-+ */
-+void __nfs_readpage_to_fscache(struct inode *inode, struct page *page, int sync)
-+{
-+	int ret;
-+
-+	dfprintk(FSCACHE,
-+		 "NFS: readpage_to_fscache(fsc:%p/p:%p(i:%lx f:%lx)/%d)\n",
-+		 NFS_I(inode)->fscache, page, page->index, page->flags, sync);
-+
-+	ret = fscache_write_page(NFS_I(inode)->fscache, page, GFP_KERNEL);
-+	dfprintk(FSCACHE,
-+		 "NFS:     readpage_to_fscache: p:%p(i:%lu f:%lx) ret %d\n",
-+		 page, page->index, page->flags, ret);
-+
-+	if (ret != 0) {
-+		fscache_uncache_page(NFS_I(inode)->fscache, page);
-+		nfs_add_fscache_stats(inode,
-+				      NFSIOS_FSCACHE_PAGES_WRITTEN_FAIL, 1);
-+		nfs_add_fscache_stats(inode, NFSIOS_FSCACHE_PAGES_UNCACHED, 1);
-+	} else {
-+		nfs_add_fscache_stats(inode,
-+				      NFSIOS_FSCACHE_PAGES_WRITTEN_OK, 1);
-+	}
-+}
-diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index cbc010e..7eeaab4 100644
---- a/fs/nfs/fscache.h
-+++ b/fs/nfs/fscache.h
-@@ -91,6 +91,7 @@ extern int __nfs_readpage_from_fscache(struct nfs_open_context *,
- extern int __nfs_readpages_from_fscache(struct nfs_open_context *,
- 					struct inode *, struct address_space *,
- 					struct list_head *, unsigned *);
-+extern void __nfs_readpage_to_fscache(struct inode *, struct page *, int);
- 
- /*
-  * release the caching state associated with a page if undergoing complete page
-@@ -130,6 +131,19 @@ static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
- 	return -ENOBUFS;
- }
- 
-+/*
-+ * Store a page newly fetched from the server in an inode data storage object
-+ * in the cache.
-+ */
-+static inline void nfs_readpage_to_fscache(struct inode *inode,
-+					   struct page *page,
-+					   int sync)
-+{
-+	if (PageFsCache(page))
-+		__nfs_readpage_to_fscache(inode, page, sync);
-+}
-+
-+
- #else /* CONFIG_NFS_FSCACHE */
- static inline int nfs_fscache_register(void) { return 0; }
- static inline void nfs_fscache_unregister(void) {}
-@@ -172,6 +186,8 @@ static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
- {
- 	return -ENOBUFS;
- }
-+static inline void nfs_readpage_to_fscache(struct inode *inode,
-+					   struct page *page, int sync) {}
- 
- #endif /* CONFIG_NFS_FSCACHE */
- #endif /* _NFS_FSCACHE_H */
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 2e9e523..d74dc08 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -140,6 +140,11 @@ int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
- 
- static void nfs_readpage_release(struct nfs_page *req)
- {
-+	struct inode *d_inode = req->wb_context->path.dentry->d_inode;
-+
-+	if (PageUptodate(req->wb_page))
-+		nfs_readpage_to_fscache(d_inode, req->wb_page, 0);
-+
- 	unlock_page(req->wb_page);
- 
- 	dprintk("NFS: read done (%s/%Ld %d@%Ld)\n",
-
+RnJvbSA1MjM5OWQ0ZGRiZTkyMDg3NDAwOWNmNGRmZjgwYThiMDhiMDcxMTY3IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBXaWxsIE5ld3RvbiA8d2lsbC5uZXd0b25AZ21haWwuY29tPgpE
+YXRlOiBUaHUsIDIwIE5vdiAyMDA4IDE0OjE5OjA1ICswMDAwClN1YmplY3Q6IFtQQVRDSF0gZHJp
+dmVycy9jaGFyL3R0eV9pby5jOiBBdm9pZCBwYW5pYyB3aGVuIG5vIGNvbnNvbGUgaXMgY29uZmln
+dXJlZC4KCldoZW4gbm8gY29uc29sZSBpcyBjb25maWd1cmVkIHR0eV9vcGVuIHRyaWVzIHRvIGNh
+bGwga3JlZl9nZXQgb24gYSBOVUxMCnBvaW50ZXIsIHJldHVybiBFTk9ERVYgaW5zdGVhZC4KClNp
+Z25lZC1vZmYtYnk6IFdpbGwgTmV3dG9uIDx3aWxsLm5ld3RvbkBnbWFpbC5jb20+Ci0tLQogZHJp
+dmVycy9jaGFyL3R0eV9pby5jIHwgICAxNSArKysrKysrKystLS0tLS0KIDEgZmlsZXMgY2hhbmdl
+ZCwgOSBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+Y2hhci90dHlfaW8uYyBiL2RyaXZlcnMvY2hhci90dHlfaW8uYwppbmRleCA1OWY0NzIxLi4xNDEy
+YThkIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NoYXIvdHR5X2lvLmMKKysrIGIvZHJpdmVycy9jaGFy
+L3R0eV9pby5jCkBAIC0xNzk1LDEyICsxNzk1LDE1IEBAIHJldHJ5X29wZW46CiAJfQogI2VuZGlm
+CiAJaWYgKGRldmljZSA9PSBNS0RFVihUVFlBVVhfTUFKT1IsIDEpKSB7Ci0JCWRyaXZlciA9IHR0
+eV9kcml2ZXJfa3JlZl9nZXQoY29uc29sZV9kZXZpY2UoJmluZGV4KSk7Ci0JCWlmIChkcml2ZXIp
+IHsKLQkJCS8qIERvbid0IGxldCAvZGV2L2NvbnNvbGUgYmxvY2sgKi8KLQkJCWZpbHAtPmZfZmxh
+Z3MgfD0gT19OT05CTE9DSzsKLQkJCW5vY3R0eSA9IDE7Ci0JCQlnb3RvIGdvdF9kcml2ZXI7CisJ
+CXN0cnVjdCB0dHlfZHJpdmVyICpjb25zb2xlX2RyaXZlciA9IGNvbnNvbGVfZGV2aWNlKCZpbmRl
+eCk7CisJCWlmIChjb25zb2xlX2RyaXZlcikgeworCQkJZHJpdmVyID0gdHR5X2RyaXZlcl9rcmVm
+X2dldChjb25zb2xlX2RyaXZlcik7CisJCQlpZiAoZHJpdmVyKSB7CisJCQkJLyogRG9uJ3QgbGV0
+IC9kZXYvY29uc29sZSBibG9jayAqLworCQkJCWZpbHAtPmZfZmxhZ3MgfD0gT19OT05CTE9DSzsK
+KwkJCQlub2N0dHkgPSAxOworCQkJCWdvdG8gZ290X2RyaXZlcjsKKwkJCX0KIAkJfQogCQltdXRl
+eF91bmxvY2soJnR0eV9tdXRleCk7CiAJCXJldHVybiAtRU5PREVWOwotLSAKMS41LjUuMgoK
+------=_Part_71200_14691654.1227192446134--
