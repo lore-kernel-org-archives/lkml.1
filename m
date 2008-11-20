@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYKTOO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYKTOPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYKTOO7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYKTOOu
+	id S1755941AbYKTOPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYKTOPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:14:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44907 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbYKTOOu (ORCPT
+	Thu, 20 Nov 2008 09:15:34 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:51068 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754865AbYKTOPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:14:50 -0500
-Subject: Re: [PATCH] intel-iommu: remove some unused struct intel_iommu
-	fields
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mark McLoughlin <markmc@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-In-Reply-To: <1227189860.3739.21.camel@blaa>
-References: <1227189860.3739.21.camel@blaa>
-Content-Type: text/plain
-Date: Thu, 20 Nov 2008 14:14:38 +0000
-Message-Id: <1227190478.4901.20.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 20 Nov 2008 09:15:33 -0500
+Date: Thu, 20 Nov 2008 16:14:38 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Richard Purdie <rpurdie@linux.intel.com>
+Cc: me@felipebalbi.com, linux-kernel@vger.kernel.org,
+       Felipe Balbi <felipe.balbi@nokia.com>, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>, Greg KH <greg@kroah.com>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH] led: simplify led_trigger_register_simple
+Message-ID: <20081120141438.GK7476@gandalf.research.nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1226545753-6640-1-git-send-email-me@felipebalbi.com> <1226579912.5402.21.camel@dax.rpnet.com> <20081113181407.GC17166@frodo> <20081113191046.GA25855@frodo> <1227188008.22263.9.camel@ted>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227188008.22263.9.camel@ted>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 20 Nov 2008 14:14:53.0742 (UTC) FILETIME=[5BC1A4E0:01C94B1A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 14:04 +0000, Mark McLoughlin wrote:
-> The seg, saved_msg and sysdev fields appear to be unused since
-> before the code was first merged.
+On Thu, Nov 20, 2008 at 01:33:28PM +0000, ext Richard Purdie wrote:
+> On Thu, 2008-11-13 at 21:10 +0200, Felipe Balbi wrote:
+> > On Thu, Nov 13, 2008 at 08:14:16PM +0200, Felipe Balbi wrote:
+> > > On Thu, Nov 13, 2008 at 12:38:32PM +0000, Richard Purdie wrote:
+> > > > The simple triggers were designed to cause minimum interference to the
+> > > > usually external subsystem code they were added into. As an example this
+> > > > meant things like errors were just handled gracefully with a printk
+> > > > warning and did not take down the whole subsystem. I therefore don't
+> > > > regard this patch as a simplification, more a complication.
+> > > 
+> > > That's a matter of changing the return ERR_PTR(err); back to a printk.
+> > 
+> > And here you are. I still think we should at least kfree(trigger) in
+> > case of error, though.
 > 
-> linux/msi.h is not needed in linux/intel-iommu.h anymore since
-> there is no longer a reference to struct msi_msg. The MSI code
-> in drivers/pci/intel-iommu.c still has linux/msi.h included
-> via linux/dmar.h.
-> 
-> linux/sysdev.h isn't needed because there is no reference to
-> struct sys_device.
-> 
-> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+> This patch now just changes the calling convention of the function which
+> doesn't seem to serve much purpose.
 
-Applied; thanks.
+Well, it's your call then. But I don't like the idea of declaring a
+pointer, passing a pointer to that pointer to a function and changing
+the value of the original pointer.
+
+I think allocating inside led_trigger_register_simple() and returning
+the pointer would look better.
+
+> In answer to your question about kfree, I agree it needs to be called
+> upon error. The callers should just be calling
+> led_trigger_unregister_simple() in their failure paths though which
+> should take care of all problems? I know we used to register the simple
+> triggers late in paths so no error handling was needed to keep the code
+> simple and minimise the LED triggers impact on those systems.
+
+Well, led_trigger_register_simple() doesn't return anything. Imagine
+led_trigger_register_simple() fails, but the driver author decides
+it's not a failure if, let's say, a led doesn't turn on when we insert
+a mmc card to the slot since it doesn't change functionality.
+
+Now, imagine the user notes the led is not turning on and decides to
+unload and reload the module to try again. Once again the led doesn't go
+on. If the user keeps trying, it's quite a dangerous memory leak, right
+?
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+balbi
