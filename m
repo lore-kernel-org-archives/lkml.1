@@ -1,21 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYKTOn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbYKTOoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYKTOn7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYKTOmH
+	id S1756350AbYKTOoa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYKTOmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:42:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40976 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:42:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40982 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755209AbYKTOmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:42:00 -0500
+	id S1755368AbYKTOmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:42:05 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 00/45] Permit filesystem local caching [ver #41]
+Subject: [PATCH 04/45] Document the slow work thread pool [ver #41]
 To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:41:39 +0000
-Message-ID: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
+Date: Thu, 20 Nov 2008 14:42:00 +0000
+Message-ID: <20081120144200.10667.88484.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
+References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -24,318 +30,222 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Document the slow work thread pool.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ Documentation/slow-work.txt |  174 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/slow-work.h   |    2 
+ kernel/slow-work.c          |    2 
+ 3 files changed, 178 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/slow-work.txt
+
+
+diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.txt
+new file mode 100644
+index 0000000..ebc50f8
+--- /dev/null
++++ b/Documentation/slow-work.txt
+@@ -0,0 +1,174 @@
++		     ====================================
++		     SLOW WORK ITEM EXECUTION THREAD POOL
++		     ====================================
++
++By: David Howells <dhowells@redhat.com>
++
++The slow work item execution thread pool is a pool of threads for performing
++things that take a relatively long time, such as making mkdir calls.
++Typically, when processing something, these items will spend a lot of time
++blocking a thread on I/O, thus making that thread unavailable for doing other
++work.
++
++The standard workqueue model is unsuitable for this class of work item as that
++limits the owner to a single thread or a single thread per CPU.  For some
++tasks, however, more threads - or fewer - are required.
++
++There is just one pool per system.  It contains no threads unless something
++wants to use it - and that something must register its interest first.  When
++the pool is active, the number of threads it contains is dynamic, varying
++between a maximum and minimum setting, depending on the load.
++
++
++====================
++CLASSES OF WORK ITEM
++====================
++
++This pool support two classes of work items:
++
++ (*) Slow work items.
++
++ (*) Very slow work items.
++
++The former are expected to finish much quicker than the latter.
++
++An operation of the very slow class may do a batch combination of several
++lookups, mkdirs, and a create for instance.
++
++An operation of the ordinarily slow class may, for example, write stuff or
++expand files, provided the time taken to do so isn't too long.
++
++Operations of both types may sleep during execution, thus tying up the thread
++loaned to it.
++
++
++THREAD-TO-CLASS ALLOCATION
++--------------------------
++
++Not all the threads in the pool are available to work on very slow work items.
++The number will be between one and one fewer than the number of active threads.
++This is configurable (see the "Pool Configuration" section).
++
++All the threads are available to work on ordinarily slow work items, but a
++percentage of the threads will prefer to work on very slow work items.
++
++The configuration ensures that at least one thread will be available to work on
++very slow work items, and at least one thread will be available that won't work
++on very slow work items at all.
++
++
++=====================
++USING SLOW WORK ITEMS
++=====================
++
++Firstly, a module or subsystem wanting to make use of slow work items must
++register its interest:
++
++	 int ret = slow_work_register_user();
++
++This will return 0 if successful, or a -ve error upon failure.
++
++
++Slow work items may then be set up by:
++
++ (1) Declaring a slow_work struct type variable:
++
++	#include <linux/slow-work.h>
++
++	struct slow_work myitem;
++
++ (2) Declaring the operations to be used for this item:
++
++	struct slow_work_ops myitem_ops = {
++		.get_ref = myitem_get_ref,
++		.put_ref = myitem_put_ref,
++		.execute = myitem_execute,
++	};
++
++     [*] For a description of the ops, see section "Item Operations".
++
++ (3) Initialising the item:
++
++	slow_work_init(&myitem, &myitem_ops);
++
++     or:
++
++	vslow_work_init(&myitem, &myitem_ops);
++
++     depending on its class.
++
++A suitably set up work item can then be enqueued for processing:
++
++	int ret = slow_work_enqueue(&myitem);
++
++This will return a -ve error if the thread pool is unable to gain a reference
++on the item, 0 otherwise.
++
++
++The items are reference counted, so there ought to be no need for a flush
++operation.  When all a module's slow work items have been processed, and the
++module has no further interest in the facility, it should unregister its
++interest:
++
++	slow_work_unregister_user();
++
++
++===============
++ITEM OPERATIONS
++===============
++
++Each work item requires a table of operations of type struct slow_work_ops.
++All members are required:
++
++ (*) Get a reference on an item:
++
++	int (*get_ref)(struct slow_work *work);
++
++     This allows the thread pool to attempt to pin an item by getting a
++     reference on it.  This function should return 0 if the reference was
++     granted, or a -ve error otherwise.  If an error is returned,
++     slow_work_enqueue() will fail.
++
++     The reference is held whilst the item is queued and whilst it is being
++     executed.  The item may then be requeued with the same reference held, or
++     the reference will be released.
++
++ (*) Release a reference on an item:
++
++	void (*put_ref)(struct slow_work *work);
++
++     This allows the thread pool to unpin an item by releasing the reference on
++     it.  The thread pool will not touch the item again once this has been
++     called.
++
++ (*) Execute an item:
++
++	void (*execute)(struct slow_work *work);
++
++     This should perform the work required of the item.  It may sleep, it may
++     perform disk I/O and it may wait for locks.
++
++
++==================
++POOL CONFIGURATION
++==================
++
++The slow-work thread pool has a number of configurables:
++
++ (*) /proc/sys/kernel/slow-work/min-threads
++
++     The minimum number of threads that should be in the pool whilst it is in
++     use.  This may be anywhere between 2 and max-threads.
++
++ (*) /proc/sys/kernel/slow-work/max-threads
++
++     The maximum number of threads that should in the pool.  This may be
++     anywhere between min-threads and 255 or NR_CPUS * 2, whichever is greater.
++
++ (*) /proc/sys/kernel/slow-work/vslow-percentage
++
++     The percentage of active threads in the pool that may be used to execute
++     very slow work items.  This may be between 1 and 99.  The resultant number
++     is bounded to between 1 and one fewer than the number of active threads.
++     This ensures there is always at least one thread that can process very
++     slow work items, and always at least one thread that won't.
+diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
+index 3be8aea..5b74483 100644
+--- a/include/linux/slow-work.h
++++ b/include/linux/slow-work.h
+@@ -7,6 +7,8 @@
+  * modify it under the terms of the GNU General Public Licence
+  * as published by the Free Software Foundation; either version
+  * 2 of the Licence, or (at your option) any later version.
++ *
++ * See Documentation/slow-work.txt
+  */
+ 
+ #ifndef _LINUX_SLOW_WORK_H
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 3d6ce3b..556be87 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -7,6 +7,8 @@
+  * modify it under the terms of the GNU General Public Licence
+  * as published by the Free Software Foundation; either version
+  * 2 of the Licence, or (at your option) any later version.
++ *
++ * See Documentation/slow-work.txt
+  */
+ 
+ #include <linux/module.h>
 
-
-These patches add local caching for network filesystems such as NFS and AFS.
-These patches are also available in tarball format here:
-
-	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-41.tar.bz2
-
-
-To give a really quick overview of the way the facility works:
-
-	+---------+
-	|         |
-	|   NFS   |--+
-	|         |  |
-	+---------+  |   +----------+
-	             |   |          |
-	+---------+  +-->|          |
-	|         |      |          |
-	|   AFS   |----->| FS-Cache |
-	|         |      |          |--+
-	+---------+  +-->|          |  |
-	             |   |          |  |   +--------------+   +--------------+
-	+---------+  |   +----------+  |   |              |   |              |
-	|         |  |                 +-->|  CacheFiles  |-->|  Ext3        |
-	|  ISOFS  |--+                     |  /var/cache  |   |  /dev/sda6   |
-	|         |                        +--------------+   +--------------+
-	+---------+
-
-
- (1) NFS, say, asks FS-Cache to store/retrieve data for it;
-
- (2) FS-Cache asks the cache backend, in this case CacheFiles to honour the
-     operation;
-
- (3) CacheFiles 'opens' a file in a mounted filesystem, say Ext3, and does read
-     and write operations of a sort on it;
-
- (4) Ext3 decides how the cache data is laid out on disk - CacheFiles just
-     attempts to use one sparse file per netfs inode.
-
- (5) If NFS asks for data from the cache, but the file has a hole in it, NFS
-     falls back to asking the server.  The data obtained from the server is
-     then written over the hole in the file.
-
-To look at it another way:
-
-	+---------+
-	|         |
-	| Server  |
-	|         |
-	+---------+
-	     |                  NETWORK
-	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	     |
-	     |           +----------+
-	     V           |          |
-	+---------+      |          |
-	|         |      |          |
-	|   NFS   |----->| FS-Cache |
-	|         |      |          |--+
-	+---------+      |          |  |   +--------------+   +--------------+
-	     |           |          |  |   |              |   |              |
-	     V           +----------+  +-->|  CacheFiles  |-->|  Ext3        |
-	+---------+                        |  /var/cache  |   |  /dev/sda6   |
-	|         |                        +--------------+   +--------------+
-	|   VFS   |                                ^                     ^
-	|         |                                |                     |
-	+---------+                                +--------------+      |
-	     |                  KERNEL SPACE                      |      |
-	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~|~~~~
-	     |                  USER SPACE                        |      |
-	     V                                                    |      |
-	+---------+                                           +--------------+
-	|         |                                           |              |
-	| Process |                                           | cachefilesd  |
-	|         |                                           |              |
-	+---------+                                           +--------------+
-
-FS-Cache attempts to provide a caching facility to a network filesystem such
-that it's transparent to the users of that network filesystem.
-
-
-The patches can roughly be broken down into a number of sets:
-
-  (*) 01-slow-work.diff
-  (*) 02-slow-work-dynamic.diff
-  (*) 03-slow-work-config.diff
-  (*) 04-slow-work-doc.diff
-
-      A thread pool for (very) slow work items, such as batches of lookup,
-      mkdir, create and [sg]etxattr calls.
-
-      It doesn't make sense to use an ordinary work queue because I want more
-      than one thread, but I don't want to be limited to 1 thread per CPU.
-      The work items in question take a long time, most of which is spent
-      sleeping on I/O.  For the duration the worker thread is unable to do
-      anything else.
-
-      These four patches add the basic facility, make it dynamic, make it
-      configurable and document it.
-
-
-  (*) 05-release-page.diff
-
-      Call the page release function after a failed readahead.
-
-  (*) 06-fscache-page-flags.diff
-
-      Add two extra page flags that FS-Cache then uses to keep track of two
-      bits of per-cached-page information:
-
-	 (1) This page is known by the cache, and that the cache must be
-	     informed if the page is going to go away.  It's an indication to
-	     the netfs that the cache has an interest in this page, where an
-	     interest may be a pointer to it, resources allocated or reserved
-	     for it, or I/O in progress upon it.
-
-	 (2) This page is being written to disk by the cache, and that it
-	     cannot be released until completion.  Ideally it shouldn't be
-	     changed until completion either so as to maintain the known state
-	     of the cache.  This cannot be unified with PG_writeback as the
-	     page may be being written to both the server and the cache at the
-	     same time or at different times.
-
-      To avoid using extra page bits, I could, for example, set up a radix tree
-      per data storage object to keep track of both these bits, however this
-      would mean that the netfs would have to do a call, spinlock, conditional
-      jumps, etc to find out either state.
-
-      On the other hand, if we can spare two page flags, those are sufficient.
-
-      Note that the cache doesn't necessarily need to be able to find the netfs
-      pages, but may have to allocate/pin resources for backing them.
-
-      Further note that PG_private may not be used as I want to be able to use
-      caching with ISOFS eventually, and PG_private is owned by the block
-      buffer code.
-
-      These bits can be otherwise used by any filesystem that doesn't want to
-      use FS-Cache.
-
-  (*) 07-add_wait_queue_tail.diff
-
-      Make it possible to add an item to the back of a waitqueue instead of the
-      front
-
-
-  (*) 08-fscache-netfs-api.diff
-  (*) 09-fscache-backend-api.diff
-  (*) 10-fscache-kconfig.diff
-  (*) 11-fscache-proc.diff
-  (*) 12-fscache-fsdef.diff
-  (*) 13-fscache-tag-handling.diff
-  (*) 14-fscache-cache-handling.diff
-  (*) 15-fscache-cookie-jar.diff
-  (*) 16-fscache-netfs-reg.diff
-  (*) 17-fscache-bits.diff
-  (*) 18-fscache-object.diff
-  (*) 19-fscache-cookie.diff
-  (*) 20-fscache-operation.diff
-  (*) 21-fscache-io.diff
-
-      Patches to provide a local caching facility for network filesystems.
-
-      FS-Cache is a layer that takes requests from any one of a number of
-      netfs's and passes them to an appropriate cache, if there is one.
-      FS-Cache makes operations requested by the netfs transparently
-      asynchronous where possible.
-
-      FS-Cache also protects the netfs against (a) there being no cache, (b)
-      the cache suffering a fatal I/O error and (c) the cache being removed;
-      and protects the cache against (d) the netfs uncaching pages that the
-      cache is using and (e) conflicting operations from the netfs, some of
-      which may be queued for asynchronous processing.
-
-      Five documents in text file format that describe the FS-Cache interface
-      are added by these patches:
-
-      Documentation/filesystems/caching/fscache.txt gives an overview of the
-      facility and describes the statistical data it makes available.
-
-      Documentation/filesystems/caching/netfs-api.txt describes the API by
-      which a network filesystem would make use of the FS-Cache facility.
-
-      Documentation/filesystems/caching/backend-api.txt describes the API that
-      a cache backend must implement to provide caching services through
-      FS-Cache.
-
-      Documentation/filesystems/caching/object.txt describes the object
-      management state machine used.
-
-      Documentation/filesystems/caching/operations.txt describes the operation
-      scheduling facility provided and used by FS-Cache that can also be used
-      by cache backend modules.
-
-      The patches provide the following components of the FS-Cache facility:
-
-      (08) The netfs API header file and documentation.  A netfs can actually
-      	   be built and run against just this patch.  It won't actually do
-      	   anything without the later patches, though, but it will compile.
-
-      (09) The cache backend API header file and documentation.
-
-      (10) The main selector configuration option, the main module load/unload
-      	   hooks and the debugging code declarations.  With this patch applied,
-      	   it is possible to enable caching in a client netfs, though it won't
-      	   actually do anything.
-
-      (11) The /proc files for statistics presentation, plus the internal
-      	   interfaces for driving it.
-
-      (12) The top level index definition.
-
-      (13) Cache reference tag handling.
-
-      (14) Cache (un)registration and error handling.
-
-      (15) Cookie (de)allocator and initialisation.
-
-      (16) Netfs (un)registration handling.  This is partly usable.  Without a
-      	   later patch, however, a cookie will be leaked from unregistration.
-
-      (17) Bit waiting utility functions.
-
-      (18) The object management state machine implementation and
-      	   documentation.
-
-      (19) Implementation of the cookie management part of the netfs API.  With
-      	   this, it's possible for netfs's to actually be granted cookies and
-      	   to release them without error.
-
-      (20) Cache I/O operation scheduler and documentation.
-
-      (21) Implementation of the data I/O part of the netfs API.
-
-
-  (*) 22-cachefiles-ia64.diff
-  (*) 23-cachefiles-ext3-f_mapping.diff
-  (*) 24-cachefiles-write.diff
-  (*) 25-cachefiles-monitor.diff
-  (*) 26-cachefiles-export.diff
-  (*) 27-cachefiles.diff
-
-      Patches to provide a local cache in a directory of an already mounted
-      filesystem.
-
-      The latter patch adds a document in text file format that describes the
-      CacheFiles cache backend and gives instructions on how it is set up and
-      used.  This will be Documentation/filesystems/caching/cachefiles.txt when
-      the patch is applied.
-
-  (*) 28-afs-fscache.diff
-
-      Patches to provide AFS with local caching.
-
-  (*) 29-nfs-comment.diff
-  (*) 30-nfs-fscache-option.diff
-  (*) 31-nfs-fscache-kconfig.diff
-  (*) 32-nfs-fscache-top-index.diff
-  (*) 33-nfs-fscache-server-obj.diff
-  (*) 34-nfs-fscache-super-obj.diff
-  (*) 35-nfs-fscache-inode-obj.diff
-  (*) 36-nfs-fscache-use-inode.diff
-  (*) 37-nfs-fscache-invalidate-pages.diff
-  (*) 38-nfs-fscache-iostats.diff
-  (*) 39-nfs-fscache-page-management.diff
-  (*) 40-nfs-fscache-read-context.diff
-  (*) 41-nfs-fscache-read-fallback.diff
-  (*) 42-nfs-fscache-read-from-cache.diff
-  (*) 43-nfs-fscache-store-to-cache.diff
-  (*) 44-nfs-fscache-display.diff
-  (*) 45-nfs-fscache-mount.diff
-
-      Patches to provide NFS with local caching.
-
-
-The requisite security patches are now resident in James Morris's security
-testing tree (branch next) and linux-next.
-
-I've been testing these patches by throwing batches of eight parallel "tar cf"
-commands across three different 350MB NFS-based kernel trees (3 tars on first
-tree, 3 on second, 2 on third), sometimes with one or more of the trees
-preloaded into the cache.  The complete working data set does not fit into the
-RAM of my test machine, so even three tars that can be entirely satisfied from
-the cache, the cache may have to reread everything from disk.
-
-I've also occasionally stopped the cache and restarted it whilst the tars were
-using it, whilst both loading it up and reading it back.
-
-I've also been running tars against AFS mounted kernel trees.
-
---
-These patches should be built on top of:
-
-	http://git.kernel.org/?p=linux/kernel/git/jmorris/security-testing-2.6.git
-
-branch 'next'.
-
-
-To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
-is available as an SRPM:
-
-	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
-
-Or as individual bits:
-
-	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
-	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
-
-The .fc, .if and .te files are for manipulating SELinux.
-
-David
