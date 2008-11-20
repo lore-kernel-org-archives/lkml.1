@@ -1,170 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbYKTLbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbYKTLb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbYKTLbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYKTLao
+	id S1755653AbYKTLb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYKTLaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:30:44 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47326 "EHLO
+	Thu, 20 Nov 2008 06:30:55 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47343 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754791AbYKTLam (ORCPT
+	by vger.kernel.org with ESMTP id S1755318AbYKTLay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:30:42 -0500
-Subject: [PATCH 2.6.28-rc5 02/11] kmemleak: Add documentation on the memory
-	leak detector
+	Thu, 20 Nov 2008 06:30:54 -0500
+Subject: [PATCH 2.6.28-rc5 04/11] kmemleak: Add modules support
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Thu, 20 Nov 2008 11:30:39 +0000
-Message-ID: <20081120113039.16607.68994.stgit@pc1117.cambridge.arm.com>
+Date: Thu, 20 Nov 2008 11:30:51 +0000
+Message-ID: <20081120113050.16607.67335.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
 References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.14.3.286.g8983
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Nov 2008 11:30:40.0056 (UTC) FILETIME=[6A807B80:01C94B03]
+X-OriginalArrivalTime: 20 Nov 2008 11:30:51.0415 (UTC) FILETIME=[7145BA70:01C94B03]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Documentation/kmemleak.txt file with some
-information about how kmemleak works.
+This patch handles the kmemleak operations needed for modules loading so
+that memory allocations from inside a module are properly tracked.
 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- Documentation/kmemleak.txt |  125 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 125 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/kmemleak.txt
+ kernel/module.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 50 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
-new file mode 100644
-index 0000000..bf985df
---- /dev/null
-+++ b/Documentation/kmemleak.txt
-@@ -0,0 +1,125 @@
-+Kernel Memory Leak Detector
-+===========================
+diff --git a/kernel/module.c b/kernel/module.c
+index 1f4cc00..85a773b 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -51,6 +51,7 @@
+ #include <asm/sections.h>
+ #include <linux/tracepoint.h>
+ #include <linux/ftrace.h>
++#include <linux/memleak.h>
+ 
+ #if 0
+ #define DEBUGP printk
+@@ -409,6 +410,7 @@ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ 	unsigned long extra;
+ 	unsigned int i;
+ 	void *ptr;
++	int cpu;
+ 
+ 	if (align > PAGE_SIZE) {
+ 		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
+@@ -438,6 +440,10 @@ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ 			if (!split_block(i, size))
+ 				return NULL;
+ 
++		/* add the per-cpu scanning areas */
++		for_each_possible_cpu(cpu)
++			memleak_alloc(ptr + per_cpu_offset(cpu), size, 0);
 +
-+Introduction
-+------------
+ 		/* Mark allocated */
+ 		pcpu_size[i] = -pcpu_size[i];
+ 		return ptr;
+@@ -452,6 +458,7 @@ static void percpu_modfree(void *freeme)
+ {
+ 	unsigned int i;
+ 	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
++	int cpu;
+ 
+ 	/* First entry is core kernel percpu data. */
+ 	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+@@ -463,6 +470,10 @@ static void percpu_modfree(void *freeme)
+ 	BUG();
+ 
+  free:
++	/* remove the per-cpu scanning areas */
++	for_each_possible_cpu(cpu)
++		memleak_free(freeme + per_cpu_offset(cpu));
 +
-+Kmemleak provides a way of detecting possible kernel memory leaks in a
-+way similar to a tracing garbage collector
-+(http://en.wikipedia.org/wiki/Garbage_collection_%28computer_science%29#Tracing_garbage_collectors),
-+with the difference that the orphan objects are not freed but only
-+reported via /sys/kernel/debug/memleak. A similar method is used by
-+the Valgrind tool (memcheck --leak-check) to detect the memory leaks
-+in user-space applications.
+ 	/* Merge with previous? */
+ 	if (pcpu_size[i-1] >= 0) {
+ 		pcpu_size[i-1] += pcpu_size[i];
+@@ -1833,6 +1844,35 @@ static void *module_alloc_update_bounds(unsigned long size)
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_DEBUG_MEMLEAK
++static void memleak_load_module(struct module *mod, Elf_Ehdr *hdr,
++				Elf_Shdr *sechdrs, char *secstrings)
++{
++	unsigned int i;
 +
-+Usage
-+-----
++	/* only scan the sections containing data */
++	memleak_scan_area(mod->module_core,
++			  (unsigned long)mod - (unsigned long)mod->module_core,
++			  sizeof(struct module));
 +
-+CONFIG_DEBUG_MEMLEAK in "Kernel hacking" has to be enabled. To display
-+the possible memory leaks:
++	for (i = 1; i < hdr->e_shnum; i++) {
++		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
++			continue;
++		if (strncmp(secstrings + sechdrs[i].sh_name, ".data", 5) != 0
++		    && strncmp(secstrings + sechdrs[i].sh_name, ".bss", 4) != 0)
++			continue;
 +
-+  # mount -t debugfs nodev /sys/kernel/debug/
-+  # cat /sys/kernel/debug/memleak
++		memleak_scan_area(mod->module_core,
++				  sechdrs[i].sh_addr - (unsigned long)mod->module_core,
++				  sechdrs[i].sh_size);
++	}
++}
++#else
++static inline void memleak_load_module(struct module *mod, Elf_Ehdr *hdr,
++				       Elf_Shdr *sechdrs, char *secstrings)
++{ }
++#endif
 +
-+In order to reduce the run-time overhead, memory scanning is only
-+performed when reading the /sys/kernel/debug/memleak file. Note that
-+the orphan objects are listed in the order they were allocated and one
-+object at the beginning of the list may cause other subsequent objects
-+to be reported as orphan.
-+
-+Basic Algorithm
-+---------------
-+
-+The memory allocations via kmalloc, vmalloc, kmem_cache_alloc and
-+friends are tracked and the pointers, together with additional
-+information like size and stack trace, are stored in a prio search
-+tree. The corresponding freeing function calls are tracked and the
-+pointers removed from the kmemleak data structures.
-+
-+An allocated block of memory is considered orphan if no pointer to its
-+start address or to any location inside the block can be found by
-+scanning the memory (including saved registers). This means that there
-+might be no way for the kernel to pass the address of the allocated
-+block to a freeing function and therefore the block is considered a
-+memory leak.
-+
-+The scanning algorithm steps:
-+
-+  1. mark all objects as white (remaining white objects will later be
-+     considered orphan)
-+  2. scan the memory starting with the data section and stacks,
-+     checking the values against the addresses stored in the hash
-+     table. If a pointer to a white object is found, the object is
-+     added to the grey list
-+  3. scan the grey objects for matching addresses (some white objects
-+     can become grey and added at the end of the grey list) until the
-+     grey set is finished
-+  4. the remaining white objects are considered orphan and reported
-+     via /sys/kernel/debug/memleak
-+
-+Some allocated memory blocks have pointers stored in the kernel's
-+internal data structures and they cannot be detected as orphans. To
-+avoid this, kmemleak can also store the number of values pointing to
-+an address inside the block address range that need to be found so
-+that the block is not considered a leak. One example is __vmalloc().
-+
-+Limitations and Drawbacks
-+-------------------------
-+
-+The biggest drawback is the reduced performance of memory allocation
-+and freeing. To avoid other penalties, the memory scanning is only
-+performed when the /sys/kernel/debug/memleak file is read. Anyway,
-+this tool is intended for debugging purposes where the performance
-+might not be the most important requirement.
-+
-+To keep the algorithm simple, kmemleak scans for values pointing to
-+any address inside a block's address range. This may lead to an
-+increased number of false negatives. However, it is likely that a
-+realy memory leak will eventually become visible.
-+
-+Another source of false negatives is the data stored in non-pointer
-+values. In a future version, kmemleak could only scan the pointer
-+members in the allocated structures. This feature would solve many of
-+the false negative cases described above.
-+
-+The tool can report false positives. These are cases where an
-+allocated block doesn't need to be freed (some cases in the init_call
-+functions), the pointer is calculated by other methods than the usual
-+container_of macro or the pointer is stored in a location not scanned
-+by kmemleak.
-+
-+Page allocations and ioremap are not tracked. Only the ARM and i386
-+architectures are currently supported.
-+
-+Kmemleak API
-+------------
-+
-+See the include/linux/memleak.h header for the functions prototype.
-+
-+memleak_init		- initialize kmemleak
-+memleak_alloc		- notify of a memory block allocation
-+memleak_free		- notify of a memory block freeing
-+memleak_not_leak	- mark an object as not a leak
-+memleak_ignore		- do not scan or report an object as leak
-+memleak_scan_area	- add scan areas inside a memory block
-+memleak_erase		- erase an old value in a pointer variable
-+
-+Dealing with false positives/negatives
-+--------------------------------------
-+
-+To reduce the false negatives, kmemleak provides the memleak_ignore,
-+memleak_scan_area and memleak_erase functions. The task stacks also
-+increase the amount of false negatives and their scanning is not
-+enabled by default.
-+
-+For objects known not to be leaks, kmemleak provides the
-+memleak_not_leak function. The memleak_ignore could also be used if
-+the memory block is known not to contain other pointers and it will no
-+longer be scanned.
-+
-+Some of the reported leaks are only transient because of pointers
-+temporarily stored in CPU registers or stacks. Kmemleak defines
-+REPORT_THLD (defaulting to 1) representing the detection threshold
-+after which the block is reported as a memory leak. This value may
-+need to be increased if transient leaks are reported frequently,
-+especially on SMP systems.
+ /* Allocate and load the module: note that size of section 0 is always
+    zero, and we rely on this for optional sections. */
+ static noinline struct module *load_module(void __user *umod,
+@@ -2011,6 +2051,10 @@ static noinline struct module *load_module(void __user *umod,
+ 
+ 	/* Do the allocs. */
+ 	ptr = module_alloc_update_bounds(mod->core_size);
++	/* the pointer to this block is stored in the module structure
++	 * which is inside the block. Just mark it as not being a
++	 * leak */
++	memleak_not_leak(ptr);
+ 	if (!ptr) {
+ 		err = -ENOMEM;
+ 		goto free_percpu;
+@@ -2019,6 +2063,11 @@ static noinline struct module *load_module(void __user *umod,
+ 	mod->module_core = ptr;
+ 
+ 	ptr = module_alloc_update_bounds(mod->init_size);
++	/* the pointer to this block is stored in the module structure
++	 * which is inside the block. This block doesn't need to be
++	 * scanned as it contains data and code that will be freed
++	 * after the module is initialized */
++	memleak_ignore(ptr);
+ 	if (!ptr && mod->init_size) {
+ 		err = -ENOMEM;
+ 		goto free_core;
+@@ -2049,6 +2098,7 @@ static noinline struct module *load_module(void __user *umod,
+ 	}
+ 	/* Module has been moved. */
+ 	mod = (void *)sechdrs[modindex].sh_addr;
++	memleak_load_module(mod, hdr, sechdrs, secstrings);
+ 
+ 	/* Now we've moved module, initialize linked lists, etc. */
+ 	module_unload_init(mod);
 
