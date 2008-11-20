@@ -1,171 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYKTAMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbYKTAW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYKTAMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 19:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYKTAMj
+	id S1753187AbYKTAW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 19:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYKTAWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 19:12:39 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:8000 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbYKTAMi (ORCPT
+	Wed, 19 Nov 2008 19:22:16 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:27071 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbYKTAWQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 19:12:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=GxSCRnbUDuAIFPSKmBHsFVIyM9S0qhz1M5MuOfndzikPDNH6MYpBXgxHLFo1vpuHn
-	cbOcAZAEUt4MYuJEKQfYQ==
+	Wed, 19 Nov 2008 19:22:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=p6tx40658MRq9igW24Bne80AFQJePI/O2PH5SYknLAq4EkWBKTf1S8LkBBlBEeHEg7
+         J/Q1ndYY4xK60/o7Kh39iVAIjJh5/oHy3Wbnj2JgK5LQKvZ65lQ0tnD7Z0hsD/JbTdF1
+         hWlsBtoH7eUC7YPnhcNpRaw5tHwTGjRF7Zbg8=
+From: Eric Lacombe <goretux@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [x86] do_arch_prctl
+Date: Thu, 20 Nov 2008 01:22:07 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.5; KDE/4.1.3; x86_64; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+References: <200811181835.07360.goretux@gmail.com> <200811200035.57509.goretux@gmail.com> <4924AA4E.4090001@goop.org>
+In-Reply-To: <4924AA4E.4090001@goop.org>
 MIME-Version: 1.0
-In-Reply-To: <20081119142446.GH26308@kernel.dk>
-References: <20081114160525.GE24624@redhat.com>
-	 <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com>
-	 <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>
-	 <20081118120508.GD15268@gandalf.sssup.it>
-	 <20081118140751.GA4283@redhat.com>
-	 <20081118144139.GE15268@gandalf.sssup.it>
-	 <20081118191208.GJ26308@kernel.dk>
-	 <e98e18940811181507t6b1473act2efa23df21dab270@mail.gmail.com>
-	 <20081119142446.GH26308@kernel.dk>
-Date: Wed, 19 Nov 2008 16:12:30 -0800
-Message-ID: <af41c7c40811191612v5db13ae7n3cfe537beb6a157c@mail.gmail.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Divyesh Shah <dpshah@google.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Nauman Rafique <nauman@google.com>, Fabio Checconi <fchecconi@gmail.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
-       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, paolo.valente@unimore.it
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200811200122.07694.goretux@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 6:24 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Tue, Nov 18 2008, Nauman Rafique wrote:
->> On Tue, Nov 18, 2008 at 11:12 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
->> > On Tue, Nov 18 2008, Fabio Checconi wrote:
->> >> > From: Vivek Goyal <vgoyal@redhat.com>
->> >> > Date: Tue, Nov 18, 2008 09:07:51AM -0500
->> >> >
->> >> > On Tue, Nov 18, 2008 at 01:05:08PM +0100, Fabio Checconi wrote:
->> >> ...
->> >> > > I have to think a little bit on how it would be possible to support
->> >> > > an option for time-only budgets, coexisting with the current behavior,
->> >> > > but I think it can be done.
->> >> > >
->> >> >
->> >> > IIUC, bfq and cfq are different in following manner.
->> >> >
->> >> > a. BFQ employs WF2Q+ for fairness and CFQ employes weighted round robin.
->> >> > b. BFQ uses the budget (sector count) as notion of service and CFQ uses
->> >> >    time slices.
->> >> > c. BFQ supports hierarchical fair queuing and CFQ does not.
->> >> >
->> >> > We are looking forward for implementation of point C. Fabio seems to
->> >> > thinking of supporting time slice as a service (B). It seems like
->> >> > convergence of CFQ and BFQ except the point A (WF2Q+ vs weighted round
->> >> > robin).
->> >> >
->> >> > It looks like WF2Q+ provides tighter service bound and bfq guys mention
->> >> > that they have been able to ensure throughput while ensuring tighter
->> >> > bounds. If that's the case, does that mean BFQ is a replacement for CFQ
->> >> > down the line?
->> >> >
->> >>
->> >> BFQ started from CFQ, extending it in the way you correctly describe,
->> >> so it is indeed very similar.  There are also some minor changes to
->> >> locking, cic handling, hw_tag detection and to the CIC_SEEKY heuristic.
->> >>
->> >> The two schedulers share similar goals, and in my opinion BFQ can be
->> >> considered, in the long term, a CFQ replacement; *but* before talking
->> >> about replacing CFQ we have to consider that:
->> >>
->> >>   - it *needs* review and testing; we've done our best, but for sure
->> >>     it's not enough; review and testing are never enough;
->> >>   - the service domain fairness, which was one of our objectives, requires
->> >>     some extra complexity; the mechanisms we used and the design choices
->> >>     we've made may not fit all the needs, or may not be as generic as the
->> >>     simpler CFQ's ones;
->> >>   - CFQ has years of history behind and has been tuned for a wider
->> >>     variety of environments than the ones we've been able to test.
->> >>
->> >> If time-based fairness is considered more robust and the loss of
->> >> service-domain fairness is not a problem, then the two schedulers can
->> >> be made even more similar.
->> >
->> > My preferred approach here would be, in order or TODO:
->> >
->> > - Create and test the smallish patches for seekiness, hw_tag checking,
->> >  and so on for CFQ.
->> > - Create and test a WF2Q+ service dispatching patch for CFQ.
->> >
->> > and if there are leftovers after that, we could even conditionally
->> > enable some of those if appropriate. I think the WF2Q+ is quite cool and
->> > could be easily usable as the default, so it's definitely a viable
->> > alternative.
->>
->> 1 Merge BFQ into CFQ (Jens and Fabio). I am assuming that this would
->> result in time slices being scheduled using WF2Q+
+Le jeudi 20 novembre 2008 01:07:42 Jeremy Fitzhardinge, vous avez écrit :
+> Eric Lacombe wrote:
+> > Thanks for your answer, I've got one last question ;)
+> > In the ARCH_GET_GS, can you explain the line 834 to 838?
+> >
+> > In fact, at first sight I thought that just the line 836 was sufficient,
+> > but I obviously miss the case where MSR_KERNEL_GS_BASE does not reflect
+> > the value requested, hence my question.
 >
-> Yep, at least that is my preference.
->
->> 2 Do the following to support proportional division:
->>  a) Expose the per device weight interface to user, instead of calculating
->>  from priority.
->>  b) Add support for scheduling bandwidth among a hierarchy of cgroups
->> (besides threads)
->> 3 Do the following to support the goals of 2 level schedulers:
->>  a) Limit the request descriptors allocated to each cgroup by adding
->>  functionality to elv_may_queue()
->>  b) Add support for putting an absolute limit on IO consumed by a
->>  cgroup. Such support is provided by Andrea
->>  Righi's patches too.
->>  c) Add support (configurable option) to keep track of total disk
->> time/sectors/count
->>  consumed at each device, and factor that into scheduling decision
->>  (more discussion needed here)
->> 6 Incorporate an IO tracking approach which can allow tracking cgroups
->> for asynchronous reads/writes.
->> 7 Start an offline email thread to keep track of progress on the above
->> goals.
->>
->> Jens, what is your opinion everything beyond (1) in the above list?
->>
->> It would be great if work on (1) and (2)-(7) can happen in parallel so
->> that we can see "proportional division of IO bandwidth to cgroups" in
->> tree sooner than later.
->
-> Sounds feasible, I'd like to see the cgroups approach get more traction.
-> My primary concern is just that I don't want to merge it into specific
-> IO schedulers.
+> I think the rationale is that rdmsr is slow, so reading the value from
+> the task context is faster where possible.
 
-Jens,
-     So are you saying you don't prefer cgroups based proportional IO
-division solutions in the IO scheduler but at a layer above so it can
-be shared with all IO schedulers?
+But in this case why not doing instead:
 
-     If yes, then in that case, what do you think about Vivek Goyal's
-patch or dm-ioband that achieve that. Of course, both solutions don't
-meet all the requirements in the list above, but we can work on that
-once we know which direction we should be heading in. In fact, it
-would help if you could express the reservations (if you have any)
-about these approaches. That would help in coming up with a plan that
-everyone agrees on.
+828 case ARCH_GET_GS: {
+829                 unsigned long base;
+830                 unsigned gsindex;
+831                 if (task->thread.gsindex == GS_TLS_SEL)
+832                         base = read_32bit_tls(task, GS_TLS);
+840                 else
+841                         base = task->thread.gs;
 
-Thanks,
-DIvyesh
+> > 828 case ARCH_GET_GS: {
+> > 829                 unsigned long base;
+> > 830                 unsigned gsindex;
+> > 831                 if (task->thread.gsindex == GS_TLS_SEL)
+> > 832                         base = read_32bit_tls(task, GS_TLS);
+> > 833                 else if (doit) {
+> > 834                         asm("movl %%gs,%0" : "=r" (gsindex));
+> > 835                         if (gsindex)
+> > 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
+> > 837                         else
+> > 838                                 base = task->thread.gs;
+> > 839                 }
+> > 840                 else
+> > 841                         base = task->thread.gs;
 
- As you mention, we can hook into the may queue logic for
-> that subset of the problem, that avoids touching the io scheduler. If we
-> can get this supported 'generically', then I'd be happy to help out.
->
-> --
-> Jens Axboe
->
->
+and as I see with ARCH_GET_FS we have :
+
+817         case ARCH_GET_FS: {
+818                 unsigned long base;
+819                 if (task->thread.fsindex == FS_TLS_SEL)
+820                         base = read_32bit_tls(task, FS_TLS);
+821                 else if (doit)
+822                         rdmsrl(MSR_FS_BASE, base);
+823                 else
+824                         base = task->thread.fs;
+825                 ret = put_user(base, (unsigned long __user *)addr);
+826                 break;
+827         }
+
+So it seems that the "rdmsrl(MSR_FS_BASE, base);" could be faster than an 
+access to the memory, else why bother with the "doit" case?
+
+Regards,
+
+	Eric
+
