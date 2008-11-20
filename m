@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYKTOcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYKTOg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbYKTOcS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYKTOcH
+	id S1755548AbYKTOg5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYKTOgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:32:07 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56225 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754758AbYKTOcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:32:06 -0500
-Date: Thu, 20 Nov 2008 14:31:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Pfaff <tpfaff@pcs.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Question about TTY_DO_WRITE_WAKEUP
-Message-ID: <20081120143147.5e8d6c20@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0811201446380.21561@lxtpfaff.pcs.ditec.de>
-References: <Pine.LNX.4.64.0811201007120.30713@lxtpfaff.pcs.ditec.de>
-	<20081120131726.2636b559@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811201446380.21561@lxtpfaff.pcs.ditec.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 20 Nov 2008 09:36:48 -0500
+Received: from smtpeu1.atmel.com ([195.65.72.27]:56365 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754834AbYKTOgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:36:48 -0500
+Date: Thu, 20 Nov 2008 15:34:53 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Pierre Ossman <drzeus@drzeus.cx>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: Re: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
+Message-ID: <20081120153453.0f2f6cb6@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <4925734E.1060606@atmel.com>
+References: <491C0C05.6040301@atmel.com>
+	<20081113134818.GA9161@fluff.org.uk>
+	<491C3D16.1050501@atmel.com>
+	<20081119193631.448ae25e@mjolnir.drzeus.cx>
+	<4925734E.1060606@atmel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 20 Nov 2008 14:34:32.0471 (UTC) FILETIME=[1A556A70:01C94B1D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Is the TTY_DO_WRITE_WAKEUP bit some kind of cruft that can be removed entirely 
-> or should i generate a patch for serial devices only ?
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> I agree with both of you Pierre and Antonio.
+> Haavard, I submit a patch which also fix the mimc200 board very soon now.
 
-It shouldn't happen at the serial level. The line discipline sets the
-flag as and when it has data for the process above.
+Sounds good to me. Thanks :-)
 
-The expected flow in normal use is
-
-	app writes to tty
-		data goes to n_tty ldisc
-			goes to tty
-		n_tty ldisc seems tty blocked
-		n_tty ldisc sets DO_WRITE_WAKEUP
-
-	tty gets ucongested
-		calls n_tty write_wakeup
-			SIGIO sent
-			Flag set again
-
-The important part of the logic is in n_tty.c and tty_io.c
-
-Alan
+Haavard
