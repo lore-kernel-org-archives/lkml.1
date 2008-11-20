@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbYKTPFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYKTPM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759537AbYKTPFv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 10:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758608AbYKTPCW
+	id S1755961AbYKTPM4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYKTPMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 10:02:22 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:41917 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758990AbYKTPCV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 10:02:21 -0500
-Date: Thu, 20 Nov 2008 17:01:48 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Richard Purdie <rpurdie@linux.intel.com>
-Cc: felipe.balbi@nokia.com, me@felipebalbi.com, linux-kernel@vger.kernel.org,
-       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       Greg KH <greg@kroah.com>, Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [PATCH] led: simplify led_trigger_register_simple
-Message-ID: <20081120150148.GL7476@gandalf.research.nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1226545753-6640-1-git-send-email-me@felipebalbi.com> <1226579912.5402.21.camel@dax.rpnet.com> <20081113181407.GC17166@frodo> <20081113191046.GA25855@frodo> <1227188008.22263.9.camel@ted> <20081120141438.GK7476@gandalf.research.nokia.com> <1227192359.22263.23.camel@ted>
+	Thu, 20 Nov 2008 10:12:47 -0500
+Received: from mail.pcs.de ([145.253.69.50]:51889 "EHLO mail.pcs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754869AbYKTPMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 10:12:47 -0500
+Date: Thu, 20 Nov 2008 16:12:45 +0100 (CET)
+From: Thomas Pfaff <tpfaff@pcs.com>
+X-X-Sender: tpfaff@lxtpfaff.pcs.ditec.de
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Question about TTY_DO_WRITE_WAKEUP
+In-Reply-To: <20081120143147.5e8d6c20@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0811201536150.23073@lxtpfaff.pcs.ditec.de>
+References: <Pine.LNX.4.64.0811201007120.30713@lxtpfaff.pcs.ditec.de>
+ <20081120131726.2636b559@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811201446380.21561@lxtpfaff.pcs.ditec.de>
+ <20081120143147.5e8d6c20@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227192359.22263.23.camel@ted>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 20 Nov 2008 15:02:03.0570 (UTC) FILETIME=[F2772120:01C94B20]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 20 Nov 2008 15:12:45.0155 (UTC) FILETIME=[70E13B30:01C94B22]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 02:45:59PM +0000, ext Richard Purdie wrote:
-> On Thu, 2008-11-20 at 16:14 +0200, Felipe Balbi wrote:
-> > > In answer to your question about kfree, I agree it needs to be called
-> > > upon error. The callers should just be calling
-> > > led_trigger_unregister_simple() in their failure paths though which
-> > > should take care of all problems? I know we used to register the simple
-> > > triggers late in paths so no error handling was needed to keep the code
-> > > simple and minimise the LED triggers impact on those systems.
-> > 
-> > Well, led_trigger_register_simple() doesn't return anything. Imagine
-> > led_trigger_register_simple() fails, but the driver author decides
-> > it's not a failure if, let's say, a led doesn't turn on when we insert
-> > a mmc card to the slot since it doesn't change functionality.
-> > 
-> > Now, imagine the user notes the led is not turning on and decides to
-> > unload and reload the module to try again. Once again the led doesn't go
-> > on. If the user keeps trying, it's quite a dangerous memory leak, right
-> > ?
-> 
-> So we have the module loading and one of two things happens:
-> 
-> led_trigger_register_simple() succeeds
-> led_trigger_register_simple() fails (probably from kmalloc failure)
-> 
-> The module doesn't know or care which happened. When the module unloads
-> it calls led_trigger_unregister_simple() which will free the memory in
-> the success case and do nothing in the case where it had failed.
-> 
-> So there is no memory leak?
 
-Hmmm, you are right. Didin't think about the exit path. But freeing in
-led_triger_register_simple() if led_trigger_register() fails, also
-doesn't seem wrong.
+On Thu, 20 Nov 2008, Alan Cox wrote:
 
--- 
-balbi
+> > Is the TTY_DO_WRITE_WAKEUP bit some kind of cruft that can be removed entirely 
+> > or should i generate a patch for serial devices only ?
+> 
+> It shouldn't happen at the serial level. The line discipline sets the
+> flag as and when it has data for the process above.
+> 
+> The expected flow in normal use is
+> 
+> 	app writes to tty
+> 		data goes to n_tty ldisc
+> 			goes to tty
+> 		n_tty ldisc seems tty blocked
+> 		n_tty ldisc sets DO_WRITE_WAKEUP
+> 
+> 	tty gets ucongested
+> 		calls n_tty write_wakeup
+> 			SIGIO sent
+> 			Flag set again
+> 
+> The important part of the logic is in n_tty.c and tty_io.c
+
+Following the source the TTY_DO_WRITE_WAKEUP flag is set in n_tty_write_wakeup. 
+
+But n_tty_write_wakeup is only called from tty_wakeup when this bit is already 
+set, therefore it makes no sense to set this bit in n_tty_write_wakeup again.
+
+The flow looks to me as
+
+If the tty driver sets TTY_DO_WRITE_WAKEUP a SIGIO is generated on every 
+tty_wakeup.
+
+If it is not set then n_tty_write_wakeup is never called and a SIGIO is not 
+generated.
+
+Thomas
+
