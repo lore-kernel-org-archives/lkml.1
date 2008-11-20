@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYKTJTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYKTJW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYKTJTf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYKTJTT
+	id S1754666AbYKTJW6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYKTJWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:19:19 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:37713 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751926AbYKTJTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:19:17 -0500
-Date: Thu, 20 Nov 2008 18:20:53 +0900 (JST)
-Message-Id: <20081120.182053.220301508585579959.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       fchecconi@gmail.com, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20081113221304.GH7542@redhat.com>
-References: <20081113.180558.519459540419535699.ryov@valinux.co.jp>
-	<20081113155834.GE7542@redhat.com>
-	<20081113221304.GH7542@redhat.com>
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 04:22:43 -0500
+Received: from inhex.net ([193.33.178.145]:38140 "EHLO inhex.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751926AbYKTJWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 04:22:42 -0500
+Date: Thu, 20 Nov 2008 11:22:39 +0200
+From: Dmitry Nezhevenko <dion@inhex.net>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.28 git: WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404
+	generic_get_mtrr+0xea/0x120()
+Message-ID: <20081120092239.GA16613@laptop.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+Hi folks. This is first time I've tried 2.6.28-git (cloned git a few hours ago). 
+And got this:
 
-Sorry for late reply.
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000007ffd0000 (usable)
+[    0.000000]  BIOS-e820: 000000007ffd0000 - 000000007ffde000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000007ffde000 - 0000000080000000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
+[    0.000000] DMI present.
+[    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working it around.
+[    0.000000] last_pfn = 0x7ffd0 max_arch_pfn = 0x100000
+[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
+[    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
+[    0.000000] Modules linked in:
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc5 #1
+[    0.000000] Call Trace:
+[    0.000000]  [<c012b86f>] warn_slowpath+0x6f/0x90
+[    0.000000]  [<c0373031>] inet_rtm_newroute+0x21/0x50
+[    0.000000]  [<c02593c4>] number+0x2b4/0x2c0
+[    0.000000]  [<c0259ff3>] vsnprintf+0x393/0x670
+[    0.000000]  [<c0144fd1>] up+0x11/0x40
+[    0.000000]  [<c012c069>] release_console_sem+0x189/0x1d0
+[    0.000000]  [<c01124da>] generic_get_mtrr+0xea/0x120
+[    0.000000]  [<c04db85f>] mtrr_trim_uncached_memory+0x7d/0x374
+[    0.000000]  [<c03a569a>] printk+0x17/0x1b
+[    0.000000]  [<c011edbc>] pat_init+0x7c/0xa0
+[    0.000000]  [<c01129ac>] post_set+0x1c/0x50
+[    0.000000]  [<c03a569a>] printk+0x17/0x1b
+[    0.000000]  [<c04d7b52>] e820_end_pfn+0xb5/0xd3
+[    0.000000]  [<c04d6016>] setup_arch+0x518/0x802
+[    0.000000]  [<c04d8cc7>] reserve_early_overlap_ok+0x3f/0x47
+[    0.000000]  [<c04cf5dc>] start_kernel+0x58/0x334
+[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.000000] kernel direct mapping tables up to 377fe000 @ 10000-16000
 
-> > > Do you have any benchmark results?
-> > > I'm especially interested in the followings:
-> > > - Comparison of disk performance with and without the I/O controller patch.
-> > 
-> > If I dynamically disable the bio control, then I did not observe any
-> > impact on performance. Because in that case practically it boils down
-> > to just an additional variable check in __make_request().
-> > 
-> 
-> Oh.., I understood your question wrong. You are looking for what's the 
-> performance penalty if I enable the IO controller on a device.
+Can I just ignore this?
 
-Yes, that is what I want to know.
-
-> I have not done any extensive benchmarking. If I run two dd commands
-> without controller, I get 80MB/s from disk (roughly 40 MB for each task).
-> With bio group enabled (default token=2000), I was getting total BW of
-> roughly 68 MB/s.
->
-> I have not done any performance analysis or optimizations at this point of
-> time. I plan to do that once we have some sort of common understanding about
-> a particular approach. There are so many IO controllers floating, right now
-> I am more concerned if we can all come to a common platform.
-
-I understood the reason of posting the patch well.
-
-> Ryo, do you still want to stick to two level scheduling? Given the problem
-> of it breaking down underlying scheduler's assumptions, probably it makes
-> more sense to the IO control at each individual IO scheduler.
-
-I don't want to stick to it. I'm considering implementing dm-ioband's
-algorithm into the block I/O layer experimentally.
-
-Thanks,
-Ryo Tsuruta
+-- 
+WBR, Dmitry
