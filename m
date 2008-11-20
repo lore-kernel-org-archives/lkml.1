@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbYKTAC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYKTADT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbYKTAC1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 19:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYKTACT
+	id S1753425AbYKTADT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 19:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYKTADL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 19:02:19 -0500
-Received: from mga09.intel.com ([134.134.136.24]:63966 "EHLO mga09.intel.com"
+	Wed, 19 Nov 2008 19:03:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58203 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751929AbYKTACS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 19:02:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,635,1220252400"; 
-   d="scan'208";a="362112138"
-From: "Zou, Yi" <yi.zou@intel.com>
-To: David Miller <davem@davemloft.net>
-CC: "jeff@garzik.org" <jeff@garzik.org>,
-       "linux-netdev@vger.kernel.org" <linux-netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Nov 2008 16:02:03 -0800
-Subject: RE: [PATCH 3/3] net: define feature flags for FCoE offloads
-Thread-Topic: [PATCH 3/3] net: define feature flags for FCoE offloads
-Thread-Index: AclKoTHwphYlHGUQTEWuc/CoK+NrvQAADVCw
-Message-ID: <1DB50624F8348F48840F2E2CF6040A9D2F383FB5@orsmsx508.amr.corp.intel.com>
-References: <20081117182659.15776.58181.stgit@zychongqing.jf.intel.com>
-	<20081117183049.15776.84674.stgit@zychongqing.jf.intel.com>
- <20081119.154710.135220757.davem@davemloft.net>
-In-Reply-To: <20081119.154710.135220757.davem@davemloft.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1752010AbYKTADK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 19:03:10 -0500
+Date: Thu, 20 Nov 2008 11:02:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for November 19 (v4l2 warnings)
+Message-Id: <20081120110253.c0f2e80b.sfr@canb.auug.org.au>
+In-Reply-To: <20081119105100.26de5ff0.randy.dunlap@oracle.com>
+References: <20081119175917.7d21cf77.sfr@canb.auug.org.au>
+	<20081119105100.26de5ff0.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: David Miller [mailto:davem@davemloft.net]
->Sent: Wednesday, November 19, 2008 3:47 PM
+--Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Mauro,
+
+On Wed, 19 Nov 2008 10:51:00 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
+rote:
 >
->
->Why would FibreChannel over Ethernet need IPV4/IPV6 segmentation
->offloading?
-Thanks for reviewing the patch. I am hoping to make use of the existing gso logic as much as possible for fcoe segmentation as well, to hookup fcoe segmentation using ptype->gso_segment(). 
+> On Wed, 19 Nov 2008 17:59:17 +1100 Stephen Rothwell wrote:
 
-Thanks.
+(Randy, I didn't really ...)
 
-yi
+> drivers/media/video/v4l2-ioctl.c:1819: warning: format '%d' expects type =
+'int', but argument 3 has type 'struct v4l2_fract'
+> drivers/media/video/v4l2-ioctl.c:1819: warning: format '%d' expects type =
+'int', but argument 4 has type 'struct v4l2_fract'
+> drivers/media/video/v4l2-ioctl.c:1819: warning: format '%d' expects type =
+'int', but argument 5 has type 'struct v4l2_fract'
 
+Introduced in commit b35e0c6035369de9f3273b6a3fbb1c67f830cf49 "4L/DVB
+(9578): v4l core: add support for enumerating frame sizes and intervals"
+and been there for some time now.
+
+Mauro, please fix this.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkkqS0ACgkQjjKRsyhoI8z3PwCgjbRalkdjjqLsULyZGncp78FD
+6F8An1SktKaIgWvWeM+yKLL0v8BsMdkI
+=wSC7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__20_Nov_2008_11_02_53_+1100_BlqoAmEZ/EXf0.oU--
