@@ -1,122 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYKTFqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbYKTFyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbYKTFqd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 00:46:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYKTFqZ
+	id S1754170AbYKTFyM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 00:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYKTFx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 00:46:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:32479 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753201AbYKTFqY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 00:46:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=iJ5oHUL4SRKg8/AwkSlIev6x7KOD4aPF1e67tCTzqB5n87oYL4l6PP9AJgXKTl1p/1
-         pYrrNdH+zCIZ085+m8EXpcTV2ZjIQnaIk+puBo+ADQhZpJBwV8seWwPYYUbTRYCfbIMw
-         TTmceubPq2yHkTzahGOWgDxZHZyxOqvYgbu5s=
-To: <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 2/3] ide: make IDE_AFLAG_.. numbering continuous again
-Date: Thu, 20 Nov 2008 06:41:22 +0100
-Message-Id: <1227159683-2487-3-git-send-email-petkovbb@gmail.com>
-X-Mailer: git-send-email 1.6.0.3
-In-Reply-To: <1227159683-2487-1-git-send-email-petkovbb@gmail.com>
-References: <1227159683-2487-1-git-send-email-petkovbb@gmail.com>
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Thu, 20 Nov 2008 00:53:56 -0500
+Received: from kroah.org ([198.145.64.141]:51812 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752110AbYKTFxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 00:53:55 -0500
+Date: Wed, 19 Nov 2008 21:50:26 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB fixes for 2.6.28-git
+Message-ID: <20081120055026.GA10709@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- include/linux/ide.h |   48 ++++++++++++++++++++++++------------------------
- 1 files changed, 24 insertions(+), 24 deletions(-)
+Here are a few USB fixes against your current git tree.
 
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index fb81060..efd95e9 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -473,53 +473,53 @@ enum {
- 
- 	/* ide-cd */
- 	/* Drive cannot eject the disc. */
--	IDE_AFLAG_NO_EJECT		= (1 << 3),
-+	IDE_AFLAG_NO_EJECT		= (1 << 1),
- 	/* Drive is a pre ATAPI 1.2 drive. */
--	IDE_AFLAG_PRE_ATAPI12		= (1 << 4),
-+	IDE_AFLAG_PRE_ATAPI12		= (1 << 2),
- 	/* TOC addresses are in BCD. */
--	IDE_AFLAG_TOCADDR_AS_BCD	= (1 << 5),
-+	IDE_AFLAG_TOCADDR_AS_BCD	= (1 << 3),
- 	/* TOC track numbers are in BCD. */
--	IDE_AFLAG_TOCTRACKS_AS_BCD	= (1 << 6),
-+	IDE_AFLAG_TOCTRACKS_AS_BCD	= (1 << 4),
- 	/*
- 	 * Drive does not provide data in multiples of SECTOR_SIZE
- 	 * when more than one interrupt is needed.
- 	 */
--	IDE_AFLAG_LIMIT_NFRAMES		= (1 << 7),
-+	IDE_AFLAG_LIMIT_NFRAMES		= (1 << 5),
- 	/* Saved TOC information is current. */
--	IDE_AFLAG_TOC_VALID		= (1 << 9),
-+	IDE_AFLAG_TOC_VALID		= (1 << 6),
- 	/* We think that the drive door is locked. */
--	IDE_AFLAG_DOOR_LOCKED		= (1 << 10),
-+	IDE_AFLAG_DOOR_LOCKED		= (1 << 7),
- 	/* SET_CD_SPEED command is unsupported. */
--	IDE_AFLAG_NO_SPEED_SELECT	= (1 << 11),
--	IDE_AFLAG_VERTOS_300_SSD	= (1 << 12),
--	IDE_AFLAG_VERTOS_600_ESD	= (1 << 13),
--	IDE_AFLAG_SANYO_3CD		= (1 << 14),
--	IDE_AFLAG_FULL_CAPS_PAGE	= (1 << 15),
--	IDE_AFLAG_PLAY_AUDIO_OK		= (1 << 16),
--	IDE_AFLAG_LE_SPEED_FIELDS	= (1 << 17),
-+	IDE_AFLAG_NO_SPEED_SELECT	= (1 << 8),
-+	IDE_AFLAG_VERTOS_300_SSD	= (1 << 9),
-+	IDE_AFLAG_VERTOS_600_ESD	= (1 << 10),
-+	IDE_AFLAG_SANYO_3CD		= (1 << 11),
-+	IDE_AFLAG_FULL_CAPS_PAGE	= (1 << 12),
-+	IDE_AFLAG_PLAY_AUDIO_OK		= (1 << 13),
-+	IDE_AFLAG_LE_SPEED_FIELDS	= (1 << 14),
- 
- 	/* ide-floppy */
- 	/* Avoid commands not supported in Clik drive */
--	IDE_AFLAG_CLIK_DRIVE		= (1 << 19),
-+	IDE_AFLAG_CLIK_DRIVE		= (1 << 15),
- 	/* Requires BH algorithm for packets */
--	IDE_AFLAG_ZIP_DRIVE		= (1 << 20),
-+	IDE_AFLAG_ZIP_DRIVE		= (1 << 16),
- 	/* Supports format progress report */
--	IDE_AFLAG_SRFP			= (1 << 22),
-+	IDE_AFLAG_SRFP			= (1 << 17),
- 
- 	/* ide-tape */
--	IDE_AFLAG_IGNORE_DSC		= (1 << 23),
-+	IDE_AFLAG_IGNORE_DSC		= (1 << 18),
- 	/* 0 When the tape position is unknown */
--	IDE_AFLAG_ADDRESS_VALID		= (1 <<	24),
-+	IDE_AFLAG_ADDRESS_VALID		= (1 <<	19),
- 	/* Device already opened */
--	IDE_AFLAG_BUSY			= (1 << 25),
-+	IDE_AFLAG_BUSY			= (1 << 20),
- 	/* Attempt to auto-detect the current user block size */
--	IDE_AFLAG_DETECT_BS		= (1 << 26),
-+	IDE_AFLAG_DETECT_BS		= (1 << 21),
- 	/* Currently on a filemark */
--	IDE_AFLAG_FILEMARK		= (1 << 27),
-+	IDE_AFLAG_FILEMARK		= (1 << 22),
- 	/* 0 = no tape is loaded, so we don't rewind after ejecting */
--	IDE_AFLAG_MEDIUM_PRESENT	= (1 << 28),
-+	IDE_AFLAG_MEDIUM_PRESENT	= (1 << 23),
- 
--	IDE_AFLAG_NO_AUTOCLOSE		= (1 << 29),
-+	IDE_AFLAG_NO_AUTOCLOSE		= (1 << 24),
- };
- 
- /* device flags */
--- 
-1.6.0.4
+These patches are:
+	- fix for broken AMD USB controllers
+	- musb bugfix
+	- rndis bugfix to keep Windows from blue-screening
+	- new device ids
+	- usb-storage quirks
+
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+
+All of these patches have been in the -next and -mm tree for a few
+releases.
+
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------------
+
+ drivers/usb/gadget/f_rndis.c       |    3 +--
+ drivers/usb/host/ehci-pci.c        |   21 +++++++++++++++++++++
+ drivers/usb/mon/mon_bin.c          |    5 ++++-
+ drivers/usb/musb/musb_host.c       |    2 +-
+ drivers/usb/serial/cp2101.c        |    1 +
+ drivers/usb/storage/unusual_devs.h |   11 +++++++++--
+ 6 files changed, 37 insertions(+), 6 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      USB: storage: updates unusual_devs entry for the Nokia 6300
+      USB: storage: update unusual_devs entries for Nokia 5300 and 5310
+
+Andiry Xu (1):
+      USB: fix SB700 usb subsystem hang bug
+
+David Brownell (1):
+      USB: gadget rndis: stop windows self-immolation
+
+Felipe Balbi (1):
+      usb: musb: fix bug in musb_schedule
+
+M Kondrin (1):
+      USB: ACE1001 patch for cp2101.c
+
+Pete Zaitcev (1):
+      USB: usbmon: fix read(2)
+
+Richard Röjfors (1):
+      USB: gadget rndis: send notifications
 
