@@ -1,143 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYKTLhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYKTLiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbYKTLhp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYKTLgU
+	id S1756242AbYKTLiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 06:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbYKTLgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:36:20 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54932 "EHLO smtp.wine.ocn.ne.jp"
+	Thu, 20 Nov 2008 06:36:21 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55014 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754515AbYKTLgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754620AbYKTLgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Nov 2008 06:36:14 -0500
-Message-Id: <20081120112732.119069758@I-love.SAKURA.ne.jp>
+Message-Id: <20081120112732.678470045@I-love.SAKURA.ne.jp>
 References: <20081120112543.799450455@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Nov 2008 20:25:46 +0900
+Date: Thu, 20 Nov 2008 20:25:47 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #13 (mmotm 2008-11-19-02-19) 03/11] Singly linked list implementation.
-Content-Disposition: inline; filename=introduce-write-once-read-many-linked-list.patch
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>
+Subject: [TOMOYO #13 (mmotm 2008-11-19-02-19) 04/11] Introduce d_realpath().
+Content-Disposition: inline; filename=introduce-d_realpath.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces new list structure named "list1".
+To remove factors that make pathname based access control difficult
+(e.g. symbolic links, "..", "//", chroot() etc.), a variant of d_path()
+which traverses up to the root of the namespace is needed.
 
-TOMOYO wants to use "write once read many" list.
-Since only two operations
+This patch introduces d_realpath(), a variant of d_path().
+While d_path() stops traversing at current->fs->root,
+d_realpath() doesn't stop traversiong at current->fs->root.
 
- (1) Append an entry to the tail of the list.
- (2) Read all entries starting from the head of the list.
+Three differences compared to d_path().
+(1) Ignores current process's root directory.
+(2) Trailing '/' is added if the pathname refers to a directory.
+(3) /proc/PID/ is represented as /proc/self/ if PID equals current->tgid.
 
-are needed for that purpose, this list doesn't have pointer to previous
-element.
-
-While "hlist" is defined as
-
- struct hlist_head {
- 	struct hlist_node *first;
- };
-
- struct hlist_node {
- 	struct hlist_node *next, **pprev;
- };
-
-I don't use "hlist_node" because I don't need pointer to previous element.
-
-By ommiting pointer to previous element, the reader becomes read lock free,
-which is good thing for implementing "write once read many" list.
-
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- include/linux/list1.h |   81 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 81 insertions(+)
+ fs/dcache.c            |   84 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/dcache.h |    1 
+ 2 files changed, 85 insertions(+)
 
---- /dev/null
-+++ linux-2.6.28-rc5-mm1/include/linux/list1.h
-@@ -0,0 +1,81 @@
-+#ifndef _LINUX_LIST1_H
-+#define _LINUX_LIST1_H
-+
-+#include <linux/list.h>
-+#include <linux/rcupdate.h>
-+
-+/*
-+ * Singly linked list implementation.
+--- linux-2.6.28-rc5-mm1.orig/fs/dcache.c
++++ linux-2.6.28-rc5-mm1/fs/dcache.c
+@@ -33,6 +33,7 @@
+ #include <linux/swap.h>
+ #include <linux/bootmem.h>
+ #include <linux/backing-dev.h>
++#include <linux/magic.h>
+ #include "internal.h"
+ 
+ 
+@@ -1982,6 +1983,89 @@ Elong:
+ }
+ 
+ /**
++ * d_realpath - Get the realpath of a dentry.
 + *
-+ * This list supports only two operations.
-+ * (1) Append an entry to the tail of the list.
-+ * (2) Read all entries starting from the head of the list.
++ * @path: Pointer to "struct path".
++ * @buffer: Pointer to buffer to return value in.
++ * @buflen: Sizeof @buffer.
 + *
-+ * This list is designed for holding "write once, read many" entries.
-+ * This list requires no locks for read operation.
-+ * This list doesn't support "remove an entry from the list" operation.
++ * Returns pointer to the realpath on success, an error code othersize.
++ *
++ * If @dentry is a directory, trailing '/' is appended.
++ * /proc/PID/ is replaced by /proc/self/ if PID == task_tgid_nr_ns(current).
 + */
-+
-+/* To reduce memory usage, this list doesn't use "->prev" pointer. */
-+struct list1_head {
-+	struct list1_head *next;
-+};
-+
-+#define LIST1_HEAD_INIT(name) { &(name) }
-+#define LIST1_HEAD(name) struct list1_head name = LIST1_HEAD_INIT(name)
-+
-+static inline void INIT_LIST1_HEAD(struct list1_head *list)
++char *d_realpath(struct path *path, char *buffer, int buflen)
 +{
-+	list->next = list;
++	struct dentry *dentry = path->dentry;
++	struct vfsmount *vfsmnt = path->mnt;
++	char *end = buffer + buflen;
++
++	spin_lock(&dcache_lock);
++	spin_lock(&vfsmount_lock);
++	if (buflen < 1 || prepend(&end, &buflen, "", 1))
++		goto Elong;
++	/*
++	 * Exception: Add trailing '/' for directory.
++	 */
++	if (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode) &&
++	    prepend(&end, &buflen, "/", 1))
++		goto Elong;
++	for (;;) {
++		struct dentry *parent;
++		const char *name;
++		int name_len;
++		unsigned long pid;
++
++		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++			/* Global root? */
++			if (vfsmnt->mnt_parent == vfsmnt)
++				break;
++			dentry = vfsmnt->mnt_mountpoint;
++			vfsmnt = vfsmnt->mnt_parent;
++			continue;
++		}
++		parent = dentry->d_parent;
++		prefetch(parent);
++		/*
++		 * Exception: Use /proc/self/ rather than /proc/\$/
++		 * for current process.
++		 */
++		name = dentry->d_name.name;
++		name_len = dentry->d_name.len;
++		if (IS_ROOT(parent) &&
++		    parent->d_sb->s_magic == PROC_SUPER_MAGIC &&
++		    !strict_strtoul(name, 10, &pid)) {
++			const pid_t tgid
++				= task_tgid_nr_ns(current,
++						  dentry->d_sb->s_fs_info);
++			if (tgid && (pid_t) pid == tgid) {
++				name = "self";
++				name_len = 4;
++			}
++		}
++		if (prepend(&end, &buflen, name, name_len))
++			goto Elong;
++		if (prepend(&end, &buflen, "/", 1))
++			goto Elong;
++		dentry = parent;
++	}
++	if (*end == '/') {
++		/* hit the slash */
++		buflen++;
++		end++;
++	}
++	if (prepend_name(&end, &buflen, &dentry->d_name))
++		goto Elong;
++ out:
++	spin_unlock(&vfsmount_lock);
++	spin_unlock(&dcache_lock);
++	return end;
++ Elong:
++	end = ERR_PTR(-ENAMETOOLONG);
++	goto out;
 +}
 +
-+/* Reuse list_entry because it doesn't use "->prev" pointer. */
-+#define list1_entry list_entry
-+
-+/* Reuse list_for_each_rcu because it doesn't use "->prev" pointer. */
-+#define list1_for_each list_for_each_rcu
-+/* Reuse list_for_each_entry_rcu because it doesn't use "->prev" pointer. */
-+#define list1_for_each_entry list_for_each_entry_rcu
-+
 +/**
-+ * list1_for_each_cookie - iterate over a list with cookie.
-+ * @pos:        the &struct list1_head to use as a loop cursor.
-+ * @cookie:     the &struct list1_head to use as a cookie.
-+ * @head:       the head for your list.
-+ *
-+ * Same with list_for_each_rcu() except that this primitive uses @cookie
-+ * so that we can continue iteration.
-+ * @cookie must be NULL when iteration starts, and @cookie will become
-+ * NULL when iteration finishes.
-+ *
-+ * Since list elements are never removed, we don't need to get a lock
-+ * or a reference count.
-+ */
-+#define list1_for_each_cookie(pos, cookie, head)                      \
-+	for (({ if (!cookie)                                          \
-+				     cookie = head; }),               \
-+	     pos = rcu_dereference((cookie)->next);                   \
-+	     prefetch(pos->next), pos != (head) || ((cookie) = NULL); \
-+	     (cookie) = pos, pos = rcu_dereference(pos->next))
-+
-+/**
-+ * list1_add_tail - add a new entry to list1 list.
-+ * @new: new entry to be added.
-+ * @head: list head to add it before.
-+ *
-+ * Same with list_add_tail_rcu() without "->prev" pointer.
-+ *
-+ * Caller must hold a lock for protecting @head.
-+ */
-+static inline void list1_add_tail(struct list1_head *new,
-+				  struct list1_head *head)
-+{
-+	struct list1_head *prev = head;
-+
-+	new->next = head;
-+	while (prev->next != head)
-+		prev = prev->next;
-+	rcu_assign_pointer(prev->next, new);
-+}
-+
-+#endif
+  * d_path - return the path of a dentry
+  * @path: path to report
+  * @buf: buffer to return value in
+--- linux-2.6.28-rc5-mm1.orig/include/linux/dcache.h
++++ linux-2.6.28-rc5-mm1/include/linux/dcache.h
+@@ -305,6 +305,7 @@ extern char *dynamic_dname(struct dentry
+ extern char *__d_path(const struct path *path, struct path *root, char *, int);
+ extern char *d_path(const struct path *, char *, int);
+ extern char *dentry_path(struct dentry *, char *, int);
++extern char *d_realpath(struct path *, char *, int);
+ 
+ /* Allocation counts.. */
+ 
 
 -- 
