@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYKTVHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYKTVJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYKTVHh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 16:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbYKTVH1
+	id S1757108AbYKTVJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 16:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbYKTVJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 16:07:27 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:50786 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbYKTVH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 16:07:27 -0500
-X-IronPort-AV: E=Sophos;i="4.33,639,1220252400"; 
-   d="scan'208";a="90771529"
-Subject: [PATCH] SUNRPC: Fix a performance regression in the RPC
- authentication code
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Thu, 20 Nov 2008 16:06:21 -0500
-Message-Id: <1227215181.7150.18.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-X-OriginalArrivalTime: 20 Nov 2008 21:07:16.0914 (UTC) FILETIME=[F7D61120:01C94B53]
+	Thu, 20 Nov 2008 16:09:50 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:48156 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755467AbYKTVJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 16:09:50 -0500
+Date: Thu, 20 Nov 2008 14:09:33 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: Fix interrupt leak due to migration
+Message-ID: <20081120210932.GW1617@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a regression reported by Max Kellermann whereby kernel profiling
-showed that his clients were spending 45% of their time in
-rpcauth_lookup_credcache.
 
-It turns out that although his processes had identical uid/gid/groups,
-generic_match() was failing to detect this, because the task->group_info
-pointers were not shared. This again lead to the creation of a huge number
-of identical credentials at the RPC layer.
+When we migrate an interrupt from one CPU to another, we set the
+move_in_progress flag and clean up the vectors later once they're not
+being used.  If you're unlucky and call destroy_irq() before the vectors
+become un-used, the move_in_progress flag is never cleared, which causes
+the interrupt to become unusable.
 
-The regression is fixed by comparing the contents of task->group_info
-if the actual pointers are not identical.
+This was discovered by Jesse Brandeburg for whom it manifested as an
+MSI-X device refusing to use MSI-X mode when the driver was unloaded
+and reloaded repeatedly.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
- net/sunrpc/auth_generic.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
-
-
-diff --git a/net/sunrpc/auth_generic.c b/net/sunrpc/auth_generic.c
-index 744b79f..4028502 100644
---- a/net/sunrpc/auth_generic.c
-+++ b/net/sunrpc/auth_generic.c
-@@ -133,13 +133,29 @@ static int
- generic_match(struct auth_cred *acred, struct rpc_cred *cred, int flags)
- {
- 	struct generic_cred *gcred = container_of(cred, struct generic_cred, gc_base);
-+	int i;
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 7a3f202..c9513e1 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -1140,6 +1140,20 @@ static void __clear_irq_vector(int irq)
  
- 	if (gcred->acred.uid != acred->uid ||
- 	    gcred->acred.gid != acred->gid ||
--	    gcred->acred.group_info != acred->group_info ||
- 	    gcred->acred.machine_cred != acred->machine_cred)
--		return 0;
-+		goto out_nomatch;
+ 	cfg->vector = 0;
+ 	cpus_clear(cfg->domain);
 +
-+	/* Optimisation in the case where pointers are identical... */
-+	if (gcred->acred.group_info == acred->group_info)
-+		goto out_match;
-+
-+	/* Slow path... */
-+	if (gcred->acred.group_info->ngroups != acred->group_info->ngroups)
-+		goto out_nomatch;
-+	for (i = 0; i < gcred->acred.group_info->ngroups; i++) {
-+		if (GROUP_AT(gcred->acred.group_info, i) !=
-+				GROUP_AT(acred->group_info, i))
-+			goto out_nomatch;
++	if (likely(!cfg->move_in_progress))
++		return;
++	cpus_and(mask, cfg->old_domain, cpu_online_map);
++	for_each_cpu_mask_nr(cpu, mask) {
++		for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS;
++								vector++) {
++			if (per_cpu(vector_irq, cpu)[vector] != irq)
++				continue;
++			per_cpu(vector_irq, cpu)[vector] = -1;
++			break;
++		}
 +	}
-+out_match:
- 	return 1;
-+out_nomatch:
-+	return 0;
++	cfg->move_in_progress = 0;
  }
  
- void __init rpc_init_generic_auth(void)
+ void __setup_vector_irq(int cpu)
 
 -- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
