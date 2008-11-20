@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbYKTOsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYKTOtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbYKTOsc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYKTOnD
+	id S1757323AbYKTOtL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbYKTOnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:43:03 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41040 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:43:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41043 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756029AbYKTOmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:42:54 -0500
+	id S1755788AbYKTOm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:42:57 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 11/45] FS-Cache: Add use of /proc and presentation of
-	statistics [ver #41]
+Subject: [PATCH 14/45] FS-Cache: Add cache management [ver #41]
 To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:42:36 +0000
-Message-ID: <20081120144236.10667.83390.stgit@warthog.procyon.org.uk>
+Date: Thu, 20 Nov 2008 14:42:52 +0000
+Message-ID: <20081120144251.10667.26827.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,731 +30,316 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make FS-Cache create its /proc interface and present various statistical
-information through it.  Also provide the functions for updating this
-information.
+Implement the entry points by which a cache backend may initialise, add,
+declare an error upon and withdraw a cache.
 
-These features are enabled by:
+Further, an object is created in sysfs under which each cache added will get
+an object created:
 
-	CONFIG_FSCACHE_PROC
-	CONFIG_FSCACHE_STATS
-	CONFIG_FSCACHE_HISTOGRAM
+	/sys/fs/fscache/<cachetag>/
 
-The /proc directory for FS-Cache is also exported so that caching modules can
-add their own statistics there too.
-
-The FS-Cache module is loadable at this point, and the statistics files can be
-examined by userspace:
-
-	cat /proc/fs/fscache/stats
-	cat /proc/fs/fscache/histogram
+All of this is described in Documentation/filesystems/caching/backend-api.txt
+added by a previous patch.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/fscache/Kconfig        |   27 +++
- fs/fscache/Makefile       |    4 
- fs/fscache/fsc-internal.h |  117 ++++++++++++++
- fs/fscache/fsc-main.c     |    7 +
- fs/fscache/fsc-proc.c     |  370 +++++++++++++++++++++++++++++++++++++++++++++
- fs/fscache/fsc-stats.c    |  104 +++++++++++++
- 6 files changed, 628 insertions(+), 1 deletions(-)
- create mode 100644 fs/fscache/fsc-proc.c
- create mode 100644 fs/fscache/fsc-stats.c
+ fs/fscache/fsc-cache.c |  250 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/fscache/fsc-main.c  |    7 +
+ 2 files changed, 257 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/fscache/Kconfig b/fs/fscache/Kconfig
-index 7c7bccd..b9ff04a 100644
---- a/fs/fscache/Kconfig
-+++ b/fs/fscache/Kconfig
-@@ -11,6 +11,33 @@ config FSCACHE
+diff --git a/fs/fscache/fsc-cache.c b/fs/fscache/fsc-cache.c
+index 4b28536..8696c84 100644
+--- a/fs/fscache/fsc-cache.c
++++ b/fs/fscache/fsc-cache.c
+@@ -16,6 +16,9 @@
  
- 	  See Documentation/filesystems/caching/fscache.txt for more information.
+ LIST_HEAD(fscache_cache_list);
+ DECLARE_RWSEM(fscache_addremove_sem);
++DECLARE_WAIT_QUEUE_HEAD(fscache_cache_cleared_wq);
++
++EXPORT_SYMBOL(fscache_cache_cleared_wq);
  
-+config FSCACHE_PROC
-+	bool "Provide /proc interface for local caching statistics"
-+	depends on FSCACHE && PROC_FS
-+
-+config FSCACHE_STATS
-+	bool "Gather statistical information on local caching"
-+	depends on FSCACHE_PROC
-+	help
-+	  This option causes statistical information to be gathered on local
-+	  caching and exported through file:
-+
-+		/proc/fs/fscache/stats
-+
-+	  See Documentation/filesystems/caching/fscache.txt for more information.
-+
-+config FSCACHE_HISTOGRAM
-+	bool "Gather latency information on local caching"
-+	depends on FSCACHE_PROC
-+	help
-+
-+	  This option causes latency information to be gathered on local
-+	  caching and exported through file:
-+
-+		/proc/fs/fscache/histogram
-+
-+	  See Documentation/filesystems/caching/fscache.txt for more information.
-+
- config FSCACHE_DEBUG
- 	bool "Debug FS-Cache"
- 	depends on FSCACHE
-diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
-index 7f15726..ba55ab1 100644
---- a/fs/fscache/Makefile
-+++ b/fs/fscache/Makefile
-@@ -3,6 +3,8 @@
- #
+ static LIST_HEAD(fscache_cache_tag_list);
  
- fscache-y := \
--	fsc-main.o
-+	fsc-main.o \
-+	fsc-proc.o \
-+	fsc-stats.o
- 
- obj-$(CONFIG_FSCACHE) := fscache.o
-diff --git a/fs/fscache/fsc-internal.h b/fs/fscache/fsc-internal.h
-index fd60aed..4ada505 100644
---- a/fs/fscache/fsc-internal.h
-+++ b/fs/fscache/fsc-internal.h
-@@ -35,6 +35,123 @@ extern unsigned fscache_defer_create;
- extern unsigned fscache_debug;
- extern struct kobject *fscache_root;
- 
-+/*
-+ * fsc-stats.c
+@@ -164,3 +167,250 @@ no_preference:
+ 	_leave(" = %p [first]", cache);
+ 	return cache;
+ }
++
++/**
++ * fscache_init_cache - Initialise a cache record
++ * @cache: The cache record to be initialised
++ * @ops: The cache operations to be installed in that record
++ * @idfmt: Format string to define identifier
++ * @...: sprintf-style arguments
++ *
++ * Initialise a record of a cache and fill in the name.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
 + */
-+#ifdef CONFIG_FSCACHE_STATS
-+extern atomic_t fscache_n_ops_processed[FSCACHE_MAX_THREADS];
-+extern atomic_t fscache_n_objs_processed[FSCACHE_MAX_THREADS];
-+
-+extern atomic_t fscache_n_op_pend;
-+extern atomic_t fscache_n_op_run;
-+extern atomic_t fscache_n_op_enqueue;
-+extern atomic_t fscache_n_op_deferred_release;
-+extern atomic_t fscache_n_op_release;
-+extern atomic_t fscache_n_op_gc;
-+
-+extern atomic_t fscache_n_attr_changed;
-+extern atomic_t fscache_n_attr_changed_ok;
-+extern atomic_t fscache_n_attr_changed_nobufs;
-+extern atomic_t fscache_n_attr_changed_nomem;
-+extern atomic_t fscache_n_attr_changed_calls;
-+
-+extern atomic_t fscache_n_allocs;
-+extern atomic_t fscache_n_allocs_ok;
-+extern atomic_t fscache_n_allocs_wait;
-+extern atomic_t fscache_n_allocs_nobufs;
-+extern atomic_t fscache_n_alloc_ops;
-+extern atomic_t fscache_n_alloc_op_waits;
-+
-+extern atomic_t fscache_n_retrievals;
-+extern atomic_t fscache_n_retrievals_ok;
-+extern atomic_t fscache_n_retrievals_wait;
-+extern atomic_t fscache_n_retrievals_nodata;
-+extern atomic_t fscache_n_retrievals_nobufs;
-+extern atomic_t fscache_n_retrievals_intr;
-+extern atomic_t fscache_n_retrievals_nomem;
-+extern atomic_t fscache_n_retrieval_ops;
-+extern atomic_t fscache_n_retrieval_op_waits;
-+
-+extern atomic_t fscache_n_stores;
-+extern atomic_t fscache_n_stores_ok;
-+extern atomic_t fscache_n_stores_again;
-+extern atomic_t fscache_n_stores_nobufs;
-+extern atomic_t fscache_n_stores_oom;
-+extern atomic_t fscache_n_store_ops;
-+extern atomic_t fscache_n_store_calls;
-+
-+extern atomic_t fscache_n_marks;
-+extern atomic_t fscache_n_uncaches;
-+
-+extern atomic_t fscache_n_acquires;
-+extern atomic_t fscache_n_acquires_null;
-+extern atomic_t fscache_n_acquires_no_cache;
-+extern atomic_t fscache_n_acquires_ok;
-+extern atomic_t fscache_n_acquires_nobufs;
-+extern atomic_t fscache_n_acquires_oom;
-+
-+extern atomic_t fscache_n_updates;
-+extern atomic_t fscache_n_updates_null;
-+extern atomic_t fscache_n_updates_run;
-+
-+extern atomic_t fscache_n_relinquishes;
-+extern atomic_t fscache_n_relinquishes_null;
-+extern atomic_t fscache_n_relinquishes_waitcrt;
-+
-+extern atomic_t fscache_n_cookie_index;
-+extern atomic_t fscache_n_cookie_data;
-+extern atomic_t fscache_n_cookie_special;
-+
-+extern atomic_t fscache_n_object_alloc;
-+extern atomic_t fscache_n_object_no_alloc;
-+extern atomic_t fscache_n_object_lookups;
-+extern atomic_t fscache_n_object_lookups_negative;
-+extern atomic_t fscache_n_object_lookups_positive;
-+extern atomic_t fscache_n_object_created;
-+extern atomic_t fscache_n_object_avail;
-+extern atomic_t fscache_n_object_dead;
-+
-+extern atomic_t fscache_n_checkaux_none;
-+extern atomic_t fscache_n_checkaux_okay;
-+extern atomic_t fscache_n_checkaux_update;
-+extern atomic_t fscache_n_checkaux_obsolete;
-+
-+static inline void fscache_stat(atomic_t *stat)
++void fscache_init_cache(struct fscache_cache *cache,
++			const struct fscache_cache_ops *ops,
++			const char *idfmt,
++			...)
 +{
-+	atomic_inc(stat);
++	va_list va;
++
++	memset(cache, 0, sizeof(*cache));
++
++	cache->ops = ops;
++
++	va_start(va, idfmt);
++	vsnprintf(cache->identifier, sizeof(cache->identifier), idfmt, va);
++	va_end(va);
++
++	INIT_WORK(&cache->op_gc, NULL);
++	INIT_LIST_HEAD(&cache->link);
++	INIT_LIST_HEAD(&cache->object_list);
++	INIT_LIST_HEAD(&cache->op_gc_list);
++	spin_lock_init(&cache->object_list_lock);
++	spin_lock_init(&cache->op_gc_list_lock);
 +}
-+#else
++EXPORT_SYMBOL(fscache_init_cache);
 +
-+#define fscache_stat(stat) do {} while (0)
-+#endif
-+
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+extern atomic_t fscache_obj_instantiate_histogram[HZ];
-+extern atomic_t fscache_objs_histogram[HZ];
-+extern atomic_t fscache_ops_histogram[HZ];
-+extern atomic_t fscache_retrieval_delay_histogram[HZ];
-+extern atomic_t fscache_retrieval_histogram[HZ];
-+
-+static inline void fscache_hist(atomic_t histogram[], unsigned long start_jif)
++/**
++ * fscache_add_cache - Declare a cache as being open for business
++ * @cache: The record describing the cache
++ * @ifsdef: The record of the cache object describing the top-level index
++ * @tagname: The tag describing this cache
++ *
++ * Add a cache to the system, making it available for netfs's to use.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++int fscache_add_cache(struct fscache_cache *cache,
++		      struct fscache_object *ifsdef,
++		      const char *tagname)
 +{
-+	unsigned long jif = jiffies - start_jif;
-+	if (jif >= HZ)
-+		jif = HZ - 1;
-+	atomic_inc(&histogram[jif]);
++	struct fscache_cache_tag *tag;
++
++	BUG_ON(!cache->ops);
++	BUG_ON(!ifsdef);
++
++	cache->flags = 0;
++	ifsdef->event_mask = ULONG_MAX & ~(1 << FSCACHE_OBJECT_EV_CLEARED);
++	ifsdef->state = FSCACHE_OBJECT_ACTIVE;
++
++	if (!tagname)
++		tagname = cache->identifier;
++
++	BUG_ON(!tagname[0]);
++
++	_enter("{%s.%s},,%s", cache->ops->name, cache->identifier, tagname);
++
++	/* we use the cache tag to uniquely identify caches */
++	tag = __fscache_lookup_cache_tag(tagname);
++	if (IS_ERR(tag))
++		goto nomem;
++
++	if (test_and_set_bit(FSCACHE_TAG_RESERVED, &tag->flags))
++		goto tag_in_use;
++
++	cache->kobj = kobject_create_and_add(tagname, fscache_root);
++	if (!cache->kobj)
++		goto error;
++
++	ifsdef->cookie = &fscache_fsdef_index;
++	ifsdef->cache = cache;
++	cache->fsdef = ifsdef;
++
++	down_write(&fscache_addremove_sem);
++
++	tag->cache = cache;
++	cache->tag = tag;
++
++	/* add the cache to the list */
++	list_add(&cache->link, &fscache_cache_list);
++
++	/* add the cache's netfs definition index object to the cache's
++	 * list */
++	spin_lock(&cache->object_list_lock);
++	list_add_tail(&ifsdef->cache_link, &cache->object_list);
++	spin_unlock(&cache->object_list_lock);
++
++	/* add the cache's netfs definition index object to the top level index
++	 * cookie as a known backing object */
++	spin_lock(&fscache_fsdef_index.lock);
++
++	hlist_add_head(&ifsdef->cookie_link,
++		       &fscache_fsdef_index.backing_objects);
++
++	atomic_inc(&fscache_fsdef_index.usage);
++
++	/* done */
++	spin_unlock(&fscache_fsdef_index.lock);
++	up_write(&fscache_addremove_sem);
++
++	printk(KERN_NOTICE "FS-Cache: Cache \"%s\" added (type %s)\n",
++	       cache->tag->name, cache->ops->name);
++	kobject_uevent(cache->kobj, KOBJ_ADD);
++
++	_leave(" = 0 [%s]", cache->identifier);
++	return 0;
++
++tag_in_use:
++	printk(KERN_ERR "FS-Cache: Cache tag '%s' already in use\n", tagname);
++	__fscache_release_cache_tag(tag);
++	_leave(" = -EXIST");
++	return -EEXIST;
++
++error:
++	__fscache_release_cache_tag(tag);
++	_leave(" = -EINVAL");
++	return -EINVAL;
++
++nomem:
++	_leave(" = -ENOMEM");
++	return -ENOMEM;
++}
++EXPORT_SYMBOL(fscache_add_cache);
++
++/**
++ * fscache_io_error - Note a cache I/O error
++ * @cache: The record describing the cache
++ *
++ * Note that an I/O error occurred in a cache and that it should no longer be
++ * used for anything.  This also reports the error into the kernel log.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++void fscache_io_error(struct fscache_cache *cache)
++{
++	set_bit(FSCACHE_IOERROR, &cache->flags);
++
++	printk(KERN_ERR "FS-Cache: Cache %s stopped due to I/O error\n",
++	       cache->ops->name);
++}
++EXPORT_SYMBOL(fscache_io_error);
++
++/*
++ * request withdrawal of all the objects in a cache
++ * - all the objects being withdrawn are moved onto the supplied list
++ */
++static void fscache_withdraw_all_objects(struct fscache_cache *cache,
++					 struct list_head *dying_objects)
++{
++	struct fscache_object *object;
++
++	spin_lock(&cache->object_list_lock);
++
++	while (!list_empty(&cache->object_list)) {
++		object = list_entry(cache->object_list.next,
++				    struct fscache_object, cache_link);
++		list_move_tail(&object->cache_link, dying_objects);
++
++		_debug("withdraw %p", object->cookie);
++
++		spin_lock(&object->lock);
++		spin_unlock(&cache->object_list_lock);
++		fscache_raise_event(object, FSCACHE_OBJECT_EV_WITHDRAW);
++		spin_unlock(&object->lock);
++
++		cond_resched();
++		spin_lock(&cache->object_list_lock);
++	}
++
++	spin_unlock(&cache->object_list_lock);
 +}
 +
-+#else
-+#define fscache_hist(hist, start_jif) do {} while (0)
-+#endif
++/**
++ * fscache_withdraw_cache - Withdraw a cache from the active service
++ * @cache: The record describing the cache
++ *
++ * Withdraw a cache from service, unbinding all its cache objects from the
++ * netfs cookies they're currently representing.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++void fscache_withdraw_cache(struct fscache_cache *cache)
++{
++	LIST_HEAD(dying_objects);
 +
-+#ifdef CONFIG_FSCACHE_PROC
-+extern int __init fscache_proc_init(void);
-+extern void fscache_proc_cleanup(void);
-+#else
-+#define fscache_proc_init()	(0)
-+#define fscache_proc_cleanup()	do {} while (0)
-+#endif
++	_enter("");
 +
- /*****************************************************************************/
- /*
-  * debug tracing
++	printk(KERN_NOTICE "FS-Cache: Withdrawing cache \"%s\"\n",
++	       cache->tag->name);
++
++	/* make the cache unavailable for cookie acquisition */
++	if (test_and_set_bit(FSCACHE_CACHE_WITHDRAWN, &cache->flags))
++		BUG();
++
++	down_write(&fscache_addremove_sem);
++	list_del_init(&cache->link);
++	cache->tag->cache = NULL;
++	up_write(&fscache_addremove_sem);
++
++	/* make sure all pages pinned by operations on behalf of the netfs are
++	 * written to disk */
++	cache->ops->sync_cache(cache);
++
++	/* dissociate all the netfs pages backed by this cache from the block
++	 * mappings in the cache */
++	cache->ops->dissociate_pages(cache);
++
++	/* we now have to destroy all the active objects pertaining to this
++	 * cache - which we do by passing them off to thread pool to be
++	 * disposed of */
++	_debug("destroy");
++
++	fscache_withdraw_all_objects(cache, &dying_objects);
++
++	/* wait for all extant objects to finish their outstanding operations
++	 * and go away */
++	_debug("wait for finish");
++	wait_event(fscache_cache_cleared_wq,
++		   atomic_read(&cache->object_count) == 0);
++	_debug("wait for clearance");
++	wait_event(fscache_cache_cleared_wq,
++		   list_empty(&cache->object_list));
++	_debug("cleared");
++	ASSERT(list_empty(&dying_objects));
++
++	kobject_put(cache->kobj);
++
++	clear_bit(FSCACHE_TAG_RESERVED, &cache->tag->flags);
++	fscache_release_cache_tag(cache->tag);
++	cache->tag = NULL;
++
++	_leave("");
++}
++EXPORT_SYMBOL(fscache_withdraw_cache);
 diff --git a/fs/fscache/fsc-main.c b/fs/fscache/fsc-main.c
-index 2dd0e21..1819e9d 100644
+index 1819e9d..e88117b 100644
 --- a/fs/fscache/fsc-main.c
 +++ b/fs/fscache/fsc-main.c
-@@ -52,9 +52,15 @@ static int __init fscache_init(void)
+@@ -56,9 +56,15 @@ static int __init fscache_init(void)
  	if (ret < 0)
- 		goto error_slow_work;
+ 		goto error_proc;
  
-+	ret = fscache_proc_init();
-+	if (ret < 0)
-+		goto error_proc;
++	fscache_root = kobject_create_and_add("fscache", kernel_kobj);
++	if (!fscache_root)
++		goto error_kobj;
 +
  	printk(KERN_NOTICE "FS-Cache: Loaded\n");
  	return 0;
  
-+error_proc:
-+	slow_work_unregister_user();
++error_kobj:
++ 	fscache_proc_cleanup();
+ error_proc:
+ 	slow_work_unregister_user();
  error_slow_work:
- 	return ret;
- }
-@@ -68,6 +74,7 @@ static void __exit fscache_exit(void)
+@@ -74,6 +80,7 @@ static void __exit fscache_exit(void)
  {
  	_enter("");
  
-+	fscache_proc_cleanup();
++	kobject_put(fscache_root);
+ 	fscache_proc_cleanup();
  	slow_work_unregister_user();
  	printk(KERN_NOTICE "FS-Cache: Unloaded\n");
- }
-diff --git a/fs/fscache/fsc-proc.c b/fs/fscache/fsc-proc.c
-new file mode 100644
-index 0000000..dd6daa5
---- /dev/null
-+++ b/fs/fscache/fsc-proc.c
-@@ -0,0 +1,370 @@
-+/* FS-Cache statistics viewing interface
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#define FSCACHE_DEBUG_LEVEL OPERATION
-+#include <linux/module.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
-+#include "fsc-internal.h"
-+
-+struct fscache_proc {
-+	unsigned			nlines;
-+	const struct seq_operations	*ops;
-+};
-+
-+struct proc_dir_entry *proc_fscache;
-+EXPORT_SYMBOL(proc_fscache);
-+
-+#if defined(CONFIG_FSCACHE_STATS) || defined(CONFIG_FSCACHE_HISTOGRAM)
-+static int fscache_proc_open(struct inode *inode, struct file *file);
-+static void *fscache_proc_start(struct seq_file *m, loff_t *pos);
-+static void fscache_proc_stop(struct seq_file *m, void *v);
-+static void *fscache_proc_next(struct seq_file *m, void *v, loff_t *pos);
-+
-+static const struct file_operations fscache_proc_fops = {
-+	.open		= fscache_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release,
-+};
-+#endif
-+
-+#ifdef CONFIG_FSCACHE_STATS
-+static int fscache_stats_show(struct seq_file *m, void *v);
-+
-+static const struct seq_operations fscache_stats_ops = {
-+	.start		= fscache_proc_start,
-+	.stop		= fscache_proc_stop,
-+	.next		= fscache_proc_next,
-+	.show		= fscache_stats_show,
-+};
-+
-+static const struct fscache_proc fscache_stats = {
-+	.nlines		= 17,
-+	.ops		= &fscache_stats_ops,
-+};
-+#endif
-+
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+static int fscache_histogram_show(struct seq_file *m, void *v);
-+
-+static const struct seq_operations fscache_histogram_ops = {
-+	.start		= fscache_proc_start,
-+	.stop		= fscache_proc_stop,
-+	.next		= fscache_proc_next,
-+	.show		= fscache_histogram_show,
-+};
-+
-+static const struct fscache_proc fscache_histogram = {
-+	.nlines		= HZ + 1,
-+	.ops		= &fscache_histogram_ops,
-+};
-+#endif
-+
-+#define FSC_DESC(SELECT, N) ((void *) (unsigned long) (((SELECT) << 16) | (N)))
-+
-+/*
-+ * initialise the /proc/fs/fscache/ directory
-+ */
-+int __init fscache_proc_init(void)
-+{
-+#if defined(CONFIG_FSCACHE_STATS) || defined(CONFIG_FSCACHE_HISTOGRAM)
-+	struct proc_dir_entry *p;
-+#endif
-+
-+	_enter("");
-+
-+	proc_fscache = proc_mkdir("fs/fscache", NULL);
-+	if (!proc_fscache)
-+		goto error_dir;
-+	proc_fscache->owner = THIS_MODULE;
-+
-+#ifdef CONFIG_FSCACHE_STATS
-+	p = create_proc_entry("stats", 0, proc_fscache);
-+	if (!p)
-+		goto error_stats;
-+	p->proc_fops = &fscache_proc_fops;
-+	p->owner = THIS_MODULE;
-+	p->data = (void *) &fscache_stats;
-+#endif
-+
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+	p = create_proc_entry("histogram", 0, proc_fscache);
-+	if (!p)
-+		goto error_histogram;
-+	p->proc_fops = &fscache_proc_fops;
-+	p->owner = THIS_MODULE;
-+	p->data = (void *) &fscache_histogram;
-+#endif
-+
-+	_leave(" = 0");
-+	return 0;
-+
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+error_histogram:
-+#endif
-+#ifdef CONFIG_FSCACHE_STATS
-+	remove_proc_entry("stats", proc_fscache);
-+error_stats:
-+#endif
-+	remove_proc_entry("fs/fscache", NULL);
-+error_dir:
-+	_leave(" = -ENOMEM");
-+	return -ENOMEM;
-+}
-+
-+/*
-+ * clean up the /proc/fs/fscache/ directory
-+ */
-+void fscache_proc_cleanup(void)
-+{
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+	remove_proc_entry("histogram", proc_fscache);
-+#endif
-+#ifdef CONFIG_FSCACHE_STATS
-+	remove_proc_entry("stats", proc_fscache);
-+#endif
-+	remove_proc_entry("fs/fscache", NULL);
-+}
-+
-+#if defined(CONFIG_FSCACHE_STATS) || defined(CONFIG_FSCACHE_HISTOGRAM)
-+/*
-+ * open "/proc/fs/fscache/XXX" which provide statistics summaries
-+ */
-+static int fscache_proc_open(struct inode *inode, struct file *file)
-+{
-+	const struct fscache_proc *proc = PDE(inode)->data;
-+	struct seq_file *m;
-+	int ret;
-+
-+	ret = seq_open(file, proc->ops);
-+	if (ret == 0) {
-+		m = file->private_data;
-+		m->private = (void *) proc;
-+	}
-+	return ret;
-+}
-+
-+/*
-+ * set up the iterator to start reading from the first line
-+ */
-+static void *fscache_proc_start(struct seq_file *m, loff_t *_pos)
-+{
-+	if (*_pos == 0)
-+		*_pos = 1;
-+	return (void *)(unsigned long) *_pos;
-+}
-+
-+/*
-+ * move to the next line
-+ */
-+static void *fscache_proc_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	const struct fscache_proc *proc = m->private;
-+
-+	(*pos)++;
-+	return *pos > proc->nlines ? NULL : (void *)(unsigned long) *pos;
-+}
-+
-+/*
-+ * clean up after reading
-+ */
-+static void fscache_proc_stop(struct seq_file *m, void *v)
-+{
-+}
-+#endif
-+
-+#ifdef CONFIG_FSCACHE_STATS
-+/*
-+ * display the general statistics
-+ */
-+static int fscache_stats_show(struct seq_file *m, void *v)
-+{
-+	unsigned long line = (unsigned long) v;
-+
-+	switch (line) {
-+	case 1:
-+		seq_puts(m, "FS-Cache statistics\n");
-+		break;
-+
-+	case 2:
-+		seq_printf(m, "Cookies: idx=%u dat=%u spc=%u\n",
-+			   atomic_read(&fscache_n_cookie_index),
-+			   atomic_read(&fscache_n_cookie_data),
-+			   atomic_read(&fscache_n_cookie_special));
-+		break;
-+
-+	case 3:
-+		seq_printf(m, "Objects: alc=%u nal=%u avl=%u ded=%u\n",
-+			   atomic_read(&fscache_n_object_alloc),
-+			   atomic_read(&fscache_n_object_no_alloc),
-+			   atomic_read(&fscache_n_object_avail),
-+			   atomic_read(&fscache_n_object_dead));
-+		break;
-+
-+	case 4:
-+		seq_printf(m, "ChkAux : non=%u ok=%u upd=%u obs=%u\n",
-+			   atomic_read(&fscache_n_checkaux_none),
-+			   atomic_read(&fscache_n_checkaux_okay),
-+			   atomic_read(&fscache_n_checkaux_update),
-+			   atomic_read(&fscache_n_checkaux_obsolete));
-+		break;
-+
-+	case 5:
-+		seq_printf(m, "Pages  : mrk=%u unc=%u\n",
-+			   atomic_read(&fscache_n_marks),
-+			   atomic_read(&fscache_n_uncaches));
-+		break;
-+
-+	case 6:
-+		seq_printf(m, "Acquire: n=%u nul=%u noc=%u ok=%u nbf=%u"
-+			   " oom=%u\n",
-+			   atomic_read(&fscache_n_acquires),
-+			   atomic_read(&fscache_n_acquires_null),
-+			   atomic_read(&fscache_n_acquires_no_cache),
-+			   atomic_read(&fscache_n_acquires_ok),
-+			   atomic_read(&fscache_n_acquires_nobufs),
-+			   atomic_read(&fscache_n_acquires_oom));
-+		break;
-+
-+	case 7:
-+		seq_printf(m, "Lookups: n=%u neg=%u pos=%u crt=%u\n",
-+			   atomic_read(&fscache_n_object_lookups),
-+			   atomic_read(&fscache_n_object_lookups_negative),
-+			   atomic_read(&fscache_n_object_lookups_positive),
-+			   atomic_read(&fscache_n_object_created));
-+		break;
-+
-+	case 8:
-+		seq_printf(m, "Updates: n=%u nul=%u run=%u\n",
-+			   atomic_read(&fscache_n_updates),
-+			   atomic_read(&fscache_n_updates_null),
-+			   atomic_read(&fscache_n_updates_run));
-+		break;
-+
-+	case 9:
-+		seq_printf(m, "Relinqs: n=%u nul=%u wcr=%u\n",
-+			   atomic_read(&fscache_n_relinquishes),
-+			   atomic_read(&fscache_n_relinquishes_null),
-+			   atomic_read(&fscache_n_relinquishes_waitcrt));
-+		break;
-+
-+	case 10:
-+		seq_printf(m, "AttrChg: n=%u ok=%u nbf=%u oom=%u run=%u\n",
-+			   atomic_read(&fscache_n_attr_changed),
-+			   atomic_read(&fscache_n_attr_changed_ok),
-+			   atomic_read(&fscache_n_attr_changed_nobufs),
-+			   atomic_read(&fscache_n_attr_changed_nomem),
-+			   atomic_read(&fscache_n_attr_changed_calls));
-+		break;
-+
-+	case 11:
-+		seq_printf(m, "Allocs : n=%u ok=%u wt=%u nbf=%u\n",
-+			   atomic_read(&fscache_n_allocs),
-+			   atomic_read(&fscache_n_allocs_ok),
-+			   atomic_read(&fscache_n_allocs_wait),
-+			   atomic_read(&fscache_n_allocs_nobufs));
-+		break;
-+	case 12:
-+		seq_printf(m, "Allocs : ops=%u owt=%u\n",
-+			   atomic_read(&fscache_n_alloc_ops),
-+			   atomic_read(&fscache_n_alloc_op_waits));
-+		break;
-+
-+	case 13:
-+		seq_printf(m, "Retrvls: n=%u ok=%u wt=%u nod=%u nbf=%u"
-+			   " int=%u oom=%u\n",
-+			   atomic_read(&fscache_n_retrievals),
-+			   atomic_read(&fscache_n_retrievals_ok),
-+			   atomic_read(&fscache_n_retrievals_wait),
-+			   atomic_read(&fscache_n_retrievals_nodata),
-+			   atomic_read(&fscache_n_retrievals_nobufs),
-+			   atomic_read(&fscache_n_retrievals_intr),
-+			   atomic_read(&fscache_n_retrievals_nomem));
-+		break;
-+	case 14:
-+		seq_printf(m, "Retrvls: ops=%u owt=%u\n",
-+			   atomic_read(&fscache_n_retrieval_ops),
-+			   atomic_read(&fscache_n_retrieval_op_waits));
-+		break;
-+
-+	case 15:
-+		seq_printf(m, "Stores : n=%u ok=%u agn=%u nbf=%u oom=%u\n",
-+			   atomic_read(&fscache_n_stores),
-+			   atomic_read(&fscache_n_stores_ok),
-+			   atomic_read(&fscache_n_stores_again),
-+			   atomic_read(&fscache_n_stores_nobufs),
-+			   atomic_read(&fscache_n_stores_oom));
-+		break;
-+	case 16:
-+		seq_printf(m, "Stores : ops=%u run=%u\n",
-+			   atomic_read(&fscache_n_store_ops),
-+			   atomic_read(&fscache_n_store_calls));
-+		break;
-+
-+	case 17:
-+		seq_printf(m, "Ops    : pend=%u run=%u enq=%u\n",
-+			   atomic_read(&fscache_n_op_pend),
-+			   atomic_read(&fscache_n_op_run),
-+			   atomic_read(&fscache_n_op_enqueue));
-+		break;
-+
-+	case 18:
-+		seq_printf(m, "Ops    : dfr=%u rel=%u gc=%u\n",
-+			   atomic_read(&fscache_n_op_deferred_release),
-+			   atomic_read(&fscache_n_op_release),
-+			   atomic_read(&fscache_n_op_gc));
-+		break;
-+
-+	default:
-+		break;
-+	}
-+	return 0;
-+}
-+
-+#endif /* end CONFIG_FSCACHE_STATS */
-+
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+/*
-+ * display the time-taken histogram
-+ */
-+static int fscache_histogram_show(struct seq_file *m, void *v)
-+{
-+	unsigned long index;
-+	unsigned n[5], t;
-+
-+	switch ((unsigned long) v) {
-+	case 1:
-+		seq_puts(m, "JIFS  SECS  OBJ INST  OP RUNS   OBJ RUNS "
-+			 " RETRV DLY RETRIEVLS\n");
-+		return 0;
-+	case 2:
-+		seq_puts(m, "===== ===== ========= ========= ========="
-+			 " ========= =========\n");
-+		return 0;
-+	default:
-+		index = (unsigned long) v - 3;
-+		n[0] = atomic_read(&fscache_obj_instantiate_histogram[index]);
-+		n[1] = atomic_read(&fscache_ops_histogram[index]);
-+		n[2] = atomic_read(&fscache_objs_histogram[index]);
-+		n[3] = atomic_read(&fscache_retrieval_delay_histogram[index]);
-+		n[4] = atomic_read(&fscache_retrieval_histogram[index]);
-+		if (!(n[0] | n[1] | n[2] | n[3] | n[4]))
-+			return 0;
-+
-+		t = (index * 1000) / HZ;
-+
-+		seq_printf(m, "%4lu  0.%03u %9u %9u %9u %9u %9u\n",
-+			   index, t, n[0], n[1], n[2], n[3], n[4]);
-+		return 0;
-+	}
-+}
-+#endif /* end CONFIG_FSCACHE_HISTOGRAM */
-diff --git a/fs/fscache/fsc-stats.c b/fs/fscache/fsc-stats.c
-new file mode 100644
-index 0000000..8762d43
---- /dev/null
-+++ b/fs/fscache/fsc-stats.c
-@@ -0,0 +1,104 @@
-+/* FS-Cache statistics
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#define FSCACHE_DEBUG_LEVEL THREAD
-+#include <linux/module.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
-+#include "fsc-internal.h"
-+
-+/*
-+ * operation counters
-+ */
-+#ifdef CONFIG_FSCACHE_STATS
-+atomic_t fscache_n_op_pend;
-+atomic_t fscache_n_op_run;
-+atomic_t fscache_n_op_enqueue;
-+atomic_t fscache_n_op_requeue;
-+atomic_t fscache_n_op_deferred_release;
-+atomic_t fscache_n_op_release;
-+atomic_t fscache_n_op_gc;
-+
-+atomic_t fscache_n_attr_changed;
-+atomic_t fscache_n_attr_changed_ok;
-+atomic_t fscache_n_attr_changed_nobufs;
-+atomic_t fscache_n_attr_changed_nomem;
-+atomic_t fscache_n_attr_changed_calls;
-+
-+atomic_t fscache_n_allocs;
-+atomic_t fscache_n_allocs_ok;
-+atomic_t fscache_n_allocs_wait;
-+atomic_t fscache_n_allocs_nobufs;
-+atomic_t fscache_n_alloc_ops;
-+atomic_t fscache_n_alloc_op_waits;
-+
-+atomic_t fscache_n_retrievals;
-+atomic_t fscache_n_retrievals_ok;
-+atomic_t fscache_n_retrievals_wait;
-+atomic_t fscache_n_retrievals_nodata;
-+atomic_t fscache_n_retrievals_nobufs;
-+atomic_t fscache_n_retrievals_intr;
-+atomic_t fscache_n_retrievals_nomem;
-+atomic_t fscache_n_retrieval_ops;
-+atomic_t fscache_n_retrieval_op_waits;
-+
-+atomic_t fscache_n_stores;
-+atomic_t fscache_n_stores_ok;
-+atomic_t fscache_n_stores_again;
-+atomic_t fscache_n_stores_nobufs;
-+atomic_t fscache_n_stores_oom;
-+atomic_t fscache_n_store_ops;
-+atomic_t fscache_n_store_calls;
-+
-+atomic_t fscache_n_marks;
-+atomic_t fscache_n_uncaches;
-+
-+atomic_t fscache_n_acquires;
-+atomic_t fscache_n_acquires_null;
-+atomic_t fscache_n_acquires_no_cache;
-+atomic_t fscache_n_acquires_ok;
-+atomic_t fscache_n_acquires_nobufs;
-+atomic_t fscache_n_acquires_oom;
-+
-+atomic_t fscache_n_updates;
-+atomic_t fscache_n_updates_null;
-+atomic_t fscache_n_updates_run;
-+
-+atomic_t fscache_n_relinquishes;
-+atomic_t fscache_n_relinquishes_null;
-+atomic_t fscache_n_relinquishes_waitcrt;
-+
-+atomic_t fscache_n_cookie_index;
-+atomic_t fscache_n_cookie_data;
-+atomic_t fscache_n_cookie_special;
-+
-+atomic_t fscache_n_object_alloc;
-+atomic_t fscache_n_object_no_alloc;
-+atomic_t fscache_n_object_lookups;
-+atomic_t fscache_n_object_lookups_negative;
-+atomic_t fscache_n_object_lookups_positive;
-+atomic_t fscache_n_object_created;
-+atomic_t fscache_n_object_avail;
-+atomic_t fscache_n_object_dead;
-+
-+atomic_t fscache_n_checkaux_none;
-+atomic_t fscache_n_checkaux_okay;
-+atomic_t fscache_n_checkaux_update;
-+atomic_t fscache_n_checkaux_obsolete;
-+#endif
-+
-+#ifdef CONFIG_FSCACHE_HISTOGRAM
-+atomic_t fscache_obj_instantiate_histogram[HZ];
-+atomic_t fscache_objs_histogram[HZ];
-+atomic_t fscache_ops_histogram[HZ];
-+atomic_t fscache_retrieval_delay_histogram[HZ];
-+atomic_t fscache_retrieval_histogram[HZ];
-+#endif
 
