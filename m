@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYKTOtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbYKTOtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbYKTOtL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbYKTOnM
+	id S1756465AbYKTOtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYKTOnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:43:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41043 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:43:14 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41054 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755788AbYKTOm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:42:57 -0500
+	id S1756058AbYKTOnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:43:07 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 14/45] FS-Cache: Add cache management [ver #41]
+Subject: [PATCH 16/45] FS-Cache: Add netfs registration [ver #41]
 To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:42:52 +0000
-Message-ID: <20081120144251.10667.26827.stgit@warthog.procyon.org.uk>
+Date: Thu, 20 Nov 2008 14:43:02 +0000
+Message-ID: <20081120144302.10667.86332.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -30,316 +30,181 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the entry points by which a cache backend may initialise, add,
-declare an error upon and withdraw a cache.
+Add functions to register and unregister a network filesystem or other client
+of the FS-Cache service.  This allocates and releases the cookie representing
+the top-level index for a netfs, and makes it available to the netfs.
 
-Further, an object is created in sysfs under which each cache added will get
-an object created:
+If the FS-Cache facility is disabled, then the calls are optimised away at
+compile time.
 
-	/sys/fs/fscache/<cachetag>/
-
-All of this is described in Documentation/filesystems/caching/backend-api.txt
-added by a previous patch.
+Note that whilst this patch may appear to work with FS-Cache enabled and a
+netfs attempting to use it, it will leak the cookie it allocates for the netfs
+as fscache_relinquish_cookie() is implemented in a later patch.  This will
+cause the slab code to emit a warning when the module is removed.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/fscache/fsc-cache.c |  250 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/fscache/fsc-main.c  |    7 +
- 2 files changed, 257 insertions(+), 0 deletions(-)
+ fs/fscache/Makefile     |    1 
+ fs/fscache/fsc-netfs.c  |  103 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fscache.h |    9 ++++
+ 3 files changed, 112 insertions(+), 1 deletions(-)
+ create mode 100644 fs/fscache/fsc-netfs.c
 
 
-diff --git a/fs/fscache/fsc-cache.c b/fs/fscache/fsc-cache.c
-index 4b28536..8696c84 100644
---- a/fs/fscache/fsc-cache.c
-+++ b/fs/fscache/fsc-cache.c
-@@ -16,6 +16,9 @@
+diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
+index 51c91e4..a1b23b9 100644
+--- a/fs/fscache/Makefile
++++ b/fs/fscache/Makefile
+@@ -7,6 +7,7 @@ fscache-y := \
+ 	fsc-cookie.o \
+ 	fsc-fsdef.o \
+ 	fsc-main.o \
++	fsc-netfs.o \
+ 	fsc-proc.o \
+ 	fsc-stats.o
  
- LIST_HEAD(fscache_cache_list);
- DECLARE_RWSEM(fscache_addremove_sem);
-+DECLARE_WAIT_QUEUE_HEAD(fscache_cache_cleared_wq);
-+
-+EXPORT_SYMBOL(fscache_cache_cleared_wq);
- 
- static LIST_HEAD(fscache_cache_tag_list);
- 
-@@ -164,3 +167,250 @@ no_preference:
- 	_leave(" = %p [first]", cache);
- 	return cache;
- }
-+
-+/**
-+ * fscache_init_cache - Initialise a cache record
-+ * @cache: The cache record to be initialised
-+ * @ops: The cache operations to be installed in that record
-+ * @idfmt: Format string to define identifier
-+ * @...: sprintf-style arguments
+diff --git a/fs/fscache/fsc-netfs.c b/fs/fscache/fsc-netfs.c
+new file mode 100644
+index 0000000..7f871f1
+--- /dev/null
++++ b/fs/fscache/fsc-netfs.c
+@@ -0,0 +1,103 @@
++/* FS-Cache netfs (client) registration
 + *
-+ * Initialise a record of a cache and fill in the name.
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
 + *
-+ * See Documentation/filesystems/caching/backend-api.txt for a complete
-+ * description.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
 + */
-+void fscache_init_cache(struct fscache_cache *cache,
-+			const struct fscache_cache_ops *ops,
-+			const char *idfmt,
-+			...)
-+{
-+	va_list va;
 +
-+	memset(cache, 0, sizeof(*cache));
++#define FSCACHE_DEBUG_LEVEL COOKIE
++#include <linux/module.h>
++#include <linux/slab.h>
++#include "fsc-internal.h"
 +
-+	cache->ops = ops;
-+
-+	va_start(va, idfmt);
-+	vsnprintf(cache->identifier, sizeof(cache->identifier), idfmt, va);
-+	va_end(va);
-+
-+	INIT_WORK(&cache->op_gc, NULL);
-+	INIT_LIST_HEAD(&cache->link);
-+	INIT_LIST_HEAD(&cache->object_list);
-+	INIT_LIST_HEAD(&cache->op_gc_list);
-+	spin_lock_init(&cache->object_list_lock);
-+	spin_lock_init(&cache->op_gc_list_lock);
-+}
-+EXPORT_SYMBOL(fscache_init_cache);
-+
-+/**
-+ * fscache_add_cache - Declare a cache as being open for business
-+ * @cache: The record describing the cache
-+ * @ifsdef: The record of the cache object describing the top-level index
-+ * @tagname: The tag describing this cache
-+ *
-+ * Add a cache to the system, making it available for netfs's to use.
-+ *
-+ * See Documentation/filesystems/caching/backend-api.txt for a complete
-+ * description.
-+ */
-+int fscache_add_cache(struct fscache_cache *cache,
-+		      struct fscache_object *ifsdef,
-+		      const char *tagname)
-+{
-+	struct fscache_cache_tag *tag;
-+
-+	BUG_ON(!cache->ops);
-+	BUG_ON(!ifsdef);
-+
-+	cache->flags = 0;
-+	ifsdef->event_mask = ULONG_MAX & ~(1 << FSCACHE_OBJECT_EV_CLEARED);
-+	ifsdef->state = FSCACHE_OBJECT_ACTIVE;
-+
-+	if (!tagname)
-+		tagname = cache->identifier;
-+
-+	BUG_ON(!tagname[0]);
-+
-+	_enter("{%s.%s},,%s", cache->ops->name, cache->identifier, tagname);
-+
-+	/* we use the cache tag to uniquely identify caches */
-+	tag = __fscache_lookup_cache_tag(tagname);
-+	if (IS_ERR(tag))
-+		goto nomem;
-+
-+	if (test_and_set_bit(FSCACHE_TAG_RESERVED, &tag->flags))
-+		goto tag_in_use;
-+
-+	cache->kobj = kobject_create_and_add(tagname, fscache_root);
-+	if (!cache->kobj)
-+		goto error;
-+
-+	ifsdef->cookie = &fscache_fsdef_index;
-+	ifsdef->cache = cache;
-+	cache->fsdef = ifsdef;
-+
-+	down_write(&fscache_addremove_sem);
-+
-+	tag->cache = cache;
-+	cache->tag = tag;
-+
-+	/* add the cache to the list */
-+	list_add(&cache->link, &fscache_cache_list);
-+
-+	/* add the cache's netfs definition index object to the cache's
-+	 * list */
-+	spin_lock(&cache->object_list_lock);
-+	list_add_tail(&ifsdef->cache_link, &cache->object_list);
-+	spin_unlock(&cache->object_list_lock);
-+
-+	/* add the cache's netfs definition index object to the top level index
-+	 * cookie as a known backing object */
-+	spin_lock(&fscache_fsdef_index.lock);
-+
-+	hlist_add_head(&ifsdef->cookie_link,
-+		       &fscache_fsdef_index.backing_objects);
-+
-+	atomic_inc(&fscache_fsdef_index.usage);
-+
-+	/* done */
-+	spin_unlock(&fscache_fsdef_index.lock);
-+	up_write(&fscache_addremove_sem);
-+
-+	printk(KERN_NOTICE "FS-Cache: Cache \"%s\" added (type %s)\n",
-+	       cache->tag->name, cache->ops->name);
-+	kobject_uevent(cache->kobj, KOBJ_ADD);
-+
-+	_leave(" = 0 [%s]", cache->identifier);
-+	return 0;
-+
-+tag_in_use:
-+	printk(KERN_ERR "FS-Cache: Cache tag '%s' already in use\n", tagname);
-+	__fscache_release_cache_tag(tag);
-+	_leave(" = -EXIST");
-+	return -EEXIST;
-+
-+error:
-+	__fscache_release_cache_tag(tag);
-+	_leave(" = -EINVAL");
-+	return -EINVAL;
-+
-+nomem:
-+	_leave(" = -ENOMEM");
-+	return -ENOMEM;
-+}
-+EXPORT_SYMBOL(fscache_add_cache);
-+
-+/**
-+ * fscache_io_error - Note a cache I/O error
-+ * @cache: The record describing the cache
-+ *
-+ * Note that an I/O error occurred in a cache and that it should no longer be
-+ * used for anything.  This also reports the error into the kernel log.
-+ *
-+ * See Documentation/filesystems/caching/backend-api.txt for a complete
-+ * description.
-+ */
-+void fscache_io_error(struct fscache_cache *cache)
-+{
-+	set_bit(FSCACHE_IOERROR, &cache->flags);
-+
-+	printk(KERN_ERR "FS-Cache: Cache %s stopped due to I/O error\n",
-+	       cache->ops->name);
-+}
-+EXPORT_SYMBOL(fscache_io_error);
++static LIST_HEAD(fscache_netfs_list);
 +
 +/*
-+ * request withdrawal of all the objects in a cache
-+ * - all the objects being withdrawn are moved onto the supplied list
++ * register a network filesystem for caching
 + */
-+static void fscache_withdraw_all_objects(struct fscache_cache *cache,
-+					 struct list_head *dying_objects)
++int __fscache_register_netfs(struct fscache_netfs *netfs)
 +{
-+	struct fscache_object *object;
++	struct fscache_netfs *ptr;
++	int ret;
 +
-+	spin_lock(&cache->object_list_lock);
++	_enter("{%s}", netfs->name);
 +
-+	while (!list_empty(&cache->object_list)) {
-+		object = list_entry(cache->object_list.next,
-+				    struct fscache_object, cache_link);
-+		list_move_tail(&object->cache_link, dying_objects);
++	INIT_LIST_HEAD(&netfs->link);
 +
-+		_debug("withdraw %p", object->cookie);
++	/* allocate a cookie for the primary index */
++	netfs->primary_index =
++		kmem_cache_zalloc(fscache_cookie_jar, GFP_KERNEL);
 +
-+		spin_lock(&object->lock);
-+		spin_unlock(&cache->object_list_lock);
-+		fscache_raise_event(object, FSCACHE_OBJECT_EV_WITHDRAW);
-+		spin_unlock(&object->lock);
-+
-+		cond_resched();
-+		spin_lock(&cache->object_list_lock);
++	if (!netfs->primary_index) {
++		_leave(" = -ENOMEM");
++		return -ENOMEM;
 +	}
 +
-+	spin_unlock(&cache->object_list_lock);
-+}
++	/* initialise the primary index cookie */
++	atomic_set(&netfs->primary_index->usage, 1);
++	atomic_set(&netfs->primary_index->n_children, 0);
 +
-+/**
-+ * fscache_withdraw_cache - Withdraw a cache from the active service
-+ * @cache: The record describing the cache
-+ *
-+ * Withdraw a cache from service, unbinding all its cache objects from the
-+ * netfs cookies they're currently representing.
-+ *
-+ * See Documentation/filesystems/caching/backend-api.txt for a complete
-+ * description.
-+ */
-+void fscache_withdraw_cache(struct fscache_cache *cache)
-+{
-+	LIST_HEAD(dying_objects);
++	netfs->primary_index->def		= &fscache_fsdef_netfs_def;
++	netfs->primary_index->parent		= &fscache_fsdef_index;
++	netfs->primary_index->netfs_data	= netfs;
 +
-+	_enter("");
++	atomic_inc(&netfs->primary_index->parent->usage);
++	atomic_inc(&netfs->primary_index->parent->n_children);
 +
-+	printk(KERN_NOTICE "FS-Cache: Withdrawing cache \"%s\"\n",
-+	       cache->tag->name);
++	spin_lock_init(&netfs->primary_index->lock);
++	INIT_HLIST_HEAD(&netfs->primary_index->backing_objects);
 +
-+	/* make the cache unavailable for cookie acquisition */
-+	if (test_and_set_bit(FSCACHE_CACHE_WITHDRAWN, &cache->flags))
-+		BUG();
-+
++	/* check the netfs type is not already present */
 +	down_write(&fscache_addremove_sem);
-+	list_del_init(&cache->link);
-+	cache->tag->cache = NULL;
++
++	ret = -EEXIST;
++	list_for_each_entry(ptr, &fscache_netfs_list, link) {
++		if (strcmp(ptr->name, netfs->name) == 0)
++			goto already_registered;
++	}
++
++	list_add(&netfs->link, &fscache_netfs_list);
++	ret = 0;
++
++	printk(KERN_NOTICE "FS-Cache: Netfs '%s' registered for caching\n",
++	       netfs->name);
++
++already_registered:
 +	up_write(&fscache_addremove_sem);
 +
-+	/* make sure all pages pinned by operations on behalf of the netfs are
-+	 * written to disk */
-+	cache->ops->sync_cache(cache);
++	if (ret < 0) {
++		netfs->primary_index->parent = NULL;
++		__fscache_cookie_put(netfs->primary_index);
++		netfs->primary_index = NULL;
++	}
 +
-+	/* dissociate all the netfs pages backed by this cache from the block
-+	 * mappings in the cache */
-+	cache->ops->dissociate_pages(cache);
++	_leave(" = %d", ret);
++	return ret;
++}
++EXPORT_SYMBOL(__fscache_register_netfs);
 +
-+	/* we now have to destroy all the active objects pertaining to this
-+	 * cache - which we do by passing them off to thread pool to be
-+	 * disposed of */
-+	_debug("destroy");
++/*
++ * unregister a network filesystem from the cache
++ * - all cookies must have been released first
++ */
++void __fscache_unregister_netfs(struct fscache_netfs *netfs)
++{
++	_enter("{%s.%u}", netfs->name, netfs->version);
 +
-+	fscache_withdraw_all_objects(cache, &dying_objects);
++	down_write(&fscache_addremove_sem);
 +
-+	/* wait for all extant objects to finish their outstanding operations
-+	 * and go away */
-+	_debug("wait for finish");
-+	wait_event(fscache_cache_cleared_wq,
-+		   atomic_read(&cache->object_count) == 0);
-+	_debug("wait for clearance");
-+	wait_event(fscache_cache_cleared_wq,
-+		   list_empty(&cache->object_list));
-+	_debug("cleared");
-+	ASSERT(list_empty(&dying_objects));
++	list_del(&netfs->link);
++	fscache_relinquish_cookie(netfs->primary_index, 0);
 +
-+	kobject_put(cache->kobj);
++	up_write(&fscache_addremove_sem);
 +
-+	clear_bit(FSCACHE_TAG_RESERVED, &cache->tag->flags);
-+	fscache_release_cache_tag(cache->tag);
-+	cache->tag = NULL;
++	printk(KERN_NOTICE "FS-Cache: Netfs '%s' unregistered from caching\n",
++	       netfs->name);
 +
 +	_leave("");
 +}
-+EXPORT_SYMBOL(fscache_withdraw_cache);
-diff --git a/fs/fscache/fsc-main.c b/fs/fscache/fsc-main.c
-index 1819e9d..e88117b 100644
---- a/fs/fscache/fsc-main.c
-+++ b/fs/fscache/fsc-main.c
-@@ -56,9 +56,15 @@ static int __init fscache_init(void)
- 	if (ret < 0)
- 		goto error_proc;
++EXPORT_SYMBOL(__fscache_unregister_netfs);
+diff --git a/include/linux/fscache.h b/include/linux/fscache.h
+index 0b66726..e4278b3 100644
+--- a/include/linux/fscache.h
++++ b/include/linux/fscache.h
+@@ -187,6 +187,8 @@ struct fscache_netfs {
+  * - these are undefined symbols when FS-Cache is not configured and the
+  *   optimiser takes care of not using them
+  */
++extern int __fscache_register_netfs(struct fscache_netfs *);
++extern void __fscache_unregister_netfs(struct fscache_netfs *);
+ extern struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *);
+ extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
  
-+	fscache_root = kobject_create_and_add("fscache", kernel_kobj);
-+	if (!fscache_root)
-+		goto error_kobj;
-+
- 	printk(KERN_NOTICE "FS-Cache: Loaded\n");
- 	return 0;
- 
-+error_kobj:
-+ 	fscache_proc_cleanup();
- error_proc:
- 	slow_work_unregister_user();
- error_slow_work:
-@@ -74,6 +80,7 @@ static void __exit fscache_exit(void)
+@@ -202,7 +204,10 @@ extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
+ static inline
+ int fscache_register_netfs(struct fscache_netfs *netfs)
  {
- 	_enter("");
+-	return 0;
++	if (fscache_available())
++		return __fscache_register_netfs(netfs);
++	else
++		return 0;
+ }
  
-+	kobject_put(fscache_root);
- 	fscache_proc_cleanup();
- 	slow_work_unregister_user();
- 	printk(KERN_NOTICE "FS-Cache: Unloaded\n");
+ /**
+@@ -219,6 +224,8 @@ int fscache_register_netfs(struct fscache_netfs *netfs)
+ static inline
+ void fscache_unregister_netfs(struct fscache_netfs *netfs)
+ {
++	if (fscache_available())
++		__fscache_unregister_netfs(netfs);
+ }
+ 
+ /**
 
