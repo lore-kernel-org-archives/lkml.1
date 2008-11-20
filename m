@@ -1,403 +1,379 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYKTONf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYKTONw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755012AbYKTONf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYKTOMK
+	id S1756147AbYKTONw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYKTOML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:12:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34823 "EHLO hera.kernel.org"
+	Thu, 20 Nov 2008 09:12:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34824 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754846AbYKTOMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754848AbYKTOMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Nov 2008 09:12:05 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
        miklos@szeredi.hu
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 2/5] FUSE: implement ioctl support
-Date: Thu, 20 Nov 2008 23:11:35 +0900
-Message-Id: <1227190298-4585-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 5/5] FUSE: implement poll support
+Date: Thu, 20 Nov 2008 23:11:38 +0900
+Message-Id: <1227190298-4585-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1227190298-4585-1-git-send-email-tj@kernel.org>
 References: <1227190298-4585-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:11:49 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:11:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generic ioctl support is tricky to implement because only the ioctl
-implementation itself knows which memory regions need to be read
-and/or written.  To support this, fuse client can request retry of
-ioctl specifying memory regions to read and write.  Deep copying
-(nested pointers) can be implemented by retrying multiple times
-resolving one depth of dereference at a time.
+Implement poll support.  Polled files are indexed using fh in a RB
+tree rooted at fuse_conn->polled_files.  All pollable files should
+have unique fh as that's how notifications are matched to files.  If
+duplicate fhs are detected, FUSE spits out warning message.  Poll will
+malfunction but otherwise it will work fine.
 
-For security and cleanliness considerations, ioctl implementation has
-restricted mode where the kernel determines data transfer directions
-and sizes using the _IOC_*() macros on the ioctl command.  In this
-mode, retry is not allowed.
+Client should send FUSE_NOTIFY_POLL notification once after processing
+FUSE_POLL which has FUSE_POLL_SCHEDULE_NOTIFY set.  Sending
+notification unconditionally after the latest poll or everytime file
+content might have changed is inefficient but won't cause malfunction.
 
-For all FUSE servers, restricted mode is enforced.  Unrestricted ioctl
-will be used by CUSE.
+fuse_file_poll() can sleep and requires patches from the following
+thread which allows f_op->poll() to sleep.
 
-Plese read the comment on top of fs/fuse/file.c::fuse_file_do_ioctl()
-for more information.
+  http://thread.gmane.org/gmane.linux.kernel/726176
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- fs/fuse/file.c       |  273 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fuse.h |   32 ++++++
- 2 files changed, 305 insertions(+), 0 deletions(-)
+ fs/fuse/dev.c        |   15 ++++++
+ fs/fuse/file.c       |  135 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/fuse/fuse_i.h     |   20 +++++++
+ fs/fuse/inode.c      |    1 +
+ include/linux/fuse.h |   25 +++++++++
+ 5 files changed, 196 insertions(+), 0 deletions(-)
 
+diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
+index 1408b18..b71cc89 100644
+--- a/fs/fuse/dev.c
++++ b/fs/fuse/dev.c
+@@ -819,11 +819,26 @@ static int fuse_handle_notify(struct fuse_conn *fc, enum fuse_notify_code code,
+ 	int err;
+ 
+ 	switch (code) {
++	case FUSE_NOTIFY_POLL: {
++		struct fuse_notify_poll_wakeup_out outarg;
++
++		err = -EINVAL;
++		if (size != sizeof(outarg))
++			goto out;
++
++		err = fuse_copy_one(cs, &outarg, sizeof(outarg));
++		if (err)
++			goto out;
++
++		err = fuse_notify_poll_wakeup(fc, &outarg);
++		break;
++	}
+ 	default:
+ 		err = -EINVAL;
+ 		break;
+ 	}
+ 
++out:
+ 	fuse_copy_finish(cs);
+ 	return err;
+ }
 diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index 34930a9..71fde8b 100644
+index 1f662f1..3ea9304 100644
 --- a/fs/fuse/file.c
 +++ b/fs/fuse/file.c
-@@ -1470,6 +1470,275 @@ static loff_t fuse_file_llseek(struct file *file, loff_t offset, int origin)
- 	return retval;
+@@ -62,6 +62,8 @@ struct fuse_file *fuse_file_alloc(struct fuse_conn *fc)
+ 			ff->kh = ++fc->khctr;
+ 			spin_unlock(&fc->lock);
+ 		}
++		RB_CLEAR_NODE(&ff->polled_node);
++		init_waitqueue_head(&ff->poll_wait);
+ 	}
+ 	return ff;
+ }
+@@ -171,7 +173,11 @@ int fuse_release_common(struct inode *inode, struct file *file, int isdir)
+ 
+ 		spin_lock(&fc->lock);
+ 		list_del(&ff->write_entry);
++		if (!RB_EMPTY_NODE(&ff->polled_node))
++			rb_erase(&ff->polled_node, &fc->polled_files);
+ 		spin_unlock(&fc->lock);
++
++		wake_up_interruptible_sync(&ff->poll_wait);
+ 		/*
+ 		 * Normally this will send the RELEASE request,
+ 		 * however if some asynchronous READ or WRITE requests
+@@ -1743,6 +1749,133 @@ static long fuse_file_compat_ioctl(struct file *file, unsigned int cmd,
+ 	return fuse_file_do_ioctl(file, cmd, arg, FUSE_IOCTL_COMPAT);
  }
  
-+static int fuse_ioctl_copy_user(struct page **pages, struct iovec *iov,
-+			unsigned int nr_segs, size_t bytes, bool to_user)
++/*
++ * All files which have been polled are linked to RB tree
++ * fuse_conn->polled_files which is indexed by kh.  Walk the tree and
++ * find the matching one.
++ */
++static struct rb_node **fuse_find_polled_node(struct fuse_conn *fc, u64 kh,
++					      struct rb_node **parent_out)
 +{
-+	struct iov_iter ii;
-+	int page_idx = 0;
++	struct rb_node **link = &fc->polled_files.rb_node;
++	struct rb_node *last = NULL;
 +
-+	if (!bytes)
-+		return 0;
++	while (*link) {
++		struct fuse_file *ff = rb_entry(*link, struct fuse_file,
++						polled_node);
++		last = *link;
 +
-+	iov_iter_init(&ii, iov, nr_segs, bytes, 0);
-+
-+	while (iov_iter_count(&ii)) {
-+		struct page *page = pages[page_idx++];
-+		size_t todo = min_t(size_t, PAGE_SIZE, iov_iter_count(&ii));
-+		void *kaddr, *map;
-+
-+		kaddr = map = kmap(page);
-+
-+		while (todo) {
-+			char __user *uaddr = ii.iov->iov_base + ii.iov_offset;
-+			size_t iov_len = ii.iov->iov_len - ii.iov_offset;
-+			size_t copy = min(todo, iov_len);
-+			size_t left;
-+
-+			if (!to_user)
-+				left = copy_from_user(kaddr, uaddr, copy);
-+			else
-+				left = copy_to_user(uaddr, kaddr, copy);
-+
-+			if (unlikely(left))
-+				return -EFAULT;
-+
-+			iov_iter_advance(&ii, copy);
-+			todo -= copy;
-+			kaddr += copy;
-+		}
-+
-+		kunmap(map);
++		if (kh < ff->kh)
++			link = &(*link)->rb_left;
++		else if (kh > ff->kh)
++			link = &(*link)->rb_right;
++		else
++			return link;
 +	}
 +
-+	return 0;
++	if (parent_out)
++		*parent_out = last;
++	return link;
 +}
 +
 +/*
-+ * For ioctls, there is no generic way to determine how much memory
-+ * needs to be read and/or written.  Furthermore, ioctls are allowed
-+ * to dereference the passed pointer, so the parameter requires deep
-+ * copying but FUSE has no idea whatsoever about what to copy in or
-+ * out.
-+ *
-+ * This is solved by allowing FUSE server to retry ioctl with
-+ * necessary in/out iovecs.  Let's assume the ioctl implementation
-+ * needs to read in the following structure.
-+ *
-+ * struct a {
-+ *	char	*buf;
-+ *	size_t	buflen;
-+ * }
-+ *
-+ * On the first callout to FUSE server, inarg->in_size and
-+ * inarg->out_size will be NULL; then, the server completes the ioctl
-+ * with FUSE_IOCTL_RETRY set in out->flags, out->in_iovs set to 1 and
-+ * the actual iov array to
-+ *
-+ * { { .iov_base = inarg.arg,	.iov_len = sizeof(struct a) } }
-+ *
-+ * which tells FUSE to copy in the requested area and retry the ioctl.
-+ * On the second round, the server has access to the structure and
-+ * from that it can tell what to look for next, so on the invocation,
-+ * it sets FUSE_IOCTL_RETRY, out->in_iovs to 2 and iov array to
-+ *
-+ * { { .iov_base = inarg.arg,	.iov_len = sizeof(struct a)	},
-+ *   { .iov_base = a.buf,	.iov_len = a.buflen		} }
-+ *
-+ * FUSE will copy both struct a and the pointed buffer from the
-+ * process doing the ioctl and retry ioctl with both struct a and the
-+ * buffer.
-+ *
-+ * This time, FUSE server has everything it needs and completes ioctl
-+ * without FUSE_IOCTL_RETRY which finishes the ioctl call.
-+ *
-+ * Copying data out works the same way.
-+ *
-+ * Note that if FUSE_IOCTL_UNRESTRICTED is clear, the kernel
-+ * automatically initializes in and out iovs by decoding @cmd with
-+ * _IOC_* macros and the server is not allowed to request RETRY.  This
-+ * limits ioctl data transfers to well-formed ioctls and is the forced
-+ * behavior for all FUSE servers.
++ * The file is about to be polled.  Make sure it's on the polled_files
++ * RB tree.  Note that files once added to the polled_files tree are
++ * not removed before the file is released.  This is because a file
++ * polled once is likely to be polled again.
 + */
-+static long fuse_file_do_ioctl(struct file *file, unsigned int cmd,
-+			       unsigned long arg, unsigned int flags)
++static void fuse_register_polled_file(struct fuse_conn *fc,
++				      struct fuse_file *ff)
++{
++	if (!RB_EMPTY_NODE(&ff->polled_node))
++		return;
++
++	spin_lock(&fc->lock);
++
++	if (RB_EMPTY_NODE(&ff->polled_node)) {
++		struct rb_node **link, *parent;
++
++		link = fuse_find_polled_node(fc, ff->kh, &parent);
++		BUG_ON(*link);
++		rb_link_node(&ff->polled_node, parent, link);
++		rb_insert_color(&ff->polled_node, &fc->polled_files);
++	}
++
++	spin_unlock(&fc->lock);
++}
++
++static unsigned fuse_file_poll(struct file *file, poll_table *wait)
 +{
 +	struct inode *inode = file->f_dentry->d_inode;
 +	struct fuse_file *ff = file->private_data;
 +	struct fuse_conn *fc = get_fuse_conn(inode);
-+	struct fuse_ioctl_in inarg = { .fh = ff->fh, .cmd = cmd, .arg = arg,
-+				       .flags = flags };
-+	struct fuse_ioctl_out outarg;
-+	struct fuse_req *req = NULL;
-+	struct page **pages = NULL;
-+	struct page *iov_page = NULL;
-+	struct iovec *in_iov = NULL, *out_iov = NULL;
-+	unsigned int in_iovs = 0, out_iovs = 0, num_pages = 0, max_pages;
-+	size_t in_size, out_size, transferred;
++	struct fuse_poll_in inarg = { .fh = ff->fh, .kh = ff->kh };
++	struct fuse_poll_out outarg;
++	struct fuse_req *req;
 +	int err;
 +
-+	/* assume all the iovs returned by client always fits in a page */
-+	BUILD_BUG_ON(sizeof(struct iovec) * FUSE_IOCTL_MAX_IOV > PAGE_SIZE);
++	if (fc->no_poll)
++		return DEFAULT_POLLMASK;
 +
-+	err = -EIO;
-+	if (is_bad_inode(inode))
-+		goto out;
-+
-+	err = -ENOMEM;
-+	pages = kzalloc(sizeof(pages[0]) * FUSE_MAX_PAGES_PER_REQ, GFP_KERNEL);
-+	iov_page = alloc_page(GFP_KERNEL);
-+	if (!pages || !iov_page)
-+		goto out;
++	poll_wait(file, &ff->poll_wait, wait);
 +
 +	/*
-+	 * If restricted, initialize IO parameters as encoded in @cmd.
-+	 * RETRY from server is not allowed.
++	 * Ask for notification iff there's someone waiting for it.
++	 * The client may ignore the flag and always notify.
 +	 */
-+	if (!(flags & FUSE_IOCTL_UNRESTRICTED)) {
-+		struct iovec *iov = page_address(iov_page);
-+
-+		iov->iov_base = (void *)arg;
-+		iov->iov_len = _IOC_SIZE(cmd);
-+
-+		if (_IOC_DIR(cmd) & _IOC_READ) {
-+			in_iov = iov;
-+			in_iovs = 1;
-+		}
-+
-+		if (_IOC_DIR(cmd) & _IOC_WRITE) {
-+			out_iov = iov;
-+			out_iovs = 1;
-+		}
-+	}
-+
-+ retry:
-+	inarg.in_size = in_size = iov_length(in_iov, in_iovs);
-+	inarg.out_size = out_size = iov_length(out_iov, out_iovs);
-+
-+	/*
-+	 * Out data can be used either for actual out data or iovs,
-+	 * make sure there always is at least one page.
-+	 */
-+	out_size = max_t(size_t, out_size, PAGE_SIZE);
-+	max_pages = DIV_ROUND_UP(max(in_size, out_size), PAGE_SIZE);
-+
-+	/* make sure there are enough buffer pages and init request with them */
-+	err = -ENOMEM;
-+	if (max_pages > FUSE_MAX_PAGES_PER_REQ)
-+		goto out;
-+	while (num_pages < max_pages) {
-+		pages[num_pages] = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
-+		if (!pages[num_pages])
-+			goto out;
-+		num_pages++;
++	if (waitqueue_active(&ff->poll_wait)) {
++		inarg.flags |= FUSE_POLL_SCHEDULE_NOTIFY;
++		fuse_register_polled_file(fc, ff);
 +	}
 +
 +	req = fuse_get_req(fc);
-+	if (IS_ERR(req)) {
-+		req = NULL;
-+		err = PTR_ERR(req);
-+		goto out;
-+	}
-+	memcpy(req->pages, pages, sizeof(req->pages[0]) * num_pages);
-+	req->num_pages = num_pages;
++	if (IS_ERR(req))
++		return PTR_ERR(req);
 +
-+	/* okay, let's send it to the client */
-+	req->in.h.opcode = FUSE_IOCTL;
++	req->in.h.opcode = FUSE_POLL;
 +	req->in.h.nodeid = get_node_id(inode);
 +	req->in.numargs = 1;
 +	req->in.args[0].size = sizeof(inarg);
 +	req->in.args[0].value = &inarg;
-+	if (in_size) {
-+		req->in.numargs++;
-+		req->in.args[1].size = in_size;
-+		req->in.argpages = 1;
-+
-+		err = fuse_ioctl_copy_user(pages, in_iov, in_iovs, in_size,
-+					   false);
-+		if (err)
-+			goto out;
-+	}
-+
-+	req->out.numargs = 2;
++	req->out.numargs = 1;
 +	req->out.args[0].size = sizeof(outarg);
 +	req->out.args[0].value = &outarg;
-+	req->out.args[1].size = out_size;
-+	req->out.argpages = 1;
-+	req->out.argvar = 1;
-+
 +	request_send(fc, req);
 +	err = req->out.h.error;
-+	transferred = req->out.args[1].size;
 +	fuse_put_request(fc, req);
-+	req = NULL;
-+	if (err)
-+		goto out;
 +
-+	/* did it ask for retry? */
-+	if (outarg.flags & FUSE_IOCTL_RETRY) {
-+		char *vaddr;
++	if (!err)
++		return outarg.revents;
++	if (err == -ENOSYS) {
++		fc->no_poll = 1;
++		return DEFAULT_POLLMASK;
++	}
++	return POLLERR;
++}
 +
-+		/* no retry if in restricted mode */
-+		err = -EBADE;
-+		if (!(flags & FUSE_IOCTL_UNRESTRICTED))
-+			goto out;
++/*
++ * This is called from fuse_handle_notify() on FUSE_NOTIFY_POLL and
++ * wakes up the poll waiters.
++ */
++int fuse_notify_poll_wakeup(struct fuse_conn *fc,
++			    struct fuse_notify_poll_wakeup_out *outarg)
++{
++	u64 kh = outarg->kh;
++	struct rb_node **link;
 +
-+		in_iovs = outarg.in_iovs;
-+		out_iovs = outarg.out_iovs;
++	spin_lock(&fc->lock);
 +
-+		/*
-+		 * Make sure things are in boundary, separate checks
-+		 * are to protect against overflow.
-+		 */
-+		err = -ENOMEM;
-+		if (in_iovs > FUSE_IOCTL_MAX_IOV ||
-+		    out_iovs > FUSE_IOCTL_MAX_IOV ||
-+		    in_iovs + out_iovs > FUSE_IOCTL_MAX_IOV)
-+			goto out;
-+
-+		err = -EBADE;
-+		if ((in_iovs + out_iovs) * sizeof(struct iovec) != transferred)
-+			goto out;
-+
-+		/* okay, copy in iovs and retry */
-+		vaddr = kmap_atomic(pages[0], KM_USER0);
-+		memcpy(page_address(iov_page), vaddr, transferred);
-+		kunmap_atomic(vaddr, KM_USER0);
-+
-+		in_iov = page_address(iov_page);
-+		out_iov = in_iov + in_iovs;
-+
-+		goto retry;
++	link = fuse_find_polled_node(fc, kh, NULL);
++	if (*link) {
++		struct fuse_file *ff = rb_entry(*link, struct fuse_file,
++						polled_node);
++		wake_up_interruptible_sync(&ff->poll_wait);
 +	}
 +
-+	err = -EBADE;
-+	if (transferred > inarg.out_size)
-+		goto out;
-+
-+	err = fuse_ioctl_copy_user(pages, out_iov, out_iovs, transferred, true);
-+ out:
-+	if (req)
-+		fuse_put_request(fc, req);
-+	if (iov_page)
-+		__free_page(iov_page);
-+	while (num_pages)
-+		__free_page(pages[--num_pages]);
-+	kfree(pages);
-+
-+	return err ? err : outarg.result;
-+}
-+
-+static long fuse_file_ioctl(struct file *file, unsigned int cmd,
-+			    unsigned long arg)
-+{
-+	return fuse_file_do_ioctl(file, cmd, arg, 0);
-+}
-+
-+static long fuse_file_compat_ioctl(struct file *file, unsigned int cmd,
-+				   unsigned long arg)
-+{
-+	return fuse_file_do_ioctl(file, cmd, arg, FUSE_IOCTL_COMPAT);
++	spin_unlock(&fc->lock);
++	return 0;
 +}
 +
  static const struct file_operations fuse_file_operations = {
  	.llseek		= fuse_file_llseek,
  	.read		= do_sync_read,
-@@ -1484,6 +1753,8 @@ static const struct file_operations fuse_file_operations = {
- 	.lock		= fuse_file_lock,
- 	.flock		= fuse_file_flock,
+@@ -1759,6 +1892,7 @@ static const struct file_operations fuse_file_operations = {
  	.splice_read	= generic_file_splice_read,
-+	.unlocked_ioctl	= fuse_file_ioctl,
-+	.compat_ioctl	= fuse_file_compat_ioctl,
+ 	.unlocked_ioctl	= fuse_file_ioctl,
+ 	.compat_ioctl	= fuse_file_compat_ioctl,
++	.poll		= fuse_file_poll,
  };
  
  static const struct file_operations fuse_direct_io_file_operations = {
-@@ -1496,6 +1767,8 @@ static const struct file_operations fuse_direct_io_file_operations = {
- 	.fsync		= fuse_fsync,
- 	.lock		= fuse_file_lock,
+@@ -1773,6 +1907,7 @@ static const struct file_operations fuse_direct_io_file_operations = {
  	.flock		= fuse_file_flock,
-+	.unlocked_ioctl	= fuse_file_ioctl,
-+	.compat_ioctl	= fuse_file_compat_ioctl,
+ 	.unlocked_ioctl	= fuse_file_ioctl,
+ 	.compat_ioctl	= fuse_file_compat_ioctl,
++	.poll		= fuse_file_poll,
  	/* no mmap and splice_read */
  };
  
+diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
+index fdfdfb0..66f2400 100644
+--- a/fs/fuse/fuse_i.h
++++ b/fs/fuse/fuse_i.h
+@@ -19,6 +19,8 @@
+ #include <linux/backing-dev.h>
+ #include <linux/mutex.h>
+ #include <linux/rwsem.h>
++#include <linux/rbtree.h>
++#include <linux/poll.h>
+ 
+ /** Max number of pages that can be used in a single read request */
+ #define FUSE_MAX_PAGES_PER_REQ 32
+@@ -111,6 +113,12 @@ struct fuse_file {
+ 
+ 	/** Entry on inode's write_files list */
+ 	struct list_head write_entry;
++
++	/** RB node to be linked on fuse_conn->polled_files */
++	struct rb_node polled_node;
++
++	/** Wait queue head for poll */
++	wait_queue_head_t poll_wait;
+ };
+ 
+ /** One input argument of a request */
+@@ -328,6 +336,9 @@ struct fuse_conn {
+ 	/** The next unique kernel file handle */
+ 	u64 khctr;
+ 
++	/** rbtree of fuse_files waiting for poll events indexed by ph */
++	struct rb_root polled_files;
++
+ 	/** Number of requests currently in the background */
+ 	unsigned num_background;
+ 
+@@ -416,6 +427,9 @@ struct fuse_conn {
+ 	/** Is bmap not implemented by fs? */
+ 	unsigned no_bmap : 1;
+ 
++	/** Is poll not implemented by fs? */
++	unsigned no_poll : 1;
++
+ 	/** Do multi-page cached writes */
+ 	unsigned big_writes : 1;
+ 
+@@ -525,6 +539,12 @@ int fuse_fsync_common(struct file *file, struct dentry *de, int datasync,
+ 		      int isdir);
+ 
+ /**
++ * Notify poll wakeup
++ */
++int fuse_notify_poll_wakeup(struct fuse_conn *fc,
++			    struct fuse_notify_poll_wakeup_out *outarg);
++
++/**
+  * Initialize file operations on a regular file
+  */
+ void fuse_init_file_inode(struct inode *inode);
+diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+index 9f27441..77fcedb 100644
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -486,6 +486,7 @@ static struct fuse_conn *new_conn(struct super_block *sb)
+ 		/* fuse does it's own writeback accounting */
+ 		fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
+ 		fc->khctr = 0;
++		fc->polled_files = RB_ROOT;
+ 		fc->dev = sb->s_dev;
+ 		err = bdi_init(&fc->bdi);
+ 		if (err)
 diff --git a/include/linux/fuse.h b/include/linux/fuse.h
-index 7caa473..608e300 100644
+index abde994..5650cf0 100644
 --- a/include/linux/fuse.h
 +++ b/include/linux/fuse.h
-@@ -148,6 +148,21 @@ struct fuse_file_lock {
-  */
- #define FUSE_READ_LOCKOWNER	(1 << 1)
+@@ -163,6 +163,13 @@ struct fuse_file_lock {
+ 
+ #define FUSE_IOCTL_MAX_IOV	256
  
 +/**
-+ * Ioctl flags
++ * Poll flags
 + *
-+ * FUSE_IOCTL_COMPAT: 32bit compat ioctl on 64bit machine
-+ * FUSE_IOCTL_UNRESTRICTED: not restricted to well-formed ioctls, retry allowed
-+ * FUSE_IOCTL_RETRY: retry with new iovecs
-+ *
-+ * FUSE_IOCTL_MAX_IOV: maximum of in_iovecs + out_iovecs
++ * FUSE_POLL_SCHEDULE_NOTIFY: request poll notify
 + */
-+#define FUSE_IOCTL_COMPAT	(1 << 0)
-+#define FUSE_IOCTL_UNRESTRICTED	(1 << 1)
-+#define FUSE_IOCTL_RETRY	(1 << 2)
-+
-+#define FUSE_IOCTL_MAX_IOV	256
++#define FUSE_POLL_SCHEDULE_NOTIFY (1 << 0)
 +
  enum fuse_opcode {
  	FUSE_LOOKUP	   = 1,
  	FUSE_FORGET	   = 2,  /* no reply */
-@@ -185,6 +200,7 @@ enum fuse_opcode {
- 	FUSE_INTERRUPT     = 36,
+@@ -201,9 +208,11 @@ enum fuse_opcode {
  	FUSE_BMAP          = 37,
  	FUSE_DESTROY       = 38,
-+	FUSE_IOCTL         = 39,
+ 	FUSE_IOCTL         = 39,
++	FUSE_POLL          = 40,
  };
  
- /* The read buffer is required to be at least 8k, but may be much larger */
-@@ -385,6 +401,22 @@ struct fuse_bmap_out {
- 	__u64	block;
+ enum fuse_notify_code {
++	FUSE_NOTIFY_POLL   = 1,
+ 	FUSE_NOTIFY_CODE_MAX,
  };
  
-+struct fuse_ioctl_in {
+@@ -421,6 +430,22 @@ struct fuse_ioctl_out {
+ 	__u32	out_iovs;
+ };
+ 
++struct fuse_poll_in {
 +	__u64	fh;
++	__u64	kh;
 +	__u32	flags;
-+	__u32	cmd;
-+	__u64	arg;
-+	__u32	in_size;
-+	__u32	out_size;
++	__u32   padding;
 +};
 +
-+struct fuse_ioctl_out {
-+	__s32	result;
-+	__u32	flags;
-+	__u32	in_iovs;
-+	__u32	out_iovs;
++struct fuse_poll_out {
++	__u32	revents;
++	__u32	padding;
++};
++
++struct fuse_notify_poll_wakeup_out {
++	__u64	kh;
 +};
 +
  struct fuse_in_header {
