@@ -1,483 +1,921 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYKTOZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbYKTOZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbYKTOZD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:25:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYKTOXm
+	id S1756379AbYKTOZd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 09:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYKTOXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:23:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46443 "EHLO hera.kernel.org"
+	Thu, 20 Nov 2008 09:23:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46444 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755321AbYKTOXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:23:41 -0500
+	id S1755530AbYKTOXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:23:42 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
        miklos@szeredi.hu, akpm@linux-foundation.org, greg@kroah.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 1/5] FUSE: add fuse_ prefix to several functions
-Date: Thu, 20 Nov 2008 23:22:59 +0900
-Message-Id: <1227190983-5820-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 5/5] CUSE: implement CUSE - Character device in Userspace
+Date: Thu, 20 Nov 2008 23:23:03 +0900
+Message-Id: <1227190983-5820-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1227190983-5820-1-git-send-email-tj@kernel.org>
 References: <1227190983-5820-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:23:15 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:23:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add fuse_ prefix to request_send*() and get_root_inode() as some of
-those functions will be exported for CUSE.  With or without CUSE
-export, having the function names scoped is a good idea for
-debuggability.
+CUSE enables implementing character devices in userspace.  With recent
+additions of nonblock, lseek, ioctl and poll support, FUSE already has
+most of what's necessary to implement character devices.  All CUSE has
+to do is bonding all those components - FUSE, chardev and the driver
+model - nicely.
+
+Due to the number of different objects involved and many ways an
+instance can fail, object lifetime rules are a tad bit complex.
+Please take a look at the comment on top of fs/fuse/cuse.c for
+details.
+
+Other than that, it's mostly straight forward.  Client opens
+/dev/cuse, kernel starts conversation with CUSE_INIT.  The client
+tells CUSE which device it wants to create.  CUSE creates the device
+for the client and the rest works the same way as in a direct IO FUSE
+session.
+
+Each CUSE device has a corresponding directory /sys/class/cuse/DEVNAME
+(which is symlink to /sys/devices/virtual/class/DEVNAME if
+SYSFS_DEPRECATED is turned off) which hosts "waiting" and "abort"
+among other things.  Those two files have the same meaning as the FUSE
+control files.
+
+The only notable lacking feature compared to in-kernel implementation
+is mmap support.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- fs/fuse/dev.c    |   23 ++++++++++++-----------
- fs/fuse/dir.c    |   34 +++++++++++++++++-----------------
- fs/fuse/file.c   |   28 ++++++++++++++--------------
- fs/fuse/fuse_i.h |    9 +++++----
- fs/fuse/inode.c  |   12 ++++++------
- 5 files changed, 54 insertions(+), 52 deletions(-)
+ fs/Kconfig                 |   10 +
+ fs/fuse/Makefile           |    1 +
+ fs/fuse/cuse.c             |  720 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cuse.h       |   47 +++
+ include/linux/fuse.h       |    2 +
+ include/linux/magic.h      |    5 +-
+ include/linux/miscdevice.h |    1 +
+ 7 files changed, 784 insertions(+), 2 deletions(-)
+ create mode 100644 fs/fuse/cuse.c
+ create mode 100644 include/linux/cuse.h
 
-diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
-index b71cc89..f11439a 100644
---- a/fs/fuse/dev.c
-+++ b/fs/fuse/dev.c
-@@ -380,7 +380,7 @@ static void request_wait_answer(struct fuse_conn *fc, struct fuse_req *req)
- 	}
- }
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..3d0c8c9 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -419,6 +419,16 @@ config FUSE_FS
+ 	  If you want to develop a userspace FS, or if you want to use
+ 	  a filesystem based on FUSE, answer Y or M.
  
--void request_send(struct fuse_conn *fc, struct fuse_req *req)
-+void fuse_request_send(struct fuse_conn *fc, struct fuse_req *req)
- {
- 	req->isreply = 1;
- 	spin_lock(&fc->lock);
-@@ -399,8 +399,8 @@ void request_send(struct fuse_conn *fc, struct fuse_req *req)
- 	spin_unlock(&fc->lock);
- }
++config CUSE
++	tristate "Character device in Userpace support"
++	depends on FUSE_FS
++	help
++	  This FUSE extension allows character devices to be
++	  implemented in userspace.
++
++	  If you want to develop or use userspace character device
++	  based on CUSE, answer Y or M.
++
+ config GENERIC_ACL
+ 	bool
+ 	select FS_POSIX_ACL
+diff --git a/fs/fuse/Makefile b/fs/fuse/Makefile
+index 7243706..e95eeb4 100644
+--- a/fs/fuse/Makefile
++++ b/fs/fuse/Makefile
+@@ -3,5 +3,6 @@
+ #
  
--static void request_send_nowait_locked(struct fuse_conn *fc,
--				       struct fuse_req *req)
-+static void fuse_request_send_nowait_locked(struct fuse_conn *fc,
-+					    struct fuse_req *req)
- {
- 	req->background = 1;
- 	fc->num_background++;
-@@ -414,11 +414,11 @@ static void request_send_nowait_locked(struct fuse_conn *fc,
- 	flush_bg_queue(fc);
- }
+ obj-$(CONFIG_FUSE_FS) += fuse.o
++obj-$(CONFIG_CUSE) += cuse.o
  
--static void request_send_nowait(struct fuse_conn *fc, struct fuse_req *req)
-+static void fuse_request_send_nowait(struct fuse_conn *fc, struct fuse_req *req)
- {
- 	spin_lock(&fc->lock);
- 	if (fc->connected) {
--		request_send_nowait_locked(fc, req);
-+		fuse_request_send_nowait_locked(fc, req);
- 		spin_unlock(&fc->lock);
- 	} else {
- 		req->out.h.error = -ENOTCONN;
-@@ -426,16 +426,16 @@ static void request_send_nowait(struct fuse_conn *fc, struct fuse_req *req)
- 	}
- }
+ fuse-objs := dev.o dir.o file.o inode.o control.o
+diff --git a/fs/fuse/cuse.c b/fs/fuse/cuse.c
+new file mode 100644
+index 0000000..048e67d
+--- /dev/null
++++ b/fs/fuse/cuse.c
+@@ -0,0 +1,720 @@
++/*
++ * CUSE: Character device in Userspace
++ *
++ * Copyright (C) 2008       SUSE Linux Products GmbH
++ * Copyright (C) 2008       Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPLv2.
++ *
++ * CUSE enables character devices to be implemented from userland much
++ * like FUSE allows filesystems.  On initialization /dev/cuse is
++ * created.  By opening the file and replying to the CUSE_INIT request
++ * userland CUSE server can create a character device.  After that the
++ * operation is very similar to FUSE.
++ *
++ * CUSE bridges several objects to implement a character device using
++ * userland backend.  The lifetime rules of the involved objects are a
++ * bit complex.
++ *
++ * cuse_conn	: contains fuse_conn and serves as bonding structure
++ * channel	: file handle connected to the userland CUSE server
++ * cdev		: the implemented character device
++ * mnt		: vfsmount which serves dentry and inode for cdev
++ * dev		: generic device for cdev
++ *
++ * Note that 'channel' is what 'dev' is in FUSE.  As CUSE deals with
++ * devices, it's called 'channel' to reduce confusion.
++ *
++ * channel determines when the character device dies.  When channel is
++ * closed, everything should begin to destruct.  As cuse_conn and mnt
++ * dereference each other unlike FUSE where mnt can outlive fuse_conn,
++ * both should be destructed at the same time.  This is achieved by
++ * giving the base reference of cuse_conn to mnt and never referencing
++ * cuse_conn directly, so both channel and cdev have reference to mnt
++ * which in turn has single reference to cuse_conn.
++ *
++ * On CUSE server disconnect, cuse_channel_release() unregisters dev,
++ * deletes cdev and puts mnt.  When the cdev is released, it puts mnt
++ * which in turn puts the cuse_conn on release.
++ *
++ * cuse_conn_get/put() takes cuse_conn and manipulates the reference
++ * count of mnt for convenience.
++ */
++
++#include <linux/cuse.h>
++
++#include <linux/cdev.h>
++#include <linux/device.h>
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/kdev_t.h>
++#include <linux/kthread.h>
++#include <linux/magic.h>
++#include <linux/miscdevice.h>
++#include <linux/stat.h>
++
++#include "fuse_i.h"
++
++struct cuse_conn {
++	struct fuse_conn	fc;
++	struct cdev		cdev;
++	struct vfsmount		*mnt;
++	struct device		*dev;
++
++	/* init parameters */
++	bool			unrestricted_ioctl:1;
++
++	/* the following two bools are protected by cuse_disconnect_lock */
++	bool			cdev_added;
++	bool			disconnected;	/* channel disconnected */
++};
++
++static struct class *cuse_class;
++static DEFINE_SPINLOCK(cuse_disconnect_lock);
++
++static inline struct cuse_conn *fc_to_cc(struct fuse_conn *fc)
++{
++	return container_of(fc, struct cuse_conn, fc);
++}
++
++static inline struct cuse_conn *cdev_to_cc(struct cdev *cdev)
++{
++	return container_of(cdev, struct cuse_conn, cdev);
++}
++
++/*
++ * Connection reference count helpers.  Note that instead of directly
++ * referencing cc->fc, its mnt, which holds single reference to
++ * cc->fc, is referenced.
++ */
++static inline struct cuse_conn *cuse_conn_get(struct cuse_conn *cc)
++{
++	mntget(cc->mnt);
++	return cc;
++}
++
++static inline void cuse_conn_put(struct cuse_conn *cc)
++{
++	mntput(cc->mnt);
++}
++
++
++/**************************************************************************
++ * CUSE frontend operations
++ *
++ * These are file operations for the character device.
++ *
++ * On open, CUSE opens a file from the FUSE mnt and stores it to
++ * private_data of the open file.  All other ops call FUSE ops on the
++ * FUSE file.
++ */
++
++static ssize_t cuse_direct_read(struct file *file, char __user *buf,
++				size_t count, loff_t *ppos)
++{
++	return fuse_direct_io(file->private_data, buf, count, ppos, 0);
++}
++
++static ssize_t cuse_direct_write(struct file *file, const char __user *buf,
++				 size_t count, loff_t *ppos)
++{
++	/*
++	 * No locking or generic_write_checks(), the server is
++	 * responsible for locking and sanity checks.
++	 */
++	return fuse_direct_io(file->private_data, buf, count, ppos, 1);
++}
++
++static int cuse_open(struct inode *inode, struct file *file)
++{
++	struct cuse_conn *cc = cdev_to_cc(inode->i_cdev);
++	struct file *cfile;
++
++	cfile = dentry_open(dget(cc->mnt->mnt_root), mntget(cc->mnt),
++			    file->f_flags);
++	if (IS_ERR(cfile))
++		return PTR_ERR(cfile);
++
++	file->private_data = cfile;
++	return 0;
++}
++
++static int cuse_flush(struct file *file, fl_owner_t id)
++{
++	return fuse_flush(file->private_data, id);
++}
++
++static int cuse_release(struct inode *inode, struct file *file)
++{
++	return filp_close(file->private_data, NULL);
++}
++
++static int cuse_fsync(struct file *file, struct dentry *de, int datasync)
++{
++	return fuse_fsync(file->private_data, de, datasync);
++}
++
++static unsigned cuse_file_poll(struct file *file, poll_table *wait)
++{
++	return fuse_file_poll(file->private_data, wait);
++}
++
++static long cuse_file_ioctl(struct file *file, unsigned int cmd,
++			    unsigned long arg)
++{
++	struct cuse_conn *cc = cdev_to_cc(file->f_dentry->d_inode->i_cdev);
++	unsigned int flags = 0;
++
++	if (cc->unrestricted_ioctl)
++		flags |= FUSE_IOCTL_UNRESTRICTED;
++
++	return fuse_file_do_ioctl(file->private_data, cmd, arg, flags);
++}
++
++static long cuse_file_compat_ioctl(struct file *file, unsigned int cmd,
++				   unsigned long arg)
++{
++	struct cuse_conn *cc = cdev_to_cc(file->f_dentry->d_inode->i_cdev);
++	unsigned int flags = FUSE_IOCTL_COMPAT;
++
++	if (cc->unrestricted_ioctl)
++		flags |= FUSE_IOCTL_UNRESTRICTED;
++
++	return fuse_file_do_ioctl(file->private_data, cmd, arg, flags);
++}
++
++static const struct file_operations cuse_frontend_fops = {
++	.read			= cuse_direct_read,
++	.write			= cuse_direct_write,
++	.open			= cuse_open,
++	.flush			= cuse_flush,
++	.release		= cuse_release,
++	.fsync			= cuse_fsync,
++	.poll			= cuse_file_poll,
++	.unlocked_ioctl		= cuse_file_ioctl,
++	.compat_ioctl		= cuse_file_compat_ioctl,
++};
++
++
++/**************************************************************************
++ * CUSE filesystem operations
++ *
++ * CUSE filesystem type implementation.  Each CUSE device instance is
++ * served by a separate superblock of cuse_fs type.
++ */
++
++static void cuse_fc_release(struct fuse_conn *fc)
++{
++	struct cuse_conn *cc = fc_to_cc(fc);
++
++	kfree(cc);
++}
++
++static int cuse_fill_super(struct super_block *sb, void *data, int silent)
++{
++	struct cuse_conn *cc = NULL;
++	struct dentry *root_dentry = NULL;
++	struct inode *root = NULL;
++	int rc;
++
++	sb->s_magic = CUSE_SUPER_MAGIC;
++	sb->s_op = &fuse_super_operations;
++	sb->s_maxbytes = MAX_LFS_FILESIZE;
++
++	cc = kzalloc(sizeof(*cc), GFP_KERNEL);
++	if (!cc)
++		goto err_nomem;
++	rc = fuse_conn_init(&cc->fc, sb);
++	if (rc)
++		goto err;
++
++	/* cuse isn't accessible to mortal users, give it some latitude */
++	cc->fc.flags = FUSE_ALLOW_OTHER;
++	cc->fc.user_id = current->euid;
++	cc->fc.group_id = current->egid;
++	cc->fc.max_read = FUSE_MAX_PAGES_PER_REQ * PAGE_SIZE;
++	cc->fc.release = cuse_fc_release;
++
++	/* transfer the initial cc refcnt to sb */
++	sb->s_fs_info = &cc->fc;
++	cc = NULL;
++
++	root = fuse_get_root_inode(sb, S_IFREG);
++	if (!root)
++		goto err_nomem;
++
++	root_dentry = d_alloc_root(root);
++	if (!root_dentry)
++		goto err_nomem;
++
++	sb->s_root = root_dentry;
++
++	return 0;
++
++err_nomem:
++	rc = -ENOMEM;
++err:
++	if (root_dentry)
++		dput(root_dentry);
++	else if (root)
++		iput(root);
++	kfree(cc);
++	return rc;
++}
++
++static int cuse_get_sb(struct file_system_type *fs_type, int flags,
++		       const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	return get_sb_nodev(fs_type, flags, data, cuse_fill_super, mnt);
++}
++
++static struct file_system_type cuse_fs = {
++	.name		= "cuse",
++	.get_sb		= cuse_get_sb,
++	.kill_sb	= kill_anon_super,
++};
++
++
++/**************************************************************************
++ * CUSE channel initialization and destruction
++ */
++
++struct cuse_devinfo {
++	const char		*name;
++};
++
++/**
++ * cuse_parse_one - parse one key=value pair
++ * @pp: i/o parameter for the current position
++ * @end: points to one past the end of the packed string
++ * @keyp: out parameter for key
++ * @valp: out parameter for value
++ *
++ * *@pp points to packed strings - "key0=val0\0key1=val1\0" which ends
++ * at @end - 1.  This function parses one pair and set *@keyp to the
++ * start of the key and *@valp to the start of the value.  Note that
++ * the original string is modified such that the key string is
++ * terminated with '\0'.  *@pp is updated to point to the next string.
++ *
++ * RETURNS:
++ * 1 on successful parse, 0 on EOF, -errno on failure.
++ */
++static int cuse_parse_one(char **pp, char *end, char **keyp, char **valp)
++{
++	char *p = *pp;
++	char *key, *val;
++
++	while (p < end && *p == '\0')
++		p++;
++	if (p == end)
++		return 0;
++
++	if (end[-1] != '\0') {
++		printk(KERN_ERR "CUSE: info not properly terminated\n");
++		return -EINVAL;
++	}
++
++	key = val = p;
++	p += strlen(p);
++
++	if (valp) {
++		strsep(&val, "=");
++		if (!val)
++			val = key + strlen(key);
++		key = strstrip(key);
++		val = strstrip(val);
++	} else
++		key = strstrip(key);
++
++	if (!strlen(key)) {
++		printk(KERN_ERR "CUSE: zero length info key specified\n");
++		return -EINVAL;
++	}
++
++	*pp = p;
++	*keyp = key;
++	if (valp)
++		*valp = val;
++
++	return 1;
++}
++
++/**
++ * cuse_parse_dev_info - parse device info
++ * @p: device info string
++ * @len: length of device info string
++ * @devinfo: out parameter for parsed device info
++ *
++ * Parse @p to extract device info and store it into @devinfo.  String
++ * pointed to by @p is modified by parsing and @devinfo points into
++ * them, so @p shouldn't be freed while @devinfo is in use.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++static int cuse_parse_devinfo(char *p, size_t len, struct cuse_devinfo *devinfo)
++{
++	char *end = p + len;
++	char *key, *val;
++	int rc;
++
++	while (true) {
++		rc = cuse_parse_one(&p, end, &key, &val);
++		if (rc < 0)
++			return rc;
++		if (!rc)
++			break;
++		if (strcmp(key, "DEVNAME") == 0)
++			devinfo->name = val;
++		else
++			printk(KERN_WARNING "CUSE: unknown device info \"%s\"\n",
++			       key);
++	}
++
++	if (!devinfo->name || !strlen(devinfo->name)) {
++		printk(KERN_ERR "CUSE: DEVNAME unspecified\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static void cuse_gendev_release(struct device *dev)
++{
++	kfree(dev);
++}
++
++static void cuse_cdev_release(struct cdev *cdev)
++{
++	cuse_conn_put(cdev_to_cc(cdev));
++}
++
++/**
++ * cuse_init_worker - worker to finish initializing CUSE channel
++ * @data: cuse_conn to initialize
++ *
++ * CUSE channel is created by opening /dev/cuse but the open itself
++ * can't do much of initialization as it must return to the userland
++ * so that CUSE server and kernel can talk via the open file, so
++ * cuse_channel_open() performs minimal initialization and schedules
++ * this function on a kthread to finish up initialization.
++ *
++ * This function queries userland CUSE server which character device
++ * it wants to create and creates the character device and sets up all
++ * the required data structures for it.  As there are quite a few data
++ * structures involved, object lifetime rule is a bit complex.  Please
++ * read the comment at the top of this file for high level overview.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++static int cuse_init_worker(void *data)
++{
++	struct cuse_conn *cc = data;
++	struct cuse_init_in iin = { };
++	struct cuse_init_out iout = { };
++	struct cuse_devinfo devinfo = { };
++	struct fuse_req *req;
++	struct page *page = NULL;
++	struct device *dev;
++	bool disconnected;
++	dev_t devt;
++	int rc;
++
++	BUILD_BUG_ON(CUSE_INIT_INFO_MAX > PAGE_SIZE);
++
++	/* identify ourself and query what the CUSE server wants */
++	req = fuse_get_req(&cc->fc);
++	if (IS_ERR(req)) {
++		rc = PTR_ERR(req);
++		goto out;
++	}
++
++	rc = -ENOMEM;
++	page = alloc_pages(GFP_KERNEL | __GFP_ZERO, 1);
++	if (!page)
++		goto out;
++
++	req->pages[0] = nth_page(page, 0);
++	req->pages[1] = nth_page(page, 1);
++	req->num_pages = 2;
++
++	req->in.h.opcode = CUSE_INIT;
++	req->in.h.nodeid = get_node_id(cc->mnt->mnt_sb->s_root->d_inode);
++	req->in.numargs = 1;
++	req->in.args[0].size = sizeof(iin);
++	req->in.args[0].value = &iin;
++
++	iin.ver_major = CUSE_KERNEL_VERSION;
++	iin.ver_minor = CUSE_KERNEL_MINOR_VERSION;
++
++	req->out.numargs = 2;
++	req->out.args[0].size = sizeof(iout);
++	req->out.args[0].value = &iout;
++	req->out.args[1].size = CUSE_INIT_INFO_MAX;
++	req->out.argpages = 1;
++	req->out.argvar = 1;
++
++	fuse_request_send(&cc->fc, req);
++	rc = req->out.h.error;
++	if (rc)
++		goto out;
++
++	/* parse init reply */
++	cc->unrestricted_ioctl = iout.flags & CUSE_UNRESTRICTED_IOCTL;
++
++	rc = cuse_parse_devinfo(page_address(page), req->out.args[1].size,
++				&devinfo);
++	if (rc)
++		goto out;
++
++	/* MAJ, MIN and name available, let's create the device */
++	devt = MKDEV(iout.dev_major, iout.dev_minor);
++	if (!MAJOR(devt))
++		rc = alloc_chrdev_region(&devt, MINOR(devt), 1, devinfo.name);
++	else
++		rc = register_chrdev_region(devt, 1, devinfo.name);
++	if (rc) {
++		printk(KERN_ERR "CUSE: failed to register chrdev region\n");
++		goto out;
++	}
++
++	rc = -ENOMEM;
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev)
++		goto out_unregister_chrdev_region;
++	device_initialize(dev);
++	dev->class = cuse_class;
++	dev->devt = devt;
++	dev->release = cuse_gendev_release;
++	dev_set_drvdata(dev, cc);
++	dev_set_name(dev, "%s", devinfo.name);
++
++	rc = device_add(dev);
++	if (rc)
++		goto out_put_device;
++
++	/* register cdev */
++	cdev_init(&cc->cdev, &cuse_frontend_fops);
++	cc->cdev.owner = THIS_MODULE;
++	cc->cdev.release = cuse_cdev_release;
++
++	rc = cdev_add(&cc->cdev, devt, 1);
++	if (rc)
++		goto out_put_device;
++	cuse_conn_get(cc);	/* will be released on cdev final put */
++
++	/* transfer dev and cdev ownership to channel */
++	spin_lock(&cuse_disconnect_lock);
++	disconnected = cc->disconnected;
++	if (!disconnected) {
++		cc->dev = dev;
++		cc->cdev_added = true;
++	}
++	spin_unlock(&cuse_disconnect_lock);
++
++	if (disconnected)
++		goto out_cdev_del;
++
++	rc = 0;
++	goto out;
++
++out_cdev_del:
++	cdev_del(&cc->cdev);
++out_put_device:
++	put_device(dev);
++out_unregister_chrdev_region:
++	unregister_chrdev_region(devt, 1);
++out:
++	if (!IS_ERR(req))
++		fuse_put_request(&cc->fc, req);
++	if (page)
++		__free_pages(page, 1);
++
++	if (rc)
++		fuse_abort_conn(&cc->fc);
++
++	cuse_conn_put(cc);
++	return rc;
++}
++
++/**
++ * cuse_channel_open - open method for /dev/cuse
++ * @inode: inode for /dev/cuse
++ * @file: file struct being opened
++ *
++ * Userland CUSE server can create a CUSE device by opening /dev/cuse
++ * and replying to initilaization request the kernel sends.  This
++ * function is responsible for handling CUSE device initialization.
++ * Because the fd opened by this function is used during
++ * initialization, only mnt and cuse_conn are created here and the
++ * reset of initialization is delegated to a kthread.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++static int cuse_channel_open(struct inode *inode, struct file *file)
++{
++	struct cuse_conn *cc;
++	struct vfsmount *mnt;
++	struct fuse_req *init_req;
++	struct task_struct *worker;
++	int rc;
++
++	/* Set up cuse_conn.  cuse_conn will be created when filling
++	 * in superblock for the following kern_mount().
++	 */
++	mnt = kern_mount(&cuse_fs);
++	if (IS_ERR(mnt))
++		return PTR_ERR(mnt);
++
++	cc = fc_to_cc(get_fuse_conn_super(mnt->mnt_sb));
++	cc->mnt = mnt;
++
++	/* let's send fuse init request */
++	rc = -ENOMEM;
++	init_req = fuse_request_alloc();
++	if (!init_req)
++		goto err_cc_put;
++
++	cc->fc.connected = 1;
++	file->private_data = fuse_conn_get(&cc->fc);
++	fuse_send_init(&cc->fc, init_req);
++
++	/* Okay, FUSE part of initialization is complete.  The rest of
++	 * the initialization is a bit more involved and requires
++	 * conversing with userland.  Start a kthread.
++	 */
++	worker = kthread_run(cuse_init_worker, cuse_conn_get(cc),
++			     "cuse-init-pid%d", current->pid);
++	if (IS_ERR(worker)) {
++		fput(file);
++		rc = PTR_ERR(worker);
++		goto err_cc_put;
++	}
++
++	return 0;
++
++err_cc_put:
++	cuse_conn_put(cc);
++	return rc;
++}
++
++/**
++ * cuse_channel_release - release method for /dev/cuse
++ * @inode: inode for /dev/cuse
++ * @file: file struct being closed
++ *
++ * Disconnect the channel, deregister CUSE device and initiate
++ * destruction by putting the default reference.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++static int cuse_channel_release(struct inode *inode, struct file *file)
++{
++	struct cuse_conn *cc = fc_to_cc(file->private_data);
++	int rc;
++
++	spin_lock(&cuse_disconnect_lock);
++	cc->disconnected = true;
++	spin_unlock(&cuse_disconnect_lock);
++
++	rc = fuse_dev_release(inode, file);
++	if (rc)
++		return rc;
++
++	if (cc->dev)
++		device_unregister(cc->dev);
++	if (cc->cdev_added) {
++		unregister_chrdev_region(cc->cdev.dev, 1);
++		cdev_del(&cc->cdev);
++	}
++	cuse_conn_put(cc);
++
++	return 0;
++}
++
++static struct file_operations cuse_channel_fops; /* initialized during init */
++
++
++/**************************************************************************
++ * Misc stuff and module initializatiion
++ *
++ * CUSE exports the same set of attributes to sysfs as fusectl.
++ */
++
++ssize_t cuse_class_waiting_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct cuse_conn *cc = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%d\n", atomic_read(&cc->fc.num_waiting));
++}
++
++ssize_t cuse_class_abort_store(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	struct cuse_conn *cc = dev_get_drvdata(dev);
++
++	fuse_abort_conn(&cc->fc);
++	return count;
++}
++
++static struct device_attribute cuse_class_dev_attrs[] = {
++	__ATTR(waiting, S_IFREG | 0400, cuse_class_waiting_show, NULL),
++	__ATTR(abort, S_IFREG | 0200, NULL, cuse_class_abort_store),
++	{ }
++};
++
++static struct miscdevice cuse_miscdev = {
++	.minor		= CUSE_MINOR,
++	.name		= "cuse",
++	.fops		= &cuse_channel_fops,
++};
++
++static int __init cuse_init(void)
++{
++	int rc;
++
++	/* inherit and extend fuse_dev_operations */
++	cuse_channel_fops		= fuse_dev_operations;
++	cuse_channel_fops.owner		= THIS_MODULE;
++	cuse_channel_fops.open		= cuse_channel_open;
++	cuse_channel_fops.release	= cuse_channel_release;
++
++	cuse_class = class_create(THIS_MODULE, "cuse");
++	if (IS_ERR(cuse_class))
++		return PTR_ERR(cuse_class);
++	cuse_class->dev_attrs = cuse_class_dev_attrs;
++
++	rc = misc_register(&cuse_miscdev);
++	if (rc)
++		goto destroy_class;
++	rc = register_filesystem(&cuse_fs);
++	if (rc)
++		goto misc_deregister;
++	return 0;
++
++misc_deregister:
++	misc_deregister(&cuse_miscdev);
++destroy_class:
++	class_destroy(cuse_class);
++	return rc;
++}
++
++static void __exit cuse_exit(void)
++{
++	unregister_filesystem(&cuse_fs);
++	misc_deregister(&cuse_miscdev);
++	class_destroy(cuse_class);
++}
++
++module_init(cuse_init);
++module_exit(cuse_exit);
++
++MODULE_ALIAS_MISCDEV(CUSE_MINOR);
++MODULE_AUTHOR("Tejun Heo <tj@kernel.org>");
++MODULE_DESCRIPTION("Character device in Userspace");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/cuse.h b/include/linux/cuse.h
+new file mode 100644
+index 0000000..35281d6
+--- /dev/null
++++ b/include/linux/cuse.h
+@@ -0,0 +1,47 @@
++/*
++ * CUSE: Character device in Userspace
++ * Copyright (C) 2008       SUSE Linux Products GmbH
++ * Copyright (C) 2008       Tejun Heo <teheo@suse.de>
++ *
++ * This file is released under the GPL.
++ */
++
++#ifndef _CUSE_H_
++#define _CUSE_H_
++
++#include <linux/major.h>
++#include <linux/miscdevice.h>
++#include <linux/fuse.h>
++
++#define CUSE_KERNEL_VERSION		0
++#define CUSE_KERNEL_MINOR_VERSION	1
++
++#define CUSE_KERNEL_MAJOR		MISC_MAJOR
++#define CUSE_KERNEL_MINOR		MISC_DYNAMIC_MINOR
++
++#define CUSE_INIT_INFO_MAX		4096
++
++/*
++ * CUSE INIT request/reply flags
++ */
++#define CUSE_UNRESTRICTED_IOCTL		(1 << 0) /* use unrestricted ioctl */
++
++enum cuse_opcode {
++	CUSE_INIT	= CUSE_BASE,
++};
++
++struct cuse_init_in {
++	__u32	ver_major;
++	__u32	ver_minor;
++	__u32	flags;
++	__u32	padding;
++};
++
++struct cuse_init_out {
++	__u32	dev_major;		/* chardev major */
++	__u32	dev_minor;		/* chardev minor */
++	__u32	flags;
++	__u32	padding;
++};
++
++#endif /*_CUSE_H_*/
+diff --git a/include/linux/fuse.h b/include/linux/fuse.h
+index 5650cf0..5842560 100644
+--- a/include/linux/fuse.h
++++ b/include/linux/fuse.h
+@@ -209,6 +209,8 @@ enum fuse_opcode {
+ 	FUSE_DESTROY       = 38,
+ 	FUSE_IOCTL         = 39,
+ 	FUSE_POLL          = 40,
++
++	CUSE_BASE          = 4096,
+ };
  
--void request_send_noreply(struct fuse_conn *fc, struct fuse_req *req)
-+void fuse_request_send_noreply(struct fuse_conn *fc, struct fuse_req *req)
- {
- 	req->isreply = 0;
--	request_send_nowait(fc, req);
-+	fuse_request_send_nowait(fc, req);
- }
+ enum fuse_notify_code {
+diff --git a/include/linux/magic.h b/include/linux/magic.h
+index f7f3fdd..0071322 100644
+--- a/include/linux/magic.h
++++ b/include/linux/magic.h
+@@ -3,10 +3,11 @@
  
--void request_send_background(struct fuse_conn *fc, struct fuse_req *req)
-+void fuse_request_send_background(struct fuse_conn *fc, struct fuse_req *req)
- {
- 	req->isreply = 1;
--	request_send_nowait(fc, req);
-+	fuse_request_send_nowait(fc, req);
- }
- 
- /*
-@@ -443,10 +443,11 @@ void request_send_background(struct fuse_conn *fc, struct fuse_req *req)
-  *
-  * fc->connected must have been checked previously
-  */
--void request_send_background_locked(struct fuse_conn *fc, struct fuse_req *req)
-+void fuse_request_send_background_locked(struct fuse_conn *fc,
-+					 struct fuse_req *req)
- {
- 	req->isreply = 1;
--	request_send_nowait_locked(fc, req);
-+	fuse_request_send_nowait_locked(fc, req);
- }
- 
- /*
-diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
-index 7c6821e..b640b4c 100644
---- a/fs/fuse/dir.c
-+++ b/fs/fuse/dir.c
-@@ -189,7 +189,7 @@ static int fuse_dentry_revalidate(struct dentry *entry, struct nameidata *nd)
- 		parent = dget_parent(entry);
- 		fuse_lookup_init(fc, req, get_node_id(parent->d_inode),
- 				 &entry->d_name, &outarg);
--		request_send(fc, req);
-+		fuse_request_send(fc, req);
- 		dput(parent);
- 		err = req->out.h.error;
- 		fuse_put_request(fc, req);
-@@ -283,7 +283,7 @@ int fuse_lookup_name(struct super_block *sb, u64 nodeid, struct qstr *name,
- 	attr_version = fuse_get_attr_version(fc);
- 
- 	fuse_lookup_init(fc, req, nodeid, name, outarg);
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	/* Zero nodeid is same as -ENOENT, but with valid timeout */
-@@ -369,7 +369,7 @@ static void fuse_sync_release(struct fuse_conn *fc, struct fuse_file *ff,
- {
- 	fuse_release_fill(ff, nodeid, flags, FUSE_RELEASE);
- 	ff->reserved_req->force = 1;
--	request_send(fc, ff->reserved_req);
-+	fuse_request_send(fc, ff->reserved_req);
- 	fuse_put_request(fc, ff->reserved_req);
- 	kfree(ff);
- }
-@@ -432,7 +432,7 @@ static int fuse_create_open(struct inode *dir, struct dentry *entry, int mode,
- 	req->out.args[0].value = &outentry;
- 	req->out.args[1].size = sizeof(outopen);
- 	req->out.args[1].value = &outopen;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	if (err) {
- 		if (err == -ENOSYS)
-@@ -502,7 +502,7 @@ static int create_new_entry(struct fuse_conn *fc, struct fuse_req *req,
- 	else
- 		req->out.args[0].size = sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err)
-@@ -631,7 +631,7 @@ static int fuse_unlink(struct inode *dir, struct dentry *entry)
- 	req->in.numargs = 1;
- 	req->in.args[0].size = entry->d_name.len + 1;
- 	req->in.args[0].value = entry->d_name.name;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (!err) {
-@@ -662,7 +662,7 @@ static int fuse_rmdir(struct inode *dir, struct dentry *entry)
- 	req->in.numargs = 1;
- 	req->in.args[0].size = entry->d_name.len + 1;
- 	req->in.args[0].value = entry->d_name.name;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (!err) {
-@@ -695,7 +695,7 @@ static int fuse_rename(struct inode *olddir, struct dentry *oldent,
- 	req->in.args[1].value = oldent->d_name.name;
- 	req->in.args[2].size = newent->d_name.len + 1;
- 	req->in.args[2].value = newent->d_name.name;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (!err) {
-@@ -811,7 +811,7 @@ static int fuse_do_getattr(struct inode *inode, struct kstat *stat,
- 	else
- 		req->out.args[0].size = sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (!err) {
-@@ -904,7 +904,7 @@ static int fuse_access(struct inode *inode, int mask)
- 	req->in.numargs = 1;
- 	req->in.args[0].size = sizeof(inarg);
- 	req->in.args[0].value = &inarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err == -ENOSYS) {
-@@ -1026,7 +1026,7 @@ static int fuse_readdir(struct file *file, void *dstbuf, filldir_t filldir)
- 	req->num_pages = 1;
- 	req->pages[0] = page;
- 	fuse_read_fill(req, file, inode, file->f_pos, PAGE_SIZE, FUSE_READDIR);
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	nbytes = req->out.args[0].size;
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
-@@ -1060,7 +1060,7 @@ static char *read_link(struct dentry *dentry)
- 	req->out.numargs = 1;
- 	req->out.args[0].size = PAGE_SIZE - 1;
- 	req->out.args[0].value = link;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	if (req->out.h.error) {
- 		free_page((unsigned long) link);
- 		link = ERR_PTR(req->out.h.error);
-@@ -1266,7 +1266,7 @@ static int fuse_do_setattr(struct dentry *entry, struct iattr *attr,
- 	else
- 		req->out.args[0].size = sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err) {
-@@ -1360,7 +1360,7 @@ static int fuse_setxattr(struct dentry *entry, const char *name,
- 	req->in.args[1].value = name;
- 	req->in.args[2].size = size;
- 	req->in.args[2].value = value;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err == -ENOSYS) {
-@@ -1406,7 +1406,7 @@ static ssize_t fuse_getxattr(struct dentry *entry, const char *name,
- 		req->out.args[0].size = sizeof(outarg);
- 		req->out.args[0].value = &outarg;
- 	}
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	ret = req->out.h.error;
- 	if (!ret)
- 		ret = size ? req->out.args[0].size : outarg.size;
-@@ -1456,7 +1456,7 @@ static ssize_t fuse_listxattr(struct dentry *entry, char *list, size_t size)
- 		req->out.args[0].size = sizeof(outarg);
- 		req->out.args[0].value = &outarg;
- 	}
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	ret = req->out.h.error;
- 	if (!ret)
- 		ret = size ? req->out.args[0].size : outarg.size;
-@@ -1489,7 +1489,7 @@ static int fuse_removexattr(struct dentry *entry, const char *name)
- 	req->in.numargs = 1;
- 	req->in.args[0].size = strlen(name) + 1;
- 	req->in.args[0].value = name;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err == -ENOSYS) {
-diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index 3ea9304..580873a 100644
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -39,7 +39,7 @@ static int fuse_send_open(struct inode *inode, struct file *file, int isdir,
- 	req->out.numargs = 1;
- 	req->out.args[0].size = sizeof(*outargp);
- 	req->out.args[0].value = outargp;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 
-@@ -94,7 +94,7 @@ static void fuse_file_put(struct fuse_file *ff)
- 		struct inode *inode = req->misc.release.dentry->d_inode;
- 		struct fuse_conn *fc = get_fuse_conn(inode);
- 		req->end = fuse_release_end;
--		request_send_background(fc, req);
-+		fuse_request_send_background(fc, req);
- 		kfree(ff);
- 	}
- }
-@@ -290,7 +290,7 @@ static int fuse_flush(struct file *file, fl_owner_t id)
- 	req->in.args[0].size = sizeof(inarg);
- 	req->in.args[0].value = &inarg;
- 	req->force = 1;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err == -ENOSYS) {
-@@ -354,7 +354,7 @@ int fuse_fsync_common(struct file *file, struct dentry *de, int datasync,
- 	req->in.numargs = 1;
- 	req->in.args[0].size = sizeof(inarg);
- 	req->in.args[0].value = &inarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err == -ENOSYS) {
-@@ -406,7 +406,7 @@ static size_t fuse_send_read(struct fuse_req *req, struct file *file,
- 		inarg->read_flags |= FUSE_READ_LOCKOWNER;
- 		inarg->lock_owner = fuse_lock_owner_id(fc, owner);
- 	}
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	return req->out.args[0].size;
- }
- 
-@@ -519,9 +519,9 @@ static void fuse_send_readpages(struct fuse_req *req, struct file *file,
- 		struct fuse_file *ff = file->private_data;
- 		req->ff = fuse_file_get(ff);
- 		req->end = fuse_readpages_end;
--		request_send_background(fc, req);
-+		fuse_request_send_background(fc, req);
- 	} else {
--		request_send(fc, req);
-+		fuse_request_send(fc, req);
- 		fuse_readpages_end(fc, req);
- 	}
- }
-@@ -646,7 +646,7 @@ static size_t fuse_send_write(struct fuse_req *req, struct file *file,
- 		inarg->write_flags |= FUSE_WRITE_LOCKOWNER;
- 		inarg->lock_owner = fuse_lock_owner_id(fc, owner);
- 	}
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	return req->misc.write.out.size;
- }
- 
-@@ -1089,7 +1089,7 @@ static void fuse_send_writepage(struct fuse_conn *fc, struct fuse_req *req)
- 
- 	req->in.args[1].size = inarg->size;
- 	fi->writectr++;
--	request_send_background_locked(fc, req);
-+	fuse_request_send_background_locked(fc, req);
- 	return;
- 
-  out_free:
-@@ -1335,7 +1335,7 @@ static int fuse_getlk(struct file *file, struct file_lock *fl)
- 	req->out.numargs = 1;
- 	req->out.args[0].size = sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (!err)
-@@ -1367,7 +1367,7 @@ static int fuse_setlk(struct file *file, struct file_lock *fl, int flock)
- 		return PTR_ERR(req);
- 
- 	fuse_lk_fill(req, file, fl, opcode, pid, flock);
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	/* locking is restartable */
- 	if (err == -EINTR)
-@@ -1443,7 +1443,7 @@ static sector_t fuse_bmap(struct address_space *mapping, sector_t block)
- 	req->out.numargs = 1;
- 	req->out.args[0].size = sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	if (err == -ENOSYS)
-@@ -1675,7 +1675,7 @@ static long fuse_file_do_ioctl(struct file *file, unsigned int cmd,
- 	req->out.argpages = 1;
- 	req->out.argvar = 1;
- 
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	transferred = req->out.args[1].size;
- 	fuse_put_request(fc, req);
-@@ -1840,7 +1840,7 @@ static unsigned fuse_file_poll(struct file *file, poll_table *wait)
- 	req->out.numargs = 1;
- 	req->out.args[0].size = sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 
-diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
-index 66f2400..2006656 100644
---- a/fs/fuse/fuse_i.h
-+++ b/fs/fuse/fuse_i.h
-@@ -619,19 +619,20 @@ void fuse_put_request(struct fuse_conn *fc, struct fuse_req *req);
- /**
-  * Send a request (synchronous)
-  */
--void request_send(struct fuse_conn *fc, struct fuse_req *req);
-+void fuse_request_send(struct fuse_conn *fc, struct fuse_req *req);
- 
- /**
-  * Send a request with no reply
-  */
--void request_send_noreply(struct fuse_conn *fc, struct fuse_req *req);
-+void fuse_request_send_noreply(struct fuse_conn *fc, struct fuse_req *req);
- 
- /**
-  * Send a request in the background
-  */
--void request_send_background(struct fuse_conn *fc, struct fuse_req *req);
-+void fuse_request_send_background(struct fuse_conn *fc, struct fuse_req *req);
- 
--void request_send_background_locked(struct fuse_conn *fc, struct fuse_req *req);
-+void fuse_request_send_background_locked(struct fuse_conn *fc,
-+					 struct fuse_req *req);
- 
- /* Abort all requests */
- void fuse_abort_conn(struct fuse_conn *fc);
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 77fcedb..283cce5 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -94,7 +94,7 @@ void fuse_send_forget(struct fuse_conn *fc, struct fuse_req *req,
- 	req->in.numargs = 1;
- 	req->in.args[0].size = sizeof(struct fuse_forget_in);
- 	req->in.args[0].value = inarg;
--	request_send_noreply(fc, req);
-+	fuse_request_send_noreply(fc, req);
- }
- 
- static void fuse_clear_inode(struct inode *inode)
-@@ -269,7 +269,7 @@ static void fuse_send_destroy(struct fuse_conn *fc)
- 		fc->destroy_req = NULL;
- 		req->in.h.opcode = FUSE_DESTROY;
- 		req->force = 1;
--		request_send(fc, req);
-+		fuse_request_send(fc, req);
- 		fuse_put_request(fc, req);
- 	}
- }
-@@ -334,7 +334,7 @@ static int fuse_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	req->out.args[0].size =
- 		fc->minor < 4 ? FUSE_COMPAT_STATFS_SIZE : sizeof(outarg);
- 	req->out.args[0].value = &outarg;
--	request_send(fc, req);
-+	fuse_request_send(fc, req);
- 	err = req->out.h.error;
- 	if (!err)
- 		convert_fuse_statfs(buf, &outarg.st);
-@@ -544,7 +544,7 @@ struct fuse_conn *fuse_conn_get(struct fuse_conn *fc)
- 	return fc;
- }
- 
--static struct inode *get_root_inode(struct super_block *sb, unsigned mode)
-+static struct inode *fuse_get_root_inode(struct super_block *sb, unsigned mode)
- {
- 	struct fuse_attr attr;
- 	memset(&attr, 0, sizeof(attr));
-@@ -789,7 +789,7 @@ static void fuse_send_init(struct fuse_conn *fc, struct fuse_req *req)
- 	req->out.args[0].size = sizeof(struct fuse_init_out);
- 	req->out.args[0].value = &req->misc.init_out;
- 	req->end = process_init_reply;
--	request_send_background(fc, req);
-+	fuse_request_send_background(fc, req);
- }
- 
- static int fuse_fill_super(struct super_block *sb, void *data, int silent)
-@@ -843,7 +843,7 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_fs_info = fc;
- 
- 	err = -ENOMEM;
--	root = get_root_inode(sb, d.rootmode);
-+	root = fuse_get_root_inode(sb, d.rootmode);
- 	if (!root)
- 		goto err;
+ #define ADFS_SUPER_MAGIC	0xadf5
+ #define AFFS_SUPER_MAGIC	0xadff
+-#define AFS_SUPER_MAGIC                0x5346414F
++#define AFS_SUPER_MAGIC		0x5346414F
+ #define AUTOFS_SUPER_MAGIC	0x0187
+ #define CODA_SUPER_MAGIC	0x73757245
+-#define DEBUGFS_MAGIC          0x64626720
++#define CUSE_SUPER_MAGIC	0x43555345
++#define DEBUGFS_MAGIC		0x64626720
+ #define SYSFS_MAGIC		0x62656572
+ #define SECURITYFS_MAGIC	0x73636673
+ #define TMPFS_MAGIC		0x01021994
+diff --git a/include/linux/miscdevice.h b/include/linux/miscdevice.h
+index 0be9245..d4dcca8 100644
+--- a/include/linux/miscdevice.h
++++ b/include/linux/miscdevice.h
+@@ -28,6 +28,7 @@
+ #define MPT_MINOR		220
+ #define	HPET_MINOR		228
+ #define FUSE_MINOR		229
++#define CUSE_MINOR		230
+ #define KVM_MINOR		232
+ #define MISC_DYNAMIC_MINOR	255
  
 -- 
 1.5.6
