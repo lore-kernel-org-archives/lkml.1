@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYKTNsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYKTNvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbYKTNsg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 08:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYKTNs1
+	id S1755345AbYKTNvA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 08:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYKTNuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 08:48:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39373 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965AbYKTNs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 08:48:27 -0500
-Date: Thu, 20 Nov 2008 08:47:01 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       fchecconi@gmail.com, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081120134701.GB29306@redhat.com>
-References: <20081113.180558.519459540419535699.ryov@valinux.co.jp> <20081113155834.GE7542@redhat.com> <20081113221304.GH7542@redhat.com> <20081120.182053.220301508585579959.ryov@valinux.co.jp>
+	Thu, 20 Nov 2008 08:50:52 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:60218 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbYKTNuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 08:50:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bmql+JRO4qwDOcQwPS8t7HE3xux7j25DLtPD2i65V1gP8WeazF/vUgZA6kl1j83ZI6
+         x6/OBgxcJFHE/+a7+JbEtcZ0UnMW/bPovI1avJvC6bfMn5ZFlkR+KDh50g43yq8zz3Fd
+         yJ55WIO2P74/KWpdwiY8TcFvF78L+fkByljI8=
+Message-ID: <8bd0f97a0811200550o6bde2024k76f9cf2dd7aed384@mail.gmail.com>
+Date: Thu, 20 Nov 2008 08:50:50 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <cooloney@kernel.org>
+Subject: Re: [PATCH 2/5] Blackfin arch: SMP supporting patchset: Blackfin header files and machine common code
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org,
+       "Graf Yang" <graf.yang@analog.com>
+In-Reply-To: <386072610811182342i701497bcne37e6ab0dbefbc5f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081120.182053.220301508585579959.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1226999108-13839-1-git-send-email-cooloney@kernel.org>
+	 <1226999108-13839-3-git-send-email-cooloney@kernel.org>
+	 <20081118225629.eddd23ae.akpm@linux-foundation.org>
+	 <386072610811182342i701497bcne37e6ab0dbefbc5f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 06:20:53PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> Sorry for late reply.
-> 
-> > > > Do you have any benchmark results?
-> > > > I'm especially interested in the followings:
-> > > > - Comparison of disk performance with and without the I/O controller patch.
-> > > 
-> > > If I dynamically disable the bio control, then I did not observe any
-> > > impact on performance. Because in that case practically it boils down
-> > > to just an additional variable check in __make_request().
-> > > 
-> > 
-> > Oh.., I understood your question wrong. You are looking for what's the 
-> > performance penalty if I enable the IO controller on a device.
-> 
-> Yes, that is what I want to know.
-> 
-> > I have not done any extensive benchmarking. If I run two dd commands
-> > without controller, I get 80MB/s from disk (roughly 40 MB for each task).
-> > With bio group enabled (default token=2000), I was getting total BW of
-> > roughly 68 MB/s.
-> >
-> > I have not done any performance analysis or optimizations at this point of
-> > time. I plan to do that once we have some sort of common understanding about
-> > a particular approach. There are so many IO controllers floating, right now
-> > I am more concerned if we can all come to a common platform.
-> 
-> I understood the reason of posting the patch well.
-> 
-> > Ryo, do you still want to stick to two level scheduling? Given the problem
-> > of it breaking down underlying scheduler's assumptions, probably it makes
-> > more sense to the IO control at each individual IO scheduler.
-> 
-> I don't want to stick to it. I'm considering implementing dm-ioband's
-> algorithm into the block I/O layer experimentally.
+On Wed, Nov 19, 2008 at 02:42, Bryan Wu wrote:
+> On Wed, Nov 19, 2008 at 2:56 PM, Andrew Morton wrote:
+>> On Tue, 18 Nov 2008 17:05:05 +0800 Bryan Wu wrote:
+>>> From: Graf Yang <graf.yang@analog.com>
+>>> +#define smp_mb__before_clear_bit()   barrier()
+>>> +#define smp_mb__after_clear_bit()    barrier()
+>>> +
+>>> +static inline void __set_bit(int nr, volatile unsigned long *addr)
+>>> +{
+>>> +     int *a = (int *)addr;
+>>> +     int mask;
+>>> +
+>>> +     a += nr >> 5;
+>>> +     mask = 1 << (nr & 0x1f);
+>>> +     *a |= mask;
+>>> +}
+>>> +
+>>> +static inline void __clear_bit(int nr, volatile unsigned long *addr)
+>>> +{
+>>> +     int *a = (int *)addr;
+>>> +     int mask;
+>>> +
+>>> +     a += nr >> 5;
+>>> +     mask = 1 << (nr & 0x1f);
+>>> +     *a &= ~mask;
+>>> +}
+>>> +
+>>> +static inline void __change_bit(int nr, volatile unsigned long *addr)
+>>> +{
+>>> +     int mask;
+>>> +     unsigned long *ADDR = (unsigned long *)addr;
+>>> +
+>>> +     ADDR += nr >> 5;
+>>> +     mask = 1 << (nr & 31);
+>>> +     *ADDR ^= mask;
+>>> +}
+>>
+>> I'm surprised there isn't any generic code which can be used for the above.
+>>
+>
+> As Nick said, include/asm-generic/bitops/non-atomic.h is the generic code.
+> We will try it.
 
-Thanks Ryo. Implementing a control at block layer sounds like another
-2 level scheduling. We will still have the issue of breaking underlying
-CFQ and other schedulers. How to plan to resolve that conflict.
+the Blackfin ISA provides explicit bit operations.  is there something
+special about these C-level bit operations that prevents us from using
+them ?
 
-What do you think about the solution at IO scheduler level (like BFQ) or
-may be little above that where one can try some code sharing among IO
-schedulers? 
-
-Thanks
-Vivek
+PRM:
+"BITCLR" on page 13-2
+"BITSET" on page 13-4
+"BITTGL" on page 13-6
+-mike
