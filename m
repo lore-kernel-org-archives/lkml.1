@@ -1,147 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYKTL7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYKTMBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYKTL7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 06:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbYKTL6t
+	id S1755318AbYKTMBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 07:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYKTMBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 06:58:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33119 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754776AbYKTL6r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 06:58:47 -0500
-Date: Thu, 20 Nov 2008 06:58:44 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Milton Miller <miltonm@bga.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/9] powerpc: port of dynamic ftrace
-In-Reply-To: <20081120081307.GD21785@elte.hu>
-Message-ID: <alpine.DEB.1.10.0811200645510.17538@gandalf.stny.rr.com>
-References: <20081119212204.318400312@goodmis.org> <20081120081307.GD21785@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 20 Nov 2008 07:01:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53430 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754433AbYKTMBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 07:01:04 -0500
+Date: Thu, 20 Nov 2008 13:00:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.28-rc5 03/11] kmemleak: Add the memory
+	allocation/freeing hooks
+Message-ID: <20081120120054.GB20724@elte.hu>
+References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com> <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 20 Nov 2008, Ingo Molnar wrote:
-> 
-> Hm, something like this shouldnt be pulled into the powerpc tree: it 
-> touches the core kernel, x86 code and ftrace code as well.
-> 
-> Please do the suggestion i outlined and which Paul agreed with: 
-> prepare a branch that touches _only_ powerpc files and gets these 
-> changes there, without actually breaking the build on powerpc. And 
-> please do not name the branch as "hack" - we dont want Paul to pull 
-> such a branch name - it will show up in the upstream git logs.
-> 
-> Those changes should only touch powerpc files. Do not try to shoe-horn 
-> already applied ftrace commits into a separate branch with different 
-> sha1's. Yes, ftrace wont be enable-able on powerpc when that is 
-> pulled, but it will only be for a brief period shortly before the 
-> merge window. (and it will all just work fine when integrated 
-> together)
+* Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-As stated in the original post, I also had a separate branch called
-ppc/ftrace-disable. Here's the generate posting if I were to send it:
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -112,6 +112,7 @@
+>  #include	<linux/rtmutex.h>
+>  #include	<linux/reciprocal_div.h>
+>  #include	<linux/debugobjects.h>
+> +#include	<linux/memleak.h>
 
-The following patches are in:
+please move this line up 5-7 lines so that it auto-merges fine with 
+the kmemcheck-next tree.
 
-  
-git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/kallsyms.h>
+>  #include <linux/memory.h>
+>  #include <linux/math64.h>
+> +#include <linux/memleak.h>
 
-    branch: ppc/ftrace-disable
+ditto.
 
+> -	return __vmalloc_area_node(area, gfp_mask, prot, -1,
+> -					__builtin_return_address(0));
+> +	void *addr = __vmalloc_area_node(area, gfp_mask, prot, -1,
+> +					 __builtin_return_address(0));
+> +
+> +	/* this needs ref_count = 2 since vm_struct also contains a
+> +	 * pointer to this address. The guard page is also subtracted
+> +	 * from the size */
+> +	memleak_alloc(addr, area->size - PAGE_SIZE, 2);
 
-Matt Fleming (1):
-      ftrace: align __mcount_loc sections
+please use the customary comment style:
 
-Steven Rostedt (8):
-      ftrace: disable dynamic ftrace from PowerPC
-      powerpc: ftrace, do not latency trace idle
-      powerpc: ftrace, convert to new dynamic ftrace arch API
-      powerpc/ppc64: ftrace, mcount record powerpc port
-      powerpc: ftrace, use probe_kernel API to modify code
-      powerpc/ppc64: ftrace, handle module trampolines for dyn ftrace
-      powerpc/ppc32: ftrace, enabled dynamic ftrace
-      powerpc/ppc32: ftrace, dynamic ftrace to handle modules
+  /*
+   * Comment .....
+   * ...... goes here:
+   */
 
-----
- arch/powerpc/Kconfig              |    2 +
- arch/powerpc/include/asm/ftrace.h |   14 +-
- arch/powerpc/include/asm/module.h |   16 ++-
- arch/powerpc/kernel/ftrace.c      |  473 +++++++++++++++++++++++++++++++++---
- arch/powerpc/kernel/idle.c        |    5 +
- arch/powerpc/kernel/module_32.c   |   10 +
- arch/powerpc/kernel/module_64.c   |   13 +
- kernel/trace/Kconfig              |    1 +
- scripts/recordmcount.pl           |   20 ++-
- 9 files changed, 511 insertions(+), 43 deletions(-)
+Thanks,
 
-There is a dependency on Matt's commit for one of the PPC commits to 
-apply.  I could hack that commit to work without Matt's patch, but then 
-that just postpones conflicts later on.
-
-Matt's change is this:
-
- scripts/recordmcount.pl           |   20 ++-
-
-
-The commit to disable PPC is this:
-
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 33dbefd..d9127f4 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -162,6 +162,7 @@ config DYNAMIC_FTRACE
-        depends on FUNCTION_TRACER
-        depends on HAVE_DYNAMIC_FTRACE
-        depends on DEBUG_KERNEL
-+       depends on !PPC
-        default y
-        help
-          This option will modify all the calls to ftrace dynamically
-
-
-This does touch generic code, but this is to handle the chicken and the 
-egg problem.  I would like the disabling of PowerPC code in a separate 
-commit (one easy to revert). But I can not disable the PowerPC code before 
-the code is there. If I disable it after the code is there, then there 
-exists a time that PowerPC will not compile due to this not being 
-disabled.
-
-
-
-> 
-> Once this branch is done, and once Paul agrees that it looks OK-ish to 
-> him, we can put it into ftrace-next straight away [but still keep it 
-> in a separate topic tree in tip/tracing/powerpc - so it can all be 
-> reconsidered reversibly if it causes too much merge trouble]. Paul 
-> will then be able to pull it in a few weeks, in the runup to the 
-> v2.6.29 merge window.
-
-I guess the question comes down to, do I work around Matt's patch?
-
-> 
-> The other option is to go the slow route of 2-3 kernel releases to 
-> pull this all off.
-
-2 or 3 kernel releases seems a bit extreme. But this is Paul's call.
-
-Paul, any suggestions?
-
--- Steve
-
-> 
-> ok?
-> 
-> 	Ingo
-> 
-> 
+        Ingo
