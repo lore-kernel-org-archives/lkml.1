@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbYKTQrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYKTQsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbYKTQrr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 11:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYKTQrj
+	id S1756707AbYKTQsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 11:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbYKTQs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 11:47:39 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39126 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753456AbYKTQrj (ORCPT
+	Thu, 20 Nov 2008 11:48:26 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:56240 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbYKTQsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 11:47:39 -0500
-Date: Thu, 20 Nov 2008 16:47:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Pfaff <tpfaff@pcs.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Question about TTY_DO_WRITE_WAKEUP
-Message-ID: <20081120164719.13daa129@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0811201700320.1274@lxtpfaff.pcs.ditec.de>
-References: <Pine.LNX.4.64.0811201007120.30713@lxtpfaff.pcs.ditec.de>
-	<20081120131726.2636b559@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811201446380.21561@lxtpfaff.pcs.ditec.de>
-	<20081120143147.5e8d6c20@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811201536150.23073@lxtpfaff.pcs.ditec.de>
-	<20081120155502.608812d9@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811201700320.1274@lxtpfaff.pcs.ditec.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 11:48:25 -0500
+Date: Thu, 20 Nov 2008 10:47:24 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+In-Reply-To: <200811161030.34054.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0811201038580.19948@quilx.com>
+References: <s5htzaekp6o.wl%tiwai@suse.de> <200811141019.49493.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0811131759250.7010@quilx.com> <200811161030.34054.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The base code should probably really use test_and_clear_bit() when
-> > calling that method.
-> 
-> Why should you test it, clear it and set it again in n_tty_write_wakeup ?
+On Sun, 16 Nov 2008, Rusty Russell wrote:
 
-Because it should only be set again if a wakeup is needed. If the fasync
-list for the tty is now empty it should stay clear.
+> > And other flags can become necessary if percpu areas gain the ability of
+> > being dynamically extended.
+>
+> And other flags become impossible, eg. GFP_ATOMIC.
 
-> IMHO a SIGIO on write possible should always be generated if the user wants it, 
-> currently it is generated when the user wants it and the tty driver enables the 
-> TTY_DO_WRITE_WAKEUP flag. Unfortunately most drivers don't set it.
+There are other flags that may become relevant like GFP_THISNODE, reclaim
+settings (counter allocation from filesystem context) etc.
 
-It is nothing to do with the driver. The line discipline sets it - or
-rather should set it. If you have a case where you get an EAGAIN or short
-write and the line discipline is not setting it then that is what needs
-fixing not the drivers.
+> The strange indirection was from someone's failed experiment at only
+> allocating only online cpus.  We should kill that as a separate patch.
 
-> Once a write fails with EAGAIN a flag can be set and only in that case a SIGIO is 
-> generated, afterwards the bit is cleared. Maybe that is what TTY_DO_WRITE_WAKEUP 
-> was intended for. 
+I fully agree.
 
-Correct.
+> There are several seperate things here (this is to make sure my head is
+> straight and to clarify for others skimming):
+>
+> 1) Make the dynamic percpu allocator use the static percpu system.
+>    - Agreed, always the aim, never quite happened.
+
+Ack.
+
+> 2) Make zeroing optional
+>    - Disagree, adds API complexity for corner case with no gain.  Using
+>      gfp_t for it is even worse, since it implies GFP_ATOMIC is valid or
+>      sensible.
+
+It does not imply that. Various allocations limit the type of flags that
+can be passed. Also there may be situations in which GFP_ATOMIC will make
+sense in the future f.e. if a percpu counter structure has to be allocated
+from an interrupt context.
+
+GFP_FS, GFP_IO, GFP_NOFAIL GFP_ZERO GFP_NOMEMALLOC GFP_THISNODE and
+GFP_HARDWALL could all be relevant for a dynamically extending percpu
+allocator since memory reclaim could be triggered.
+
+> 3) Change API to use CAPS for macros
+>    - Strongly disagree, Linus doesn't use CAPS for type-taking macros
+>      (list_entry, container_of, min_t), it's ugly, and status-quo wins.
+
+That is the cause for many problems because people assume these can be
+handled like a function.
+
+> 4) Get rid of unused "online-only" percpu allocators.
+>    - Agree, and will simplify implementation and macro tangle.
+
+Ack.
+
+> 5) Make dynamic percpu var access more efficient.
+>    - Agree, obviously.  x86 for the moment, the rest can follow (or not).
+
+Ack.
+>
+> 6) Use percpu allocations more widely.
+>    - Definitely, I have some other patches which use it too.  And makes even
+>      more sense once (5) is done.
+
+Ack.
+
+> 7) Make percpu area grow dynamically.
+>    - Yes, but a thorny tangle esp. with IA64.  The cmdline hack is probably
+>      sufficient meanwhile, and parallels can be drawn with vmalloc.
+
+Allright. Please check with David Miller who wants to allocate thousands
+of network interfaces which all need a MIB block.
+
