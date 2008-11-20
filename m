@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYKTPnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYKTPoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYKTPnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 10:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbYKTPnF
+	id S1756679AbYKTPoQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbYKTPoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 10:43:05 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:54445 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754894AbYKTPnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 10:43:04 -0500
-Date: Thu, 20 Nov 2008 16:42:58 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       peterz@infradead.org, Ingo Molnar <mingo@elte.hu>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [patch 2.6.28-rc2] at91_mci: workaround lockdep
-Message-ID: <20081120164258.31f51cdc@mjolnir.drzeus.cx>
-In-Reply-To: <49257C13.2080304@atmel.com>
-References: <200810271426.27110.david-b@pacbell.net>
-	<4921394E.2000901@atmel.com>
-	<20081119194517.2b73d74f@mjolnir.drzeus.cx>
-	<49257C13.2080304@atmel.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Nov 2008 10:44:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39749 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbYKTPn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 10:43:59 -0500
+Date: Thu, 20 Nov 2008 16:43:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] x86: Fixing __cpuinit/__init tangle.
+Message-ID: <20081120154354.GA23060@elte.hu>
+References: <b9df5fa10811200508h6dc8ec60p1934ece2dde2b426@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b9df5fa10811200508h6dc8ec60p1934ece2dde2b426@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Nov 2008 16:02:43 +0100
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-> Pierre Ossman :
-> > On Mon, 17 Nov 2008 10:28:46 +0100
-> > Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
-> > 
-> >> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> >>
-> > 
-> > Any side-effects besides from dmesg noise? IOW should I push for .28?
+* Rakib Mullick <rakib.mullick@gmail.com> wrote:
+
+> Impact:	 Fixing __cpuinit/__init tangle.
 > 
-> No side-effect. I advice you to push it for .28-final.
+> This patch removes the following section mismatch warning. A patch set
+> was send previously (http://lkml.org/lkml/2008/11/10/407). But
+> introduce some other problem, reported by Rufus
+> (http://lkml.org/lkml/2008/11/11/46). Then Ingo Molnar suggest that,
+> it's best to remove __init from xsave_cntxt_init(void). Which is the
+> second patch in this series. Now, this one removes the following
+> warning.
 > 
+> WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x2237): Section
+> mismatch in reference from the function cpu_init() to the function
+> .init.text:init_thread_xstate()
+> The function __cpuinit cpu_init() references
+> a function __init init_thread_xstate().
+> If init_thread_xstate is only used by cpu_init then
+> annotate init_thread_xstate with a matching annotation.
+> 
+> Thanks.
 
-Well, considering Linus' recent clarification I was thinking more along
-the lines that if the only thing it "solves" is some dmesg noise, then
-it can wait for .29. :)
+applied to tip/x86/urgent, thanks Rakib!
 
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+	Ingo
