@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYKTMpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYKTMrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbYKTMpL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 07:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYKTMo6
+	id S1755247AbYKTMrq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 07:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbYKTMri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 07:44:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47007 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 07:47:38 -0500
+Received: from smtp.cs.aau.dk ([130.225.194.6]:36192 "EHLO smtp.cs.aau.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbYKTMo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 07:44:58 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Deal with the warning from dmi_low_memory_corruption() being
-	unused
-To: torvalds@osdl.org, akpm@linux-foundation.org, mingo@elte.hu
-Cc: dhowells@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Date: Thu, 20 Nov 2008 12:44:11 +0000
-Message-ID: <20081120124411.17087.11596.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1753495AbYKTMrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 07:47:37 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 07:47:37 EST
+Subject: Crash during suspend to disk
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <account@cs.aau.dk>
+To: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 20 Nov 2008 13:41:56 +0100
+Message-Id: <1227184916.4855.31.camel@odie.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Deal with the warning from dmi_low_memory_corruption() being unused when
-CONFIG_X86_RESERVE_LOW_64K is not set:
+Hi
 
-arch/x86/kernel/setup.c:742: warning: 'dmi_low_memory_corruption' defined but not used
+I hope this information is sufficient to debug my problem, though it
+unfortunately is somewhat incomplete. I took two pictures of the OOPS
+with my mobile phone, but unfortunately the picture of the upper part is
+so blurred that it is unreadable. Apparently I have to be in a hurry
+getting out of the door for this to happen. Here is what I got from the
+lower part
 
-This was introduced by fc38151947477596aa27df6c4306ad6008dc6711.
+Call Trace:
+  __blkdev_put
+  swsusp_write
+  hibernate
+  state_store
+  state_store
+  state_store
+  kobj_attr_store
+  sysfs_write_file
+  sysfs_write_file
+  vfs_write
+  sys_write
+  sysenter_do_call
+Code: ......
+EIP: [<...>] iput
+---[ end trace ........................... ]---
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+There is a lot of blanks here that I should be able provide on request
+as well.
 
- arch/x86/kernel/setup.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+The problem occured in my third attempt in quick succession to suspend
+to disk. The first two did not succeed due to insufficient free swap. I
+got 768 MB ram and a ~1 GB swap partition. I believe top said something
+like Mem: 3xxxxxk used and Swap: 6xxxxxk used before the third attempt
+to suspend to disk.
+
+The system that was running had at least one successful suspend to disk
+and restore the day before and I also use it sucessfully on a daily
+basis.
+
+I believe I've seen the same crash before with a 2.6.27 or earlier
+kernel, but I was in a hurry getting out of the door back then as I was
+here. Circumstances was the same though, with already successful suspend
+to disk and the crash appearing during second or third attempt to
+suspend to disk in quick succession.
+
+I guess I should be able to reproduce the crash with some efforts, but
+I'd like to hear your thoughts on this before I do that.
+
+Filesystems are reiserfs.
 
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0fa6790..c35ec3f 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -738,6 +738,7 @@ void start_periodic_check_for_corruption(void)
- }
- #endif
- 
-+#ifdef CONFIG_X86_RESERVE_LOW_64K
- static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
- {
- 	printk(KERN_NOTICE
-@@ -749,6 +750,7 @@ static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
- 
- 	return 0;
- }
-+#endif
- 
- /* List of systems that have known low memory corruption BIOS problems */
- static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+Simon Holm Thøgersen
 
