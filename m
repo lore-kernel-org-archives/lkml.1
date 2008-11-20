@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYKTJW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYKTJY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbYKTJW6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYKTJWn
+	id S1754687AbYKTJY5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYKTJYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:22:43 -0500
-Received: from inhex.net ([193.33.178.145]:38140 "EHLO inhex.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbYKTJWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:22:42 -0500
-Date: Thu, 20 Nov 2008 11:22:39 +0200
-From: Dmitry Nezhevenko <dion@inhex.net>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.28 git: WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404
-	generic_get_mtrr+0xea/0x120()
-Message-ID: <20081120092239.GA16613@laptop.local>
-MIME-Version: 1.0
+	Thu, 20 Nov 2008 04:24:48 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58841 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753202AbYKTJYs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 04:24:48 -0500
+Date: Thu, 20 Nov 2008 09:19:23 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-fsdevel@vger.kernel.org, Naval Saini <navalnovel@gmail.com>,
+       linux-arch@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, naval.saini@nxp.com
+Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline kernel (specifically arm in our case)
+Message-ID: <20081120091923.GA2515@flint.arm.linux.org.uk>
+References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com> <200811191740.23638.nickpiggin@yahoo.com.au> <20081119204315.GB17209@flint.arm.linux.org.uk> <200811201759.01039.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200811201759.01039.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks. This is first time I've tried 2.6.28-git (cloned git a few hours ago). 
-And got this:
+On Thu, Nov 20, 2008 at 05:59:00PM +1100, Nick Piggin wrote:
+> Basically, an O_DIRECT write involves:
+> 
+> - The program storing into some virtual address, then passing that virtual
+>   address as the buffer to write(2).
+> 
+> - The kernel will get_user_pages() to get the struct page * of that user
+>   virtual address. At this point, get_user_pages does flush_dcache_page.
+>   (Which should write back the user caches?)
+> 
+> - Then the struct page is sent to the block layer (it won't tend to be
+>   touched by the kernel via the kernel linear map, unless we have like an
+>   "emulated" block device block device like 'brd').
+> 
+> - Even if it is read via the kernel linear map, AFAIKS, we should be OK
+>   due to the flush_dcache_page().
 
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 000000007ffd0000 (usable)
-[    0.000000]  BIOS-e820: 000000007ffd0000 - 000000007ffde000 (ACPI data)
-[    0.000000]  BIOS-e820: 000000007ffde000 - 0000000080000000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
-[    0.000000] DMI present.
-[    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working it around.
-[    0.000000] last_pfn = 0x7ffd0 max_arch_pfn = 0x100000
-[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
-[    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
-[    0.000000] Modules linked in:
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc5 #1
-[    0.000000] Call Trace:
-[    0.000000]  [<c012b86f>] warn_slowpath+0x6f/0x90
-[    0.000000]  [<c0373031>] inet_rtm_newroute+0x21/0x50
-[    0.000000]  [<c02593c4>] number+0x2b4/0x2c0
-[    0.000000]  [<c0259ff3>] vsnprintf+0x393/0x670
-[    0.000000]  [<c0144fd1>] up+0x11/0x40
-[    0.000000]  [<c012c069>] release_console_sem+0x189/0x1d0
-[    0.000000]  [<c01124da>] generic_get_mtrr+0xea/0x120
-[    0.000000]  [<c04db85f>] mtrr_trim_uncached_memory+0x7d/0x374
-[    0.000000]  [<c03a569a>] printk+0x17/0x1b
-[    0.000000]  [<c011edbc>] pat_init+0x7c/0xa0
-[    0.000000]  [<c01129ac>] post_set+0x1c/0x50
-[    0.000000]  [<c03a569a>] printk+0x17/0x1b
-[    0.000000]  [<c04d7b52>] e820_end_pfn+0xb5/0xd3
-[    0.000000]  [<c04d6016>] setup_arch+0x518/0x802
-[    0.000000]  [<c04d8cc7>] reserve_early_overlap_ok+0x3f/0x47
-[    0.000000]  [<c04cf5dc>] start_kernel+0x58/0x334
-[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.000000] kernel direct mapping tables up to 377fe000 @ 10000-16000
+That seems sane, and yes, flush_dcache_page() will write back and
+invalidate dirty cache lines in both the kernel and user mappings.
 
-Can I just ignore this?
+> An O_DIRECT read involves:
+> 
+> - Same first 2 steps as O_DIRECT write, including flush_dcache_page. So the
+>   user mapping should not have any previously dirtied lines around.
+> 
+> - The page is sent to the block layer, which stores into the page. Some
+>   block devices like 'brd' will potentially store via the kernel linear map
+>   here, and they probably don't do enough cache flushing. But a regular
+>   block device should go via DMA, which AFAIK should be OK? (the user address
+>   should remain invalidated because it would be a bug to read from the buffer
+>   before the read has completed)
 
--- 
-WBR, Dmitry
+This is where things get icky with lots of drivers - DMA is fine, but
+many PIO based drivers don't handle the implications of writing to the
+kernel page cache page when there may be CPU cache side effects.
+
+If the cache is in read allocate mode, then in this case there shouldn't
+be any dirty cache lines.  (That's not always the case though, esp. via
+conventional IO.)  If the cache is in write allocate mode, PIO data will
+sit in the kernel mapping and won't be visible to userspace.
+
+That is a years-old bug, one that I've been unable to run tests for here
+(because my platforms don't have the right combinations of CPUs supporting
+write alloc and/or a problem block driver.)  I've even been accused of
+being uncooperative over testing possible bug fixes by various people
+(if I don't have hardware which can show the problem, how can I test
+possible fixes?)  So I've given up with that issue - as far as I'm
+concerned, it's a problem for others to sort out.
+
+Do we know what hardware, which IO drivers are being used, and any
+relevent configuration of the drivers?
