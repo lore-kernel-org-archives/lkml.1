@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYKTQpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbYKTQp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbYKTQpl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 11:45:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbYKTQoZ
+	id S1756952AbYKTQp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 11:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYKTQo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 11:44:25 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:57262 "EHLO e5.ny.us.ibm.com"
+	Thu, 20 Nov 2008 11:44:29 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60885 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756193AbYKTQoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 11:44:19 -0500
+	id S1756201AbYKTQoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 11:44:20 -0500
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
@@ -17,9 +17,9 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
        Al Viro <viro@ZenIV.linux.org.uk>,
        David Safford <safford@watson.ibm.com>,
        Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
-Date: Thu, 20 Nov 2008 11:43:04 -0500
-Message-Id: <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linux.vnet.ibm.com>
+Subject: [PATCH 3/4] integrity: IMA as an integrity service provider
+Date: Thu, 20 Nov 2008 11:43:05 -0500
+Message-Id: <342f87b65eae2369d96501d8d4935d6be0f46678.1227137423.git.zohar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
 References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
@@ -29,246 +29,161 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This version resolves the merge issues resulting from the removal
-of the nameidata parameter to inode_permission(), by moving the
-integrity_inode_permission() call from inode_permission() to
-may_open(), and renaming the hook to integrity_path_check(). The
-path is needed in order to open and read the file, so that the
-file can be hashed(a cryptographically strong checksum.)
+This is a re-release of Integrity Measurement Architecture(IMA) as an
+independent Linunx Integrity Module(LIM) service provider.
 
-This patch is a redesign of the integrity framework, which address a
-number of issues, including
-   - generalizing the measurement API beyond just inode measurements.
-   - separation of the measurement into distinct collection, appraisal,
-     and commitment phases, for greater flexibility.
+As a LIM integrity provider, IMA implements the new LIM must_measure(),
+collect_measurement(), store_measurement(), and display_template() API
+calls. The store_measurement() call supports two types of data, IMA
+(i.e. file data) and generic template data.
 
-Extended Verification Module(EVM) and the Integrity Measurement
-Architecture(IMA) were originally implemented as an LSM module.  Based
-on discussions on the LSM mailing list, a decision was made that the
-LSM hooks should only be used to enforce mandatory access control
-decisions and a new set of hooks should be defined specifically for
-integrity.
+IMA provides hardware (TPM) based measurement and attestation for both
+files and other types of template measurements. As the Trusted Computing
+(TPM) model requires, IMA measures all files before they are accessed
+in any way (on the bprm_check_integrity, nameidata_check_integrity,
+file_mmap hooks), and commits the measurements to the TPM.  In addition,
+IMA maintains a list of these hash values, which can be used to validate
+the aggregate PCR value.  The TPM can sign these measurements, and thus
+the system can prove to itself and to a third party these measurements
+in a way that cannot be circumvented by malicious or compromised software.
 
-EVM/IMA was limited to verifying and measuring a file's (i.e. an inode)
-integrity and the metadata associated with it.  Current research is
-looking into other types of integrity measurements. (i.e. "Linux kernel
-integrity measurement using contextual inspection",  by Peter A. Loscocco,
-Perry W. Wilson, J. Aaron Pendergrass, C. Durward McDonell,
-http://doi.acm.org/10.1145/1314354.1314362). As a result, a requirement
-of the new integrity framework is support for different types of integrity
-measurements.
+When store_measurement() is called for the IMA type of data, the file
+measurement and the file name hint are used to form an IMA template.
+IMA then calculates the IMA template measurement(hash) and submits it
+to the TPM chip for inclusion in one of the chip's Platform Configuration
+Registers (PCR).
 
-This patch provides an integrity framework(api and hooks) and placement
-of the integrity hooks in the appropriate places in the fs directory.
-Collecting, appraising, and storing of file and other types of integrity
-data is supported.  Multiple integrity templates, which implement the
-integrity API, may register themselves.  For now, only a single integrity
-provider can register itself for the integrity hooks. (Support for multiple
-providers registering themselves for the integrity hooks would require
-some form of stacking.)
+When store_measurement() is called for generic template data, IMA
+calculates the measurement(hash) of the template data, and submits
+the template measurement to the TPM chip for inclusion in one of the
+chip's Platform Configuration Registers(PCR).
 
-The six integrity hooks are:
-   path_check_integrity, inode_alloc_integrity, inode_free_integrity,
-   bprm_check_integrity, file_free_integrity, file_mmap
+In order to view the contents of template data through securityfs, the
+template_display() function must be defined in the registered
+template_operations.  In the case of the IMA template, the list of
+file names and files hashes submitted can be viewed through securityfs.
 
-The five integrity API calls provided are:
-   integrity_must_measure, integrity_collect_measurement,
-   integrity_appraise_measurement, integrity_store_measurement,
-   and integrity_display_template.
+As mentioned above, IMA maintains a list of hash values of executables
+and other sensitive system files loaded into the run-time of the system.
+Our work has shown that requests for integrity appraisal and measurement
+need to be based on knowledge of the filesystem, requiring the system
+to either be labeled with integrity data or depend on the existent LSM
+security labels.  The previous set of integrity patches modified the LSM
+modules to be integrity context aware, meaning that the LSM modules made
+integrity data/metadata appraisal and measurement API calls based on
+an understanding of the LSM security labels.  Both of the LSM maintainers
+felt that the changes were too intrusive and that integrity enforcement
+should be made by the integrity provider, not the LSM module.
 
-The type of integrity data being collected, appraised, stored, or
-displayed is template dependent.
-
-(Details on the calls and their exact arguments are in linux/integrity.h,
-included in the patch.)
+To address these concerns, Stephen Smalley suggested using the
+security_audit_rule_match(), renamed to security_filter_rule_match(), to
+define LSM specific integrity measurement policy rules, in lieu of
+modifying the LSM modules.  In the current set of patches, the integrity
+API calls can be made either by IMA, based on an LSM specific integrity
+policy, or by an integrity context aware LSM.
 
 Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
+diff --git a/Documentation/ABI/testing/ima_policy b/Documentation/ABI/testing/ima_policy
+new file mode 100644
+index 0000000..6434f0d
+--- /dev/null
++++ b/Documentation/ABI/testing/ima_policy
+@@ -0,0 +1,61 @@
++What:		security/ima/policy
++Date:		May 2008
++Contact:	Mimi Zohar <zohar@us.ibm.com>
++Description:
++		The Trusted Computing Group(TCG) runtime Integrity
++		Measurement Architecture(IMA) maintains a list of hash
++		values of executables and other sensitive system files
++		loaded into the run-time of this system.  At runtime,
++		the policy can be constrained based on LSM specific data.
++		Policies are loaded into the securityfs file ima/policy
++		by opening the file, writing the rules one at a time and
++		then closing the file.  The new policy takes effect after
++		the file ima/policy is closed.
++
++		rule format: action [condition ...]
++
++		action: measure | dont_measure
++		condition:= base | lsm
++			base:	[[func=] [mask=] [fsmagic=] [uid=]]
++			lsm:	[[subj_user=] [subj_role=] [subj_type=]
++				 [obj_user=] [obj_role=] [obj_type=]]
++
++		base: 	func:= [BPRM_CHECK][FILE_MMAP][INODE_PERMISSION]
++			mask:= [MAY_READ] [MAY_WRITE] [MAY_APPEND] [MAY_EXEC]
++			fsmagic:= hex value
++			uid:= decimal value
++		lsm:  	are LSM specific
++
++		default policy:
++			# PROC_SUPER_MAGIC
++			dont_measure fsmagic=0x9fa0
++			# SYSFS_MAGIC
++			dont_measure fsmagic=0x62656572
++			# DEBUGFS_MAGIC
++			dont_measure fsmagic=0x64626720
++			# TMPFS_MAGIC
++			dont_measure fsmagic=0x01021994
++			# SECURITYFS_MAGIC
++			dont_measure fsmagic=0x73636673
++
++			measure func=BPRM_CHECK
++			measure func=FILE_MMAP mask=MAY_EXEC
++			measure func=INODE_PERM mask=MAY_READ uid=0
++
++		The default policy measures all executables in bprm_check,
++		all files mmapped executable in file_mmap, and all files
++		open for read by root in inode_permission.
++
++		Examples of LSM specific definitions:
++
++		SELinux:
++			# SELINUX_MAGIC
++			dont_measure fsmagic=0xF97CFF8C
++
++			dont_measure obj_type=var_log_t
++			dont_measure obj_type=auditd_log_t
++			measure subj_user=system_u func=INODE_PERM mask=MAY_READ
++			measure subj_role=system_r func=INODE_PERM mask=MAY_READ
++
++		Smack:
++			measure subj_user=_ func=INODE_PERM mask=MAY_READ
 diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9fa6508..9789805 100644
+index 9789805..10c3b87 100644
 --- a/Documentation/kernel-parameters.txt
 +++ b/Documentation/kernel-parameters.txt
 @@ -44,6 +44,7 @@ parameter is applicable:
  	FB	The frame buffer device is enabled.
  	HW	Appropriate hardware is enabled.
  	IA-64	IA-64 architecture is enabled.
-+	INTEGRITY Integrity support is enabled.
++	IMA     Integrity measurement architecture is enabled.
+ 	INTEGRITY Integrity support is enabled.
  	IOSCHED	More than one I/O scheduler is enabled.
  	IP_PNP	IP DHCP, BOOTP, or RARP is enabled.
- 	ISAPNP	ISA PnP code is enabled.
-@@ -894,6 +895,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 	inport.irq=	[HW] Inport (ATI XL and Microsoft) busmouse driver
- 			Format: <irq>
+@@ -878,6 +879,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	ihash_entries=	[KNL]
+ 			Set number of hash buckets for inode cache.
  
-+	integrity_audit= [INTEGRITY]
-+                        Format: { "0" | "1" }
-+                        0 -- integrity auditing messages. (Default)
-+                        1 -- enable informational integrity auditing messages.
++	ima_hash=	[IMA] runtime ability to define hash crypto algorithm.
++			Format: { "MD5" | "SHA1" }
++			Default is "SHA1".
 +
- 	inttest=	[IA64]
+ 	in2000=		[HW,SCSI]
+ 			See header of drivers/scsi/in2000.c.
  
- 	iommu=		[x86]
-diff --git a/fs/exec.c b/fs/exec.c
-index 4e834f1..3494c4c 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -45,6 +45,7 @@
- #include <linux/proc_fs.h>
- #include <linux/mount.h>
- #include <linux/security.h>
-+#include <linux/integrity.h>
- #include <linux/syscalls.h>
- #include <linux/tsacct_kern.h>
- #include <linux/cn_proc.h>
-@@ -129,6 +130,9 @@ asmlinkage long sys_uselib(const char __user * library)
- 	error = vfs_permission(&nd, MAY_READ | MAY_EXEC | MAY_OPEN);
- 	if (error)
- 		goto exit;
-+	error = integrity_path_check(&nd.path, MAY_READ | MAY_EXEC | MAY_OPEN);
-+	if (error)
-+		goto exit;
- 
- 	file = nameidata_to_filp(&nd, O_RDONLY|O_LARGEFILE);
- 	error = PTR_ERR(file);
-@@ -1199,6 +1203,9 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
- 	retval = security_bprm_check(bprm);
- 	if (retval)
- 		return retval;
-+	retval = integrity_bprm_check(bprm);
-+	if (retval)
-+		return retval;
- 
- 	/* kernel module loader fixup */
- 	/* so we don't try to load run modprobe in kernel space. */
-diff --git a/fs/file_table.c b/fs/file_table.c
-index 5ad0eca..74b30ba 100644
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/security.h>
-+#include <linux/integrity.h>
- #include <linux/eventpoll.h>
- #include <linux/rcupdate.h>
- #include <linux/mount.h>
-@@ -276,6 +277,7 @@ void __fput(struct file *file)
- 	if (file->f_op && file->f_op->release)
- 		file->f_op->release(inode, file);
- 	security_file_free(file);
-+	integrity_file_free(file);
- 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
- 		cdev_put(inode->i_cdev);
- 	fops_put(file->f_op);
-@@ -347,6 +349,7 @@ void put_filp(struct file *file)
- {
- 	if (atomic_long_dec_and_test(&file->f_count)) {
- 		security_file_free(file);
-+		integrity_file_free(file);
- 		file_kill(file);
- 		file_free(file);
- 	}
-diff --git a/fs/inode.c b/fs/inode.c
-index 0487ddb..bc2c3a5 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -17,6 +17,7 @@
- #include <linux/hash.h>
- #include <linux/swap.h>
- #include <linux/security.h>
-+#include <linux/integrity.h>
- #include <linux/pagemap.h>
- #include <linux/cdev.h>
- #include <linux/bootmem.h>
-@@ -143,12 +144,13 @@ static struct inode *alloc_inode(struct super_block *sb)
- 		inode->i_cdev = NULL;
- 		inode->i_rdev = 0;
- 		inode->dirtied_when = 0;
--		if (security_inode_alloc(inode)) {
--			if (inode->i_sb->s_op->destroy_inode)
--				inode->i_sb->s_op->destroy_inode(inode);
--			else
--				kmem_cache_free(inode_cachep, (inode));
--			return NULL;
-+		if (security_inode_alloc(inode))
-+			goto out_free_inode;
-+
-+		/* allocate, attach and initialize an i_integrity */
-+		if (integrity_inode_alloc(inode)) {
-+			security_inode_free(inode);
-+			goto out_free_inode;
- 		}
- 
- 		spin_lock_init(&inode->i_lock);
-@@ -185,12 +187,20 @@ static struct inode *alloc_inode(struct super_block *sb)
- 		inode->i_mapping = mapping;
- 	}
- 	return inode;
-+
-+out_free_inode:
-+	if (inode->i_sb->s_op->destroy_inode)
-+		inode->i_sb->s_op->destroy_inode(inode);
-+	else
-+		kmem_cache_free(inode_cachep, (inode));
-+	return NULL;
- }
- 
- void destroy_inode(struct inode *inode) 
- {
- 	BUG_ON(inode_has_buffers(inode));
- 	security_inode_free(inode);
-+	integrity_inode_free(inode);
- 	if (inode->i_sb->s_op->destroy_inode)
- 		inode->i_sb->s_op->destroy_inode(inode);
- 	else
-diff --git a/fs/namei.c b/fs/namei.c
-index 09ce58e..d7d4e59 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -24,6 +24,7 @@
- #include <linux/fsnotify.h>
- #include <linux/personality.h>
- #include <linux/security.h>
-+#include <linux/integrity.h>
- #include <linux/syscalls.h>
- #include <linux/mount.h>
- #include <linux/audit.h>
-@@ -1523,6 +1524,11 @@ int may_open(struct nameidata *nd, int acc_mode, int flag)
- 	error = vfs_permission(nd, acc_mode);
- 	if (error)
- 		return error;
-+
-+	error = integrity_path_check(&nd->path, acc_mode
-+				     & (MAY_READ | MAY_WRITE | MAY_EXEC));
-+	if (error)
-+		return error;
- 	/*
- 	 * An append-only file must be opened in append mode for writing.
- 	 */
-diff --git a/include/linux/audit.h b/include/linux/audit.h
-index 6272a39..63bb3ec 100644
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -123,6 +123,11 @@
- #define AUDIT_LAST_KERN_ANOM_MSG    1799
- #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
- #define AUDIT_ANOM_ABEND            1701 /* Process ended abnormally */
-+#define AUDIT_INTEGRITY_DATA	    1800 /* Data integrity verification */
-+#define AUDIT_INTEGRITY_METADATA    1801 /* Metadata integrity verification */
-+#define AUDIT_INTEGRITY_STATUS	    1802 /* Integrity enable status */
-+#define AUDIT_INTEGRITY_HASH	    1803 /* Integrity HASH type */
-+#define AUDIT_INTEGRITY_PCR	    1804 /* PCR invalidation msgs */
- 
- #define AUDIT_KERNEL		2000	/* Asynchronous audit record. NOT A REQUEST. */
- 
-diff --git a/include/linux/integrity.h b/include/linux/integrity.h
+diff --git a/include/linux/ima.h b/include/linux/ima.h
 new file mode 100644
-index 0000000..eb4adfb
+index 0000000..b7f0ce7
 --- /dev/null
-+++ b/include/linux/integrity.h
-@@ -0,0 +1,166 @@
++++ b/include/linux/ima.h
+@@ -0,0 +1,46 @@
 +/*
-+ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ * ima.h
++ *
++ * Copyright (C) 2008 IBM Corporation
 + * Author: Mimi Zohar <zohar@us.ibm.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -276,690 +191,2406 @@ index 0000000..eb4adfb
 + * the Free Software Foundation, version 2 of the License.
 + */
 +
-+#ifndef _LINUX_INTEGRITY_H
-+#define _LINUX_INTEGRITY_H
++#ifndef _LINUX_IMA_H
++#define _LINUX_IMA_H
 +
-+#include <linux/fs.h>
-+#include <linux/audit.h>
++/* IMA LIM Data */
++enum ima_type { IMA_DATA, IMA_METADATA, IMA_TEMPLATE };
 +
-+#ifdef CONFIG_INTEGRITY
-+void integrity_audit_msg(int audit_msgno, struct inode *inode,
-+			 const unsigned char *fname, char *op,
-+			 char *cause, int result);
-+
-+/*
-+ * Integrity API calls:
-+ *
-+ * @collect_measurement:
-+ *	Collect template specific measurement data.
-+ *	@data contains template specific data used for collecting the
-+ *	measurement.
-+ * 	Return 0 if operation was successful.
-+ *
-+ * @appraise_measurement:
-+ *	Appraise the integrity of the template specific measurement data.
-+ *	@data contains template specific data used for appraising the
-+ *	measurement.
-+ * 	Return 0 if operation was successful.
-+ *
-+ * @store_measurement:
-+ *	Store the template specific data.
-+ *	@data contains template specific data used for storing the
-+ *	measurement.
-+ *
-+ * @must_measure:
-+ *	Measurement decision based on an integrity policy.
-+ *	@data contains template specific data used for making policy
-+ * 	decision.
-+ * 	Return 0 if operation was successful.
-+ *
-+ * @display_template:
-+ *	Display template specific data.
-+ *
-+ */
-+
-+enum integrity_show_type { INTEGRITY_SHOW_BINARY, INTEGRITY_SHOW_ASCII };
-+
-+struct template_operations {
-+	int (*collect_measurement) (void *);
-+	int (*appraise_measurement) (void *);
-+	void (*store_measurement) (void *);
-+	int (*must_measure) (void *);
-+	void (*display_template) (struct seq_file *m, void *,
-+				  enum integrity_show_type);
++struct ima_args_data {
++	const char *filename;
++	struct file *file;
++	struct path *path;
++	struct dentry *dentry;
++	struct inode *inode;
++	enum lim_hooks function;
++	u32 osid;
++	int mask;
 +};
-+extern int integrity_register_template(const char *template_name,
-+				       const struct template_operations *ops);
-+extern int integrity_unregister_template(const char *template_name);
 +
-+/*
-+ * Integrity hooks:
-+ *
-+ * @bprm_check_integrity:
-+ * 	This hook mediates the point when a search for a binary handler	will
-+ * 	begin.  At this point, the OS protects against an executable file,
-+ * 	already open for write, from being executed; and an executable file
-+ * 	already open for execute, from being modified. So we can be certain
-+ *	that any measurements(collect, appraise, store) done here are of
-+ * 	the file being executed.
-+ * 	@bprm contains the linux_binprm structure.
-+ *	Return 0 if the hook is successful and permission is granted.
-+ *
-+ * @inode_alloc_integrity:
-+ *	Allocate an integrity structure associated with an inode.
-+ * 	@inode contains the inode structure.
-+ * 	Return 0 if operation was successful.
-+ *
-+ * @inode_free_integrity:
-+ *	@inode contains the inode structure.
-+ * 	Deallocate the integrity structure associated with the inode
-+ *
-+ * @path_check_integrity:
-+ *	This hook is called by the existing Linux may_open function,
-+ *	after calling verify_permission(), as a file is opened.  At
-+ *	this point, measurements(collect, appraise, store) of files
-+ *	open for read can be made.
-+ *	@path contains the path structure.
-+ *	@mask contains the permission mask.
-+ *	Return 0 if the hook is successful and permission is granted.
-+ *
-+ * @file_free_integrity:
-+ *	Update the integrity xattr value as necessary.
-+ * 	@file contains the file structure being closed.
-+ *
-+ * @file_mmap :
-+ *	Measurements(collect, appraise, store) of files mmaped for EXEC
-+ *	can be made.
-+ *	@file contains the file structure of the file to map (may be NULL).
-+ *	@prot contains the protection that will be applied by the kernel.
-+ *	Return 0 if the hook is successful and permission is granted.
-+ */
-+
-+enum lim_hooks { INODE_PERMISSION = 1, FILE_MMAP, BPRM_CHECK };
-+
-+struct integrity_operations {
-+	int (*bprm_check_integrity) (struct linux_binprm *bprm);
-+	int (*inode_alloc_integrity) (struct inode *inode);
-+	void (*inode_free_integrity) (struct inode *inode);
-+	int (*path_check_integrity) (struct path *path, int mask);
-+	void (*file_free_integrity) (struct file *file);
-+	int (*file_mmap) (struct file *file, unsigned long prot);
++struct ima_store_data {
++	char *name;
++	int len;
++	char *data;
++	int violation;
 +};
-+extern int register_integrity(const struct integrity_operations *ops);
-+extern int unregister_integrity(const struct integrity_operations *ops);
 +
-+/* global variables */
-+int integrity_collect_measurement(const char *template_name, void *data);
-+int integrity_appraise_measurement(const char *template_name, void *data);
-+int integrity_must_measure(const char *template_name, void *data);
-+int integrity_store_measurement(const char *template_name, void *data);
++struct ima_data {
++	enum ima_type type;
++	union {
++		struct ima_args_data args;
++		struct ima_store_data template;
++	} data;
++};
 +
-+int integrity_bprm_check(struct linux_binprm *bprm);
-+int integrity_inode_alloc(struct inode *inode);
-+void integrity_inode_free(struct inode *inode);
-+int integrity_path_check(struct path *path, int mask);
-+void integrity_file_free(struct file *file);
-+int integrity_file_mmap(struct file *file, unsigned long prot);
-+#else
-+
-+static inline int integrity_bprm_check(struct linux_binprm *bprm)
-+{
-+	return 0;
-+}
-+
-+static inline int integrity_inode_alloc(struct inode *inode)
-+{
-+	return 0;
-+}
-+
-+static inline void integrity_inode_free(struct inode *inode)
-+{
-+	return;
-+}
-+
-+static inline int integrity_path_check(struct path *path, int mask)
-+{
-+	return 0;
-+}
-+
-+static inline void integrity_file_free(struct file *file)
-+{
-+	return;
-+}
-+
-+static inline int integrity_file_mmap(struct file *file, unsigned long prot)
-+{
-+	return 0;
-+}
++void ima_fixup_argsdata(struct ima_args_data *data, struct file *file,
++			struct path *path, int mask, int function);
 +#endif
-+#endif
-diff --git a/mm/mmap.c b/mm/mmap.c
-index d4855a6..7cdfd3a 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -20,6 +20,7 @@
- #include <linux/fs.h>
- #include <linux/personality.h>
- #include <linux/security.h>
-+#include <linux/integrity.h>
- #include <linux/hugetlb.h>
- #include <linux/profile.h>
- #include <linux/module.h>
-@@ -1050,6 +1051,9 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 	error = security_file_mmap(file, reqprot, prot, flags, addr, 0);
- 	if (error)
- 		return error;
-+	error = integrity_file_mmap(file, prot);
-+	if (error)
-+		return error;
- 
- 	return mmap_region(file, addr, len, flags, vm_flags, pgoff,
- 			   accountable);
 diff --git a/security/Kconfig b/security/Kconfig
-index d9f47ce..4c602be 100644
+index 4c602be..665a1b7 100644
 --- a/security/Kconfig
 +++ b/security/Kconfig
-@@ -126,5 +126,7 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
- source security/selinux/Kconfig
- source security/smack/Kconfig
+@@ -55,7 +55,8 @@ config SECURITYFS
+ 	bool "Enable the securityfs filesystem"
+ 	help
+ 	  This will build the securityfs filesystem.  It is currently used by
+-	  the TPM bios character driver.  It is not used by SELinux or SMACK.
++	  the TPM bios character driver and IMA, an integrity provider.  It
++	  is not used by SELinux or SMACK.
  
-+source security/integrity/Kconfig
-+
- endmenu
+ 	  If you are unsure how to answer this question, answer N.
  
-diff --git a/security/Makefile b/security/Makefile
-index c05c127..db9efb5 100644
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -17,3 +17,7 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
- obj-$(CONFIG_SECURITY_SMACK)		+= smack/built-in.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= root_plug.o
- obj-$(CONFIG_CGROUP_DEVICE)		+= device_cgroup.o
-+
-+# Object integrity file lists
-+subdir-$(CONFIG_INTEGRITY)		+= integrity
-+obj-$(CONFIG_INTEGRITY)			+= integrity/built-in.o
 diff --git a/security/integrity/Kconfig b/security/integrity/Kconfig
-new file mode 100644
-index 0000000..2123dfc
---- /dev/null
+index 2123dfc..57213d6 100644
+--- a/security/integrity/Kconfig
 +++ b/security/integrity/Kconfig
-@@ -0,0 +1,24 @@
+@@ -22,3 +22,5 @@ config INTEGRITY_AUDIT
+ 	  at boot.  If this option is selected, informational integrity
+ 	  auditing messages can be enabled with 'integrity_audit=1' on
+ 	  the kernel command line.
++
++source security/integrity/ima/Kconfig
+diff --git a/security/integrity/Makefile b/security/integrity/Makefile
+index a6e1405..107dafd 100644
+--- a/security/integrity/Makefile
++++ b/security/integrity/Makefile
+@@ -4,3 +4,4 @@
+ 
+ # Object file lists
+ obj-$(CONFIG_INTEGRITY) += integrity.o integrity_audit.o
++obj-$(CONFIG_IMA) += ima/
+diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+new file mode 100644
+index 0000000..8dd390d
+--- /dev/null
++++ b/security/integrity/ima/Kconfig
+@@ -0,0 +1,48 @@
 +#
-+# Integrity configuration
++# IBM Integrity Measurement Architecture
 +#
-+
-+config INTEGRITY
-+	bool "Enable different integrity models"
-+	help
-+	  This allows you to choose different integrity modules to be
-+	  configured into your kernel. Integrity models can collect,
-+	  verify, and record measurements, such as of a file's data
-+	  and metadata before it is read or executed.
-+
-+	  If you are unsure how to answer this question, answer N.
-+
-+config INTEGRITY_AUDIT
-+	bool "Integrity audit boot parameter"
++config IMA
++	bool "Integrity Measurement Architecture(IMA)"
 +	depends on INTEGRITY
++	depends on ACPI
++	select SECURITYFS
++	select CRYPTO
++	select CRYPTO_HMAC
++	select CRYPTO_MD5
++	select CRYPTO_SHA1
++	select TCG_TPM
++	select TCG_TIS
++	help
++	  The Trusted Computing Group(TCG) runtime Integrity
++	  Measurement Architecture(IMA) maintains a list of hash
++	  values of executables and other sensitive system files
++	  loaded into the run-time of this system.  If your system
++	  has a TPM chip, then IMA also maintains an aggregate
++	  integrity value over this list inside the TPM hardware.
++	  These measurements and the aggregate (signed inside the
++	  TPM) can be retrieved and presented to remote parties to
++	  establish system properties. If unsure, say N.
++
++config IMA_MEASURE_PCR_IDX
++	int "PCR for Aggregate (8 <= Index <= 14)"
++	depends on IMA
++	range 8 14
++	default 10
++	help
++	  IMA_MEASURE_PCR_IDX determines the TPM PCR register index
++	  that IMA uses to maintain the integrity aggregate of the
++	  measurement list.  If unsure, use the default 10.
++
++config IMA_BASE_HOOKS
++	bool "IMA base hooks"
++	depends on IMA
 +	default n
 +	help
-+	  This option adds a kernel parameter 'integrity_audit', which
-+	  allows informational integrity auditing messages to be enabled
-+	  at boot.  If this option is selected, informational integrity
-+	  auditing messages can be enabled with 'integrity_audit=1' on
-+	  the kernel command line.
-diff --git a/security/integrity/Makefile b/security/integrity/Makefile
++	  Enable this option to allow the LSM module to enforce integrity.
++
++config IMA_LSM_RULES
++	bool "Enable LSM measurement policy rules"
++	depends on IMA && (SECURITY_SELINUX || SECURITY_SMACK)
++	default y
++	help
++	  Disabling this option will not enforce LSM based policy rules.
+diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
 new file mode 100644
-index 0000000..a6e1405
+index 0000000..959ae66
 --- /dev/null
-+++ b/security/integrity/Makefile
-@@ -0,0 +1,6 @@
++++ b/security/integrity/ima/Makefile
+@@ -0,0 +1,9 @@
 +#
-+# Makefile for the kernel integrity code
++# Makefile for building Trusted Computing Group's(TCG) runtime Integrity
++# Measurement Architecture(IMA).
 +#
 +
-+# Object file lists
-+obj-$(CONFIG_INTEGRITY) += integrity.o integrity_audit.o
-diff --git a/security/integrity/integrity.c b/security/integrity/integrity.c
++obj-$(CONFIG_IMA) += ima.o
++
++ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
++	 ima_policy.o ima_iint.o
+diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
 new file mode 100644
-index 0000000..447ccf2
+index 0000000..0a0efa5
 --- /dev/null
-+++ b/security/integrity/integrity.c
-@@ -0,0 +1,313 @@
++++ b/security/integrity/ima/ima.h
+@@ -0,0 +1,198 @@
 +/*
-+ * Copyright (C) 2006,2007,2008 IBM Corporation
-+ * Author: Mimi Zohar <zohar@us.ibm.com>
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation, version 2 of the License.
++ * Authors:
++ * Reiner Sailer <sailer@watson.ibm.com>
++ * Mimi Zohar <zohar@us.ibm.com>
 + *
-+ * File: integrity.c
-+ * 	register integrity subsystem
-+ * 	register integrity template
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ *
++ * File: ima.h
++ *	internal ima definitions
 + */
 +
-+#include <asm/atomic.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
++#ifndef __LINUX_IMA_H
++#define __LINUX_IMA_H
++
++#include <linux/types.h>
++#include <linux/crypto.h>
++#include <linux/security.h>
 +#include <linux/integrity.h>
-+#include "integrity.h"
++#include <linux/hash.h>
++#include <linux/tpm.h>
 +
-+static const struct integrity_operations *integrity_ops;
-+static LIST_HEAD(integrity_templates);
-+static DEFINE_MUTEX(integrity_templates_mutex);
++#define ima_printk(level, format, arg...)		\
++	printk(level "ima (%s): " format, __func__, ## arg)
 +
-+/**
-+ * register_integrity - registers an integrity framework with the kernel
-+ * @ops: a pointer to the struct security_options that is to be registered
-+ *
-+ * Perhaps in the future integrity module stacking will be necessary, but
-+ * for the time being, this function permits only one integrity module to
-+ * register itself with the kernel integrity subsystem.
-+ *
-+ * If another integrity module is already registered, an error code is
-+ * returned. On success 0 is returned.
-+ */
-+int register_integrity(const struct integrity_operations *ops)
-+{
-+	if (integrity_ops != NULL)
-+		return -EAGAIN;
-+	integrity_ops = ops;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(register_integrity);
++#define ima_error(format, arg...)	\
++	ima_printk(KERN_ERR, format, ## arg)
 +
-+/**
-+ * unregister_integrity - unregisters an integrity framework from the kernel
-+ * @ops: a pointer to the struct security_options that is to be registered
-+ *
-+ * Returns 0 on success, -EINVAL on failure.
-+ */
-+int unregister_integrity(const struct integrity_operations *ops)
-+{
-+	if (ops != integrity_ops)
-+		return -EINVAL;
++#define ima_info(format, arg...)	\
++	ima_printk(KERN_INFO, format, ## arg)
 +
-+	integrity_ops = NULL;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(unregister_integrity);
++/* digest size for IMA, fits SHA1 or MD5 */
++#define IMA_DIGEST_SIZE		20
++#define IMA_EVENT_NAME_LEN_MAX	255
 +
-+/**
-+ * integrity_register_template - registers an integrity template with the kernel
-+ * @template_name: a pointer to a string containing the template name.
-+ * @template_ops: a pointer to the template functions
-+ *
-+ * Register a set of functions to collect, appraise, store, and display
-+ * a template measurement, and a means to decide whether to do them.
-+ * Unlike integrity modules, any number of templates may be registered.
-+ *
-+ * Returns 0 on success, an error code on failure.
-+ */
-+int integrity_register_template(const char *template_name,
-+				const struct template_operations *template_ops)
-+{
++#define IMA_HASH_BITS 9
++#define IMA_MEASURE_HTABLE_SIZE (1 << IMA_HASH_BITS)
++
++/* set during initialization */
++extern int ima_used_chip;
++extern char *ima_hash;
++
++struct ima_measure_entry {
++	u8 digest[IMA_DIGEST_SIZE];	/* sha1 or md5 measurement hash */
++	char template_name[IMA_EVENT_NAME_LEN_MAX + 1];	/* name + \0 */
 +	int template_len;
-+	struct template_list_entry *entry;
-+
-+	template_len = strlen(template_name);
-+	if (template_len > TEMPLATE_NAME_LEN_MAX)
-+		return -EINVAL;
-+
-+	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		return -ENOMEM;
-+	INIT_LIST_HEAD(&entry->template);
-+
-+	atomic_set(&entry->refcount, 1);
-+	strcpy(entry->template_name, template_name);
-+	entry->template_ops = template_ops;
-+
-+	mutex_lock(&integrity_templates_mutex);
-+	list_add_rcu(&entry->template, &integrity_templates);
-+	mutex_unlock(&integrity_templates_mutex);
-+	synchronize_rcu();
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(integrity_register_template);
-+
-+/**
-+ * integrity_unregister_template: unregister a template
-+ * @template_name: a pointer to a string containing the template name.
-+ *
-+ * Returns 0 on success, -EINVAL on failure.
-+ */
-+int integrity_unregister_template(const char *template_name)
-+{
-+	struct template_list_entry *entry;
-+
-+	mutex_lock(&integrity_templates_mutex);
-+	list_for_each_entry(entry, &integrity_templates, template) {
-+		if (strncmp(entry->template_name, template_name,
-+			    strlen(entry->template_name)) == 0) {
-+			list_del_rcu(&entry->template);
-+			mutex_unlock(&integrity_templates_mutex);
-+			synchronize_rcu();
-+			tput(entry);
-+			return 0;
-+		}
-+	}
-+	mutex_unlock(&integrity_templates_mutex);
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(integrity_unregister_template);
-+
-+/**
-+ * integrity_find_template - search the integrity_templates list
-+ * @template_name: a pointer to a string containing the template name.
-+ * @template_entry: a pointer to an entry in the template list
-+ *
-+ * Called with an rcu_read_lock
-+ * Returns 0 on success, -EINVAL on failure.
-+ */
-+int integrity_find_template(const char *template_name,
-+			    struct template_list_entry **template_entry)
-+{
-+	struct template_list_entry *entry;
-+
-+	list_for_each_entry_rcu(entry, &integrity_templates, template) {
-+		if (strncmp(entry->template_name, template_name,
-+			    strlen(entry->template_name)) == 0) {
-+			*template_entry = entry;
-+			return 0;
-+		}
-+	}
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(integrity_find_template);
-+
-+/* Start of the integrity API calls */
-+
-+/**
-+ * integrity_collect_measurement - collect template specific measurement
-+ * @template_name: a pointer to a string containing the template name.
-+ * @data: pointer to template specific data
-+ *
-+ * Returns 0 on success, an error code on failure.
-+ */
-+int integrity_collect_measurement(const char *template_name, void *data)
-+{
-+	struct template_list_entry *template_entry;
-+	int rc;
-+
-+	rcu_read_lock();
-+	rc = integrity_find_template(template_name, &template_entry);
-+	if (rc == 0)
-+		tget(template_entry);
-+	rcu_read_unlock();
-+
-+	if (rc == 0) {
-+		rc = template_entry->template_ops->collect_measurement(data);
-+		tput(template_entry);
-+	}
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(integrity_collect_measurement);
-+
-+/**
-+ * integrity_appraise_measurement - appraise template specific measurement
-+ * @template_name: a pointer to a string containing the template name.
-+ * @data: pointer to template specific data
-+ *
-+ * Returns 0 on success, an error code on failure
-+ */
-+int integrity_appraise_measurement(const char *template_name, void *data)
-+{
-+	struct template_list_entry *template_entry;
-+	int rc;
-+
-+	rcu_read_lock();
-+	rc = integrity_find_template(template_name, &template_entry);
-+	if (rc == 0)
-+		tget(template_entry);
-+	rcu_read_unlock();
-+
-+	if (rc == 0) {
-+		rc = template_entry->template_ops->appraise_measurement(data);
-+		tput(template_entry);
-+	}
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(integrity_appraise_measurement);
-+
-+/**
-+ * integrity_store_measurement - store template specific measurement
-+ * @template_name: a pointer to a string containing the template name.
-+ * @data: pointer to template specific data
-+ *
-+ * Store template specific integrity measurement.
-+ */
-+int integrity_store_measurement(const char *template_name, void *data)
-+{
-+	struct template_list_entry *template_entry;
-+	int rc;
-+
-+	rcu_read_lock();
-+	rc = integrity_find_template(template_name, &template_entry);
-+	if (rc == 0)
-+		tget(template_entry);
-+	rcu_read_unlock();
-+
-+	if (rc == 0) {
-+		template_entry->template_ops->store_measurement(data);
-+		tput(template_entry);
-+	}
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(integrity_store_measurement);
-+
-+/**
-+ * integrity_must_measure - measure decision based on template policy
-+ * @template_name: a pointer to a string containing the template name.
-+ * @data: pointer to template specific data
-+ *
-+ * Returns 0 on success, an error code on failure.
-+ */
-+int integrity_must_measure(const char *template_name, void *data)
-+{
-+	struct template_list_entry *template_entry;
-+	int rc;
-+
-+	rcu_read_lock();
-+	rc = integrity_find_template(template_name, &template_entry);
-+	if (rc == 0)
-+		tget(template_entry);
-+	rcu_read_unlock();
-+
-+	if (rc == 0) {
-+		rc = template_entry->template_ops->must_measure(data);
-+		tput(template_entry);
-+	}
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(integrity_must_measure);
-+
-+/* Start of the integrity Hooks */
-+
-+/* Hook used to measure executable file integrity. */
-+int integrity_bprm_check(struct linux_binprm *bprm)
-+{
-+	int rc = 0;
-+
-+	if (integrity_ops && integrity_ops->bprm_check_integrity)
-+		rc = integrity_ops->bprm_check_integrity(bprm);
-+	return rc;
-+}
-+
-+/* Allocate, attach and initialize an inode's i_integrity,
-+ * if INTEGRITY is configured.
-+ */
-+int integrity_inode_alloc(struct inode *inode)
-+{
-+	int rc = 0;
-+
-+	if (integrity_ops && integrity_ops->inode_alloc_integrity)
-+		rc = integrity_ops->inode_alloc_integrity(inode);
-+	return rc;
-+}
-+
-+/* Hook used to free an inode's i_integrity structure. */
-+void integrity_inode_free(struct inode *inode)
-+{
-+	if (integrity_ops && integrity_ops->inode_free_integrity)
-+		integrity_ops->inode_free_integrity(inode);
-+}
-+
-+/* Hook used to measure a file's integrity. */
-+int integrity_path_check(struct path *path, int mask)
-+{
-+	int rc = 0;
-+
-+	if (integrity_ops && integrity_ops->path_check_integrity)
-+		rc = integrity_ops->path_check_integrity(path, mask);
-+	return rc;
-+}
-+
-+/* Hook used to update i_integrity data and integrity xattr values
-+ * as necessary.
-+ */
-+void integrity_file_free(struct file *file)
-+{
-+	if (integrity_ops && integrity_ops->file_free_integrity)
-+		integrity_ops->file_free_integrity(file);
-+}
-+
-+/* Hook used to measure integrity of an mmapped file */
-+int integrity_file_mmap(struct file *file, unsigned long prot)
-+{
-+	int rc = 0;
-+
-+	if (integrity_ops && integrity_ops->file_mmap)
-+		rc = integrity_ops->file_mmap(file, prot);
-+	return rc;
-+}
-diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
-new file mode 100644
-index 0000000..c57fa2d
---- /dev/null
-+++ b/security/integrity/integrity.h
-@@ -0,0 +1,30 @@
-+/*
-+ * Copyright (C) 2008 IBM Corporation
-+ * Author: Mimi Zohar <zohar@us.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation, version 2 of the License.
-+ */
-+
-+#define TEMPLATE_NAME_LEN_MAX 12
-+struct template_list_entry {
-+	struct list_head template;
-+	char template_name[TEMPLATE_NAME_LEN_MAX + 1];
-+	const struct template_operations *template_ops;
-+	atomic_t refcount;
++	char *template;
 +};
 +
-+static inline void tget(struct template_list_entry *entry)
++struct ima_queue_entry {
++	struct hlist_node hnext;	/* place in hash collision list */
++	struct list_head later;		/* place in ima_measurements list */
++	struct ima_measure_entry *entry;
++};
++extern struct list_head ima_measurements;	/* list of all measurements */
++
++/* declarations */
++extern int ima_template_mode;
++extern const struct template_operations ima_template_ops;
++
++/* Internal IMA function definitions */
++int ima_init(void);
++void ima_cleanup(void);
++int ima_fs_init(void);
++void ima_fs_cleanup(void);
++void ima_create_htable(void);
++int ima_add_measure_entry(struct ima_measure_entry *entry, int violation);
++struct ima_queue_entry *ima_lookup_digest_entry(u8 *digest);
++int ima_calc_hash(struct file *file, struct path *path, char *digest);
++int ima_calc_template_hash(int template_len, char *template, char *digest);
++void ima_add_violation(struct inode *inode, const unsigned char *fname,
++		       char *op, char *cause);
++
++enum ima_action { DONT_MEASURE, MEASURE };
++int ima_match_policy(struct inode *inode, enum lim_hooks func, int mask);
++int ima_add_rule(int, char *subj_user, char *subj_role, char *subj_type,
++		 char *obj_user, char *obj_role, char *obj_type,
++		 char *func, char *mask, char *fsmagic, char *uid);
++void ima_init_policy(void);
++void ima_update_policy(void);
++
++
++/* LIM API function definitions */
++int ima_must_measure(void *d);
++int ima_collect_measurement(void *d);
++int ima_appraise_measurement(void *d);
++void ima_store_measurement(void *d);
++void ima_template_show(struct seq_file *m, void *e,
++		       enum integrity_show_type show);
++
++/*
++ * used to protect h_table and sha_table
++ */
++extern spinlock_t ima_queue_lock;
++
++struct ima_h_table {
++	atomic_long_t len;	/* number of stored measurements in the list */
++	atomic_long_t violations;
++	unsigned int max_htable_size;
++	struct hlist_head queue[IMA_MEASURE_HTABLE_SIZE];
++	atomic_t queue_len[IMA_MEASURE_HTABLE_SIZE];
++};
++extern struct ima_h_table ima_htable;
++
++static inline unsigned long IMA_HASH_KEY(u8 *digest)
 +{
-+	atomic_inc(&entry->refcount);
++	 return (hash_long(*digest, IMA_HASH_BITS));
 +}
 +
-+static inline void tput(struct template_list_entry *entry)
++/* TPM "Glue" definitions */
++
++#define IMA_TPM ((((u32)TPM_ANY_TYPE)<<16) | (u32)TPM_ANY_NUM)
++static inline void ima_extend(const u8 *hash)
 +{
-+	if (atomic_dec_and_test(&entry->refcount))
-+		kfree(entry);
++	if (!ima_used_chip)
++		return;
++
++	if (tpm_pcr_extend(IMA_TPM, CONFIG_IMA_MEASURE_PCR_IDX, hash) != 0)
++		ima_error("Error Communicating to TPM chip\n");
 +}
 +
-+extern int integrity_find_template(const char *,
-+				   struct template_list_entry **entry);
-diff --git a/security/integrity/integrity_audit.c b/security/integrity/integrity_audit.c
++static inline void ima_pcrread(int idx, u8 *pcr, int pcr_size)
++{
++	if (!ima_used_chip)
++		return;
++
++	if (tpm_pcr_read(IMA_TPM, idx, pcr) != 0)
++		ima_error("Error Communicating to TPM chip\n");
++}
++
++struct ima_inode_measure_entry {
++	u8 digest[IMA_DIGEST_SIZE];	/* sha1/md5 measurement hash */
++	char file_name[IMA_EVENT_NAME_LEN_MAX + 1];	/* name + \0 */
++};
++
++/* inode integrity data */
++struct ima_iint_cache {
++	u64 version;
++	ulong flags;
++	u8 hmac[IMA_DIGEST_SIZE];
++	u8 digest[IMA_DIGEST_SIZE];
++	struct mutex mutex;
++	atomic_t refcount;
++};
++#define IMA_IINT_INIT		1
++#define IMA_MUST_MEASURE	2
++#define IMA_MEASURED		4
++
++void ima_iint_init(void);
++struct ima_iint_cache *ima_iint_lookup(struct inode *inode);
++int ima_iint_insert(struct inode *inode);
++void ima_iint_delete(struct inode *inode);
++
++static inline void iint_get(struct ima_iint_cache *iint)
++{
++	atomic_inc(&iint->refcount);
++}
++
++/*
++ * When iint->refcounter goes to 0, free iint.
++ *
++ * When inode_alloc_integrity starts at late_initcall,
++ * iint can be NULl.
++ */
++static inline void iint_put(struct ima_iint_cache *iint)
++{
++	if (!iint)
++		return;
++	if (atomic_dec_and_test(&iint->refcount))
++		kfree(iint);
++}
++
++/* LSM based policy rules require audit */
++#ifdef CONFIG_IMA_LSM_RULES
++
++#define security_filter_rule_init security_audit_rule_init
++#define security_filter_rule_match security_audit_rule_match
++
++#else
++
++static inline int security_filter_rule_init(u32 field, u32 op, char *rulestr,
++					    void **lsmrule)
++{
++	return -EINVAL;
++}
++
++static inline int security_filter_rule_match(u32 secid, u32 field, u32 op,
++					     void *lsmrule,
++					     struct audit_context *actx)
++{
++	return -EINVAL;
++}
++#endif
++#endif
+diff --git a/security/integrity/ima/ima_api.c b/security/integrity/ima/ima_api.c
 new file mode 100644
-index 0000000..758e5dd
+index 0000000..5b0b2f9
 --- /dev/null
-+++ b/security/integrity/integrity_audit.c
-@@ -0,0 +1,79 @@
++++ b/security/integrity/ima/ima_api.c
+@@ -0,0 +1,420 @@
 +/*
 + * Copyright (C) 2008 IBM Corporation
++ *
 + * Author: Mimi Zohar <zohar@us.ibm.com>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation, version 2 of the License.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
 + *
-+ * File: integrity_audit.c
-+ * 	Audit calls for the integrity subsystem
++ * File: ima_api.c
++ *            - implements the LIM API
 + */
-+
-+#include <linux/audit.h>
-+#include <linux/fs.h>
++#include <linux/module.h>
 +#include <linux/integrity.h>
++#include <linux/magic.h>
++#include <linux/writeback.h>
++#include <linux/string.h>
++#include <linux/list.h>
++#include <linux/audit.h>
++#include <linux/ima.h>
 +
-+static int integrity_audit;
++#include "ima.h"
 +
-+#ifdef CONFIG_INTEGRITY_AUDIT
-+static int __init integrity_audit_setup(char *str)
++const struct template_operations ima_template_ops = {
++	.must_measure = ima_must_measure,
++	.collect_measurement = ima_collect_measurement,
++	.store_measurement = ima_store_measurement,
++	.display_template = ima_template_show
++};
++
++/**
++ * mode_setup - for compatability with non-template IMA versions
++ * @str: is pointer to a string
++ */
++int ima_template_mode = 1;
++static int __init mode_setup(char *str)
 +{
-+	ulong audit;
-+	int rc;
-+	char *op;
-+
-+	rc = strict_strtoul(str, 0, &audit);
-+	if (rc || audit > 1)
-+		printk(KERN_INFO "integrity: invalid integrity_audit value\n");
-+	else
-+		integrity_audit = audit;
-+
-+	op = integrity_audit ? "integrity_audit_enabled" :
-+	    "integrity_audit_not_enabled";
-+	integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL, NULL, NULL, op, 0);
++	if (strncmp(str, "ima", 3) == 0)
++		ima_template_mode = 0;
++	if (strncmp(str, "template", 7) == 0)
++		ima_template_mode = 1;
++	ima_info("template_mode %s \n", ima_template_mode ? "template" : "ima");
 +	return 1;
 +}
 +
-+__setup("integrity_audit=", integrity_audit_setup);
++__setup("ima_mode=", mode_setup);
++
++/**
++ * ima_digest_cpy - copy the hash in the IMA template structure to a digest
++ * @template_name: string containing the name of the template (i.e. "ima")
++ * @template: pointer to template structure
++ * @digest: pointer to the digest
++ *
++ * Returns 0 on success, error code otherwise
++ */
++static int ima_digest_cpy(char *template_name, void *template, u8 *digest)
++{
++	int rc, result = 0;
++	struct ima_inode_measure_entry *inode_template =
++	    (struct ima_inode_measure_entry *)template;
++
++	rc = strcmp(template_name, "ima");
++	if (rc == 0)
++		memcpy(digest, inode_template->digest,
++		       sizeof inode_template->digest);
++	else
++		result = -ENODATA;
++	return result;
++}
++
++/**
++ * ima_store_template_measure - collect and protect template measurements
++ * @template_name: string containing the name of the template (i.e. "ima")
++ * @template_len: length of the template data
++ * @template: actual template data
++ * @violation: invalidate pcr measurement indication
++ * @audit_cause: string containing the audit failure cause
++ *
++ * Calculate the hash of a template entry, add the template entry
++ * to an ordered list of measurement entries maintained inside the kernel,
++ * and also update the aggregate integrity value (maintained inside the
++ * configured TPM PCR) over the hashes of the current list of measurement
++ * entries.
++ *
++ * Applications retrieve the current kernel-held measurement list through
++ * the securityfs entries in /sys/kernel/security/ima. The signed aggregate
++ * TPM PCR (called quote) can be retrieved using a TPM user space library
++ * and is used to validate the measurement list.
++ *
++ * Returns 0 on success, error code otherwise
++ */
++static int ima_store_template_measure(char *template_name, int template_len,
++				      char *template, int violation,
++				      char **audit_cause)
++{
++	struct ima_measure_entry *entry;
++	u8 digest[IMA_DIGEST_SIZE];
++	struct ima_queue_entry *qe;
++	int count, result = 0;
++
++	memset(digest, 0, IMA_DIGEST_SIZE);
++	if (!violation) {
++		int rc = -ENODATA;
++
++		if (!ima_template_mode)
++			rc = ima_digest_cpy(template_name, template, digest);
++		if (rc < 0)
++			result = ima_calc_template_hash(template_len, template,
++							digest);
++
++		/* hash exists already? */
++		qe = ima_lookup_digest_entry(digest);
++		if (qe) {
++			*audit_cause = "hash_exists";
++			result = -EEXIST;
++			goto out;
++		}
++	}
++
++	/* create new entry and add to measurement list */
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	if (!entry) {
++		*audit_cause = "ENOMEM";
++		result = -ENOMEM;
++		goto out;
++	}
++
++	entry->template = kzalloc(template_len, GFP_KERNEL);
++	if (!entry->template) {
++		*audit_cause = "ENOMEM";
++		result = -ENOMEM;
++		goto out;
++	}
++	if (!template_name) {
++		*audit_cause = "null_template_name";
++		count = 1;
++	} else {
++		count = strlen(template_name);
++		if (count > IMA_EVENT_NAME_LEN_MAX)
++			count = IMA_EVENT_NAME_LEN_MAX;
++		memcpy(entry->template_name, template_name, count);
++	}
++	entry->template_name[count] = '\0';
++	entry->template_len = template_len;
++	memcpy(entry->template, template, template_len);
++	memcpy(entry->digest, digest, IMA_DIGEST_SIZE);
++
++	result = ima_add_measure_entry(entry, violation);
++	if (result < 0)
++		kfree(entry);
++out:
++	return result;
++}
++
++/**
++ * ima_store_inode_measure - create and store an inode template measurement
++ * @name: ascii file name associated with the measurement hash
++ * @hash_len: length of hash value in bytes (16 for MD5, 20 for SHA1)
++ * @hash: actual hash value pre-calculated
++ *
++ * Returns 0 on success, error code otherwise
++ */
++static int ima_store_inode_measure(struct inode *inode,
++				   const unsigned char *name,
++				   int hash_len, char *hash, int violation)
++{
++	struct ima_inode_measure_entry measure_entry, *entry = &measure_entry;
++	int result;
++	int namelen;
++	char *op = "add_measure";
++	char *cause = " ";
++
++	memset(entry, 0, sizeof *entry);
++	if (!violation)
++		memcpy(entry->digest, hash, hash_len > IMA_DIGEST_SIZE ?
++		       IMA_DIGEST_SIZE : hash_len);
++	if (name) {
++		namelen = strlen(name);
++		memcpy(entry->file_name, name, namelen > IMA_EVENT_NAME_LEN_MAX
++		       ? IMA_EVENT_NAME_LEN_MAX : namelen);
++		entry->file_name[namelen] = '\0';
++	}
++	result = ima_store_template_measure("ima", sizeof *entry, (char *)entry,
++					    violation, &cause);
++	if (result == -EEXIST)
++		integrity_audit_msg(AUDIT_INTEGRITY_PCR, inode,
++				    name, op, cause, 1);
++	else if (result < 0)
++		integrity_audit_msg(AUDIT_INTEGRITY_PCR, inode,
++				    name, op, cause, 0);
++	return result;
++}
++
++/**
++ * ima_add_violation - add violation to measurement list.
++ * @inode: inode associated with the violation
++ * @fname: name associated with the inode
++ * @op: string pointer to audit operation (i.e. "invalid_pcr", "add_measure")
++ * @cause: string pointer to reason for violation (i.e. "ToMToU")
++ *
++ * Violations are flagged in the measurement list with zero hash values.
++ * By extending the PCR with 0xFF's instead of with zeroes, the PCR
++ * value is invalidated.
++ */
++void ima_add_violation(struct inode *inode, const unsigned char *fname,
++		       char *op, char *cause)
++{
++	int result;
++
++	/* can overflow, only indicator */
++	atomic_long_inc(&ima_htable.violations);
++
++	result = ima_store_inode_measure(inode, fname, 0, NULL, 1);
++	integrity_audit_msg(AUDIT_INTEGRITY_PCR, inode, fname, op, cause, 0);
++}
++
++/**
++ * skip_measurement - measure only regular files, skip everything else.
++ * @inode: inode being measured
++ * @mask: contains the permission mask
++ *
++ * Quick sanity check to make sure that only regular files opened
++ * for read-only or execute are measured.
++ *
++ * Return 1 to skip measure, 0 to measure
++ */
++static int skip_measurement(struct inode *inode, int mask)
++{
++	if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode))
++		return 1;	/* can't measure */
++
++	if (special_file(inode->i_mode) || S_ISLNK(inode->i_mode))
++		return 1;	/* don't measure */
++
++	if (S_ISREG(inode->i_mode))
++		return 0;	/* measure */
++	return 1;		/* don't measure */
++}
++
++/**
++ * ima_must_measure - measure decision based on policy.
++ * @template_data: pointer to struct ima_data containing ima_args_data
++ *
++ * The policy is defined in terms of keypairs:
++ * 		subj=, obj=, type=, func=, mask=, fsmagic=
++ *	subj,obj, and type: are LSM specific.
++ * 	func: INODE_PERMISSION | BPRM_CHECK | FILE_MMAP
++ * 	mask: contains the permission mask
++ *	fsmagic: hex value
++ *
++ * Return 0 to measure. For matching a DONT_MEASURE policy, no policy,
++ * or other error, return an error code.
++*/
++int ima_must_measure(void *template_data)
++{
++	struct ima_iint_cache *iint;
++	struct ima_data *idata = (struct ima_data *)template_data;
++	struct ima_args_data *data = &idata->data.args;
++	struct inode *inode = data->inode;
++	int must_measure = -EACCES;
++
++	if ((data->mask & MAY_WRITE) || (data->mask & MAY_APPEND))
++		return -EPERM;
++
++	if (skip_measurement(data->inode, data->mask))
++		return -EPERM;
++
++	rcu_read_lock();
++	iint = ima_iint_lookup(inode);
++	if (iint)
++		iint_get(iint);
++	rcu_read_unlock();
++
++	if (!iint) {
++		int rc;
++
++		/* Most insertions are done at inode_alloc,
++		 * except those allocated before late_initcall.
++		 * Can't initialize at security_initcall,
++		 * got to wait at least until proc_init.
++		 */
++		rc = ima_iint_insert(inode);
++		if (rc < 0)
++			return rc;
++
++		rcu_read_lock();
++		iint = ima_iint_lookup(inode);
++		if (!iint) {
++			rcu_read_unlock();
++			return -ENOMEM;
++		}
++		iint_get(iint);
++		rcu_read_unlock();
++	}
++
++	mutex_lock(&iint->mutex);
++	/* short circuit out of here, if iint initialized
++	 * and either no measurement required or already measured.
++	 */
++	if (iint->flags & IMA_IINT_INIT) {
++		if (!(iint->flags & IMA_MUST_MEASURE)
++		    || iint->flags & IMA_MEASURED)
++			must_measure = -EEXIST;
++		else
++			must_measure = 0;
++	} else {
++		int rc;
++
++		rc = ima_match_policy(data->inode, data->function, data->mask);
++		if (rc) {
++			iint->flags = IMA_MUST_MEASURE;
++			must_measure = 0;
++		} else
++			must_measure = -EACCES;
++		iint->flags |= IMA_IINT_INIT;
++	}
++	mutex_unlock(&iint->mutex);
++	iint_put(iint);
++	return must_measure;
++}
++
++/**
++ * ima_collect_measurement - collect file measurements and store in the inode
++ * @template_data: pointer to struct ima_data containing ima_args_data
++ *
++ * Return 0 on success, error code otherwise
++ */
++int ima_collect_measurement(void *template_data)
++{
++	struct ima_iint_cache *iint;
++	struct ima_data *idata = (struct ima_data *)template_data;
++	struct ima_args_data *data = &idata->data.args;
++	struct dentry *dentry = data->dentry;
++	struct inode *inode = data->inode;
++	int result = 0;
++
++	if (idata->type != IMA_DATA)
++		return -EPERM;
++
++	if (!inode || !dentry)
++		return -EINVAL;
++
++	rcu_read_lock();
++	iint = ima_iint_lookup(inode);
++	if (!iint) {
++		rcu_read_unlock();
++		return -ENOMEM;
++	}
++	iint_get(iint);
++	rcu_read_unlock();
++
++	mutex_lock(&iint->mutex);
++	if (!(iint->flags & IMA_MEASURED)) {
++		memset(iint->digest, 0, IMA_DIGEST_SIZE);
++		result = ima_calc_hash(data->file, data->path, iint->digest);
++	} else
++		result = -EEXIST;
++	mutex_unlock(&iint->mutex);
++	iint_put(iint);
++	return result;
++}
++
++/**
++ * ima_store_measurement - store file and template measurements
++ * @template_data: pointer to struct ima_data containing ima_args_data,
++ * used to create an IMA template, or a template.
++ *
++ * For file measurements, first create an IMA template and then store it.
++ * For all other types of template measurements, just store it.
++ */
++void ima_store_measurement(void *template_data)
++{
++	struct ima_data *idata = (struct ima_data *)template_data;
++	int result;
++	char *op = "add_template_measure";
++	char *cause = "";
++
++	if (idata->type == IMA_DATA) {
++		struct ima_args_data *data = &idata->data.args;
++		struct ima_iint_cache *iint;
++
++		rcu_read_lock();
++		iint = ima_iint_lookup(data->inode);
++		if (!iint) {
++			rcu_read_unlock();
++			return;
++		}
++		iint_get(iint);
++		rcu_read_unlock();
++
++		mutex_lock(&iint->mutex);
++		if (iint->flags & IMA_MEASURED) {
++			mutex_unlock(&iint->mutex);
++			return;
++		}
++		result = ima_store_inode_measure(data->inode, data->filename,
++						 IMA_DIGEST_SIZE, iint->digest,
++						 0);
++		if (!result || result == -EEXIST) {
++			iint->flags |= IMA_MEASURED;
++			iint->version = data->inode->i_version;
++		}
++		mutex_unlock(&iint->mutex);
++		iint_put(iint);
++	} else if (idata->type == IMA_TEMPLATE) {
++		struct ima_store_data *template = (struct ima_store_data *)
++		    &idata->data.template;
++
++		result = ima_store_template_measure(template->name,
++						    template->len,
++						    template->data, 0, &cause);
++		if (result == -EEXIST)
++			integrity_audit_msg(AUDIT_INTEGRITY_PCR, NULL,
++					    template->name, op, cause, 1);
++		else if (result < 0)
++			integrity_audit_msg(AUDIT_INTEGRITY_PCR, NULL,
++					    template->name, op, cause, 0);
++	}
++}
+diff --git a/security/integrity/ima/ima_crypto.c b/security/integrity/ima/ima_crypto.c
+new file mode 100644
+index 0000000..f62f2b7
+--- /dev/null
++++ b/security/integrity/ima/ima_crypto.c
+@@ -0,0 +1,147 @@
++/*
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ *
++ * Authors:
++ * Mimi Zohar <zohar@us.ibm.com>
++ * Kylene Hall <kjhall@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2 of the License.
++ *
++ * File: ima_crypto.c
++ * 	Calculate a file's or a template's hash.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/crypto.h>
++#include <linux/mm.h>
++#include <linux/mount.h>
++#include <linux/scatterlist.h>
++#include <linux/namei.h>
++#include "ima.h"
++
++/*
++ * Calculate the file hash, using an open file descriptor if available.
++ */
++static int update_file_hash(struct file *f, struct path *path,
++			    struct hash_desc *desc)
++{
++	struct file *file = f;
++	struct scatterlist sg[1];
++	loff_t i_size;
++	int rc = 0;
++	char *rbuf;
++	int offset = 0;
++
++	if (!file) {
++		struct dentry *de = dget(path->dentry);
++		struct vfsmount *mnt = mntget(path->mnt);
++		if (!de || !mnt) {
++			rc = -EINVAL;
++			goto out;
++		}
++		file = dentry_open(de, mnt, O_RDONLY);
++		if (IS_ERR(file)) {
++			ima_info("%s dentry_open failed\n", de->d_name.name);
++			rc = PTR_ERR(file);
++			file = NULL;
++		}
++	}
++
++	if (!file->f_dentry || !file->f_dentry->d_inode) {
++		rc = -EINVAL;
++		goto out;
++	}
++
++	rbuf = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!rbuf) {
++		rc = -ENOMEM;
++		goto out;
++	}
++	i_size = i_size_read(file->f_dentry->d_inode);
++	while (offset < i_size) {
++		int rbuf_len;
++
++		rbuf_len = kernel_read(file, offset, rbuf, PAGE_SIZE);
++		if (rbuf_len < 0) {
++			rc = rbuf_len;
++			break;
++		}
++		offset += rbuf_len;
++		sg_set_buf(sg, rbuf, rbuf_len);
++
++		rc = crypto_hash_update(desc, sg, rbuf_len);
++		if (rc)
++			break;
++	}
++	kfree(rbuf);
++out:
++	if (file && !f)
++		fput(file);	/* clean up dentry_open() */
++	return rc;
++}
++
++/*
++ * Calculate the MD5/SHA1 digest
++ */
++int ima_calc_hash(struct file *file, struct path *path, char *digest)
++{
++	struct hash_desc desc;
++	int rc;
++
++	if (!file && !path)
++		return -EINVAL;
++
++	desc.tfm = crypto_alloc_hash(ima_hash, 0, CRYPTO_ALG_ASYNC);
++	if (IS_ERR(desc.tfm)) {
++		ima_info("failed to load %s transform: %ld\n",
++			 ima_hash, PTR_ERR(desc.tfm));
++		rc = PTR_ERR(desc.tfm);
++		return rc;
++	}
++	desc.flags = 0;
++	rc = crypto_hash_init(&desc);
++	if (rc)
++		goto out;
++
++	rc = update_file_hash(file, path, &desc);
++	if (!rc)
++		rc = crypto_hash_final(&desc, digest);
++out:
++	crypto_free_hash(desc.tfm);
++	return rc;
++}
++
++/*
++ * Calculate the hash of a given template
++ */
++int ima_calc_template_hash(int template_len, char *template, char *digest)
++{
++	struct hash_desc desc;
++	struct scatterlist sg[1];
++	int rc;
++
++	desc.tfm = crypto_alloc_hash(ima_hash, 0, CRYPTO_ALG_ASYNC);
++	if (IS_ERR(desc.tfm)) {
++		ima_info("failed to load %s transform: %ld\n",
++			 ima_hash, PTR_ERR(desc.tfm));
++		rc = PTR_ERR(desc.tfm);
++		return rc;
++	}
++	desc.flags = 0;
++	rc = crypto_hash_init(&desc);
++	if (rc)
++		goto out;
++
++	sg_set_buf(sg, template, template_len);
++	rc = crypto_hash_update(&desc, sg, template_len);
++	if (!rc)
++		rc = crypto_hash_final(&desc, digest);
++out:
++	crypto_free_hash(desc.tfm);
++	return rc;
++}
+diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
+new file mode 100644
+index 0000000..bc175d3
+--- /dev/null
++++ b/security/integrity/ima/ima_fs.c
+@@ -0,0 +1,488 @@
++/*
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ *
++ * Authors:
++ * Kylene Hall <kjhall@us.ibm.com>
++ * Reiner Sailer <sailer@us.ibm.com>
++ * Mimi Zohar <zohar@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ *
++ * File: ima_fs.c
++ *	implemenents security file system for reporting
++ *	current measurement list and IMA statistics
++ */
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/rculist.h>
++#include <linux/rcupdate.h>
++#include <linux/integrity.h>
++
++#include "../integrity.h"
++#include "ima.h"
++
++#define TMPBUFLEN 12
++static ssize_t ima_show_htable_value(char __user *buf, size_t count,
++				     loff_t *ppos, atomic_long_t *val)
++{
++	char tmpbuf[TMPBUFLEN];
++	ssize_t len;
++
++	len = scnprintf(tmpbuf, TMPBUFLEN, "%li\n", atomic_long_read(val));
++	return simple_read_from_buffer(buf, count, ppos, tmpbuf, len);
++}
++
++static ssize_t ima_show_htable_violations(struct file *filp,
++					  char __user *buf,
++					  size_t count, loff_t *ppos)
++{
++	return ima_show_htable_value(buf, count, ppos, &ima_htable.violations);
++}
++
++static struct file_operations ima_htable_violations_ops = {
++	.read = ima_show_htable_violations
++};
++
++static ssize_t ima_show_measurements_count(struct file *filp,
++					   char __user *buf,
++					   size_t count, loff_t *ppos)
++{
++	return ima_show_htable_value(buf, count, ppos, &ima_htable.len);
++
++}
++
++static struct file_operations ima_measurements_count_ops = {
++	.read = ima_show_measurements_count
++};
++
++/* returns pointer to hlist_node */
++static void *ima_measurements_start(struct seq_file *m, loff_t *pos)
++{
++	struct list_head *lpos;
++	loff_t l = *pos;
++	/* we need a lock since pos could point beyond last element */
++	rcu_read_lock();
++	__list_for_each_rcu(lpos, &ima_measurements) {
++		if (!l--) {
++			rcu_read_unlock();
++			return lpos;
++		}
++	}
++	rcu_read_unlock();
++	return NULL;
++}
++
++static void *ima_measurements_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	/* lock protects when reading beyond last element
++	 * against concurrent list-extension */
++	struct list_head *lpos = (struct list_head *)v;
++
++	rcu_read_lock();
++	lpos = rcu_dereference(lpos->next);
++	rcu_read_unlock();
++	(*pos)++;
++
++	return (lpos == &ima_measurements) ? NULL : lpos;
++}
++
++static void ima_measurements_stop(struct seq_file *m, void *v)
++{
++}
++
++/* print format:
++ *       32bit-le=pcr#
++ *       char[20]=template digest
++ *       32bit-le=template size
++ *       32bit-le=template name size
++ *       eventdata[n] = template name
++ *
++ */
++static int ima_measurements_show(struct seq_file *m, void *v)
++{
++	/* the list never shrinks, so we don't need a lock here */
++	struct list_head *lpos = v;
++	struct ima_queue_entry *qe;
++	struct ima_measure_entry *e;
++	struct ima_inode_measure_entry *entry;
++	struct template_list_entry *template_entry;
++	int templatename_len;
++	int i, rc;
++	u32 pcr = CONFIG_IMA_MEASURE_PCR_IDX;
++	char data[4];
++
++	/* get entry */
++	qe = list_entry(lpos, struct ima_queue_entry, later);
++	e = qe->entry;
++	if (e == NULL)
++		return -1;
++
++	/*
++	 * 1st: PCRIndex
++	 * PCR used is always the same (config option) in
++	 * little-endian format
++	 */
++	memcpy(data, &pcr, 4);
++	for (i = 0; i < 4; i++)
++		seq_putc(m, data[i]);
++
++	/* 2nd: template digest */
++	for (i = 0; i < 20; i++)
++		seq_putc(m, e->digest[i]);
++
++	/* 3rd: template name size */
++	templatename_len = strlen(e->template_name);
++	if (templatename_len > IMA_EVENT_NAME_LEN_MAX)
++		templatename_len = IMA_EVENT_NAME_LEN_MAX;
++
++	memcpy(data, &templatename_len, 4);
++	for (i = 0; i < 4; i++)
++		seq_putc(m, data[i]);
++
++	/* 4th:  template name  */
++	for (i = 0; i < templatename_len; i++)
++		seq_putc(m, e->template_name[i]);
++
++	/* 5th:  template dependent */
++	entry = (struct ima_inode_measure_entry *)e->template;
++	rcu_read_lock();
++	rc = integrity_find_template(e->template_name, &template_entry);
++	if (rc == 0)
++		tget(template_entry);
++	rcu_read_unlock();
++
++	if (rc == 0) {
++		const struct template_operations *ops;
++
++		ops = template_entry->template_ops;
++		ops->display_template(m, entry, INTEGRITY_SHOW_BINARY);
++		tput(template_entry);
++	} else
++		seq_printf(m, " \n");
++	return 0;
++}
++
++static struct seq_operations ima_measurments_seqops = {
++	.start = ima_measurements_start,
++	.next = ima_measurements_next,
++	.stop = ima_measurements_stop,
++	.show = ima_measurements_show
++};
++
++static int ima_measurements_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &ima_measurments_seqops);
++}
++
++static struct file_operations ima_measurements_ops = {
++	.open = ima_measurements_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = seq_release,
++};
++
++void ima_template_show(struct seq_file *m, void *e,
++		       enum integrity_show_type show)
++{
++	struct ima_inode_measure_entry *entry =
++	    (struct ima_inode_measure_entry *)e;
++	int filename_len;
++	char data[4];
++	int i;
++
++	/* Display file digest */
++	if (ima_template_mode)
++		for (i = 0; i < 20; i++) {
++			switch (show) {
++			case INTEGRITY_SHOW_ASCII:
++				seq_printf(m, "%02x", entry->digest[i]);
++				break;
++			case INTEGRITY_SHOW_BINARY:
++				seq_putc(m, entry->digest[i]);
++			default:
++				break;
++			}
++		}
++
++	switch (show) {
++	case INTEGRITY_SHOW_ASCII:
++		seq_printf(m, " %s\n", entry->file_name);
++		break;
++	case INTEGRITY_SHOW_BINARY:
++		filename_len = strlen(entry->file_name);
++		if (filename_len > IMA_EVENT_NAME_LEN_MAX)
++			filename_len = IMA_EVENT_NAME_LEN_MAX;
++
++		memcpy(data, &filename_len, 4);
++		for (i = 0; i < 4; i++)
++			seq_putc(m, data[i]);
++		for (i = 0; i < filename_len; i++)
++			seq_putc(m, entry->file_name[i]);
++	default:
++		break;
++	}
++}
++
++/* print in ascii */
++static int ima_ascii_measurements_show(struct seq_file *m, void *v)
++{
++	/* the list never shrinks, so we don't need a lock here */
++	struct list_head *lpos = v;
++	struct ima_queue_entry *qe;
++	struct ima_measure_entry *e;
++	struct ima_inode_measure_entry *entry;
++	struct template_list_entry *template_entry;
++	int i, rc;
++
++	/* get entry */
++	qe = list_entry(lpos, struct ima_queue_entry, later);
++	e = qe->entry;
++	if (e == NULL)
++		return -1;
++
++	/* 1st: PCR used (config option) */
++	seq_printf(m, "%2d ", CONFIG_IMA_MEASURE_PCR_IDX);
++
++	/* 2nd: SHA1 template hash */
++	for (i = 0; i < 20; i++)
++		seq_printf(m, "%02x", e->digest[i]);
++
++	/* 3th:  template name */
++	seq_printf(m, " %s ", e->template_name);
++
++	/* 4th:  filename <= max + \'0' delimiter */
++	entry = (struct ima_inode_measure_entry *)e->template;
++	rcu_read_lock();
++	rc = integrity_find_template(e->template_name, &template_entry);
++	if (rc == 0)
++		tget(template_entry);
++	rcu_read_unlock();
++
++	if (rc == 0) {
++		const struct template_operations *ops;
++
++		ops = template_entry->template_ops;
++		ops->display_template(m, entry, INTEGRITY_SHOW_ASCII);
++		tput(template_entry);
++	} else
++		seq_printf(m, " \n");
++
++	return 0;
++}
++
++static struct seq_operations ima_ascii_measurements_seqops = {
++	.start = ima_measurements_start,
++	.next = ima_measurements_next,
++	.stop = ima_measurements_stop,
++	.show = ima_ascii_measurements_show
++};
++
++static int ima_ascii_measurements_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &ima_ascii_measurements_seqops);
++}
++
++static struct file_operations ima_ascii_measurements_ops = {
++	.open = ima_ascii_measurements_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = seq_release,
++};
++
++static char *get_tag(char *bufStart, char *bufEnd, char delimiter, int *taglen)
++{
++	char *bufp = bufStart;
++	char *tag;
++
++	/* Get start of tag */
++	while (bufp < bufEnd) {
++		if (*bufp == ' ')	/* skip blanks */
++			while ((*bufp == ' ') && (bufp++ < bufEnd)) ;
++		else if (*bufp == '#') {	/* skip comment */
++			while ((*bufp != '\n') && (bufp++ < bufEnd)) ;
++			bufp++;
++		} else if (*bufp == '\n')	/* skip newline */
++			bufp++;
++		else if (*bufp == '\t')	/* skip tabs */
++			bufp++;
++		else
++			break;
++	}
++	if (bufp < bufEnd)
++		tag = bufp;
++	else
++		return NULL;
++
++	/* Get tag */
++	*taglen = 0;
++	while ((bufp < bufEnd) && (*taglen == 0)) {
++		if ((*bufp == delimiter) || (*bufp == '\n')) {
++			*taglen = bufp - tag;
++			*bufp = '\0';
++		}
++		bufp++;
++	}
++	if (*taglen == 0)	/* Didn't find end delimiter */
++		tag = NULL;
++	return tag;
++}
++
++static ssize_t ima_write_policy(struct file *file, const char __user *buf,
++				size_t buflen, loff_t *ppos)
++{
++	size_t rc = 0, datalen;
++	int action = 0;
++	char *data, *datap, *dataend;
++	char *subj_user = NULL, *subj_role = NULL, *subj_type = NULL;
++	char *obj_user = NULL, *obj_role = NULL, *obj_type = NULL;
++	char *func = NULL, *mask = NULL, *fsmagic = NULL, *uid = NULL;
++	int err = 0;
++	char *tag;
++	int taglen, i;
++
++	datalen = buflen > 4095 ? 4095 : buflen;
++	data = kmalloc(datalen + 1, GFP_KERNEL);
++	if (!data)
++		rc = -ENOMEM;
++
++	if (copy_from_user(data, buf, datalen)) {
++		kfree(data);
++		return -EFAULT;
++	}
++
++	rc = datalen;
++	*(data + datalen) = ' ';
++
++	datap = data;
++	dataend = data + datalen;
++
++	if (strncmp(datap, "measure", 7) == 0) {
++		datap += 8;
++		action = 1;
++	} else if (strncmp(datap, "dont_measure", 12) == 0)
++		datap += 13;
++	else			/* bad format */
++		goto out;
++
++	for (i = 0; i < 6; i++) {
++		tag = get_tag(datap, dataend, ' ', &taglen);
++		if (!tag)
++			break;
++		if (strncmp(tag, "obj_user=", 9) == 0)
++			obj_user = tag + 9;
++		else if (strncmp(tag, "obj_role=", 9) == 0)
++			obj_role = tag + 9;
++		else if (strncmp(tag, "obj_type=", 9) == 0)
++			obj_type = tag + 9;
++		else if (strncmp(tag, "subj_user=", 10) == 0)
++			subj_user = tag + 10;
++		else if (strncmp(tag, "subj_role=", 10) == 0)
++			subj_role = tag + 10;
++		else if (strncmp(tag, "subj_type=", 10) == 0)
++			subj_type = tag + 10;
++		else if (strncmp(tag, "func=", 5) == 0)
++			func = tag + 5;
++		else if (strncmp(tag, "mask=", 5) == 0)
++			mask = tag + 5;
++		else if (strncmp(tag, "fsmagic=", 8) == 0)
++			fsmagic = tag + 8;
++		else if (strncmp(tag, "uid=", 4) == 0)
++			uid = tag + 4;
++		else {		/* bad format */
++			err = 1;
++			break;
++		}
++		datap += taglen + 1;
++	}
++
++	if (!err)
++		ima_add_rule(action, subj_user, subj_role, subj_type,
++			     obj_user, obj_role, obj_type,
++			     func, mask, fsmagic, uid);
++out:
++	if (!data)
++		kfree(data);
++	return rc;
++}
++
++static struct dentry *ima_dir;
++static struct dentry *binary_runtime_measurements;
++static struct dentry *ascii_runtime_measurements;
++static struct dentry *runtime_measurements_count;
++static struct dentry *violations;
++static struct dentry *ima_policy;
++
++static int ima_release_policy(struct inode *inode, struct file *file)
++{
++	ima_update_policy();
++	securityfs_remove(ima_policy);
++	ima_policy = NULL;
++	return 0;
++}
++
++static struct file_operations ima_measure_policy_ops = {
++	.write = ima_write_policy,
++	.release = ima_release_policy
++};
++
++int ima_fs_init(void)
++{
++	ima_dir = securityfs_create_dir("ima", NULL);
++	if (!ima_dir || IS_ERR(ima_dir))
++		return -1;
++
++	binary_runtime_measurements =
++	    securityfs_create_file("binary_runtime_measurements",
++				   S_IRUSR | S_IRGRP, ima_dir, NULL,
++				   &ima_measurements_ops);
++	if (!binary_runtime_measurements || IS_ERR(binary_runtime_measurements))
++		goto out;
++
++	ascii_runtime_measurements =
++	    securityfs_create_file("ascii_runtime_measurements",
++				   S_IRUSR | S_IRGRP, ima_dir, NULL,
++				   &ima_ascii_measurements_ops);
++	if (!ascii_runtime_measurements || IS_ERR(ascii_runtime_measurements))
++		goto out;
++
++	runtime_measurements_count =
++	    securityfs_create_file("runtime_measurements_count",
++				   S_IRUSR | S_IRGRP, ima_dir, NULL,
++				   &ima_measurements_count_ops);
++	if (!runtime_measurements_count || IS_ERR(runtime_measurements_count))
++		goto out;
++
++	violations =
++	    securityfs_create_file("violations", S_IRUSR | S_IRGRP,
++				   ima_dir, NULL, &ima_htable_violations_ops);
++	if (!violations || IS_ERR(violations))
++		goto out;
++
++	ima_policy = securityfs_create_file("policy",
++					    S_IRUSR | S_IRGRP | S_IWUSR,
++					    ima_dir, NULL,
++					    &ima_measure_policy_ops);
++	ima_init_policy();
++	return 0;
++
++out:
++	securityfs_remove(runtime_measurements_count);
++	securityfs_remove(ascii_runtime_measurements);
++	securityfs_remove(binary_runtime_measurements);
++	securityfs_remove(ima_dir);
++	securityfs_remove(ima_policy);
++	return -1;
++}
++
++void __exit ima_fs_cleanup(void)
++{
++	securityfs_remove(violations);
++	securityfs_remove(runtime_measurements_count);
++	securityfs_remove(ascii_runtime_measurements);
++	securityfs_remove(binary_runtime_measurements);
++	securityfs_remove(ima_dir);
++	securityfs_remove(ima_policy);
++}
+diff --git a/security/integrity/ima/ima_iint.c b/security/integrity/ima/ima_iint.c
+new file mode 100644
+index 0000000..f09a5da
+--- /dev/null
++++ b/security/integrity/ima/ima_iint.c
+@@ -0,0 +1,63 @@
++/*
++ * Copyright (C) 2008 IBM Corporation
++ *
++ * Authors:
++ * Mimi Zohar <zohar@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ *
++ * File: ima_iint.c
++ *             cache integrity information associated with an inode
++ *             using a radix tree.
++ */
++#include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/radix-tree.h>
++#include "ima.h"
++
++RADIX_TREE(ima_iint_store, GFP_ATOMIC);
++DEFINE_SPINLOCK(ima_iint_lock);
++
++/* Call with rcu_read_lock */
++struct ima_iint_cache *ima_iint_lookup(struct inode *inode)
++{
++	return radix_tree_lookup(&ima_iint_store, (unsigned long)inode);
++}
++
++int ima_iint_insert(struct inode *inode)
++{
++	struct ima_iint_cache *iint;
++	int rc = 0;
++
++	iint = kzalloc(sizeof(*iint), GFP_KERNEL);
++	if (!iint)
++		return -ENOMEM;
++	mutex_init(&iint->mutex);
++	atomic_set(&iint->refcount, 1);
++	iint->version = inode->i_version;
++
++	rc = radix_tree_preload(GFP_KERNEL);
++	if (rc < 0) {
++		kfree(iint);
++		return rc;
++	}
++
++	spin_lock(&ima_iint_lock);
++	rc = radix_tree_insert(&ima_iint_store, (unsigned long)inode, iint);
++	spin_unlock(&ima_iint_lock);
++	radix_tree_preload_end();
++	return rc;
++}
++
++void ima_iint_delete(struct inode *inode)
++{
++	struct ima_iint_cache *iint;
++
++	spin_lock(&ima_iint_lock);
++	iint = radix_tree_delete(&ima_iint_store, (unsigned long)inode);
++	spin_unlock(&ima_iint_lock);
++	iint_put(iint);
++}
+diff --git a/security/integrity/ima/ima_init.c b/security/integrity/ima/ima_init.c
+new file mode 100644
+index 0000000..8a831ce
+--- /dev/null
++++ b/security/integrity/ima/ima_init.c
+@@ -0,0 +1,105 @@
++/*
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ *
++ * Authors:
++ * Reiner Sailer      <sailer@watson.ibm.com>
++ * Leendert van Doorn <leendert@watson.ibm.com>
++ * Mimi Zohar         <zohar@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ *
++ * File: ima_init.c
++ *             initialization and cleanup functions
++ */
++#include <linux/module.h>
++#include <linux/scatterlist.h>
++#include "ima.h"
++
++/* name for boot aggregate entry */
++static char *boot_aggregate_name = "boot_aggregate";
++static const char version[] = "v7.6 02/27/2007";
++
++int ima_used_chip;
++
++static void ima_add_boot_aggregate(void)
++{
++	/* cumulative sha1 over tpm registers 0-7 */
++	struct ima_measure_entry *entry;
++	size_t count;
++	int err;
++
++	/* create new entry for boot aggregate */
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	if (entry == NULL) {
++		ima_add_violation(NULL, boot_aggregate_name,
++				  "add_measure", "ENOMEM");
++		return;
++	}
++	count = strlen(boot_aggregate_name);
++	if (count > IMA_EVENT_NAME_LEN_MAX)
++		count = IMA_EVENT_NAME_LEN_MAX;
++	memcpy(entry->template_name, boot_aggregate_name, count);
++	entry->template_name[count] = '\0';
++	if (ima_used_chip) {
++		int i;
++		u8 pcr_i[20];
++		struct hash_desc desc;
++		struct crypto_hash *tfm;
++		struct scatterlist sg;
++
++		tfm = crypto_alloc_hash("sha1", 0, CRYPTO_ALG_ASYNC);
++		if (!tfm || IS_ERR(tfm)) {
++			kfree(entry);
++			ima_error("error initializing digest.\n");
++			return;
++		}
++		desc.tfm = tfm;
++		desc.flags = 0;
++		crypto_hash_init(&desc);
++
++		for (i = 0; i < 8; i++) {
++			ima_pcrread(i, pcr_i, sizeof(pcr_i));
++			/* now accumulate with current aggregate */
++			sg_init_one(&sg, (u8 *) pcr_i, 20);
++			crypto_hash_update(&desc, &sg, 20);
++		}
++		crypto_hash_final(&desc, entry->digest);
++		crypto_free_hash(tfm);
++	} else
++		memset(entry->digest, 0xff, 20);
++
++	/* now add measurement; if TPM bypassed, we have a ff..ff entry */
++	err = ima_add_measure_entry(entry, 0);
++	if (err < 0) {
++		kfree(entry);
++		ima_add_violation(NULL, boot_aggregate_name,
++				  "add_measure", " ");
++	}
++}
++
++int ima_init(void)
++{
++	int rc;
++
++	ima_used_chip = 0;
++	rc = tpm_pcr_read(IMA_TPM, 0, NULL);
++	if (rc == 0)
++		ima_used_chip = 1;
++
++	if (!ima_used_chip)
++		ima_info("No TPM chip found(rc = %d), activating TPM-bypass!\n",
++			 rc);
++
++	ima_create_htable();	/* for measurements */
++	ima_add_boot_aggregate();	/* boot aggregate must be first entry */
++
++	return ima_fs_init();
++}
++
++void __exit ima_cleanup(void)
++{
++	ima_fs_cleanup();
++}
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+new file mode 100644
+index 0000000..29641d8
+--- /dev/null
++++ b/security/integrity/ima/ima_main.c
+@@ -0,0 +1,331 @@
++/*
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ *
++ * Authors:
++ * Reiner Sailer <sailer@watson.ibm.com>
++ * Serge Hallyn <serue@us.ibm.com>
++ * Kylene Hall <kylene@us.ibm.com>
++ * Mimi Zohar <zohar@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ *
++ * File: ima_main.c
++ *             implements the IMA LIM hooks
++ */
++#include <linux/module.h>
++#include <linux/integrity.h>
++#include <linux/magic.h>
++#include <linux/writeback.h>
++#include <linux/string.h>
++#include <linux/list.h>
++#include <linux/audit.h>
++#include <linux/ima.h>
++#include <linux/mman.h>
++#include <linux/namei.h>
++
++#include "ima.h"
++
++char *ima_hash = "sha1";
++static int __init hash_setup(char *str)
++{
++	char *op = "setup";
++	char *hash = "sha1";
++
++	if (strncmp(str, "md5", 3) == 0) {
++		op = "setup";
++		hash = "md5";
++		ima_hash = str;
++	} else if (strncmp(str, "sha1", 4) != 0) {
++		op = "hash_setup";
++		hash = "invalid_hash_type";
++	}
++	integrity_audit_msg(AUDIT_INTEGRITY_HASH, NULL, NULL, op, hash, 0);
++	return 1;
++}
++
++__setup("ima_hash=", hash_setup);
++
++/* For use when the LSM module makes LIM API calls */
++#ifdef CONFIG_IMA_BASE_HOOKS
++static int ima_base_hooks = 1;
++#else
++static int ima_base_hooks;
 +#endif
 +
-+void integrity_audit_msg(int audit_msgno, struct inode *inode,
-+			 const unsigned char *fname, char *op,
-+			 char *cause, int result)
++/*
++ * Setup the data structure used for the IMA LIM API calls.
++ */
++void ima_fixup_argsdata(struct ima_args_data *data, struct file *file,
++			struct path *path, int mask, int function)
 +{
-+	struct audit_buffer *ab;
++	struct dentry *dentry = NULL;
 +
-+	if (!integrity_audit && result == 1)	/* Skip information messages */
++	data->file = file;
++	data->path = path;
++	data->mask = mask;
++	data->function = function;
++
++	if (file)
++		data->dentry = dentry = file->f_dentry;
++
++	if (path) {
++		if (!dentry)
++			data->dentry = dentry = path->dentry;
++	}
++	if (dentry)
++		data->inode = dentry->d_inode;
++
++	return;
++}
++
++/**
++ * ima_file_free - called on close
++ * @file: pointer to file being closed
++ *
++ * Flag files that changed, based on i_version.
++ */
++static void ima_file_free(struct file *file)
++{
++	struct inode *inode = NULL;
++	struct ima_iint_cache *iint;
++
++	if (!file->f_dentry)	/* can be NULL */
 +		return;
 +
-+	ab = audit_log_start(current->audit_context, GFP_KERNEL, audit_msgno);
-+	audit_log_format(ab, "integrity: pid=%d uid=%u auid=%u",
-+			 current->pid, current->uid,
-+			 audit_get_loginuid(current));
-+	audit_log_task_context(ab);
-+	switch (audit_msgno) {
-+	case AUDIT_INTEGRITY_DATA:
-+	case AUDIT_INTEGRITY_METADATA:
-+	case AUDIT_INTEGRITY_PCR:
-+		audit_log_format(ab, " op=%s cause=%s", op, cause);
-+		break;
-+	case AUDIT_INTEGRITY_HASH:
-+		audit_log_format(ab, " op=%s hash=%s", op, cause);
-+		break;
-+	case AUDIT_INTEGRITY_STATUS:
-+	default:
-+		audit_log_format(ab, " op=%s", op);
++	inode = file->f_dentry->d_inode;
++	if (S_ISDIR(inode->i_mode))
++		return;
++	if ((file->f_mode & FMODE_WRITE) &&
++	    (atomic_read(&inode->i_writecount) == 1)) {
++		rcu_read_lock();
++		iint = ima_iint_lookup(inode);
++		if (!iint) {
++			rcu_read_unlock();
++			return;
++		}
++		iint_get(iint);
++		rcu_read_unlock();
++
++		mutex_lock(&iint->mutex);
++		if (iint->version != inode->i_version)
++			iint->flags &= ~IMA_MEASURED;
++		mutex_unlock(&iint->mutex);
++		iint_put(iint);
 +	}
-+	audit_log_format(ab, " comm=");
-+	audit_log_untrustedstring(ab, current->comm);
-+	if (fname) {
-+		audit_log_format(ab, " name=");
-+		audit_log_untrustedstring(ab, fname);
++}
++
++/**
++ * ima_alloc_integrity - allocate and insert an integrity structure
++ * @inode: the inode structure
++ *
++ * Returns 0 on success, -ENOMEM on failure
++ */
++static int ima_inode_alloc_integrity(struct inode *inode)
++{
++	return ima_iint_insert(inode);
++}
++
++/**
++ * ima_inode_free_integrity - free the integrity structure
++ * @inode: the inode structure
++ */
++static void ima_inode_free_integrity(struct inode *inode)
++{
++	ima_iint_delete(inode);
++}
++
++/**
++ * ima_path_check_integrity - based on policy, collect/store measurement.
++ * @path: contains a pointer to the path to be measured
++ * @mask: contains MAY_READ, MAY_WRITE, MAY_APPEND or MAY_EXECUTE
++ *
++ * Measure the inode being open for read, based on the ima_must_measure()
++ * policy decision.
++ *
++ * Invalidate the PCR:
++ * 	- Opening a file for write when already open for read,
++ *	  results in a time of measure, time of use (ToMToU) error.
++ *	- Opening a file for read when already open for write,
++ * 	  could result in a file measurement error.
++ *
++ * Return 0 on success, an error code on failure.
++ * (Based on the results of appraise_measurement().)
++ */
++static int ima_path_check_integrity(struct path *path, int mask)
++{
++	struct ima_data idata;
++	struct ima_args_data *data = &idata.data.args;
++	struct dentry *dentry;
++	struct inode *inode;
++
++	memset(&idata, 0, sizeof idata);
++	ima_fixup_argsdata(data, NULL, path, mask, INODE_PERMISSION);
++	inode = data->inode;
++
++	/* The file name is only a hint. */
++	dentry = path->dentry;
++	data->filename = (!dentry->d_name.name) ? (char *)dentry->d_iname :
++	    (char *)dentry->d_name.name;
++
++	/* Invalidate PCR, if a measured file is already open for read */
++	if ((mask == MAY_WRITE) || (mask == MAY_APPEND)) {
++		int mask_sav = data->mask;
++		int rc;
++
++		data->mask = MAY_READ;
++		rc = ima_must_measure(&idata);
++		if (!rc) {
++			if (atomic_read(&(data->dentry->d_count)) - 1 >
++			    atomic_read(&(inode->i_writecount)))
++				ima_add_violation(inode, data->filename,
++						  "invalid_pcr", "ToMToU");
++		}
++		data->mask = mask_sav;
++		goto out;
 +	}
-+	if (inode)
-+		audit_log_format(ab, " dev=%s ino=%lu",
-+				 inode->i_sb->s_id, inode->i_ino);
-+	audit_log_format(ab, " res=%d", result);
-+	audit_log_end(ab);
++
++	/* measure executables later */
++	if (mask & MAY_READ) {
++		int rc;
++
++		rc = ima_must_measure(&idata);
++		if (!rc) {
++			/* Invalidate PCR, if a measured file is
++			 * already open for write.
++			 */
++			if (atomic_read(&(inode->i_writecount)) > 0)
++				ima_add_violation(inode, data->filename,
++						  "invalid_pcr",
++						  "open_writers");
++
++			idata.type = IMA_DATA;
++			rc = ima_collect_measurement(&idata);
++			if (!rc)
++				ima_store_measurement(&idata);
++		}
++	}
++out:
++	return 0;
++}
++
++/**
++ * ima_file_mmap - based on policy, collect/store measurement.
++ * @file: pointer to the file to be measured
++ * @prot contains the protection that will be applied by the kernel.
++ *
++ * Measure files being mmapped executable based on the ima_must_measure()
++ * policy decision.
++ *
++ * Return 0 on success, an error code on failure.
++ * (Based on the results of appraise_measurement().)
++ */
++static int ima_file_mmap(struct file *file, unsigned long prot)
++{
++	struct ima_data idata;
++	struct ima_args_data *data = &idata.data.args;
++	int rc = 0;
++
++	if (!file || !file->f_dentry)
++		return rc;
++	if (!(prot & VM_EXEC))
++		return rc;
++
++	ima_fixup_argsdata(data, file, NULL, MAY_EXEC, FILE_MMAP);
++	data->filename = (!file->f_dentry->d_name.name) ?
++	    (char *)file->f_dentry->d_iname :
++	    (char *)file->f_dentry->d_name.name;
++
++	rc = ima_must_measure(&idata);
++	if (!rc) {
++		idata.type = IMA_DATA;
++		rc = ima_collect_measurement(&idata);
++		if (!rc)
++			ima_store_measurement(&idata);
++	}
++	return 0;
++}
++
++/**
++ * ima_bprm_check_integrity - based on policy, collect/store measurement.
++ * @bprm: contains the linux_binprm structure
++ *
++ * The OS protects against an executable file, already open for write,
++ * from being executed in deny_write_access() and an executable file,
++ * already open for execute, from being modified in get_write_access().
++ * So we can be certain that what we verify and measure here is actually
++ * what is being executed.
++ *
++ * Return 0 on success, an error code on failure.
++ * (Based on the results of appraise_measurement().)
++ */
++static int ima_bprm_check_integrity(struct linux_binprm *bprm)
++{
++	struct ima_data idata;
++	struct ima_args_data *data = &idata.data.args;
++	int rc = 0;
++
++	ima_fixup_argsdata(data, bprm->file, NULL, MAY_EXEC, BPRM_CHECK);
++	data->filename = bprm->filename;
++
++	rc = ima_must_measure(&idata);
++	if (!rc) {
++		idata.type = IMA_DATA;
++		rc = ima_collect_measurement(&idata);
++		if (!rc)
++			ima_store_measurement(&idata);
++	}
++	return 0;
++}
++
++static const struct integrity_operations ima_integrity_ops = {
++	.bprm_check_integrity = ima_bprm_check_integrity,
++	.path_check_integrity = ima_path_check_integrity,
++	.inode_alloc_integrity = ima_inode_alloc_integrity,
++	.inode_free_integrity = ima_inode_free_integrity,
++	.file_free_integrity = ima_file_free,
++	.file_mmap = ima_file_mmap,
++};
++
++static const struct integrity_operations ima_base_ops = {
++	.inode_alloc_integrity = ima_inode_alloc_integrity,
++	.inode_free_integrity = ima_inode_free_integrity,
++	.file_free_integrity = ima_file_free,
++};
++
++/* After the TPM is available, start IMA
++ */
++static int __init init_ima(void)
++{
++	int error;
++
++	error = ima_init();
++	if (error)
++		goto out;
++
++	if (ima_base_hooks)
++		error = register_integrity(&ima_base_ops);
++	else
++		error = register_integrity(&ima_integrity_ops);
++	if (error)
++		goto out;
++
++	integrity_register_template("ima", &ima_template_ops);
++out:
++	return error;
++}
++
++static void __exit cleanup_ima(void)
++{
++	integrity_unregister_template("ima");
++	unregister_integrity(&ima_integrity_ops);
++	ima_cleanup();
++}
++
++late_initcall(init_ima);	/* Start IMA after the TPM is available */
++module_exit(cleanup_ima);
++
++MODULE_DESCRIPTION("Integrity Measurement Architecture");
++MODULE_LICENSE("GPL");
+diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
+new file mode 100644
+index 0000000..2e95c35
+--- /dev/null
++++ b/security/integrity/ima/ima_policy.c
+@@ -0,0 +1,334 @@
++/*
++ * Copyright (C) 2008 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2 of the License.
++ *
++ * ima_policy.c
++ * 	- initialize default measure policy rules
++	- load a policy ruleset
++ *
++ */
++#include <linux/module.h>
++#include <linux/list.h>
++#include <linux/audit.h>
++#include <linux/security.h>
++#include <linux/integrity.h>
++#include <linux/magic.h>
++
++#include "ima.h"
++
++#define MAX_LSM_RULES 6
++enum lsm_rule_types { LSM_OBJ_USER, LSM_OBJ_ROLE, LSM_OBJ_TYPE,
++	LSM_SUBJ_USER, LSM_SUBJ_ROLE, LSM_SUBJ_TYPE
++};
++
++#define audit_type(type) AUDIT_ ##type
++#define lsm_type(type) LSM_ ##type
++
++struct ima_measure_rule_entry {
++	struct list_head list;
++	int action;
++	struct {
++		void *rule;
++		int type;	/* audit type */
++	} lsm_field[MAX_LSM_RULES];
++	uint flags;
++	enum lim_hooks func;
++	int mask;
++	ulong fsmagic;
++	uid_t uid;
++};
++
++/* flags definitions */
++#define IMA_FUNC 	0x0001
++#define IMA_MASK 	0x0002
++#define IMA_FSMAGIC	0x0004
++#define IMA_UID		0x0008
++
++/* Without LSM specific knowledge, default policy can only be
++ * written in terms of .action, .func, .mask, .fsmagic, and .uid
++ */
++static struct ima_measure_rule_entry default_rules[] = {
++	{.action = DONT_MEASURE,.fsmagic = PROC_SUPER_MAGIC,
++	 .flags = IMA_FSMAGIC},
++	{.action = DONT_MEASURE,.fsmagic = SYSFS_MAGIC,.flags = IMA_FSMAGIC},
++	{.action = DONT_MEASURE,.fsmagic = DEBUGFS_MAGIC,.flags = IMA_FSMAGIC},
++	{.action = DONT_MEASURE,.fsmagic = TMPFS_MAGIC,.flags = IMA_FSMAGIC},
++	{.action = DONT_MEASURE,.fsmagic = SECURITYFS_MAGIC,
++	 .flags = IMA_FSMAGIC},
++	{.action = MEASURE,.func = FILE_MMAP,.mask = MAY_EXEC,
++	 .flags = IMA_FUNC | IMA_MASK},
++	{.action = MEASURE,.func = BPRM_CHECK,.mask = MAY_EXEC,
++	 .flags = IMA_FUNC | IMA_MASK},
++	{.action = MEASURE,.func = INODE_PERMISSION,.mask = MAY_READ,.uid = 0,
++	 .flags = IMA_FUNC | IMA_MASK | IMA_UID}
++};
++
++static struct list_head measure_default_rules;
++static struct list_head measure_policy_rules;
++static struct list_head *ima_measure;
++
++static DEFINE_MUTEX(ima_measure_mutex);
++
++/**
++ * ima_match_rules - determine whether an inode matches the measure rule.
++ * @rule: a pointer to a rule
++ * @inode: a pointer to an inode
++ * @func: LIM hook identifier
++ * @mask: requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ *
++ * Returns true on rule match, false on failure.
++ */
++static bool ima_match_rules(struct ima_measure_rule_entry *rule,
++			    struct inode *inode, enum lim_hooks func, int mask)
++{
++	struct task_struct *tsk = current;
++	int i;
++
++	if ((rule->flags & IMA_FUNC) && rule->func != func)
++		return false;
++	if ((rule->flags & IMA_MASK) && rule->mask != mask)
++		return false;
++	if ((rule->flags & IMA_FSMAGIC)
++	    && rule->fsmagic != inode->i_sb->s_magic)
++		return false;
++	if ((rule->flags & IMA_UID) && rule->uid != tsk->uid)
++		return false;
++	for (i = 0; i < MAX_LSM_RULES; i++) {
++		int rc;
++		u32 osid, sid;
++
++		if (!rule->lsm_field[i].rule)
++			continue;
++
++		switch (i) {
++		case LSM_OBJ_USER:
++		case LSM_OBJ_ROLE:
++		case LSM_OBJ_TYPE:
++			security_inode_getsecid(inode, &osid);
++			rc = security_filter_rule_match(osid,
++							rule->lsm_field[i].type,
++							AUDIT_EQUAL,
++							rule->lsm_field[i].rule,
++							NULL);
++			break;
++		case LSM_SUBJ_USER:
++		case LSM_SUBJ_ROLE:
++		case LSM_SUBJ_TYPE:
++			security_task_getsecid(tsk, &sid);
++			rc = security_filter_rule_match(sid,
++							rule->lsm_field[i].type,
++							AUDIT_EQUAL,
++							rule->lsm_field[i].rule,
++							NULL);
++		default:
++			break;
++		}
++		if (!rc)
++			return false;
++	}
++	return true;
++}
++
++/**
++ * ima_match_policy - decision based on LSM and other conditions
++ * @inode: pointer to an inode
++ * @func: IMA hook identifier
++ * @mask: requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ *
++ * Measure decision based on func/mask/fsmagic and LSM(subj/obj/type)
++ * conditions. Returns rule action on rule match, 0 on failure.
++ */
++int ima_match_policy(struct inode *inode, enum lim_hooks func, int mask)
++{
++	struct ima_measure_rule_entry *entry;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(entry, ima_measure, list) {
++		bool rc;
++
++		rc = ima_match_rules(entry, inode, func, mask);
++		if (rc) {
++			rcu_read_unlock();
++			return entry->action;
++		}
++	}
++	rcu_read_unlock();
++	return 0;
++}
++
++/**
++ * ima_init_policy - initialize the default and policy measure rules.
++ */
++void ima_init_policy(void)
++{
++	int i;
++
++	INIT_LIST_HEAD(&measure_default_rules);
++	for (i = 0; i < ARRAY_SIZE(default_rules); i++)
++		list_add_tail(&default_rules[i].list, &measure_default_rules);
++	ima_measure = &measure_default_rules;
++
++	INIT_LIST_HEAD(&measure_policy_rules);
++}
++
++/**
++ * ima_update_policy - update default_rules with new measure rules
++ *
++ * Wait to update the default rules with a complete new set of measure rules.
++ */
++void ima_update_policy(void)
++{
++	char *op = "policy_update";
++	char *cause = "already exists";
++	int result = 1;
++
++	if (ima_measure == &measure_default_rules) {
++		ima_measure = &measure_policy_rules;
++		cause = "complete";
++		result = 0;
++	}
++	integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
++			    NULL, op, cause, result);
++}
++
++/**
++ * ima_add_rule - add ima measure rules
++ * @action: integer 1 indicating MEASURE, 0 indicating DONT_MEASURE
++ * @subj_user: pointer to an LSM subject's user value
++ * @subj_role:  pointer to an LSM subject's role value
++ * @subj_type:  pointer to an LSM subject's type value
++ * @obj_user: pointer to an LSM object's user value
++ * @obj_role:  pointer to an LSM object's role value
++ * @obj_type:  pointer to an LSM object's type value
++ * @func: LIM hook identifier
++ * @mask: requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ * @fsmagic: fs magic hex value string
++ * @uid: uid value string
++ *
++ * Returns 0 on success, an error code on failure.
++ */
++int ima_add_rule(int action,
++		 char *subj_user, char *subj_role, char *subj_type,
++		 char *obj_user, char *obj_role, char *obj_type,
++		 char *func, char *mask, char *fsmagic, char *uid)
++{
++	struct ima_measure_rule_entry *entry;
++	int i, result = 0;
++
++	/* Prevent installed policy from changing */
++	if (ima_measure != &measure_default_rules) {
++		integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
++				    NULL, "policy_update", "already exists", 0);
++		return -EACCES;
++	}
++
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	INIT_LIST_HEAD(&entry->list);
++	if (action < 0 || action > 1)
++		result = -EINVAL;
++	else
++		entry->action = action;
++
++	if (!result && subj_user) {
++		i = lsm_type(SUBJ_USER);
++		entry->lsm_field[i].type = audit_type(SUBJ_USER);
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, subj_user,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && subj_role) {
++		i = lsm_type(SUBJ_ROLE);
++		entry->lsm_field[i].type = audit_type(SUBJ_ROLE);
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, subj_role,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && subj_type) {
++		i = lsm_type(SUBJ_TYPE);
++		entry->lsm_field[i].type = audit_type(SUBJ_TYPE);
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, subj_type,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && obj_user) {
++		i = lsm_type(OBJ_USER);
++		entry->lsm_field[i].type = audit_type(OBJ_USER);
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, obj_user,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && obj_role) {
++		i = lsm_type(OBJ_ROLE);
++		entry->lsm_field[i].type = audit_type(OBJ_ROLE);
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, obj_role,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && obj_type) {
++		i = lsm_type(OBJ_TYPE);
++		entry->lsm_field[i].type = audit_type(OBJ_TYPE);
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, obj_type,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && func) {
++		if (strcmp(func, "INODE_PERMISSION") == 0)
++			entry->func = INODE_PERMISSION;
++		else if (strcmp(func, "FILE_MMAP") == 0)
++			entry->func = FILE_MMAP;
++		else if (strcmp(func, "BPRM_CHECK") == 0)
++			entry->func = BPRM_CHECK;
++		else
++			result = -EINVAL;
++		if (!result)
++			entry->flags |= IMA_FUNC;
++	}
++	if (!result && mask) {
++		if (strcmp(mask, "MAY_EXEC") == 0)
++			entry->mask = MAY_EXEC;
++		else if (strcmp(mask, "MAY_WRITE") == 0)
++			entry->mask = MAY_WRITE;
++		else if (strcmp(mask, "MAY_READ") == 0)
++			entry->mask = MAY_READ;
++		else if (strcmp(mask, "MAY_APPEND") == 0)
++			entry->mask = MAY_APPEND;
++		else
++			result = -EINVAL;
++		if (!result)
++			entry->flags |= IMA_MASK;
++	}
++	if (!result && fsmagic) {
++		int rc;
++
++		rc = strict_strtoul(fsmagic, 16, &entry->fsmagic);
++		if (rc)
++			result = -EINVAL;
++		else
++			entry->flags |= IMA_FSMAGIC;
++	}
++	if (!result && uid) {
++		int rc;
++		ulong lnum;
++
++		rc = strict_strtoul(uid, 10, &lnum);
++		if (rc)
++			result = -EINVAL;
++		else {
++			entry->uid = (uid_t) lnum;
++			if (entry->uid != lnum)
++				result = -EINVAL;
++			else
++				entry->flags |= IMA_UID;
++		}
++	}
++	if (!result) {
++		mutex_lock(&ima_measure_mutex);
++		list_add_tail(&entry->list, &measure_policy_rules);
++		mutex_unlock(&ima_measure_mutex);
++	}
++	return result;
++}
+diff --git a/security/integrity/ima/ima_queue.c b/security/integrity/ima/ima_queue.c
+new file mode 100644
+index 0000000..1cb4f03
+--- /dev/null
++++ b/security/integrity/ima/ima_queue.c
+@@ -0,0 +1,124 @@
++/*
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ *
++ * Authors:
++ * Serge Hallyn <serue@us.ibm.com>
++ * Reiner Sailer <sailer@watson.ibm.com>
++ * Mimi Zohar <zohar@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ *
++ * File: ima_queue.c
++ *       implements queues that store IMA measurements and
++ *       maintains aggregate over the stored measurements
++ *       in the pre-configured TPM PCR (if available)
++ *       The measurement list is append-only. No entry is
++ *       ever removed or changed during the boot-cycle.
++ */
++#include <linux/module.h>
++
++#include "ima.h"
++
++struct list_head ima_measurements;	/* list of all measurements */
++struct ima_h_table ima_htable;	/* key: inode (before secure-hashing a file) */
++
++/* mutex protects atomicity of extending measurement list
++ * and extending the TPM PCR aggregate. Since tpm_extend can take
++ * long (and the tpm driver uses a mutex), we can't use the spinlock.
++ */
++static DEFINE_MUTEX(ima_extend_list_mutex);
++
++void ima_create_htable(void)
++{
++	int i;
++
++	INIT_LIST_HEAD(&ima_measurements);
++	atomic_set(&ima_htable.len, 0);
++	atomic_long_set(&ima_htable.violations, 0);
++	ima_htable.max_htable_size = IMA_MEASURE_HTABLE_SIZE;
++
++	for (i = 0; i < ima_htable.max_htable_size; i++) {
++		INIT_HLIST_HEAD(&ima_htable.queue[i]);
++		atomic_set(&ima_htable.queue_len[i], 0);
++	}
++}
++
++struct ima_queue_entry *ima_lookup_digest_entry(u8 *digest_value)
++{
++	struct ima_queue_entry *qe, *ret = NULL;
++	unsigned int key;
++	struct hlist_node *pos;
++
++	key = IMA_HASH_KEY(digest_value);
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(qe, pos, &ima_htable.queue[key], hnext) {
++		if (memcmp(qe->entry->digest, digest_value, 20) == 0) {
++			ret = qe;
++			break;
++		}
++	}
++	rcu_read_unlock();
++	return ret;
++}
++
++/* Called with mutex held */
++static int ima_add_digest_entry(struct ima_measure_entry *entry)
++{
++	struct ima_queue_entry *qe;
++	unsigned int key;
++
++	key = IMA_HASH_KEY(entry->digest);
++	qe = kmalloc(sizeof(*entry), GFP_KERNEL);
++	if (qe == NULL) {
++		ima_error("OUT OF MEMORY ERROR creating queue entry.\n");
++		return -ENOMEM;
++	}
++	qe->entry = entry;
++
++	hlist_add_head_rcu(&qe->hnext, &ima_htable.queue[key]);
++	atomic_inc(&ima_htable.queue_len[key]);
++	return 0;
++}
++
++int ima_add_measure_entry(struct ima_measure_entry *entry, int violation)
++{
++	struct ima_queue_entry *qe;
++	int error = 0;
++
++	mutex_lock(&ima_extend_list_mutex);
++	if (!violation) {
++		if (ima_lookup_digest_entry(entry->digest)) {
++			error = -EEXIST;
++			goto out;
++		}
++	}
++	qe = kmalloc(sizeof(struct ima_queue_entry), GFP_KERNEL);
++	if (qe == NULL) {
++		ima_error("OUT OF MEMORY in %s.\n", __func__);
++		error = -ENOMEM;
++		goto out;
++	}
++	qe->entry = entry;
++
++	INIT_LIST_HEAD(&qe->later);
++	list_add_tail_rcu(&qe->later, &ima_measurements);
++
++	atomic_long_inc(&ima_htable.len);
++	if (ima_add_digest_entry(entry)) {
++		error = -ENOMEM;
++		goto out;
++	}
++	if (violation) {	/* Replace 0x00 with 0xFF */
++		u8 digest[IMA_DIGEST_SIZE];
++
++		memset(digest, 0xff, sizeof digest);
++		ima_extend(digest);
++	} else
++		ima_extend(entry->digest);
++out:
++	mutex_unlock(&ima_extend_list_mutex);
++	return error;
 +}
 -- 
 1.5.6.5
