@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYKTUw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYKTUwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbYKTUw2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 15:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYKTUvi
+	id S1757518AbYKTUwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 15:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbYKTUvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 15:51:38 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:22317 "HELO
+	Thu, 20 Nov 2008 15:51:39 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:22326 "HELO
 	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756015AbYKTUvh (ORCPT
+	by vger.kernel.org with SMTP id S1756125AbYKTUvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 15:51:37 -0500
+	Thu, 20 Nov 2008 15:51:38 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rUkvy672zP9QozbRMBXzIAMaIYH/m5EoIjkLz+N22Mc+XCrA3KeohTVCY0kdopAWbJ4d+0fzATcPqpZ10nLHl0rhwiQJilfJIXitbG19a39qt16O0HXIe7JVX94NEWNPbm3LyKr2gSeA+N4tfBZH65fL8IXCV0lzQfiuZOOYFOo=  ;
-X-YMail-OSG: 2fKQ9CMVM1mPxFhjRCh9GpGPAoZYrqVXr.O_9A8F0YjRO3jqyAiMfMUlID2m_EYVLf2pMWuNcO0.GLAx4Mnx4xYiFj5K81jxpEy57vCYSw5Kp33mmWLDj2JUd7TOzlrteNDKhpoJVTxfLdc4m3FZllRV
+  b=PVkJ6vr9A1Yetvt4o5x4f3naw9DQfyouUPAmAjE5MwofrPnDH9mtO2P+49xhzRpdiGIWsa3SwUFcjVI5zQLlgDIGRcCYRwY8qhX2WFCrwfhhQQlSO4+wtuQhN6GY5ZU7vgELVk9AJPaV4ubVzlIFqirMON9QP6NqyUa06uOGmuE=  ;
+X-YMail-OSG: aKvDM1YVM1mdHlc6xkU4RMaFbrZnXc0_KLRcWkP7V0MJ.u96lE.KOSDIA1sdurOwKuT5fsCiLemw.7pxrfdSy0ytuIAvg5ymD5_s2ovAOk3MLy9t7fmYrh0xBYI3r4WTauByaNQYQYxaldKHrPN1XtZuL4.5OW.4GKwgU8DmEkXKmCflibLVAZ.pJo9u
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
 To: Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH 02/16] Blackfin SPI Driver: Fix erroneous SPI Clock divisor calculation
-Date: Thu, 20 Nov 2008 12:25:59 -0800
+Subject: Re: [PATCH 03/16] Blackfin SPI Driver: move bfin_addr_dcachable() and friends into the cacheflush header where it belongs
+Date: Thu, 20 Nov 2008 12:26:55 -0800
 User-Agent: KMail/1.9.10
 Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org> <1226994760-4301-3-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1226994760-4301-3-git-send-email-cooloney@kernel.org>
+       Mike Frysinger <vapier.adi@gmail.com>
+References: <1226994760-4301-1-git-send-email-cooloney@kernel.org> <1226994760-4301-4-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1226994760-4301-4-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811201226.00286.david-b@pacbell.net>
+Message-Id: <200811201226.55975.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Monday 17 November 2008, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+> From: Mike Frysinger <vapier.adi@gmail.com>
 > 
-> Fix erroneous SPI Clock divisor calculation. Make sure SPI_BAUD is
-> always >= 2. Writing a value of 0 or 1 to the SPI_BAUD register disables
-> the serial clock.
-> 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
 > Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
 Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
+... except that you really need to have patch comments,
+not just overlong $SUBJECT lines, so please fix that.
+
+
 > ---
->  arch/blackfin/include/asm/bfin5xx_spi.h |    2 ++
->  drivers/spi/spi_bfin5xx.c               |    3 +++
->  2 files changed, 5 insertions(+), 0 deletions(-)
+>  drivers/spi/spi_bfin5xx.c |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/blackfin/include/asm/bfin5xx_spi.h b/arch/blackfin/include/asm/bfin5xx_spi.h
-> index 9fa1915..b16c3cd 100644
-> --- a/arch/blackfin/include/asm/bfin5xx_spi.h
-> +++ b/arch/blackfin/include/asm/bfin5xx_spi.h
-> @@ -21,6 +21,8 @@
->  #ifndef _SPI_CHANNEL_H_
->  #define _SPI_CHANNEL_H_
->  
-> +#define MIN_SPI_BAUD_VAL	2
-> +
->  #define SPI_READ              0
->  #define SPI_WRITE             1
->  
 > diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-> index e9b7366..a38106a 100644
+> index a38106a..6c5671e 100644
 > --- a/drivers/spi/spi_bfin5xx.c
 > +++ b/drivers/spi/spi_bfin5xx.c
-> @@ -158,6 +158,9 @@ static u16 hz_to_spi_baud(u32 speed_hz)
->  	if ((sclk % (2 * speed_hz)) > 0)
->  		spi_baud++;
+> @@ -25,9 +25,6 @@
+>  #include <asm/dma.h>
+>  #include <asm/portmux.h>
+>  #include <asm/bfin5xx_spi.h>
+> -
+> -/* reserved_mem_dcache_on and cache friends */
+> -#include <asm/cplbinit.h>
+>  #include <asm/cacheflush.h>
 >  
-> +	if (spi_baud < MIN_SPI_BAUD_VAL)
-> +		spi_baud = MIN_SPI_BAUD_VAL;
-> +
->  	return spi_baud;
->  }
->  
+>  #define DRV_NAME	"bfin-spi"
 > -- 
 > 1.5.6.3
 > 
