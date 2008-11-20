@@ -1,116 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYKTUhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbYKTUhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbYKTUhJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 15:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYKTUf4
+	id S1757208AbYKTUhi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 15:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbYKTUhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 15:35:56 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62888 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753756AbYKTUfx (ORCPT
+	Thu, 20 Nov 2008 15:37:10 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:55383 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755724AbYKTUhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 15:35:53 -0500
-Message-Id: <20081120203551.873831232@goodmis.org>
-References: <20081120203415.251344054@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 20 Nov 2008 15:34:17 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
-       Matt Fleming <mjf@gentoo.org>, Jim Radford <radford@galvanix.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/3] ftrace: add support for powerpc to recordmcount.pl script
-Content-Disposition: inline; filename=0002-ftrace-add-support-for-powerpc-to-recordmcount.pl-s.patch
+	Thu, 20 Nov 2008 15:37:09 -0500
+Date: Thu, 20 Nov 2008 21:36:37 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mikael Starvik <mikael.starvik@axis.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: headers-y for machines
+Message-ID: <20081120203637.GA21308@uranus.ravnborg.org>
+References: <4BEA3FF3CAA35E408EA55C7BE2E61D053B05D40823@xmail3.se.axis.com> <20081120190819.GA15838@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120190819.GA15838@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Thu, Nov 20, 2008 at 08:08:19PM +0100, Sam Ravnborg wrote:
+> Hi Mikael.
+> 
+> On Thu, Nov 20, 2008 at 09:48:45AM +0100, Mikael Starvik wrote:
+> > Lets say you have arch/arm/mach-xx/include/mach/myfile.h and want to add myfile.h to header-y. How do you do that?
+> > 
+> > I tried to add 
+> > 
+> > header-y += ../../maxh-xx/
+> > 
+> > in arch/arm/include/asm/Kbuild
+> > 
+> > and then
+> > header-y += myfile.h in arch/arm/mach-xx/include/mach/Kbuild
+> 
+> When we did the header file rearrange I had not foreseen that we would export header files
+> located anywhere else than include/* and arch/$ARCH/include so there is
+> no way to properly export files located in arch/$ARCH/mach-foo/...
+> 
+> Do we really want to export files form this location to userspace?
 
-Impact: Add PowerPC port to recordmcount.pl script
+One way to support this could be to add the possibility to specify where
+to install the header files.
+Like this patch:
 
-This patch updates the recordmcount.pl script to process
-PowerPC.
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 612dc13..1760113 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -14,6 +14,8 @@ _dst := $(if $(dst),$(dst),$(obj))
+ kbuild-file := $(srctree)/$(obj)/Kbuild
+ include $(kbuild-file)
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- scripts/recordmcount.pl |   19 +++++++++++++++++--
- 1 files changed, 17 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 9f75438..7ec032e 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -130,6 +130,7 @@ my %weak;		# List of weak functions
- my %convert;		# List of local functions used that needs conversion
- 
- my $type;
-+my $nm_regex;		# Find the local functions (return function)
- my $section_regex;	# Find the start of a section
- my $function_regex;	# Find the name of a function
- 			#    (return offset and func name)
-@@ -145,6 +146,7 @@ if ($arch eq "x86") {
- }
- 
- if ($arch eq "x86_64") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
-@@ -158,6 +160,7 @@ if ($arch eq "x86_64") {
-     $cc .= " -m64";
- 
- } elsif ($arch eq "i386") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-@@ -171,6 +174,7 @@ if ($arch eq "x86_64") {
-     $cc .= " -m32";
- 
- } elsif ($arch eq "sh") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\S+)";
-     $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-@@ -181,6 +185,17 @@ if ($arch eq "x86_64") {
-     $objcopy .= " -O elf32-sh-linux";
-     $cc .= " -m32";
- 
-+} elsif ($arch eq "powerpc") {
-+    $nm_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
-+    $section_regex = "Disassembly of section\\s+(\\S+):";
-+    $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?.*?)>:";
-+    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
-+    if ($bits == 64) {
-+	$type = ".quad";
-+    } else {
-+	$type = ".long";
-+    }
++_dst := $(if $(header-dest-y),$(header-dest-y),$(_dst))
 +
- } else {
-     die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
- }
-@@ -250,7 +265,7 @@ if (!$found_version) {
- #
- open (IN, "$nm $inputfile|") || die "error running $nm";
- while (<IN>) {
--    if (/^[0-9a-fA-F]+\s+t\s+(\S+)/) {
-+    if (/$nm_regex/) {
- 	$locals{$1} = 1;
-     } elsif (/^[0-9a-fA-F]+\s+([wW])\s+(\S+)/) {
- 	$weak{$2} = $1;
-@@ -302,7 +317,7 @@ sub update_funcs
- 	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
- 	    $opened = 1;
- 	    print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
--	    print FILE "\t.align $alignment\n";
-+	    print FILE "\t.align $alignment\n" if (defined($alignment));
- 	}
- 	printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
-     }
--- 
-1.5.6.5
+ include scripts/Kbuild.include
 
--- 
+ install       := $(INSTALL_HDR_PATH)/$(_dst)
+
+
+With this you could add:
+header-dest-y := include/mach-foo
+
+to the Kbuild file despite having it located somewhere else in the tree.
+
+	Sam
