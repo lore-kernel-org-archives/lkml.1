@@ -1,116 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYKTPEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYKTPFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758180AbYKTPEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 10:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbYKTOxX
+	id S1758199AbYKTPFc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbYKTOzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:53:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58693 "EHLO hera.kernel.org"
+	Thu, 20 Nov 2008 09:55:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40004 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757984AbYKTOxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:53:22 -0500
-From: Tejun Heo <tj@kernel.org>
-To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu, akpm@linux-foundation.org, npiggin@suse.de
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 5/6] FUSE: implement fuse_req->prep()
-Date: Thu, 20 Nov 2008 23:52:19 +0900
-Message-Id: <1227192740-10532-6-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1227192740-10532-1-git-send-email-tj@kernel.org>
-References: <1227192740-10532-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:52:36 +0000 (UTC)
+	id S1758295AbYKTOzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:55:41 -0500
+Date: Thu, 20 Nov 2008 15:55:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Deal with the warning from dmi_low_memory_corruption()
+	being unused
+Message-ID: <20081120145511.GB13550@elte.hu>
+References: <20081120124411.17087.11596.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081120124411.17087.11596.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement ->prep() which is the opposite equivalent of ->end().  It's
-called right before the request is passed to userland server in the
-kernel context of the server.  ->prep() can fail the request without
-disrupting the whole channel.
 
-This will be used by direct mmap implementation.
+* David Howells <dhowells@redhat.com> wrote:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
+> Deal with the warning from dmi_low_memory_corruption() being unused 
+> when CONFIG_X86_RESERVE_LOW_64K is not set:
+> 
+> arch/x86/kernel/setup.c:742: warning: 'dmi_low_memory_corruption' defined but not used
+> 
+> This was introduced by fc38151947477596aa27df6c4306ad6008dc6711.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+> 
+>  arch/x86/kernel/setup.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+
+thx - already fixed via the patch below.
+
+	Ingo
+
+------------>
+>From faad95db248fffe94b691a9c8f9cd0193584633a Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 17 Oct 2008 12:00:38 +0200
+Subject: [PATCH] fix warning in arch/x86/kernel/setup.c
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+fix this warning:
+
+  arch/x86/kernel/setup.c:736: warning: ‘dmi_low_memory_corruption’ defined but not used
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/fuse/dev.c    |   29 ++++++++++++++++++++++++++---
- fs/fuse/fuse_i.h |    6 ++++++
- 2 files changed, 32 insertions(+), 3 deletions(-)
+ arch/x86/kernel/setup.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
-index c83ff20..05414b8 100644
---- a/fs/fuse/dev.c
-+++ b/fs/fuse/dev.c
-@@ -747,6 +747,7 @@ static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
- 			      unsigned long nr_segs, loff_t pos)
- {
- 	int err;
-+	bool restart;
- 	struct fuse_req *req;
- 	struct fuse_in *in;
- 	struct fuse_copy_state cs;
-@@ -793,12 +794,32 @@ static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
- 		goto restart;
- 	}
- 	spin_unlock(&fc->lock);
-+
-+	restart = false;
- 	fuse_copy_init(&cs, fc, 1, req, iov, nr_segs);
-+
-+	/*
-+	 * Execute prep if available.  Failure from prep doesn't
-+	 * indicate faulty channel.  On failure, fail the current
-+	 * request and proceed to the next one.
-+	 */
-+	if (req->prep) {
-+		err = req->prep(fc, req);
-+		if (err) {
-+			restart = true;
-+			goto finish;
-+		}
-+	}
-+
- 	err = fuse_copy_one(&cs, &in->h, sizeof(in->h));
--	if (!err)
--		err = fuse_copy_args(&cs, in->numargs, in->argpages,
--				     (struct fuse_arg *) in->args, 0);
-+	if (err)
-+		goto finish;
-+
-+	err = fuse_copy_args(&cs, in->numargs, in->argpages,
-+			     (struct fuse_arg *) in->args, 0);
-+ finish:
- 	fuse_copy_finish(&cs);
-+
- 	spin_lock(&fc->lock);
- 	req->locked = 0;
- 	if (req->aborted) {
-@@ -808,6 +829,8 @@ static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
- 	if (err) {
- 		req->out.h.error = -EIO;
- 		request_end(fc, req);
-+		if (restart)
-+			goto restart;
- 		return err;
- 	}
- 	if (!req->isreply)
-diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
-index 90eb42c..9d3becb 100644
---- a/fs/fuse/fuse_i.h
-+++ b/fs/fuse/fuse_i.h
-@@ -282,6 +282,12 @@ struct fuse_req {
- 	/** Link on fi->writepages */
- 	struct list_head writepages_entry;
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 0fa6790..c35ec3f 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -738,6 +738,7 @@ void start_periodic_check_for_corruption(void)
+ }
+ #endif
  
-+	/** Request preparation callback.  Called from the kernel
-+	    context of the FUSE server before passing the request to
-+	    the FUSE server.  Non-zero return from this function will
-+	    fail the request. */
-+	int (*prep)(struct fuse_conn *, struct fuse_req *);
-+
- 	/** Request completion callback.  This function is called from
- 	    the kernel context of the FUSE server if the request isn't
- 	    being aborted.  If the request is being aborted, it's
--- 
-1.5.6
++#ifdef CONFIG_X86_RESERVE_LOW_64K
+ static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_NOTICE
+@@ -749,6 +750,7 @@ static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
+ 
+ 	return 0;
+ }
++#endif
+ 
+ /* List of systems that have known low memory corruption BIOS problems */
+ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
 
