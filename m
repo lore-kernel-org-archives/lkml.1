@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYKTSpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbYKTSxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYKTSpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 13:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYKTSpW
+	id S1755598AbYKTSxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 13:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYKTSxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 13:45:22 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:6077 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYKTSpV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 13:45:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=dCyZRQ5k6klVIZOt/GeZICIgWxyzDADPeRtqmdXYoBVt/BN5iw8Y60WueZdTtVeClj
-         lfWxkxd4EbUtET7HIJh3haEZggYM1+6zTp/FLBbS0Op/H9ZXAeo2WpwF9mBVBXulwPRi
-         NcYwElI0eKV9qo3dpBBlUUxQZSDdbmaAxDL7E=
-Message-ID: <84144f020811201045w27d4d751h771276eb5fd8beda@mail.gmail.com>
-Date: Thu, 20 Nov 2008 20:45:19 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Catalin Marinas" <catalin.marinas@arm.com>
-Subject: Re: Possible memory leak via slub kmem_cache_create
-Cc: "Christoph Lameter" <cl@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
-In-Reply-To: <1227174711.5784.9.camel@pc1117.cambridge.arm.com>
+	Thu, 20 Nov 2008 13:53:45 -0500
+Received: from ns2.q-leap.de ([88.79.172.217]:52463 "EHLO mail.q-leap.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753990AbYKTSxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 13:53:44 -0500
+X-Greylist: delayed 2060 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Nov 2008 13:53:44 EST
+Date: Thu, 20 Nov 2008 19:19:19 +0100
+From: Bernd Schubert <bs@q-leap.de>
+To: linux-scsi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: cache flush timeouts by blk_queue_ordered()
+Message-ID: <20081120181919.GA3818@lanczos.q-leap.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1227111954.27162.28.camel@pc1117.cambridge.arm.com>
-	 <Pine.LNX.4.64.0811191319360.23084@quilx.com>
-	 <1227174711.5784.9.camel@pc1117.cambridge.arm.com>
-X-Google-Sender-Auth: f387002be7ea2589
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Catalin,
+Hello,
 
-On Thu, Nov 20, 2008 at 11:51 AM, Catalin Marinas
-<catalin.marinas@arm.com> wrote:
-> My point is that the API is slightly different when slub is used since
-> kmem_cache_name is no longer guaranteed to return the same pointer
-> passed to kmem_cache_create. Maybe a documentation update:
->
-> diff --git a/mm/slab.c b/mm/slab.c
-> index ea76bcb..9723a72 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -2124,6 +2124,8 @@ static int __init_refok setup_cpu_cache(struct kmem_cache
->  *
->  * @name must be valid until the cache is destroyed. This implies that
->  * the module calling this has to destroy the cache before getting unloaded.
-> + * Note that kmem_cache_name() is not guaranteed to return the same pointer,
-> + * therefore applications must manage it themselves.
+with some FC hardware-raid units we have the problem that the 
+SYNCHRONIZE_CACHE command reproducibly fails. 
 
-Yes, makes sense. Care to send a patch I can apply?
+[658715.827428] sd 6:0:2:2: last recovery: 4311805647, now: 4459793681
+[658715.833980] sd 6:0:2:2: [sdk] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
+[658715.842288] sd 6:0:2:2: [sdk] CDB: Synchronize Cache(10): 35 00 00 00 00 00 00 00 00 00
+[658715.850954] sd 6:0:2:2: Activating scsi error recovery (1)
+[658715.856793] sd 6:0:2:2: trying to abort command
+[658715.861820] qla2xxx 0000:07:02.0: scsi(6:2:2): Abort command issued -- 1 36e2df2 2002.
+[658746.004124] sd 6:0:2:2: last recovery: 4459793692, now: 4459801236
+[658746.010686] sd 6:0:2:2: [sdk] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
+[658746.019004] sd 6:0:2:2: [sdk] CDB: Synchronize Cache(10): 35 00 00 00 00 00 00 00 00 00
+[658746.027680] sd 6:0:2:2: Activating scsi error recovery (2)
+[658746.033526] sd 6:0:2:2: trying to abort command
+[658746.038543] qla2xxx 0000:07:02.0: scsi(6:2:2): Abort command issued -- 1 36e2df4 2002.
 
-                         Pekka
+My guess is that these units flush their cache when this command is send
+even though they have a battery backup unit and flushing 2GB cache may
+take some time... Since I can only reproduce it on systems in production
+I can't do any experiments, but I guess the default timeout of 30s is not
+sufficient.
+
+Problem is now that this timeout cannot be adjusted by the sysfs scsi device 
+timeout, since sd_prepare_flush() doesn't have the required device 
+structure. The reason for that is blk_queue_ordered(). It neither
+gets a timeout argument, nor any pointer to the device.
+
+I already tried to use container_of() in sd_prepare_flush, but somehow
+that doesn't seem work if the structure member is a pointer.
+
+The next solution that comes into my my mind is to add the timeout argument
+to blk_queue_ordered() and subsequentely to modifiy all callers.
+Would such a patch be accepted? Or is there any better solution?
+
+Any help is appreciated.
+
+
+Thanks,
+Bernd
+
+PS: (I'm also discussing the cache flush issue with one of our 
+hardware vendors, but fixing their firmware might take ages). 
