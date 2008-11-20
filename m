@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYKTINs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYKTIRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYKTINs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 03:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYKTINk
+	id S1754221AbYKTIRy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 03:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbYKTIRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 03:13:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58026 "EHLO mx2.mail.elte.hu"
+	Thu, 20 Nov 2008 03:17:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43216 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753033AbYKTINj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 03:13:39 -0500
-Date: Thu, 20 Nov 2008 09:13:07 +0100
+	id S1752293AbYKTIRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 03:17:44 -0500
+Date: Thu, 20 Nov 2008 09:17:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Milton Miller <miltonm@bga.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/9] powerpc: port of dynamic ftrace
-Message-ID: <20081120081307.GD21785@elte.hu>
-References: <20081119212204.318400312@goodmis.org>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] sched: Don't allow priority switch to realtime when
+	the task doesn't belong to init_task_group and when
+	CONFIG_RT_GROUP_SCHED isn't set
+Message-ID: <20081120081732.GE21785@elte.hu>
+References: <20081120061854.GA4349@in.ibm.com> <20081120075829.GA21785@elte.hu> <20081120080344.GA11023@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081119212204.318400312@goodmis.org>
+In-Reply-To: <20081120080344.GA11023@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,50 +40,67 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-> ----
->  arch/powerpc/Kconfig              |    2 +
->  arch/powerpc/include/asm/ftrace.h |   14 +-
->  arch/powerpc/include/asm/module.h |   16 ++-
->  arch/powerpc/kernel/ftrace.c      |  473 +++++++++++++++++++++++++++++++++---
->  arch/powerpc/kernel/idle.c        |    5 +
->  arch/powerpc/kernel/module_32.c   |   10 +
->  arch/powerpc/kernel/module_64.c   |   13 +
->  arch/x86/include/asm/ftrace.h     |    9 +-
->  arch/x86/kernel/ftrace.c          |  168 +++++++++++++-
->  include/linux/ftrace.h            |   51 ++++-
->  kernel/module.c                   |    2 +-
->  kernel/trace/ftrace.c             |  137 ++++++------
->  scripts/recordmcount.pl           |   20 ++-
->  13 files changed, 790 insertions(+), 130 deletions(-)
+> On Thu, Nov 20, 2008 at 08:58:29AM +0100, Ingo Molnar wrote:
+> > 
+> > * Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> > 
+> > > Applies on 2.6.28-rc5.
+> > > 
+> > > With CONFIG_RT_GROUP_SCHED not set, don't allow a task's priority 
+> > > switch to realtime if the task isn't part of init_task_group.
+> > > 
+> > > A task belonging to a fair group could use 
+> > > sched_setscheduler/sched_setparam to become a realtime task. If such 
+> > > a task belongs to one of the child groups of init_task_group and if 
+> > > CONFIG_RT_GROUP_SCHED is not set, then it ends up getting queued in 
+> > > init_task_group's runqueue. So we have a situation where, a task 
+> > > belongs to one group (child) but ends in the runqueue of another 
+> > > group (init_task_group). This does not look correct.
+> > > 
+> > > Fix this by failing such priority change requests in 
+> > > sched_setscheduler() and sched_setparam().
+> > > 
+> > > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > > ---
+> > >  kernel/sched.c |    7 +++++++
+> > >  1 file changed, 7 insertions(+)
+> > > 
+> > > --- a/kernel/sched.c
+> > > +++ b/kernel/sched.c
+> > > @@ -5206,6 +5206,13 @@ recheck:
+> > >  		if (rt_bandwidth_enabled() && rt_policy(policy) &&
+> > >  				task_group(p)->rt_bandwidth.rt_runtime == 0)
+> > >  			return -EPERM;
+> > > +#elif defined(CONFIG_FAIR_GROUP_SCHED)
+> > > +		/*
+> > > +		 * If the task doesn't belong to init_task_group, don't
+> > > +		 * allow priority switch to realtime. (!CONFIG_RT_GROUP_SCHED)
+> > > +		 */
+> > > +		if (rt_policy(policy) && (task_group(p) != &init_task_group))
+> > > +			return -EPERM;
+> > >  #endif
+> > >  
+> > >  		retval = security_task_setscheduler(p, policy, param);
+> > 
+> > hm, another option would be, instead of denying something (which 
+> > denial might not even be noticed by the app) that the app clearly has 
+> > enough privilege to request - to just act upon it and move the task to 
+> > the init_task_group?
+> > 
+> > the app cannot expect fair scheduling for this task anyway. And if we 
+> > want to forbid tasks from doing so - do not give them privilege to go 
+> > to RT priorities.
+> > 
+> 
+> I am wondering what would the right action then be if the task drops 
+> back to CFS.
 
-Hm, something like this shouldnt be pulled into the powerpc tree: it 
-touches the core kernel, x86 code and ftrace code as well.
-
-Please do the suggestion i outlined and which Paul agreed with: 
-prepare a branch that touches _only_ powerpc files and gets these 
-changes there, without actually breaking the build on powerpc. And 
-please do not name the branch as "hack" - we dont want Paul to pull 
-such a branch name - it will show up in the upstream git logs.
-
-Those changes should only touch powerpc files. Do not try to shoe-horn 
-already applied ftrace commits into a separate branch with different 
-sha1's. Yes, ftrace wont be enable-able on powerpc when that is 
-pulled, but it will only be for a brief period shortly before the 
-merge window. (and it will all just work fine when integrated 
-together)
-
-Once this branch is done, and once Paul agrees that it looks OK-ish to 
-him, we can put it into ftrace-next straight away [but still keep it 
-in a separate topic tree in tip/tracing/powerpc - so it can all be 
-reconsidered reversibly if it causes too much merge trouble]. Paul 
-will then be able to pull it in a few weeks, in the runup to the 
-v2.6.29 merge window.
-
-The other option is to go the slow route of 2-3 kernel releases to 
-pull this all off.
-
-ok?
+yeah. If the integration artifacts around the edges get too awkward, 
+then the best would be to consolidate fair-group and rt-group into the 
+same group-sched config option and _eliminate_ such artifacts at their 
+root. rt-group was started as a separate option mostly because it was 
+new and experimental code - that splitup is not cast into stone.
 
 	Ingo
