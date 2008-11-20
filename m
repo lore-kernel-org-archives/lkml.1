@@ -1,114 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKTBiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbYKTBqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYKTBiU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 20:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYKTBiJ
+	id S1753519AbYKTBqA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 20:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYKTBpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 20:38:09 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:35419 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752388AbYKTBiI (ORCPT
+	Wed, 19 Nov 2008 20:45:49 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:47058 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751875AbYKTBps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 20:38:08 -0500
-X-YMail-OSG: IPFM9lcVM1nXGggvuViGmY6DD3drLxw4tbMa_9CbbKvkGXRFt5ZNdrBPM0OV9aZhgmCHnQSRWPyMk6ysLk1gEYO_rDE2tsel6NKlNPq8QTI7zNM5JFjEIiZpo1PL4voYL1LhNPZ3aiKyvzEdE3CbQObb9kjMk226IcDKuGD8fbSsShCFD.4XVVaUmEg-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] Disable task_timeout, status_thread and status_thread_tur
-	device object attributes by default
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 19 Nov 2008 17:38:00 -0800
-Message-Id: <1227145080.4192.318.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Nov 2008 20:45:48 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: mtk.manpages@gmail.com
+Cc: "Serge Hallyn" <serue@us.ibm.com>,
+       "Subrata Modak" <subrata@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
+       clg@fr.ibm.com, herbert@13thfloor.at, dev@sw.ru
+References: <cfd18e0f0811191204r4ccaeaf4m4145e67f408543e0@mail.gmail.com>
+Date: Wed, 19 Nov 2008 17:41:21 -0800
+In-Reply-To: <cfd18e0f0811191204r4ccaeaf4m4145e67f408543e0@mail.gmail.com>
+	(Michael Kerrisk's message of "Wed, 19 Nov 2008 15:04:22 -0500")
+Message-ID: <m1vdujdvi6.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;mtk.manpages@gmail.com
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.2210]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: Current state of CLONE_NEWUSER?
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8086e1fb0c1f00aec7d4d453c0156e0e033e72b4 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Wed, 19 Nov 2008 12:14:21 -0800
-Subject: [PATCH] Disable task_timeout, status_thread and status_thread_tur device object attributes by default
+"Michael Kerrisk" <mtk.manpages@googlemail.com> writes:
 
-There is a known bug: http://linux-iscsi.org/bug/cgi-bin/bugzilla/show_bug.cgi?id=2 that
-occurs when task_timeout fires while one of the Linux subsystems is still holding on to an
-outstanding I/O.  In reality, when a Linux subsystem is not returning an I/O to us after
-some period of time (the old default for task_timeout was 60 for TYPE_DISK), it usually
-means there is bug outside of LIO-Target.
+> Hi Serge,
+>
+> What is the current status of CLONE_NEWUSER?  I'm currently trying to
+> test this flag in preparation for documenting it in the clone(2) man
+> page, but am running into an ENOMEM error from the clone() call, which
+> seems to occur after a failure in kobject_init_and_add() in the
+> following call sequence:
+>
+> clone_user_ns() --> alloc_uid() --> uids_user_create() -->
+> kobject_init_and_add()
+>
+> Are there already some test programs somewhere?  Is there any
+> documentation already available for this flag?
 
-In any event, this functionality is now disabled by default and will wait forever
-for Linux subsystems to return outstanding I/O to us.
+This code is definitely still under development.
 
-This functionality may very well end up getting removed all together in v3.0, because
-if I/Os are never getting returned to the target engine, it really does mean a BUG
-outside of the target code.
+When complete it should be able to create a new uid namespace,
+as an unprivileged user.  Creating a new process with uid == gid == 0.
+Have a full set of caps.  And have permission to do nothing on the system
+except read world readable files and write world writable files.
 
-Forward port to v3.0 Target_Core_Mod/ConfigFS from v2.9-STABLE r405
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_base.h      |    7 -------
- drivers/lio-core/target_core_device.c    |    6 ++++++
- drivers/lio-core/target_core_transport.h |    4 ++--
- 3 files changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/lio-core/target_core_base.h b/drivers/lio-core/target_core_base.h
-index 0b7b3f0..5ee04d3 100644
---- a/drivers/lio-core/target_core_base.h
-+++ b/drivers/lio-core/target_core_base.h
-@@ -43,13 +43,6 @@
- 
- #define SCSI_CDB_SIZE			16 /* SCSI Command Descriptor Block Size a la SCSI's MAX_COMMAND_SIZE */
- 
--/* se_dev_attrib_t sanity values */
--#define DA_TASK_TIMEOUT_MAX		600 /* 10 Minutes, see transport_get_default_task_timeout()  */
--#define DA_STATUS_THREAD		1 /* Enabled by default */
--#define DA_STATUS_THREAD_TUR		1 /* Enabled by default */
--#define DA_STATUS_MAX_SECTORS_MIN	16
--#define DA_STATUS_MAX_SECTORS_MAX	8192
--
- /* used by PSCSI and iBlock Transport drivers */
- #define READ_BLOCK_LEN          		6
- #define READ_CAP_LEN            		8
-diff --git a/drivers/lio-core/target_core_device.c b/drivers/lio-core/target_core_device.c
-index 974574a..a262b19 100644
---- a/drivers/lio-core/target_core_device.c
-+++ b/drivers/lio-core/target_core_device.c
-@@ -376,7 +376,13 @@ extern void se_dev_set_default_attribs (se_device_t *dev)
- 	/*
- 	 * task_timeout is based on device type.
- 	 */
-+#if 1
-+	// Disabled by default due to known BUG in some cases when task_timeout fires..
-+	// task_timeout, status_thread and status_thread_tur may end up being removed in v3.0..
-+	DEV_ATTRIB(dev)->task_timeout = 0;
-+#else
- 	DEV_ATTRIB(dev)->task_timeout = transport_get_default_task_timeout(dev);
-+#endif
- 
- 	return;
- }
-diff --git a/drivers/lio-core/target_core_transport.h b/drivers/lio-core/target_core_transport.h
-index c2fd11a..fe7083d 100644
---- a/drivers/lio-core/target_core_transport.h
-+++ b/drivers/lio-core/target_core_transport.h
-@@ -84,8 +84,8 @@
- 
- /* se_dev_attrib_t sanity values */
- #define DA_TASK_TIMEOUT_MAX			600 /* 10 Minutes, see transport_get_default_task_timeout()  */
--#define DA_STATUS_THREAD			1 /* Enabled by default */
--#define DA_STATUS_THREAD_TUR			1 /* Enabled by default */
-+#define DA_STATUS_THREAD			0 /* Disabled by default */
-+#define DA_STATUS_THREAD_TUR			0 /* Disabled by default */
- #define DA_STATUS_MAX_SECTORS_MIN		16
- #define DA_STATUS_MAX_SECTORS_MAX		8192
- 
--- 
-1.5.4.1
-
-
-
+Eric
