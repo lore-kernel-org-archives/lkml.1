@@ -1,88 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbYKTO6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYKTPEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbYKTO6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbYKTOpS
+	id S1758180AbYKTPEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbYKTOxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:45:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41189 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:53:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58693 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755994AbYKTOpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:45:13 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 40/45] NFS: Add read context retention for FS-Cache to call
-	back with [ver #41]
-To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
-Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:45:05 +0000
-Message-ID: <20081120144505.10667.43690.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1757984AbYKTOxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:53:22 -0500
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       miklos@szeredi.hu, akpm@linux-foundation.org, npiggin@suse.de
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 5/6] FUSE: implement fuse_req->prep()
+Date: Thu, 20 Nov 2008 23:52:19 +0900
+Message-Id: <1227192740-10532-6-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1227192740-10532-1-git-send-email-tj@kernel.org>
+References: <1227192740-10532-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:52:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add read context retention so that FS-Cache can call back into NFS when a read
-operation on the cache fails EIO rather than reading data.  This permits NFS to
-then fetch the data from the server instead using the appropriate security
-context.
+Implement ->prep() which is the opposite equivalent of ->end().  It's
+called right before the request is passed to userland server in the
+kernel context of the server.  ->prep() can fail the request without
+disrupting the whole channel.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+This will be used by direct mmap implementation.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
+ fs/fuse/dev.c    |   29 ++++++++++++++++++++++++++---
+ fs/fuse/fuse_i.h |    6 ++++++
+ 2 files changed, 32 insertions(+), 3 deletions(-)
 
- fs/nfs/fscache-index.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
-
-
-diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
-index a119b56..5b10064 100644
---- a/fs/nfs/fscache-index.c
-+++ b/fs/nfs/fscache-index.c
-@@ -292,6 +292,30 @@ static void nfs_fscache_inode_now_uncached(void *cookie_netfs_data)
- }
+diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
+index c83ff20..05414b8 100644
+--- a/fs/fuse/dev.c
++++ b/fs/fuse/dev.c
+@@ -747,6 +747,7 @@ static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
+ 			      unsigned long nr_segs, loff_t pos)
+ {
+ 	int err;
++	bool restart;
+ 	struct fuse_req *req;
+ 	struct fuse_in *in;
+ 	struct fuse_copy_state cs;
+@@ -793,12 +794,32 @@ static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
+ 		goto restart;
+ 	}
+ 	spin_unlock(&fc->lock);
++
++	restart = false;
+ 	fuse_copy_init(&cs, fc, 1, req, iov, nr_segs);
++
++	/*
++	 * Execute prep if available.  Failure from prep doesn't
++	 * indicate faulty channel.  On failure, fail the current
++	 * request and proceed to the next one.
++	 */
++	if (req->prep) {
++		err = req->prep(fc, req);
++		if (err) {
++			restart = true;
++			goto finish;
++		}
++	}
++
+ 	err = fuse_copy_one(&cs, &in->h, sizeof(in->h));
+-	if (!err)
+-		err = fuse_copy_args(&cs, in->numargs, in->argpages,
+-				     (struct fuse_arg *) in->args, 0);
++	if (err)
++		goto finish;
++
++	err = fuse_copy_args(&cs, in->numargs, in->argpages,
++			     (struct fuse_arg *) in->args, 0);
++ finish:
+ 	fuse_copy_finish(&cs);
++
+ 	spin_lock(&fc->lock);
+ 	req->locked = 0;
+ 	if (req->aborted) {
+@@ -808,6 +829,8 @@ static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
+ 	if (err) {
+ 		req->out.h.error = -EIO;
+ 		request_end(fc, req);
++		if (restart)
++			goto restart;
+ 		return err;
+ 	}
+ 	if (!req->isreply)
+diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
+index 90eb42c..9d3becb 100644
+--- a/fs/fuse/fuse_i.h
++++ b/fs/fuse/fuse_i.h
+@@ -282,6 +282,12 @@ struct fuse_req {
+ 	/** Link on fi->writepages */
+ 	struct list_head writepages_entry;
  
- /*
-+ * Get an extra reference on a read context.
-+ * - This function can be absent if the completion function doesn't require a
-+ *   context.
-+ * - The read context is passed back to NFS in the event that a data read on the
-+ *   cache fails with EIO - in which case the server must be contacted to
-+ *   retrieve the data, which requires the read context for security.
-+ */
-+static void nfs_fh_get_context(void *cookie_netfs_data, void *context)
-+{
-+	get_nfs_open_context(context);
-+}
++	/** Request preparation callback.  Called from the kernel
++	    context of the FUSE server before passing the request to
++	    the FUSE server.  Non-zero return from this function will
++	    fail the request. */
++	int (*prep)(struct fuse_conn *, struct fuse_req *);
 +
-+/*
-+ * Release an extra reference on a read context.
-+ * - This function can be absent if the completion function doesn't require a
-+ *   context.
-+ */
-+static void nfs_fh_put_context(void *cookie_netfs_data, void *context)
-+{
-+	if (context)
-+		put_nfs_open_context(context);
-+}
-+
-+/*
-  * Define the inode object for FS-Cache.  This is used to describe an inode
-  * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
-  * an inode.
-@@ -308,4 +332,6 @@ const struct fscache_cookie_def nfs_fscache_inode_object_def = {
- 	.get_aux	= nfs_fscache_inode_get_aux,
- 	.check_aux	= nfs_fscache_inode_check_aux,
- 	.now_uncached	= nfs_fscache_inode_now_uncached,
-+	.get_context	= nfs_fh_get_context,
-+	.put_context	= nfs_fh_put_context,
- };
+ 	/** Request completion callback.  This function is called from
+ 	    the kernel context of the FUSE server if the request isn't
+ 	    being aborted.  If the request is being aborted, it's
+-- 
+1.5.6
 
