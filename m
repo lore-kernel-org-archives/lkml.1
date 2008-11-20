@@ -1,74 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYKTO6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbYKTPDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbYKTO6j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 09:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYKTOpW
+	id S1759246AbYKTPDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 10:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbYKTOxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 09:45:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41196 "EHLO mx2.redhat.com"
+	Thu, 20 Nov 2008 09:53:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58687 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756547AbYKTOpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 09:45:15 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 41/45] NFS: nfs_readpage_async() needs to be accessible as a
-	fallback for local caching [ver #41]
-To: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk
-Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Date: Thu, 20 Nov 2008 14:45:10 +0000
-Message-ID: <20081120144510.10667.30934.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1757957AbYKTOxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 09:53:14 -0500
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       miklos@szeredi.hu, akpm@linux-foundation.org, npiggin@suse.de
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 4/6] FUSE: make request_wait_answer() wait for ->end() completion
+Date: Thu, 20 Nov 2008 23:52:18 +0900
+Message-Id: <1227192740-10532-5-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1227192740-10532-1-git-send-email-tj@kernel.org>
+References: <1227192740-10532-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Nov 2008 14:52:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nfs_readpage_async() needs to be non-static so that it can be used as a
-fallback for the local on-disk caching should an EIO crop up when reading the
-cache.
+Previously, a request was marked FINISHED before ->end() is executed
+and thus request_wait_answer() can return before it's done.  This
+patch makes request_wait_answer() wait for ->end() to finish before
+returning.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+Note that no current ->end() user waits for request completion, so
+this change doesn't cause any behavior difference.
+
+While at it, beef up the comment above ->end() hook and clarify when
+and where it's called.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
+ fs/fuse/dev.c    |   41 +++++++++++++++++++++++++----------------
+ fs/fuse/fuse_i.h |    5 ++++-
+ 2 files changed, 29 insertions(+), 17 deletions(-)
 
- fs/nfs/read.c          |    4 ++--
- include/linux/nfs_fs.h |    2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 40d1798..9bf534c 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -111,8 +111,8 @@ static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
+diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
+index 25a134a..c83ff20 100644
+--- a/fs/fuse/dev.c
++++ b/fs/fuse/dev.c
+@@ -278,7 +278,6 @@ static void request_end(struct fuse_conn *fc, struct fuse_req *req)
+ 	req->end = NULL;
+ 	list_del(&req->list);
+ 	list_del(&req->intr_entry);
+-	req->state = FUSE_REQ_FINISHED;
+ 	if (req->background) {
+ 		if (fc->num_background == FUSE_MAX_BACKGROUND) {
+ 			fc->blocked = 0;
+@@ -292,10 +291,21 @@ static void request_end(struct fuse_conn *fc, struct fuse_req *req)
+ 		fc->active_background--;
+ 		flush_bg_queue(fc);
+ 	}
++
+ 	spin_unlock(&fc->lock);
+-	wake_up(&req->waitq);
+-	if (end)
++
++	if (end) {
+ 		end(fc, req);
++		smp_wmb();
++	}
++
++	/*
++	 * We own this request and wake_up() has enough memory
++	 * barrier, no need to grab spin lock to set state.
++	 */
++	req->state = FUSE_REQ_FINISHED;
++
++	wake_up(&req->waitq);
+ 	fuse_put_request(fc, req);
+ }
+ 
+@@ -369,17 +379,16 @@ static void request_wait_answer(struct fuse_conn *fc, struct fuse_req *req)
+ 		return;
+ 
+  aborted:
+-	BUG_ON(req->state != FUSE_REQ_FINISHED);
+-	if (req->locked) {
+-		/* This is uninterruptible sleep, because data is
+-		   being copied to/from the buffers of req.  During
+-		   locked state, there mustn't be any filesystem
+-		   operation (e.g. page fault), since that could lead
+-		   to deadlock */
+-		spin_unlock(&fc->lock);
+-		wait_event(req->waitq, !req->locked);
+-		spin_lock(&fc->lock);
+-	}
++	spin_unlock(&fc->lock);
++	wait_event(req->waitq, req->state == FUSE_REQ_FINISHED);
++	/*
++	 * This is uninterruptible sleep, because data is being copied
++	 * to/from the buffers of req.  During locked state, there
++	 * mustn't be any filesystem operation (e.g. page fault),
++	 * since that could lead to deadlock
++	 */
++	wait_event(req->waitq, !req->locked);
++	spin_lock(&fc->lock);
+ }
+ 
+ void fuse_request_send(struct fuse_conn *fc, struct fuse_req *req)
+@@ -1046,9 +1055,7 @@ static void end_io_requests(struct fuse_conn *fc)
+ 
+ 		req->aborted = 1;
+ 		req->out.h.error = -ECONNABORTED;
+-		req->state = FUSE_REQ_FINISHED;
+ 		list_del_init(&req->list);
+-		wake_up(&req->waitq);
+ 		if (end) {
+ 			req->end = NULL;
+ 			spin_unlock(&fc->lock);
+@@ -1056,6 +1063,8 @@ static void end_io_requests(struct fuse_conn *fc)
+ 			end(fc, req);
+ 			spin_lock(&fc->lock);
+ 		}
++		req->state = FUSE_REQ_FINISHED;
++		wake_up(&req->waitq);
  	}
  }
  
--static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
--		struct page *page)
-+int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
-+		       struct page *page)
- {
- 	LIST_HEAD(one_request);
- 	struct nfs_page	*new;
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index 07283c0..1c1ee0f 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -513,6 +513,8 @@ extern int  nfs_readpages(struct file *, struct address_space *,
- 		struct list_head *, unsigned);
- extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
- extern void nfs_readdata_release(void *data);
-+extern int  nfs_readpage_async(struct nfs_open_context *, struct inode *,
-+			       struct page *);
+diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
+index 23df478..90eb42c 100644
+--- a/fs/fuse/fuse_i.h
++++ b/fs/fuse/fuse_i.h
+@@ -282,7 +282,10 @@ struct fuse_req {
+ 	/** Link on fi->writepages */
+ 	struct list_head writepages_entry;
  
- /*
-  * Allocate nfs_read_data structures
+-	/** Request completion callback */
++	/** Request completion callback.  This function is called from
++	    the kernel context of the FUSE server if the request isn't
++	    being aborted.  If the request is being aborted, it's
++	    called from the kernel context of the aborting process. */
+ 	void (*end)(struct fuse_conn *, struct fuse_req *);
+ 
+ 	/** Request is stolen from fuse_file->reserved_req */
+-- 
+1.5.6
 
