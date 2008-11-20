@@ -1,113 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYKTEqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYKTEvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYKTEqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Nov 2008 23:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYKTEqo
+	id S1753993AbYKTEvv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Nov 2008 23:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYKTEvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Nov 2008 23:46:44 -0500
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:59039 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752036AbYKTEqn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Nov 2008 23:46:43 -0500
-From: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-To: Fabio Checconi <fchecconi@gmail.com>, Jens Axboe <jens.axboe@oracle.com>
-Date: Thu, 20 Nov 2008 15:45:02 +1100
-Message-ID: <4924EB4E.7050600@gelato.unsw.edu.au>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081027)
+	Wed, 19 Nov 2008 23:51:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59417 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752841AbYKTEvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Nov 2008 23:51:40 -0500
+Message-ID: <4924ECAD.7080603@kernel.org>
+Date: Wed, 19 Nov 2008 20:50:53 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-CC: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Divyesh Shah <dpshah@google.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
-       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-References: <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081118191208.GJ26308@kernel.dk> <20081118211442.GG15268@gandalf.sssup.it> <4923716A.5090104@gelato.unsw.edu.au> <20081119101701.GA20915@gandalf.sssup.it> <20081119110655.GC20915@gandalf.sssup.it>
-In-Reply-To: <20081119110655.GC20915@gandalf.sssup.it>
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2 - fix v2
+References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117173728.GA7384@elte.hu> <4921FC19.1080803@kernel.org> <20081117232837.GA10308@elte.hu> <20081118074346.GA21875@elte.hu> <4922E99B.8090604@kernel.org> <20081118211413.GE11490@elte.hu>
+In-Reply-To: <20081118211413.GE11490@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fabio Checconi wrote:
->>> Fabio Checconi wrote:
->>>>   - To detect hw tagging in BFQ we consider a sample valid iff the
->>>>     number of requests that the scheduler could have dispatched (given
->>>>     by cfqd->rb_queued + cfqd->rq_in_driver, i.e., the ones still into
->>>>     the scheduler plus the ones into the driver) is higher than the
->>>>     CFQ_HW_QUEUE_MIN threshold.  This obviously caused no problems
->>>>     during testing, but the way CFQ uses now seems a little bit
->>>>     strange.
->>> BFQ's tag detection logic is broken in the same way that CFQ's used to
->>> be.  Explanation is in this patch:
->>>
->> If you look at bfq_update_hw_tag(), the logic introduced by the patch
->> you mention is still there; BFQ starts with ->hw_tag = 1, and updates it
-
-Yes, I missed that.  So which part of CFQ's hw_tag detection is strange?
-
->> every 32 valid samples.  What changed WRT your patch, apart from the
->> number of samples, is that the condition for a sample to be valid is:
->>
->>   bfqd->rq_in_driver + bfqd->queued >= 5
->>
->> while in your patch it is:
->>
->>   cfqd->rq_queued > 5 || cfqd->rq_in_driver > 5
->>
->> We preferred the first one because that sum better reflects the number
->> of requests that could have been dispatched, and I don't think that this
->> is wrong.
-
-I think it's fine too.  CFQ's condition accounts for a few rare situations,
-such as the device stalling or hw_tag being updated right after a bunch of
-requests are queued.  They are probably irrelevant, but can't hurt.
-
->> There is a problem, but it's not within the tag detection logic itself.
->> From some quick experiments, what happens is that when a process starts,
->> CFQ considers it seeky (*), BFQ doesn't.  As a side effect BFQ does not
->> always dispatch enough requests to correctly detect tagging.
->>
->> At the first seek you cannot tell if the process is going to bee seeky
->> or not, and we have chosen to consider it sequential because it improved
->> fairness in some sequential workloads (the CIC_SEEKY heuristic is used
->> also to determine the idle_window length in [bc]fq_arm_slice_timer()).
->>
->> Anyway, we're dealing with heuristics, and they tend to favor some
->> workload over other ones.  If recovering this thoughput loss is more
->> important than a transient unfairness due to short idling windows assigned
->> to sequential processes when they start, I've no problems in switching
->> the CIC_SEEKY logic to consider a process seeky when it starts.
->>
->> Thank you for testing and for pointing out this issue, we missed it
->> in our testing.
->>
->>
->> (*) to be correct, the initial classification depends on the position
->>     of the first accessed sector.
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> Sorry, I forgot the patch...  This seems to solve the problem with
-> your workload here, does it work for you?
+>> Impact: fix wakeup_secondary_cpu with hotplug
+>>
+>> We can not put that in x86_quirks, because that is __initdata.
+>> So try to move that to genapic, and add update_genapic in x86_quirks.
+>>
+>> later we even could use that stub to
+>> 1. autodetect CONFIG_ES7000_CLUSTERED_APIC
+>> 2. more correct inquire_remote_apic with apic_verbosity setting.
+> 
+> thanks - this patch and the next one did the trick to stabilize the 
+> tip/x86/quirks topic tree - no more hotplug crashes and no more build 
+> failures either. The lineup is:
+> 
+>  b5fe363: x86: use update_genapic to get rid of ES7000_CLUSTERED_APIC v2
+>  f632ddc: x86: fix wakeup_cpu with numaq/es7000, v2, fix #2
+>  54ac14a: x86: fix wakeup_cpu with numaq/es7000, v2, fix
+>  569712b: x86: fix wakeup_cpu with numaq/es7000, v2
+> 
+> and i've merged them into tip/master as well.
+> 
 
-Yes, it works fine now :)
+need more update_genapic calling
 
-However, hw_tag detection (in CFQ and BFQ) is still broken in a few ways:
-  * If you go from queue_depth=1 to queue_depth=large, it's possible that
-    the detection logic fails.  This could happen if setting queue_depth
-    to a larger value at boot, which seems a reasonable situation.
-  * It depends too much on the hardware.  If you have a seekly load on a
-    fast disk with a unit queue depth, idling sucks for performance (I
-    imagine this is particularly bad on SSDs).  If you have any disk with
-    a deep queue, not idling sucks for fairness.
-I suppose CFQ's slice_resid is supposed to help here, but as far as I can
-tell, it doesn't do a thing.
-
-
-     -- Aaron
-
-
+diff --git a/arch/x86/mach-generic/probe.c b/arch/x86/mach-generic/probe.c
+index 90b134f..c346d9d 100644
+--- a/arch/x86/mach-generic/probe.c
++++ b/arch/x86/mach-generic/probe.c
+@@ -76,12 +76,15 @@ void __init generic_bigsmp_probe(void)
+ 	 * - we find more than 8 CPUs in acpi LAPIC listing with xAPIC support
+ 	 */
+ 
+-	if (!cmdline_apic && genapic == &apic_default)
++	if (!cmdline_apic && genapic == &apic_default) {
+ 		if (apic_bigsmp.probe()) {
+ 			genapic = &apic_bigsmp;
++			if (x86_quirks->update_genapic)
++				x86_quirks->update_genapic();
+ 			printk(KERN_INFO "Overriding APIC driver with %s\n",
+ 			       genapic->name);
+ 		}
++	}
+ #endif
+ }
+ 
+@@ -98,6 +101,9 @@ void __init generic_apic_probe(void)
+ 		/* Not visible without early console */
+ 		if (!apic_probe[i])
+ 			panic("Didn't find an APIC driver");
++
++		if (x86_quirks->update_genapic)
++			x86_quirks->update_genapic();
+ 	}
+ 	printk(KERN_INFO "Using APIC driver %s\n", genapic->name);
+ }
+@@ -112,6 +118,8 @@ int __init mps_oem_check(struct mp_config_table *mpc, char *oem,
+ 		if (apic_probe[i]->mps_oem_check(mpc, oem, productid)) {
+ 			if (!cmdline_apic) {
+ 				genapic = apic_probe[i];
++				if (x86_quirks->update_genapic)
++					x86_quirks->update_genapic();
+ 				printk(KERN_INFO "Switched to APIC driver `%s'.\n",
+ 				       genapic->name);
+ 			}
+@@ -128,6 +136,8 @@ int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ 		if (apic_probe[i]->acpi_madt_oem_check(oem_id, oem_table_id)) {
+ 			if (!cmdline_apic) {
+ 				genapic = apic_probe[i];
++				if (x86_quirks->update_genapic)
++					x86_quirks->update_genapic();
+ 				printk(KERN_INFO "Switched to APIC driver `%s'.\n",
+ 				       genapic->name);
+ 			}
