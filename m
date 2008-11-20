@@ -1,108 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYKTIvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbYKTI5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYKTIvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 03:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYKTIvL
+	id S1754607AbYKTI5Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 03:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYKTI5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 03:51:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54166 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975AbYKTIvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 03:51:10 -0500
-Date: Thu, 20 Nov 2008 09:50:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Cc: sfr@canb.auug.org.au, linux-laptop@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] apm: Remove CONFIG_APM_REAL_MODE_POWER_OFF in favor of
-	kernel parameter
-Message-ID: <20081120085043.GK21785@elte.hu>
-References: <4924201B.8010301@wincor-nixdorf.com>
+	Thu, 20 Nov 2008 03:57:17 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:64091 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753392AbYKTI5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 03:57:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vGjzo4grt0C5fjoUsPyy6NhrTIH9e/XEJxnBpoVrTZ7OEpGrGyF0ILHD1AoPHIztiH
+         goQGeLGYJSUdoeedFSoShd2tlkD5UhZW5xtegvs27fSA5DozV9UrR0YuX7tzsmmxPkPh
+         dKH4O0YLCRl39PQGtu5f+iVf+M3vIck6kbwak=
+Message-ID: <19f34abd0811200057n73cfae6va5efc1d91bc438e4@mail.gmail.com>
+Date: Thu, 20 Nov 2008 09:57:14 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: gitwatch: RSS feed of checkpatch+coccinelle against new commits in mainline
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Julia Lawall" <julia@diku.dk>
+In-Reply-To: <20081120082639.GC14274@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4924201B.8010301@wincor-nixdorf.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <19f34abd0811181420i2b582fd2jcaa685b0cbb5c979@mail.gmail.com>
+	 <20081120082639.GC14274@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 20, 2008 at 9:26 AM, Andy Whitcroft <apw@shadowen.org> wrote:
+> On Tue, Nov 18, 2008 at 11:20:48PM +0100, Vegard Nossum wrote:
+>> I've written a script that follows the mainline git repository and
+>> runs checkpatch against all new commits. The result is available as an
+>> RSS stream:
+>>
+>>     http://kernel.org/~vegard/gitwatch.rss
+>>
+>> Only commits with warnings or errors are shown. Files that change are
+>> also searched for known/frequent coding errors using Coccinelle and a
+>> selection of the semantic patches found on the Coccinelle website.
+>
+> Thats pretty intresting.  Looking at some of the cochinelle output I am
+> a little confused as to what its saying.  Am I right in thinking that
+> for those reports that a proposed patch is printed, after the comment
+> for the original patch?  If so it might be helpful to say something like
+> 'proposed modificiation' just before the patchlet.
 
-* Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
+You are correct, those are the modifications that would have been made
+by the semantic patch. I agree, it might look like the log text
+belongs to the patch below, which is wrong. We are also planning to
+add a description to each of the semantic patches so that a better
+explanation is given for the change.
 
-> Remove CONFIG_APM_REAL_MODE_POWER_OFF like CONFIG_APM_POWER_OFF 
-> which has been done for linux-2.2.14pre8 
-> (http://lkml.org/lkml/1999/11/23/3).
-> 
-> Re-introducing CONFIG_APM_POWER_OFF got nack-ed. Stephen didn't bother
-> to remove CONFIG_APM_REAL_MODE_POWER_OFF, let's get rid of it now.
-> 	Reference: http://lkml.org/lkml/2008/5/7/97
-> 
-> Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
-> 
-> ---
->  arch/x86/Kconfig         |    7 -------
->  arch/x86/kernel/apm_32.c |    4 ----
->  2 files changed, 0 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 93224b5..d0b9ef7 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -1629,13 +1629,6 @@ config APM_ALLOW_INTS
->  	  many of the newer IBM Thinkpads.  If you experience hangs when you
->  	  suspend, try setting this to Y.  Otherwise, say N.
->  
-> -config APM_REAL_MODE_POWER_OFF
-> -	bool "Use real mode APM BIOS call to power off"
-> -	help
-> -	  Use real mode APM BIOS calls to switch off the computer. This is
-> -	  a work-around for a number of buggy BIOSes. Switch this option on if
-> -	  your computer crashes instead of powering off properly.
-> -
+> Also which version of checkpatch is this output being generated with?
+> The one at the head of the git tree or something else?  I see a couple
+> of false positives in there that I know I have fixed already.
 
-> -#ifdef CONFIG_APM_REAL_MODE_POWER_OFF
-> -static int realmode_power_off = 1;
-> -#else
->  static int realmode_power_off;
-> -#endif
+Yes, it's a copy of the one in linux-2.6.git (after v2.6.28-rc4). The
+file itself says 0.24. Which false positives were you thinking about?
 
-this might be an option for obsolete hardware, but still it has the 
-potential to help people - and they could depend on it. The proper way 
-to phase out the Kconfig feature would be to insert an obsoletion 
-warning that triggers in some form when 
-CONFIG_APM_REAL_MODE_POWER_OFF=y is enabled, and then remove the 
-config option in 1-2 years. (and keep the boot option of course)
 
-even better we should have a transparent kernel-parameters framework 
-that would be a one-stop-shop for _both_ .config and boot-time flags. 
-Something like:
+Vegard
 
-  define_bootparam("realmode_power_off");
-
-plus a way to define the help text - all in a single file and in a 
-single place.
-
-Which would automatically be turned into a kconfig option, a boot 
-option and (optionally) a sysctl as well, during the kernel build.
-
-We do have the CONFIG_CMDLINE facility in the latest kernels to inject 
-arbitrary boot parameters during the kernel build, but that does not 
-have any semantic dimensions and its opacity makes it fragile: there's 
-no facility that warns if an option is typoed, if an option goes away 
-or gets changed, there's no help text like we have when there's a 
-Kconfig entry, etc.
-
-	Ingo
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
