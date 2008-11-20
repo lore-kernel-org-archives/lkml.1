@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYKTJPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYKTJSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbYKTJPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYKTJO4
+	id S1753149AbYKTJSz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYKTJSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:14:56 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53905 "EHLO pasmtpB.tele.dk"
+	Thu, 20 Nov 2008 04:18:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42058 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbYKTJOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:14:54 -0500
-Date: Thu, 20 Nov 2008 10:13:03 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-Message-ID: <20081120091303.GF26308@kernel.dk>
-References: <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net> <4923347D.8000205@oracle.com> <20081119085227.GQ26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB7986A@GVW0547EXC.americas.hpqcorp.net> <49244B69.80903@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77884EACB798C4@GVW0547EXC.americas.hpqcorp.net> <20081119172919.GT26308@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A77884EACB799CC@GVW0547EXC.americas.hpqcorp.net> <20081119204624.GW26308@kernel.dk>
+	id S1753305AbYKTJSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 04:18:37 -0500
+Date: Thu, 20 Nov 2008 04:18:17 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: Active waiting with yield()
+In-Reply-To: <20081118212652.46d36da5@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0811200414100.17455@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
+ <20081114190616.30dd273e@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
+ <1226696221.7685.8148.camel@twins> <Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
+ <1226789714.8172.0.camel@lappy.programming.kicks-ass.net>
+ <Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
+ <20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811180921450.12274@hs20-bc2-1.build.redhat.com>
+ <20081118144053.0072d54c@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811181157260.13418@hs20-bc2-1.build.redhat.com>
+ <20081118212652.46d36da5@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081119204624.GW26308@kernel.dk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19 2008, Jens Axboe wrote:
-> On Wed, Nov 19 2008, Miller, Mike (OS Dev) wrote:
-> > Jens wrote:
-> > 
-> > >
-> > > Yeah, kexec is definitely a clue. My guess is that we got
-> > > some sort of left over completion. Regardless of the status
-> > > of this particular bug or not, I think it would be a good
-> > > idea to add some checks for when a command is attempted
-> > > removed from a queue it isn't currently on.
-> > >
-> > 
-> > I agree, I'll fix.
+
+
+On Tue, 18 Nov 2008, Alan Cox wrote:
+
+> > This makes a code branch that is very rarely tested and a potential bug. 
+> > Every such rarely executed branch is a danger and even a silly typo in the 
+> > code can hide there for many years without being noticed.
 > 
-> I'd propose just converting it to list_head instead of doing it
-> manually. Heck, that should be a 5 minute job, let me just do it...
+> Learn to use a debugger. You want an unusual timing to occur you
+> breakpoint the relevant task and suspend it for a bit.
 > 
-> OK, here it is, totally untested (it compiles, must be golden...)
+> > So, I say msleep(1) instead of yield(). What are the counterarguments to 
+> > msleep?
+> 
+> msleep isn't particularly a problem. You are giving up the CPU and not
+> wasting so much power and you won't deadlock in realtime. Assuming you
+> only expect one or two msleep cycles its fine.
 
-It was missing a list_entry() in fail_all_cmds(), apart from that it was
-fine. I changed it to use hlist instead, as that is more appropriate and
-similar to how it worked before. It also means there's no extra space
-usage in the controller structure. I've tested it and it works fine for
-me.
+So msleep(1) should be OK. I can't think of a case when it could break.
 
-Mike, can you give this a look-over and give me a Reviewed-by or
-similar? As an extra bonus, it also gets rid of some code.
+> And if you think virtualisation and power management and correctness
+> (as Ingo noted) are a "bad reason" you need to wake up to the real world.
 
- 3 files changed, 33 insertions(+), 46 deletions(-)
+If the involved cases are:
+- a race condition that never happened to a user, only seen during 
+artifical testing
+- a race condition that existed for 5 years and just one user hit it
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=e303054e55acd1b6478b8859a5f8648bfaf69a44
+--- then yes, considering power management is a bad reason.
 
--- 
-Jens Axboe
+Mikulas
 
+> Alan
+> 
