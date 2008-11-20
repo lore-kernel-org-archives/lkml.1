@@ -1,120 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYKTUzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYKTU4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbYKTUzo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 15:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756977AbYKTUvr
+	id S1758156AbYKTU4E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 15:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYKTUw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 15:51:47 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:22401 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756936AbYKTUvp (ORCPT
+	Thu, 20 Nov 2008 15:52:59 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:58559 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757572AbYKTUw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 15:51:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PCnUkOM3mgvxHPbQm29w/cZKaxUmDYA6kFyaVH1AQ3JRwPk3OtglZSVVTo9x5dPS8p8DVH3dXHPDlbCnloWcfQAxpIkDEsKF5RZFNoSWuMDYspSnUY/aTUgkoTvq3IzjxAXkev8ji+SKF7PUI5y9M+tAI6IHNK5zumva05+qIH8=  ;
-X-YMail-OSG: 8OKQUFsVM1la0PglA1XTStmXPhLsbw7vW1vYEDtyuqsUBBClyA4NBEYnjTqzZDMeaTmgaAk47_Kx7621QWByyxYYh8874s2ms6hP0qqq0ygg2q0iW4P6WWNOFdfGwvaGmVyP0EDrzhaDjoIHkIzKZEZL
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH 16/16] Blackfin SPI Driver: fix bug - correct usage of struct spi_transfer.cs_change
-Date: Thu, 20 Nov 2008 12:51:33 -0800
-User-Agent: KMail/1.9.10
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Yi Li <yi.li@analog.com>
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org> <1226994760-4301-17-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1226994760-4301-17-git-send-email-cooloney@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 20 Nov 2008 15:52:57 -0500
+Date: Thu, 20 Nov 2008 12:52:40 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 20 (staging* [lots])
+Message-Id: <20081120125240.149af529.randy.dunlap@oracle.com>
+In-Reply-To: <20081120212907.efc2276b.sfr@canb.auug.org.au>
+References: <20081120212907.efc2276b.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811201251.33339.david-b@pacbell.net>
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4925CE1C.010D:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 November 2008, Bryan Wu wrote:
-> From: Yi Li <yi.li@analog.com>
-> 
-> According to comments in linux/spi/spi.h:
-> 
->  * All SPI transfers start with the relevant chipselect active.  Normally
->  * it stays selected until after the last transfer in a message. Drivers
->  * can affect the chipselect signal using cs_change.
->  *
->  * (i) If the transfer isn't the last one in the message, this flag is
->  * used to make the chipselect briefly go inactive in the middle of the
->  * message.  Toggling chipselect in this way may be needed to terminate
->  * a chip command, letting a single spi_message perform all of group of
->  * chip transactions together.
->  *
->  * (ii) When the transfer is the last one in the message, the chip may
->  * stay selected until the next transfer.  On multi-device SPI busses
->  * with nothing blocking messages going to other devices, this is just
->  * a performance hint; starting a message to another device deselects
->  * this one.  But in other cases, this can be used to ensure correctness.
->  * Some devices need protocol transactions to be built from a series of
->  * spi_message submissions, where the content of one message is determined
->  * by the results of previous messages and where the whole transaction
->  * ends when the chipselect goes intactive.
-> 
-> Signed-off-by: Yi Li <yi.li@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+On Thu, 20 Nov 2008 21:29:07 +1100 Stephen Rothwell wrote:
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-
-> ---
->  drivers/spi/spi_bfin5xx.c |   15 ++++++++-------
->  1 files changed, 8 insertions(+), 7 deletions(-)
+> Hi all,
 > 
-> diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-> index 8cf5d6e..0e3102a 100644
-> --- a/drivers/spi/spi_bfin5xx.c
-> +++ b/drivers/spi/spi_bfin5xx.c
-> @@ -540,15 +540,13 @@ static void giveback(struct driver_data *drv_data)
->  
->  	msg->state = NULL;
->  
-> -	/* disable chip select signal. And not stop spi in autobuffer mode */
-> -	if (drv_data->tx_dma != 0xFFFF) {
-> -		cs_deactive(drv_data, chip);
-> -		bfin_spi_disable(drv_data);
-> -	}
-> -
->  	if (!drv_data->cs_change)
->  		cs_deactive(drv_data, chip);
->  
-> +	/* Not stop spi in autobuffer mode */
-> +	if (drv_data->tx_dma != 0xFFFF)
-> +		bfin_spi_disable(drv_data);
-> +
->  	if (msg->complete)
->  		msg->complete(msg->context);
->  }
-> @@ -757,7 +755,8 @@ static void pump_transfers(unsigned long data)
->  
->  	write_STAT(drv_data, BIT_STAT_CLR);
->  	cr = (read_CTRL(drv_data) & (~BIT_CTL_TIMOD));
-> -	cs_active(drv_data, chip);
-> +	if (drv_data->cs_change)
-> +		cs_active(drv_data, chip);
->  
->  	dev_dbg(&drv_data->pdev->dev,
->  		"now pumping a transfer: width is %d, len is %d\n",
-> @@ -920,6 +919,8 @@ static void pump_transfers(unsigned long data)
->  			message->state = next_transfer(drv_data);
->  		}
->  
-> +		if (drv_data->cs_change)
-> +			cs_active(drv_data, chip);
->  		/* Schedule next transfer tasklet */
->  		tasklet_schedule(&drv_data->pump_transfers);
->  
-> -- 
-> 1.5.6.3
+> Changes since 20081119:
 > 
-> 
+> Undropped trees:
+> 	driver-core
+> 	usb
+> 	staging
+
+drivers/staging/agnx/pci.c:327: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+drivers/staging/agnx/pci.c:328: error: 'struct ieee80211_if_conf' has no member named 'ssid'
+drivers/staging/agnx/pci.c:328: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+drivers/staging/agnx/pci.c:329: error: 'struct ieee80211_if_conf' has no member named 'ssid'
+drivers/staging/agnx/pci.c:329: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+drivers/staging/agnx/pci.c:330: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+drivers/staging/agnx/pci.c:331: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+drivers/staging/agnx/pci.c:331: error: 'struct ieee80211_if_conf' has no member named 'ssid'
+drivers/staging/agnx/pci.c:331: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+drivers/staging/agnx/pci.c:331: error: 'struct ieee80211_if_conf' has no member named 'ssid'
+drivers/staging/agnx/pci.c:331: error: 'struct ieee80211_if_conf' has no member named 'ssid_len'
+(r6260 & r6298 & r6300)
+
+drivers/staging/rt2860/rt_profile.c:928: error: 'struct task_struct' has no member named 'fsuid'
+drivers/staging/rt2860/rt_profile.c:929: error: 'struct task_struct' has no member named 'fsgid'
+drivers/staging/rt2860/rt_profile.c:930: error: 'struct task_struct' has no member named 'fsuid'
+drivers/staging/rt2860/rt_profile.c:930: error: 'struct task_struct' has no member named 'fsgid'
+drivers/staging/rt2860/rt_profile.c:1554: error: 'struct task_struct' has no member named 'fsuid'
+drivers/staging/rt2860/rt_profile.c:1555: error: 'struct task_struct' has no member named 'fsgid'
+(r6265)
+
+(.text+0x5e0): multiple definition of `comedi_unmap'
+(r6272 & r6297 & r6259)
+
+asus_oled.c:(.text+0x164fb4): undefined reference to `usb_bulk_msg'
+asus_oled.c:(.text+0x16508d): undefined reference to `usb_bulk_msg'
+asus_oled.c:(.text+0x1651ef): undefined reference to `usb_put_dev'
+asus_oled.c:(.text+0x1652f3): undefined reference to `usb_bulk_msg'
+asus_oled.c:(.text+0x1654eb): undefined reference to `usb_get_dev'
+asus_oled.c:(.text+0x1655b0): undefined reference to `usb_put_dev'
+asus_oled.c:(.init.text+0xcb01): undefined reference to `usb_register_driver'
+asus_oled.c:(.exit.text+0x1acb): undefined reference to `usb_deregister'
+(r6261)
+
+drivers/staging/meilhaus/me0600_device.o: WARNING: referencing weak function me0600_pci_constructor for mcount
+drivers/staging/meilhaus/me0900_device.o: WARNING: referencing weak function me0900_pci_constructor for mcount
+drivers/staging/meilhaus/me1400_device.o: WARNING: referencing weak function me1400_pci_constructor for mcount
+drivers/staging/meilhaus/me4600_device.o: WARNING: referencing weak function me4600_pci_constructor for mcount
+drivers/staging/meilhaus/me6000_device.o: WARNING: referencing weak function me6000_pci_constructor for mcount
+drivers/staging/meilhaus/me8100_device.o: WARNING: referencing weak function me8100_pci_constructor for mcount
+(r6263)
+
+drivers/staging/comedi/proc.c:89: error: redefinition of 'comedi_proc_init'
+drivers/staging/comedi/comedidev.h:368: error: previous definition of 'comedi_proc_init' was here
+drivers/staging/comedi/proc.c:98: error: redefinition of 'comedi_proc_cleanup'
+drivers/staging/comedi/comedidev.h:371: error: previous definition of 'comedi_proc_cleanup' was here
+(r6287)
+
+(.init.text+0x0): multiple definition of `init_module'
+(.text+0x1d1d): multiple definition of `me_dlock_lock'
+(.text+0x1c5b): multiple definition of `me_dlist_deinit'
+(.text+0x1ca4): multiple definition of `me_dlist_get_device'
+(.exit.text+0x0): multiple definition of `cleanup_module'
+(.text+0x20fc): multiple definition of `me_slist_add_subdevice_tail'
+(.text+0x2123): multiple definition of `me_slist_deinit'
+(.text+0x1ebc): multiple definition of `me_dlock_enter'
+(.text+0x226c): multiple definition of `me_slock_deinit'
+(.text+0x22f4): multiple definition of `me_slock_lock'
+(.init.text+0x0): multiple definition of `init_module'
+(.text+0x20f0): multiple definition of `me_slist_query_number_subdevices'
+(.text+0x2112): multiple definition of `me_slist_init'
+(.text+0x1d04): multiple definition of `me_dlock_deinit'
+(.text+0x1fb6): multiple definition of `me_subdevice_deinit'
+(.text+0x1c4a): multiple definition of `me_dlist_init'
+(.text+0x220a): multiple definition of `me_slist_get_subdevice'
+(.text+0x226d): multiple definition of `me_slock_init'
+(.text+0x1c34): multiple definition of `me_dlist_add_device_tail'
+(.text+0x222f): multiple definition of `me_slist_del_subdevice_tail'
+(.text+0x1c30): multiple definition of `me_dlist_get_number_devices'
+(.text+0x2285): multiple definition of `me_slock_enter'
+(.text+0x1c28): multiple definition of `me_dlist_query_number_devices'
+(.text+0x1cc9): multiple definition of `me_dlist_del_device_tail'
+(.text+0x1fbf): multiple definition of `me_subdevice_init'
+(.text+0x20f8): multiple definition of `me_slist_get_number_subdevices'
+(.text+0x86): multiple definition of `me_device_deinit'
+(.text+0x1f04): multiple definition of `me_dlock_exit'
+(.text+0xbd): multiple definition of `me_device_pci_init'
+(.text+0x216c): multiple definition of `me_slist_get_subdevice_by_type'
+(.text+0x1d05): multiple definition of `me_dlock_init'
+(.text+0x22cd): multiple definition of `me_slock_exit'
+(.text+0x1d1d): multiple definition of `me_dlock_lock'
+(.text+0x1c5b): multiple definition of `me_dlist_deinit'
+(.text+0x1ca4): multiple definition of `me_dlist_get_device'
+(.exit.text+0x0): multiple definition of `cleanup_module'
+(.text+0x20fc): multiple definition of `me_slist_add_subdevice_tail'
+(.text+0x2123): multiple definition of `me_slist_deinit'
+(.text+0x1ebc): multiple definition of `me_dlock_enter'
+(.text+0x226c): multiple definition of `me_slock_deinit'
+(.text+0x22f4): multiple definition of `me_slock_lock'
+(.init.text+0x0): multiple definition of `init_module'
+(.text+0x20f0): multiple definition of `me_slist_query_number_subdevices'
+(.text+0x2112): multiple definition of `me_slist_init'
+(.text+0x1d04): multiple definition of `me_dlock_deinit'
+(.text+0x1fb6): multiple definition of `me_subdevice_deinit'
+(.text+0x1c4a): multiple definition of `me_dlist_init'
+(.text+0x220a): multiple definition of `me_slist_get_subdevice'
+(.text+0x226d): multiple definition of `me_slock_init'
+(.text+0x1c34): multiple definition of `me_dlist_add_device_tail'
+(.text+0x222f): multiple definition of `me_slist_del_subdevice_tail'
+(.text+0x1c30): multiple definition of `me_dlist_get_number_devices'
+(.text+0x2285): multiple definition of `me_slock_enter'
+(.text+0x1c28): multiple definition of `me_dlist_query_number_devices'
+(.text+0x1cc9): multiple definition of `me_dlist_del_device_tail'
+(.text+0x1fbf): multiple definition of `me_subdevice_init'
+(.text+0x20f8): multiple definition of `me_slist_get_number_subdevices'
+(.text+0x86): multiple definition of `me_device_deinit'
+(.text+0x1f04): multiple definition of `me_dlock_exit'
+(.text+0xbd): multiple definition of `me_device_pci_init'
+(.text+0x216c): multiple definition of `me_slist_get_subdevice_by_type'
+(.text+0x1d05): multiple definition of `me_dlock_init'
+(.text+0x22cd): multiple definition of `me_slock_exit'
+make[4]: *** [drivers/staging/meilhaus/built-in.o] Error 1
+(r6291)
 
 
+Let me know if/which .config files are needed.
+
+---
+~Randy
