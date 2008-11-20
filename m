@@ -1,109 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbYKTVTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYKTVWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbYKTVTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 16:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbYKTVTX
+	id S1757050AbYKTVWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 16:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbYKTVW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 16:19:23 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:36495 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755185AbYKTVTV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 16:19:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=vXjkxHfISnJVs/AWgoTn8254XkN2fmrgcEeLMs734hSCCez+kcXfbO+BQpRVV19A5y
-         uw7f2fs5Mg3m8vYrzx4dIgIlse7iRK00PCMExMSqN7gtto2TRUsMfuWPXIpAhtU8AYo2
-         JHMj3+OOyp8VuV/loeTbU5ivaa712gagvFEsE=
-Message-ID: <7c86c4470811201319x2eb93d41vbdd8ce480a797fab@mail.gmail.com>
-Date: Thu, 20 Nov 2008 22:19:18 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Markus Metzger" <markus.t.metzger@googlemail.com>
-Subject: Re: debugctl msr
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1227133570.6104.10.camel@raistlin>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 20 Nov 2008 16:22:27 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49166 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752743AbYKTVW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 16:22:26 -0500
+Subject: Re: [PATCH 3/4] integrity: IMA as an integrity service provider
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@liux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       Christoph Hellwig <hch@lst.de>
+In-Reply-To: <342f87b65eae2369d96501d8d4935d6be0f46678.1227137423.git.zohar@linux.vnet.ibm.com>
+References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
+	 <342f87b65eae2369d96501d8d4935d6be0f46678.1227137423.git.zohar@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 20 Nov 2008 13:22:21 -0800
+Message-Id: <1227216141.11607.22.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
-	 <1226743286.6162.6.camel@raistlin>
-	 <7c86c4470811181400r1fa56ef9o1931467ee10e4f52@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F10AAA@irsmsx504.ger.corp.intel.com>
-	 <7c86c4470811190459y5996f51bp24ab38c9e856c2eb@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F10CB1@irsmsx504.ger.corp.intel.com>
-	 <7c86c4470811190913u743706abgafff3b0f0e3559ec@mail.gmail.com>
-	 <1227119245.6025.12.camel@raistlin>
-	 <7c86c4470811191120i63b70970s3e24af5c962ea538@mail.gmail.com>
-	 <1227133570.6104.10.camel@raistlin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus,
+On Thu, 2008-11-20 at 11:43 -0500, Mimi Zohar wrote:
+> 
+> +       /* Invalidate PCR, if a measured file is already open for read
+> */
+> +       if ((mask == MAY_WRITE) || (mask == MAY_APPEND)) {
+> +               int mask_sav = data->mask;
+> +               int rc;
+> +
+> +               data->mask = MAY_READ;
+> +               rc = ima_must_measure(&idata);
+> +               if (!rc) {
+> +                       if (atomic_read(&(data->dentry->d_count)) - 1 >
+> +                           atomic_read(&(inode->i_writecount)))
+> +                               ima_add_violation(inode, data->filename,
+> +                                                 "invalid_pcr", "ToMToU");
+> +               }
+> +               data->mask = mask_sav;
+> +               goto out;
+> +       }
 
-I found a couple more bugs with ds.c:
+Following up on Christoph's comment...
 
-- in ds_put_context(), you need to mark task->thread.ds_ctx = NULL or
-this_system_context = NULL when you are
-  done, otherwise a subsequent session on the same task or CPU will
-think there is already a context allocated but
-  the pointer will be stale.
+I'm worried that this calculation isn't very precise.  The calculation
+that you're trying to come up with here is the number of opens (d_count)
+vs. the number of writers (i_writecount).  When they don't match, you
+know that the new open is the first write, and you must 'invalidate the
+PCR'?
 
-- in ptrace.c:ptrace_disable(), you systematically invoke ds_release()
-without checking if TIF_BTS_TRACE_TS
-  is set. That causes extraneous calls to ds_release() which messes up
-the reference counting if PEBS is in use.
+There are a number of things that elevate d_count, and it is a lot more
+than just an open() that can do it.  Is that OK?
 
+-- Dave
 
-I ran into those issues trying to make perfmon work. So far, I have
-gotten per-thread PEBS to work. Per-cpu is still
-crashing the machine.
-
-
-On Wed, Nov 19, 2008 at 11:26 PM, Markus Metzger
-<markus.t.metzger@googlemail.com> wrote:
-> On Wed, 2008-11-19 at 20:20 +0100, stephane eranian wrote:
->
->> Yes, I have narrowed this down to the following lines:
->>         current->mm->total_vm  -= context->pages[qual];
->>         current->mm->locked_vm -= context->pages[qual];
->>
->> I think this is again related to the problem of which thread call
->> ds_release(). In my test
->> case, this is the monitored thread as it exits. By the time it gets
->> there current->mm is NULL.
->
-> Yes, this is again the ptrace-ness of the approach. The entire code
-> assumes that there is one tracer task that controls another traced task.
->
-> You're right, though, that I should only do the memory accounting
-> if the buffer had been allocated by ds.c.
-> That's a plain bug. Perfmon2 is the first user that uses its own
-> buffers.
->
->
->> > The point I was trying to make is that buffer overflows should not be
->> > handled on higher levels (i.e. users of ds.c). That's why I am so
->> > reluctant to expose the interrupt threshold in the ds.c interface.
->> >
->> But the threshold is a characteristic of the buffer, not the interrupt handler.
->> Depending on the tool, it may be interesting to set the threshold earlier than
->> at the end of the buffer.
->
-> Good point.
->
-> Would you want to change the threshold or would it be OK if this became
-> another parameter to ds_request()?
->
-> regards,
-> markus.
->
->
