@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYKTJY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbYKTJ1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbYKTJY5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 04:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYKTJYs
+	id S1754706AbYKTJ1Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 04:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYKTJ1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 04:24:48 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58841 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202AbYKTJYs (ORCPT
+	Thu, 20 Nov 2008 04:27:10 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:4643 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752897AbYKTJ1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 04:24:48 -0500
-Date: Thu, 20 Nov 2008 09:19:23 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-fsdevel@vger.kernel.org, Naval Saini <navalnovel@gmail.com>,
-       linux-arch@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org, naval.saini@nxp.com
-Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline kernel (specifically arm in our case)
-Message-ID: <20081120091923.GA2515@flint.arm.linux.org.uk>
-References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com> <200811191740.23638.nickpiggin@yahoo.com.au> <20081119204315.GB17209@flint.arm.linux.org.uk> <200811201759.01039.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Nov 2008 04:27:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JudUG72KQtUFoB2UZoggbKYBgps/4kV+SEN3fpBW9b+GDeKF7FiYoMvYSmYAkZ8sSr
+         eyMsQIvXcMpvoqjolFe+ROAodPG5+8ajfgIqtCoYol30GQXg9cSPPNv5IL+MGnasWDq9
+         zzDsWFrEemQFv+U7eBwe42xMo3wyqzD0tIjQk=
+Message-ID: <1ba2fa240811200127m32f69b40h4fdd55de20926b95@mail.gmail.com>
+Date: Thu, 20 Nov 2008 11:27:07 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2008-11-18
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au
+In-Reply-To: <20081120003748.GK3485@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200811201759.01039.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+References: <20081119000719.GA19756@tuxdriver.com>
+	 <1ba2fa240811182246m17a6baf0ybde19af030a65819@mail.gmail.com>
+	 <1ba2fa240811190134u7974a840i532e8ed0e18f8c72@mail.gmail.com>
+	 <20081119143919.GA3485@tuxdriver.com>
+	 <1ba2fa240811190851i5dda6734w10d38b0f27e5ac97@mail.gmail.com>
+	 <20081119185340.GC3485@tuxdriver.com>
+	 <1ba2fa240811191355p7218dd84j8517d9ff4bab4e0b@mail.gmail.com>
+	 <20081120003748.GK3485@tuxdriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 05:59:00PM +1100, Nick Piggin wrote:
-> Basically, an O_DIRECT write involves:
-> 
-> - The program storing into some virtual address, then passing that virtual
->   address as the buffer to write(2).
-> 
-> - The kernel will get_user_pages() to get the struct page * of that user
->   virtual address. At this point, get_user_pages does flush_dcache_page.
->   (Which should write back the user caches?)
-> 
-> - Then the struct page is sent to the block layer (it won't tend to be
->   touched by the kernel via the kernel linear map, unless we have like an
->   "emulated" block device block device like 'brd').
-> 
-> - Even if it is read via the kernel linear map, AFAIKS, we should be OK
->   due to the flush_dcache_page().
+On Thu, Nov 20, 2008 at 2:37 AM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> On Wed, Nov 19, 2008 at 11:55:15PM +0200, Tomas Winkler wrote:
+>> On Wed, Nov 19, 2008 at 8:53 PM, John W. Linville
+>> <linville@tuxdriver.com> wrote:
+>
+>> > Now, if you could put as much energy into fixing these issues as you
+>> > are putting into arguing with me or anyone else contradicting you...
+>>
+>> I'm not a yes man and if I think differently I say so. It's legitimate
+>> to have another opinion and I'm really trying to keep it technical and
+>> I'm not ashamed to say if I'm wrong, but you people are so hostile
+>> from some unknown reason I just hope somebody in anthropology is
+>> making his doctoral thesis of it to explain it to me.
+>
+> Of course!  You are right and all the rest of us are wrong.  How could
+> I have been so stupid?  Thank you for being so easy to work with
+> while the rest of us are being so difficult.
+>
 
-That seems sane, and yes, flush_dcache_page() will write back and
-invalidate dirty cache lines in both the kernel and user mappings.
+Citing my self again ' I'm not ashamed to say if I'm wrong'  I'm not
+always right and  you be careful with majority
+rightness it put whole nations into misery.
 
-> An O_DIRECT read involves:
-> 
-> - Same first 2 steps as O_DIRECT write, including flush_dcache_page. So the
->   user mapping should not have any previously dirtied lines around.
-> 
-> - The page is sent to the block layer, which stores into the page. Some
->   block devices like 'brd' will potentially store via the kernel linear map
->   here, and they probably don't do enough cache flushing. But a regular
->   block device should go via DMA, which AFAIK should be OK? (the user address
->   should remain invalidated because it would be a bug to read from the buffer
->   before the read has completed)
+> Are you done?
 
-This is where things get icky with lots of drivers - DMA is fine, but
-many PIO based drivers don't handle the implications of writing to the
-kernel page cache page when there may be CPU cache side effects.
+Common John you've started that. Compare your IMHO with mine, it's not
+full of empty accusations. I'm not less frustrated with development
+process of mac80211 then you are with our, and if you see the history
+this is where we always clash. I think we also have valid points if
+you would care to listen.
 
-If the cache is in read allocate mode, then in this case there shouldn't
-be any dirty cache lines.  (That's not always the case though, esp. via
-conventional IO.)  If the cache is in write allocate mode, PIO data will
-sit in the kernel mapping and won't be visible to userspace.
-
-That is a years-old bug, one that I've been unable to run tests for here
-(because my platforms don't have the right combinations of CPUs supporting
-write alloc and/or a problem block driver.)  I've even been accused of
-being uncooperative over testing possible bug fixes by various people
-(if I don't have hardware which can show the problem, how can I test
-possible fixes?)  So I've given up with that issue - as far as I'm
-concerned, it's a problem for others to sort out.
-
-Do we know what hardware, which IO drivers are being used, and any
-relevent configuration of the drivers?
+Thanks
+Tomas
