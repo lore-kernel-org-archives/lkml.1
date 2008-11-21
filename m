@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbYKUOh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbYKUOmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbYKUOh4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYKUOhr
+	id S1755613AbYKUOmA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYKUOlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:37:47 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33373 "EHLO hera.kernel.org"
+	Fri, 21 Nov 2008 09:41:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40636 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752784AbYKUOhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:37:47 -0500
-Message-ID: <4926C7A4.7020605@kernel.org>
-Date: Fri, 21 Nov 2008 23:37:24 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1753308AbYKUOlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:41:50 -0500
+Message-ID: <4926C838.8080105@redhat.com>
+Date: Fri, 21 Nov 2008 09:39:52 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations, take
- #2
-References: <1227190298-4585-1-git-send-email-tj@kernel.org> <E1L3G3Q-0006SJ-Uc@pomaz-ex.szeredi.hu> <49268876.7080303@kernel.org> <E1L3Tp0-0007dc-3S@pomaz-ex.szeredi.hu> <4926B251.6010109@kernel.org> <E1L3W52-0007t3-PZ@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1L3W52-0007t3-PZ@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nikanth Karthikesan <knikanth@suse.de>
+CC: linux-kernel@vger.kernel.org, ananth@in.ibm.com, davem@davemloft.net,
+       contact@ksplice.com, jbarnold@ksplice.com, tabbott@ksplice.com,
+       wdaher@ksplice.com, andersk@ksplice.com
+Subject: Re: [RFC] kreplace: Rebootless kernel updates
+References: <200811211720.26394.knikanth@suse.de>
+In-Reply-To: <200811211720.26394.knikanth@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Nov 2008 14:37:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Fri, 21 Nov 2008, Tejun Heo wrote:
->> Miklos Szeredi wrote:
->>> On Fri, 21 Nov 2008, Tejun Heo wrote:
->>>>> I removed ->unrestricted_ioctl() and associated code because it really
->>>>> doesn't make any sense: the high level lib won't be used for CUSE
->>>>> stuff, otherwise unrestrited ioctls are not allowed (and the interface
->>>>> is rather horrible anyway).
->>>> Well, CUSE highlevel interface piggy backs on FUSE so it requires
->>>> unrestricted_ioctl() there for it and ossp does use it.
->>> I thought it uses the lowlevel interface.  Why doesn't it do that?
->> Well, because it's simpler that way and people would be more used to it?
->>  It's just easier when you implement a method which returns something
->> and looks similar to the respective file operation.
-> 
-> Ah, that.  Yeah, it's more intuitive, but that comes at a price.  I'm
-> not sure that for CUSE it's worth it.  As I said the biggest feature
-> is having paths, the others are not that important (like allocating a
-> buffer for read, that's really not too complex to do in each CUSE
-> driver).
-> 
->>> For CUSE there's really no point in going through high level
->>> interface, since there's just one file involved, so the path name
->>> generation (the main feature of the highlevel lib) doesn't make any
->>> sense.
->> Well, the choice was mostly for convenience as there also are a few
->> places where high level interface wraps things better a bit.  Converting
->> wouldn't be difficult.  Do you think it's important?  I think keeping
->> things as parallel to FUSE as possible is more important.
-> 
-> I wouldn't care very much, if it weren't for that horrid
-> unrestricted_ioctl().  Not your fault, the interface is just not well
-> suited to that.
+Hi Nikanth,
 
-If you want drop highlevel CUSE interface, that's fine with me.  After
-all, the complexity difference isn't that big for CUSE anyway.
+Nikanth Karthikesan wrote:
+> This RFC patch adds support for limited form of rebootless kernel patching 
+> even without building the entire kernel.
+> 
+> When looking for a shortcut to avoid the rebuild/reboot cycle when hacking the  
+> kernel - the ksplice[1] was posted. This patch extends kprobes to do something 
+> similar, which would require even lesser time to _experiment_ with the running 
+> kernel. 
+> 
+> This small patch extends jprobes so that the jprobe's handler is executed but 
+> skips executing the actual function. But this has its own limitations such as 
+> Cannot access symbols not exported for modules (ofcourse hacks like 
+> pointers[2] can be used.), problems related to return values[3], etc... This 
+> is currently a x86_64 only _hack_.
 
-Thanks.
+Hmm,
+Would you like to replace a function to another function?
+If so, AFAIK, you can do that with kprobe and below pre_handler.
+(see booster enabled path in setup_singlestep())
+
+pre_handler(...)
+{
+	reset_current_kprobe();	/* this kprobe doesn't need any more */
+	regs->ip = new_function;	/* change IP to new function */
+	preempt_enable_no_resched();	/* recover preempt count */
+	return 1;	/* No need to setup singlestep */
+}
+
+Thank you,
+
 
 -- 
-tejun
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
