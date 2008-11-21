@@ -1,155 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbYKUN5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYKUODi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbYKUN5z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 08:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbYKUN5d
+	id S1755606AbYKUODi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYKUOD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 08:57:33 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33986 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753814AbYKUN5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 08:57:31 -0500
-Date: Thu, 20 Nov 2008 14:17:38 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Tino Keitel <tino.keitel@gmx.de>, Bob Copeland <me@bobcopeland.com>
-Subject: Re: [PATCH] ACPI suspend: Blacklist boxes that require us to set
-	SCI_EN directly on resume
-Message-ID: <20081120131738.GB1408@ucw.cz>
-References: <200811172333.13466.rjw@sisk.pl>
+	Fri, 21 Nov 2008 09:03:28 -0500
+Received: from broadrack.ru ([195.178.208.66]:35651 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752266AbYKUOD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:03:28 -0500
+Date: Fri, 21 Nov 2008 17:03:25 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Pavel Machek <pavel@suse.cz>
+Cc: mtk.manpages@gmail.com, Robert Love <rlove@rlove.org>,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [take 3] Use pid in inotify events.
+Message-ID: <20081121140325.GA12384@ioremap.net>
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com> <20081117171508.GA564@ioremap.net> <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com> <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200811172333.13466.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081120130902.GA1408@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: ACPI suspend: Blacklist boxes that require us to set SCI_EN directly on resume
+On Thu, Nov 20, 2008 at 02:09:03PM +0100, Pavel Machek (pavel@suse.cz) wrote:
+> > > It is a minimum functionality extension that serves the needs of one
+> > > or a few projects, while dirtying the design for all users.
+> > 
+> > Yes, this is a minimum functionality extension, which breaks nothing.
+> > That's why it is a good idea, but I agree that there may be better than
+> > just a good idea and implementation :)
 > 
-> Some Apple boxes evidently require us to set SCI_EN on resume
-> directly, because if we don't do that, they hung somewhere in the
-> resume code path.  Moreover, on these boxes it is not sufficient to
-> use acpi_enable() to turn ACPI on during resume.  All of this is
-> against the ACPI specification which states that (1) the BIOS is
-> supposed to return from the S3 sleep state with ACPI enabled
-> (SCI_EN set) and (2) the SCI_EN bit is owned by the hardware and we
-> are not supposed to change it.
+> Breaks nothing?!
 > 
-> For this reason, blacklist the affected systems so that the SCI_EN
-> bit is set during resume on them.
+> Introducing ugly hack with broken permission check we have to maintain
+> forever seems like way too much breakage for 14 lines.
+
+Apparently you missed the patch itself.
+Please check it first before making such statements.
+
+> > And I actually answered, that this may be a good idea for the new
+> > project. Although if things work right now no one will ever try to
+> > change it. It does not work in my case, so I need to invent as simple
+> > as possible way to fix it.
 > 
-> [NOTE: Unconditional setting SCI_EN for all system on resume doesn't
->  work, because it makes some other systems crash (that's to be
->  expected).  Also, it is not entirely clear right now if all of the
->  Apple boxes require this workaround.]
+> 'as simple diff as possible' is pretty bad criterium for kernel
+> merges.
 
-
-Silent bug workarounds are evil. In this case, MSI insisted their BIOS
-is correct because it works with opensuse11, and forced us to backport
-workaround to sled instead of fixing their bios :-(.
-
-
-> This patch fixes the recent regression tracked as
-> http://bugzilla.kernel.org/show_bug.cgi?id=12038
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Tested-by: Tino Keitel <tino.keitel@gmx.de>
-> Tested-by: Bob Copeland <me@bobcopeland.com>
-
-ACK.
-
-
-> ---
->  drivers/acpi/sleep/main.c |   40 +++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 39 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/acpi/sleep/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/sleep/main.c
-> +++ linux-2.6/drivers/acpi/sleep/main.c
-> @@ -104,6 +104,18 @@ void __init acpi_s4_no_nvs(void)
->  	s4_no_nvs = true;
->  }
->  
-> +/*
-> + * According to the ACPI specification the BIOS should make sure that ACPI is
-> + * enabled and SCI_EN bit is set on wake-up from S1 - S3 sleep states.  Still,
-> + * some BIOSes don't do that and therefore we use acpi_enable() to enable ACPI
-> + * on such systems during resume.  Unfortunately that doesn't help in
-> + * particularly pathological cases in which SCI_EN has to be set directly on
-> + * resume, although the specification states very clearly that this flag is
-> + * owned by the hardware.  The set_sci_en_on_resume variable will be set in such
-> + * cases.
-> + */
-> +static bool set_sci_en_on_resume;
-> +
->  /**
->   *	acpi_pm_disable_gpes - Disable the GPEs.
->   */
-> @@ -249,7 +261,11 @@ static int acpi_suspend_enter(suspend_st
->  	}
->  
->  	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
-> -	acpi_enable();
-> +	if (set_sci_en_on_resume)
-> +		acpi_set_register(ACPI_BITREG_SCI_ENABLE, 1);
-> +	else
-> +		acpi_enable();
-> +
->  	/* Reprogram control registers and execute _BFS */
->  	acpi_leave_sleep_state_prep(acpi_state);
->  
-> @@ -337,6 +353,12 @@ static int __init init_old_suspend_order
->  	return 0;
->  }
->  
-> +static int __init init_set_sci_en_on_resume(const struct dmi_system_id *d)
-> +{
-> +	set_sci_en_on_resume = true;
-> +	return 0;
-> +}
-> +
->  static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
->  	{
->  	.callback = init_old_suspend_ordering,
-> @@ -354,6 +376,22 @@ static struct dmi_system_id __initdata a
->  		DMI_MATCH(DMI_PRODUCT_NAME, "HP xw4600 Workstation"),
->  		},
->  	},
-> +	{
-> +	.callback = init_set_sci_en_on_resume,
-> +	.ident = "Apple MacBook 1,1",
-> +	.matches = {
-> +		DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
-> +		DMI_MATCH(DMI_PRODUCT_NAME, "MacBook1,1"),
-> +		},
-> +	},
-> +	{
-> +	.callback = init_set_sci_en_on_resume,
-> +	.ident = "Apple MacMini 1,1",
-> +	.matches = {
-> +		DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
-> +		DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
-> +		},
-> +	},
->  	{},
->  };
->  #endif /* CONFIG_SUSPEND */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Critics without suggestions is useless. What did you try to say here?
+You you believe it should be done in a different way, please tell us how
+you see this should be implemented.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Evgeniy Polyakov
