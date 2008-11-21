@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYKURQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYKURRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbYKURQz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYKURQp
+	id S1757366AbYKURRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbYKURQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:16:45 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37799 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbYKURQo (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:16:44 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jamie Lokier <jamie@shareable.org>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, trond.myklebust@fys.uio.no,
-       viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 24/45] CacheFiles: Add a hook to write a single page of data to an inode [ver #41]
-In-Reply-To: Your message of "Fri, 21 Nov 2008 13:00:30 GMT."
-             <20081121130030.GE29831@shareable.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20081121002317.69e4fd11.akpm@linux-foundation.org> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144343.10667.530.stgit@warthog.procyon.org.uk> <3843.1227271421@redhat.com>
-            <20081121130030.GE29831@shareable.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1227287735_4186P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Nov 2008 12:15:35 -0500
-Message-ID: <12060.1227287735@turing-police.cc.vt.edu>
+	Fri, 21 Nov 2008 12:16:51 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:42134 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756198AbYKURQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:16:50 -0500
+Date: Fri, 21 Nov 2008 11:16:49 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2 v3] SGI RTC: add clocksource/clockevent driver and generic timer vector
+Message-ID: <20081121171649.GB12370@sgi.com>
+References: <20081023163041.GA14574@sgi.com> <20081119212202.GA3377@sgi.com> <20081120095943.GF6885@elte.hu> <49261276.10408@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49261276.10408@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1227287735_4186P
-Content-Type: text/plain; charset=us-ascii
+On Thu, Nov 20, 2008 at 05:44:22PM -0800, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+> > * Dimitri Sivanich <sivanich@sgi.com> wrote:
+> > 
+> >> The following patches provide a driver for synchronized RTC 
+> >> clocksource and clockevents for SGI systems, as well as a generic 
+> >> timer system interrupt.
+> >>
+> >> With these patches, a module can be installed that registers the 
+> >> system-wide synchronized RTC clocksource and timers as both a 
+> >> clocksource and clockevents device running in high resolution mode.
+> >>
+> >> [PATCH 1/2 v3] SGI RTC: add clocksource driver
+> >> [PATCH 2/2 v3] SGI RTC: add generic timer system interrupt
+> > 
+> > Looks very clean and well-done to me.
+> > 
+> > I had to take a good look at the rtc_timer_head->expires[] construct - 
+> > but i guess that's the best approach, as the max number of entries is 
+> > hard to judge at build time. (and we wont get any real limit 
+> > protection from gcc anyway)
+> > 
+> > Thomas, any objections?
+> 
+> I have *extremely* serious reservations about reserving even more
+> hardware vectors for SGI only.  This affects all systems, and quite
+> frankly should not be necessary at all.
+> 
+> The SGI UV people have pushed this at a number of points in the past,
+> and we have told them to use an irqchip instead.  This patch tries to
+> allocate yet another reserved vector, instead.
 
-On Fri, 21 Nov 2008 13:00:30 GMT, Jamie Lokier said:
-> Couldn't we just skip the "wasted" comment lines and go to //-style
-> comments, since it's been standard GCC for what, 13 years now?  And
-> standard ANSI C for some 9 years...
-
-The problem is that // style comments tend to encourage *really* short
-comments, because we're already hitting col 80:
-
-	current->whizbang = some_random_func(dev->wombats, 0); //vryshrtcmmnt
-
-Making people use block comments encourages this:
-
-	/*
-	 * Since we're committed to at least 3 lines anyhow, take an
-	 * extra line or two and explain why we're checking dev->wombats,
-	 * rather than the more obvious proto->giraffe field....
-	 */
-	current->whizbang = some_random_func(dev->wombats, 0);
-
-(And before you ask, trying to ban // comments on the right-hand of code, and
-using // for block comments rather than /*... */ is the worst of both worlds.
-
-
---==_Exmh_1227287735_4186P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJJuy3cC3lWbTT17ARAmGAAKDC/fCobJg81TskkceTToh1/NVyXQCeMn72
-G3Xd6/7MdfxHcj19P3GObA8=
-=wpI2
------END PGP SIGNATURE-----
-
---==_Exmh_1227287735_4186P--
+I labeled the system vector as generic to indicate that this is available
+to other platforms.  See my other email to you for the reasons why I did
+not use an irq instead.
