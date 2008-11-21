@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYKURDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbYKURFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbYKURDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:03:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYKURDk
+	id S1756978AbYKURFh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYKURF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:03:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53107 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752705AbYKURDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:03:39 -0500
-Date: Fri, 21 Nov 2008 18:03:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/10] DMA-API debugging facility
-Message-ID: <20081121170321.GH733@elte.hu>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227286492.4901.208.camel@macbook.infradead.org> <20081121165722.GD1386@amd.com>
+	Fri, 21 Nov 2008 12:05:28 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:29238 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753837AbYKURF1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:05:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RA8lSSq/NAeATMUq93wN2hlJuJJgf8UGh8GatcYoPmmik3gUfGVIP+W9C/pNCz6oUW
+         +YPAGSYheST8QB0DcYdHUEwu8a2MXczAP+MAybwMrWZ2vsibAfx8L/FhBBWTe+LdQJHg
+         oR4en8e5ULuTSlIugUbYekZhaMRG4pt9R2ffE=
+Date: Fri, 21 Nov 2008 12:05:20 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: stefan@datenfreihafen.org
+Cc: eric.y.miao@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: [patch 08/14] input: PCAP2 based touchscreen driver
+Message-ID: <20081121170518.GA4416@USFSHXP-002051>
+References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <20081121160521.959037675@dodger.lab.datenfreihafen.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081121165722.GD1386@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081121160521.959037675@dodger.lab.datenfreihafen.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Fri, Nov 21, 2008 at 04:54:52PM +0000, David Woodhouse wrote:
-> > On Fri, 2008-11-21 at 17:26 +0100, Joerg Roedel wrote:
-> > > this patchset introduces code to debug drivers usage of the DMA-API.
-> > > Tests with hardware IOMMUs have shown several bugs in drivers
-> > > regarding the usage of that API.
-> > > Problems were found especially in network card drivers.
-> > 
-> > This is really useful -- but surely it shouldn't be x86-specific?
-> > 
-> > All the code except the hooks in the architecture's dma_map_single() et
-> > al functions could be generic, couldn't it?
+On Fri, Nov 21, 2008 at 05:04:11PM +0100, stefan@datenfreihafen.org wrote:
+> Touchscreen driver based on the PCAP2 multi function device.
 > 
-> Yes, in principle we could move most of it to generic code. There is 
-> nothing architecture specific in it. Anybody who prefers this to be 
-> arch/x86 before moving it to lib/?
+> Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+> 
+> +
+> +static int __devexit pcap_ts_remove(struct platform_device *pdev)
+> +{
+> +	ezx_pcap_unregister_event(PCAP_IRQ_TS);
+> +
+> +	del_timer_sync(&pcap_ts->timer);
+> +
+> +	input_unregister_device(pcap_ts->input);
+> +	kfree(pcap_ts);
+> +
 
-yeah, we want to make it generic once it works.
+Could pcap_ts->work be still running at this point?
 
-but my comments about the allocation needs to be addressed (see my 
-comments on [03/10]), and solving that will likely impact the 
-structure of the approach in a way that will generalize it anyway, as 
-a side-effect.
+> +	return 0;
+> +}
+> +
+> +}
+> +#else
+> +
+> +#define pcap_ts_suspend NULL
+> +#define pcap_ts_resume  NULL
+> +
+> +#endif
+> +
+> +static struct platform_driver pcap_ts_driver = {
+> +	.probe		= pcap_ts_probe,
+> +	.remove		= __devexit_p(pcap_ts_remove),
+> +	.suspend	= pcap_ts_suspend,
+> +	.resume		= pcap_ts_resume,
 
-	Ingo
+I think it is preferred that .suspend and .resume assigments are
+guarded by #ifdef CONFIG_PM, not creating NULL stubs as this will
+(theoretically) allow removing .suspend and .resume pointers from
+driver stucture when compiling without PM support.
+
+Also try running through checkpatch.pl - there are a few warnings I'd
+like to be fixed as well. Otherwise looks pretty good.
+
+Oh, and you need to add your sign-off please. Thanks!
+
+-- 
+Dmitry
