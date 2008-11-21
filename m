@@ -1,104 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbYKUQ2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbYKUQ2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbYKUQ2p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYKUQ0k
+	id S1757129AbYKUQ2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbYKUQ0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:26:40 -0500
+	Fri, 21 Nov 2008 11:26:38 -0500
 Received: from outbound-va3.frontbridge.com ([216.32.180.16]:3152 "EHLO
 	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755271AbYKUQ03 (ORCPT
+	with ESMTP id S1754017AbYKUQ03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Nov 2008 11:26:29 -0500
-X-BigFish: VPS3(zzzzzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KAOYZO-03-S7Y-01
+X-BigFish: VPS3(zzzzzzz32i43j65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-SS: 5,
+X-WSS-ID: 0KAOYZP-03-S80-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 09/10] x86: add checks for sync_single_range* code
-Date: Fri, 21 Nov 2008 17:26:09 +0100
-Message-ID: <1227284770-19215-10-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 08/10] x86: add checks for sync_single* code
+Date: Fri, 21 Nov 2008 17:26:08 +0100
+Message-ID: <1227284770-19215-9-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
 References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0656 (UTC) FILETIME=[DD2D1600:01C94BF5]
+X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0631 (UTC) FILETIME=[DD294570:01C94BF5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: detect bugs in sync_single_range* usage
+Impact: detect bugs in sync_single* usage
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/dma-mapping.h |    4 ++++
- arch/x86/include/asm/dma_debug.h   |   26 ++++++++++++++++++++++++++
- arch/x86/kernel/pci-dma-debug.c    |   17 +++++++++++++++++
- 3 files changed, 47 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/dma-mapping.h |    2 ++
+ arch/x86/include/asm/dma_debug.h   |   20 ++++++++++++++++++++
+ arch/x86/kernel/pci-dma-debug.c    |   14 ++++++++++++++
+ 3 files changed, 36 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 63bed40..2b6399d 100644
+index 2893adb..63bed40 100644
 --- a/arch/x86/include/asm/dma-mapping.h
 +++ b/arch/x86/include/asm/dma-mapping.h
-@@ -185,6 +185,8 @@ dma_sync_single_range_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
- 	if (ops->sync_single_range_for_cpu)
- 		ops->sync_single_range_for_cpu(hwdev, dma_handle, offset,
- 					       size, direction);
-+	debug_sync_single_range_for_cpu(hwdev, dma_handle, offset,
-+					size, direction);
+@@ -158,6 +158,7 @@ dma_sync_single_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
+ 	BUG_ON(!valid_dma_direction(direction));
+ 	if (ops->sync_single_for_cpu)
+ 		ops->sync_single_for_cpu(hwdev, dma_handle, size, direction);
++	debug_sync_single_for_cpu(hwdev, dma_handle, size, direction);
  	flush_write_buffers();
  }
  
-@@ -199,6 +201,8 @@ dma_sync_single_range_for_device(struct device *hwdev, dma_addr_t dma_handle,
- 	if (ops->sync_single_range_for_device)
- 		ops->sync_single_range_for_device(hwdev, dma_handle,
- 						  offset, size, direction);
-+	debug_sync_single_range_for_device(hwdev, dma_handle, offset,
-+					   size, direction);
+@@ -170,6 +171,7 @@ dma_sync_single_for_device(struct device *hwdev, dma_addr_t dma_handle,
+ 	BUG_ON(!valid_dma_direction(direction));
+ 	if (ops->sync_single_for_device)
+ 		ops->sync_single_for_device(hwdev, dma_handle, size, direction);
++	debug_sync_single_for_device(hwdev, dma_handle, size, direction);
  	flush_write_buffers();
  }
  
 diff --git a/arch/x86/include/asm/dma_debug.h b/arch/x86/include/asm/dma_debug.h
-index 8262cd1..bc4a841 100644
+index 7245e27..8262cd1 100644
 --- a/arch/x86/include/asm/dma_debug.h
 +++ b/arch/x86/include/asm/dma_debug.h
-@@ -75,6 +75,17 @@ extern
- void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
- 				  size_t size, int direction);
+@@ -67,6 +67,14 @@ extern
+ void debug_free_coherent(struct device *dev, size_t size,
+ 			 void *virt, dma_addr_t addr);
  
 +extern
-+void debug_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+				     unsigned long offset, size_t size,
-+				     int direction);
++void debug_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
++			       size_t size, int direction);
 +
 +extern
-+void debug_sync_single_range_for_device(struct device *dev,
-+					dma_addr_t dma_handle,
-+					unsigned long offset,
-+					size_t size, int direction);
++void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
++				  size_t size, int direction);
 +
  #else /* CONFIG_DMA_API_DEBUG */
  
  static inline
-@@ -130,6 +141,21 @@ void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
+@@ -110,6 +118,18 @@ void debug_free_coherent(struct device *dev, size_t size,
  {
  }
  
 +static inline
-+void debug_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+				     unsigned long offset, size_t size,
-+				     int direction)
++void debug_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
++			       size_t size, int direction)
 +{
 +}
 +
 +static inline
-+void debug_sync_single_range_for_device(struct device *dev,
-+					dma_addr_t dma_handle,
-+					unsigned long offset,
-+					size_t size, int direction)
++void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
++				  size_t size, int direction)
 +{
 +}
 +
@@ -106,29 +99,26 @@ index 8262cd1..bc4a841 100644
  
  #endif /* __ASM_X86_DMA_DEBUG */
 diff --git a/arch/x86/kernel/pci-dma-debug.c b/arch/x86/kernel/pci-dma-debug.c
-index 1dfcd33..92b9491 100644
+index db5ef9a..1dfcd33 100644
 --- a/arch/x86/kernel/pci-dma-debug.c
 +++ b/arch/x86/kernel/pci-dma-debug.c
-@@ -422,3 +422,20 @@ void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
+@@ -408,3 +408,17 @@ void debug_free_coherent(struct device *dev, size_t size,
  }
- EXPORT_SYMBOL(debug_sync_single_for_device);
+ EXPORT_SYMBOL(debug_free_coherent);
  
-+void debug_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+				     unsigned long offset, size_t size,
-+				     int direction)
++void debug_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
++			       size_t size, int direction)
 +{
-+	check_sync(dev, dma_handle, size, offset, direction, true);
++	check_sync(dev, dma_handle, size, 0, direction, true);
 +}
-+EXPORT_SYMBOL(debug_sync_single_range_for_cpu);
++EXPORT_SYMBOL(debug_sync_single_for_cpu);
 +
-+void debug_sync_single_range_for_device(struct device *dev,
-+					dma_addr_t dma_handle,
-+					unsigned long offset,
-+					size_t size, int direction)
++void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
++				  size_t size, int direction)
 +{
-+	check_sync(dev, dma_handle, size, offset, direction, false);
++	check_sync(dev, dma_handle, size, 0, direction, false);
 +}
-+EXPORT_SYMBOL(debug_sync_single_range_for_device);
++EXPORT_SYMBOL(debug_sync_single_for_device);
 +
 -- 
 1.5.6.4
