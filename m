@@ -1,67 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYKUJRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYKUJTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbYKUJRt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 04:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYKUJRc
+	id S1754768AbYKUJTe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 04:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYKUJTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 04:17:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50329 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752588AbYKUJRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 04:17:31 -0500
-Message-ID: <49267BF0.3080806@cn.fujitsu.com>
-Date: Fri, 21 Nov 2008 17:14:24 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
+	Fri, 21 Nov 2008 04:19:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43129 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbYKUJTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 04:19:17 -0500
+Date: Fri, 21 Nov 2008 10:18:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCHSET] fix CGROUP VS RCU
-References: <49267609.8050600@cn.fujitsu.com> <20081121010637.0f71ffff.akpm@linux-foundation.org> <49267AFD.8050707@cn.fujitsu.com>
-In-Reply-To: <49267AFD.8050707@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20081121091851.GA26396@elte.hu>
+References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera> <20081117090648.GG28786@elte.hu> <Pine.LNX.4.64.0811191341570.23502@quilx.com> <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49267694.1030506@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
-> Andrew Morton wrote:
->> On Fri, 21 Nov 2008 16:49:13 +0800 Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->>
->>> current some cgroup struct are protected by RCU.
->>>
->>> struct protected by RCU:
->>> 	struct css_set, struct cgroup_subsys_state, struct cgroup
->>>
->>> pointer protected by RCU:
->>> 	struct task_struct.cgroups, struct css_set.subsys[*],
->>> 	struct cgroup_subsys_state.cgroup
->>> the last two pointers are readonly pointer!
->>>
->>> these patches are fix these structs, and pointers. And a faker:
->>> struct cgroup_subsys.root
->>>
->>> Not cleanup all yet.
->>>
->> These patches aren't sequence numbered.  In what order should they be
->> applied?
->>
->>
->>
->>
-> 
-> No order number, they are dependent(except 2 patches which have order number).
 
-                            dependent --> independent
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-> 
-> Lai.
-> 
-> 
+> Ingo Molnar a écrit :
+>> * Christoph Lameter <cl@linux-foundation.org> wrote:
+>>
+>>> hmmm... Well we are almost there.
+>>>
+>>> 2.6.22:
+>>>
+>>> Throughput 2526.15 MB/sec 8 procs
+>>>
+>>> 2.6.28-rc5:
+>>>
+>>> Throughput 2486.2 MB/sec 8 procs
+>>>
+>>> 8p Dell 1950 and the number of processors specified on the tbench  
+>>> command line.
+>>
+>> And with net-next we might even be able to get past that magic limit?  
+>> net-next is linus-latest plus the latest and greatest networking bits:
+>>
+>>  $ cat .git/config
+>>
+>>  [remote "net-next"]
+>> 	url = git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
+>> 	fetch = +refs/heads/*:refs/remotes/net-next/*
+>>
+>> ... so might be worth a test. Just to satisfy our curiosity and to 
+>> possibly close the entry :-)
+>>
+>
+> Well, bits in net-next are new stuff for 2.6.29, not really 
+> regression fixes, but yes, they should give nice tbench speedups.
 
+yeah, i know - technically these are lots-of-kernel-releases effects 
+so not bona fide latest-cycle regressions anyway. But it doesnt matter 
+how we call them, we want improvement in these metrics.
 
+> Now, I wish sockets and pipes not going through dcache, not tbench 
+> affair of course but real workloads...
+>
+> running 8 processes on a 8 way machine doing a 
+>
+> for (;;)
+> 	close(socket(AF_INET, SOCK_STREAM, 0));
+>
+> is slow as hell, we hit so many contended cache lines ...
+>
+> ticket spin locks are slower in this case (dcache_lock for example 
+> is taken twice when we allocate a socket(), once in d_alloc(), 
+> another one in d_instantiate())
+
+hm, weird - since there's no real VFS namespace impact i fail to 
+realize the fundamental need that causes us to hit the dcache_lock. 
+(perhaps there's none and this is fixable)
+
+The general concept of mapping sockets to fds is a fundamental and 
+powerful abstraction. There are APIs that also connect them to the VFS 
+namespace (such as unix domain sockets) - but those should be special 
+cases, not impacting normal TCP sockets.
+
+	Ingo
