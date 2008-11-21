@@ -1,78 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYKUIRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYKUIR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbYKUIRe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYKUIRY
+	id S1755240AbYKUIR7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKUIRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:17:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58403 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752391AbYKUIRX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:17:23 -0500
-Date: Fri, 21 Nov 2008 00:17:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 06/45] FS-Cache: Recruit a couple of page flags for
- cache management [ver #41]
-Message-Id: <20081121001704.51e7d744.akpm@linux-foundation.org>
-In-Reply-To: <20081120144210.10667.11143.stgit@warthog.procyon.org.uk>
-References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-	<20081120144210.10667.11143.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Nov 2008 03:17:48 -0500
+Received: from mail.windriver.com ([147.11.1.11]:57759 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752439AbYKUIRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 03:17:48 -0500
+Message-ID: <49266DA2.3060705@windriver.com>
+Date: Fri, 21 Nov 2008 16:13:22 +0800
+From: Wang Liming <liming.wang@windriver.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] function tracing: fix wrong position computing of
+ stack_trace
+References: <1227236418-6023-1-git-send-email-liming.wang@windriver.com> <1227236418-6023-2-git-send-email-liming.wang@windriver.com> <20081121075256.GA16242@elte.hu>
+In-Reply-To: <20081121075256.GA16242@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Nov 2008 08:17:33.0689 (UTC) FILETIME=[9AE6EE90:01C94BB1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Nov 2008 14:42:10 +0000 David Howells <dhowells@redhat.com> wrote:
+Ingo Molnar wrote:
+> * Liming Wang <liming.wang@windriver.com> wrote:
+> 
+>> Impact: make output of stack_trace complete if buffer overflow
+>>
+>> When read buffer overflows, the output of stack_trace isn't 
+>> complete.
+>>
+>> When printing records with seq_printf in t_show, if the read buffer 
+>> has overflowed by the current record, then this record won't be 
+>> printed to user space through read buffer, it will just be dropped 
+>> in this printing.
+>>
+>> When next printing, t_start should return the "*pos"th record, which 
+>> is the one dropped by previous printing, but it just returns 
+>> (m->private + *pos)th record.
+>>
+>> Here we use a more sane method to implement seq_operations which can 
+>> be found in kernel code. Thus we needn't initialize m->private.
+>>
+>> About testing, it's not easy to overflow read buffer, but we can use 
+>> seq_printf to print more padding bytes in t_show, then it's easy to 
+>> check whether or not records are lost.
+>>
+>> This commit has been tested on both condition of overflow and non 
+>> overflow.
+>>
+>> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+>> ---
+>>  kernel/trace/trace_stack.c |   24 +++++++++++++++---------
+>>  1 files changed, 15 insertions(+), 9 deletions(-)
+> 
+> applied to tip/tracing/urgent, thanks!
+> 
+> Note, i changed 'buffer overflow' to 'buffer overrun'. (buffer 
+> overflow is a term typically used in a security context)
+OK.
 
-> Recruit a couple of page flags to aid in cache management.  The following extra
-> flags are defined:
 > 
->  (1) PG_fscache (PG_private_2)
+>> -	i++;
+>> +	if (v == SEQ_START_TOKEN )
+>> +		i = 0;
+>> +	else {
+>> +		i = *(long *)v;
+>> +		i++;
+>> +	}
 > 
->      The marked page is backed by a local cache and is pinning resources in the
->      cache driver.
+> i also fixed these two minor style problems pointed out by 
+> scripts/checkpatch.pl:
 > 
->  (2) PG_fscache_write (PG_owner_priv_2)
-> 
->      The marked page is being written to the local cache.  The page may not be
->      modified whilst this is in progress.
-> 
-> If PG_fscache is set, then things that checked for PG_private will now also
-> check for that.  This includes things like truncation and page invalidation.
-> The function page_has_private() had been added to make the checks for both
-> PG_private and PG_private_2 at the same time.
-> 
-> ...
-> 
-> index 74b9d90..da467b2 100644
-> --- a/include/linux/page-flags.h
-> +++ b/include/linux/page-flags.h
-> @@ -79,9 +79,11 @@ enum pageflags {
->  	PG_active,
->  	PG_slab,
->  	PG_owner_priv_1,	/* Owner use. If pagecache, fs may use*/
-> +	PG_owner_priv_2,	/* Owner use. fs may use in pagecache */
->  	PG_arch_1,
->  	PG_reserved,
->  	PG_private,		/* If pagecache, has fs-private data */
-> +	PG_private_2,		/* If pagecache, has fs aux data */
->  	PG_writeback,		/* Page is under writeback */
+> | ERROR: space prohibited before that close parenthesis ')'
+> | #47: FILE: kernel/trace/trace_stack.c:187:
+> | +	if (v == SEQ_START_TOKEN )
+> |
+> | ERROR: space prohibited before that close parenthesis ')'
+> | #82: FILE: kernel/trace/trace_stack.c:245:
+> | +	if (v == SEQ_START_TOKEN ) {
+> |
+> | total: 2 errors, 0 warnings, 0 checks, 64 lines checked
+It's my fault, thanks a lot!
 
-ow, that hurt.  Every time someone does this I ask "how many are left"
-but nobody seems to know how to work it out.
-
-How many are left?
-
-> -	if (PagePrivate(page) &&
-> +	if (page_has_private(page) &&
-
-I'd suggest that we make PagePrivate() go away completely, to prevent
-accidental usages from sneaking back in.  If that's practical.
+walimis
+> 
+> 	Ingo
+> 
 
