@@ -1,73 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbYKURzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYKUR4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbYKURzg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYKURzZ
+	id S1757407AbYKUR4M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYKURzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:55:25 -0500
-Received: from 1wt.eu ([62.212.114.60]:1340 "EHLO 1wt.eu"
+	Fri, 21 Nov 2008 12:55:55 -0500
+Received: from mail.tmr.com ([64.65.253.246]:50098 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbYKURzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:55:24 -0500
-Date: Fri, 21 Nov 2008 18:55:15 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081121175515.GA32198@1wt.eu>
-References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com> <20081118065006.GC24654@1wt.eu> <20081120031101.GD26448@xw6200.broadcom.net> <20081120053746.GB15168@1wt.eu> <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081120215318.GB27907@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+	id S1754433AbYKURzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:55:54 -0500
+Message-ID: <4926F60E.6040104@tmr.com>
+Date: Fri, 21 Nov 2008 12:55:26 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081112 Fedora/1.1.13-1.fc9 pango-text SeaMonkey/1.1.13
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Rabbitson <rabbit+list@rabbit.us>,
+       linux-raid <linux-raid@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       martmontools-support@lists.sourceforge.net,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>, westerndigital@custhelp.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Ninth(?) Velociraptor replacement or md(RAID)/smartmontools(?)
+ bug?
+References: <alpine.DEB.1.10.0811210600310.5577@p34.internal.lan> <49269BCF.8060300@rabbit.us> <20081121115415.6c872f11@lxorguk.ukuu.org.uk> <alpine.DEB.1.10.0811210657110.5577@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0811210657110.5577@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+Justin Piszcz wrote:
+>
+>
+> On Fri, 21 Nov 2008, Alan Cox wrote:
+>
+>>> Oct 27 11:33:41 Arzamas kernel: ata6.00: error: { IDNF ABRT }
+>>
+>> Different error. IDNF -> ID not found
+>>
+>
+> So the only thing in common is WD disks.  I don't know at this point.. 
+> NCQ with
+> WD disks (at least raptor150s/300s) is completely broken and I have to 
+> disable
+> it to use the disks without NCQ errors and dropping out of arrays (on 
+> 3 diff)
+> systems with different chipsets, p35, 965.
+>
+> This guy has the same errors I do when I enable NCQ.  It seems like WD 
+> raptors
+> should be blacklisted from using NCQ in the kernel.
+>
+> NCQ: http://lkml.org/lkml/2007/10/17/380
+>
+> Concerning my error specifically:
+>
+> How much time have you spent replacing and RMA'ing disks?  Personally 
+> for me
+> I spent $3600 on new velociraptors but after having spend hours, days 
+> with
+> doing testing, replacing, I have spent much more in time than the 
+> drives are
+> worth.  I am really getting sick and tired of it, every few days or 
+> every week
+> its another drive failure (or more). What are you plans, just keep 
+> RMA'ing and hopefully they'll find the bug and fix it or just give up 
+> and build a new system for production and the RMA'ing can be a hobby 
+> in another system?
+>
+> What I meant when I asked did you buy them new, was, did you buy them 
+> recently,
+> because with the raptor150s I have in another system, all 1+ year old, 
+> bought
+> new but I wonder if they changed something in their firmware to cause 
+> this
+> problem, when I opened a case with WD about the issue and spoke with 
+> someone
+> in India they are only setup to answer basic questions and anything 
+> complicated
+> you will get canned answer: "RMA."
+>
+> Time to dump WD raptor drives?
+>
+> I will note I am using several 750GiB drives without any issue whether
+> NCQ is enabled or disabled in various raid and non-raid configurations.
+>
+> Comments--buggy raptors?
 
-On Thu, Nov 20, 2008 at 01:53:18PM -0800, Matt Carlson wrote:
-> > Today, with the notebook connected to a gig switch, I could not reproduce
-> > the problem, even after one hour of approximately the same workload. I'll
-> > retry with the original 100 Mbps switch on monday.
-> 
-> Was it really a 5704 that you were using?
+Well I guess I will have some data points after the weekend... I just 
+got a new WD 1TB on sale from Newegg, and I'm going to be using it 
+raid10 with a raid0 of a pair of Seagate 500GB, and expect to beat it 
+somewhat severely moving data from place to place.
 
-No, I was wrong, finally it's a 5705 :
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
-tg3.c:v3.94 (August 14, 2008)
-ACPI: PCI Interrupt Link [C0C5] enabled at IRQ 11
-tg3 0000:02:0e.0: PCI INT A -> Link[C0C5] -> GSI 11 (level, low) -> IRQ 11
-eth0: Tigon3 [partno(BMC5705mA3) rev 3003 PHY(5705)] (PCI:33MHz:32-bit) 10/100/1000Base-T Ethernet 00:0d:9d:91:ef:24
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
-eth0: dma_rwctrl[763f0000] dma_mask[64-bit]
-tg3: eth0: Link is up at 1000 Mbps, full duplex.
-tg3: eth0: Flow control is on for TX and on for RX.
-
-Here's the lspci :
-
-02:0e.0 Class 0200: 14e4:165e (rev 03)
-        Subsystem: 103c:088c
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Latency: 64 (16000ns min), cache line size 10
-        Interrupt: pin A routed to IRQ 11
-        Region 0: Memory at 90000000 (64-bit, non-prefetchable) [size=64K]
-        Expansion ROM at 5c000000 [disabled] [size=64K]
-        Capabilities: [48] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [50] Vital Product Data
-        Capabilities: [58] Message Signalled Interrupts: 64bit+ Queue=0/3 Enable-
-                Address: fbff71ffffbfebfc  Data: edff
-00: e4 14 5e 16 06 00 b0 02 03 00 00 02 10 40 00 00
-10: 04 00 00 90 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 07 00 00 00 3c 10 8c 08
-30: 00 00 00 00 48 00 00 00 00 00 00 00 0b 01 40 00
-
-Regards,
-Willy
 
