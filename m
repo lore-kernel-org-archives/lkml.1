@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYKUMHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYKUMIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYKUMHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 07:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYKUMHd
+	id S1755789AbYKUMIp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 07:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYKUMId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 07:07:33 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51754 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753360AbYKUMHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 07:07:32 -0500
-Subject: Re: [PATCH 2.6.28-rc5 01/11] kmemleak: Add the base support
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <84144f020811201135l7b83404etb311a7b62390dd19@mail.gmail.com>
-References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
-	 <20081120113033.16607.19928.stgit@pc1117.cambridge.arm.com>
-	 <84144f020811201135l7b83404etb311a7b62390dd19@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 21 Nov 2008 12:07:28 +0000
-Message-Id: <1227269248.7015.31.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Nov 2008 12:07:29.0263 (UTC) FILETIME=[B9B477F0:01C94BD1]
+	Fri, 21 Nov 2008 07:08:33 -0500
+Received: from lucidpixels.com ([75.144.35.66]:46157 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753458AbYKUMIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 07:08:32 -0500
+Date: Fri, 21 Nov 2008 07:08:31 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Peter Rabbitson <rabbit+list@rabbit.us>,
+       linux-raid <linux-raid@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       martmontools-support@lists.sourceforge.net,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>, westerndigital@custhelp.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Ninth(?) Velociraptor replacement or md(RAID)/smartmontools(?)
+ bug?
+In-Reply-To: <20081121115415.6c872f11@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.1.10.0811210657110.5577@p34.internal.lan>
+References: <alpine.DEB.1.10.0811210600310.5577@p34.internal.lan> <49269BCF.8060300@rabbit.us> <20081121115415.6c872f11@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 21:35 +0200, Pekka Enberg wrote:
-> On Thu, Nov 20, 2008 at 1:30 PM, Catalin Marinas
-> <catalin.marinas@arm.com> wrote:
-> > +#ifdef CONFIG_SMP
-> > +#define cache_line_align(x)    L1_CACHE_ALIGN(x)
-> > +#else
-> > +#define cache_line_align(x)    (x)
-> > +#endif
-> 
-> Maybe we should be put to <linux/cache.h> and call it cache_line_align_in_smp()?
 
-Yes, it makes sense.
 
-> > +/*
-> > + * Object allocation
-> > + */
-> > +static void *fast_cache_alloc(struct fast_cache *cache)
-[...]
-> The slab allocators are pretty fast as well. Is there a reason you
-> can't use kmalloc() or kmem_cache_alloc() for this? 
+On Fri, 21 Nov 2008, Alan Cox wrote:
 
-The reason for the internal allocator wasn't speed, I would be happy to
-use the main one. The past kmemleak versions used the slab allocator and
-I was getting lockdep reports about the l3->list_lock via the
-cache_grow() and memleak_alloc() functions, IIRC. At that time I also
-had another lock held during radix_tree_insert (this function calling
-kmem_cache_alloc), so some of these problems might have gone away now
-with a finer-grained locking and some RCU usage (actually no locks
-should be held when calling the alloc functions from kmemleak).
+>> Oct 27 11:33:41 Arzamas kernel: ata6.00: error: { IDNF ABRT }
+>
+> Different error. IDNF -> ID not found
+>
 
-It seems that the flags are propagated inside the slab allocator so it
-is also possible to miss some slab-internal allocations we would like to
-track (like slabmgmt objects in a list) or get too many recursive calls
-via memleak_alloc().
+So the only thing in common is WD disks.  I don't know at this point.. NCQ with
+WD disks (at least raptor150s/300s) is completely broken and I have to disable
+it to use the disks without NCQ errors and dropping out of arrays (on 3 diff)
+systems with different chipsets, p35, 965.
 
-> You can fix the
-> recursion problem by adding a new GFP_NOLEAKTRACK flag that makes sure
-> memleak hooks are not invoked if it's set.
+This guy has the same errors I do when I enable NCQ.  It seems like WD raptors
+should be blacklisted from using NCQ in the kernel.
 
-But this flag doesn't get passed to kfree. An option would be to use a
-kmem_cache and a SLAB_NOLEAKTRACE bit so that it can be checked via
-kmem_cache_free().
+NCQ: http://lkml.org/lkml/2007/10/17/380
 
-If you don't think the above issues are real problems, I'm happy to give
-it a try.
+Concerning my error specifically:
 
--- 
-Catalin
+How much time have you spent replacing and RMA'ing disks?  Personally for me
+I spent $3600 on new velociraptors but after having spend hours, days with
+doing testing, replacing, I have spent much more in time than the drives are
+worth.  I am really getting sick and tired of it, every few days or every week
+its another drive failure (or more). What are you plans, just keep RMA'ing 
+and hopefully they'll find the bug and fix it or just give up and build a new 
+system for production and the RMA'ing can be a hobby in another system?
 
+What I meant when I asked did you buy them new, was, did you buy them recently,
+because with the raptor150s I have in another system, all 1+ year old, bought
+new but I wonder if they changed something in their firmware to cause this
+problem, when I opened a case with WD about the issue and spoke with someone
+in India they are only setup to answer basic questions and anything complicated
+you will get canned answer: "RMA."
+
+Time to dump WD raptor drives?
+
+I will note I am using several 750GiB drives without any issue whether
+NCQ is enabled or disabled in various raid and non-raid configurations.
+
+Comments--buggy raptors?
+
+Justin.
