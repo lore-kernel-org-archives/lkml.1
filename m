@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYKUQS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYKUQTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYKUQS7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYKUQSs
+	id S1756870AbYKUQTe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYKUQTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:18:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53954 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752586AbYKUQSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:18:47 -0500
-Date: Fri, 21 Nov 2008 17:18:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Eduardo Habkost <ehabkost@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Zachary Amsden <zach@vmware.com>,
-       kexec@lists.infradead.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/12] x86: disable virt on kdump and emergency_restart
-	(v4)
-Message-ID: <20081121161807.GB24839@elte.hu>
-References: <1226955804-16802-1-git-send-email-ehabkost@redhat.com> <20081118081501.GF17838@elte.hu> <4926DCC8.1040500@redhat.com>
+	Fri, 21 Nov 2008 11:19:22 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:23349 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752429AbYKUQTU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:19:20 -0500
+Message-ID: <4926DF63.1030107@hp.com>
+Date: Fri, 21 Nov 2008 11:18:43 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4926DCC8.1040500@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "K.S. Bhaskar" <ks.bhaskar@fnis.com>
+CC: Jeff Moyer <jmoyer@redhat.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Enterprise workload testing for storage and filesystems
+References: <1226962063.3403.13.camel@localhost.localdomain> <x49y6zegjum.fsf@segfault.boston.devel.redhat.com> <4926DAFC.5070006@fnis.com>
+In-Reply-To: <4926DAFC.5070006@fnis.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Avi Kivity <avi@redhat.com> wrote:
-
-> Ingo Molnar wrote:
->> * Eduardo Habkost <ehabkost@redhat.com> wrote:
+K.S. Bhaskar wrote:
+> On 11/20/2008 04:37 PM, Jeff Moyer wrote:
+>> James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+> 
+> [KSB] <...snip...>
+> 
+>>  > Let's see how our storage and filesystem tuning measures up to this.
 >>
->>   
->>> Hi, Ingo,
->>>
->>> This is yet another spin of the series to disable vmx on kdump and  
->>> on emergency_restart, after some feedback from Avi.
->>>     
->>
->> this is going to interact with the KVM tree, wont it?
->>
->> i think the best way forward would be to keep your changes in the KVM  
->> tree.
->>
->> Lets try a Git trick for that. Avi could do that by pulling your other  
->> x86 changes from the x86 topic tree into the kvm tree. They are  
->> reviewed, acked and well-tested now, and kept in a separate tree so no  
->> other x86 change will be pulled in via them.
->>
->> We can do this if Avi can guarantee that these commits wont ever be  
->> rebased within KVM - then the two trees will merge up just fine in  
->> linux-next (and later in v2.6.29 as well), without any awkward merge  
->> dependencies or merge conflicts.
->>   
->
-> I never rebase kvm.git master, so I pulled the x86 changes and 
-> applied all.  Ingo, this will mean you have to push x86 before 
-> kvm.git, but as you're generally faster than me there shouldn't be a 
-> problem.
+>> This is indeed great news!  The tool is very flexible, so I'd like to
+>> know if we can get some sane configuration options to start testing.
+>> I'm sure I can cook something up, but I'd like to be confident that what
+>> I'm testing does indeed reflect a real-world workload.
+> 
+> [KSB] Here are numbers for some tests that we ran recently:
+> 
+> io_thrash -o 4 4 testdb 4000000 100000 12 8192 512 1000 90 90 10 512
+> io_thrash -o 4 4 testdb 4000000 100000 12 8192 512 10000 90 90 10 512
+> io_thrash -o 4 4 testdb 4000000 100000 12 8192 512 100000 90 90 10 512
+> io_thrash -o 4 4 testdb 4000000 100000 12 8192 512 200000 90 90 10 512
+> 
+> Note that these are relatively modest tests (4x32GB database files, all
+> on one file system, 12 processes).  To simulate bigger loads, allow the
+> journal file sizes to grow to 4GB, use a configuration file to spread
+> the database and journal files on different file systems, take the
+> number of processes up into the hundreds and database sizes into the
+> hundreds of GB.  To keep test times reasonable, use the smallest numbers
+> that give insightful results (after a point, making things bigger adds
+> more time, but does not yield additional insights into system behavior,
+> which is what we are trying to achieve).
+> 
+> Regards
+> -- Bhaskar
 
-Great!
+Thanks for additional feedback Bhaskar - I've been playing with this
+on-and-off the last couple of days trying to stress one testbed (16 way
+AMD, 128GB RAM, two P800 Smart Arrays (48 disks total put into a single
+LVM2/DM volume)). I've been able to get the I/O subsystem 100% utilized,
+but in so doing really didn't stress the system (something like 80-90%
+idle).
 
-Note that the dependencies are even more relaxed that that: you can 
-push it too via the KVM tree, independently of the x86 push. Obviously 
-you got those x86 changes from us x86 maintainers and they all work 
-standalone too.
+In order to stress the whole system, it sounds like it _may_ be better
+to use 48 separate file systems on 48 separate platters (each with its
+own DB)? Or are there other knobs to play with to get more of the system
+involved besides the I/O? Is it a good idea to separate the journals
+from the DB (separate FS/platter)?
 
-Pulling from each other means both sides agree on that sub-set of 
-changes and trust each other - so there's no forced merge ordering or 
-maintenance boundaries - any side can merge it upstream. (If you feel 
-uneasy about it on any level, and were you to send a pull request 
-first, then you can point it out to Linus in the pull request that you 
-got those changes from us.)
-
-	Ingo
+Regards,
+Alan
