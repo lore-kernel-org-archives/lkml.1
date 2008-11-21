@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYKUQdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYKUQhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbYKUQdW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:33:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKUQdL
+	id S1756555AbYKUQhq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYKUQhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:33:11 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:26351 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbYKUQdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:33:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=J4aQK6MVbIrmwH3aKY01QJUt4UOPcBeenFqypFXRXKHeqCA46M8gjhizYbAujr7+It
-         /DOwUZqhzUuzP2CDPBTWaX0hinLmTjduPOrIvLQp7Oui7/h9srl0m8Dmy50pkngEr3is
-         OjRPZuHq1ziJygRzVVUOFQoUOvNSPOeakSMfs=
-Message-ID: <7c86c4470811210833l5c8005b4l675bc51df50affaa@mail.gmail.com>
-Date: Fri, 21 Nov 2008 17:33:07 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Subject: Re: debugctl msr
-Cc: "Markus Metzger" <markus.t.metzger@googlemail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E08F3B93D@irsmsx504.ger.corp.intel.com>
+	Fri, 21 Nov 2008 11:37:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36120 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751838AbYKUQhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:37:34 -0500
+Date: Fri, 21 Nov 2008 17:37:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 0/10] DMA-API debugging facility
+Message-ID: <20081121163717.GA733@elte.hu>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
-	 <7c86c4470811190913u743706abgafff3b0f0e3559ec@mail.gmail.com>
-	 <1227119245.6025.12.camel@raistlin>
-	 <7c86c4470811191120i63b70970s3e24af5c962ea538@mail.gmail.com>
-	 <1227133570.6104.10.camel@raistlin>
-	 <7c86c4470811201319x2eb93d41vbdd8ce480a797fab@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F115BC@irsmsx504.ger.corp.intel.com>
-	 <7c86c4470811210538i5e6958e1p2c31effa762f5914@mail.gmail.com>
-	 <7c86c4470811210727o13006d5bk5bcbacb791e51b1c@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F3B93D@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 5:10 PM, Metzger, Markus T
-<markus.t.metzger@intel.com> wrote:
->>-----Original Message-----
->>From: stephane eranian [mailto:eranian@googlemail.com]
->>Sent: Freitag, 21. November 2008 16:27
->>To: Metzger, Markus T
->>Cc: Markus Metzger; Ingo Molnar; Andi Kleen; Andrew Morton;
->>linux-kernel@vger.kernel.org
->>Subject: Re: debugctl msr
->
->>The absolute maximum MUST be at buffer+size+1 but the
->>threshold can be anywhere
->>between the start of the buffer and buffer+size. You had it set past
->>the end of the buffer (at +1),
->>therefore PEBS was not generating any interrupts.
->
-> The default is cyclic mode, which requires the interrupt threshold
-> to be outside of the buffer.
->
-That's not what I need.
 
-> A request for interrupt mode should have got you -EOPNOTSUPP.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-I did not try that.
+> Hi,
+> 
+> this patchset introduces code to debug drivers usage of the DMA-API. 
+> Tests with hardware IOMMUs have shown several bugs in drivers 
+> regarding the usage of that API. Problems were found especially in 
+> network card drivers.
+> 
+> These bugs often don't show up or have any negative impact if there 
+> is no hardware IOMMU in use in the system. But with an hardware 
+> IOMMU these bugs turn the hardware unusable or, in the worst case, 
+> cause data corruption on devices which are managed by other (good) 
+> drivers.
+> 
+> With the code these patches introduce driver developers can find 
+> several bugs of misusing the DMA-API in their drivers. But be aware, 
+> it can not find all possible bugs. If it finds a problem it prints 
+> out messages like
+> 
+> tg3 0000:08:04.0: PCI-DMA: device driver tries to free DMA memory it 
+> has not allocated [device address=0x000000042f0f3ae7] [size=48 
+> bytes]
+>
+> Pid: 6285, comm: bash Not tainted 2.6.28-rc5-00176-g6ae6379-dirty #6
+> Call Trace:
+>  <IRQ>  [<ffffffff80221276>] check_unmap+0x52/0x1ce
+>  [<ffffffff80221af0>] debug_unmap_single+0x61/0xa4
+>  [<ffffffff8053d396>] skb_dma_unmap+0xf2/0x10c
+>  [<ffffffff8040a986>] tg3_poll+0xe8/0x822
+>  [<ffffffff803abe2f>] mix_pool_bytes_extract+0x5c/0x155
+>  [<ffffffff80540e42>] net_rx_action+0x9d/0x170
 
->
-> Absolute max should be one byte beyond the buffer, which
-> is base + size.
->
-My bad ;-<
+very nice! I like this approach - and have a few comments on some 
+details - will post them as a reply to the patchs.
+
+	Ingo
