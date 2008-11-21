@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYKUOau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYKUOfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbYKUOau (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYKUOak
+	id S1755606AbYKUOfG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYKUOez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:30:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:51025 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbYKUOaj (ORCPT
+	Fri, 21 Nov 2008 09:34:55 -0500
+Received: from sour.ops.eusc.inter.net ([84.23.254.154]:50383 "EHLO
+	sour.ops.eusc.inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784AbYKUOey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:30:39 -0500
-Message-ID: <acdcfe7e0811210630s65404ef5pf2b94731c2a872e1@mail.gmail.com>
-Date: Fri, 21 Nov 2008 09:30:38 -0500
-From: "Robert Love" <rlove@rlove.org>
-To: "Evgeniy Polyakov" <zbr@ioremap.net>
-Subject: Re: [take 3] Use pid in inotify events.
-Cc: "Pavel Machek" <pavel@suse.cz>, mtk.manpages@gmail.com,
-       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@lst.de>
-In-Reply-To: <20081121140325.GA12384@ioremap.net>
+	Fri, 21 Nov 2008 09:34:54 -0500
+X-Greylist: delayed 1465 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Nov 2008 09:34:54 EST
+Message-ID: <4926C153.3090104@gmx.de>
+Date: Fri, 21 Nov 2008 15:10:27 +0100
+From: Cord Walter <cord.walter@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
-	 <20081116232450.GA13547@ioremap.net>
-	 <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
-	 <20081117171508.GA564@ioremap.net>
-	 <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com>
-	 <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz>
-	 <20081121140325.GA12384@ioremap.net>
+To: Komuro <komurojun-mbn@nifty.com>
+CC: netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: axnet_cs / pcnet_cs: moving PCMCIA_DEVICE_PROD_ID for Netgear
+ FA411
+References: <4925F6F1.9010305@gmx.de> <20081121214812.b03d7166.komurojun-mbn@nifty.com>
+In-Reply-To: <20081121214812.b03d7166.komurojun-mbn@nifty.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 9:03 AM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
+Komuro schrieb:
+> On Fri, 21 Nov 2008 00:46:57 +0100
+> Cord Walter <cord.walter@gmx.de> wrote:
+> 
+>> after noticing that my Netgear FA411 (PCMCIA-NIC) [1] stopped working with
+>> the release of the 2.6.25 kernel (sidux-version),
+> 
+> You are right. My patch has a bug.
+> The patch below fixes this problem.
+> 
+> By the way,
+> (1) Does your FA411 work properly with the pcnet_cs driver before?
 
-> Critics without suggestions is useless. What did you try to say here?
-> You you believe it should be done in a different way, please tell us how
-> you see this should be implemented.
+Yes, it worked until the 2.6.25 release.
 
-Pavel has the bedside manner of a T-Rex, but he is right.
+> (2) Please post the full-dmesg (axnet_cs).
 
-Your solution needs to be (a) generally applicable and useful, with an
-(b) elegant and clean API, which (c) does not break ABI or API.
+This is what I get from dmesg when plugging in the FA411:
 
-Overloading the cookie field is not the way to go. Finding ways to
-extend the API through inotify_init might be--you will have even
-higher hurdles of "do we really need this" though.
+pccard: PCMCIA card inserted into slot 1
+cs: memory probe 0xa0000000-0xa0ffffff: clean.
+pcmcia: registering new device pcmcia1.0
+eth0: Asix AX88790: io 0x300, irq 3, hw_addr 00:09:5b:08:98:93
+udev: renamed network interface eth0 to eth1
+NET: Registered protocol family 17
 
-John & I intentionally did not add the pid field when writing inotify
-for reasons of security and questionable need. It also stinks to have
-to add a pid field to the event structure if that field is seldom
-used.
 
-Working on lkml often sounds like everyone is screaming NO, channeling
-nothing but stop energy. Sometimes people are, but more often what
-they really mean is you just have to take your time and do things
-right. Admittedly it is a lot of iteration, but Linux is a noble
-pursuit.
+Does this help?
 
-     Robert
+-cord
+
+-- 
+Cord Walter
+email: cord.walter@gmx.de
+
+Weil es niemanden etwas angeht, dass ich nichts zu verbergen habe:
+http://www.gnupg.org/
+http://www.truecrypt.org/
+...und überhaupt: http://www.FreiheitstattAngst.de
