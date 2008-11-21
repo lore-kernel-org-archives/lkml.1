@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbYKUQIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYKUQI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756913AbYKUQIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbYKUQIQ
+	id S1756141AbYKUQI4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbYKUQIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:08:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47840 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756610AbYKUQIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:08:14 -0500
-Message-ID: <4926DCC8.1040500@redhat.com>
-Date: Fri, 21 Nov 2008 18:07:36 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 21 Nov 2008 11:08:39 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35544 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756880AbYKUQIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:08:38 -0500
+Message-ID: <4926DC1B.1020809@linux.vnet.ibm.com>
+Date: Fri, 21 Nov 2008 21:34:43 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Eduardo Habkost <ehabkost@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Zachary Amsden <zach@vmware.com>,
-       kexec@lists.infradead.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/12] x86: disable virt on kdump and emergency_restart
- (v4)
-References: <1226955804-16802-1-git-send-email-ehabkost@redhat.com> <20081118081501.GF17838@elte.hu>
-In-Reply-To: <20081118081501.GF17838@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: ananth@in.ibm.com
+CC: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, mhiramat@redhat.com, contact@ksplice.com,
+       jbarnold@ksplice.com, tabbott@ksplice.com, wdaher@ksplice.com,
+       andersk@ksplice.com
+Subject: Re: [RFC] kreplace: Rebootless kernel updates
+References: <200811211720.26394.knikanth@suse.de> <20081121133800.GA5244@in.ibm.com>
+In-Reply-To: <20081121133800.GA5244@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Eduardo Habkost <ehabkost@redhat.com> wrote:
->
->   
->> Hi, Ingo,
+Ananth N Mavinakayanahalli wrote:
+> On Fri, Nov 21, 2008 at 05:20:25PM +0530, Nikanth Karthikesan wrote:
+>> This RFC patch adds support for limited form of rebootless kernel patching 
+>> even without building the entire kernel.
 >>
->> This is yet another spin of the series to disable vmx on kdump and 
->> on emergency_restart, after some feedback from Avi.
->>     
->
-> this is going to interact with the KVM tree, wont it?
->
-> i think the best way forward would be to keep your changes in the KVM 
-> tree.
->
-> Lets try a Git trick for that. Avi could do that by pulling your other 
-> x86 changes from the x86 topic tree into the kvm tree. They are 
-> reviewed, acked and well-tested now, and kept in a separate tree so no 
-> other x86 change will be pulled in via them.
->
-> We can do this if Avi can guarantee that these commits wont ever be 
-> rebased within KVM - then the two trees will merge up just fine in 
-> linux-next (and later in v2.6.29 as well), without any awkward merge 
-> dependencies or merge conflicts.
->   
+>> When looking for a shortcut to avoid the rebuild/reboot cycle when hacking the  
+>> kernel - the ksplice[1] was posted. This patch extends kprobes to do something 
+>> similar, which would require even lesser time to _experiment_ with the running 
+>> kernel. 
+> 
+> There have been other implementations of this feature, I am sure quite a
+> few people would have objections to having this as part of the kernel :-)
+> 
 
-I never rebase kvm.git master, so I pulled the x86 changes and applied 
-all.  Ingo, this will mean you have to push x86 before kvm.git, but as 
-you're generally faster than me there shouldn't be a problem.
+I had a patch for x86 a long time ago in 2005, but I never posted it :(
 
-Eduardo, please check the merge (there was a small conflict in reboot.c 
-which I fixed) once I push it.  Also, when generating patches that move 
-files, use the -M switch: this makes it easier to review, and also 
-handles files that change better.
+>> This small patch extends jprobes so that the jprobe's handler is executed but 
+>> skips executing the actual function. But this has its own limitations such as 
+>> Cannot access symbols not exported for modules (ofcourse hacks like 
+>> pointers[2] can be used.), problems related to return values[3], etc... This 
+>> is currently a x86_64 only _hack_.
+> 
+> There are many other issues too... How do you enforce correct usage of this
+> infrastrucutre? What prevents people from overriding core-kernel
+> functions with their own?
+> 
+
+Yes and we need to be careful about licensing, tainting the kernel with such an
+implementation.
+
+> Kprobes themselves provide enough ammunition to users to shoot themselves
+> in the foot, but this is way more dangerous than that.
+> ...
+> 
+
+Undoubtedly, but a good warning is the best way to keep people warned about
+running such code :) It is a useful thing to have and to run, but running it
+would take more guts than anything else.
+
+
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+	Balbir
