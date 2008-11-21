@@ -1,89 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbYKUS2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYKUS3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbYKUS2f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbYKUS2M
+	id S1757636AbYKUS3I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:29:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbYKUS2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:28:12 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:64627 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755468AbYKUS2L (ORCPT
+	Fri, 21 Nov 2008 13:28:51 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:16435 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbYKUS2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:28:11 -0500
-Message-ID: <4926FDB3.2030701@lwfinger.net>
-Date: Fri, 21 Nov 2008 12:28:03 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Fri, 21 Nov 2008 13:28:50 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=g201BFnHtCtE3PTAvjiYLRn0Ng0RvQ1s95uB+j1CSdzjh9nWpU7ahCIA1n5OiYUrG
+	ShBsaTXplMoEzLnBKWRww==
 MIME-Version: 1.0
-To: Yuval Hager <yuval@avramzon.net>
-CC: Michael Buesch <mb@bu3sch.de>, bcm43xx-dev@lists.berlios.de,
-       LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>, Peter Stuge <peter@stuge.se>
-Subject: Re: BCM4312 Fails when xdm is started
-References: <200811151801.02369.yuval@avramzon.net> <20081115174623.27321.qmail@stuge.se> <4926E0F2.5060200@lwfinger.net> <200811211842.13099.mb@bu3sch.de>
-In-Reply-To: <200811211842.13099.mb@bu3sch.de>
+In-Reply-To: <4926761B.2060608@cn.fujitsu.com>
+References: <4926761B.2060608@cn.fujitsu.com>
+Date: Fri, 21 Nov 2008 10:28:44 -0800
+Message-ID: <6599ad830811211028v2d9532cfsfef18c0af5935964@mail.gmail.com>
+Subject: Re: [PATCH] cgroups: defer free css_set
+From: Paul Menage <menage@google.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yuval,
+On Fri, Nov 21, 2008 at 12:49 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>
+> we free css_set when refcnt became 0 immediately(except cgroup_attach_task()).
+> I will destroy the data which read side maybe still access it.
+> this patch use call_rcu() to defer free css_set
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index 1164963..22901ff 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -178,6 +178,8 @@ struct css_set {
+>         */
+>        struct list_head cg_links;
+>
+> +       struct rcu_head rcu;
+> +
+>        /*
+>         * Set of subsystem states, one for each subsystem. This array
+>         * is immutable after creation apart from the init_css_set
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 358e775..ddc10ac 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -252,6 +252,11 @@ static void unlink_css_set(struct css_set *cg)
+>        }
+>  }
+>
+> +static void rcu_free_css_set(struct rcu_head *head)
+> +{
+> +       kfree(container_of(head, struct css_set, rcu));
+> +}
+> +
+>  static void __put_css_set(struct css_set *cg, int taskexit)
+>  {
+>        int i;
+> @@ -281,7 +286,7 @@ static void __put_css_set(struct css_set *cg, int taskexit)
+>                }
+>        }
+>        rcu_read_unlock();
+> -       kfree(cg);
+> +       call_rcu(&cg->rcu, rcu_free_css_set);
+>  }
+>
+>  /*
+> @@ -1267,7 +1277,6 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
+>                        ss->attach(ss, cgrp, oldcgrp, tsk);
+>        }
+>        set_bit(CGRP_RELEASABLE, &oldcgrp->flags);
+> -       synchronize_rcu();
 
-Michael Buesch wrote:
-> 
-> Can you dump PCI config space and SSB registers (TMSLOW, maybe others, too).
-> It looks like a random bus write disabled the device.
+I'm reluctant to remove this synchronize_rcu() call - it gives the
+property that if you get a pointer to a task's cgroup protected by
+RCU, then even if you race with the task moving away to a different
+cgroup, then no other cgroup_mutex-protected operation can start until
+you've finished your RCU section (since the thread that you raced with
+is blocking in synchronize_rcu() while holding cgroup_mutex). I'm
+pretty sure that some of the cgroups code relies on that property,
+although I can't find exactly which bit I'm thinking of.
 
-Please incorporate the following patch and run your system. In addition, run the
-following command when the wireless is working and after it fails:
+Also, using call_rcu() for freeing all css_sets seems unnecessary -
+the only one that appears to be potentially broken is the one from
+cgroup_exit(), since in the other cases the css_set hasn't been
+visible via a task->cgroups pointer. So how about making
+__put_css_set() do a call_rcu() for the case when taskexit is true,
+and a plain free() otherwise? That would also reduce the change of
+overloading the RCU system with too many deferred frees.
 
-sudo lspci -d 14e4:4312 -x
-
-Post the results of the above commands and any entries in /var/log/messages that
-dump registers. They should all be prefaced with ****
-
-
-Index: linux-2.6/drivers/net/wireless/b43/phy_common.c
-===================================================================
---- linux-2.6.orig/drivers/net/wireless/b43/phy_common.c
-+++ linux-2.6/drivers/net/wireless/b43/phy_common.c
-@@ -133,6 +133,11 @@ void b43_radio_lock(struct b43_wldev *de
-
- 	macctl = b43_read32(dev, B43_MMIO_MACCTL);
- 	B43_WARN_ON(macctl & B43_MACCTL_RADIOLOCK);
-+	if (macctl & B43_MACCTL_RADIOLOCK) {
-+		printk(KERN_INFO "****** b43: B43_MMIO_MACCTL 0x%X\n", macctl);
-+		printk(KERN_INFO "****** b43: SSB_TMSLOW 0x%X\n",
-+			ssb_read32(dev->dev, SSB_TMSLOW));
-+	}
- 	macctl |= B43_MACCTL_RADIOLOCK;
- 	b43_write32(dev, B43_MMIO_MACCTL, macctl);
- 	/* Commit the write and wait for the device
-@@ -150,6 +155,11 @@ void b43_radio_unlock(struct b43_wldev *
- 	/* unlock */
- 	macctl = b43_read32(dev, B43_MMIO_MACCTL);
- 	B43_WARN_ON(!(macctl & B43_MACCTL_RADIOLOCK));
-+	if (macctl & B43_MACCTL_RADIOLOCK) {
-+		printk(KERN_INFO "****** b43: B43_MMIO_MACCTL 0x%X\n", macctl);
-+		printk(KERN_INFO "****** b43: SSB_TMSLOW 0x%X\n",
-+			ssb_read32(dev->dev, SSB_TMSLOW));
-+	}
- 	macctl &= ~B43_MACCTL_RADIOLOCK;
- 	b43_write32(dev, B43_MMIO_MACCTL, macctl);
- }
-Index: linux-2.6/drivers/net/wireless/b43/rfkill.c
-===================================================================
---- linux-2.6.orig/drivers/net/wireless/b43/rfkill.c
-+++ linux-2.6/drivers/net/wireless/b43/rfkill.c
-@@ -63,6 +63,8 @@ static void b43_rfkill_poll(struct input
- 		report_change = 1;
- 		b43info(wl, "Radio hardware status changed to %s\n",
- 			enabled ? "ENABLED" : "DISABLED");
-+		b43info(wl, "******** B43_B43_MMIO_RADIO_HWENABLED_HI 0x%X\n",
-+			b43_read32(dev, B43_MMIO_RADIO_HWENABLED_HI));
- 	}
- 	mutex_unlock(&wl->mutex);
-
-
-
+Paul
