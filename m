@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYKUFbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYKUFnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYKUFbf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 00:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYKUFbZ
+	id S1753528AbYKUFnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 00:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYKUFnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 00:31:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58580 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751026AbYKUFbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 00:31:25 -0500
-Date: Fri, 21 Nov 2008 16:31:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH RFC] cpu alloc cleanups and implementation improvement
-Message-Id: <20081121163111.7107315e.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0811201030240.19948@quilx.com>
-References: <200811172353.18356.rusty@rustcorp.com.au>
-	<Pine.LNX.4.64.0811201030240.19948@quilx.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__21_Nov_2008_16_31_11_+1100_kIwZ2l=r3eEWdu1M"
+	Fri, 21 Nov 2008 00:43:00 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:27967 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbYKUFm7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 00:42:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=aruxl/hCv/KLWWyreoHiHCS0pWCETwV6H8AkY3/9eSTqjN20vogLpOSv32UImuRmsO
+         ssTKRePEb0dcs3yuvB03OHalHZzEBzByoo8D0U5XrURUfLLDmXfpUZllX7cL4MWnoDIh
+         atvG3RTEwGixDXA98dCICU6+1ZMrtz8P6Kl4w=
+Message-ID: <804dabb00811202142y799fb70dxf89a1fc3514d78b1@mail.gmail.com>
+Date: Fri, 21 Nov 2008 13:42:56 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: A question sort_main_extable()
+Cc: "Sam Ravnborg" <sam@ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__21_Nov_2008_16_31_11_+1100_kIwZ2l=r3eEWdu1M
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Inside start_kernel() there is a call to sort_main_extable().
 
-Hi Christoph,
+void sort_extable(struct exception_table_entry *start,
+                 struct exception_table_entry *finish)
+{
+       sort(start, finish - start, sizeof(struct exception_table_entry),
+            cmp_ex, NULL);
+}
 
-On Thu, 20 Nov 2008 10:35:05 -0600 (CST) Christoph Lameter <cl@linux-founda=
-tion.org> wrote:
->
-> On Mon, 17 Nov 2008, Rusty Russell wrote:
->=20
-> >   I've argued with Christoph that his implementation contains gratuitous
-> > obsolescence of perfectly-good APIs; hopefully providing real patches w=
-ill
-> > give us a more useful debate.
->=20
-> I would not mind if you would take over from here.
+With reference to
+http://tuxology.net/2008/07/08/benchmarking-boot-latency-on-x86/, I
+think it can help bootup latency (how much I got no number) if the
+sorting is done post-compilation time, instead of dynamically
+everytime the system bootup.  (perhaps at the stage of modposting,
+when all the vmlinux, kernel modules objects have been generated, so
+extracting out the exceptions strings is possible?)  Is this a
+possible optimization?
 
-So, should I remove the cpu_alloc tree from linux-next?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Sam, can it be done?
 
---Signature=_Fri__21_Nov_2008_16_31_11_+1100_kIwZ2l=r3eEWdu1M
-Content-Type: application/pgp-signature
+Thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkkmR58ACgkQjjKRsyhoI8wV1gCeMREaWD8YIUVYFhFOGNvW7CMW
-5lgAn0NHO5P9oP0MZSyKuoYhxeUzSrW8
-=fvMA
------END PGP SIGNATURE-----
-
---Signature=_Fri__21_Nov_2008_16_31_11_+1100_kIwZ2l=r3eEWdu1M--
+-- 
+Regards,
+Peter Teoh
