@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbYKUO5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYKUO7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755444AbYKUO5d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbYKUO5Z
+	id S1755746AbYKUO7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYKUO7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:57:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60767 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753634AbYKUO5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:57:24 -0500
-Date: Fri, 21 Nov 2008 15:57:09 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Robert Love <rlove@rlove.org>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, mtk.manpages@gmail.com,
-       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [take 3] Use pid in inotify events.
-Message-ID: <20081121145709.GC1554@ucw.cz>
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com> <20081117171508.GA564@ioremap.net> <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com> <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz> <20081121140325.GA12384@ioremap.net> <acdcfe7e0811210630s65404ef5pf2b94731c2a872e1@mail.gmail.com>
+	Fri, 21 Nov 2008 09:59:05 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38934 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753685AbYKUO7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:59:03 -0500
+Date: Fri, 21 Nov 2008 09:58:23 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
+       paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081121145823.GD3111@redhat.com>
+References: <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it> <20081120213155.GI29306@redhat.com> <20081121030533.GA30883@gandalf.sssup.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <acdcfe7e0811210630s65404ef5pf2b94731c2a872e1@mail.gmail.com>
+In-Reply-To: <20081121030533.GA30883@gandalf.sssup.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-11-21 09:30:38, Robert Love wrote:
-> On Fri, Nov 21, 2008 at 9:03 AM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
+On Fri, Nov 21, 2008 at 04:05:33AM +0100, Fabio Checconi wrote:
+> > From: Vivek Goyal <vgoyal@redhat.com>
+> > Date: Thu, Nov 20, 2008 04:31:55PM -0500
+> >
+> ...
+> > Hi Fabio,
+> > 
+> > I though will give bfq a try.  I get following when I put my current shell
+> > into a newly created cgroup and then try to do "ls".
+> > 
 > 
-> > Critics without suggestions is useless. What did you try to say here?
-> > You you believe it should be done in a different way, please tell us how
-> > you see this should be implemented.
+> The posted patch cannot work as it is, I'm sorry for that ugly bug.
+> Do you still have problems with this one applied?
 > 
-> Pavel has the bedside manner of a T-Rex, but he is right.
+> ---
+> diff --git a/block/bfq-cgroup.c b/block/bfq-cgroup.c
+> index efb03fc..ed8c597 100644
+> --- a/block/bfq-cgroup.c
+> +++ b/block/bfq-cgroup.c
+> @@ -168,7 +168,7 @@ static void bfq_group_chain_link(struct bfq_data *bfqd, struct cgroup *cgroup,
+>  
+>  		spin_lock_irqsave(&bgrp->lock, flags);
+>  
+> -		rcu_assign_pointer(bfqg->bfqd, bfqd);
+> +		rcu_assign_pointer(leaf->bfqd, bfqd);
+>  		hlist_add_head_rcu(&leaf->group_node, &bgrp->group_data);
+>  		hlist_add_head(&leaf->bfqd_node, &bfqd->group_list);
 
-Heh. Will attach T-Rex to next email.
+Thanks Fabio. This fix solves the issue for me.
 
-> Your solution needs to be (a) generally applicable and useful, with an
-> (b) elegant and clean API, which (c) does not break ABI or API.
-> 
-> Overloading the cookie field is not the way to go. Finding ways to
-> extend the API through inotify_init might be--you will have even
-> higher hurdles of "do we really need this" though.
-> 
-> John & I intentionally did not add the pid field when writing inotify
-> for reasons of security and questionable need. It also stinks to have
-> to add a pid field to the event structure if that field is seldom
-> used.
+I did a quick testing and I can see the differential service if I create
+two cgroups of different priority. How do I map ioprio to shares? I
+mean lets say one cgroup has ioprio 4 and other has got ioprio 7, then
+what's the respective share(%) of each cgroup?
 
-...plus the permission check was quite strange. We don't normally try
-to hide PIDs, and 'equal uid' is very non-standard test. can_ptrace()
-is normally used for such stuff...
-
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks
+Vivek
