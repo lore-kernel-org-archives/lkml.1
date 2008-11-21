@@ -1,128 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYKUKVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYKUKX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYKUKVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 05:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYKUKVk
+	id S1754865AbYKUKX5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 05:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYKUKXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 05:21:40 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:55762 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbYKUKVj (ORCPT
+	Fri, 21 Nov 2008 05:23:48 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:47381 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753143AbYKUKXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 05:21:39 -0500
-X-IronPort-AV: E=Sophos;i="4.33,643,1220241600"; 
-   d="scan'208";a="28979801"
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ian Campbell <Ian.Campbell@citrix.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] xen: pin correct PGD on suspend
-Date: Fri, 21 Nov 2008 10:21:33 +0000
-Message-Id: <1227262893-27335-1-git-send-email-Ian.Campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.3
-X-OriginalArrivalTime: 21 Nov 2008 10:21:38.0298 (UTC) FILETIME=[F03C1DA0:01C94BC2]
+	Fri, 21 Nov 2008 05:23:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=QnqZR800jJsOSzYJVLMf4iO3MVP4dArdMd0WNrK6DXw8Wnd+r1I6zEyWwmMwddOqSN
+         rDl0cWdy1EeLjmIXjaOQec3GcIVvHhZFRMQ0ENdrf/9SWASnqy0ivD9erdNkdTvCaKht
+         v7Ddo1FA3XJ1128IXyDdbVe/0Rf091JtEaTk0=
+Message-ID: <a4423d670811210223j53883165mb6651d8fa1bef95f@mail.gmail.com>
+Date: Fri, 21 Nov 2008 13:23:45 +0300
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       vojtech@suse.cz, tglx@linutronix.de
+Subject: next-20081121: WARNING: at lib/debugobjects.c: hpet
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit eefb47f6a1e855653d275cb90592a3587ea93a09 ("xen: use
-spin_lock_nest_lock when pinning a pagetable") changed xen_pgd_walk to
-walk over mm->pgd rather than taking pgd as an argument.
+Hi
 
-This breaks xen_mm_(un)pin_all() because it makes init_mm.pgd readonly
-instead of the pgd we are interested in and therefore the pin subsequently
-fails.
+It is x86_64 SMP
 
-(XEN) mm.c:2280:d15 Bad type (saw 00000000e8000001 != exp 0000000060000000) for mfn bc464 (pfn 21ca7)
-(XEN) mm.c:2665:d15 Error while pinning mfn bc464
-
-[   14.586913] 1 multicall(s) failed: cpu 0
-[   14.586926] Pid: 14, comm: kstop/0 Not tainted 2.6.28-rc5-x86_32p-xenU-00172-gee2f6cc #200
-[   14.586940] Call Trace:
-[   14.586955]  [<c030c17a>] ? printk+0x18/0x1e
-[   14.586972]  [<c0103df3>] xen_mc_flush+0x163/0x1d0
-[   14.586986]  [<c0104bc1>] __xen_pgd_pin+0xa1/0x110
-[   14.587000]  [<c015a330>] ? stop_cpu+0x0/0xf0
-[   14.587015]  [<c0104d7b>] xen_mm_pin_all+0x4b/0x70
-[   14.587029]  [<c022bcb9>] xen_suspend+0x39/0xe0
-[   14.587042]  [<c015a330>] ? stop_cpu+0x0/0xf0
-[   14.587054]  [<c015a3cd>] stop_cpu+0x9d/0xf0
-[   14.587067]  [<c01417cd>] run_workqueue+0x8d/0x150
-[   14.587080]  [<c030e4b3>] ? _spin_unlock_irqrestore+0x23/0x40
-[   14.587094]  [<c014558a>] ? prepare_to_wait+0x3a/0x70
-[   14.587107]  [<c0141918>] worker_thread+0x88/0xf0
-[   14.587120]  [<c01453c0>] ? autoremove_wake_function+0x0/0x50
-[   14.587133]  [<c0141890>] ? worker_thread+0x0/0xf0
-[   14.587146]  [<c014509c>] kthread+0x3c/0x70
-[   14.587157]  [<c0145060>] ? kthread+0x0/0x70
-[   14.587170]  [<c0109d1b>] kernel_thread_helper+0x7/0x10
-[   14.587181]   call  1/3: op=14 arg=[c0415000] result=0
-[   14.587192]   call  2/3: op=14 arg=[e1ca2000] result=0
-[   14.587204]   call  3/3: op=26 arg=[c1808860] result=-22
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/xen/mmu.c |   21 ++++++++++++++-------
- 1 files changed, 14 insertions(+), 7 deletions(-)
-
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 6889360..636ef4c 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -661,12 +661,11 @@ void xen_set_pgd(pgd_t *ptr, pgd_t val)
-  * For 64-bit, we must skip the Xen hole in the middle of the address
-  * space, just after the big x86-64 virtual hole.
-  */
--static int xen_pgd_walk(struct mm_struct *mm,
--			int (*func)(struct mm_struct *mm, struct page *,
--				    enum pt_level),
--			unsigned long limit)
-+static int __xen_pgd_walk(struct mm_struct *mm, pgd_t *pgd,
-+			  int (*func)(struct mm_struct *mm, struct page *,
-+				      enum pt_level),
-+			  unsigned long limit)
- {
--	pgd_t *pgd = mm->pgd;
- 	int flush = 0;
- 	unsigned hole_low, hole_high;
- 	unsigned pgdidx_limit, pudidx_limit, pmdidx_limit;
-@@ -753,6 +752,14 @@ out:
- 	return flush;
- }
- 
-+static int xen_pgd_walk(struct mm_struct *mm,
-+			int (*func)(struct mm_struct *mm, struct page *,
-+				    enum pt_level),
-+			unsigned long limit)
-+{
-+	return __xen_pgd_walk(mm, mm->pgd, func, limit);
-+}
-+
- /* If we're using split pte locks, then take the page's lock and
-    return a pointer to it.  Otherwise return NULL. */
- static spinlock_t *xen_pte_lock(struct page *page, struct mm_struct *mm)
-@@ -854,7 +861,7 @@ static void __xen_pgd_pin(struct mm_struct *mm, pgd_t *pgd)
- 
- 	xen_mc_batch();
- 
--	 if (xen_pgd_walk(mm, xen_pin_page, USER_LIMIT)) {
-+	if (__xen_pgd_walk(mm, pgd, xen_pin_page, USER_LIMIT)) {
- 		/* re-enable interrupts for flushing */
- 		xen_mc_issue(0);
- 
-@@ -998,7 +1005,7 @@ static void __xen_pgd_unpin(struct mm_struct *mm, pgd_t *pgd)
- 		       PT_PMD);
- #endif
- 
--	xen_pgd_walk(mm, xen_unpin_page, USER_LIMIT);
-+	__xen_pgd_walk(mm, pgd, xen_unpin_page, USER_LIMIT);
- 
- 	xen_mc_issue(0);
- }
--- 
-1.5.6.3
-
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+hpet0: 3 comparators, 64-bit 14.318180 MHz counter
+ODEBUG: object is on stack, but not annotated
+------------[ cut here ]------------
+WARNING: at lib/debugobjects.c:251 __debug_object_init+0x2bf/0x36d()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.28-rc5-next-20081121 #8
+Call Trace:
+ [<ffffffff80236bfb>] warn_on_slowpath+0x58/0x7d
+ [<ffffffff804e3405>] ? printk+0x67/0x6a
+ [<ffffffff803803cc>] ? __debug_object_init+0x191/0x36d
+ [<ffffffff803804fa>] __debug_object_init+0x2bf/0x36d
+ [<ffffffff80297856>] ? compound_order+0x15/0x26
+ [<ffffffff803805d5>] debug_object_init+0x14/0x17
+ [<ffffffff8023fcbf>] init_timer+0x18/0x5b
+ [<ffffffff8022087d>] hpet_cpuhp_notify+0x93/0x105
+ [<ffffffff802209b6>] ? hpet_work+0x0/0x206
+ [<ffffffff803d1ae8>] ? hpet_alloc+0x333/0x38f
+ [<ffffffff802577cd>] ? trace_hardirqs_on_caller+0x128/0x153
+ [<ffffffff80257805>] ? trace_hardirqs_on+0xd/0xf
+ [<ffffffff806d15f5>] ? hpet_late_init+0x0/0x19e
+ [<ffffffff806d15f5>] ? hpet_late_init+0x0/0x19e
+ [<ffffffff806d175f>] hpet_late_init+0x16a/0x19e
+ [<ffffffff806cf7c2>] ? print_all_ICs+0x0/0x540
+ [<ffffffff80209058>] _stext+0x58/0x138
+ [<ffffffff804e5e83>] ? _spin_unlock+0x4a/0x57
+ [<ffffffff802de3c4>] ? proc_register+0x10b/0x118
+ [<ffffffff802de4f9>] ? create_proc_entry+0x7e/0x94
+ [<ffffffff80268745>] ? register_irq_proc+0xb0/0xcc
+ [<ffffffff802d0000>] ? do_usbdevfs_discsignal+0x20/0x84
+ [<ffffffff806c666d>] kernel_init+0x125/0x179
+ [<ffffffff804e583a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+ [<ffffffff8020c8a9>] child_rip+0xa/0x11
+ [<ffffffff8020bd98>] ? restore_args+0x0/0x30
+ [<ffffffff806c6548>] ? kernel_init+0x0/0x179
+ [<ffffffff8020c89f>] ? child_rip+0x0/0x11
+---[ end trace 4eaa2a86a8e2da22 ]---
+Switched to high resolution mode on CPU 0
+Switched to high resolution mode on CPU 3
+Switched to high resolution mode on CPU 2
+Switched to high resolution mode on CPU 1
