@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYKUQiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbYKUQkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbYKUQiE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:38:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbYKUQhv
+	id S1756678AbYKUQkt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYKUQkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:37:51 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33334 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756728AbYKUQhu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:37:50 -0500
-Date: Fri, 21 Nov 2008 11:37:46 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: Jim Radford <radford@galvanix.net>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: mcount record based dynamic tracing for ARM
-In-Reply-To: <20081121153827.GA8433@flint.arm.linux.org.uk>
-Message-ID: <alpine.DEB.1.10.0811211136330.18505@gandalf.stny.rr.com>
-References: <20081118231525.GA16081@blackbean.org> <alpine.DEB.1.10.0811201734050.14652@gandalf.stny.rr.com> <20081120224903.GA3244@blackbean.org> <alpine.DEB.1.10.0811202114560.4464@gandalf.stny.rr.com> <20081121035509.GA5266@blackbean.org>
- <alpine.DEB.1.10.0811210917380.6447@gandalf.stny.rr.com> <20081121153827.GA8433@flint.arm.linux.org.uk>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 21 Nov 2008 11:40:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48116 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752688AbYKUQkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:40:35 -0500
+Date: Fri, 21 Nov 2008 17:40:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 01/10] x86: add Kconfig entry for DMA-API debugging
+Message-ID: <20081121164014.GB733@elte.hu>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-2-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227284770-19215-2-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 21 Nov 2008, Russell King - ARM Linux wrote:
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> On Fri, Nov 21, 2008 at 09:27:17AM -0500, Steven Rostedt wrote:
-> > On Thu, 20 Nov 2008, Jim Radford wrote:
-> > > -	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
-> > > +	select HAVE_FTRACE_MCOUNT_RECORD
-> > > +	select HAVE_DYNAMIC_FTRACE if (!XIP_KERNEL)
-> > 
-> > Russell mentioned something about the code not being compatible with 
-> > Thumb2, is the above if statement enough?
-> 
-> I think I said (or should've said) "upcoming Thumb 2" - it's not yet in
-> the kernel but there's a patch series floating around for it.  We've
-> started on merging some of the pre-requisits, and it will mean that
-> the instruction length is no longer constant.  (It may be a 16bit or
-> 32bit instruction.)
-> 
-> I suspect that ftrace won't be able to handle that, so it may have to
-> depend on !THUMB2_KERNEL for the time being.
+> +config DMA_API_DEBUG
+> +	default n
 
-Actually it depends on how the compiler adds the mcount call. That's all 
-that ftrace touches. The call to mcount. If all callers to mcount stay as 
-32 bit, then it may still work.
+'default n' can be omitted in general from interactive Kconfig 
+entries.
 
--- Steve
+> +	bool "Enable debugging of DMA-API usage"
+> +	depends on X86
+
+perhaps add a proper dependency on iommu or swiotlb presence as well - 
+in case we decide to make it all disable-able again and dont have the 
+callbacks present?
+
+	Ingo
