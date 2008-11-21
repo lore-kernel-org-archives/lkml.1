@@ -1,36 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYKURXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYKURXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756408AbYKURXf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:23:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYKURXR
+	id S1758013AbYKURXw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbYKURXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:23:17 -0500
-Received: from web65612.mail.ac4.yahoo.com ([76.13.9.80]:32055 "HELO
-	web65612.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757251AbYKURXQ (ORCPT
+	Fri, 21 Nov 2008 12:23:31 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:37198 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757897AbYKURXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:23:16 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Nov 2008 12:23:15 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=HtQcXJOkAaCYQrAITbiqYaPiLPDurVxhRrxaKl5y/Bl756cKgu6LngGP8luIzMHc6s2VcGO/2F/LeGmuwFjG7+6gzKOQmgFm8dfUIWM3WsqEILSIdU/Hp2rKLGSrxLBS+y0I68qP52SKlhTPB+y/9KE4IMDy5kEooOli4uyirW4=;
-X-YMail-OSG: NXByzUYVM1lblY805l8lcg3DGoY45It5EwtyJ_GYTp6NCe4Qi0kfyy5jNLhEGS0XdAcUHk4oJ2DkGFHJOsymJPW_1bhgYh7mVeSymZH_FbxXhD4fqVWTW9LkcOj2KVj9Tp9_pfSq6p3lewwg_CET10PjdeAInZn0Ir_pPRw-
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Fri, 21 Nov 2008 09:16:33 -0800 (PST)
-From: Ryan Mak <tremolo_72@yahoo.com>
-Reply-To: tremolo_72@yahoo.com
-Subject: pthread and multiple cores
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <890000.99085.qm@web65612.mail.ac4.yahoo.com>
+	Fri, 21 Nov 2008 12:23:30 -0500
+To: tj@kernel.org
+CC: miklos@szeredi.hu, torvalds@linux-foundation.org, hch@infradead.org,
+       mingo@elte.hu, rminnich@sandia.gov, ericvh@gmail.com,
+       linux-kernel@vger.kernel.org
+In-reply-to: <4926EBD8.6070200@kernel.org> (message from Tejun Heo on Sat, 22
+	Nov 2008 02:11:52 +0900)
+Subject: Re: [PATCH RESEND] poll: allow f_op->poll to sleep, take #2
+References: <491BA16C.30606@kernel.org> <alpine.LFD.2.00.0811151208430.3468@nehalem.linux-foundation.org> <49256CCE.9060107@kernel.org> <E1L3Z5h-0008J7-QN@pomaz-ex.szeredi.hu> <4926EBD8.6070200@kernel.org>
+Message-Id: <E1L3Zif-0008SF-S1@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 21 Nov 2008 18:23:01 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-working with a multiple core box, there seems to be core(s) idle and not evenly distributed when threads are set(default) with system scope. is this a scheduler thing or am i not tuning my pthread parameters correctly? thanks.
+On Sat, 22 Nov 2008, Tejun Heo wrote:
+> For both, I was trying to stay consistent with the environment.  I
+> find mixed styles in close proximity much uglier than slightly
+> different but consistent style.  Eh... Is the consensus checkpatch or
+> die?
 
+I think some common sense can be applied in these cases.  For example
+a small amount of offending style in close proximity can be fixed as
+well, as long as it doesn't interfere too much with the readability of
+the patch.
 
-
-      
+Miklos
