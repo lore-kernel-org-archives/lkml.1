@@ -1,121 +1,746 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYKUVSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYKUVTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbYKUVSS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 16:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYKUVSF
+	id S1756820AbYKUVTz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 16:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYKUVTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 16:18:05 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:41518 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750822AbYKUVSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 16:18:04 -0500
-Date: Fri, 21 Nov 2008 15:18:00 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Gregory Haskins <ghaskins@novell.com>, Max Krasnyansky <maxk@qualcomm.com>
-Cc: Derek Fults <dfults@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and no load balance
-Message-ID: <20081121211800.GA16647@sgi.com>
-References: <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com> <4924C770.7050107@qualcomm.com> <4926158B.9020909@novell.com> <49271449.2030804@qualcomm.com>
+	Fri, 21 Nov 2008 16:19:47 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47400 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbYKUVTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 16:19:46 -0500
+Date: Fri, 21 Nov 2008 22:21:21 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Eric.Piel@tremplin-utc.net, trenn@suse.de, rpurdie@rpsys.net,
+       hmh@hmh.eng.br
+Subject: HP accelerometer: split chip handling from HP ACPI interface
+Message-ID: <20081121212121.GA7222@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49271449.2030804@qualcomm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg and Max,
+This patch splits handling between chip-specific lis3lv02d and HP/ACPI
+specific hp_accel.c.
 
-On Fri, Nov 21, 2008 at 12:04:25PM -0800, Max Krasnyansky wrote:
-> Hi Greg,
-> 
-> I attached debug instrumentation patch for Dmitri to try. I'll clean it up and
->  add things you requested and will resubmit properly some time next week.
-> 
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-We added Max's debug patch to our kernel and have run Max's Trace 3 scenario, but we do not see a NULL sched-domain remain attached, see my comments below.
+diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+index 58fc5be..9f891ff 100644
+--- a/drivers/hwmon/Makefile
++++ b/drivers/hwmon/Makefile
+@@ -49,7 +49,7 @@ obj-$(CONFIG_SENSORS_IBMAEM)	+= ibmaem.o
+ obj-$(CONFIG_SENSORS_IBMPEX)	+= ibmpex.o
+ obj-$(CONFIG_SENSORS_IT87)	+= it87.o
+ obj-$(CONFIG_SENSORS_K8TEMP)	+= k8temp.o
+-obj-$(CONFIG_SENSORS_LIS3LV02D) += lis3lv02d.o
++obj-$(CONFIG_SENSORS_LIS3LV02D) += lis3lv02d.o hp_accel.o
+ obj-$(CONFIG_SENSORS_LM63)	+= lm63.o
+ obj-$(CONFIG_SENSORS_LM70)	+= lm70.o
+ obj-$(CONFIG_SENSORS_LM75)	+= lm75.o
+diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
+new file mode 100644
+index 0000000..b4dea9b
+--- /dev/null
++++ b/drivers/hwmon/hp_accel.c
+@@ -0,0 +1,301 @@
++/*
++ *  hp_accel.c - Interface between LIS3LV02DL driver and HP ACPI BIOS
++ *
++ *  Copyright (C) 2007-2008 Yan Burman
++ *  Copyright (C) 2008 Eric Piel
++ *  Copyright (C) 2008 Pavel Machek
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/dmi.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++#include <linux/input.h>
++#include <linux/kthread.h>
++#include <linux/semaphore.h>
++#include <linux/delay.h>
++#include <linux/wait.h>
++#include <linux/poll.h>
++#include <linux/freezer.h>
++#include <linux/version.h>
++#include <linux/uaccess.h>
++#include <linux/leds.h>
++#include <acpi/acpi_drivers.h>
++#include <asm/atomic.h>
++#include "lis3lv02d.h"
++
++#define DRIVER_NAME     "lis3lv02d"
++#define ACPI_MDPS_CLASS "accelerometer"
++
++
++/* For automatic insertion of the module */
++static struct acpi_device_id lis3lv02d_device_ids[] = {
++	{"HPQ0004", 0}, /* HP Mobile Data Protection System PNP */
++	{"", 0},
++};
++MODULE_DEVICE_TABLE(acpi, lis3lv02d_device_ids);
++
++
++/**
++ * lis3lv02d_acpi_init - ACPI _INI method: initialize the device.
++ * @handle: the handle of the device
++ *
++ * Returns AE_OK on success.
++ */
++acpi_status lis3lv02d_acpi_init(acpi_handle handle)
++{
++	return acpi_evaluate_object(handle, METHOD_NAME__INI, NULL, NULL);
++}
++
++/**
++ * lis3lv02d_acpi_read - ACPI ALRD method: read a register
++ * @handle: the handle of the device
++ * @reg:    the register to read
++ * @ret:    result of the operation
++ *
++ * Returns AE_OK on success.
++ */
++acpi_status lis3lv02d_acpi_read(acpi_handle handle, int reg, u8 *ret)
++{
++	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
++	struct acpi_object_list args = { 1, &arg0 };
++	unsigned long long lret;
++	acpi_status status;
++
++	arg0.integer.value = reg;
++
++	status = acpi_evaluate_integer(handle, "ALRD", &args, &lret);
++	*ret = lret;
++	return status;
++}
++
++/**
++ * lis3lv02d_acpi_write - ACPI ALWR method: write to a register
++ * @handle: the handle of the device
++ * @reg:    the register to write to
++ * @val:    the value to write
++ *
++ * Returns AE_OK on success.
++ */
++acpi_status lis3lv02d_acpi_write(acpi_handle handle, int reg, u8 val)
++{
++	unsigned long long ret; /* Not used when writting */
++	union acpi_object in_obj[2];
++	struct acpi_object_list args = { 2, in_obj };
++
++	in_obj[0].type          = ACPI_TYPE_INTEGER;
++	in_obj[0].integer.value = reg;
++	in_obj[1].type          = ACPI_TYPE_INTEGER;
++	in_obj[1].integer.value = val;
++
++	return acpi_evaluate_integer(handle, "ALWR", &args, &ret);
++}
++
++static int lis3lv02d_dmi_matched(const struct dmi_system_id *dmi)
++{
++	adev.ac = *((struct axis_conversion *)dmi->driver_data);
++	printk(KERN_INFO DRIVER_NAME ": hardware type %s found.\n", dmi->ident);
++
++	return 1;
++}
++
++/* Represents, for each axis seen by userspace, the corresponding hw axis (+1).
++ * If the value is negative, the opposite of the hw value is used. */
++static struct axis_conversion lis3lv02d_axis_normal = {1, 2, 3};
++static struct axis_conversion lis3lv02d_axis_y_inverted = {1, -2, 3};
++static struct axis_conversion lis3lv02d_axis_x_inverted = {-1, 2, 3};
++static struct axis_conversion lis3lv02d_axis_z_inverted = {1, 2, -3};
++static struct axis_conversion lis3lv02d_axis_xy_rotated_left = {-2, 1, 3};
++static struct axis_conversion lis3lv02d_axis_xy_swap_inverted = {-2, -1, 3};
++
++#define AXIS_DMI_MATCH(_ident, _name, _axis) {		\
++	.ident = _ident,				\
++	.callback = lis3lv02d_dmi_matched,		\
++	.matches = {					\
++		DMI_MATCH(DMI_PRODUCT_NAME, _name)	\
++	},						\
++	.driver_data = &lis3lv02d_axis_##_axis		\
++}
++static struct dmi_system_id lis3lv02d_dmi_ids[] = {
++	/* product names are truncated to match all kinds of a same model */
++	AXIS_DMI_MATCH("NC64x0", "HP Compaq nc64", x_inverted),
++	AXIS_DMI_MATCH("NC84x0", "HP Compaq nc84", z_inverted),
++	AXIS_DMI_MATCH("NX9420", "HP Compaq nx9420", x_inverted),
++	AXIS_DMI_MATCH("NW9440", "HP Compaq nw9440", x_inverted),
++	AXIS_DMI_MATCH("NC2510", "HP Compaq 2510", y_inverted),
++	AXIS_DMI_MATCH("NC8510", "HP Compaq 8510", xy_swap_inverted),
++	AXIS_DMI_MATCH("HP2133", "HP 2133", xy_rotated_left),
++	{ NULL, }
++/* Laptop models without axis info (yet):
++ * "NC651xx" "HP Compaq 651"
++ * "NC671xx" "HP Compaq 671"
++ * "NC6910" "HP Compaq 6910"
++ * HP Compaq 8710x Notebook PC / Mobile Workstation
++ * "NC2400" "HP Compaq nc2400"
++ * "NX74x0" "HP Compaq nx74"
++ * "NX6325" "HP Compaq nx6325"
++ * "NC4400" "HP Compaq nc4400"
++ */
++};
++
++
++static acpi_status hpled_acpi_write(acpi_handle handle, int reg)
++{
++	unsigned long long ret; /* Not used when writing */
++	union acpi_object in_obj[1];
++	struct acpi_object_list args = { 1, in_obj };
++
++	in_obj[0].type          = ACPI_TYPE_INTEGER;
++	in_obj[0].integer.value = reg;
++
++	return acpi_evaluate_integer(handle, "ALED", &args, &ret);
++}
++
++static void hpled_set(struct led_classdev *led_cdev,
++			       enum led_brightness value)
++{
++	hpled_acpi_write(adev.device->handle, !!value);
++}
++
++static struct led_classdev hpled_led = {
++	.name			= "hp:red:hddprotection",
++	.default_trigger	= "heartbeat",
++	.brightness_set		= hpled_set,
++};
++
++static int lis3lv02d_add(struct acpi_device *device)
++{
++	u8 val;
++	int ret;
++
++	if (!device)
++		return -EINVAL;
++
++	adev.device = device;
++	strcpy(acpi_device_name(device), DRIVER_NAME);
++	strcpy(acpi_device_class(device), ACPI_MDPS_CLASS);
++	device->driver_data = &adev;
++
++	lis3lv02d_acpi_read(device->handle, WHO_AM_I, &val);
++	if ((val != LIS3LV02DL_ID) && (val != LIS302DL_ID)) {
++		printk(KERN_ERR DRIVER_NAME
++				": Accelerometer chip not LIS3LV02D{L,Q}\n");
++	}
++
++	/* If possible use a "standard" axes order */
++	if (dmi_check_system(lis3lv02d_dmi_ids) == 0) {
++		printk(KERN_INFO DRIVER_NAME ": laptop model unknown, "
++				 "using default axes configuration\n");
++		adev.ac = lis3lv02d_axis_normal;
++	}
++
++	ret = led_classdev_register(NULL, &hpled_led);
++	if (ret)
++		return ret;
++
++	ret = lis3lv02d_init_device(&adev);
++	if (ret) {
++		led_classdev_unregister(&hpled_led);
++		return ret;
++	}
++	
++	return ret;
++}
++
++static int lis3lv02d_remove(struct acpi_device *device, int type)
++{
++	if (!device)
++		return -EINVAL;
++
++	lis3lv02d_joystick_disable();
++	lis3lv02d_poweroff(device->handle);
++
++	led_classdev_unregister(&hpled_led);
++
++	return lis3lv02d_remove_fs();
++}
++
++
++#ifdef CONFIG_PM
++static int lis3lv02d_suspend(struct acpi_device *device, pm_message_t state)
++{
++	/* make sure the device is off when we suspend */
++	lis3lv02d_poweroff(device->handle);
++	led_classdev_suspend(&hpled_led);
++	return 0;
++}
++
++static int lis3lv02d_resume(struct acpi_device *device)
++{
++	/* put back the device in the right state (ACPI might turn it on) */
++	mutex_lock(&adev.lock);
++	if (adev.usage > 0)
++		lis3lv02d_poweron(device->handle);
++	else
++		lis3lv02d_poweroff(device->handle);
++	mutex_unlock(&adev.lock);
++	led_classdev_resume(&hpled_led);
++	return 0;
++}
++#else
++#define lis3lv02d_suspend NULL
++#define lis3lv02d_resume NULL
++#endif
++
++/* For the HP MDPS aka 3D Driveguard */
++static struct acpi_driver lis3lv02d_driver = {
++	.name  = DRIVER_NAME,
++	.class = ACPI_MDPS_CLASS,
++	.ids   = lis3lv02d_device_ids,
++	.ops = {
++		.add     = lis3lv02d_add,
++		.remove  = lis3lv02d_remove,
++		.suspend = lis3lv02d_suspend,
++		.resume  = lis3lv02d_resume,
++	}
++};
++
++static int __init lis3lv02d_init_module(void)
++{
++	int ret;
++
++	if (acpi_disabled)
++		return -ENODEV;
++
++	ret = acpi_bus_register_driver(&lis3lv02d_driver);
++	if (ret < 0)
++		return ret;
++
++	printk(KERN_INFO DRIVER_NAME " driver loaded.\n");
++
++	return 0;
++}
++
++static void __exit lis3lv02d_exit_module(void)
++{
++	acpi_bus_unregister_driver(&lis3lv02d_driver);
++}
++
++MODULE_DESCRIPTION("Glue between LIS3LV02Dx and HP ACPI BIOS");
++MODULE_AUTHOR("Yan Burman, Eric Piel, Pavel Machek");
++MODULE_LICENSE("GPL");
++
++module_init(lis3lv02d_init_module);
++module_exit(lis3lv02d_exit_module);
+diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
+index c002144..faa51cc 100644
+--- a/drivers/hwmon/lis3lv02d.c
++++ b/drivers/hwmon/lis3lv02d.c
+@@ -3,6 +3,7 @@
+  *
+  *  Copyright (C) 2007-2008 Yan Burman
+  *  Copyright (C) 2008 Eric Piel
++ *  Copyright (C) 2008 Pavel Machek
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -41,6 +42,7 @@ #include "lis3lv02d.h"
+ #define DRIVER_NAME     "lis3lv02d"
+ #define ACPI_MDPS_CLASS "accelerometer"
+ 
++
+ /* joystick device poll interval in milliseconds */
+ #define MDPS_POLL_INTERVAL 50
+ /*
+@@ -55,94 +57,12 @@ #define MDPS_POLL_INTERVAL 50
+ /* Maximum value our axis may get for the input device (signed 12 bits) */
+ #define MDPS_MAX_VAL 2048
+ 
+-struct axis_conversion {
+-	s8	x;
+-	s8	y;
+-	s8	z;
+-};
+ 
+-struct acpi_lis3lv02d {
+-	struct acpi_device	*device;   /* The ACPI device */
+-	struct input_dev	*idev;     /* input device */
+-	struct task_struct	*kthread;  /* kthread for input */
+-	struct mutex            lock;
+-	struct platform_device	*pdev;     /* platform device */
+-	atomic_t		count;     /* interrupt count after last read */
+-	int			xcalib;    /* calibrated null value for x */
+-	int			ycalib;    /* calibrated null value for y */
+-	int			zcalib;    /* calibrated null value for z */
+-	unsigned char		is_on;     /* whether the device is on or off */
+-	unsigned char		usage;     /* usage counter */
+-	struct axis_conversion	ac;        /* hw -> logical axis */
+-};
+ 
+-static struct acpi_lis3lv02d adev;
++struct acpi_lis3lv02d adev;
+ 
+-static int lis3lv02d_remove_fs(void);
+ static int lis3lv02d_add_fs(struct acpi_device *device);
+ 
+-/* For automatic insertion of the module */
+-static struct acpi_device_id lis3lv02d_device_ids[] = {
+-	{"HPQ0004", 0}, /* HP Mobile Data Protection System PNP */
+-	{"", 0},
+-};
+-MODULE_DEVICE_TABLE(acpi, lis3lv02d_device_ids);
+-
+-/**
+- * lis3lv02d_acpi_init - ACPI _INI method: initialize the device.
+- * @handle: the handle of the device
+- *
+- * Returns AE_OK on success.
+- */
+-static inline acpi_status lis3lv02d_acpi_init(acpi_handle handle)
+-{
+-	return acpi_evaluate_object(handle, METHOD_NAME__INI, NULL, NULL);
+-}
+-
+-/**
+- * lis3lv02d_acpi_read - ACPI ALRD method: read a register
+- * @handle: the handle of the device
+- * @reg:    the register to read
+- * @ret:    result of the operation
+- *
+- * Returns AE_OK on success.
+- */
+-static acpi_status lis3lv02d_acpi_read(acpi_handle handle, int reg, u8 *ret)
+-{
+-	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+-	struct acpi_object_list args = { 1, &arg0 };
+-	unsigned long long lret;
+-	acpi_status status;
+-
+-	arg0.integer.value = reg;
+-
+-	status = acpi_evaluate_integer(handle, "ALRD", &args, &lret);
+-	*ret = lret;
+-	return status;
+-}
+-
+-/**
+- * lis3lv02d_acpi_write - ACPI ALWR method: write to a register
+- * @handle: the handle of the device
+- * @reg:    the register to write to
+- * @val:    the value to write
+- *
+- * Returns AE_OK on success.
+- */
+-static acpi_status lis3lv02d_acpi_write(acpi_handle handle, int reg, u8 val)
+-{
+-	unsigned long long ret; /* Not used when writting */
+-	union acpi_object in_obj[2];
+-	struct acpi_object_list args = { 2, in_obj };
+-
+-	in_obj[0].type          = ACPI_TYPE_INTEGER;
+-	in_obj[0].integer.value = reg;
+-	in_obj[1].type          = ACPI_TYPE_INTEGER;
+-	in_obj[1].integer.value = val;
+-
+-	return acpi_evaluate_integer(handle, "ALWR", &args, &ret);
+-}
+-
+ static s16 lis3lv02d_read_16(acpi_handle handle, int reg)
+ {
+ 	u8 lo, hi;
+@@ -190,14 +110,14 @@ static void lis3lv02d_get_xyz(acpi_handl
+ 	*z = lis3lv02d_get_axis(adev.ac.z, position);
+ }
+ 
+-static inline void lis3lv02d_poweroff(acpi_handle handle)
++void lis3lv02d_poweroff(acpi_handle handle)
+ {
+ 	adev.is_on = 0;
+ 	/* disable X,Y,Z axis and power down */
+ 	lis3lv02d_acpi_write(handle, CTRL_REG1, 0x00);
+ }
+ 
+-static void lis3lv02d_poweron(acpi_handle handle)
++void lis3lv02d_poweron(acpi_handle handle)
+ {
+ 	u8 val;
+ 
+@@ -214,30 +134,6 @@ static void lis3lv02d_poweron(acpi_handl
+ 	lis3lv02d_acpi_write(handle, CTRL_REG2, val);
+ }
+ 
+-#ifdef CONFIG_PM
+-static int lis3lv02d_suspend(struct acpi_device *device, pm_message_t state)
+-{
+-	/* make sure the device is off when we suspend */
+-	lis3lv02d_poweroff(device->handle);
+-	return 0;
+-}
+-
+-static int lis3lv02d_resume(struct acpi_device *device)
+-{
+-	/* put back the device in the right state (ACPI might turn it on) */
+-	mutex_lock(&adev.lock);
+-	if (adev.usage > 0)
+-		lis3lv02d_poweron(device->handle);
+-	else
+-		lis3lv02d_poweroff(device->handle);
+-	mutex_unlock(&adev.lock);
+-	return 0;
+-}
+-#else
+-#define lis3lv02d_suspend NULL
+-#define lis3lv02d_resume NULL
+-#endif
+-
+ 
+ /*
+  * To be called before starting to use the device. It makes sure that the
+@@ -315,7 +211,7 @@ static inline void lis3lv02d_calibrate_j
+ 	lis3lv02d_get_xyz(adev.device->handle, &adev.xcalib, &adev.ycalib, &adev.zcalib);
+ }
+ 
+-static int lis3lv02d_joystick_enable(void)
++int lis3lv02d_joystick_enable(void)
+ {
+ 	int err;
+ 
+@@ -350,7 +246,7 @@ static int lis3lv02d_joystick_enable(voi
+ 	return err;
+ }
+ 
+-static void lis3lv02d_joystick_disable(void)
++void lis3lv02d_joystick_disable(void)
+ {
+ 	if (!adev.idev)
+ 		return;
+@@ -360,11 +256,12 @@ static void lis3lv02d_joystick_disable(v
+ }
+ 
+ 
++
+ /*
+  * Initialise the accelerometer and the various subsystems.
+  * Should be rather independant of the bus system.
+  */
+-static int lis3lv02d_init_device(struct acpi_lis3lv02d *dev)
++int lis3lv02d_init_device(struct acpi_lis3lv02d *dev)
+ {
+ 	mutex_init(&dev->lock);
+ 	lis3lv02d_add_fs(dev->device);
+@@ -377,91 +274,6 @@ static int lis3lv02d_init_device(struct 
+ 	return 0;
+ }
+ 
+-static int lis3lv02d_dmi_matched(const struct dmi_system_id *dmi)
+-{
+-	adev.ac = *((struct axis_conversion *)dmi->driver_data);
+-	printk(KERN_INFO DRIVER_NAME ": hardware type %s found.\n", dmi->ident);
+-
+-	return 1;
+-}
+-
+-/* Represents, for each axis seen by userspace, the corresponding hw axis (+1).
+- * If the value is negative, the opposite of the hw value is used. */
+-static struct axis_conversion lis3lv02d_axis_normal = {1, 2, 3};
+-static struct axis_conversion lis3lv02d_axis_y_inverted = {1, -2, 3};
+-static struct axis_conversion lis3lv02d_axis_x_inverted = {-1, 2, 3};
+-static struct axis_conversion lis3lv02d_axis_z_inverted = {1, 2, -3};
+-static struct axis_conversion lis3lv02d_axis_xy_rotated_left = {-2, 1, 3};
+-static struct axis_conversion lis3lv02d_axis_xy_swap_inverted = {-2, -1, 3};
+-
+-#define AXIS_DMI_MATCH(_ident, _name, _axis) {		\
+-	.ident = _ident,				\
+-	.callback = lis3lv02d_dmi_matched,		\
+-	.matches = {					\
+-		DMI_MATCH(DMI_PRODUCT_NAME, _name)	\
+-	},						\
+-	.driver_data = &lis3lv02d_axis_##_axis		\
+-}
+-static struct dmi_system_id lis3lv02d_dmi_ids[] = {
+-	/* product names are truncated to match all kinds of a same model */
+-	AXIS_DMI_MATCH("NC64x0", "HP Compaq nc64", x_inverted),
+-	AXIS_DMI_MATCH("NC84x0", "HP Compaq nc84", z_inverted),
+-	AXIS_DMI_MATCH("NX9420", "HP Compaq nx9420", x_inverted),
+-	AXIS_DMI_MATCH("NW9440", "HP Compaq nw9440", x_inverted),
+-	AXIS_DMI_MATCH("NC2510", "HP Compaq 2510", y_inverted),
+-	AXIS_DMI_MATCH("NC8510", "HP Compaq 8510", xy_swap_inverted),
+-	AXIS_DMI_MATCH("HP2133", "HP 2133", xy_rotated_left),
+-	{ NULL, }
+-/* Laptop models without axis info (yet):
+- * "NC651xx" "HP Compaq 651"
+- * "NC671xx" "HP Compaq 671"
+- * "NC6910" "HP Compaq 6910"
+- * HP Compaq 8710x Notebook PC / Mobile Workstation
+- * "NC2400" "HP Compaq nc2400"
+- * "NX74x0" "HP Compaq nx74"
+- * "NX6325" "HP Compaq nx6325"
+- * "NC4400" "HP Compaq nc4400"
+- */
+-};
+-
+-static int lis3lv02d_add(struct acpi_device *device)
+-{
+-	u8 val;
+-
+-	if (!device)
+-		return -EINVAL;
+-
+-	adev.device = device;
+-	strcpy(acpi_device_name(device), DRIVER_NAME);
+-	strcpy(acpi_device_class(device), ACPI_MDPS_CLASS);
+-	device->driver_data = &adev;
+-
+-	lis3lv02d_acpi_read(device->handle, WHO_AM_I, &val);
+-	if ((val != LIS3LV02DL_ID) && (val != LIS302DL_ID)) {
+-		printk(KERN_ERR DRIVER_NAME
+-				": Accelerometer chip not LIS3LV02D{L,Q}\n");
+-	}
+-
+-	/* If possible use a "standard" axes order */
+-	if (dmi_check_system(lis3lv02d_dmi_ids) == 0) {
+-		printk(KERN_INFO DRIVER_NAME ": laptop model unknown, "
+-				 "using default axes configuration\n");
+-		adev.ac = lis3lv02d_axis_normal;
+-	}
+-
+-	return lis3lv02d_init_device(&adev);
+-}
+-
+-static int lis3lv02d_remove(struct acpi_device *device, int type)
+-{
+-	if (!device)
+-		return -EINVAL;
+-
+-	lis3lv02d_joystick_disable();
+-	lis3lv02d_poweroff(device->handle);
+-
+-	return lis3lv02d_remove_fs();
+-}
+ 
+ 
+ /* Sysfs stuff */
+@@ -523,6 +335,7 @@ static struct attribute_group lis3lv02d_
+ 	.attrs = lis3lv02d_attributes
+ };
+ 
++
+ static int lis3lv02d_add_fs(struct acpi_device *device)
+ {
+ 	adev.pdev = platform_device_register_simple(DRIVER_NAME, -1, NULL, 0);
+@@ -532,50 +345,13 @@ static int lis3lv02d_add_fs(struct acpi_
+ 	return sysfs_create_group(&adev.pdev->dev.kobj, &lis3lv02d_attribute_group);
+ }
+ 
+-static int lis3lv02d_remove_fs(void)
++int lis3lv02d_remove_fs(void)
+ {
+ 	sysfs_remove_group(&adev.pdev->dev.kobj, &lis3lv02d_attribute_group);
+ 	platform_device_unregister(adev.pdev);
+ 	return 0;
+ }
+ 
+-/* For the HP MDPS aka 3D Driveguard */
+-static struct acpi_driver lis3lv02d_driver = {
+-	.name  = DRIVER_NAME,
+-	.class = ACPI_MDPS_CLASS,
+-	.ids   = lis3lv02d_device_ids,
+-	.ops = {
+-		.add     = lis3lv02d_add,
+-		.remove  = lis3lv02d_remove,
+-		.suspend = lis3lv02d_suspend,
+-		.resume  = lis3lv02d_resume,
+-	}
+-};
+-
+-static int __init lis3lv02d_init_module(void)
+-{
+-	int ret;
+-
+-	if (acpi_disabled)
+-		return -ENODEV;
+-
+-	ret = acpi_bus_register_driver(&lis3lv02d_driver);
+-	if (ret < 0)
+-		return ret;
+-
+-	printk(KERN_INFO DRIVER_NAME " driver loaded.\n");
+-
+-	return 0;
+-}
+-
+-static void __exit lis3lv02d_exit_module(void)
+-{
+-	acpi_bus_unregister_driver(&lis3lv02d_driver);
+-}
+-
+ MODULE_DESCRIPTION("ST LIS3LV02Dx three-axis digital accelerometer driver");
+ MODULE_AUTHOR("Yan Burman and Eric Piel");
+ MODULE_LICENSE("GPL");
+-
+-module_init(lis3lv02d_init_module);
+-module_exit(lis3lv02d_exit_module);
+diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
+index 330cfc6..8614280 100644
+--- a/drivers/hwmon/lis3lv02d.h
++++ b/drivers/hwmon/lis3lv02d.h
+@@ -147,3 +147,36 @@ enum lis3lv02d_dd_src {
+ 	DD_SRC_IA	= 0x40,
+ };
+ 
++acpi_status lis3lv02d_acpi_init(acpi_handle handle);
++acpi_status lis3lv02d_acpi_read(acpi_handle handle, int reg, u8 *ret);
++acpi_status lis3lv02d_acpi_write(acpi_handle handle, int reg, u8 val);
++
++struct axis_conversion {
++	s8	x;
++	s8	y;
++	s8	z;
++};
++
++struct acpi_lis3lv02d {
++	struct acpi_device	*device;   /* The ACPI device */
++	struct input_dev	*idev;     /* input device */
++	struct task_struct	*kthread;  /* kthread for input */
++	struct mutex            lock;
++	struct platform_device	*pdev;     /* platform device */
++	atomic_t		count;     /* interrupt count after last read */
++	int			xcalib;    /* calibrated null value for x */
++	int			ycalib;    /* calibrated null value for y */
++	int			zcalib;    /* calibrated null value for z */
++	unsigned char		is_on;     /* whether the device is on or off */
++	unsigned char		usage;     /* usage counter */
++	struct axis_conversion	ac;        /* hw -> logical axis */
++};
++
++int lis3lv02d_init_device(struct acpi_lis3lv02d *dev);
++int lis3lv02d_joystick_enable(void);
++void lis3lv02d_joystick_disable(void);
++void lis3lv02d_poweroff(acpi_handle handle);
++void lis3lv02d_poweron(acpi_handle handle);
++int lis3lv02d_remove_fs(void);
++
++extern struct acpi_lis3lv02d adev;
 
-
- mount -t cgroup cpuset -ocpuset /cpusets/
-
-for i in 0 1 2 3; do mkdir par$i; echo $i > par$i/cpuset.cpus; done
-
-kernel: cpusets: rebuild ndoms 1
-kernel: cpuset: domain 0 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpusets: rebuild ndoms 1
-kernel: cpuset: domain 0 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpusets: rebuild ndoms 1
-kernel: cpuset: domain 0 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpusets: rebuild ndoms 1
-kernel: cpuset: domain 0 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-
-echo 0 > cpuset.sched_load_balance
-kernel: cpusets: rebuild ndoms 4
-kernel: cpuset: domain 0 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpuset: domain 1 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpuset: domain 2 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpuset: domain 3 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: CPU0 root domain default
-kernel: CPU0 attaching NULL sched-domain.
-kernel: CPU1 root domain default
-kernel: CPU1 attaching NULL sched-domain.
-kernel: CPU2 root domain default
-kernel: CPU2 attaching NULL sched-domain.
-kernel: CPU3 root domain default
-kernel: CPU3 attaching NULL sched-domain.
-kernel: CPU3 root domain e0000069ecb20000
-kernel: CPU3 attaching sched-domain:
-kernel:  domain 0: span 3 level NODE
-kernel:   groups: 3
-kernel: CPU2 root domain e000006884a00000
-kernel: CPU2 attaching sched-domain:
-kernel:  domain 0: span 2 level NODE
-kernel:   groups: 2
-kernel: CPU1 root domain e000006884a20000
-kernel: CPU1 attaching sched-domain:
-kernel:  domain 0: span 1 level NODE
-kernel:   groups: 1
-kernel: CPU0 root domain e000006884a40000
-kernel: CPU0 attaching sched-domain:
-kernel:  domain 0: span 0 level NODE
-kernel:   groups: 0
-
-
-Which is the way sched_load_balance is supposed to work.  You need to set sched_load_balance=0 for all cpusets containing any cpu you want to disable balancing on, otherwise some balancing will happen.
-
-So in addition to the top (root) cpuset, we need to set it to '0' in the parX cpusets.  That will turn off load balancing to the cpus in question (thereby attaching a NULL sched domain).  So when we do that for just par3, we get the following:
-
-echo 0 > par3/cpuset.sched_load_balance
-kernel: cpusets: rebuild ndoms 3
-kernel: cpuset: domain 0 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpuset: domain 1 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: cpuset: domain 2 cpumask
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
-0000000,00000000,00000000,00000000,0
-kernel: CPU3 root domain default
-kernel: CPU3 attaching NULL sched-domain.
-
-So the def_root_domain is now attached for CPU 3.  And we do have a NULL sched-domain, which we expect for a cpu with load balancing turned off.  If we turn sched_load_balance off ('0') on each of the other cpusets (par0-2), each of those cpus would also have a NULL sched-domain attached.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
