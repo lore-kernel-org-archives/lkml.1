@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYKUQEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYKUQHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053AbYKUQEw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYKUQEn
+	id S1755881AbYKUQHD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYKUQGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:04:43 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:41626 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbYKUQEm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:04:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xN6mzI+0o8h37LwHuI7/7Ujs1Xx2Zi8pu6+TT7yrrICRG55MIUXbwBC1k7UN61chrq
-         faeJcOeRoaviBYWKVw4ujZ2KzrHhTTl0Qjxb8NMOPgFvXKf/qVHHB23VWUtQ6e813QQA
-         g0nUfHedy+kfSRGLbuBRtdz/12/ouRDrPfBYk=
-Date: Fri, 21 Nov 2008 11:04:36 -0500
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Henrik Rydberg <rydberg@bitmath.org>
-Cc: Henrik Rydberg <rydberg@euromail.se>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
-	protocol
-Message-ID: <20081121110128.ZZRA012@mailhub.coreip.homeip.net>
-References: <49142351.9080805@euromail.se> <20081119113508.ZZRA012@mailhub.coreip.homeip.net> <4926C95C.7000609@bitmath.org>
+	Fri, 21 Nov 2008 11:06:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37169 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752059AbYKUQGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:06:53 -0500
+Date: Fri, 21 Nov 2008 17:06:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
+       Glauber Costa <gcosta@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH] Split out some macro's and move common code to
+	paranoid_exit
+Message-ID: <20081121160629.GA24839@elte.hu>
+References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <20081119001811.GA23237@mailshack.com> <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4926C95C.7000609@bitmath.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20081121154428.GB13014@mailshack.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Henrik,
 
-On Fri, Nov 21, 2008 at 03:44:44PM +0100, Henrik Rydberg wrote:
-> Dmitry,
-> 
-> My patch is all wrong. It would certainly benefit from using the
-> EV_SYN/SYN_MT_REPORT, but the defuzz mechanism of the EV_ABS class
-> simply will not work when sending data for several different fingers
-> using the same event.
-> 
-> I can see two clear alternatives: either add a new event class, EV_MT,
-> which sends all data without trying to limit the bandwidth, or forget
-> about the whole serial-finger-data idea and expand the current EV_ABS
-> class with an array of MT finger data [1]. I would very much appreciate
-> your input on this. Maybe there is a third option.
-> 
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-I don't like the idea of a new class since the finger data is a part
-of absolute device state (in my opinion anyway). I am not sure if we
-really need to pre-allocate space for 10 fingers either. Could we just
-mark certain EV_ABS events as uncacheable in the input core? It could
-be implemented with one static bitmap.
+>  	/* runs on exception stack */
+>  ENTRY(stack_segment)
+> -	XCPT_FRAME
+> -	PARAVIRT_ADJUST_EXCEPTION_FRAME
+> -	paranoidentry do_stack_segment
+> -	jmp paranoid_exit
+> -	CFI_ENDPROC
+> +	paranoiderrorentry do_stack_segment
+>  END(stack_segment)
 
--- 
-Dmitry
+cool!
+
+Could you please also collapse it into just a single macro? The 
+ENTRY/END sequence can be generated by the macro. (if you do it then 
+please do it in a followup patch, i'll look at and apply your current 
+series)
+
+Something like:
+
+  PARANOID_ERROR_ENTRY(stack_segment)
+
+Could do all the magic, right?
+
+	Ingo
