@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYKURKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYKURLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbYKURKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYKURKf
+	id S1752766AbYKURLa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbYKURLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:10:35 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:58730 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757147AbYKURKd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:10:33 -0500
-Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline
-	kernel (specifically arm in our case)
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
-       Naval Saini <navalnovel@gmail.com>, linux-arch@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       naval.saini@nxp.com
-In-Reply-To: <20081120091923.GA2515@flint.arm.linux.org.uk>
-References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com>
-	 <200811191740.23638.nickpiggin@yahoo.com.au>
-	 <20081119204315.GB17209@flint.arm.linux.org.uk>
-	 <200811201759.01039.nickpiggin@yahoo.com.au>
-	 <20081120091923.GA2515@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 21 Nov 2008 17:10:19 +0000
-Message-Id: <1227287420.7015.77.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Nov 2008 17:10:20.0975 (UTC) FILETIME=[08E3ABF0:01C94BFC]
+	Fri, 21 Nov 2008 12:11:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59191 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754318AbYKURLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:11:17 -0500
+Date: Fri, 21 Nov 2008 18:10:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 06/10] x86: add check code for map/unmap_sg code
+Message-ID: <20081121171055.GJ733@elte.hu>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-7-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227284770-19215-7-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 09:19 +0000, Russell King - ARM Linux wrote:
-> On Thu, Nov 20, 2008 at 05:59:00PM +1100, Nick Piggin wrote:
-> > - The page is sent to the block layer, which stores into the page. Some
-> >   block devices like 'brd' will potentially store via the kernel linear map
-> >   here, and they probably don't do enough cache flushing. But a regular
-> >   block device should go via DMA, which AFAIK should be OK? (the user address
-> >   should remain invalidated because it would be a bug to read from the buffer
-> >   before the read has completed)
-> 
-> This is where things get icky with lots of drivers - DMA is fine, but
-> many PIO based drivers don't handle the implications of writing to the
-> kernel page cache page when there may be CPU cache side effects.
 
-And for PIO devices, what cache flushing function should be used if the
-page isn't available (maybe just a pointer to a buffer) to do a
-flush_dcache_page? Should this be done in the filesystem layer?
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> If the cache is in read allocate mode, then in this case there shouldn't
-> be any dirty cache lines.  (That's not always the case though, esp. via
-> conventional IO.)  If the cache is in write allocate mode, PIO data will
-> sit in the kernel mapping and won't be visible to userspace.
+> +	ret =  ops->map_sg(hwdev, sg, nents, direction);
 
-This problem re-appeared in our tests when someone started using an ext2
-filesystem with mtd+slram with write-allocate caches. Basically the D
-cache isn't flushed to ensure its coherency with the I cache.
+stray double space in '=  ops'.
 
-The very dirty workaround was to use flush_icache_range (I know, it's
-meant for something completely different) in mtd_blkdevs.c. The slram.c
-doesn't have access to any page information either and I noticed that
-there are very few block devices that call flush_dcache_page directly.
-Should this be done by the filesystem layer?
+another very small detail:
 
-It looks to me like some filesystems like cramfs call flush_dcache_page
-in their "readpage" functions but ext2 doesn't. My other, less dirty,
-workaround for the mtd+slram problem is below. It appears to solve the
-problem though I'm not sure it is the right solution (ext2 uses
-mpage_readpages).
+> +	unsigned long flags;
+> +	struct dma_debug_entry *entry;
+> +	struct scatterlist *s;
+> +	int i;
 
-diff --git a/fs/mpage.c b/fs/mpage.c
-index 552b80b..979a4a9 100644
---- a/fs/mpage.c
-+++ b/fs/mpage.c
-@@ -51,6 +51,7 @@ static void mpage_end_io_read(struct bio *bio, int err)
- 			prefetchw(&bvec->bv_page->flags);
- 
- 		if (uptodate) {
-+			flush_dcache_page(page);
- 			SetPageUptodate(page);
- 		} else {
- 			ClearPageUptodate(page);
+please order them like this, similar to the include line:
 
+> +	struct dma_debug_entry *entry;
+> +	struct scatterlist *s;
+> +	unsigned long flags;
+> +	int i;
 
-Thanks.
+that makes the whole variable section non-intrusive. (and also acts as 
+a patch-conflict-reducer mechanism in the future - when variable 
+definition lines get particularly long)
 
--- 
-Catalin
+(not a hard rule, exceptions are possible - grouping same-type fields 
+together, etc.)
 
+	Ingo
