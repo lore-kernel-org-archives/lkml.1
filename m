@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYKULOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYKULO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbYKULOn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 06:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYKULOe
+	id S1756139AbYKULO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 06:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbYKULOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 06:14:34 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:36982 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYKULOd (ORCPT
+	Fri, 21 Nov 2008 06:14:41 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44265 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754321AbYKULOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 06:14:33 -0500
-Date: Fri, 21 Nov 2008 11:14:30 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Daney <ddaney@caviumnetworks.com>,
-       linux-mips <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MIPS: Make BUG() __noreturn.
-In-Reply-To: <Pine.LNX.4.64.0811211126420.26004@anakin>
-Message-ID: <alpine.LFD.1.10.0811211059290.20023@ftp.linux-mips.org>
-References: <49260E4C.8080500@caviumnetworks.com> <20081121100035.3f5a640b@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0811211126420.26004@anakin>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Nov 2008 06:14:40 -0500
+Date: Fri, 21 Nov 2008 11:13:48 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, greg@kroah.com,
+       linux-pci@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       kkeil@suse.de, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CONFIG_PCI_LEGACY removal
+Message-ID: <20081121111348.6dad16cf@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081121181426.9f5efa36.sfr@canb.auug.org.au>
+References: <20081121181426.9f5efa36.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Geert Uytterhoeven wrote:
+On Fri, 21 Nov 2008 18:14:26 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> > That sounds like your __noreturn macro is wrong.
-> > 
-> > Try using __attribute__ ((__noreturn__))
-> > 
-> > if that works then fix up the __noreturn definitions for the MIPS and gcc
-> > you have.
+> Hi all,
 > 
-> Nope, gcc is too smart:
-> 
-> $ cat a.c
-> 
-> int f(void) __attribute__((__noreturn__));
-> 
-> int f(void)
-> {
-> }
-> 
-> $ gcc -c -Wall a.c
-> a.c: In function f:
-> a.c:6: warning: `noreturn' function does return
-> $ 
+> Now that it is more than a year since CONFIG_PCI_LEGACY was added (Oct
+> 2007) and longer since pci_find_slot() (May 2007) and pci_find_device()
+> (Nov 2006) were deprecated, is there any way that we can get rid of the
+> last vestiges of them?
 
- Hmm, in the case of your example the warning is justified, because the 
-(virtual) "return" statement of your function is in a unconditional block.  
-Otherwise it looks like the attribute is useless -- it looks like it can 
-only be used for functions where GCC can determine the function does not 
-return anyway.  Which means it is redundant.
+Jeff Garzik I believe it was posted patches to do this. They were ignored
+and the old ISDN code appears unmaintained. These drivers should IMHO
+therefore be marked as BROKEN in 2.6.28 or Jeff's patch applied. Ditto
+for the old cpq driver.
 
- The cases where within the function concerned there is a volatile asm or 
-a conditional block which cannot be determined with simple static analysis 
-that it does stop look like legitimate ones for the use of the "noreturn" 
-attribute and my opinion is GCC should not warn about them with -Wall, 
-though a separate -W<whatever> option for the inquisitive would make sense 
-to me.  It might be worthwhile to have a look into archives of the GCC 
-mailing lists to see how the implementation has evolved into the current 
-form and if no useful conclusion can be made, to bring the issue now 
-and/or file a bug report.
-
-  Maciej
+If Jeff's patch is wrong we'll find out if anyone even uses that code.
