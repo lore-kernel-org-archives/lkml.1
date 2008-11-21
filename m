@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYKUSRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbYKUSSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbYKUSRj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYKUSR3
+	id S1757446AbYKUSSe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYKUSSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:17:29 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:40361 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752705AbYKUSR2 convert rfc822-to-8bit (ORCPT
+	Fri, 21 Nov 2008 13:18:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37072 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752705AbYKUSSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:17:28 -0500
-Message-ID: <4926FB13.3080808@cosmosbay.com>
-Date: Fri, 21 Nov 2008 19:16:51 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [Bug #11308] tbench regression on each kernel release from 2.6.22
- -&gt; 2.6.28
-References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera> <20081117090648.GG28786@elte.hu> <Pine.LNX.4.64.0811191341570.23502@quilx.com> <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <Pine.LNX.4.64.0811210936580.25354@quilx.com> <Pine.LNX.4.64.0811211119550.27777@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0811211119550.27777@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 21 Nov 2008 19:16:52 +0100 (CET)
+	Fri, 21 Nov 2008 13:18:23 -0500
+Date: Fri, 21 Nov 2008 10:17:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/45] Create a dynamically sized pool of threads for
+ doing very slow work items [ver #41]
+Message-Id: <20081121101718.aa1dfc25.akpm@linux-foundation.org>
+In-Reply-To: <18617.1227263040@redhat.com>
+References: <20081121000913.6506d7b6.akpm@linux-foundation.org>
+	<20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
+	<20081120144145.10667.39594.stgit@warthog.procyon.org.uk>
+	<18617.1227263040@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> AIM9 results:
-> 		TCP		UDP
-> 2.6.22		104868.00	489970.03
-> 2.6.28-rc5	110007.00	518640.00
-> net-next	108207.00	514790.00
+On Fri, 21 Nov 2008 10:24:00 +0000 David Howells <dhowells@redhat.com> wrote:
+
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> net-next looses here for some reason against 2.6.28-rc5. But the numbers
-> are better than 2.6.22 in any case.
+> > umm, if they're slow, why not create a kernel thread per operation? 
+> > Why add the thread pool?
 > 
+> Because if someone does a tar of, say, a kernel tree, that'll create one
+> thread per file...
 
-I found that on current net-next, running oprofile in background can give better bench
-results. Thats really curious... no ?
+OK.
 
+>  This provides a limiter - and makes sure there are threads
+> immediately available.
 
-So the single loop on close(socket()), on all my 8 cpus is almost 10% faster if oprofile
-is running... (20 secs instead of 23 secs)
-
+Those two objectives seem incompatible.  What does a caller do when the
+limit has been hit?  Do the work synchronously?
 
