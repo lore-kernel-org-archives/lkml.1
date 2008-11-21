@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYKUWvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbYKUXBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbYKUWvb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 17:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYKUWvY
+	id S1756627AbYKUXBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 18:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYKUXBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 17:51:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39341 "EHLO
+	Fri, 21 Nov 2008 18:01:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40451 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753339AbYKUWvX (ORCPT
+	by vger.kernel.org with ESMTP id S1752840AbYKUXBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 17:51:23 -0500
-Date: Fri, 21 Nov 2008 14:50:43 -0800
+	Fri, 21 Nov 2008 18:01:02 -0500
+Date: Fri, 21 Nov 2008 15:00:23 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ying Han <yinghan@google.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, menage@google.com,
-       rientjes@google.com, rohitseth@google.com
-Subject: Re: Make the get_user_pages interruptible
-Message-Id: <20081121145043.0e4b2bf9.akpm@linux-foundation.org>
-In-Reply-To: <604427e00811201403k26e4bf93tdb2dee9506756a82@mail.gmail.com>
-References: <604427e00811201403k26e4bf93tdb2dee9506756a82@mail.gmail.com>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MIPS: Make BUG() __noreturn.
+Message-Id: <20081121150023.032f7b5b.akpm@linux-foundation.org>
+In-Reply-To: <49260E4C.8080500@caviumnetworks.com>
+References: <49260E4C.8080500@caviumnetworks.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,55 +26,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Nov 2008 14:03:36 -0800
-Ying Han <yinghan@google.com> wrote:
+On Thu, 20 Nov 2008 17:26:36 -0800
+David Daney <ddaney@caviumnetworks.com> wrote:
 
-> make get_user_pages interruptible
-> The initial implementation of checking TIF_MEMDIE covers the cases of OOM
-> killing. If the process has been OOM killed, the TIF_MEMDIE is set and it
-> return immediately. This patch includes:
+> MIPS: Make BUG() __noreturn.
 > 
-> 1. add the case that the SIGKILL is sent by user processes. The process can
-> try to get_user_pages() unlimited memory even if a user process has sent a
-> SIGKILL to it(maybe a monitor find the process exceed its memory limit and
-> try to kill it). In the old implementation, the SIGKILL won't be handled
-> until the get_user_pages() returns.
+> Often we do things like put BUG() in the default clause of a case
+> statement.  Since it was not declared __noreturn, this could sometimes
+> lead to bogus compiler warnings that variables were used
+> uninitialized.
 > 
-> 2. change the return value to be ERESTARTSYS. It makes no sense to return
-> ENOMEM if the get_user_pages returned by getting a SIGKILL signal.
-> Considering the general convention for a system call interrupted by a
-> signal is ERESTARTNOSYS, so the current return value is consistant to that.
+> There is a small problem in that we have to put a magic while(1); loop to
+> fool GCC into really thinking it is noreturn.  This makes the new
+> BUG() function 3 instructions long instead of just 1, but I think it
+> is worth it as it is now unnecessary to do extra work to silence the
+> 'used uninitialized' warnings.
 > 
-> Signed-off-by:	Paul Menage <menage@google.com>
-> 		Ying Han <yinghan@google.com>
-> 
+> I also re-wrote BUG_ON so that if it is given a constant condition, it
+> just does BUG() instead of loading a constant value in to a register
+> and testing it.
 > 
 
-This isn't right?
+Yup, this change will fix some compile warnings which will never be
+fixed in any other way for mips.
 
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1218,12 +1218,11 @@ int __get_user_pages(struct task_struct *tsk, struct m
->  			struct page *page;
-> 
->  			/*
-> -			 * If tsk is ooming, cut off its access to large memory
-> -			 * allocations. It has a pending SIGKILL, but it can't
-> -			 * be processed until returning to user space.
-> +			 * If we have a pending SIGKILL, don't keep
-> +			 * allocating memory.
->  			 */
-> -			if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
-> -				return i ? i : -ENOMEM;
-> +			if (sigkill_pending(current))
-> +				return -ERESTARTSYS;
-> 
->  			if (write)
->  				foll_flags |= FOLL_WRITE;
+> +static inline void __noreturn BUG(void)
+> +{
+> +	__asm__ __volatile__("break %0" : : "i" (BRK_BUG));
+> +	/* Fool GCC into thinking the function doesn't return. */
+> +	while (1)
+> +		;
+> +}
 
-If this function has already put some page*'s into *pages, they will be
-leaked.  The function fails to release those pages and it does not
-provide sufficient information to callers to allow them to release the
-pages.
+This kind of sucks, doesn't it?  It adds instructions into the kernel
+text, very frequently on fast paths.  Those instructions are never
+executed, and we're blowing away i-cache just to quash compiler
+warnings.
 
-I thought I already mentioned that last time I saw this patch?
+For example, this:
+
+--- a/arch/x86/include/asm/bug.h~a
++++ a/arch/x86/include/asm/bug.h
+@@ -22,14 +22,12 @@ do {								\
+ 		     ".popsection"				\
+ 		     : : "i" (__FILE__), "i" (__LINE__),	\
+ 		     "i" (sizeof(struct bug_entry)));		\
+-	for (;;) ;						\
+ } while (0)
+ 
+ #else
+ #define BUG()							\
+ do {								\
+ 	asm volatile("ud2");					\
+-	for (;;) ;						\
+ } while (0)
+ #endif
+ 
+_
+
+reduces the size of i386 mm/vmalloc.o text by 56 bytes.
+
+I wonder if there is any clever way in which we can do this without
+introducing additional runtime cost.
