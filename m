@@ -1,131 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbYKUBMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYKUBQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbYKUBMf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 20:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbYKUBMV
+	id S1756055AbYKUBQf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 20:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbYKUBQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 20:12:21 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:60877 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755937AbYKUBMT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 20:12:19 -0500
-Date: Thu, 20 Nov 2008 17:05:56 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 4/4] leds: Let GPIO LEDs keep their current state
-In-Reply-To: <1226933427.17109.15.camel@ted>
-Message-ID: <Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp> 
- <1224889741-4167-4-git-send-email-tpiepho@freescale.com> <1226933427.17109.15.camel@ted>
+	Thu, 20 Nov 2008 20:16:26 -0500
+Received: from gw.goop.org ([64.81.55.164]:55077 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755120AbYKUBQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 20:16:26 -0500
+Message-ID: <49260BE7.1080909@goop.org>
+Date: Thu, 20 Nov 2008 17:16:23 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
+References: <patchbomb.1226603398@abulafia.goop.org>	<d103c0da2fa147ac31af.1226603428@abulafia.goop.org>	<20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org>	<m1y6ze87w6.fsf@frodo.ebiederm.org> <4925D762.6040406@goop.org> <m1prkpj3nl.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1prkpj3nl.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008, Richard Purdie wrote:
-> On Fri, 2008-10-24 at 16:09 -0700, Trent Piepho wrote:
->> +	if (template->keep_state)
->> +		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
->> +	else
->> +		state = template->default_state;
->>
->>  		state = of_get_property(child, "default-state", NULL);
->>  		led.default_state = state && !strcmp(state, "on");
->> +		led.keep_state = state && !strcmp(state, "keep");
->>
->> +++ b/include/linux/leds.h
->> @@ -138,7 +138,8 @@ struct gpio_led {
->>  	const char *default_trigger;
->>  	unsigned 	gpio;
->>  	u8 		active_low;
->> -	u8		default_state;
->> +	u8		default_state;	/* 0 = off, 1 = on */
->> +	u8		keep_state; /* overrides default_state */
->>  };
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
 >
-> How about something simpler here, just make default state have three
-> different values - "keep", "on" and "off"? I'm not keen on having two
-> different state variables like this.
+>
+>   
+>> The changes are spread over a number of patches, but the meat of it is in "xen:
+>> route hardware irqs via Xen".  It turns out fairly simply, but perhaps its
+>> because I've made a number of simplifying assumptions: interrupts are always
+>> IOAPIC based, only using ACPI for routing, no MSI support yet.
+>>
+>> But it seems to me that the only time you really care that the irq isn't a gsi
+>> is when programming a vector into the ioapics - you need to do a irq ->
+>> ioapic/pin mapping anyway, so adding a irq -> gsi -> ioapic/pin map isn't all
+>> that complex.
+>>     
+>
+> It is hideous.  Been there and ripped out hundreds of lines of useless and problem
+> causing code to get here.  It is especially bad when you do not identity map the first
+> 16 gsi to linux irqs (the legacy isa irqs).
+>   
 
-I thought of that, but it ends up being more complex.  Instead of just
-using:
-static const struct gpio_led myled = {
- 	.name = "something",
- 	.keep_state = 1,
-}
+Yes.  I made that concession too, and just reserved them as identity 
+mapped legacy irqs.
 
-You'd do something like this:
- 	.default_state = LEDS_GPIO_DEFSTATE_KEEP,
+> Yep.  And but the numbers we you should be beyond the range of the gsi's so there
+> is no conflict.  Think of it an extension of how we identitly make the low 16 linux
+> irqs.
+>   
 
-Is that better?  The constants for on/off/keep are one more thing you have
-to look-up and remember when defining leds.  The code in the leds-gpio
-driver ends up getting more complex to deal with one tristate vs two
-booleans.
+Yes, I suppose we can statically partition the irq space.  In fact the 
+original 2.6.18-xen dom0 kernel does precisely that, but runs into 
+limitations because of the compile-time limit on NR_IRQS in that 
+kernel.  If we move to a purely dynamically allocated irq space, then 
+having a sparse allocation if irqs becomes reasonable again, for msis 
+and vectorless Xen interrupts.
 
-This is a patch to change to a tristate.  I don't think it's an
-improvement.  More symbols defined, more code, extra stuff to remember
-when defining leds, and removing the field from struct gpio_led doesn't
-make it smaller due to padding.
+>>  In a sense you can think
+>> of the other Xen interrupt sources as being a bit like MSI, at least in as much
+>> as they're not sourced from a GSI (but they go further and are not sourced from
+>> an IOAPIC at all).
+>>     
+>
+> MSI isn't sourced from an IOAPIC either.
+>   
 
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index bb2a234..8a7303c 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -92,10 +92,10 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
-  		led_dat->cdev.blink_set = gpio_blink_set;
-  	}
-  	led_dat->cdev.brightness_set = gpio_led_set;
--	if (template->keep_state)
-+	if (template->default_state == LEDS_GPIO_DEFSTATE_KEEP)
-  		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
-  	else
--		state = template->default_state;
-+		state = (template->default_state == LEDS_GPIO_DEFSTATE_ON);
-  	led_dat->cdev.brightness = state ? LED_FULL : LED_OFF;
+Right.
 
-  	gpio_direction_output(led_dat->gpio, led_dat->active_low ^ state);
-@@ -268,8 +268,15 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
-  		led.default_trigger =
-  			of_get_property(child, "linux,default-trigger", NULL);
-  		state = of_get_property(child, "default-state", NULL);
--		led.default_state = state && !strcmp(state, "on");
--		led.keep_state = state && !strcmp(state, "keep");
-+		if (state) {
-+			if (!strcmp(state, "keep")) {
-+				led.default_state = LEDS_GPIO_DEFSTATE_KEEP;
-+			} else if(!strcmp(state, "on")) {
-+				led.default_state = LEDS_GPIO_DEFSTATE_ON;
-+			} else {
-+				led.default_state = LEDS_GPIO_DEFSTATE_OFF;
-+			}
-+		}
+> The difference is that the xen sources are not delivered using vectors.  The cpu
+> vector numbers we do hide and treat as an implementation detail.  And I am totally
+> happy not going through the vector allocation path.
+>   
 
-  		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
-  				      &ofdev->dev, NULL);
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index c51b625..f4a125c 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -138,9 +138,12 @@ struct gpio_led {
-  	const char *default_trigger;
-  	unsigned 	gpio;
-  	u8 		active_low;
--	u8		default_state;	/* 0 = off, 1 = on */
--	u8		keep_state; /* overrides default_state */
-+	u8		default_state;
-+	/* default_state should be one of LEDS_GPIO_DEFSTATE_(ON|OFF|KEEP) */
-  };
-+#define LEDS_GPIO_DEFSTATE_OFF	0
-+#define LEDS_GPIO_DEFSTATE_ON	1
-+#define LEDS_GPIO_DEFSTATE_KEEP	2
+Right.  And in the physical irq event channel case, the vector space is 
+managed by Xen, so we need to use Xen to allocate the vector, then 
+program that into the appropriate place in the ioapic.
 
-  struct gpio_led_platform_data {
-  	int 		num_leds;
+> My gut feel says that you just want to use a different set of irq operations when
+> doing Xen native and working with hardware interrupts.    I haven't seen the code so
+> I don't know how you interact there.  Except in dom0 this is not a consideration so
+> I don't how it is handled.
+>   
+
+Yeah.  In the domU case, where there's no physical interrupts, the Xen 
+code completely avoids the ioapic/vector stuff, and directly converts an 
+event channel into an irq.  Indeed, physical irq delivery is handled the 
+same way; its just that the setup requires touching the ioapics to 
+program the appropriate vector and bind it to an event channel.
+
+    J
