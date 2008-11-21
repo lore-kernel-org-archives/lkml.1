@@ -1,134 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbYKUMwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYKUMxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbYKUMwS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 07:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYKUMwE
+	id S1755993AbYKUMxd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 07:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYKUMxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 07:52:04 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:50689 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbYKUMwD convert rfc822-to-8bit (ORCPT
+	Fri, 21 Nov 2008 07:53:25 -0500
+Received: from userg502.nifty.com ([202.248.238.82]:23419 "EHLO
+	userg502.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbYKUMxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 07:52:03 -0500
-Message-ID: <4926AEDB.10007@cosmosbay.com>
-Date: Fri, 21 Nov 2008 13:51:39 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mingo@elte.hu, cl@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       efault@gmx.de, a.p.zijlstra@chello.nl
-Subject: Re: [Bug #11308] tbench regression on each kernel release from 2.6.22
- -&gt; 2.6.28
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com>	<20081121083044.GL16242@elte.hu>	<49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net>
-In-Reply-To: <20081121.010508.40225532.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 21 Nov 2008 13:51:41 +0100 (CET)
+	Fri, 21 Nov 2008 07:53:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=userg502; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=qvFmU65Ctd2mED3d4zYZgx3NoMim8punckmZ+zLsy1DHZFB7Mc0eYoxbCGoRXM/N2
+	DII/BXN8KsaofjERfPzVA==
+X-Nifty-SrcIP: [219.116.16.197]
+Date: Fri, 21 Nov 2008 21:48:12 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Cord Walter <cord.walter@gmx.de>
+Cc: netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: axnet_cs / pcnet_cs: moving PCMCIA_DEVICE_PROD_ID for Netgear
+ FA411
+Message-Id: <20081121214812.b03d7166.komurojun-mbn@nifty.com>
+In-Reply-To: <4925F6F1.9010305@gmx.de>
+References: <4925F6F1.9010305@gmx.de>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Fri, 21 Nov 2008 09:51:32 +0100
+On Fri, 21 Nov 2008 00:46:57 +0100
+Cord Walter <cord.walter@gmx.de> wrote:
+
+> after noticing that my Netgear FA411 (PCMCIA-NIC) [1] stopped working with
+> the release of the 2.6.25 kernel (sidux-version),
+
+You are right. My patch has a bug.
+The patch below fixes this problem.
+
+By the way,
+(1) Does your FA411 work properly with the pcnet_cs driver before?
+(2) Please post the full-dmesg (axnet_cs).
+
+
+--- linux-2.6.28-rc6/drivers/net/pcmcia/pcnet_cs.c.orig	2008-11-21 21:39:08.000000000 +0900
++++ linux-2.6.28-rc6/drivers/net/pcmcia/pcnet_cs.c	2008-11-21 21:39:24.000000000 +0900
+@@ -587,7 +587,7 @@ static int pcnet_config(struct pcmcia_de
+     }
+ 
+     if ((link->conf.ConfigBase == 0x03c0)
+-	&& (link->manf_id == 0x149) && (link->card_id = 0xc1ab)) {
++	&& (link->manf_id == 0x149) && (link->card_id == 0xc1ab)) {
+ 	printk(KERN_INFO "pcnet_cs: this is an AX88190 card!\n");
+ 	printk(KERN_INFO "pcnet_cs: use axnet_cs instead.\n");
+ 	goto failed;
+
+
+Best Regards
+Komuro
+
+
+> Hi,
 > 
->> Now, I wish sockets and pipes not going through dcache, not tbench affair
->> of course but real workloads...
->>
->> running 8 processes on a 8 way machine doing a 
->>
->> for (;;)
->> 	close(socket(AF_INET, SOCK_STREAM, 0));
->>
->> is slow as hell, we hit so many contended cache lines ...
->>
->> ticket spin locks are slower in this case (dcache_lock for example
->> is taken twice when we allocate a socket(), once in d_alloc(), another one
->> in d_instantiate())
+> after noticing that my Netgear FA411 (PCMCIA-NIC) [1] stopped working with
+> the release of the 2.6.25 kernel (sidux-version), I checked the
+> respective driver sources and noticed that the pcnet_cs driver bailed
+> out with "use axnet_cs instead" for the Netgear FA411, but axnet_cs
+> doesn't claim this ID.
 > 
-> As you of course know, this used to be a ton worse.  At least now
-> these things are unhashed. :)
+> I compiled a kernel with the PCMCIA-ID for the netgear card moved to
+> axnet_cs from pcnet_cs which worked. I then contacted sidux-kernel
+> maintainer Stefan Lippers-Hollmann who turned the info into this patch
+> and integrated it into the kernel:
+> 
+> <http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/features/2.6.27.4_PCMCIA_move-PCMCIA-ID-for-Netgear-FA411-from-pcnet_cs-to-axnet_cs.patch>
+> 
+> This works for me and AFAIK there were no reports of any breakage for
+> other devices on sidux-support.
+> 
+> This looks like a trivial patch, but since I have very limited
+> experience with kernel modifications  I might be woefully wrong there.
+> But if there are no side effects of this patch, is it possible to get it
+> into the official kernel?
+> 
+> I can provide more detailed information on the affected hardware if
+> necessary.
+> 
+> -cord
+> 
+> 
+> [1]
+> Socket 1 Device 0:      [axnet_cs]              (bus ID: 1.0)
+>         Configuration:  state: on
+>         Product Name:   NETGEAR FA411 Fast Ethernet
+>         Identification: manf_id: 0x0149 card_id: 0x0411
+>                         function: 6 (network)
+>                         prod_id(1): "NETGEAR" (0x9aa79dc3)
+>                         prod_id(2): "FA411" (0x40fad875)
+>                         prod_id(3): "Fast Ethernet" (0xb4be14e3)
+>                         prod_id(4): --- (---)
+> -- 
+> Cord Walter
+> email: cord.walter@gmx.de
+> 
+> Weil es niemanden etwas angeht, dass ich nichts zu verbergen habe:
+> http://www.gnupg.org/
+> http://www.truecrypt.org/
+> ...und Ã¼berhaupt: http://www.FreiheitstattAngst.de
+> 
+> 
+> 
 
-Well, this is dust compared to what we currently have.
 
-To allocate a socket we :
-0) Do the usual file manipulation (pretty scalable these days)
-   (but recent drop_file_write_access() and co slow down a bit)
-1) allocate an inode with new_inode()
-    This function :
-     - locks inode_lock,
-     - dirties nr_inodes counter
-     - dirties inode_in_use list  (for sockets, I doubt it is usefull)
-     - dirties superblock s_inodes.
-     - dirties last_ino counter
- All these are in different cache lines of course.
-2) allocate a dentry
-   d_alloc() takes dcache_lock,
-   insert dentry on its parent list (dirtying sock_mnt->mnt_sb->s_root)
-   dirties nr_dentry
-3) d_instantiate() dentry  (dcache_lock taken again)
-4) init_file() -> atomic_inc on sock_mnt->refcount (in case we want to umount this vfs ...)
-
-
-
-At close() time, we must undo the things. Its even more expensive because
-of the _atomic_dec_and_lock() that stress a lot, and because of two cache 
-lines that are touched when an element is deleted from a list.
-
-for (i = 0; i < 1000*1000; i++)
-	close(socket(socket(AF_INET, SOCK_STREAM, 0));
-
-Cost if run one one cpu :
-
-real    0m1.561s
-user    0m0.092s
-sys     0m1.469s
-
-If run on 8 CPUS :
-
-real    0m27.496s
-user    0m0.657s
-sys     3m39.092s
-
-
-CPU: Core 2, speed 3000.11 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 100
-000
-samples  cum. samples  %        cum. %     symbol name
-164211   164211        10.9678  10.9678    init_file
-155663   319874        10.3969  21.3647    d_alloc
-147596   467470         9.8581  31.2228    _atomic_dec_and_lock
-92993    560463         6.2111  37.4339    inet_create
-73495    633958         4.9088  42.3427    kmem_cache_alloc
-46353    680311         3.0960  45.4387    dentry_iput
-46042    726353         3.0752  48.5139    tcp_close
-42784    769137         2.8576  51.3715    kmem_cache_free
-37074    806211         2.4762  53.8477    wake_up_inode
-36375    842586         2.4295  56.2772    tcp_v4_init_sock
-35212    877798         2.3518  58.6291    inotify_d_instantiate
-33199    910997         2.2174  60.8465    sysenter_past_esp
-31161    942158         2.0813  62.9277    d_instantiate
-31000    973158         2.0705  64.9983    generic_forget_inode
-28020    1001178        1.8715  66.8698    vfs_dq_drop
-19007    1020185        1.2695  68.1393    __copy_from_user_ll
-17513    1037698        1.1697  69.3090    new_inode
-16957    1054655        1.1326  70.4415    __init_timer
-16897    1071552        1.1286  71.5701    discard_slab
-16115    1087667        1.0763  72.6464    d_kill
-15542    1103209        1.0381  73.6845    __percpu_counter_add
-13562    1116771        0.9058  74.5903    __slab_free
-13276    1130047        0.8867  75.4771    __fput
-12423    1142470        0.8297  76.3068    new_slab
-11976    1154446        0.7999  77.1067    tcp_v4_destroy_sock
-10889    1165335        0.7273  77.8340    inet_csk_destroy_sock
-10516    1175851        0.7024  78.5364    alloc_inode
-9979     1185830        0.6665  79.2029    sock_attach_fd
-7980     1193810        0.5330  79.7359    drop_file_write_access
-7609     1201419        0.5082  80.2441    alloc_fd
-7584     1209003        0.5065  80.7506    sock_init_data
-7164     1216167        0.4785  81.2291    add_partial
-7107     1223274        0.4747  81.7038    sys_close
-6997     1230271        0.4673  82.1711    mwait_idle
-
+-- 
+Komuro <komurojun-mbn@nifty.com>
