@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYKUJFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYKUJH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbYKUJFh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 04:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYKUJFL
+	id S1755425AbYKUJH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 04:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYKUJHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 04:05:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55118
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752262AbYKUJFJ (ORCPT
+	Fri, 21 Nov 2008 04:07:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33322 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752251AbYKUJHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 04:05:09 -0500
-Date: Fri, 21 Nov 2008 01:05:08 -0800 (PST)
-Message-Id: <20081121.010508.40225532.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: mingo@elte.hu, cl@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       efault@gmx.de, a.p.zijlstra@chello.nl
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
- 2.6.22 -&gt; 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49267694.1030506@cosmosbay.com>
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com>
-	<20081121083044.GL16242@elte.hu>
-	<49267694.1030506@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 21 Nov 2008 04:07:08 -0500
+Date: Fri, 21 Nov 2008 01:06:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCHSET] fix CGROUP VS RCU
+Message-Id: <20081121010637.0f71ffff.akpm@linux-foundation.org>
+In-Reply-To: <49267609.8050600@cn.fujitsu.com>
+References: <49267609.8050600@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Fri, 21 Nov 2008 09:51:32 +0100
+On Fri, 21 Nov 2008 16:49:13 +0800 Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> Now, I wish sockets and pipes not going through dcache, not tbench affair
-> of course but real workloads...
 > 
-> running 8 processes on a 8 way machine doing a 
+> current some cgroup struct are protected by RCU.
 > 
-> for (;;)
-> 	close(socket(AF_INET, SOCK_STREAM, 0));
+> struct protected by RCU:
+> 	struct css_set, struct cgroup_subsys_state, struct cgroup
 > 
-> is slow as hell, we hit so many contended cache lines ...
+> pointer protected by RCU:
+> 	struct task_struct.cgroups, struct css_set.subsys[*],
+> 	struct cgroup_subsys_state.cgroup
+> the last two pointers are readonly pointer!
 > 
-> ticket spin locks are slower in this case (dcache_lock for example
-> is taken twice when we allocate a socket(), once in d_alloc(), another one
-> in d_instantiate())
+> these patches are fix these structs, and pointers. And a faker:
+> struct cgroup_subsys.root
+> 
+> Not cleanup all yet.
+> 
 
-As you of course know, this used to be a ton worse.  At least now
-these things are unhashed. :)
+These patches aren't sequence numbered.  In what order should they be
+applied?
 
