@@ -1,69 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYKUIbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbYKUIlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbYKUIbt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYKUIbi
+	id S1754582AbYKUIlh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKUIl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:31:38 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33348 "EHLO mx3.mail.elte.hu"
+	Fri, 21 Nov 2008 03:41:28 -0500
+Received: from verein.lst.de ([213.95.11.210]:34246 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbYKUIbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:31:37 -0500
-Date: Fri, 21 Nov 2008 09:30:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
-	2.6.22 -&gt; 2.6.28
-Message-ID: <20081121083044.GL16242@elte.hu>
-References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera> <20081117090648.GG28786@elte.hu> <Pine.LNX.4.64.0811191341570.23502@quilx.com> <Pine.LNX.4.64.0811201727070.9089@quilx.com>
-MIME-Version: 1.0
+	id S1752603AbYKUIl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 03:41:27 -0500
+Date: Fri, 21 Nov 2008 09:41:05 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: linux-kernel@vger.kernel.org
+Cc: sandeen@sandeen.net, davem@davemloft.net, tony.luck@intel.com,
+       ralf@linux-mips.org, kyle@mcmartin.ca, schwidefsky@de.ibm.com
+Subject: [PATCH] generic compat_sys_ustat
+Message-ID: <20081121084105.GA7155@lst.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811201727070.9089@quilx.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0.373 () BAYES_20,REMOVE_REMOVAL_2WORD
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Due to a different size of ino_t ustat needs a compat handler, but
+currently only x86 and mips provide one.  Add a generic compat_sys_ustat
+and switch all architectures over to it.
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
+Found by Eric Sandeen when running xfstests/017 on ppc64, which causes
+stack smashing warnings on RHEL/Fedora due to the too large amount of
+data writen by the syscall.
 
-> hmmm... Well we are almost there.
-> 
-> 2.6.22:
-> 
-> Throughput 2526.15 MB/sec 8 procs
-> 
-> 2.6.28-rc5:
-> 
-> Throughput 2486.2 MB/sec 8 procs
-> 
-> 8p Dell 1950 and the number of processors specified on the tbench 
-> command line.
 
-And with net-next we might even be able to get past that magic limit? 
-net-next is linus-latest plus the latest and greatest networking bits:
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
- $ cat .git/config
-
- [remote "net-next"]
-	url = git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
-	fetch = +refs/heads/*:refs/remotes/net-next/*
-
-... so might be worth a test. Just to satisfy our curiosity and to 
-possibly close the entry :-)
-
-	Ingo
+Index: linux-2.6/arch/x86/ia32/ia32entry.S
+===================================================================
+--- linux-2.6.orig/arch/x86/ia32/ia32entry.S	2008-11-20 20:13:31.000000000 +0100
++++ linux-2.6/arch/x86/ia32/ia32entry.S	2008-11-20 20:13:36.000000000 +0100
+@@ -555,7 +555,7 @@ ia32_sys_call_table:
+ 	.quad sys32_olduname
+ 	.quad sys_umask		/* 60 */
+ 	.quad sys_chroot
+-	.quad sys32_ustat
++	.quad compat_sys_ustat
+ 	.quad sys_dup2
+ 	.quad sys_getppid
+ 	.quad sys_getpgrp		/* 65 */
+Index: linux-2.6/arch/x86/ia32/sys_ia32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2008-11-20 20:09:52.000000000 +0100
++++ linux-2.6/arch/x86/ia32/sys_ia32.c	2008-11-20 20:10:02.000000000 +0100
+@@ -638,28 +638,6 @@ long sys32_uname(struct old_utsname __us
+ 	return err ? -EFAULT : 0;
+ }
+ 
+-long sys32_ustat(unsigned dev, struct ustat32 __user *u32p)
+-{
+-	struct ustat u;
+-	mm_segment_t seg;
+-	int ret;
+-
+-	seg = get_fs();
+-	set_fs(KERNEL_DS);
+-	ret = sys_ustat(dev, (struct ustat __user *)&u);
+-	set_fs(seg);
+-	if (ret < 0)
+-		return ret;
+-
+-	if (!access_ok(VERIFY_WRITE, u32p, sizeof(struct ustat32)) ||
+-	    __put_user((__u32) u.f_tfree, &u32p->f_tfree) ||
+-	    __put_user((__u32) u.f_tinode, &u32p->f_tfree) ||
+-	    __copy_to_user(&u32p->f_fname, u.f_fname, sizeof(u.f_fname)) ||
+-	    __copy_to_user(&u32p->f_fpack, u.f_fpack, sizeof(u.f_fpack)))
+-		ret = -EFAULT;
+-	return ret;
+-}
+-
+ asmlinkage long sys32_execve(char __user *name, compat_uptr_t __user *argv,
+ 			     compat_uptr_t __user *envp, struct pt_regs *regs)
+ {
+Index: linux-2.6/arch/x86/include/asm/ia32.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/ia32.h	2008-11-20 20:07:49.000000000 +0100
++++ linux-2.6/arch/x86/include/asm/ia32.h	2008-11-20 20:08:59.000000000 +0100
+@@ -147,13 +147,6 @@ struct rt_sigframe32 {
+ 	struct _fpstate_ia32 fpstate;
+ };
+ 
+-struct ustat32 {
+-	__u32			f_tfree;
+-	compat_ino_t		f_tinode;
+-	char			f_fname[6];
+-	char			f_fpack[6];
+-};
+-
+ #define IA32_STACK_TOP IA32_PAGE_OFFSET
+ 
+ #ifdef __KERNEL__
+Index: linux-2.6/fs/compat.c
+===================================================================
+--- linux-2.6.orig/fs/compat.c	2008-11-20 20:09:52.000000000 +0100
++++ linux-2.6/fs/compat.c	2008-11-20 20:16:05.000000000 +0100
+@@ -378,6 +378,24 @@ out:
+ 	return error;
+ }
+ 
++asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *u32)
++{
++	struct ustat *u = compat_alloc_user_space(sizeof(*u));
++	int ret;
++
++	ret = sys_ustat(dev, u);
++	if (ret < 0)
++		return ret;
++
++	if (!access_ok(VERIFY_WRITE, u32, sizeof(*u32)) ||
++	    __put_user((compat_daddr_t) u->f_tfree, &u32->f_tfree) ||
++	    __put_user((compat_ino_t) u->f_tinode, &u32->f_tfree) ||
++	    __copy_to_user(&u32->f_fname, u->f_fname, sizeof(u32->f_fname)) ||
++	    __copy_to_user(&u32->f_fpack, u->f_fpack, sizeof(u32->f_fpack)))
++		return -EFAULT;
++	return 0;
++}
++
+ static int get_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
+ {
+ 	if (!access_ok(VERIFY_READ, ufl, sizeof(*ufl)) ||
+Index: linux-2.6/include/linux/compat.h
+===================================================================
+--- linux-2.6.orig/include/linux/compat.h	2008-11-20 20:07:49.000000000 +0100
++++ linux-2.6/include/linux/compat.h	2008-11-20 20:14:51.000000000 +0100
+@@ -125,6 +125,13 @@ struct compat_dirent {
+ 	char		d_name[256];
+ };
+ 
++struct compat_ustat {
++	compat_daddr_t		f_tfree;
++	compat_ino_t		f_tinode;
++	char			f_fname[6];
++	char			f_fpack[6];
++};
++
+ typedef union compat_sigval {
+ 	compat_int_t	sival_int;
+ 	compat_uptr_t	sival_ptr;
+@@ -178,6 +185,7 @@ long compat_sys_semtimedop(int semid, st
+ 		unsigned nsems, const struct compat_timespec __user *timeout);
+ asmlinkage long compat_sys_keyctl(u32 option,
+ 			      u32 arg2, u32 arg3, u32 arg4, u32 arg5);
++asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *u32);
+ 
+ asmlinkage ssize_t compat_sys_readv(unsigned long fd,
+ 		const struct compat_iovec __user *vec, unsigned long vlen);
+Index: linux-2.6/arch/ia64/ia32/ia32_entry.S
+===================================================================
+--- linux-2.6.orig/arch/ia64/ia32/ia32_entry.S	2008-11-20 20:19:10.000000000 +0100
++++ linux-2.6/arch/ia64/ia32/ia32_entry.S	2008-11-20 20:19:22.000000000 +0100
+@@ -240,7 +240,7 @@ ia32_syscall_table:
+ 	data8 sys_ni_syscall
+ 	data8 sys_umask		  /* 60 */
+ 	data8 sys_chroot
+-	data8 sys_ustat
++	data8 compat_sys_ustat
+ 	data8 sys_dup2
+ 	data8 sys_getppid
+ 	data8 sys_getpgrp	  /* 65 */
+Index: linux-2.6/arch/mips/kernel/linux32.c
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/linux32.c	2008-11-20 20:19:45.000000000 +0100
++++ linux-2.6/arch/mips/kernel/linux32.c	2008-11-20 20:19:59.000000000 +0100
+@@ -347,40 +347,6 @@ asmlinkage int sys32_personality(unsigne
+ 	return ret;
+ }
+ 
+-/* ustat compatibility */
+-struct ustat32 {
+-	compat_daddr_t	f_tfree;
+-	compat_ino_t	f_tinode;
+-	char		f_fname[6];
+-	char		f_fpack[6];
+-};
+-
+-extern asmlinkage long sys_ustat(dev_t dev, struct ustat __user * ubuf);
+-
+-asmlinkage int sys32_ustat(dev_t dev, struct ustat32 __user * ubuf32)
+-{
+-	int err;
+-	struct ustat tmp;
+-	struct ustat32 tmp32;
+-	mm_segment_t old_fs = get_fs();
+-
+-	set_fs(KERNEL_DS);
+-	err = sys_ustat(dev, (struct ustat __user *)&tmp);
+-	set_fs(old_fs);
+-
+-	if (err)
+-		goto out;
+-
+-	memset(&tmp32, 0, sizeof(struct ustat32));
+-	tmp32.f_tfree = tmp.f_tfree;
+-	tmp32.f_tinode = tmp.f_tinode;
+-
+-	err = copy_to_user(ubuf32, &tmp32, sizeof(struct ustat32)) ? -EFAULT : 0;
+-
+-out:
+-	return err;
+-}
+-
+ asmlinkage int sys32_sendfile(int out_fd, int in_fd, compat_off_t __user *offset,
+ 	s32 count)
+ {
+Index: linux-2.6/arch/mips/kernel/scall64-n32.S
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/scall64-n32.S	2008-11-20 20:20:11.000000000 +0100
++++ linux-2.6/arch/mips/kernel/scall64-n32.S	2008-11-20 20:20:17.000000000 +0100
+@@ -253,7 +253,7 @@ EXPORT(sysn32_call_table)
+ 	PTR	compat_sys_utime		/* 6130 */
+ 	PTR	sys_mknod
+ 	PTR	sys32_personality
+-	PTR	sys32_ustat
++	PTR	compat_sys_ustat
+ 	PTR	compat_sys_statfs
+ 	PTR	compat_sys_fstatfs		/* 6135 */
+ 	PTR	sys_sysfs
+Index: linux-2.6/arch/mips/kernel/scall64-o32.S
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/scall64-o32.S	2008-11-20 20:20:19.000000000 +0100
++++ linux-2.6/arch/mips/kernel/scall64-o32.S	2008-11-20 20:20:24.000000000 +0100
+@@ -267,7 +267,7 @@ sys_call_table:
+ 	PTR	sys_olduname
+ 	PTR	sys_umask			/* 4060 */
+ 	PTR	sys_chroot
+-	PTR	sys32_ustat
++	PTR	compat_sys_ustat
+ 	PTR	sys_dup2
+ 	PTR	sys_getppid
+ 	PTR	sys_getpgrp			/* 4065 */
+Index: linux-2.6/arch/parisc/kernel/syscall_table.S
+===================================================================
+--- linux-2.6.orig/arch/parisc/kernel/syscall_table.S	2008-11-20 20:20:52.000000000 +0100
++++ linux-2.6/arch/parisc/kernel/syscall_table.S	2008-11-20 20:21:04.000000000 +0100
+@@ -130,7 +130,7 @@
+ 	ENTRY_OURS(newuname)
+ 	ENTRY_SAME(umask)		/* 60 */
+ 	ENTRY_SAME(chroot)
+-	ENTRY_SAME(ustat)
++	ENTRY_COMP(ustat)
+ 	ENTRY_SAME(dup2)
+ 	ENTRY_SAME(getppid)
+ 	ENTRY_SAME(getpgrp)		/* 65 */
+Index: linux-2.6/arch/powerpc/include/asm/systbl.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2008-11-20 20:16:32.000000000 +0100
++++ linux-2.6/arch/powerpc/include/asm/systbl.h	2008-11-20 20:16:57.000000000 +0100
+@@ -65,7 +65,7 @@ SYSCALL(ni_syscall)
+ SYSX(sys_ni_syscall,sys_olduname, sys_olduname)
+ COMPAT_SYS_SPU(umask)
+ SYSCALL_SPU(chroot)
+-SYSCALL(ustat)
++COMPAT_SYS(ustat)
+ SYSCALL_SPU(dup2)
+ SYSCALL_SPU(getppid)
+ SYSCALL_SPU(getpgrp)
+Index: linux-2.6/arch/s390/kernel/compat_wrapper.S
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/compat_wrapper.S	2008-11-20 20:21:29.000000000 +0100
++++ linux-2.6/arch/s390/kernel/compat_wrapper.S	2008-11-20 20:21:45.000000000 +0100
+@@ -252,7 +252,7 @@ sys32_chroot_wrapper:
+ sys32_ustat_wrapper:
+ 	llgfr	%r2,%r2			# dev_t
+ 	llgtr	%r3,%r3			# struct ustat *
+-	jg	sys_ustat
++	jg	compat_sys_ustat
+ 
+ 	.globl	sys32_dup2_wrapper
+ sys32_dup2_wrapper:
+Index: linux-2.6/arch/sparc64/kernel/systbls.S
+===================================================================
+--- linux-2.6.orig/arch/sparc64/kernel/systbls.S	2008-11-20 20:18:42.000000000 +0100
++++ linux-2.6/arch/sparc64/kernel/systbls.S	2008-11-20 20:18:51.000000000 +0100
+@@ -51,7 +51,7 @@ sys_call_table32:
+ /*150*/	.word sys_nis_syscall, sys_inotify_init, sys_inotify_add_watch, sys_poll, sys_getdents64
+ 	.word compat_sys_fcntl64, sys_inotify_rm_watch, compat_sys_statfs, compat_sys_fstatfs, sys_oldumount
+ /*160*/	.word compat_sys_sched_setaffinity, compat_sys_sched_getaffinity, sys32_getdomainname, sys32_setdomainname, sys_nis_syscall
+-	.word sys_quotactl, sys_set_tid_address, compat_sys_mount, sys_ustat, sys32_setxattr
++	.word sys_quotactl, sys_set_tid_address, compat_sys_mount, compat_sys_ustat, sys32_setxattr
+ /*170*/	.word sys32_lsetxattr, sys32_fsetxattr, sys_getxattr, sys_lgetxattr, compat_sys_getdents
+ 	.word sys_setsid, sys_fchdir, sys32_fgetxattr, sys_listxattr, sys_llistxattr
+ /*180*/	.word sys32_flistxattr, sys_removexattr, sys_lremovexattr, compat_sys_sigpending, sys_ni_syscall
