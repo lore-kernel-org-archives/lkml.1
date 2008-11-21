@@ -1,46 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbYKUQlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYKUQm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbYKUQlj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbYKUQlH
+	id S1756922AbYKUQm1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYKUQmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:41:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:41500 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754141AbYKUQlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:41:04 -0500
-Date: Fri, 21 Nov 2008 08:40:47 -0800 (PST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jesper Dangaard Brouer <jdb@comx.dk>
-cc: Jesper Dangaard Brouer <hawk@diku.dk>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Robert Olsson <Robert.Olsson@data.slu.se>
-Subject: Re: Regression: Bisected, IRQ and MSI allocations screwed without
- sparse irq
-In-Reply-To: <1227263614.25811.25.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0811210838360.3232@localhost.localdomain>
-References: <1226572171.6834.87.camel@localhost.localdomain>  <20081113.141513.116537651.davem@davemloft.net>  <Pine.LNX.4.64.0811192333130.30818@ask.diku.dk>  <20081119.151138.93409143.davem@davemloft.net>  <Pine.LNX.4.64.0811202035590.19962@ask.diku.dk> 
- <alpine.LFD.2.00.0811201539360.3197@localhost.localdomain> <1227263614.25811.25.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 21 Nov 2008 11:42:18 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:50307 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbYKUQmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:42:18 -0500
+Message-ID: <4926E499.4070706@caviumnetworks.com>
+Date: Fri, 21 Nov 2008 08:40:57 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>, gcc@gcc.gnu.org
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-mips <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org,
+       Adam Nemet <anemet@caviumnetworks.com>
+Subject: Re: [PATCH] MIPS: Make BUG() __noreturn.
+References: <49260E4C.8080500@caviumnetworks.com> <20081121100035.3f5a640b@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0811211126420.26004@anakin>
+In-Reply-To: <Pine.LNX.4.64.0811211126420.26004@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Nov 2008 16:40:58.0010 (UTC) FILETIME=[EE148FA0:01C94BF7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Jesper Dangaard Brouer wrote:
-> > Can you please try the attached patch ?
+Geert Uytterhoeven wrote:
+> On Fri, 21 Nov 2008, Alan Cox wrote:
+>> On Thu, 20 Nov 2008 17:26:36 -0800
+>> David Daney <ddaney@caviumnetworks.com> wrote:
+>>
+>>> MIPS: Make BUG() __noreturn.
+>>>
+>>> Often we do things like put BUG() in the default clause of a case
+>>> statement.  Since it was not declared __noreturn, this could sometimes
+>>> lead to bogus compiler warnings that variables were used
+>>> uninitialized.
+>>>
+>>> There is a small problem in that we have to put a magic while(1); loop to
+>>> fool GCC into really thinking it is noreturn.  
+>> That sounds like your __noreturn macro is wrong.
+>>
+>> Try using __attribute__ ((__noreturn__))
+>>
+>> if that works then fix up the __noreturn definitions for the MIPS and gcc
+>> you have.
 > 
-> I have tried the patch and it solved the problem! :-)
+> Nope, gcc is too smart:
 > 
-> I'll gladly test other patches from your.  Guess this patch needs to be
-> brushed up before a mainline patch is ready.
+> $ cat a.c
+> 
+> int f(void) __attribute__((__noreturn__));
+> 
+> int f(void)
+> {
+> }
+> 
+> $ gcc -c -Wall a.c
+> a.c: In function f:
+> a.c:6: warning: `noreturn' function does return
+> $ 
+> 
 
-Ok, I queue it for mainline. This solves just the number of irqs
-limitation, the rmmod problem still persists, right ?
+That's right.
 
-Thanks,
+I was discussing this issue with my colleague Adam Nemet, and we came
+up with a couple of options:
 
-	tglx
+1) Enhance the _builtin_trap() function so that we can specify the
+   break code that is emitted.  This would allow us to do something
+   like:
+
+static inline void __attribute__((noreturn)) BUG()
+{
+	__builtin_trap(0x200);
+}
+
+2) Create a new builtin '__builtin_noreturn()' that expands to nothing
+   but has no CFG edges leaving it, which would allow:
+
+static inline void __attribute__((noreturn)) BUG()
+{
+	__asm__ __volatile__("break %0" : : "i" (0x200));
+	__builtin_noreturn();
+}
 
 
+David Daney
