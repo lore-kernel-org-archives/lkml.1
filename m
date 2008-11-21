@@ -1,226 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYKUQal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYKUQa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbYKUQal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbYKUQ2B
+	id S1757954AbYKUQa4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYKUQ2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:28:01 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:9504 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757344AbYKUQ17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:27:59 -0500
-X-BigFish: VPS-4(zz18c1K655Oc8kzzzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KAOYZL-04-Y1E-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 03/10] x86: add initialization code for DMA-API debugging
-Date: Fri, 21 Nov 2008 17:26:03 +0100
-Message-ID: <1227284770-19215-4-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0522 (UTC) FILETIME=[DD18A3A0:01C94BF5]
+	Fri, 21 Nov 2008 11:28:46 -0500
+Received: from kroah.org ([198.145.64.141]:41883 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757460AbYKUQ2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:28:44 -0500
+Date: Fri, 21 Nov 2008 08:21:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       isdn4linux@listserv.isdn4linux.de, kkeil@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CONFIG_PCI_LEGACY removal
+Message-ID: <20081121162138.GC13564@kroah.com>
+References: <20081121181426.9f5efa36.sfr@canb.auug.org.au> <20081121110819.GA5707@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081121110819.GA5707@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: creates necessary data structures for DMA-API debugging
+On Fri, Nov 21, 2008 at 04:08:19AM -0700, Matthew Wilcox wrote:
+> > drivers/pci/hotplug/cpqphp_pci.c
+> 
+> The cpqphp driver is basically unmaintained.  Last time I spoke to Greg
+> about it (which was probably three years ago) he said it wasn't possible
+> to find a machine which had one of these any more.
+> 
+> I suspect the driver should simply be deleted, but if anyone steps up
+> and claims to have one of these to test the resulting patch, I'm willing
+> to remove pci_find_slot() from it.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/include/asm/dma-mapping.h |    1 +
- arch/x86/include/asm/dma_debug.h   |   14 +++++
- arch/x86/kernel/Makefile           |    2 +
- arch/x86/kernel/pci-dma-debug.c    |  111 ++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/pci-dma.c          |    2 +
- 5 files changed, 130 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/kernel/pci-dma-debug.c
+I say mark it CONFIG_BROKEN for now.
 
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 7f225a4..83d7b7d 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -9,6 +9,7 @@
- #include <linux/scatterlist.h>
- #include <asm/io.h>
- #include <asm/swiotlb.h>
-+#include <asm/dma_debug.h>
- #include <asm-generic/dma-coherent.h>
- 
- extern dma_addr_t bad_dma_address;
-diff --git a/arch/x86/include/asm/dma_debug.h b/arch/x86/include/asm/dma_debug.h
-index d79f024..f2c3d53 100644
---- a/arch/x86/include/asm/dma_debug.h
-+++ b/arch/x86/include/asm/dma_debug.h
-@@ -38,4 +38,18 @@ struct dma_debug_entry {
- 	int direction;
- };
- 
-+#ifdef CONFIG_DMA_API_DEBUG
-+
-+extern
-+void dma_debug_init(void);
-+
-+#else /* CONFIG_DMA_API_DEBUG */
-+
-+static inline
-+void dma_debug_init(void)
-+{
-+}
-+
-+#endif /* CONFIG_DMA_API_DEBUG */
-+
- #endif /* __ASM_X86_DMA_DEBUG */
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index e489ff9..6271cd2 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -105,6 +105,8 @@ microcode-$(CONFIG_MICROCODE_INTEL)	+= microcode_intel.o
- microcode-$(CONFIG_MICROCODE_AMD)	+= microcode_amd.o
- obj-$(CONFIG_MICROCODE)			+= microcode.o
- 
-+obj-$(CONFIG_DMA_API_DEBUG)             += pci-dma-debug.o
-+
- ###
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
-diff --git a/arch/x86/kernel/pci-dma-debug.c b/arch/x86/kernel/pci-dma-debug.c
-new file mode 100644
-index 0000000..c2d3408
---- /dev/null
-+++ b/arch/x86/kernel/pci-dma-debug.c
-@@ -0,0 +1,111 @@
-+/*
-+ * Copyright (C) 2008 Advanced Micro Devices, Inc.
-+ *
-+ * Author: Joerg Roedel <joerg.roedel@amd.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/scatterlist.h>
-+#include <linux/list.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/module.h>
-+#include <linux/hardirq.h>
-+#include <linux/dma-mapping.h>
-+#include <asm/bug.h>
-+#include <asm/dma-mapping.h>
-+#include <asm/dma_debug.h>
-+
-+#define HASH_SIZE 256
-+#define HASH_FN_SHIFT 20
-+#define HASH_FN_MASK 0xffULL
-+
-+/* Hash list to save the allocated dma addresses */
-+static struct list_head dma_entry_hash[HASH_SIZE];
-+
-+/* A slab cache to allocate dma_map_entries fast */
-+static struct kmem_cache *dma_entry_cache;
-+
-+/* lock to protect the data structures */
-+static DEFINE_SPINLOCK(dma_lock);
-+
-+static int hash_fn(struct dma_debug_entry *entry)
-+{
-+	/*
-+	 * Hash function is based on the dma address.
-+	 * We use bits 20-27 here as the index into the hash
-+	 */
-+	BUG_ON(entry->dev_addr == bad_dma_address);
-+
-+	return (entry->dev_addr >> HASH_FN_SHIFT) & HASH_FN_MASK;
-+}
-+
-+static struct dma_debug_entry *dma_entry_alloc(void)
-+{
-+	gfp_t gfp = GFP_KERNEL | __GFP_ZERO;
-+
-+	if (in_atomic())
-+		gfp |= GFP_ATOMIC;
-+
-+	return kmem_cache_alloc(dma_entry_cache, gfp);
-+}
-+
-+static void dma_entry_free(struct dma_debug_entry *entry)
-+{
-+	kmem_cache_free(dma_entry_cache, entry);
-+}
-+
-+static struct dma_debug_entry *
-+find_dma_entry(struct dma_debug_entry *ref)
-+{
-+	int idx = hash_fn(ref);
-+	struct dma_debug_entry *entry;
-+
-+	list_for_each_entry(entry, &dma_entry_hash[idx], list) {
-+		if ((entry->dev_addr == ref->dev_addr) &&
-+				(entry->dev == ref->dev))
-+			return entry;
-+	}
-+
-+	return NULL;
-+}
-+
-+static void add_dma_entry(struct dma_debug_entry *entry)
-+{
-+	int idx = hash_fn(entry);
-+
-+	list_add_tail(&entry->list, &dma_entry_hash[idx]);
-+}
-+
-+static void remove_dma_entry(struct dma_debug_entry *entry)
-+{
-+	list_del(&entry->list);
-+}
-+
-+void dma_debug_init(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < HASH_SIZE; ++i)
-+		INIT_LIST_HEAD(&dma_entry_hash[i]);
-+
-+	dma_entry_cache = kmem_cache_create("dma_debug_entry_cache",
-+			sizeof(struct dma_debug_entry),
-+			0, SLAB_PANIC, NULL);
-+
-+	printk(KERN_INFO "PCI-DMA: DMA API debugging enabled by kernel config\n");
-+}
-+
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 1926248..94096b8 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -275,6 +275,8 @@ EXPORT_SYMBOL(dma_supported);
- 
- static int __init pci_iommu_init(void)
- {
-+	dma_debug_init();
-+
- 	calgary_iommu_init();
- 
- 	intel_iommu_init();
--- 
-1.5.6.4
+thanks,
 
-
+greg k-h
