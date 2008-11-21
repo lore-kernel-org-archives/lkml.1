@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYKURHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYKURIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbYKURHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYKURHi
+	id S1757560AbYKURIN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757311AbYKURHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:07:38 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:41979 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554AbYKURHh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:07:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BnifH0J6WHN1r0dRF/mVyUKtzym6rfmmCcgLyxRa9U+ZuQUc9a74WdX+M0zAEsxmq4
-         k1PUGR7dhSp0KlZtk/gy5+QR61PZCQXI0dCJ5WMjKUCFR8xeEE6iCj9YaEIreUeumUUI
-         txlH0VT4Z58+NX1s4zj1N14bFC2s9DMRF2l5g=
-Date: Fri, 21 Nov 2008 17:07:11 +0000
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] uml: fix undeclared variables
-Message-ID: <20081121170711.GA23653@hack.voiplan.pt>
-References: <20081118174250.GE3185@hack.voiplan.pt> <20081118192626.GU28946@ZenIV.linux.org.uk> <20081119184014.GD22898@hack.voiplan.pt> <20081119190636.GW28946@ZenIV.linux.org.uk>
+	Fri, 21 Nov 2008 12:07:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45179 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757289AbYKURHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:07:45 -0500
+Date: Fri, 21 Nov 2008 18:07:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 04/10] x86: add helper functions for consistency checks
+Message-ID: <20081121170719.GI733@elte.hu>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-5-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081119190636.GW28946@ZenIV.linux.org.uk>
+In-Reply-To: <1227284770-19215-5-git-send-email-joerg.roedel@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 19, 2008 at 07:06:36PM +0000, Al Viro wrote:
->On Wed, Nov 19, 2008 at 06:40:14PM +0000, Am??rico Wang wrote:
->> On Tue, Nov 18, 2008 at 07:26:26PM +0000, Al Viro wrote:
->> >On Tue, Nov 18, 2008 at 05:42:51PM +0000, Am??rico Wang wrote:
->> >> 
->> >> Fix three compile errors about undeclared variables in
->> >> arch/um/kernel/mem.c.
->> >
->> >And what, pray tell, would initialize it?
->> 
->> Sorry, I can't fully understand you. I got the following error:
->> 
->> arch/um/kernel/mem.c: In function ???init_highmem???:
->> arch/um/kernel/mem.c:177: error: ???pkmap_page_table??? undeclared (first
->> use in this function)
->> arch/um/kernel/mem.c:177: error: (Each undeclared identifier is
->> reported only once
->> arch/um/kernel/mem.c:177: error: for each function it appears in.)
->
->The error is there, all right.  However, proposed patch only hides the
->real problem.  Building uml/i386 with CONFIG_HIGHMEM will result in
->a badly broken kernel with that patch, with no visible hints at the
->cause of problems.
->
->You've got it to link, but that's not enough.  The problems you are seeing
->come from arch/x86/mm/highmem_32.c.  It uses several variables from
->arch/x86/mm/init_32.c and you have copied them to arch/um.  However, getting
->these variable defined is not going to make it work - the code that used
->to set it had been in init_32.c too and you've just left your copy initialized
->to NULL.  Which will *not* work.
->
 
-Thanks for teaching this! I will look deep into this problem.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
+> +static bool check_unmap(struct dma_debug_entry *ref,
+> +		struct dma_debug_entry *entry)
+> +{
+> +	bool errors = false;
+> +
+> +	if (!entry) {
+> +		dev_printk(KERN_ERR, ref->dev, "PCI-DMA: device driver tries "
+> +			   "to free DMA memory it has not allocated "
+> +			   "[device address=0x%016llx] [size=%llu bytes]\n",
+> +			   ref->dev_addr, ref->size);
+> +		dump_stack();
+> +
+> +		return false;
 
--- 
-"Sometimes the only way to stay sane is to go a little crazy."
+okay, the warnings need to be one-shot. It will be enabled by distros 
+in debug kernels to test a wide range of drivers, and the output will 
+be collected by kerneloops.org. Distros will disable the debug feature 
+fast if it spams the logs.
 
+So please make it WARN_ONCE() type of warnings. Dont use dump_stack() 
+directly but use the WARN() signature so that it's picked up by 
+automated bug collection mechanisms.
+
+This holds true for all the other warnings as well. Plus probably the 
+whole mechanism should self-deactivate like lockdep does, when it 
+notices the first error. That guarantees that even if it has a false 
+positive or some other bug it wont break more stuff.
+
+> +	struct dma_debug_entry ref = {
+> +		.dev = dev,
+> +		.dev_addr = addr,
+> +		.size = size,
+> +		.direction = direction,
+> +	};
+
+(align the field init vertically please.)
+
+	Ingo
