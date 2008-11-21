@@ -1,293 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbYKUIlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbYKUIsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbYKUIlh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKUIl2
+	id S1754113AbYKUIsG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYKUIrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:41:28 -0500
-Received: from verein.lst.de ([213.95.11.210]:34246 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbYKUIl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:41:27 -0500
-Date: Fri, 21 Nov 2008 09:41:05 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: linux-kernel@vger.kernel.org
-Cc: sandeen@sandeen.net, davem@davemloft.net, tony.luck@intel.com,
-       ralf@linux-mips.org, kyle@mcmartin.ca, schwidefsky@de.ibm.com
-Subject: [PATCH] generic compat_sys_ustat
-Message-ID: <20081121084105.GA7155@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Nov 2008 03:47:53 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:26187 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672AbYKUIrw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 03:47:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=JVWZ0JZ8h82Z0lLnxfxrqM/8pVW2c2Ihun1DqnCt4Q5P4jZieb5CW976awpJLdYeM4
+         KFv40ho7vVyHb08ADm8BFlLyLsOiNaNhFOvtm5SUIADnwEFwbbZ2FJSVqDQtx+5fGynq
+         DMOcunpxjUWYWbcMKKOXq//543qVaS3nQ/c7o=
+Message-ID: <7c86c4470811210047u66a4c188nb99785527f1718ef@mail.gmail.com>
+Date: Fri, 21 Nov 2008 09:47:50 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Subject: Re: debugctl msr
+Cc: "Markus Metzger" <markus.t.metzger@googlemail.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E08F115BC@irsmsx504.ger.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0.373 () BAYES_20,REMOVE_REMOVAL_2WORD
+References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F10AAA@irsmsx504.ger.corp.intel.com>
+	 <7c86c4470811190459y5996f51bp24ab38c9e856c2eb@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F10CB1@irsmsx504.ger.corp.intel.com>
+	 <7c86c4470811190913u743706abgafff3b0f0e3559ec@mail.gmail.com>
+	 <1227119245.6025.12.camel@raistlin>
+	 <7c86c4470811191120i63b70970s3e24af5c962ea538@mail.gmail.com>
+	 <1227133570.6104.10.camel@raistlin>
+	 <7c86c4470811201319x2eb93d41vbdd8ce480a797fab@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F115BC@irsmsx504.ger.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to a different size of ino_t ustat needs a compat handler, but
-currently only x86 and mips provide one.  Add a generic compat_sys_ustat
-and switch all architectures over to it.
+Markus,
 
-Found by Eric Sandeen when running xfstests/017 on ppc64, which causes
-stack smashing warnings on RHEL/Fedora due to the too large amount of
-data writen by the syscall.
+On Fri, Nov 21, 2008 at 9:22 AM, Metzger, Markus T
+<markus.t.metzger@intel.com> wrote:
+>>-----Original Message-----
+>>From: stephane eranian [mailto:eranian@googlemail.com]
+>>Sent: Donnerstag, 20. November 2008 22:19
+>>To: Markus Metzger
+>
+>>- in ds_put_context(), you need to mark task->thread.ds_ctx = NULL or
+>>this_system_context = NULL when you are
+>>  done, otherwise a subsequent session on the same task or CPU will
+>>think there is already a context allocated but
+>>  the pointer will be stale.
+>
+> This should happen in:
+>    *(context->this) = NULL;
+>
+Ah, I missed that. I admit this code is hard to follow. Maybe it would easier to
+explicitly use the actual fields.
+>
+>>- in ptrace.c:ptrace_disable(), you systematically invoke ds_release()
+>>without checking if TIF_BTS_TRACE_TS
+>>  is set. That causes extraneous calls to ds_release() which messes up
+>>the reference counting if PEBS is in use.
+>
+> That TIF only triggers the recording of scheduling timestamps.
+>
+> That ds_release_bts() call should:
+> - get the context
+> - fail the ownership validation in ds_validate()
+> - put the context
+>
+> If ds_validate() is disabled, it would put the context twice.
+>
+Yes, that was my case.
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+>
+> I am currently working on a patch to replace the validation
+> mechanism by using a handle returned from ds_request().
+>
+Yes, that's the solution.
 
-Index: linux-2.6/arch/x86/ia32/ia32entry.S
-===================================================================
---- linux-2.6.orig/arch/x86/ia32/ia32entry.S	2008-11-20 20:13:31.000000000 +0100
-+++ linux-2.6/arch/x86/ia32/ia32entry.S	2008-11-20 20:13:36.000000000 +0100
-@@ -555,7 +555,7 @@ ia32_sys_call_table:
- 	.quad sys32_olduname
- 	.quad sys_umask		/* 60 */
- 	.quad sys_chroot
--	.quad sys32_ustat
-+	.quad compat_sys_ustat
- 	.quad sys_dup2
- 	.quad sys_getppid
- 	.quad sys_getpgrp		/* 65 */
-Index: linux-2.6/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2008-11-20 20:09:52.000000000 +0100
-+++ linux-2.6/arch/x86/ia32/sys_ia32.c	2008-11-20 20:10:02.000000000 +0100
-@@ -638,28 +638,6 @@ long sys32_uname(struct old_utsname __us
- 	return err ? -EFAULT : 0;
- }
- 
--long sys32_ustat(unsigned dev, struct ustat32 __user *u32p)
--{
--	struct ustat u;
--	mm_segment_t seg;
--	int ret;
--
--	seg = get_fs();
--	set_fs(KERNEL_DS);
--	ret = sys_ustat(dev, (struct ustat __user *)&u);
--	set_fs(seg);
--	if (ret < 0)
--		return ret;
--
--	if (!access_ok(VERIFY_WRITE, u32p, sizeof(struct ustat32)) ||
--	    __put_user((__u32) u.f_tfree, &u32p->f_tfree) ||
--	    __put_user((__u32) u.f_tinode, &u32p->f_tfree) ||
--	    __copy_to_user(&u32p->f_fname, u.f_fname, sizeof(u.f_fname)) ||
--	    __copy_to_user(&u32p->f_fpack, u.f_fpack, sizeof(u.f_fpack)))
--		ret = -EFAULT;
--	return ret;
--}
--
- asmlinkage long sys32_execve(char __user *name, compat_uptr_t __user *argv,
- 			     compat_uptr_t __user *envp, struct pt_regs *regs)
- {
-Index: linux-2.6/arch/x86/include/asm/ia32.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/ia32.h	2008-11-20 20:07:49.000000000 +0100
-+++ linux-2.6/arch/x86/include/asm/ia32.h	2008-11-20 20:08:59.000000000 +0100
-@@ -147,13 +147,6 @@ struct rt_sigframe32 {
- 	struct _fpstate_ia32 fpstate;
- };
- 
--struct ustat32 {
--	__u32			f_tfree;
--	compat_ino_t		f_tinode;
--	char			f_fname[6];
--	char			f_fpack[6];
--};
--
- #define IA32_STACK_TOP IA32_PAGE_OFFSET
- 
- #ifdef __KERNEL__
-Index: linux-2.6/fs/compat.c
-===================================================================
---- linux-2.6.orig/fs/compat.c	2008-11-20 20:09:52.000000000 +0100
-+++ linux-2.6/fs/compat.c	2008-11-20 20:16:05.000000000 +0100
-@@ -378,6 +378,24 @@ out:
- 	return error;
- }
- 
-+asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *u32)
-+{
-+	struct ustat *u = compat_alloc_user_space(sizeof(*u));
-+	int ret;
-+
-+	ret = sys_ustat(dev, u);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!access_ok(VERIFY_WRITE, u32, sizeof(*u32)) ||
-+	    __put_user((compat_daddr_t) u->f_tfree, &u32->f_tfree) ||
-+	    __put_user((compat_ino_t) u->f_tinode, &u32->f_tfree) ||
-+	    __copy_to_user(&u32->f_fname, u->f_fname, sizeof(u32->f_fname)) ||
-+	    __copy_to_user(&u32->f_fpack, u->f_fpack, sizeof(u32->f_fpack)))
-+		return -EFAULT;
-+	return 0;
-+}
-+
- static int get_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
- {
- 	if (!access_ok(VERIFY_READ, ufl, sizeof(*ufl)) ||
-Index: linux-2.6/include/linux/compat.h
-===================================================================
---- linux-2.6.orig/include/linux/compat.h	2008-11-20 20:07:49.000000000 +0100
-+++ linux-2.6/include/linux/compat.h	2008-11-20 20:14:51.000000000 +0100
-@@ -125,6 +125,13 @@ struct compat_dirent {
- 	char		d_name[256];
- };
- 
-+struct compat_ustat {
-+	compat_daddr_t		f_tfree;
-+	compat_ino_t		f_tinode;
-+	char			f_fname[6];
-+	char			f_fpack[6];
-+};
-+
- typedef union compat_sigval {
- 	compat_int_t	sival_int;
- 	compat_uptr_t	sival_ptr;
-@@ -178,6 +185,7 @@ long compat_sys_semtimedop(int semid, st
- 		unsigned nsems, const struct compat_timespec __user *timeout);
- asmlinkage long compat_sys_keyctl(u32 option,
- 			      u32 arg2, u32 arg3, u32 arg4, u32 arg5);
-+asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *u32);
- 
- asmlinkage ssize_t compat_sys_readv(unsigned long fd,
- 		const struct compat_iovec __user *vec, unsigned long vlen);
-Index: linux-2.6/arch/ia64/ia32/ia32_entry.S
-===================================================================
---- linux-2.6.orig/arch/ia64/ia32/ia32_entry.S	2008-11-20 20:19:10.000000000 +0100
-+++ linux-2.6/arch/ia64/ia32/ia32_entry.S	2008-11-20 20:19:22.000000000 +0100
-@@ -240,7 +240,7 @@ ia32_syscall_table:
- 	data8 sys_ni_syscall
- 	data8 sys_umask		  /* 60 */
- 	data8 sys_chroot
--	data8 sys_ustat
-+	data8 compat_sys_ustat
- 	data8 sys_dup2
- 	data8 sys_getppid
- 	data8 sys_getpgrp	  /* 65 */
-Index: linux-2.6/arch/mips/kernel/linux32.c
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/linux32.c	2008-11-20 20:19:45.000000000 +0100
-+++ linux-2.6/arch/mips/kernel/linux32.c	2008-11-20 20:19:59.000000000 +0100
-@@ -347,40 +347,6 @@ asmlinkage int sys32_personality(unsigne
- 	return ret;
- }
- 
--/* ustat compatibility */
--struct ustat32 {
--	compat_daddr_t	f_tfree;
--	compat_ino_t	f_tinode;
--	char		f_fname[6];
--	char		f_fpack[6];
--};
--
--extern asmlinkage long sys_ustat(dev_t dev, struct ustat __user * ubuf);
--
--asmlinkage int sys32_ustat(dev_t dev, struct ustat32 __user * ubuf32)
--{
--	int err;
--	struct ustat tmp;
--	struct ustat32 tmp32;
--	mm_segment_t old_fs = get_fs();
--
--	set_fs(KERNEL_DS);
--	err = sys_ustat(dev, (struct ustat __user *)&tmp);
--	set_fs(old_fs);
--
--	if (err)
--		goto out;
--
--	memset(&tmp32, 0, sizeof(struct ustat32));
--	tmp32.f_tfree = tmp.f_tfree;
--	tmp32.f_tinode = tmp.f_tinode;
--
--	err = copy_to_user(ubuf32, &tmp32, sizeof(struct ustat32)) ? -EFAULT : 0;
--
--out:
--	return err;
--}
--
- asmlinkage int sys32_sendfile(int out_fd, int in_fd, compat_off_t __user *offset,
- 	s32 count)
- {
-Index: linux-2.6/arch/mips/kernel/scall64-n32.S
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/scall64-n32.S	2008-11-20 20:20:11.000000000 +0100
-+++ linux-2.6/arch/mips/kernel/scall64-n32.S	2008-11-20 20:20:17.000000000 +0100
-@@ -253,7 +253,7 @@ EXPORT(sysn32_call_table)
- 	PTR	compat_sys_utime		/* 6130 */
- 	PTR	sys_mknod
- 	PTR	sys32_personality
--	PTR	sys32_ustat
-+	PTR	compat_sys_ustat
- 	PTR	compat_sys_statfs
- 	PTR	compat_sys_fstatfs		/* 6135 */
- 	PTR	sys_sysfs
-Index: linux-2.6/arch/mips/kernel/scall64-o32.S
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/scall64-o32.S	2008-11-20 20:20:19.000000000 +0100
-+++ linux-2.6/arch/mips/kernel/scall64-o32.S	2008-11-20 20:20:24.000000000 +0100
-@@ -267,7 +267,7 @@ sys_call_table:
- 	PTR	sys_olduname
- 	PTR	sys_umask			/* 4060 */
- 	PTR	sys_chroot
--	PTR	sys32_ustat
-+	PTR	compat_sys_ustat
- 	PTR	sys_dup2
- 	PTR	sys_getppid
- 	PTR	sys_getpgrp			/* 4065 */
-Index: linux-2.6/arch/parisc/kernel/syscall_table.S
-===================================================================
---- linux-2.6.orig/arch/parisc/kernel/syscall_table.S	2008-11-20 20:20:52.000000000 +0100
-+++ linux-2.6/arch/parisc/kernel/syscall_table.S	2008-11-20 20:21:04.000000000 +0100
-@@ -130,7 +130,7 @@
- 	ENTRY_OURS(newuname)
- 	ENTRY_SAME(umask)		/* 60 */
- 	ENTRY_SAME(chroot)
--	ENTRY_SAME(ustat)
-+	ENTRY_COMP(ustat)
- 	ENTRY_SAME(dup2)
- 	ENTRY_SAME(getppid)
- 	ENTRY_SAME(getpgrp)		/* 65 */
-Index: linux-2.6/arch/powerpc/include/asm/systbl.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2008-11-20 20:16:32.000000000 +0100
-+++ linux-2.6/arch/powerpc/include/asm/systbl.h	2008-11-20 20:16:57.000000000 +0100
-@@ -65,7 +65,7 @@ SYSCALL(ni_syscall)
- SYSX(sys_ni_syscall,sys_olduname, sys_olduname)
- COMPAT_SYS_SPU(umask)
- SYSCALL_SPU(chroot)
--SYSCALL(ustat)
-+COMPAT_SYS(ustat)
- SYSCALL_SPU(dup2)
- SYSCALL_SPU(getppid)
- SYSCALL_SPU(getpgrp)
-Index: linux-2.6/arch/s390/kernel/compat_wrapper.S
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/compat_wrapper.S	2008-11-20 20:21:29.000000000 +0100
-+++ linux-2.6/arch/s390/kernel/compat_wrapper.S	2008-11-20 20:21:45.000000000 +0100
-@@ -252,7 +252,7 @@ sys32_chroot_wrapper:
- sys32_ustat_wrapper:
- 	llgfr	%r2,%r2			# dev_t
- 	llgtr	%r3,%r3			# struct ustat *
--	jg	sys_ustat
-+	jg	compat_sys_ustat
- 
- 	.globl	sys32_dup2_wrapper
- sys32_dup2_wrapper:
-Index: linux-2.6/arch/sparc64/kernel/systbls.S
-===================================================================
---- linux-2.6.orig/arch/sparc64/kernel/systbls.S	2008-11-20 20:18:42.000000000 +0100
-+++ linux-2.6/arch/sparc64/kernel/systbls.S	2008-11-20 20:18:51.000000000 +0100
-@@ -51,7 +51,7 @@ sys_call_table32:
- /*150*/	.word sys_nis_syscall, sys_inotify_init, sys_inotify_add_watch, sys_poll, sys_getdents64
- 	.word compat_sys_fcntl64, sys_inotify_rm_watch, compat_sys_statfs, compat_sys_fstatfs, sys_oldumount
- /*160*/	.word compat_sys_sched_setaffinity, compat_sys_sched_getaffinity, sys32_getdomainname, sys32_setdomainname, sys_nis_syscall
--	.word sys_quotactl, sys_set_tid_address, compat_sys_mount, sys_ustat, sys32_setxattr
-+	.word sys_quotactl, sys_set_tid_address, compat_sys_mount, compat_sys_ustat, sys32_setxattr
- /*170*/	.word sys32_lsetxattr, sys32_fsetxattr, sys_getxattr, sys_lgetxattr, compat_sys_getdents
- 	.word sys_setsid, sys_fchdir, sys32_fgetxattr, sys_listxattr, sys_llistxattr
- /*180*/	.word sys32_flistxattr, sys_removexattr, sys_lremovexattr, compat_sys_sigpending, sys_ni_syscall
+> I also added the interrupt threshold to the parameters of ds_request().
+> It will be fix for one tracing session, if that's OK with you.
+>
+Yes.
+
+I found the reason why in system-wide my kernel was crashing.
+It was due to the way you are writing DS_AREA_MSR in
+ds_allocate_context():
+
+                if (!task || (task == current))
+                        wrmsr(MSR_IA32_DS_AREA, (unsigned long)context->ds, 0);
+
+
+This does not work in 64-bit, you truncate the DS address. You must use wrmsrl()
+and let the macro break it down in two halves.
+
+I am still seeing an issue whereby I have a buffer with > 100 entries
+but I get an interrupt
+or each sample, which is wrong. I am investigating why this is. There
+should only be one
+interrupt per buffer full. This use to work with my old ways of handling PEBS.
+
+Thanks.
