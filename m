@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYKUQwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbYKUQwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbYKUQwg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbYKUQwU
+	id S1756768AbYKUQwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbYKUQwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:52:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45107 "EHLO mx2.redhat.com"
+	Fri, 21 Nov 2008 11:52:23 -0500
+Received: from 8bytes.org ([88.198.83.132]:38324 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757044AbYKUQwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:52:19 -0500
-Subject: Re: [PATCH 3/8] intel-iommu: move context entry defs out from
-	dma_remapping.h
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, x86@kernel.org
-In-Reply-To: <20081120191135.GB3955@elte.hu>
-References: <1227191861.4901.24.camel@macbook.infradead.org>
-	 <1227196190-488-1-git-send-email-markmc@redhat.com>
-	 <1227196190-488-2-git-send-email-markmc@redhat.com>
-	 <1227196190-488-3-git-send-email-markmc@redhat.com>
-	 <20081120191135.GB3955@elte.hu>
-Content-Type: text/plain
-Date: Fri, 21 Nov 2008 16:50:58 +0000
-Message-Id: <1227286258.3693.101.camel@blaa>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1757416AbYKUQwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:52:22 -0500
+Date: Fri, 21 Nov 2008 17:52:20 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/10] DMA-API debugging facility
+Message-ID: <20081121165220.GE29705@8bytes.org>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 20:11 +0100, Ingo Molnar wrote:
+btw, if somebody wants to try out this code, it can also be pulled from
 
-> Since you move this code, please also do a patch to clean it up to use 
-> inlines, not macros.
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-api-debug
 
-Okay, coming up.
+Have fun,
 
-Cheers,
-Mark.
-
+     Joerg
