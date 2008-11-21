@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYKURrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYKURsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbYKURrI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:47:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYKURqz
+	id S1757347AbYKURsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYKURsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:46:55 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:39888 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753039AbYKURqy (ORCPT
+	Fri, 21 Nov 2008 12:48:19 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53736 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753938AbYKURsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:46:54 -0500
+	Fri, 21 Nov 2008 12:48:19 -0500
 Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
 From: Dave Hansen <dave@linux.vnet.ibm.com>
 To: Mimi Zohar <zohar@linux.vnet.ibm.com>
@@ -22,8 +22,8 @@ In-Reply-To: <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linu
 References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
 	 <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Fri, 21 Nov 2008 09:46:43 -0800
-Message-Id: <1227289603.11607.38.camel@nimitz>
+Date: Fri, 21 Nov 2008 09:48:10 -0800
+Message-Id: <1227289690.11607.41.camel@nimitz>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -33,14 +33,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thu, 2008-11-20 at 11:43 -0500, Mimi Zohar wrote:
 > 
-> +       rcu_read_lock();
-> +       rc = integrity_find_template(template_name, &template_entry);
-> +       if (rc == 0)
-> +               tget(template_entry);
-> +       rcu_read_unlock();
+> +static inline void tget(struct template_list_entry *entry)
+> +{
+> +       atomic_inc(&entry->refcount);
+> +}
+> +
+> +static inline void tput(struct template_list_entry *entry)
+> +{
+> +       if (atomic_dec_and_test(&entry->refcount))
+> +               kfree(entry);
+> +}
 
-This little nugget is repeated over and over.  How about an
-integrity_find_get_template()?
+Seems like a good place for a kref.
 
 -- Dave
 
