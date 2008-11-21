@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYKUOod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYKUOo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbYKUOod (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYKUOoZ
+	id S1756391AbYKUOo7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:44:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbYKUOos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:44:25 -0500
-Received: from qmta03.westchester.pa.mail.comcast.net ([76.96.62.32]:50252
-	"EHLO QMTA03.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753480AbYKUOoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:44:24 -0500
-X-Authority-Analysis: v=1.0 c=1 a=n-_EF0tFy-QA:10 a=zn7U-nhvGoYA:10
- a=2iNgh9swn-kA:10 a=EHYkf4x39Nvm60-2uisA:9 a=FaU2_Ki9l2_Ipb1iZtaDaqtFq6IA:4
- a=d4CUUju0HPYA:10 a=5WZzfXpOq_gA:10
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
-	protocol
-From: Jim Gettys <jg@laptop.org>
-Reply-To: jg@laptop.org
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Fri, 21 Nov 2008 09:44:48 -0500
+Received: from csmtp1.one.com ([195.47.247.21]:43609 "EHLO csmtp1.b-one.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753292AbYKUOor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:44:47 -0500
+Message-ID: <4926C95C.7000609@bitmath.org>
+Date: Fri, 21 Nov 2008 15:44:44 +0100
+From: Henrik Rydberg <rydberg@bitmath.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Henrik Rydberg <rydberg@euromail.se>,
        Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <4924A289.6030906@euromail.se>
-References: <49142351.9080805@euromail.se>
-	 <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
-	 <1227113699.7181.103.camel@jg-vaio>  <4924A289.6030906@euromail.se>
-Content-Type: text/plain
-Organization: One Laptop Per Child
-Date: Fri, 21 Nov 2008 09:43:44 -0500
-Message-Id: <1227278624.7218.16.camel@jg-vaio>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
+ protocol
+References: <49142351.9080805@euromail.se> <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interesting....  I know of the a different case: a device which
-certainly does not report ellipses, rather reports x, y, dx, dy.
-                          - Jim
+Dmitry,
 
+My patch is all wrong. It would certainly benefit from using the
+EV_SYN/SYN_MT_REPORT, but the defuzz mechanism of the EV_ABS class
+simply will not work when sending data for several different fingers
+using the same event.
 
-On Thu, 2008-11-20 at 00:34 +0100, Henrik Rydberg wrote:
-> Jim Gettys wrote:
-> [...]
-> > Also, I'm still concerned about using elipses. I doubt very much any
-> > hardware will ever be reporting elipses; more likely are parallelograms,
-> > or trapezoids, other simple geometric figures, rather than a center with
-> > size and orientation.
-> 
-> The bcm5974 chip is doing precisely this.
-> 
-> Henrik
-> 
--- 
-Jim Gettys <jg@laptop.org>
-One Laptop Per Child
+I can see two clear alternatives: either add a new event class, EV_MT,
+which sends all data without trying to limit the bandwidth, or forget
+about the whole serial-finger-data idea and expand the current EV_ABS
+class with an array of MT finger data [1]. I would very much appreciate
+your input on this. Maybe there is a third option.
+
+Cheers,
+Henrik
+
+[1] An example of a straight-forward addition of EV_ABS/ABS_MT events:
+
+#define ABS_MT_FINGER_CNT	10
+#define ABS_MT_PROPERTY_CNT	12
+
+#define ABS_MT_FINGER_START	0x30
+#define ABS_MT_TOUCH(x)		(ABS_MT_FINGER_START + 0 * ABS_MT_FINGER_CNT + x)
+#define ABS_MT_WIDTH(x)		(ABS_MT_FINGER_START + 1 * ABS_MT_FINGER_CNT + x)
+...
+#define ABS_MT_FINGER_END	0xa8 /* = ABS_MT_FINGER_START + ABS_MT_PROPERTY_CNT * ABS_MT_FINGER_CNT */
 
