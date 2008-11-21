@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYKUPxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYKUQCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbYKUPxo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 10:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYKUPxf
+	id S1755783AbYKUQCp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYKUQCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 10:53:35 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:40975 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbYKUPxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 10:53:34 -0500
-Date: Fri, 21 Nov 2008 07:53:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.28-rc5] RCU detected CPU 0 stall (t=4294893165/750
-	jiffies)
-Message-ID: <20081121155333.GB6775@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081119123717.GE24427@vanheusden.com> <49267FA4.60609@cn.fujitsu.com> <20081121094543.GP24427@vanheusden.com> <20081121151205.GA6775@linux.vnet.ibm.com> <20081121153425.GR24427@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121153425.GR24427@vanheusden.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 21 Nov 2008 11:02:35 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:53562 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbYKUQCf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 11:02:35 -0500
+Subject: Re: [PATCH] IB/ehca: Fix lockdep failures for shca_list_lock
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+In-Reply-To: <200811211637.15300.fenkes@de.ibm.com>
+References: <200806061835.43802.fenkes@de.ibm.com>
+	 <48499C11.7030504@gmail.com>  <200811211637.15300.fenkes@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lE2xKnnJ7qgNxVLjKvvc"
+Date: Fri, 21 Nov 2008 17:02:27 +0100
+Message-Id: <1227283347.3599.8.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 04:34:26PM +0100, Folkert van Heusden wrote:
-> > > I'm afraid there's no script for that: it happens during boot.
-> > 
-> > This is a HZ=250 machine, correct?  If so, please try the following
-> > patch (already in -tip), which helps suppress boot-time false positives.
-> 
-> That's correct, 250Hz.
-> 
-> > diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-> > index 5f89b62..301dda8 100644
-> > --- a/include/linux/rcuclassic.h
-> > +++ b/include/linux/rcuclassic.h
-> > @@ -41,7 +41,7 @@
-> >  #include <linux/seqlock.h>
-> >  
-> >  #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-> > -#define RCU_SECONDS_TILL_STALL_CHECK	( 3 * HZ) /* for rcp->jiffies_stall */
-> > +#define RCU_SECONDS_TILL_STALL_CHECK	(10 * HZ) /* for rcp->jiffies_stall */
-> 
-> Isn't it better to let the define depend on the value of CONFIG_HZ?
-> E.g.
-> 
-> Signed-off-by: Folkert van Heusden <folkert@vanheusden.com>
-> 
-> diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-> index 5f89b62..301dda8 100644
-> --- a/include/linux/rcuclassic.h
-> +++ b/include/linux/rcuclassic.h
-> @@ -41,7 +41,7 @@
->  #include <linux/seqlock.h>
-> 
->  #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-> -#define RCU_SECONDS_TILL_STALL_CHECK	( 3 * HZ) /* for rcp->jiffies_stall */
-> +#define RCU_SECONDS_TILL_STALL_CHECK	( (CONFIG_HZ / 100) * 3 * HZ) /* for rcp->jiffies_stall */
->  #define RCU_SECONDS_TILL_STALL_RECHECK	(30 * HZ) /* for rcp->jiffies_stall */
->  #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
 
-The stalls occur when CPUs spin in the kernel with preemption (or irqs
-or whatever) disabled.  So while I suppose that there is some
-possibility that such a spin might be a function of HZ, I have never
-seen this happen.
+--=-lE2xKnnJ7qgNxVLjKvvc
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The reason I asked for your HZ value was to make sure that the stall
-detection was 3 seconds (750 jiffies).  If you had been running a
-75HZ system (admittedly unlikely) you would have seen a 10-second stall,
-and the patch would not help.  In that case, the right thing to do would
-have been to work out why the system was spinning for 10 seconds during
-boot -- tough to get a 5-second boot when the system spins for 10
-seconds coming up, right?  ;-)
+On Fri, 2008-11-21 at 16:37 +0100, Joachim Fenkes wrote:
 
-							Thanx, Paul
+> +	u64 flags;
 
-> Folkert van Heusden
-> 
-> -- 
-> MultiTail na wan makriki wrokosani fu tan luku den logfile nanga san
-> den commando spiti puru. Piki puru spesrutu sani, wroko nanga difrenti
-> kroru, tya kon makandra, nanga wan lo moro.
-> http://www.vanheusden.com/multitail/
-> ----------------------------------------------------------------------
-> Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+> -	spin_lock(&shca_list_lock);
+> +	spin_lock_irqsave(&shca_list_lock, flags);
+
+That's wrong and I think will give a warning on all machines where
+u64 !=3D unsigned long. Might not particularly matter in this case.
+
+Also, generally it seems wrong to say "fix lockdep failure" when the
+patch really fixes a bug that lockdep happened to find.
+
+johannes
+
+--=-lE2xKnnJ7qgNxVLjKvvc
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJJtuOAAoJEKVg1VMiehFY3SgP+wQxUP8OH09UEvYbkTm3Wb82
+r3LUyHaDNlla4X8D4/qlc7bKyam39YddIeT95GV7/pbZJ/rMV/ZoQSZWK963OqLN
+Y27da78iwCeR5Hy+JosDkMskp8hQR6XG+GJB9U9GDwnOBNV7ah9tRBqxFkeT7ZtZ
+pSgT+7I6Cpjuxd7J7JD2xRPwwtEeQi+yfHwCH0V5ihYe2fBmsDmh4ipjAr0CtB+W
+85npS0K8NNmmUdjuN6DXs7yln6Aur1L1cBGbjG7tfCWRv6W/iC7e9AzuFIlqg6pw
+LXRGOx482BU6y1oDSn5wSfmt2VxDu7Fm9p3Ql14gtIcIU1iy/v5JcxGlZAZZ7ETK
+3MAchChmB0ElplTKpP1eW6Hah9Y6BgU2oTArlDohUPrScv7uW57YhYhi25sjU6ho
+JlIfx6SAQVPP+S2wntAj2aHiuWgTLhSTAkbbwWJv/bi0+Nyy2k3aVUlqSf9LmXek
+YGYdkHsp9PlfOCMRuS5o/yjZeWrayTfT54NWD5ZxLEd7Iblvz/DwNiioiY/KIGVQ
+bJ6GGCgcN/w8LyMD8Bs+gnY19eYEMTWgO9b1JSpdihJFqOurRqrKz5j1dnRuXjwW
+MXMjfdpcL084fNbBh4f+HjypcTfx7S43WnPiG6lSF08Z36uHeLd5gR16n6zrSmBK
+DoSGG7IwJXMoIHCWJ2ru
+=2bTj
+-----END PGP SIGNATURE-----
+
+--=-lE2xKnnJ7qgNxVLjKvvc--
+
