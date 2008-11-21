@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbYKUMY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbYKUMiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbYKUMY1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 07:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYKUMYS
+	id S1755608AbYKUMiY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 07:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYKUMiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 07:24:18 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:53961 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753458AbYKUMYR (ORCPT
+	Fri, 21 Nov 2008 07:38:14 -0500
+Received: from igw2.watson.ibm.com ([129.34.20.6]:49589 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbYKUMiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 07:24:17 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [PATCH] loop file resizable 
-To: Karel Zak <kzak@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tomas@slax.org,
-       linux-kernel@vger.kernel.org, akinobu.mita@gmail.com,
-       util-linux-ng@vger.kernel.org
-In-Reply-To: <20081121101209.GJ2961@nb.net.home>
-References: <492120DC.1070407@slax.org> <20081118164207.137e92be.akpm@linux-foundation.org> <16149.1227066661@jrobl> <20081120132654.4c649eb0.akpm@linux-foundation.org> <20081121101209.GJ2961@nb.net.home>
-Date: Fri, 21 Nov 2008 21:23:48 +0900
-Message-ID: <7554.1227270228@jrobl>
+	Fri, 21 Nov 2008 07:38:13 -0500
+Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
+From: david safford <safford@watson.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081120192612.GA15080@infradead.org>
+References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
+	 <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linux.vnet.ibm.com>
+	 <20081120174506.GA20972@infradead.org>
+	 <1227208898.3066.36.camel@localhost.localdomain>
+	 <20081120192612.GA15080@infradead.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 21 Nov 2008 07:37:01 -0500
+Message-Id: <1227271021.3016.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Karel Zak:
-> > Presumably that would be some enhancement to losetup, or perhaps a new
-> > tool.  Could the util-linux people please have a think about this and
-> > comment?
+On Thu, 2008-11-20 at 14:26 -0500, Christoph Hellwig wrote: 
+> On Thu, Nov 20, 2008 at 02:21:38PM -0500, david safford wrote:
+> > The consensus in the (insane) security community was to have an
+> > interface with selectable modules similar to LSM and its modules,
+> > so that users could easily choose among a set of integrity providers.
 > 
->  It shouldn't be a problem to extend the current losetup(8). I have no
->  problem with this change.
+> So what other integrity provider is there waiting to be merged?  Unless
+> there is a realistic mid-term candidate it's just pure bloat, and we
+> can introduce an abstraction once it's actually needed.
+> 
 
-I have updated the userspace utility, logrow.c which I already posted
-here.
-Do you want me to post it here again?
-If you tell me the URL of the base version of losetup, I will make a
-patch.
+IMA tries to be generic, but it is still oriented around the Trusted
+Computing Group concept of hardware anchored lists of file measurements.
+We know of other projects looking at measurements of things that are
+not files, such as introspection of process memory invariants, and
+other integrity models not anchored in TCG hardware, such as public 
+key signed files. I don't really know how close these other projects 
+are to submission, but when this was reviewed on the LSM mailing list, 
+everyone agreed with the abstraction. Hopefully some of the other
+interested people will chime in here.
 
-
-J. R. Okajima
+dave
