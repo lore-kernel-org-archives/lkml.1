@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYKUJA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYKUJDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbYKUJA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 04:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYKUJAu
+	id S1754914AbYKUJDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 04:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYKUJD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 04:00:50 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:8365 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbYKUJAt (ORCPT
+	Fri, 21 Nov 2008 04:03:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55110
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752941AbYKUJDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 04:00:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=dbpkh1NXEk8O5VRdCi7wjLg3U3+oHa/Z0Tlw7dK7IjIZumgdZKwocez7YDnFey+q7e
-         ecsCITr1H4OjAVFXzRYWJIci5CbhwNRJ4vyXBDgH3kEFmXZYvHPtGELYoO90pwuT5lvU
-         qq8ugKgzlV0DVPUa+e3Nwqdq1fdqop040x380=
-Date: Fri, 21 Nov 2008 09:00:45 +0000
-From: Matt Fleming <mjf@gentoo.org>
-To: Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       Jim Radford <radford@galvanix.net>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/3] sh: dynamic ftrace support.
-Message-ID: <20081121090044.GA635@console-pimps.org>
-References: <20081120203415.251344054@goodmis.org> <20081120203551.633484431@goodmis.org> <20081121074428.GC28447@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121074428.GC28447@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 21 Nov 2008 04:03:24 -0500
+Date: Fri, 21 Nov 2008 01:03:20 -0800 (PST)
+Message-Id: <20081121.010320.73660585.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: cl@linux-foundation.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, efault@gmx.de, a.p.zijlstra@chello.nl
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+ 2.6.22 -&gt; 2.6.28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081121083044.GL16242@elte.hu>
+References: <Pine.LNX.4.64.0811191341570.23502@quilx.com>
+	<Pine.LNX.4.64.0811201727070.9089@quilx.com>
+	<20081121083044.GL16242@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 04:44:29PM +0900, Paul Mundt wrote:
-> On Thu, Nov 20, 2008 at 03:34:16PM -0500, Steven Rostedt wrote:
-> > +} elsif ($arch eq "sh") {
-> > +    $section_regex = "Disassembly of section\\s+(\\S+):";
-> > +    $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-> > +    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-> > +    $type = ".long";
-> > +
-> > +    # force flags for this arch
-> > +    $ld .= " -m shlelf_linux";
-> > +    $objcopy .= " -O elf32-sh-linux";
-> > +    $cc .= " -m32";
-> > +
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 21 Nov 2008 09:30:44 +0100
+
 > 
-> Note that if the $alignment changes are in this version, you will also
-> need to add an $alignment = 2; for sh. That was in Matt's original patch,
-> but I stripped the alignment line out in the commit given that it was not
-> yet present in the mainline version of the script.
+> * Christoph Lameter <cl@linux-foundation.org> wrote:
+> 
+> > hmmm... Well we are almost there.
+> > 
+> > 2.6.22:
+> > 
+> > Throughput 2526.15 MB/sec 8 procs
+> > 
+> > 2.6.28-rc5:
+> > 
+> > Throughput 2486.2 MB/sec 8 procs
+> > 
+> > 8p Dell 1950 and the number of processors specified on the tbench 
+> > command line.
+> 
+> And with net-next we might even be able to get past that magic limit? 
+> net-next is linus-latest plus the latest and greatest networking bits:
 
-I've sent a patch to steven for his tip/devel branch that adds this line.
+In any event I'm happy to toss this from the regression list.
 
+My sparc still shows the issues and I'll profile that independently.
+I'm pretty sure it's the indirect calls and the deeper stack frames
+(which == 128 bytes of extra stores at each level to save the register
+window), but I need to prove that first.
