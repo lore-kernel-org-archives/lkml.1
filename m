@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYKUEgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYKUEmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbYKUEgJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 23:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKUEf4
+	id S1755323AbYKUEmu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 23:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYKUEmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 23:35:56 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:50068 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYKUEfz (ORCPT
+	Thu, 20 Nov 2008 23:42:36 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:9024 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbYKUEme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 23:35:55 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-References: <patchbomb.1226603398@abulafia.goop.org>
-	<d103c0da2fa147ac31af.1226603428@abulafia.goop.org>
-	<20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org>
-	<m1y6ze87w6.fsf@frodo.ebiederm.org> <4925D762.6040406@goop.org>
-	<m1prkpj3nl.fsf@frodo.ebiederm.org> <49260BE7.1080909@goop.org>
-Date: Thu, 20 Nov 2008 20:27:21 -0800
-In-Reply-To: <49260BE7.1080909@goop.org> (Jeremy Fitzhardinge's message of
-	"Thu, 20 Nov 2008 17:16:23 -0800")
-Message-ID: <m1tza1hffa.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 20 Nov 2008 23:42:34 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=oOBwfb1U8KLrCBQ61rBVZHv8KHsOM5UbINQxheXHcyNmD3E7rVm0mzKRYswFJy7Zd
+	JiIo5zbCGrB37FtaN4b/A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.2866]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+In-Reply-To: <1226962063.3403.13.camel@localhost.localdomain>
+References: <1226962063.3403.13.camel@localhost.localdomain>
+Date: Thu, 20 Nov 2008 20:42:29 -0800
+Message-ID: <da824cf30811202042p43549a1bne0eefa627424be33@mail.gmail.com>
+Subject: Re: Enterprise workload testing for storage and filesystems
+From: Grant Grundler <grundler@google.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, "K.S. Bhaskar" <ks.bhaskar@fnis.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
-
+On Mon, Nov 17, 2008 at 2:47 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> Hi all,
 >
-> Yes, I suppose we can statically partition the irq space.  In fact the original
-> 2.6.18-xen dom0 kernel does precisely that, but runs into limitations because of
-> the compile-time limit on NR_IRQS in that kernel.  If we move to a purely
-> dynamically allocated irq space, then having a sparse allocation if irqs becomes
-> reasonable again, for msis and vectorless Xen interrupts.
+> High on our list at the recent Linux Foundation end user summit was
+> obtaining a method of obtaining enterprise workloads (or simulators) we
+> can run in our own testing environments.  The main problem being that
+> the data sets used by the systems are usually secret or under regulatory
+> embargo and thus unobtainable.  However, several participants noted that
+> regulatory prohibitions also extended to their own in-house IT team,
+> thus they had had to develop simulators for the workloads which, since
+> they contained no customer data, might be more widely distributable.
+
+Google has the same concerns. Hoping to work through those, last year
+I arranged funding for UNSW (Joshua Root) to develop a GPL linux block
+layer replay tool:
+    http://www.gelato.unsw.edu.au/IA64wiki/JoshuaRoot/MarkovChains
+
+Unfortunately, I've not been able to address all concerns with this
+and thus can't offer any google specific markov chains. :( Still I
+hope this tool can be of use to others.
+
+
+> Fidelity National Information Service were the first to try this.
+> They've kicked off a sourceforge site for their stress testing tool
+> (which is the same tool they use in their own qualification labs).  The
+> source for the tool is available here:
 >
->> The difference is that the xen sources are not delivered using vectors.  The cpu
->> vector numbers we do hide and treat as an implementation detail.  And I am totally
->> happy not going through the vector allocation path.
->>
+> http://sourceforge.net/project/showfiles.php?group_id=11026&package_id=298597
+
+Awesome! Kudos!
+
+> And it comes with a fairly detailed readme explaining what it's trying
+> to simulate and why.  Hopefully this will give us all a much better
+> insight into both enterprise workloads and the way enterprise IT
+> departments conduct testing.
 >
-> Right.  And in the physical irq event channel case, the vector space is managed
-> by Xen, so we need to use Xen to allocate the vector, then program that into the
-> appropriate place in the ioapic.
+> Let's see how our storage and filesystem tuning measures up to this.
 
-We should be able to share code with iommu for irqs handling, at first glance you
-are describing a pretty similar problem.  Now I don't know think the interrupt
-remapping code is any kind of beauty but that seems to be roughly what you
-are doing with Xen domU.  I certainly think with some careful factoring
-we can share the ioapic munging code.  And the code to pick how we program
-the ioapics.
+*nod*
 
->> My gut feel says that you just want to use a different set of irq operations when
->> doing Xen native and working with hardware interrupts.  I haven't seen the code so
->> I don't know how you interact there.  Except in dom0 this is not a consideration so
->> I don't how it is handled.
->>
->
-> Yeah.  In the domU case, where there's no physical interrupts, the Xen code
-> completely avoids the ioapic/vector stuff, and directly converts an event
-> channel into an irq.  Indeed, physical irq delivery is handled the same way; its
-> just that the setup requires touching the ioapics to program the appropriate
-> vector and bind it to an event channel.
-
-Reasonable.  A lot like the intel interrupt remapping code in that respect.  The
-message we program in has little to do with the vector the interrupt arrives on.
-
-So I don't quite know where to hook it but if we are careful we should be able
-to get a good interrupt mapping.
-
-Eric
+thanks,
+grant
