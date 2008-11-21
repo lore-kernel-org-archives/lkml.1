@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYKUOug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbYKUOxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYKUOug (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYKUOu2
+	id S1755225AbYKUOxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYKUOxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:50:28 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:54520 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752784AbYKUOu1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:50:27 -0500
-Date: Fri, 21 Nov 2008 08:49:29 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH RFC] cpu alloc cleanups and implementation improvement
-In-Reply-To: <20081121163111.7107315e.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0811210842580.24965@quilx.com>
-References: <200811172353.18356.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0811201030240.19948@quilx.com> <20081121163111.7107315e.sfr@canb.auug.org.au>
+	Fri, 21 Nov 2008 09:53:32 -0500
+Received: from kandzendo.ru ([195.178.208.66]:45168 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbYKUOxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:53:31 -0500
+Date: Fri, 21 Nov 2008 17:53:29 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Robert Love <rlove@rlove.org>
+Cc: Pavel Machek <pavel@suse.cz>, mtk.manpages@gmail.com,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [take 3] Use pid in inotify events.
+Message-ID: <20081121145329.GA14556@ioremap.net>
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com> <20081117171508.GA564@ioremap.net> <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com> <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz> <20081121140325.GA12384@ioremap.net> <acdcfe7e0811210630s65404ef5pf2b94731c2a872e1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <acdcfe7e0811210630s65404ef5pf2b94731c2a872e1@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Stephen Rothwell wrote:
+On Fri, Nov 21, 2008 at 09:30:38AM -0500, Robert Love (rlove@rlove.org) wrote:
+> Your solution needs to be (a) generally applicable and useful, with an
+> (b) elegant and clean API, which (c) does not break ABI or API.
+> 
+> Overloading the cookie field is not the way to go. Finding ways to
+> extend the API through inotify_init might be--you will have even
+> higher hurdles of "do we really need this" though.
 
-> > I would not mind if you would take over from here.
->
-> So, should I remove the cpu_alloc tree from linux-next?
+That's it. Does it mean neither solution will be accepted?
+Just because 'we' do not need to know IO origin identity.
 
-I think the cpu_alloc branch itself is fine because it only contains the
-allocator and a single use case. The only point of disagreement at this
-point is the uppercase / lowercase use. Currently its a separate API (its
-not replacing allocpercpu) and therefore easy to merge.
+According to your three requirements for the solution. They can not be
+satisfied, just because inotify event returned to userspace is fixed, so
+there will be at least extension of the API and ABI.
 
-The more invasive stuff is stage2 and the following which is not in next
-yet. The way I envision to go forward is with a gradual transition to the
-new APIs converting dynamic percpu users to use the new percpu operations
-and functionality.
+> John & I intentionally did not add the pid field when writing inotify
+> for reasons of security and questionable need. It also stinks to have
+> to add a pid field to the event structure if that field is seldom
+> used.
 
-The whole thing becomes riskier if we directly replace all allocpercpu
-users as proposed by Rusty.
+That's it: overloading existing cookie is a no-go, new interface is not
+needed :)
 
-Rusty, are you going to take this on?
+What I would implement if things are getting that far, is a nesting
+attributes in form of header and data, like
 
+[generic inotify header: event, watch and attached data size]
+[attribute0 size data]
+[attribute1 size data]
+...
+[attributeN size data]
+
+where attribute list, needed to be sent per event is created via ioctls
+on top of inotify file descriptor, since overloading flag value of the
+inotify_init1() allows to have only 32 attributes, while that may be not
+enough. So far I see several: pid, IO offset and start, attributes
+changed (access mode, permissions, xattrs names), combine move event
+into two attributes of the same event instead of two events with the
+same cookie. Maybe something else, this can be extended infinitely.
+
+> Working on lkml often sounds like everyone is screaming NO, channeling
+> nothing but stop energy. Sometimes people are, but more often what
+> they really mean is you just have to take your time and do things
+> right. Admittedly it is a lot of iteration, but Linux is a noble
+> pursuit.
+
+It is linux-kernel@ only. All subsystems I worked with behave
+cooperately to solve the problem. All except generic changes, which end
+up in linux-kernel@. But that's the matter of feeling that this is a
+so special mail lists. We can live with it of course :)
+
+-- 
+	Evgeniy Polyakov
