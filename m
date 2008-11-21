@@ -1,125 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbYKUTfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYKUTgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbYKUTfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 14:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbYKUTfi
+	id S1756409AbYKUTgL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 14:36:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbYKUTfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 14:35:38 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:41111 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115AbYKUTfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 14:35:36 -0500
-Date: Fri, 21 Nov 2008 20:35:32 +0100 (CET)
-From: Jesper Dangaard Brouer <hawk@diku.dk>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jesper Dangaard Brouer <jdb@comx.dk>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Robert Olsson <Robert.Olsson@data.slu.se>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Regression: Bisected, IRQ and MSI allocations screwed without
- sparse irq
-In-Reply-To: <alpine.LFD.2.00.0811210838360.3232@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0811212022520.29808@ask.diku.dk>
-References: <1226572171.6834.87.camel@localhost.localdomain> 
- <20081113.141513.116537651.davem@davemloft.net>  <Pine.LNX.4.64.0811192333130.30818@ask.diku.dk>
-  <20081119.151138.93409143.davem@davemloft.net>  <Pine.LNX.4.64.0811202035590.19962@ask.diku.dk>
-  <alpine.LFD.2.00.0811201539360.3197@localhost.localdomain>
- <1227263614.25811.25.camel@localhost.localdomain>
- <alpine.LFD.2.00.0811210838360.3232@localhost.localdomain>
+	Fri, 21 Nov 2008 14:35:43 -0500
+Received: from mga02.intel.com ([134.134.136.20]:30110 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755558AbYKUTfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 14:35:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,645,1220252400"; 
+   d="scan'208";a="465873971"
+Date: Sat, 22 Nov 2008 02:38:52 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "achiang@hp.com" <achiang@hp.com>,
+       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "horms@verge.net.au" <horms@verge.net.au>,
+       "yinghai@kernel.org" <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH 2/13 v7] PCI: remove unnecessary arg of
+	pci_update_resource()
+Message-ID: <20081121183852.GC7810@yzhao12-linux.sh.intel.com>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Thomas Gleixner wrote:
+This cleanup removes unnecessary argument 'struct resource *res' in
+pci_update_resource(), so it takes same arguments as other companion
+functions (pci_assign_resource(), etc.).
 
-> On Fri, 21 Nov 2008, Jesper Dangaard Brouer wrote:
->>> Can you please try the attached patch ?
->>
->> I have tried the patch and it solved the problem! :-)
->>
->> I'll gladly test other patches from your.  Guess this patch needs to be
->> brushed up before a mainline patch is ready.
->
-> Ok, I queue it for mainline. This solves just the number of irqs
-> limitation, the rmmod problem still persists, right ?
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-It solves both the irq limit and the NIU driver unload bug.
-
-We should give it a good description.
-I have cooked up a patch with a description below, will you accept that?
-
-Who's tree do you want it to go upsteam via?
-(You are listed as one of the X86 maintainers, but Ingo's tree seems more 
-up-to-date. My patch below is agains DaveM's tree)
-
-Cheers,
-   Jesper Brouer
-
---
--------------------------------------------------------------------
-MSc. Master of Computer Science
-Dept. of Computer Science, University of Copenhagen
-Author of http://www.adsl-optimizer.dk
--------------------------------------------------------------------
-
-Fixing irq limit and NIU driver unload bug.
-
-Removing the config option HAVE_SPARSE_IRQ (commit
-3235e936c0cc3589309280b6f59e5096779adae3) revealed a regression that
-limited the number of irqs on the system.
-
-Besides limiting the number of IRQ, this also caused unloading of the
-NIU driver to fail during msi_free_irqs(). The reduced number of IRQs
-caused the NIU driver to use "IO-APIC" based IRQs instead of
-"PCI-MSI-edge".
-
-This patch changes probe_nr_irqs() to return NR_IRQS, which is
-basically the same as the NOT CONFIG_X86_IO_APIC case.  Thus being
-fairly safe.
-
-Thus, solving both the irq limit and the NIU driver unload bug.
-
-Tested-by: Jesper Dangaard Brouer <hawk@comx.dk>
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
-  arch/x86/kernel/io_apic.c |   22 +---------------------
-  1 files changed, 1 insertions(+), 21 deletions(-)
+ drivers/pci/pci.c       |    4 ++--
+ drivers/pci/setup-res.c |    7 ++++---
+ include/linux/pci.h     |    2 +-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index c9513e1..1fec0f9 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -3608,27 +3608,7 @@ int __init io_apic_get_redir_entries (int ioapic)
-
-  int __init probe_nr_irqs(void)
-  {
--	int idx;
--	int nr = 0;
--#ifndef CONFIG_XEN
--	int nr_min = 32;
--#else
--	int nr_min = NR_IRQS;
--#endif
--
--	for (idx = 0; idx < nr_ioapics; idx++)
--		nr += io_apic_get_redir_entries(idx) + 1;
--
--	/* double it for hotplug and msi and nmi */
--	nr <<= 1;
--
--	/* something wrong ? */
--	if (nr < nr_min)
--		nr = nr_min;
--	if (WARN_ON(nr > NR_IRQS))
--		nr = NR_IRQS;
--
--	return nr;
-+	return NR_IRQS;
-  }
-
-  /* --------------------------------------------------------------------------
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 21f2ac6..c408be8 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -377,8 +377,8 @@ pci_restore_bars(struct pci_dev *dev)
+ 		return;
+ 	}
+ 
+-	for (i = 0; i < numres; i ++)
+-		pci_update_resource(dev, &dev->resource[i], i);
++	for (i = 0; i < numres; i++)
++		pci_update_resource(dev, i);
+ }
+ 
+ static struct pci_platform_pm_ops *pci_platform_pm;
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index 2dbd96c..b7ca679 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -26,11 +26,12 @@
+ #include "pci.h"
+ 
+ 
+-void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno)
++void pci_update_resource(struct pci_dev *dev, int resno)
+ {
+ 	struct pci_bus_region region;
+ 	u32 new, check, mask;
+ 	int reg;
++	struct resource *res = dev->resource + resno;
+ 
+ 	/*
+ 	 * Ignore resources for unimplemented BARs and unused resource slots
+@@ -162,7 +163,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
+ 	} else {
+ 		res->flags &= ~IORESOURCE_STARTALIGN;
+ 		if (resno < PCI_BRIDGE_RESOURCES)
+-			pci_update_resource(dev, res, resno);
++			pci_update_resource(dev, resno);
+ 	}
+ 
+ 	return ret;
+@@ -197,7 +198,7 @@ int pci_assign_resource_fixed(struct pci_dev *dev, int resno)
+ 		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
+ 			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
+ 	} else if (resno < PCI_BRIDGE_RESOURCES) {
+-		pci_update_resource(dev, res, resno);
++		pci_update_resource(dev, resno);
+ 	}
+ 
+ 	return ret;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index feb4657..7e7ff03 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -642,7 +642,7 @@ int pcie_get_readrq(struct pci_dev *dev);
+ int pcie_set_readrq(struct pci_dev *dev, int rq);
+ int pci_reset_function(struct pci_dev *dev);
+ int pci_execute_reset_function(struct pci_dev *dev);
+-void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno);
++void pci_update_resource(struct pci_dev *dev, int resno);
+ int __must_check pci_assign_resource(struct pci_dev *dev, int i);
+ int pci_select_bars(struct pci_dev *dev, unsigned long flags);
+ 
 -- 
-1.5.4.2
+1.5.6.4
 
