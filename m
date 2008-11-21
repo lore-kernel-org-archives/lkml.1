@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYKUJWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYKUJdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbYKUJWD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 04:22:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbYKUJVr
+	id S1754028AbYKUJdb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 04:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYKUJdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 04:21:47 -0500
-Received: from ns2.suse.de ([195.135.220.15]:38461 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903AbYKUJVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 04:21:46 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] Documentation: remove reference to ll_rw_blk.c and moved drivers/block/elevator.c
-Date: Fri, 21 Nov 2008 14:53:29 +0530
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: linux-kernel@vger.kernel.org
+	Fri, 21 Nov 2008 04:33:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54154 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752662AbYKUJdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 04:33:19 -0500
+Message-ID: <49267FA4.60609@cn.fujitsu.com>
+Date: Fri, 21 Nov 2008 17:30:12 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Folkert van Heusden <folkert@vanheusden.com>
+CC: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [2.6.28-rc5] RCU detected CPU 0 stall (t=4294893165/750 jiffies)
+References: <20081119123717.GE24427@vanheusden.com>
+In-Reply-To: <20081119123717.GE24427@vanheusden.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811211453.29936.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The drivers/block/ll_rw_block.c has been split and organized in the block/ 
-directory, and also drivers/block/elevator.c has been moved to the block/ 
-directory. Update Documentation/block/biodoc.txt accordingly
+Hi, Folkert van Heusden,
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Can you tell me how can I reproduce this bug.
 
----
+Thanx, Lai
 
-diff --git a/Documentation/block/biodoc.txt b/Documentation/block/biodoc.txt
-index 4dbb8be..3c5434c 100644
---- a/Documentation/block/biodoc.txt
-+++ b/Documentation/block/biodoc.txt
-@@ -914,7 +914,7 @@ I/O scheduler, a.k.a. elevator, is implemented in two 
-layers.  Generic dispatch
- queue and specific I/O schedulers.  Unless stated otherwise, elevator is used
- to refer to both parts and I/O scheduler to specific I/O schedulers.
- 
--Block layer implements generic dispatch queue in ll_rw_blk.c and elevator.c.
-+Block layer implements generic dispatch queue in block/*.c.
- The generic dispatch queue is responsible for properly ordering barrier
- requests, requeueing, handling non-fs requests and all other subtleties.
- 
-@@ -926,8 +926,8 @@ be built inside the kernel.  Each queue can choose 
-different one and can also
- change to another one dynamically.
- 
- A block layer call to the i/o scheduler follows the convention elv_xxx(). 
-This
--calls elevator_xxx_fn in the elevator switch (drivers/block/elevator.c). Oh,
--xxx and xxx might not match exactly, but use your imagination. If an elevator
-+calls elevator_xxx_fn in the elevator switch (block/elevator.c). Oh, xxx
-+and xxx might not match exactly, but use your imagination. If an elevator
- doesn't implement a function, the switch does nothing or some minimal house
- keeping work.
- 
+Folkert van Heusden wrote:
+> During the boot-process of a 2.6.28-RC5 kernel I got the followin on
+> the console:
+> 
+> - [    3.479998] RCU detected CPU 0 stall (t=4294893165/750 jiffies)
+> ! [    3.480004] Pid: 1, comm: swapper Not tainted 2.6.28-rc5-custom2 #1
+> ! [    3.480004] Call Trace:
+> ! [    3.480004]  [<c0300c33>] ? printk+0xf/0x14
+> ! [    3.480004]  [<c0166f15>] __rcu_pending+0x53/0x189
+> ! [    3.480004]  [<c0167067>] rcu_pending+0x1c/0x47
+> ! [    3.480004]  [<c0132aa4>] update_process_times+0x2b/0x4e
+> ! [    3.480004]  [<c0144c8d>] tick_sched_timer+0x6d/0x9b
+> ! [    3.480004]  [<c0144c20>] ? tick_sched_timer+0x0/0x9b
+> ! [    3.480004]  [<c013e0cc>] __run_hrtimer+0x60/0x97
+> ! [    3.480004]  [<c013eb35>] hrtimer_interrupt+0xfe/0x166
+> ! [    3.480004]  [<c0112eea>] smp_apic_timer_interrupt+0x6c/0x7f
+> ! [    3.480004]  [<c0104829>] apic_timer_interrupt+0x2d/0x34
+> ! [    3.480004]  [<c043c454>] ? inflate_codes+0x272/0x3bc
+> ! [    3.480004]  [<c043cf22>] inflate_dynamic+0x4c0/0x4f0
+> ! [    3.480004]  [<c043d775>] unpack_to_rootfs+0x524/0x975
+> ! [    3.480004]  [<c0147eaf>] ? debug_check_no_locks_freed+0x1a/0x123
+> ! [    3.480004]  [<c043e202>] ? populate_rootfs+0x0/0xcd
+> ! [    3.480004]  [<c043e202>] ? populate_rootfs+0x0/0xcd
+> ! [    3.480004]  [<c043e278>] populate_rootfs+0x76/0xcd
+> ! [    3.480004]  [<c0101130>] _stext+0x48/0x11e
+> ! [    3.480004]  [<c0206830>] ? ida_get_new_above+0x157/0x171
+> ! [    3.480004]  [<c0218a08>] ? _raw_spin_lock+0x53/0xfa
+> ! [    3.480004]  [<c02189b1>] ? _raw_spin_unlock+0x74/0x78
+> ! [    3.480004]  [<c0303759>] ? _spin_unlock+0x1d/0x20
+> ! [    3.480004]  [<c01c1ab1>] ? proc_register+0x146/0x157
+> ! [    3.480004]  [<c01c1bda>] ? create_proc_entry+0x7b/0x91
+> ! [    3.480004]  [<c0166600>] ? register_irq_proc+0x7b/0x9b
+> ! [    3.480004]  [<c0166666>] ? init_irq_proc+0x46/0x59
+> ! [    3.480004]  [<c04392ee>] kernel_init+0x102/0x150
+> ! [    3.480004]  [<c04391ec>] ? kernel_init+0x0/0x150
+> ! [    3.480004]  [<c0104987>] kernel_thread_helper+0x7/0x10
+> + [    4.773412] Freeing initrd memory: 53252k freed
+> 
+> This is a P4 with hyperthreading. 0.5GB ram. IDE disk.
+> 
+> 
+> Folkert van Heusden
+> 
+
 
