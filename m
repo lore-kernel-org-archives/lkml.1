@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYKURHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYKURHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbYKURHY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYKURHE
+	id S1756250AbYKURHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYKURHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:07:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53254 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281AbYKURHD (ORCPT
+	Fri, 21 Nov 2008 12:07:38 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:41979 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755554AbYKURHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:07:03 -0500
-Subject: Re: [PATCH 0/10] DMA-API debugging facility
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081121165722.GD1386@amd.com>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-	 <1227286492.4901.208.camel@macbook.infradead.org>
-	 <20081121165722.GD1386@amd.com>
-Content-Type: text/plain
-Date: Fri, 21 Nov 2008 17:06:55 +0000
-Message-Id: <1227287215.4901.213.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 21 Nov 2008 12:07:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BnifH0J6WHN1r0dRF/mVyUKtzym6rfmmCcgLyxRa9U+ZuQUc9a74WdX+M0zAEsxmq4
+         k1PUGR7dhSp0KlZtk/gy5+QR61PZCQXI0dCJ5WMjKUCFR8xeEE6iCj9YaEIreUeumUUI
+         txlH0VT4Z58+NX1s4zj1N14bFC2s9DMRF2l5g=
+Date: Fri, 21 Nov 2008 17:07:11 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [Patch] uml: fix undeclared variables
+Message-ID: <20081121170711.GA23653@hack.voiplan.pt>
+References: <20081118174250.GE3185@hack.voiplan.pt> <20081118192626.GU28946@ZenIV.linux.org.uk> <20081119184014.GD22898@hack.voiplan.pt> <20081119190636.GW28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081119190636.GW28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-21 at 17:57 +0100, Joerg Roedel wrote:
-> Yes, in principle we could move most of it to generic code. There is
-> nothing architecture specific in it.
-> Anybody who prefers this to be arch/x86 before moving it to lib/?
+On Wed, Nov 19, 2008 at 07:06:36PM +0000, Al Viro wrote:
+>On Wed, Nov 19, 2008 at 06:40:14PM +0000, Am??rico Wang wrote:
+>> On Tue, Nov 18, 2008 at 07:26:26PM +0000, Al Viro wrote:
+>> >On Tue, Nov 18, 2008 at 05:42:51PM +0000, Am??rico Wang wrote:
+>> >> 
+>> >> Fix three compile errors about undeclared variables in
+>> >> arch/um/kernel/mem.c.
+>> >
+>> >And what, pray tell, would initialize it?
+>> 
+>> Sorry, I can't fully understand you. I got the following error:
+>> 
+>> arch/um/kernel/mem.c: In function ???init_highmem???:
+>> arch/um/kernel/mem.c:177: error: ???pkmap_page_table??? undeclared (first
+>> use in this function)
+>> arch/um/kernel/mem.c:177: error: (Each undeclared identifier is
+>> reported only once
+>> arch/um/kernel/mem.c:177: error: for each function it appears in.)
+>
+>The error is there, all right.  However, proposed patch only hides the
+>real problem.  Building uml/i386 with CONFIG_HIGHMEM will result in
+>a badly broken kernel with that patch, with no visible hints at the
+>cause of problems.
+>
+>You've got it to link, but that's not enough.  The problems you are seeing
+>come from arch/x86/mm/highmem_32.c.  It uses several variables from
+>arch/x86/mm/init_32.c and you have copied them to arch/um.  However, getting
+>these variable defined is not going to make it work - the code that used
+>to set it had been in init_32.c too and you've just left your copy initialized
+>to NULL.  Which will *not* work.
+>
 
-I think it's better to start off with a generic version, and test it on
-more than one architecture before feeding it upstream. That way, you
-know you aren't going to have to go back to the drawing board with it.
+Thanks for teaching this! I will look deep into this problem.
+
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+"Sometimes the only way to stay sane is to go a little crazy."
 
