@@ -1,256 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYKUHUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYKUHV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbYKUHUU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 02:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYKUHUG
+	id S1754206AbYKUHV1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 02:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYKUHVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 02:20:06 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49452 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbYKUHUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 02:20:04 -0500
-Date: Fri, 21 Nov 2008 18:19:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 21
-Message-Id: <20081121181948.ee771502.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__21_Nov_2008_18_19_48_+1100_YkhlKON7Y4bL_ih8"
+	Fri, 21 Nov 2008 02:21:17 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:52818 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751178AbYKUHVQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 02:21:16 -0500
+Message-ID: <49266175.9090403@suse.de>
+Date: Fri, 21 Nov 2008 12:51:25 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Steve French <smfrench@gmail.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [linux-cifs-client] Re: third patch
+References: <20081114185039.1f3af842@tleilax.poochiereds.net>	<524f69650811141609n63f3631bn6493e2be76b1bed6@mail.gmail.com>	<20081115063641.26003498@tleilax.poochiereds.net>	<524f69650811161918i738ba50frd87666a58640b76f@mail.gmail.com>	<20081117055603.GA1381@kroah.com>	<524f69650811171506y1f518c3bnac03e4f557ba29fb@mail.gmail.com> <20081117233833.GA28435@kroah.com>
+In-Reply-To: <20081117233833.GA28435@kroah.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__21_Nov_2008_18_19_48_+1100_YkhlKON7Y4bL_ih8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Greg KH wrote:
+> On Mon, Nov 17, 2008 at 05:06:43PM -0600, Steve French wrote:
+>> On Sun, Nov 16, 2008 at 11:56 PM, Greg KH <greg@kroah.com> wrote:
+>>> On Sun, Nov 16, 2008 at 09:18:43PM -0600, Steve French wrote:
+>>>> Jeff and I have worked on a series of patches to fix the oopses,
+>>>> memory corruption and mount failures due to races in various linked
+>>>> list handling relating to socket, session and tree connection when
+>>>> using the reproducer detailed here:
+>>
+>> I don't mind the large mount/umount fix series (diffstat shows about
+>> 800 lines added, 800 removed) being included in stable, it does fix
+>> some oopses that can occur with simultaneous cifs mounts/umounts
+>> racing.
+> 
+> Well, if Linus takes them so late in the merge window, I'll consider
+> also adding them to -stable, as they do fix reported problems, and are
+> good to have in there for users who rely on cifs.
+> 
 
-Hi all,
+I have backported this patchset for 2.6.27.7 along with cifs data
+corruption fixes and would be sending it to stable@kernel.org requesting
+for inclusion since these had been merged upstream and fixes various
+critical problems.
 
-Changes since 20081120:
 
-Undropped trees:
-	proc
+Thanks,
 
-Dropped trees (temporarily):
-	net (build problem)
-	wireless (conflicts due to net tree being dropped)
-	rr (build problem)
-	userns (it depends on creds)
-	semaphore-removal (due to unfixed conflicts against Linus' tree)
+-- 
+Suresh Jayaraman
 
-The s390 tree lost 2 conflicts.
-
-The net tree gained 2 conflicts against the net-current tree and a build
-problem that caused me to drop it.
-
-The rr tree lost its 2 conflicts and fixed its build problem only to get
-another.
-
-The hdlc tree lost its conflict (because the net tree was dropped).
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 126 trees (counting Linus' and 15 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/char/Makefile
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/ixgbe/ixgbe_main.c
-CONFLICT (content): Merge conflict in include/net/mac80211.h
-CONFLICT (content): Merge conflict in net/phonet/af_phonet.c
-Applying net: async_tx merge fix
-Applying net: ieee80211_notify_mac merge fix
-$ git reset --hard HEAD^
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-$ git reset --hard HEAD^
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-CONFLICT (content): Merge conflict in fs/ocfs2/namei.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in fs/devpts/inode.c
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-CONFLICT (content): Merge conflict in fs/proc/base.c
-CONFLICT (content): Merge conflict in kernel/exit.c
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cpu_alloc/cpu_alloc
-CONFLICT (content): Merge conflict in kernel/lockdep.c
-CONFLICT (content): Merge conflict in kernel/module.c
-Applying cpu_alloc: merge_fix_1
-Applying undefined reference to __per_cpu_start
-Merging cputime/cputime
-Merging perfmon3/master
-Merging osd/linux-next
-Merging fatfs/master
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Fri__21_Nov_2008_18_19_48_+1100_YkhlKON7Y4bL_ih8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkmYRQACgkQjjKRsyhoI8zDbwCdEzM+7VzJ2Nl80FJVicr4Ew23
-TFcAn05GNzjkgmThfL+bedMYHTm83FeK
-=z/rJ
------END PGP SIGNATURE-----
-
---Signature=_Fri__21_Nov_2008_18_19_48_+1100_YkhlKON7Y4bL_ih8--
