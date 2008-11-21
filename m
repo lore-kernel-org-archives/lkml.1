@@ -1,79 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYKUJdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYKUJem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYKUJdb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 04:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYKUJdV
+	id S1753472AbYKUJem (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 04:34:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYKUJec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 04:33:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54154 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbYKUJdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 04:33:19 -0500
-Message-ID: <49267FA4.60609@cn.fujitsu.com>
-Date: Fri, 21 Nov 2008 17:30:12 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 21 Nov 2008 04:34:32 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:9193 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbYKUJe3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 04:34:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=uYiIYhcr3ojHGRALQEwhfjGJNCSSexf/AK78wsBt+XI30rfqcpvuHYaVJNrG0GH/VQ
+         I8Vxmhi+GYvRVANyoSh2AOSu2+OBOxfQlCgv3eLl5/468n/WGfMRcR3MqEhcxTmAFaLa
+         3hgx98cgtsi/ej8jZDCk/sE1hn8/IqpdwyNqc=
+Message-ID: <4926809C.3020603@gmail.com>
+Date: Fri, 21 Nov 2008 03:34:20 -0600
+From: Roger Heflin <rogerheflin@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Folkert van Heusden <folkert@vanheusden.com>
-CC: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [2.6.28-rc5] RCU detected CPU 0 stall (t=4294893165/750 jiffies)
-References: <20081119123717.GE24427@vanheusden.com>
-In-Reply-To: <20081119123717.GE24427@vanheusden.com>
-Content-Type: text/plain; charset=UTF-8
+To: Matt Carlson <mcarlson@broadcom.com>
+CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e()
+ with tg3 network
+References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com> <20081120030012.GC26448@xw6200.broadcom.net> <492536EE.3050804@gmail.com> <20081120171124.GA27532@xw6200.broadcom.net>
+In-Reply-To: <20081120171124.GA27532@xw6200.broadcom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Folkert van Heusden,
+Matt Carlson wrote:
+> On Thu, Nov 20, 2008 at 02:07:42AM -0800, Roger Heflin wrote:
+>> Matt Carlson wrote:
 
-Can you tell me how can I reproduce this bug.
-
-Thanx, Lai
-
-Folkert van Heusden wrote:
-> During the boot-process of a 2.6.28-RC5 kernel I got the followin on
-> the console:
 > 
-> - [    3.479998] RCU detected CPU 0 stall (t=4294893165/750 jiffies)
-> ! [    3.480004] Pid: 1, comm: swapper Not tainted 2.6.28-rc5-custom2 #1
-> ! [    3.480004] Call Trace:
-> ! [    3.480004]  [<c0300c33>] ? printk+0xf/0x14
-> ! [    3.480004]  [<c0166f15>] __rcu_pending+0x53/0x189
-> ! [    3.480004]  [<c0167067>] rcu_pending+0x1c/0x47
-> ! [    3.480004]  [<c0132aa4>] update_process_times+0x2b/0x4e
-> ! [    3.480004]  [<c0144c8d>] tick_sched_timer+0x6d/0x9b
-> ! [    3.480004]  [<c0144c20>] ? tick_sched_timer+0x0/0x9b
-> ! [    3.480004]  [<c013e0cc>] __run_hrtimer+0x60/0x97
-> ! [    3.480004]  [<c013eb35>] hrtimer_interrupt+0xfe/0x166
-> ! [    3.480004]  [<c0112eea>] smp_apic_timer_interrupt+0x6c/0x7f
-> ! [    3.480004]  [<c0104829>] apic_timer_interrupt+0x2d/0x34
-> ! [    3.480004]  [<c043c454>] ? inflate_codes+0x272/0x3bc
-> ! [    3.480004]  [<c043cf22>] inflate_dynamic+0x4c0/0x4f0
-> ! [    3.480004]  [<c043d775>] unpack_to_rootfs+0x524/0x975
-> ! [    3.480004]  [<c0147eaf>] ? debug_check_no_locks_freed+0x1a/0x123
-> ! [    3.480004]  [<c043e202>] ? populate_rootfs+0x0/0xcd
-> ! [    3.480004]  [<c043e202>] ? populate_rootfs+0x0/0xcd
-> ! [    3.480004]  [<c043e278>] populate_rootfs+0x76/0xcd
-> ! [    3.480004]  [<c0101130>] _stext+0x48/0x11e
-> ! [    3.480004]  [<c0206830>] ? ida_get_new_above+0x157/0x171
-> ! [    3.480004]  [<c0218a08>] ? _raw_spin_lock+0x53/0xfa
-> ! [    3.480004]  [<c02189b1>] ? _raw_spin_unlock+0x74/0x78
-> ! [    3.480004]  [<c0303759>] ? _spin_unlock+0x1d/0x20
-> ! [    3.480004]  [<c01c1ab1>] ? proc_register+0x146/0x157
-> ! [    3.480004]  [<c01c1bda>] ? create_proc_entry+0x7b/0x91
-> ! [    3.480004]  [<c0166600>] ? register_irq_proc+0x7b/0x9b
-> ! [    3.480004]  [<c0166666>] ? init_irq_proc+0x46/0x59
-> ! [    3.480004]  [<c04392ee>] kernel_init+0x102/0x150
-> ! [    3.480004]  [<c04391ec>] ? kernel_init+0x0/0x150
-> ! [    3.480004]  [<c0104987>] kernel_thread_helper+0x7/0x10
-> + [    4.773412] Freeing initrd memory: 53252k freed
-> 
-> This is a P4 with hyperthreading. 0.5GB ram. IDE disk.
-> 
-> 
-> Folkert van Heusden
+> Yes, I remember hearing something about this problem too.  That is a firmware
+> problem though.  The 5789 does not have any management firmware, so that
+> shouldn't be the case here.
 > 
 
+Gotcha.
+
+>>>> If someone else runs into this issue, since I have 2 ports I would be
+>>>> able to do some testing on it, right now my first port is locked up, and
+>>>> the machine is running fine on the second port.
+>>>>
+>>>> lspci -vvv for the first (bad) port:
+>>> Ah.  There it is.
+>>>
+>>>> 02:00.0 Ethernet controller: Broadcom Corporation NetLink BCM5789 Gigabit
+>>>> Ethernet PCI Express (rev 11)
+>>>>          Subsystem: Foxconn International, Inc. Unknown device 0cc1
+>>>>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+>>>> Stepping- SERR- FastB2B-
+>>>>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort-
+>>>> <MAbort- >SERR- <PERR-
+>>>>          Latency: 0, Cache Line Size: 32 bytes
+>>>>          Interrupt: pin A routed to IRQ 19
+>>>>          Region 0: Memory at fd8f0000 (64-bit, non-prefetchable) [size=64K]
+>>>>          Expansion ROM at <ignored> [disabled]
+>>>>          Capabilities: [48] Power Management version 2
+>>>>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+>>>> PME(D0-,D1-,D2-,D3hot+,D3cold+)
+>>>>                  Status: D3 PME-Enable- DSel=0 DScale=1 PME-
+>>>>          Capabilities: [50] Vital Product Data
+>>>>          Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3
+>>>> Enable-
+>>>>                  Address: 0101b8102a0f7b0c  Data: f21e
+>>>>          Capabilities: [d0] Express Endpoint IRQ 0
+>>>>                  Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag+
+>>>>                  Device: Latency L0s <4us, L1 unlimited
+>>>>                  Device: AtnBtn- AtnInd- PwrInd-
+>>>>                  Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+>>>>                  Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+>>>>                  Device: MaxPayload 128 bytes, MaxReadReq 4096 bytes
+>>>>                  Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s, Port 0
+>>>>                  Link: Latency L0s <2us, L1 <64us
+>>>>                  Link: ASPM Disabled RCB 64 bytes CommClk+ ExtSynch-
+>>>>                  Link: Speed 2.5Gb/s, Width x1
+>>>>          Capabilities: [100] Advanced Error Reporting
+>>>>          Capabilities: [13c] Virtual Channel
+>>> Hmmm.  No smoking gun.  Perhaps the register dump will help.
+>>>
+>> driver: tg3
+>> version: 3.94
+>> firmware-version: 5789-v3.29a
+>> bus-info: 0000:02:00.0
+> 
+> O.K.  I'll see if I can find any problems like this in the firmware
+> archives.
+> 
+>> tg3.c:v3.94 (August 14, 2008)
+>> tg3 0000:02:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+>> tg3 0000:02:00.0: setting latency timer to 64
+>> tg3 0000:05:01.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+>> tg3: eth0: Link is up at 1000 Mbps, full duplex.
+>> tg3: eth0: Flow control is on for TX and on for RX.
+>>
+>> Right now I brought the interface back up (it is still broken) and setup a
+>> network ip on it that other machines can ping.
+>>
+>> The registers are included at the end of the email.
+> 
+> O.K.  I'll pour over the dump and get back to you.
+> 
+> More below.
+> 
+>>>>>> Nov 11 00:44:39 computer kernel: ------------[ cut here ]------------
+>>>>>> Nov 11 00:44:39 computer kernel: WARNING: at net/sched/sch_generic.c:219
+>>>>>> dev_watchdog+0xfe/0x17e()
+>>>>>> Nov 11 00:44:39 computer kernel: NETDEV WATCHDOG: eth0 (tg3): transmit timed out
+>>> Usually the tg3_tx_timeout function dumps a few registers before
+>>> resetting the chip, but I don't see that here.  Have you seen any dumps
+>>> since then?
+>> Is this the dump?
+> 
+> This would be it.  Thanks.
+> 
+>> Nov 12 14:58:13 computer kernel: tg3: eth0: transmit timed out, resetting
+>> Nov 12 14:58:13 computer kernel: tg3: DEBUG: MAC_TX_STATUS[00000008]
+>> MAC_RX_STATUS[00000006]
+>> Nov 12 14:58:13 computer kernel: tg3: DEBUG: RDMAC_STATUS[00000010]
+>> WDMAC_STATUS[00000000]
+> 
+> Here the Read DMA Status register is reporting a Read DMA PCI Parity Error.
+> I've seen this before...very recently in fact.  The problem was that the
+> chipset was not programmed by the BIOS correctly.  In that particular case,
+> a BIOS upgrade solved the problem.  YMMV.
+
+The board I have is a OLD board (but new to me) and I have what appears to be 
+the last bios that was officially released for it, and cannot find any newer 
+updates that what I have.
+
+> 
+>> Nov 12 14:58:13 computer kernel: tg3: tg3_stop_block timed out, ofs=2c00
+>> enable_bit=2
+>> Nov 12 14:58:13 computer kernel: tg3: tg3_stop_block timed out, ofs=1400
+>> enable_bit=2
+>> Nov 12 14:58:13 computer kernel: tg3: tg3_stop_block timed out, ofs=4800
+>> enable_bit=2
+>> Nov 12 14:58:13 computer kernel: tg3: eth0: Link is down.
+>> Nov 12 14:58:16 computer kernel: tg3: eth0: Link is up at 1000 Mbps, full duplex.
+>> Nov 12 14:58:16 computer kernel: tg3: eth0: Flow control is on for TX and on for RX.
+>> Nov 12 15:20:37 computer kernel: tg3: eth0: transmit timed out, resetting
+>> Nov 12 15:20:37 computer kernel: tg3: DEBUG: MAC_TX_STATUS[0000000b]
+>> MAC_RX_STATUS[00000000]
+>> Nov 12 15:20:37 computer kernel: tg3: DEBUG: RDMAC_STATUS[00000000]
+>> WDMAC_STATUS[00000000]
+> 
+> Here the MAC TX Status register is reporting that the link is up, but
+> the device is sending pause frames and rx is currently rx off'd.
+> 
+> Does the same problem happen if flow control is disabled?
+> 
+
+I have disabled flow control (live) but not rebooted yet I won't have time to 
+reboot and test until sometime tomorrow.
 
