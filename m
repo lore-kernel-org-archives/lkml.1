@@ -1,60 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYKUODi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYKUOI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbYKUODi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYKUOD2
+	id S1755571AbYKUOI5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYKUOIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:03:28 -0500
-Received: from broadrack.ru ([195.178.208.66]:35651 "EHLO tservice.net.ru"
+	Fri, 21 Nov 2008 09:08:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60299 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbYKUOD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:03:28 -0500
-Date: Fri, 21 Nov 2008 17:03:25 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Pavel Machek <pavel@suse.cz>
-Cc: mtk.manpages@gmail.com, Robert Love <rlove@rlove.org>,
-       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [take 3] Use pid in inotify events.
-Message-ID: <20081121140325.GA12384@ioremap.net>
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com> <20081117171508.GA564@ioremap.net> <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com> <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz>
+	id S1752743AbYKUOIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:08:43 -0500
+Date: Fri, 21 Nov 2008 12:08:08 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix memory leak in the proto_register function
+Message-ID: <20081121140808.GA20958@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20081121125628.11468.72009.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081120130902.GA1408@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081121125628.11468.72009.stgit@pc1117.cambridge.arm.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 02:09:03PM +0100, Pavel Machek (pavel@suse.cz) wrote:
-> > > It is a minimum functionality extension that serves the needs of one
-> > > or a few projects, while dirtying the design for all users.
-> > 
-> > Yes, this is a minimum functionality extension, which breaks nothing.
-> > That's why it is a good idea, but I agree that there may be better than
-> > just a good idea and implementation :)
-> 
-> Breaks nothing?!
-> 
-> Introducing ugly hack with broken permission check we have to maintain
-> forever seems like way too much breakage for 14 lines.
+Please send networking patches to netdev@vger.kernel.org as well.
 
-Apparently you missed the patch itself.
-Please check it first before making such statements.
+David,
+	Please apply.
 
-> > And I actually answered, that this may be a good idea for the new
-> > project. Although if things work right now no one will ever try to
-> > change it. It does not work in my case, so I need to invent as simple
-> > as possible way to fix it.
-> 
-> 'as simple diff as possible' is pretty bad criterium for kernel
-> merges.
+- arnaldo
 
-Critics without suggestions is useless. What did you try to say here?
-You you believe it should be done in a different way, please tell us how
-you see this should be implemented.
+> Em Fri, Nov 21, 2008 at 12:56:28PM +0000, Catalin Marinas escreveu:
+If the slub allocator is used, kmem_cache_create() may merge two or more
+kmem_cache's into one but the cache name pointer is not updated and
+kmem_cache_name() is no longer guaranteed to return the pointer passed
+to the former function. This patch stores the kmalloc'ed pointers in the
+corresponding request_sock_ops and timewait_sock_ops structures.
 
--- 
-	Evgeniy Polyakov
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+---
+ include/net/request_sock.h  |    1 +
+ include/net/timewait_sock.h |    1 +
+ net/core/sock.c             |   31 ++++++++++++-------------------
+ 3 files changed, 14 insertions(+), 19 deletions(-)
+
+diff --git a/include/net/request_sock.h b/include/net/request_sock.h
+index cac811e..c719084 100644
+--- a/include/net/request_sock.h
++++ b/include/net/request_sock.h
+@@ -31,6 +31,7 @@ struct request_sock_ops {
+ 	int		family;
+ 	int		obj_size;
+ 	struct kmem_cache	*slab;
++	char		*slab_name;
+ 	int		(*rtx_syn_ack)(struct sock *sk,
+ 				       struct request_sock *req);
+ 	void		(*send_ack)(struct sock *sk, struct sk_buff *skb,
+diff --git a/include/net/timewait_sock.h b/include/net/timewait_sock.h
+index 1e1ee32..97c3b14 100644
+--- a/include/net/timewait_sock.h
++++ b/include/net/timewait_sock.h
+@@ -16,6 +16,7 @@
+ 
+ struct timewait_sock_ops {
+ 	struct kmem_cache	*twsk_slab;
++	char		*twsk_slab_name;
+ 	unsigned int	twsk_obj_size;
+ 	int		(*twsk_unique)(struct sock *sk,
+ 				       struct sock *sktw, void *twp);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 341e394..edf7220 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -2035,9 +2035,6 @@ static inline void release_proto_idx(struct proto *prot)
+ 
+ int proto_register(struct proto *prot, int alloc_slab)
+ {
+-	char *request_sock_slab_name = NULL;
+-	char *timewait_sock_slab_name;
+-
+ 	if (alloc_slab) {
+ 		prot->slab = kmem_cache_create(prot->name, prot->obj_size, 0,
+ 					       SLAB_HWCACHE_ALIGN, NULL);
+@@ -2051,12 +2048,12 @@ int proto_register(struct proto *prot, int alloc_slab)
+ 		if (prot->rsk_prot != NULL) {
+ 			static const char mask[] = "request_sock_%s";
+ 
+-			request_sock_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
+-			if (request_sock_slab_name == NULL)
++			prot->rsk_prot->slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
++			if (prot->rsk_prot->slab_name == NULL)
+ 				goto out_free_sock_slab;
+ 
+-			sprintf(request_sock_slab_name, mask, prot->name);
+-			prot->rsk_prot->slab = kmem_cache_create(request_sock_slab_name,
++			sprintf(prot->rsk_prot->slab_name, mask, prot->name);
++			prot->rsk_prot->slab = kmem_cache_create(prot->rsk_prot->slab_name,
+ 								 prot->rsk_prot->obj_size, 0,
+ 								 SLAB_HWCACHE_ALIGN, NULL);
+ 
+@@ -2070,14 +2067,14 @@ int proto_register(struct proto *prot, int alloc_slab)
+ 		if (prot->twsk_prot != NULL) {
+ 			static const char mask[] = "tw_sock_%s";
+ 
+-			timewait_sock_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
++			prot->twsk_prot->twsk_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
+ 
+-			if (timewait_sock_slab_name == NULL)
++			if (prot->twsk_prot->twsk_slab_name == NULL)
+ 				goto out_free_request_sock_slab;
+ 
+-			sprintf(timewait_sock_slab_name, mask, prot->name);
++			sprintf(prot->twsk_prot->twsk_slab_name, mask, prot->name);
+ 			prot->twsk_prot->twsk_slab =
+-				kmem_cache_create(timewait_sock_slab_name,
++				kmem_cache_create(prot->twsk_prot->twsk_slab_name,
+ 						  prot->twsk_prot->twsk_obj_size,
+ 						  0, SLAB_HWCACHE_ALIGN,
+ 						  NULL);
+@@ -2093,14 +2090,14 @@ int proto_register(struct proto *prot, int alloc_slab)
+ 	return 0;
+ 
+ out_free_timewait_sock_slab_name:
+-	kfree(timewait_sock_slab_name);
++	kfree(prot->twsk_prot->twsk_slab_name);
+ out_free_request_sock_slab:
+ 	if (prot->rsk_prot && prot->rsk_prot->slab) {
+ 		kmem_cache_destroy(prot->rsk_prot->slab);
+ 		prot->rsk_prot->slab = NULL;
+ 	}
+ out_free_request_sock_slab_name:
+-	kfree(request_sock_slab_name);
++	kfree(prot->rsk_prot->slab_name);
+ out_free_sock_slab:
+ 	kmem_cache_destroy(prot->slab);
+ 	prot->slab = NULL;
+@@ -2123,18 +2120,14 @@ void proto_unregister(struct proto *prot)
+ 	}
+ 
+ 	if (prot->rsk_prot != NULL && prot->rsk_prot->slab != NULL) {
+-		const char *name = kmem_cache_name(prot->rsk_prot->slab);
+-
+ 		kmem_cache_destroy(prot->rsk_prot->slab);
+-		kfree(name);
++		kfree(prot->rsk_prot->slab_name);
+ 		prot->rsk_prot->slab = NULL;
+ 	}
+ 
+ 	if (prot->twsk_prot != NULL && prot->twsk_prot->twsk_slab != NULL) {
+-		const char *name = kmem_cache_name(prot->twsk_prot->twsk_slab);
+-
+ 		kmem_cache_destroy(prot->twsk_prot->twsk_slab);
+-		kfree(name);
++		kfree(prot->twsk_prot->twsk_slab_name);
+ 		prot->twsk_prot->twsk_slab = NULL;
+ 	}
+ }
+
