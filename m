@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYKUTKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYKUTOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYKUTKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 14:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757806AbYKUTKo
+	id S1757248AbYKUTOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 14:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYKUTOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 14:10:44 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44750 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757782AbYKUTKn (ORCPT
+	Fri, 21 Nov 2008 14:14:08 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54357 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbYKUTOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 14:10:43 -0500
-Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <1227290011.11607.43.camel@nimitz>
-References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
-	 <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linux.vnet.ibm.com>
-	 <1227290011.11607.43.camel@nimitz>
-Content-Type: text/plain
-Date: Fri, 21 Nov 2008 14:10:32 -0500
-Message-Id: <1227294632.12636.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Nov 2008 14:14:07 -0500
+Date: Fri, 21 Nov 2008 12:14:14 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: rpurdie@rpsys.net, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: backlight: catch invalid input
+Message-ID: <20081121111414.GA1455@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-21 at 09:53 -0800, Dave Hansen wrote:
-> On Thu, 2008-11-20 at 11:43 -0500, Mimi Zohar wrote:
-> > 
-> > +static int integrity_audit;
-> > +
-> > +#ifdef CONFIG_INTEGRITY_AUDIT
-> > +static int __init integrity_audit_setup(char *str)
-> > +{
-> > +       ulong audit;
-> > +       int rc;
-> > +       char *op;
-> > +
-> > +       rc = strict_strtoul(str, 0, &audit);
-> 
-> I think we usually write out 'unsigned long'.
-> 
-> -- Dave
 
-Ok
+Currently, echo > brightness turns brightness to zero due to
+insufficient checking. Add a test to catch that.
 
-Mimi
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index fab0bc8..5c2e23d 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -86,6 +86,8 @@ static ssize_t backlight_store_power(str
+ 	int power = simple_strtoul(buf, &endp, 0);
+ 	size_t size = endp - buf;
+ 
++	if (!size)
++		return -EINVAL;
+ 	if (*endp && isspace(*endp))
+ 		size++;
+ 	if (size != count)
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
