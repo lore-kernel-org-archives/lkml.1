@@ -1,169 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYKUOI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYKUOUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbYKUOI5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYKUOIp
+	id S1754822AbYKUOUx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYKUOUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:08:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60299 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbYKUOIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:08:43 -0500
-Date: Fri, 21 Nov 2008 12:08:08 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix memory leak in the proto_register function
-Message-ID: <20081121140808.GA20958@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20081121125628.11468.72009.stgit@pc1117.cambridge.arm.com>
+	Fri, 21 Nov 2008 09:20:42 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:7629 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbYKUOUl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:20:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ZZsUonOPa08MpcYCO1464LdX5Xgr5NmdPVSF42iA/C+eV7a6m59tHkAho91PjETjGn
+         v7pLE3BZkan/XBLPYtj8v4j6xbUsvAiFNoQVyoFsfGevZfudN3wHtiKpEtCjmk9EKQI4
+         bs9KBlLQ+j+3nIDlNSz+rAh1xKaxYF4Kr801M=
+Message-ID: <517f3f820811210620o34307610hf926bbe3b3828e8c@mail.gmail.com>
+Date: Fri, 21 Nov 2008 09:20:39 -0500
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Evgeniy Polyakov" <zbr@ioremap.net>
+Subject: Re: [take 3] Use pid in inotify events.
+Cc: "Pavel Machek" <pavel@suse.cz>, "Robert Love" <rlove@rlove.org>,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@lst.de>,
+       "John McCutchan" <john@johnmccutchan.com>
+In-Reply-To: <20081121140325.GA12384@ioremap.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081121125628.11468.72009.stgit@pc1117.cambridge.arm.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
+	 <20081116232450.GA13547@ioremap.net>
+	 <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
+	 <20081117171508.GA564@ioremap.net>
+	 <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com>
+	 <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz>
+	 <20081121140325.GA12384@ioremap.net>
+X-Google-Sender-Auth: f06687f32dc706c4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please send networking patches to netdev@vger.kernel.org as well.
+>> > And I actually answered, that this may be a good idea for the new
+>> > project. Although if things work right now no one will ever try to
+>> > change it. It does not work in my case, so I need to invent as simple
+>> > as possible way to fix it.
+>>
+>> 'as simple diff as possible' is pretty bad criterium for kernel
+>> merges.
+>
+> Critics without suggestions is useless. What did you try to say here?
+> You you believe it should be done in a different way, please tell us how
+> you see this should be implemented.
 
-David,
-	Please apply.
+Hi Evgeniy,
 
-- arnaldo
+I think the point is this.  You want to introduce a change that
+address the needs of a single application.  Many others see the
+change, which though it may be simple and quick to implement, as "an
+ugly hack" -- it messes up an otherwise rather well designed API.
+Should we make such a change?  I think not -- and others are echoing
+that sentiment.  Your argument that "we should do this because no-one
+else has proposed a better way" is not sufficient rationale for
+uglifying this API to serve the needs of a single app -- the argument
+will not fly, no matter how many times you repeat it.  (Your statement
+"Critics without suggestions is useless" does not hold: one very
+useful purpose of critics is to maintain the status quo of "good
+taste" in API design.)
 
-> Em Fri, Nov 21, 2008 at 12:56:28PM +0000, Catalin Marinas escreveu:
-If the slub allocator is used, kmem_cache_create() may merge two or more
-kmem_cache's into one but the cache name pointer is not updated and
-kmem_cache_name() is no longer guaranteed to return the pointer passed
-to the former function. This patch stores the kmalloc'ed pointers in the
-corresponding request_sock_ops and timewait_sock_ops structures.
+At this stage, I see three possibilities -- you maintain an
+out-of-mainline patch for the kernel, and distribute that with your
+app; you work out some other *userspace* solution to your problem; or
+someone comes up with inotify-ng, designed to address your needs and
+those of others (okay, we may not know what those other needs are yet,
+but the question is if we could come up with an inotify-ng design that
+can extensible in a sane way).  I know that none of these options will
+be what you are happy with, but all of them have more life than your
+proposal, IMO.
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
----
- include/net/request_sock.h  |    1 +
- include/net/timewait_sock.h |    1 +
- net/core/sock.c             |   31 ++++++++++++-------------------
- 3 files changed, 14 insertions(+), 19 deletions(-)
+Cheers,
 
-diff --git a/include/net/request_sock.h b/include/net/request_sock.h
-index cac811e..c719084 100644
---- a/include/net/request_sock.h
-+++ b/include/net/request_sock.h
-@@ -31,6 +31,7 @@ struct request_sock_ops {
- 	int		family;
- 	int		obj_size;
- 	struct kmem_cache	*slab;
-+	char		*slab_name;
- 	int		(*rtx_syn_ack)(struct sock *sk,
- 				       struct request_sock *req);
- 	void		(*send_ack)(struct sock *sk, struct sk_buff *skb,
-diff --git a/include/net/timewait_sock.h b/include/net/timewait_sock.h
-index 1e1ee32..97c3b14 100644
---- a/include/net/timewait_sock.h
-+++ b/include/net/timewait_sock.h
-@@ -16,6 +16,7 @@
- 
- struct timewait_sock_ops {
- 	struct kmem_cache	*twsk_slab;
-+	char		*twsk_slab_name;
- 	unsigned int	twsk_obj_size;
- 	int		(*twsk_unique)(struct sock *sk,
- 				       struct sock *sktw, void *twp);
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 341e394..edf7220 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -2035,9 +2035,6 @@ static inline void release_proto_idx(struct proto *prot)
- 
- int proto_register(struct proto *prot, int alloc_slab)
- {
--	char *request_sock_slab_name = NULL;
--	char *timewait_sock_slab_name;
--
- 	if (alloc_slab) {
- 		prot->slab = kmem_cache_create(prot->name, prot->obj_size, 0,
- 					       SLAB_HWCACHE_ALIGN, NULL);
-@@ -2051,12 +2048,12 @@ int proto_register(struct proto *prot, int alloc_slab)
- 		if (prot->rsk_prot != NULL) {
- 			static const char mask[] = "request_sock_%s";
- 
--			request_sock_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
--			if (request_sock_slab_name == NULL)
-+			prot->rsk_prot->slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
-+			if (prot->rsk_prot->slab_name == NULL)
- 				goto out_free_sock_slab;
- 
--			sprintf(request_sock_slab_name, mask, prot->name);
--			prot->rsk_prot->slab = kmem_cache_create(request_sock_slab_name,
-+			sprintf(prot->rsk_prot->slab_name, mask, prot->name);
-+			prot->rsk_prot->slab = kmem_cache_create(prot->rsk_prot->slab_name,
- 								 prot->rsk_prot->obj_size, 0,
- 								 SLAB_HWCACHE_ALIGN, NULL);
- 
-@@ -2070,14 +2067,14 @@ int proto_register(struct proto *prot, int alloc_slab)
- 		if (prot->twsk_prot != NULL) {
- 			static const char mask[] = "tw_sock_%s";
- 
--			timewait_sock_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
-+			prot->twsk_prot->twsk_slab_name = kmalloc(strlen(prot->name) + sizeof(mask) - 1, GFP_KERNEL);
- 
--			if (timewait_sock_slab_name == NULL)
-+			if (prot->twsk_prot->twsk_slab_name == NULL)
- 				goto out_free_request_sock_slab;
- 
--			sprintf(timewait_sock_slab_name, mask, prot->name);
-+			sprintf(prot->twsk_prot->twsk_slab_name, mask, prot->name);
- 			prot->twsk_prot->twsk_slab =
--				kmem_cache_create(timewait_sock_slab_name,
-+				kmem_cache_create(prot->twsk_prot->twsk_slab_name,
- 						  prot->twsk_prot->twsk_obj_size,
- 						  0, SLAB_HWCACHE_ALIGN,
- 						  NULL);
-@@ -2093,14 +2090,14 @@ int proto_register(struct proto *prot, int alloc_slab)
- 	return 0;
- 
- out_free_timewait_sock_slab_name:
--	kfree(timewait_sock_slab_name);
-+	kfree(prot->twsk_prot->twsk_slab_name);
- out_free_request_sock_slab:
- 	if (prot->rsk_prot && prot->rsk_prot->slab) {
- 		kmem_cache_destroy(prot->rsk_prot->slab);
- 		prot->rsk_prot->slab = NULL;
- 	}
- out_free_request_sock_slab_name:
--	kfree(request_sock_slab_name);
-+	kfree(prot->rsk_prot->slab_name);
- out_free_sock_slab:
- 	kmem_cache_destroy(prot->slab);
- 	prot->slab = NULL;
-@@ -2123,18 +2120,14 @@ void proto_unregister(struct proto *prot)
- 	}
- 
- 	if (prot->rsk_prot != NULL && prot->rsk_prot->slab != NULL) {
--		const char *name = kmem_cache_name(prot->rsk_prot->slab);
--
- 		kmem_cache_destroy(prot->rsk_prot->slab);
--		kfree(name);
-+		kfree(prot->rsk_prot->slab_name);
- 		prot->rsk_prot->slab = NULL;
- 	}
- 
- 	if (prot->twsk_prot != NULL && prot->twsk_prot->twsk_slab != NULL) {
--		const char *name = kmem_cache_name(prot->twsk_prot->twsk_slab);
--
- 		kmem_cache_destroy(prot->twsk_prot->twsk_slab);
--		kfree(name);
-+		kfree(prot->twsk_prot->twsk_slab_name);
- 		prot->twsk_prot->twsk_slab = NULL;
- 	}
- }
-
+Michael
