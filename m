@@ -1,106 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYKUBGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYKUBMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYKUBGM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 20:06:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYKUBF4
+	id S1755950AbYKUBMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 20:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYKUBME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 20:05:56 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:38041 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbYKUBFz (ORCPT
+	Thu, 20 Nov 2008 20:12:04 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:44290 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752799AbYKUBMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 20:05:55 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-References: <patchbomb.1226603398@abulafia.goop.org>
-	<d103c0da2fa147ac31af.1226603428@abulafia.goop.org>
-	<20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org>
-	<m1y6ze87w6.fsf@frodo.ebiederm.org> <4925D762.6040406@goop.org>
-Date: Thu, 20 Nov 2008 16:58:38 -0800
-In-Reply-To: <4925D762.6040406@goop.org> (Jeremy Fitzhardinge's message of
-	"Thu, 20 Nov 2008 13:32:18 -0800")
-Message-ID: <m1prkpj3nl.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1808]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Thu, 20 Nov 2008 20:12:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=ecoA3p6BUC+7pbhRNMUZYcR3hFYjikHSB3XS34+4Z99jVhub3dmUVgrWlrjbkf2ZRo
+         PCETq27+5KaLP6JqA2fHqPUL02LlZWoha00yg+I+Z6SR9WQLjbpHcMpJ4vgfPGsj1Sig
+         xOyd2sDCFXSh8EoMGhIRTt96TXka+kw7ArAAs=
+Subject: [RFC PATCH-mm] kernel: add new endian and unaligned access helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 20 Nov 2008 17:11:59 -0800
+Message-Id: <1227229919.5354.14.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Add the following API for the 6 endian types in the kernel
+__le16,__le32, __le64, __be16, __be32, __be64:
 
+u16 load_le16(const __le16 *p)
+void store_le16(__le16 *p, u16 val)
 
-> The changes are spread over a number of patches, but the meat of it is in "xen:
-> route hardware irqs via Xen".  It turns out fairly simply, but perhaps its
-> because I've made a number of simplifying assumptions: interrupts are always
-> IOAPIC based, only using ACPI for routing, no MSI support yet.
->
-> But it seems to me that the only time you really care that the irq isn't a gsi
-> is when programming a vector into the ioapics - you need to do a irq ->
-> ioapic/pin mapping anyway, so adding a irq -> gsi -> ioapic/pin map isn't all
-> that complex.
+u16 load_le16_noalign(const __le16 *p)
+void store_le16_noalign(__le16 *p, u16 val)
 
-It is hideous.  Been there and ripped out hundreds of lines of useless and problem
-causing code to get here.  It is especially bad when you do not identity map the first
-16 gsi to linux irqs (the legacy isa irqs).
+Some general comments:
 
-It is very useful to keep the linux irq number and the gsi irq number the same.
-It facilitates debugging and keeps the code simple.
+get/put_unaligned are being replaced because get/put in the kernel
+usually implies some kind of reference is being taken/released, which
+is not the case here.  They work with void * pointers which defeats
+sparse checking. Also, put_unaligned takes its arguments in the
+opposite order from what is expected.  The new names are chosen
+to allow the APIs to live in parallel without breaking compilation.
+The get/put_unaligned API can be removed once all users are converted.
 
-> And conversely, when probing devices you need to map gsi->irq to
-> see whether the interrupt is shared, though you could do that on a pure gsi
-> level anyway.
+load_le16 is a synonym for the existing le16_to_cpup and is added to
+be symmetric with the load_le16_noalign API.  On arches where unaligned
+access is OK, the unaligned calls are replaced with aligned calls.
 
-What I care about is important is that the GSI number == the linux irq number.
+store_le16 is a new API and is added to be symmetric with the unaligned
+functions.  It is implemented as a macro to allow compile-time byteswapping
+when the value is a constant.  This will also allow use in many places
+currently that are of the form:
 
-> And of course the current code isn't purely irq == gsi anyway, since msis are
-> allocated irqs as well, and there's no underlying gsi.
+*(__le16 *)ptr = cpu_to_le16(foo);
 
-Yep.  And but the numbers we you should be beyond the range of the gsi's so there
-is no conflict.  Think of it an extension of how we identitly make the low 16 linux
-irqs.
+In addition, some drivers/filesystems/arches already provide this API
+privately, which will allow them to be consolidated into this common
+code.
 
->  In a sense you can think
-> of the other Xen interrupt sources as being a bit like MSI, at least in as much
-> as they're not sourced from a GSI (but they go further and are not sourced from
-> an IOAPIC at all).
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Andrew, depends on the unaligned patches and the byteorder patches in -mm,
+so needs to come after both sets.
 
-MSI isn't sourced from an IOAPIC either.
+ include/asm-generic/unaligned.h |  117 +++++++++++++++++++++++----------------
+ include/linux/byteorder.h       |   26 +++++++--
+ 2 files changed, 89 insertions(+), 54 deletions(-)
 
-The difference is that the xen sources are not delivered using vectors.  The cpu
-vector numbers we do hide and treat as an implementation detail.  And I am totally
-happy not going through the vector allocation path.
-
-My gut feel says that you just want to use a different set of irq operations when
-doing Xen native and working with hardware interrupts.    I haven't seen the code so
-I don't know how you interact there.  Except in dom0 this is not a consideration so
-I don't how it is handled.
-
-Eric
-
+diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
+index 55d1126..54d4a48 100644
+--- a/include/asm-generic/unaligned.h
++++ b/include/asm-generic/unaligned.h
+@@ -6,6 +6,20 @@
+ 
+ #ifdef _UNALIGNED_ACCESS_OK
+ 
++# define load_le16_noalign load_le16
++# define load_le32_noalign load_le32
++# define load_le64_noalign load_le64
++# define load_be16_noalign load_be16
++# define load_be32_noalign load_be32
++# define load_be64_noalign load_be64
++
++# define store_le16_noalign store_le16
++# define store_le32_noalign store_le32
++# define store_le64_noalign store_le64
++# define store_be16_noalign store_be16
++# define store_be32_noalign store_be32
++# define store_be64_noalign store_be64
++
+ static inline u16 get_unaligned_le16(const void *p)
+ {
+ 	return le16_to_cpup(p);
+@@ -102,60 +116,67 @@ static inline u64 __get_be64_noalign(const u8 *p)
+ 	return ((u64)__get_be32_noalign(p) << 32) | __get_be32_noalign(p + 4);
+ }
+ 
+-static inline u16 get_unaligned_le16(const void *p)
++static inline u16 load_le16_noalign(const __le16 *p)
+ {
+ #ifdef __LITTLE_ENDIAN
+-	return ((const struct __una_u16 *)p)->x;
++	return ((__force const struct __una_u16 *)p)->x;
+ #else
+-	return __get_le16_noalign(p);
++	return __get_le16_noalign((__force const u8 *)p);
+ #endif
+ }
+ 
+-static inline u32 get_unaligned_le32(const void *p)
++static inline u32 load_le32_noalign(const __le32 *p)
+ {
+ #ifdef __LITTLE_ENDIAN
+-	return ((const struct __una_u32 *)p)->x;
++	return ((__force const struct __una_u32 *)p)->x;
+ #else
+-	return __get_le32_noalign(p);
++	return __get_le32_noalign((__force const u8 *)p);
+ #endif
+ }
+ 
+-static inline u64 get_unaligned_le64(const void *p)
++static inline u64 load_le64_noalign(const __le64 *p)
+ {
+ #ifdef __LITTLE_ENDIAN
+-	return ((const struct __una_u64 *)p)->x;
++	return ((__force const struct __una_u64 *)p)->x;
+ #else
+-	return __get_le64_noalign(p);
++	return __get_le64_noalign((__force const u8 *)p);
+ #endif
+ }
+ 
+-static inline u16 get_unaligned_be16(const void *p)
++static inline u16 load_be16_noalign(const __be16 *p)
+ {
+ #ifdef __BIG_ENDIAN
+-	return ((const struct __una_u16 *)p)->x;
++	return ((__force const struct __una_u16 *)p)->x;
+ #else
+-	return __get_be16_noalign(p);
++	return __get_be16_noalign((__force const u8 *)p);
+ #endif
+ }
+ 
+-static inline u32 get_unaligned_be32(const void *p)
++static inline u32 load_be32_noalign(const __be32 *p)
+ {
+ #ifdef __BIG_ENDIAN
+-	return ((const struct __una_u32 *)p)->x;
++	return ((__force const struct __una_u32 *)p)->x;
+ #else
+-	return __get_be32_noalign(p);
++	return __get_be32_noalign((__force const u8 *)p);
+ #endif
+ }
+ 
+-static inline u64 get_unaligned_be64(const void *p)
++static inline u64 load_be64_noalign(const __be64 *p)
+ {
+ #ifdef __BIG_ENDIAN
+-	return ((const struct __una_u64 *)p)->x;
++	return ((__force const struct __una_u64 *)p)->x;
+ #else
+-	return __get_be64_noalign(p);
++	return __get_be64_noalign((__force const u8 *)p);
+ #endif
+ }
+ 
++# define get_unaligned_le16(p) load_le16_noalign((const void *)(p))
++# define get_unaligned_le32(p) load_le32_noalign((const void *)(p))
++# define get_unaligned_le64(p) load_le64_noalign((const void *)(p))
++# define get_unaligned_be16(p) load_be16_noalign((const void *)(p))
++# define get_unaligned_be32(p) load_be32_noalign((const void *)(p))
++# define get_unaligned_be64(p) load_be64_noalign((const void *)(p))
++
+ static inline void __put_le16_noalign(u8 *p, u16 val)
+ {
+ 	*p++ = val;
+@@ -192,57 +213,57 @@ static inline void __put_be64_noalign(u8 *p, u64 val)
+ 	__put_be32_noalign(p + 4, val);
+ }
+ 
+-static inline void put_unaligned_le16(u16 val, void *p)
++static inline void store_le16_noalign(__le16 *p, u16 val)
+ {
+ #ifdef __LITTLE_ENDIAN
+-	((struct __una_u16 *)p)->x = val;
++	((__force struct __una_u16 *)p)->x = val;
+ #else
+-	__put_le16_noalign(p, val);
++	__put_le16_noalign((__force u8 *)p, val);
+ #endif
+ }
+ 
+-static inline void put_unaligned_le32(u32 val, void *p)
++static inline void store_le32_noalign(__le32 *p, u32 val)
+ {
+ #ifdef __LITTLE_ENDIAN
+-	((struct __una_u32 *)p)->x = val;
++	((__force struct __una_u32 *)p)->x = val;
+ #else
+-	__put_le32_noalign(p, val);
++	__put_le32_noalign((__force u8 *)p, val);
+ #endif
+ }
+ 
+-static inline void put_unaligned_le64(u64 val, void *p)
++static inline void store_le64_noalign(__le64 *p, u64 val)
+ {
+ #ifdef __LITTLE_ENDIAN
+-	((struct __una_u64 *)p)->x = val;
++	((__force struct __una_u64 *)p)->x = val;
+ #else
+-	__put_le64_noalign(p, val);
++	__put_le64_noalign((__force u8 *)p, val);
+ #endif
+ }
+ 
+-static inline void put_unaligned_be16(u16 val, void *p)
++static inline void store_be16_noalign(__be16 *p, u16 val)
+ {
+ #ifdef __BIG_ENDIAN
+-	((struct __una_u16 *)p)->x = val;
++	((__force struct __una_u16 *)p)->x = val;
+ #else
+-	__put_be16_noalign(p, val);
++	__put_be16_noalign((__force u8 *)p, val);
+ #endif
+ }
+ 
+-static inline void put_unaligned_be32(u32 val, void *p)
++static inline void store_be32_noalign(__be32 *p, u32 val)
+ {
+ #ifdef __BIG_ENDIAN
+-	((struct __una_u32 *)p)->x = val;
++	((__force struct __una_u32 *)p)->x = val;
+ #else
+-	__put_be32_noalign(p, val);
++	__put_be32_noalign((__force u8 *)p, val);
+ #endif
+ }
+ 
+-static inline void put_unaligned_be64(u64 val, void *p)
++static inline void store_be64_noalign(__be64 *p, u64 val)
+ {
+ #ifdef __BIG_ENDIAN
+-	((struct __una_u64 *)p)->x = val;
++	((__force struct __una_u64 *)p)->x = val;
+ #else
+-	__put_be64_noalign(p, val);
++	__put_be64_noalign((__force u8 *)p, val);
+ #endif
+ }
+ 
+@@ -256,17 +277,17 @@ extern void __bad_unaligned_access_size(void);
+ 
+ #define __get_unaligned_le(ptr) ((__force typeof(*(ptr)))({			\
+ 	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
+-	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_le16((ptr)),	\
+-	__builtin_choose_expr(sizeof(*(ptr)) == 4, get_unaligned_le32((ptr)),	\
+-	__builtin_choose_expr(sizeof(*(ptr)) == 8, get_unaligned_le64((ptr)),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 2, load_le16_noalign(ptr),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 4, load_le32_noalign(ptr),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 8, load_le64_noalign(ptr),	\
+ 	__bad_unaligned_access_size()))));					\
+ 	}))
+ 
+ #define __get_unaligned_be(ptr) ((__force typeof(*(ptr)))({			\
+ 	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
+-	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_be16((ptr)),	\
+-	__builtin_choose_expr(sizeof(*(ptr)) == 4, get_unaligned_be32((ptr)),	\
+-	__builtin_choose_expr(sizeof(*(ptr)) == 8, get_unaligned_be64((ptr)),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 2, load_be16_noalign(ptr),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 4, load_be32_noalign(ptr),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 8, load_be64_noalign(ptr),	\
+ 	__bad_unaligned_access_size()))));					\
+ 	}))
+ 
+@@ -277,13 +298,13 @@ extern void __bad_unaligned_access_size(void);
+ 		*(u8 *)__gu_p = (__force u8)(val);			\
+ 		break;							\
+ 	case 2:								\
+-		put_unaligned_le16((__force u16)(val), __gu_p);		\
++		store_le16_noalign(__gu_p, (__force u16)(val));		\
+ 		break;							\
+ 	case 4:								\
+-		put_unaligned_le32((__force u32)(val), __gu_p);		\
++		store_le32_noalign(__gu_p, (__force u32)(val));		\
+ 		break;							\
+ 	case 8:								\
+-		put_unaligned_le64((__force u64)(val), __gu_p);		\
++		store_le64_noalign(__gu_p, (__force u64)(val));		\
+ 		break;							\
+ 	default:							\
+ 		__bad_unaligned_access_size();				\
+@@ -298,13 +319,13 @@ extern void __bad_unaligned_access_size(void);
+ 		*(u8 *)__gu_p = (__force u8)(val);			\
+ 		break;							\
+ 	case 2:								\
+-		put_unaligned_be16((__force u16)(val), __gu_p);		\
++		store_be16_noalign(__gu_p, (__force u16)(val));		\
+ 		break;							\
+ 	case 4:								\
+-		put_unaligned_be32((__force u32)(val), __gu_p);		\
++		store_be32_noalign(__gu_p, (__force u32)(val));		\
+ 		break;							\
+ 	case 8:								\
+-		put_unaligned_be64((__force u64)(val), __gu_p);		\
++		store_be64_noalign(__gu_p, (__force u64)(val));		\
+ 		break;							\
+ 	default:							\
+ 		__bad_unaligned_access_size();				\
+diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
+index 29f002d..ba87b00 100644
+--- a/include/linux/byteorder.h
++++ b/include/linux/byteorder.h
+@@ -292,6 +292,20 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
+ # define cpu_to_be32 __cpu_to_be32
+ # define cpu_to_be64 __cpu_to_be64
+ 
++# define load_le16 __le16_to_cpup
++# define load_le32 __le32_to_cpup
++# define load_le64 __le64_to_cpup
++# define load_be16 __be16_to_cpup
++# define load_be32 __be32_to_cpup
++# define load_be64 __be64_to_cpup
++
++# define store_le16(p, val)	(*(__le16 *)(p) = __cpu_to_le16(val))
++# define store_le32(p, val)	(*(__le32 *)(p) = __cpu_to_le32(val))
++# define store_le64(p, val)	(*(__le64 *)(p) = __cpu_to_le64(val))
++# define store_be16(p, val)	(*(__be16 *)(p) = __cpu_to_be16(val))
++# define store_be32(p, val)	(*(__be32 *)(p) = __cpu_to_be32(val))
++# define store_be64(p, val)	(*(__be64 *)(p) = __cpu_to_be64(val))
++
+ # define le16_to_cpup __le16_to_cpup
+ # define le32_to_cpup __le32_to_cpup
+ # define le64_to_cpup __le64_to_cpup
+@@ -340,32 +354,32 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
+ 
+ static inline void le16_add_cpu(__le16 *var, u16 val)
+ {
+-	*var = cpu_to_le16(le16_to_cpup(var) + val);
++	store_le16(var, load_le16(var) + val);
+ }
+ 
+ static inline void le32_add_cpu(__le32 *var, u32 val)
+ {
+-	*var = cpu_to_le32(le32_to_cpup(var) + val);
++	store_le32(var, load_le32(var) + val);
+ }
+ 
+ static inline void le64_add_cpu(__le64 *var, u64 val)
+ {
+-	*var = cpu_to_le64(le64_to_cpup(var) + val);
++	store_le64(var, load_le64(var) + val);
+ }
+ 
+ static inline void be16_add_cpu(__be16 *var, u16 val)
+ {
+-	*var = cpu_to_be16(be16_to_cpup(var) + val);
++	store_be16(var, load_be16(var) + val);
+ }
+ 
+ static inline void be32_add_cpu(__be32 *var, u32 val)
+ {
+-	*var = cpu_to_be32(be32_to_cpup(var) + val);
++	store_be32(var, load_be32(var) + val);
+ }
+ 
+ static inline void be64_add_cpu(__be64 *var, u64 val)
+ {
+-	*var = cpu_to_be64(be64_to_cpup(var) + val);
++	store_be64(var, load_be64(var) + val);
+ }
+ 
+ #endif /* __KERNEL__ */
+-- 
+1.6.0.4.1013.gc6a01
 
 
 
