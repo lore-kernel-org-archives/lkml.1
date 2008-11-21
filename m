@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYKUQm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbYKUQnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbYKUQm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYKUQmS
+	id S1757358AbYKUQnE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:43:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbYKUQmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:42:18 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:50307 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753607AbYKUQmS (ORCPT
+	Fri, 21 Nov 2008 11:42:50 -0500
+Received: from mailoutltc.fnis.com ([199.200.24.190]:9997 "EHLO
+	mailoutltc.fnis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753854AbYKUQmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:42:18 -0500
-Message-ID: <4926E499.4070706@caviumnetworks.com>
-Date: Fri, 21 Nov 2008 08:40:57 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 21 Nov 2008 11:42:49 -0500
+Message-ID: <4926E501.9010802@fnis.com>
+Date: Fri, 21 Nov 2008 11:42:41 -0500
+From: "K.S. Bhaskar" <ks.bhaskar@fnis.com>
+Reply-To: "K.S. Bhaskar" <ks.bhaskar@fnis.com>
+Organization: Fidelity National Information Services, Inc.
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>, gcc@gcc.gnu.org
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-mips <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org,
-       Adam Nemet <anemet@caviumnetworks.com>
-Subject: Re: [PATCH] MIPS: Make BUG() __noreturn.
-References: <49260E4C.8080500@caviumnetworks.com> <20081121100035.3f5a640b@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0811211126420.26004@anakin>
-In-Reply-To: <Pine.LNX.4.64.0811211126420.26004@anakin>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+CC: Jeff Moyer <jmoyer@redhat.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Enterprise workload testing for storage and filesystems
+References: <1226962063.3403.13.camel@localhost.localdomain> <x49y6zegjum.fsf@segfault.boston.devel.redhat.com> <4926DAFC.5070006@fnis.com> <4926DF63.1030107@hp.com>
+In-Reply-To: <4926DF63.1030107@hp.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Nov 2008 16:40:58.0010 (UTC) FILETIME=[EE148FA0:01C94BF7]
+X-OriginalArrivalTime: 21 Nov 2008 16:42:42.0236 (UTC) FILETIME=[2C342FC0:01C94BF8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Fri, 21 Nov 2008, Alan Cox wrote:
->> On Thu, 20 Nov 2008 17:26:36 -0800
->> David Daney <ddaney@caviumnetworks.com> wrote:
->>
->>> MIPS: Make BUG() __noreturn.
->>>
->>> Often we do things like put BUG() in the default clause of a case
->>> statement.  Since it was not declared __noreturn, this could sometimes
->>> lead to bogus compiler warnings that variables were used
->>> uninitialized.
->>>
->>> There is a small problem in that we have to put a magic while(1); loop to
->>> fool GCC into really thinking it is noreturn.  
->> That sounds like your __noreturn macro is wrong.
->>
->> Try using __attribute__ ((__noreturn__))
->>
->> if that works then fix up the __noreturn definitions for the MIPS and gcc
->> you have.
+On 11/21/2008 11:18 AM, Alan D. Brunelle wrote:
+> K.S. Bhaskar wrote:
+
+[KSB2] <...snip...>
+
+> Thanks for additional feedback Bhaskar - I've been playing with this
+> on-and-off the last couple of days trying to stress one testbed (16 way
+> AMD, 128GB RAM, two P800 Smart Arrays (48 disks total put into a single
+> LVM2/DM volume)). I've been able to get the I/O subsystem 100% utilized,
+> but in so doing really didn't stress the system (something like 80-90%
+> idle).
 > 
-> Nope, gcc is too smart:
-> 
-> $ cat a.c
-> 
-> int f(void) __attribute__((__noreturn__));
-> 
-> int f(void)
-> {
-> }
-> 
-> $ gcc -c -Wall a.c
-> a.c: In function f:
-> a.c:6: warning: `noreturn' function does return
-> $ 
-> 
+> In order to stress the whole system, it sounds like it _may_ be better
+> to use 48 separate file systems on 48 separate platters (each with its
+> own DB)? Or are there other knobs to play with to get more of the system
+> involved besides the I/O? Is it a good idea to separate the journals
+> from the DB (separate FS/platter)?
 
-That's right.
+[KSB2] The intent of io_thrash is to stress the IO subsystem.  So, I am 
+not at all surprised that CPU and memory were not stressed.
 
-I was discussing this issue with my colleague Adam Nemet, and we came
-up with a couple of options:
+With the 48 platters on your system, perhaps consider creating 4 logical 
+volumes each striped across 12 physical volumes.  Try 8 databases, with 
+each logical volume having two databases and journal files for two 
+databases that reside on different file systems.
 
-1) Enhance the _builtin_trap() function so that we can specify the
-   break code that is emitted.  This would allow us to do something
-   like:
+In the real world, yes one would separate each journal file from its 
+database file, at least putting them on separate platters, because if 
+the journal platters, disk controller, or file system croak, you still 
+have the database, and if the database underpinnings die, the database 
+is recoverable from a backup and the journal file.  One aims to get 
+maximum separation from the database and its journal file.
 
-static inline void __attribute__((noreturn)) BUG()
-{
-	__builtin_trap(0x200);
-}
+If you want to simulate an application that produces a more balanced 
+load, perhaps you can set %ioUnderLock to 0 and modify io_thrash to do 
+some compute intensive task (like fill a large block of memory with 
+pseudo random numbers) before each IO operation.  You would probably 
+want to increase the number of processes so that the IO subsystem 
+continues to be driven hard.
 
-2) Create a new builtin '__builtin_noreturn()' that expands to nothing
-   but has no CFG edges leaving it, which would allow:
+Regards
+-- Bhaskar
 
-static inline void __attribute__((noreturn)) BUG()
-{
-	__asm__ __volatile__("break %0" : : "i" (0x200));
-	__builtin_noreturn();
-}
+_____________
 
-
-David Daney
+The information contained in this message is proprietary and/or confidential. If you are not the 
+intended recipient, please: (i) delete the message and all copies; (ii) do not disclose, 
+distribute or use the message in any manner; and (iii) notify the sender immediately. In addition, 
+please be aware that any message addressed to our domain is subject to archiving and review by 
+persons other than the intended recipient. Thank you.
+_____________
