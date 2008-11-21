@@ -1,209 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbYKUPow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYKUPpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbYKUPow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 10:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYKUPoN
+	id S1756505AbYKUPpN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 10:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbYKUPoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 10:44:13 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:59039 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752692AbYKUPoK (ORCPT
+	Fri, 21 Nov 2008 10:44:12 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:58959 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbYKUPoK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Nov 2008 10:44:10 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] UBIFS: endian handling fixes and annotations
-Date: Fri, 21 Nov 2008 19:19:24 +0200
-Message-Id: <1227287970-14684-3-git-send-email-dedekind@infradead.org>
+Subject: [PATCH] UBIFS: remove printk
+Date: Fri, 21 Nov 2008 19:19:23 +0200
+Message-Id: <1227287970-14684-2-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1227287970-14684-1-git-send-email-dedekind@infradead.org>
 References: <1227287970-14684-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 21 Nov 2008 15:44:05.0960 (UTC) FILETIME=[FC570C80:01C94BEF]
+X-OriginalArrivalTime: 21 Nov 2008 15:44:05.0944 (UTC) FILETIME=[FC549B80:01C94BEF]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-Noticed by sparse:
-fs/ubifs/file.c:75:2: warning: restricted __le64 degrades to integer
-fs/ubifs/file.c:629:4: warning: restricted __le64 degrades to integer
-fs/ubifs/dir.c:431:3: warning: restricted __le64 degrades to integer
+Remove the "UBIFS background thread ubifs_bgd0_0 started" message.
+We kill the background thread when we switch to R/O mode, and
+start it again whan we switch to R/W mode. OLPC is doing this
+many times during boot, and we see this message many times as
+well, which is irritating. So just kill the message.
 
-This should be checked to ensure the ubifs_assert is working as
-intended, I've done the suggested annotation in this patch.
-
-fs/ubifs/sb.c:298:6: warning: incorrect type in assignment (different base types)
-fs/ubifs/sb.c:298:6:    expected int [signed] [assigned] tmp
-fs/ubifs/sb.c:298:6:    got restricted __le64 [usertype] <noident>
-fs/ubifs/sb.c:299:19: warning: incorrect type in assignment (different base types)
-fs/ubifs/sb.c:299:19:    expected restricted __le64 [usertype] atime_sec
-fs/ubifs/sb.c:299:19:    got int [signed] [assigned] tmp
-fs/ubifs/sb.c:300:19: warning: incorrect type in assignment (different base types)
-fs/ubifs/sb.c:300:19:    expected restricted __le64 [usertype] ctime_sec
-fs/ubifs/sb.c:300:19:    got int [signed] [assigned] tmp
-fs/ubifs/sb.c:301:19: warning: incorrect type in assignment (different base types)
-fs/ubifs/sb.c:301:19:    expected restricted __le64 [usertype] mtime_sec
-fs/ubifs/sb.c:301:19:    got int [signed] [assigned] tmp
-
-This looks like a bugfix as your tmp was a u32 so there was truncation in
-the atime, mtime, ctime value, probably not intentional, add a tmp_le64
-and use it here.
-
-fs/ubifs/key.h:348:9: warning: cast to restricted __le32
-fs/ubifs/key.h:348:9: warning: cast to restricted __le32
-fs/ubifs/key.h:419:9: warning: cast to restricted __le32
-
-Read from the annotated union member instead.
-
-fs/ubifs/recovery.c:175:13: warning: incorrect type in assignment (different base types)
-fs/ubifs/recovery.c:175:13:    expected unsigned int [unsigned] [usertype] save_flags
-fs/ubifs/recovery.c:175:13:    got restricted __le32 [usertype] flags
-fs/ubifs/recovery.c:186:13: warning: incorrect type in assignment (different base types)
-fs/ubifs/recovery.c:186:13:    expected restricted __le32 [usertype] flags
-fs/ubifs/recovery.c:186:13:    got unsigned int [unsigned] [usertype] save_flags
-
-Do byteshifting at compile time of the flag value.  Annotate the saved_flags
-as le32.
-
-fs/ubifs/debug.c:368:10: warning: cast to restricted __le32
-fs/ubifs/debug.c:368:10: warning: cast from restricted __le64
-
-Should be checked if the truncation was intentional, I've changed the
-printk to print the full width.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ubifs/debug.c    |    4 ++--
- fs/ubifs/dir.c      |    3 ++-
- fs/ubifs/file.c     |    4 ++--
- fs/ubifs/key.h      |    4 ++--
- fs/ubifs/recovery.c |    4 ++--
- fs/ubifs/sb.c       |    9 +++++----
- 6 files changed, 15 insertions(+), 13 deletions(-)
+ fs/ubifs/commit.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ubifs/debug.c b/fs/ubifs/debug.c
-index 7186400..f9deccb 100644
---- a/fs/ubifs/debug.c
-+++ b/fs/ubifs/debug.c
-@@ -364,8 +364,8 @@ void dbg_dump_node(const struct ubifs_info *c, const void *node)
- 		       le32_to_cpu(mst->ihead_lnum));
- 		printk(KERN_DEBUG "\tihead_offs     %u\n",
- 		       le32_to_cpu(mst->ihead_offs));
--		printk(KERN_DEBUG "\tindex_size     %u\n",
--		       le32_to_cpu(mst->index_size));
-+		printk(KERN_DEBUG "\tindex_size     %llu\n",
-+		       (unsigned long long)le64_to_cpu(mst->index_size));
- 		printk(KERN_DEBUG "\tlpt_lnum       %u\n",
- 		       le32_to_cpu(mst->lpt_lnum));
- 		printk(KERN_DEBUG "\tlpt_offs       %u\n",
-diff --git a/fs/ubifs/dir.c b/fs/ubifs/dir.c
-index 526c01e..37a9e60 100644
---- a/fs/ubifs/dir.c
-+++ b/fs/ubifs/dir.c
-@@ -428,7 +428,8 @@ static int ubifs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 		dbg_gen("feed '%s', ino %llu, new f_pos %#x",
- 			dent->name, (unsigned long long)le64_to_cpu(dent->inum),
- 			key_hash_flash(c, &dent->key));
--		ubifs_assert(dent->ch.sqnum > ubifs_inode(dir)->creat_sqnum);
-+		ubifs_assert(le64_to_cpu(dent->ch.sqnum) >
-+			     ubifs_inode(dir)->creat_sqnum);
+diff --git a/fs/ubifs/commit.c b/fs/ubifs/commit.c
+index 0a6aa2c..b49884c 100644
+--- a/fs/ubifs/commit.c
++++ b/fs/ubifs/commit.c
+@@ -234,8 +234,8 @@ int ubifs_bg_thread(void *info)
+ 	int err;
+ 	struct ubifs_info *c = info;
  
- 		nm.len = le16_to_cpu(dent->nlen);
- 		over = filldir(dirent, dent->name, nm.len, file->f_pos,
-diff --git a/fs/ubifs/file.c b/fs/ubifs/file.c
-index 51cf511..9124eee 100644
---- a/fs/ubifs/file.c
-+++ b/fs/ubifs/file.c
-@@ -72,7 +72,7 @@ static int read_block(struct inode *inode, void *addr, unsigned int block,
- 		return err;
- 	}
+-	ubifs_msg("background thread \"%s\" started, PID %d",
+-		  c->bgt_name, current->pid);
++	dbg_msg("background thread \"%s\" started, PID %d",
++		c->bgt_name, current->pid);
+ 	set_freezable();
  
--	ubifs_assert(dn->ch.sqnum > ubifs_inode(inode)->creat_sqnum);
-+	ubifs_assert(le64_to_cpu(dn->ch.sqnum) > ubifs_inode(inode)->creat_sqnum);
- 
- 	len = le32_to_cpu(dn->size);
- 	if (len <= 0 || len > UBIFS_BLOCK_SIZE)
-@@ -626,7 +626,7 @@ static int populate_page(struct ubifs_info *c, struct page *page,
- 
- 			dn = bu->buf + (bu->zbranch[nn].offs - offs);
- 
--			ubifs_assert(dn->ch.sqnum >
-+			ubifs_assert(le64_to_cpu(dn->ch.sqnum) >
- 				     ubifs_inode(inode)->creat_sqnum);
- 
- 			len = le32_to_cpu(dn->size);
-diff --git a/fs/ubifs/key.h b/fs/ubifs/key.h
-index 9ee6508..3f1f16b 100644
---- a/fs/ubifs/key.h
-+++ b/fs/ubifs/key.h
-@@ -345,7 +345,7 @@ static inline int key_type_flash(const struct ubifs_info *c, const void *k)
- {
- 	const union ubifs_key *key = k;
- 
--	return le32_to_cpu(key->u32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
-+	return le32_to_cpu(key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
- }
- 
- /**
-@@ -416,7 +416,7 @@ static inline unsigned int key_block_flash(const struct ubifs_info *c,
- {
- 	const union ubifs_key *key = k;
- 
--	return le32_to_cpu(key->u32[1]) & UBIFS_S_KEY_BLOCK_MASK;
-+	return le32_to_cpu(key->j32[1]) & UBIFS_S_KEY_BLOCK_MASK;
- }
- 
- /**
-diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
-index 77d26c1..bed9742 100644
---- a/fs/ubifs/recovery.c
-+++ b/fs/ubifs/recovery.c
-@@ -168,12 +168,12 @@ static int write_rcvrd_mst_node(struct ubifs_info *c,
- 				struct ubifs_mst_node *mst)
- {
- 	int err = 0, lnum = UBIFS_MST_LNUM, sz = c->mst_node_alsz;
--	uint32_t save_flags;
-+	__le32 save_flags;
- 
- 	dbg_rcvry("recovery");
- 
- 	save_flags = mst->flags;
--	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
-+	mst->flags |= cpu_to_le32(UBIFS_MST_RCVRY);
- 
- 	ubifs_prepare_node(c, mst, UBIFS_MST_NODE_SZ, 1);
- 	err = ubi_leb_change(c->ubi, lnum, mst, sz, UBI_SHORTTERM);
-diff --git a/fs/ubifs/sb.c b/fs/ubifs/sb.c
-index 2bf753b..0f39235 100644
---- a/fs/ubifs/sb.c
-+++ b/fs/ubifs/sb.c
-@@ -81,6 +81,7 @@ static int create_default_filesystem(struct ubifs_info *c)
- 	int lpt_lebs, lpt_first, orph_lebs, big_lpt, ino_waste, sup_flags = 0;
- 	int min_leb_cnt = UBIFS_MIN_LEB_CNT;
- 	uint64_t tmp64, main_bytes;
-+	__le64 tmp_le64;
- 
- 	/* Some functions called from here depend on the @c->key_len filed */
- 	c->key_len = UBIFS_SK_LEN;
-@@ -295,10 +296,10 @@ static int create_default_filesystem(struct ubifs_info *c)
- 	ino->ch.node_type = UBIFS_INO_NODE;
- 	ino->creat_sqnum = cpu_to_le64(++c->max_sqnum);
- 	ino->nlink = cpu_to_le32(2);
--	tmp = cpu_to_le64(CURRENT_TIME_SEC.tv_sec);
--	ino->atime_sec   = tmp;
--	ino->ctime_sec   = tmp;
--	ino->mtime_sec   = tmp;
-+	tmp_le64 = cpu_to_le64(CURRENT_TIME_SEC.tv_sec);
-+	ino->atime_sec   = tmp_le64;
-+	ino->ctime_sec   = tmp_le64;
-+	ino->mtime_sec   = tmp_le64;
- 	ino->atime_nsec  = 0;
- 	ino->ctime_nsec  = 0;
- 	ino->mtime_nsec  = 0;
+ 	while (1) {
 -- 
 1.5.4.3
 
