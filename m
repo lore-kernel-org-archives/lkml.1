@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYKUSgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYKUSly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbYKUSgs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYKUSgk
+	id S1756412AbYKUSly (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYKUSlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:36:40 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:17926 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbYKUSgj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:36:39 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=aKNxDgpoQEyrk1nsf4VqXC5S61nChQgvBGRpdJxaR5BEhcdMXyYY+mNi6ZmETON5b
-	UTpsIMURdilx202/CQJxQ==
+	Fri, 21 Nov 2008 13:41:45 -0500
+Received: from styx.suse.cz ([82.119.242.94]:59274 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751026AbYKUSlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 13:41:44 -0500
+From: Petr Tesarik <ptesarik@suse.cz>
+Organization: SUSE LINUX, s.r.o.
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+Date: Fri, 21 Nov 2008 19:42:43 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Frank Mayhar <fmayhar@google.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
+       adobriyan@gmail.com, akpm@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1224694989.8431.23.camel@oberon> <1226015568.2186.20.camel@bobble.smo.corp.google.com> <1226053744.7803.5851.camel@twins>
+In-Reply-To: <1226053744.7803.5851.camel@twins>
 MIME-Version: 1.0
-In-Reply-To: <49267621.2070706@cn.fujitsu.com>
-References: <49267621.2070706@cn.fujitsu.com>
-Date: Fri, 21 Nov 2008 10:36:37 -0800
-Message-ID: <6599ad830811211036k419ff716h6068d532c9942d73@mail.gmail.com>
-Subject: Re: [PATCH] cpuset: rcu_read_lock() to protect task_cs()
-From: Paul Menage <menage@google.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811211942.43848.ptesarik@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 12:49 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+Dne Friday 07 of November 2008 11:29:04 Peter Zijlstra napsal(a):
+> (fwiw your email doesn't come across properly, evo refuses to display
+> them, there's some mangling of headers which makes it think there's an
+> attachment)
 >
-> task_cs() calls cgroup_subsys_state().
-
-You mean it calls task_subsys_state().
-
+> On Thu, 2008-11-06 at 15:52 -0800, Frank Mayhar wrote:
+> > On Thu, 2008-11-06 at 16:08 +0100, Peter Zijlstra wrote:
+> > > On Thu, 2008-11-06 at 09:03 -0600, Christoph Lameter wrote:
+> > > > On Thu, 6 Nov 2008, Peter Zijlstra wrote:
+> > > > > Also, you just introduced per-cpu allocations for each
+> > > > > thread-group, while Christoph is reworking the per-cpu allocator,
+> > > > > with one unfortunate side-effect - its going to have a limited size
+> > > > > pool. Therefore this will limit the number of thread-groups we can
+> > > > > have.
+> > > >
+> > > > Patches exist that implement a dynamically growable percpu pool
+> > > > (using virtual mappings though). If the cost of the additional
+> > > > complexity / overhead is justifiable then we can make the percpu pool
+> > > > dynamically extendable.
+> > >
+> > > Right, but I don't think the patch under consideration will fly anyway,
+> > > doing a for_each_possible_cpu() loop on every tick on all cpus isn't
+> > > really healthy, even for moderate sized machines.
+> >
+> > I personally think that you're overstating this.  First, the current
+> > implementation walks all threads for each tick, which is simply not
+> > scalable and results in soft lockups with large numbers of threads.
+> > This patch fixes a real bug.  Second, this only happens "on every tick"
+> > for processes that have more than one thread _and_ that use posix
+> > interval timers.  Roland and I went to some effort to keep loops like
+> > the on you're referring to out of the common paths.
+> >
+> > In any event, while this particular implementation may not be optimal,
+> > at least it's _right_.  Whatever happened to "make it right, then make
+> > it fast?"
 >
-> we must use rcu_read_lock() to protect cgroup_subsys_state().
+> Well, I'm not thinking you did it right ;-)
 >
-> it's correct that top_cpuset is never freed, but cgroup_subsys_state()
-> accesses css_set, this css_set maybe freed when task_cs() called.
+> While I agree that the linear loop is sub-optimal, but it only really
+> becomes a problem when you have hundreds or thousands of threads in your
+> application, which I'll argue to be insane anyway.
 
-It would be nice to have an RCU debug mode where rcu_dereference()
-does a WARN() if it's invoked not under rcu_read_lock().
+This is just not true. I've seen a very real example of a lockup with a very 
+sane number of threads (one per CPU), but on a very large machine (1024 CPUs 
+IIRC). The application set per-process CPU profiling with an interval of 1 
+tick, which translates to 1024 timers firing off with each tick...
 
->
-> we use use rcu_read_lock() to protect it.
->
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> index 3e00526..e0e087e 100644
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -363,14 +363,9 @@ void cpuset_update_task_memory_state(void)
->        struct task_struct *tsk = current;
->        struct cpuset *cs;
->
-> -       if (task_cs(tsk) == &top_cpuset) {
-> -               /* Don't need rcu for top_cpuset.  It's never freed. */
-> -               my_cpusets_mem_gen = top_cpuset.mems_generation;
-> -       } else {
-> -               rcu_read_lock();
-> -               my_cpusets_mem_gen = task_cs(tsk)->mems_generation;
-> -               rcu_read_unlock();
-> -       }
-> +       rcu_read_lock();
-> +       my_cpusets_mem_gen = task_cs(tsk)->mems_generation;
-> +       rcu_read_unlock();
+Well, yes, that was broken, too, but that's the way one quite popular FORTRAN 
+compiler works...
 
-Yes, I guess this old cpusets assumption is no longer valid in cgroups.
-
-Acked-by: Paul Menage <menage@google.com>
-
-Thanks
-
-Paul
+Petr
