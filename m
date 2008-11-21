@@ -1,150 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYKUFPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYKUFXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbYKUFPe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 00:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYKUFPZ
+	id S1753629AbYKUFXg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 00:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYKUFX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 00:15:25 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58206 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbYKUFPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 00:15:24 -0500
-Message-ID: <492643E3.8090906@cn.fujitsu.com>
-Date: Fri, 21 Nov 2008 13:15:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
+	Fri, 21 Nov 2008 00:23:27 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44570 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbYKUFX1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 00:23:27 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Containers <containers@lists.linux-foundation.org>,
-       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroups: remove some redundant NULL checks
-References: <4926320A.5060507@cn.fujitsu.com>
-In-Reply-To: <4926320A.5060507@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: penguin-kernel@i-love.sakura.ne.jp, linux-kernel@vger.kernel.org
+Subject: Re: Random freeze (Re: mmotm 2008-11-19-02-19 uploaded)
+In-Reply-To: Your message of "Thu, 20 Nov 2008 15:20:54 PST."
+             <20081120152054.2f757251.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200811200609.mAK69ZbZ053438@www262.sakura.ne.jp> <4401.1227222347@turing-police.cc.vt.edu>
+            <20081120152054.2f757251.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1227244998_3088P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 21 Nov 2008 00:23:18 -0500
+Message-ID: <5539.1227244998@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- In cgroup_clone(), if vfs_mkdir() returns successfully,
-  dentry->d_fsdata will be the pointer to the newly created
-  cgroup and won't be NULL.
+--==_Exmh_1227244998_3088P
+Content-Type: text/plain; charset=us-ascii
 
-- a cgroup file's dentry->d_fsdata won't be NULL, guaranteed
-  by cgroup_add_file().
+On Thu, 20 Nov 2008 15:20:54 PST, Andrew Morton said:
 
-- When walking through the subsystems of a cgroup_fs (using
-  for_each_subsys), cgrp->subsys[ss->subsys_id] won't be NULL,
-  guaranteed by cgroup_create().
+> The traditional cause of the above trace is that someone mucked up the
+> block/driver/irq-routing layer and we lost an IO completion.
 
-(Also remove 2 unused variables in cgroup_rmdir().
+Yes, that would explain all the symptoms and tracebacks - everybody comes
+to a screeching halt the next time they try to go to disk, while the actual
+disk drive is showing zero activity.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
+> It's also of course possible (but less common) that someone mucked up
+> the VFS.  It would be interesting to revert
+> do_mpage_readpage-dont-submit-lots-of-small-bios-on-boundary.patch.
 
-There was a compile warning..resend this patch. Sorry for bothering.
+I'm seeing an MTBF of about 2-3 hours when actually applying an I/O load to the
+system.  I'll try reverting that patch, and if it survives an entire day or
+two it will be pretty strong circumstantial evidence that patch is the culprit...
 
----
- kernel/cgroup.c |   29 +++++++----------------------
- 1 files changed, 7 insertions(+), 22 deletions(-)
+--==_Exmh_1227244998_3088P
+Content-Type: application/pgp-signature
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index fe00b3b..7b0e4a5 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -588,7 +588,7 @@ static void cgroup_call_pre_destroy(struct cgroup *cgrp)
- {
- 	struct cgroup_subsys *ss;
- 	for_each_subsys(cgrp->root, ss)
--		if (ss->pre_destroy && cgrp->subsys[ss->subsys_id])
-+		if (ss->pre_destroy)
- 			ss->pre_destroy(ss, cgrp);
- 	return;
- }
-@@ -612,10 +612,8 @@ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
- 		/*
- 		 * Release the subsystem state objects.
- 		 */
--		for_each_subsys(cgrp->root, ss) {
--			if (cgrp->subsys[ss->subsys_id])
--				ss->destroy(ss, cgrp);
--		}
-+		for_each_subsys(cgrp->root, ss)
-+			ss->destroy(ss, cgrp);
- 
- 		cgrp->root->number_of_cgroups--;
- 		mutex_unlock(&cgroup_mutex);
-@@ -1443,7 +1441,7 @@ static ssize_t cgroup_file_write(struct file *file, const char __user *buf,
- 	struct cftype *cft = __d_cft(file->f_dentry);
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
- 
--	if (!cft || cgroup_is_removed(cgrp))
-+	if (cgroup_is_removed(cgrp))
- 		return -ENODEV;
- 	if (cft->write)
- 		return cft->write(cgrp, cft, file, buf, nbytes, ppos);
-@@ -1488,7 +1486,7 @@ static ssize_t cgroup_file_read(struct file *file, char __user *buf,
- 	struct cftype *cft = __d_cft(file->f_dentry);
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
- 
--	if (!cft || cgroup_is_removed(cgrp))
-+	if (cgroup_is_removed(cgrp))
- 		return -ENODEV;
- 
- 	if (cft->read)
-@@ -1552,10 +1550,8 @@ static int cgroup_file_open(struct inode *inode, struct file *file)
- 	err = generic_file_open(inode, file);
- 	if (err)
- 		return err;
--
- 	cft = __d_cft(file->f_dentry);
--	if (!cft)
--		return -ENODEV;
-+
- 	if (cft->read_map || cft->read_seq_string) {
- 		struct cgroup_seqfile_state *state =
- 			kzalloc(sizeof(*state), GFP_USER);
-@@ -2461,8 +2457,6 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- 	struct cgroup *cgrp = dentry->d_fsdata;
- 	struct dentry *d;
- 	struct cgroup *parent;
--	struct super_block *sb;
--	struct cgroupfs_root *root;
- 
- 	/* the vfs holds both inode->i_mutex already */
- 
-@@ -2485,8 +2479,6 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- 
- 	mutex_lock(&cgroup_mutex);
- 	parent = cgrp->parent;
--	root = cgrp->root;
--	sb = root->sb;
- 
- 	if (atomic_read(&cgrp->count)
- 	    || !list_empty(&cgrp->children)
-@@ -2966,7 +2958,7 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 	}
- 
- 	/* Create the cgroup directory, which also creates the cgroup */
--	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
-+	ret = vfs_mkdir(inode, dentry, 0755);
- 	child = __d_cgrp(dentry);
- 	dput(dentry);
- 	if (ret) {
-@@ -2976,13 +2968,6 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 		goto out_release;
- 	}
- 
--	if (!child) {
--		printk(KERN_INFO
--		       "Couldn't find new cgroup %s\n", nodename);
--		ret = -ENOMEM;
--		goto out_release;
--	}
--
- 	/* The cgroup now exists. Retake cgroup_mutex and check
- 	 * that we're still in the same state that we thought we
- 	 * were. */
--- 
-1.5.4.rc3
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFJJkXGcC3lWbTT17ARAhR+AJ9FNGGqOiW6wXpBWLqXto6+gZquGQCfZIFQ
+nCXcmd0PpNh+oS0v5v5ZjNo=
+=vWBc
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1227244998_3088P--
