@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYKUI2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbYKUI3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbYKUI2r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbYKUI2W
+	id S1756324AbYKUI3G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbYKUI20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:28:22 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:56085 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbYKUI2V (ORCPT
+	Fri, 21 Nov 2008 03:28:26 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:55503 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755240AbYKUI2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:28:21 -0500
+	Fri, 21 Nov 2008 03:28:24 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 1/7] sched: Framework for sched_mc/smt_power_savings=N
+Subject: [RFC PATCH v4 5/7] sched: activate active load balancing in new idle
+	cpus
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -24,8 +25,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Gregory Haskins <gregory.haskins@gmail.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Fri, 21 Nov 2008 14:00:53 +0530
-Message-ID: <20081121083052.27075.87221.stgit@drishya.in.ibm.com>
+Date: Fri, 21 Nov 2008 14:01:38 +0530
+Message-ID: <20081121083137.27075.74736.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
 References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -36,92 +37,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+Active load balancing is a process by which migration thread
+is woken up on the target CPU in order to pull current
+running task on another package into this newly idle
+package.
 
-***  RFC patch of work in progress and not for inclusion. ***
+This method is already in use with normal load_balance(),
+this patch introduces this method to new idle cpus when
+sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
 
-Currently the sched_mc/smt_power_savings variable is a boolean, which either
-enables or disables topology based power savings. This extends the behaviour of
-the variable from boolean to multivalued, such that based on the value, we
-decide how aggressively do we want to perform topology based powersavings
-balance.
+This logic provides effective consolidation of short running
+daemon jobs in a almost idle system
 
-Variable levels of power saving tunable would benefit end user to match the
-required level of power savings vs performance trade off depending on the
-system configuration and workloads.
+The side effect of this patch may be ping-ponging of tasks
+if the system is moderately utilised. May need to adjust the
+iterations before triggering.
 
-This initial version makes the sched_mc_power_savings global variable to take
-more values (0,1,2).
-
-Later version is expected to add new member sd->powersavings_level at the multi
-core CPU level sched_domain. This make all sd->flags check for
-SD_POWERSAVINGS_BALANCE into a different macro that will check for
-powersavings_level.
-
-The power savings level setting should be in one place either in the
-sched_mc_power_savings global variable or contained within the appropriate
-sched_domain structure.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- include/linux/sched.h |   11 +++++++++++
- kernel/sched.c        |   16 +++++++++++++---
- 2 files changed, 24 insertions(+), 3 deletions(-)
+ kernel/sched.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 54 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 644ffbd..d862837 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -760,6 +760,17 @@ enum cpu_idle_type {
- #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
- #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
- 
-+enum powersavings_balance_level {
-+	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
-+	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
-+					 * first for long running threads
-+					 */
-+	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
-+					 * cpu package for power savings
-+					 */
-+	MAX_POWERSAVINGS_BALANCE_LEVELS
-+};
-+
- #define BALANCE_FOR_MC_POWER	\
- 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
- 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 9b1e793..ea33446 100644
+index d28cd98..e4aff6c 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -7876,14 +7876,24 @@ int arch_reinit_sched_domains(void)
- static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
- {
- 	int ret;
-+	unsigned int level = 0;
+@@ -3694,10 +3694,64 @@ redo:
+ 	}
  
--	if (buf[0] != '0' && buf[0] != '1')
-+	sscanf(buf, "%u", &level);
+ 	if (!ld_moved) {
++		int active_balance;
 +
-+	/*
-+	 * level is always be positive so don't check for
-+	 * level < POWERSAVINGS_BALANCE_NONE which is 0
-+	 * What happens on 0 or 1 byte write,
-+	 * need to check for count as well?
-+	 */
+ 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+ 		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+ 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+ 			return -1;
 +
-+	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
- 		return -EINVAL;
- 
- 	if (smt)
--		sched_smt_power_savings = (buf[0] == '1');
-+		sched_smt_power_savings = level;
- 	else
--		sched_mc_power_savings = (buf[0] == '1');
-+		sched_mc_power_savings = level;
- 
- 	ret = arch_reinit_sched_domains();
++		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
++			return -1;
++
++		if (sd->nr_balance_failed++ < 2)
++			return -1;
++
++		/*
++		 * The only task running in a non-idle cpu can be moved to this
++		 * cpu in an attempt to completely freeup the other CPU
++		 * package. The same method used to move task in load_balance()
++		 * have been extended for load_balance_newidle() to speedup
++		 * consolidation at sched_mc=POWERSAVINGS_BALANCE_WAKEUP (2)
++		 *
++		 * The package power saving logic comes from
++		 * find_busiest_group().  If there are no imbalance, then
++		 * f_b_g() will return NULL.  However when sched_mc={1,2} then
++		 * f_b_g() will select a group from which a running task may be
++		 * pulled to this cpu in order to make the other package idle.
++		 * If there is no opportunity to make a package idle and if
++		 * there are no imbalance, then f_b_g() will return NULL and no
++		 * action will be taken in load_balance_newidle().
++		 *
++		 * Under normal task pull operation due to imbalance, there
++		 * will be more than one task in the source run queue and
++		 * move_tasks() will succeed.  ld_moved will be true and this
++		 * active balance code will not be triggered.
++		 */
++
++		/* Lock busiest in correct order while this_rq is held */
++		double_lock_balance(this_rq, busiest);
++
++		/*
++		 * don't kick the migration_thread, if the curr
++		 * task on busiest cpu can't be moved to this_cpu
++		 */
++		if (!cpu_isset(this_cpu, busiest->curr->cpus_allowed)) {
++			double_unlock_balance(this_rq, busiest);
++			all_pinned = 1;
++			return ld_moved;
++		}
++
++		if (!busiest->active_balance) {
++			busiest->active_balance = 1;
++			busiest->push_cpu = this_cpu;
++			active_balance = 1;
++		}
++
++		double_unlock_balance(this_rq, busiest);
++		if (active_balance)
++			wake_up_process(busiest->migration_thread);
++
+ 	} else
+ 		sd->nr_balance_failed = 0;
  
 
