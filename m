@@ -1,161 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYKUWLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYKUWQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYKUWLo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 17:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYKUWLg
+	id S1756956AbYKUWQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 17:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYKUWQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 17:11:36 -0500
-Received: from flusers.ccur.com ([12.192.68.2]:42135 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752668AbYKUWLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 17:11:35 -0500
-Date: Fri, 21 Nov 2008 17:11:13 -0500
-From: Joe Korty <joe.korty@ccur.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] create /proc/timer-wheel-list
-Message-ID: <20081121221113.GA13566@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
+	Fri, 21 Nov 2008 17:16:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45152 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752668AbYKUWQ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 17:16:28 -0500
+Date: Fri, 21 Nov 2008 14:16:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix array overflow in parport_serial.c
+Message-Id: <20081121141621.fe4277bb.akpm@linux-foundation.org>
+In-Reply-To: <s5habbu9wzb.wl%tiwai@suse.de>
+References: <s5habbu9wzb.wl%tiwai@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create /proc/timer_wheel_list.
+On Thu, 20 Nov 2008 17:35:20 +0100
+Takashi Iwai <tiwai@suse.de> wrote:
 
-This does for the timer wheel what /proc/timer_list
-does for hrtimers -- provide a way of displaying what
-timers are running on what cpus, and their attributes.
+> Subject: [PATCH] Fix array overflow in parport_serial.c
 
-Signed-off-by: Joe Korty <joe.korty@ccur.com>
+Please prefer titles in the form
 
-Index: 2.6.28-rc6/kernel/timer.c
-===================================================================
---- 2.6.28-rc6.orig/kernel/timer.c	2008-11-21 17:02:04.000000000 -0500
-+++ 2.6.28-rc6/kernel/timer.c	2008-11-21 17:04:25.000000000 -0500
-@@ -36,6 +36,8 @@
- #include <linux/syscalls.h>
- #include <linux/delay.h>
- #include <linux/tick.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
- #include <linux/kallsyms.h>
- 
- #include <asm/uaccess.h>
-@@ -1568,6 +1570,113 @@
- 	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
- }
- 
-+#ifdef CONFIG_PROC_FS
-+
-+static void seq_printf_symbol(struct seq_file *m, void *symaddr, int width)
-+{
-+	char symname[KSYM_NAME_LEN];
-+	int stat, len = m->count;
-+
-+	if (lookup_symbol_name((unsigned long)symaddr, symname) < 0)
-+		stat = seq_printf(m, "<%p>", symaddr);
-+	else
-+		stat = seq_printf(m, "%s", symname);
-+	if (width && stat == 0) {
-+		len += (width - m->count);
-+		if (len > 0)
-+			seq_printf(m, "%*s", len, " ");
-+	}
-+}
-+
-+static void print_single_timer(struct seq_file *m, struct timer_list *timer)
-+{
-+	unsigned long base_jiffies = tbase_get_base(timer->base)->timer_jiffies;
-+
-+	seq_printf(m, " %p - ", (void *)(timer->expires - base_jiffies));
-+	seq_printf_symbol(m, timer->function, 24);
-+	seq_printf(m, " (data ");
-+	seq_printf_symbol(m, (void *)(timer->data), 24);
-+	seq_printf(m, ")");
-+#ifdef CONFIG_TIMER_STATS
-+	seq_printf(m, " from ");
-+	seq_printf_symbol(m, timer->start_site, 28);
-+	seq_printf(m, " %*s/%d",
-+		TASK_COMM_LEN, timer->start_comm,
-+		timer->start_pid);
-+#endif
-+	seq_printf(m, "\n");
-+}
-+
-+static void print_timer_list(struct seq_file *m, struct list_head *head)
-+{
-+	struct timer_list *timer;
-+	struct list_head *item;
-+
-+	for (item = head->next; item != head; item = item->next) {
-+		timer = list_entry(item, struct timer_list, entry);
-+		print_single_timer(m, timer);
-+	}
-+}
-+
-+static void print_cpu_timers(struct seq_file *m, int cpu)
-+{
-+	int i;
-+	struct tvec_base *base = per_cpu(tvec_bases, cpu);
-+
-+	spin_lock_irq(&base->lock);
-+	seq_printf(m, "\ncpu: %d, base jiffies: %p\n\n",
-+		cpu, (void *)(base->timer_jiffies));
-+
-+	for (i = 0; i < TVR_SIZE; i++)
-+		print_timer_list(m, base->tv1.vec + i);
-+	for (i = 0; i < TVN_SIZE; i++) {
-+		print_timer_list(m, base->tv2.vec + i);
-+		print_timer_list(m, base->tv3.vec + i);
-+		print_timer_list(m, base->tv4.vec + i);
-+		print_timer_list(m, base->tv5.vec + i);
-+	}
-+	spin_unlock_irq(&base->lock);
-+}
-+
-+static int timer_list_show(struct seq_file *m, void *v)
-+{
-+	int cpu;
-+
-+	seq_printf(m, "Timer Wheel List Version: 1\n");
-+	seq_printf(m, "Jiffies: %px\n", (void *)jiffies);
-+
-+	for_each_online_cpu(cpu) {
-+		print_cpu_timers(m, cpu);
-+	}
-+
-+	return 0;
-+}
-+
-+static int timer_list_open(struct inode *inode, struct file *filp)
-+{
-+	return single_open(filp, timer_list_show, NULL);
-+}
-+
-+static struct file_operations timer_list_fops = {
-+	.open		= timer_list_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int __init init_timer_list_procfs(void)
-+{
-+	struct proc_dir_entry *pe;
-+
-+	pe = proc_create("timer_wheel_list", 0444, NULL, &timer_list_fops);
-+	if (!pe)
-+		return -ENOMEM;
-+	return 0;
-+}
-+late_initcall(init_timer_list_procfs);
-+
-+#endif /* CONFIG_PROC_FS */
-+
- /**
-  * msleep - sleep safely even with waitqueue interruptions
-  * @msecs: Time in milliseconds to sleep for
+	subsystem identifer: what was done to it
+
+I renamed this one to
+
+	parport_serial: fix array overflow
+
+> Date: Thu, 20 Nov 2008 17:35:20 +0100
+> User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
+>  FLIM/1.14.7 (Sanj__) APEL/10.6 Emacs/22.3
+>  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
+> 
+> The netmos_9xx5_combo type assumes that PCI SSID provides always the
+> correct value for the number of parallel and serial ports, but there
+> are indeed broken devices with wrong numbers, which may result in
+> Oops.
+> 
+> This patch simply adds the check of the array range.
+> 
+> Reference: Novell bnc#447067
+> 	https://bugzilla.novell.com/show_bug.cgi?id=447067
+> 
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> 
+> ---
+> diff --git a/drivers/parport/parport_serial.c b/drivers/parport/parport_serial.c
+> index e2e95b3..101ed49 100644
+> --- a/drivers/parport/parport_serial.c
+> +++ b/drivers/parport/parport_serial.c
+> @@ -70,6 +70,8 @@ static int __devinit netmos_parallel_init(struct pci_dev *dev, struct parport_pc
+>  	 * parallel ports and <S> is the number of serial ports.
+>  	 */
+>  	card->numports = (dev->subsystem_device & 0xf0) >> 4;
+> +	if (card->numports > ARRAY_SIZE(card->addr))
+
+hm.  ARRAY_SIZE returns an unsigned type so we don't have to worry
+about negative values when doing comparisons like this.  Not that
+card->numports could be negative anyway, but it's always nice to set
+readers' minds at rest..
+
+> +		card->numports = ARRAY_SIZE(card->addr);
+>  	return 0;
+>  }
+
+
+Should we emit some kind of warning when this is detected?  I guess
+not, if we're sure that there will never be a situation in which users
+find that some of their ports don't work?
+
