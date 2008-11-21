@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYKUGnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYKUGsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbYKUGnp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 01:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYKUGng
+	id S1753541AbYKUGsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 01:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYKUGsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 01:43:36 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:27500 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbYKUGnf (ORCPT
+	Fri, 21 Nov 2008 01:48:45 -0500
+Received: from krynn.se.axis.com ([193.13.178.10]:54526 "EHLO
+	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbYKUGso convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 01:43:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JWAtnm9W9SJ9p3sk9/IFXCn167VdDChaXA8y0gxzCnUUE5Jq5SwuNCFYtU8sS+16TZ
-         h7jG6ZwKEdJfi2AQWodR2WnGh/09ZIuGVYui2mo9njHsfMUoBrSD/g81m1W9jazWSzC/
-         szKSMJKBc9Wb6gQvb/6tGnYN+J30i5VQ41qh0=
-Message-ID: <804dabb00811202243x2d8d6070l11b245095d2ebe17@mail.gmail.com>
-Date: Fri, 21 Nov 2008 14:43:34 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: A question sort_main_extable()
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081120214717.1a02a9af@infradead.org>
+	Fri, 21 Nov 2008 01:48:44 -0500
+From: Mikael Starvik <mikael.starvik@axis.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 21 Nov 2008 07:48:35 +0100
+Subject: RE: headers-y for machines
+Thread-Topic: headers-y for machines
+Thread-Index: AclLT8+ZYEL0oOZ8RH2FVwZj2z0PLwAVRcQw
+Message-ID: <4BEA3FF3CAA35E408EA55C7BE2E61D053B05D4090A@xmail3.se.axis.com>
+References: <4BEA3FF3CAA35E408EA55C7BE2E61D053B05D40823@xmail3.se.axis.com>
+ <20081120190819.GA15838@uranus.ravnborg.org>
+ <20081120203637.GA21308@uranus.ravnborg.org>
+In-Reply-To: <20081120203637.GA21308@uranus.ravnborg.org>
+Accept-Language: sv-SE
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: sv-SE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00811202142y799fb70dxf89a1fc3514d78b1@mail.gmail.com>
-	 <20081120214717.1a02a9af@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Arjan.
+Thanks a lot Sam!
 
-On Fri, Nov 21, 2008 at 1:47 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Fri, 21 Nov 2008 13:42:56 +0800
-> "Peter Teoh" <htmldeveloper@gmail.com> wrote:
->
->> Inside start_kernel() there is a call to sort_main_extable().
->>
->> void sort_extable(struct exception_table_entry *start,
->>                  struct exception_table_entry *finish)
->> {
->>        sort(start, finish - start, sizeof(struct
->> exception_table_entry), cmp_ex, NULL);
->> }
->>
+I agree that this is a rare case. We find it useful to keep kernel code simple and sometimes lift out some machine specific calculations or algorithms to userspace. I will enter your diff in our local CVS. It's up to you if you would like to add it in mainline or not.
 
-Sorting is one problem, possibly it is partially pre-ordered.
+Best Regards
+/Mikael
 
-Another problem is memory usage.   Do you or anyone know the amount of
-memory used?   In MS windows, there is an article dedicated to
-explaining why bootup is quick - one of the contributing factor is
-saving memory for only the necessary stuff.   Exception strings, being
-rarely needed to be used, will not be loaded into memory until it is
-really necessary.   At kernel compilation time, compiler will
-intelligently collate all the strings together, and pushed it right to
-the end of the kernel binary, avoiding unnecessary loading.   But then
-it is a different architecture - as Windows allow swap-in of kernel
-image during kernel runtime, unlike that of Linux Kernel - no swap-in
-of kernel image at kernel runtime is allowed.
+-----Original Message-----
+From: Sam Ravnborg [mailto:sam@ravnborg.org] 
+Sent: den 20 november 2008 21:37
+To: Mikael Starvik
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: headers-y for machines
 
-So I guessed there is no way to avoid loading in these exception
-strings, even though it is really not needed......unless these can be
-pushed out to a specialized kernel module, and used udevd to
-dynamically load the module when needed?   Unless the size of memory
-saved is substantial enough (how do you calculate that?), I don't
-think it is justifiable to take these heavier path whenever strings
-are needed.
+On Thu, Nov 20, 2008 at 08:08:19PM +0100, Sam Ravnborg wrote:
+> Hi Mikael.
+> 
+> On Thu, Nov 20, 2008 at 09:48:45AM +0100, Mikael Starvik wrote:
+> > Lets say you have arch/arm/mach-xx/include/mach/myfile.h and want to add myfile.h to header-y. How do you do that?
+> > 
+> > I tried to add 
+> > 
+> > header-y += ../../maxh-xx/
+> > 
+> > in arch/arm/include/asm/Kbuild
+> > 
+> > and then
+> > header-y += myfile.h in arch/arm/mach-xx/include/mach/Kbuild
+> 
+> When we did the header file rearrange I had not foreseen that we would export header files
+> located anywhere else than include/* and arch/$ARCH/include so there is
+> no way to properly export files located in arch/$ARCH/mach-foo/...
+> 
+> Do we really want to export files form this location to userspace?
 
--- 
-Regards,
-Peter Teoh
+One way to support this could be to add the possibility to specify where
+to install the header files.
+Like this patch:
+
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 612dc13..1760113 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -14,6 +14,8 @@ _dst := $(if $(dst),$(dst),$(obj))
+ kbuild-file := $(srctree)/$(obj)/Kbuild
+ include $(kbuild-file)
+
++_dst := $(if $(header-dest-y),$(header-dest-y),$(_dst))
++
+ include scripts/Kbuild.include
+
+ install       := $(INSTALL_HDR_PATH)/$(_dst)
+
+
+With this you could add:
+header-dest-y := include/mach-foo
+
+to the Kbuild file despite having it located somewhere else in the tree.
+
+	Sam
