@@ -1,110 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYKUWrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYKUWvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbYKUWrt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 17:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYKUWrl
+	id S1756770AbYKUWvb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 17:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYKUWvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 17:47:41 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:33396 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbYKUWrk (ORCPT
+	Fri, 21 Nov 2008 17:51:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39341 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753339AbYKUWvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 17:47:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=JXUDMU7eKd5RzNpX6UjsI5vZAOM+rrCt5fT1i/p52Poir8vnT5OjdEy9yySh7HW2DQ
-         q9ppx6ayCYG+puU24UG4jR/F1+x85w689gahxNWrwRuDWu/FktZPhxvT6GRLtK7R18pv
-         aYfbuwPTuEb8E8P262tQfQ/fZ9o0FyBaAezbM=
-Message-ID: <7c86c4470811211447p57b38ecy9520a9e5170d2ce1@mail.gmail.com>
-Date: Fri, 21 Nov 2008 23:47:38 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Subject: Re: debugctl msr
-Cc: "Markus Metzger" <markus.t.metzger@googlemail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <7c86c4470811210833l5c8005b4l675bc51df50affaa@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 21 Nov 2008 17:51:23 -0500
+Date: Fri, 21 Nov 2008 14:50:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ying Han <yinghan@google.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, menage@google.com,
+       rientjes@google.com, rohitseth@google.com
+Subject: Re: Make the get_user_pages interruptible
+Message-Id: <20081121145043.0e4b2bf9.akpm@linux-foundation.org>
+In-Reply-To: <604427e00811201403k26e4bf93tdb2dee9506756a82@mail.gmail.com>
+References: <604427e00811201403k26e4bf93tdb2dee9506756a82@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
-	 <1227119245.6025.12.camel@raistlin>
-	 <7c86c4470811191120i63b70970s3e24af5c962ea538@mail.gmail.com>
-	 <1227133570.6104.10.camel@raistlin>
-	 <7c86c4470811201319x2eb93d41vbdd8ce480a797fab@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F115BC@irsmsx504.ger.corp.intel.com>
-	 <7c86c4470811210538i5e6958e1p2c31effa762f5914@mail.gmail.com>
-	 <7c86c4470811210727o13006d5bk5bcbacb791e51b1c@mail.gmail.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E08F3B93D@irsmsx504.ger.corp.intel.com>
-	 <7c86c4470811210833l5c8005b4l675bc51df50affaa@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus,
+On Thu, 20 Nov 2008 14:03:36 -0800
+Ying Han <yinghan@google.com> wrote:
 
-Perfmon does allocate its own buffer for PEBS.
-That buffer contains: a perfmon header + PEBS buffer
+> make get_user_pages interruptible
+> The initial implementation of checking TIF_MEMDIE covers the cases of OOM
+> killing. If the process has been OOM killed, the TIF_MEMDIE is set and it
+> return immediately. This patch includes:
+> 
+> 1. add the case that the SIGKILL is sent by user processes. The process can
+> try to get_user_pages() unlimited memory even if a user process has sent a
+> SIGKILL to it(maybe a monitor find the process exceed its memory limit and
+> try to kill it). In the old implementation, the SIGKILL won't be handled
+> until the get_user_pages() returns.
+> 
+> 2. change the return value to be ERESTARTSYS. It makes no sense to return
+> ENOMEM if the get_user_pages returned by getting a SIGKILL signal.
+> Considering the general convention for a system call interrupted by a
+> signal is ERESTARTNOSYS, so the current return value is consistant to that.
+> 
+> Signed-off-by:	Paul Menage <menage@google.com>
+> 		Ying Han <yinghan@google.com>
+> 
+> 
 
-Keep in mind that the PEBS buffer is actually remapped to user space to avoid
-copying records around.
+This isn't right?
 
-With the current code base, ds.c can accept a pre-allocated buffer.
-However, it does
-some adjustments for alignment and size (multiple of PEBS record
-size). That means
-that the start and end of the buffer could be different from the area
-passed to ds_request_pebs().
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1218,12 +1218,11 @@ int __get_user_pages(struct task_struct *tsk, struct m
+>  			struct page *page;
+> 
+>  			/*
+> -			 * If tsk is ooming, cut off its access to large memory
+> -			 * allocations. It has a pending SIGKILL, but it can't
+> -			 * be processed until returning to user space.
+> +			 * If we have a pending SIGKILL, don't keep
+> +			 * allocating memory.
+>  			 */
+> -			if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
+> -				return i ? i : -ENOMEM;
+> +			if (sigkill_pending(current))
+> +				return -ERESTARTSYS;
+> 
+>  			if (write)
+>  				foll_flags |= FOLL_WRITE;
 
-To parse the buffer, a monitoring tools needs a start position and the
-number of samples. The start
-position can be expressed as an offset from the beginning of the
-perfmon buffer.  The ds.c interface
-currently only returns indexes for current position, threshold, and
-end. Those indexes are good enough
-to derived the number of samples. But I would need one call to return
-the byte offset from the original
-buffer, or the actual address (which perfmon could then convert back
-to an offset from its buffer).
+If this function has already put some page*'s into *pages, they will be
+leaked.  The function fails to release those pages and it does not
+provide sufficient information to callers to allow them to release the
+pages.
 
-Thanks.
-
-On Fri, Nov 21, 2008 at 5:33 PM, stephane eranian
-<eranian@googlemail.com> wrote:
-> On Fri, Nov 21, 2008 at 5:10 PM, Metzger, Markus T
-> <markus.t.metzger@intel.com> wrote:
->>>-----Original Message-----
->>>From: stephane eranian [mailto:eranian@googlemail.com]
->>>Sent: Freitag, 21. November 2008 16:27
->>>To: Metzger, Markus T
->>>Cc: Markus Metzger; Ingo Molnar; Andi Kleen; Andrew Morton;
->>>linux-kernel@vger.kernel.org
->>>Subject: Re: debugctl msr
->>
->>>The absolute maximum MUST be at buffer+size+1 but the
->>>threshold can be anywhere
->>>between the start of the buffer and buffer+size. You had it set past
->>>the end of the buffer (at +1),
->>>therefore PEBS was not generating any interrupts.
->>
->> The default is cyclic mode, which requires the interrupt threshold
->> to be outside of the buffer.
->>
-> That's not what I need.
->
->> A request for interrupt mode should have got you -EOPNOTSUPP.
->
-> I did not try that.
->
->>
->> Absolute max should be one byte beyond the buffer, which
->> is base + size.
->>
-> My bad ;-<
->
+I thought I already mentioned that last time I saw this patch?
