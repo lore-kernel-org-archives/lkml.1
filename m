@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYKUS1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbYKUS2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbYKUS1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYKUS1Y
+	id S1757314AbYKUS2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYKUS2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:27:24 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38304 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbYKUS1X (ORCPT
+	Fri, 21 Nov 2008 13:28:07 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:60188 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbYKUS2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:27:23 -0500
-Message-ID: <4926FD58.7000406@zytor.com>
-Date: Fri, 21 Nov 2008 10:26:32 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 21 Nov 2008 13:28:06 -0500
+X-IronPort-AV: E=Sophos;i="4.33,645,1220227200"; 
+   d="scan'208";a="108285671"
+From: Roland Dreier <rdreier@cisco.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       Alexander Schmidt <alexschm@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Fix locking for shca_list_lock
+References: <200806061835.43802.fenkes@de.ibm.com>
+	<200811211637.15300.fenkes@de.ibm.com>
+	<1227283347.3599.8.camel@johannes.berg>
+	<200811211718.17489.fenkes@de.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 21 Nov 2008 10:28:03 -0800
+In-Reply-To: <200811211718.17489.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Fri, 21 Nov 2008 17:18:16 +0100")
+Message-ID: <adawsexexxo.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Dimitri Sivanich <sivanich@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 2/2 v3] SGI RTC: add generic timer system interrupt
-References: <20081023163041.GA14574@sgi.com> <20081119212202.GA3377@sgi.com> <20081119212350.GB3377@sgi.com> <20081119212631.GC3377@sgi.com> <20081120151208.f7892050.akpm@linux-foundation.org> <4925F095.40107@zytor.com> <20081121171537.GA12370@sgi.com>
-In-Reply-To: <20081121171537.GA12370@sgi.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Nov 2008 18:28:04.0461 (UTC) FILETIME=[E48B29D0:01C94C06]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Sivanich wrote:
-> 
-> There are basically two issues with using 'normal IRQs' in cases like this:
-> 
-> - Using normal IRQs would mean we would have an IRQ per cpu.  The current
->   hard coded maximum, NR_IRQS, is 4352 (NR_VECTORS + (32 * MAX_IO_APICS)).
->   On machines with large numbers of cpus and an irq per cpu for each desired
->   interrupt, that's a lot of IRQs.  In addition, the GRU, will need 2 such
->   IRQs per cpu.  On 4096 cpu systems, you've already used up more than the
->   limit just for that.  Until some sort of infrastructure change takes place
->   that would potentially allow this to be dynamically increased, such as
->   Yinghai Lu's "sparse_irq aka dyn_irq v14" patch, this problem will exist.
->   
->   Furthermore, the actual runtime limit, nr_irqs, is set to 96 by
->   probe_nr_irqs for our configuration.  This is because that code assumes all
->   vectors are io-apic vectors, not cpu centric vectors like the ones I'm
->   talking about.  With the current, scheme, even on a 128 cpu system, I'm out
->   of IRQs immediately.
-> 
-> - The current infrastructure for requesting vector/IRQ combinations doesn't
->   allow one to request an interrupt priority higher than i/o device interrupt
->   priorities.  Clock event (high resolution timer) code should run at higher
->   interrupt priority.
-
-Okay, so it is a hack pending us taking care of issues in the current
-code.  #1 we're obviously working on, #2 I need to think some more about
-but shouldn't be too hard to fix -- if real, it also affects other
-interrupt-driven clock sources.
-
-I'm OK with this being a temporary hack, but I want it to be recognized
-as such and cleaned up as soon as possible.
-
-	-hpa
-
-
-
+Looks good... I'll add this for 2.6.29, since as far as I can tell this
+bug has been there approximately forever already.
