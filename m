@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYKUTgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbYKUTgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbYKUTgL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 14:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbYKUTfn
+	id S1756761AbYKUTgh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 14:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbYKUTg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 14:35:43 -0500
-Received: from mga02.intel.com ([134.134.136.20]:30110 "EHLO mga02.intel.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755558AbYKUTfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 14:35:40 -0500
+	Fri, 21 Nov 2008 14:36:27 -0500
+Received: from mga09.intel.com ([134.134.136.24]:19627 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755558AbYKUTgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 14:36:24 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,645,1220252400"; 
-   d="scan'208";a="465873971"
-Date: Sat, 22 Nov 2008 02:38:52 +0800
+   d="scan'208";a="465874135"
+Date: Sat, 22 Nov 2008 02:39:32 +0800
 From: Yu Zhao <yu.zhao@intel.com>
 To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 Cc: "achiang@hp.com" <achiang@hp.com>,
@@ -29,9 +29,8 @@ Cc: "achiang@hp.com" <achiang@hp.com>,
        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
        "virtualization@lists.linux-foundation.org" 
 	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 2/13 v7] PCI: remove unnecessary arg of
-	pci_update_resource()
-Message-ID: <20081121183852.GC7810@yzhao12-linux.sh.intel.com>
+Subject: [PATCH 3/13 v7] PCI: define PCI resource names in an 'enum'
+Message-ID: <20081121183932.GD7810@yzhao12-linux.sh.intel.com>
 References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,82 +41,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cleanup removes unnecessary argument 'struct resource *res' in
-pci_update_resource(), so it takes same arguments as other companion
-functions (pci_assign_resource(), etc.).
+This patch moves all definitions of the PCI resource names to an 'enum',
+and also replaces some hard-coded resource variables with symbol
+names. This change eases introduction of device specific resources.
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
 ---
- drivers/pci/pci.c       |    4 ++--
- drivers/pci/setup-res.c |    7 ++++---
- include/linux/pci.h     |    2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/pci/pci-sysfs.c |    4 +++-
+ drivers/pci/probe.c     |    2 +-
+ drivers/pci/proc.c      |    7 ++++---
+ include/linux/pci.h     |   37 ++++++++++++++++++++++++-------------
+ 4 files changed, 32 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 21f2ac6..c408be8 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -377,8 +377,8 @@ pci_restore_bars(struct pci_dev *dev)
- 		return;
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 5d72866..0d74851 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -101,11 +101,13 @@ resource_show(struct device * dev, struct device_attribute *attr, char * buf)
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	char * str = buf;
+ 	int i;
+-	int max = 7;
++	int max;
+ 	resource_size_t start, end;
+ 
+ 	if (pci_dev->subordinate)
+ 		max = DEVICE_COUNT_RESOURCE;
++	else
++		max = PCI_BRIDGE_RESOURCES;
+ 
+ 	for (i = 0; i < max; i++) {
+ 		struct resource *res =  &pci_dev->resource[i];
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 003a9b3..4c5429f 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -423,7 +423,7 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 	child->subordinate = 0xff;
+ 
+ 	/* Set up default resource pointers and names.. */
+-	for (i = 0; i < 4; i++) {
++	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
+ 		child->resource[i] = &bridge->resource[PCI_BRIDGE_RESOURCES+i];
+ 		child->resource[i]->name = child->name;
  	}
- 
--	for (i = 0; i < numres; i ++)
--		pci_update_resource(dev, &dev->resource[i], i);
-+	for (i = 0; i < numres; i++)
-+		pci_update_resource(dev, i);
- }
- 
- static struct pci_platform_pm_ops *pci_platform_pm;
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 2dbd96c..b7ca679 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -26,11 +26,12 @@
- #include "pci.h"
- 
- 
--void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno)
-+void pci_update_resource(struct pci_dev *dev, int resno)
- {
- 	struct pci_bus_region region;
- 	u32 new, check, mask;
- 	int reg;
-+	struct resource *res = dev->resource + resno;
- 
- 	/*
- 	 * Ignore resources for unimplemented BARs and unused resource slots
-@@ -162,7 +163,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	} else {
- 		res->flags &= ~IORESOURCE_STARTALIGN;
- 		if (resno < PCI_BRIDGE_RESOURCES)
--			pci_update_resource(dev, res, resno);
-+			pci_update_resource(dev, resno);
+diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
+index e1098c3..f6f2a59 100644
+--- a/drivers/pci/proc.c
++++ b/drivers/pci/proc.c
+@@ -352,15 +352,16 @@ static int show_device(struct seq_file *m, void *v)
+ 			dev->vendor,
+ 			dev->device,
+ 			dev->irq);
+-	/* Here should be 7 and not PCI_NUM_RESOURCES as we need to preserve compatibility */
+-	for (i=0; i<7; i++) {
++
++	/* only print standard and ROM resources to preserve compatibility */
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		resource_size_t start, end;
+ 		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+ 		seq_printf(m, "\t%16llx",
+ 			(unsigned long long)(start |
+ 			(dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
  	}
- 
- 	return ret;
-@@ -197,7 +198,7 @@ int pci_assign_resource_fixed(struct pci_dev *dev, int resno)
- 		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
- 			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
- 	} else if (resno < PCI_BRIDGE_RESOURCES) {
--		pci_update_resource(dev, res, resno);
-+		pci_update_resource(dev, resno);
- 	}
- 
- 	return ret;
+-	for (i=0; i<7; i++) {
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		resource_size_t start, end;
+ 		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+ 		seq_printf(m, "\t%16llx",
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index feb4657..7e7ff03 100644
+index 7e7ff03..d455ec8 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -642,7 +642,7 @@ int pcie_get_readrq(struct pci_dev *dev);
- int pcie_set_readrq(struct pci_dev *dev, int rq);
- int pci_reset_function(struct pci_dev *dev);
- int pci_execute_reset_function(struct pci_dev *dev);
--void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno);
-+void pci_update_resource(struct pci_dev *dev, int resno);
- int __must_check pci_assign_resource(struct pci_dev *dev, int i);
- int pci_select_bars(struct pci_dev *dev, unsigned long flags);
+@@ -82,7 +82,30 @@ enum pci_mmap_state {
+ #define PCI_DMA_FROMDEVICE	2
+ #define PCI_DMA_NONE		3
  
+-#define DEVICE_COUNT_RESOURCE	12
++/*
++ *  For PCI devices, the region numbers are assigned this way:
++ */
++enum {
++	/* #0-5: standard PCI resources */
++	PCI_STD_RESOURCES,
++	PCI_STD_RESOURCE_END = 5,
++
++	/* #6: expansion ROM resource */
++	PCI_ROM_RESOURCE,
++
++	/* resources assigned to buses behind the bridge */
++#define PCI_BRIDGE_RESOURCE_NUM 4
++
++	PCI_BRIDGE_RESOURCES,
++	PCI_BRIDGE_RESOURCE_END = PCI_BRIDGE_RESOURCES +
++				  PCI_BRIDGE_RESOURCE_NUM - 1,
++
++	/* total resources associated with a PCI device */
++	PCI_NUM_RESOURCES,
++
++	/* preserve this for compatibility */
++	DEVICE_COUNT_RESOURCE
++};
+ 
+ typedef int __bitwise pci_power_t;
+ 
+@@ -268,18 +291,6 @@ static inline void pci_add_saved_cap(struct pci_dev *pci_dev,
+ 	hlist_add_head(&new_cap->next, &pci_dev->saved_cap_space);
+ }
+ 
+-/*
+- *  For PCI devices, the region numbers are assigned this way:
+- *
+- *	0-5	standard PCI regions
+- *	6	expansion ROM
+- *	7-10	bridges: address space assigned to buses behind the bridge
+- */
+-
+-#define PCI_ROM_RESOURCE	6
+-#define PCI_BRIDGE_RESOURCES	7
+-#define PCI_NUM_RESOURCES	11
+-
+ #ifndef PCI_BUS_NUM_RESOURCES
+ #define PCI_BUS_NUM_RESOURCES	16
+ #endif
 -- 
 1.5.6.4
 
