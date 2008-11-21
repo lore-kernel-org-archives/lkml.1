@@ -1,176 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbYKUQ33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYKUQ3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbYKUQ33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756855AbYKUQ06
+	id S1756857AbYKUQ3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYKUQ1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:26:58 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:6049 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756286AbYKUQ0d (ORCPT
+	Fri, 21 Nov 2008 11:27:00 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:3674 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756253AbYKUQ0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:26:33 -0500
-X-BigFish: VPS3(zzzzzzz32i43j62h)
+	Fri, 21 Nov 2008 11:26:32 -0500
+X-BigFish: VPS-2(zz4015Mzzzzz32i43j62h)
 X-Spam-TCS-SCL: 1:0
 X-FB-SS: 5,
-X-WSS-ID: 0KAOYZN-04-Y1I-01
+X-WSS-ID: 0KAOYZK-03-S7V-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 07/10] x86: add checks for alloc/free_coherent code
-Date: Fri, 21 Nov 2008 17:26:07 +0100
-Message-ID: <1227284770-19215-8-git-send-email-joerg.roedel@amd.com>
+       iommu@lists.linux-foundation.org
+Subject: [PATCH 0/10] DMA-API debugging facility
+Date: Fri, 21 Nov 2008 17:26:00 +0100
+Message-ID: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0625 (UTC) FILETIME=[DD285B10:01C94BF5]
+X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0469 (UTC) FILETIME=[DD108D50:01C94BF5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: detect bugs in alloc/free_coherent usage
+Hi,
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/include/asm/dma-mapping.h |   10 +++++-
- arch/x86/include/asm/dma_debug.h   |   20 +++++++++++++
- arch/x86/kernel/pci-dma-debug.c    |   56 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 84 insertions(+), 2 deletions(-)
+this patchset introduces code to debug drivers usage of the DMA-API.
+Tests with hardware IOMMUs have shown several bugs in drivers regarding
+the usage of that API.
+Problems were found especially in network card drivers.
 
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index c7bdb75..2893adb 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -304,8 +304,12 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 	if (!ops->alloc_coherent)
- 		return NULL;
- 
--	return ops->alloc_coherent(dev, size, dma_handle,
--				   dma_alloc_coherent_gfp_flags(dev, gfp));
-+	memory = ops->alloc_coherent(dev, size, dma_handle,
-+				     dma_alloc_coherent_gfp_flags(dev, gfp));
-+
-+	debug_alloc_coherent(dev, size, *dma_handle, memory);
-+
-+	return memory;
- }
- 
- static inline void dma_free_coherent(struct device *dev, size_t size,
-@@ -320,6 +324,8 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
- 
- 	if (ops->free_coherent)
- 		ops->free_coherent(dev, size, vaddr, bus);
-+
-+	debug_free_coherent(dev, size, vaddr, bus);
- }
- 
- #endif
-diff --git a/arch/x86/include/asm/dma_debug.h b/arch/x86/include/asm/dma_debug.h
-index ff06d1c..7245e27 100644
---- a/arch/x86/include/asm/dma_debug.h
-+++ b/arch/x86/include/asm/dma_debug.h
-@@ -59,6 +59,14 @@ extern
- void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 		    int nelems, int dir);
- 
-+extern
-+void debug_alloc_coherent(struct device *dev, size_t size,
-+			  dma_addr_t dma_addr, void *virt);
-+
-+extern
-+void debug_free_coherent(struct device *dev, size_t size,
-+			 void *virt, dma_addr_t addr);
-+
- #else /* CONFIG_DMA_API_DEBUG */
- 
- static inline
-@@ -90,6 +98,18 @@ void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
- {
- }
- 
-+static inline
-+void debug_alloc_coherent(struct device *dev, size_t size,
-+			  dma_addr_t dma_addr, void *virt)
-+{
-+}
-+
-+static inline
-+void debug_free_coherent(struct device *dev, size_t size,
-+			 void *virt, dma_addr_t addr)
-+{
-+}
-+
- #endif /* CONFIG_DMA_API_DEBUG */
- 
- #endif /* __ASM_X86_DMA_DEBUG */
-diff --git a/arch/x86/kernel/pci-dma-debug.c b/arch/x86/kernel/pci-dma-debug.c
-index 55ef69a..db5ef9a 100644
---- a/arch/x86/kernel/pci-dma-debug.c
-+++ b/arch/x86/kernel/pci-dma-debug.c
-@@ -352,3 +352,59 @@ void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
- }
- EXPORT_SYMBOL(debug_unmap_sg);
- 
-+void debug_alloc_coherent(struct device *dev, size_t size,
-+			  dma_addr_t dma_addr, void *virt)
-+{
-+	unsigned long flags;
-+	struct dma_debug_entry *entry;
-+
-+	if (dma_addr == bad_dma_address)
-+		return;
-+
-+	entry = dma_entry_alloc();
-+	if (!entry)
-+		return;
-+
-+	entry->type      = DMA_DEBUG_COHERENT;
-+	entry->dev       = dev;
-+	entry->cpu_addr  = virt;
-+	entry->size      = size;
-+	entry->dev_addr  = dma_addr;
-+	entry->direction = DMA_BIDIRECTIONAL;
-+
-+	spin_lock_irqsave(&dma_lock, flags);
-+	add_dma_entry(entry);
-+	spin_unlock_irqrestore(&dma_lock, flags);
-+}
-+EXPORT_SYMBOL(debug_alloc_coherent);
-+
-+void debug_free_coherent(struct device *dev, size_t size,
-+			 void *virt, dma_addr_t addr)
-+{
-+	unsigned long flags;
-+	struct dma_debug_entry ref = {
-+		.type = DMA_DEBUG_COHERENT,
-+		.dev = dev,
-+		.cpu_addr = virt,
-+		.dev_addr = addr,
-+		.size = size,
-+		.direction = DMA_BIDIRECTIONAL,
-+	};
-+	struct dma_debug_entry *entry;
-+
-+	if (addr == bad_dma_address)
-+		return;
-+
-+	spin_lock_irqsave(&dma_lock, flags);
-+
-+	entry = find_dma_entry(&ref);
-+
-+	if (check_unmap(&ref, entry)) {
-+		remove_dma_entry(entry);
-+		dma_entry_free(entry);
-+	}
-+
-+	spin_unlock_irqrestore(&dma_lock, flags);
-+}
-+EXPORT_SYMBOL(debug_free_coherent);
-+
--- 
-1.5.6.4
+These bugs often don't show up or have any negative impact if there is
+no hardware IOMMU in use in the system. But with an hardware IOMMU these
+bugs turn the hardware unusable or, in the worst case, cause data
+corruption on devices which are managed by other (good) drivers.
+
+With the code these patches introduce driver developers can find several
+bugs of misusing the DMA-API in their drivers. But be aware, it can not
+find all possible bugs. If it finds a problem it prints out messages
+like
+
+tg3 0000:08:04.0: PCI-DMA: device driver tries to free DMA memory it has not allocated [device address=0x000000042f0f3ae7] [size=48 bytes]
+Pid: 6285, comm: bash Not tainted 2.6.28-rc5-00176-g6ae6379-dirty #6
+Call Trace:
+ <IRQ>  [<ffffffff80221276>] check_unmap+0x52/0x1ce
+ [<ffffffff80221af0>] debug_unmap_single+0x61/0xa4
+ [<ffffffff8053d396>] skb_dma_unmap+0xf2/0x10c
+ [<ffffffff8040a986>] tg3_poll+0xe8/0x822
+ [<ffffffff803abe2f>] mix_pool_bytes_extract+0x5c/0x155
+ [<ffffffff80540e42>] net_rx_action+0x9d/0x170
+ [<ffffffff8023bc3c>] __do_softirq+0x7a/0x13d
+ [<ffffffff8020c3cc>] call_softirq+0x1c/0x28
+ [<ffffffff8020d8ac>] do_softirq+0x2c/0x68
+ [<ffffffff8023bb7c>] irq_exit+0x3f/0x85
+ [<ffffffff8020db5e>] do_IRQ+0x14d/0x16f
+ [<ffffffff8020b686>] ret_from_intr+0x0/0xa
+ <EOI>  [<ffffffff80368187>] memcmp+0xb/0x22
+ [<ffffffff8029f11e>] __d_lookup+0xb9/0xf9
+ [<ffffffff80298166>] do_lookup+0x2a/0x1c1
+ [<ffffffff8029979f>] __link_path_walk+0x331/0xc0d
+ [<ffffffff8029a0c1>] path_walk+0x46/0x8b
+ [<ffffffff8029a245>] do_path_lookup+0xff/0x121
+ [<ffffffff8029ad2d>] path_lookup_open+0x54/0x95
+ [<ffffffff8029af7c>] do_filp_open+0x9d/0x782
+ [<ffffffff802a234e>] alloc_fd+0x69/0x10c
+ [<ffffffff8028fda9>] do_sys_open+0x48/0xcc
+ [<ffffffff8020b17b>] system_call_fastpath+0x16/0x1b
+
+or (from another machine with AMD IOMMU):
+
+ixgbe 0000:02:00.0: PCI-DMA: device driver frees DMA memory with different size [device address=0x0000000003fed812] [map size=258 bytes] [unmap size=256 bytes]
+Pid: 6178, comm: rmmod Not tainted 2.6.28-rc5 #4
+Call Trace:
+ [<ffffffff8022a2ae>] iommu_queue_inv_iommu_pages+0x5e/0x70
+ [<ffffffff80225956>] check_unmap+0x1c6/0x240
+ [<ffffffff80225ff5>] debug_unmap_single+0xb5/0x110
+ [<ffffffffa0213997>] ixgbe_clean_rx_ring+0x147/0x220
+ [<ffffffffa0214d7d>] ixgbe_down+0x2fd/0x3d0 [ixgbe]
+ [<ffffffffa02150b3>] ixgbe_close+0x13/0xc0 [ixgbe]
+ [<ffffffff80431326>] dev_close+0x56/0xa0
+ [<ffffffff804313b3>] rollback_registered+0x43/0x220
+ [<ffffffff804315a5>] unregister_netdevice+0x15/0x60
+ [<ffffffff80431601>] unregister_netdev+0x11/0x20
+ [<ffffffffa021aef8>] ixgbe_remove+0x48/0x16e [ixgbe]
+ [<ffffffff80386ffc>] pci_device_remove+0x2c/0x60
+ [<ffffffff803ef929>] __device_release_driver+0x99/0x100
+ [<ffffffff803efa48>] driver_detach+0xb8/0xc0
+ [<ffffffff803eea6e>] bus_remove_driver+0x8e/0xd0
+ [<ffffffff80387374>] pci_unregister_driver+0x34/0x90
+ [<ffffffff8026c6c7>] sys_delete_module+0x1c7/0x2a0
+ [<ffffffff802a9ce9>] do_munmap+0x349/0x390
+ [<ffffffff80374481>] __up_write+0x21/0x150
+ [<ffffffff8020c30b>] system_call_fastpath+0x16/0x1b
+
+This way driver developers get an idea where the problem is in their
+code.
+
+Please review and send any objections or, if there are none, consider
+for inclusion ;)
+
+Thanks,
+
+Joerg
+
 
 
