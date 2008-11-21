@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYKUI2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYKUI2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYKUI2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYKUI2G
+	id S1754590AbYKUI2r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbYKUI2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:28:06 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:58306 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753003AbYKUI2E (ORCPT
+	Fri, 21 Nov 2008 03:28:22 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:56085 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbYKUI2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:28:04 -0500
+	Fri, 21 Nov 2008 03:28:21 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 7/7] sched: fine-tune SD_MC_INIT -- revert
+Subject: [RFC PATCH v4 1/7] sched: Framework for sched_mc/smt_power_savings=N
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -24,8 +24,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Gregory Haskins <gregory.haskins@gmail.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Fri, 21 Nov 2008 14:01:54 +0530
-Message-ID: <20081121083154.27075.71015.stgit@drishya.in.ibm.com>
+Date: Fri, 21 Nov 2008 14:00:53 +0530
+Message-ID: <20081121083052.27075.87221.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
 References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -36,46 +36,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 14800984706bf6936bbec5187f736e928be5c218
-    Author: Mike Galbraith <efault@gmx.de>
-    Date:   Fri Nov 7 15:26:50 2008 +0100
+From: Gautham R Shenoy <ego@in.ibm.com>
 
-    Reverting this patch for now since this affects
-    consolidation and power savings.  Will rework
-    this tuning in the next iteration.
+***  RFC patch of work in progress and not for inclusion. ***
 
-    Tune SD_MC_INIT the same way as SD_CPU_INIT:
-    unset SD_BALANCE_NEWIDLE, and set SD_WAKE_BALANCE.
+Currently the sched_mc/smt_power_savings variable is a boolean, which either
+enables or disables topology based power savings. This extends the behaviour of
+the variable from boolean to multivalued, such that based on the value, we
+decide how aggressively do we want to perform topology based powersavings
+balance.
 
-    This improves vmark by 5%:
+Variable levels of power saving tunable would benefit end user to match the
+required level of power savings vs performance trade off depending on the
+system configuration and workloads.
 
-    vmark         132102 125968 125497 messages/sec    avg 127855.66    .984
-    vmark         139404 131719 131272 messages/sec    avg 134131.66   1.033
+This initial version makes the sched_mc_power_savings global variable to take
+more values (0,1,2).
 
-    Signed-off-by: Mike Galbraith <efault@gmx.de>
-    Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Later version is expected to add new member sd->powersavings_level at the multi
+core CPU level sched_domain. This make all sd->flags check for
+SD_POWERSAVINGS_BALANCE into a different macro that will check for
+powersavings_level.
 
-    Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+The power savings level setting should be in one place either in the
+sched_mc_power_savings global variable or contained within the appropriate
+sched_domain structure.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- include/linux/topology.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/sched.h |   11 +++++++++++
+ kernel/sched.c        |   16 +++++++++++++---
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 2565f4a..b1551d4 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -120,10 +120,10 @@ void arch_update_cpu_topology(void);
- 	.wake_idx		= 1,			\
- 	.forkexec_idx		= 1,			\
- 	.flags			= SD_LOAD_BALANCE	\
-+				| SD_BALANCE_NEWIDLE	\
- 				| SD_BALANCE_FORK	\
- 				| SD_BALANCE_EXEC	\
- 				| SD_WAKE_AFFINE	\
--				| SD_WAKE_BALANCE	\
- 				| SD_SHARE_PKG_RESOURCES\
- 				| BALANCE_FOR_MC_POWER,	\
- 	.last_balance		= jiffies,		\
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 644ffbd..d862837 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -760,6 +760,17 @@ enum cpu_idle_type {
+ #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+ #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
+ 
++enum powersavings_balance_level {
++	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
++	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
++					 * first for long running threads
++					 */
++	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
++					 * cpu package for power savings
++					 */
++	MAX_POWERSAVINGS_BALANCE_LEVELS
++};
++
+ #define BALANCE_FOR_MC_POWER	\
+ 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 9b1e793..ea33446 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7876,14 +7876,24 @@ int arch_reinit_sched_domains(void)
+ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ {
+ 	int ret;
++	unsigned int level = 0;
+ 
+-	if (buf[0] != '0' && buf[0] != '1')
++	sscanf(buf, "%u", &level);
++
++	/*
++	 * level is always be positive so don't check for
++	 * level < POWERSAVINGS_BALANCE_NONE which is 0
++	 * What happens on 0 or 1 byte write,
++	 * need to check for count as well?
++	 */
++
++	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
+ 		return -EINVAL;
+ 
+ 	if (smt)
+-		sched_smt_power_savings = (buf[0] == '1');
++		sched_smt_power_savings = level;
+ 	else
+-		sched_mc_power_savings = (buf[0] == '1');
++		sched_mc_power_savings = level;
+ 
+ 	ret = arch_reinit_sched_domains();
+ 
 
