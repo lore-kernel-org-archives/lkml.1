@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbYKUSJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYKUSM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757732AbYKUSJz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYKUSJr
+	id S1757303AbYKUSM4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYKUSMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:09:47 -0500
-Received: from cpe-67-49-92-118.socal.res.rr.com ([67.49.92.118]:57424 "EHLO
-	mail.blackbean.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754567AbYKUSJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:09:46 -0500
-Date: Fri, 21 Nov 2008 10:09:29 -0800
-From: Jim Radford <radford@galvanix.net>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: mcount record based dynamic tracing for ARM
-Message-ID: <20081121180929.GA13863@blackbean.org>
-References: <20081118231525.GA16081@blackbean.org> <alpine.DEB.1.10.0811201734050.14652@gandalf.stny.rr.com> <20081120224903.GA3244@blackbean.org> <alpine.DEB.1.10.0811202114560.4464@gandalf.stny.rr.com> <20081121035509.GA5266@blackbean.org> <alpine.DEB.1.10.0811210917380.6447@gandalf.stny.rr.com> <20081121153827.GA8433@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121153827.GA8433@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 21 Nov 2008 13:12:48 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51120 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755145AbYKUSMr (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 13:12:47 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: penguin-kernel@i-love.sakura.ne.jp, linux-kernel@vger.kernel.org
+Subject: Re: Random freeze (Re: mmotm 2008-11-19-02-19 uploaded)
+In-Reply-To: Your message of "Thu, 20 Nov 2008 15:20:54 PST."
+             <20081120152054.2f757251.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200811200609.mAK69ZbZ053438@www262.sakura.ne.jp> <4401.1227222347@turing-police.cc.vt.edu>
+            <20081120152054.2f757251.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1227291159_3137P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 21 Nov 2008 13:12:39 -0500
+Message-ID: <5672.1227291159@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 03:38:27PM +0000, Russell King - ARM Linux wrote:
-> On Fri, Nov 21, 2008 at 09:27:17AM -0500, Steven Rostedt wrote:
-> > On Thu, 20 Nov 2008, Jim Radford wrote:
-> > > -	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
-> > > +	select HAVE_FTRACE_MCOUNT_RECORD
-> > > +	select HAVE_DYNAMIC_FTRACE if (!XIP_KERNEL)
+--==_Exmh_1227291159_3137P
+Content-Type: text/plain; charset=us-ascii
 
-> > Russell mentioned something about the code not being compatible
-> > with Thumb2, is the above if statement enough?
+On Thu, 20 Nov 2008 15:20:54 PST, Andrew Morton said:
 
-> We've started on merging some of the pre-requisits, and it will mean
-> that the instruction length is no longer constant.  (It may be a
-> 16bit or 32bit instruction.)
+> It's also of course possible (but less common) that someone mucked up
+> the VFS.  It would be interesting to revert
+> do_mpage_readpage-dont-submit-lots-of-small-bios-on-boundary.patch.
 
-The only instruction that matters for arm is "bl <func>" since that's
-what's emitted by gcc to call mcount().  I suspect thumb will be easy
-to support.  <func> isn't known when the file is compiled, so I assume
-in that case the assembler will have to leave at least 4 bytes (even
-in thumb) in case mcount() gets linked far away.
+Reverted that one, managed to provoke a wedge-up this morning anyhow.
+So it's something else.
 
-I haven't looked at the return tracing code yet.  That might be harder
-to support, but given x86 works, I suspect it'll be doable.
+I may have to go and find a reproducer good enough to make bisection plausible.
 
--Jim
+--==_Exmh_1227291159_3137P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJJvoXcC3lWbTT17ARAqLfAJ92uA3KE5lzsW7MqvjhjF8Y8DbicACeIL4s
+dW46Vnnb/dNBi9tQZyJrHws=
+=scUe
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1227291159_3137P--
