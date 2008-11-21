@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYKULF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbYKULHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbYKULF0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 06:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYKULFO
+	id S1755444AbYKULHe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 06:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYKULHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 06:05:14 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:60431 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYKULFN (ORCPT
+	Fri, 21 Nov 2008 06:07:25 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47018 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751308AbYKULHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 06:05:13 -0500
-To: tj@kernel.org
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net
-In-reply-to: <49268876.7080303@kernel.org> (message from Tejun Heo on Fri, 21
-	Nov 2008 19:07:50 +0900)
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations, take
- #2
-References: <1227190298-4585-1-git-send-email-tj@kernel.org> <E1L3G3Q-0006SJ-Uc@pomaz-ex.szeredi.hu> <49268876.7080303@kernel.org>
-Message-Id: <E1L3Tp0-0007dc-3S@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 21 Nov 2008 12:05:10 +0100
+	Fri, 21 Nov 2008 06:07:25 -0500
+Subject: Re: [PATCH 2.6.28-rc5 03/11] kmemleak: Add the memory
+	allocation/freeing hooks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <84144f020811201130y2de91d03q7e6557e4086147ad@mail.gmail.com>
+References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
+	 <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+	 <84144f020811201130y2de91d03q7e6557e4086147ad@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 21 Nov 2008 11:07:07 +0000
+Message-Id: <1227265627.7015.7.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Nov 2008 11:07:08.0739 (UTC) FILETIME=[4BB45930:01C94BC9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Tejun Heo wrote:
-> > I removed ->unrestricted_ioctl() and associated code because it really
-> > doesn't make any sense: the high level lib won't be used for CUSE
-> > stuff, otherwise unrestrited ioctls are not allowed (and the interface
-> > is rather horrible anyway).
+Hi Pekka,
+
+On Thu, 2008-11-20 at 21:30 +0200, Pekka Enberg wrote:
+> > @@ -2610,6 +2611,9 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
+> >                /* Slab management obj is off-slab. */
+> >                slabp = kmem_cache_alloc_node(cachep->slabp_cache,
+> >                                              local_flags & ~GFP_THISNODE, nodeid);
+> > +               /* only scan the list member to avoid false negatives */
+> > +               memleak_scan_area(slabp, offsetof(struct slab, list),
+> > +                                 sizeof(struct list_head));
 > 
-> Well, CUSE highlevel interface piggy backs on FUSE so it requires
-> unrestricted_ioctl() there for it and ossp does use it.
+> I find this comment somewhat confusing. Does it mean we _must_ scan
+> the list members to avoid false negatives (i.e. leaks that happened
+> but were not reported) or that if we scan the whole of struct slab, we
+> get false negatives?
 
-I thought it uses the lowlevel interface.  Why doesn't it do that?
+It's been some time since I first added this and I may not remember the
+full details but it's the latter case - it should avoid scanning
+slabp->s_mem because (my understanding) is that it may contain a pointer
+to an allocated block. Kmemleak only allows adding what sections to
+scan, so in this case only the list_head is relevant.
 
-For CUSE there's really no point in going through high level
-interface, since there's just one file involved, so the path name
-generation (the main feature of the highlevel lib) doesn't make any
-sense.
+Let me know if my understanding is correct and I'll make the comment
+more clear.
 
-Thanks,
-Miklos
+Thanks.
+
+-- 
+Catalin
+
