@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYKUIXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYKUIYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbYKUIXv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYKUIXl
+	id S1755448AbYKUIYX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYKUIYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:23:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59283 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752482AbYKUIXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:23:41 -0500
-Date: Fri, 21 Nov 2008 00:23:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 24/45] CacheFiles: Add a hook to write a single page of
- data to an inode [ver #41]
-Message-Id: <20081121002317.69e4fd11.akpm@linux-foundation.org>
-In-Reply-To: <20081120144343.10667.530.stgit@warthog.procyon.org.uk>
-References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-	<20081120144343.10667.530.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Nov 2008 03:24:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51233 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752487AbYKUIYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 03:24:09 -0500
+Date: Fri, 21 Nov 2008 09:23:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, cpufreq@vger.kernel.org,
+       stable@kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       linux-kernel@vger.kernel.org, davej@redhat.com
+Subject: Re: [PATCH] x86: powernow-k8: ignore out-of-range PstateStatus
+	value
+Message-ID: <20081121082346.GK16242@elte.hu>
+References: <20081107150811.GI15390@alberich.amd.com> <20081121080841.GD10940@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081121080841.GD10940@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Nov 2008 14:43:43 +0000 David Howells <dhowells@redhat.com> wrote:
 
-> Add an address space operation to write one single page of data to an inode at
-> a page-aligned location (thus permitting the implementation to be highly
-> optimised).  The data source is a single page.
-> 
-> This is used by CacheFiles to store the contents of netfs pages into their
-> backing file pages.
-> 
-> Supply a generic implementation for this that uses the write_begin() and
-> write_end() address_space operations to bind a copy directly into the page
-> cache.
-> 
-> Hook the Ext2 and Ext3 operations to the generic implementation.
-> 
->
-> ...
->
-> +
-> +	/* write the contents of the source page over the page at the specified
-> +	 * index in the target address space (the source page does not need to
-> +	 * be related to the target address space) */
-> +	int (*write_one_page)(struct address_space *, pgoff_t, struct page *);
->  };
+nice fix! A few minor nits:
 
-Sigh.  I don't normally comment on busted comment layout, but Ingo does
-so I'm allowed to ;) See recent discussion around the kmemleak patches.
+> +			/* a workaround for family 11h erratum 311 might cause
+> +			   an "out-of-range Pstate if the core is in Pstate-0 */
 
-> +/**
-> + * generic_file_buffered_write_one_page - Write a single page of data to an
-> + *	inode
+Please use the customary comment style:
 
-kerneldoc doesn't permit line breaks in this context (unless it got
-fixed recently)
+  /*
+   * Comment .....
+   * ...... goes here:
+   */
 
-> + * @mapping - The address space of the target inode
-> + * @index - The target page in the target inode to fill
-> + * @source - The data to write into the target page
-> + *
-> + * Write the data from the source page to the page in the nominated address
-> + * space at the @index specified.  Note that the file will not be extended if
-> + * the page crosses the EOF marker, in which case only the first part of the
-> + * page will be written.
-> + *
-> + * The @source page does not need to have any association with the file or the
-> + * target page offset.
-> + */
+and since it's multi-line anyway, keep to the 80-col limit too please.
 
+> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> index ab48cfe..4078f5d 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> @@ -23,7 +23,9 @@ struct powernow_k8_data {
+>          u32 exttype; /* extended interface = 1 */
+>  
+>  	/* keep track of the current fid / vid or pstate */
+> -	u32 currvid, currfid, currpstate;
+> +	u32 currvid, currfid;
+> +	u32 currpstate;
+
+Any reason why it has been moved to a separate line? (either split all 
+fields or keep them all together)
+
+> +#define INVALID_HW_PSTATE 0xff
+
+Please use an enum, not a define in the middle of a struct.
+
+Thanks,
+
+        Ingo
