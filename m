@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbYKUS4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYKUS5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbYKUS4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYKUS4g
+	id S1757369AbYKUS5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYKUS5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:56:36 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:52285 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751942AbYKUS4g (ORCPT
+	Fri, 21 Nov 2008 13:57:04 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:22087 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbYKUS5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:56:36 -0500
-Date: Fri, 21 Nov 2008 13:56:32 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Yi Yang <yi.y.yang@intel.com>
-cc: David Brownell <david-b@pacbell.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] USB: improve ehci_watchdog's side effect in CPU power
- management
-In-Reply-To: <1227279337.3447.22.camel@yangyi-dev>
-Message-ID: <Pine.LNX.4.44L0.0811211354350.2376-100000@iolanthe.rowland.org>
+	Fri, 21 Nov 2008 13:57:01 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=Bl6xC4Iz/E3/hti+TU8vO3o0IbvIFrHsK8Qoz1EPEjEcUb/6Qguw06Om39JtlxOw7
+	64x+5oaETvEYRSoTXHVAw==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4926762E.9010207@cn.fujitsu.com>
+References: <4926762E.9010207@cn.fujitsu.com>
+Date: Fri, 21 Nov 2008 10:56:58 -0800
+Message-ID: <6599ad830811211056x205f0fc7k6b0472dc34c03c69@mail.gmail.com>
+Subject: Re: [PATCH 2/2] cpuset: use cgroup_path() in proc_cpuset_show()
+From: Paul Menage <menage@google.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Yi Yang wrote:
+On Fri, Nov 21, 2008 at 12:49 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>
+> use cgroup_path() instead of
+> task_subsys_state(tsk, cpuset_subsys_id)->cgroup
 
-> But on Asus EeePC, i saw another periodical timer usb_hcd_poll_rh_status
-> which fires every 256 milisecond, is this also doing with some
-> hardware's quirk?
+You mean:
 
-That timer is associated mostly with UHCI controllers.  It is not 
-because of a hardware quirk.  If the controller is suspended (for 
-example, because no devices are attached to it) then the timer should 
-stop.
+use task_cgroup() instead of task_subsys_state()->cgroup
 
-Alan Stern
-
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+> index 3e00526..e0e087e 100644
+> --- a/kernel/cpuset.c
+> +++ b/kernel/cpuset.c
+> @@ -2387,7 +2386,7 @@ static int proc_cpuset_show(struct seq_file *m, void *unused_v)
+>        struct pid *pid;
+>        struct task_struct *tsk;
+>        char *buf;
+> -       struct cgroup_subsys_state *css;
+> +       struct cgroup *cgp;
+>        int retval;
+>
+>        retval = -ENOMEM;
+> @@ -2403,8 +2402,8 @@ static int proc_cpuset_show(struct seq_file *m, void *unused_v)
+>
+>        retval = -EINVAL;
+>        cgroup_lock();
+> -       css = task_subsys_state(tsk, cpuset_subsys_id);
+> -       retval = cgroup_path(css->cgroup, buf, PAGE_SIZE);
+> +       cgp = task_cgroup(tsk, cpuset_subsys_id);
+> +       retval = cgroup_path(cgp, buf, PAGE_SIZE);
+>        if (retval < 0)
+>                goto out_unlock;
+>        seq_puts(m, buf);
+>
+>
+>
