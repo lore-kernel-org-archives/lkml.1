@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYKUPY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbYKUP1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbYKUPY3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 10:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYKUPYE
+	id S1756190AbYKUP1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 10:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYKUP11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 10:24:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57585 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754891AbYKUPYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 10:24:02 -0500
-Date: Fri, 21 Nov 2008 16:23:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/8] cpumask: x86: Introduce cpumask_of_{node,pcibus}
-	to replace {node,pcibus}_to_cpumask
-Message-ID: <20081121152358.GA21377@elte.hu>
-References: <20081121104450.5AB09DDEE8@ozlabs.org>
+	Fri, 21 Nov 2008 10:27:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:41446 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810AbYKUP11 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 10:27:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=LEHd+CN17JaFRH8z+F2EWaIySVvXDEb2TkJa017I4AAgYUik+QR8YHDD9HS0Fm6AHq
+         XNLDdfbT0syjhMXXdqQoezF6S3lTsA+wnZv9RfglQG54z+j2/dSxg1yF3kfdz4cMRdXB
+         Q/N0+JEHcBOhKn98XF9/5GLx67jzsBYSHsQHo=
+Message-ID: <7c86c4470811210727o13006d5bk5bcbacb791e51b1c@mail.gmail.com>
+Date: Fri, 21 Nov 2008 16:27:25 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Subject: Re: debugctl msr
+Cc: "Markus Metzger" <markus.t.metzger@googlemail.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <7c86c4470811210538i5e6958e1p2c31effa762f5914@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081121104450.5AB09DDEE8@ozlabs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
+	 <7c86c4470811190459y5996f51bp24ab38c9e856c2eb@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F10CB1@irsmsx504.ger.corp.intel.com>
+	 <7c86c4470811190913u743706abgafff3b0f0e3559ec@mail.gmail.com>
+	 <1227119245.6025.12.camel@raistlin>
+	 <7c86c4470811191120i63b70970s3e24af5c962ea538@mail.gmail.com>
+	 <1227133570.6104.10.camel@raistlin>
+	 <7c86c4470811201319x2eb93d41vbdd8ce480a797fab@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F115BC@irsmsx504.ger.corp.intel.com>
+	 <7c86c4470811210538i5e6958e1p2c31effa762f5914@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Markus,
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+Ok, I finally got everything working. The interrupt issue was due to a
+bug in the perfmon code.
 
-> 
-> Impact: New APIs
-> 
-> The old node_to_cpumask/node_to_pcibus returned a cpumask_t: these
-> return a pointer to a struct cpumask.  Part of removing cpumasks from
-> the stack.
-> 
-> Also makes __pcibus_to_node take a const pointer.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  arch/x86/include/asm/pci.h      |   10 ++++++++--
->  arch/x86/include/asm/topology.h |   35 +++++++++++++++++++++++------------
->  arch/x86/kernel/setup_percpu.c  |    8 ++++----
->  3 files changed, 35 insertions(+), 18 deletions(-)
+But I found another bug in ds.c.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+The absolute maximum MUST be at buffer+size+1 but the threshold can be anywhere
+between the start of the buffer and buffer+size. You had it set past
+the end of the buffer (at +1),
+therefore PEBS was not generating any interrupts.
 
-	Ingo
+On Fri, Nov 21, 2008 at 2:38 PM, stephane eranian
+<eranian@googlemail.com> wrote:
+> Markus,
+>
+> On Fri, Nov 21, 2008 at 9:22 AM, Metzger, Markus T
+> <markus.t.metzger@intel.com> wrote:
+>> I also added the interrupt threshold to the parameters of ds_request().
+>> It will be fix for one tracing session, if that's OK with you.
+>>
+> I still need a call to query the threshold.
+>
