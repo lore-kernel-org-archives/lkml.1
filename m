@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbYKUOmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYKUOod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755613AbYKUOmA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYKUOlv
+	id S1755931AbYKUOod (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYKUOoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:41:51 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40636 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753308AbYKUOlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:41:50 -0500
-Message-ID: <4926C838.8080105@redhat.com>
-Date: Fri, 21 Nov 2008 09:39:52 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Nikanth Karthikesan <knikanth@suse.de>
-CC: linux-kernel@vger.kernel.org, ananth@in.ibm.com, davem@davemloft.net,
-       contact@ksplice.com, jbarnold@ksplice.com, tabbott@ksplice.com,
-       wdaher@ksplice.com, andersk@ksplice.com
-Subject: Re: [RFC] kreplace: Rebootless kernel updates
-References: <200811211720.26394.knikanth@suse.de>
-In-Reply-To: <200811211720.26394.knikanth@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 21 Nov 2008 09:44:25 -0500
+Received: from qmta03.westchester.pa.mail.comcast.net ([76.96.62.32]:50252
+	"EHLO QMTA03.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753480AbYKUOoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:44:24 -0500
+X-Authority-Analysis: v=1.0 c=1 a=n-_EF0tFy-QA:10 a=zn7U-nhvGoYA:10
+ a=2iNgh9swn-kA:10 a=EHYkf4x39Nvm60-2uisA:9 a=FaU2_Ki9l2_Ipb1iZtaDaqtFq6IA:4
+ a=d4CUUju0HPYA:10 a=5WZzfXpOq_gA:10
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
+	protocol
+From: Jim Gettys <jg@laptop.org>
+Reply-To: jg@laptop.org
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4924A289.6030906@euromail.se>
+References: <49142351.9080805@euromail.se>
+	 <20081119113508.ZZRA012@mailhub.coreip.homeip.net>
+	 <1227113699.7181.103.camel@jg-vaio>  <4924A289.6030906@euromail.se>
+Content-Type: text/plain
+Organization: One Laptop Per Child
+Date: Fri, 21 Nov 2008 09:43:44 -0500
+Message-Id: <1227278624.7218.16.camel@jg-vaio>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nikanth,
+Interesting....  I know of the a different case: a device which
+certainly does not report ellipses, rather reports x, y, dx, dy.
+                          - Jim
 
-Nikanth Karthikesan wrote:
-> This RFC patch adds support for limited form of rebootless kernel patching 
-> even without building the entire kernel.
+
+On Thu, 2008-11-20 at 00:34 +0100, Henrik Rydberg wrote:
+> Jim Gettys wrote:
+> [...]
+> > Also, I'm still concerned about using elipses. I doubt very much any
+> > hardware will ever be reporting elipses; more likely are parallelograms,
+> > or trapezoids, other simple geometric figures, rather than a center with
+> > size and orientation.
 > 
-> When looking for a shortcut to avoid the rebuild/reboot cycle when hacking the  
-> kernel - the ksplice[1] was posted. This patch extends kprobes to do something 
-> similar, which would require even lesser time to _experiment_ with the running 
-> kernel. 
+> The bcm5974 chip is doing precisely this.
 > 
-> This small patch extends jprobes so that the jprobe's handler is executed but 
-> skips executing the actual function. But this has its own limitations such as 
-> Cannot access symbols not exported for modules (ofcourse hacks like 
-> pointers[2] can be used.), problems related to return values[3], etc... This 
-> is currently a x86_64 only _hack_.
-
-Hmm,
-Would you like to replace a function to another function?
-If so, AFAIK, you can do that with kprobe and below pre_handler.
-(see booster enabled path in setup_singlestep())
-
-pre_handler(...)
-{
-	reset_current_kprobe();	/* this kprobe doesn't need any more */
-	regs->ip = new_function;	/* change IP to new function */
-	preempt_enable_no_resched();	/* recover preempt count */
-	return 1;	/* No need to setup singlestep */
-}
-
-Thank you,
-
-
+> Henrik
+> 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Jim Gettys <jg@laptop.org>
+One Laptop Per Child
 
