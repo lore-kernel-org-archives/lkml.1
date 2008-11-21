@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYKUNOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYKUNRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbYKUNOa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 08:14:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYKUNOW
+	id S1755323AbYKUNRt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 08:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYKUNRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 08:14:22 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51173 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbYKUNOV (ORCPT
+	Fri, 21 Nov 2008 08:17:40 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:19218 "EHLO
+	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbYKUNRj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 08:14:21 -0500
-Date: Fri, 21 Nov 2008 08:14:18 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Liming Wang <liming.wang@windriver.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] function tracing: fix wrong position computing of
- stack_trace
-In-Reply-To: <1227236418-6023-2-git-send-email-liming.wang@windriver.com>
-Message-ID: <alpine.DEB.1.10.0811210813510.6447@gandalf.stny.rr.com>
-References: <1227236418-6023-1-git-send-email-liming.wang@windriver.com> <1227236418-6023-2-git-send-email-liming.wang@windriver.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 21 Nov 2008 08:17:39 -0500
+X-BigFish: VPS-32(zz146fK1432R98dR1805M936fOzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KAOQ8Z-02-HPX-01
+Date: Fri, 21 Nov 2008 14:16:09 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, cpufreq@vger.kernel.org,
+       stable@kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       linux-kernel@vger.kernel.org, davej@redhat.com
+Subject: Re: [PATCH] x86: powernow-k8: ignore out-of-range PstateStatus
+	value
+Message-ID: <20081121131609.GA10975@alberich.amd.com>
+References: <20081107150811.GI15390@alberich.amd.com> <20081121080841.GD10940@alberich.amd.com> <20081121082346.GK16242@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081121082346.GK16242@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 21 Nov 2008 13:17:26.0755 (UTC) FILETIME=[7F9AEB30:01C94BDB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Nov 21, 2008 at 09:23:46AM +0100, Ingo Molnar wrote:
+> 
+> nice fix! A few minor nits:
+> 
+> > +			/* a workaround for family 11h erratum 311 might cause
+> > +			   an "out-of-range Pstate if the core is in Pstate-0 */
 
-On Fri, 21 Nov 2008, Liming Wang wrote:
+> Please use the customary comment style:
+>   /*
+>    * Comment .....
+>    * ...... goes here:
+>    */
 
-> Impact: make output of stack_trace complete if buffer overflow
-> 
-> When read buffer overflows, the output of stack_trace isn't complete.
-> 
-> When printing records with seq_printf in t_show, if the read buffer
-> has overflowed by the current record, then this record won't be printed
-> to user space through read buffer, it will just be dropped in this printing.
-> 
-> When next printing, t_start should return the "*pos"th record, which is the one
-> dropped by previous printing, but it just returns (m->private + *pos)th record.
-> 
-> Here we use a more sane method to implement seq_operations which can be found
-> in kernel code. Thus we needn't initialize m->private.
-> 
-> About testing, it's not easy to overflow read buffer, but we can use
-> seq_printf to print more padding bytes in t_show, then it's easy to check
-> whether or not records are lost.
-> 
-> This commit has been tested on both condition of overflow and non overflow.
-> 
-> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+I don't prefer that style -- but if you do.
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+> and since it's multi-line anyway, keep to the 80-col limit too please.
 
--- Steve
+2nd line should be exactly 80 columns.
+
+> > diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> > index ab48cfe..4078f5d 100644
+> > --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> > +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> > @@ -23,7 +23,9 @@ struct powernow_k8_data {
+> >          u32 exttype; /* extended interface = 1 */
+> >  
+> >  	/* keep track of the current fid / vid or pstate */
+> > -	u32 currvid, currfid, currpstate;
+> > +	u32 currvid, currfid;
+> > +	u32 currpstate;
+> 
+> Any reason why it has been moved to a separate line?
+
+Sure, it's to emphasize that the following define is just for this field.
+
+
+Andreas
+
 
