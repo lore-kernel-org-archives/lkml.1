@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbYKURKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYKURKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbYKURKa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYKURKN
+	id S1756074AbYKURKs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYKURKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:10:13 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:3584 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbYKURKL (ORCPT
+	Fri, 21 Nov 2008 12:10:35 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:58730 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757147AbYKURKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:10:11 -0500
-X-BigFish: VPS-39(zz1432R98dR1805M179dR936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KAP10P-04-157-01
-Date: Fri, 21 Nov 2008 18:10:04 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 03/10] x86: add initialization code for DMA-API debugging
-Message-ID: <20081121171004.GE1386@amd.com>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-4-git-send-email-joerg.roedel@amd.com> <20081121165628.GD733@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081121165628.GD733@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 21 Nov 2008 17:10:04.0570 (UTC) FILETIME=[FF1C77A0:01C94BFB]
+	Fri, 21 Nov 2008 12:10:33 -0500
+Subject: Re: O_DIRECT patch for processors with VIPT cache for mainline
+	kernel (specifically arm in our case)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
+       Naval Saini <navalnovel@gmail.com>, linux-arch@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       naval.saini@nxp.com
+In-Reply-To: <20081120091923.GA2515@flint.arm.linux.org.uk>
+References: <d8dd82df0811180606w503563ach8650ab07dcd0a35c@mail.gmail.com>
+	 <200811191740.23638.nickpiggin@yahoo.com.au>
+	 <20081119204315.GB17209@flint.arm.linux.org.uk>
+	 <200811201759.01039.nickpiggin@yahoo.com.au>
+	 <20081120091923.GA2515@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 21 Nov 2008 17:10:19 +0000
+Message-Id: <1227287420.7015.77.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Nov 2008 17:10:20.0975 (UTC) FILETIME=[08E3ABF0:01C94BFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 05:56:28PM +0100, Ingo Molnar wrote:
-> > +	return (entry->dev_addr >> HASH_FN_SHIFT) & HASH_FN_MASK;
-> > +}
-> > +
-> > +static struct dma_debug_entry *dma_entry_alloc(void)
-> > +{
-> > +	gfp_t gfp = GFP_KERNEL | __GFP_ZERO;
-> > +
-> > +	if (in_atomic())
-> > +		gfp |= GFP_ATOMIC;
-> > +
-> > +	return kmem_cache_alloc(dma_entry_cache, gfp);
+On Thu, 2008-11-20 at 09:19 +0000, Russell King - ARM Linux wrote:
+> On Thu, Nov 20, 2008 at 05:59:00PM +1100, Nick Piggin wrote:
+> > - The page is sent to the block layer, which stores into the page. Some
+> >   block devices like 'brd' will potentially store via the kernel linear map
+> >   here, and they probably don't do enough cache flushing. But a regular
+> >   block device should go via DMA, which AFAIK should be OK? (the user address
+> >   should remain invalidated because it would be a bug to read from the buffer
+> >   before the read has completed)
 > 
-> hm. that slab allocation in the middle of DMA mapping ops makes me a 
-> bit nervous. the DMA mapping ops are generally rather atomic.
-> 
-> and in_atomic() check there is a bug on !PREEMPT kernels, so it wont 
-> fly.
+> This is where things get icky with lots of drivers - DMA is fine, but
+> many PIO based drivers don't handle the implications of writing to the
+> kernel page cache page when there may be CPU cache side effects.
 
-I am not sure I understand this correctly. You say the check for
-in_atomic() will break on !PREEMPT kernels?
+And for PIO devices, what cache flushing function should be used if the
+page isn't available (maybe just a pointer to a buffer) to do a
+flush_dcache_page? Should this be done in the filesystem layer?
 
-> We dont have a gfp flag passed in as all the DMA mapping APIs really 
-> expect all allocations having been done in advance already.
+> If the cache is in read allocate mode, then in this case there shouldn't
+> be any dirty cache lines.  (That's not always the case though, esp. via
+> conventional IO.)  If the cache is in write allocate mode, PIO data will
+> sit in the kernel mapping and won't be visible to userspace.
 
-Hmm, I can change the code to pre-allocate a certain (configurable?)
-number of these entries and disble the checking if we run out of it.
+This problem re-appeared in our tests when someone started using an ext2
+filesystem with mtd+slram with write-allocate caches. Basically the D
+cache isn't flushed to ensure its coherency with the I cache.
 
-> Any chance to attach the debug entry to the iotlb entries themselves - 
-> either during build time (for swiotlb) or during iommu init time (for 
-> the hw iommu's) ?
+The very dirty workaround was to use flush_icache_range (I know, it's
+meant for something completely different) in mtd_blkdevs.c. The slram.c
+doesn't have access to any page information either and I noticed that
+there are very few block devices that call flush_dcache_page directly.
+Should this be done by the filesystem layer?
 
-Hm, I want to avoid that. This approach has the advantage that is
-works independent of any dma_ops implementation. So it can be used to
-find out if a DMA bug originates from the device driver or (in my case)
-from the IOMMU driver.
+It looks to me like some filesystems like cramfs call flush_dcache_page
+in their "readpage" functions but ext2 doesn't. My other, less dirty,
+workaround for the mtd+slram problem is below. It appears to solve the
+problem though I'm not sure it is the right solution (ext2 uses
+mpage_readpages).
 
-Joerg
+diff --git a/fs/mpage.c b/fs/mpage.c
+index 552b80b..979a4a9 100644
+--- a/fs/mpage.c
++++ b/fs/mpage.c
+@@ -51,6 +51,7 @@ static void mpage_end_io_read(struct bio *bio, int err)
+ 			prefetchw(&bvec->bv_page->flags);
+ 
+ 		if (uptodate) {
++			flush_dcache_page(page);
+ 			SetPageUptodate(page);
+ 		} else {
+ 			ClearPageUptodate(page);
+
+
+Thanks.
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Catalin
 
