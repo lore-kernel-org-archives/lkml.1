@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYKUPWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbYKUPWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbYKUPWB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 10:22:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYKUPVw
+	id S1756378AbYKUPWq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 10:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYKUPWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 10:21:52 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:22603 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753752AbYKUPVv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 10:21:51 -0500
-Message-ID: <154e089b0811210721i35738ef3yf4f1cd5b340a6cf0@mail.gmail.com>
-Date: Fri, 21 Nov 2008 16:21:49 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "Cheng Renquan" <crquan@gmail.com>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] md: fix compilation warning: left shift count >= width of type
+	Fri, 21 Nov 2008 10:22:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57312 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752452AbYKUPWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 10:22:33 -0500
+Date: Fri, 21 Nov 2008 16:21:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, cl@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       efault@gmx.de, a.p.zijlstra@chello.nl,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] fs: pipe/sockets/anon dentries should not have a parent
+Message-ID: <20081121152148.GA20388@elte.hu>
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4926D022.5060008@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following warnings:
 
-drivers/md/md.c:1678: warning: left shift count >= width of type
-drivers/md/md.c:1702: warning: left shift count >= width of type
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- include/linux/raid/md_p.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Before patch, time to run 8 millions of close(socket()) calls on 8 
+> CPUS was :
+>
+> real    0m27.496s
+> user    0m0.657s
+> sys     3m39.092s
+>
+> After patch :
+>
+> real    0m23.997s
+> user    0m0.682s
+> sys     3m11.193s
 
-diff --git a/include/linux/raid/md_p.h b/include/linux/raid/md_p.h
-index 269e147..9491026 100644
---- a/include/linux/raid/md_p.h
-+++ b/include/linux/raid/md_p.h
-@@ -194,7 +194,7 @@ static inline __u64 md_event(mdp_super_t *sb) {
- 	return (ev<<32)| sb->events_lo;
- }
+cool :-)
 
--#define MD_SUPERBLOCK_1_TIME_SEC_MASK ((1UL<<40) - 1)
-+#define MD_SUPERBLOCK_1_TIME_SEC_MASK ((1ULL<<40) - 1)
+What would it take to get it down to:
 
- /*
-  * The version-1 superblock :
+>> Cost if run one one cpu :
+>>
+>> real    0m1.561s
+>> user    0m0.092s
+>> sys     0m1.469s
+
+i guess asking for a wall-clock cost of 1.561/8 would be too much? :)
+
+	Ingo
