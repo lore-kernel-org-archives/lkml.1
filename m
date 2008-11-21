@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYKUD7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYKUEAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbYKUD7t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 22:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbYKUD7T
+	id S1752596AbYKUEAL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 23:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbYKUD7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 22:59:19 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59640 "EHLO song.cn.fujitsu.com"
+	Thu, 20 Nov 2008 22:59:23 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49467 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752802AbYKUD7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 22:59:18 -0500
-Message-ID: <49263214.5080604@cn.fujitsu.com>
-Date: Fri, 21 Nov 2008 11:59:16 +0800
+	id S1756495AbYKUD7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 22:59:22 -0500
+Message-ID: <49263218.1090305@cn.fujitsu.com>
+Date: Fri, 21 Nov 2008 11:59:20 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>,
        Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] ns_cgroup: remove unused spinlock
+Subject: [PATCH] memcg: fix a typo in Kconfig
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I happened to find the spinlock in struct ns_cgroup is never
-used.
+s/contoller/controller
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-of-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/ns_cgroup.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/ns_cgroup.c b/kernel/ns_cgroup.c
-index 43c2111..78bc3fd 100644
---- a/kernel/ns_cgroup.c
-+++ b/kernel/ns_cgroup.c
-@@ -13,7 +13,6 @@
+diff --git a/init/Kconfig b/init/Kconfig
+index f763762..8767393 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -414,7 +414,7 @@ config CGROUP_MEM_RES_CTLR
+ 	  sure you need the memory resource controller. Even when you enable
+ 	  this, you can set "cgroup_disable=memory" at your boot option to
+ 	  disable memory resource controller and you can avoid overheads.
+-	  (and lose benefits of memory resource contoller)
++	  (and lose benefits of memory resource controller)
  
- struct ns_cgroup {
- 	struct cgroup_subsys_state css;
--	spinlock_t lock;
- };
- 
- struct cgroup_subsys ns_subsys;
-@@ -84,7 +83,6 @@ static struct cgroup_subsys_state *ns_create(struct cgroup_subsys *ss,
- 	ns_cgroup = kzalloc(sizeof(*ns_cgroup), GFP_KERNEL);
- 	if (!ns_cgroup)
- 		return ERR_PTR(-ENOMEM);
--	spin_lock_init(&ns_cgroup->lock);
- 	return &ns_cgroup->css;
- }
- 
+ 	  This config option also selects MM_OWNER config option, which
+ 	  could in turn add some fork/exit overhead.
 -- 
 1.5.4.rc3
 
