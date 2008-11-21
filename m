@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYKUEFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbYKUENW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYKUEFU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 23:05:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYKUEFG
+	id S1754861AbYKUENW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 23:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYKUENI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 23:05:06 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:42140 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbYKUEFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 23:05:05 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] autodetect_raid: add missing __init marking
-Date: Thu, 20 Nov 2008 23:05:03 -0500
-Message-Id: <1227240303-30591-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.4
+	Thu, 20 Nov 2008 23:13:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:39336 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbYKUENF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 23:13:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qrAeD6QMaAP+Ty2BT49n8+JvVioOscL4rhxNCsexzA4rdv1IOuPK95M6jasCuxmHTm
+         WtF3jk+0DeucBosNCzicG0ps4BkeO+qCQ0iS4j45Jod1NYMdoe99BewTSkV9OJ6VVPY7
+         PpJKrHZNGEl5b8dEb09y3hKdAPMC9qwNFl+/M=
+Date: Fri, 21 Nov 2008 07:16:43 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       h-shimamoto@ct.jp.nec.com
+Subject: Re: [PATCH 2/3] proc: Export statistics for softirq to /proc
+Message-ID: <20081121041643.GA5366@x200.localdomain>
+References: <20081120195542.c85d4967.kobayashi.kk@ncos.nec.co.jp> <20081120195843.c6d0b653.kobayashi.kk@ncos.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120195843.c6d0b653.kobayashi.kk@ncos.nec.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function autodetect_raid is only used by __init functions, and it refers
-to __initdata, so it needs __init markings.  Fixes this error:
-The function autodetect_raid() references
-the variable __initdata raid_noautodetect.
-This is often because autodetect_raid lacks a __initdata
-annotation or the annotation of raid_noautodetect is wrong.
+On Thu, Nov 20, 2008 at 07:58:43PM -0800, Keika Kobayashi wrote:
+> Export statistics for softirq in /proc/softirqs and /proc/stat.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- init/do_mounts_md.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index d6da5cd..ff95e31 100644
---- a/init/do_mounts_md.c
-+++ b/init/do_mounts_md.c
-@@ -271,7 +271,7 @@ static int __init raid_setup(char *str)
- __setup("raid=", raid_setup);
- __setup("md=", md_setup);
- 
--static void autodetect_raid(void)
-+static void __init autodetect_raid(void)
- {
- 	int fd;
- 
--- 
-1.6.0.4
-
+I thought we added debugfs to stop adding these and similar stuff to /proc.
