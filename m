@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbYKURMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbYKURPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757574AbYKURMA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:12:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYKURLv
+	id S1756569AbYKURPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYKURPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:11:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36927 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754525AbYKURLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:11:50 -0500
-Message-ID: <4926EBD8.6070200@kernel.org>
-Date: Sat, 22 Nov 2008 02:11:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Fri, 21 Nov 2008 12:15:40 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55188 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751838AbYKURPk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:15:40 -0500
+Date: Fri, 21 Nov 2008 11:15:37 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 2/2 v3] SGI RTC: add generic timer system interrupt
+Message-ID: <20081121171537.GA12370@sgi.com>
+References: <20081023163041.GA14574@sgi.com> <20081119212202.GA3377@sgi.com> <20081119212350.GB3377@sgi.com> <20081119212631.GC3377@sgi.com> <20081120151208.f7892050.akpm@linux-foundation.org> <4925F095.40107@zytor.com>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: torvalds@linux-foundation.org, hch@infradead.org, mingo@elte.hu,
-       rminnich@sandia.gov, ericvh@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND] poll: allow f_op->poll to sleep, take #2
-References: <491BA16C.30606@kernel.org> <alpine.LFD.2.00.0811151208430.3468@nehalem.linux-foundation.org> <49256CCE.9060107@kernel.org> <E1L3Z5h-0008J7-QN@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1L3Z5h-0008J7-QN@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Nov 2008 17:11:30 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4925F095.40107@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Thu, 20 Nov 2008, Tejun Heo wrote:
+On Thu, Nov 20, 2008 at 03:19:49PM -0800, H. Peter Anvin wrote:
+> Andrew Morton wrote:
+> >>
+> >> Refreshing this to use 0xed as the vector.  Have repackaged it to be more
+> >> generic.
+> >>
 > 
-> [snip]
-> 
->> +int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
->> +			  ktime_t *expires, unsigned long slack)
-> 
-> The 'state' parameter is unused, and is always called with the
-> TASK_INTERRUPTIBLE value.  Shouldn't it be removed?
-> 
->> +{
->> +	int rc = -EINTR;
->> +
->> +	set_current_state(TASK_INTERRUPTIBLE);
+> What happened to the concept of using normal IRQs for this, via a custom
+> irqchip?  Adding more reserved vectors really sucks, and it affects
+> non-SGI platforms, which could potentially run out of vectors as a result.
 
-Aieee... this should have been set_current_state(state).  We can also
-remove @state but this being a schedule() function I think it's better
-to pass @state explicitly.
+There are basically two issues with using 'normal IRQs' in cases like this:
 
->> +	if (!pwq->triggered)
->> +		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
->> +	__set_current_state(TASK_RUNNING);
->> +
->> +	/* clear triggered for the next iteration */
->> +	pwq->triggered = 0;
->> +
->> +	return rc;
->> +}
->> +
->> +EXPORT_SYMBOL(poll_schedule_timeout);
-> 
-> Checkpatch warning:
-> 
-> WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> #118: FILE: fs/select.c:216:
-> +EXPORT_SYMBOL(poll_schedule_timeout);
-> 
-> [snip]
-> 
->> Index: work/include/linux/poll.h
->> ===================================================================
->> --- work.orig/include/linux/poll.h
->> +++ work/include/linux/poll.h
->> @@ -57,6 +57,8 @@ struct poll_table_entry {
->>  struct poll_wqueues {
->>  	poll_table pt;
->>  	struct poll_table_page * table;
->> +	struct task_struct * polling_task;
->> +	int triggered;
-> 
-> Checkpatch error:
-> 
-> ERROR: "foo * bar" should be "foo *bar"
-> #173: FILE: include/linux/poll.h:60:
-> +       struct task_struct * polling_task;
+- Using normal IRQs would mean we would have an IRQ per cpu.  The current
+  hard coded maximum, NR_IRQS, is 4352 (NR_VECTORS + (32 * MAX_IO_APICS)).
+  On machines with large numbers of cpus and an irq per cpu for each desired
+  interrupt, that's a lot of IRQs.  In addition, the GRU, will need 2 such
+  IRQs per cpu.  On 4096 cpu systems, you've already used up more than the
+  limit just for that.  Until some sort of infrastructure change takes place
+  that would potentially allow this to be dynamically increased, such as
+  Yinghai Lu's "sparse_irq aka dyn_irq v14" patch, this problem will exist.
+  
+  Furthermore, the actual runtime limit, nr_irqs, is set to 96 by
+  probe_nr_irqs for our configuration.  This is because that code assumes all
+  vectors are io-apic vectors, not cpu centric vectors like the ones I'm
+  talking about.  With the current, scheme, even on a 128 cpu system, I'm out
+  of IRQs immediately.
 
-For both, I was trying to stay consistent with the environment.  I
-find mixed styles in close proximity much uglier than slightly
-different but consistent style.  Eh... Is the consensus checkpatch or
-die?
+- The current infrastructure for requesting vector/IRQ combinations doesn't
+  allow one to request an interrupt priority higher than i/o device interrupt
+  priorities.  Clock event (high resolution timer) code should run at higher
+  interrupt priority.
 
-Thanks.
+I labeled the system vector as generic to indicate that this is available to
+other platforms.
 
--- 
-tejun
+Given the above issues, do you have any suggestions as to how I might best
+resolve this?
