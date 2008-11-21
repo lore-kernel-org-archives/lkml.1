@@ -1,111 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYKUKdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbYKUKhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053AbYKUKdv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 05:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYKUKdj
+	id S1754949AbYKUKhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 05:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYKUKhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 05:33:39 -0500
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:39941 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753235AbYKUKdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 05:33:38 -0500
-Subject: Re: Regression: Bisected, IRQ and MSI allocations screwed without
-	sparse irq
-From: Jesper Dangaard Brouer <jdb@comx.dk>
-Reply-To: jdb@comx.dk
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jesper Dangaard Brouer <hawk@diku.dk>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Robert Olsson <Robert.Olsson@data.slu.se>
-In-Reply-To: <alpine.LFD.2.00.0811201539360.3197@localhost.localdomain>
-References: <1226572171.6834.87.camel@localhost.localdomain>
-	 <20081113.141513.116537651.davem@davemloft.net>
-	 <Pine.LNX.4.64.0811192333130.30818@ask.diku.dk>
-	 <20081119.151138.93409143.davem@davemloft.net>
-	 <Pine.LNX.4.64.0811202035590.19962@ask.diku.dk>
-	 <alpine.LFD.2.00.0811201539360.3197@localhost.localdomain>
-Content-Type: text/plain
+	Fri, 21 Nov 2008 05:37:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:43592 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753214AbYKUKhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 05:37:20 -0500
+To: Dave Jones <davej@redhat.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Fri, 21 Nov 2008 21:07:16 +1030
+Subject: [PATCH] x86: clean up speedstep-centrino and reduce cpumask_t usage
+Cc: Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Organization: ComX Networks A/S
-Date: Fri, 21 Nov 2008 11:33:34 +0100
-Message-Id: <1227263614.25811.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Disposition: inline
+Message-Id: <200811212107.16738.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 16:34 -0800, Thomas Gleixner wrote:
-> On Thu, 20 Nov 2008, Jesper Dangaard Brouer wrote:
-> > I have bisected a regression to your commit
-> > 3235e936c0cc3589309280b6f59e5096779adae3,
-> > "x86: remove sparse irq from Kconfig".
-> > 
-> > Its actually not necessary your fault, as your commit simply removes
-> > the config option HAVE_SPARSE_IRQ.  This revels the bug / regression
-> > I'm exposted to.
-> 
-> Yup, the bisect result is pretty useless.
->  
-> > The cause of this problem (tracked down together with Robert Olsson)
-> > is that on 2.6.28 I have a lot less IRQs available.  It seems max 34
-> > IRQs.  Due the reduced number of IRQs the NIU driver cannot get
-> > enough IRQs to the interfaces, and starts to use "IO-APIC" based
-> > IRQs.
-> 
-> Can you please try the attached patch ?
+Impact: cleanup
 
-I have tried the patch and it solved the problem! :-)
+1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
+2) The loop can simply skip over offline cpus, rather than creating a tmp mask.
+3) set_mask is set to either a single cpu or all online cpus in a policy.
+   Since it's just used for set_cpus_allowed(), any offline cpus in a policy
+   don't matter, so we can just use cpumask_of_cpu() or the policy->cpus.
 
-I'll gladly test other patches from your.  Guess this patch needs to be
-brushed up before a mainline patch is ready.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   51 ++++++++++-------------
+ 1 file changed, 24 insertions(+), 27 deletions(-)
 
-My hardware is a HP ProLiant DL380-G5.
+--- linux-2.6.28.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6.28/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -552,9 +552,7 @@ static int centrino_verify (struct cpufr
+  * Sets a new CPUFreq policy.
+  */
+ struct allmasks {
+-	cpumask_t		online_policy_cpus;
+ 	cpumask_t		saved_mask;
+-	cpumask_t		set_mask;
+ 	cpumask_t		covered_cpus;
+ };
+ 
+@@ -568,9 +566,7 @@ static int centrino_target (struct cpufr
+ 	int			retval = 0;
+ 	unsigned int		j, k, first_cpu, tmp;
+ 	CPUMASK_ALLOC(allmasks);
+-	CPUMASK_PTR(online_policy_cpus, allmasks);
+ 	CPUMASK_PTR(saved_mask, allmasks);
+-	CPUMASK_PTR(set_mask, allmasks);
+ 	CPUMASK_PTR(covered_cpus, allmasks);
+ 
+ 	if (unlikely(allmasks == NULL))
+@@ -590,30 +586,28 @@ static int centrino_target (struct cpufr
+ 		goto out;
+ 	}
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(*online_policy_cpus, cpu_online_map, policy->cpus);
+-#else
+-	*online_policy_cpus = policy->cpus;
+-#endif
+-
+ 	*saved_mask = current->cpus_allowed;
+ 	first_cpu = 1;
+ 	cpus_clear(*covered_cpus);
+-	for_each_cpu_mask_nr(j, *online_policy_cpus) {
++	for_each_cpu_mask_nr(j, policy->cpus) {
++		const cpumask_t *mask;
++
++		/* cpufreq holds the hotplug lock, so we are safe here */
++		if (!cpu_online(j))
++			continue;
++
+ 		/*
+ 		 * Support for SMP systems.
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+-		cpus_clear(*set_mask);
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			cpus_or(*set_mask, *set_mask, *online_policy_cpus);
++			mask = &policy->cpus;
+ 		else
+-			cpu_set(j, *set_mask);
++			mask = &cpumask_of_cpu(j);
+ 
+-		set_cpus_allowed_ptr(current, set_mask);
++		set_cpus_allowed_ptr(current, mask);
+ 		preempt_disable();
+-		if (unlikely(!cpu_isset(smp_processor_id(), *set_mask))) {
++		if (unlikely(!cpu_isset(smp_processor_id(), *mask))) {
+ 			dprintk("couldn't limit to CPUs in this domain\n");
+ 			retval = -EAGAIN;
+ 			if (first_cpu) {
+@@ -641,7 +635,9 @@ static int centrino_target (struct cpufr
+ 			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+ 				target_freq, freqs.old, freqs.new, msr);
+ 
+-			for_each_cpu_mask_nr(k, *online_policy_cpus) {
++			for_each_cpu_mask_nr(k, policy->cpus) {
++				if (!cpu_online(k))
++					continue;
+ 				freqs.cpu = k;
+ 				cpufreq_notify_transition(&freqs,
+ 					CPUFREQ_PRECHANGE);
+@@ -664,7 +660,9 @@ static int centrino_target (struct cpufr
+ 		preempt_enable();
+ 	}
+ 
+-	for_each_cpu_mask_nr(k, *online_policy_cpus) {
++	for_each_cpu_mask_nr(k, policy->cpus) {
++		if (!cpu_online(k))
++			continue;
+ 		freqs.cpu = k;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -677,18 +675,17 @@ static int centrino_target (struct cpufr
+ 		 * Best effort undo..
+ 		 */
+ 
+-		if (!cpus_empty(*covered_cpus))
+-			for_each_cpu_mask_nr(j, *covered_cpus) {
+-				set_cpus_allowed_ptr(current,
+-						     &cpumask_of_cpu(j));
+-				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-			}
++		for_each_cpu_mask_nr(j, *covered_cpus) {
++			set_cpus_allowed_ptr(current, &cpumask_of_cpu(j));
++			wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++		}
+ 
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+ 		freqs.old = tmp;
+-		for_each_cpu_mask_nr(j, *online_policy_cpus) {
+-			freqs.cpu = j;
++		for_each_cpu_mask_nr(j, policy->cpus) {
++			if (!cpu_online(j))
++				continue;
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 		}
 
 
-> -----
->  arch/x86/kernel/io_apic.c |   22 +---------------------
->  1 file changed, 1 insertion(+), 21 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/kernel/io_apic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/io_apic.c
-> +++ linux-2.6/arch/x86/kernel/io_apic.c
-> @@ -3594,27 +3594,7 @@ int __init io_apic_get_redir_entries (in
->  
->  int __init probe_nr_irqs(void)
->  {
-> -	int idx;
-> -	int nr = 0;
-> -#ifndef CONFIG_XEN
-> -	int nr_min = 32;
-> -#else
-> -	int nr_min = NR_IRQS;
-> -#endif
-> -
-> -	for (idx = 0; idx < nr_ioapics; idx++)
-> -		nr += io_apic_get_redir_entries(idx) + 1;
-> -
-> -	/* double it for hotplug and msi and nmi */
-> -	nr <<= 1;
-> -
-> -	/* something wrong ? */
-> -	if (nr < nr_min)
-> -		nr = nr_min;
-> -	if (WARN_ON(nr > NR_IRQS))
-> -		nr = NR_IRQS;
-> -
-> -	return nr;
-> +	return NR_IRQS;
->  }
->  
-
--- 
-Med venlig hilsen / Best regards
-  Jesper Brouer
-  ComX Networks A/S
-  Linux Network developer
-  Cand. Scient Datalog / MSc.
-  Author of http://adsl-optimizer.dk
-  LinkedIn: http://www.linkedin.com/in/brouer
