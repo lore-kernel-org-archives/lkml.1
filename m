@@ -1,97 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbYKUQ2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbYKUQ3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757129AbYKUQ2Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbYKUQ0i
+	id S1756359AbYKUQ3G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbYKUQ0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:26:38 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:3152 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbYKUQ03 (ORCPT
+	Fri, 21 Nov 2008 11:26:49 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:3687 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756507AbYKUQ0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:26:29 -0500
-X-BigFish: VPS3(zzzzzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KAOYZP-03-S80-01
+	Fri, 21 Nov 2008 11:26:40 -0500
+X-BigFish: VPS3(zzzzzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
+X-WSS-ID: 0KAOYZP-03-S7Z-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 08/10] x86: add checks for sync_single* code
-Date: Fri, 21 Nov 2008 17:26:08 +0100
-Message-ID: <1227284770-19215-9-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 10/10] x86: add checks for sync_sg* code
+Date: Fri, 21 Nov 2008 17:26:10 +0100
+Message-ID: <1227284770-19215-11-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
 References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0631 (UTC) FILETIME=[DD294570:01C94BF5]
+X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0672 (UTC) FILETIME=[DD2F8700:01C94BF5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: detect bugs in sync_single* usage
+Impact: detect bugs in sync_sg* usage
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
  arch/x86/include/asm/dma-mapping.h |    2 ++
  arch/x86/include/asm/dma_debug.h   |   20 ++++++++++++++++++++
- arch/x86/kernel/pci-dma-debug.c    |   14 ++++++++++++++
- 3 files changed, 36 insertions(+), 0 deletions(-)
+ arch/x86/kernel/pci-dma-debug.c    |   24 ++++++++++++++++++++++++
+ 3 files changed, 46 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 2893adb..63bed40 100644
+index 2b6399d..6a580e9 100644
 --- a/arch/x86/include/asm/dma-mapping.h
 +++ b/arch/x86/include/asm/dma-mapping.h
-@@ -158,6 +158,7 @@ dma_sync_single_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
+@@ -215,6 +215,7 @@ dma_sync_sg_for_cpu(struct device *hwdev, struct scatterlist *sg,
  	BUG_ON(!valid_dma_direction(direction));
- 	if (ops->sync_single_for_cpu)
- 		ops->sync_single_for_cpu(hwdev, dma_handle, size, direction);
-+	debug_sync_single_for_cpu(hwdev, dma_handle, size, direction);
+ 	if (ops->sync_sg_for_cpu)
+ 		ops->sync_sg_for_cpu(hwdev, sg, nelems, direction);
++	debug_sync_sg_for_cpu(hwdev, sg, nelems, direction);
  	flush_write_buffers();
  }
  
-@@ -170,6 +171,7 @@ dma_sync_single_for_device(struct device *hwdev, dma_addr_t dma_handle,
+@@ -227,6 +228,7 @@ dma_sync_sg_for_device(struct device *hwdev, struct scatterlist *sg,
  	BUG_ON(!valid_dma_direction(direction));
- 	if (ops->sync_single_for_device)
- 		ops->sync_single_for_device(hwdev, dma_handle, size, direction);
-+	debug_sync_single_for_device(hwdev, dma_handle, size, direction);
+ 	if (ops->sync_sg_for_device)
+ 		ops->sync_sg_for_device(hwdev, sg, nelems, direction);
++	debug_sync_sg_for_device(hwdev, sg, nelems, direction);
+ 
  	flush_write_buffers();
  }
- 
 diff --git a/arch/x86/include/asm/dma_debug.h b/arch/x86/include/asm/dma_debug.h
-index 7245e27..8262cd1 100644
+index bc4a841..b30d3c9 100644
 --- a/arch/x86/include/asm/dma_debug.h
 +++ b/arch/x86/include/asm/dma_debug.h
-@@ -67,6 +67,14 @@ extern
- void debug_free_coherent(struct device *dev, size_t size,
- 			 void *virt, dma_addr_t addr);
+@@ -86,6 +86,14 @@ void debug_sync_single_range_for_device(struct device *dev,
+ 					unsigned long offset,
+ 					size_t size, int direction);
  
 +extern
-+void debug_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+			       size_t size, int direction);
++void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
++			   int nelems, int direction);
 +
 +extern
-+void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
-+				  size_t size, int direction);
++void debug_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
++			      int nelems, int direction);
 +
  #else /* CONFIG_DMA_API_DEBUG */
  
  static inline
-@@ -110,6 +118,18 @@ void debug_free_coherent(struct device *dev, size_t size,
+@@ -156,6 +164,18 @@ void debug_sync_single_range_for_device(struct device *dev,
  {
  }
  
 +static inline
-+void debug_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+			       size_t size, int direction)
++void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
++			   int nelems, int direction)
 +{
 +}
 +
 +static inline
-+void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
-+				  size_t size, int direction)
++void debug_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
++			      int nelems, int direction)
 +{
 +}
 +
@@ -99,26 +98,36 @@ index 7245e27..8262cd1 100644
  
  #endif /* __ASM_X86_DMA_DEBUG */
 diff --git a/arch/x86/kernel/pci-dma-debug.c b/arch/x86/kernel/pci-dma-debug.c
-index db5ef9a..1dfcd33 100644
+index 92b9491..ac8e1f9 100644
 --- a/arch/x86/kernel/pci-dma-debug.c
 +++ b/arch/x86/kernel/pci-dma-debug.c
-@@ -408,3 +408,17 @@ void debug_free_coherent(struct device *dev, size_t size,
+@@ -439,3 +439,27 @@ void debug_sync_single_range_for_device(struct device *dev,
  }
- EXPORT_SYMBOL(debug_free_coherent);
+ EXPORT_SYMBOL(debug_sync_single_range_for_device);
  
-+void debug_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+			       size_t size, int direction)
++void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
++			   int nelems, int direction)
 +{
-+	check_sync(dev, dma_handle, size, 0, direction, true);
-+}
-+EXPORT_SYMBOL(debug_sync_single_for_cpu);
++	struct scatterlist *s;
++	int i;
 +
-+void debug_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
-+				  size_t size, int direction)
-+{
-+	check_sync(dev, dma_handle, size, 0, direction, false);
++	for_each_sg(sg, s, nelems, i)
++		check_sync(dev, s->dma_address, s->dma_length, 0,
++			   direction, true);
 +}
-+EXPORT_SYMBOL(debug_sync_single_for_device);
++EXPORT_SYMBOL(debug_sync_sg_for_cpu);
++
++void debug_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
++			      int nelems, int direction)
++{
++	struct scatterlist *s;
++	int i;
++
++	for_each_sg(sg, s, nelems, i)
++		check_sync(dev, s->dma_address, s->dma_length, 0,
++			   direction, false);
++}
++EXPORT_SYMBOL(debug_sync_sg_for_device);
 +
 -- 
 1.5.6.4
