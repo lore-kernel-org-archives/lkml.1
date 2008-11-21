@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYKUT2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYKUTdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbYKUT2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 14:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYKUT2q
+	id S1757050AbYKUTdH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 14:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYKUTcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 14:28:46 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:29770 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753039AbYKUT2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 14:28:45 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=MaaSH0bezOraDdElfCw+N8iZMk/IId4Lr/Nyuf7DpVaWBOos+q9DL/I9e507FHXEV
-	wdJugdFfKfGqdQ5Tph46g==
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-From: Frank Mayhar <fmayhar@google.com>
-To: Petr Tesarik <ptesarik@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
-       adobriyan@gmail.com, akpm@linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200811211942.43848.ptesarik@suse.cz>
-References: <1224694989.8431.23.camel@oberon>
-	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
-	 <1226053744.7803.5851.camel@twins>  <200811211942.43848.ptesarik@suse.cz>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Fri, 21 Nov 2008 11:26:03 -0800
-Message-Id: <1227295563.21605.13.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Nov 2008 14:32:54 -0500
+Received: from mga09.intel.com ([134.134.136.24]:33523 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbYKUTcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 14:32:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,645,1220252400"; 
+   d="scan'208";a="362853852"
+Date: Sat, 22 Nov 2008 02:36:05 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: linux-pci@vger.kernel.org
+Cc: achiang@hp.com, bjorn.helgaas@hp.com, grundler@parisc-linux.org,
+       greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org, matthew@wil.cx,
+       randy.dunlap@oracle.com, rdreier@cisco.com, horms@verge.net.au,
+       yinghai@kernel.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       virtualization@lists.linux-foundation.org
+Subject: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Message-ID: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-21 at 19:42 +0100, Petr Tesarik wrote:
-> This is just not true. I've seen a very real example of a lockup with a very 
-> sane number of threads (one per CPU), but on a very large machine (1024 CPUs 
-> IIRC). The application set per-process CPU profiling with an interval of 1 
-> tick, which translates to 1024 timers firing off with each tick...
-> 
-> Well, yes, that was broken, too, but that's the way one quite popular FORTRAN 
-> compiler works...
+Greetings,
 
-Petr, have you tried the fix in the latest kernel?  Does it help?  I'm
-intensely curious to know how it affected your runs.
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
+Following patches are intended to support SR-IOV capability in the
+Linux kernel. With these patches, people can turn a PCI device with
+the capability into multiple ones from software perspective, which
+will benefit KVM and achieve other purposes such as QoS, security,
+and etc.
+
+The Physical Function and Virtual Function drivers using the SR-IOV
+APIs will come soon!
+
+Major changes from v6 to v7:
+1, remove boot-time resource rebalancing support. (Greg KH)
+2, emit uevent upon the PF driver is loaded. (Greg KH)
+3, put SR-IOV callback function into the 'pci_driver'. (Matthew Wilcox)
+4, register SR-IOV service at the PF loading stage.
+5, remove unnecessary APIs (pci_iov_enable/disable).
+
+---
+
+[PATCH 1/13 v7] PCI: enhance pci_ari_enabled()
+[PATCH 2/13 v7] PCI: remove unnecessary arg of pci_update_resource()
+[PATCH 3/13 v7] PCI: define PCI resource names in an 'enum'
+[PATCH 4/13 v7] PCI: remove unnecessary condition check in pci_restore_bars()
+[PATCH 5/13 v7] PCI: export __pci_read_base()
+[PATCH 6/13 v7] PCI: make pci_alloc_child_bus() be able to handle NULL bridge
+[PATCH 7/13 v7] PCI: add a new function to map BAR offset
+[PATCH 8/13 v7] PCI: cleanup pci_bus_add_devices()
+[PATCH 9/13 v7] PCI: split a new function from pci_bus_add_devices()
+[PATCH 10/13 v7] PCI: support the SR-IOV capability
+[PATCH 11/13 v7] PCI: reserve bus range for SR-IOV device
+[PATCH 12/13 v7] PCI: document the SR-IOV sysfs entries
+[PATCH 13/13 v7] PCI: document for SR-IOV user and developer
+
+Cc: Alex Chiang <achiang@hp.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>
+Cc: Greg KH <greg@kroah.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Roland Dreier <rdreier@cisco.com>
+Cc: Simon Horman <horms@verge.net.au>
+Cc: Yinghai Lu <yinghai@kernel.org>
+
+---
+
+Single Root I/O Virtualization (SR-IOV) capability defined by PCI-SIG
+is intended to enable multiple system software to share PCI hardware
+resources.  PCI device that supports this capability can be extended
+to one Physical Functions plus multiple Virtual Functions. Physical
+Function, which could be considered as the "real" PCI device, reflects
+the hardware instance and manages all physical resources. Virtual
+Functions are associated with a Physical Function and shares physical
+resources with the Physical Function.Software can control allocation of
+Virtual Functions via registers encapsulated in the capability structure.
+
+SR-IOV specification can be found at
+http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
+
+Devices that support SR-IOV are available from following vendors:
+http://download.intel.com/design/network/ProdBrf/320025.pdf
+http://www.netxen.com/products/chipsolutions/NX3031.html
+http://www.neterion.com/products/x3100.html
 
