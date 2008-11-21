@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYKUTVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYKUT2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbYKUTVy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 14:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbYKUTVl
+	id S1757409AbYKUT2y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 14:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYKUT2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 14:21:41 -0500
-Received: from ti-out-0910.google.com ([209.85.142.191]:9450 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755812AbYKUTVj (ORCPT
+	Fri, 21 Nov 2008 14:28:46 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:29770 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbYKUT2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 14:21:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:bcc:subject:date:user-agent:message-id;
-        b=gc1yjWTZZG8SwRyCbib2hFsNj09iDsUZXWSEqHyHgOA0J0Epa8hfFBSZHbHQ01m2Xc
-         AjzbFMUSS1N4BZTe4H1m/gAgg1U10k6z9qyT2nqW2f2h+5pGtqOIqyuLKdz6FpyvWHbT
-         qI++LKgGXLAMAAhnQBA4ihR1/GFhCAVZsox1c=
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 02/3] net/netlabel/netlabel_domainhash.c: cleanup kernel-doc
-Date: Sat, 22 Nov 2008 03:21:19 +0800
-User-Agent: sniper-patch-carrier/1.06
-Message-ID: <49270a41.0c636e0a.5b79.ffffab7d@mx.google.com>
+	Fri, 21 Nov 2008 14:28:45 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:from:to:cc:in-reply-to:references:content-type:
+	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=MaaSH0bezOraDdElfCw+N8iZMk/IId4Lr/Nyuf7DpVaWBOos+q9DL/I9e507FHXEV
+	wdJugdFfKfGqdQ5Tph46g==
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+From: Frank Mayhar <fmayhar@google.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
+       adobriyan@gmail.com, akpm@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200811211942.43848.ptesarik@suse.cz>
+References: <1224694989.8431.23.camel@oberon>
+	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
+	 <1226053744.7803.5851.camel@twins>  <200811211942.43848.ptesarik@suse.cz>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Fri, 21 Nov 2008 11:26:03 -0800
+Message-Id: <1227295563.21605.13.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are no argument named @def in netlbl_domhsh_search_def(),
-remove its' comment.
+On Fri, 2008-11-21 at 19:42 +0100, Petr Tesarik wrote:
+> This is just not true. I've seen a very real example of a lockup with a very 
+> sane number of threads (one per CPU), but on a very large machine (1024 CPUs 
+> IIRC). The application set per-process CPU profiling with an interval of 1 
+> tick, which translates to 1024 timers firing off with each tick...
+> 
+> Well, yes, that was broken, too, but that's the way one quite popular FORTRAN 
+> compiler works...
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/net/netlabel/netlabel_domainhash.c b/net/netlabel/netlabel_domainhash.c
-index 5fadf10..2d81c94 100644
---- a/net/netlabel/netlabel_domainhash.c
-+++ b/net/netlabel/netlabel_domainhash.c
-@@ -153,7 +153,6 @@ static struct netlbl_dom_map *netlbl_domhsh_search(const char *domain)
- /**
-  * netlbl_domhsh_search_def - Search for a domain entry
-  * @domain: the domain
-- * @def: return default if no match is found
-  *
-  * Description:
-  * Searches the domain hash table and returns a pointer to the hash table
+Petr, have you tried the fix in the latest kernel?  Does it help?  I'm
+intensely curious to know how it affected your runs.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
