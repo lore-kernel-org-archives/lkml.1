@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYKUJEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYKUJFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbYKUJEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 04:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYKUJD4
+	id S1753289AbYKUJFh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 04:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYKUJFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 04:03:56 -0500
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:57051 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754889AbYKUJDy (ORCPT
+	Fri, 21 Nov 2008 04:05:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55118
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752262AbYKUJFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 04:03:54 -0500
-Date: Fri, 21 Nov 2008 09:01:50 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, sandeen@sandeen.net, davem@davemloft.net,
-       tony.luck@intel.com, kyle@mcmartin.ca, schwidefsky@de.ibm.com
-Subject: Re: [PATCH] generic compat_sys_ustat
-Message-ID: <20081121090150.GD16159@linux-mips.org>
-References: <20081121084105.GA7155@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121084105.GA7155@lst.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 21 Nov 2008 04:05:09 -0500
+Date: Fri, 21 Nov 2008 01:05:08 -0800 (PST)
+Message-Id: <20081121.010508.40225532.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: mingo@elte.hu, cl@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       efault@gmx.de, a.p.zijlstra@chello.nl
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+ 2.6.22 -&gt; 2.6.28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49267694.1030506@cosmosbay.com>
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com>
+	<20081121083044.GL16242@elte.hu>
+	<49267694.1030506@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 09:41:05AM +0100, Christoph Hellwig wrote:
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Fri, 21 Nov 2008 09:51:32 +0100
 
-> Due to a different size of ino_t ustat needs a compat handler, but
-> currently only x86 and mips provide one.  Add a generic compat_sys_ustat
-> and switch all architectures over to it.
+> Now, I wish sockets and pipes not going through dcache, not tbench affair
+> of course but real workloads...
 > 
-> Found by Eric Sandeen when running xfstests/017 on ppc64, which causes
-> stack smashing warnings on RHEL/Fedora due to the too large amount of
-> data writen by the syscall.
+> running 8 processes on a 8 way machine doing a 
 > 
+> for (;;)
+> 	close(socket(AF_INET, SOCK_STREAM, 0));
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> is slow as hell, we hit so many contended cache lines ...
+> 
+> ticket spin locks are slower in this case (dcache_lock for example
+> is taken twice when we allocate a socket(), once in d_alloc(), another one
+> in d_instantiate())
 
-For the MIPS bits:
+As you of course know, this used to be a ton worse.  At least now
+these things are unhashed. :)
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-
-  Ralf
