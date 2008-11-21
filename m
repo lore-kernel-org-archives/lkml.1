@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYKUVB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbYKUVMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbYKUVB0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 16:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYKUVBR
+	id S1756440AbYKUVMZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 16:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYKUVMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 16:01:17 -0500
-Received: from kroah.org ([198.145.64.141]:45366 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752187AbYKUVBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 16:01:16 -0500
-Date: Fri, 21 Nov 2008 12:57:46 -0800
-From: Greg KH <greg@kroah.com>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: linux-pci@vger.kernel.org, achiang@hp.com, bjorn.helgaas@hp.com,
-       grundler@parisc-linux.org, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       matthew@wil.cx, randy.dunlap@oracle.com, rdreier@cisco.com,
-       horms@verge.net.au, yinghai@kernel.org, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
-Message-ID: <20081121205746.GA3639@kroah.com>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
+	Fri, 21 Nov 2008 16:12:12 -0500
+Received: from www.tglx.de ([62.245.132.106]:49435 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbYKUVML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 16:12:11 -0500
+Date: Fri, 21 Nov 2008 13:11:43 -0800 (PST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jesper Dangaard Brouer <hawk@diku.dk>
+cc: Jesper Dangaard Brouer <jdb@comx.dk>, David Miller <davem@davemloft.net>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Robert Olsson <Robert.Olsson@data.slu.se>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Regression: Bisected, IRQ and MSI allocations screwed without
+ sparse irq
+In-Reply-To: <Pine.LNX.4.64.0811212022520.29808@ask.diku.dk>
+Message-ID: <alpine.LFD.2.00.0811211307550.3179@localhost.localdomain>
+References: <1226572171.6834.87.camel@localhost.localdomain>  <20081113.141513.116537651.davem@davemloft.net>  <Pine.LNX.4.64.0811192333130.30818@ask.diku.dk>  <20081119.151138.93409143.davem@davemloft.net>  <Pine.LNX.4.64.0811202035590.19962@ask.diku.dk> 
+ <alpine.LFD.2.00.0811201539360.3197@localhost.localdomain> <1227263614.25811.25.camel@localhost.localdomain> <alpine.LFD.2.00.0811210838360.3232@localhost.localdomain> <Pine.LNX.4.64.0811212022520.29808@ask.diku.dk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 02:36:05AM +0800, Yu Zhao wrote:
-> Greetings,
+On Fri, 21 Nov 2008, Jesper Dangaard Brouer wrote:
+> > Ok, I queue it for mainline. This solves just the number of irqs
+> > limitation, the rmmod problem still persists, right ?
 > 
-> Following patches are intended to support SR-IOV capability in the
-> Linux kernel. With these patches, people can turn a PCI device with
-> the capability into multiple ones from software perspective, which
-> will benefit KVM and achieve other purposes such as QoS, security,
-> and etc.
+> It solves both the irq limit and the NIU driver unload bug.
+
+I don't believe that it solves it. It hides it at the best.
+ 
+> We should give it a good description.
+> I have cooked up a patch with a description below, will you accept that?
 > 
-> The Physical Function and Virtual Function drivers using the SR-IOV
-> APIs will come soon!
+> Who's tree do you want it to go upsteam via?
+> (You are listed as one of the X86 maintainers, but Ingo's tree seems more
+> up-to-date. My patch below is agains DaveM's tree)
 
-Thanks for respining these patches, but I think we really need to see a
-driver using this in order to get an idea of how it will be used.
+I queued it already with a description of the irq nr. problem. 
 
-Also, the Xen and KVM people need to agree on the userspace interface
-here, perhaps also getting some libvirt involvement as well, as they are
-going to be the ones having to use this all the time.
+The rmmod problem is something different and should be investigated
+thoroughly instead of declaring it solved by magic.
+ 
+Thanks,
 
-thanks,
-
-greg k-h
+	tglx
