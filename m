@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYKUOfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYKUOhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbYKUOfG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 09:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYKUOez
+	id S1755937AbYKUOhU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 09:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYKUOhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 09:34:55 -0500
-Received: from sour.ops.eusc.inter.net ([84.23.254.154]:50383 "EHLO
-	sour.ops.eusc.inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752784AbYKUOey (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 09:34:54 -0500
-X-Greylist: delayed 1465 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Nov 2008 09:34:54 EST
-Message-ID: <4926C153.3090104@gmx.de>
-Date: Fri, 21 Nov 2008 15:10:27 +0100
-From: Cord Walter <cord.walter@gmx.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Fri, 21 Nov 2008 09:37:07 -0500
+Received: from corega.com.ru ([195.178.208.66]:50679 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752784AbYKUOhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 09:37:05 -0500
+Date: Fri, 21 Nov 2008 17:37:02 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>, Robert Love <rlove@rlove.org>,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, John McCutchan <john@johnmccutchan.com>
+Subject: Re: [take 3] Use pid in inotify events.
+Message-ID: <20081121143702.GA13931@ioremap.net>
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com> <20081117171508.GA564@ioremap.net> <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com> <20081117175212.GA2224@ioremap.net> <20081120130902.GA1408@ucw.cz> <20081121140325.GA12384@ioremap.net> <517f3f820811210620o34307610hf926bbe3b3828e8c@mail.gmail.com>
 MIME-Version: 1.0
-To: Komuro <komurojun-mbn@nifty.com>
-CC: netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: axnet_cs / pcnet_cs: moving PCMCIA_DEVICE_PROD_ID for Netgear
- FA411
-References: <4925F6F1.9010305@gmx.de> <20081121214812.b03d7166.komurojun-mbn@nifty.com>
-In-Reply-To: <20081121214812.b03d7166.komurojun-mbn@nifty.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <517f3f820811210620o34307610hf926bbe3b3828e8c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Komuro schrieb:
-> On Fri, 21 Nov 2008 00:46:57 +0100
-> Cord Walter <cord.walter@gmx.de> wrote:
-> 
->> after noticing that my Netgear FA411 (PCMCIA-NIC) [1] stopped working with
->> the release of the 2.6.25 kernel (sidux-version),
-> 
-> You are right. My patch has a bug.
-> The patch below fixes this problem.
-> 
-> By the way,
-> (1) Does your FA411 work properly with the pcnet_cs driver before?
+Hi Michael.
 
-Yes, it worked until the 2.6.25 release.
+On Fri, Nov 21, 2008 at 09:20:39AM -0500, Michael Kerrisk (mtk.manpages@gmail.com) wrote:
+> I think the point is this.  You want to introduce a change that
+> address the needs of a single application.  Many others see the
+> change, which though it may be simple and quick to implement, as "an
+> ugly hack" -- it messes up an otherwise rather well designed API.
+> Should we make such a change?  I think not -- and others are echoing
+> that sentiment.  Your argument that "we should do this because no-one
+> else has proposed a better way" is not sufficient rationale for
+> uglifying this API to serve the needs of a single app -- the argument
+> will not fly, no matter how many times you repeat it.  (Your statement
+> "Critics without suggestions is useless" does not hold: one very
+> useful purpose of critics is to maintain the status quo of "good
+> taste" in API design.)
 
-> (2) Please post the full-dmesg (axnet_cs).
+That's the point, I proposed an idea, people just say no, without
+discussion on how this should be implemented. This is a sign that
+people do not really know how they want this to be implemented, if
+they care at all, but want to show that some cenversation took place.
 
-This is what I get from dmesg when plugging in the FA411:
+It does not. There may be infinite ways to satisfy taste of the
+beautiful for lots of people, I already tried, so know this perfectly
+well. And when I ask how others expect it to look like, I got _zero_
+responses except that to put it into different field, when you proposed
+new inotify interface.
 
-pccard: PCMCIA card inserted into slot 1
-cs: memory probe 0xa0000000-0xa0ffffff: clean.
-pcmcia: registering new device pcmcia1.0
-eth0: Asix AX88790: io 0x300, irq 3, hw_addr 00:09:5b:08:98:93
-udev: renamed network interface eth0 to eth1
-NET: Registered protocol family 17
+No one proposed netlink-like attributes nesting, no one proposed new
+fields, nothing. Because no one really cares about that. Only becuase of
+this fact I'm still trying to say that existing inotify works ok and its
+ugly extension is not a bad idea. Because no one needs new inotify, new
+fileds and new interfaces.
 
+> At this stage, I see three possibilities -- you maintain an
+> out-of-mainline patch for the kernel, and distribute that with your
+> app; you work out some other *userspace* solution to your problem; or
+> someone comes up with inotify-ng, designed to address your needs and
+> those of others (okay, we may not know what those other needs are yet,
+> but the question is if we could come up with an inotify-ng design that
+> can extensible in a sane way).  I know that none of these options will
+> be what you are happy with, but all of them have more life than your
+> proposal, IMO.
 
-Does this help?
+I'm happy with any solution, which solves the problem. I proposed one.
+It was not accepted. So I asked how this should look like? No response.
+I proposed some ideas (pid, start/offset of the io) - still no response
+if it is good, bad, ugly or beautiful.
 
--cord
+But instead people want to throw a stone, that something is ugly.
 
 -- 
-Cord Walter
-email: cord.walter@gmx.de
-
-Weil es niemanden etwas angeht, dass ich nichts zu verbergen habe:
-http://www.gnupg.org/
-http://www.truecrypt.org/
-...und überhaupt: http://www.FreiheitstattAngst.de
+	Evgeniy Polyakov
