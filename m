@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYKULjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbYKULmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbYKULjY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 06:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYKULjO
+	id S1755426AbYKULmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 06:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYKULmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 06:39:14 -0500
-Received: from arx.rabbit.us ([76.244.88.238]:47970 "EHLO arx.rabbit.us"
+	Fri, 21 Nov 2008 06:42:45 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:46799 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753235AbYKULjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 06:39:13 -0500
-Message-ID: <49269BCF.8060300@rabbit.us>
-Date: Fri, 21 Nov 2008 12:30:23 +0100
-From: Peter Rabbitson <rabbit+list@rabbit.us>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-raid <linux-raid@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, martmontools-support@lists.sourceforge.net,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: Ninth(?) Velociraptor replacement or md(RAID)/smartmontools(?)
- bug?
-References: <alpine.DEB.1.10.0811210600310.5577@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0811210600310.5577@p34.internal.lan>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1752865AbYKULmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 06:42:44 -0500
+Date: Fri, 21 Nov 2008 22:41:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/8] cpumask: powerpc: Introduce
+ cpumask_of_{node,pcibus} to replace {node,pcibus}_to_cpumask
+Message-Id: <20081121224159.3bc54524.sfr@canb.auug.org.au>
+In-Reply-To: <20081121104446.A45F1DDEE8@ozlabs.org>
+References: <20081121104446.A45F1DDEE8@ozlabs.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__21_Nov_2008_22_41_59_+1100_ERoSjOftgr9452RN"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Comment 1: From Alan Cox:
-> 
-> ================================================================================
-> 
-> Alan Cox <alan@lxorguk.ukuu.org.uk>
-> 
->> Error 1 occurred at disk power-on lifetime: 818 hours (34 days + 2 hours)
->>    When the command that caused the error occurred, the device was
->> doing SMART
-> Offline or Self-test.
->>
->>    After command completion occurred, registers were:
->>    ER ST SC SN CL CH DH
->>    -- -- -- -- -- -- --
->>    04 51 00 34 cf f3 a3
-> 
-> So Error 0x04 (ABRT)
-> Status 0x51 (DRDY N/A ERR)      Error occurred, and at the point data
-> transfer was expected
-> 
-> Which the spec says means the device errored the command because it does
-> not support it.
-> 
-> Seems odd that this then tripped a raid failover
-> ================================================================================
-> 
-> 
-> Comment 1 Response: Should this have tripped a raid fail-over?  I have
-> been having raid failures like this ever since I replaced all my
-> raptor150s with velociraptor300 disks, what can be done so this does not
-> occur?  Is this a WD/firmware bug or a bug in the md/raid code?
-> 
-> ================================================================================
-> 
+--Signature=_Fri__21_Nov_2008_22_41_59_+1100_ERoSjOftgr9452RN
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It might very well be a WD bug. I had three (3) identical WDC
-WD2500AAJS-08B4A0 drives fail on me with the same _identical_ error
-(same sector number to the last digit):
+Hi Rusty,
 
-Oct 27 11:33:41 Arzamas kernel: ata6.00: exception Emask 0x10 SAct 0x0
-SErr 0x80000 action 0xe frozen
-Oct 27 11:33:41 Arzamas kernel: ata6.00: irq_stat 0x01100010, PHY RDY
-changed
-Oct 27 11:33:41 Arzamas kernel: ata6: SError: { 10B8B }
-Oct 27 11:33:41 Arzamas kernel: ata6.00: cmd
-ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-Oct 27 11:33:41 Arzamas kernel: res 06/37:00:00:00:00/00:00:00:00:06/00
-Emask 0x12 (ATA bus error)
-Oct 27 11:33:41 Arzamas kernel: ata6.00: error: { IDNF ABRT }
-Oct 27 11:33:41 Arzamas kernel: ata6: hard resetting link
-Oct 27 11:33:46 Arzamas kernel: ata6: SATA link up 3.0 Gbps (SStatus 123
-SControl 0)
-Oct 27 11:33:46 Arzamas kernel: ata6.00: configured for UDMA/100
-Oct 27 11:33:46 Arzamas kernel: ata6: EH complete
-Oct 27 11:33:46 Arzamas kernel: sd 6:0:0:0: [sde] 488397168 512-byte
-hardware sectors (250059 MB)
-Oct 27 11:33:46 Arzamas kernel: sd 6:0:0:0: [sde] Write Protect is off
-Oct 27 11:33:46 Arzamas kernel: sd 6:0:0:0: [sde] Mode Sense: 00 3a 00 00
-Oct 27 11:33:46 Arzamas kernel: sd 6:0:0:0: [sde] Write cache: enabled,
-read cache: enabled, doesn't support DPO or FUA
-Oct 27 11:33:46 Arzamas kernel: end_request: I/O error, dev sde, sector
-488166955
-Oct 27 11:33:46 Arzamas kernel: md: super_written gets error=-5, uptodate=0
+On Fri, 21 Nov 2008 21:12:13 +1030 Rusty Russell <rusty@rustcorp.com.au> wr=
+ote:
+>
+> Impact: New APIs
+>=20
+> The old node_to_cpumask/node_to_pcibus returned a cpumask_t: these
+> return a pointer to a struct cpumask.  Part of removing cpumasks from
+> the stack.
+>=20
+> (Also replaces powerpc internal uses of node_to_cpumask).
+>=20
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+Sending powerpc patches to linuxppc-dev@ozlabs.org and paulus@samba.org
+is a good idea (the first because it gets put into patchwork (and so
+doesn't get lost) and the second because Paul and Ben are currently
+juggling the maintainership between them.
 
-All 3 drives endured the same multiple rewriting of the sector in
-question, as they did multiple smart self-tests. I am currently in the
-process of replacing these two drives with Seagates, (the other 2 in the
-4 member array are Maxtors). Will see what happens.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Peter
+--Signature=_Fri__21_Nov_2008_22_41_59_+1100_ERoSjOftgr9452RN
+Content-Type: application/pgp-signature
 
-P.S. See threads http://marc.info/?l=linux-raid&m=122523835815697 and
-http://marc.info/?l=linux-raid&m=122669103213041 for more info on my
-setup and hardware.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkmnocACgkQjjKRsyhoI8wl0ACfW6/LEBMaiTR7/whz1hAJiUEd
++S4AoKGDUTBg4wWqwbvwL8pCjR54uiTC
+=W+fy
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__21_Nov_2008_22_41_59_+1100_ERoSjOftgr9452RN--
