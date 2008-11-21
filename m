@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYKUFnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYKUFqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbYKUFnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 00:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYKUFnA
+	id S1753905AbYKUFqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 00:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYKUFqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 00:43:00 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:27967 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbYKUFm7 (ORCPT
+	Fri, 21 Nov 2008 00:46:11 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54979 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbYKUFqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 00:42:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=aruxl/hCv/KLWWyreoHiHCS0pWCETwV6H8AkY3/9eSTqjN20vogLpOSv32UImuRmsO
-         ssTKRePEb0dcs3yuvB03OHalHZzEBzByoo8D0U5XrURUfLLDmXfpUZllX7cL4MWnoDIh
-         atvG3RTEwGixDXA98dCICU6+1ZMrtz8P6Kl4w=
-Message-ID: <804dabb00811202142y799fb70dxf89a1fc3514d78b1@mail.gmail.com>
-Date: Fri, 21 Nov 2008 13:42:56 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: A question sort_main_extable()
-Cc: "Sam Ravnborg" <sam@ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 21 Nov 2008 00:46:10 -0500
+Date: Fri, 21 Nov 2008 14:45:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] memcg: fix a typo in Kconfig
+Message-Id: <20081121144525.cdb72a9a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49263218.1090305@cn.fujitsu.com>
+References: <49263218.1090305@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Inside start_kernel() there is a call to sort_main_extable().
+On Fri, 21 Nov 2008 11:59:20 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-void sort_extable(struct exception_table_entry *start,
-                 struct exception_table_entry *finish)
-{
-       sort(start, finish - start, sizeof(struct exception_table_entry),
-            cmp_ex, NULL);
-}
+> s/contoller/controller
+> 
+> Signed-of-by: Li Zefan <lizf@cn.fujitsu.com>
+Thanks,
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-With reference to
-http://tuxology.net/2008/07/08/benchmarking-boot-latency-on-x86/, I
-think it can help bootup latency (how much I got no number) if the
-sorting is done post-compilation time, instead of dynamically
-everytime the system bootup.  (perhaps at the stage of modposting,
-when all the vmlinux, kernel modules objects have been generated, so
-extracting out the exceptions strings is possible?)  Is this a
-possible optimization?
+> ---
+>  init/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index f763762..8767393 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -414,7 +414,7 @@ config CGROUP_MEM_RES_CTLR
+>  	  sure you need the memory resource controller. Even when you enable
+>  	  this, you can set "cgroup_disable=memory" at your boot option to
+>  	  disable memory resource controller and you can avoid overheads.
+> -	  (and lose benefits of memory resource contoller)
+> +	  (and lose benefits of memory resource controller)
+>  
+>  	  This config option also selects MM_OWNER config option, which
+>  	  could in turn add some fork/exit overhead.
+> -- 
+> 1.5.4.rc3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Sam, can it be done?
-
-Thanks.
-
-
--- 
-Regards,
-Peter Teoh
