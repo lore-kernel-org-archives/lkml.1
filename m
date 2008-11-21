@@ -1,212 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYKUTlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYKUTpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbYKUTlo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 14:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbYKUTl1
+	id S1757665AbYKUTpw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 14:45:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbYKUTpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 14:41:27 -0500
-Received: from mga02.intel.com ([134.134.136.20]:63631 "EHLO mga02.intel.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758127AbYKUTlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 14:41:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,645,1220252400"; 
-   d="scan'208";a="465875190"
-Date: Sat, 22 Nov 2008 02:44:32 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "achiang@hp.com" <achiang@hp.com>,
-       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "horms@verge.net.au" <horms@verge.net.au>,
-       "yinghai@kernel.org" <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 13/13 v7] PCI: document for SR-IOV user and developer
-Message-ID: <20081121184432.GN7810@yzhao12-linux.sh.intel.com>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 21 Nov 2008 14:45:43 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:63392 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752888AbYKUTpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 14:45:42 -0500
+Date: Fri, 21 Nov 2008 19:45:55 +0000
+From: David Collier-Brown <David.Collier-Brown@Sun.COM>
+Subject: Re: [RFC PATCH v4 1/7] sched: Framework for
+ sched_mc/smt_power_savings=N
+In-reply-to: <20081121083052.27075.87221.stgit@drishya.in.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@Sun.COM>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+Reply-to: David.Collier-Brown@Sun.COM
+Message-id: <49270FF3.6080302@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8
+Content-transfer-encoding: 7BIT
+X-Enigmail-Version: 0.95.1
+References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
+ <20081121083052.27075.87221.stgit@drishya.in.ibm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080119)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create how-to for the SR-IOV user and driver developer.
+Vaidyanathan Srinivasan wrote:
+> From: Gautham R Shenoy <ego@in.ibm.com>
+> 
+> ***  RFC patch of work in progress and not for inclusion. ***
+> 
+> Currently the sched_mc/smt_power_savings variable is a boolean, which either
+> enables or disables topology based power savings. This extends the behaviour of
+> the variable from boolean to multivalued, such that based on the value, we
+> decide how aggressively do we want to perform topology based powersavings
+> balance.
+> 
+> Variable levels of power saving tunable would benefit end user to match the
+> required level of power savings vs performance trade off depending on the
+> system configuration and workloads.
+> 
+> This initial version makes the sched_mc_power_savings global variable to take
+> more values (0,1,2).
 
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+  Might I suggest a dimensioned number rather than a relative one?
+One might say that 100 represents the full power of a system, meaning
+that all chips/cores are running at full speed, whereas 50 means that
+the power system would attempt to halve the resources available, and
+would return a value that represents the value that the power system
+believes it has achieved.  For example, if it could only reduce the
+clock speed by 10%, on a old uniprocessor, it would return 90.
 
----
- Documentation/DocBook/kernel-api.tmpl |    1 +
- Documentation/PCI/pci-iov-howto.txt   |  138 +++++++++++++++++++++++++++++++++
- 2 files changed, 139 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/PCI/pci-iov-howto.txt
+  An additional, second value it might return might be the power
+reduction it believed it had achieved.
 
-diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
-index 5818ff7..506e611 100644
---- a/Documentation/DocBook/kernel-api.tmpl
-+++ b/Documentation/DocBook/kernel-api.tmpl
-@@ -251,6 +251,7 @@ X!Edrivers/pci/hotplug.c
- -->
- !Edrivers/pci/probe.c
- !Edrivers/pci/rom.c
-+!Edrivers/pci/iov.c
-      </sect1>
-      <sect1><title>PCI Hotplug Support Library</title>
- !Edrivers/pci/hotplug/pci_hotplug_core.c
-diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
-new file mode 100644
-index 0000000..216cecc
---- /dev/null
-+++ b/Documentation/PCI/pci-iov-howto.txt
-@@ -0,0 +1,138 @@
-+		PCI Express I/O Virtualization Howto
-+		Copyright (C) 2008 Intel Corporation
-+
-+
-+1. Overview
-+
-+1.1 What is SR-IOV
-+
-+Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
-+capability which makes one physical device appear as multiple virtual
-+devices. The physical device is referred to as Physical Function (PF)
-+while the virtual devices are referred to as Virtual Functions (VF).
-+Allocation of the VF can be dynamically controlled by the PF via
-+registers encapsulated in the capability. By default, this feature is
-+not enabled and the PF behaves as traditional PCIe device. Once it's
-+turned on, each VF's PCI configuration space can be accessed by its own
-+Bus, Device and Function Number (Routing ID). And each VF also has PCI
-+Memory Space, which is used to map its register set. VF device driver
-+operates on the register set so it can be functional and appear as a
-+real existing PCI device.
-+
-+2. User Guide
-+
-+2.1 How can I manage the SR-IOV
-+
-+If a device has the SR-IOV capability and the device driver (PF driver)
-+supports this operation, then there should be some entries under the
-+PF's sysfs directory:
-+	- /sys/bus/pci/devices/NNNN:BB:DD.F/iov/
-+	(NNNN:BB:DD:F is the domain, bus, device and function numbers)
-+
-+To change number of Virtual Functions:
-+	- /sys/bus/pci/devices/NNNN:BB:DD.F/iov/nr_virtfn
-+	(writing positive integer to this file will change the number of
-+	VFs, and 0 means disable the capability)
-+
-+The total and initial numbers of VFs can get from:
-+	- /sys/bus/pci/devices/NNNN:BB:DD.F/iov/total_virtfn
-+	- /sys/bus/pci/devices/NNNN:BB:DD.F/iov/initial_virtfn
-+
-+2.2 How can I use the Virtual Functions
-+
-+The VF is treated as hot-plugged PCI devices in the kernel, so they
-+should be able to work in the same way as real PCI devices. And also
-+the VF requires device driver that is same as a normal PCI device's.
-+
-+3. Developer Guide
-+
-+3.1 SR-IOV APIs
-+
-+To use the SR-IOV service, the Physical Function driver needs to declare
-+a callback function in its 'struct pci_driver':
-+
-+	static struct pci_driver dev_driver = {
-+		...
-+		.virtual =	dev_virtual,
-+		...
-+	};
-+
-+	The 'dev_virtual' is a callback function that the SR-IOV service
-+	will invoke it when the number of  VFs is changed by the user.
-+	The first argument of this callback is PF itself ('struct pci_dev'),
-+	and the second argument is the number of VFs requested. The callback
-+	should return 0 if the requested number of VFs is supported and all
-+	necessary resources are granted to these VFs; otherwise it should
-+	return a negative value indicating the error.
-+
-+3.2 Usage example
-+
-+Following piece of code illustrates the usage of APIs above.
-+
-+static int __devinit dev_probe(struct pci_dev *dev,
-+				const struct pci_device_id *id)
-+{
-+	...
-+
-+	return 0;
-+}
-+
-+static void __devexit dev_remove(struct pci_dev *dev)
-+{
-+	...
-+}
-+
-+#ifdef CONFIG_PM
-+static int dev_suspend(struct pci_dev *dev, pm_message_t state)
-+{
-+	...
-+
-+	return 0;
-+}
-+
-+static int dev_resume(struct pci_dev *dev)
-+{
-+	pci_restore_state(dev);
-+
-+	...
-+
-+	return 0;
-+}
-+#endif
-+
-+static void dev_shutdown(struct pci_dev *dev)
-+{
-+	...
-+}
-+
-+static int dev_virtual(struct pci_dev *dev, int nr_virtfn)
-+{
-+
-+	if (nr_virtfn) {
-+		/*
-+		 * allocate device internal resources for VFs.
-+		 * these resources are device-specific (e.g. rx/tx
-+		 * queue in the NIC) and necessary to make the VF
-+		 * functional.
-+		 */
-+	} else {
-+		/*
-+		 * reclaim the VF related resources if any.
-+		 */
-+	}
-+
-+	return 0;
-+}
-+
-+static struct pci_driver dev_driver = {
-+	.name =		"SR-IOV Physical Function driver",
-+	.id_table =	dev_id_table,
-+	.probe =	dev_probe,
-+	.remove =	__devexit_p(dev_remove),
-+#ifdef CONFIG_PM
-+	.suspend =	dev_suspend,
-+	.resume =	dev_resume,
-+#endif
-+	.shutdown =	dev_shutdown,
-+	.virtual =	dev_virtual
-+};
+  These, by the way, are what my Tadpole GUI shows (;-)) so I'm just
+following someone else's lead.
+
+--dave
+
+
+> 
+> Later version is expected to add new member sd->powersavings_level at the multi
+> core CPU level sched_domain. This make all sd->flags check for
+> SD_POWERSAVINGS_BALANCE into a different macro that will check for
+> powersavings_level.
+> 
+> The power savings level setting should be in one place either in the
+> sched_mc_power_savings global variable or contained within the appropriate
+> sched_domain structure.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
+> 
+>  include/linux/sched.h |   11 +++++++++++
+>  kernel/sched.c        |   16 +++++++++++++---
+>  2 files changed, 24 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 644ffbd..d862837 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -760,6 +760,17 @@ enum cpu_idle_type {
+>  #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+>  #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
+>  
+> +enum powersavings_balance_level {
+> +	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
+> +	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
+> +					 * first for long running threads
+> +					 */
+> +	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
+> +					 * cpu package for power savings
+> +					 */
+> +	MAX_POWERSAVINGS_BALANCE_LEVELS
+> +};
+> +
+>  #define BALANCE_FOR_MC_POWER	\
+>  	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+>  
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 9b1e793..ea33446 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -7876,14 +7876,24 @@ int arch_reinit_sched_domains(void)
+>  static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+>  {
+>  	int ret;
+> +	unsigned int level = 0;
+>  
+> -	if (buf[0] != '0' && buf[0] != '1')
+> +	sscanf(buf, "%u", &level);
+> +
+> +	/*
+> +	 * level is always be positive so don't check for
+> +	 * level < POWERSAVINGS_BALANCE_NONE which is 0
+> +	 * What happens on 0 or 1 byte write,
+> +	 * need to check for count as well?
+> +	 */
+> +
+> +	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
+>  		return -EINVAL;
+>  
+>  	if (smt)
+> -		sched_smt_power_savings = (buf[0] == '1');
+> +		sched_smt_power_savings = level;
+>  	else
+> -		sched_mc_power_savings = (buf[0] == '1');
+> +		sched_mc_power_savings = level;
+>  
+>  	ret = arch_reinit_sched_domains();
+>  
+> 
+> 
+
 -- 
-1.5.6.4
-
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+cell: (647) 833-9377, bridge: (877) 385-4099 code: 506 9191#
