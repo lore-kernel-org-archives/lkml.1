@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYKUSM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYKUSRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbYKUSM4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 13:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYKUSMs
+	id S1756933AbYKUSRj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 13:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYKUSR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 13:12:48 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51120 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755145AbYKUSMr (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 13:12:47 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: penguin-kernel@i-love.sakura.ne.jp, linux-kernel@vger.kernel.org
-Subject: Re: Random freeze (Re: mmotm 2008-11-19-02-19 uploaded)
-In-Reply-To: Your message of "Thu, 20 Nov 2008 15:20:54 PST."
-             <20081120152054.2f757251.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200811200609.mAK69ZbZ053438@www262.sakura.ne.jp> <4401.1227222347@turing-police.cc.vt.edu>
-            <20081120152054.2f757251.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1227291159_3137P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Nov 2008 13:12:39 -0500
-Message-ID: <5672.1227291159@turing-police.cc.vt.edu>
+	Fri, 21 Nov 2008 13:17:29 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:40361 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705AbYKUSR2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 13:17:28 -0500
+Message-ID: <4926FB13.3080808@cosmosbay.com>
+Date: Fri, 21 Nov 2008 19:16:51 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from 2.6.22
+ -&gt; 2.6.28
+References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera> <20081117090648.GG28786@elte.hu> <Pine.LNX.4.64.0811191341570.23502@quilx.com> <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <Pine.LNX.4.64.0811210936580.25354@quilx.com> <Pine.LNX.4.64.0811211119550.27777@quilx.com>
+In-Reply-To: <Pine.LNX.4.64.0811211119550.27777@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 21 Nov 2008 19:16:52 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1227291159_3137P
-Content-Type: text/plain; charset=us-ascii
+Christoph Lameter a écrit :
+> AIM9 results:
+> 		TCP		UDP
+> 2.6.22		104868.00	489970.03
+> 2.6.28-rc5	110007.00	518640.00
+> net-next	108207.00	514790.00
+> 
+> net-next looses here for some reason against 2.6.28-rc5. But the numbers
+> are better than 2.6.22 in any case.
+> 
 
-On Thu, 20 Nov 2008 15:20:54 PST, Andrew Morton said:
+I found that on current net-next, running oprofile in background can give better bench
+results. Thats really curious... no ?
 
-> It's also of course possible (but less common) that someone mucked up
-> the VFS.  It would be interesting to revert
-> do_mpage_readpage-dont-submit-lots-of-small-bios-on-boundary.patch.
 
-Reverted that one, managed to provoke a wedge-up this morning anyhow.
-So it's something else.
+So the single loop on close(socket()), on all my 8 cpus is almost 10% faster if oprofile
+is running... (20 secs instead of 23 secs)
 
-I may have to go and find a reproducer good enough to make bisection plausible.
 
---==_Exmh_1227291159_3137P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJJvoXcC3lWbTT17ARAqLfAJ92uA3KE5lzsW7MqvjhjF8Y8DbicACeIL4s
-dW46Vnnb/dNBi9tQZyJrHws=
-=scUe
------END PGP SIGNATURE-----
-
---==_Exmh_1227291159_3137P--
