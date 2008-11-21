@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYKUK2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYKUKa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYKUK2B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 05:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbYKUK1x
+	id S1755236AbYKUKa6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 05:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYKUKau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 05:27:53 -0500
-Received: from winston.telenet-ops.be ([195.130.137.75]:58836 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbYKUK1w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 05:27:52 -0500
-Date: Fri, 21 Nov 2008 11:27:48 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: David Daney <ddaney@caviumnetworks.com>,
-       linux-mips <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MIPS: Make BUG() __noreturn.
-In-Reply-To: <20081121100035.3f5a640b@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0811211126420.26004@anakin>
-References: <49260E4C.8080500@caviumnetworks.com> <20081121100035.3f5a640b@lxorguk.ukuu.org.uk>
+	Fri, 21 Nov 2008 05:30:50 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:50097 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753143AbYKUKat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 05:30:49 -0500
+Date: Fri, 21 Nov 2008 16:17:56 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>
+Subject: Re: [PATCH 36 of 38] xen: route hardware irqs via Xen
+Message-ID: <20081121071754.GA4680@verge.net.au>
+References: <patchbomb.1226603398@abulafia.goop.org> <00079eee3818aa0205e2.1226603434@abulafia.goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <00079eee3818aa0205e2.1226603434@abulafia.goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008, Alan Cox wrote:
-> On Thu, 20 Nov 2008 17:26:36 -0800
-> David Daney <ddaney@caviumnetworks.com> wrote:
+On Thu, Nov 13, 2008 at 11:10:34AM -0800, Jeremy Fitzhardinge wrote:
+> This patch puts the hooks into place so that when the interrupt
+> subsystem registers an irq, it gets routed via Xen (if we're running
+> under Xen).
 > 
-> > MIPS: Make BUG() __noreturn.
-> > 
-> > Often we do things like put BUG() in the default clause of a case
-> > statement.  Since it was not declared __noreturn, this could sometimes
-> > lead to bogus compiler warnings that variables were used
-> > uninitialized.
-> > 
-> > There is a small problem in that we have to put a magic while(1); loop to
-> > fool GCC into really thinking it is noreturn.  
+> The first step is to get a gsi for a particular device+pin.  We use
+> the normal acpi interrupt routing to do the mapping.
 > 
-> That sounds like your __noreturn macro is wrong.
+> Normally the gsi number is used directly as the irq number.  We can't
+> do that since we also have irqs for non-hardware event channels, and
+> so we must share the irq space between them.  A given gsi is only
+> allocated a single irq, so re-registering a gsi will simply return the
+> same irq.
 > 
-> Try using __attribute__ ((__noreturn__))
+> We therefore allocate an irq for a given gsi, and return that.  As a
+> special case, we reserve the first 16 irqs for identity-mapping legacy
+> irqs, since there's a fair amount of code which assumes that.
 > 
-> if that works then fix up the __noreturn definitions for the MIPS and gcc
-> you have.
+> Having allocated an irq, we ask Xen to allocate a vector, and then
+> bind that pirq/vector to an event channel.  When the hardware raises
+> an interrupt on a vector, Xen signals us on the corresponding event
+> channel, which gets routed to the irq and delivered to the appropriate
+> device driver.
+> 
+> This patch does everything except set up the IO APIC pin routing to
+> the vector.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  arch/x86/kernel/acpi/boot.c |    8 +++
+>  arch/x86/pci/legacy.c       |    4 +
+>  arch/x86/xen/Makefile       |    1
+>  arch/x86/xen/pci.c          |   98 +++++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/xen/xen-ops.h      |    1
+>  drivers/xen/events.c        |    9 ++-
+>  include/asm-x86/xen/pci.h   |    7 +++
+>  include/xen/events.h        |    8 +++
+>  8 files changed, 132 insertions(+), 4 deletions(-)
+> 
 
-Nope, gcc is too smart:
+[snip]
 
-$ cat a.c
+> diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+> --- a/arch/x86/xen/xen-ops.h
+> +++ b/arch/x86/xen/xen-ops.h
+> @@ -63,7 +63,6 @@
+>  static inline void xen_smp_init(void) {}
+>  #endif
+>  
+> -
+>  void xen_init_apic(void);
+>  
+>  /* Declare an asm function, along with symbols needed to make it
 
-int f(void) __attribute__((__noreturn__));
+Hi Jeremy,
 
-int f(void)
-{
-}
+This seems like a spurious whitespace change that could be
+merged into "[PATCH 30 of 38] xen: implement io_apic_ops"
 
-$ gcc -c -Wall a.c
-a.c: In function f:
-a.c:6: warning: `noreturn' function does return
-$ 
+[snip]
 
-Gr{oetje,eeting}s,
+-- 
+Simon Horman
+  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
