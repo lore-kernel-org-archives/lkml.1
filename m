@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbYKUBkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbYKUBmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbYKUBkN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Nov 2008 20:40:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYKUBj7
+	id S1756192AbYKUBmy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Nov 2008 20:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYKUBmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Nov 2008 20:39:59 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:53367 "EHLO e3.ny.us.ibm.com"
+	Thu, 20 Nov 2008 20:42:46 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:52084 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752027AbYKUBj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Nov 2008 20:39:58 -0500
+	id S1752158AbYKUBmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Nov 2008 20:42:45 -0500
 Subject: Re: [PATCH 3/4] integrity: IMA as an integrity service provider
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@liux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
        David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
-       Christoph Hellwig <hch@lst.de>
-In-Reply-To: <1227216141.11607.22.camel@nimitz>
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081120181523.GA4444@infradead.org>
 References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
 	 <342f87b65eae2369d96501d8d4935d6be0f46678.1227137423.git.zohar@linux.vnet.ibm.com>
-	 <1227216141.11607.22.camel@nimitz>
+	 <20081120181523.GA4444@infradead.org>
 Content-Type: text/plain
-Date: Thu, 20 Nov 2008 20:39:56 -0500
-Message-Id: <1227231596.2819.102.camel@localhost.localdomain>
+Date: Thu, 20 Nov 2008 20:42:42 -0500
+Message-Id: <1227231762.2819.105.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -32,49 +30,155 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 13:22 -0800, Dave Hansen wrote: 
-> On Thu, 2008-11-20 at 11:43 -0500, Mimi Zohar wrote:
-> > 
-> > +       /* Invalidate PCR, if a measured file is already open for read
-> > */
-> > +       if ((mask == MAY_WRITE) || (mask == MAY_APPEND)) {
-> > +               int mask_sav = data->mask;
-> > +               int rc;
+On Thu, 2008-11-20 at 13:15 -0500, Christoph Hellwig wrote: 
+> Ok, after the API is sorted out I had a quick looks at this patch.
+> 
+> The first very odd thing is the data strucutures:
+> 
+> > +struct ima_args_data {
+> > +	const char *filename;
+> > +	struct file *file;
+> > +	struct path *path;
+> > +	struct dentry *dentry;
+> > +	struct inode *inode;
+> > +	enum lim_hooks function;
+> > +	u32 osid;
+> > +	int mask;
+> > +};
+> 
+> You can always get from a file to a path, from a path to a dentry,
+> from a dentry to and inode and from a path to some defintion of a
+> filename.  So a lot of things here seems very redundant.
+> 
+> When looking at how it's used it's acually even worse.  AFAICS the
+> code would be a lot cleaner if you'd just kill struct ima_args_data
+> and the odd pass arguments as void pointers obsfucations and just
+> pass the file/path + mask directly to the lower level functions.
+> 
+> That's also help killing things like ima_store_measurement which
+> do entirely different things depending on idata->type.
+
+hm, looking into it.
+
+> > +static int skip_measurement(struct inode *inode, int mask)
+> > +{
+> > +	if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode))
+> > +		return 1;	/* can't measure */
 > > +
-> > +               data->mask = MAY_READ;
-> > +               rc = ima_must_measure(&idata);
-> > +               if (!rc) {
-> > +                       if (atomic_read(&(data->dentry->d_count)) - 1 >
-> > +                           atomic_read(&(inode->i_writecount)))
-> > +                               ima_add_violation(inode, data->filename,
-> > +                                                 "invalid_pcr", "ToMToU");
-> > +               }
-> > +               data->mask = mask_sav;
-> > +               goto out;
-> > +       }
+> > +	if (special_file(inode->i_mode) || S_ISLNK(inode->i_mode))
+> > +		return 1;	/* don't measure */
+> > +
+> > +	if (S_ISREG(inode->i_mode))
+> > +		return 0;	/* measure */
+> > +	return 1;		/* don't measure */
+> > +}
 > 
-> Following up on Christoph's comment...
+> This could just be an
 > 
-> I'm worried that this calculation isn't very precise.  The calculation
-> that you're trying to come up with here is the number of opens (d_count)
-> vs. the number of writers (i_writecount).  When they don't match, you
-> know that the new open is the first write, and you must 'invalidate the
-> PCR'?
+> 	if (!S_ISREG(inode->i_mode))
 > 
-> There are a number of things that elevate d_count, and it is a lot more
-> than just an open() that can do it.  Is that OK?
-> 
-> -- Dave
+> in the caller..
 
->From an integrity perspective, a file measurement might be invalidated
-unnecessarily, but it is safe. For any file when opened for write, while
-having an existing reader, will cause the file measurement to be
-invalidated. Can you give examples of things, other than open(), that
-elevate d_count?
+Done.
 
-Is there a different, better way to determine if there are any readers?
+> > +static int update_file_hash(struct file *f, struct path *path,
+> > +			    struct hash_desc *desc)
+> 
+> Please split this into a update_file_hash that always operates on a
+> struct file, and a wrapper around it that creates the struct file
+> for the cases that needs it.
 
-Thanks!
+Ok.
+
+> > +void ima_fixup_argsdata(struct ima_args_data *data, struct file *file,
+> > +			struct path *path, int mask, int function)
+> > +{
+> > +	struct dentry *dentry = NULL;
+> > +
+> > +	data->file = file;
+> > +	data->path = path;
+> > +	data->mask = mask;
+> > +	data->function = function;
+> > +
+> > +	if (file)
+> > +		data->dentry = dentry = file->f_dentry;
+> > +
+> > +	if (path) {
+> > +		if (!dentry)
+> > +			data->dentry = dentry = path->dentry;
+> > +	}
+> > +	if (dentry)
+> > +		data->inode = dentry->d_inode;
+> > +
+> > +	return;
+> > +}
+> 
+> You have two different callers for this, either file NULL or path NULL
+> but never neither or both.  So just do the setup in the callers and do
+> the right thing there.  (and please kill the inode member, it's entirely
+> superflous)
+> 
+> > +static void ima_file_free(struct file *file)
+> > +{
+> > +	struct inode *inode = NULL;
+> > +	struct ima_iint_cache *iint;
+> > +
+> > +	if (!file->f_dentry)	/* can be NULL */
+> > +		return;
+> 
+> No, it can't.
+> 
+> > +
+> > +	inode = file->f_dentry->d_inode;
+> > +	if (S_ISDIR(inode->i_mode))
+> > +		return;
+> > +	if ((file->f_mode & FMODE_WRITE) &&
+> > +	    (atomic_read(&inode->i_writecount) == 1)) {
+> 
+> > + * Returns 0 on success, -ENOMEM on failure
+> > + */
+> > +static int ima_inode_alloc_integrity(struct inode *inode)
+> > +{
+> > +	return ima_iint_insert(inode);
+> > +}
+> > +
+> > +/**
+> > + * ima_inode_free_integrity - free the integrity structure
+> > + * @inode: the inode structure
+> > + */
+> > +static void ima_inode_free_integrity(struct inode *inode)
+> > +{
+> > +	ima_iint_delete(inode);
+> > +}
+> 
+> Why these wrappers?
+
+You're right. I'll remove these routines and assign
+ima_iint_insert()/delete() directly in ima_integrity_ops.
+
+> > +	/* The file name is only a hint. */
+> > +	dentry = path->dentry;
+> > +	data->filename = (!dentry->d_name.name) ? (char *)dentry->d_iname :
+> > +	    (char *)dentry->d_name.name;
+> 
+> d_iname is the internal storage for d_name, always use d_name only.
+
+ok
+
+> 
+> > +	if (!file || !file->f_dentry)
+> > +		return rc;
+> 
+> Can't happen.
+
+Will remove test.
+
+> > +#define audit_type(type) AUDIT_ ##type
+> > +#define lsm_type(type) LSM_ ##type
+> 
+> Just spelling out the constants would be a lot more readable..
+
+ok
 
 Mimi
 
