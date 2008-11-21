@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbYKUIbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYKUIbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbYKUIbT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 03:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYKUIbB
+	id S1755301AbYKUIbt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 03:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYKUIbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 03:31:01 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:57546 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYKUIbA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 03:31:00 -0500
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 2/7] sched: favour lower logical cpu number for
-	sched_mc balance
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Fri, 21 Nov 2008 14:01:04 +0530
-Message-ID: <20081121083103.27075.68835.stgit@drishya.in.ibm.com>
-In-Reply-To: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
-References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Fri, 21 Nov 2008 03:31:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33348 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752603AbYKUIbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 03:31:37 -0500
+Date: Fri, 21 Nov 2008 09:30:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20081121083044.GL16242@elte.hu>
+References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera> <20081117090648.GG28786@elte.hu> <Pine.LNX.4.64.0811191341570.23502@quilx.com> <Pine.LNX.4.64.0811201727070.9089@quilx.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0811201727070.9089@quilx.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just in case two groups have identical load, prefer to move load to lower
-logical cpu number rather than the present logic of moving to higher logical
-number.
 
-find_busiest_group() tries to look for a group_leader that has spare capacity
-to take more tasks and freeup an appropriate least loaded group.  Just in case
-there is a tie and the load is equal, then the group with higher logical number
-is favoured.  This conflicts with user space irqbalance daemon that will move
-interrupts to lower logical number if the system utilisation is very low.
+* Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
+> hmmm... Well we are almost there.
+> 
+> 2.6.22:
+> 
+> Throughput 2526.15 MB/sec 8 procs
+> 
+> 2.6.28-rc5:
+> 
+> Throughput 2486.2 MB/sec 8 procs
+> 
+> 8p Dell 1950 and the number of processors specified on the tbench 
+> command line.
 
- kernel/sched.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+And with net-next we might even be able to get past that magic limit? 
+net-next is linus-latest plus the latest and greatest networking bits:
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ea33446..79b71f3 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3263,7 +3263,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		 */
- 		if ((sum_nr_running < min_nr_running) ||
- 		    (sum_nr_running == min_nr_running &&
--		     first_cpu(group->cpumask) <
-+		     first_cpu(group->cpumask) >
- 		     first_cpu(group_min->cpumask))) {
- 			group_min = group;
- 			min_nr_running = sum_nr_running;
-@@ -3279,7 +3279,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		if (sum_nr_running <= group_capacity - 1) {
- 			if (sum_nr_running > leader_nr_running ||
- 			    (sum_nr_running == leader_nr_running &&
--			     first_cpu(group->cpumask) >
-+			     first_cpu(group->cpumask) <
- 			      first_cpu(group_leader->cpumask))) {
- 				group_leader = group;
- 				leader_nr_running = sum_nr_running;
+ $ cat .git/config
 
+ [remote "net-next"]
+	url = git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
+	fetch = +refs/heads/*:refs/remotes/net-next/*
+
+... so might be worth a test. Just to satisfy our curiosity and to 
+possibly close the entry :-)
+
+	Ingo
