@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbYKURqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYKURrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbYKURqg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 12:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbYKURqY
+	id S1757944AbYKURrI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 12:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYKURqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 12:46:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56807 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755661AbYKURqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 12:46:24 -0500
-Date: Fri, 21 Nov 2008 18:45:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/10] DMA-API debugging facility
-Message-ID: <20081121174551.GC4336@elte.hu>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227286492.4901.208.camel@macbook.infradead.org> <20081121165722.GD1386@amd.com> <1227287215.4901.213.camel@macbook.infradead.org> <20081121171802.GK733@elte.hu> <20081121172046.GF1386@amd.com> <1227288269.4901.222.camel@macbook.infradead.org> <20081121172722.GG1386@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121172722.GG1386@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 21 Nov 2008 12:46:55 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39888 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbYKURqy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 12:46:54 -0500
+Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@liux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linux.vnet.ibm.com>
+References: <cover.1227137423.git.zohar@linux.vnet.ibm.com>
+	 <ece5bb6863d9b42016860f3ef78656e4a228ad95.1227137423.git.zohar@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 21 Nov 2008 09:46:43 -0800
+Message-Id: <1227289603.11607.38.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Fri, Nov 21, 2008 at 05:24:29PM +0000, David Woodhouse wrote:
-> > On Fri, 2008-11-21 at 18:20 +0100, Joerg Roedel wrote:
-> > > Ok, I will move the generic bits to lib/ and include/linux and let
-> > > architectures decide if they want to use it.
-> > 
-> > Once you've done that, I'll try to hook it up on PowerPC to make 
-> > sure it works there.
+On Thu, 2008-11-20 at 11:43 -0500, Mimi Zohar wrote:
 > 
-> Ok, cool. Thanks
+> +       rcu_read_lock();
+> +       rc = integrity_find_template(template_name, &template_entry);
+> +       if (rc == 0)
+> +               tget(template_entry);
+> +       rcu_read_unlock();
 
-i'll give it a whirl on x86 once the allocation bug is resolved. x86 
-testing will be the most interesting in practice, because most drivers 
-there are developed with no dynamic DMA in mind. (many of the x86 
-drivers were developed before IOMMUs were supported in Linux)
+This little nugget is repeated over and over.  How about an
+integrity_find_get_template()?
 
-	Ingo
+-- Dave
+
