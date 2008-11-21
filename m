@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYKUQZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYKUQ0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbYKUQZo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 11:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbYKUQZZ
+	id S1756546AbYKUQ0o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 11:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYKUQ0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 11:25:25 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:36154 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754893AbYKUQZY (ORCPT
+	Fri, 21 Nov 2008 11:26:23 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:5021 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbYKUQ0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 11:25:24 -0500
-Message-ID: <4926E0F2.5060200@lwfinger.net>
-Date: Fri, 21 Nov 2008 10:25:22 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Fri, 21 Nov 2008 11:26:22 -0500
+X-BigFish: VPS-4(zz18c1K655Oc8kzzzzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-FB-SS: 5,
+X-WSS-ID: 0KAOYZK-04-Y1C-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 02/10] x86: add data structures for DMA-API debugging
+Date: Fri, 21 Nov 2008 17:26:02 +0100
+Message-ID: <1227284770-19215-3-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+In-Reply-To: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 21 Nov 2008 16:26:10.0500 (UTC) FILETIME=[DD154840:01C94BF5]
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Peter Stuge <peter@stuge.se>, wireless <linux-wireless@vger.kernel.org>,
-       Broadcom Linux <bcm43xx-dev@lists.berlios.de>,
-       Yuval Hager <yuval@avramzon.net>
-Subject: BCM4312 Fails when xdm is started
-References: <200811151801.02369.yuval@avramzon.net>	<491EFB9D.3040002@lwfinger.net>	<200811151907.05636.yuval@avramzon.net> <20081115174623.27321.qmail@stuge.se>
-In-Reply-To: <20081115174623.27321.qmail@stuge.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A problem was recently posted to the bcm43xx mailing list that I am unable to
-solve. The machine in question is an HP Mini 2133 (HP product number FU346EA)
-with a BCM4312 PCIe wireless card. This card is known to work with the b43
-driver (I have one.) and it does work on this machine - at least initially.
+Impact: adds a new header file for DMA-API debugging
 
-A problem occurs when xdm/kde is started. Suddenly a read operation on device
-hardware returns all ones as though the register does not exist, or if it were
-suddenly mismapped. If the OP doesn't try to run xdm, the same problem will
-eventually occur, it just takes longer.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/include/asm/dma_debug.h |   41 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 41 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/include/asm/dma_debug.h
 
-This is a 32-bit system running 2.6.28-rc5, but I don't think this is a
-regression from some earlier version as the problem was first reported with
-kernel 2.6.27-gentoo-r2.
+diff --git a/arch/x86/include/asm/dma_debug.h b/arch/x86/include/asm/dma_debug.h
+new file mode 100644
+index 0000000..d79f024
+--- /dev/null
++++ b/arch/x86/include/asm/dma_debug.h
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (C) 2008 Advanced Micro Devices, Inc.
++ *
++ * Author: Joerg Roedel <joerg.roedel@amd.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#ifndef __ASM_X86_DMA_DEBUG
++#define __ASM_X86_DMA_DEBUG
++
++/* Allocation flags */
++#define DMA_DEBUG_SINGLE        0
++#define DMA_DEBUG_SG            1
++#define DMA_DEBUG_COHERENT      2
++
++struct device;
++struct list_head;
++
++struct dma_debug_entry {
++	struct list_head list;
++	struct device *dev;
++	int type;
++	void *cpu_addr;
++	u64 dev_addr;
++	u64 size;
++	int direction;
++};
++
++#endif /* __ASM_X86_DMA_DEBUG */
+-- 
+1.5.6.4
 
-I have complete logs, but before spamming the list with them, I have a question
-about the "Zone PFN" settings. On the problem machine, the following list occurs:
 
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA      0x00000000 -> 0x00001000
-[    0.000000]   Normal   0x00001000 -> 0x000373fe
-[    0.000000]   HighMem  0x000373fe -> 0x0006feb0
-
-On my 64-bit HP machine, I see:
-
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  DMA32    0x00001000 -> 0x00100000
-  Normal   0x00100000 -> 0x00100000
-
-Is it "normal" for there not to be a DMA32 range with a 32-bit version of Linux?
-Certainly all the memory is available to 32-bit DMA. This card does 64-bit DMA,
-but the driver falls back to a 32-bit mask for this system.
-
-Is there some kind of memory mapping problem in the PCIe system? Should the
-entire log be posted?
-
-Thanks,
-
-Larry
