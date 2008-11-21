@@ -1,227 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYKUPs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbYKUPvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbYKUPs3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 10:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYKUPrk
+	id S1756753AbYKUPvK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 10:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYKUPux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 10:47:40 -0500
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:25339 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757462AbYKUPri (ORCPT
+	Fri, 21 Nov 2008 10:50:53 -0500
+Received: from styx.suse.cz ([82.119.242.94]:52065 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752626AbYKUPuw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 10:47:38 -0500
-Date: Fri, 21 Nov 2008 16:44:28 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
-       Glauber Costa <gcosta@redhat.com>, Matt Mackall <mpm@selenic.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH] Split out some macro's and move common code to paranoid_exit
-Message-ID: <20081121154428.GB13014@mailshack.com>
-References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <20081119001811.GA23237@mailshack.com> <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Nov 2008 10:50:52 -0500
+From: Petr Tesarik <ptesarik@suse.cz>
+Organization: SUSE LINUX, s.r.o.
+To: "Ilpo =?utf-8?q?J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: Re: [PATCH] tcp: fix potential corner case issue in segmentation (Was: Re: [PATCH] Do not use TSO/GSO when there is urgent data)
+Date: Fri, 21 Nov 2008 16:51:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Jan =?utf-8?q?=C5=A0embera?=" <jsembera@suse.cz>
+References: <200811211319.45515.ptesarik@suse.cz> <Pine.LNX.4.64.0811211438420.3930@wrl-59.cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0811211438420.3930@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081121154318.GA13014@mailshack.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Fri, 21 Nov 2008 16:46:48 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.35; VDF: 7.1.0.120; host: AntiVir3)
+Message-Id: <200811211651.52024.ptesarik@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DISABLE_INTERRUPTS(CLBR_NONE)/TRACE_IRQS_OFF is now always
-executed just before paranoid_exit. Move it there.
+Dne Friday 21 of November 2008 14:07:32 Ilpo Järvinen napsal(a):
+> On Fri, 21 Nov 2008, Petr Tesarik wrote:
+> > This patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=12014
+> >
+> > Since most (if not all) implementations of TSO and even the in-kernel
+> > software GSO do not update the urgent pointer when splitting a large
+> > segment, it is necessary to turn off TSO/GSO for all outgoing traffic
+> > with the URG pointer set.
+>
+> Good observation, I totally missed this possibility of T/GSO while
+> looking.
+>
+> > Looking at tcp_current_mss (and the preceding comment) I even think
+> > this was the original intention. However, this approach is insufficient,
+> > because TSO/GSO is turned off only for newly created frames, not for
+> > frames which were already pending at the arrival of a message with
+> > MSG_OOB set. These frames were created when TSO/GSO was enabled,
+> > so they may be large, and they will have the urgent pointer set
+> > in tcp_transmit_skb().
+> >
+> > With this patch, such large packets will be fragmented again before
+> > going to the transmit routine.
+>
+> I wonder if there's some corner case which still fails to fragment
+> in tcp_retransmit_xmit's in skb->len <= cur_mss case if cur_mss
+> grew very recently (and therefore skb-len now fits to a single segment).
 
-Split out paranoidzeroentry, paranoiderrorentry, and
-paranoidzeroentry_ist to get more readable macro's.
+This shouldn't be a problem, because TSO only applies to packets which are 
+larger than MSS, so the problematic case is when cur_mss gets smaller, not 
+when it grows. In other words, the original implementation of 
+tcp_retransmit_xmit() could never make use of TSO/GSO, anyway...
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/entry_64.S |  102 ++++++++++++++++++++++----------------------
- 1 files changed, 51 insertions(+), 51 deletions(-)
+>[...]
+> > Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> > CC: Jan Sembera <jsembera@suse.cz>
+> > CC: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+> >
+> > --
+> >  tcp_output.c |    7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
+> > --- a/net/ipv4/tcp_output.c
+> > +++ b/net/ipv4/tcp_output.c
+> > @@ -722,7 +722,8 @@ static void tcp_queue_skb(struct sock *sk, struct
+> > sk_buff *skb)
+> >  static void tcp_set_skb_tso_segs(struct sock *sk, struct sk_buff *skb,
+> >  				 unsigned int mss_now)
+> >  {
+> > -	if (skb->len <= mss_now || !sk_can_gso(sk)) {
+> > +	if (skb->len <= mss_now || !sk_can_gso(sk) ||
+> > +	    tcp_urg_mode(tcp_sk(sk))) {
+> >  		/* Avoid the costly divide in the normal
+> >  		 * non-TSO case.
+> >  		 */
+> > @@ -1163,7 +1164,9 @@ static int tcp_init_tso_segs(struct sock *sk,
+> > struct sk_buff *skb,
+> >  {
+> >  	int tso_segs = tcp_skb_pcount(skb);
+> >
+> > -	if (!tso_segs || (tso_segs > 1 && tcp_skb_mss(skb) != mss_now)) {
+> > +	if (!tso_segs ||
+> > +	    (tso_segs > 1 && (tcp_skb_mss(skb) != mss_now ||
+> > +			      tcp_urg_mode(tcp_sk(sk))))) {
+> >  		tcp_set_skb_tso_segs(sk, skb, mss_now);
+> >  		tso_segs = tcp_skb_pcount(skb);
+> >  	}
+>
+> It's a bit intrusive but I couldn't immediately come up with alternative
+> that would have worked (came up with some not working ones :-)).
 
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index fad777b..692c1da 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -1026,6 +1026,39 @@ END(spurious_interrupt)
- 	CFI_ENDPROC
- 	.endm
- 
-+	.macro paranoidzeroentry sym
-+	INTR_FRAME
-+	PARAVIRT_ADJUST_EXCEPTION_FRAME
-+	pushq $-1		/* ORIG_RAX: no syscall to restart */
-+	CFI_ADJUST_CFA_OFFSET 8
-+	subq $15*8, %rsp
-+	call save_paranoid
-+	TRACE_IRQS_OFF
-+	movq %rsp,%rdi		/* pt_regs pointer */
-+	xorl %esi,%esi		/* no error code */
-+	call \sym
-+	jmp paranoid_exit	/* %ebx: no swapgs flag */
-+	CFI_ENDPROC
-+	.endm
-+
-+	.macro paranoidzeroentry_ist sym ist
-+ 	INTR_FRAME
-+	PARAVIRT_ADJUST_EXCEPTION_FRAME
-+	pushq $-1		/* ORIG_RAX: no syscall to restart */
-+	CFI_ADJUST_CFA_OFFSET 8
-+	subq $15*8, %rsp
-+	call save_paranoid
-+	TRACE_IRQS_OFF
-+	movq %rsp,%rdi		/* pt_regs pointer */
-+	xorl %esi,%esi		/* no error code */
-+	movq %gs:pda_data_offset, %rbp
-+	subq $EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
-+	call \sym
-+	addq $EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
-+	jmp paranoid_exit	/* %ebx: no swapgs flag */
-+	CFI_ENDPROC
-+	.endm
-+
- 	.macro errorentry sym
- 	XCPT_FRAME
- 	PARAVIRT_ADJUST_EXCEPTION_FRAME
-@@ -1042,27 +1075,20 @@ END(spurious_interrupt)
- 	.endm
- 
- 	/* error code is on the stack already */
--	.macro paranoidentry sym ist=0
--	subq $15*8, %rsp
-+	.macro paranoiderrorentry sym
-+	XCPT_FRAME
-+	PARAVIRT_ADJUST_EXCEPTION_FRAME
-+	subq $15*8,%rsp
- 	CFI_ADJUST_CFA_OFFSET 15*8
- 	call save_paranoid
- 	DEFAULT_FRAME 0
--	.if \ist
--	movq	%gs:pda_data_offset, %rbp
--	.endif
- 	TRACE_IRQS_OFF
--	movq %rsp,%rdi
--	movq ORIG_RAX(%rsp),%rsi
--	movq $-1,ORIG_RAX(%rsp)
--	.if \ist
--	subq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
--	.endif
-+	movq %rsp,%rdi			/* pt_regs pointer */
-+	movq ORIG_RAX(%rsp),%rsi	/* get error code */
-+	movq $-1,ORIG_RAX(%rsp)		/* no syscall to restart */
- 	call \sym
--	.if \ist
--	addq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
--	.endif
--	DISABLE_INTERRUPTS(CLBR_NONE)
--	TRACE_IRQS_OFF
-+	jmp paranoid_exit		/* %ebx: no swapgs flag */
-+	CFI_ENDPROC
- 	.endm
- 
- 	/*
-@@ -1081,6 +1107,8 @@ END(spurious_interrupt)
- 	/* ebx:	no swapgs flag */
- KPROBE_ENTRY(paranoid_exit)
- 	INTR_FRAME
-+	DISABLE_INTERRUPTS(CLBR_NONE)
-+	TRACE_IRQS_OFF
- 	testl %ebx,%ebx				/* swapgs needed? */
- 	jnz paranoid_restore
- 	testl $3,CS(%rsp)
-@@ -1331,13 +1359,7 @@ END(device_not_available)
- 
- 	/* runs on exception stack */
- KPROBE_ENTRY(debug)
-- 	INTR_FRAME
--	PARAVIRT_ADJUST_EXCEPTION_FRAME
--	pushq $0
--	CFI_ADJUST_CFA_OFFSET 8
--	paranoidentry do_debug, DEBUG_STACK
--	jmp paranoid_exit
-- 	CFI_ENDPROC
-+	paranoidzeroentry_ist do_debug, DEBUG_STACK
- KPROBE_END(debug)
- 
- 	/* runs on exception stack */
-@@ -1351,14 +1373,12 @@ KPROBE_ENTRY(nmi)
- 	DEFAULT_FRAME 0
- 	/* paranoidentry do_nmi, 0; without TRACE_IRQS_OFF */
- 	movq %rsp,%rdi
--	movq ORIG_RAX(%rsp),%rsi
--	movq $-1,ORIG_RAX(%rsp)
-+	movq $-1,%rsi
- 	call do_nmi
--	DISABLE_INTERRUPTS(CLBR_NONE)
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/* paranoidexit; without TRACE_IRQS_OFF */
- 	/* ebx:	no swapgs flag */
--nmi_exit:
-+	DISABLE_INTERRUPTS(CLBR_NONE)
- 	testl %ebx,%ebx				/* swapgs needed? */
- 	jnz nmi_restore
- 	testl $3,CS(%rsp)
-@@ -1398,13 +1418,7 @@ nmi_schedule:
- KPROBE_END(nmi)
- 
- KPROBE_ENTRY(int3)
-- 	INTR_FRAME
--	PARAVIRT_ADJUST_EXCEPTION_FRAME
-- 	pushq $0
-- 	CFI_ADJUST_CFA_OFFSET 8
-- 	paranoidentry do_int3, DEBUG_STACK
-- 	jmp paranoid_exit
-- 	CFI_ENDPROC
-+	paranoidzeroentry_ist do_int3, DEBUG_STACK
- KPROBE_END(int3)
- 
- ENTRY(overflow)
-@@ -1425,11 +1439,7 @@ END(coprocessor_segment_overrun)
- 
- 	/* runs on exception stack */
- ENTRY(double_fault)
--	XCPT_FRAME
--	PARAVIRT_ADJUST_EXCEPTION_FRAME
--	paranoidentry do_double_fault
--	jmp paranoid_exit
--	CFI_ENDPROC
-+	paranoiderrorentry do_double_fault
- END(double_fault)
- 
- ENTRY(invalid_TSS)
-@@ -1442,11 +1452,7 @@ END(segment_not_present)
- 
- 	/* runs on exception stack */
- ENTRY(stack_segment)
--	XCPT_FRAME
--	PARAVIRT_ADJUST_EXCEPTION_FRAME
--	paranoidentry do_stack_segment
--	jmp paranoid_exit
--	CFI_ENDPROC
-+	paranoiderrorentry do_stack_segment
- END(stack_segment)
- 
- KPROBE_ENTRY(general_protection)
-@@ -1468,13 +1474,7 @@ END(spurious_interrupt_bug)
- #ifdef CONFIG_X86_MCE
- 	/* runs on exception stack */
- ENTRY(machine_check)
--	INTR_FRAME
--	PARAVIRT_ADJUST_EXCEPTION_FRAME
--	pushq $0
--	CFI_ADJUST_CFA_OFFSET 8
--	paranoidentry do_machine_check
--	jmp paranoid_exit
--	CFI_ENDPROC
-+	paranoidzeroentry do_machine_check
- END(machine_check)
- #endif
- 
--- 
-1.5.4.3
+Yes, I also noticed that. We could add some more code to tcp_mark_urg(), e.g. 
+walk sk_write_queue and adjust the pending SKBs there...
 
+Is it OK to simply set all skb->gso_segs to zero, and let the next call to 
+tcp_init_tso_segs redo them? I mean, will tcp_init_tso_segs() be always 
+called on all SKBs which are in the write queue at the time tcp_mark_urg() is 
+called?
+
+Petr
