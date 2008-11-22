@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYKVBjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757109AbYKVBje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYKVBjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 20:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbYKVBjA
+	id S1757109AbYKVBje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 20:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYKVBjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 20:39:00 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55013 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755843AbYKVBi7 (ORCPT
+	Fri, 21 Nov 2008 20:39:21 -0500
+Received: from mga12.intel.com ([143.182.124.36]:32357 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758104AbYKVBjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 20:38:59 -0500
-Message-ID: <492762B1.4020107@ct.jp.nec.com>
-Date: Fri, 21 Nov 2008 17:38:57 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Fri, 21 Nov 2008 20:39:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,648,1220252400"; 
+   d="scan'208";a="80462967"
+Date: Sat, 22 Nov 2008 09:39:02 +0800
+From: Wu Fengguang <wfg@linux.intel.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH linux-next] snd-hda: fix build errors
+Message-ID: <20081122013902.GA12810@localhost>
+References: <20081121181948.ee771502.sfr@canb.auug.org.au> <492713E8.9080103@oracle.com> <s5hy6zc7rjr.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: signal: cosmetic unification of sys_rt_sigreturn()
-References: <49276229.9060000@ct.jp.nec.com>
-In-Reply-To: <49276229.9060000@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hy6zc7rjr.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Fri, Nov 21, 2008 at 09:27:52PM +0100, Takashi Iwai wrote:
+> At Fri, 21 Nov 2008 12:02:48 -0800,
+> Randy Dunlap wrote:
+> > 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > First error comes from snd_hda_eld_proc_new() not being static
+> > when CONFIG_PROC_FS=n.  After that is fixed, the next problem is:
+> > ERROR: "snd_print_pcm_rates" [sound/pci/hda/snd-hda-intel.ko] undefined!
+> > 
+> > so I made a static inline version of that one too, for CONFIG_PROC_FS=n.
+> > Please build/test more config variations.
+> > 
+> >   LD [M]  sound/pci/hda/snd-hda-intel.o
+> > sound/pci/hda/hda_eld.o: In function `snd_hda_eld_proc_new':
+> > (.text+0x0): multiple definition of `snd_hda_eld_proc_new'
+> > sound/pci/hda/hda_codec.o:(.text+0x58): first defined here
+> > sound/pci/hda/hda_hwdep.o: In function `snd_hda_eld_proc_new':
+[...]
+> > sound/pci/hda/patch_intelhdmi.o: In function `snd_hda_eld_proc_new':
+> > (.text+0x3b): multiple definition of `snd_hda_eld_proc_new'
+> > sound/pci/hda/hda_codec.o:(.text+0x58): first defined here
+> > make[4]: *** [sound/pci/hda/snd-hda-intel.o] Error 1
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > cc: Wu Fengguang <wfg@linux.intel.com>
+> > cc: Takashi Iwai <tiwai@suse.de>
+> > ---
+> >  sound/pci/hda/hda_local.h |    7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Thanks, but these have been differently fixed on the latest ALSA tree.
+> snd_print_pcm_*() have to be defined no matter what CONFIG_PROC_FS is.
 
-Impact: cleanup
+Thank you!
 
-Add #ifdef directive for unification.
+I'll send another fix for remaining build warnings when CONFIG_PROC_FS=n.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/signal_32.c |    7 +++++++
- arch/x86/kernel/signal_64.c |    9 +++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index d990988..f7dd6c4 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -299,12 +299,19 @@ badframe:
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_32
- asmlinkage int sys_rt_sigreturn(unsigned long __unused)
- {
- 	struct pt_regs *regs = (struct pt_regs *)&__unused;
- 
- 	return do_rt_sigreturn(regs);
- }
-+#else /* !CONFIG_X86_32 */
-+asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
-+{
-+	return do_rt_sigreturn(regs);
-+}
-+#endif /* CONFIG_X86_32 */
- 
- /*
-  * Set up a signal frame.
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index b6e4fe0..32718f5 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -169,10 +169,19 @@ badframe:
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_32
-+asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-+{
-+	struct pt_regs *regs = (struct pt_regs *)&__unused;
-+
-+	return do_rt_sigreturn(regs);
-+}
-+#else /* !CONFIG_X86_32 */
- asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- {
- 	return do_rt_sigreturn(regs);
- }
-+#endif /* CONFIG_X86_32 */
- 
- /*
-  * Set up a signal frame.
--- 
-1.5.6
-
+Fengguang
