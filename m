@@ -1,186 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbYKVWhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbYKVWi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbYKVWhx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 17:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbYKVWfM
+	id S1759170AbYKVWi2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 17:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYKVWiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 17:35:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37851 "EHLO ogre.sisk.pl"
+	Sat, 22 Nov 2008 17:38:14 -0500
+Received: from lucidpixels.com ([75.144.35.66]:48960 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758712AbYKVWfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 17:35:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: processors core stuck in full throttle after waking up from s2ram
-Date: Sat, 22 Nov 2008 23:33:06 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <1227168699.4276.24.camel@LiNuX> <200811222151.49273.rjw@sisk.pl> <1227389306.3171.14.camel@LiNuX>
-In-Reply-To: <1227389306.3171.14.camel@LiNuX>
+	id S1753508AbYKVWiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 17:38:11 -0500
+Date: Sat, 22 Nov 2008 17:38:10 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: "Moore, Eric" <Eric.Moore@lsi.com>
+cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Alan Piszcz <ap@solarrain.com>
+Subject: RE: Question regarding SAS controllers.
+In-Reply-To: <660360F4F2570145BD872F298951B17A5CC4073E@cosmail03.lsi.com>
+Message-ID: <alpine.DEB.1.10.0811221735240.14817@p34.internal.lan>
+References: <660360F4F2570145BD872F298951B17A5CC4073E@cosmail03.lsi.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811222333.06459.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 22 of November 2008, Justin P. Mattock wrote:
-> On Sat, 2008-11-22 at 21:51 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, 20 of November 2008, Justin P. Mattock wrote:
-> > > (before getting into this I need to see if somebody else with a macbook
-> > > pro(ATI with radeon drivers) is experiencing the same issue?)
-> > > I'm not sure I this is caused by the kernel or the program s2ram.
-> > > when I cat watch /proc/cpuinfo I see: (after waking up from suspend.)
-> > > 
-> > > Every 2.0s: cat /proc/cpuinfo
-> > > Wed Nov 19 23:49:13 2008
-> > > 
-> > > processor       : 0
-> > > vendor_id       : GenuineIntel
-> > > cpu family      : 6
-> > > model           : 15
-> > > model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-> > > stepping        : 6
-> > > cpu MHz         : 2167.000  
-> > > cache size      : 4096 KB
-> > > physical id     : 0
-> > > siblings        : 2
-> > > core id         : 0
-> > > cpu cores       : 2
-> > > apicid          : 0
-> > > initial apicid  : 0
-> > > fdiv_bug        : no
-> > > hlt_bug         : no
-> > > f00f_bug        : no
-> > > coma_bug        : no
-> > > fpu             : yes
-> > > fpu_exception   : yes
-> > > cpuid level     : 10
-> > > wp              : yes
-> > > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> > > mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> > > constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx
-> > >  est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-> > > bogomips        : 4322.49
-> > > clflush size    : 64
-> > > power management:
-> > > 
-> > > processor       : 1
-> > > vendor_id       : GenuineIntel
-> > > cpu family      : 6
-> > > model           : 15
-> > > model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-> > > stepping        : 6
-> > > cpu MHz         : 1000.000
-> > > cache size      : 4096 KB
-> > > physical id     : 0
-> > > siblings        : 2
-> > > core id         : 1
-> > > cpu cores       : 2
-> > > apicid          : 1
-> > > initial apicid  : 1
-> > > fdiv_bug        : no
-> > > hlt_bug         : no
-> > > f00f_bug        : no
-> > > coma_bug        : no
-> > > fpu             : yes
-> > > fpu_exception   : yes
-> > > cpuid level     : 10
-> > > wp              : yes
-> > > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> > > mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> > > constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx
-> > >  est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-> > > bogomips        : 4322.60
-> > > clflush size    : 64
-> > > power management:
-> > > 
-> > > 
-> > > the processor is full throttle on one of the cores.
-> > 
-> > Surely not.  The first core shows 2.16 GHz.
-> > 
-> > Anyway, it certainly is not related to the s2ram program in any way.
-> 
-> Normally I would see cpu MHz: 1000 under both entries,
-> this time upon wakeup theres 1000 and 2167.00. the 2167.00 doesn't move
-> down to 1000 i.g. example of system normally:
->  cat /proc/cpuinfo <below>
-> 
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-> stepping        : 6
-> cpu MHz         : 1000.000   
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 0
-> cpu cores       : 2
-> apicid          : 0
-> initial apicid  : 0
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> constant_tsc arch_perfmon                             pebs bts pni
-> dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm
-> tpr_shadow
-> bogomips        : 4322.48
-> clflush size    : 64
-> power management:
-> 
-> processor       : 1
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-> stepping        : 6
-> cpu MHz         : 1000.000
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 1
-> cpu cores       : 2
-> apicid          : 1
-> initial apicid  : 1
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> constant_tsc arch_perfmon                             pebs bts pni
-> dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm
-> tpr_shadow
-> bogomips        : 4322.51
-> clflush size    : 64
-> power management:
-> 
-> under normal use this 
-> will move between 2167.00 to 1000 simultaneously under load with both
-> cores, but then back down to 1000, for both when settled down.
-> in this situation as I reported, the 2167.00 just
-> stays at that number for one of the cores(if thats what I'm seeing) when
-> waking up from suspend for some reason or another. 
 
-Ah, ok.  So the problem is that core remains at the highest frequency.
 
-What cpufreq driver is used on this box?
+On Sat, 22 Nov 2008, Moore, Eric wrote:
 
-Rafael
+>> Firmware and BIOS for both Integrated RAID and Initiator-Target.  Must
+>> boot to DOS to run utility.  Batch file simplifies installation.
+>>
+>> Welcome to LSI Logic Integrated SAS Flash Utility
+>>       This Utility will upgrade your LSI SAS3442E HBA
+>>
+>
+> Justin - We have linux tools for flashing firmware and bios.
+>
+
+Eric, one final question:
+http://www.lsi.jp/storage_home/products_home/host_bus_adapters/sas_hbas/lsisas3041er/index.html
+This obviously has 4 SAS/SATA ports (regular cables) and looks like it 
+would be great in Linux/SW raid for SAS/SATA disks.
+
+This (8 port version):
+http://www.lsi.com/storage_home/products_home/host_bus_adapters/sas_hbas/lsisas3081er/index.html
+Has two SFF-8087 mini-SAS connectors.
+
+It states "two (4) x1 SATA cables"
+
+Does this mean:
+
+8087 ------------> 8087 (with 4 lanes)
+
+Thus it would require the purchase of an additional breakout cable or 
+attachment to a special SATA/SAS enclosure.
+
+or:
+
+8087 ------------> regular sas/sata/1
+                    regular sas/sata/2
+                    regular sas/sata/3
+                    regular sas/sata/4
+
+Justin.
