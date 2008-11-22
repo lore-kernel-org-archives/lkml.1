@@ -1,241 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbYKVGr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYKVHDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbYKVGr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 01:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYKVGrs
+	id S1755966AbYKVHDy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 02:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYKVHDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 01:47:48 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:5216 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYKVGrr (ORCPT
+	Sat, 22 Nov 2008 02:03:44 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:33562 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbYKVHDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 01:47:47 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:content-type:content-transfer-encoding;
-	b=d2ShyiP4XJYlReTdmUX5Lp9Vlrtkf5tio0eeFQfD4Zc8uc6LBTZjDWY/OGzBlOBKN
-	APZSZZ7IxU/pkuz5w8VXw==
+	Sat, 22 Nov 2008 02:03:43 -0500
+X-IronPort-AV: E=McAfee;i="5300,2777,5441"; a="13386960"
+Message-ID: <4927AECA.2040707@qualcomm.com>
+Date: Fri, 21 Nov 2008 23:03:38 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Date: Fri, 21 Nov 2008 22:47:44 -0800
-Message-ID: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
-Subject: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-From: Ying Han <yinghan@google.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>, Mike Waychison <mikew@google.com>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>
+To: Dimitri Sivanich <sivanich@sgi.com>
+CC: Gregory Haskins <ghaskins@novell.com>, Derek Fults <dfults@sgi.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
+ no load balance
+References: <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com> <4924C770.7050107@qualcomm.com> <4926158B.9020909@novell.com> <49271449.2030804@qualcomm.com> <20081121211800.GA16647@sgi.com>
+In-Reply-To: <20081121211800.GA16647@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-page fault retry with NOPAGE_RETRY
-Allow major faults to drop the mmap_sem read lock while waitting for
-synchronous disk read. This allows another thread which wishes to grab
-down_read(mmap_sem) to proceed while the current is waitting the disk IO.
-
-The patch flags current->flags to PF_FAULT_MAYRETRY as identify that the
-caller can tolerate the retry in the filemap_fault call patch.
-
-Benchmark is done by mmap in huge file and spaw 64 thread each faulting in
-pages in reverse order, the the result shows 8% porformance hit with the
-patch.
-
-Future Improvement:
-1. It could be more efficient to check if the mm_struct has been changed or
-not. So we don't need to back all the way out of pagefault handler for the
-cases mm_struct not changed.
-2. It is a bit hacky and using a flag in current->flags to determine
-whether we have done the retry or now. More generic way of doing it is pass
-back the page_fault handler something like page_fault_args which introduce
-the reason for the retry, so the higher level could be able to better
-handle.
-
- Signed-off-by: Mike Waychison <mikew@google.com>
- Signed-off-by: Ying Han <yinghan@google.com>
 
 
- arch/x86/mm/fault.c   |   25 +++++++++++++++++++---
- include/linux/mm.h    |    1 +
- include/linux/sched.h |    1 +
- mm/filemap.c          |   53 +++++++++++++++++++++++++++++++++++++++++++++++-
- mm/memory.c           |    6 +++++
- 5 files changed, 80 insertions(+), 6 deletions(-)
+Dimitri Sivanich wrote:
+> Hi Greg and Max,
+> 
+> On Fri, Nov 21, 2008 at 12:04:25PM -0800, Max Krasnyansky wrote:
+>> Hi Greg,
+>>
+>> I attached debug instrumentation patch for Dmitri to try. I'll clean it up and
+>>  add things you requested and will resubmit properly some time next week.
+>>
+> 
+> We added Max's debug patch to our kernel and have run Max's Trace 3 scenario, but we do not see a NULL sched-domain remain attached, see my comments below.
+> 
+> 
+> mount -t cgroup cpuset -ocpuset /cpusets/
+> 
+> for i in 0 1 2 3; do mkdir par$i; echo $i > par$i/cpuset.cpus; done
+> 
+> kernel: cpusets: rebuild ndoms 1
+> kernel: cpuset: domain 0 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+Oops. I did not realize your NR_CPUS is so large. Unfortunately all your masks
+got truncated.
+I'll update the patch to print cpu list instead of the masks.
 
+> echo 0 > cpuset.sched_load_balance
+> kernel: cpusets: rebuild ndoms 4
+> kernel: cpuset: domain 0 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: cpuset: domain 1 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: cpuset: domain 2 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: cpuset: domain 3 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: CPU0 root domain default
+> kernel: CPU0 attaching NULL sched-domain.
+> kernel: CPU1 root domain default
+> kernel: CPU1 attaching NULL sched-domain.
+> kernel: CPU2 root domain default
+> kernel: CPU2 attaching NULL sched-domain.
+> kernel: CPU3 root domain default
+> kernel: CPU3 attaching NULL sched-domain.
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 31e8730..883e9c5 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -577,10 +577,8 @@ int show_unhandled_signals = 1;
-  * and the problem, and then passes it off to one of the appropriate
-  * routines.
-  */
--#ifdef CONFIG_X86_64
--asmlinkage
--#endif
--void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
-+static void __kprobes __do_page_fault(struct pt_regs *regs,
-+					unsigned long error_code)
- {
- 	struct task_struct *tsk;
- 	struct mm_struct *mm;
-@@ -689,6 +687,7 @@ again:
- 		down_read(&mm->mmap_sem);
- 	}
+> kernel: CPU3 root domain e0000069ecb20000
+> kernel: CPU3 attaching sched-domain:
+> kernel:  domain 0: span 3 level NODE
+> kernel:   groups: 3
+> kernel: CPU2 root domain e000006884a00000
+> kernel: CPU2 attaching sched-domain:
+> kernel:  domain 0: span 2 level NODE
+> kernel:   groups: 2
+> kernel: CPU1 root domain e000006884a20000
+> kernel: CPU1 attaching sched-domain:
+> kernel:  domain 0: span 1 level NODE
+> kernel:   groups: 1
+> kernel: CPU0 root domain e000006884a40000
+> kernel: CPU0 attaching sched-domain:
+> kernel:  domain 0: span 0 level NODE
+> kernel:   groups: 0
+> 
+> Which is the way sched_load_balance is supposed to work. You need to set
+> sched_load_balance=0 for all cpusets containing any cpu you want to disable
+> balancing on, otherwise some balancing will happen.
+It won't be much of a balancing in this case because this just one cpu per
+domain.
+In other words no that's not how it supposed to work. There is code in
+cpu_attach_domain() that is supposed to remove redundant levels
+(sd_degenerate() stuff). There is an explicit check in there for numcpus == 1.
+btw The reason you got a different result that I did is because you have a
+NUMA box where is mine is UMA. I was able to reproduce the problem though by
+enabling multi-core scheduler. In which case I also get one redundant domain
+level CPU, with a single CPU in it.
+So we definitely need to fix this. I'll try to poke around tomorrow and figure
+out why redundant level is not dropped.
 
-+retry:
- 	vma = find_vma(mm, address);
- 	if (!vma)
- 		goto bad_area;
-@@ -743,6 +742,15 @@ good_area:
- 			goto do_sigbus;
- 		BUG();
- 	}
-+
-+	if (fault & VM_FAULT_RETRY) {
-+		if (current->flags & PF_FAULT_MAYRETRY) {
-+			current->flags &= ~PF_FAULT_MAYRETRY;
-+			goto retry;
-+		}
-+		BUG();
-+	}
-+
- 	if (fault & VM_FAULT_MAJOR)
- 		tsk->maj_flt++;
- 	else
-@@ -893,6 +901,16 @@ do_sigbus:
- 	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
- }
+> So in addition to the top (root) cpuset, we need to set it to '0' in the
+> parX cpusets. That will turn off load balancing to the cpus in question
+> (thereby attaching a NULL sched domain). 
+As I explained above we should not have to disable load balancing in cpusets
+with a single CPU.
 
-+#ifdef CONFIG_X86_64
-+asmlinkage
-+#endif
-+void do_page_fault(struct pt_regs *regs, unsigned long error_code)
-+{
-+	current->flags |= PF_FAULT_MAYRETRY;
-+	__do_page_fault(regs, error_code);
-+	current->flags &= ~PF_FAULT_MAYRETRY;
-+}
-+
- DEFINE_SPINLOCK(pgd_lock);
- LIST_HEAD(pgd_list);
+> So when we do that for just par3, we get the following:
+> echo 0 > par3/cpuset.sched_load_balance
+> kernel: cpusets: rebuild ndoms 3
+> kernel: cpuset: domain 0 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: cpuset: domain 1 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: cpuset: domain 2 cpumask
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
+> 0000000,00000000,00000000,00000000,0
+> kernel: CPU3 root domain default
+> kernel: CPU3 attaching NULL sched-domain.
+> 
+> So the def_root_domain is now attached for CPU 3.  And we do have a NULL
+> sched-domain, which we expect for a cpu with load balancing turned off.  If
+> we turn sched_load_balance off ('0') on each of the other cpusets (par0-2),
+> each of those cpus would also have a NULL sched-domain attached.
+Ok. This one is a bug in cpuset.c:generate_sched_domains(). Sched domain
+generator in cpusets should not drop domains with single cpu in them when
+sched_load_balance==0. I'll look at that tomorrow too.
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ffee2f7..d325ae8 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -694,6 +694,7 @@ static inline int page_mapped(struct page *page)
- #define VM_FAULT_SIGBUS	0x0002
- #define VM_FAULT_MAJOR	0x0004
- #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
-+#define VM_FAULT_RETRY	0x0010
-
- #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page
- #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b483f39..8c41746 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1559,7 +1559,7 @@ extern cputime_t task_gtime(struct task_struct *p);
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester *
- #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeab
- #define PF_FREEZER_NOSIG 0x80000000	/* Freezer won't send signals to it */
--
-+#define PF_FAULT_MAYRETRY 0x08000000	/* may drop mmap_sem during fault */
- /*
-  * Only the _current_ task can read/write to tsk->flags, but other
-  * tasks can access tsk->flags in readonly mode for example
-diff --git a/mm/filemap.c b/mm/filemap.c
-index f3e5f89..2baa519 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1458,6 +1458,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
- 	 */
- retry_find:
- 	page = find_lock_page(mapping, vmf->pgoff);
-+
-+retry_find_nopage:
- 	/*
- 	 * For sequential accesses, we use the generic readahead logic.
- 	 */
-@@ -1512,6 +1514,7 @@ retry_find:
- 	if (!did_readaround)
- 		ra->mmap_miss--;
-
-+retry_page_update:
- 	/*
- 	 * We have a locked page in the page cache, now we need to check
- 	 * that it's up-to-date. If not, it is going to be due to an error.
-@@ -1547,8 +1550,54 @@ no_cached_page:
- 	 * In the unlikely event that someone removed it in the
- 	 * meantime, we'll just come back here and read it again.
- 	 */
--	if (error >= 0)
--		goto retry_find;
-+	if (error >= 0) {
-+		/*
-+		 * If caller cannot tolerate a retry in the ->fault path
-+		 * go back to check the page again.
-+		 */
-+		if (!(current->flags & PF_FAULT_MAYRETRY))
-+			goto retry_find;
-+
-+		/*
-+		 * Caller is flagged with retry. If page is deleted
-+		 * already, go back to get a new page, otherwise
-+		 * check the page is locked or not. If page is
-+		 * locked, do nopage_retry.
-+		 */
-+		page = find_get_page(mapping, vmf->pgoff);
-+		if (!page)
-+			goto retry_find_nopage;
-+		if (!trylock_page(page)) {
-+			struct mm_struct *mm = vma->vm_mm;
-+			/*
-+			 * Page is already locked by someone else.
-+			 *
-+			 * We don't want to be holding down_read(mmap_sem)
-+			 * inside lock_page(). We use wait_on_page_lock here
-+			 * to just wait until the page is unlocked, but we
-+			 * don't really need
-+			 * to lock it.
-+			 */
-+			up_read(&mm->mmap_sem);
-+			wait_on_page_locked(page);
-+			down_read(&mm->mmap_sem);
-+			/*
-+			 * The VMA tree may have changed at this point.
-+			 */
-+			page_cache_release(page);
-+			return VM_FAULT_RETRY;
-+		}
-+
-+		/* Has the page been truncated */
-+		if (unlikely(page->mapping != mapping)) {
-+			unlock_page(page);
-+			page_cache_release(page);
-+			goto retry_find;
-+		}
-+
-+		goto retry_page_update;
-+
-+	}
-
- 	/*
- 	 * An error return from page_cache_read can result if the
-diff --git a/mm/memory.c b/mm/memory.c
-index 164951c..38bd63b 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2467,6 +2467,12 @@ static int __do_fault(struct mm_struct *mm, struct vm_a
- 	vmf.page = NULL;
-
- 	ret = vma->vm_ops->fault(vma, &vmf);
-+
-+	/* page may be available, but we have to restart the process
-+	 * because mmap_sem was dropped during the ->fault */
-+	if (ret == VM_FAULT_RETRY)
-+		return ret;
-+
- 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
- 		return ret;
+Max
