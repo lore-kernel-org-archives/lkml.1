@@ -1,84 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbYKVDlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYKVDnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbYKVDlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 22:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbYKVDlM
+	id S1757506AbYKVDnX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 22:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYKVDnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 22:41:12 -0500
-Received: from ozlabs.org ([203.10.76.45]:54391 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756711AbYKVDlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 22:41:10 -0500
-Subject: Re: [PATCH] IB/ehca: Fix lockdep failures for shca_list_lock
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       OF-EWG <ewg@lists.openfabrics.org>,
-       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       OF-General <general@lists.openfabrics.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-In-Reply-To: <1227283347.3599.8.camel@johannes.berg>
-References: <200806061835.43802.fenkes@de.ibm.com>
-	 <48499C11.7030504@gmail.com>  <200811211637.15300.fenkes@de.ibm.com>
-	 <1227283347.3599.8.camel@johannes.berg>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-wGTLu2HDVlWeitLDaXUm"
-Date: Sat, 22 Nov 2008 14:41:08 +1100
-Message-Id: <1227325268.10134.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 21 Nov 2008 22:43:12 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53391 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753464AbYKVDnL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 22:43:11 -0500
+From: Jeff Arnold <jbarnold@MIT.EDU>
+To: linux-kernel@vger.kernel.org
+Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
+       Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: [RFC v3 PATCH 5/7] Ksplice: Add functions for walking kallsyms symbols
+Date: Fri, 21 Nov 2008 22:35:59 -0500
+Message-Id: <1227324961-13273-6-git-send-email-jbarnold@mit.edu>
+X-Mailer: git-send-email 1.6.0
+In-Reply-To: <1227324961-13273-5-git-send-email-jbarnold@mit.edu>
+References: <1227324961-13273-1-git-send-email-jbarnold@mit.edu>
+ <1227324961-13273-2-git-send-email-jbarnold@mit.edu>
+ <1227324961-13273-3-git-send-email-jbarnold@mit.edu>
+ <1227324961-13273-4-git-send-email-jbarnold@mit.edu>
+ <1227324961-13273-5-git-send-email-jbarnold@mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Anders Kaseorg <andersk@mit.edu>
 
---=-wGTLu2HDVlWeitLDaXUm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+kallsyms_lookup_name only returns the first match that it finds.  Ksplice
+needs information about all symbols with a given name in order to correctly
+resolve local symbols.
 
-On Fri, 2008-11-21 at 17:02 +0100, Johannes Berg wrote:
-> On Fri, 2008-11-21 at 16:37 +0100, Joachim Fenkes wrote:
->=20
-> > +	u64 flags;
->=20
-> > -	spin_lock(&shca_list_lock);
-> > +	spin_lock_irqsave(&shca_list_lock, flags);
->=20
-> That's wrong and I think will give a warning on all machines where
-> u64 !=3D unsigned long. Might not particularly matter in this case.
+kallsyms_on_each_symbol provides a generic mechanism for iterating over the
+kallsyms table.
 
-Crud, sorry.
+Signed-off-by: Anders Kaseorg <andersk@mit.edu>
+---
+ include/linux/kallsyms.h |   13 +++++++++++++
+ include/linux/module.h   |   12 ++++++++++++
+ kernel/kallsyms.c        |   19 +++++++++++++++++++
+ kernel/module.c          |   19 +++++++++++++++++++
+ 4 files changed, 63 insertions(+), 0 deletions(-)
 
-> Also, generally it seems wrong to say "fix lockdep failure" when the
-> patch really fixes a bug that lockdep happened to find.
-
-True. I guess it should be "fix locking error found with lockdep", to
-make it clear no one has actually hit the bug.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-wGTLu2HDVlWeitLDaXUm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkknf1QACgkQdSjSd0sB4dLuegCfdD9QaCxGcfpr0dLLsdDw8aCy
-znQAoKjg+uaMRKR7noZNuoq2/rhEX2Ed
-=+IXW
------END PGP SIGNATURE-----
-
---=-wGTLu2HDVlWeitLDaXUm--
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index f3fe343..37746b2 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -17,6 +17,11 @@
+ /* Lookup the address for a symbol. Returns 0 if not found. */
+ unsigned long kallsyms_lookup_name(const char *name);
+ 
++/* Call a function on each kallsyms symbol in the core kernel */
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data);
++
+ extern int kallsyms_lookup_size_offset(unsigned long addr,
+ 				  unsigned long *symbolsize,
+ 				  unsigned long *offset);
+@@ -43,6 +48,14 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++						    struct module *,
++						    unsigned long),
++					  void *data)
++{
++	return 0;
++}
++
+ static inline int kallsyms_lookup_size_offset(unsigned long addr,
+ 					      unsigned long *symbolsize,
+ 					      unsigned long *offset)
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 2268147..29972a2 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -378,6 +378,10 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name);
+ 
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data);
++
+ extern void __module_put_and_exit(struct module *mod, long code)
+ 	__attribute__((noreturn));
+ #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
+@@ -546,6 +550,14 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++							   struct module *,
++							   unsigned long),
++						 void *data)
++{
++	return 0;
++}
++
+ static inline int register_module_notifier(struct notifier_block * nb)
+ {
+ 	/* no events will happen anyway, so this can always succeed */
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 7b8b0f2..374faf9 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -161,6 +161,25 @@ unsigned long kallsyms_lookup_name(const char *name)
+ 	return module_kallsyms_lookup_name(name);
+ }
+ 
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data)
++{
++	char namebuf[KSYM_NAME_LEN];
++	unsigned long i;
++	unsigned int off;
++	int ret;
++
++	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
++		off = kallsyms_expand_symbol(off, namebuf);
++		ret = fn(data, namebuf, NULL, kallsyms_addresses[i]);
++		if (ret != 0)
++			return ret;
++	}
++	return module_kallsyms_on_each_symbol(fn, data);
++}
++EXPORT_SYMBOL_GPL(kallsyms_on_each_symbol);
++
+ static unsigned long get_symbol_pos(unsigned long addr,
+ 				    unsigned long *symbolsize,
+ 				    unsigned long *offset)
+diff --git a/kernel/module.c b/kernel/module.c
+index c3cf234..8839d40 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2554,6 +2554,25 @@ unsigned long module_kallsyms_lookup_name(const char *name)
+ 	preempt_enable();
+ 	return ret;
+ }
++
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data)
++{
++	struct module *mod;
++	unsigned int i;
++	int ret;
++
++	list_for_each_entry(mod, &modules, list) {
++		for (i = 0; i < mod->num_symtab; i++) {
++			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
++				 mod, mod->symtab[i].st_value);
++			if (ret != 0)
++				return ret;
++		}
++	}
++	return 0;
++}
+ #endif /* CONFIG_KALLSYMS */
+ 
+ static char *module_flags(struct module *mod, char *buf)
+-- 
+1.5.6.3
 
