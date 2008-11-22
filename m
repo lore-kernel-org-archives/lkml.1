@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbYKVJ3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYKVJda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbYKVJ3U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 04:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYKVJ3J
+	id S1755990AbYKVJda (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 04:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbYKVJdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 04:29:09 -0500
-Received: from 8bytes.org ([88.198.83.132]:33298 "EHLO 8bytes.org"
+	Sat, 22 Nov 2008 04:33:20 -0500
+Received: from 8bytes.org ([88.198.83.132]:46028 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbYKVJ3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 04:29:07 -0500
-Date: Sat, 22 Nov 2008 10:29:04 +0100
+	id S1751072AbYKVJdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 04:33:19 -0500
+Date: Sat, 22 Nov 2008 10:33:18 +0100
 From: Joerg Roedel <joro@8bytes.org>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, netdev@vger.kernel.org, tglx@linutronix.de,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, mingo@redhat.com,
+       netdev@vger.kernel.org, tglx@linutronix.de
 Subject: Re: [PATCH 0/10] DMA-API debugging facility
-Message-ID: <20081122092904.GF29705@8bytes.org>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <20081122115802K.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <20081122093318.GG29705@8bytes.org>
+References: <1227288269.4901.222.camel@macbook.infradead.org> <20081121172722.GG1386@amd.com> <20081121174551.GC4336@elte.hu> <20081122122730W.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081122115802K.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081122122730W.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 12:27:39PM +0900, FUJITA Tomonori wrote:
-> On Fri, 21 Nov 2008 17:26:00 +0100
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Sat, Nov 22, 2008 at 12:27:43PM +0900, FUJITA Tomonori wrote:
+> On Fri, 21 Nov 2008 18:45:51 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > Hi,
 > > 
-> > this patchset introduces code to debug drivers usage of the DMA-API.
-> > Tests with hardware IOMMUs have shown several bugs in drivers regarding
-> > the usage of that API.
-> > Problems were found especially in network card drivers.
-> 
-> Especially? Have you met dma similar bugs with storage (scsi, etc)
-> drivers?
-
-No. For me the code only triggered network card drivers. Namely the
-ixgbe, tg3 and bnx2 driver.
-
-> 
-> > This way driver developers get an idea where the problem is in their
-> > code.
+> > * Joerg Roedel <joerg.roedel@amd.com> wrote:
 > > 
-> > Please review and send any objections or, if there are none, consider
-> > for inclusion ;)
+> > > On Fri, Nov 21, 2008 at 05:24:29PM +0000, David Woodhouse wrote:
+> > > > On Fri, 2008-11-21 at 18:20 +0100, Joerg Roedel wrote:
+> > > > > Ok, I will move the generic bits to lib/ and include/linux and let
+> > > > > architectures decide if they want to use it.
+> > > > 
+> > > > Once you've done that, I'll try to hook it up on PowerPC to make 
+> > > > sure it works there.
+> > > 
+> > > Ok, cool. Thanks
+> > 
+> > i'll give it a whirl on x86 once the allocation bug is resolved. x86 
+> > testing will be the most interesting in practice, because most drivers 
+> > there are developed with no dynamic DMA in mind. (many of the x86 
+> > drivers were developed before IOMMUs were supported in Linux)
 > 
-> This should be architecture independent code. Except for that, it
-> looks very useful.
+> Yeah, one of the problems due to this is that some drivers wrongly
+> assume that the dma mapping operations never fail (they do DMA with a
+> wrong address). With VT-d and AMD IOMMU, the dma mapping operations
+> fail just because of OOM.
 
-Thanks,
+At least AMD IOMMU code will not fail because of memory shortage. All
+necessary data structures, including the pagetables, are preallocated.
+The only place were it might fail is dma_alloc_coherent. But that is not
+specific to that driver.
+
+> Some time ago, I hooked the fault injection mechanism to the dma
+> mapping operations (I linked struct fault_attr to struct pci_dev so
+> you can make dma_map_single/sg fail with a particular pci device). It
+> might interest some people:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git dmafault
+
+This would also be helpful to find bugs in drivers together with this
+code. Do you plan to submit it?
 
 Joerg
