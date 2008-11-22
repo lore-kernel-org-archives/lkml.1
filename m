@@ -1,35 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbYKVVrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYKVVxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbYKVVrS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 16:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYKVVrB
+	id S1755290AbYKVVxA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 16:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYKVVww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 16:47:01 -0500
-Received: from lucidpixels.com ([75.144.35.66]:40030 "EHLO lucidpixels.com"
+	Sat, 22 Nov 2008 16:52:52 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43241 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbYKVVrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 16:47:00 -0500
-Date: Sat, 22 Nov 2008 16:46:59 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: Question regarding SAS controllers.
-Message-ID: <alpine.DEB.1.10.0811221645250.707@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	id S1751751AbYKVVwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 16:52:51 -0500
+Subject: Re: [PATCH 13/32] rackmeter section fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1L3wOC-0006T5-Ji@ZenIV.linux.org.uk>
+References: <E1L3wOC-0006T5-Ji@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Sun, 23 Nov 2008 08:52:00 +1100
+Message-Id: <1227390720.7185.276.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do any SAS controllers exist that are not RAID?
+On Sat, 2008-11-22 at 17:35 +0000, Al Viro wrote:
+> * rackmeter_remove() reference needs devexit_p
+> * rackmeter_setup() is calls devinit and is called only from devinit
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
 
-Or to put it another way, if one wants to use SAS disks for example and 
-NOT export them as JBOD or use them as RAID, is there a normal controller?
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Back in the days of regular SCSI you had SCSI controllers and SCSI raid 
-controllers, when searching for SAS controllers now, all that comes up is 
-hundreds of SAS-Raid controllers.
-
-Justin.
+>  drivers/macintosh/rack-meter.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+> --- a/drivers/macintosh/rack-meter.c
+> +++ b/drivers/macintosh/rack-meter.c
+> @@ -288,7 +288,7 @@ static void __devexit rackmeter_stop_cpu_sniffer(struct rackmeter *rm)
+>  	cancel_rearming_delayed_work(&rm->cpu[1].sniffer);
+>  }
+>  
+> -static int rackmeter_setup(struct rackmeter *rm)
+> +static int __devinit rackmeter_setup(struct rackmeter *rm)
+>  {
+>  	pr_debug("rackmeter: setting up i2s..\n");
+>  	rackmeter_setup_i2s(rm);
+> @@ -582,12 +582,12 @@ static struct of_device_id rackmeter_match[] = {
+>  	{ }
+>  };
+>  
+> -static struct macio_driver rackmeter_drv = {
+> +static struct macio_driver rackmeter_driver = {
+>  	.name = "rackmeter",
+>  	.owner = THIS_MODULE,
+>  	.match_table = rackmeter_match,
+>  	.probe = rackmeter_probe,
+> -	.remove = rackmeter_remove,
+> +	.remove = __devexit_p(rackmeter_remove),
+>  	.shutdown = rackmeter_shutdown,
+>  };
+>  
+> @@ -596,14 +596,14 @@ static int __init rackmeter_init(void)
+>  {
+>  	pr_debug("rackmeter_init()\n");
+>  
+> -	return macio_register_driver(&rackmeter_drv);
+> +	return macio_register_driver(&rackmeter_driver);
+>  }
+>  
+>  static void __exit rackmeter_exit(void)
+>  {
+>  	pr_debug("rackmeter_exit()\n");
+>  
+> -	macio_unregister_driver(&rackmeter_drv);
+> +	macio_unregister_driver(&rackmeter_driver);
+>  }
+>  
+>  module_init(rackmeter_init);
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
