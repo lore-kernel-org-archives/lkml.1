@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYKVHPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbYKVHQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYKVHPa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 02:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYKVHPW
+	id S1757225AbYKVHQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 02:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYKVHQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 02:15:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47714 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752362AbYKVHPV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 02:15:21 -0500
-Date: Fri, 21 Nov 2008 23:15:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ying Han <yinghan@google.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mike Waychison <mikew@google.com>, David Rientjes <rientjes@google.com>,
-       Rohit Seth <rohitseth@google.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-Id: <20081121231511.ce59702e.akpm@linux-foundation.org>
-In-Reply-To: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Nov 2008 02:16:06 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52084 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753073AbYKVHQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 02:16:05 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Exiting queue and task might race to free cic
+Date: Sat, 22 Nov 2008 12:47:44 +0530
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org, Fabio Checconi <fchecconi@gmail.com>
+References: <200811191527.18539.knikanth@suse.de> <20081119141531.GG26308@kernel.dk> <200811201027.07860.knikanth@suse.de>
+In-Reply-To: <200811201027.07860.knikanth@suse.de>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200811221247.44558.knikanth@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008 22:47:44 -0800 Ying Han <yinghan@google.com> wrote:
+Hi Jens
 
-> page fault retry with NOPAGE_RETRY
-> Allow major faults to drop the mmap_sem read lock while waitting for
-> synchronous disk read. This allows another thread which wishes to grab
-> down_read(mmap_sem) to proceed while the current is waitting the disk IO.
+On Thursday 20 November 2008 10:27:06 Nikanth Karthikesan wrote:
+> On Wednesday 19 November 2008 19:45:31 Jens Axboe wrote:
+> > On Wed, Nov 19 2008, Nikanth Karthikesan wrote:
+> >
+> > Not sure this is enough, we probably need to copy the key to ensure that
+> > we get a fresh value. How does this look?
+>
+> Agreed. Read barrier required. But the compiler hint, "likely" can stay?
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 6a062ee..4504b94 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1318,7 +1318,15 @@ static void cfq_exit_single_io_context(struct
+> io_context *ioc,
+>  		unsigned long flags;
+>
+>  		spin_lock_irqsave(q->queue_lock, flags);
+> -		__cfq_exit_single_io_context(cfqd, cic);
+> +
+> +		/*
+> +		 * Ensure we get a fresh copy of the ->key to prevent
+> +		 * race between exiting task and queue
+> +		 */
+> +		smp_read_barrier_depends();
+> +		if (likely(cic->key))
+> +			__cfq_exit_single_io_context(cfqd, cic);
+> +
+>  		spin_unlock_irqrestore(q->queue_lock, flags);
+>  	}
+>  }
+>
+> > Did you actually trigger this, or is it just from code inspection?
+>
+> No. But I am looking at another bug report on Suse Kernel where the bug is
+> triggered during reboot when the kernel thread usb_stor_scan_thread exits.
+>
 
-Confused.  down_read() on an rwsem will already permit multiple threads
-to run that section of ccode concurrently.
+This patch seems to solve the above said bug report on Suse kernel. So, yes it 
+is reproducible! Can this be merged?
 
-The benefit here will be to permit down_write() callers (eg:
-sys_mmap()) to get in there and do work.
-
-> The patch flags current->flags to PF_FAULT_MAYRETRY as identify that the
-> caller can tolerate the retry in the filemap_fault call patch.
-> 
-> Benchmark is done by mmap in huge file and spaw 64 thread each faulting in
-> pages in reverse order, the the result shows 8% porformance hit with the
-> patch.
-
-You mean it slowed down 8%?  I'm a bit surprised - I'd have expected a
-smaller slowdown for an IO-intensive thing like this.
-
-Does it speed anything up?
+Thanks
+Nikanth
 
