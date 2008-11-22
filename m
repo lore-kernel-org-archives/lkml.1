@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYKVTTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYKVT2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYKVTTq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 14:19:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYKVTTg
+	id S1754176AbYKVT2A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 14:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYKVT1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 14:19:36 -0500
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:29473 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751004AbYKVTTf (ORCPT
+	Sat, 22 Nov 2008 14:27:49 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:37280 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751075AbYKVT1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 14:19:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6meAS3M8BH8gy2U/k+qVJNPBhYIvvlweIpLSdVQI0M33S25Hkjuc9Av3m9vLLpCmuGJn70060wuCuqBaSWr3N4NhO0wZJz8F+sHerU+xy+o2mKB+rvtsdshtv+BISCn7w2Z43D2bkjUVy+QCAcjP+jDP2jss5pKtbcXdgSK/68Y=  ;
-X-YMail-OSG: bWRAqdAVM1nXOg.gDdcbyHXHZH_JeLupuqGK7A3LalhpI7LsJK5GzLjimQgg7yGql0pID8hxNWXuex9k47Ue4Is2rcnJjG0oHUwFuHTibGX7wnd.Bvm06ebEhtvmp_WV4So-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
-Date: Sat, 22 Nov 2008 11:19:27 -0800
-User-Agent: KMail/1.9.10
-Cc: spi-devel-general@lists.sourceforge.net, stefan@datenfreihafen.org,
-       eric.y.miao@gmail.com, sameo@openedhand.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <200811212125.49068.david-b@pacbell.net> <1227373948.19591.66.camel@brutus>
-In-Reply-To: <1227373948.19591.66.camel@brutus>
+	Sat, 22 Nov 2008 14:27:48 -0500
+Date: Sat, 22 Nov 2008 20:27:47 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UBIFS: endian handling fixes and annotations
+Message-ID: <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
+References: <1227287970-14684-1-git-send-email-dedekind@infradead.org> <1227287970-14684-3-git-send-email-dedekind@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200811221119.27981.david-b@pacbell.net>
+In-Reply-To: <1227287970-14684-3-git-send-email-dedekind@infradead.org>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 November 2008, Daniel Ribeiro wrote:
-> Above comments are integrated on the attached patch. 
+* Artem Bityutskiy | 2008-11-21 19:19:24 [+0200]:
 
-Not exactly:
+>index 9ee6508..3f1f16b 100644
+>--- a/fs/ubifs/key.h
+>+++ b/fs/ubifs/key.h
+>@@ -345,7 +345,7 @@ static inline int key_type_flash(const struct ubifs_info *c, const void *k)
+> {
+> 	const union ubifs_key *key = k;
+> 
+>-	return le32_to_cpu(key->u32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
+>+	return le32_to_cpu(key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
 
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -153,6 +153,13 @@ config MFD_WM8350_I2C
->           I2C as the control interface.  Additional options must be
->           selected to enable support for the functionality of the chip.
->  
-> +config EZX_PCAP
-> +       bool "PCAP Support"
-> +       depends on PXA_EZX
+If you would change such references to something like
+|return le32_to_cpup(&key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
+then on powerpc
 
-It only builds on one platform.  Now, that may make sense if it's
-an ASIC currently used only on that platform; it's a "hardware"
-dependency.  But it's not a necessary "software" dependency, no
-code here seems to rely on PXA hardware, or EZX hardware.
+  text    data     bss     dec     hex filename
+155384    1284      24  156692   26414 ubifs-b4.ko
+155372    1284      24  156680   26408 ubifs-after.ko
 
-One of the goals of getting drivers into mainline is to get rid
-of needless dependencies ... and thereby open the code up to
-many more developers.  Some may do nothing more than cleanup;
-others will be doing API overhauls, which can be a PITA if you
-place needless build dependencies on your code.
+because now it is possible to load the value as LE from memory instead
+of loading it BE and swapping it afterwads.
 
-Strike that dependency, and depend instead on SPI_MASTER since
-that's the only dependency truly required by the build system.
+> }
+> 
+> /**
+>@@ -416,7 +416,7 @@ static inline unsigned int key_block_flash(const struct ubifs_info *c,
+> {
+> 	const union ubifs_key *key = k;
+> 
+>-	return le32_to_cpu(key->u32[1]) & UBIFS_S_KEY_BLOCK_MASK;
+>+	return le32_to_cpu(key->j32[1]) & UBIFS_S_KEY_BLOCK_MASK;
+> }
 
-Or tell me I'm wrong, and there's really a reason this code must
-not even *build* on x86 systems.
+This and the previous change look like a bugfix for something that
+should trigger during recovery or something? Shouldn't I fail in
+ubifs_validate_entry() during recovery?
 
+> /**
+>diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
+>index 77d26c1..bed9742 100644
+>--- a/fs/ubifs/recovery.c
+>+++ b/fs/ubifs/recovery.c
+>@@ -168,12 +168,12 @@ static int write_rcvrd_mst_node(struct ubifs_info *c,
+> 				struct ubifs_mst_node *mst)
+> {
+> 	int err = 0, lnum = UBIFS_MST_LNUM, sz = c->mst_node_alsz;
+>-	uint32_t save_flags;
+>+	__le32 save_flags;
+> 
+> 	dbg_rcvry("recovery");
+> 
+> 	save_flags = mst->flags;
+>-	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
+>+	mst->flags |= cpu_to_le32(UBIFS_MST_RCVRY);
 
-> +       help
-> +         This enables the PCAP ASIC present on EZX Phones. This is
-> +         needed for MMC, TouchScreen, Sound, USB, etc..
-> +
->  endmenu
->  
+another micro optimisation would be to use __constant_cpu_to_le32()
 
-
+Sebastian
