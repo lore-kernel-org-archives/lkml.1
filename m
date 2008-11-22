@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbYKVAuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbYKVAwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbYKVAuA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 19:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbYKVAtu
+	id S1757680AbYKVAwP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 19:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbYKVAv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 19:49:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35993 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753299AbYKVAtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 19:49:49 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4926F1AC.7090301@oracle.com>
-References: <4926F1AC.7090301@oracle.com> <20081121002317.69e4fd11.akpm@linux-foundation.org> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144343.10667.530.stgit@warthog.procyon.org.uk> <3843.1227271421@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       trond.myklebust@fys.uio.no, viro@zeniv.linux.org.uk,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 24/45] CacheFiles: Add a hook to write a single page of data to an inode [ver #41]
-Date: Sat, 22 Nov 2008 00:48:48 +0000
-Message-ID: <19630.1227314928@redhat.com>
+	Fri, 21 Nov 2008 19:51:59 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:25779 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753724AbYKVAv7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 19:51:59 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -8.097
+Message-ID: <492757A8.6010509@tremplin-utc.net>
+Date: Sat, 22 Nov 2008 01:51:52 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@suse.cz>,
+       linux-kernel@vger.kernel.org, trenn@suse.de, rpurdie@rpsys.net,
+       hmh@hmh.eng.br
+Subject: Re: HP accelerometer: split chip handling from HP ACPI interface
+References: <20081121212121.GA7222@elf.ucw.cz> <20081121160022.86020953.akpm@linux-foundation.org> <49275194.6070604@tremplin-utc.net>
+In-Reply-To: <49275194.6070604@tremplin-utc.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Éric Piel schreef:
+> Andrew Morton schreef:
+>> On Fri, 21 Nov 2008 22:21:21 +0100
+>> Pavel Machek <pavel@suse.cz> wrote:
+>>
+>>> This patch splits handling between chip-specific lis3lv02d and HP/ACPI
+>>> specific hp_accel.c.
+>> umm, so?  What reason does anyone have for applying it?
+> Here is the log I have for the (old version) of pavel's patch:
+> 
+> The sensor can be accessed via various buses. In particular, SPI, I²C
+> and, on HP laptops, via a specific ACPI API (the only one currently
+> supported). Separate this latest platform from the core of the sensor
+> driver to allow support for the other bus type. The second, and more
+> direct goal is actually to be able to merge this part with the
+> hp-disk-leds driver, which has the same ACPI PNP number.
+> 
+> 
+> I'll try to follow with a patch doing the merge of the hp-disk-leds
+> driver, so that everything makes sense...
+Actually, I mistook, Pavel also included some led stuff in this patch.
+That doesn't look right, especially as the led driver is not removed!
+Following are two patches (nearly all work done by Pavel) which should
+make this enhancement much clearer:
+- Separate the HP ACPI support from the core
+- Merge the led support and with the rest of the HP ACPI support
 
-> I would have said that the prevailing comment style in struct
-> address_space_operations is sketchy or limited or lacking.
+The final semantic of these two patches should be equivalent to the one
+provided by Pavel (with some Kconfig bonus).
 
-Well, there's that too.
-
-> I want useful comments.  I don't give a hoot whether they are in kernel-doc
-> format or /* or //.  I'll even take them in a separate file if they are
-> more about theory of operation (overview) instead of directly related
-> to a struct or a function's operations, although some people want comments
-> only in source files because that is more likely to be updated when
-> needed.
-
-I want to see proper interface documentation in Documentation.  Where an
-interface is treated as a process, and where it's viewed from both sides where
-others are expected both to implement it and to use it.
-
-My opinion is that you should document any interface you propose on the theory
-that if you can't explain your interface, why should you expect anyone to
-understand what it does?
-
-If I get some spare time, I intend to start writing it for interfaces that
-already exist but don't have it yet.  It would then have to be up to those
-that accept patches, from Linus on down, to force people to update
-documentation when they submit a patch to alter, extend, add or remove an
-interface.  Unfortunately, I don't see that as being likely to happen:-(
-
-Sorry, but this is one of my favourite rants.
-
-> If you don't document your own code, who will do it?  Probably nobody.
-
-I do document my own code.  It's my responsibility to do so.
-
-> Well, documentation can have consistent look and feel too, and it should.
-
-Indeed.
-
-David
+See you,
+Eric
