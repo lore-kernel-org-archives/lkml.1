@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbYKVW7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYKVXAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbYKVW7B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 17:59:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYKVW6l
+	id S1757478AbYKVXAN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 18:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYKVW74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 17:58:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37912 "EHLO ogre.sisk.pl"
+	Sat, 22 Nov 2008 17:59:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37951 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755547AbYKVW6k convert rfc822-to-8bit (ORCPT
+	id S1753297AbYKVW7z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 17:58:40 -0500
+	Sat, 22 Nov 2008 17:59:55 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Miao Xie" <miaox@cn.fujitsu.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Soeren Sonnenburg" <kernel@nn7.de>
 References: <0kQZaQnNVIL.A.BhG.FwIKJB@chimera>
 In-Reply-To: <0kQZaQnNVIL.A.BhG.FwIKJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <V2w_GS-X2aE.A.bb.v0IKJB@chimera>
-Subject: [Bug #11207] VolanoMark regression with 2.6.27-rc1
+Message-ID: <V2w_GS-X2aE.A.rcH.ywIKJB@chimera>
+Subject: [Bug #11698] 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 22 Nov 2008 21:58:05 +0100 (CET)
+Date: Sat, 22 Nov 2008 21:59:19 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,14 +35,11 @@ introduced between 2.6.26 and 2.6.27.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
-Subject		: VolanoMark regression with 2.6.27-rc1
-Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Date		: 2008-07-31 3:20 (115 days old)
-References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
-Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-		  Peter Zijlstra <a.p.zijlstra@chello.nl>
-		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
-		  Miao Xie <miaox@cn.fujitsu.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11698
+Subject		: 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
+Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+Date		: 2008-09-29 11:29 (55 days old)
+References	: http://marc.info/?l=linux-kernel&m=122268780926859&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
 
 
