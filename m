@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbYKVM5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbYKVM7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758091AbYKVM5K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 07:57:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYKVM4z
+	id S1758194AbYKVM7T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 07:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYKVM7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 07:56:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36901 "EHLO ogre.sisk.pl"
+	Sat, 22 Nov 2008 07:59:11 -0500
+Received: from sh.osrg.net ([192.16.179.4]:46076 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757195AbYKVM4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 07:56:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Subject: Re: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old code ordering
-Date: Sat, 22 Nov 2008 13:56:07 +0100
-User-Agent: KMail/1.9.9
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, John Brown <john.brown3@hp.com>
-References: <200810142254.07024.rjw@sisk.pl> <200810152320.06167.rjw@sisk.pl> <200811221111.50952.carlos@strangeworlds.co.uk>
-In-Reply-To: <200811221111.50952.carlos@strangeworlds.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751579AbYKVM7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 07:59:09 -0500
+Date: Sat, 22 Nov 2008 21:58:47 +0900
+To: tony.luck@intel.com, dwmw2@infradead.org, fenghua.yu@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: [PATCH] IA64: fix VT-d dma_mapping_error
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811221356.08294.rjw@sisk.pl>
+Message-Id: <20081122215822A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 22 of November 2008, Carlos Corbacho wrote:
-> On Wednesday 15 October 2008 22:20:05 Rafael J. Wysocki wrote:
-> > > > IOW, we aren't doing anything wrong and the BIOS is buggy.
-> > >
-> > > So how does Windows cope with this?
-> >
-> > I don't know. :-(
-> >
-> > One possible explanation is that the device causing the trouble is not put
-> > into D3 at all during suspend, but I'm speculating here.
-> 
-> Do we know which device it is that causes the trouble on this HP box?
+Hmm, IA64 VT-d dma_mapping_error() is broken?
 
-Not really, but most probably is one of the USB controllers.  Hopefully, we'll
-find out.
+=
+Subject: [PATCH] IA64: fix VT-d dma_mapping_error
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Thanks,
-Rafael
+IA64 VT-d dma_mapping_error always says that the dma mapping is
+successful even though intel_map_single() could fail.
+
+VT-d uses X86 dependent dma_mapping_error() code. This patch adds
+VT-d's own dma_mapping_error() that works for both X86_64 and IA64.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/dig/dig_vtd_iommu.c |    2 +-
+ drivers/pci/intel-iommu.c     |    6 ++++++
+ include/linux/intel-iommu.h   |    1 +
+ 3 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ia64/dig/dig_vtd_iommu.c b/arch/ia64/dig/dig_vtd_iommu.c
+index 1c8a079..e663eac 100644
+--- a/arch/ia64/dig/dig_vtd_iommu.c
++++ b/arch/ia64/dig/dig_vtd_iommu.c
+@@ -54,6 +54,6 @@ EXPORT_SYMBOL_GPL(vtd_unmap_sg_attrs);
+ int
+ vtd_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ {
+-	return 0;
++	return intel_dma_mapping_error(dev, dma_addr);
+ }
+ EXPORT_SYMBOL_GPL(vtd_dma_mapping_error);
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 5c8baa4..5289fc1 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2157,6 +2157,11 @@ int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int nelems,
+ 	return nelems;
+ }
+ 
++int intel_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
++{
++	return !dma_addr;
++}
++
+ static struct dma_mapping_ops intel_dma_ops = {
+ 	.alloc_coherent = intel_alloc_coherent,
+ 	.free_coherent = intel_free_coherent,
+@@ -2164,6 +2169,7 @@ static struct dma_mapping_ops intel_dma_ops = {
+ 	.unmap_single = intel_unmap_single,
+ 	.map_sg = intel_map_sg,
+ 	.unmap_sg = intel_unmap_sg,
++	.mapping_error = intel_dma_mapping_error,
+ };
+ 
+ static inline int iommu_domain_cache_init(void)
+diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
+index 3d017cf..027e75e 100644
+--- a/include/linux/intel-iommu.h
++++ b/include/linux/intel-iommu.h
+@@ -359,5 +359,6 @@ extern dma_addr_t intel_map_single(struct device *, phys_addr_t, size_t, int);
+ extern void intel_unmap_single(struct device *, dma_addr_t, size_t, int);
+ extern int intel_map_sg(struct device *, struct scatterlist *, int, int);
+ extern void intel_unmap_sg(struct device *, struct scatterlist *, int, int);
++extern int intel_dma_mapping_error(struct device *, dma_addr_t);
+ 
+ #endif
+-- 
+1.5.6.5
+
