@@ -1,77 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbYKVUoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYKVUwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbYKVUoz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 15:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYKVUor
+	id S1754774AbYKVUwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 15:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYKVUwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 15:44:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37456 "EHLO ogre.sisk.pl"
+	Sat, 22 Nov 2008 15:52:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37476 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbYKVUoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 15:44:46 -0500
+	id S1751751AbYKVUwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 15:52:03 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Nezhevenko <dion@inhex.net>
-Subject: Re: 2.6.28 git: WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
-Date: Sat, 22 Nov 2008 21:44:31 +0100
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: processors core stuck in full throttle after waking up from s2ram
+Date: Sat, 22 Nov 2008 21:51:49 +0100
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-References: <20081120092239.GA16613@laptop.local>
-In-Reply-To: <20081120092239.GA16613@laptop.local>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <1227168699.4276.24.camel@LiNuX>
+In-Reply-To: <1227168699.4276.24.camel@LiNuX>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811222144.31812.rjw@sisk.pl>
+Message-Id: <200811222151.49273.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 20 of November 2008, Dmitry Nezhevenko wrote:
-> Hi folks. This is first time I've tried 2.6.28-git (cloned git a few hours ago). 
-> And got this:
+On Thursday, 20 of November 2008, Justin P. Mattock wrote:
+> (before getting into this I need to see if somebody else with a macbook
+> pro(ATI with radeon drivers) is experiencing the same issue?)
+> I'm not sure I this is caused by the kernel or the program s2ram.
+> when I cat watch /proc/cpuinfo I see: (after waking up from suspend.)
 > 
-> [    0.000000] BIOS-provided physical RAM map:
-> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-> [    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 000000007ffd0000 (usable)
-> [    0.000000]  BIOS-e820: 000000007ffd0000 - 000000007ffde000 (ACPI data)
-> [    0.000000]  BIOS-e820: 000000007ffde000 - 0000000080000000 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
-> [    0.000000] DMI present.
-> [    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working it around.
-> [    0.000000] last_pfn = 0x7ffd0 max_arch_pfn = 0x100000
-> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
-> [    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
-> [    0.000000] Modules linked in:
-> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc5 #1
-> [    0.000000] Call Trace:
-> [    0.000000]  [<c012b86f>] warn_slowpath+0x6f/0x90
-> [    0.000000]  [<c0373031>] inet_rtm_newroute+0x21/0x50
-> [    0.000000]  [<c02593c4>] number+0x2b4/0x2c0
-> [    0.000000]  [<c0259ff3>] vsnprintf+0x393/0x670
-> [    0.000000]  [<c0144fd1>] up+0x11/0x40
-> [    0.000000]  [<c012c069>] release_console_sem+0x189/0x1d0
-> [    0.000000]  [<c01124da>] generic_get_mtrr+0xea/0x120
-> [    0.000000]  [<c04db85f>] mtrr_trim_uncached_memory+0x7d/0x374
-> [    0.000000]  [<c03a569a>] printk+0x17/0x1b
-> [    0.000000]  [<c011edbc>] pat_init+0x7c/0xa0
-> [    0.000000]  [<c01129ac>] post_set+0x1c/0x50
-> [    0.000000]  [<c03a569a>] printk+0x17/0x1b
-> [    0.000000]  [<c04d7b52>] e820_end_pfn+0xb5/0xd3
-> [    0.000000]  [<c04d6016>] setup_arch+0x518/0x802
-> [    0.000000]  [<c04d8cc7>] reserve_early_overlap_ok+0x3f/0x47
-> [    0.000000]  [<c04cf5dc>] start_kernel+0x58/0x334
-> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
-> [    0.000000] kernel direct mapping tables up to 377fe000 @ 10000-16000
+> Every 2.0s: cat /proc/cpuinfo
+> Wed Nov 19 23:49:13 2008
 > 
-> Can I just ignore this?
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 15
+> model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
+> stepping        : 6
+> cpu MHz         : 2167.000  
+> cache size      : 4096 KB
+> physical id     : 0
+> siblings        : 2
+> core id         : 0
+> cpu cores       : 2
+> apicid          : 0
+> initial apicid  : 0
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 10
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
+> constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx
+>  est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
+> bogomips        : 4322.49
+> clflush size    : 64
+> power management:
+> 
+> processor       : 1
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 15
+> model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
+> stepping        : 6
+> cpu MHz         : 1000.000
+> cache size      : 4096 KB
+> physical id     : 0
+> siblings        : 2
+> core id         : 1
+> cpu cores       : 2
+> apicid          : 1
+> initial apicid  : 1
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 10
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
+> constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx
+>  est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
+> bogomips        : 4322.60
+> clflush size    : 64
+> power management:
+> 
+> 
+> the processor is full throttle on one of the cores.
 
-Hm, not sure (added some CCs).
+Surely not.  The first core shows 2.16 GHz.
+
+Anyway, it certainly is not related to the s2ram program in any way.
+
+Thanks,
+Rafael
