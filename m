@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYKVMde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbYKVMfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbYKVMde (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 07:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbYKVMdZ
+	id S1758161AbYKVMfY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 07:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757588AbYKVMfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 07:33:25 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:34502 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757505AbYKVMdY (ORCPT
+	Sat, 22 Nov 2008 07:35:08 -0500
+Received: from qb-out-0506.google.com ([72.14.204.238]:3233 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757438AbYKVMfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 07:33:24 -0500
+	Sat, 22 Nov 2008 07:35:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qzFxJzYlYN7f5aYHKpBF5zlhBZBCHltsjRBHVKHuzyZ5AcUk6Jffb3IerhIAZBloi9
-         +AeOJmFvSXBI0EAeNCsImmWzLgsfsmmcK1l2wcscxoz7dpjPyfel0V+aZ3GMB1ppKs9J
-         3T+2ItJJawhRRXk432MWfoJVAuSsXRBgh9lQE=
-Message-ID: <4927FC0C.10900@gmail.com>
-Date: Sat, 22 Nov 2008 14:33:16 +0200
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BTdQnxhe71Bt/g8NfkjKR+kPfNZJMZ0KDSUeV977L3hheL53eSCOhFtDtf30AcVoXv
+         uI6HCeeXogQyjmHk/H4sT6aFQCtxn+GKiQK2x8qKRFOFgE14w05QhJCd+wFWDPSGvk9i
+         X9O2LpyZa+H05Dv8YQzKSx+l0db5K3nSzQ1mE=
+Message-ID: <19f34abd0811220435r38e749e3o425d994912fc92ea@mail.gmail.com>
+Date: Sat, 22 Nov 2008 13:35:02 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] SLUB: use page allocator for PAGE_SIZE requests
+Cc: "Mel Gorman" <mel@csn.ul.ie>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081122123230.GA27189@localhost.localdomain>
 MIME-Version: 1.0
-To: Derek Smithies <derek@indranet.co.nz>
-CC: Bob Copeland <me@bobcopeland.com>, wally@theblackmoor.net,
-       ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
-Subject: Re: [ath5k-devel] Unusually low speeds with ath5k and iwl3945
-References: <492719ED.5000006@gmail.com> <20081122005240.GA27826@hash.localnet> <alpine.DEB.2.00.0811221643030.7067@monster>
-In-Reply-To: <alpine.DEB.2.00.0811221643030.7067@monster>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081122123230.GA27189@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Derek Smithies wrote:
-> Hi,
->  to verify that it is a rate control issue, there is one very simple and 
-> very practical test.
-> 
-> Take both ends of your link, and set them to fixed rate, and at the rate 
-> you think it should be achieving.
-> If you can achieve significantly higher throughputs with fixed rate, you 
-> know that the rate control algorithm (or interface with rate algorithm) 
-> has failed.
-> 
-> Derek.
-> 
-> On Fri, 21 Nov 2008, Bob Copeland wrote:
-> 
->> On Fri, Nov 21, 2008 at 10:28:29PM +0200, Maxim Levitsky wrote:
->>> I initially blamed iwl3945, then thought it got fixed, but now I have
->>> ath5k, and speeds are low
->>> and I suspect that both drivers has bugs regarding to speed.
->>
->> Quite possible, but both use mac80211 for rate control.  Which rate
->> control algorithm are you using?
-Hi,
+On Sat, Nov 22, 2008 at 1:32 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> From 4d526db4781aaab86cb79ff8135bb0e2bc560598 Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Sat, 22 Nov 2008 13:27:54 +0100
+> Subject: [PATCH] SLUB: use page allocator for PAGE_SIZE requests
+>
+> It seems strange that we should use the page allocator for
+> requests of (PAGE_SIZE + 1) bytes or more, and not for requests
+> that are exactly PAGE_SIZE.
 
-Well, iwl3945 was showing 54M all the time in iwconfig,
-also it doesn't support setting fixed rate, at least not using iwconfig.
-
-ath5k never shows higher that 18M, and supports setting fixed rate, but if I set it to anything higher that 18M,
-speeds drop to 0Kbytes/s immediately.
-Speeds lower that 18M work, and affect throughput accordantly
-For most of tests speeds are ether 18M or lower, but then when I set them to 18M this didn't increase throughput.
- 
-iwl3945 was always at 54M
+Actually, there are some more places that need to be fixed. I think
+I'll send an updated patch that fixes all of them.
 
 
+Vegard
 
-Best regards,
-	Maxim Levitsky
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
