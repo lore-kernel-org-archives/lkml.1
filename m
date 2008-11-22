@@ -1,90 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbYKVBL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbYKVBPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbYKVBL2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 20:11:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYKVBLT
+	id S1757753AbYKVBPl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 20:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbYKVBP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 20:11:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59156 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752250AbYKVBLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 20:11:18 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081121002847.c8fe7aef.akpm@linux-foundation.org>
-References: <20081121002847.c8fe7aef.akpm@linux-foundation.org> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 00/45] Permit filesystem local caching [ver #41]
-Date: Sat, 22 Nov 2008 01:11:09 +0000
-Message-ID: <19708.1227316269@redhat.com>
+	Fri, 21 Nov 2008 20:15:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57949
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753734AbYKVBP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 20:15:26 -0500
+Date: Fri, 21 Nov 2008 17:15:25 -0800 (PST)
+Message-Id: <20081121.171525.198161288.davem@davemloft.net>
+To: qhfeng.kernel@gmail.com
+Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 01/3] NET: remove redundant argument comments
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49270a30.011e6e0a.40c2.ffffb30e@mx.google.com>
+References: <49270a30.011e6e0a.40c2.ffffb30e@mx.google.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+From: Qinghuang Feng <qhfeng.kernel@gmail.com>
+Date: Sat, 22 Nov 2008 03:20:57 +0800
 
-> > These patches add local caching for network filesystems such as NFS and AFS.
+> Remove redundant argument comments in files of net/*
 > 
-> For performance reasons, one assumes.  Are there any other reasons?
-> Disconnected operation, anything like that?
+> Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
 
-There are a number of reasons.  It *can* improve performance, of the client,
-the network and the server; and it can form the basis of disconnected
-operation.
+Applied, please submit networking patches to netdev@vger.kernel.org
+in the future.
 
-If the link is very slow, the disk may be fast enough that locally cached files
-are faster pulled from disk on the client.  If the link is very fast, then
-pulling from RAM on the server may be much faster than the cache.
-
-However, even if the link is very fast, if there are lots of clients, using a
-cache may reduce the loading on the network because the clients are able to
-satisfy read requests from their own disk rather than sucking the data over the
-network.  Furthermore, this will reduce the loading on the server as that also
-has to do less work as it doesn't have to receive, process and respond to the
-read requests.
-
-FS-Cache does _not_ guarantee there will be a performance improvement on the
-client.  There _is_ a penalty associated with using a cache.  The various
-penalties imposed by a particular cache and the various enhancements supplied
-by that cache are a compromise.  Generally you cannot get an improvement in one
-parameter without a further penalty elsewhere.
-
-FS-Cache tries to be very simple: It allows the netfs to store pages, to key
-those pages in such a way that it can retrieve them later, and to allow
-coherency data to be stored about those pages - all without the netfs knowing
-anything about how the cache actually works, or if there's even a cache at all.
-That means, however, that the netfs must decide how and when it wants to use
-the facility.
-
-> We would want to know the performance benefits in some detail before even 
-> looking at the code, no?  Maybe they're in here somewhere but I missed it..
-
-Now that I've applied the comments I got, I'll get you some benchmarks.  I'll
-have to see about setting up some realistic test scenarios.
-
-My current testing rig involves a single client connected by GigE to a single
-server with little other traffic on the network.  In this situation uncached
-NFS (22s[*]) creams cached NFS (18m) because the working set fits entirely into
-RAM on the server, but doesn't on the client, so the client has to read the
-whole lot from disk each time (lots of synchronous seek penalties), but the
-server doesn't.
-
-[*] Eight parallel tars over three 350MB kernel trees pulled by NFS.  Three
-    tars on each of two trees, two tars on the third.  The client machine has
-    1GB of RAM.
-
-This is not a situation in which I'd normally use a cache, except if I was
-expecting the server to disappear randomly and wanted to be able to go on
-working.
-
-So I need to slow down the network.  Pulling from my AFS server, which is at
-the far end of a ~50MB/s ethernet-over-mains network, the cache makes much more
-of a difference.
-
-David
+> diff --git a/net/9p/trans_rdma.c b/net/9p/trans_rdma.c
+> index 2f1fe5f..7fa0eb2 100644
+> --- a/net/9p/trans_rdma.c
+> +++ b/net/9p/trans_rdma.c
+> @@ -528,8 +528,6 @@ static void rdma_close(struct p9_client *client)
+>  
+>  /**
+>   * alloc_rdma - Allocate and initialize the rdma transport structure
+> - * @msize: MTU
+> - * @dotu: Extension attribute
+>   * @opts: Mount options structure
+>   */
+>  static struct p9_trans_rdma *alloc_rdma(struct p9_rdma_opts *opts)
+> diff --git a/net/decnet/dn_nsp_out.c b/net/decnet/dn_nsp_out.c
+> index 1964faf..81a40ff 100644
+> --- a/net/decnet/dn_nsp_out.c
+> +++ b/net/decnet/dn_nsp_out.c
+> @@ -230,7 +230,6 @@ static inline unsigned dn_nsp_clone_and_send(struct sk_buff *skb,
+>  /**
+>   * dn_nsp_output - Try and send something from socket queues
+>   * @sk: The socket whose queues are to be investigated
+> - * @gfp: The memory allocation flags
+>   *
+>   * Try and send the packet on the end of the data and other data queues.
+>   * Other data gets priority over data, and if we retransmit a packet we
+> diff --git a/net/ipv6/ip6_tunnel.c b/net/ipv6/ip6_tunnel.c
+> index 64ce3d3..537ea34 100644
+> --- a/net/ipv6/ip6_tunnel.c
+> +++ b/net/ipv6/ip6_tunnel.c
+> @@ -1150,7 +1150,6 @@ static void ip6_tnl_link_config(struct ip6_tnl *t)
+>   * ip6_tnl_change - update the tunnel parameters
+>   *   @t: tunnel to be changed
+>   *   @p: tunnel configuration parameters
+> - *   @active: != 0 if tunnel is ready for use
+>   *
+>   * Description:
+>   *   ip6_tnl_change() updates the tunnel parameters
+> diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
+> index 5bcc452..56fd85a 100644
+> --- a/net/llc/af_llc.c
+> +++ b/net/llc/af_llc.c
+> @@ -103,7 +103,6 @@ static inline u8 llc_ui_header_len(struct sock *sk, struct sockaddr_llc *addr)
+>   *	llc_ui_send_data - send data via reliable llc2 connection
+>   *	@sk: Connection the socket is using.
+>   *	@skb: Data the user wishes to send.
+> - *	@addr: Source and destination fields provided by the user.
+>   *	@noblock: can we block waiting for data?
+>   *
+>   *	Send data via reliable llc2 connection.
+> diff --git a/net/mac80211/mesh_hwmp.c b/net/mac80211/mesh_hwmp.c
+> index 501c783..bef73e9 100644
+> --- a/net/mac80211/mesh_hwmp.c
+> +++ b/net/mac80211/mesh_hwmp.c
+> @@ -759,7 +759,6 @@ enddiscovery:
+>   *
+>   * @skb: 802.11 frame to be sent
+>   * @sdata: network subif the frame will be sent through
+> - * @fwd_frame: true if this frame was originally from a different host
+>   *
+>   * Returns: 0 if the next hop was found. Nonzero otherwise. If no next hop is
+>   * found, the function will start a path discovery and queue the frame so it is
+> diff --git a/net/netlabel/netlabel_mgmt.c b/net/netlabel/netlabel_mgmt.c
+> index 0a0ef17..1821c5d 100644
+> --- a/net/netlabel/netlabel_mgmt.c
+> +++ b/net/netlabel/netlabel_mgmt.c
+> @@ -596,7 +596,6 @@ listdef_failure:
+>  /**
+>   * netlbl_mgmt_protocols_cb - Write an individual PROTOCOL message response
+>   * @skb: the skb to write to
+> - * @seq: the NETLINK sequence number
+>   * @cb: the NETLINK callback
+>   * @protocol: the NetLabel protocol to use in the message
+>   *
+> 
