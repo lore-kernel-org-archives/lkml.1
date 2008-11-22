@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbYKVHMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYKVHPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbYKVHMg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 02:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYKVHM1
+	id S1756820AbYKVHPa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 02:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYKVHPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 02:12:27 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:33535 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbYKVHM0 (ORCPT
+	Sat, 22 Nov 2008 02:15:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47714 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752362AbYKVHPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 02:12:26 -0500
-Message-ID: <4927B0D5.4020907@davidnewall.com>
-Date: Sat, 22 Nov 2008 17:42:21 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: linux-api@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [take 3] Use pid in inotify events.
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <cfec22b10811201434v2230d11dvc9797018e433fd20@mail.gmail.com> <20081120230612.GB6536@ioremap.net> <200811211939.46812.arnd@arndb.de>
-In-Reply-To: <200811211939.46812.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 22 Nov 2008 02:15:21 -0500
+Date: Fri, 21 Nov 2008 23:15:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ying Han <yinghan@google.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Mike Waychison <mikew@google.com>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+Message-Id: <20081121231511.ce59702e.akpm@linux-foundation.org>
+In-Reply-To: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 November 2008, Evgeniy Polyakov wrote:
-> I have a network server, which gets IO requests from different clients
-> and maintains coherency of the data between them, but if file is
-> modified locally I want to flush or invalidate remote data. I decided
-> not to dig into the kernel on the server node and use inotify to get
-> notifications about events, but there is no way to determine if given IO
-> was originated by server itself (and in this case nothing should be
-> done), or by external application which accesses exported directory (and
-> in this case I should send update messages to clients).
+On Fri, 21 Nov 2008 22:47:44 -0800 Ying Han <yinghan@google.com> wrote:
 
-Why not require local access to use the same mechanism as remote, i.e.
-by "network mounting" the data on the local machine, too.  That way
-there's no confusion over where the change originated nor who's copy
-must be invalidated.
+> page fault retry with NOPAGE_RETRY
+> Allow major faults to drop the mmap_sem read lock while waitting for
+> synchronous disk read. This allows another thread which wishes to grab
+> down_read(mmap_sem) to proceed while the current is waitting the disk IO.
+
+Confused.  down_read() on an rwsem will already permit multiple threads
+to run that section of ccode concurrently.
+
+The benefit here will be to permit down_write() callers (eg:
+sys_mmap()) to get in there and do work.
+
+> The patch flags current->flags to PF_FAULT_MAYRETRY as identify that the
+> caller can tolerate the retry in the filemap_fault call patch.
+> 
+> Benchmark is done by mmap in huge file and spaw 64 thread each faulting in
+> pages in reverse order, the the result shows 8% porformance hit with the
+> patch.
+
+You mean it slowed down 8%?  I'm a bit surprised - I'd have expected a
+smaller slowdown for an IO-intensive thing like this.
+
+Does it speed anything up?
 
