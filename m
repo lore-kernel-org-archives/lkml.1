@@ -1,168 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbYKVISr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYKVIlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbYKVISr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 03:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYKVISi
+	id S1754865AbYKVIlP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 03:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYKVIk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 03:18:38 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62031 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965AbYKVISh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 03:18:37 -0500
-Message-ID: <4927C055.8030009@cn.fujitsu.com>
-Date: Sat, 22 Nov 2008 16:18:29 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Max Krasnyansky <maxk@qualcomm.com>
-CC: Dimitri Sivanich <sivanich@sgi.com>, Gregory Haskins <ghaskins@novell.com>,
-       Derek Fults <dfults@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
- no load balance
-References: <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com> <4924C770.7050107@qualcomm.com> <4926158B.9020909@novell.com> <49271449.2030804@qualcomm.com> <20081121211800.GA16647@sgi.com> <4927AECA.2040707@qualcomm.com>
-In-Reply-To: <4927AECA.2040707@qualcomm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Nov 2008 03:40:58 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33739 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYKVIk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 03:40:58 -0500
+To: tj@kernel.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       greg@kroah.com
+In-reply-to: <49279324.7010605@kernel.org> (message from Tejun Heo on Sat, 22
+	Nov 2008 14:05:40 +0900)
+Subject: Re: [PATCH 5/5] CUSE: implement CUSE - Character device in Userspace
+References: <1227190983-5820-1-git-send-email-tj@kernel.org> <1227190983-5820-6-git-send-email-tj@kernel.org> <E1L3bA9-0000Dx-Vb@pomaz-ex.szeredi.hu> <49279324.7010605@kernel.org>
+Message-Id: <E1L3o2v-0001Nz-Oi@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 22 Nov 2008 09:40:53 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Krasnyansky wrote:
+On Sat, 22 Nov 2008, Tejun Heo wrote:
+> Miklos Szeredi wrote:
+> > On Thu, 20 Nov 2008, Tejun Heo wrote:
+> >> diff --git a/include/linux/miscdevice.h b/include/linux/miscdevice.h
+> >> index 0be9245..d4dcca8 100644
+> >> --- a/include/linux/miscdevice.h
+> >> +++ b/include/linux/miscdevice.h
+> >> @@ -28,6 +28,7 @@
+> >>  #define MPT_MINOR		220
+> >>  #define	HPET_MINOR		228
+> >>  #define FUSE_MINOR		229
+> >> +#define CUSE_MINOR		230
+> > 
+> > This doesn't work: device numbers have to be allocated by LANANA.
 > 
-> Dimitri Sivanich wrote:
->> Hi Greg and Max,
->>
->> On Fri, Nov 21, 2008 at 12:04:25PM -0800, Max Krasnyansky wrote:
->>> Hi Greg,
->>>
->>> I attached debug instrumentation patch for Dmitri to try. I'll clean it up and
->>>  add things you requested and will resubmit properly some time next week.
->>>
->> We added Max's debug patch to our kernel and have run Max's Trace 3 scenario, but we do not see a NULL sched-domain remain attached, see my comments below.
->>
->>
->> mount -t cgroup cpuset -ocpuset /cpusets/
->>
->> for i in 0 1 2 3; do mkdir par$i; echo $i > par$i/cpuset.cpus; done
->>
->> kernel: cpusets: rebuild ndoms 1
->> kernel: cpuset: domain 0 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
-> Oops. I did not realize your NR_CPUS is so large. Unfortunately all your masks
-> got truncated.
-> I'll update the patch to print cpu list instead of the masks.
-> 
->> echo 0 > cpuset.sched_load_balance
->> kernel: cpusets: rebuild ndoms 4
->> kernel: cpuset: domain 0 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: cpuset: domain 1 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: cpuset: domain 2 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: cpuset: domain 3 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: CPU0 root domain default
->> kernel: CPU0 attaching NULL sched-domain.
->> kernel: CPU1 root domain default
->> kernel: CPU1 attaching NULL sched-domain.
->> kernel: CPU2 root domain default
->> kernel: CPU2 attaching NULL sched-domain.
->> kernel: CPU3 root domain default
->> kernel: CPU3 attaching NULL sched-domain.
-> 
->> kernel: CPU3 root domain e0000069ecb20000
->> kernel: CPU3 attaching sched-domain:
->> kernel:  domain 0: span 3 level NODE
->> kernel:   groups: 3
->> kernel: CPU2 root domain e000006884a00000
->> kernel: CPU2 attaching sched-domain:
->> kernel:  domain 0: span 2 level NODE
->> kernel:   groups: 2
->> kernel: CPU1 root domain e000006884a20000
->> kernel: CPU1 attaching sched-domain:
->> kernel:  domain 0: span 1 level NODE
->> kernel:   groups: 1
->> kernel: CPU0 root domain e000006884a40000
->> kernel: CPU0 attaching sched-domain:
->> kernel:  domain 0: span 0 level NODE
->> kernel:   groups: 0
->>
->> Which is the way sched_load_balance is supposed to work. You need to set
->> sched_load_balance=0 for all cpusets containing any cpu you want to disable
->> balancing on, otherwise some balancing will happen.
-> It won't be much of a balancing in this case because this just one cpu per
-> domain.
-> In other words no that's not how it supposed to work. There is code in
-> cpu_attach_domain() that is supposed to remove redundant levels
-> (sd_degenerate() stuff). There is an explicit check in there for numcpus == 1.
-> btw The reason you got a different result that I did is because you have a
-> NUMA box where is mine is UMA. I was able to reproduce the problem though by
-> enabling multi-core scheduler. In which case I also get one redundant domain
-> level CPU, with a single CPU in it.
-> So we definitely need to fix this. I'll try to poke around tomorrow and figure
-> out why redundant level is not dropped.
-> 
+> My last attempt at LANANA for extended devt didn't get me anywhere and
+> I'm not sure LANANA is handling miscdevice minors at all.
 
-You were not using latest kernel, were you?
+Back then I did get the fuse device registered in LANANA database
+(http://www.lanana.org/docs/device-list/devices-2.6+.txt)
 
-There was a bug in sd degenerate code, and it has already been fixed:
-	http://lkml.org/lkml/2008/11/8/10
+>   If you go
+> through the tree, there are quite a few duplicate allocations including
+> FUSE_MINOR.  At any rate, we can definitely try LANANA.
 
->> So in addition to the top (root) cpuset, we need to set it to '0' in the
->> parX cpusets. That will turn off load balancing to the cpus in question
->> (thereby attaching a NULL sched domain). 
-> As I explained above we should not have to disable load balancing in cpusets
-> with a single CPU.
-> 
+Ugh, I suppose that's my fault for not putting the definition in
+miscdevice.h (though apparently the duplicates didn't do so either).
 
-Yes, and please try the laste kernel. ;)
-
->> So when we do that for just par3, we get the following:
->> echo 0 > par3/cpuset.sched_load_balance
->> kernel: cpusets: rebuild ndoms 3
->> kernel: cpuset: domain 0 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: cpuset: domain 1 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: cpuset: domain 2 cpumask
->> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,0
->> 0000000,00000000,00000000,00000000,0
->> kernel: CPU3 root domain default
->> kernel: CPU3 attaching NULL sched-domain.
->>
->> So the def_root_domain is now attached for CPU 3.  And we do have a NULL
->> sched-domain, which we expect for a cpu with load balancing turned off.  If
->> we turn sched_load_balance off ('0') on each of the other cpusets (par0-2),
->> each of those cpus would also have a NULL sched-domain attached.
-> Ok. This one is a bug in cpuset.c:generate_sched_domains(). Sched domain
-> generator in cpusets should not drop domains with single cpu in them when
-> sched_load_balance==0. I'll look at that tomorrow too.
-> 
-
-Do you mean the correct behavior should be as following?
-	kernel: cpusets: rebuild ndoms 4
-
-But why do you think this is a bug? In generate_sched_domains(), cpusets with
-sched_load_balance==0 will be skippped:
-
-	list_add(&top_cpuset.stack_list, &q);
-	while (!list_empty(&q)) {
-		...
-		if (is_sched_load_balance(cp)) {
-			csa[csn++] = cp;
-			continue;
-		}
-		...
-  	}
-
-Correct me if I misunderstood your point.
+Thanks,
+Miklos
