@@ -1,35 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYKVJ16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbYKVJ3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYKVJ16 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 04:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYKVJ1r
+	id S1756249AbYKVJ3U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 04:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYKVJ3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 04:27:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45571 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751072AbYKVJ1q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 04:27:46 -0500
-Date: Sat, 22 Nov 2008 01:27:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: htejun@gmail.com, arjan@linux.intel.com, torvalds@linux-foundation.org,
-       hch@infradead.org, mingo@elte.hu, rminnich@sandia.gov, ericvh@gmail.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH fwd] poll: allow f_op->poll to sleep
-Message-Id: <20081122012722.e1ac2698.akpm@linux-foundation.org>
-In-Reply-To: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu>
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Nov 2008 04:29:09 -0500
+Received: from 8bytes.org ([88.198.83.132]:33298 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752032AbYKVJ3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 04:29:07 -0500
+Date: Sat, 22 Nov 2008 10:29:04 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, netdev@vger.kernel.org, tglx@linutronix.de,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 0/10] DMA-API debugging facility
+Message-ID: <20081122092904.GF29705@8bytes.org>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <20081122115802K.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081122115802K.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Nov 2008 09:58:33 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Sat, Nov 22, 2008 at 12:27:39PM +0900, FUJITA Tomonori wrote:
+> On Fri, 21 Nov 2008 17:26:00 +0100
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > Hi,
+> > 
+> > this patchset introduces code to debug drivers usage of the DMA-API.
+> > Tests with hardware IOMMUs have shown several bugs in drivers regarding
+> > the usage of that API.
+> > Problems were found especially in network card drivers.
+> 
+> Especially? Have you met dma similar bugs with storage (scsi, etc)
+> drivers?
 
-> Andrew, can you please apply this?
+No. For me the code only triggered network card drivers. Namely the
+ixgbe, tg3 and bnx2 driver.
 
-I did so earlier today.
+> 
+> > This way driver developers get an idea where the problem is in their
+> > code.
+> > 
+> > Please review and send any objections or, if there are none, consider
+> > for inclusion ;)
+> 
+> This should be architecture independent code. Except for that, it
+> looks very useful.
+
+Thanks,
+
+Joerg
