@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbYKVHEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbYKVHMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757111AbYKVHEX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 02:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYKVHEI
+	id S1756608AbYKVHMg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 02:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYKVHM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 02:04:08 -0500
-Received: from mga14.intel.com ([143.182.124.37]:16916 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754630AbYKVHEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 02:04:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,649,1220252400"; 
-   d="scan'208";a="80580782"
-Message-ID: <4927AEDF.4070808@intel.com>
-Date: Sat, 22 Nov 2008 15:03:59 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sat, 22 Nov 2008 02:12:27 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:33535 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbYKVHM0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 02:12:26 -0500
+Message-ID: <4927B0D5.4020907@davidnewall.com>
+Date: Sat, 22 Nov 2008 17:42:21 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "horms@verge.net.au" <horms@verge.net.au>,
-       "yinghai@kernel.org" <yinghai@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081121205746.GA3639@kroah.com>
-In-Reply-To: <20081121205746.GA3639@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Evgeniy Polyakov <zbr@ioremap.net>
+CC: linux-api@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [take 3] Use pid in inotify events.
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <cfec22b10811201434v2230d11dvc9797018e433fd20@mail.gmail.com> <20081120230612.GB6536@ioremap.net> <200811211939.46812.arnd@arndb.de>
+In-Reply-To: <200811211939.46812.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sat, Nov 22, 2008 at 02:36:05AM +0800, Yu Zhao wrote:
->> Greetings,
->>
->> Following patches are intended to support SR-IOV capability in the
->> Linux kernel. With these patches, people can turn a PCI device with
->> the capability into multiple ones from software perspective, which
->> will benefit KVM and achieve other purposes such as QoS, security,
->> and etc.
->>
->> The Physical Function and Virtual Function drivers using the SR-IOV
->> APIs will come soon!
-> 
-> Thanks for respining these patches, but I think we really need to see a
-> driver using this in order to get an idea of how it will be used.
+On Friday 21 November 2008, Evgeniy Polyakov wrote:
+> I have a network server, which gets IO requests from different clients
+> and maintains coherency of the data between them, but if file is
+> modified locally I want to flush or invalidate remote data. I decided
+> not to dig into the kernel on the server node and use inotify to get
+> notifications about events, but there is no way to determine if given IO
+> was originated by server itself (and in this case nothing should be
+> done), or by external application which accesses exported directory (and
+> in this case I should send update messages to clients).
 
-Yes, the PF driver patch and the VF driver for Intel 82576 NIC will be 
-available next week. Both PF/VF drivers are testing versions. The PF 
-driver patch is based on the lasted kernel IGB driver 
-(drivers/net/igb/), and uses SR-IOV v7 API. The VF driver is a totally 
-new NIC driver, it looks like other normal PCI NIC drivers.
+Why not require local access to use the same mechanism as remote, i.e.
+by "network mounting" the data on the local machine, too.  That way
+there's no confusion over where the change originated nor who's copy
+must be invalidated.
 
-> Also, the Xen and KVM people need to agree on the userspace interface
-> here, perhaps also getting some libvirt involvement as well, as they are
-> going to be the ones having to use this all the time.
-
-I'll keep KVM/Xen people updated on the user level interface and let 
-them comment based on a real usage model of the Intel 82576 NIC after 
-PF/VF drivers are available.
-
-Regards,
-Yu
