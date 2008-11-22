@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYKVJjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbYKVJjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYKVJjX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 04:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYKVJjL
+	id S1757399AbYKVJjw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 04:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYKVJjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 04:39:11 -0500
-Received: from 8bytes.org ([88.198.83.132]:42412 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbYKVJjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 04:39:10 -0500
-Date: Sat, 22 Nov 2008 10:39:08 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, netdev@vger.kernel.org, tglx@linutronix.de,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 05/10] x86: add check code for map/unmap_single code
-Message-ID: <20081122093908.GI29705@8bytes.org>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-6-git-send-email-joerg.roedel@amd.com> <20081122120632M.fujita.tomonori@lab.ntt.co.jp>
+	Sat, 22 Nov 2008 04:39:43 -0500
+Received: from h4.dl5rb.org.uk ([81.2.74.4]:54055 "EHLO
+	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753619AbYKVJjm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 04:39:42 -0500
+Date: Sat, 22 Nov 2008 09:39:35 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-mips <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MIPS: Make BUG() __noreturn.
+Message-ID: <20081122093935.GA31703@linux-mips.org>
+References: <49260E4C.8080500@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081122120632M.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49260E4C.8080500@caviumnetworks.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 12:27:41PM +0900, FUJITA Tomonori wrote:
-> On Fri, 21 Nov 2008 17:26:05 +0100
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Thu, Nov 20, 2008 at 05:26:36PM -0800, David Daney wrote:
+> From: David Daney <ddaney@caviumnetworks.com>
+> Date: Thu, 20 Nov 2008 17:26:36 -0800
+> To: linux-mips <linux-mips@linux-mips.org>
+> CC: linux-kernel@vger.kernel.org
+> Subject: [PATCH] MIPS: Make BUG() __noreturn.
+> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 > 
-> > Impact: detect bugs in map/unmap_single usage
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/include/asm/dma-mapping.h |    9 +++++-
-> >  arch/x86/include/asm/dma_debug.h   |   20 +++++++++++++
-> >  arch/x86/kernel/pci-dma-debug.c    |   55 ++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 83 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-> > index 83d7b7d..c9bead2 100644
-> > --- a/arch/x86/include/asm/dma-mapping.h
-> > +++ b/arch/x86/include/asm/dma-mapping.h
-> > @@ -98,9 +98,14 @@ dma_map_single(struct device *hwdev, void *ptr, size_t size,
-> >  	       int direction)
-> >  {
-> >  	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
-> > +	dma_addr_t addr;
-> >  
-> >  	BUG_ON(!valid_dma_direction(direction));
-> > -	return ops->map_single(hwdev, virt_to_phys(ptr), size, direction);
-> > +	addr = ops->map_single(hwdev, virt_to_phys(ptr), size, direction);
-> > +
-> > +	debug_map_single(hwdev, ptr, size, direction, addr);
-> 
-> debug_map_single could fail due to OOM. Then debug_unmap_single in
-> dma_unmap_single gives a false warning because it can't find the
-> dma_debug_entry?
+> MIPS: Make BUG() __noreturn.
 
-True. I will add a check to disable checking when a map operation has
-failed.
+Please don't repeat the subject in the body of a patch email.  Git takes
+the subject followed by the body upto the --- line as the log message so
+this is just duplication that will need to be manually deleted again.
 
-Joerg
+> Often we do things like put BUG() in the default clause of a case
+> statement.  Since it was not declared __noreturn, this could sometimes
+> lead to bogus compiler warnings that variables were used
+> uninitialized.
+>
+> There is a small problem in that we have to put a magic while(1); loop to
+> fool GCC into really thinking it is noreturn.  This makes the new
+> BUG() function 3 instructions long instead of just 1, but I think it
+> is worth it as it is now unnecessary to do extra work to silence the
+> 'used uninitialized' warnings.
+>
+> I also re-wrote BUG_ON so that if it is given a constant condition, it
+> just does BUG() instead of loading a constant value in to a register
+> and testing it.
+
+I don't like the endless loop in the BUG() macros but at this time it seems
+the best solution.  Looking forward to __builtin_noreturn().
+
+Patch applied,
+
+  Ralf
