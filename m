@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbYKVPy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYKVQSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbYKVPy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 10:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758544AbYKVPyi
+	id S1758645AbYKVQSV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 11:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbYKVQSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 10:54:38 -0500
-Received: from bu3sch.de ([62.75.166.246]:48900 "EHLO vs166246.vserver.de"
+	Sat, 22 Nov 2008 11:18:10 -0500
+Received: from mga03.intel.com ([143.182.124.21]:16617 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758531AbYKVPyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 10:54:37 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: BCM4312 Fails when xdm is started
-Date: Sat, 22 Nov 2008 16:54:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Yuval Hager <yuval@avramzon.net>, bcm43xx-dev@lists.berlios.de,
-       LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>, Peter Stuge <peter@stuge.se>
-References: <200811151801.02369.yuval@avramzon.net> <200811221613.00303.mb@bu3sch.de> <492825F8.6020606@lwfinger.net>
-In-Reply-To: <492825F8.6020606@lwfinger.net>
+	id S1758520AbYKVQSJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 11:18:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,650,1220252400"; 
+   d="scan'208";a="80704674"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'FUJITA Tomonori'" <fujita.tomonori@lab.ntt.co.jp>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "'dwmw2@infradead.org'" <dwmw2@infradead.org>
+CC: "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'mingo@elte.hu'" <mingo@elte.hu>
+Date: Sat, 22 Nov 2008 08:18:02 -0800
+Subject: RE: [PATCH] IA64: fix VT-d dma_mapping_error
+Thread-Topic: [PATCH] IA64: fix VT-d dma_mapping_error
+Thread-Index: AclMohtwQPq+NQuxRV+UMWgAhq/6AgAGciBA
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB88EAB57E1@orsmsx505.amr.corp.intel.com>
+References: <20081122215822A.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081122215822A.fujita.tomonori@lab.ntt.co.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811221654.09399.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 November 2008 16:32:08 Larry Finger wrote:
-> Michael Buesch wrote:
-> 
-> > Somebody disabled MMIO and busmastering.
-> > And somebody cleared the CACHE_LINE_SIZE register.
-> 
-> Are these all the read/write bits in the configuration area? Should I conclude
-> that someone zeroed this area?
+ 
+>+int intel_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
+>+{
+>+	return !dma_addr;
+>+}
 
-Yeah well. I'm not sure. It _looks_ like someone completely cut the physical
-power line to the card and it reset its complete PCI config.
-So well, X does poke with the PCI devices. But as you said it also happens if
-X doesn't run, I'd rule that out.
-But I would not rule out a fucked BIOS, yet.
-Does the BIOS have any powersave options and/or spread-spectrum options for
-the PCI-bus? Can you try to turn them all off?
-I have a machine that has PCI-slot autodetect and turns of the PCI clock, if
-it doesn't detect a card on that slot. Also turn that off, if you have it, too.
+The implementation of inte_dma_mapping_error is incomplete.
 
-> In case the kernel memory diagnostics don't help, is there any way to trap
-> writes to the configuration registers?
+Dma_addr is valid only when it belongs to hwdev's domain. This is all about VT-d isolation fundamental.
 
-Well, if we have random memory corruption, that can hit memory and MMIO.
-It doesn't hurt to turn on all debugging options. Often you get some hint
-by doing so.
-
--- 
-Greetings Michael.
++int intel_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
++{
++        struct pci_dev *pdev = to_pci_dev(hwdev);
++        struct dmar_domain *domain;
++        struct iova *iova;
++
++        domain = find_domain(pdev);
++
++        iova = find_iova(&domain->iovad, IOVA_PFN(dma_addr));
++        if (!iova)
++                return -EINVAL;
++	   return 0;
++}
