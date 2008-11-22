@@ -1,89 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbYKVVnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYKVVn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905AbYKVVnh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 16:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYKVVn1
+	id S1754891AbYKVVn7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 16:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYKVVnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 16:43:27 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:60886 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752876AbYKVVn1 (ORCPT
+	Sat, 22 Nov 2008 16:43:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:43768 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbYKVVns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 16:43:27 -0500
+	Sat, 22 Nov 2008 16:43:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=YuIoL3EH1oNj/hf6qpnBkNqU2tl++EAX1WCKb5nk+ngZuqHTcQNN6Wj5Ica/gRxqwd
-         nga9bYIeHdJMjIdUwXu5zMPbht1diHRmRh+ovF9FzsbLgjRqDvB1chLF12c2gGz6RWl7
-         0aaVv+qkU2fsZVER+OtcP4UViVSxTzgzfWriw=
-Message-ID: <86802c440811221343n61b9d20cue4d89c1c4b45121c@mail.gmail.com>
-Date: Sat, 22 Nov 2008 13:43:25 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.28 git: WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
-Cc: "Dmitry Nezhevenko" <dion@inhex.net>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <200811222144.31812.rjw@sisk.pl>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=YUxy+VmHaCQtQiVqtKJPPqU5dYokGH7Gs5Iki94G79I+h4cQT1QMlx1nPCfsR7EL0y
+         8r/EAdtkjnPEgWFjvCjE+zvuUXLDvTxn44F4WiPQ9GcxAwfN3YBnLoVbZaj2XXEOhd9q
+         3afBylXggDppzJJPBT+sNuBmTsmgoc5Jma15I=
+Message-ID: <28f715610811221343s67ed9901nc80618774fcbdcf8@mail.gmail.com>
+Date: Sat, 22 Nov 2008 22:43:46 +0100
+From: "Daniel Perzynski" <daniel.perzynski@gmail.com>
+To: linux-kernel@vger.kernel.org, linu-acpi@vger.kernel.org
+Subject: Re: HP WMI laptop extras driver
+Cc: mjg59@srcf.ucam.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081120092239.GA16613@laptop.local>
-	 <200811222144.31812.rjw@sisk.pl>
-X-Google-Sender-Auth: 54612989607243e7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 12:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, 20 of November 2008, Dmitry Nezhevenko wrote:
->> Hi folks. This is first time I've tried 2.6.28-git (cloned git a few hours ago).
->> And got this:
->>
->> [    0.000000] BIOS-provided physical RAM map:
->> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->> [    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
->> [    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
->> [    0.000000]  BIOS-e820: 0000000000100000 - 000000007ffd0000 (usable)
->> [    0.000000]  BIOS-e820: 000000007ffd0000 - 000000007ffde000 (ACPI data)
->> [    0.000000]  BIOS-e820: 000000007ffde000 - 0000000080000000 (ACPI NVS)
->> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
->> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
->> [    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
->> [    0.000000] DMI present.
->> [    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working it around.
->> [    0.000000] last_pfn = 0x7ffd0 max_arch_pfn = 0x100000
->> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
->> [    0.000000] ------------[ cut here ]------------
->> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
->> [    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
->> [    0.000000] Modules linked in:
->> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc5 #1
->> [    0.000000] Call Trace:
->> [    0.000000]  [<c012b86f>] warn_slowpath+0x6f/0x90
->> [    0.000000]  [<c0373031>] inet_rtm_newroute+0x21/0x50
->> [    0.000000]  [<c02593c4>] number+0x2b4/0x2c0
->> [    0.000000]  [<c0259ff3>] vsnprintf+0x393/0x670
->> [    0.000000]  [<c0144fd1>] up+0x11/0x40
->> [    0.000000]  [<c012c069>] release_console_sem+0x189/0x1d0
->> [    0.000000]  [<c01124da>] generic_get_mtrr+0xea/0x120
->> [    0.000000]  [<c04db85f>] mtrr_trim_uncached_memory+0x7d/0x374
->> [    0.000000]  [<c03a569a>] printk+0x17/0x1b
->> [    0.000000]  [<c011edbc>] pat_init+0x7c/0xa0
->> [    0.000000]  [<c01129ac>] post_set+0x1c/0x50
->> [    0.000000]  [<c03a569a>] printk+0x17/0x1b
->> [    0.000000]  [<c04d7b52>] e820_end_pfn+0xb5/0xd3
->> [    0.000000]  [<c04d6016>] setup_arch+0x518/0x802
->> [    0.000000]  [<c04d8cc7>] reserve_early_overlap_ok+0x3f/0x47
->> [    0.000000]  [<c04cf5dc>] start_kernel+0x58/0x334
->> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
->> [    0.000000] kernel direct mapping tables up to 377fe000 @ 10000-16000
->>
->> Can I just ignore this?
+Hi again,
 
-can we get whole boot message? also cat /proc/mtrr
+Below are messages collected for all special buttons of my laptop.
 
-YH
+Nov 22 13:11:49 h3xu5 input: HP WMI hotkeys as /class/input/input9
+quickplay button -> Nov 22 13:13:10 h3xu5 HP WMI: Unknown key pressed - 22142
+quickplay dvd button  -> Nov 22 13:14:22 h3xu5 HP WMI: Unknown key
+pressed - 220e6
+quickplay TV button -> Nov 22 13:14:52 h3xu5 HP WMI: Unknown key pressed - 22181
+
+previous track button -> Nov 22 13:15:50 h3xu5 HP WMI: Unknown key
+pressed - 32192
+stop button -> Nov 22 13:16:15 h3xu5 HP WMI: Unknown key pressed - 32191
+play/pause button -> Nov 22 13:16:30 h3xu5 HP WMI: Unknown key pressed - 32190
+next track  button -> Nov 22 13:16:46 h3xu5 HP WMI: Unknown key pressed - 32193
+
+4 above buttons are working fine in x-windows
+
+cinema button -> Nov 22 13:21:14 h3xu5 HP WMI: Unknown key pressed - 2218b
+synaptics touchpad button off/on:
+Nov 22 13:21:28 h3xu5 atkbd.c: Unknown key pressed (translated set 2,
+code 0xd8 on isa0060/serio0).
+Nov 22 13:21:28 h3xu5 atkbd.c: Use 'setkeycodes e058 <keycode>' to
+make it known.
+Nov 22 13:21:40 h3xu5 atkbd.c: Unknown key pressed (translated set 2,
+code 0xd9 on isa0060/serio0).
+Nov 22 13:21:40 h3xu5 atkbd.c: Use 'setkeycodes e059 <keycode>' to
+make it known.
+wifi button off
+Nov 22 13:22:26 h3xu5 usb 3-2: USB disconnect, address 3
+Nov 22 13:22:26 h3xu5 btusb_intr_complete: hci0 urb ffff88013e1252c0
+failed to resubmit (19)
+Nov 22 13:22:26 h3xu5 btusb_send_frame: hci0 urb ffff88013e1252c0
+submission failed
+Nov 22 13:22:26 h3xu5 hcid[3607]: HCI dev 0 down
+Nov 22 13:22:26 h3xu5 hcid[3607]: Stopping security manager 0
+Nov 22 13:22:26 h3xu5 hcid[3607]: Device hci0 has been disabled
+Nov 22 13:22:27 h3xu5 hcid[3607]: HCI dev 0 unregistered
+Nov 22 13:22:27 h3xu5 hcid[3607]: Unregister path: /org/bluez/hci0
+Nov 22 13:22:27 h3xu5 hcid[3607]: Device hci0 has been removed
+Nov 22 13:22:29 h3xu5 hcid[3607]: Can't remove GN bridge
+Nov 22 13:22:29 h3xu5 hcid[3607]: Unregistered manager path
+Nov 22 13:22:29 h3xu5 hcid[3607]: Unregistered manager path
+Nov 22 13:22:29 h3xu5 hcid[3607]: Unregistered manager path
+Nov 22 13:22:29 h3xu5 hcid[3607]: Stopping SDP server
+Nov 22 13:22:29 h3xu5 hcid[3607]: Exit
+wifi button on
+Nov 22 13:23:01 h3xu5 usb 3-2: new full speed USB device using
+uhci_hcd and address 4
+Nov 22 13:23:01 h3xu5 usb 3-2: configuration #1 chosen from 1 choice
+Nov 22 13:23:01 h3xu5 hcid[17796]: Bluetooth HCI daemon
+Nov 22 13:23:01 h3xu5 hcid[17796]: Parsing /etc/bluetooth/main.conf
+failed: No such file or directory
+Nov 22 13:23:02 h3xu5 hcid[17796]: Starting SDP server
+Nov 22 13:23:02 h3xu5 hcid[17796]: Parsing /etc/bluetooth/network.conf
+failed: No such file or directory
+Nov 22 13:23:02 h3xu5 hcid[17796]: Can't create GN bridge
+Nov 22 13:23:02 h3xu5 hcid[17796]: Registered manager path:/org/bluez/network
+Nov 22 13:23:02 h3xu5 hcid[17796]: Registered input manager
+path:/org/bluez/input
+Nov 22 13:23:02 h3xu5 hcid[17796]: Parsing /etc/bluetooth/audio.conf
+failed: No such file or directory
+Nov 22 13:23:02 h3xu5 hcid[17796]: Unix socket created: 16
+Nov 22 13:23:02 h3xu5 hcid[17796]: Registered manager path:/org/bluez/audio
+Nov 22 13:23:02 h3xu5 hcid[17796]: Starting experimental netlink support
+Nov 22 13:23:02 h3xu5 hcid[17796]: Failed to find Bluetooth netlink family
+Nov 22 13:23:02 h3xu5 hcid[17796]: Can't init plugin
+/usr/lib64/bluetooth/plugins/netlink.so
+Nov 22 13:23:02 h3xu5 hcid[17796]: Registered manager path:/org/bluez/serial
+Nov 22 13:23:02 h3xu5 hcid[17796]: HCI dev 0 registered
+Nov 22 13:23:02 h3xu5 hcid[17796]: HCI dev 0 up
+Nov 22 13:23:02 h3xu5 hcid[17796]: Device hci0 has been added
+Nov 22 13:23:02 h3xu5 hcid[17796]: Starting security manager 0
+Nov 22 13:23:02 h3xu5 hcid[17796]: Device hci0 has been activated
+
+As I understand wifi on/off is supported already by hp-wmi driver
+
+sound mute button -> Nov 22 13:23:28 h3xu5 HP WMI: Unknown key pressed - 32190
+volume up -> Nov 22 13:24:02 h3xu5 HP WMI: Unknown key pressed - 32190
+volume down -> Nov 22 13:24:04 h3xu5 HP WMI: Unknown key pressed - 32190
+
+above 3 are working fine in x-windows
+
+bass/treble switch button -> Nov 22 13:25:06 h3xu5 HP WMI: Unknown key
+pressed - 22199
+bass/treble up button:
+Nov 22 13:26:18 h3xu5 HP WMI: Unknown key pressed - 22197
+Nov 22 13:26:18 h3xu5 atkbd.c: Unknown key pressed (translated set 2,
+code 0xbe on isa0060/serio0).
+Nov 22 13:26:18 h3xu5 atkbd.c: Use 'setkeycodes e03e <keycode>' to
+make it known.
+bass/treble down button:
+Nov 22 13:26:21 h3xu5 HP WMI: Unknown key pressed - 22198
+Nov 22 13:26:21 h3xu5 atkbd.c: Unknown key pressed (translated set 2,
+code 0xbf on isa0060/serio0).
+Nov 22 13:26:21 h3xu5 atkbd.c: Use 'setkeycodes e03f <keycode>' to
+make it known.
+cd eject button -> Nov 22 13:26:45 h3xu5 HP WMI: Unknown key pressed - 0
+
+
+If you have any question please let me know.
+
+Regards,
