@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYKVQlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbYKVQr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbYKVQlR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 11:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbYKVQlD
+	id S1758748AbYKVQr6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 11:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758614AbYKVQrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 11:41:03 -0500
-Received: from sh.osrg.net ([192.16.179.4]:40788 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758591AbYKVQlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 11:41:01 -0500
-Date: Sun, 23 Nov 2008 01:40:39 +0900
-To: fenghua.yu@intel.com
-Cc: fujita.tomonori@lab.ntt.co.jp, tony.luck@intel.com, dwmw2@infradead.org,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: RE: [PATCH] IA64: fix VT-d dma_mapping_error
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB88EAB57E1@orsmsx505.amr.corp.intel.com>
-References: <20081122215822A.fujita.tomonori@lab.ntt.co.jp>
-	<A6AD88C3F2289247BE726C37303E1EB88EAB57E1@orsmsx505.amr.corp.intel.com>
+	Sat, 22 Nov 2008 11:47:48 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41027 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758613AbYKVQrr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 11:47:47 -0500
+Date: Sat, 22 Nov 2008 16:47:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: vme_scc.c breakage (was: Re: linux-next: Tree for November 21)
+Message-ID: <20081122164738.2226b63e@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0811221558340.30025@anakin>
+References: <20081121181948.ee771502.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0811221558340.30025@anakin>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081123014037A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Nov 2008 08:18:02 -0800
-"Yu, Fenghua" <fenghua.yu@intel.com> wrote:
-
->  
-> >+int intel_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
-> >+{
-> >+	return !dma_addr;
-> >+}
+> | -	struct scc_port *port = ptr;
+> | +	struct scc_port *scc = container_of(port, struct scc_port, gs.port);
+> |  	unsigned channel = port->channel;
+> |  
+> |  	return !!(scc_last_status_reg[channel] & SR_DCD);
 > 
-> The implementation of inte_dma_mapping_error is incomplete.
+> Issues:
+>   1. When Atari support is enabled, `scc' is defined in
+>      include/asm-m68k/atari.h as:
 > 
-> Dma_addr is valid only when it belongs to hwdev's domain. This is all about VT-d isolation fundamental.
+> 	# define scc ((*(volatile struct SCC*)SCC_BAS))
 > 
-> +int intel_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
-> +{
-> +        struct pci_dev *pdev = to_pci_dev(hwdev);
-> +        struct dmar_domain *domain;
-> +        struct iova *iova;
-> +
-> +        domain = find_domain(pdev);
-> +
-> +        iova = find_iova(&domain->iovad, IOVA_PFN(dma_addr));
-> +        if (!iova)
-> +                return -EINVAL;
-> +	   return 0;
-> +}
+>      However, renaming the variable `scc' doesn't help, as
+> 
+>   2. the variable `scc' is not used in scc_carrier_raised(),
+> 
+>   3. `port->channel' on line 635 still fails as `port' is not longer `struct
+>      scc_port', but a 'struct tty_port', which has no member named 'channel'.
 
-Hmm, intel_dma_mapping_error is used to test only the value that
-intel_map_single() returns. If intel_map_single() returns a non-zero
-dma address, it belongs to hwdev's domain. So intel_dma_mapping_error
-can simply return 1 (failure) if the dma_addr is zero.
+Will take a look at this, but gs is going to away so at some point
+someone with hardware is going to have to admit to owning this driver or
+just mark it BROKEN..
 
-Do I misunderstand something?
+Alan
