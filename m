@@ -1,81 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYKVDXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYKVDZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbYKVDXN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 22:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYKVDW6
+	id S1755413AbYKVDZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 22:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYKVDZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 22:22:58 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:43973 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbYKVDW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 22:22:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=RGXa8tRi5KhSE0Glgszjpg2cWrPPgb/8MVcrJscsbupCZsTGv2AdGcGi7rFctcjylT
-         BClpJnJIsgIQVqUKbAS12llvwD1NAS+DXu2Ax/r9FMmfW8G3N9XFHGXVJH7GxqR4XH3e
-         3kF9NTfx2EO02oZbk4h9QhWIKO9jZgTYNh4Xg=
-From: crquan@gmail.com
-To: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>, ath5k-devel@venema.h4ckr.net
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ath5k: fix Security issue in DebugFS part of ath5k
-Date: Sat, 22 Nov 2008 11:22:49 +0800
-Message-Id: <1227324169-13260-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.6.0.2
+	Fri, 21 Nov 2008 22:25:10 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61480 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752786AbYKVDZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 22:25:08 -0500
+Message-ID: <49277AF7.3090000@cn.fujitsu.com>
+Date: Sat, 22 Nov 2008 11:22:31 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cgroups: fix incorrect using rcu_dereference() in 	cgroup_subsys_state()
+References: <4926761E.8030002@cn.fujitsu.com> <6599ad830811211007s43f0c683s9d56e0aed3af938@mail.gmail.com>
+In-Reply-To: <6599ad830811211007s43f0c683s9d56e0aed3af938@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cheng Renquan <crquan@gmail.com>
+Paul Menage wrote:
+> On Fri, Nov 21, 2008 at 12:49 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>> It's task->cgroups protected by RCU. and struct css_set.subsys[subsys_id]
+>> is readonly(after init). so we don't need rcu_dereference() for
+>> struct css_set.subsys[subsys_id].
+>>
+>> the ways using cgroup_subsys_state() safely:
+>>
+>> #1:
+>> rcu_read_lock() / task_lock();
+>> c = cgroup_subsys_state(tsk, id);
+>> use c;
+>> rcu_read_unlock() / task_unlock();
+> 
+> You need to qualify that with the fact that if you're just using RCU,
+> the subsys state may no longer be the state for the task that you're
+> interested in, since we don't guarantee that the task won't move
+> directly after you read the state pointer.
+> 
+>>
+>> #2: use cgroup_lock() for _current_ task.
+>> cgroup_lock();
+>> c = cgroup_subsys_state(current, id);
+>> use c;
+>> cgroup_unlock();
+> 
+> No, if you use cgroup_lock() you can do this for any task.
+> cgroup_lock() is the cgroups equivalent of the BKL, and definitely
+> prevents all task movement between groups.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12076
+cgroup_exit() will defeat you.
 
-Remove any write access to groups and others, only keep write permission
-to its owner, usually only root user.
+>>  static inline struct cgroup_subsys_state *task_subsys_state(
+>>        struct task_struct *task, int subsys_id)
+>>  {
+>> -       return rcu_dereference(task->cgroups->subsys[subsys_id]);
+>> +       /*
+>> +        * ->subsys[subsys_id] are read-only data, so we do not need
+>> +        * rcu_dereference() for it.
+>> +        */
+>> +       return rcu_dereference(task->cgroups)->subsys[subsys_id];
+>>  }
+> 
+> Change looks OK but I think we can lose the additional comment.
+> 
+> Paul
+> 
+> 
+> 
 
-Reported-by: Jérôme Poulin <jeromepoulin@gmail.com>
-Signed-off-by: Cheng Renquan <crquan@gmail.com>
+I just remembered I had deferred Li Zefan's patch.
+(I'm also RCU developer, I had been writing CGROUP VS RCU then,
+I thought these patches should be sent together, So I deferred his patch)
+
+From: Li Zefan <lizf@cn.fujitsu.com>
+Date: Mon, 25 Aug 2008 11:05:28 +0800
+Subject: [PATCH] cgroup: fix wrong rcu_dereference()
+
+It is tsk->cgroups which is protected by RCU.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- drivers/net/wireless/ath5k/debug.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ include/linux/cgroup.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/wireless/ath5k/debug.c b/drivers/net/wireless/ath5k/debug.c
-index 19980cb..ccaeb5c 100644
---- a/drivers/net/wireless/ath5k/debug.c
-+++ b/drivers/net/wireless/ath5k/debug.c
-@@ -417,19 +417,19 @@ ath5k_debug_init_device(struct ath5k_softc *sc)
- 	sc->debug.debugfs_phydir = debugfs_create_dir(wiphy_name(sc->hw->wiphy),
- 				ath5k_global_debugfs);
- 
--	sc->debug.debugfs_debug = debugfs_create_file("debug", 0666,
-+	sc->debug.debugfs_debug = debugfs_create_file("debug", S_IWUSR | S_IRUGO,
- 				sc->debug.debugfs_phydir, sc, &fops_debug);
- 
--	sc->debug.debugfs_registers = debugfs_create_file("registers", 0444,
-+	sc->debug.debugfs_registers = debugfs_create_file("registers", S_IRUGO,
- 				sc->debug.debugfs_phydir, sc, &fops_registers);
- 
--	sc->debug.debugfs_tsf = debugfs_create_file("tsf", 0666,
-+	sc->debug.debugfs_tsf = debugfs_create_file("tsf", S_IWUSR | S_IRUGO,
- 				sc->debug.debugfs_phydir, sc, &fops_tsf);
- 
--	sc->debug.debugfs_beacon = debugfs_create_file("beacon", 0666,
-+	sc->debug.debugfs_beacon = debugfs_create_file("beacon", S_IWUSR | S_IRUGO,
- 				sc->debug.debugfs_phydir, sc, &fops_beacon);
- 
--	sc->debug.debugfs_reset = debugfs_create_file("reset", 0222,
-+	sc->debug.debugfs_reset = debugfs_create_file("reset", S_IWUSR,
- 				sc->debug.debugfs_phydir, sc, &fops_reset);
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index c98dd7c..d911dc7 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -355,7 +355,7 @@ static inline struct cgroup_subsys_state *cgroup_subsys_state(
+ static inline struct cgroup_subsys_state *task_subsys_state(
+ 	struct task_struct *task, int subsys_id)
+ {
+-	return rcu_dereference(task->cgroups->subsys[subsys_id]);
++	return rcu_dereference(task->cgroups)->subsys[subsys_id];
  }
  
--- 
-1.6.0.4.758.g36c05
+ static inline struct cgroup* task_cgroup(struct task_struct *task,
 
