@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYKVTnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbYKVToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYKVTnb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 14:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYKVTnU
+	id S1754922AbYKVToT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 14:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYKVToE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 14:43:20 -0500
-Received: from rn-out-0910.google.com ([64.233.170.186]:63492 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbYKVTnT (ORCPT
+	Sat, 22 Nov 2008 14:44:04 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:56043 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbYKVToD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 14:43:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=CQMccuj7PuhZz2/PK51LPfaU/UXz4cCK7XdJ7oj2aiACIE7Qdx2q9751gbfxv98Gg9
-         pwVp8Y17D9Rp8WN+5WLJdtesAblNFAl66NnknbkncHqPB59yh3o6zZqMdrm/rmboH7jM
-         ene6CX7BnNksrx7fCiuYZyAOEDJlByUQ7hevo=
-Message-ID: <9929d2390811221143n66f3f09bu3801919a54263589@mail.gmail.com>
-Date: Sat, 22 Nov 2008 11:43:17 -0800
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-To: "Al Viro" <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH 14/32] ixgbe section fixes
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, netdev <netdev@vger.kernel.org>
-In-Reply-To: <E1L3wOM-0006Ti-Jt@ZenIV.linux.org.uk>
+	Sat, 22 Nov 2008 14:44:03 -0500
+Date: Sat, 22 Nov 2008 20:43:59 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>, Takashi Iwai <tiwai@suse.de>,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [alsa-devel] Bugs on aspire one A150
+Message-ID: <20081122194359.GA29278@rhlx01.hs-esslingen.de>
+References: <s5h3ai11dpt.wl%tiwai@suse.de> <20081109151323.GA18705@rhlx01.hs-esslingen.de> <s5h7i7c916e.wl%tiwai@suse.de> <20081109200929.GA29333@rhlx01.hs-esslingen.de> <s5hiqqtkxqr.wl%tiwai@suse.de> <491B0D38.1050207@gmail.com> <20081112180519.GA21919@rhlx01.hs-esslingen.de> <491DBDEA.9010104@gmail.com> <492856C2.8000707@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <E1L3wOM-0006Ti-Jt@ZenIV.linux.org.uk>
-X-Google-Sender-Auth: 605b367cb73624ea
+In-Reply-To: <492856C2.8000707@gmail.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 9:35 AM, Al Viro <viro@ftp.linux.org.uk> wrote:
+Hi,
+
+On Sat, Nov 22, 2008 at 09:00:18PM +0200, Maxim Levitsky wrote:
+> Maxim Levitsky wrote:
+>> 1) The dc offset isn't present on aspire one, really is a circuit 
+>> design bug I guess 2) Internal mic works perfectly on aspire one, can 
+>> reproduce the strange behaver at all,
+>> Probably this was mixer bug.
+> Finally, I found how to reproduce that bug,
+> I mean to get normal volume on internal mic, I have to increase volume
+> only on left or right channel.
 >
-> ixgbe_init_interrupt_scheme() is called from ixgbe_resume().  Build that
-> with CONFIG_PM and without CONFIG_HOTPLUG and you've got a problem.
-> Several helpers called by it also are misannotated __devinit.
+> So, this happens always, and _only_ when recording _mono_ sound from internal
+> mic.
 >
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/net/ixgbe/ixgbe_main.c |    9 ++++-----
->  1 files changed, 4 insertions(+), 5 deletions(-)
->
+> Since hardware doesn't support hardware mono input, tested with -D hw:0
+> I suspect this to be alsa-lib bug, any ideas?
+> Happens with arecord -D plughw:0 -c1 .
 
-Adding Netdev...
+Wow, nice analysis!
+I had already intended to report that you're #2 who told me that Mic does work
+(and I was starting to feel weird since I'm the only one who cannot
+get it to work!)
+Given your analysis, things start to make a lot more sense now.
 
-Patch does not apply to latest net-next-2.6 tree because half of the
-requested changes are already applied to the driver in an earlier
-commit.
+That probably means that Ekiga Wizard uses mono input (since it does not work
+for me), whereas many other apps use stereo input as (natively!) supported
+by this hardware setup?
 
-Please re-test with
-git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
-if possible.
+--> alsa lib bug sounds like a good guess.
 
--- 
-Cheers,
-Jeff
+Thanks,
+
+Andreas Mohr
