@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbYKVBA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYKVBCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbYKVBA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 20:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYKVBAU
+	id S1757607AbYKVBCK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 20:02:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYKVBBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 20:00:20 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:51527 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752453AbYKVBAT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 20:00:19 -0500
-Message-ID: <4927598D.3090505@oracle.com>
-Date: Fri, 21 Nov 2008 16:59:57 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] irq.h: fix missing/extra kernel-doc
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 21 Nov 2008 20:01:55 -0500
+Received: from fizeau.zen.co.uk ([212.23.8.67]:33138 "EHLO fizeau.zen.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755750AbYKVBBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 20:01:54 -0500
+X-Greylist: delayed 1088 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Nov 2008 20:01:54 EST
+Subject: Re: [RFC][PATCH] sysrq-j: emergency shell
+From: Matt Keenan <tank.en.mate@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20081121235159.GA15861@localhost.localdomain>
+References: <20081121235159.GA15861@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 22 Nov 2008 00:42:16 +0000
+Message-Id: <1227314536.29976.1.camel@bazbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49275990.0129:SCFSTAT928724,ss=1,fgs=0
+X-Originating-Smarthost02-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Sat, 2008-11-22 at 00:51 +0100, Vegard Nossum wrote:
+> >From 57adfe62983db316fceba1b64258fd3d8830bcd8 Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Sat, 22 Nov 2008 00:25:57 +0100
+> Subject: [PATCH] sysrq-j: emergency shell
+> 
+> This patch adds support for "SysRq-j", which invokes an emergency
+> root shell in the current console.
+> 
+> Please don't bite my head off for abusing the file API; documentation
+> was rather sparse! (Corrections are welcome, though.)
+> 
+> It seems that keyboard input will go to the shell only half of the
+> time; the other half goes to whatever program was running there in
+> the first place. I tried to kill the other users of the TTY using
+> TIOCSCTTY, but it seems not to have worked. Any ideas?
+> 
 
-Fix missing & excess irq.h kernel-doc:
+Have you considered SIGTSTP?
 
-Warning(include/linux/irq.h:182): No description found for parameter 'irq'
-Warning(include/linux/irq.h:182): Excess struct/union/enum/typedef member 'affinity_entry' description in 'irq_desc'
+Matt
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/irq.h |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- linux-2.6.28-rc6-git1.orig/include/linux/irq.h
-+++ linux-2.6.28-rc6-git1/include/linux/irq.h
-@@ -130,7 +130,7 @@ struct irq_chip {
- 
- /**
-  * struct irq_desc - interrupt descriptor
-- *
-+ * @irq:		interrupt number for this descriptor
-  * @handle_irq:		highlevel irq-events handler [if NULL, __do_IRQ()]
-  * @chip:		low level interrupt hardware access
-  * @msi_desc:		MSI descriptor
-@@ -149,7 +149,6 @@ struct irq_chip {
-  * @cpu:		cpu index useful for balancing
-  * @pending_mask:	pending rebalanced interrupts
-  * @dir:		/proc/irq/ procfs entry
-- * @affinity_entry:	/proc/irq/smp_affinity procfs entry on SMP
-  * @name:		flow handler name for /proc/interrupts output
-  */
- struct irq_desc {
