@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbYKVOmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbYKVPIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758441AbYKVOmS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 09:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbYKVOmH
+	id S1758507AbYKVPIA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 10:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbYKVPHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 09:42:07 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:29787 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758082AbYKVOmF (ORCPT
+	Sat, 22 Nov 2008 10:07:50 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:40604 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758201AbYKVPHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 09:42:05 -0500
-Date: Sat, 22 Nov 2008 07:41:59 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, greg@kroah.com,
-       linux-pci@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
-       kkeil@suse.de, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: CONFIG_PCI_LEGACY removal
-Message-ID: <20081122144159.GH25709@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	LKML <linux-kernel@vger.kernel.org>, greg@kroah.com,
-	linux-pci@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
-	kkeil@suse.de, Andrew Morton <akpm@linux-foundation.org>
-References: <20081121181426.9f5efa36.sfr@canb.auug.org.au> <20081121110819.GA5707@parisc-linux.org>
+	Sat, 22 Nov 2008 10:07:49 -0500
+Date: Sat, 22 Nov 2008 16:07:46 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: vme_scc.c breakage (was: Re: linux-next: Tree for November 21)
+In-Reply-To: <20081121181948.ee771502.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0811221558340.30025@anakin>
+References: <20081121181948.ee771502.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121110819.GA5707@parisc-linux.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Matthew Wilcox <matthew@wil.cx>:
-> On Fri, Nov 21, 2008 at 06:14:26PM +1100, Stephen Rothwell wrote:
-> 
-> I think the plan is to delete all these drivers once the new ISDN layer
-> is a bit more battle-hardened.
-> 
-> > User of pci_find_slot():
-> > 
-> > drivers/pci/hotplug/cpqphp_pci.c
-> 
-> The cpqphp driver is basically unmaintained.  Last time I spoke to Greg
-> about it (which was probably three years ago) he said it wasn't possible
-> to find a machine which had one of these any more.
+	Hi Alan,
 
-I've managed to track some down.
+drivers/char/vme_scc.c no longer compiles in linux-next:
+http://kisskb.ellerman.id.au/kisskb/buildresult/56964/
 
-> I suspect the driver should simply be deleted, but if anyone steps up
-> and claims to have one of these to test the resulting patch, I'm willing
-> to remove pci_find_slot() from it.
+I get a slightly different error message, though:
 
-Converting cpqphp to use the modern pci_get_slot() API has been
-on my TODO list for a while. It was languishing because I
-couldn't find hardware nor time.
+| drivers/char/vme_scc.c: In function 'scc_carrier_raised':
+| drivers/char/vme_scc.c:634: error: expected identifier or '(' before 'volatile'
+| drivers/char/vme_scc.c:634: error: expected ')' before '(' token
+| drivers/char/vme_scc.c:634: error: expected statement before ')' token
+| drivers/char/vme_scc.c:635: error: 'struct tty_port' has no member named 'channel'
 
-I've got hardware now. Just need to free up a few cycles. :-/
+The problem seems to be introduced by commit
+e21405cbbaa859c68119b260c0fe43afdb86a385 ("tty-port-extract-cd"). The relevant
+part is below:
 
-But if it's not worth it, I'm fine with marking as CONFIG_BROKEN
-and scheduling for eventual deletion.
+| diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
+| index 1718b3c..d4e1534 100644
+| --- a/drivers/char/vme_scc.c
+| +++ b/drivers/char/vme_scc.c
+| @@ -624,9 +629,9 @@ static void scc_enable_rx_interrupts(void *ptr)
+|  }
+|  
+|  
+| -static int scc_get_CD(void *ptr)
+| +static int scc_carrier_raised(struct tty_port *port)
+|  {
+| -	struct scc_port *port = ptr;
+| +	struct scc_port *scc = container_of(port, struct scc_port, gs.port);
+|  	unsigned channel = port->channel;
+|  
+|  	return !!(scc_last_status_reg[channel] & SR_DCD);
 
-/ac
+Issues:
+  1. When Atari support is enabled, `scc' is defined in
+     include/asm-m68k/atari.h as:
 
+	# define scc ((*(volatile struct SCC*)SCC_BAS))
+
+     However, renaming the variable `scc' doesn't help, as
+
+  2. the variable `scc' is not used in scc_carrier_raised(),
+
+  3. `port->channel' on line 635 still fails as `port' is not longer `struct
+     scc_port', but a 'struct tty_port', which has no member named 'channel'.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
