@@ -1,198 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYKVV2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbYKVVnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbYKVV2m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 16:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYKVV2c
+	id S1754905AbYKVVnh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 16:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYKVVn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 16:28:32 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:62312 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYKVV2b (ORCPT
+	Sat, 22 Nov 2008 16:43:27 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:60886 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752876AbYKVVn1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 16:28:31 -0500
+	Sat, 22 Nov 2008 16:43:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kL/AtRv+bVhmVrkgBjO8Z9Dc5ldEbYIFOmEDFelQl78UqaAU0RTv1yEj/iumdG1zZ5
-         xikCSHshz4SV4T1Q573gAH+p9Ia4BgZTjkcf33tAVMIR1xXUh/pmmzkXqzClqmzJSoIK
-         TGm4/Cpdvd4NmWbWm1re39iV2LIjGY+3cIRnw=
-Subject: Re: processors core stuck in full throttle after waking up from
- s2ram
-From: "Justin P. Mattock" <justinmattock@gmail.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=YuIoL3EH1oNj/hf6qpnBkNqU2tl++EAX1WCKb5nk+ngZuqHTcQNN6Wj5Ica/gRxqwd
+         nga9bYIeHdJMjIdUwXu5zMPbht1diHRmRh+ovF9FzsbLgjRqDvB1chLF12c2gGz6RWl7
+         0aaVv+qkU2fsZVER+OtcP4UViVSxTzgzfWriw=
+Message-ID: <86802c440811221343n61b9d20cue4d89c1c4b45121c@mail.gmail.com>
+Date: Sat, 22 Nov 2008 13:43:25 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200811222151.49273.rjw@sisk.pl>
-References: <1227168699.4276.24.camel@LiNuX>
-	 <200811222151.49273.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 22 Nov 2008 13:28:26 -0800
-Message-Id: <1227389306.3171.14.camel@LiNuX>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Subject: Re: 2.6.28 git: WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
+Cc: "Dmitry Nezhevenko" <dion@inhex.net>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <200811222144.31812.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081120092239.GA16613@laptop.local>
+	 <200811222144.31812.rjw@sisk.pl>
+X-Google-Sender-Auth: 54612989607243e7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-11-22 at 21:51 +0100, Rafael J. Wysocki wrote:
-> On Thursday, 20 of November 2008, Justin P. Mattock wrote:
-> > (before getting into this I need to see if somebody else with a macbook
-> > pro(ATI with radeon drivers) is experiencing the same issue?)
-> > I'm not sure I this is caused by the kernel or the program s2ram.
-> > when I cat watch /proc/cpuinfo I see: (after waking up from suspend.)
-> > 
-> > Every 2.0s: cat /proc/cpuinfo
-> > Wed Nov 19 23:49:13 2008
-> > 
-> > processor       : 0
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 15
-> > model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-> > stepping        : 6
-> > cpu MHz         : 2167.000  
-> > cache size      : 4096 KB
-> > physical id     : 0
-> > siblings        : 2
-> > core id         : 0
-> > cpu cores       : 2
-> > apicid          : 0
-> > initial apicid  : 0
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 10
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> > mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> > constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx
-> >  est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-> > bogomips        : 4322.49
-> > clflush size    : 64
-> > power management:
-> > 
-> > processor       : 1
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 15
-> > model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-> > stepping        : 6
-> > cpu MHz         : 1000.000
-> > cache size      : 4096 KB
-> > physical id     : 0
-> > siblings        : 2
-> > core id         : 1
-> > cpu cores       : 2
-> > apicid          : 1
-> > initial apicid  : 1
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 10
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> > mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> > constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx
-> >  est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-> > bogomips        : 4322.60
-> > clflush size    : 64
-> > power management:
-> > 
-> > 
-> > the processor is full throttle on one of the cores.
-> 
-> Surely not.  The first core shows 2.16 GHz.
-> 
-> Anyway, it certainly is not related to the s2ram program in any way.
-> 
-> Thanks,
-> Rafael
+On Sat, Nov 22, 2008 at 12:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, 20 of November 2008, Dmitry Nezhevenko wrote:
+>> Hi folks. This is first time I've tried 2.6.28-git (cloned git a few hours ago).
+>> And got this:
+>>
+>> [    0.000000] BIOS-provided physical RAM map:
+>> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+>> [    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+>> [    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+>> [    0.000000]  BIOS-e820: 0000000000100000 - 000000007ffd0000 (usable)
+>> [    0.000000]  BIOS-e820: 000000007ffd0000 - 000000007ffde000 (ACPI data)
+>> [    0.000000]  BIOS-e820: 000000007ffde000 - 0000000080000000 (ACPI NVS)
+>> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+>> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
+>> [    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
+>> [    0.000000] DMI present.
+>> [    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working it around.
+>> [    0.000000] last_pfn = 0x7ffd0 max_arch_pfn = 0x100000
+>> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>> [    0.000000] ------------[ cut here ]------------
+>> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
+>> [    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
+>> [    0.000000] Modules linked in:
+>> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc5 #1
+>> [    0.000000] Call Trace:
+>> [    0.000000]  [<c012b86f>] warn_slowpath+0x6f/0x90
+>> [    0.000000]  [<c0373031>] inet_rtm_newroute+0x21/0x50
+>> [    0.000000]  [<c02593c4>] number+0x2b4/0x2c0
+>> [    0.000000]  [<c0259ff3>] vsnprintf+0x393/0x670
+>> [    0.000000]  [<c0144fd1>] up+0x11/0x40
+>> [    0.000000]  [<c012c069>] release_console_sem+0x189/0x1d0
+>> [    0.000000]  [<c01124da>] generic_get_mtrr+0xea/0x120
+>> [    0.000000]  [<c04db85f>] mtrr_trim_uncached_memory+0x7d/0x374
+>> [    0.000000]  [<c03a569a>] printk+0x17/0x1b
+>> [    0.000000]  [<c011edbc>] pat_init+0x7c/0xa0
+>> [    0.000000]  [<c01129ac>] post_set+0x1c/0x50
+>> [    0.000000]  [<c03a569a>] printk+0x17/0x1b
+>> [    0.000000]  [<c04d7b52>] e820_end_pfn+0xb5/0xd3
+>> [    0.000000]  [<c04d6016>] setup_arch+0x518/0x802
+>> [    0.000000]  [<c04d8cc7>] reserve_early_overlap_ok+0x3f/0x47
+>> [    0.000000]  [<c04cf5dc>] start_kernel+0x58/0x334
+>> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+>> [    0.000000] kernel direct mapping tables up to 377fe000 @ 10000-16000
+>>
+>> Can I just ignore this?
 
+can we get whole boot message? also cat /proc/mtrr
 
-Normally I would see cpu MHz: 1000 under both entries,
-this time upon wakeup theres 1000 and 2167.00. the 2167.00 doesn't move
-down to 1000 i.g. example of system normally:
- cat /proc/cpuinfo <below>
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-stepping        : 6
-cpu MHz         : 1000.000   
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-apicid          : 0
-initial apicid  : 0
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-constant_tsc arch_perfmon                             pebs bts pni
-dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm
-tpr_shadow
-bogomips        : 4322.48
-clflush size    : 64
-power management:
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-stepping        : 6
-cpu MHz         : 1000.000
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 1
-cpu cores       : 2
-apicid          : 1
-initial apicid  : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-constant_tsc arch_perfmon                             pebs bts pni
-dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm
-tpr_shadow
-bogomips        : 4322.51
-clflush size    : 64
-power management:
-
-under normal use this 
-will move between 2167.00 to 1000 simultaneously under load with both
-cores, but then back down to 1000, for both when settled down.
-in this situation as I reported, the 2167.00 just
-stays at that number for one of the cores(if thats what I'm seeing) when
-waking up from suspend for some reason or another. 
-
-regards;
-
-
--- 
-Justin P. Mattock <justinmattock@gmail.com>
-
+YH
