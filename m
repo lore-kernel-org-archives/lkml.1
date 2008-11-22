@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbYKVRdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbYKVReE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbYKVRdr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 12:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbYKVRdg
+	id S1758807AbYKVReE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 12:34:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbYKVRdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 12:33:36 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55278 "EHLO
+	Sat, 22 Nov 2008 12:33:46 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55292 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758922AbYKVRdf (ORCPT
+	with ESMTP id S1759065AbYKVRdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 12:33:35 -0500
+	Sat, 22 Nov 2008 12:33:45 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH 2/32] false __cpuinit positives on alpha
+Subject: [PATCH 3/32] powerpc set_huge_psize() false positive
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1L3wMQ-0006GK-Hy@ZenIV.linux.org.uk>
+Message-Id: <E1L3wMa-0006Hj-I9@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 22 Nov 2008 17:33:34 +0000
+Date: Sat, 22 Nov 2008 17:33:44 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-pure noise - alpha doesn't have CPU hotplug
+called only from __init, calls __init.  Incidentally, it ought to be static
+in file.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/alpha/kernel/smp.c   |    6 +++---
- arch/alpha/kernel/traps.c |    4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/mmu-hash64.h |    1 -
+ arch/powerpc/mm/hugetlbpage.c         |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
---- a/arch/alpha/kernel/smp.c
-+++ b/arch/alpha/kernel/smp.c
-@@ -121,7 +121,7 @@ wait_boot_cpu_to_stop(int cpuid)
- /*
-  * Where secondaries begin a life of C.
-  */
--void __init
-+void __cpuinit
- smp_callin(void)
- {
- 	int cpuid = hard_smp_processor_id();
-@@ -198,7 +198,7 @@ wait_for_txrdy (unsigned long cpumask)
-  * Send a message to a secondary's console.  "START" is one such
-  * interesting message.  ;-)
-  */
--static void __init
-+static void __cpuinit
- send_secondary_console_msg(char *str, int cpuid)
- {
- 	struct percpu_struct *cpu;
-@@ -289,7 +289,7 @@ recv_secondary_console_msg(void)
- /*
-  * Convince the console to have a secondary cpu begin execution.
-  */
--static int __init
-+static int __cpuinit
- secondary_cpu_start(int cpuid, struct task_struct *idle)
- {
- 	struct percpu_struct *cpu;
-diff --git a/arch/alpha/kernel/traps.c b/arch/alpha/kernel/traps.c
---- a/arch/alpha/kernel/traps.c
-+++ b/arch/alpha/kernel/traps.c
-@@ -31,7 +31,7 @@
- 
- static int opDEC_fix;
- 
--static void __init
-+static void __cpuinit
- opDEC_check(void)
- {
- 	__asm__ __volatile__ (
-@@ -1072,7 +1072,7 @@ give_sigbus:
- 	return;
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -280,7 +280,6 @@ extern int hash_huge_page(struct mm_struct *mm, unsigned long access,
+ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+ 			     unsigned long pstart, unsigned long prot,
+ 			     int psize, int ssize);
+-extern void set_huge_psize(int psize);
+ extern void add_gpage(unsigned long addr, unsigned long page_size,
+ 			  unsigned long number_of_pages);
+ extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -677,7 +677,7 @@ repeat:
+ 	return err;
  }
  
--void __init
-+void __cpuinit
- trap_init(void)
+-void set_huge_psize(int psize)
++static void __init set_huge_psize(int psize)
  {
- 	/* Tell PAL-code what global pointer we want in the kernel.  */
+ 	/* Check that it is a page size supported by the hardware and
+ 	 * that it fits within pagetable limits. */
