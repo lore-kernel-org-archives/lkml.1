@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbYKVM7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbYKVNR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758331AbYKVM7r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 07:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757690AbYKVM7i
+	id S1758143AbYKVNR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 08:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbYKVNRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 07:59:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36910 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757628AbYKVM7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 07:59:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Subject: Re: Some FTRACE related question
-Date: Sat, 22 Nov 2008 13:59:24 +0100
-User-Agent: KMail/1.9.9
-Cc: "Steven Rostedt" <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <804dabb00811220047q6e0f24eap23e9a7c4c7bd71b6@mail.gmail.com>
-In-Reply-To: <804dabb00811220047q6e0f24eap23e9a7c4c7bd71b6@mail.gmail.com>
+	Sat, 22 Nov 2008 08:17:18 -0500
+Received: from [63.81.120.155] ([63.81.120.155]:22250 "EHLO imap.sh.mvista.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757631AbYKVNRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 08:17:17 -0500
+Message-ID: <49280658.9080606@ru.mvista.com>
+Date: Sat, 22 Nov 2008 16:17:12 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ide: add ->max_sectors field to struct ide_port_info
+References: <200811212242.08182.bzolnier@gmail.com>
+In-Reply-To: <200811212242.08182.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811221359.24808.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 22 of November 2008, Peter Teoh wrote:
-> Q1:   how to use ftrace to ftrace itself?   (i would like to see some
-> ftrace-triggered flow)   In view of the following patch:
-> 
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-11/msg03745.html
-> 
-> Is it to prevent this from being possible?
+Hello.
 
-I can't really answer this, sorry.
+Bartlomiej Zolnierkiewicz wrote:
 
-> Q2:   how to ftrace s2ram and resume?   I attempted to do it, but the
-> trace output is always filled with "resume" related functions when it
-> started up, which is only logical.
+> * Add ->max_sectors field to struct ide_port_info to allow host drivers
+>   to specify value used for hwif->rqsize (if smaller than the default).
+>
+> * Convert pdc202xx_old to use ->max_sectors and remove no longer needed
+>   IDE_HFLAG_RQSIZE_256 flag.
+>
+> There should be no functional changes caused by this patch.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
 
-The tracing is disabled during suspend/resume, so you can't.
+Acked-by: Sergei Shtyltov <sshtylyov@ru.mvista.com>
 
-Thanks,
-Rafael
+MBR, Sergei
+
+
