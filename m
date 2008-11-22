@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbYKVPIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYKVPNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758507AbYKVPIA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 10:08:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbYKVPHu
+	id S1758526AbYKVPNm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 10:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbYKVPNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 10:07:50 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:40604 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758201AbYKVPHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 10:07:49 -0500
-Date: Sat, 22 Nov 2008 16:07:46 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Sat, 22 Nov 2008 10:13:34 -0500
+Received: from bu3sch.de ([62.75.166.246]:41785 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758250AbYKVPNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 10:13:33 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Yuval Hager <yuval@avramzon.net>
+Subject: Re: BCM4312 Fails when xdm is started
+Date: Sat, 22 Nov 2008 16:13:00 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, bcm43xx-dev@lists.berlios.de,
        LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: vme_scc.c breakage (was: Re: linux-next: Tree for November 21)
-In-Reply-To: <20081121181948.ee771502.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0811221558340.30025@anakin>
-References: <20081121181948.ee771502.sfr@canb.auug.org.au>
+       wireless <linux-wireless@vger.kernel.org>, Peter Stuge <peter@stuge.se>
+References: <200811151801.02369.yuval@avramzon.net> <4926FDB3.2030701@lwfinger.net> <200811220839.32674.yuval@avramzon.net>
+In-Reply-To: <200811220839.32674.yuval@avramzon.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200811221613.00303.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Alan,
+On Saturday 22 November 2008 07:39:24 Yuval Hager wrote:
+> On Friday 21 November 2008, Larry Finger wrote:
+> > Yuval,
+> >
+> > Michael Buesch wrote:
+> > > Can you dump PCI config space and SSB registers (TMSLOW, maybe others,
+> > > too). It looks like a random bus write disabled the device.
+> >
+> > Please incorporate the following patch and run your system. In addition,
+> > run the following command when the wireless is working and after it fails:
+> >
+> > sudo lspci -d 14e4:4312 -x
+> >
+> 
+> When the wireless is working:
+> $ lspci -d 14e4:4312 -x
+> 02:00.0 Network controller: Broadcom Corporation BCM4312 802.11a/b/g (rev 02)
+> 00: e4 14 12 43 06 01 10 00 02 00 80 02 08 00 00 00
+> 10: 04 c0 ff fd 00 00 00 00 00 00 00 00 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 3c 10 71 13
+> 30: 00 00 00 00 40 00 00 00 00 00 00 00 0a 01 00 00
+> 
+> After it fails:
+> $ lspci -d 14e4:4312 -x
+> 02:00.0 Network controller: Broadcom Corporation BCM4312 802.11a/b/g (rev 02)
+> 00: e4 14 12 43 00 00 10 00 02 00 80 02 00 00 00 00
+                  ^^                      ^^
+Somebody disabled MMIO and busmastering.
+And somebody cleared the CACHE_LINE_SIZE register.
 
-drivers/char/vme_scc.c no longer compiles in linux-next:
-http://kisskb.ellerman.id.au/kisskb/buildresult/56964/
+> 10: 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 3c 10 71 13
+> 30: 00 00 00 00 40 00 00 00 00 00 00 00 00 01 00 00
 
-I get a slightly different error message, though:
-
-| drivers/char/vme_scc.c: In function 'scc_carrier_raised':
-| drivers/char/vme_scc.c:634: error: expected identifier or '(' before 'volatile'
-| drivers/char/vme_scc.c:634: error: expected ')' before '(' token
-| drivers/char/vme_scc.c:634: error: expected statement before ')' token
-| drivers/char/vme_scc.c:635: error: 'struct tty_port' has no member named 'channel'
-
-The problem seems to be introduced by commit
-e21405cbbaa859c68119b260c0fe43afdb86a385 ("tty-port-extract-cd"). The relevant
-part is below:
-
-| diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
-| index 1718b3c..d4e1534 100644
-| --- a/drivers/char/vme_scc.c
-| +++ b/drivers/char/vme_scc.c
-| @@ -624,9 +629,9 @@ static void scc_enable_rx_interrupts(void *ptr)
-|  }
-|  
-|  
-| -static int scc_get_CD(void *ptr)
-| +static int scc_carrier_raised(struct tty_port *port)
-|  {
-| -	struct scc_port *port = ptr;
-| +	struct scc_port *scc = container_of(port, struct scc_port, gs.port);
-|  	unsigned channel = port->channel;
-|  
-|  	return !!(scc_last_status_reg[channel] & SR_DCD);
-
-Issues:
-  1. When Atari support is enabled, `scc' is defined in
-     include/asm-m68k/atari.h as:
-
-	# define scc ((*(volatile struct SCC*)SCC_BAS))
-
-     However, renaming the variable `scc' doesn't help, as
-
-  2. the variable `scc' is not used in scc_carrier_raised(),
-
-  3. `port->channel' on line 635 still fails as `port' is not longer `struct
-     scc_port', but a 'struct tty_port', which has no member named 'channel'.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Greetings Michael.
