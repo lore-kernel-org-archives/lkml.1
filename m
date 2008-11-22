@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYKVWVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYKVWZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458AbYKVWVp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 17:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbYKVWVg
+	id S1755925AbYKVWZs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 17:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYKVWZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 17:21:36 -0500
-Received: from mx.treblig.org ([80.68.94.177]:43843 "EHLO mx.treblig.org"
+	Sat, 22 Nov 2008 17:25:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37644 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbYKVWVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 17:21:35 -0500
-Date: Sat, 22 Nov 2008 22:21:21 +0000
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: "Moore, Eric" <Eric.Moore@lsi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: Question regarding SAS controllers.
-Message-ID: <20081122222120.GA12360@gallifrey>
-References: <660360F4F2570145BD872F298951B17A5CC40737@cosmail03.lsi.com> <alpine.DEB.1.10.0811221658280.707@p34.internal.lan>
+	id S1752486AbYKVWZa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 17:25:30 -0500
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Len Brown" <len.brown@intel.com>, "Lin Ming" <ming.m.lin@intel.com>,
+       "Robert Moore" <Robert.Moore@intel.com>
+References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera>
+In-Reply-To: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811221658280.707@p34.internal.lan>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.23.1-bytemark-uml (i686)
-X-Uptime: 22:19:09 up 48 days,  4:14,  2 users,  load average: 0.07, 0.03, 0.02
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <vyitTh0pP2N.A.elE.t9HKJB@chimera>
+Subject: [Bug #11822] ACPI Warning (nspredef-0858): _SB_.PCI0.LPC_.EC__.BAT0._BIF: Return Package type mismatch at index 9 - found Buffer, expected String [20080926]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 22 Nov 2008 21:24:56 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Justin Piszcz (jpiszcz@lucidpixels.com) wrote:
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-<snip>
+The following bug entry is on the current list of known regressions
+from 2.6.27.  Please verify if it still should be listed and let me know
+(either way).
 
-> Eric,
-> 
-> Thanks, I had checked this out earlier but the only non-raid SAS HBAs 
-> (those HBAs that do not end in -R) that are JBOD seem to be external only
-> (e.g., do not contain any internal SAS ports?)
-> 
-> Justin.
 
-For some of the SAS cards that LSI produce there are 2 sets of firmware
-on their site and you can load the non-RAID firmware; both versions
-will let you drive stuff as individual drives (e.g. tape drives or
-inidivudal discs) but the non-RAID firmware is a LOT faster for that.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11822
+Subject		: ACPI Warning (nspredef-0858): _SB_.PCI0.LPC_.EC__.BAT0._BIF: Return Package type mismatch at index 9 - found Buffer, expected String [20080926]
+Submitter	: Len Brown <len.brown@intel.com>
+Date		: 2008-10-25 01:26 (29 days old)
+Handled-By	: Robert Moore <Robert.Moore@intel.com>
+		  Lin Ming <ming.m.lin@intel.com>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=18949&action=view
 
-Dave
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+
