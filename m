@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYKVFS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYKVF0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbYKVFS3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 00:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbYKVFSV
+	id S1754503AbYKVF0D (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 00:26:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYKVFZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 00:18:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42431 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750835AbYKVFSV (ORCPT
+	Sat, 22 Nov 2008 00:25:52 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:28788 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1749667AbYKVFZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 00:18:21 -0500
-Date: Fri, 21 Nov 2008 21:17:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, greg@kroah.com
-Subject: Re: [PATCH 5/5] CUSE: implement CUSE - Character device in
- Userspace
-Message-Id: <20081121211756.a211d3a8.akpm@linux-foundation.org>
-In-Reply-To: <49279324.7010605@kernel.org>
-References: <1227190983-5820-1-git-send-email-tj@kernel.org>
-	<1227190983-5820-6-git-send-email-tj@kernel.org>
-	<E1L3bA9-0000Dx-Vb@pomaz-ex.szeredi.hu>
-	<49279324.7010605@kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Nov 2008 00:25:52 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=OX6wNJ3gY86sVnT+B8PknYB4kQwA96kNvrVEC0MZELCLYqfM15zTCI6HqRrmRUGaNoeyXljBwwyPmV4ffTljSLtqqoHZmNt7qAzqM5fQMUTylQoYm4k2qHTADJgq1wbocZLuFYYTuT0tdiw2dltPPqwQKfBlFHlt3Ywsgb23NGo=  ;
+X-YMail-OSG: qouem5IVM1meOBB1JfEEomRREkqP36Id3OFJPkRkyhAW1YEsOs3RuBVbDFUKrdnv_E4viYw.mzoukfRaSvcX8BMx6l_pWcGXQ1qJQI3puEksvtkonew83mv6g11pIC8F0Jp65jI5OlpSCxoc06I6iov3pm6W4bRgqskIRrJkaDzrj0bCfohlOOWSmFr4
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
+Date: Fri, 21 Nov 2008 21:25:48 -0800
+User-Agent: KMail/1.9.10
+Cc: stefan@datenfreihafen.org, eric.y.miao@gmail.com, sameo@openedhand.com,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Daniel Ribeiro <drwyrm@gmail.com>, linux-kernel@vger.kernel.org
+References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <20081121160521.016544616@dodger.lab.datenfreihafen.org>
+In-Reply-To: <20081121160521.016544616@dodger.lab.datenfreihafen.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811212125.49068.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Nov 2008 14:05:40 +0900 Tejun Heo <tj@kernel.org> wrote:
+On Friday 21 November 2008, stefan@datenfreihafen.org wrote:
+> Since the last submission we are also using the spi subsystem and
+> pxa2xx-spi instead of ssp.c directly as before.
 
-> Miklos Szeredi wrote:
-> > On Thu, 20 Nov 2008, Tejun Heo wrote:
-> >> diff --git a/include/linux/miscdevice.h b/include/linux/miscdevice.h
-> >> index 0be9245..d4dcca8 100644
-> >> --- a/include/linux/miscdevice.h
-> >> +++ b/include/linux/miscdevice.h
-> >> @@ -28,6 +28,7 @@
-> >>  #define MPT_MINOR		220
-> >>  #define	HPET_MINOR		228
-> >>  #define FUSE_MINOR		229
-> >> +#define CUSE_MINOR		230
-> > 
-> > This doesn't work: device numbers have to be allocated by LANANA.
-> 
-> My last attempt at LANANA for extended devt didn't get me anywhere and
-> I'm not sure LANANA is handling miscdevice minors at all.
+I took a quick glance at this and it seemed like it should be
+able to build without depending on PXA ... should certainly
+not include <mach/ssp.h> or <mach/regs-ssp.h>, and it doesn't
+look like it needs PXA-specific stuff like <mach/mfp-pxa27x.h>
+either.
 
-No, I don't believe that miscdev minors are handled by lanana.
+It's also worth removing the reverse dependencies ("select X")
+from Kconfig; they don't work very well for the things which
+those dependencies rely on.
 
-otoh, we've added only one new miscdev minor since 2005.  All the new
-code is using dynamic allocation.  Readers of your changelog and code
-comments will be wondering why you didn't do so ;)
-
-
+- Dave
