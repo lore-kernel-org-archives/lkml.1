@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbYKVKQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYKVKRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785AbYKVKQV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 05:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbYKVKQK
+	id S1757341AbYKVKRK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 05:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYKVKQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 05:16:10 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:30022 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753586AbYKVKQI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 05:16:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QOJWatsATCLvevFaH1StROeE9QOYd01gXZjIXQnFmqghTdZ7PPfZ41BDgdjI4q56WV
-         55LRxnHJLv4D8DaFhQ6unp71m98d11J9uIcQ818/LqB6QPALUmT9a8AYT6mb1O0LjPDn
-         kxP+prLwfesfDZ2c89rmQV0KRrULOLjti7nc8=
-Message-ID: <b170af450811220216x7ce8dabaofc5f51b044c5c4c1@mail.gmail.com>
-Date: Sat, 22 Nov 2008 11:16:07 +0100
-From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
-To: "Maxim Levitsky" <maximlevitsky@gmail.com>
-Subject: Re: [ipw3945-devel] Unusually low speeds with ath5k and iwl3945
-Cc: "Bob Copeland" <me@bobcopeland.com>, ath5k-devel@venema.h4ckr.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net
-In-Reply-To: <492719ED.5000006@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <492719ED.5000006@gmail.com>
+	Sat, 22 Nov 2008 05:16:52 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49500 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753651AbYKVKQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 05:16:51 -0500
+Date: Sat, 22 Nov 2008 19:16:05 +0900
+To: joro@8bytes.org
+Cc: fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com,
+       netdev@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/10] x86: add initialization code for DMA-API
+ debugging
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081122094032.GJ29705@8bytes.org>
+References: <1227284770-19215-4-git-send-email-joerg.roedel@amd.com>
+	<20081122120058I.fujita.tomonori@lab.ntt.co.jp>
+	<20081122094032.GJ29705@8bytes.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081122191533K.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mAMAGVdq007691
 
-2008/11/21 Maxim Levitsky <maximlevitsky@gmail.com>:> sorry for cross-posting, but this issue really spans both iwl3945 and ath5k.
-I've no idea if this can be related, but recently there was somereport about ath5k && b43. Maybe it's some bug in ath5k?
-https://lists.berlios.de/pipermail/bcm43xx-dev/2008-November/008315.html
--- RafaÅ‚ MiÅ‚eckiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Sat, 22 Nov 2008 10:40:32 +0100
+Joerg Roedel <joro@8bytes.org> wrote:
+
+> > > +static int hash_fn(struct dma_debug_entry *entry)
+> > > +{
+> > > +	/*
+> > > +	 * Hash function is based on the dma address.
+> > > +	 * We use bits 20-27 here as the index into the hash
+> > > +	 */
+> > > +	BUG_ON(entry->dev_addr == bad_dma_address);
+> > 
+> > 'bad_dma_address' is x86 specific. You already found it though.
+> 
+> Interesting. Is there another value for dma_addr_t which drivers can
+> check for to find out if a dma-api operation failed?
+
+They are architecture dependent. But only X86 uses a variable because
+of GART and swiotlb, I think.
