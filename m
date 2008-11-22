@@ -1,130 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbYKVSCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYKVSle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbYKVSCu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 13:02:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758735AbYKVSCl
+	id S1755932AbYKVSle (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 13:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYKVSlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 13:02:41 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36505 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758709AbYKVSCj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 13:02:39 -0500
-Date: Sat, 22 Nov 2008 23:36:21 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: David Collier-Brown <David.Collier-Brown@Sun.COM>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@Sun.COM>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v4 1/7] sched: Framework for
-	sched_mc/smt_power_savings=N
-Message-ID: <20081122180621.GA5441@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: David Collier-Brown <David.Collier-Brown@Sun.COM>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@Sun.COM>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>
-References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com> <20081121083052.27075.87221.stgit@drishya.in.ibm.com> <49270FF3.6080302@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <49270FF3.6080302@sun.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 22 Nov 2008 13:41:24 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:34224 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751072AbYKVSlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 13:41:24 -0500
+Date: Sat, 22 Nov 2008 19:41:05 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: Re: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
+Message-ID: <20081122194105.348cd5e0@mjolnir.drzeus.cx>
+In-Reply-To: <49257B40.8020807@atmel.com>
+References: <491C0C05.6040301@atmel.com>
+	<20081113134818.GA9161@fluff.org.uk>
+	<491C3D16.1050501@atmel.com>
+	<20081119193631.448ae25e@mjolnir.drzeus.cx>
+	<49257B40.8020807@atmel.com>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-17339-1227379275-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Collier-Brown <David.Collier-Brown@Sun.COM> [2008-11-21 19:45:55]:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> Vaidyanathan Srinivasan wrote:
-> > From: Gautham R Shenoy <ego@in.ibm.com>
-> > 
-> > ***  RFC patch of work in progress and not for inclusion. ***
-> > 
-> > Currently the sched_mc/smt_power_savings variable is a boolean, which either
-> > enables or disables topology based power savings. This extends the behaviour of
-> > the variable from boolean to multivalued, such that based on the value, we
-> > decide how aggressively do we want to perform topology based powersavings
-> > balance.
-> > 
-> > Variable levels of power saving tunable would benefit end user to match the
-> > required level of power savings vs performance trade off depending on the
-> > system configuration and workloads.
-> > 
-> > This initial version makes the sched_mc_power_savings global variable to take
-> > more values (0,1,2).
-> 
->   Might I suggest a dimensioned number rather than a relative one?
-> One might say that 100 represents the full power of a system, meaning
-> that all chips/cores are running at full speed, whereas 50 means that
-> the power system would attempt to halve the resources available, and
-> would return a value that represents the value that the power system
-> believes it has achieved.  For example, if it could only reduce the
-> clock speed by 10%, on a old uniprocessor, it would return 90.
+--=_freyr.drzeus.cx-17339-1227379275-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Ideally we would like to have such a metric :)  However practically
-the power savings and performance tradeoff depends on 
+On Thu, 20 Nov 2008 15:59:12 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-1) System configuration (topology, cpu type, cpu features)
-2) Workload -- memory bound, IO bound, cpu bound
-3) Environment -- system temperature 
+> Needed to use the atmel-mci driver in an architecture
+> independant maner.
+>=20
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+> ---
 
-and many more dimensions that we have not considered yet!
+Colour me confused. Shouldn't this go through Haavard?
 
-What you are asking for may have been possible if the CPUs were very
-simple and performance and power directly corresponded to operating
-frequency.  Modern CPUs have very widely varying operating
-characteristics that greatly depend on workload type. Hence deriving
-a metric for power vs performance tradeoff will be very inaccurate and
-useless.
+--=20
+     -- Pierre Ossman
 
-We may be able to design the framework in such a way that each level
-of settings will provide increasing levels of power savings with
-little or no performance impact (depending on the workload).
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-Power consumption at sched_mc=0 > sched_mc=1 > sched_mc=2 but not in
-linear scale. 
+--=_freyr.drzeus.cx-17339-1227379275-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-Also, this is only one of the component of the power saving tunables.
-There are various governor settings and platform setting that may
-affect the power consumption.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
- 
->   An additional, second value it might return might be the power
-> reduction it believed it had achieved.
+iEYEARECAAYFAkkoUkUACgkQ7b8eESbyJLj0egCePSccK6NgskBIU4qDNKaKozfX
+KX0AoKWGgyTPuEmmweF2WmI9H0BX9f6z
+=rPOQ
+-----END PGP SIGNATURE-----
 
-Measuring the actual power being consumed will be useful for sys
-admins to choose the correct settings.  However this is platform
-dependent and best left to the platform management tools as compared
-to generic scheduler.
-
-We would expect the end user to use the platform management tools to
-collect and trend the power consumption data and correlate with the
-power saving tunables to decide the best power vs performance
-tradeoffs.
- 
->   These, by the way, are what my Tadpole GUI shows (;-)) so I'm just
-> following someone else's lead.
-
-Can you please provide more details.  I could not get a google hit on
-the Tadpole GUI which is relevant to this discussion.  
-
-Thanks,
-Vaidy
+--=_freyr.drzeus.cx-17339-1227379275-0001-2--
