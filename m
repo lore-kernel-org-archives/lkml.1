@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbYKVLm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbYKVMW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbYKVLm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 06:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757931AbYKVLmL
+	id S1757973AbYKVMW2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 07:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbYKVMWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 06:42:11 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36078 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758116AbYKVLmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 06:42:09 -0500
-Date: Sat, 22 Nov 2008 11:40:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-Cc: "Qinghuang Feng" <qhfeng.kernel@gmail.com>,
-       "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] driver/net/*: remove redundant argument comments
-Message-ID: <20081122114014.379f2762@lxorguk.ukuu.org.uk>
-In-Reply-To: <9929d2390811212355j635e0e8iee0e53678efc5f09@mail.gmail.com>
-References: <4927b790.0e0d6e0a.65cc.ffffcb05@mx.google.com>
-	<9929d2390811212355j635e0e8iee0e53678efc5f09@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Nov 2008 07:22:18 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48484 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757505AbYKVMWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 07:22:17 -0500
+Date: Sat, 22 Nov 2008 13:21:50 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: ?ric Piel <eric.piel@tremplin-utc.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       trenn@suse.de, rpurdie@rpsys.net, hmh@hmh.eng.br
+Subject: Re: HP accelerometer: split chip handling from HP ACPI interface
+Message-ID: <20081122122149.GA1794@ucw.cz>
+References: <20081121212121.GA7222@elf.ucw.cz> <20081121160022.86020953.akpm@linux-foundation.org> <49275194.6070604@tremplin-utc.net> <492757A8.6010509@tremplin-utc.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <492757A8.6010509@tremplin-utc.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > - * @rx_ring: pointer to receive ring structure
-> >  * @cleaned_count: number of buffers to allocate this pass
-> >  **/
-> >
-> 
-> NAK - rather than removing documentation, I would suggest improving
-> the documentation.  
+On Sat 2008-11-22 01:51:52, ?ric Piel wrote:
+> Éric Piel schreef:
+> > Andrew Morton schreef:
+> >> On Fri, 21 Nov 2008 22:21:21 +0100
+> >> Pavel Machek <pavel@suse.cz> wrote:
+> >>
+> >>> This patch splits handling between chip-specific lis3lv02d and HP/ACPI
+> >>> specific hp_accel.c.
+> >> umm, so?  What reason does anyone have for applying it?
+> > Here is the log I have for the (old version) of pavel's patch:
+> > 
+> > The sensor can be accessed via various buses. In particular, SPI, I?C
+> > and, on HP laptops, via a specific ACPI API (the only one currently
+> > supported). Separate this latest platform from the core of the sensor
+> > driver to allow support for the other bus type. The second, and more
+> > direct goal is actually to be able to merge this part with the
+> > hp-disk-leds driver, which has the same ACPI PNP number.
+> > 
+> > 
+> > I'll try to follow with a patch doing the merge of the hp-disk-leds
+> > driver, so that everything makes sense...
+>
+> Actually, I mistook, Pavel also included some led stuff in this patch.
+> That doesn't look right, especially as the led driver is not
+>removed!
 
-I would suggest reading the patch more carefully - there is no rx_ring
-argument. The documentation in the header is stale.
+I was simply planning to remove the LED stuff in the followup patch. I
+guess I should have mentioned that in the changelog...
 
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
