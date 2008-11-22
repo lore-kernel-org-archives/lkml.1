@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYKVAnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYKVApp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbYKVAnw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 19:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYKVAnl
+	id S1757518AbYKVApp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 19:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbYKVApf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 19:43:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39600
+	Fri, 21 Nov 2008 19:45:35 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36950
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753566AbYKVAnl (ORCPT
+	by vger.kernel.org with ESMTP id S1753669AbYKVApe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 19:43:41 -0500
-Date: Fri, 21 Nov 2008 16:43:40 -0800 (PST)
-Message-Id: <20081121.164340.67054948.davem@davemloft.net>
-To: ptesarik@suse.cz
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ilpo.jarvinen@helsinki.fi, jsembera@suse.cz
-Subject: Re: [PATCH] Do not use TSO/GSO when there is urgent data
+	Fri, 21 Nov 2008 19:45:34 -0500
+Date: Fri, 21 Nov 2008 16:45:33 -0800 (PST)
+Message-Id: <20081121.164533.133749247.davem@davemloft.net>
+To: acme@redhat.com
+Cc: catalin.marinas@arm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix memory leak in the proto_register function
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200811211319.45515.ptesarik@suse.cz>
-References: <200811211319.45515.ptesarik@suse.cz>
+In-Reply-To: <20081121140808.GA20958@ghostprotocols.net>
+References: <20081121125628.11468.72009.stgit@pc1117.cambridge.arm.com>
+	<20081121140808.GA20958@ghostprotocols.net>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,48 +28,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Petr Tesarik <ptesarik@suse.cz>
-Date: Fri, 21 Nov 2008 13:19:45 +0100
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date: Fri, 21 Nov 2008 12:08:08 -0200
 
-> This patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=12014
+> Please send networking patches to netdev@vger.kernel.org as well.
+ ...
+> If the slub allocator is used, kmem_cache_create() may merge two or more
+> kmem_cache's into one but the cache name pointer is not updated and
+> kmem_cache_name() is no longer guaranteed to return the pointer passed
+> to the former function. This patch stores the kmalloc'ed pointers in the
+> corresponding request_sock_ops and timewait_sock_ops structures.
 > 
-> Since most (if not all) implementations of TSO and even the in-kernel
-> software GSO do not update the urgent pointer when splitting a large
-> segment, it is necessary to turn off TSO/GSO for all outgoing traffic
-> with the URG pointer set.
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 > 
-> Looking at tcp_current_mss (and the preceding comment) I even think
-> this was the original intention. However, this approach is insufficient,
-> because TSO/GSO is turned off only for newly created frames, not for
-> frames which were already pending at the arrival of a message with
-> MSG_OOB set. These frames were created when TSO/GSO was enabled,
-> so they may be large, and they will have the urgent pointer set
-> in tcp_transmit_skb().
-> 
-> With this patch, such large packets will be fragmented again before
-> going to the transmit routine.
-> 
-> As a side note, at least the following NICs are known to screw up
-> the urgent pointer in the TCP header when doing TSO:
-> 
-> 	Intel 82566MM (PCI ID 8086:1049)
-> 	Intel 82566DC (PCI ID 8086:104b)
-> 	Intel 82541GI (PCI ID 8086:1076)
-> 	Broadcom NetXtreme II BCM5708 (PCI ID 14e4:164c)
-> 
-> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 
-Applied, thanks Petr.
-
-BTW, your email client screwed up the patch by breaking up long lines,
-for example:
-
-> @@ -722,7 +722,8 @@ static void tcp_queue_skb(struct sock *sk, struct sk_buff 
-> *skb)
-
-And:
-
-> @@ -1163,7 +1164,9 @@ static int tcp_init_tso_segs(struct sock *sk, struct 
-> sk_buff *skb,
-
-I fixed it up this time, but I will not in the future.
+Applied, thanks everyone.
