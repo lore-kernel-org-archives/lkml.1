@@ -1,110 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbYKVKWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYKVKb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbYKVKWT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 05:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYKVKWL
+	id S1757482AbYKVKb3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 05:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYKVKbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 05:22:11 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59746 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753586AbYKVKWK (ORCPT
+	Sat, 22 Nov 2008 05:31:17 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:17329 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756041AbYKVKbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 05:22:10 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after swap_cluster_max pages
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20081115235410.2d2c76de.akpm@linux-foundation.org>
-References: <20081116163915.F208.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081115235410.2d2c76de.akpm@linux-foundation.org>
-Message-Id: <20081122191258.26B0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Sat, 22 Nov 2008 05:31:15 -0500
+Date: Sat, 22 Nov 2008 11:30:59 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, Jean Delvare <khali@linux-fr.org>,
+       Henrik Rydberg <rydberg@euromail.se>, Greg KH <greg@kroah.com>,
+       rkoktarianto@gmail.com, mhoffman@lightlink.com, nicolas@boichat.ch,
+       stable-commits@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: [stable] patch hwmon-applesmc-add-support-for-macbook-air.patch
+  added to 2.6.27-stable tree
+Message-ID: <20081122113059.334d203c@hyperion.delvare>
+In-Reply-To: <20081121163219.601e68be@redhat.com>
+References: <20081111184816.80D2D49036@coco.kroah.org>
+	<4919E869.2060302@euromail.se>
+	<20081111203341.GA29042@suse.de>
+	<4919EF97.1010900@euromail.se>
+	<20081111210121.GA29731@suse.de>
+	<49241411.6020807@euromail.se>
+	<20081119155436.GB4983@kroah.com>
+	<4924B845.9060705@euromail.se>
+	<20081120090121.08ee7b0c@hyperion.delvare>
+	<20081121190142.GC31017@suse.de>
+	<20081121163219.601e68be@redhat.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Sat, 22 Nov 2008 19:22:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-I digged many git-log today.
-
-
-> > > > Of course, one thing we could do is exempt kswapd from this check.
-> > > > During light reclaim, kswapd does most of the eviction so scanning
-> > > > should remain balanced.  Having one process fall down to a lower
-> > > > priority level is also not a big problem.
-> > > > 
-> > > > As long as the direct reclaim processes do not also fall into the
-> > > > same trap, the situation should be manageable.
-> > > > 
-> > > > Does that sound reasonable to you?
-> > > 
-> > > I'll need to find some time to go dig through the changelogs.  
-> > 
-> > as far as I tried, git database doesn't have that changelogs.
-> > FWIW, I guess it is more old.
+On Fri, 21 Nov 2008 16:32:19 -0500, Chuck Ebbert wrote:
+> On Fri, 21 Nov 2008 11:01:42 -0800
+> Greg KH <gregkh@suse.de> wrote:
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/old-2.6-bkcvs.git
-> goes back to 2.5.20 (iirc).
+> > On Thu, Nov 20, 2008 at 09:01:21AM +0100, Jean Delvare wrote:
+> > > On Thu, 20 Nov 2008 02:07:17 +0100, Henrik Rydberg wrote:
+> > > > Absolutely. However, since the commits are all in Linus' tree, cherry-picking
+> > > > sounds like the easiest thing, does it not? Here are the commits to applesmc,
+> > > > in reverse chronological order, since the 2.6.27 release:
+> > > > 
+> > > > 468cc0320ed083e26364d9febde2679d981ed6a6 hwmon: applesmc: add support for Macbook 4
+> > > > eefc488f96cdde6e152b45675b50bf380b95d99f hwmon: applesmc: add support for iMac 8
+> > > > a66603257bf88bbe2c9fd6a97ee5dc24de15d196 hwmon: applesmc: add support for Macbook Pro 5
+> > > > 181209a1d91756bfd83b1d6ce2008cea3ca225b6 hwmon: applesmc: add support for Macbook 5
+> > > > 6e3530fa241ae759313496f67295c9252691ed04 hwmon: applesmc: add support for iMac 5
+> > > > 8c9398d1e9766e3659e277acb2e8ca1c17684139 hwmon: applesmc: lighter wait mechanism, drastic improvement
+> > > > 07e8dbd3ebbdedc71335049dd4b0d542cb038d7d hwmon: applesmc: Add support for Macbook Pro 3
+> > > > d7549905f157f217b888edb0f2055f5090eaf1d8 hwmon: applesmc: Add support for Macbook Pro 4
+> > > > 7b5e3cb28f52f42d8cf2b36771be580f33bbc7ae drivers/hwmon/applesmc.c: remove unneeded casts
+> > > > f5274c972bac2d14c092a9c634e03f51785c7b76 hwmon: applesmc: add support for Macbook Air
+> > > > 8bd1a12a51871f0c870612d8220b1485d6aefc73 hwmon: applesmc: allow for variable ALV0 and ALV1 package length
+> > > > 02fcbd144d684167aa67b1d3ad68f18d265f2d08 hwmon: applesmc: prolong status wait
+> > > > 84d2d7f2ee98dc9bd799790c89b5eb8280af2d37 hwmon: applesmc: fix the 'wait status failed: c != 8' problem
+> > > > 05224091af06177c0ce7c1fae1f498455b47a6be hwmon: applesmc: specified number of bytes to read should match actual
+> > > > 
+> > > > The non-trivial ones are 8c9398, 8bd1a1 and 84d2d7.
+> > > 
+> > > This is too much for -stable IMHO.
+> > 
+> > In looking at the non-trivial ones, I agree, it's not just a "simple"
+> > addition, sorry.
+> 
+> OTOH the driver is basically broken without all those patches.
 
-sorry, I was wrong.
-following patch revertion was happend at 2006.
+Feel free to send a single patch disabling the driver altogether in
+-stable if this is really the case.
 
-And, thank you andrew.
-your comment is very nice.
-
-So, desiable behavior is
-
-	direct reclaim:
-		should be bailed out if enough page reclaimed
-
-	kswapd:
-		don't bailed.
-
-
-Actually, my prepared another bailed out patch has sc->may_cut_off member.
-shrink_zone can do shorcut exiting if only sc->may_cut_off==1.
-
-
-Rik, sorry, I nak current your patch. 
-because it don't fix old akpm issue.
-
-Very sorry. 
-
-
-------------------------------------------------------------------------
-From: Andrew Morton <akpm@osdl.org>
-Date: Fri, 6 Jan 2006 08:11:14 +0000 (-0800)
-Subject: [PATCH] vmscan: balancing fix
-X-Git-Tag: v2.6.16-rc1~936^2~246
-
-
-Revert a patch which went into 2.6.8-rc1.  The changelog for that patch was:
-
-  The shrink_zone() logic can, under some circumstances, cause far too many
-  pages to be reclaimed.  Say, we're scanning at high priority and suddenly
-  hit a large number of reclaimable pages on the LRU.
-
-  Change things so we bale out when SWAP_CLUSTER_MAX pages have been
-  reclaimed.
-
-Problem is, this change caused significant imbalance in inter-zone scan
-balancing by truncating scans of larger zones.
-
-Suppose, for example, ZONE_HIGHMEM is 10x the size of ZONE_NORMAL.  The zone
-balancing algorithm would require that if we're scanning 100 pages of
-ZONE_HIGHMEM, we should scan 10 pages of ZONE_NORMAL.  But this logic will
-cause the scanning of ZONE_HIGHMEM to bale out after only 32 pages are
-reclaimed.  Thus effectively causing smaller zones to be scanned relatively
-harder than large ones.
-
-Now I need to remember what the workload was which caused me to write this
-patch originally, then fix it up in a different way...
-----------------------------------------------------------------------------
-
-
-
-
+-- 
+Jean Delvare
