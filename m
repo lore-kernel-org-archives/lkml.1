@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbYKVRhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbYKVRhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759047AbYKVRhj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 12:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759389AbYKVRf1
+	id S1759829AbYKVRhy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 12:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759185AbYKVRfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 12:35:27 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55430 "EHLO
+	Sat, 22 Nov 2008 12:35:38 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58449 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759028AbYKVRfZ (ORCPT
+	with ESMTP id S1759006AbYKVRfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 12:35:25 -0500
+	Sat, 22 Nov 2008 12:35:36 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH 13/32] rackmeter section fixes
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-Id: <E1L3wOC-0006T5-Ji@ZenIV.linux.org.uk>
+Subject: [PATCH 14/32] ixgbe section fixes
+Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com
+Message-Id: <E1L3wOM-0006Ti-Jt@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 22 Nov 2008 17:35:24 +0000
+Date: Sat, 22 Nov 2008 17:35:34 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* rackmeter_remove() reference needs devexit_p
-* rackmeter_setup() is calls devinit and is called only from devinit
+ixgbe_init_interrupt_scheme() is called from ixgbe_resume().  Build that
+with CONFIG_PM and without CONFIG_HOTPLUG and you've got a problem.
+Several helpers called by it also are misannotated __devinit.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/macintosh/rack-meter.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ixgbe/ixgbe_main.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
---- a/drivers/macintosh/rack-meter.c
-+++ b/drivers/macintosh/rack-meter.c
-@@ -288,7 +288,7 @@ static void __devexit rackmeter_stop_cpu_sniffer(struct rackmeter *rm)
- 	cancel_rearming_delayed_work(&rm->cpu[1].sniffer);
- }
- 
--static int rackmeter_setup(struct rackmeter *rm)
-+static int __devinit rackmeter_setup(struct rackmeter *rm)
+diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -2330,7 +2330,7 @@ static void ixgbe_acquire_msix_vectors(struct ixgbe_adapter *adapter,
+  * Once we know the feature-set enabled for the device, we'll cache
+  * the register offset the descriptor ring is assigned to.
+  **/
+-static void __devinit ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
++static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
  {
- 	pr_debug("rackmeter: setting up i2s..\n");
- 	rackmeter_setup_i2s(rm);
-@@ -582,12 +582,12 @@ static struct of_device_id rackmeter_match[] = {
- 	{ }
- };
- 
--static struct macio_driver rackmeter_drv = {
-+static struct macio_driver rackmeter_driver = {
- 	.name = "rackmeter",
- 	.owner = THIS_MODULE,
- 	.match_table = rackmeter_match,
- 	.probe = rackmeter_probe,
--	.remove = rackmeter_remove,
-+	.remove = __devexit_p(rackmeter_remove),
- 	.shutdown = rackmeter_shutdown,
- };
- 
-@@ -596,14 +596,14 @@ static int __init rackmeter_init(void)
+ 	int feature_mask = 0, rss_i;
+ 	int i, txr_idx, rxr_idx;
+@@ -2367,7 +2367,7 @@ static void __devinit ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
+  * number of queues at compile-time.  The polling_netdev array is
+  * intended for Multiqueue, but should work fine with a single queue.
+  **/
+-static int __devinit ixgbe_alloc_queues(struct ixgbe_adapter *adapter)
++static int ixgbe_alloc_queues(struct ixgbe_adapter *adapter)
  {
- 	pr_debug("rackmeter_init()\n");
+ 	int i;
  
--	return macio_register_driver(&rackmeter_drv);
-+	return macio_register_driver(&rackmeter_driver);
- }
- 
- static void __exit rackmeter_exit(void)
+@@ -2408,8 +2408,7 @@ err_tx_ring_allocation:
+  * Attempt to configure the interrupts using the best available
+  * capabilities of the hardware and the kernel.
+  **/
+-static int __devinit ixgbe_set_interrupt_capability(struct ixgbe_adapter
+-                                                    *adapter)
++static int ixgbe_set_interrupt_capability(struct ixgbe_adapter *adapter)
  {
- 	pr_debug("rackmeter_exit()\n");
+ 	int err = 0;
+ 	int vector, v_budget;
+@@ -2501,7 +2500,7 @@ static void ixgbe_reset_interrupt_capability(struct ixgbe_adapter *adapter)
+  * - Hardware queue count (num_*_queues)
+  *   - defined by miscellaneous hardware support/features (RSS, etc.)
+  **/
+-static int __devinit ixgbe_init_interrupt_scheme(struct ixgbe_adapter *adapter)
++static int ixgbe_init_interrupt_scheme(struct ixgbe_adapter *adapter)
+ {
+ 	int err;
  
--	macio_unregister_driver(&rackmeter_drv);
-+	macio_unregister_driver(&rackmeter_driver);
- }
- 
- module_init(rackmeter_init);
