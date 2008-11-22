@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbYKVSys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYKVTCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753883AbYKVSys (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 13:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYKVSyg
+	id S1756683AbYKVTCe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 14:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYKVTCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 13:54:36 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:56013 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756552AbYKVSyd (ORCPT
+	Sat, 22 Nov 2008 14:02:25 -0500
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:42225 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbYKVTCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 13:54:33 -0500
-Date: Sat, 22 Nov 2008 19:54:29 +0100
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UBIFS: fix compilation warnings
-Message-ID: <20081122185429.GA21433@Chamillionaire.breakpoint.cc>
-References: <1227287970-14684-1-git-send-email-dedekind@infradead.org> <1227287970-14684-5-git-send-email-dedekind@infradead.org>
+	Sat, 22 Nov 2008 14:02:24 -0500
+X-Greylist: delayed 664 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Nov 2008 14:02:24 EST
+Message-ID: <51963.166.70.238.45.1227377156.squirrel@webmail.wolfmountaingroup.com>
+Date: Sat, 22 Nov 2008 11:05:56 -0700 (MST)
+Subject: Forensic File System Patches Posted 11-20-08
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1227287970-14684-5-git-send-email-dedekind@infradead.org>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Artem Bityutskiy | 2008-11-21 19:19:26 [+0200]:
 
->From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
->
->We print 'ino_t' type using '%lu' printk() placeholder, but this
->results in many warnings when compiling for Alpha platform. Fix
->this by adding (unsingned long) casts.
->
->Fixes these warnings:
->
->fs/ubifs/journal.c:693: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+Pursuant to the GPL, the following patches are posted or the Forensic File
+System appliance on Linux.  We will be shipping and are now shipping
+support for Linux with the Forensic File System after reviewing customer
+requirements and looking at GPL issues wit commercial software deployment.
 
-Wouldn't %z help? A cast sounds wrong.
+ftp://ftp.wolfmountaingroup.org/pub/forenfs/ffs-2.6.26.4-el5-11-20-08.patch
 
-Sebastian
+The File System is not distributed with Linux or built on it or any other
+GPL code and is not linked against Linux until installed by the customer
+and is provided in a non-GNU object format for linking against Linux,
+similar to how ndiswrapper works.  I do not believe there are any GPL
+restrictions on customers downloading or purchasing Linux add ons provided
+they are not distributing them with Linux.  I have observed that a large
+number of companies, including the providers of VMWare and Novell
+distribute Linux and GPL code with their proprietary software bundled with
+it.
+
+This appears to violate the GPL, but I am not certain of this.  So given
+this, I am offering for sale Linux add ons not distributed with Linux and
+providing the patches and kernel changes back as required by the GPL.
+
+Jeffrey Vernon Merkey
+
+
+I am working on MDB updates for 2.6.28 and will post mdb with major kernel
+releases from now on in order to better measure kernel breakage between
+releases.  The rc level debugger releases seem to be redundant since the
+areas debuggers touch rarely changes.
+
+
+
+
+
+
