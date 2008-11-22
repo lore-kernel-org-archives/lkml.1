@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbYKVW2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbYKVW24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbYKVW2V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 17:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYKVW2K
+	id S1757074AbYKVW24 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 17:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYKVW2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 17:28:10 -0500
-Received: from lucidpixels.com ([75.144.35.66]:35854 "EHLO lucidpixels.com"
+	Sat, 22 Nov 2008 17:28:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37668 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752401AbYKVW2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 17:28:08 -0500
-Date: Sat, 22 Nov 2008 17:28:07 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-cc: "Moore, Eric" <Eric.Moore@lsi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: Question regarding SAS controllers.
-In-Reply-To: <20081122222120.GA12360@gallifrey>
-Message-ID: <alpine.DEB.1.10.0811221726450.14817@p34.internal.lan>
-References: <660360F4F2570145BD872F298951B17A5CC40737@cosmail03.lsi.com> <alpine.DEB.1.10.0811221658280.707@p34.internal.lan> <20081122222120.GA12360@gallifrey>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1753102AbYKVW2n convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 17:28:43 -0500
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Tejun Heo" <tj@kernel.org>
+References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera>
+In-Reply-To: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <vyitTh0pP2N.A.qHE.H9HKJB@chimera>
+Subject: [Bug #11858] Timeout regression introduced by 242f9dcb8ba6f68fcd217a119a7648a4f69290e9
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 22 Nov 2008 21:28:14 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This message has been generated automatically as a part of a report
+of recent regressions.
+
+The following bug entry is on the current list of known regressions
+from 2.6.27.  Please verify if it still should be listed and let me know
+(either way).
 
 
-On Sat, 22 Nov 2008, Dr. David Alan Gilbert wrote:
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11858
+Subject		: Timeout regression introduced by 242f9dcb8ba6f68fcd217a119a7648a4f69290e9
+Submitter	: Tejun Heo <tj@kernel.org>
+Date		: 2008-10-26 9:46 (28 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=242f9dcb8ba6f68fcd217a119a7648a4f69290e9
+References	: http://marc.info/?l=linux-kernel&m=122501447326698&w=4
 
-> * Justin Piszcz (jpiszcz@lucidpixels.com) wrote:
->
-> <snip>
->
->> Eric,
->>
->> Thanks, I had checked this out earlier but the only non-raid SAS HBAs
->> (those HBAs that do not end in -R) that are JBOD seem to be external only
->> (e.g., do not contain any internal SAS ports?)
->>
->> Justin.
->
-> For some of the SAS cards that LSI produce there are 2 sets of firmware
-> on their site and you can load the non-RAID firmware; both versions
-> will let you drive stuff as individual drives (e.g. tape drives or
-> inidivudal discs) but the non-RAID firmware is a LOT faster for that.
 
-Four and eight port LSI cards:
-http://www.lsi.com/storage_home/products_home/host_bus_adapters/sas_hbas/lsisas3041er/index.html
-http://www.lsi.com/storage_home/products_home/host_bus_adapters/sas_hbas/lsisas3081er/index.html
-
-Firmware and BIOS for both Integrated RAID and Initiator-Target.  Must 
-boot to DOS to run utility.  Batch file simplifies installation.
-
-Welcome to LSI Logic Integrated SAS Flash Utility
-      This Utility will upgrade your LSI SAS3442E HBA
-
-      Integrated RAID ( IR ) or Initiator ( IT ) Firmware
-
-     For IR     Type   R or r
-     For IT     Type   T or t
-     To Exit    Type   q
-
-So one just needs to flash the card and use the initiator firmware and 
-then it will act like a regular (SAS) HBA, no RAID in the card itself, and 
-then one, presumably could use the card for md/software raid and have 
-direct access to the disks, no need for exporting disks via JBOD etc?
-
-Justin.
