@@ -1,41 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbYKVJly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbYKVJsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756928AbYKVJly (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 04:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYKVJlq
+	id S1756569AbYKVJsZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 04:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYKVJsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 04:41:46 -0500
-Received: from kandzendo.ru ([195.178.208.66]:59986 "EHLO tservice.net.ru"
+	Sat, 22 Nov 2008 04:48:10 -0500
+Received: from 8bytes.org ([88.198.83.132]:54071 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbYKVJlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 04:41:45 -0500
-Date: Sat, 22 Nov 2008 12:41:44 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: David Newall <davidn@davidnewall.com>
-Cc: linux-api@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [take 3] Use pid in inotify events.
-Message-ID: <20081122094144.GB12543@ioremap.net>
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <cfec22b10811201434v2230d11dvc9797018e433fd20@mail.gmail.com> <20081120230612.GB6536@ioremap.net> <200811211939.46812.arnd@arndb.de> <4927B0D5.4020907@davidnewall.com>
+	id S1751072AbYKVJsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 04:48:08 -0500
+Date: Sat, 22 Nov 2008 10:48:07 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/10] x86: add initialization code for DMA-API debugging
+Message-ID: <20081122094807.GK29705@8bytes.org>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-4-git-send-email-joerg.roedel@amd.com> <20081121174348.GB4336@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4927B0D5.4020907@davidnewall.com>
+In-Reply-To: <20081121174348.GB4336@elte.hu>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 05:42:21PM +1030, David Newall (davidn@davidnewall.com) wrote:
-> Why not require local access to use the same mechanism as remote, i.e.
-> by "network mounting" the data on the local machine, too.  That way
-> there's no confusion over where the change originated nor who's copy
-> must be invalidated.
+On Fri, Nov 21, 2008 at 06:43:48PM +0100, Ingo Molnar wrote:
+> 
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > +static struct list_head dma_entry_hash[HASH_SIZE];
+> > +
+> > +/* A slab cache to allocate dma_map_entries fast */
+> > +static struct kmem_cache *dma_entry_cache;
+> > +
+> > +/* lock to protect the data structures */
+> > +static DEFINE_SPINLOCK(dma_lock);
+> 
+> some more generic comments about the data structure: it's main purpose 
+> is to provide a mapping based on (dev,addr). There's little if any 
+> cross-entry interaction - same-address+same-dev DMA is checked.
+> 
+> 1)
+> 
+> the hash:
+> 
+> + 	return (entry->dev_addr >> HASH_FN_SHIFT) & HASH_FN_MASK;
+> 
+> should mix in entry->dev as well - that way we get not just per 
+> address but per device hash space separation as well.
+> 
+> 2)
+> 
+> HASH_FN_SHIFT is 1MB chunks right now - that's probably fine in 
+> practice albeit perhaps a bit too small. There's seldom any coherency 
+> between the physical addresses of DMA - we rarely have any real 
+> (performance-relevant) physical co-location of DMA addresses beyond 4K 
+> granularity. So using 1MB chunking here will discard a good deal of 
+> random low bits we should be hashing on.
+> 
+> 3)
+> 
+> And the most scalable locking would be per hash bucket locking - no 
+> global lock is needed. The bucket hash heads should probably be 
+> cacheline sized - so we'd get one lock per bucket.
 
-There is always a possibility that some application will access given
-data directly and not via mounted partition, plus I have to patch
-server's kernel with out of the tree modules, so intestead I could
-implement lsm-based module to catch access and embed cache coherency
-protocol there. Inotify in this case is the simplest approach.
+Hmm, I just had the idea of saving this data in struct device. How about
+that? The locking should scale too and we can extend it easier. For
+example it simplifys a per-device disable function for the checking. Or
+another future feature might be leak tracing.
 
--- 
-	Evgeniy Polyakov
+> This way if there's irq+DMA traffic on one CPU from one device into 
+> one range of memory, and irq+DMA traffic on another CPU to another 
+> device, they will map to two different hash buckets.
+> 
+> 4)
+> 
+> Plus it might be an option to make hash lookup lockless as well: 
+> depending on the DMA flux we can get a lot of lookups, and taking the 
+> bucket lock can be avoided, if you use RCU-safe list ops and drive the 
+> refilling of the free entries pool from RCU.
+
+Joerg
