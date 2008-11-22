@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbYKVRhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbYKVRhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759021AbYKVRhJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 12:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758970AbYKVRfR
+	id S1759047AbYKVRhj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 12:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759389AbYKVRf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 12:35:17 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55408 "EHLO
+	Sat, 22 Nov 2008 12:35:27 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55430 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758963AbYKVRfP (ORCPT
+	with ESMTP id S1759028AbYKVRfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 12:35:15 -0500
+	Sat, 22 Nov 2008 12:35:25 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH 12/32] gdth section fixes
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1L3wO2-0006SA-Jb@ZenIV.linux.org.uk>
+Subject: [PATCH 13/32] rackmeter section fixes
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <E1L3wOC-0006T5-Ji@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 22 Nov 2008 17:35:14 +0000
+Date: Sat, 22 Nov 2008 17:35:24 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-PCI side of driver should be devinit, not init
+* rackmeter_remove() reference needs devexit_p
+* rackmeter_setup() is calls devinit and is called only from devinit
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/scsi/gdth.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/macintosh/rack-meter.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -588,7 +588,7 @@ static struct pci_driver gdth_pci_driver = {
- 	.remove		= gdth_pci_remove_one,
- };
- 
--static void gdth_pci_remove_one(struct pci_dev *pdev)
-+static void __devexit gdth_pci_remove_one(struct pci_dev *pdev)
- {
- 	gdth_ha_str *ha = pci_get_drvdata(pdev);
- 
-@@ -600,7 +600,7 @@ static void gdth_pci_remove_one(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -288,7 +288,7 @@ static void __devexit rackmeter_stop_cpu_sniffer(struct rackmeter *rm)
+ 	cancel_rearming_delayed_work(&rm->cpu[1].sniffer);
  }
  
--static int gdth_pci_init_one(struct pci_dev *pdev,
-+static int __devinit gdth_pci_init_one(struct pci_dev *pdev,
- 				       const struct pci_device_id *ent)
+-static int rackmeter_setup(struct rackmeter *rm)
++static int __devinit rackmeter_setup(struct rackmeter *rm)
  {
- 	ushort vendor = pdev->vendor;
-@@ -853,7 +853,7 @@ static int __init gdth_init_isa(ulong32 bios_adr,gdth_ha_str *ha)
- #endif /* CONFIG_ISA */
+ 	pr_debug("rackmeter: setting up i2s..\n");
+ 	rackmeter_setup_i2s(rm);
+@@ -582,12 +582,12 @@ static struct of_device_id rackmeter_match[] = {
+ 	{ }
+ };
  
- #ifdef CONFIG_PCI
--static int gdth_init_pci(struct pci_dev *pdev, gdth_pci_str *pcistr,
-+static int __devinit gdth_init_pci(struct pci_dev *pdev, gdth_pci_str *pcistr,
- 				   gdth_ha_str *ha)
+-static struct macio_driver rackmeter_drv = {
++static struct macio_driver rackmeter_driver = {
+ 	.name = "rackmeter",
+ 	.owner = THIS_MODULE,
+ 	.match_table = rackmeter_match,
+ 	.probe = rackmeter_probe,
+-	.remove = rackmeter_remove,
++	.remove = __devexit_p(rackmeter_remove),
+ 	.shutdown = rackmeter_shutdown,
+ };
+ 
+@@ -596,14 +596,14 @@ static int __init rackmeter_init(void)
  {
-     register gdt6_dpram_str __iomem *dp6_ptr;
-@@ -1237,7 +1237,7 @@ static int gdth_init_pci(struct pci_dev *pdev, gdth_pci_str *pcistr,
+ 	pr_debug("rackmeter_init()\n");
  
- /* controller protocol functions */
+-	return macio_register_driver(&rackmeter_drv);
++	return macio_register_driver(&rackmeter_driver);
+ }
  
--static void __init gdth_enable_int(gdth_ha_str *ha)
-+static void __devinit gdth_enable_int(gdth_ha_str *ha)
+ static void __exit rackmeter_exit(void)
  {
-     ulong flags;
-     gdt2_dpram_str __iomem *dp2_ptr;
-@@ -1553,7 +1553,7 @@ static int gdth_internal_cmd(gdth_ha_str *ha, unchar service, ushort opcode,
+ 	pr_debug("rackmeter_exit()\n");
  
- /* search for devices */
+-	macio_unregister_driver(&rackmeter_drv);
++	macio_unregister_driver(&rackmeter_driver);
+ }
  
--static int __init gdth_search_drives(gdth_ha_str *ha)
-+static int __devinit gdth_search_drives(gdth_ha_str *ha)
- {
-     ushort cdev_cnt, i;
-     int ok;
-@@ -4935,7 +4935,7 @@ static int __init gdth_eisa_probe_one(ushort eisa_slot)
- #endif /* CONFIG_EISA */
- 
- #ifdef CONFIG_PCI
--static int gdth_pci_probe_one(gdth_pci_str *pcistr,
-+static int __devinit gdth_pci_probe_one(gdth_pci_str *pcistr,
- 			     gdth_ha_str **ha_out)
- {
- 	struct Scsi_Host *shp;
+ module_init(rackmeter_init);
