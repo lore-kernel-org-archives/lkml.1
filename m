@@ -1,72 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbYKVC0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757865AbYKVCbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115AbYKVC0W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 21:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYKVC0O
+	id S1757865AbYKVCbX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 21:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbYKVCbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 21:26:14 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51355 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653AbYKVC0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 21:26:14 -0500
-Message-ID: <49276D25.5020001@cn.fujitsu.com>
-Date: Sat, 22 Nov 2008 10:23:33 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 21 Nov 2008 21:31:15 -0500
+Received: from ozlabs.org ([203.10.76.45]:54391 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbYKVCbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 21:31:15 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: linux-next: rr tree build failure
+Date: Sat, 22 Nov 2008 13:01:06 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       Pete Zaitcev <zaitcev@redhat.com>
+References: <20081121141913.90d05091.sfr@canb.auug.org.au> <200811212128.52317.rusty@rustcorp.com.au> <20081121183403.GC16353@suse.de>
+In-Reply-To: <20081121183403.GC16353@suse.de>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH 1/2] cgroups: enhance task_cgroup()
-References: <4926762A.7000602@cn.fujitsu.com> <6599ad830811211058q3fe12e5coa62436e777b60f1a@mail.gmail.com>
-In-Reply-To: <6599ad830811211058q3fe12e5coa62436e777b60f1a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811221301.07058.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Fri, Nov 21, 2008 at 12:49 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->> task_cgroup() calls cgroup_subsys_state().
-> 
-> No, it calls task_subsys_state()
-> 
->> and we must use rcu_read_lock() to protect cgroup_subsys_state().
->> so we must use rcu_read_lock() to protect task_cgroup().
->>
->> but it'll not so friendly to caller: the callers of task_cgroup() have
->> held cgroup_lock(). it means that struct cgroup will not be freed.
->>
->> So this patch add rcu_read_lock() in task_cgroup() to enhance task_cgroup().
->> And we do NOT NEED FIX task_cgroup()'s callers, and cgroup_lock()
->> can protect task_cgroup().
-> 
-> Is there a reason to add an implicit rcu_read_lock() in task_cgroup()
-> and not directly in task_subsys_state() ?
+On Saturday 22 November 2008 05:04:03 Greg KH wrote:
+> On Fri, Nov 21, 2008 at 09:28:51PM +1030, Rusty Russell wrote:
+> > Greg, here's the complete patch I have now:
+> >
+> > Subject: USB: Use core_param.
+> >
+> > Found this when I changed args to __module_param_call.  We now have
+> > core_param for exactly this.
+> >
+> > This reverts to the 2005 (pre- aafbf24a) behaviour where "nousb" was
+> > not a module parameter, just a kernel command line parameter.  That's
+> > more sensible anyway.
+>
+...
+> No, we need to keep that module parameter please, some distros and users
+> rely on it.
 
-Yes.
+Fair enough.  Patch below does this as moduleparam.h suggests.
 
-The caller have held the cgroup_lock() when it calls task_cgroup().
-After we add an implicit rcu_read_lock() in task_cgroup(),
-we don't need rcu_read_lock()/task_lock() for using task_cgroup().
+It still means that the paremeter appears in 
+/sys/module/kernel/parameters/nousb OR
+/sys/module/usbcore/parameters/nousb.
 
-For cgroup_exit() will change tsk->cgroups, if we don't
-add an implicit rcu_read_lock() in task_cgroup(), we have to fix 7
-places which using task_cgroup().
-
-
-task_subsys_state() is different, it is used in fast path,
-If we add an implicit rcu_read_lock() in task_subsys_state(),
-we still need rcu_read_lock()/task_lock() for using it,
-so it's redundant rcu_read_lock(), and slower the fast path a little.
+FYI, if Pete had discovered this __setup issue today, the correct fix would
+be:
+1) core_param(nousb) for backwards compat.
+2) module_param(disable) for modern users who want module/in-built symmetry
+   (ie. boot cmdline "usbcore.disable", and "modprobe usbcore disable")
 
 
-Lai.
+USB: Don't use __module_param_call
 
-> 
-> Paul
-> 
+Found this when I changed args to __module_param_call.  We now have
+core_param for exactly this, but Greg assures me "nousb" is used as a
+module parameter, using the method suggested in moduleparam.h will
+have to do.
 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Pete Zaitcev <zaitcev@redhat.com>
+---
+ drivers/usb/core/usb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -962,9 +962,6 @@ void usb_buffer_unmap_sg(const struct us
+ }
+ EXPORT_SYMBOL_GPL(usb_buffer_unmap_sg);
+ 
+-/* format to disable USB on kernel command line is: nousb */
+-__module_param_call("", nousb, param_set_bool, param_get_bool, &nousb, 0444);
+-
+ /*
+  * for external read access to <nousb>
+  */
+@@ -1052,6 +1049,11 @@ static void __exit usb_exit(void)
+ 	ksuspend_usb_cleanup();
+ }
+ 
++/* To disable USB, kernel command line is 'nousb' not 'usbcore.nousb' */
++#undef MODULE_PARAM_PREFIX
++#define MODULE_PARAM_PREFIX
++module_param(nousb, bool, 0444);
++
+ subsys_initcall(usb_init);
+ module_exit(usb_exit);
+ MODULE_LICENSE("GPL");
 
