@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbYKVQr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYKVQ63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758748AbYKVQr6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 11:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758614AbYKVQrs
+	id S1758731AbYKVQ63 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 11:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbYKVQ6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 11:47:48 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41027 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758613AbYKVQrr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 11:47:47 -0500
-Date: Sat, 22 Nov 2008 16:47:38 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: vme_scc.c breakage (was: Re: linux-next: Tree for November 21)
-Message-ID: <20081122164738.2226b63e@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0811221558340.30025@anakin>
-References: <20081121181948.ee771502.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0811221558340.30025@anakin>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Nov 2008 11:58:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53991 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758590AbYKVQ6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 11:58:19 -0500
+Message-ID: <49283A05.1060009@redhat.com>
+Date: Sat, 22 Nov 2008 11:57:41 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after swap_cluster_max
+ pages
+References: <20081116163915.F208.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081115235410.2d2c76de.akpm@linux-foundation.org> <20081122191258.26B0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081122191258.26B0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> | -	struct scc_port *port = ptr;
-> | +	struct scc_port *scc = container_of(port, struct scc_port, gs.port);
-> |  	unsigned channel = port->channel;
-> |  
-> |  	return !!(scc_last_status_reg[channel] & SR_DCD);
-> 
-> Issues:
->   1. When Atari support is enabled, `scc' is defined in
->      include/asm-m68k/atari.h as:
-> 
-> 	# define scc ((*(volatile struct SCC*)SCC_BAS))
-> 
->      However, renaming the variable `scc' doesn't help, as
-> 
->   2. the variable `scc' is not used in scc_carrier_raised(),
-> 
->   3. `port->channel' on line 635 still fails as `port' is not longer `struct
->      scc_port', but a 'struct tty_port', which has no member named 'channel'.
+KOSAKI Motohiro wrote:
 
-Will take a look at this, but gs is going to away so at some point
-someone with hardware is going to have to admit to owning this driver or
-just mark it BROKEN..
+> Rik, sorry, I nak current your patch. 
+> because it don't fix old akpm issue.
 
-Alan
+You are right.  We do need to keep pressure between zones
+equivalent to the size of the zones (or more precisely, to
+the number of pages the zones have on their LRU lists).
+
+However, having dozens of direct reclaim tasks all getting
+to the lower priority levels can be disastrous, causing
+extraordinarily large amounts of memory to be swapped out
+and minutes-long stalls to applications.
+
+I think we can come up with a middle ground here:
+- always let kswapd continue its rounds
+- have direct reclaim tasks continue when priority == DEF_PRIORITY
+- break out of the loop for direct reclaim tasks, when
+   priority < DEF_PRIORITY and enough pages have been freed
+
+Does that sound like it would mostly preserve memory pressure
+between zones, while avoiding the worst of the worst when it
+comes to excessive page eviction?
+
+-- 
+All rights reversed.
