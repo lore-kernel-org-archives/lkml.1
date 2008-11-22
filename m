@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbYKVDbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYKVDhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbYKVDbe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Nov 2008 22:31:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYKVDbW
+	id S1755942AbYKVDhS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Nov 2008 22:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYKVDhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Nov 2008 22:31:22 -0500
-Received: from sh.osrg.net ([192.16.179.4]:38491 "EHLO sh.osrg.net"
+	Fri, 21 Nov 2008 22:37:04 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:59504 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753621AbYKVDbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Nov 2008 22:31:21 -0500
-Date: Sat, 22 Nov 2008 12:27:43 +0900
-To: mingo@elte.hu
-Cc: joerg.roedel@amd.com, dwmw2@infradead.org, mingo@redhat.com,
-       tglx@linutronix.de, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/10] DMA-API debugging facility
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081121174551.GC4336@elte.hu>
-References: <1227288269.4901.222.camel@macbook.infradead.org>
-	<20081121172722.GG1386@amd.com>
-	<20081121174551.GC4336@elte.hu>
+	id S1751944AbYKVDhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Nov 2008 22:37:03 -0500
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Zero-clearing all zero-clearable bytes.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Message-Id: <200811221236.FJE81778.LtMHOQFJFVFSOO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sat, 22 Nov 2008 12:36:56 +0900
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081122122730W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008 18:45:51 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Hello.
 
-> 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > On Fri, Nov 21, 2008 at 05:24:29PM +0000, David Woodhouse wrote:
-> > > On Fri, 2008-11-21 at 18:20 +0100, Joerg Roedel wrote:
-> > > > Ok, I will move the generic bits to lib/ and include/linux and let
-> > > > architectures decide if they want to use it.
-> > > 
-> > > Once you've done that, I'll try to hook it up on PowerPC to make 
-> > > sure it works there.
-> > 
-> > Ok, cool. Thanks
-> 
-> i'll give it a whirl on x86 once the allocation bug is resolved. x86 
-> testing will be the most interesting in practice, because most drivers 
-> there are developed with no dynamic DMA in mind. (many of the x86 
-> drivers were developed before IOMMUs were supported in Linux)
+I often create a Live CD.
+When creating a Live CD, loopback mounted ext3 image files are used.
+These image files are then compressed so that the ISO image will fit within
+a CD-R's capacity (i.e. 700MB).
 
-Yeah, one of the problems due to this is that some drivers wrongly
-assume that the dma mapping operations never fail (they do DMA with a
-wrong address). With VT-d and AMD IOMMU, the dma mapping operations
-fail just because of OOM.
+Compressing whole image files includes compressing deleted/unused bytes within
+a block. This means that non-zero bytes in deleted/unused blocks affect
+compression ratio.
 
-Some time ago, I hooked the fault injection mechanism to the dma
-mapping operations (I linked struct fault_attr to struct pci_dev so
-you can make dma_map_single/sg fail with a particular pci device). It
-might interest some people:
+I'm using the below program to improve compression ratio.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git dmafault
+----------
+#define _FILE_OFFSET_BITS 64
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+    int fd;
+    static char buffer[4096];
+    memset(buffer, 0, sizeof(buffer));
+    snprintf(buffer, sizeof(buffer) - 1, "%s/XXXXXX", argc > 1 ? argv[1] : "");
+    if ((fd = mkstemp(buffer)) != EOF) {
+        unlink(buffer);
+        memset(buffer, 255, sizeof(buffer));
+        while (write(fd, buffer, sizeof(buffer)) > 0);
+        sync();
+        close(fd);
+    }
+    return 0;
+}
+----------
+
+But this program cannot clear some bytes within a block for file data (e.g.
+offset from 1 to 511 of a data block used by a file with only 1 byte data)
+and blocks for directory entries.
+
+Any suggestions?
+
+Regards.
