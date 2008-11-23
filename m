@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbYKWMov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYKWMug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758564AbYKWMov (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 07:44:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbYKWMom
+	id S1758572AbYKWMug (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 07:50:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYKWMu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 07:44:42 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38784 "EHLO ogre.sisk.pl"
+	Sun, 23 Nov 2008 07:50:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60226 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754582AbYKWMol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 07:44:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #11965] regression introduced by - timers: fix itimer/many thread hang
-Date: Sun, 23 Nov 2008 13:43:49 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Doug Chapman <doug.chapman@hp.com>, Frank Mayhar <fmayhar@google.com>,
-       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera> <vyitTh0pP2N.A.t7C.D8HKJB@chimera> <20081123073929.GA23229@elte.hu>
-In-Reply-To: <20081123073929.GA23229@elte.hu>
+	id S1754582AbYKWMu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 07:50:26 -0500
+Date: Sun, 23 Nov 2008 13:49:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/1] powerpc: make mcount a stub for dynamic ftrace
+Message-ID: <20081123124958.GM29663@elte.hu>
+References: <20081120215541.489725873@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811231343.50307.rjw@sisk.pl>
+In-Reply-To: <20081120215541.489725873@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 23 of November 2008, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report 
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions 
-> > from 2.6.27.  Please verify if it still should be listed and let me 
-> > know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11965
-> > Subject		: regression introduced by - timers: fix itimer/many thread hang
-> > Submitter	: Doug Chapman <doug.chapman@hp.com>
-> > Date		: 2008-11-06 11:03 (17 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f06febc96ba8e0af80bcc3eaec0a109e88275fac
-> > References	: http://marc.info/?l=linux-kernel&m=122596943416648&w=4
-> > Handled-By	: Frank Mayhar <fmayhar@google.com>
-> > 		  Peter Zijlstra <peterz@infradead.org>
-> > 		  Ingo Molnar <mingo@elte.hu>
-> 
-> the hang is fixed by:
-> 
->   commit ad474caca3e2a0550b7ce0706527ad5ab389a4d4
->   Author: Oleg Nesterov <oleg@redhat.com>
->   Date:   Mon Nov 10 15:39:30 2008 +0100
-> 
->     fix for account_group_exec_runtime(), make sure ->signal can't be freed under rq->lock
 
-Thanks for the info and thanks for closing the bug. :-)
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Rafael
+> Paul,
+> 
+> I have one more patch. I added it to the end of the ppc/ftrace 
+> branch. The new way of handling the finding of mcounts means we do 
+> not need to do anything in the mcount call itself. It should just be 
+> a stub and when ftrace is enabled, it will change the caller sites 
+> to call something other than mcount.
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: ppc/ftrace
+
+i've also pulled the ppc/ftrace branch into tip/tracing/powerpc, and 
+added it to ftrace-next's linux-next integration rules.
+
+So if Paul gives the green light that the commits have the right 
+structure, we can freeze down the branch and the SHA1's and integrate 
+it into ftrace-next. (which is integrated in linux-next after the 
+powerpc tree so should be all fine in terms of merge ordering)
+
+	Ingo
