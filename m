@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYKWMgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYKWMiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYKWMgG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 07:36:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbYKWMfv
+	id S1758633AbYKWMiT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 07:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYKWMiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 07:35:51 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:37408 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758626AbYKWMfu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 07:35:50 -0500
-Message-ID: <154e089b0811230435m5d3182feyff0babb8c55cec72@mail.gmail.com>
-Date: Sun, 23 Nov 2008 13:35:48 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] x86: Remove duplicate #define from 'cpufeature.h'
+	Sun, 23 Nov 2008 07:38:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54319 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754582AbYKWMiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 07:38:09 -0500
+Date: Sun, 23 Nov 2008 13:37:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, peterz@infradead.org, tytso@mit.edu,
+       arjan@infradead.org, srostedt@redhat.com
+Subject: Re: [PATCH 4/4] trace: profile all if conditionals
+Message-ID: <20081123123730.GI29663@elte.hu>
+References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <20081121152030.7024971e.akpm@linux-foundation.org> <alpine.DEB.1.10.0811211832460.7797@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811211832460.7797@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove duplicate #define from 'cpufeature.h'.
 
-This also fixes the following sparse warning:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-arch/x86/kernel/cpu/capflags.c:54:3: warning: Initializer entry defined twice
-arch/x86/kernel/cpu/capflags.c:58:3:   also defined here
+> 
+> On Fri, 21 Nov 2008, Andrew Morton wrote:
+> > >
+> > > +#define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :		\
+> > 
+> > wheee...
+> > 
+> > Now how are you going to profile ?:, while, for(;expr;), etc? ;)
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- arch/x86/include/asm/cpufeature.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+btw., there's hardware driven branch tracing and profiling in the 
+works too, which captures all conditionals - including loops. Stay 
+tuned :)
 
-diff --git a/arch/x86/include/asm/cpufeature.h
-b/arch/x86/include/asm/cpufeature.h
-index 694d1f8..5bce8ed 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -80,7 +80,6 @@
- #define X86_FEATURE_UP		(3*32+ 9) /* smp kernel running on up */
- #define X86_FEATURE_FXSAVE_LEAK (3*32+10) /* "" FXSAVE leaks FOP/FIP/FOP */
- #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
--#define X86_FEATURE_NOPL	(3*32+20) /* The NOPL (0F 1F) instructions */
- #define X86_FEATURE_PEBS	(3*32+12) /* Precise-Event Based Sampling */
- #define X86_FEATURE_BTS		(3*32+13) /* Branch Trace Store */
- #define X86_FEATURE_SYSCALL32	(3*32+14) /* "" syscall in ia32 userspace */
+> I don't know. Give me a few months, I'll figure out a way ;-)
+
+also loops generally have a more static (hence less interesting) 
+prediction pattern - while for branches we frequently have a "should 
+this branch be made likely/unlikely in the fastpath" question.
+
+	Ingo
