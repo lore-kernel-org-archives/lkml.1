@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYKWTFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYKWTTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbYKWTFE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYKWTEw
+	id S1756790AbYKWTTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYKWTTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:04:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36296 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751532AbYKWTEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:04:51 -0500
-Date: Sun, 23 Nov 2008 20:04:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: jia zhang <jia.zhang2008@gmail.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [PATCH] x86: remove the confusing entry in call trace
-Message-ID: <20081123190444.GE21106@elte.hu>
-References: <49296CEE.2070905@gmail.com> <20081123173058.GA32147@mailshack.com>
+	Sun, 23 Nov 2008 14:19:36 -0500
+Received: from ik-out-1112.google.com ([66.249.90.176]:7659 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbYKWTTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 14:19:35 -0500
+Message-ID: <154e089b0811231119s2c91de2md3144ff9ed2d73f7@mail.gmail.com>
+Date: Sun, 23 Nov 2008 20:19:33 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] x86: HPET: fix sparse warning
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081123173058.GA32147@mailshack.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix this sparse warning:
 
-* Alexander van Heukelum <heukelum@mailshack.com> wrote:
+arch/x86/kernel/hpet.c:36:18: warning: symbol 'hpet_num_timers' was
+not declared. Should it be static?
 
-> On Sun, Nov 23, 2008 at 10:47:10PM +0800, jia zhang wrote:
-> > 
-> > avoid the confusion in call trace because of the lack of padding at the tail of
-> > function.
-> > 
-> > Signed-off-by: jia zhang <jia.zhang2008@gmail.com> --- When do_exit get call,
-> > the return address behind call instruction is pushed into stack. If something
-> > get wrong in do_exit, for x86_64, the entry "kernel_execve +0x00/0xXX" rather
-> > than "child_rip +0xYY/0xZZ" is remained in call trace. It looks confused.
-> 
-> It's valuable to know from where do_exit is called, so that's the
-> only reason why using "call" is important. Otherwise it could just
-> be changed to a jmp as do_exit does not return. It's maybe a bit
-> ugly to add the padding, but it does give better traces. Maybe
-> a 'ret', 'int3', or 'ud2' would be slightly less offensive?
-> 
-> Anyhow, I don't have a problem with the added padding, so:
-> 
-> Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ arch/x86/kernel/hpet.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-applied to tip/x86/debug, thanks guys!
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 067d8de..15fcaac 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -33,7 +33,7 @@
+  * HPET address is set in acpi/boot.c, when an ACPI entry exists
+  */
+ unsigned long				hpet_address;
+-unsigned long				hpet_num_timers;
++static unsigned long			hpet_num_timers;
+ static void __iomem			*hpet_virt_address;
 
-i changed it to u2d based on your suggestion - that makes it not only 
-easier to understand, but also more robust, should do_exit() return. 
-(which it should never in practice)
-
-	Ingo
+ struct hpet_dev {
