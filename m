@@ -1,144 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752207AbYKWWTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbYKWWYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752207AbYKWWTy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYKWWTp
+	id S1752238AbYKWWYV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKWWYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:19:45 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62735 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYKWWTo (ORCPT
+	Sun, 23 Nov 2008 17:24:13 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:52703 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbYKWWYN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:19:44 -0500
-Date: Sun, 23 Nov 2008 16:20:23 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Kir Kolyshkin <kir@openvz.org>,
-       linux-man@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: Documentation for CLONE_NEWPID
-Message-ID: <20081123222023.GB12687@hallyn.com>
-References: <4923810B.7010201@gmail.com>
+	Sun, 23 Nov 2008 17:24:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=CuKDJGRyWYJde5SKQK/bo2vKu8dhVpDgdE8hxgLYj8VLehN8fuQrvpWbosKl7sxJYL
+         y8vzuA1Ff/5EE/DU5pXJeEO0DVm7PYIhM5P/Qyr1b7zeGKdAv0wCrGESPBx97mCq3maM
+         dc9RGvsLqJpEbIU5PrnvA3op3VHI4o3nRAWCA=
+Message-ID: <4929D803.80708@tuffmail.co.uk>
+Date: Sun, 23 Nov 2008 22:24:03 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4923810B.7010201@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Linux 2.6.27-git3: no SD card reader
+References: <20081014025453.617f2ef8@werewolf.home>	<20081014174536.1353d17e@mjolnir.drzeus.cx>	<20081014232759.08f5d212@werewolf.home> <20081123213921.667ecb93@mjolnir.drzeus.cx>
+In-Reply-To: <20081123213921.667ecb93@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
-> Pavel, Kir,
-> 
-> Drawing fairly heavily on your LWN.net article
-> (http://lwn.net/Articles/259217/), plus the kernel source and some
-> experimentation, I created the patch below to document CLONE_NEWPID for the
-> clone(2) manual page.  Could you please review and let me know of any
-> improvements or inaccuracies.
+Pierre Ossman wrote:
+> On Tue, 14 Oct 2008 23:27:59 +0200
+> "J.A. Magallón" <jamagallon@ono.com> wrote:
+>
+>
+>   
+>>> Have you tested more than one card?
+>>>       
+>> I have two (both unknown brands for me, but I write full names fwiw):
+>> - One "MBA Executive HiSpeed SD", 2Gb
+>> - One "takeMS SDHC card Class6",  8Gb
+>>
+>> Both give about 10Mb/s on read with hdparm under 2.6.27.
+>>     
+>
+> And both work fine in one of the slots, but not the other?
+>
+>   
+>>> What machine is this? 
+>>>       
+>> It's an Acer Aspire One. From what I have seen, there are two SD devices.
+>> Both are capable to read SDHC cards, I have switched cards and they work
+>> (or at the moment both are working as backwards-compatible in plain SD
+>> mode, if that even exists...).
+>>     
+>
+> The SD/SDHC distinction is all software, so the hardware doesn't really
+> care.
+>
+>   
+>> I call this half-working because I have to boot with a card inside a slot
+>> to have it detected. If i boot without the card-in, it even dissapears from
+>> lspci. This is just with the left SD inserted:
+>>
+>>     
+>
+> No idea why this occurs. I'd guess some ACPI voodoo. You're going to
+> have to check with the PCI and/or ACPI guys to figure that part of the
+> mystery out.
+>   
 
+This specific problem is what I thought Matthew's acpiphp patch would 
+solve - see my comment 
+<http://bugzilla.kernel.org/show_bug.cgi?id=11828#c1>.
 
-Thanks, Michael, this is something we've definately been wanting to
-get to.
+If I've got this right, then this *specific* issue isnot a regression.
 
-...
+Matthew, if I have confused two similar issues, could you please help by 
+explaining the differences?
 
-> +(i.e., the process created using the
-> +.BR CLONE_NEWPID
-> +flag) has the PID 1, and is the "init" process for the namespace.
-> +Children that are orphaned within the namespace will be reparented
-> +to this process rather than
-> +.BR init (8).
-> +Unlike the traditional
-> +.B init
-> +process, the "init" process of a PID namespace can terminate,
-> +and if it does, all of the processes in the namespace are terminated.
-> +
-> +PID namespaces form a hierarchy.
-> +When a PID new namespace is created,
-> +the PIDs of the processes in that namespace are visible
-
-The processes in that namespace are visible, but by different
-pids.  So saying that the pids are visible in the parent
-pidns isn't quite right.
-
-> +in the PID namespace of the process that created the new namespace;
-> +analogously, if the parent PID namespace is itself
-> +the child of another PID namespace,
-> +then PIDs of the child and parent PID namespaces will both be
-
-Again, the processes, not pids, are visible.
-
-> +visible in the grandparent PID namespace.
-> +Conversely, the processes in the "child" PID namespace do not see
-> +the PIDs of the processes in the parent namespace.
-> +The existence of a namespace hierarchy means that each process
-> +may now have multiple PIDs:
-> +one for each namespace in which it is visible.
-> +(A call to
-> +.BR getpid (2)
-> +always returns the PID associated with the namespace in which
-> +the process was created.)
-> +
-> +After creating the new namespace,
-> +it is useful for the child to change its root directory
-> +and mount a new procfs instance at
-> +.I /proc
-> +so that tools such as
-> +.BR ps (1)
-> +work correctly.
-
-Probably not worth mentioning here, but if it has done
-CLONE_NEWNS then it doesn't need to change its root, it
-can just mount a new proc instance over /proc.
-
-> +
-> +Use of this flag requires: a kernel configured with the
-> +.B CONFIG_PID_NS
-> +configuration option and requires that the process be privileged
-> +.RB (CAP_SYS_ADMIN ).
-> +This flag can't be specified in conjunction with
-> +.BR CLONE_THREAD .
-> +.TP
->  .BR CLONE_PARENT " (since Linux 2.3.12)"
->  If
->  .B CLONE_PARENT
-> @@ -627,6 +701,14 @@ were specified in
->  .IR flags .
->  .TP
->  .B EINVAL
-> +Both
-> +.BR CLONE_NEWPID
-> +and
-> +.BR CLONE_THREAD
-> +were specified in
-> +.IR flags .
-> +.TP
-> +.B EINVAL
->  Returned by
->  .BR clone ()
->  when a zero value is specified for
-> @@ -639,6 +721,8 @@ copied.
->  .TP
->  .B EPERM
->  .B CLONE_NEWNS
-> +or
-> +.B CLONE_NEWPID
->  was specified by a non-root process (process without \fBCAP_SYS_ADMIN\fP).
->  .TP
->  .B EPERM
-
-I assume you've considered the pros and cons of mentioning
-signal semantics with respect to init tasks of child pid namespaces,
-and decided it's not worth mentioning yet as the semantics are not
-yet finalized?
-
-The goal is to treat the process as a system-wide init with respect
-to signals coming from its own namespace, and treat it as an ordinary
-task for signals coming from its ancestor namespaces.  But as you've
-probably read, the implementation may result in some unfortunate
-side-effects regarding blocked signals etc.
-
-thanks,
--serge
+Thanks
+Alan
