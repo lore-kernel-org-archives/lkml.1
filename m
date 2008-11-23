@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYKWBkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYKWBvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757108AbYKWBkk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 20:40:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYKWBkb
+	id S1757383AbYKWBvy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 20:51:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbYKWBvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 20:40:31 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:2942 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbYKWBka (ORCPT
+	Sat, 22 Nov 2008 20:51:44 -0500
+Received: from ag-out-0708.google.com ([72.14.246.250]:9127 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754938AbYKWBvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 20:40:30 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 2.6.28-rc4]lock_stat: Add "con-hungry" to show that how
- many person-time fight for the ticket spinlock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Yang Xi <yangxilkm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, chyyuu <chyyuu@gmail.com>
-In-Reply-To: <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
-References: <d36bb30d0811180300r77c3a13ld0a4881a8261a40@mail.gmail.com>
-	 <1227025232.29743.23.camel@lappy.programming.kicks-ass.net>
-	 <d36bb30d0811182118x1e394780n8a257fd4c44f4836@mail.gmail.com>
-	 <1227112785.29743.37.camel@lappy.programming.kicks-ass.net>
-	 <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 23 Nov 2008 02:40:26 +0100
-Message-Id: <1227404426.7685.19975.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Sat, 22 Nov 2008 20:51:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=xqnQdyImafZVJ6bi8/WKr0P+g+pF64Rw6TuicUkzjvk9RNKuoDMTlhgoSPnm/D+k9F
+         C+nIqLS3bIJ+UydjSnQyaYXu5RuazJXRdoMaRIcXTbcCmbUJ1xwEog6I9nn77+wPPc3X
+         XBFisREevHmyEeqafNjg/pY49St6CEbtGDg98=
+Message-ID: <4928B72D.20901@gmail.com>
+Date: Sun, 23 Nov 2008 09:51:41 +0800
+From: jia zhang <jia.zhang2008@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>, hpa@zytor.com
+Subject: [PATCH] x86_64: fix the check point in stack_overflow_check
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 16:09 +0800, Yang Xi wrote:
-> > I of course meant folding cpu and isspinlock into a combined bitfield
-> > (sorry for not being more clear), thereby saving space, this still takes
-> > 2*sizeof(int).
-> >
-> > We can safely take some bits from the cpu number as there currently are
-> > no plans for a 2g cpu machine, right SGI? :-)
-> Thanks, ok, 31bits enough for cpu at now stage. 1bit for isticketspinlock.
-> Here is the new one. Welcome more comments :).
+stack_overflow_check() should consider the stack usage of pt_regs, and thus it could warn us in advance. Additionally, it looks a bit good that the warning time starts at INITIAL_JIFFIES.
 
-Looks good, one more question :-)
+Signed-off-by: jia zhang <jia.zhang2008@gmail.com>
+---
+Assume at the moment rsp get close to the check point before interrupt arrives.
+When interrupt really happens, thread_info will be partly overrode.
 
-> --- a/include/linux/spinlock.h
-> +++ b/include/linux/spinlock.h
-> @@ -127,6 +127,12 @@ do {
->                  \
->  #define spin_is_contended(lock)
-> __raw_spin_is_contended(&(lock)->raw_lock)
->  #endif
-> 
-> +#ifdef CONFIG_HAVE_TICKET_SPINLOCK
-> +#define spin_nr_contended(lock) __ticket_spin_nr_contended(&(lock)->raw_lock)
-> +#else
-> +#define spin_nr_contended(lock) (0)
-> +#endif
-> +
+ arch/x86/kernel/irq_64.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Does it make sense to make the alternative case return
-spin_is_contended()?
+--- a/arch/x86/kernel/irq_64.c
++++ b/arch/x86/kernel/irq_64.c
+@@ -29,11 +29,12 @@
+ static inline void stack_overflow_check(struct pt_regs *regs)
+ {
+ 	u64 curbase = (u64)task_stack_page(current);
+-	static unsigned long warned = -60*HZ;
++	static unsigned long warned = INITIAL_JIFFIES - 60*HZ;
+ 
+ 	if (regs->sp >= curbase && regs->sp <= curbase + THREAD_SIZE &&
+-	    regs->sp <  curbase + sizeof(struct thread_info) + 128 &&
+-	    time_after(jiffies, warned + 60*HZ)) {
++			regs->sp < curbase + sizeof(struct thread_info) +
++			sizeof(struct pt_regs) + 128 &&
++			time_after(jiffies, warned + 60*HZ)) {
+ 		printk("do_IRQ: %s near stack overflow (cur:%Lx,sp:%lx)\n",
+ 		       current->comm, curbase, regs->sp);
+ 		show_stack(NULL,NULL);
 
