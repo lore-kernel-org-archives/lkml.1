@@ -1,222 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbYKWPiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbYKWPi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbYKWPiD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 10:38:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYKWPhv
+	id S1759008AbYKWPi1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 10:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbYKWPiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 10:37:51 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:49722 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbYKWPhu (ORCPT
+	Sun, 23 Nov 2008 10:38:07 -0500
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:47368 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758822AbYKWPiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 10:37:50 -0500
+	Sun, 23 Nov 2008 10:38:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Iv8v6/pmZseK5zuWDtxqKI80xqaEG6ruBjqMZD4hiDfKYh7rtL1j4Axf5OqH+3suUB
-         Zgbguw14uppDWNubPU9W3q5zzjWpDwedEaTQlsmifje/pp/J5C3mZAwQftY3sgOjQbUE
-         2bwuua2evaVc56HPR4mR8iLMAp49/a2yQQyJg=
-Message-ID: <804dabb00811230737g4c958ca1p74b661faabfece0b@mail.gmail.com>
-Date: Sun, 23 Nov 2008 23:37:49 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] tracing: allow tracing of suspend/resume & hibernation code again
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Steven Rostedt" <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081123094124.GO30453@elte.hu>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FfBNnfnCp5QNgatqwxJL4mf8OC/jbgAJcrNV6/sntyUopO4DFT23J1gWYzF2WcglsT
+         HbI64Bw/CfIlmrK32NI6v1K80wUeDQLw4GfPObWU7PrvYQmcKZ5QZ3gauqKBz/fZXjLj
+         z59/gPIEPwPfLHnhrqAqhRWOkZ7AYRxAmiJpE=
+Date: Sun, 23 Nov 2008 18:37:58 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
+Message-ID: <20081123153758.GC27396@localhost>
+References: <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123091532.GA31515@mailshack.com> <20081123132752.GF1178@elte.hu> <20081123135134.GH24818@localhost> <20081123141237.GI24818@localhost> <20081123150418.GA32078@mailshack.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <804dabb00811220047q6e0f24eap23e9a7c4c7bd71b6@mail.gmail.com>
-	 <200811221359.24808.rjw@sisk.pl> <20081123094124.GO30453@elte.hu>
+In-Reply-To: <20081123150418.GA32078@mailshack.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Ingo,
+[Alexander van Heukelum - Sun, Nov 23, 2008 at 04:04:18PM +0100]
+| On Sun, Nov 23, 2008 at 05:12:37PM +0300, Cyrill Gorcunov wrote:
+| > [Cyrill Gorcunov - Sun, Nov 23, 2008 at 04:51:34PM +0300]
+| > | [Ingo Molnar - Sun, Nov 23, 2008 at 02:27:52PM +0100]
+| > | | 
+| > | | * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+| > | | 
+| > | | > Impact: moves some code out of .kprobes.text
+| > | | > 
+| > | | > KPROBE_ENTRY switches code generation to .kprobes.text, and KPROBE_END
+| > | | > uses .popsection to get back to the previous section (.text, normally).
+| > | | > Also replace ENDPROC by END, for consistency.
+| > | | > 
+| > | | > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+| > | | 
+| > | | applied to tip/x86/irq, thanks Alexander!
+| > | | 
+| > | | > One more small change for today. The xen-related functions 
+| > | | > xen_do_hypervisor_callback and xen_failsafe_callback are put
+| > | | > in the .kprobes.text even in the current kernel: ignore_sysret
+| > | | > is enclosed in KPROBE_ENTRY / ENDPROC, instead of KPROBE_ENTRY /
+| > | | > KPROBE_END, but I guess the situation is harmless.
+| > | | 
+| > | | yeah. It narrows no-kprobes protection for that code, but it should 
+| > | | indeed be fine (and that's the intention as well).
+| > | | 
+| > | | Note that this is a reoccuring bug type, and rather long-lived. Can 
+| > | | you think of any way to get automated nesting protection of both the 
+| > | | .cfi_startproc/endproc macros and kprobes start/end? A poor man's 
+| > | | solution would be to grep the number of start and end methods and 
+| > | | enforce that they are equal.
+| > | | 
+| > | | 	Ingo
+| > | | 
+| > | 
+| > | I think we could play with preprocessor and check if ENTRY/END matches.
+| > | Looking now.
+| > | 
+| > | 		- Cyrill -
+| > 
+| > Here is what I've done
+| > 
+| > 1) Add some macros like:
+| > 
+| > 	.macro __set_entry
+| > 	.set _ENTRY_IN, 1
+| > 	.endm
+| > 
+| > 	.macro __unset_entry
+| > 	.set _ENTRY_IN, 0
+| > 	.endm
+| > 
+| > 	.macro __check_entry
+| > 	.ifeq _ENTRY_IN
+| > 	.error "END should be used"
+| > 	.abort
+| > 	.endif
+| > 	.endm
+| > 
+| > So the code
+| > 
+| > ENTRY(mcount)
+| > 	__unset_entry
+| > 	retq
+| > 	__check_entry
+| > END(mcount)
+| 
+| Looks like a good approach to me. But I assume the ENTRY cppmacro
+| will include magic?
+| 
+| Greetings,
+| 	Alexander
+| 
+| > will fail like
+| > 
+| > cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/entry_64.o
+| >   CHK     include/linux/version.h
+| >   CHK     include/linux/utsrelease.h
+| >   SYMLINK include/asm -> include/asm-x86
+| >   CALL    scripts/checksyscalls.sh
+| >   AS      arch/x86/kernel/entry_64.o
+| > arch/x86/kernel/entry_64.S: Assembler messages:
+| > arch/x86/kernel/entry_64.S:84: Error: END should be used
+| > arch/x86/kernel/entry_64.S:84: Fatal error: .abort detected.  Abandoning ship.
+| > make[1]: *** [arch/x86/kernel/entry_64.o] Error 1
+| > make: *** [arch/x86/kernel/entry_64.o] Error 2
+| > cyrill@lenovo linux-2.6.git $ 
+| > 
+| > So if such an approach is acceptable (in general) -- I could take a more
+| > deeper look. So every ENTRY would check if other ENTRY/KPROBE is active
+| > and report that.
+| > 
+| > 		- Cyrill -
+| 
 
-I applied the patch (manually) agains Linus's git:
+OK, the patch (below) found the first problem. The patch is still quite
+rough and not good for usage in general but it found that we have an
+unbalanced ENTRY for ENTRY(native_usergs_sysret64).
 
-git describe
-v2.6.28-rc6-7-ged31348
+And the message is not fully correct -- it's not mess btw ENTRY and KPROBE
+but just unbalanced ENRTY -- ie not closed by END.
 
-Previously, before the patch, I had no problem resuming - for
-v2.6.28-rc6.   Now after s2ram, it cannot resume properly - nothing is
-displayed.   And I had not applied any changes to ftrace's
-/debug/tracing files yet.
+---
+cyrill@lenovo linux-2.6.git $ make arch/x86/kernel/entry_64.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  AS      arch/x86/kernel/entry_64.o
+arch/x86/kernel/entry_64.S: Assembler messages:
+arch/x86/kernel/entry_64.S:284: Error: Do not mess regular ENTRY and KPROBE!
+arch/x86/kernel/entry_64.S:284: Fatal error: .abort detected.  Abandoning
+ship.
+make[1]: *** [arch/x86/kernel/entry_64.o] Error 1
+make: *** [arch/x86/kernel/entry_64.o] Error 2
+cyrill@lenovo linux-2.6.git $ 
+---
 
-Let me test it out again.   Thanks.   (I am on FC7).
+Not sure if general linkage.h is good place for such a macros.
+Anyway, the patch applied to get a glace view.
 
-On Sun, Nov 23, 2008 at 5:41 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
->> > Q2: how to ftrace s2ram and resume?  I attempted to do it, but the
->> > trace output is always filled with "resume" related functions when
->> > it started up, which is only logical.
->>
->> The tracing is disabled during suspend/resume, so you can't.
->
-> i think we could lift this restriction now that dftrace is gone for
-> good - which was causing most of the trouble.
->
->  41108eb10142e0552f2de1e4c0675b108c5f018f
->  f42ac38c59e0a03d6da0c24a63fb211393f484b0
->
-> Completely untested patch below. Peter, does it work for you?
->
->        Ingo
->
-> ------------------->
-> From 3134c953216111a35d17f77b784e5d1fa2ba36d5 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Sun, 23 Nov 2008 10:37:12 +0100
-> Subject: [PATCH] tracing: allow tracing of suspend/resume & hibernation code again:
->
-> Now that the ftrace kernel thread is gone, we can allow tracing
-> during suspend/resume again.
->
-> So revert these two commits:
->
->  f42ac38c5 "ftrace: disable tracing for suspend to ram"
->  41108eb10 "ftrace: disable tracing for hibernation"
->
-> This should be tested very carefully, as it could interact with
-> altneratives instruction patching, etc.
->
-> Not-Yet-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/power/disk.c |   13 +++----------
->  kernel/power/main.c |    5 +----
->  2 files changed, 4 insertions(+), 14 deletions(-)
->
-> diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-> index c9d7408..f77d381 100644
-> --- a/kernel/power/disk.c
-> +++ b/kernel/power/disk.c
-> @@ -22,7 +22,6 @@
->  #include <linux/console.h>
->  #include <linux/cpu.h>
->  #include <linux/freezer.h>
-> -#include <linux/ftrace.h>
->
->  #include "power.h"
->
-> @@ -257,7 +256,7 @@ static int create_image(int platform_mode)
->
->  int hibernation_snapshot(int platform_mode)
->  {
-> -       int error, ftrace_save;
-> +       int error;
->
->        /* Free memory before shutting down devices. */
->        error = swsusp_shrink_memory();
-> @@ -269,7 +268,6 @@ int hibernation_snapshot(int platform_mode)
->                goto Close;
->
->        suspend_console();
-> -       ftrace_save = __ftrace_enabled_save();
->        error = device_suspend(PMSG_FREEZE);
->        if (error)
->                goto Recover_platform;
-> @@ -299,7 +297,6 @@ int hibernation_snapshot(int platform_mode)
->  Resume_devices:
->        device_resume(in_suspend ?
->                (error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-> -       __ftrace_enabled_restore(ftrace_save);
->        resume_console();
->  Close:
->        platform_end(platform_mode);
-> @@ -370,11 +367,10 @@ static int resume_target_kernel(void)
->
->  int hibernation_restore(int platform_mode)
->  {
-> -       int error, ftrace_save;
-> +       int error;
->
->        pm_prepare_console();
->        suspend_console();
-> -       ftrace_save = __ftrace_enabled_save();
->        error = device_suspend(PMSG_QUIESCE);
->        if (error)
->                goto Finish;
-> @@ -389,7 +385,6 @@ int hibernation_restore(int platform_mode)
->        platform_restore_cleanup(platform_mode);
->        device_resume(PMSG_RECOVER);
->  Finish:
-> -       __ftrace_enabled_restore(ftrace_save);
->        resume_console();
->        pm_restore_console();
->        return error;
-> @@ -402,7 +397,7 @@ int hibernation_restore(int platform_mode)
->
->  int hibernation_platform_enter(void)
->  {
-> -       int error, ftrace_save;
-> +       int error;
->
->        if (!hibernation_ops)
->                return -ENOSYS;
-> @@ -417,7 +412,6 @@ int hibernation_platform_enter(void)
->                goto Close;
->
->        suspend_console();
-> -       ftrace_save = __ftrace_enabled_save();
->        error = device_suspend(PMSG_HIBERNATE);
->        if (error) {
->                if (hibernation_ops->recover)
-> @@ -452,7 +446,6 @@ int hibernation_platform_enter(void)
->        hibernation_ops->finish();
->  Resume_devices:
->        device_resume(PMSG_RESTORE);
-> -       __ftrace_enabled_restore(ftrace_save);
->        resume_console();
->  Close:
->        hibernation_ops->end();
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index eaa122b..142e005 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -22,7 +22,6 @@
->  #include <linux/freezer.h>
->  #include <linux/vmstat.h>
->  #include <linux/syscalls.h>
-> -#include <linux/ftrace.h>
->
->  #include "power.h"
->
-> @@ -321,7 +320,7 @@ static int suspend_enter(suspend_state_t state)
->  */
->  int suspend_devices_and_enter(suspend_state_t state)
->  {
-> -       int error, ftrace_save;
-> +       int error;
->
->        if (!suspend_ops)
->                return -ENOSYS;
-> @@ -332,7 +331,6 @@ int suspend_devices_and_enter(suspend_state_t state)
->                        goto Close;
->        }
->        suspend_console();
-> -       ftrace_save = __ftrace_enabled_save();
->        suspend_test_start();
->        error = device_suspend(PMSG_SUSPEND);
->        if (error) {
-> @@ -364,7 +362,6 @@ int suspend_devices_and_enter(suspend_state_t state)
->        suspend_test_start();
->        device_resume(PMSG_RESUME);
->        suspend_test_finish("resume devices");
-> -       __ftrace_enabled_restore(ftrace_save);
->        resume_console();
->  Close:
->        if (suspend_ops->end)
->
+		- Cyrill -
+---
 
+---
+ include/linux/linkage.h |   43 +++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 39 insertions(+), 4 deletions(-)
 
-
--- 
-Regards,
-Peter Teoh
+Index: linux-2.6.git/include/linux/linkage.h
+===================================================================
+--- linux-2.6.git.orig/include/linux/linkage.h
++++ linux-2.6.git/include/linux/linkage.h
+@@ -51,8 +51,35 @@
+ #define ALIGN __ALIGN
+ #define ALIGN_STR __ALIGN_STR
+ 
++#define __set_entry   .set _ENTRY_IN, 0
++#define __unset_entry .set _ENTRY_IN, 1
++#define __set_kprobe  .set _KPROBE_IN, 0
++#define __unset_kprobe .set _KPROBE_IN, 1
++
++#define __check_entry		\
++	.ifdef _ENTRY_IN;	\
++	.ifeq _ENTRY_IN;	\
++	.error "Do not mess regular ENTRY and KPROBE!"; \
++	.abort;			\
++	.endif;			\
++	.endif
++
++#define __check_kprobe		\
++	.ifdef _KPROBE_IN;	\
++	.ifeq _KPROBE_IN;	\
++	.error "Do not mess regular ENTRY and KPROBE!"; \
++	.abort;			\
++	.endif;			\
++	.endif
++
++#define __check_entry_kprobe	\
++	__check_entry;		\
++	__check_kprobe
++
+ #ifndef ENTRY
+ #define ENTRY(name) \
++  __check_entry_kprobe; \
++  __set_entry; \
+   .globl name; \
+   ALIGN; \
+   name:
+@@ -65,16 +92,24 @@
+ #endif
+ 
+ #define KPROBE_ENTRY(name) \
++  __check_entry_kprobe; \
++  __set_kprobe; \
+   .pushsection .kprobes.text, "ax"; \
+-  ENTRY(name)
++  .globl name; \
++  ALIGN; \
++  name:
+ 
+ #define KPROBE_END(name) \
+-  END(name);		 \
+-  .popsection
++  __unset_kprobe; \
++  __check_entry_kprobe; \
++    .size name, .-name; \
++ .popsection
+ 
+ #ifndef END
+ #define END(name) \
+-  .size name, .-name
++  __unset_entry; \
++  __check_entry_kprobe; \
++   .size name, .-name
+ #endif
+ 
+ /* If symbol 'name' is treated as a subroutine (gets called, and returns)
