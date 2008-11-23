@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYKWJwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbYKWJxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758006AbYKWJwQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 04:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYKWJv7
+	id S1758119AbYKWJxc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 04:53:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYKWJxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 04:51:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47881 "EHLO mx3.mail.elte.hu"
+	Sun, 23 Nov 2008 04:53:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47978 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbYKWJv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 04:51:59 -0500
-Date: Sun, 23 Nov 2008 10:51:46 +0100
+	id S1750872AbYKWJxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 04:53:24 -0500
+Date: Sun, 23 Nov 2008 10:53:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: signal: cosmetic unification of
-	sys_rt_sigreturn()
-Message-ID: <20081123095146.GR30453@elte.hu>
-References: <49276229.9060000@ct.jp.nec.com> <492762B1.4020107@ct.jp.nec.com> <4927655B.5070906@zytor.com> <4927698C.90104@ct.jp.nec.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] irq.h: fix missing/extra kernel-doc
+Message-ID: <20081123095311.GS30453@elte.hu>
+References: <4927598D.3090505@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4927698C.90104@ct.jp.nec.com>
+In-Reply-To: <4927598D.3090505@oracle.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,34 +36,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> H. Peter Anvin wrote:
-> > Hiroshi Shimamoto wrote:
-> >>  
-> >> +#ifdef CONFIG_X86_32
-> >>  asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-> >>  {
-> >>  	struct pt_regs *regs = (struct pt_regs *)&__unused;
-> >>  
-> >>  	return do_rt_sigreturn(regs);
-> >>  }
-> > 
-> > Why not:
-> > 
-> > asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
-> > {
-> > 	return do_rt_sigreturn(&regs);
-> > }
-> > 
-> > ...?
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Good question. I didn't realize about that.
-> Will take a look.
+> Fix missing & excess irq.h kernel-doc:
+> 
+> Warning(include/linux/irq.h:182): No description found for parameter 'irq'
+> Warning(include/linux/irq.h:182): Excess struct/union/enum/typedef member 'affinity_entry' description in 'irq_desc'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  include/linux/irq.h |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-I've applied your 3 patches to tip/x86/signal - please send a patch on 
-top of your current lineup, for the detail Peter pointed out.
-
-Thanks,
+applied to tip/irq/urgent, thanks Randy!
 
 	Ingo
