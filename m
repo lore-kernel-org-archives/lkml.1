@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbYKWWYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYKWWZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752238AbYKWWYV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKWWYN
+	id S1752768AbYKWWZh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYKWWZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:24:13 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:52703 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbYKWWYN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:24:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=CuKDJGRyWYJde5SKQK/bo2vKu8dhVpDgdE8hxgLYj8VLehN8fuQrvpWbosKl7sxJYL
-         y8vzuA1Ff/5EE/DU5pXJeEO0DVm7PYIhM5P/Qyr1b7zeGKdAv0wCrGESPBx97mCq3maM
-         dc9RGvsLqJpEbIU5PrnvA3op3VHI4o3nRAWCA=
-Message-ID: <4929D803.80708@tuffmail.co.uk>
-Date: Sun, 23 Nov 2008 22:24:03 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Sun, 23 Nov 2008 17:25:24 -0500
+Received: from lucidpixels.com ([75.144.35.66]:44112 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbYKWWZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 17:25:23 -0500
+Date: Sun, 23 Nov 2008 17:25:22 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Stian Jordet <liste@jordet.net>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+In-Reply-To: <1227476908.32357.5.camel@chevrolet>
+Message-ID: <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>
+References: <1226760254.5089.11.camel@chevrolet> <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com> <1227476908.32357.5.camel@chevrolet>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Linux 2.6.27-git3: no SD card reader
-References: <20081014025453.617f2ef8@werewolf.home>	<20081014174536.1353d17e@mjolnir.drzeus.cx>	<20081014232759.08f5d212@werewolf.home> <20081123213921.667ecb93@mjolnir.drzeus.cx>
-In-Reply-To: <20081123213921.667ecb93@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> On Tue, 14 Oct 2008 23:27:59 +0200
-> "J.A. Magallón" <jamagallon@ono.com> wrote:
->
->
->   
->>> Have you tested more than one card?
->>>       
->> I have two (both unknown brands for me, but I write full names fwiw):
->> - One "MBA Executive HiSpeed SD", 2Gb
->> - One "takeMS SDHC card Class6",  8Gb
->>
->> Both give about 10Mb/s on read with hdparm under 2.6.27.
->>     
->
-> And both work fine in one of the slots, but not the other?
->
->   
->>> What machine is this? 
->>>       
->> It's an Acer Aspire One. From what I have seen, there are two SD devices.
->> Both are capable to read SDHC cards, I have switched cards and they work
->> (or at the moment both are working as backwards-compatible in plain SD
->> mode, if that even exists...).
->>     
->
-> The SD/SDHC distinction is all software, so the hardware doesn't really
-> care.
->
->   
->> I call this half-working because I have to boot with a card inside a slot
->> to have it detected. If i boot without the card-in, it even dissapears from
->> lspci. This is just with the left SD inserted:
->>
->>     
->
-> No idea why this occurs. I'd guess some ACPI voodoo. You're going to
-> have to check with the PCI and/or ACPI guys to figure that part of the
-> mystery out.
->   
 
-This specific problem is what I thought Matthew's acpiphp patch would 
-solve - see my comment 
-<http://bugzilla.kernel.org/show_bug.cgi?id=11828#c1>.
 
-If I've got this right, then this *specific* issue isnot a regression.
+On Sun, 23 Nov 2008, Stian Jordet wrote:
 
-Matthew, if I have confused two similar issues, could you please help by 
-explaining the differences?
+> ti., 18.11.2008 kl. 11.51 -0200, skrev Sergio Luis:
+>> please post your config and dmesg output. It might help people try to
+>> identify something wrong.
+>
+> (see http://marc.info/?l=linux-kernel&m=122676220019858&w=2 for the
+> start of this thread)
+>
+> Hmm. I have now converted my root and /home filesystems to ext3, and
+> that actually fixed it (!). I have no idea why xfs is performing so
+> extremely poorly on this machine, i'm running xfs on every filesystem on
+> eight other computers (one heavy loaded server, as well).
+>
+> Anyway, I'm now unpacking the 2.6.27.6 kernel in 15 seconds, with xfs on
+> the same array it used between five and six minutes.
+>
+> I still have a xfs array, and when I copy files to or from that array,
+> the gnome session practically freezes, and the load average easily goes
+> beyond 10.
+>
+> How should I debug this? I'm not very eager about reformatting my 1,5TB
+> xfs array... Besides, xfs have never let me down earlier.
+>
+> Thanks.
+>
+> Please cc me on any replies.
+>
+> Regards,
+> Stian
+>
+> _______________________________________________
+> xfs mailing list
+> xfs@oss.sgi.com
+> http://oss.sgi.com/mailman/listinfo/xfs
+>
 
-Thanks
-Alan
+As the original posted stated:
+
+1. please post dmesg output
+2. you may want to include your kernel .config
+3. xfs_info /dev/mdX or /dev/device may also be useful
+4. you can also check fragmentation:
+    # xfs_db -c frag -f /dev/md2
+    actual 257492, ideal 242687, fragmentation factor 5.75%
+5. something sounds very strange, I also run XFS on a lot of systems and
+    have never heard of that before..
+6. also post your /etc/fstab options
+7. what distribution are you running?
+8. are -only- the two fujitsu's (raid0) affected or are other arrays
+    affected on this HW as well (separate disks etc)?
+9. you can also compile in support for latency_top & power_top to see
+    if there is any excessive polling going on by any one specific
+    device/function as well
+
+Justin.
