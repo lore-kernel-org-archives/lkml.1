@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752252AbYKWWqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbYKWWqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752252AbYKWWqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYKWWq0
+	id S1751782AbYKWWqv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:46:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYKWWqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:46:26 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61533 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYKWWqZ (ORCPT
+	Sun, 23 Nov 2008 17:46:31 -0500
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:56101 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751871AbYKWWqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:46:25 -0500
-Date: Sun, 23 Nov 2008 16:47:08 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
-       Kirill Korotaev <dev@openvz.org>, Herbert Poetzl <herbert@13thfloor.at>,
-       Andrey Savochkin <saw@sw.ru>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>
-Subject: Re: CLONE_NEWUTS documentation
-Message-ID: <20081123224708.GC12687@hallyn.com>
-References: <492464F8.8070101@gmail.com>
-MIME-Version: 1.0
+	Sun, 23 Nov 2008 17:46:30 -0500
+X-Greylist: delayed 353 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Nov 2008 17:46:30 EST
+Date: Sun, 23 Nov 2008 23:37:54 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: scanner interface proposal was: [TALPA] Intro to a linux interface for on access scanning (fwd)
+Message-ID: <20081123223753.GA16424@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <alpine.DEB.1.10.0808171824060.12859@asgard.lang.hm>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <492464F8.8070101@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <alpine.DEB.1.10.0808171824060.12859@asgard.lang.hm>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ,
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42,
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida,
+X-Killer: 23, endloesung, Weltuntergang,
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
-> Serge, Eric,
-> 
-> Below is a patch to document the CLONE_NEWUTS flag that was
-> added in 2.6.19.
+* david@lang.hm <david@lang.hm> wrote:
 
-Thanks for writing this.
+<big_snip />
 
-> Could you please review and let me know of improvements
-> or inaccuracies?
-> 
-> By the way, does anyone know where the UTS name in the uname()
-> API comes from? My best guess is that it's from Unix Timesharing
-> System, but I don't know this for sure.
+Hi folks,
 
-That sounds plausible - I've wondered myself and even googled a
-bit, but not found an answer.  I suppose we might need to ask
-Linus, or check one of the git repos that goes back to the early
-90s and see who created the struct.
+I've just battled through the tons of text in this thread and 
+really wonder why this is a kernel issue at all.
 
-> Cheers,
-> 
-> Michael
-> 
-> diff --git a/man2/clone.2 b/man2/clone.2
-> index 7212332..80f9caf 100644
-> --- a/man2/clone.2
-> +++ b/man2/clone.2
-> @@ -341,6 +340,33 @@ configuration option and that the process be privileged
->  This flag can't be specified in conjunction with
->  .BR CLONE_THREAD .
->  .TP
-> +.BR CLONE_NEWUTS " (since Linux 2.6.19)"
-> +If
-> +.B CLONE_NEWUTS
-> +is set, then create the process in a new UTS namespace.
+You want to keep track if certain files are changed ? 
+Any you want to block/delay access to unchecked or 
+considered-malicous files ? 
 
-And the new UTS namespace will initially be identical as the
-parent - same hostname and domainname.
+Fine. Why not just putting this into a userland filesystem ?
+Coding an 9P server is quite trivial. So why messing up the 
+kernel with stuff clearly belonging into userland ?  ;-o
 
-> +If this flag is not set, then (as with
-> +.BR fork (2)),
-> +the process is created in the same UTS namespace as
-> +the calling process.
-> +This flag is intended for the implementation of control groups.
 
-I'm not sure Eric was sufficiently clear - this flag is intended
-for the implementation of virtual server functionality and maybe
-checkpoint/restart (though I'm not sure any apps will care about
-being able to reset the hostname on restart :)
-
-It's not that you have to call it 'virtual server functionality',
-just that 'control groups' is definately not right.
-
-Maybe 'lightweight containers'?  "lightweight virtual servers'?
-
-thanks,
--serge
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
