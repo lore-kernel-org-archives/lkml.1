@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYKWMiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYKWMjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758633AbYKWMiT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 07:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYKWMiK
+	id S1758718AbYKWMjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 07:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYKWMjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 07:38:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54319 "EHLO mx3.mail.elte.hu"
+	Sun, 23 Nov 2008 07:39:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54384 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754582AbYKWMiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 07:38:09 -0500
-Date: Sun, 23 Nov 2008 13:37:30 +0100
+	id S1753247AbYKWMjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 07:39:11 -0500
+Date: Sun, 23 Nov 2008 13:39:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, peterz@infradead.org, tytso@mit.edu,
-       arjan@infradead.org, srostedt@redhat.com
-Subject: Re: [PATCH 4/4] trace: profile all if conditionals
-Message-ID: <20081123123730.GI29663@elte.hu>
-References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <20081121152030.7024971e.akpm@linux-foundation.org> <alpine.DEB.1.10.0811211832460.7797@gandalf.stny.rr.com>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove duplicate #define from 'cpufeature.h'
+Message-ID: <20081123123907.GJ29663@elte.hu>
+References: <154e089b0811230435m5d3182feyff0babb8c55cec72@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811211832460.7797@gandalf.stny.rr.com>
+In-Reply-To: <154e089b0811230435m5d3182feyff0babb8c55cec72@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,25 +34,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Hannes Eder <hannes@hanneseder.net> wrote:
 
+> Remove duplicate #define from 'cpufeature.h'.
 > 
-> On Fri, 21 Nov 2008, Andrew Morton wrote:
-> > >
-> > > +#define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :		\
-> > 
-> > wheee...
-> > 
-> > Now how are you going to profile ?:, while, for(;expr;), etc? ;)
+> This also fixes the following sparse warning:
+> 
+> arch/x86/kernel/cpu/capflags.c:54:3: warning: Initializer entry defined twice
+> arch/x86/kernel/cpu/capflags.c:58:3:   also defined here
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  arch/x86/include/asm/cpufeature.h |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 
-btw., there's hardware driven branch tracing and profiling in the 
-works too, which captures all conditionals - including loops. Stay 
-tuned :)
-
-> I don't know. Give me a few months, I'll figure out a way ;-)
-
-also loops generally have a more static (hence less interesting) 
-prediction pattern - while for branches we frequently have a "should 
-this branch be made likely/unlikely in the fastpath" question.
+applied to tip/x86/cpufeature, thanks Hannes!
 
 	Ingo
