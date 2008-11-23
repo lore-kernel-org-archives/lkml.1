@@ -1,154 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbYKWIVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYKWIXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757590AbYKWIVy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 03:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYKWIVp
+	id S1757918AbYKWIXR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 03:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYKWIXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 03:21:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48457 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbYKWIVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 03:21:44 -0500
-Date: Sun, 23 Nov 2008 09:21:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/function-return-tracer: clean up task start/exit
-	callbacks
-Message-ID: <20081123082132.GB30453@elte.hu>
-References: <4928E8B0.1090103@gmail.com>
+	Sun, 23 Nov 2008 03:23:07 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:28837 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284AbYKWIXE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 03:23:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=o3mTAkuMYnPaX9VU5arIZNlEsYbCA7sM5Txyk5BV3Aj4PSMYrRUZN2i1muV83jryUK
+         kmyR84zFWJ/bBK0TEva1dKyK2meGMljZKclY8fELaG95BCx+xXECvX1ejNEO1PwsBCt9
+         eh2CYQyMGyJK6xey3ATfZJu4dJqmtqWU21Lm4=
+Message-ID: <d36bb30d0811230023i2d80d93fv2fc45d518ecaf04a@mail.gmail.com>
+Date: Sun, 23 Nov 2008 16:23:03 +0800
+From: "Yang Xi" <yangxilkm@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 2.6.28-rc4]lock_stat: Add "con-hungry" to show that how many person-time fight for the ticket spinlock
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, chyyuu <chyyuu@gmail.com>,
+       "Fu, Michael" <michael.fu@intel.com>
+In-Reply-To: <1227404426.7685.19975.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4928E8B0.1090103@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <d36bb30d0811180300r77c3a13ld0a4881a8261a40@mail.gmail.com>
+	 <1227025232.29743.23.camel@lappy.programming.kicks-ass.net>
+	 <d36bb30d0811182118x1e394780n8a257fd4c44f4836@mail.gmail.com>
+	 <1227112785.29743.37.camel@lappy.programming.kicks-ass.net>
+	 <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
+	 <1227404426.7685.19975.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 23, 2008 at 9:40 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Thu, 2008-11-20 at 16:09 +0800, Yang Xi wrote:
+>> > I of course meant folding cpu and isspinlock into a combined bitfield
+>> > (sorry for not being more clear), thereby saving space, this still takes
+>> > 2*sizeof(int).
+>> >
+>> > We can safely take some bits from the cpu number as there currently are
+>> > no plans for a 2g cpu machine, right SGI? :-)
+>> Thanks, ok, 31bits enough for cpu at now stage. 1bit for isticketspinlock.
+>> Here is the new one. Welcome more comments :).
+>
+> Looks good, one more question :-)
+>
+>> --- a/include/linux/spinlock.h
+>> +++ b/include/linux/spinlock.h
+>> @@ -127,6 +127,12 @@ do {
+>>                  \
+>>  #define spin_is_contended(lock)
+>> __raw_spin_is_contended(&(lock)->raw_lock)
+>>  #endif
+>>
+>> +#ifdef CONFIG_HAVE_TICKET_SPINLOCK
+>> +#define spin_nr_contended(lock) __ticket_spin_nr_contended(&(lock)->raw_lock)
+>> +#else
+>> +#define spin_nr_contended(lock) (0)
+>> +#endif
+>> +
+>
+> Does it make sense to make the alternative case return
+> spin_is_contended()?
+You mean do it like this?
+#ifdef CONFIG_HAVE_TICKET_SPINLOCK
+#define spin_nr_contended(lock) __ticket_spin_nr_contended(&(lock)->raw_lock)
+#else
+#define spin_nr_contended(lock) (spin_is_contended(lock) ? 1: 0)
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+If we do it like this, for some architectures which donot have ticket
+spinlock, we can know that the percentage of contentions which involve
+more than two threads (con-hungry/ contention times). But i donot know
+whether there are some guys are interested in this number.
 
-> Impact: use deeper tracing depth safely
-> 
-> Some tests showed that function return tracing needed a more deeper depth
-> of function calls. But it could be unsafe to store these return addresses
-> to the stack.
-> So these arrays will now be allocated dynamically into task_struct of current
-> only when the tracer is activated.
-> 
-> Typical scheme when tracer is activated:
-> _ allocate a return stack for each task in global list.
-> _ fork: allocate the return stack for the newly created task
-> _ exit: free return stack of current
-> _ idle init: same as fork
-> 
-> I chose a default depth of 50. I don't have anymore overruns (didn't tested for
-> a long time).
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  arch/x86/include/asm/ftrace.h      |    1 -
->  arch/x86/include/asm/thread_info.h |   29 -----------
->  arch/x86/kernel/ftrace.c           |   29 ++++++-----
->  include/linux/ftrace.h             |    5 ++
->  include/linux/sched.h              |   23 ++++-----
->  kernel/exit.c                      |    5 ++-
->  kernel/fork.c                      |    4 ++
->  kernel/sched.c                     |    3 +
->  kernel/trace/ftrace.c              |   96 +++++++++++++++++++++++++++++++++++-
->  9 files changed, 137 insertions(+), 58 deletions(-)
+Best regards
 
-nice! Applied to tip/tracing/function-return-tracer and i started 
-testing it as well.
-
-I've done the small cleanup below on top of your patch - we try to 
-avoid #ifdefs in core kernel code as much as possible, by hiding 
-.config details into include files.
-
-	Ingo
-
--------------->
->From 82f60f0bc854aada696f27d863c03bef91f1509d Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun, 23 Nov 2008 09:18:56 +0100
-Subject: [PATCH] tracing/function-return-tracer: clean up task start/exit callbacks
-
-Impact: cleanup
-
-Eliminate #ifdefs in core code by using empty inline functions.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/ftrace.h |    3 +++
- kernel/exit.c          |    2 --
- kernel/fork.c          |    2 --
- kernel/sched.c         |    2 --
- 4 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 2ba259b..938ca19 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -335,6 +335,9 @@ extern void unregister_ftrace_return(void);
- 
- extern void ftrace_retfunc_init_task(struct task_struct *t);
- extern void ftrace_retfunc_exit_task(struct task_struct *t);
-+#else
-+static inline void ftrace_retfunc_init_task(struct task_struct *t) { }
-+static inline void ftrace_retfunc_exit_task(struct task_struct *t) { }
- #endif
- 
- #endif /* _LINUX_FTRACE_H */
-diff --git a/kernel/exit.c b/kernel/exit.c
-index b9d4463..ef04d03 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1128,9 +1128,7 @@ NORET_TYPE void do_exit(long code)
- 	preempt_disable();
- 	/* causes final put_task_struct in finish_task_switch(). */
- 	tsk->state = TASK_DEAD;
--#ifdef CONFIG_FUNCTION_RET_TRACER
- 	ftrace_retfunc_exit_task(tsk);
--#endif
- 	schedule();
- 	BUG();
- 	/* Avoid "noreturn function does return".  */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index d1eb30e..fbf4a4c 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1270,9 +1270,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	total_forks++;
- 	spin_unlock(&current->sighand->siglock);
- 	write_unlock_irq(&tasklist_lock);
--#ifdef CONFIG_FUNCTION_RET_TRACER
- 	ftrace_retfunc_init_task(p);
--#endif
- 	proc_fork_connector(p);
- 	cgroup_post_fork(p);
- 	return p;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index fb17205..388d9db 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5901,9 +5901,7 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
- 	 * The idle tasks have their own, simple scheduling class:
- 	 */
- 	idle->sched_class = &idle_sched_class;
--#ifdef CONFIG_FUNCTION_RET_TRACER
- 	ftrace_retfunc_init_task(idle);
--#endif
- }
- 
- /*
+>
+>
