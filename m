@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbYKWDFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbYKWDVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757646AbYKWDFq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 22:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbYKWDFg
+	id S1757667AbYKWDVp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 22:21:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbYKWDVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 22:05:36 -0500
-Received: from ti-out-0910.google.com ([209.85.142.191]:22206 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755384AbYKWDFf (ORCPT
+	Sat, 22 Nov 2008 22:21:35 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:64428 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751786AbYKWDVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 22:05:35 -0500
+	Sat, 22 Nov 2008 22:21:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=CaRb6U5N5S4oQE9ev8mjsitg5vMXkwk/b4KM/i2cGdifhUgs/Ru3PPjnPZq3bGcwDp
-         3gnaZMNaR2YM51D/FFkcBhuRiLmiKGW9RGEmGK+EsSYKfvhTHUdi1mVaMxEfwVS8I+lP
-         7OCZVaRGo+0xUREJ+Al8fq3pMrXbex3VdDLes=
-Message-ID: <4928C891.80405@gmail.com>
-Date: Sun, 23 Nov 2008 12:05:53 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
-       Miklos Szeredi <miklos@szeredi.hu>, arjan@linux.intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>, hch@infradead.org,
-       Ingo Molnar <mingo@elte.hu>, rminnich@sandia.gov, ericvh@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: poll: allow f_op->poll to sleep, take #3
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=e2VvlSj/UdkyP5w6dWddKHbsItod4J11joQr9el4xU8yrVZryHkx3tSsHz3joC+Ar6
+         Z94PY1xqdYOykNUFZcuNJCa3l9+g4SUFdUSABSoB+XxC6RDwurv6Br3WjtiA53LHENwX
+         p+zzRU7abfkPs4CyybaXhuEUonZ/0Zw3Cdz24=
+Subject: Re: [PATCH] UBIFS: endian handling fixes and annotations
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Cc: Artem Bityutskiy <dedekind@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
+References: <1227287970-14684-1-git-send-email-dedekind@infradead.org>
+	 <1227287970-14684-3-git-send-email-dedekind@infradead.org>
+	 <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain
+Date: Sat, 22 Nov 2008 19:21:29 -0800
+Message-Id: <1227410489.6117.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Sun, 23 Nov 2008, Tejun Heo wrote:
+On Sat, 2008-11-22 at 20:27 +0100, Sebastian Andrzej Siewior wrote:
+> * Artem Bityutskiy | 2008-11-21 19:19:24 [+0200]:
 > 
->> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
->> +{
->> +	struct poll_wqueues *pwq = wait->private;
->> +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
->> +
->> +	set_mb(pwq->triggered, 1);
->> +
->> +	/* perform the default wake up operation */
->> +	return default_wake_function(&dummy_wait, mode, sync, key);
->> +}
+> > 	save_flags = mst->flags;
+> >-	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
+> >+	mst->flags |= cpu_to_le32(UBIFS_MST_RCVRY);
 > 
-> Wouldn't it be nicer to un-static try_to_wake_up() (or a wrapper) instead 
-> of setting up a fake wait queue just to use default_wake_function(), just 
-> to wake up a task?
+> another micro optimisation would be to use __constant_cpu_to_le32()
+> 
 
-I thought try_to_wake_up() was made static to avoid abuse but then again
-creating dummy waitqueue is an obvious abuse of waitqueue.  What do
-other people think?  I'll be happy to use try_to_wake_up() directly.
+Nope, no difference, cpu_to_le32 does constant-detection these days and
+so there ends up being no difference.
 
-Thanks.
+Harvey
 
--- 
-tejun
