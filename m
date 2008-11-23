@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbYKWTjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYKWTnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758208AbYKWTjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYKWTjJ
+	id S1757493AbYKWTnS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYKWTnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:39:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55993 "EHLO
+	Sun, 23 Nov 2008 14:43:06 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56006 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbYKWTjI (ORCPT
+	with ESMTP id S1752318AbYKWTnE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:39:08 -0500
-To: Jeff Arnold <jbarnold@MIT.EDU>
-Cc: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com, davem@davemloft.net, mhiramat@redhat.com,
-       contact@ksplice.com, jbarnold@ksplice.com, tabbott@ksplice.com,
-       wdaher@ksplice.com, andersk@ksplice.com
-Subject: Re: [RFC] kreplace: Rebootless kernel updates
+	Sun, 23 Nov 2008 14:43:04 -0500
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/4] trace: profile all if conditionals
 From: Andi Kleen <andi@firstfloor.org>
-References: <200811211720.26394.knikanth@suse.de>
-	<alpine.DEB.2.00.0811211303460.24014@vinegar-pot.mit.edu>
-Date: Sun, 23 Nov 2008 20:39:10 +0100
-In-Reply-To: <alpine.DEB.2.00.0811211303460.24014@vinegar-pot.mit.edu> (Jeff Arnold's message of "Fri, 21 Nov 2008 22:46:59 -0500 (EST)")
-Message-ID: <87myfqi65d.fsf@basil.nowhere.org>
+References: <20081121071213.365288293@goodmis.org>
+	<20081121071328.462456268@goodmis.org>
+Date: Sun, 23 Nov 2008 20:43:07 +0100
+In-Reply-To: <20081121071328.462456268@goodmis.org> (Steven Rostedt's message of "Fri, 21 Nov 2008 02:12:17 -0500")
+Message-ID: <87iqqei5ys.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,21 +31,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Arnold <jbarnold@MIT.EDU> writes:
-
-> Hello,
+Steven Rostedt <rostedt@goodmis.org> writes:
 >
->> [kreplace] is currently a x86_64 only _hack_
->
-> The point of Ksplice is to be a hot update system that isn't a hack.  
-> Ksplice is quite far along at this point; it implements many safety and 
-> automation features that kreplace doesn't address.  Is there something in 
-> particular that discouraged you from using Ksplice?
+> Miss means the branch was not taken. Hit means the branch was taken.
+> The percent is the percentage the branch was taken.
 
-I suspect that it wasn't mainline?
+I'm not sure the results are very useful? What would
+you do with it?
 
-The usual problem is that it's much easier to get simple patches
-in than complicated ones.
+It seems like a very special case of gcov, but I think I would
+rather have the full thing (patches in -mm I think)
+
+> This adds a significant amount of overhead and should only be used
+> by those analyzing their system.
+
+Often this can be also done using CPU performance counters. Might 
+be a cheaper option. 
 
 -Andi
 
