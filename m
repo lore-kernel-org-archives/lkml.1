@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbYKWLfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbYKWLgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758643AbYKWLfy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 06:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYKWLfp
+	id S1758837AbYKWLgV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 06:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYKWLf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 06:35:45 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:36198 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757014AbYKWLfo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 06:35:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gGDs+VwtpFyC6V+B7IjSrQB5rGEyltepVRgxKeKSLr5nZgAAUeN3rZM8E/NPbFc11u
-         PtA5fNLvW9gD9nTgcRHBAK01UUMzCG9G70L2oC0vCWJjzygBlJJOWQ6imLRIeCEuRePA
-         ekMZO9Ugi6VlDYcl0fgNu8j1bVsj6rpFUupZA=
-Date: Sun, 23 Nov 2008 14:35:40 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Beulich <jbeulich@novell.com>, Glauber Costa <gcosta@redhat.com>,
-       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] x86: include ENTRY/END in entry handlers in entry_64.S
-Message-ID: <20081123113540.GE24818@localhost>
-References: <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123092136.GC24818@localhost> <20081123112354.GA31667@mailshack.com>
+	Sun, 23 Nov 2008 06:35:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45001 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758763AbYKWLf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 06:35:58 -0500
+Date: Sun, 23 Nov 2008 12:35:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/10] x86: add initialization code for DMA-API
+	debugging
+Message-ID: <20081123113543.GD29663@elte.hu>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-4-git-send-email-joerg.roedel@amd.com> <20081121174348.GB4336@elte.hu> <20081122094807.GK29705@8bytes.org> <20081123112818.GC29663@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081123112354.GA31667@mailshack.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081123112818.GC29663@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Alexander van Heukelum - Sun, Nov 23, 2008 at 12:23:54PM +0100]
-| On Sun, Nov 23, 2008 at 12:21:36PM +0300, Cyrill Gorcunov wrote:
-| > [Alexander van Heukelum - Sun, Nov 23, 2008 at 10:08:28AM +0100]
-| > | Impact: cleanup of entry_64.S
-| > | 
-| > | Except for the order and the place of the functions, this
-| > | patch should not change the generated code.
-| > | 
-| > | Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-| > | 
-| > | ---
-| > |  arch/x86/kernel/entry_64.S |  259 +++++++++++++++++++-------------------------
-| > |  1 files changed, 109 insertions(+), 150 deletions(-)
-| > |
-| > 
-| > Hi Alexander,
-| > 
-| > great! One moment is not obvious for me -- why we
-| > stopped to align interrupt section to 32 bytes?
-| > Did I miss anyhing?
-| 
-| I put a ".p2align 5" in earlier in the series which caused the
-| apicinterrupts to be 32-byte aligned. But it is a hack, really,
-| relying on the generated code per stub to be between 17 and 32
-| bytes, on the default alignment to be 16 bytes and all stubs
-| to be in the .text section.
-| 
-| I'm in favour of aligning all of the interrupt/exception stubs
-| to 32 bytes, but it should be implemented the right way ;),
-| which means that we need KPROBE_ENTRY_P5ALIGNED and so on :-/.
-| 
-| Greetings,
-|         Alexander
-|  
-| > 		- Cyrill -
-| 
 
-ah. thanks for info.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-		- Cyrill -
+> 
+> * Joerg Roedel <joro@8bytes.org> wrote:
+> 
+> > On Fri, Nov 21, 2008 at 06:43:48PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > > 
+> > > > +static struct list_head dma_entry_hash[HASH_SIZE];
+> > > > +
+> > > > +/* A slab cache to allocate dma_map_entries fast */
+> > > > +static struct kmem_cache *dma_entry_cache;
+> > > > +
+> > > > +/* lock to protect the data structures */
+> > > > +static DEFINE_SPINLOCK(dma_lock);
+> > > 
+> > > some more generic comments about the data structure: it's main purpose 
+> > > is to provide a mapping based on (dev,addr). There's little if any 
+> > > cross-entry interaction - same-address+same-dev DMA is checked.
+> > > 
+> > > 1)
+> > > 
+> > > the hash:
+> > > 
+> > > + 	return (entry->dev_addr >> HASH_FN_SHIFT) & HASH_FN_MASK;
+> > > 
+> > > should mix in entry->dev as well - that way we get not just per 
+> > > address but per device hash space separation as well.
+> > > 
+> > > 2)
+> > > 
+> > > HASH_FN_SHIFT is 1MB chunks right now - that's probably fine in 
+> > > practice albeit perhaps a bit too small. There's seldom any coherency 
+> > > between the physical addresses of DMA - we rarely have any real 
+> > > (performance-relevant) physical co-location of DMA addresses beyond 4K 
+> > > granularity. So using 1MB chunking here will discard a good deal of 
+> > > random low bits we should be hashing on.
+> > > 
+> > > 3)
+> > > 
+> > > And the most scalable locking would be per hash bucket locking - no 
+> > > global lock is needed. The bucket hash heads should probably be 
+> > > cacheline sized - so we'd get one lock per bucket.
+> > 
+> > Hmm, I just had the idea of saving this data in struct device. How 
+> > about that? The locking should scale too and we can extend it 
+> > easier. For example it simplifys a per-device disable function for 
+> > the checking. Or another future feature might be leak tracing.
+> 
+> that will help with spreading the hash across devices, but brings in 
+> lifetime issues: you must be absolutely sure all DMA has drained at 
+> the point a device is deinitialized.
+
+Note that obviously proper DMA quiescence is a must-have during device 
+dinit anyway, but still, it's an extra complication to init/deinit the 
+hashes, etc.
+
+	Ingo
