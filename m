@@ -1,66 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbYKWWCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbYKWWJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbYKWWCn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYKWWCe
+	id S1752376AbYKWWJz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYKWWJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:02:34 -0500
-Received: from fmmailgate09.web.de ([217.72.192.184]:35950 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYKWWCe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:02:34 -0500
-Date: Sun, 23 Nov 2008 23:02:30 +0100
-Message-Id: <516858439@web.de>
+	Sun, 23 Nov 2008 17:09:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42498 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbYKWWJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 17:09:43 -0500
+Date: Mon, 24 Nov 2008 00:10:14 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
+Message-ID: <20081123231014.GA2424@redhat.com>
+References: <20081115212133.GA32140@us.ibm.com> <20081118175336.GA14178@redhat.com> <20081119012207.GA19092@us.ibm.com>
 MIME-Version: 1.0
-From: devzero@web.de
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org,
-       Willy Tarreau <w@1wt.eu>
-Subject: =?iso-8859-15?Q?Re:_update7_[PATCH_1/5]_init:_bzip2_or_lzma_-compresse?=
- =?iso-8859-15?Q?d_kernels_and?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18Mf7fjwyjY8Inob8N9ROeNfsC3uXmNGwKHNToIOPhWvZ9P0
- mUwUBu6sR6YGBd3D9G7Uw1MfpXPV8EB2yKHp0PrdxTeggPj12M=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081119012207.GA19092@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-oh, that explains a lot, thanks!
+On 11/18, Sukadev Bhattiprolu wrote:
+>
+> |
+> | > +static inline int siginfo_from_ancestor_ns(siginfo_t *info)
+> | > +{
+> | > +	return SI_FROMUSER(info) && (info->si_pid == 0);
+> | > +}
+> |
+> | Yes, this is problem... I doubt we can rely on !si_pid here.
+> | More on this later.
+>
+> BTW, rather than clearing SIG_FROM_USER in send_signal(), can we
+> keep it till we dequeue the signal ? Yes, collect_signal() would
+> need to consider this flag. But when we dequeue, we can note that
+> it was from user and use that in the siginfo_from_ancestor() ?
 
-just asked because i feared this would get lost...
+Yes! I thought about this too. As a last resort this should work
+afaics. But we should be carefull, we have to fix rm_from_queue_full()
+for example as well.
 
-i wish you much luck with finding a new job, peter !
+Another note. We can split SIG_FROM_USER (if we are going to use this
+hack) into 2 flags: SIG_KILL_SUB_NS and SIG_MANGLE_SI_PID. We can
+even put "struct pid *pid" into si_signo along with these bits if
+we find some strange user which sends the signal on behalve of
+the different task.
 
-regards
-roland
+But personally, I'd prefer to make 3 simple patches for the start.
+Then we can continue with these complications if needed. Sukadev,
+please feel free to disagree with me. I am just trying to make
+the first step reviewable and simple. No changes on dequeue path,
+no -ENOMEM in send_signal().
 
+1. Introduce SIG_FROM_USER (or whatever). Basically, the patch I
+   sent. Except I'd relly like to see this code under CONFIG_
+   just for documentation, but please feel free to ignore.
 
-> -----Ursprüngliche Nachricht-----
-> Von: "H. Peter Anvin" <hpa@zytor.com>
-> Gesendet: 23.11.08 21:09:25
-> An: devzero@web.de
-> CC: linux-kernel@vger.kernel.org, Alain Knaff <alain@knaff.lu>,        Willy Tarreau <w@1wt.eu>
-> Betreff: Re: update7 [PATCH 1/5] init: bzip2 or lzma -compressed kernels and
+   So, with this patch send_signal() has "bool from_ancestor", which
+   is not used so far. And we the fixup code after copy_siginfo()
+   which clears the flags, or better yet just sets .si_signo = sig.
 
+2. Now we change send_signal()
 
-> devzero@web.de wrote:
-> > does anybody have a status update on this one? 
-> > (just being curious/impatient as the last mail in this thread was posted one month ago)
-> 
-> Sorry about this.  I lost my job and job hunting has taken priority.  It
-> is on my list of things to take care of, but it's not the highest
-> priority, obviously.
-> 
-> I will try to get to it within the next week.
-> 
-> 	-hpa
-> 
+	+	if (from_ancestor && sig == SIGKILL)
+	+		t->signal->flags &= ~SIGNAL_UNKILLABLE;
+		if (!prepare_signal(...))
+			return;
 
+   and change copy_signal() to set SIGNAL_UNKILLABLE for
+   cinit.
 
-_________________________________________________________________________
-Sensationsangebot nur bis 30.11: WEB.DE FreeDSL - Telefonanschluss + DSL 
-für nur 16,37 Euro/mtl.!* http://dsl.web.de/?ac=OM.AD.AD008K13805B7069a
+   From now cinit is protected from unwanted signals from
+   its namespace, and the parent can always kill it with
+   SIGKILL.
+
+   Actually, I think this is enough to solve most problems,
+   the further changes can be discussed later. OK, the only
+   "real" problem is SIGSTOP, afaics. This looks solveable.
+
+3. mangle .si_pid in send_signal(). Again, it is not clear
+   what should we do with sys_rt_sigqueueinfo(), but there
+   is no "obviously right" solution.
+
+And I am really sorry for delay.
+
+Oleg.
 
