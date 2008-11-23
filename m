@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752248AbYKWVh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbYKWVjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752248AbYKWVh0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 16:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKWVhN
+	id S1752456AbYKWVjo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 16:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKWVjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 16:37:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39186 "EHLO mx2.mail.elte.hu"
+	Sun, 23 Nov 2008 16:39:36 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40064 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbYKWVhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 16:37:12 -0500
-Date: Sun, 23 Nov 2008 22:36:54 +0100
+	id S1750780AbYKWVjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 16:39:35 -0500
+Date: Sun, 23 Nov 2008 22:38:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>, srostedt@redhat.com,
-       a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] fix comment style on mangle_path
-Message-ID: <20081123213654.GA16613@elte.hu>
-References: <4929C5C8.7090008@oracle.com> <1227475493-5429-1-git-send-email-edwintorok@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/4] trace: profile all if conditionals
+Message-ID: <20081123213855.GB16613@elte.hu>
+References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <87iqqei5ys.fsf@basil.nowhere.org> <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1227475493-5429-1-git-send-email-edwintorok@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,30 +39,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Török Edwin <edwintorok@gmail.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Signed-off-by: Török Edwin <edwintorok@gmail.com>
-> ---
->  fs/seq_file.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
+> On Sun, 23 Nov 2008, Andi Kleen wrote:
+> > Steven Rostedt <rostedt@goodmis.org> writes:
 > 
-> diff --git a/fs/seq_file.c b/fs/seq_file.c
-> index f5b61cc..f03220d 100644
-> --- a/fs/seq_file.c
-> +++ b/fs/seq_file.c
-> @@ -358,10 +358,10 @@ int seq_printf(struct seq_file *m, const char *f, ...)
->  EXPORT_SYMBOL(seq_printf);
->  
->  /**
-> - * 	mangle_path - mangle and copy path to buffer beginning
-> - * 	@s - buffer start
-> - * 	@p - beginning of path in above buffer
-> - *      @esc - set of characters that need escaping
-> + *	mangle_path -	mangle and copy path to buffer beginning
-> + *	@s: buffer start
-> + *	@p: beginning of path in above buffer
-> + *	@esc: set of characters that need escaping
+> > > This adds a significant amount of overhead and should only be 
+> > > used by those analyzing their system.
+> > 
+> > Often this can be also done using CPU performance counters. Might 
+> > be a cheaper option.
+> 
+> I'd love to add an option that could hook into any arch with HW 
+> support for this. We could dump out the same information, but just a 
+> different way to gather it.  But I'm still ignorant to the use of 
+> CPU performance counters and how to find which branch matches which 
+> if.
 
-thanks - applied this too.
+there's already new ftrace code for this and the patches are done - 
+stay tuned.
+
+but it wont be a replacement for the soft method (which is more 
+flexible - the hw can only do 'all or nothing' type of branch 
+tracing), so it's complementary.
 
 	Ingo
