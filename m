@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbYKWNYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYKWN2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbYKWNYZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 08:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbYKWNYQ
+	id S1758606AbYKWN2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 08:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbYKWN2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 08:24:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53616 "EHLO mx3.mail.elte.hu"
+	Sun, 23 Nov 2008 08:28:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50788 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756292AbYKWNYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 08:24:16 -0500
-Date: Sun, 23 Nov 2008 14:23:46 +0100
+	id S1756292AbYKWN2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 08:28:02 -0500
+Date: Sun, 23 Nov 2008 14:27:52 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
-       Glauber Costa <gcosta@redhat.com>, Matt Mackall <mpm@selenic.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
+Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
        Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH] x86: include ENTRY/END in entry handlers in entry_64.S
-Message-ID: <20081123132346.GE1178@elte.hu>
-References: <20081119001811.GA23237@mailshack.com> <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com>
+Subject: Re: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
+Message-ID: <20081123132752.GF1178@elte.hu>
+References: <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123091532.GA31515@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081123090828.GA31490@mailshack.com>
+In-Reply-To: <20081123091532.GA31515@mailshack.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,34 +38,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-> Impact: cleanup of entry_64.S
+> Impact: moves some code out of .kprobes.text
 > 
-> Except for the order and the place of the functions, this
-> patch should not change the generated code.
+> KPROBE_ENTRY switches code generation to .kprobes.text, and KPROBE_END
+> uses .popsection to get back to the previous section (.text, normally).
+> Also replace ENDPROC by END, for consistency.
 > 
 > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> 
-> ---
->  arch/x86/kernel/entry_64.S |  259 +++++++++++++++++++-------------------------
->  1 files changed, 109 insertions(+), 150 deletions(-)
 
 applied to tip/x86/irq, thanks Alexander!
 
-> > Something like:
-> > 
-> >   PARANOID_ERROR_ENTRY(stack_segment)
-> 
-> I chose to just reuse the existing names, but it's bikeshedding, so 
-> change it if you like ;)
+> One more small change for today. The xen-related functions 
+> xen_do_hypervisor_callback and xen_failsafe_callback are put
+> in the .kprobes.text even in the current kernel: ignore_sysret
+> is enclosed in KPROBE_ENTRY / ENDPROC, instead of KPROBE_ENTRY /
+> KPROBE_END, but I guess the situation is harmless.
 
-yeah. But such things, if they pile up long enough, can result in real 
-problem. entry_64.S is the result of such a degenerative process.
+yeah. It narrows no-kprobes protection for that code, but it should 
+indeed be fine (and that's the intention as well).
 
-> I now know why I did not hit the bug that was fixed by "x86: split 
-> out some macro's and move common code to paranoid_exit, fix"... 
-> *blush* I was doing my real-world testing using an i386-image of 
-> debian.
-
-heh, that indeed explains :)
+Note that this is a reoccuring bug type, and rather long-lived. Can 
+you think of any way to get automated nesting protection of both the 
+.cfi_startproc/endproc macros and kprobes start/end? A poor man's 
+solution would be to grep the number of start and end methods and 
+enforce that they are equal.
 
 	Ingo
