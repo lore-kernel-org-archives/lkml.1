@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbYKWLSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbYKWLVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbYKWLSt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 06:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYKWLSj
+	id S1758608AbYKWLVE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 06:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYKWLUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 06:18:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50843 "EHLO mx2.mail.elte.hu"
+	Sun, 23 Nov 2008 06:20:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32861 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754455AbYKWLSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 06:18:38 -0500
-Date: Sun, 23 Nov 2008 12:18:20 +0100
+	id S1754063AbYKWLUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 06:20:53 -0500
+Date: Sun, 23 Nov 2008 12:20:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] OProfile fixes for v2.6.28
-Message-ID: <20081123111820.GG30453@elte.hu>
-References: <20081123110610.GC14700@erda.amd.com>
+To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
+Cc: srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH] tracing/stack-tracer: avoid races accessing file
+Message-ID: <20081123112043.GA29663@elte.hu>
+References: <20081123110714.GE30453@elte.hu> <1227438490-23259-1-git-send-email-edwintorok@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081123110610.GC14700@erda.amd.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1227438490-23259-1-git-send-email-edwintorok@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,21 +36,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Robert Richter <robert.richter@amd.com> wrote:
+* Török Edwin <edwintorok@gmail.com> wrote:
 
-> Hi Ingo,
+> ---
+>  kernel/trace/trace.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> please pull oprofile fixes for 2.6.28 for tip regression:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git oprofile-for-tip
-> 
-> There is only one fix:
-> 
-> Eric Dumazet (1):
->       oprofile: fix an overflow in ppro code
-> 
-> Thanks,
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 4c3bd82..48d1536 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -1470,13 +1470,13 @@ static inline int seq_print_user_ip(struct trace_seq *s, struct mm_struct *mm,
+>  			file = vma->vm_file;
+>  			vmstart = vma->vm_start;
+>  		}
+> +		if (file) {
+> +			ret = trace_seq_path(s, &file->f_path);
+> +			if (ret)
+> +				ret = trace_seq_printf(s, "[+0x%lx]", ip - vmstart);
+> +		}
+>  		up_read(&mm->mmap_sem);
+>  	}
+> -	if (file) {
+> -		ret = trace_seq_path(s, &file->f_path);
+> -		if (ret)
+> -			ret = trace_seq_printf(s, "[+0x%lx]", ip - vmstart);
+> -	}
 
-Pulled into tip/x86/urgent, thanks Robert!
+applied to tip/tracing/stack-tracer, thanks Edwin!
 
 	Ingo
