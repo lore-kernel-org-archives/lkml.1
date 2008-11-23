@@ -1,134 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbYKWRnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYKWRy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbYKWRnz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 12:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbYKWRnp
+	id S1753934AbYKWRy5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 12:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYKWRys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 12:43:45 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:37007 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbYKWRno convert rfc822-to-8bit (ORCPT
+	Sun, 23 Nov 2008 12:54:48 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:49135 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751109AbYKWRyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 12:43:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=s/WKSJrFytyE750oyhhHfQYesWvEw2Syu/nj/F05Ql6MdDyqI+9aS7LbuLXvKr9v4O
-         btYJjQ5l46VWdZgpXSDxXXrkhnIrkusG7mg5OLaVCl7TK41vwHfXUbYyoI0gBScYvr7Y
-         edVhuc0cnxv9p7LpfOO5Q2w00s8iWpM1280Jg=
-Message-ID: <4929964B.2000200@gmail.com>
-Date: Sun, 23 Nov 2008 18:43:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: don't trace kfree while
- it frees the return stack
-References: <492985C8.7070205@gmail.com> <20081123164013.GC6206@elte.hu> <20081123164422.GA10029@elte.hu>
-In-Reply-To: <20081123164422.GA10029@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 23 Nov 2008 12:54:47 -0500
+Date: Sun, 23 Nov 2008 18:51:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC -tip] x86: introduce ENTRY(KPROBE)_X86  assembly helpers to catch unbalanced declaration
+Message-ID: <20081123175125.GA32472@uranus.ravnborg.org>
+References: <20081123165711.GA12710@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123165711.GA12710@localhost>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> note that we also need to keep gcc from reordering things here (no 
-> matter how unlikely in this particular case).
+On Sun, Nov 23, 2008 at 07:57:11PM +0300, Cyrill Gorcunov wrote:
+> It's usefull to catch unbalanced, missed or mixed declarations of ENTRY and
+> KPROBES. These macros would help a bit (at least I hope so).
 > 
-> (also, small detail: we prefer a newline after variable definitions.)
+> For example the following code would compile without problems
 > 
-> Full commit attached below.
+>         ENTRY_X86(mcount)
+>                 retq
+>         END_X86(mcount)
 > 
-
-I guessed that since tsk->ret_stack is referenced for the last time before the call to kfree,
-the registers to memory flushing would be done before the call.
-
-But you're right, I should prevent from possible compiler strange behaviours, thanks!
-
-
-
-
-Ingo Molnar a écrit :
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> But if you forget and mix the following form
 > 
->>  void ftrace_retfunc_exit_task(struct task_struct *t)
->>  {
->> -	kfree(t->ret_stack);
->> +	struct ftrace_ret_stack	*ret_stack = t->ret_stack;
->> +
->>  	t->ret_stack = NULL;
->> +	/* NULL must become visible to IRQs before we free it: */
->> +	barrier();
->> +
->> +	kfree(ret_stack);
->>  }
+>         ENTRY_X86(mcount)
+>                 retq
+>         END(mcount)
 > 
-> hm, this reminds me - this is the wrong place for the callback - the 
-> call stack is freed too early.
+>         ENTRY_X86(ftrace_caller)
 > 
-> instead of freeing it in do_exit() (like it's done right now), it 
-> should be freed when the task struct and thread info is freed: in 
-> kernel/fork.c:free_task() - okay?
+> The assembler will issue the following message:
+> Error: ENTRY_X86/KPROBE_X86 unbalanced,missed,mixed
 > 
-> The difference is minor but could allow more complete tracing: as 
-> right now we'll skip the entries that get generated when we schedule 
-> away from a dead task.
-> 
-> 	Ingo
+> Actually the checking is performed at every _X86 macro
+> so maybe it's good idea to put ENTRY_KPROBE_FINAL_X86
+> at the end of .S file to be sure you didn't miss anything.
 
+Could we at least try this out in -next before we decide to make 
+this X86 only?
+I am aware that binutils can be a bit fragile but -next testing should
+make a good check on this.
 
-That's right. Even if the noret code path will not be traced, we are loosing some traces.
-That should be fixed with the patch below (didn't tested widely but seems good).
---
->From a7e143e42808f66a7128c7de322ebd6733b7cd17 Mon Sep 17 00:00:00 2001
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Sun, 23 Nov 2008 18:30:01 +0100
-Subject: [PATCH] tracing/function-return-tracer: Free the return stack on free_task()
-
-Impact: avoid loosing some traces when a task is freed
-
-do_exit() is not the last function called when a task finishes.
-There are still some functions which are to be called such as free_task().
-So we delay the freeing of the return stack to the last moment.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-diff --git a/kernel/exit.c b/kernel/exit.c
-index c8334ed..cb24037 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -47,7 +47,6 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/tracehook.h>
- #include <trace/sched.h>
--#include <linux/ftrace.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -1125,7 +1124,6 @@ NORET_TYPE void do_exit(long code)
- 	preempt_disable();
- 	/* causes final put_task_struct in finish_task_switch(). */
- 	tsk->state = TASK_DEAD;
--	ftrace_retfunc_exit_task(tsk);
- 	schedule();
- 	BUG();
- 	/* Avoid "noreturn function does return".  */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 354d3f0..d183739 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -141,6 +141,7 @@ void free_task(struct task_struct *tsk)
- 	prop_local_destroy_single(&tsk->dirties);
- 	free_thread_info(tsk->stack);
- 	rt_mutex_debug_task_free(tsk);
-+	ftrace_retfunc_exit_task(tsk);
- 	free_task_struct(tsk);
- }
- EXPORT_SYMBOL(free_task);
--- 
-1.5.2.5
-
+	Sam
