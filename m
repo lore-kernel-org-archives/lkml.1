@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbYKWGcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbYKWHGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbYKWGcm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 01:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYKWGcg
+	id S1756745AbYKWHGY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 02:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYKWHGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 01:32:36 -0500
-Received: from sh.osrg.net ([192.16.179.4]:40582 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbYKWGcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 01:32:35 -0500
-Date: Sun, 23 Nov 2008 15:32:03 +0900
-To: fenghua.yu@intel.com
-Cc: fujita.tomonori@lab.ntt.co.jp, tony.luck@intel.com, dwmw2@infradead.org,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: RE: [PATCH] IA64: fix VT-d dma_mapping_error
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB88EAB5850@orsmsx505.amr.corp.intel.com>
-References: <A6AD88C3F2289247BE726C37303E1EB88EAB57E1@orsmsx505.amr.corp.intel.com>
-	<20081123014037A.fujita.tomonori@lab.ntt.co.jp>
-	<A6AD88C3F2289247BE726C37303E1EB88EAB5850@orsmsx505.amr.corp.intel.com>
+	Sun, 23 Nov 2008 02:06:14 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:3773 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbYKWHGN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 02:06:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=gUtcw37raFV1LTFIckhNMtBAj7VYy5E9YeDIZzq4v7+yLSMf/X7rmFH+mfsuRAOf0c
+         /nPpc/OALzeCUQIKnTySe3cZEEGoUj+MQrb5CSlSgKtB4KPV8RpQQ/SIdOGZZTPlQPi6
+         bNbpQLECMnGznuklQ4VkgJK+c6v9ZPRvkMrwE=
+Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
+From: Daniel Ribeiro <drwyrm@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Stefan Schmidt <stefan@datenfreihafen.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Stefan Schmidt <stefan@openmoko.org>, eric.y.miao@gmail.com,
+       linux-kernel@vger.kernel.org, sameo@openedhand.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <200811222059.59806.david-b@pacbell.net>
+References: <20081121160403.073751031@dodger.lab.datenfreihafen.org>
+	 <200811221819.53186.david-b@pacbell.net> <1227411537.3148.22.camel@brutus>
+	 <200811222059.59806.david-b@pacbell.net>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 23 Nov 2008 05:06:02 -0200
+Message-Id: <1227423962.3148.74.camel@brutus>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081123153159S.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Nov 2008 22:10:05 -0800
-"Yu, Fenghua" <fenghua.yu@intel.com> wrote:
-
-> >Hmm, intel_dma_mapping_error is used to test only the value that
-> >intel_map_single() returns. If intel_map_single() returns a non-zero
-> >dma address, it belongs to hwdev's domain. So intel_dma_mapping_error
-> >can simply return 1 (failure) if the dma_addr is zero.
+Em Sáb, 2008-11-22 às 20:59 -0800, David Brownell escreveu:
+> > I tried spi_write_then_read before, but it didn't work. I supposed it
+> > was because it was doing 2 transfers as the second transfer rx_buf
+> > always came zeroed.
 > 
-> Then there is no usage of hwdev which is one of two parameters in intel_dma_mapping_error?
+> You may have been using it wrong.  Also, verify against
+> current kernels ... there have been bugfixes to pxa2xx_spi.
+> 
+> > I see that commit 
+> > f9b90e39cbc5c4d6ef60022fd1f25d541df0aad1 changed it to do a single
+> > transfer, so i will try it again.
+> 
+> Unless it needs the full duplex capability of SPI, then
+> you should be able to make write_then_read work ... on
+> the other hand, if you do need full duplex, then you
+> should address the DMA.  (And byteswapping, either way.)
 
-Yes, and that's how VT-d dma_mapping_error() works on X86_64.
+Well, i guess it is full duplex, as i set spi_transfer.len to 4 bytes,
+write 4 bytes _and_ read 4 bytes to/from the chip.
 
-Note that we use hwdev in the following way, see
-arch/x86/kernel/include/asm/dma-mapping.h
+I'm looking at write_then_read and if I read it correctly, it sends n_tx
+bytes of data plus n_rx bytes of nothing, and discards n_tx bytes from
+the start of the receive buffer considering only n_rx bytes from the end
+of the receive buffer. This is not what i want.
 
-static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-{
-#ifdef CONFIG_X86_32
-	return 0;
-#else
-	struct dma_mapping_ops *ops = get_dma_ops(dev);
-	if (ops->mapping_error)
-		return ops->mapping_error(dev, dma_addr);
+Can you be more descriptive on "address the DMA"? Im not familiar on
+what is the issue here.
 
-	return (dma_addr == bad_dma_address);
-#endif
-}
+I will take care of byte swapping for the next patch.
 
-dma_mapping_error uses a point to struct device to choose a proper
-dma_mapping_ops.
+-- 
+Daniel Ribeiro
 
-
-> Maybe checking dma_addr only is good enough for the function? At least it's fast to check errors.
-
-Yeah, that's what my patch does (and what x86 VT-d dma_mapping_error()
-does).
