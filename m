@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbYKWTZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYKWT35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758510AbYKWTZb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYKWTZH
+	id S1757828AbYKWT35 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYKWT3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:25:07 -0500
-Received: from ik-out-1112.google.com ([66.249.90.178]:8891 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753379AbYKWTZF convert rfc822-to-8bit (ORCPT
+	Sun, 23 Nov 2008 14:29:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52197 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbYKWT3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:25:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=a2bESSPyB6G6ltp85xQbBAXaJ68tq3xxj6JZuk83tvOOixzlNra/dcNuvV97UceEc8
-         IQaUnGwyIWhWURbLDE0vHaDNchrxzgg/qrtYAnxJjqO/SLRJ5cnDQODbfigdTUrgleBK
-         mssk8VMgMrvyrwwv7J6ZcktX+Zt8i36io8AWM=
-Date: Sun, 23 Nov 2008 21:24:59 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-Subject: [PATCH 2/2] doc: update mmiotrace documentation
-Message-ID: <20081123212459.75f0ca2d@daedalus.pq.iki.fi>
-In-Reply-To: <alpine.DEB.1.10.0811231134150.27108@gandalf.stny.rr.com>
-References: <20081123154148.04e0851a@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0811231134150.27108@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Sun, 23 Nov 2008 14:29:48 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] sysrq-j: emergency shell
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081121235159.GA15861@localhost.localdomain>
+	<20081122172702.GB2748@x200.localdomain>
+	<20081122190719.3ef24df6@lxorguk.ukuu.org.uk>
+	<19f34abd0811221448p34770633keb5ea97f8e9bf62d@mail.gmail.com>
+	<20081123001035.64234982@lxorguk.ukuu.org.uk>
+Date: Sun, 23 Nov 2008 20:29:49 +0100
+In-Reply-To: <20081123001035.64234982@lxorguk.ukuu.org.uk> (Alan Cox's message of "Sun, 23 Nov 2008 00:10:35 +0000")
+Message-ID: <871vx2jl5e.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 9fac48964c6d109589c9d610a727f72d2a1835dc Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sun, 23 Nov 2008 20:59:56 +0200
-Subject: [PATCH] doc: update mmiotrace documentation
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Update to reflect the current state of the tracing framework:
-- "none" tracer has been replaced by "nop" tracer
-- tracing_enabled must be toggled when changing buffer size
+>> But I realize that this does not necessarily mean that the other
+>> processes cannot read from or write to the tty anymore. Do you know
+>> how to do that? :-)
+>
+> When you have control vhangup()
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
- Documentation/tracers/mmiotrace.txt |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+It also means more people have to disable sysrq than before.
 
-diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
-index 5bbbe20..cde23b4 100644
---- a/Documentation/tracers/mmiotrace.txt
-+++ b/Documentation/tracers/mmiotrace.txt
-@@ -37,7 +37,7 @@ $ echo mmiotrace > /debug/tracing/current_tracer
- $ cat /debug/tracing/trace_pipe > mydump.txt &
- Start X or whatever.
- $ echo "X is up" > /debug/tracing/trace_marker
--$ echo none > /debug/tracing/current_tracer
-+$ echo nop > /debug/tracing/current_tracer
- Check for lost events.
- 
- 
-@@ -66,7 +66,7 @@ which action. It is recommended to place descriptive markers about what you
- do.
- 
- Shut down mmiotrace (requires root privileges):
--$ echo none > /debug/tracing/current_tracer
-+$ echo nop > /debug/tracing/current_tracer
- The 'cat' process exits. If it does not, kill it by issuing 'fg' command and
- pressing ctrl+c.
- 
-@@ -81,7 +81,9 @@ are:
- $ cat /debug/tracing/trace_entries
- gives you a number. Approximately double this number and write it back, for
- instance:
-+$ echo 0 > /debug/tracing/tracing_enabled
- $ echo 128000 > /debug/tracing/trace_entries
-+$ echo 1 > /debug/tracing/tracing_enabled
- Then start again from the top.
- 
- If you are doing a trace for a driver project, e.g. Nouveau, you should also
+AFAIK currently it's not possible to actually change anything 
+with sysrq (just reboot/kill/show information). That would
+be the first one who could be actually used to change
+data, enable network login etc.
+
+I bet this unexpected change of security policy would
+surprise a lot of existing users and suddenly give
+a new attack vector.
+
+So if this is added it should at least have a separate
+enable switch with default off. But as Alan says, we
+have vt-switch anyways so ...
+
+-Andi
+
 -- 
-1.5.6.4
-
+ak@linux.intel.com
