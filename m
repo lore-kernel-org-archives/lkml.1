@@ -1,99 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYKWEqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbYKWFAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbYKWEqU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 23:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbYKWEqI
+	id S1756321AbYKWFAT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 00:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbYKWFAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 23:46:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52604 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754199AbYKWEqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 23:46:07 -0500
-Message-ID: <4928E010.4090801@kernel.org>
-Date: Sun, 23 Nov 2008 13:46:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 23 Nov 2008 00:00:05 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:30803 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750801AbYKWFAD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 00:00:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=j2HHrBUTYebSVo5Q7gDXM8fnjhZyPMuBE8/me8vC7YXRxUTVw/iMvSJF6CygJS4BbOgQ9Unmg6SsNJ5mF3OqSRJ+W/5pRhGYDff6zqCGN9MVo0UdPXiiY1AFtKoi0GAjzNWfF8WsUEJuxClpQMUhJHV4CWVRS4KPhB8/ev31J9A=  ;
+X-YMail-OSG: Kz_F5f8VM1nB7aIb7XqL1O1Is.txaAFV9UySuk_bcYDmLIcXmytuYI21HtQBvrmyYpKIiERdIfd1JlXEn3ll8t0LbwM42vMA5DP_TL4EeNYLtAGzgtBNz9Q1oNq4MgPUOSz6pgl.su9a2F47emKZKEpfBhqFijT5L.CBeuE-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
+Date: Sat, 22 Nov 2008 20:59:59 -0800
+User-Agent: KMail/1.9.10
+Cc: Stefan Schmidt <stefan@datenfreihafen.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Stefan Schmidt <stefan@openmoko.org>, eric.y.miao@gmail.com,
+       linux-kernel@vger.kernel.org, sameo@openedhand.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <200811221819.53186.david-b@pacbell.net> <1227411537.3148.22.camel@brutus>
+In-Reply-To: <1227411537.3148.22.camel@brutus>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dwmw2@infradead.org, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
-       chris.mason@oracle.com, Jens Axboe <jens.axboe@oracle.com>
-Subject: about TRIM/DISCARD support and barriers
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 23 Nov 2008 04:45:48 +0000 (UTC)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200811222059.59806.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, all.
+On Saturday 22 November 2008, Daniel Ribeiro wrote:
+> >  - You should make ezx_pcap_write() and ezx_pcap_read() switch
+> >    over to spi_write_then_read(), to ensure it's never doing
+> >    DMA to/from the stack.  I see a byte-order dependency too...
+> 
+> I tried spi_write_then_read before, but it didn't work. I supposed it
+> was because it was doing 2 transfers as the second transfer rx_buf
+> always came zeroed.
 
-Dongjun Shin who works for Samsung SSD dep asked me about libata TRIM
-support and pointed me to the new DISCARD support David Woodhouse got
-merged for 2.6.28.  I took a look at the code and blk-layer
-interface-wise we seemed to be ready both for filesystems and userland
-(so that fsck or something which runs background can mark unused
-blocks) but there doesn't seem to be any low level driver which
-actually implements ->prepare_discard_fn or fs which sets the DISCARD
-flag.
+You may have been using it wrong.  Also, verify against
+current kernels ... there have been bugfixes to pxa2xx_spi.
 
-Adding ->prepare_discard_fn wouldn't be difficult at all but I became
-curious about a few things after looking at the DISCARD interface.
-First of all - how to avoid racing aginst reusing and how to schedule
-DISCARDs.
 
-* There are two variants of DISCARD - DISCARD w/o barrier and DISCARD
-  w/ barrier, if a fs uses the former, it would need to make sure that
-  it the DISCARD finishes before re-using the block.  Block layer will
-  make sure order will be kept for the latter but depending on how
-  often those DICARDs are issued it can disrupt IO scheduling.
+> I see that commit 
+> f9b90e39cbc5c4d6ef60022fd1f25d541df0aad1 changed it to do a single
+> transfer, so i will try it again.
 
-* It looks like non-barrier DISCARD will be put into the IO sched and
-  scheduled the same way as regular IOs.  I don't relly think this is
-  necessary or a good idea.  DISCARDs probably don't need any kind of
-  sorting anyway and it's likely to disrupt IO sched heuristics.
-  Also, DISCARDs can be postponed w/o affecting correct operation.
-  However, DISCARDs are not likely to take a long time and we might
-  not have to worry about it too much unless it starves regular IOs.
+Unless it needs the full duplex capability of SPI, then
+you should be able to make write_then_read work ... on
+the other hand, if you do need full duplex, then you
+should address the DMA.  (And byteswapping, either way.)
 
-With the above three points, I think it might be better to make block
-layer manage and order DISCARD requests than putting it onto the
-filesystem or barrier mechanism.  If block layer manages map of
-pending DISCARDs and FSes just tell block layer newly freed blocks,
-block layer can schedule DISCARDs as it sees fit and cancels pending
-ones if IO access to it occurs before the DISCARD is issued to the
-drive.  This way, adding DISCARD support to FSes become much easier -
-it can just put blk_discard(lba, range) where it's discarding blocks
-and don't have to worry about ordering or error handling.
 
-What do you think?
+> >  - If you're going to mark the probe() as __devinit, then mark
+> >    the remove() as __devexit and use __devexit_p() in the driver
+> >    struct.
+> 
+> Ok. Shouldn't i use __init instead?
 
-Also, I have a question regarding the current barrier implementation.
-When I asked it to Chris Mason some time ago, I was told that btrfs
-doesn't really make use of barrier in that btrfs itself waits for the
-barrier to complete before proceeding.  I've been thinking about
-colored barrier implementation because I heard that the current
-barrier ordering is too crude or heavy handed.  But, then again, if
-the filesystem waits for requests to complete itself and those
-dependent requests are marked SYNC as necessary so that they don't get
-postponed too much, all that's needed is flush cache.  Doing it that
-way will add a bit of latency but as long as things can progress in
-parallel, it will probably perform better than the current barrier.
+I wouldn't.  There are ways that the probe() could be called
+more than once -- e.g. after rebinding either of the relevant
+SPI drivers through sysfs, or after rmmod/modprobe of the SPI
+master controller driver -- and using an __init annotation
+would make that point to memory that's unlikely to still hold
+that code.
 
-After all, it's not like we have selective FLUSH on actual devices
-anyway.  Where the selective barriering can make difference is how
-it's handled in the IO scheduler and FS waiting for requests to finish
-and then issuing barrier achieves that quite alright and communicating
-the partitial ordering of requests to block layer wouldn't be much
-simpler than doing it in FS proper and there's also the problem of how
-to communicate or handle when one of the request in the partial
-ordering fails.  So, would selective / more intelligent barrier be
-beneficial to filesystems or is the way things are just fine?
-
-Thanks.
-
--- 
-tejun
+- Dave
