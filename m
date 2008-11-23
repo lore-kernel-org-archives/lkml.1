@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbYKWCUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYKWC3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbYKWCUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 21:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbYKWCT4
+	id S1757566AbYKWC3l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 21:29:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYKWC3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 21:19:56 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:45614 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754912AbYKWCTz (ORCPT
+	Sat, 22 Nov 2008 21:29:31 -0500
+Received: from mailout-venus.uni-duesseldorf.de ([134.99.128.32]:41764 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755290AbYKWC3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 21:19:55 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qWoiMNRnr60PvTZZvado2KpHbq3ash2kmnETJxxAXloHdVMubirnR7zBh1XqqANT5tA0/yObsdvD+EDC4Zg4htDCNhtk2ZNgrJDAqrTPj7t6G90pIaDp8MLdX2A3cGjonv1uyMpvLuN30lMkP1Ri+5d1gIdCtc45PS3fs3tQoO8=  ;
-X-YMail-OSG: 2XCW7NUVM1mftWNuFGzCZcQwJC02txUn9gBQJjY3._u4TFSc_bDFA6ftUsryvdjQHXRthhFf9stZMA1qvFcUPk9O1Uj6c6y80BB9JTxtyJ2_gwXp2Mtsre.tbK5p14bGek8axoOajdSXvh_Z2yecqbu_.AlZS4FiKs0CyC4-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Stefan Schmidt <stefan@datenfreihafen.org>
-Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
-Date: Sat, 22 Nov 2008 18:19:52 -0800
-User-Agent: KMail/1.9.10
-Cc: spi-devel-general@lists.sourceforge.net,
-       Stefan Schmidt <stefan@openmoko.org>, eric.y.miao@gmail.com,
-       linux-kernel@vger.kernel.org, sameo@openedhand.com,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Daniel Ribeiro <drwyrm@gmail.com>
-References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <200811221558.03915.david-b@pacbell.net> <20081123003306.GE24437@datenfreihafen.org>
-In-Reply-To: <20081123003306.GE24437@datenfreihafen.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200811221819.53186.david-b@pacbell.net>
+	Sat, 22 Nov 2008 21:29:30 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 23 Nov 2008 03:29:19 +0100 (CET)
+From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: Re: vme_scc.c breakage (was: Re: linux-next: Tree for November 21)
+In-reply-to: <20081122164738.2226b63e@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Message-id: <alpine.DEB.1.00.0811230250290.8478@zirkon.biophys.uni-duesseldorf.de>
+References: <20081121181948.ee771502.sfr@canb.auug.org.au>
+ <Pine.LNX.4.64.0811221558340.30025@anakin>
+ <20081122164738.2226b63e@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 November 2008, Stefan Schmidt wrote:
+Hi,
+
+> > Issues:
+> >   1. When Atari support is enabled, `scc' is defined in
+> >      include/asm-m68k/atari.h as:
 > > 
-> > Looks to me like you're almost all the way there already!  :)
+> > 	# define scc ((*(volatile struct SCC*)SCC_BAS))
+
+This can be renamed - it is only used for control and data port address init 
+(aside from serial console, which should probably be separated out if it cannot 
+be reconciled). 
+
+> > 
+> >      However, renaming the variable `scc' doesn't help, as
+> > 
+> >   2. the variable `scc' is not used in scc_carrier_raised(),
+> > 
+> >   3. `port->channel' on line 635 still fails as `port' is not longer `struct
+> >      scc_port', but a 'struct tty_port', which has no member named 'channel'.
 > 
-> We hope so, yes. :) Once we have the EZX/PXA dep gone you are fine with this
-> patch? All SPI related stuff is ok from you?
+> Will take a look at this, but gs is going to away so at some point
+> someone with hardware is going to have to admit to owning this driver or
+> just mark it BROKEN..
 
-SPI-specific bits:
+Time to merge with pmac_zilog or ip22zilog (the latter even needing similar 
+register access delays as Ataris). 
 
- - I'd have to see the patch.  The last one I saw still didn't
-   list a SPI_MASTER dependency for the core MFD module.
+What is the time frame to gs being removed? I admit to 'owning' atari_scc which 
+was based on vme_scc so I'll have to deal with that sooner or later.
 
- - You should make ezx_pcap_write() and ezx_pcap_read() switch
-   over to spi_write_then_read(), to ensure it's never doing
-   DMA to/from the stack.  I see a byte-order dependency too...
+	Michael
 
- - For general paranoia, the probe() should abort if pcap.spi is
-   already set ... and its cleanup path, plus remove(), should
-   null that pointer.
-
- - If you're going to mark the probe() as __devinit, then mark
-   the remove() as __devexit and use __devexit_p() in the driver
-   struct.
-
-Other comments about the pcap2 core:
-
- - The set_vreg() stuff would seem to make more sense in a
-   regulator subdevice and driver ... but that's more of a
-   general driver structure thing, and might be fixed later.
-
- - Andrew seems to always want a comment explaining why the
-   IRQ handler for I2C and SPI devices needs to queue_work().
-   Maybe the threaded IRQ stuff will help there...
-
- - The mask_event()/unmask_event() stuff looks like you're
-   more or less reinventing a baby "struct irq_chip", with
-   register_event() instead of request_irq().
-
- - Those show_regs/store_regs calls would IMO make more sense
-   in debugfs than in sysfs.
-
- - And the ADC sysfs support isn't supporting hwmon models.
-   (Neither does the twl4030 ADC support, but that's not been
-   submitted for mainline yet either...)
-
-Re the IRQ stuff, this looks more like what i2c/chips/menelaus.c
-did than mfd/twl4030-irq.c ... in general I think it's better to
-pursue the latter approach, making genirq handle such stuff.
-(Even though it's kind of awkward to use it for I2C or SPI based
-interrupt controllers just now.)
-
-- Dave
