@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYKWJex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbYKWJkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbYKWJex (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 04:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYKWJem
+	id S1757907AbYKWJkw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 04:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYKWJkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 04:34:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46178 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723AbYKWJel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 04:34:41 -0500
-Date: Sun, 23 Nov 2008 10:34:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Miklos Szeredi <miklos@szeredi.hu>,
-       arjan@linux.intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       hch@infradead.org, rminnich@sandia.gov, ericvh@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: poll: allow f_op->poll to sleep, take #3
-Message-ID: <20081123093420.GN30453@elte.hu>
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com> <20081123085902.GI30453@elte.hu> <49291F06.5040907@gmail.com>
+	Sun, 23 Nov 2008 04:40:43 -0500
+Received: from smtp4.tech.numericable.fr ([82.216.111.40]:55409 "EHLO
+	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbYKWJkm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 04:40:42 -0500
+Message-ID: <49292517.5050200@numericable.fr>
+Date: Sun, 23 Nov 2008 10:40:39 +0100
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008111510)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49291F06.5040907@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [2.6.28-rc6-git1] compilation warnings and section mismatches
+Content-Type: multipart/mixed;
+ boundary="------------000702050708020903090604"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------000702050708020903090604
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Tejun Heo <htejun@gmail.com> wrote:
+Hi all,
 
-> Ingo Molnar wrote:
-> > * Davide Libenzi <davidel@xmailserver.org> wrote:
-> > 
-> >> On Sun, 23 Nov 2008, Tejun Heo wrote:
-> >>
-> >>> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> >>> +{
-> >>> +	struct poll_wqueues *pwq = wait->private;
-> >>> +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-> >>> +
-> >>> +	set_mb(pwq->triggered, 1);
-> >>> +
-> >>> +	/* perform the default wake up operation */
-> >>> +	return default_wake_function(&dummy_wait, mode, sync, key);
-> >>> +}
-> >> Wouldn't it be nicer to un-static try_to_wake_up() (or a wrapper) 
-> >> instead of setting up a fake wait queue just to use 
-> >> default_wake_function(), just to wake up a task?
-> > 
-> > the already existing single-task-wakeup shortcut method made available 
-> > by the scheduler is wake_up_process(). A number of primitives where 
-> > waitqueue overhead is of concern already make use of it. 
-> > (mutexes/rtmutexes and more)
-> > 
-> > if you need a different mode flag, then please extend the 
-> > wake_up_process() family of APIs.
-> 
-> Well, the problem is that for wait wake up functions @mode and @sync 
-> are passed as parameter and should be passed over to actual wake up 
-> function as-is, if I add @mode and @sync to wake_up_process() family 
-> of APIs, it's just try_to_wake_up().
 
-_sync() is not something that should normally be done from poll 
-handlers. But ->poll() handlers should all be TASK_INTERRUPTIBLE, 
-right? So wake_up_process_interruptible() should be the thing you 
-need?
+Here are my warnings and section mismatches when compiling 
+2.6.28-rc6-git1 kernel. All are fixed in git trees but patches are not 
+yet pulled in mainline.
 
-Anyway, if you really want to pass in a state filter, you can use the 
-already existing wake_up_state() method as well.
+Regards.
 
-	Ingo
+
+
+
+--------------000702050708020903090604
+Content-Type: text/plain;
+ name="2.6.28-rc6-git1_compilation_warnings_section_mismatches"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="2.6.28-rc6-git1_compilation_warnings_section_mismatches"
+
+YXJjaC94ODYva2VybmVsL2NwdS9tdHJyL21haW4uYzogSW4gZnVuY3Rpb24g4oCYbXRycl9j
+bGVhbnVw4oCZOgphcmNoL3g4Ni9rZXJuZWwvY3B1L210cnIvbWFpbi5jOjEzNjM6IGF0dGVu
+dGlvbiA6IOKAmGdyYW5fZmFjdG9y4oCZIG1heSBiZSB1c2VkIHVuaW5pdGlhbGl6ZWQgaW4g
+dGhpcyBmdW5jdGlvbgphcmNoL3g4Ni9rZXJuZWwvY3B1L210cnIvbWFpbi5jOjEzNjQ6IGF0
+dGVudGlvbiA6IOKAmGdyYW5fYmFzZeKAmSBtYXkgYmUgdXNlZCB1bmluaXRpYWxpemVkIGlu
+IHRoaXMgZnVuY3Rpb24KCmZpeGVkIGJ5IHBhdGNoIGluIGh0dHA6Ly9tYXJjLmluZm8vP2w9
+bGludXgta2VybmVsJm09MTIyMzk0NjQ4NDA1NTA2Jnc9MiBidXQgbm90IHlldCBpbiBtYWlu
+bGluZQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpX
+QVJOSU5HOiBhcmNoL3g4Ni9rZXJuZWwvYnVpbHQtaW4ubyguY3B1aW5pdC50ZXh0KzB4MzQ3
+KTogU2VjdGlvbiBtaXNtYXRjaCBpbiByZWZlcmVuY2UgZnJvbSB0aGUgZnVuY3Rpb24gZnB1
+X2luaXQoKSB0byB0aGUgZnVuY3Rpb24gLmluaXQudGV4dDppbml0X3RocmVhZF94c3RhdGUo
+KQpUaGUgZnVuY3Rpb24gX19jcHVpbml0IGZwdV9pbml0KCkgcmVmZXJlbmNlcwphIGZ1bmN0
+aW9uIF9faW5pdCBpbml0X3RocmVhZF94c3RhdGUoKS4KSWYgaW5pdF90aHJlYWRfeHN0YXRl
+IGlzIG9ubHkgdXNlZCBieSBmcHVfaW5pdCB0aGVuCmFubm90YXRlIGluaXRfdGhyZWFkX3hz
+dGF0ZSB3aXRoIGEgbWF0Y2hpbmcgYW5ub3RhdGlvbi4KCldBUk5JTkc6IHZtbGludXgubygu
+Y3B1aW5pdC50ZXh0KzB4NjA1KTogU2VjdGlvbiBtaXNtYXRjaCBpbiByZWZlcmVuY2UgZnJv
+bSB0aGUgZnVuY3Rpb24gZnB1X2luaXQoKSB0byB0aGUgZnVuY3Rpb24gLmluaXQudGV4dDpp
+bml0X3RocmVhZF94c3RhdGUoKQpUaGUgZnVuY3Rpb24gX19jcHVpbml0IGZwdV9pbml0KCkg
+cmVmZXJlbmNlcwphIGZ1bmN0aW9uIF9faW5pdCBpbml0X3RocmVhZF94c3RhdGUoKS4KSWYg
+aW5pdF90aHJlYWRfeHN0YXRlIGlzIG9ubHkgdXNlZCBieSBmcHVfaW5pdCB0aGVuCmFubm90
+YXRlIGluaXRfdGhyZWFkX3hzdGF0ZSB3aXRoIGEgbWF0Y2hpbmcgYW5ub3RhdGlvbi4KCmZp
+eGVkIGJ5IHBhdGNoZXMgaW4gaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0x
+MjI3MTg2ODE3MjY5Mzkmdz0yCmFuZCBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5l
+bCZtPTEyMjcxODY1NjEyNjUxMyZ3PTIgYnV0IG5vdCB5ZXQgaW4gbWFpbmxpbmUKLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KV0FSTklORzoga2Vy
+bmVsL2J1aWx0LWluLm8oLnRleHQrMHgxMGE1MCk6IFNlY3Rpb24gbWlzbWF0Y2ggaW4gcmVm
+ZXJlbmNlIGZyb20gdGhlIGZ1bmN0aW9uIG5vdGlmeV9jcHVfc3RhcnRpbmcoKSB0byB0aGUg
+dmFyaWFibGUgLmNwdWluaXQuZGF0YTpjcHVfY2hhaW4KVGhlIGZ1bmN0aW9uIG5vdGlmeV9j
+cHVfc3RhcnRpbmcoKSByZWZlcmVuY2VzCnRoZSB2YXJpYWJsZSBfX2NwdWluaXRkYXRhIGNw
+dV9jaGFpbi4KVGhpcyBpcyBvZnRlbiBiZWNhdXNlIG5vdGlmeV9jcHVfc3RhcnRpbmcgbGFj
+a3MgYSBfX2NwdWluaXRkYXRhIAphbm5vdGF0aW9uIG9yIHRoZSBhbm5vdGF0aW9uIG9mIGNw
+dV9jaGFpbiBpcyB3cm9uZy4KCldBUk5JTkc6IHZtbGludXgubygudGV4dCsweDM0MjMwKTog
+U2VjdGlvbiBtaXNtYXRjaCBpbiByZWZlcmVuY2UgZnJvbSB0aGUgZnVuY3Rpb24gbm90aWZ5
+X2NwdV9zdGFydGluZygpIHRvIHRoZSB2YXJpYWJsZSAuY3B1aW5pdC5kYXRhOmNwdV9jaGFp
+bgpUaGUgZnVuY3Rpb24gbm90aWZ5X2NwdV9zdGFydGluZygpIHJlZmVyZW5jZXMKdGhlIHZh
+cmlhYmxlIF9fY3B1aW5pdGRhdGEgY3B1X2NoYWluLgpUaGlzIGlzIG9mdGVuIGJlY2F1c2Ug
+bm90aWZ5X2NwdV9zdGFydGluZyBsYWNrcyBhIF9fY3B1aW5pdGRhdGEgCmFubm90YXRpb24g
+b3IgdGhlIGFubm90YXRpb24gb2YgY3B1X2NoYWluIGlzIHdyb25nLgoKZml4ZWQgYnkgcGF0
+Y2ggaW4gaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI1MzM5NTM3MTE0
+NDYmdz0yIGJ1dCBub3QgeWV0IGluIG1haW5saW5lCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
+--------------000702050708020903090604--
