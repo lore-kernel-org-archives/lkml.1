@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbYKWACt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbYKWAKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757089AbYKWACt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 19:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYKWACl
+	id S1756899AbYKWAKf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 19:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYKWAK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 19:02:41 -0500
-Received: from lucidpixels.com ([75.144.35.66]:45639 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753607AbYKWACl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 19:02:41 -0500
-Date: Sat, 22 Nov 2008 19:02:39 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-raid@vger.kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: Why does the md/raid subsystem does not remap bad sectors in a raid
- array?
-Message-ID: <alpine.DEB.1.10.0811221859210.14817@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Sat, 22 Nov 2008 19:10:26 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46579 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753607AbYKWAK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 19:10:26 -0500
+Date: Sun, 23 Nov 2008 00:10:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] sysrq-j: emergency shell
+Message-ID: <20081123001035.64234982@lxorguk.ukuu.org.uk>
+In-Reply-To: <19f34abd0811221448p34770633keb5ea97f8e9bf62d@mail.gmail.com>
+References: <20081121235159.GA15861@localhost.localdomain>
+	<20081122172702.GB2748@x200.localdomain>
+	<20081122190719.3ef24df6@lxorguk.ukuu.org.uk>
+	<19f34abd0811221448p34770633keb5ea97f8e9bf62d@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I asked before but it was kind of clobbered in the velociraptor mess:
+> But I realize that this does not necessarily mean that the other
+> processes cannot read from or write to the tty anymore. Do you know
+> how to do that? :-)
 
-On a colleague's box:
+When you have control vhangup()
 
-Aug 02, 2008 12:15.30AM(0x04:0x0023): Sector repair completed: port=7, 
-LBA=0x4A0387F5
 
-SMART Self-test log structure revision number 0
-Warning: ATA Specification requires self-test log structure revision 
-number = 1
-Num  Test_Description    Status                  Remaining 
-LifeTime(hours)  LBA_of_first_error
-# 1  Extended offline    Completed: read failure       90%       305 
-1241745397
-
-Even though this disk has a bad sector:
-198 Offline_Uncorrectable   0x0030   100   100   000    Old_age   Offline 
--       1
-
-The controller does not drop the drive from the array when it hits an 
-error, the 3ware card "takes care of it" and the user need not worry about 
-it, whereas with md/raid every time it hits a bad sector, it breaks the 
-raid and it goes degraded, is this correct?  Will/can something like what 
-3ware does be possible in a sw-raid based configuration or is a HW raid 
-card required?
-
-Justin.
-
+That just leaves the small matter of keymaps. I'm really not sure of the
+point of this sysrq-j hack, it seems to me we have a perfectly good vt
+switch mechanism
