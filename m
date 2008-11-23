@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbYKWBdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYKWBkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbYKWBdE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 20:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYKWBcx
+	id S1757108AbYKWBkk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 20:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYKWBkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 20:32:53 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40769
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbYKWBcw (ORCPT
+	Sat, 22 Nov 2008 20:40:31 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:2942 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754531AbYKWBka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 20:32:52 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: frans <fransmeulenbroeks@gmail.com>
-Subject: Re: [PATCH] create option to compress initramfs within the kernel
-Date: Sat, 22 Nov 2008 19:32:11 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org
-References: <alpine.DEB.1.00.0811221817560.3675@frans-desktop>
-In-Reply-To: <alpine.DEB.1.00.0811221817560.3675@frans-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 22 Nov 2008 20:40:30 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH 2.6.28-rc4]lock_stat: Add "con-hungry" to show that how
+ many person-time fight for the ticket spinlock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Yang Xi <yangxilkm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, chyyuu <chyyuu@gmail.com>
+In-Reply-To: <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
+References: <d36bb30d0811180300r77c3a13ld0a4881a8261a40@mail.gmail.com>
+	 <1227025232.29743.23.camel@lappy.programming.kicks-ass.net>
+	 <d36bb30d0811182118x1e394780n8a257fd4c44f4836@mail.gmail.com>
+	 <1227112785.29743.37.camel@lappy.programming.kicks-ass.net>
+	 <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 23 Nov 2008 02:40:26 +0100
+Message-Id: <1227404426.7685.19975.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811221932.12518.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 November 2008 11:30:13 frans wrote:
-> Below is a patch to make compression of the initramfs image optional.
-> Sumbitted to LKML as there is no MAINTAINER listed for initramfs.
->
-> Rationale is that if you create a compressed kernel image (e.g. by
-> make bzImage) it is not very efficient and useful to compress initramfs
-> as the initramfs will be compressed anyway when the kernel image is
-> compressed.
+On Thu, 2008-11-20 at 16:09 +0800, Yang Xi wrote:
+> > I of course meant folding cpu and isspinlock into a combined bitfield
+> > (sorry for not being more clear), thereby saving space, this still takes
+> > 2*sizeof(int).
+> >
+> > We can safely take some bits from the cpu number as there currently are
+> > no plans for a 2g cpu machine, right SGI? :-)
+> Thanks, ok, 31bits enough for cpu at now stage. 1bit for isticketspinlock.
+> Here is the new one. Welcome more comments :).
 
-Actually it saves intermediate space (the cpio archive and the decompressed 
-ramfs coexist during the decompression, until the kernel can free the cpio 
-archive), so it does serve a purpose.  (Given cache effects leaving it 
-compressed may actually wind up being faster on modern CPUs because it dirties 
-fewer pages.)
+Looks good, one more question :-)
 
-It also eats CPU, which is at more of a premium than memory on some little 
-battery powered wind-up boxes.  But I'd be happier seeing some actual 
-benchmark numbers on a device that would actually _notice_ this change.
-
-> @@ -257,6 +258,9 @@ while [ $# -gt 0 ]; do
->  			default_list="$arg"
->  			${dep_list}default_initramfs
->  			;;
-> +		"-c")	# compress
-> +			compress=1
-> +			;;
-
-You're changing the default behavior for people who run this script directly.  
-Just FYI.
-
-> --- a/usr/Kconfig
-> +++ b/usr/Kconfig
-> @@ -44,3 +44,14 @@ config INITRAMFS_ROOT_GID
->  	  owned by group root in the initial ramdisk image.
->
->  	  If you are not sure, leave it set to "0".
+> --- a/include/linux/spinlock.h
+> +++ b/include/linux/spinlock.h
+> @@ -127,6 +127,12 @@ do {
+>                  \
+>  #define spin_is_contended(lock)
+> __raw_spin_is_contended(&(lock)->raw_lock)
+>  #endif
+> 
+> +#ifdef CONFIG_HAVE_TICKET_SPINLOCK
+> +#define spin_nr_contended(lock) __ticket_spin_nr_contended(&(lock)->raw_lock)
+> +#else
+> +#define spin_nr_contended(lock) (0)
+> +#endif
 > +
-> +config INITRAMFS_COMPRESS
-> +	bool "Compress initramfs image"
-> +	default y
-> +	help
-> +	  If you want a compressed initramfs image in your kernel say y
-> +	  If you do not want your initramfs image to be compressed say n.
-> +	  A compressed initramfs is generally not useful if you also have a
-> +	  compressed kernel (vmlinuz, bzImage).
 
-This should probably be in the CONFIG_EMBEDDED menu.
+Does it make sense to make the alternative case return
+spin_is_contended()?
 
-Rob
