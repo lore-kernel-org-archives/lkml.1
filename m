@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbYKWVsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbYKWWCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752261AbYKWVsp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 16:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYKWVsg
+	id S1752344AbYKWWCn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYKWWCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 16:48:36 -0500
-Received: from buick.jordet.net ([193.91.240.190]:50130 "EHLO buick.jordet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750990AbYKWVsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 16:48:36 -0500
-Subject: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
-From: Stian Jordet <liste@jordet.net>
-To: linux-kernel@vger.kernel.org
-Cc: xfs@oss.sgi.com
-In-Reply-To: <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
-References: <1226760254.5089.11.camel@chevrolet>
-	 <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 23 Nov 2008 22:48:28 +0100
-Message-Id: <1227476908.32357.5.camel@chevrolet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Nov 2008 17:02:34 -0500
+Received: from fmmailgate09.web.de ([217.72.192.184]:35950 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbYKWWCe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 17:02:34 -0500
+Date: Sun, 23 Nov 2008 23:02:30 +0100
+Message-Id: <516858439@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org,
+       Willy Tarreau <w@1wt.eu>
+Subject: =?iso-8859-15?Q?Re:_update7_[PATCH_1/5]_init:_bzip2_or_lzma_-compresse?=
+ =?iso-8859-15?Q?d_kernels_and?=
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX18Mf7fjwyjY8Inob8N9ROeNfsC3uXmNGwKHNToIOPhWvZ9P0
+ mUwUBu6sR6YGBd3D9G7Uw1MfpXPV8EB2yKHp0PrdxTeggPj12M=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ti., 18.11.2008 kl. 11.51 -0200, skrev Sergio Luis: 
-> please post your config and dmesg output. It might help people try to
-> identify something wrong.
+oh, that explains a lot, thanks!
 
-(see http://marc.info/?l=linux-kernel&m=122676220019858&w=2 for the
-start of this thread)
+just asked because i feared this would get lost...
 
-Hmm. I have now converted my root and /home filesystems to ext3, and
-that actually fixed it (!). I have no idea why xfs is performing so
-extremely poorly on this machine, i'm running xfs on every filesystem on
-eight other computers (one heavy loaded server, as well).
+i wish you much luck with finding a new job, peter !
 
-Anyway, I'm now unpacking the 2.6.27.6 kernel in 15 seconds, with xfs on
-the same array it used between five and six minutes.
+regards
+roland
 
-I still have a xfs array, and when I copy files to or from that array,
-the gnome session practically freezes, and the load average easily goes
-beyond 10.
 
-How should I debug this? I'm not very eager about reformatting my 1,5TB
-xfs array... Besides, xfs have never let me down earlier.
+> -----Ursprüngliche Nachricht-----
+> Von: "H. Peter Anvin" <hpa@zytor.com>
+> Gesendet: 23.11.08 21:09:25
+> An: devzero@web.de
+> CC: linux-kernel@vger.kernel.org, Alain Knaff <alain@knaff.lu>,        Willy Tarreau <w@1wt.eu>
+> Betreff: Re: update7 [PATCH 1/5] init: bzip2 or lzma -compressed kernels and
 
-Thanks.
 
-Please cc me on any replies.
+> devzero@web.de wrote:
+> > does anybody have a status update on this one? 
+> > (just being curious/impatient as the last mail in this thread was posted one month ago)
+> 
+> Sorry about this.  I lost my job and job hunting has taken priority.  It
+> is on my list of things to take care of, but it's not the highest
+> priority, obviously.
+> 
+> I will try to get to it within the next week.
+> 
+> 	-hpa
+> 
 
-Regards,
-Stian
+
+_________________________________________________________________________
+Sensationsangebot nur bis 30.11: WEB.DE FreeDSL - Telefonanschluss + DSL 
+für nur 16,37 Euro/mtl.!* http://dsl.web.de/?ac=OM.AD.AD008K13805B7069a
 
