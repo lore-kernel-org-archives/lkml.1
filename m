@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbYKWQ3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYKWQaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753159AbYKWQ3w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 11:29:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbYKWQ3o
+	id S1755300AbYKWQaX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 11:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbYKWQaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 11:29:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38892 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750837AbYKWQ3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 11:29:44 -0500
-Date: Sun, 23 Nov 2008 17:29:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
-Message-ID: <20081123162930.GA4398@elte.hu>
-References: <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123091532.GA31515@mailshack.com> <20081123132752.GF1178@elte.hu> <20081123135134.GH24818@localhost> <20081123141237.GI24818@localhost> <20081123150418.GA32078@mailshack.com> <20081123153758.GC27396@localhost>
+	Sun, 23 Nov 2008 11:30:06 -0500
+Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:47828 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750837AbYKWQaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 11:30:04 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #12064] [regression] Measured 688 cycles TSC warp; marking TSC unstable
+Date: Sun, 23 Nov 2008 17:29:58 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera> <vyitTh0pP2N.A.d2B.M7HKJB@chimera>
+In-Reply-To: <vyitTh0pP2N.A.d2B.M7HKJB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081123153758.GC27396@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200811231729.59256.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Nov 2008 16:30:02.0075 (UTC) FILETIME=[BBF052B0:01C94D88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 22 November 2008, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12064
+> Date		: 2008-11-16 19:27:43 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122686370308852&w=2
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+Looks to be fixed in -rc6:
 
-> OK, the patch (below) found the first problem. The patch is still 
-> quite rough and not good for usage in general but it found that we 
-> have an unbalanced ENTRY for ENTRY(native_usergs_sysret64).
+-Calibrating delay using timer specific routine.. 6198.05 BogoMIPS (lpj=12396107)
++Calibrating delay using timer specific routine.. 6399.82 BogoMIPS (lpj=12799647)
+[...]
+-checking TSC synchronization [CPU#0 -> CPU#1]:
+-Measured 696 cycles TSC warp between CPUs, turning off TSC clock.
+-Marking TSC unstable due to check_tsc_sync_source failed
++checking TSC synchronization [CPU#0 -> CPU#1]: passed.
 
-very nice! Looks like the way to go.
+So, BogoMIPS value on CPU#1 is in line with CPU#0 again and TSC passes.
+No idea what commit would be responsible.
 
-	Ingo
+Cheers,
+FJP
