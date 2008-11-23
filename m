@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYKWH5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYKWIGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbYKWH5u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 02:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYKWH5j
+	id S1757341AbYKWIGV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 03:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYKWIGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 02:57:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60713 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYKWH5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 02:57:38 -0500
-Message-ID: <49290CEB.7070509@suse.de>
-Date: Sun, 23 Nov 2008 16:57:31 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 23 Nov 2008 03:06:10 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:34308 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbYKWIGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 03:06:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WzonGoefEfIqqmsbS9CmsNggFYhJqx49bqVIgn0F6Nvf1s/80kpNRKWOgMsqTeqOco
+         6ZhlPYpdYFoVHfgNkYEkiirne5wsqaNFGqCxaZpw0fuMu+URZXmQlyKKwC0YmeOE+avi
+         g15UD02AOeam4EdKiUndn7e/NzdKWxaX3US/E=
+Date: Sun, 23 Nov 2008 11:06:02 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Joshua Hoblitt <j_kernel@hoblitt.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
+Message-ID: <20081123080602.GA7855@localhost>
+References: <0kQZaQnNVIL.A.BhG.FwIKJB@chimera> <V2w_GS-X2aE.A.PwH.jxIKJB@chimera>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dwmw2@infradead.org, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
-       chris.mason@oracle.com, Jens Axboe <jens.axboe@oracle.com>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: about TRIM/DISCARD support and barriers
-References: <4928E010.4090801@kernel.org> <4929023C.2060302@suse.de>
-In-Reply-To: <4929023C.2060302@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <V2w_GS-X2aE.A.PwH.jxIKJB@chimera>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Dongjun, the only doc I can find about ATA TRIM is the following one.
-> 
->  http://t13.org/Documents/UploadedDocuments/docs2007/e07154r3-Data_Set_Management_Proposal_for_ATA-ACS2.pdf
-> 
-> And AFAICS this hasn't made into ACS yet.  Is this what you guys are
-> gonna implement and Windows7 is gonna use?
+[Rafael J. Wysocki - Sat, Nov 22, 2008 at 09:59:19PM +0100]
+| This message has been generated automatically as a part of a report
+| of regressions introduced between 2.6.26 and 2.6.27.
+| 
+| The following bug entry is on the current list of known regressions
+| introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+| be listed and let me know (either way).
+| 
+| 
+| Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+| Subject		: kernel panic: softlockup in tick_periodic() ???
+| Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+| Date		: 2008-09-11 16:46 (73 days old)
+| References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+| Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+| 		  Cyrill Gorcunov <gorcunov@gmail.com>
+| 		  Ingo Molnar <mingo@elte.hu>
+| 		  Cyrill Gorcunov <gorcunov@gmail.com>
+| 
+| 
 
-Just went over it.  Matthew, if ATA trim is gonna be implemented as
-described in the above document, it will support multiple ranges per
-command.
+Hi Rafael, it's still there. Joshua is collecting data.
 
-Dongjun, the above document strikes out all the latency/performance
-related stuff, which looks like the right move to me.  Most of those
-information can be extracted from access pattern by the device itself
-and exposing such optimization parameters to outside seldom works well.
- I'm fairly sure such over complexity will end up being
-counter-optimization due to different interpretations and executions by
-different parties (be it harddrive vendors or different filesystems).
-
-So, can you please confirm that, what we eventually get is simple TRIM
-w/ multiple ranges?  Which, BTW, makes sense as it's something the
-device can't infer from the access pattern.  Also, if there still is
-wiggle room, what would be a worthy optimization is to allow TRIM
-commands to be sent together with other NCQ commands as otherwise the
-drive will have to drain all other commands to process a TRIM command
-which will be inefficient.
-
-Thanks.
-
--- 
-tejun
+		- Cyrill -
