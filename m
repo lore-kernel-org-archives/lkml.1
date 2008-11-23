@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635AbYKWWsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbYKWWxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752635AbYKWWsP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbYKWWr7
+	id S1752371AbYKWWxT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbYKWWxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:47:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63157 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYKWWr7 (ORCPT
+	Sun, 23 Nov 2008 17:53:09 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49205 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750818AbYKWWxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:47:59 -0500
-Date: Sun, 23 Nov 2008 16:48:42 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Kirill Korotaev <dev@openvz.org>, Pavel Emelianov <xemul@openvz.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org
-Subject: Re: CLONE_NEWIPC documentation
-Message-ID: <20081123224842.GD12687@hallyn.com>
-References: <4924651C.4080909@gmail.com> <m163mji4cz.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m163mji4cz.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 23 Nov 2008 17:53:08 -0500
+Subject: Re: about TRIM/DISCARD support and barriers
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Tejun Heo <teheo@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
+       chris.mason@oracle.com
+In-Reply-To: <1227447584.4901.405.camel@macbook.infradead.org>
+References: <4928E010.4090801@kernel.org> <4929023C.2060302@suse.de>
+	 <20081123123514.GI5707@parisc-linux.org>
+	 <1227447584.4901.405.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Mon, 24 Nov 2008 07:52:56 +0900
+Message-Id: <1227480776.25499.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> > +This flag is intended for the implementation of control groups.
+On Sun, 2008-11-23 at 13:39 +0000, David Woodhouse wrote:
+> > We don't attempt to put non-contiguous ranges into a single TRIM yet.
 > 
-> The above sentence is wrong.
-> 
-> +This flag is intended for the implementation of containers.
-> 
-> Would be correct.
-> 
-> Both control groups and namespaces feed into the user space container
-> concept.  Control groups are multiprocess resource limits.
-> Namespaces are affect the mapping from resource name to resource.
-> 
-> What is interesting is you can unshare a sysvipc namespace and still have
-> sysvipc shared memory mapped from another sysvipc namespace.
-> 
-> This is something that needs to be watched for.
+> We don't even merge contiguous ranges -- I still need to fix the
+> elevators to stop writes crossing writes,
 
-Oh, I see, so please disregard my last msg, it seems Eric was plenty
-clear.
+I don't think we want to do that ... it's legal if the write isn't a
+barrier and it will inhibit merging.  That may be just fine for a SSD,
+but it's not for spinning media since they get better performance out of
+merged writes.
 
-thanks,
--serge
+>  before we can stop discards
+> from also being barriers. (Discards are just writes, for the purpose of
+> that conversation).
+
+Perhaps they shouldn't be ... they have different characteristics.  For
+instance, a discard may cross a read or write that has no sectors in
+common with it; a discard may be merged as a non contiguous range
+(assuming the drive supports multiple ranges), etc.
+
+I think it might be better to give it its own type for the elevators.
+
+James
+
+
