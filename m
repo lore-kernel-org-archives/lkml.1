@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYKWC3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbYKWCfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbYKWC3l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 21:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYKWC3b
+	id S1757599AbYKWCfv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 21:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbYKWCfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 21:29:31 -0500
-Received: from mailout-venus.uni-duesseldorf.de ([134.99.128.32]:41764 "EHLO
-	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755290AbYKWC3a (ORCPT
+	Sat, 22 Nov 2008 21:35:42 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:44883 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755290AbYKWCfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 21:29:30 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Sun, 23 Nov 2008 03:29:19 +0100 (CET)
-From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: vme_scc.c breakage (was: Re: linux-next: Tree for November 21)
-In-reply-to: <20081122164738.2226b63e@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Message-id: <alpine.DEB.1.00.0811230250290.8478@zirkon.biophys.uni-duesseldorf.de>
-References: <20081121181948.ee771502.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0811221558340.30025@anakin>
- <20081122164738.2226b63e@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sat, 22 Nov 2008 21:35:41 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 22 Nov 2008 18:35:38 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Tejun Heo <htejun@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
+       Miklos Szeredi <miklos@szeredi.hu>, arjan@linux.intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>, hch@infradead.org,
+       Ingo Molnar <mingo@elte.hu>, rminnich@sandia.gov, ericvh@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: poll: allow f_op->poll to sleep, take #3
+In-Reply-To: <4928B162.9030404@gmail.com>
+Message-ID: <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com>
+References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 23 Nov 2008, Tejun Heo wrote:
 
-> > Issues:
-> >   1. When Atari support is enabled, `scc' is defined in
-> >      include/asm-m68k/atari.h as:
-> > 
-> > 	# define scc ((*(volatile struct SCC*)SCC_BAS))
+> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> +{
+> +	struct poll_wqueues *pwq = wait->private;
+> +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
+> +
+> +	set_mb(pwq->triggered, 1);
+> +
+> +	/* perform the default wake up operation */
+> +	return default_wake_function(&dummy_wait, mode, sync, key);
+> +}
 
-This can be renamed - it is only used for control and data port address init 
-(aside from serial console, which should probably be separated out if it cannot 
-be reconciled). 
+Wouldn't it be nicer to un-static try_to_wake_up() (or a wrapper) instead 
+of setting up a fake wait queue just to use default_wake_function(), just 
+to wake up a task?
 
-> > 
-> >      However, renaming the variable `scc' doesn't help, as
-> > 
-> >   2. the variable `scc' is not used in scc_carrier_raised(),
-> > 
-> >   3. `port->channel' on line 635 still fails as `port' is not longer `struct
-> >      scc_port', but a 'struct tty_port', which has no member named 'channel'.
-> 
-> Will take a look at this, but gs is going to away so at some point
-> someone with hardware is going to have to admit to owning this driver or
-> just mark it BROKEN..
 
-Time to merge with pmac_zilog or ip22zilog (the latter even needing similar 
-register access delays as Ataris). 
-
-What is the time frame to gs being removed? I admit to 'owning' atari_scc which 
-was based on vme_scc so I'll have to deal with that sooner or later.
-
-	Michael
+- Davide
 
