@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYKWNmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbYKWNvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbYKWNmH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 08:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757650AbYKWNlz
+	id S1758752AbYKWNvr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 08:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758059AbYKWNvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 08:41:55 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:49053 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756717AbYKWNly (ORCPT
+	Sun, 23 Nov 2008 08:51:38 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:17065 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758034AbYKWNvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 08:41:54 -0500
+	Sun, 23 Nov 2008 08:51:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding:sender;
-        b=i0tljhMhjzz/x9krbRb6Uh23em0ZP1KtN+FIpQN4NpRyAnpt5YCLNJnUvCVS850zi1
-         /36HOFexR7RSZUeYGU5mVlNfbqaFo5yJZGUR5K8Omv58qE++Nu72Q7l+hMJ+zM9ibm/e
-         Q4Kp2FhNNUz5XUH8XsZTdf1Psnp67m7N6v+zg=
-Date: Sun, 23 Nov 2008 15:41:48 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com
-Subject: Mmiotrace regression in 2.6.28-rc6
-Message-ID: <20081123154148.04e0851a@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZEYHtHeEKIFT0U8Id8F23jlVu2poPd5cDFnY828zBNbFLShWTYYQbaq5ZCpAMnZlbd
+         YSsXP3C+eQw5GkN5B6y0IedjdNnuQJywF0CQc3di+n1c+E+Ntb3sDjI/04Nlnj47nF61
+         LFtC6FrqAjvSMWf+hk51gvhuiqddsB3tnjL7I=
+Date: Sun, 23 Nov 2008 16:51:34 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
+Message-ID: <20081123135134.GH24818@localhost>
+References: <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123091532.GA31515@mailshack.com> <20081123132752.GF1178@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123132752.GF1178@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+[Ingo Molnar - Sun, Nov 23, 2008 at 02:27:52PM +0100]
+| 
+| * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+| 
+| > Impact: moves some code out of .kprobes.text
+| > 
+| > KPROBE_ENTRY switches code generation to .kprobes.text, and KPROBE_END
+| > uses .popsection to get back to the previous section (.text, normally).
+| > Also replace ENDPROC by END, for consistency.
+| > 
+| > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+| 
+| applied to tip/x86/irq, thanks Alexander!
+| 
+| > One more small change for today. The xen-related functions 
+| > xen_do_hypervisor_callback and xen_failsafe_callback are put
+| > in the .kprobes.text even in the current kernel: ignore_sysret
+| > is enclosed in KPROBE_ENTRY / ENDPROC, instead of KPROBE_ENTRY /
+| > KPROBE_END, but I guess the situation is harmless.
+| 
+| yeah. It narrows no-kprobes protection for that code, but it should 
+| indeed be fine (and that's the intention as well).
+| 
+| Note that this is a reoccuring bug type, and rather long-lived. Can 
+| you think of any way to get automated nesting protection of both the 
+| .cfi_startproc/endproc macros and kprobes start/end? A poor man's 
+| solution would be to grep the number of start and end methods and 
+| enforce that they are equal.
+| 
+| 	Ingo
+| 
 
-now that the NULL deref bug in ring buffer resize is gone, I found
-another regression.
+I think we could play with preprocessor and check if ENTRY/END matches.
+Looking now.
 
-It seems I am not getting any "buffer overflow" messages anymore.
-
-Oh bummer, looks like I completely missed this one:
-(hope it's not in any .27 kernel)
-
-
-commit 3928a8a2d98081d1bc3c0a84a2d70e29b90ecf1c
-Author: Steven Rostedt <rostedt@goodmis.org>
-Date:   Mon Sep 29 23:02:41 2008 -0400
-
-    ftrace: make work with new ring buffer
-    
-    This patch ports ftrace over to the new ring buffer.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-<...>
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index a108c32..bdbf09d 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-<...>
-@@ -130,10 +130,14 @@ static unsigned long count_overruns(struct trace_iterator *iter)
- {
-        int cpu;
-        unsigned long cnt = 0;
-+/* FIXME: */
-+#if 0
-        for_each_online_cpu(cpu) {
-                cnt += iter->overrun[cpu];
-                iter->overrun[cpu] = 0;
-        }
-+#endif
-+       (void)cpu;
-        return cnt;
- }
-
-Steve, how am I going to fix this?
-I think it's quite crucial to know when the dump is incomplete.
-
-
-There's also another issue, but I am not sure how to reproduce it.
-The symptom is, that
-echo whatever > /debug/tracing/trace_marker
-gets stuck in a loop, bash eats 100% CPU: 10% user, 90% system.
-I got that twice today, like this: after a fresh boot echoing 64, 200,
-70 to trace_entries, switching between nop and mmiotrace tracers,
-echoing 0 or 1 to tracing_enabled, and running the testmmiotrace
-module. At some point the user marker got stuck.
-
-But then I tried to do that a third time by repeating some usage
-patterns I thought might trigger it, but it didn't happen.
-
-On the positive side, the basic test using testmmiotrace.ko
-with the basic setup produces the correct output.
-
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+		- Cyrill -
