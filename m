@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbYKWKjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYKWKj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758465AbYKWKjl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 05:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbYKWKjQ
+	id S1757899AbYKWKj4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 05:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbYKWKjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 05:39:16 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:26452 "EHLO
+	Sun, 23 Nov 2008 05:39:18 -0500
+Received: from mu-out-0910.google.com ([209.85.134.186]:25219 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756102AbYKWKjP (ORCPT
+	with ESMTP id S1756074AbYKWKjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 23 Nov 2008 05:39:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :mime-version:content-type:content-transfer-encoding;
-        b=G3y28eg5FeKZpHncCd/bQZzqk9xQ1U8CRiBfnlW2WulQUFR40sJP3dFrxyjN7uhv5q
-         Kzp6nCSUpURj8QzoDxuC2yej9ag/obNCHgjwCW5x0oI+F58qm4l8oSWkzvK5W0GinMla
-         acJ5ffi1ChEb2HCPqJBm8tGGcEOVoIB1WcH8c=
+        b=xRGu9FgcHEw0OEXqQClRbsA/cJ41IJ2QhPxrdIxubgSGLfzWiLzSk5USGmbvUm7avE
+         M9vxI0Ud4zmEwAer24G8ENbyk4GpaZhgyzYbATd4NUX8gD2c0TKGsaeoWg4ZUScGdKjO
+         d2bOOJLd0XhZ526SCnzM2OmfTwp/fMKzWDvgQ=
 From: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
 To: mingo@elte.hu
 Cc: srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
        linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
        =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
-Subject: [PATCH 3/3] tracing/stack-tracer: introduce CONFIG_USER_STACKTRACE_SUPPORT
-Date: Sun, 23 Nov 2008 12:39:08 +0200
-Message-Id: <1227436748-17075-3-git-send-email-edwintorok@gmail.com>
+Subject: [PATCH 2/3] tracing/stack-tracer: fix locking
+Date: Sun, 23 Nov 2008 12:39:07 +0200
+Message-Id: <1227436748-17075-2-git-send-email-edwintorok@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081123083740.GD30453@elte.hu>
-References: <20081123085310.GF30453@elte.hu> <20081123083740.GD30453@elte.hu>
+In-Reply-To: <20081123085310.GF30453@elte.hu>
+References: <20081123085310.GF30453@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -35,56 +35,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-User stack tracing is just implemented for x86, but it is not x86 specific.
-Introduce a generic config flag, that is currently enabled only for x86.
-When other arches implements it, they will have to SELECT USER_STACKTRACE_SUPPORT
+Hold mmap_sem while looking up/accessing vma.
+Hold the RCU lock while using the task we looked up.
 
 Signed-off-by: Török Edwin <edwintorok@gmail.com>
 ---
- arch/x86/Kconfig           |    1 +
- include/linux/stacktrace.h |    2 +-
- kernel/trace/Kconfig       |    3 +++
- 3 files changed, 5 insertions(+), 1 deletions(-)
+ kernel/trace/trace.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 7a146ba..e49a4fd 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -36,6 +36,7 @@ config X86
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_GENERIC_DMA_COHERENT if X86_32
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-+	select USER_STACKTRACE_SUPPORT
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index dedf35f..4c3bd82 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1462,11 +1462,15 @@ static inline int seq_print_user_ip(struct trace_seq *s, struct mm_struct *mm,
+ 	int ret = 1;
  
- config ARCH_DEFCONFIG
- 	string
-diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
-index fd42d68..1a8cecc 100644
---- a/include/linux/stacktrace.h
-+++ b/include/linux/stacktrace.h
-@@ -16,7 +16,7 @@ extern void save_stack_trace_tsk(struct task_struct *tsk,
- 
- extern void print_stack_trace(struct stack_trace *trace, int spaces);
- 
--#ifdef CONFIG_X86
-+#ifdef CONFIG_USER_STACKTRACE_SUPPORT
- extern void save_stack_trace_user(struct stack_trace *trace);
- #else
- # define save_stack_trace_user(trace)              do { } while (0)
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index b8378fa..87fc34a 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -3,6 +3,9 @@
- #  select HAVE_FUNCTION_TRACER:
- #
- 
-+config USER_STACKTRACE_SUPPORT
-+	bool
+ 	if (mm) {
+-		const struct vm_area_struct *vma = find_vma(mm, ip);
++		const struct vm_area_struct *vma;
 +
- config NOP_TRACER
- 	bool
++		down_read(&mm->mmap_sem);
++		vma = find_vma(mm, ip);
+ 		if (vma) {
+ 			file = vma->vm_file;
+ 			vmstart = vma->vm_start;
+ 		}
++		up_read(&mm->mmap_sem);
+ 	}
+ 	if (file) {
+ 		ret = trace_seq_path(s, &file->f_path);
+@@ -1494,10 +1498,9 @@ seq_print_userip_objs(const struct userstack_entry *entry, struct trace_seq *s,
+ 		 */
+ 		rcu_read_lock();
+ 		task = find_task_by_vpid(entry->ent.tgid);
+-		rcu_read_unlock();
+-
+ 		if (task)
+ 			mm = get_task_mm(task);
++		rcu_read_unlock();
+ 	}
  
+ 	for (i = 0; i < FTRACE_STACK_ENTRIES; i++) {
 -- 
 1.5.6.5
 
