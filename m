@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYKWUOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbYKWUWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYKWUOg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 15:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYKWUOX
+	id S1757643AbYKWUWn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 15:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYKWUWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 15:14:23 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37209 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbYKWUOW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 15:14:22 -0500
-Date: Sun, 23 Nov 2008 21:24:34 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/4] trace: profile all if conditionals
-Message-ID: <20081123202434.GU6703@one.firstfloor.org>
-References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <87iqqei5ys.fsf@basil.nowhere.org> <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
+	Sun, 23 Nov 2008 15:22:31 -0500
+Received: from onyx.pirko.cz ([84.16.102.30]:57260 "EHLO onyx.pirko.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751811AbYKWUWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 15:22:31 -0500
+Date: Sun, 23 Nov 2008 21:22:22 +0100
+From: Jirka Pirko <jirka@pirko.cz>
+To: linux-kernel@vger.kernel.org
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, davem@davemloft.net
+Subject: [PATCH] tokenring/3c359.c: Fix error message when allocating
+ tx_ring
+Message-ID: <20081123212222.45121ffe@jirka.pirko.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 23, 2008 at 02:56:42PM -0500, Steven Rostedt wrote:
+Pointed out by Joe Perches. Error message after tx_ring allocation check was
+wrong.
 
-You snipped my earlier suggestion? Can't you just use kernel gcov
-for this? Frankly it's output is infinitely more useful than
-the one from your patch. It also addresses Andrew's suggestion
-of profiling other control flow constructs.
+Signed-off-by: Jirka Pirko <jirka@jirka.pirko.cz>
+---
+ drivers/net/tokenring/3c359.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I know it's not ftrace, but not everything is bad just because it's
-not seen through the ftrace spectacles @)
-
-> On Sun, 23 Nov 2008, Andi Kleen wrote:
-> > Steven Rostedt <rostedt@goodmis.org> writes:
-> 
-> > > This adds a significant amount of overhead and should only be used
-> > > by those analyzing their system.
-> > 
-> > Often this can be also done using CPU performance counters. Might 
-> > be a cheaper option. 
-> 
-> I'd love to add an option that could hook into any arch with HW support 
-> for this. We could dump out the same information, but just a different way 
-> to gather it.  But I'm still ignorant to the use of CPU performance 
-> counters and how to find which branch matches which if.
-
-The theory is quite simple. Typically there are events for 
-"taken branches" and others for "non taken". So you set up
-two counters using the existing oprofile support and collect
-the samples.  Then combine these two sample streams.
-
-[Sometimes you have to also synthesize these 
-events because CPUs like to count predicted and mispredicted
-(in the CPU sense) differently, but that's also quite simple
-(on x86/core these can be all specified in the unit mask for
-the same event)]
-
-The sampling will be statistical (not every branch counted),
-but that's ok because only branches that are executed a significant
-time are interesting anyways.
-
-The only problem is you have to map back to source code lines, which
-can be done in user space based on the oprofile output and some
-addr2line or similar hacks. oprofile can also do this,
-although it gives this information only indirectly so a custom
-tool might be easier.
-
-Note it doesn't even need new kernel code, assuming 
-the architecture already has a working full oprofile implementation.
-
-The main advantage over gcov would be lower runtime overhead,
-although gcov is giving the better output (and is already working
-too)
-
--Andi
-
-
-
-> 
-> -- Steve
-> 
-
+diff --git a/drivers/net/tokenring/3c359.c b/drivers/net/tokenring/3c359.c
+index f832f9b..46fb308 100644
+--- a/drivers/net/tokenring/3c359.c
++++ b/drivers/net/tokenring/3c359.c
+@@ -638,7 +638,7 @@ static int xl_open(struct net_device *dev)
+ 	/* These MUST be on 8 byte boundaries */
+ 	xl_priv->xl_tx_ring = kzalloc((sizeof(struct xl_tx_desc) * XL_TX_RING_SIZE) + 7, GFP_DMA | GFP_KERNEL);
+ 	if (xl_priv->xl_tx_ring == NULL) {
+-		printk(KERN_WARNING "%s: Not enough memory to allocate rx buffers.\n",
++		printk(KERN_WARNING "%s: Not enough memory to allocate tx buffers.\n",
+ 				     dev->name);
+ 		free_irq(dev->irq,dev);
+ 		return -ENOMEM;
 -- 
-ak@linux.intel.com
+1.5.4.3
+
