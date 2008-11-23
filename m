@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635AbYKWU76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbYKWVBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752635AbYKWU76 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 15:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYKWU7u
+	id S1752052AbYKWVBA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 16:01:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYKWVAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 15:59:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57534 "EHLO
+	Sun, 23 Nov 2008 16:00:52 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57540 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYKWU7t convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1750887AbYKWVAv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 15:59:49 -0500
-Date: Sun, 23 Nov 2008 13:00:42 -0800
+	Sun, 23 Nov 2008 16:00:51 -0500
+Date: Sun, 23 Nov 2008 13:01:42 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: x86@kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] scripts: script from kerneloops.org to pretty print oops
- dumps
-Message-ID: <20081123130042.1d194768@infradead.org>
+Cc: viro@ftp.linux.org.uk
+Subject: [PATCH] vfs: expand some comments (d_path / seq_path)
+Message-ID: <20081123130142.5293e50f@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,237 +27,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 57b0deb1ad706a94e3118baee4127676f465c4ab Mon Sep 17 00:00:00 2001
+
+>From 126cd09e3c64ce6406cb2869c623064631c98add Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 5 Nov 2008 19:00:36 -0800
-Subject: [PATCH] scripts: script from kerneloops.org to pretty print oops dumps
+Date: Tue, 4 Nov 2008 21:29:34 -0800
+Subject: [PATCH] vfs: expand some comments (d_path / seq_path)
 
-We're strugling all the time to figure out where the code came from
-that oopsed.. The script below (a adaption from a script used by kerneloops.org)
-can help developers quite a bit, at least for non-module cases.
+explain that you really need to use the return value of d_path rather
+than the buffer you passed into it.
 
-It works and looks like this:
-
-[/home/arjan/linux]$ dmesg | perl scripts/markup_oops.pl vmlinux
- {
- 	struct agp_memory *memory;
-
- 	memory = agp_allocate_memory(agp_bridge, pg_count, type);
- c055c10f:	89 c2                	mov    %eax,%edx
- 	if (memory == NULL)
- c055c111:	74 19                	je     c055c12c <agp_allocate_memory_wrap+0x30>
- /* This function must only be called when current_controller != NULL */
- static void agp_insert_into_pool(struct agp_memory * temp)
- {
- 	struct agp_memory *prev;
-
- 	prev = agp_fe.current_controller->pool;
- c055c113:	a1 ec dc 8f c0       	mov    0xc08fdcec,%eax
-*c055c118:	8b 40 10             	mov    0x10(%eax),%eax     <----- faulting instruction
-
- 	if (prev != NULL) {
- c055c11b:	85 c0                	test   %eax,%eax
- c055c11d:	74 05                	je     c055c124 <agp_allocate_memory_wrap+0x28>
- 		prev->prev = temp;
- c055c11f:	89 50 04             	mov    %edx,0x4(%eax)
- 		temp->next = prev;
- c055c122:	89 02                	mov    %eax,(%edx)
- 	}
- 	agp_fe.current_controller->pool = temp;
- c055c124:	a1 ec dc 8f c0       	mov    0xc08fdcec,%eax
- c055c129:	89 50 10             	mov    %edx,0x10(%eax)
- 	if (memory == NULL)
- 		return NULL;
-
- 	agp_insert_into_pool(memory);
-
-so in this case, we faulted while dereferencing agp_fe.current_controller pointer, and we get to see
-exactly which function and line it affects... Personally I find this very useful, and I can
-see value for having this script in the kernel for more-than-just-me to use.
-
-Caveats:
-* It only works for oopses not-in-modules
-* It only works nicely for kernels compiled with CONFIG_DEBUG_INFO
-* It's not very fast.
-* It only works on x86
+Also fix the comment for seq_path(), the function arguments changed
+recently but the comment hadn't been updated in sync.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- scripts/markup_oops.pl |  162 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 162 insertions(+), 0 deletions(-)
- create mode 100644 scripts/markup_oops.pl
+ fs/dcache.c   |    8 ++++++--
+ fs/seq_file.c |   10 ++++++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/scripts/markup_oops.pl b/scripts/markup_oops.pl
-new file mode 100644
-index 0000000..700a7a6
---- /dev/null
-+++ b/scripts/markup_oops.pl
-@@ -0,0 +1,162 @@
-+#!/usr/bin/perl -w
-+
-+# Copyright 2008, Intel Corporation
-+#
-+# This file is part of the Linux kernel
-+#
-+# This program file is free software; you can redistribute it and/or modify it
-+# under the terms of the GNU General Public License as published by the
-+# Free Software Foundation; version 2 of the License.
-+#
-+# Authors:
-+# 	Arjan van de Ven <arjan@linux.intel.com>
-+
-+
-+my $vmlinux_name = $ARGV[0];
-+
-+#
-+# Step 1: Parse the oops to find the EIP value
-+#
-+
-+my $target = "0";
-+while (<STDIN>) {
-+	if ($_ =~ /EIP: 0060:\[\<([a-z0-9]+)\>\]/) {
-+		$target = $1;
-+	}
-+}
-+
-+if ($target =~ /^f8/) {
-+	print "This script does not work on modules ... \n";
-+	exit;
-+}
-+
-+if ($target eq "0") {
-+	print "No oops found!\n";
-+	print "Usage: \n";
-+	print "    dmesg | perl scripts/markup_oops.pl vmlinux\n";
-+	exit;
-+}
-+
-+my $counter = 0;
-+my $state   = 0;
-+my $center  = 0;
-+my @lines;
-+
-+sub InRange {
-+	my ($address, $target) = @_;
-+	my $ad = "0x".$address;
-+	my $ta = "0x".$target;
-+	my $delta = hex($ad) - hex($ta);
-+
-+	if (($delta > -4096) && ($delta < 4096)) {
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+
-+
-+# first, parse the input into the lines array, but to keep size down,
-+# we only do this for 4Kb around the sweet spot
-+
-+my $filename;
-+
-+open(FILE, "objdump -dS $vmlinux_name |") || die "Cannot start objdump";
-+
-+while (<FILE>) {
-+	my $line = $_;
-+	chomp($line);
-+	if ($state == 0) {
-+		if ($line =~ /^([a-f0-9]+)\:/) {
-+			if (InRange($1, $target)) {
-+				$state = 1;
-+			}
-+		}
-+	} else {
-+		if ($line =~ /^([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)\:/) {
-+			my $val = $1;
-+			if (!InRange($val, $target)) {
-+				last;
-+			}
-+			if ($val eq $target) {
-+				$center = $counter;
-+			}
-+		}
-+		$lines[$counter] = $line;
-+
-+		$counter = $counter + 1;
-+	}
-+}
-+
-+close(FILE);
-+
-+if ($counter == 0) {
-+	print "No matching code found \n";
-+	exit;
-+}
-+
-+if ($center == 0) {
-+	print "No matching code found \n";
-+	exit;
-+}
-+
-+my $start;
-+my $finish;
-+my $codelines = 0;
-+my $binarylines = 0;
-+# now we go up and down in the array to find how much we want to print
-+
-+$start = $center;
-+
-+while ($start > 1) {
-+	$start = $start - 1;
-+	my $line = $lines[$start];
-+	if ($line =~ /^([a-f0-9]+)\:/) {
-+		$binarylines = $binarylines + 1;
-+	} else {
-+		$codelines = $codelines + 1;
-+	}
-+	if ($codelines > 10) {
-+		last;
-+	}
-+	if ($binarylines > 20) {
-+		last;
-+	}
-+}
-+
-+
-+$finish = $center;
-+$codelines = 0;
-+$binarylines = 0;
-+while ($finish < $counter) {
-+	$finish = $finish + 1;
-+	my $line = $lines[$finish];
-+	if ($line =~ /^([a-f0-9]+)\:/) {
-+		$binarylines = $binarylines + 1;
-+	} else {
-+		$codelines = $codelines + 1;
-+	}
-+	if ($codelines > 10) {
-+		last;
-+	}
-+	if ($binarylines > 20) {
-+		last;
-+	}
-+}
-+
-+
-+my $i;
-+
-+my $fulltext = "";
-+$i = $start;
-+while ($i < $finish) {
-+	if ($i == $center) {
-+		$fulltext = $fulltext . "*$lines[$i]     <----- faulting instruction\n";
-+	} else {
-+		$fulltext = $fulltext .  " $lines[$i]\n";
-+	}
-+	$i = $i +1;
-+}
-+
-+print $fulltext;
-+
+diff --git a/fs/dcache.c b/fs/dcache.c
+index a1d86c7..e39f3e9 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1911,7 +1911,8 @@ static int prepend_name(char **buffer, int *buflen, struct qstr *name)
+  * Convert a dentry into an ASCII path name. If the entry has been deleted
+  * the string " (deleted)" is appended. Note that this is ambiguous.
+  *
+- * Returns the buffer or an error code if the path was too long.
++ * Returns a pointer into the buffer or an error code if the
++ * path was too long.
+  *
+  * "buflen" should be positive. Caller holds the dcache_lock.
+  *
+@@ -1987,7 +1988,10 @@ Elong:
+  * Convert a dentry into an ASCII path name. If the entry has been deleted
+  * the string " (deleted)" is appended. Note that this is ambiguous.
+  *
+- * Returns the buffer or an error code if the path was too long.
++ * Returns a pointer into the buffer or an error code if the path was
++ * too long. Note: Callers should use the returned pointer, not the passed
++ * in buffer, to use the name! The implementation often starts at an offset
++ * into the buffer, and may leave 0 bytes at the start.
+  *
+  * "buflen" should be positive.
+  */
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index eba2eab..9e1c051 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -377,8 +377,14 @@ static char *mangle_path(char *s, char *p, char *esc)
+ 	return NULL;
+ }
+ 
+-/*
+- * return the absolute path of 'dentry' residing in mount 'mnt'.
++/**
++ * seq_path - seq_file interface to print a pathname
++ * @m: the seq_file handle
++ * @path: the struct path to print
++ * @esc: set of characters to escape in the output
++ *
++ * return the absolute path of 'path', as represented by the
++ * dentry / mnt pair in the path parameter.
+  */
+ int seq_path(struct seq_file *m, struct path *path, char *esc)
+ {
 -- 
 1.6.0.3
-
 
 
 -- 
