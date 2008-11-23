@@ -1,66 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbYKWDso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbYKWDyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbYKWDso (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 22:48:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYKWDsd
+	id S1758003AbYKWDyM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 22:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYKWDxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 22:48:33 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:24401 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755384AbYKWDsc (ORCPT
+	Sat, 22 Nov 2008 22:53:53 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:35216 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755384AbYKWDxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 22:48:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=RNx1jHYY+RLSEohiip6HK9g4lUIRK47dOQC6mUEF8igwYeSfupkucwqHd0L47q3U1x
-         +4A1krckBNHp9Dtk1gh7E1cHguY3vNQ9tzv5dM64sGSPXi30Je0z+UewGCA+p2rbhsxZ
-         BGxzxs7HHYpOmB4WX3NeBDUkcaWS84d1b+kZI=
-Message-ID: <4928D2A2.4030304@gmail.com>
-Date: Sun, 23 Nov 2008 12:48:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sat, 22 Nov 2008 22:53:51 -0500
+Message-ID: <4928D3A9.8060805@cosmosbay.com>
+Date: Sun, 23 Nov 2008 04:53:13 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Brad Boyer <flar@allandria.com>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Miklos Szeredi <miklos@szeredi.hu>,
-       arjan@linux.intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       hch@infradead.org, Ingo Molnar <mingo@elte.hu>, rminnich@sandia.gov,
-       ericvh@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Christoph Hellwig <hch@infradead.org>, David Miller <davem@davemloft.net>,
+       mingo@elte.hu, cl@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       efault@gmx.de, a.p.zijlstra@chello.nl,
+       Linux Netdev List <netdev@vger.kernel.org>, viro@zeniv.linux.org.uk,
        linux-fsdevel@vger.kernel.org
-Subject: Re: poll: allow f_op->poll to sleep, take #3
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com> <4928C891.80405@gmail.com> <20081123033457.GA1912@cynthia.pants.nu>
-In-Reply-To: <20081123033457.GA1912@cynthia.pants.nu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] fs: pipe/sockets/anon dentries should have themselves
+ as parent
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121153626.GA9281@infradead.org> <4926F6C5.9030108@cosmosbay.com> <20081121184344.GC5707@parisc-linux.org>
+In-Reply-To: <20081121184344.GC5707@parisc-linux.org>
+Content-Type: multipart/mixed;
+ boundary="------------030909020809070702010904"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 23 Nov 2008 04:53:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brad Boyer wrote:
-> On Sun, Nov 23, 2008 at 12:05:53PM +0900, Tejun Heo wrote:
->> I thought try_to_wake_up() was made static to avoid abuse but then again
->> creating dummy waitqueue is an obvious abuse of waitqueue.  What do
->> other people think?  I'll be happy to use try_to_wake_up() directly.
-> 
-> Do you need all the extra arguments? The function wake_up_process()
-> is already a wrapper around try_to_wake_up() and is exported, but
-> it doesn't have any arguments other than the task_struct and uses
-> defaults for the other arguments. I'm not sure if anything in your
-> code would break by ignoring the other possible values instead of
-> passing them along from the arguments into the caller.
+This is a multi-part message in MIME format.
+--------------030909020809070702010904
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Hmmm... there was something which made wake_up_process() inappropriate.
- Ah, okay, it was @mode.  We can add a WARN_ON() if @mode is an
-unexpected value and use a fixed one - TASK_INTERRUPTIBLE or TASK_ALL -
-but that's even hackier than the waitqueue hack.
+Matthew Wilcox a =E9crit :
+> On Fri, Nov 21, 2008 at 06:58:29PM +0100, Eric Dumazet wrote:
+>> +/**
+>> + * d_alloc_unhashed - allocate unhashed dentry
+>> + * @inode: inode to allocate the dentry for
+>> + * @name: dentry name
+>=20
+> It's normal to list the parameters in the order they're passed to the
+> function.  Not sure if we have a tool that checks for this or not --
+> Randy?
 
-Thanks.
+Yes, no problem, better to have the same order.
 
--- 
-tejun
+>=20
+>> + *
+>> + * Allocate an unhashed dentry for the inode given. The inode is
+>> + * instantiated and returned. %NULL is returned if there is insuffici=
+ent
+>> + * memory. Unhashed dentries have themselves as a parent.
+>> + */
+>> +=20
+>> +struct dentry * d_alloc_unhashed(const char *name, struct inode *inod=
+e)
+>> +{
+>> +	struct qstr q =3D { .name =3D name, .len =3D strlen(name) };
+>> +	struct dentry *res;
+>> +
+>> +	res =3D d_alloc(NULL, &q);
+>> +	if (res) {
+>> +		res->d_sb =3D inode->i_sb;
+>> +		res->d_parent =3D res;
+>> +		/*
+>> +		 * We dont want to push this dentry into global dentry hash table.
+>> +		 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHE=
+D
+>> +		 * This permits a working /proc/$pid/fd/XXX on sockets,pipes,anon
+>> +		 */
+>=20
+> Line length ... as checkpatch would have warned you ;-)
+>=20
+> And there are several other grammatical nitpicks with this comment.  Tr=
+y
+> this:
+>=20
+> 		/*
+> 		 * We don't want to put this dentry in the global dentry
+> 		 * hash table, so we pretend the dentry is already hashed
+> 		 * by unsetting DCACHE_UNHASHED.  This permits=20
+> 		 * /proc/$pid/fd/XXX t work for sockets, pipes and
+> 		 * anonymous files (signalfd, timerfd, etc).
+> 		 */
+
+Yes, this is better.
+
+>=20
+>> +		res->d_flags &=3D ~DCACHE_UNHASHED;
+>> +		res->d_flags |=3D DCACHE_DISCONNECTED;
+>=20
+> Is this really better than:
+>=20
+> 		res->d_flags =3D res->d_flags & ~DCACHE_UNHASHED |
+> 						DCACHE_DISCONNECTED;
+
+Well, I personally prefer the two lines, intention is more readable :)
+
+>=20
+> Anyway, nice cleanup.
+>=20
+
+Thanks Matthew, here is an updated version of the patch.
+
+[PATCH] fs: pipe/sockets/anon dentries should have themselves as parent
+
+
+Linking pipe/sockets/anon dentries to one root 'parent' has no functional=
+
+impact at all, but a scalability one.
+
+We can avoid touching a cache line at allocation stage (inside d_alloc(),=
+ no need
+to touch root->d_count), but also at freeing time (in d_kill, decrementin=
+g d_count)
+We avoid an expensive atomic_dec_and_lock() call on the root dentry.
+
+We add d_alloc_unhashed(const char *name, struct inode *inode) helper
+to be used by pipes/socket/anon. This function is about the same as
+d_alloc_root() but for unhashed entries.
+
+Before patch, time to run 8 *  1 million of close(socket()) calls on 8 CP=
+US was :
+
+real    0m27.496s
+user    0m0.657s
+sys     3m39.092s
+
+After patch :
+
+real    0m23.843s
+user    0m0.616s
+sys     3m9.732s
+
+
+Old oprofile :
+CPU: Core 2, speed 3000.11 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a uni=
+t mask of 0x00 (Unhalted core cycles) count 100000
+samples  cum. samples  %        cum. %     symbol name
+164257   164257        11.0245  11.0245    init_file
+155488   319745        10.4359  21.4604    d_alloc
+151887   471632        10.1942  31.6547    _atomic_dec_and_lock
+91620    563252         6.1493  37.8039    inet_create
+74245    637497         4.9831  42.7871    kmem_cache_alloc
+46702    684199         3.1345  45.9216    dentry_iput
+46186    730385         3.0999  49.0215    tcp_close
+42824    773209         2.8742  51.8957    kmem_cache_free
+37275    810484         2.5018  54.3975    wake_up_inode
+36553    847037         2.4533  56.8508    tcp_v4_init_sock
+35661    882698         2.3935  59.2443    inotify_d_instantiate
+32998    915696         2.2147  61.4590    sysenter_past_esp
+31442    947138         2.1103  63.5693    d_instantiate
+31303    978441         2.1010  65.6703    generic_forget_inode
+27533    1005974        1.8479  67.5183    vfs_dq_drop
+24237    1030211        1.6267  69.1450    sock_attach_fd
+19290    1049501        1.2947  70.4397    __copy_from_user_ll
+
+
+New oprofile :
+CPU: Core 2, speed 3000.11 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a uni=
+t mask of 0x00 (Unhalted core cycles) count 100000
+samples  cum. samples  %        cum. %     symbol name
+148703   148703        10.8581  10.8581    inet_create
+116680   265383         8.5198  19.3779    new_inode
+108912   374295         7.9526  27.3306    init_file
+82911    457206         6.0541  33.3846    kmem_cache_alloc
+65690    522896         4.7966  38.1812    wake_up_inode
+53286    576182         3.8909  42.0721    _atomic_dec_and_lock
+43814    619996         3.1992  45.2713    generic_forget_inode
+41993    661989         3.0663  48.3376    d_alloc
+41244    703233         3.0116  51.3492    kmem_cache_free
+39244    742477         2.8655  54.2148    tcp_v4_init_sock
+37402    779879         2.7310  56.9458    tcp_close
+33336    813215         2.4342  59.3800    sysenter_past_esp
+28596    841811         2.0880  61.4680    inode_has_buffers
+25769    867580         1.8816  63.3496    d_kill
+22606    890186         1.6507  65.0003    dentry_iput
+20224    910410         1.4767  66.4770    vfs_dq_drop
+19800    930210         1.4458  67.9228    __copy_from_user_ll
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+ fs/anon_inodes.c       |    9 +--------
+ fs/dcache.c            |   33 +++++++++++++++++++++++++++++++++
+ fs/pipe.c              |   10 +---------
+ include/linux/dcache.h |    1 +
+ net/socket.c           |   10 +---------
+ 5 files changed, 37 insertions(+), 26 deletions(-)
+
+--------------030909020809070702010904
+Content-Type: text/plain;
+ name="d_alloc_unhashed2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="d_alloc_unhashed2.patch"
+
+diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
+index 3662dd4..9fd0515 100644
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -71,7 +71,6 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
+ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+ 		     void *priv, int flags)
+ {
+-	struct qstr this;
+ 	struct dentry *dentry;
+ 	struct file *file;
+ 	int error, fd;
+@@ -89,10 +88,7 @@ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+ 	 * using the inode sequence number.
+ 	 */
+ 	error = -ENOMEM;
+-	this.name = name;
+-	this.len = strlen(name);
+-	this.hash = 0;
+-	dentry = d_alloc(anon_inode_mnt->mnt_sb->s_root, &this);
++	dentry = d_alloc_unhashed(name, anon_inode_inode);
+ 	if (!dentry)
+ 		goto err_put_unused_fd;
+ 
+@@ -104,9 +100,6 @@ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+ 	atomic_inc(&anon_inode_inode->i_count);
+ 
+ 	dentry->d_op = &anon_inodefs_dentry_operations;
+-	/* Do not publish this dentry inside the global dentry hash table */
+-	dentry->d_flags &= ~DCACHE_UNHASHED;
+-	d_instantiate(dentry, anon_inode_inode);
+ 
+ 	error = -ENFILE;
+ 	file = alloc_file(anon_inode_mnt, dentry,
+diff --git a/fs/dcache.c b/fs/dcache.c
+index a1d86c7..43ef88d 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1111,6 +1111,39 @@ struct dentry * d_alloc_root(struct inode * root_inode)
+ 	return res;
+ }
+ 
++/**
++ * d_alloc_unhashed - allocate unhashed dentry
++ * @name: dentry name
++ * @inode: inode to allocate the dentry for
++ *
++ * Allocate an unhashed dentry for the inode given. The inode is
++ * instantiated and returned. %NULL is returned if there is insufficient
++ * memory. Unhashed dentries have themselves as a parent.
++ */
++ 
++struct dentry * d_alloc_unhashed(const char *name, struct inode *inode)
++{
++	struct qstr q = { .name = name, .len = strlen(name) };
++	struct dentry *res;
++
++	res = d_alloc(NULL, &q);
++	if (res) {
++		res->d_sb = inode->i_sb;
++		res->d_parent = res;
++		/*
++		 * We dont want to push this dentry into global dentry
++		 * hash table, so we pretend the dentry is already hashed
++		 * by unsetting DCACHE_UNHASHED. This permits
++		 * /proc/$pid/fd/XXX to work for sockets, pipes, and
++		 * anonymous files (signalfd, timerfd, ...)
++		 */
++		res->d_flags &= ~DCACHE_UNHASHED;
++		res->d_flags |= DCACHE_DISCONNECTED;
++		d_instantiate(res, inode);
++	}
++	return res;
++}
++
+ static inline struct hlist_head *d_hash(struct dentry *parent,
+ 					unsigned long hash)
+ {
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 7aea8b8..29fcac2 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -918,7 +918,6 @@ struct file *create_write_pipe(int flags)
+ 	struct inode *inode;
+ 	struct file *f;
+ 	struct dentry *dentry;
+-	struct qstr name = { .name = "" };
+ 
+ 	err = -ENFILE;
+ 	inode = get_pipe_inode();
+@@ -926,18 +925,11 @@ struct file *create_write_pipe(int flags)
+ 		goto err;
+ 
+ 	err = -ENOMEM;
+-	dentry = d_alloc(pipe_mnt->mnt_sb->s_root, &name);
++	dentry = d_alloc_unhashed("", inode);
+ 	if (!dentry)
+ 		goto err_inode;
+ 
+ 	dentry->d_op = &pipefs_dentry_operations;
+-	/*
+-	 * We dont want to publish this dentry into global dentry hash table.
+-	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
+-	 * This permits a working /proc/$pid/fd/XXX on pipes
+-	 */
+-	dentry->d_flags &= ~DCACHE_UNHASHED;
+-	d_instantiate(dentry, inode);
+ 
+ 	err = -ENFILE;
+ 	f = alloc_file(pipe_mnt, dentry, FMODE_WRITE, &write_pipefifo_fops);
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index a37359d..12438d6 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -238,6 +238,7 @@ extern int d_invalidate(struct dentry *);
+ 
+ /* only used at mount-time */
+ extern struct dentry * d_alloc_root(struct inode *);
++extern struct dentry * d_alloc_unhashed(const char *, struct inode *);
+ 
+ /* <clickety>-<click> the ramfs-type tree */
+ extern void d_genocide(struct dentry *);
+diff --git a/net/socket.c b/net/socket.c
+index e9d65ea..b659b5d 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -371,20 +371,12 @@ static int sock_alloc_fd(struct file **filep, int flags)
+ static int sock_attach_fd(struct socket *sock, struct file *file, int flags)
+ {
+ 	struct dentry *dentry;
+-	struct qstr name = { .name = "" };
+ 
+-	dentry = d_alloc(sock_mnt->mnt_sb->s_root, &name);
++	dentry = d_alloc_unhashed("", SOCK_INODE(sock));
+ 	if (unlikely(!dentry))
+ 		return -ENOMEM;
+ 
+ 	dentry->d_op = &sockfs_dentry_operations;
+-	/*
+-	 * We dont want to push this dentry into global dentry hash table.
+-	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
+-	 * This permits a working /proc/$pid/fd/XXX on sockets
+-	 */
+-	dentry->d_flags &= ~DCACHE_UNHASHED;
+-	d_instantiate(dentry, SOCK_INODE(sock));
+ 
+ 	sock->file = file;
+ 	init_file(file, sock_mnt, dentry, FMODE_READ | FMODE_WRITE,
+
+--------------030909020809070702010904--
