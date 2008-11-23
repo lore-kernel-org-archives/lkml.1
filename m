@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYKWWZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbYKWW3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbYKWWZh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYKWWZY
+	id S1752376AbYKWW3U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYKWW3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:25:24 -0500
-Received: from lucidpixels.com ([75.144.35.66]:44112 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbYKWWZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:25:23 -0500
-Date: Sun, 23 Nov 2008 17:25:22 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Stian Jordet <liste@jordet.net>
-cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
-In-Reply-To: <1227476908.32357.5.camel@chevrolet>
-Message-ID: <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>
-References: <1226760254.5089.11.camel@chevrolet> <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com> <1227476908.32357.5.camel@chevrolet>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 23 Nov 2008 17:29:11 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:55876 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYKWW3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 17:29:10 -0500
+Date: 23 Nov 2008 23:28:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: jkosina@suse.cz
+Cc: jonsmirl@gmail.com
+Cc: jrm8005@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Cc: pavel@suse.cz
+Message-ID: <AqQUJV3JjFB@christoph>
+In-Reply-To: <alpine.LRH.1.10.0811232128050.26670@twin.jikos.cz>
+Subject: Re: In-kernel IR remote control support
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/LJi5cZT4QZd3jnqva26s3Xvbx6eJsQLwzgU+
+ is5Y51kJ6f2v9H8DdefinxV/bIbAVYe+0AZQTIjgk84UXjDJn3
+ lXlnWJ4B2a7FahvS45um2QLdMvdCu3NpANQYDdchxI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+on 23 Nov 08 at 21:33, Jiri Kosina wrote:
+> On Sun, 23 Nov 2008, Christoph Bartelmus wrote:
 
-On Sun, 23 Nov 2008, Stian Jordet wrote:
+>> You can have LIRC setup to decode all common remote control protocols.
+>> It's just a matter of proper packaging and pre-configuration. You don't
+>> have to write a single line of code for this (I still have to add uinput
+>> support, though, which I probably would have done by now, if I weren't
+>> busy writing posts like this).
 
-> ti., 18.11.2008 kl. 11.51 -0200, skrev Sergio Luis:
->> please post your config and dmesg output. It might help people try to
->> identify something wrong.
+> Just a question -- how much is the situation different to what we
+> currently have for HID devices?
 >
-> (see http://marc.info/?l=linux-kernel&m=122676220019858&w=2 for the
-> start of this thread)
+> For these, we currently have common code, that is able to handle all the
+> "normal" devices by default, that are fully compliant with the HID
+> standard.
+> For the devices that don't behave that well, we have specialized drivers,
+> that use all the generic HID infrastructure to handle the
+> standard-compliant behavior of the device and allows the specialized
+> drivers to implement only the parts that violate standard.
 >
-> Hmm. I have now converted my root and /home filesystems to ext3, and
-> that actually fixed it (!). I have no idea why xfs is performing so
-> extremely poorly on this machine, i'm running xfs on every filesystem on
-> eight other computers (one heavy loaded server, as well).
->
-> Anyway, I'm now unpacking the 2.6.27.6 kernel in 15 seconds, with xfs on
-> the same array it used between five and six minutes.
->
-> I still have a xfs array, and when I copy files to or from that array,
-> the gnome session practically freezes, and the load average easily goes
-> beyond 10.
->
-> How should I debug this? I'm not very eager about reformatting my 1,5TB
-> xfs array... Besides, xfs have never let me down earlier.
->
-> Thanks.
->
-> Please cc me on any replies.
->
-> Regards,
-> Stian
->
-> _______________________________________________
-> xfs mailing list
-> xfs@oss.sgi.com
-> http://oss.sgi.com/mailman/listinfo/xfs
->
+> It's pretty lightweight and seems to work well. Wouldn't this work also
+> for LIRC drivers?
 
-As the original posted stated:
+No. Unlike with HID devices, with most IR receivers you can use any  
+remote. In LIRC we write drivers for the receivers and don't care about  
+the remote, which is handled in userspace. The suggested approach would  
+move both receiver and remote handling into kernel space (actually only  
+part of it because many receivers have userspace drivers, so both receiver  
+and remote handling must be done in userspace anyway for these receivers).
 
-1. please post dmesg output
-2. you may want to include your kernel .config
-3. xfs_info /dev/mdX or /dev/device may also be useful
-4. you can also check fragmentation:
-    # xfs_db -c frag -f /dev/md2
-    actual 257492, ideal 242687, fragmentation factor 5.75%
-5. something sounds very strange, I also run XFS on a lot of systems and
-    have never heard of that before..
-6. also post your /etc/fstab options
-7. what distribution are you running?
-8. are -only- the two fujitsu's (raid0) affected or are other arrays
-    affected on this HW as well (separate disks etc)?
-9. you can also compile in support for latency_top & power_top to see
-    if there is any excessive polling going on by any one specific
-    device/function as well
-
-Justin.
+Christoph
