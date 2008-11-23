@@ -1,94 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbYKWWJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752207AbYKWWTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbYKWWJz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYKWWJo
+	id S1752207AbYKWWTy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYKWWTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:09:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42498 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbYKWWJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:09:43 -0500
-Date: Mon, 24 Nov 2008 00:10:14 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
-Message-ID: <20081123231014.GA2424@redhat.com>
-References: <20081115212133.GA32140@us.ibm.com> <20081118175336.GA14178@redhat.com> <20081119012207.GA19092@us.ibm.com>
+	Sun, 23 Nov 2008 17:19:45 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62735 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbYKWWTo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 17:19:44 -0500
+Date: Sun, 23 Nov 2008 16:20:23 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>, Kir Kolyshkin <kir@openvz.org>,
+       linux-man@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: Documentation for CLONE_NEWPID
+Message-ID: <20081123222023.GB12687@hallyn.com>
+References: <4923810B.7010201@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081119012207.GA19092@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4923810B.7010201@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18, Sukadev Bhattiprolu wrote:
->
-> |
-> | > +static inline int siginfo_from_ancestor_ns(siginfo_t *info)
-> | > +{
-> | > +	return SI_FROMUSER(info) && (info->si_pid == 0);
-> | > +}
-> |
-> | Yes, this is problem... I doubt we can rely on !si_pid here.
-> | More on this later.
->
-> BTW, rather than clearing SIG_FROM_USER in send_signal(), can we
-> keep it till we dequeue the signal ? Yes, collect_signal() would
-> need to consider this flag. But when we dequeue, we can note that
-> it was from user and use that in the siginfo_from_ancestor() ?
+Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
+> Pavel, Kir,
+> 
+> Drawing fairly heavily on your LWN.net article
+> (http://lwn.net/Articles/259217/), plus the kernel source and some
+> experimentation, I created the patch below to document CLONE_NEWPID for the
+> clone(2) manual page.  Could you please review and let me know of any
+> improvements or inaccuracies.
 
-Yes! I thought about this too. As a last resort this should work
-afaics. But we should be carefull, we have to fix rm_from_queue_full()
-for example as well.
 
-Another note. We can split SIG_FROM_USER (if we are going to use this
-hack) into 2 flags: SIG_KILL_SUB_NS and SIG_MANGLE_SI_PID. We can
-even put "struct pid *pid" into si_signo along with these bits if
-we find some strange user which sends the signal on behalve of
-the different task.
+Thanks, Michael, this is something we've definately been wanting to
+get to.
 
-But personally, I'd prefer to make 3 simple patches for the start.
-Then we can continue with these complications if needed. Sukadev,
-please feel free to disagree with me. I am just trying to make
-the first step reviewable and simple. No changes on dequeue path,
-no -ENOMEM in send_signal().
+...
 
-1. Introduce SIG_FROM_USER (or whatever). Basically, the patch I
-   sent. Except I'd relly like to see this code under CONFIG_
-   just for documentation, but please feel free to ignore.
+> +(i.e., the process created using the
+> +.BR CLONE_NEWPID
+> +flag) has the PID 1, and is the "init" process for the namespace.
+> +Children that are orphaned within the namespace will be reparented
+> +to this process rather than
+> +.BR init (8).
+> +Unlike the traditional
+> +.B init
+> +process, the "init" process of a PID namespace can terminate,
+> +and if it does, all of the processes in the namespace are terminated.
+> +
+> +PID namespaces form a hierarchy.
+> +When a PID new namespace is created,
+> +the PIDs of the processes in that namespace are visible
 
-   So, with this patch send_signal() has "bool from_ancestor", which
-   is not used so far. And we the fixup code after copy_siginfo()
-   which clears the flags, or better yet just sets .si_signo = sig.
+The processes in that namespace are visible, but by different
+pids.  So saying that the pids are visible in the parent
+pidns isn't quite right.
 
-2. Now we change send_signal()
+> +in the PID namespace of the process that created the new namespace;
+> +analogously, if the parent PID namespace is itself
+> +the child of another PID namespace,
+> +then PIDs of the child and parent PID namespaces will both be
 
-	+	if (from_ancestor && sig == SIGKILL)
-	+		t->signal->flags &= ~SIGNAL_UNKILLABLE;
-		if (!prepare_signal(...))
-			return;
+Again, the processes, not pids, are visible.
 
-   and change copy_signal() to set SIGNAL_UNKILLABLE for
-   cinit.
+> +visible in the grandparent PID namespace.
+> +Conversely, the processes in the "child" PID namespace do not see
+> +the PIDs of the processes in the parent namespace.
+> +The existence of a namespace hierarchy means that each process
+> +may now have multiple PIDs:
+> +one for each namespace in which it is visible.
+> +(A call to
+> +.BR getpid (2)
+> +always returns the PID associated with the namespace in which
+> +the process was created.)
+> +
+> +After creating the new namespace,
+> +it is useful for the child to change its root directory
+> +and mount a new procfs instance at
+> +.I /proc
+> +so that tools such as
+> +.BR ps (1)
+> +work correctly.
 
-   From now cinit is protected from unwanted signals from
-   its namespace, and the parent can always kill it with
-   SIGKILL.
+Probably not worth mentioning here, but if it has done
+CLONE_NEWNS then it doesn't need to change its root, it
+can just mount a new proc instance over /proc.
 
-   Actually, I think this is enough to solve most problems,
-   the further changes can be discussed later. OK, the only
-   "real" problem is SIGSTOP, afaics. This looks solveable.
+> +
+> +Use of this flag requires: a kernel configured with the
+> +.B CONFIG_PID_NS
+> +configuration option and requires that the process be privileged
+> +.RB (CAP_SYS_ADMIN ).
+> +This flag can't be specified in conjunction with
+> +.BR CLONE_THREAD .
+> +.TP
+>  .BR CLONE_PARENT " (since Linux 2.3.12)"
+>  If
+>  .B CLONE_PARENT
+> @@ -627,6 +701,14 @@ were specified in
+>  .IR flags .
+>  .TP
+>  .B EINVAL
+> +Both
+> +.BR CLONE_NEWPID
+> +and
+> +.BR CLONE_THREAD
+> +were specified in
+> +.IR flags .
+> +.TP
+> +.B EINVAL
+>  Returned by
+>  .BR clone ()
+>  when a zero value is specified for
+> @@ -639,6 +721,8 @@ copied.
+>  .TP
+>  .B EPERM
+>  .B CLONE_NEWNS
+> +or
+> +.B CLONE_NEWPID
+>  was specified by a non-root process (process without \fBCAP_SYS_ADMIN\fP).
+>  .TP
+>  .B EPERM
 
-3. mangle .si_pid in send_signal(). Again, it is not clear
-   what should we do with sys_rt_sigqueueinfo(), but there
-   is no "obviously right" solution.
+I assume you've considered the pros and cons of mentioning
+signal semantics with respect to init tasks of child pid namespaces,
+and decided it's not worth mentioning yet as the semantics are not
+yet finalized?
 
-And I am really sorry for delay.
+The goal is to treat the process as a system-wide init with respect
+to signals coming from its own namespace, and treat it as an ordinary
+task for signals coming from its ancestor namespaces.  But as you've
+probably read, the implementation may result in some unfortunate
+side-effects regarding blocked signals etc.
 
-Oleg.
-
+thanks,
+-serge
