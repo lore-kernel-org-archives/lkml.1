@@ -1,87 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbYKWKTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbYKWKjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758034AbYKWKTa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 05:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYKWKTV
+	id S1758045AbYKWKjZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 05:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYKWKjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 05:19:21 -0500
-Received: from mga14.intel.com ([143.182.124.37]:58376 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579AbYKWKTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 05:19:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,653,1220252400"; 
-   d="scan'208";a="81060992"
-Date: Sun, 23 Nov 2008 18:19:07 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] don't take lock on changing ra_pages
-Message-ID: <20081123101907.GA12218@localhost>
+	Sun, 23 Nov 2008 05:39:15 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:22511 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755883AbYKWKjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 05:39:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :mime-version:content-type:content-transfer-encoding;
+        b=NdyXomdT2WvUjd6YaaVrkmEI5nG31zjFt2LROV8W83BRxHZvZ10icVbhjzBTvjJV5t
+         hxSGyNKlsJ7NtpqZJakTgpLvapaaap2+aLpeO7D+KOcpnXrTMn0L3+MWma2hSNxwTvk0
+         h1+KZUtKvw4MOaSabSLRc0R46myTrJzZZezXg=
+From: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
+To: mingo@elte.hu
+Cc: srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
+       =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
+Subject: [PATCH 1/3] tracing/stack-tracer: fix style issues
+Date: Sun, 23 Nov 2008 12:39:06 +0200
+Message-Id: <1227436748-17075-1-git-send-email-edwintorok@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20081123085310.GF30453@elte.hu>
+References: <20081123085310.GF30453@elte.hu> <20081123083740.GD30453@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no need to take queue_lock or kernel_lock when modifying
-bdi->ra_pages. So remove them. Also remove out of date comment for
-queue_max_sectors_store().
 
-Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
+Signed-off-by: Török Edwin <edwintorok@gmail.com>
 ---
- block/blk-sysfs.c    |    7 +------
- block/compat_ioctl.c |    2 --
- block/ioctl.c        |    2 --
- 3 files changed, 1 insertion(+), 10 deletions(-)
+ arch/x86/kernel/stacktrace.c |   51 +++++++++++++++++++++++------------------
+ include/linux/stacktrace.h   |    2 +-
+ kernel/trace/trace.c         |    7 ++---
+ 3 files changed, 33 insertions(+), 27 deletions(-)
 
---- linux-2.6.orig/block/blk-sysfs.c
-+++ linux-2.6/block/blk-sysfs.c
-@@ -88,9 +88,7 @@ queue_ra_store(struct request_queue *q, 
- 	unsigned long ra_kb;
- 	ssize_t ret = queue_var_store(&ra_kb, page, count);
+diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+index b151530..10786af 100644
+--- a/arch/x86/kernel/stacktrace.c
++++ b/arch/x86/kernel/stacktrace.c
+@@ -89,7 +89,7 @@ EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
  
--	spin_lock_irq(q->queue_lock);
- 	q->backing_dev_info.ra_pages = ra_kb >> (PAGE_CACHE_SHIFT - 10);
--	spin_unlock_irq(q->queue_lock);
+ struct stack_frame {
+ 	const void __user	*next_fp;
+-	unsigned long		return_address;
++	unsigned long		ret_addr;
+ };
  
+ static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
+@@ -108,33 +108,40 @@ static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
  	return ret;
  }
-@@ -117,10 +115,7 @@ queue_max_sectors_store(struct request_q
  
- 	if (max_sectors_kb > max_hw_sectors_kb || max_sectors_kb < page_kb)
- 		return -EINVAL;
--	/*
--	 * Take the queue lock to update the readahead and max_sectors
--	 * values synchronously:
--	 */
++static inline void __save_stack_trace_user(struct stack_trace *trace)
++{
++	const struct pt_regs *regs = task_pt_regs(current);
++	const void __user *fp = (const void __user *)regs->bp;
 +
- 	spin_lock_irq(q->queue_lock);
- 	q->max_sectors = max_sectors_kb << 1;
- 	spin_unlock_irq(q->queue_lock);
---- linux-2.6.orig/block/compat_ioctl.c
-+++ linux-2.6/block/compat_ioctl.c
-@@ -745,9 +745,7 @@ long compat_blkdev_ioctl(struct file *fi
- 		bdi = blk_get_backing_dev_info(bdev);
- 		if (bdi == NULL)
- 			return -ENOTTY;
--		lock_kernel();
- 		bdi->ra_pages = (arg * 512) / PAGE_CACHE_SIZE;
--		unlock_kernel();
- 		return 0;
- 	case BLKGETSIZE:
- 		size = bdev->bd_inode->i_size;
---- linux-2.6.orig/block/ioctl.c
-+++ linux-2.6/block/ioctl.c
-@@ -323,9 +323,7 @@ int blkdev_ioctl(struct block_device *bd
- 		bdi = blk_get_backing_dev_info(bdev);
- 		if (bdi == NULL)
- 			return -ENOTTY;
--		lock_kernel();
- 		bdi->ra_pages = (arg * 512) / PAGE_CACHE_SIZE;
--		unlock_kernel();
- 		return 0;
- 	case BLKBSZSET:
- 		/* set the logical block size */
++	if (trace->nr_entries < trace->max_entries)
++		trace->entries[trace->nr_entries++] = regs->ip;
++
++	while (trace->nr_entries < trace->max_entries) {
++		struct stack_frame frame;
++
++		frame.next_fp = NULL;
++		frame.ret_addr = 0;
++		if (!copy_stack_frame(fp, &frame))
++			break;
++		if ((unsigned long)fp < regs->sp)
++			break;
++		if (frame.ret_addr) {
++			trace->entries[trace->nr_entries++] =
++				frame.ret_addr;
++		}
++		if (fp == frame.next_fp)
++			break;
++		fp = frame.next_fp;
++	}
++}
++
+ void save_stack_trace_user(struct stack_trace *trace)
+ {
+ 	/*
+ 	 * Trace user stack if we are not a kernel thread
+ 	 */
+ 	if (current->mm) {
+-		const struct pt_regs *regs = task_pt_regs(current);
+-		const void __user *fp = (const void __user *)regs->bp;
+-
+-		if (trace->nr_entries < trace->max_entries)
+-			trace->entries[trace->nr_entries++] = regs->ip;
+-
+-		while (trace->nr_entries < trace->max_entries) {
+-			struct stack_frame frame;
+-			frame.next_fp = NULL;
+-			frame.return_address = 0;
+-			if (!copy_stack_frame(fp, &frame))
+-				break;
+-			if ((unsigned long)fp < regs->sp)
+-				break;
+-			if (frame.return_address)
+-				trace->entries[trace->nr_entries++] =
+-					frame.return_address;
+-			if (fp == frame.next_fp)
+-				break;
+-			fp = frame.next_fp;
+-		}
++		__save_stack_trace_user(trace);
+ 	}
+ 	if (trace->nr_entries < trace->max_entries)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
+diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
+index 68de514..fd42d68 100644
+--- a/include/linux/stacktrace.h
++++ b/include/linux/stacktrace.h
+@@ -25,7 +25,7 @@ extern void save_stack_trace_user(struct stack_trace *trace);
+ #else
+ # define save_stack_trace(trace)			do { } while (0)
+ # define save_stack_trace_tsk(tsk, trace)		do { } while (0)
+-# define save_stack_trace_user(trace)              do { } while (0)
++# define save_stack_trace_user(trace)			do { } while (0)
+ # define print_stack_trace(trace, spaces)		do { } while (0)
+ #endif
+ 
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 62776b7..dedf35f 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -948,9 +948,9 @@ static void ftrace_trace_userstack(struct trace_array *tr,
+ 		   struct trace_array_cpu *data,
+ 		   unsigned long flags, int pc)
+ {
++	struct ring_buffer_event *event;
+ 	struct userstack_entry *entry;
+ 	struct stack_trace trace;
+-	struct ring_buffer_event *event;
+ 	unsigned long irq_flags;
+ 
+ 	if (!(trace_flags & TRACE_ITER_USERSTACKTRACE))
+@@ -1471,8 +1471,7 @@ static inline int seq_print_user_ip(struct trace_seq *s, struct mm_struct *mm,
+ 	if (file) {
+ 		ret = trace_seq_path(s, &file->f_path);
+ 		if (ret)
+-			ret = trace_seq_printf(s, "[+0x%lx]",
+-					ip - vmstart);
++			ret = trace_seq_printf(s, "[+0x%lx]", ip - vmstart);
+ 	}
+ 	if (ret && ((sym_flags & TRACE_ITER_SYM_ADDR) || !file))
+ 		ret = trace_seq_printf(s, " <" IP_FMT ">", ip);
+@@ -1485,7 +1484,7 @@ seq_print_userip_objs(const struct userstack_entry *entry, struct trace_seq *s,
+ {
+ 	struct mm_struct *mm = NULL;
+ 	int ret = 1;
+-	unsigned i;
++	unsigned int i;
+ 
+ 	if (trace_flags & TRACE_ITER_SYM_USEROBJ) {
+ 		struct task_struct *task;
+-- 
+1.5.6.5
+
