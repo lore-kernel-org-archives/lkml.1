@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYKWKj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYKWKqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbYKWKj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 05:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbYKWKjS
+	id S1758232AbYKWKqj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 05:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbYKWKq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 05:39:18 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:25219 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756074AbYKWKjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 05:39:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=xRGu9FgcHEw0OEXqQClRbsA/cJ41IJ2QhPxrdIxubgSGLfzWiLzSk5USGmbvUm7avE
-         M9vxI0Ud4zmEwAer24G8ENbyk4GpaZhgyzYbATd4NUX8gD2c0TKGsaeoWg4ZUScGdKjO
-         d2bOOJLd0XhZ526SCnzM2OmfTwp/fMKzWDvgQ=
-From: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
-To: mingo@elte.hu
-Cc: srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
-Subject: [PATCH 2/3] tracing/stack-tracer: fix locking
-Date: Sun, 23 Nov 2008 12:39:07 +0200
-Message-Id: <1227436748-17075-2-git-send-email-edwintorok@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081123085310.GF30453@elte.hu>
-References: <20081123085310.GF30453@elte.hu>
+	Sun, 23 Nov 2008 05:46:29 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:47336 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755883AbYKWKq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 05:46:28 -0500
+Date: Sun, 23 Nov 2008 11:46:21 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: rmk@arm.linux.org.uk, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] arch/arm: Eliminate NULL test and memset after alloc_bootmem
+Message-ID: <Pine.LNX.4.64.0811231145370.28343@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hold mmap_sem while looking up/accessing vma.
-Hold the RCU lock while using the task we looked up.
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Török Edwin <edwintorok@gmail.com>
+As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
+alloc_bootmem and related functions never return NULL and always return a
+zeroed region of memory.  Thus a NULL test or memset after calls to these
+functions is unnecessary.
+
+This was fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+expression E;
+statement S;
+@@
+
+E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\|alloc_bootmem_node\|alloc_bootmem_low_pages_node\|alloc_bootmem_pages_node\)(...)
+... when != E
+(
+- BUG_ON (E == NULL);
+|
+- if (E == NULL) S
+)
+
+@@
+expression E,E1;
+@@
+
+E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\|alloc_bootmem_node\|alloc_bootmem_low_pages_node\|alloc_bootmem_pages_node\)(...)
+... when != E
+- memset(E,0,E1);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- kernel/trace/trace.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index dedf35f..4c3bd82 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1462,11 +1462,15 @@ static inline int seq_print_user_ip(struct trace_seq *s, struct mm_struct *mm,
- 	int ret = 1;
- 
- 	if (mm) {
--		const struct vm_area_struct *vma = find_vma(mm, ip);
-+		const struct vm_area_struct *vma;
-+
-+		down_read(&mm->mmap_sem);
-+		vma = find_vma(mm, ip);
- 		if (vma) {
- 			file = vma->vm_file;
- 			vmstart = vma->vm_start;
- 		}
-+		up_read(&mm->mmap_sem);
- 	}
- 	if (file) {
- 		ret = trace_seq_path(s, &file->f_path);
-@@ -1494,10 +1498,9 @@ seq_print_userip_objs(const struct userstack_entry *entry, struct trace_seq *s,
- 		 */
- 		rcu_read_lock();
- 		task = find_task_by_vpid(entry->ent.tgid);
--		rcu_read_unlock();
--
- 		if (task)
- 			mm = get_task_mm(task);
-+		rcu_read_unlock();
- 	}
- 
- 	for (i = 0; i < FTRACE_STACK_ENTRIES; i++) {
--- 
-1.5.6.5
+ arch/arm/mm/mmu.c                   |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index 9a17d51..6eb9f26 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -819,7 +819,6 @@ static void __init devicemaps_init(struct machine_desc *mdesc)
+ 	 * Allocate the vector page early.
+ 	 */
+ 	vectors = alloc_bootmem_low_pages(PAGE_SIZE);
+-	BUG_ON(!vectors);
+ 
+ 	for (addr = VMALLOC_END; addr; addr += PGDIR_SIZE)
+ 		pmd_clear(pmd_off_k(addr));
+@@ -904,10 +903,10 @@ void __init paging_init(struct machine_desc *mdesc)
+ 	top_pmd = pmd_off_k(0xffff0000);
+ 
+ 	/*
+-	 * allocate the zero page.  Note that we count on this going ok.
++	 * allocate the zero page.  Note that this always succeeds and
++	 * returns a zeroed result.
+ 	 */
+ 	zero_page = alloc_bootmem_low_pages(PAGE_SIZE);
+-	memset(zero_page, 0, PAGE_SIZE);
+ 	empty_zero_page = virt_to_page(zero_page);
+ 	flush_dcache_page(empty_zero_page);
+ }
