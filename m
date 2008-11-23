@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbYKWKrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbYKWKs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbYKWKrT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 05:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756479AbYKWKrD
+	id S1758395AbYKWKs3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 05:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYKWKsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 05:47:03 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59965 "EHLO mgw1.diku.dk"
+	Sun, 23 Nov 2008 05:48:20 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59978 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756074AbYKWKrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 05:47:01 -0500
-Date: Sun, 23 Nov 2008 11:46:58 +0100 (CET)
+	id S1755883AbYKWKsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 05:48:19 -0500
+Date: Sun, 23 Nov 2008 11:48:14 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/5] arch/avr32: Eliminate NULL test and memset after
+To: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/5] arch/ia64: Eliminate NULL test and memset after
  alloc_bootmem
-Message-ID: <Pine.LNX.4.64.0811231146250.28343@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0811231147000.28343@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -58,18 +58,31 @@ E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_p
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
- arch/avr32/mm/init.c                |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/ia64/sn/kernel/setup.c         |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index fa92ff6..e819fa6 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -97,7 +97,6 @@ void __init paging_init(void)
+diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
+index bb1d249..b683eb3 100644
+--- a/arch/ia64/sn/kernel/setup.c
++++ b/arch/ia64/sn/kernel/setup.c
+@@ -512,7 +512,6 @@ static void __init sn_init_pdas(char **cmdline_p)
+ 	for_each_online_node(cnode) {
+ 		nodepdaindr[cnode] =
+ 		    alloc_bootmem_node(NODE_DATA(cnode), sizeof(nodepda_t));
+-		memset(nodepdaindr[cnode], 0, sizeof(nodepda_t));
+ 		memset(nodepdaindr[cnode]->phys_cpuid, -1,
+ 		    sizeof(nodepdaindr[cnode]->phys_cpuid));
+ 		spin_lock_init(&nodepdaindr[cnode]->ptc_lock);
+@@ -521,11 +520,9 @@ static void __init sn_init_pdas(char **cmdline_p)
+ 	/*
+ 	 * Allocate & initialize nodepda for TIOs.  For now, put them on node 0.
+ 	 */
+-	for (cnode = num_online_nodes(); cnode < num_cnodes; cnode++) {
++	for (cnode = num_online_nodes(); cnode < num_cnodes; cnode++)
+ 		nodepdaindr[cnode] =
+ 		    alloc_bootmem_node(NODE_DATA(0), sizeof(nodepda_t));
+-		memset(nodepdaindr[cnode], 0, sizeof(nodepda_t));
+-	}
  
- 	mem_map = NODE_DATA(0)->node_mem_map;
- 
--	memset(zero_page, 0, PAGE_SIZE);
- 	empty_zero_page = virt_to_page(zero_page);
- 	flush_dcache_page(empty_zero_page);
- }
+ 	/*
+ 	 * Now copy the array of nodepda pointers to each nodepda.
