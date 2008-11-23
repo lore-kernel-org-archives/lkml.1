@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYKWSZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbYKWSZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYKWSZF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 13:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYKWSYz
+	id S1757588AbYKWSZh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 13:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYKWSZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 13:24:55 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:26900 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbYKWSYy (ORCPT
+	Sun, 23 Nov 2008 13:25:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47708 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751549AbYKWSZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 13:24:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZKpWkjPK8WYrTKqJ5Mshhgphj5fL94Zrg6RIKX/A7Ti88TYpQ3IMYozW5cStA8s100
-         xSp2lnUS18xasCgOmDmBZnUw2CKYAKIHG/mnO/w/sYE8hWQwDdDryRdaKkrFWIVmQcpL
-         uVKvCqdLpnVecronpaOHNajL47vFdtrFNS1wU=
-Message-ID: <b637ec0b0811231024t73d1b8b3x9e23e24dda94c6b8@mail.gmail.com>
-Date: Sun, 23 Nov 2008 19:24:53 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200811231914.09982.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 23 Nov 2008 13:25:27 -0500
+Date: Sun, 23 Nov 2008 10:24:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ying Han <yinghan@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+Message-Id: <20081123102453.f549da39.akpm@linux-foundation.org>
+In-Reply-To: <20081123091843.GK30453@elte.hu>
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
+	<20081123091843.GK30453@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
-	 <200811231914.09982.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Sun, 23 Nov 2008 10:18:44 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
->>
->> This problem:
->>
->> * never happened in 2.6.27.4
->> * happened many times in 2.6.27.5 and .6
->> * never happened in 2.6.27.7
->
-> Please test 2.6.27.7 a bit more.  It would be helpful to verify it's OK.
->
+> * Ying Han <yinghan@google.com> wrote:
+> 
+> > page fault retry with NOPAGE_RETRY
+> 
+> Interesting patch.
 
-Just reproduced the problem with 2.6.27.7. It behaved differently: the
-system hung for about 4 minutes and then revived. No logs
-unfortunately.
+<a grey call stirs>
 
->> * happened the first time with the current -rc series just now (the
->> logs are related to this one)
->>
->> This is the first 2.6.28-rc kernel I tried.
->
-> Do you mean 2.6.28-rc6?
->
+ahhh...  I thought this all sounded familiar.  It surfaced a couple of
+years ago, and this was my summary of the intent at the time:
 
-Yes. I started another bisection session between 2.6.27.4 and 2.6.27.5.
+http://lkml.indiana.edu/hypermail/linux/kernel/0609.1/2106.html
 
-> Rafael
+It all went round and round for a while, but I don't think anything got
+merged.  In fact I can't even find Ben's original little spufs/cell
+NOPAGE_RETRY code in the tree, an I thought we merged that.  Confused.
 
-Regards,
-Fabio
+The questions are, of course: does this new code address the issues
+which were raised at that time?
 
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
