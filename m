@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbYKWMVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbYKWMV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbYKWMVE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 07:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbYKWMUr
+	id S1758735AbYKWMV0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 07:21:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbYKWMU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 07:20:47 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47112 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756102AbYKWMUq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 07:20:46 -0500
-X-Sasl-enc: xIhi1Rg6H97lSEK9G4+I0SaQfEj9dvIMKv+Wll45v1G1 1227442844
-Date: Sun, 23 Nov 2008 10:20:41 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Brad Campbell <brad@wasp.net.au>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Why does the md/raid subsystem does not remap bad sectors in a
-	raid   array?
-Message-ID: <20081123122041.GC17607@khazad-dum.debian.net>
-References: <alpine.DEB.1.10.0811221859210.14817@p34.internal.lan> <4928B580.5040800@shaw.ca> <4928DD4C.4020301@wasp.net.au>
+	Sun, 23 Nov 2008 07:20:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35136 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758234AbYKWMUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 07:20:55 -0500
+Date: Sun, 23 Nov 2008 13:20:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: move dwarf2 related macro to dwarf2.h
+Message-ID: <20081123122043.GF29663@elte.hu>
+References: <20081123115343.GF24818@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4928DD4C.4020301@wasp.net.au>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+In-Reply-To: <20081123115343.GF24818@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Nov 2008, Brad Campbell wrote:
-> md has done this for a while now though. If it encounters a read error in 
-> the array it will make an attempt to write the reconstructed data back to 
-> that disk attempting to force a reallocation. I've seen it work quite 
-> well here on disks that have the occasional grown defect.
 
-Indeed, but it does so in the "check array" mode (which distros like
-Debian are now enabling once-a-month or so, I always up that to once a
-week :p)
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-Does md repair bitrotten sectors ALSO outside of check mode?  That's
-what is being asked in this thread...
+> Impact: cleanup
+> 
+> Move recently introduced dwarf2 macros to dwarf2.h file.
+> It allow us to not duplicate them in assembly files.
+> 
+> Active usage of _cfi macros don't make assembly files
+> more obvious to understand but we already has a lot of
+> macros there which requires to search the definitions
+> of them *anyway*. But at least it make every cfi usage
+> one line shorter.
+> 
+> Also some code alignment is done.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> 
+>  arch/x86/include/asm/dwarf2.h |   97 ++++++++++++++++++++++++++++--------------
+>  arch/x86/kernel/entry_64.S    |   23 ---------
+>  2 files changed, 66 insertions(+), 54 deletions(-)
 
-> If the disk is haemorrhaging sectors then you will find out about it 
-> sooner or later through other means.
+applied to tip/x86/irq, thanks Cyrill!
 
-Like a weekly SMART long test.   That's what our maintenance windows are
-for :)  Everything is kept on-line, but allowed to run in degraded
-performance mode, so we kick in SMART offline and long tests, RAID array
-scrubbing, etc (not at the same time, though!).
-
-That reminds me to file a bug against smartmontools to DISABLE auto
-offline mode on disks, and enable them one disk at a time at a random
-interval with at least one hour between them.  Otherwise, the disks all
-enter auto-offline-testing SMART mode at the same time.
-
-Hmm, it would be good to teach md to measure disk throughput using a
-sliding window (of say, 5 minutes) and reduce read priority of disks
-that are slow...
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	Ingo
