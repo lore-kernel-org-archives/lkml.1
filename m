@@ -1,137 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYKWQPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbYKWQSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbYKWQPL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 11:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbYKWQO6
+	id S1759045AbYKWQSE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 11:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbYKWQRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 11:14:58 -0500
-Received: from qb-out-0506.google.com ([72.14.204.239]:5035 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755161AbYKWQO5 (ORCPT
+	Sun, 23 Nov 2008 11:17:54 -0500
+Received: from mail-gx0-f11.google.com ([209.85.217.11]:47165 "EHLO
+	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755360AbYKWQRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 11:14:57 -0500
+	Sun, 23 Nov 2008 11:17:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=II4eWyZVUWtrrYsn3MhJP8KMvPBGYudNgVAI5DYGNJWhu4UpihnwKzw2vaTCdYeqU+
-         h8SXgZiPd8nUsuuef1ifRrslItS8ww2TnGxoNqq7hnkCyMWEQ6FC+2wTeq6RnsZoYxB+
-         rgi1gUuu+C5BwLP7vgIqWPsTBwFASjlCc5h9U=
-Date: Sun, 23 Nov 2008 19:14:55 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC -tip] x86: introduce X86_ assembly names macros to catch
-	unbalanced declaration
-Message-ID: <20081123161455.GE27396@localhost>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=lJOmkuX5LSXzrzRnhOOTPn3aUbyTdoy/hFu2GEnH1ws2hZKAjr0jU+5fl04xgvA1wK
+         Qpe16s4goY2gfmHSEZUNEGEDRKDJ8r+VYXz9QEnvzUL5mcfz+UnVorxbBbjYfUNoSZF6
+         GFxlP9UOXY8nUyJRWbxAwz1fwrKfzSgI58IkY=
+Message-ID: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
+Date: Sun, 23 Nov 2008 17:17:50 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's usefull to catch unbalanced or messed declarations of ENTRY and
-KPROBES. These macros would help a bit (at least I hope so).
+Hi.
+As the subject says, I have a strange regression in latest git.
+Sometimes resume from hibernating hangs _after_ the resume stage.
+When the problem happens I usually have to powercycle my laptop.
 
-For example the following code would compile without problems
+The system managed to recover from the hang only twice and this time I
+found in the logs:
 
-	X86_ENTRY(mcount)
-		retq
-	X86_END(mcount)
+Nov 23 16:43:14 hawking kernel: sd 0:0:0:0: [sda] Starting disk
+Nov 23 16:43:14 hawking kernel: Restarting tasks ... done.
+Nov 23 16:43:52 hawking kernel: ata1.01: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x6 frozen
+Nov 23 16:43:52 hawking kernel: ata1.01: cmd
+a0/00:00:00:00:00/00:00:00:00:00/b0 tag 0
+Nov 23 16:43:52 hawking kernel:          cdb 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+Nov 23 16:43:52 hawking kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/b0 Emask 0x4 (timeout)
+Nov 23 16:43:52 hawking kernel: ata1.01: status: { DRDY }
+Nov 23 16:43:52 hawking kernel: ata1: soft resetting link
+Nov 23 16:43:57 hawking kernel: ata1.01: qc timeout (cmd 0xa1)
+Nov 23 16:43:57 hawking kernel: ata1.01: failed to IDENTIFY (I/O
+error, err_mask=0x4)
+Nov 23 16:43:57 hawking kernel: ata1.01: revalidation failed (errno=-5)
+Nov 23 16:43:57 hawking kernel: ata1: soft resetting link
+Nov 23 16:44:08 hawking kernel: ata1.01: qc timeout (cmd 0xa1)
+Nov 23 16:44:08 hawking kernel: ata1.01: failed to IDENTIFY (I/O
+error, err_mask=0x4)
+Nov 23 16:44:08 hawking kernel: ata1.01: revalidation failed (errno=-5)
+Nov 23 16:44:08 hawking kernel: ata1: soft resetting link
+Nov 23 16:44:38 hawking kernel: ata1.00: configured for UDMA/100
+Nov 23 16:44:38 hawking kernel: ata1.01: configured for MWDMA2
+Nov 23 16:44:38 hawking kernel: ata1: EH complete
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] 156301488 512-byte
+hardware sectors: (80.0 GB/74.5 GiB)
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] Write Protect is off
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] Write cache:
+enabled, read cache: enabled, doesn't support DPO or FUA
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] 156301488 512-byte
+hardware sectors: (80.0 GB/74.5 GiB)
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] Write Protect is off
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Nov 23 16:44:39 hawking kernel: sd 0:0:0:0: [sda] Write cache:
+enabled, read cache: enabled, doesn't support DPO or FUA
 
-But if you forget and mess the following form
+This problem:
 
-	X86_ENTRY(mcount)
-		retq
-	END(mcount)
+* never happened in 2.6.27.4
+* happened many times in 2.6.27.5 and .6
+* never happened in 2.6.27.7
+* happened the first time with the current -rc series just now (the
+logs are related to this one)
 
-	X86_ENTRY(ftrace_caller)
+This is the first 2.6.28-rc kernel I tried.
 
-The assembler will issue the following message:
-Error: X86_ENTRY/KPROBE unbalanced or missed
+I have to say that my kernel is tainted (fglrx and cisco_ipsec) but I
+also managed to replicate the hangs also with non-tainted ones.
 
-Actually the checking is performed at every X86_ macro
-so maybe it's good idea to put __x86_check_entry_kprobe
-at the end of .S file to be sure you didn't miss anything.
+I already tried some bisection between 2.6.27.4 and 2.6.27.5 but with
+no result, probably because I marked as "good" kernel that weren't
+good at all. Unfortunately this bug happens really at random times.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+During the bisection I always used non-tainted kernels.
 
-Anyway -- it's just a RFC -- so I hope there will not be much
-screams of hate :-)
+If anyone has ideas, I can provide some more data; I can also try
+another bisection series but I think it would take very long to get
+some good results (I mean, some days of testing between two different
+kernels just to reproduce the bug).
 
- arch/x86/include/asm/linkage.h |   58 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
-
-Index: linux-2.6.git/arch/x86/include/asm/linkage.h
-===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/linkage.h
-+++ linux-2.6.git/arch/x86/include/asm/linkage.h
-@@ -57,5 +57,63 @@
- #define __ALIGN_STR ".align 16,0x90"
- #endif
- 
-+/*
-+ * to check X86_ENTRY/X86_END and
-+ * X86_KPROBE_ENTRY/X86_KPROBE_END
-+ * unbalanced/messed appearance
-+ */
-+#define __x86_set_entry   .set _X86_ENTRY_IN, 0
-+#define __x86_unset_entry .set _X86_ENTRY_IN, 1
-+#define __x86_set_kprobe  .set _X86_KPROBE_IN, 0
-+#define __x86_unset_kprobe .set _X86_KPROBE_IN, 1
-+
-+#define __x86_macro_err .error "X86_ENTRY/KPROBE unbalanced or missed"
-+
-+#define __x86_check_entry	\
-+	.ifdef _X86_ENTRY_IN;	\
-+	.ifeq _X86_ENTRY_IN;	\
-+	__x86_macro_err;	\
-+	.abort;			\
-+	.endif;			\
-+	.endif
-+
-+#define __x86_check_kprobe	\
-+	.ifdef _X86_KPROBE_IN;	\
-+	.ifeq _X86_KPROBE_IN;	\
-+	__x86_macro_err;	\
-+	.abort;			\
-+	.endif;			\
-+	.endif
-+
-+#define __x86_check_entry_kprobe	\
-+	__x86_check_entry;		\
-+	__x86_check_kprobe
-+
-+#define X86_ENTRY(name)			\
-+	__x86_check_entry_kprobe;	\
-+	__x86_set_entry;		\
-+	.globl name;			\
-+	__ALIGN;			\
-+	name:
-+
-+#define X86_KPROBE_ENTRY(name)		\
-+	__x86_check_entry_kprobe;	\
-+	__x86_set_kprobe;		\
-+	.pushsection .kprobes.text, "ax"; \
-+	.globl name;			\
-+	__ALIGN;			\
-+	name:
-+
-+#define X86_KPROBE_END(name)		\
-+	__x86_unset_kprobe;		\
-+	__x86_check_entry_kprobe;	\
-+	.size name, .-name;		\
-+	.popsection
-+
-+#define X86_END(name)			\
-+	__x86_unset_entry;		\
-+	__x86_check_entry_kprobe;	\
-+	.size name, .-name
-+
- #endif /* _ASM_X86_LINKAGE_H */
- 
+Regards,
+Fabio
