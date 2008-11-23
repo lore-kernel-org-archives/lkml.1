@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYKWMug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbYKWNEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758572AbYKWMug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 07:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYKWMu1
+	id S1758567AbYKWNEq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 08:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbYKWNEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 07:50:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60226 "EHLO mx3.mail.elte.hu"
+	Sun, 23 Nov 2008 08:04:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56699 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754582AbYKWMu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 07:50:26 -0500
-Date: Sun, 23 Nov 2008 13:49:58 +0100
+	id S1756970AbYKWNEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 08:04:34 -0500
+Date: Sun, 23 Nov 2008 14:04:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/1] powerpc: make mcount a stub for dynamic ftrace
-Message-ID: <20081123124958.GM29663@elte.hu>
-References: <20081120215541.489725873@goodmis.org>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/10] x86: add initialization code for DMA-API
+	debugging
+Message-ID: <20081123130419.GA570@elte.hu>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com> <1227284770-19215-4-git-send-email-joerg.roedel@amd.com> <20081121174348.GB4336@elte.hu> <20081122094807.GK29705@8bytes.org> <20081123112818.GC29663@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081120215541.489725873@goodmis.org>
+In-Reply-To: <20081123112818.GC29663@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,28 +37,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Another generic suggestion:
 
-> Paul,
-> 
-> I have one more patch. I added it to the end of the ppc/ftrace 
-> branch. The new way of handling the finding of mcounts means we do 
-> not need to do anything in the mcount call itself. It should just be 
-> a stub and when ftrace is enabled, it will change the caller sites 
-> to call something other than mcount.
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: ppc/ftrace
+Why not just replace dma_ops with a debug version? That way it could 
+be a runtime feature based off the already existing DMA op callbacks, 
+without any extra overhead.
 
-i've also pulled the ppc/ftrace branch into tip/tracing/powerpc, and 
-added it to ftrace-next's linux-next integration rules.
+I'd prefer such a solution much more with an x86 architecture 
+maintainer hat on, because this way distributions could enable this 
+debug feature (with the facility being off by default) without 
+worrying about the wrapping overhead.
 
-So if Paul gives the green light that the commits have the right 
-structure, we can freeze down the branch and the SHA1's and integrate 
-it into ftrace-next. (which is integrated in linux-next after the 
-powerpc tree so should be all fine in terms of merge ordering)
+This would basically be a special variant of stacked DMA ops support.
 
 	Ingo
