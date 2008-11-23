@@ -1,69 +1,449 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYKWI7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbYKWJLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbYKWI7h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 03:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYKWI72
+	id S1757455AbYKWJLs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 04:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYKWJLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 03:59:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40373 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbYKWI71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 03:59:27 -0500
-Date: Sun, 23 Nov 2008 09:59:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Miklos Szeredi <miklos@szeredi.hu>,
-       arjan@linux.intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       hch@infradead.org, rminnich@sandia.gov, ericvh@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: poll: allow f_op->poll to sleep, take #3
-Message-ID: <20081123085902.GI30453@elte.hu>
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
+	Sun, 23 Nov 2008 04:11:36 -0500
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:12535 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbYKWJLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 04:11:33 -0500
+Date: Sun, 23 Nov 2008 10:08:28 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
+       Glauber Costa <gcosta@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH] x86: include ENTRY/END in entry handlers in entry_64.S
+Message-ID: <20081123090828.GA31490@mailshack.com>
+References: <20081117175232.GA13766@mailshack.com> <20081119001811.GA23237@mailshack.com> <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081121160629.GA24839@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sun, 23 Nov 2008 10:10:55 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.35; VDF: 7.1.0.122; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: cleanup of entry_64.S
 
-* Davide Libenzi <davidel@xmailserver.org> wrote:
+Except for the order and the place of the functions, this
+patch should not change the generated code.
 
-> On Sun, 23 Nov 2008, Tejun Heo wrote:
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+
+---
+ arch/x86/kernel/entry_64.S |  259 +++++++++++++++++++-------------------------
+ 1 files changed, 109 insertions(+), 150 deletions(-)
+
+On Fri, Nov 21, 2008 at 05:06:29PM +0100, Ingo Molnar wrote:
 > 
-> > +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> > +{
-> > +	struct poll_wqueues *pwq = wait->private;
-> > +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-> > +
-> > +	set_mb(pwq->triggered, 1);
-> > +
-> > +	/* perform the default wake up operation */
-> > +	return default_wake_function(&dummy_wait, mode, sync, key);
-> > +}
+> * Alexander van Heukelum <heukelum@mailshack.com> wrote:
 > 
-> Wouldn't it be nicer to un-static try_to_wake_up() (or a wrapper) 
-> instead of setting up a fake wait queue just to use 
-> default_wake_function(), just to wake up a task?
+> >  	/* runs on exception stack */
+> >  ENTRY(stack_segment)
+> > -	XCPT_FRAME
+> > -	PARAVIRT_ADJUST_EXCEPTION_FRAME
+> > -	paranoidentry do_stack_segment
+> > -	jmp paranoid_exit
+> > -	CFI_ENDPROC
+> > +	paranoiderrorentry do_stack_segment
+> >  END(stack_segment)
+> 
+> cool!
+> 
+> Could you please also collapse it into just a single macro? The 
+> ENTRY/END sequence can be generated by the macro. (if you do it then 
+> please do it in a followup patch, i'll look at and apply your current 
+> series)
+> 
+> Something like:
+> 
+>   PARANOID_ERROR_ENTRY(stack_segment)
 
-the already existing single-task-wakeup shortcut method made available 
-by the scheduler is wake_up_process(). A number of primitives where 
-waitqueue overhead is of concern already make use of it. 
-(mutexes/rtmutexes and more)
+I chose to just reuse the existing names, but it's bikeshedding, so
+change it if you like ;)
 
-if you need a different mode flag, then please extend the 
-wake_up_process() family of APIs.
+I now know why I did not hit the bug that was fixed by "x86: split
+out some macro's and move common code to paranoid_exit, fix"... 
+*blush* I was doing my real-world testing using an i386-image of
+debian.
 
-	Ingo
+Greetings,
+    Alexander
+
+> Could do all the magic, right?
+> 
+> 	Ingo
+
+
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index e5ddf57..ec0ed9c 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -945,76 +945,70 @@ END(common_interrupt)
+ /*
+  * APIC interrupts.
+  */
+-	.p2align 5
+-
+-	.macro apicinterrupt num,func
++.macro apicinterrupt num sym do_sym
++ENTRY(\sym)
+ 	INTR_FRAME
+ 	pushq $~(\num)
+ 	CFI_ADJUST_CFA_OFFSET 8
+-	interrupt \func
++	interrupt \do_sym
+ 	jmp ret_from_intr
+ 	CFI_ENDPROC
+-	.endm
++END(\sym)
++.endm
+ 
+-ENTRY(thermal_interrupt)
+-	apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt
+-END(thermal_interrupt)
++#ifdef CONFIG_SMP
++apicinterrupt IRQ_MOVE_CLEANUP_VECTOR \
++	irq_move_cleanup_interrupt smp_irq_move_cleanup_interrupt
++#endif
+ 
+-ENTRY(threshold_interrupt)
+-	apicinterrupt THRESHOLD_APIC_VECTOR,mce_threshold_interrupt
+-END(threshold_interrupt)
++apicinterrupt 220 \
++	uv_bau_message_intr1 uv_bau_message_interrupt
++apicinterrupt LOCAL_TIMER_VECTOR \
++	apic_timer_interrupt smp_apic_timer_interrupt
+ 
+ #ifdef CONFIG_SMP
+-ENTRY(reschedule_interrupt)
+-	apicinterrupt RESCHEDULE_VECTOR,smp_reschedule_interrupt
+-END(reschedule_interrupt)
+-
+-	.macro INVALIDATE_ENTRY num
+-ENTRY(invalidate_interrupt\num)
+-	apicinterrupt INVALIDATE_TLB_VECTOR_START+\num,smp_invalidate_interrupt
+-END(invalidate_interrupt\num)
+-	.endm
+-
+-	INVALIDATE_ENTRY 0
+-	INVALIDATE_ENTRY 1
+-	INVALIDATE_ENTRY 2
+-	INVALIDATE_ENTRY 3
+-	INVALIDATE_ENTRY 4
+-	INVALIDATE_ENTRY 5
+-	INVALIDATE_ENTRY 6
+-	INVALIDATE_ENTRY 7
+-
+-ENTRY(call_function_interrupt)
+-	apicinterrupt CALL_FUNCTION_VECTOR,smp_call_function_interrupt
+-END(call_function_interrupt)
+-ENTRY(call_function_single_interrupt)
+-	apicinterrupt CALL_FUNCTION_SINGLE_VECTOR,smp_call_function_single_interrupt
+-END(call_function_single_interrupt)
+-ENTRY(irq_move_cleanup_interrupt)
+-	apicinterrupt IRQ_MOVE_CLEANUP_VECTOR,smp_irq_move_cleanup_interrupt
+-END(irq_move_cleanup_interrupt)
++apicinterrupt INVALIDATE_TLB_VECTOR_START+0 \
++	invalidate_interrupt0 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+1 \
++	invalidate_interrupt1 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+2 \
++	invalidate_interrupt2 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+3 \
++	invalidate_interrupt3 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+4 \
++	invalidate_interrupt4 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+5 \
++	invalidate_interrupt5 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+6 \
++	invalidate_interrupt6 smp_invalidate_interrupt
++apicinterrupt INVALIDATE_TLB_VECTOR_START+7 \
++	invalidate_interrupt7 smp_invalidate_interrupt
+ #endif
+ 
+-ENTRY(apic_timer_interrupt)
+-	apicinterrupt LOCAL_TIMER_VECTOR,smp_apic_timer_interrupt
+-END(apic_timer_interrupt)
+-
+-ENTRY(uv_bau_message_intr1)
+-	apicinterrupt 220,uv_bau_message_interrupt
+-END(uv_bau_message_intr1)
++apicinterrupt THRESHOLD_APIC_VECTOR \
++	threshold_interrupt mce_threshold_interrupt
++apicinterrupt THERMAL_APIC_VECTOR \
++	thermal_interrupt smp_thermal_interrupt
+ 
+-ENTRY(error_interrupt)
+-	apicinterrupt ERROR_APIC_VECTOR,smp_error_interrupt
+-END(error_interrupt)
++#ifdef CONFIG_SMP
++apicinterrupt CALL_FUNCTION_SINGLE_VECTOR \
++	call_function_single_interrupt smp_call_function_single_interrupt
++apicinterrupt CALL_FUNCTION_VECTOR \
++	call_function_interrupt smp_call_function_interrupt
++apicinterrupt RESCHEDULE_VECTOR \
++	reschedule_interrupt smp_reschedule_interrupt
++#endif
+ 
+-ENTRY(spurious_interrupt)
+-	apicinterrupt SPURIOUS_APIC_VECTOR,smp_spurious_interrupt
+-END(spurious_interrupt)
++apicinterrupt ERROR_APIC_VECTOR \
++	error_interrupt smp_error_interrupt
++apicinterrupt SPURIOUS_APIC_VECTOR \
++	spurious_interrupt smp_spurious_interrupt
+ 
+ /*
+  * Exception entry points.
+  */
+-	.macro zeroentry sym
++.macro zeroentry sym do_sym
++ENTRY(\sym)
+ 	INTR_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq_cfi $-1		/* ORIG_RAX: no syscall to restart */
+@@ -1024,12 +1018,14 @@ END(spurious_interrupt)
+ 	DEFAULT_FRAME 0
+ 	movq %rsp,%rdi		/* pt_regs pointer */
+ 	xorl %esi,%esi		/* no error code */
+-	call \sym
++	call \do_sym
+ 	jmp error_exit		/* %ebx: no swapgs flag */
+ 	CFI_ENDPROC
+-	.endm
++END(\sym)
++.endm
+ 
+-	.macro paranoidzeroentry sym
++.macro paranoidzeroentry sym do_sym
++KPROBE_ENTRY(\sym)
+ 	INTR_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq $-1		/* ORIG_RAX: no syscall to restart */
+@@ -1039,12 +1035,14 @@ END(spurious_interrupt)
+ 	TRACE_IRQS_OFF
+ 	movq %rsp,%rdi		/* pt_regs pointer */
+ 	xorl %esi,%esi		/* no error code */
+-	call \sym
++	call \do_sym
+ 	jmp paranoid_exit	/* %ebx: no swapgs flag */
+ 	CFI_ENDPROC
+-	.endm
++KPROBE_END(\sym)
++.endm
+ 
+-	.macro paranoidzeroentry_ist sym ist
++.macro paranoidzeroentry_ist sym do_sym ist
++KPROBE_ENTRY(\sym)
+  	INTR_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq $-1		/* ORIG_RAX: no syscall to restart */
+@@ -1056,13 +1054,19 @@ END(spurious_interrupt)
+ 	xorl %esi,%esi		/* no error code */
+ 	movq %gs:pda_data_offset, %rbp
+ 	subq $EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
+-	call \sym
++	call \do_sym
+ 	addq $EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
+ 	jmp paranoid_exit	/* %ebx: no swapgs flag */
+ 	CFI_ENDPROC
+-	.endm
++KPROBE_END(\sym)
++.endm
+ 
+-	.macro errorentry sym
++.macro errorentry sym do_sym entry=0
++.if \entry
++KPROBE_ENTRY(\sym)
++.else
++ENTRY(\sym)
++.endif
+ 	XCPT_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	subq $15*8,%rsp
+@@ -1072,13 +1076,23 @@ END(spurious_interrupt)
+ 	movq %rsp,%rdi			/* pt_regs pointer */
+ 	movq ORIG_RAX(%rsp),%rsi	/* get error code */
+ 	movq $-1,ORIG_RAX(%rsp)		/* no syscall to restart */
+-	call \sym
++	call \do_sym
+ 	jmp error_exit			/* %ebx: no swapgs flag */
+ 	CFI_ENDPROC
+-	.endm
++.if \entry
++KPROBE_END(\sym)
++.else
++END(\sym)
++.endif
++.endm
+ 
+ 	/* error code is on the stack already */
+-	.macro paranoiderrorentry sym
++.macro paranoiderrorentry sym do_sym entry=1
++.if \entry
++KPROBE_ENTRY(\sym)
++.else
++ENTRY(\sym)
++.endif
+ 	XCPT_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	subq $15*8,%rsp
+@@ -1089,10 +1103,37 @@ END(spurious_interrupt)
+ 	movq %rsp,%rdi			/* pt_regs pointer */
+ 	movq ORIG_RAX(%rsp),%rsi	/* get error code */
+ 	movq $-1,ORIG_RAX(%rsp)		/* no syscall to restart */
+-	call \sym
++	call \do_sym
+ 	jmp paranoid_exit		/* %ebx: no swapgs flag */
+ 	CFI_ENDPROC
+-	.endm
++.if \entry
++KPROBE_END(\sym)
++.else
++END(\sym)
++.endif
++.endm
++
++zeroentry divide_error do_divide_error
++paranoidzeroentry_ist debug do_debug DEBUG_STACK
++paranoidzeroentry_ist int3 do_int3 DEBUG_STACK
++zeroentry overflow do_overflow
++zeroentry bounds do_bounds
++zeroentry invalid_op do_invalid_op
++zeroentry device_not_available do_device_not_available
++paranoiderrorentry double_fault do_double_fault 0
++zeroentry coprocessor_segment_overrun do_coprocessor_segment_overrun
++errorentry invalid_TSS do_invalid_TSS
++errorentry segment_not_present do_segment_not_present
++paranoiderrorentry stack_segment do_stack_segment
++errorentry general_protection do_general_protection 1
++errorentry page_fault do_page_fault 1
++zeroentry spurious_interrupt_bug do_spurious_interrupt_bug
++zeroentry coprocessor_error do_coprocessor_error
++errorentry alignment_check do_alignment_check
++#ifdef CONFIG_X86_MCE
++paranoidzeroentry machine_check do_machine_check
++#endif
++zeroentry simd_coprocessor_error do_simd_coprocessor_error
+ 
+ 	/*
+  	 * "Paranoid" exit path from exception stack.
+@@ -1344,26 +1385,7 @@ ENTRY(kernel_execve)
+ 	CFI_ENDPROC
+ ENDPROC(kernel_execve)
+ 
+-KPROBE_ENTRY(page_fault)
+-	errorentry do_page_fault
+-KPROBE_END(page_fault)
+ 
+-ENTRY(coprocessor_error)
+-	zeroentry do_coprocessor_error
+-END(coprocessor_error)
+-
+-ENTRY(simd_coprocessor_error)
+-	zeroentry do_simd_coprocessor_error
+-END(simd_coprocessor_error)
+-
+-ENTRY(device_not_available)
+-	zeroentry do_device_not_available
+-END(device_not_available)
+-
+-	/* runs on exception stack */
+-KPROBE_ENTRY(debug)
+-	paranoidzeroentry_ist do_debug, DEBUG_STACK
+-KPROBE_END(debug)
+ 
+ 	/* runs on exception stack */
+ KPROBE_ENTRY(nmi)
+@@ -1420,67 +1442,6 @@ nmi_schedule:
+ #endif
+ KPROBE_END(nmi)
+ 
+-KPROBE_ENTRY(int3)
+-	paranoidzeroentry_ist do_int3, DEBUG_STACK
+-KPROBE_END(int3)
+-
+-ENTRY(overflow)
+-	zeroentry do_overflow
+-END(overflow)
+-
+-ENTRY(bounds)
+-	zeroentry do_bounds
+-END(bounds)
+-
+-ENTRY(invalid_op)
+-	zeroentry do_invalid_op
+-END(invalid_op)
+-
+-ENTRY(coprocessor_segment_overrun)
+-	zeroentry do_coprocessor_segment_overrun
+-END(coprocessor_segment_overrun)
+-
+-	/* runs on exception stack */
+-ENTRY(double_fault)
+-	paranoiderrorentry do_double_fault
+-END(double_fault)
+-
+-ENTRY(invalid_TSS)
+-	errorentry do_invalid_TSS
+-END(invalid_TSS)
+-
+-ENTRY(segment_not_present)
+-	errorentry do_segment_not_present
+-END(segment_not_present)
+-
+-	/* runs on exception stack */
+-ENTRY(stack_segment)
+-	paranoiderrorentry do_stack_segment
+-END(stack_segment)
+-
+-KPROBE_ENTRY(general_protection)
+-	errorentry do_general_protection
+-KPROBE_END(general_protection)
+-
+-ENTRY(alignment_check)
+-	errorentry do_alignment_check
+-END(alignment_check)
+-
+-ENTRY(divide_error)
+-	zeroentry do_divide_error
+-END(divide_error)
+-
+-ENTRY(spurious_interrupt_bug)
+-	zeroentry do_spurious_interrupt_bug
+-END(spurious_interrupt_bug)
+-
+-#ifdef CONFIG_X86_MCE
+-	/* runs on exception stack */
+-ENTRY(machine_check)
+-	paranoidzeroentry do_machine_check
+-END(machine_check)
+-#endif
+-
+ /* Call softirq on interrupt stack. Interrupts are off. */
+ ENTRY(call_softirq)
+ 	CFI_STARTPROC
+@@ -1509,9 +1470,7 @@ KPROBE_ENTRY(ignore_sysret)
+ ENDPROC(ignore_sysret)
+ 
+ #ifdef CONFIG_XEN
+-ENTRY(xen_hypervisor_callback)
+-	zeroentry xen_do_hypervisor_callback
+-END(xen_hypervisor_callback)
++zeroentry xen_hypervisor_callback xen_do_hypervisor_callback
+ 
+ /*
+ # A note on the "critical region" in our callback handler.
+-- 
+1.5.4.3
