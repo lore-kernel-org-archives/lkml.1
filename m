@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYKWKqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbYKWKrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758232AbYKWKqj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 05:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbYKWKq3
+	id S1758443AbYKWKrT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 05:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756479AbYKWKrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 05:46:29 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:47336 "EHLO mgw2.diku.dk"
+	Sun, 23 Nov 2008 05:47:03 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59965 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755883AbYKWKq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 05:46:28 -0500
-Date: Sun, 23 Nov 2008 11:46:21 +0100 (CET)
+	id S1756074AbYKWKrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 05:47:01 -0500
+Date: Sun, 23 Nov 2008 11:46:58 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: rmk@arm.linux.org.uk, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/5] arch/arm: Eliminate NULL test and memset after alloc_bootmem
-Message-ID: <Pine.LNX.4.64.0811231145370.28343@ask.diku.dk>
+To: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/5] arch/avr32: Eliminate NULL test and memset after
+ alloc_bootmem
+Message-ID: <Pine.LNX.4.64.0811231146250.28343@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -57,30 +58,17 @@ E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_p
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
- arch/arm/mm/mmu.c                   |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ arch/avr32/mm/init.c                |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
-index 9a17d51..6eb9f26 100644
---- a/arch/arm/mm/mmu.c
-+++ b/arch/arm/mm/mmu.c
-@@ -819,7 +819,6 @@ static void __init devicemaps_init(struct machine_desc *mdesc)
- 	 * Allocate the vector page early.
- 	 */
- 	vectors = alloc_bootmem_low_pages(PAGE_SIZE);
--	BUG_ON(!vectors);
+diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
+index fa92ff6..e819fa6 100644
+--- a/arch/avr32/mm/init.c
++++ b/arch/avr32/mm/init.c
+@@ -97,7 +97,6 @@ void __init paging_init(void)
  
- 	for (addr = VMALLOC_END; addr; addr += PGDIR_SIZE)
- 		pmd_clear(pmd_off_k(addr));
-@@ -904,10 +903,10 @@ void __init paging_init(struct machine_desc *mdesc)
- 	top_pmd = pmd_off_k(0xffff0000);
+ 	mem_map = NODE_DATA(0)->node_mem_map;
  
- 	/*
--	 * allocate the zero page.  Note that we count on this going ok.
-+	 * allocate the zero page.  Note that this always succeeds and
-+	 * returns a zeroed result.
- 	 */
- 	zero_page = alloc_bootmem_low_pages(PAGE_SIZE);
 -	memset(zero_page, 0, PAGE_SIZE);
  	empty_zero_page = virt_to_page(zero_page);
  	flush_dcache_page(empty_zero_page);
