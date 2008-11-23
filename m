@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbYKWS5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYKWS70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbYKWS5v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 13:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYKWS5k
+	id S1757547AbYKWS70 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 13:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYKWS7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 13:57:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48747 "EHLO mx2.mail.elte.hu"
+	Sun, 23 Nov 2008 13:59:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48948 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757886AbYKWS5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 13:57:39 -0500
-Date: Sun, 23 Nov 2008 19:57:26 +0100
+	id S1750884AbYKWS7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 13:59:15 -0500
+Date: Sun, 23 Nov 2008 19:59:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86: introduce ENTRY(KPROBE_ENTRY)_X86  assembly
-	helpers to catch unbalanced declaration v3
-Message-ID: <20081123185726.GB21106@elte.hu>
-References: <20081123172139.GC12710@localhost> <20081123173015.GE12710@localhost>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] x86: boot - fix sparse warnings
+Message-ID: <20081123185907.GC21106@elte.hu>
+References: <154e089b0811231037l18d4d8erce62eb4e77e28b10@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081123173015.GE12710@localhost>
+In-Reply-To: <154e089b0811231037l18d4d8erce62eb4e77e28b10@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,16 +35,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+* Hannes Eder <hannes@hanneseder.net> wrote:
 
-> | Impact: improvements
-> | 
-> | It's usefull to catch unbalanced or messed or mixed declarations of ENTRY and
-> | KPROBES. These macros would help a bit.
+> Fix this sparse warnings:
+> 
+> arch/x86/boot/video.c:233:3: warning: symbol 'saved' was not declared.
+> Should it be static?
+> arch/x86/boot/video-vga.c:37:13: warning: symbol 'video_vga' was not
+> declared. Should it be static?
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  arch/x86/boot/video-vga.c |    4 ++--
+>  arch/x86/boot/video.c     |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-applied to tip/x86/irq, thanks Cyrill.
-
-Now lets try a patch that makes use of it in the entry*.S files, and 
-see the fallout?
+applied to tip/x86/sparse-fixes, thanks Hannes!
 
 	Ingo
