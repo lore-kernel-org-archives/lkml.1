@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbYKWHMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbYKWHaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbYKWHMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 02:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYKWHMI
+	id S1757064AbYKWHaI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 02:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYKWH3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 02:12:08 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35426 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbYKWHMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 02:12:06 -0500
-Message-ID: <4929023C.2060302@suse.de>
-Date: Sun, 23 Nov 2008 16:11:56 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 23 Nov 2008 02:29:55 -0500
+Received: from sd-green-bigip-145.dreamhost.com ([208.97.132.145]:53711 "EHLO
+	spunkymail-a2.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751772AbYKWH3y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 02:29:54 -0500
+X-Greylist: delayed 89293 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Nov 2008 02:29:54 EST
+From: Yuval Hager <yuval@avramzon.net>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: BCM4312 Fails when xdm is started
+Date: Sun, 23 Nov 2008 09:26:25 +0200
+User-Agent: KMail/1.9.9
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, bcm43xx-dev@lists.berlios.de,
+       LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>, Peter Stuge <peter@stuge.se>
+References: <200811151801.02369.yuval@avramzon.net> <492825F8.6020606@lwfinger.net> <200811221654.09399.mb@bu3sch.de>
+In-Reply-To: <200811221654.09399.mb@bu3sch.de>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dwmw2@infradead.org, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
-       chris.mason@oracle.com, Jens Axboe <jens.axboe@oracle.com>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: about TRIM/DISCARD support and barriers
-References: <4928E010.4090801@kernel.org>
-In-Reply-To: <4928E010.4090801@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed;
+  boundary="nextPart6376066.XXdu72Ki2y";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200811230926.28948.yuval@avramzon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--nextPart6376066.XXdu72Ki2y
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-cc'ing Matthew whom I forgot to cc in the first message.  Matthew, the
-original message is...
+On Saturday 22 November 2008, Michael Buesch wrote:
+> On Saturday 22 November 2008 16:32:08 Larry Finger wrote:
+> > Michael Buesch wrote:
+> > > Somebody disabled MMIO and busmastering.
+> > > And somebody cleared the CACHE_LINE_SIZE register.
+> >
+> > Are these all the read/write bits in the configuration area? Should I
+> > conclude that someone zeroed this area?
+>
+> Yeah well. I'm not sure. It _looks_ like someone completely cut the
+> physical power line to the card and it reset its complete PCI config.
+> So well, X does poke with the PCI devices. But as you said it also happens
+> if X doesn't run, I'd rule that out.
+> But I would not rule out a fucked BIOS, yet.
+> Does the BIOS have any powersave options and/or spread-spectrum options f=
+or
+> the PCI-bus? Can you try to turn them all off?
+> I have a machine that has PCI-slot autodetect and turns of the PCI clock,
+> if it doesn't detect a card on that slot. Also turn that off, if you have
+> it, too.
+>
+> > In case the kernel memory diagnostics don't help, is there any way to
+> > trap writes to the configuration registers?
+>
+> Well, if we have random memory corruption, that can hit memory and MMIO.
+> It doesn't hurt to turn on all debugging options. Often you get some hint
+> by doing so.
 
- http://lkml.org/lkml/2008/11/22/260
+I've enabled all CONFIG*DEBUG I could find relevant, and ran the system wit=
+h:
+'debug memory_corruption_check=3D1 devres.log=3D1 debug_objects debugpat=20
+acpi.debug_layer=3D0x00410002 acpi.debug_level=3D0xffffffff'
+but no hint appears in the logs during the failure.
 
-Tejun Heo wrote:
-> Dongjun Shin who works for Samsung SSD dep asked me about libata TRIM
-> support and pointed me to the new DISCARD support David Woodhouse got
-> merged for 2.6.28.  I took a look at the code and blk-layer
-> interface-wise we seemed to be ready both for filesystems and userland
-> (so that fsck or something which runs background can mark unused
-> blocks) but there doesn't seem to be any low level driver which
-> actually implements ->prepare_discard_fn or fs which sets the DISCARD
-> flag.
+I did find that certain events recreate the problem immediately. if I 'xset=
+=20
+dpms force standby' it happens on wakeup. 'xset -dpms' causes this=20
+immediately as well. If I load X without DPMS support, it still happens aft=
+er=20
+the monitor is waken up from (hardware?) blackness.
 
-Dongjun, the only doc I can find about ATA TRIM is the following one.
+=2D-yuval
 
- http://t13.org/Documents/UploadedDocuments/docs2007/e07154r3-Data_Set_Management_Proposal_for_ATA-ACS2.pdf
+--nextPart6376066.XXdu72Ki2y
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-And AFAICS this hasn't made into ACS yet.  Is this what you guys are
-gonna implement and Windows7 is gonna use?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-Thanks.
+iEYEABECAAYFAkkpBaQACgkQl7qmwPqEj9+5xwCePVEdxd06VeZD/7J9W4W37qro
+xN8AniPoNoQykUukczuFFu11P+zm8Mom
+=RM4s
+-----END PGP SIGNATURE-----
 
--- 
-tejun
+--nextPart6376066.XXdu72Ki2y--
