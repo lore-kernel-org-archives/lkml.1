@@ -1,88 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbYKWVJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbYKWVJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752404AbYKWVJV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 16:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYKWVJM
+	id S1752816AbYKWVJx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 16:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYKWVJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 16:09:12 -0500
-Received: from mail.gmx.net ([213.165.64.20]:53995 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751000AbYKWVJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 16:09:11 -0500
-X-Authenticated: #787645
-X-Provags-ID: V01U2FsdGVkX1/uIZMv46fu9WgF33YuQij+2qLpR86tKQkX78jCTr
-	2xmKFTz1Ps4Ift
-Message-ID: <4929C66F.1040206@gmx.net>
-Date: Sun, 23 Nov 2008 22:09:03 +0100
-From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sun, 23 Nov 2008 16:09:43 -0500
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:46189 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751178AbYKWVJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 16:09:42 -0500
+Message-ID: <4929C68E.6080401@lwfinger.net>
+Date: Sun, 23 Nov 2008 15:09:34 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: linux-acpi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] PNPACPI: Enable Power Management
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Michael Buesch <mb@bu3sch.de>, Yuval Hager <yuval@avramzon.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: BCM4312 Fails when xdm is started
+References: <200811151801.02369.yuval@avramzon.net> <200811221654.09399.mb@bu3sch.de> <200811231350.00207.yuval@avramzon.net> <200811231320.30289.mb@bu3sch.de> <20081123204631.21061.qmail@stuge.se>
+In-Reply-To: <20081123204631.21061.qmail@stuge.se>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Enable PNPACI Power Management
+Peter Stuge wrote:
+> Michael Buesch wrote:
+>> On Sunday 23 November 2008 12:49:55 Yuval Hager wrote:
+>>> [  182.891400] ****** b43: B43_MMIO_MACCTL 0x840A0503
+>>> [  182.891409] ****** b43: SSB_TMSLOW 0x20150000
+>>> [  258.299027] irq 10: nobody cared (try booting with the "irqpoll" option)
+>> Does the kernel disable the PCI device, if it ignores the IRQ?
+> 
+> The kernel disables the IRQ at least internally, maybe also by
+> deconfiguring the interrupt register in any devices using it, which
+> would explain the change in config register 0x3c (but not the changes
+> in all the other bytes, could that be a freak chain reaction inside
+> the hardware?) but I haven't heard/seen the kernel disable the PCI
+> device itself. I don't know if it can.
+> 
+> Why doesn't b43 care about this interrupt? Without APIC interrupt 10
+> is what both device and driver should be using (according to earlier
+> lspci -x output).
 
-This patch sets the power of PnP ACPI devices to D0 when they
-are activated and to D3 when they are disabled.  The latter is
-in correspondence with the ACPI 3.0 specification, whereas the
-former is added in order to be able to power up a device after
-it has been previously disabled (or when booting up a system).
-(As a consequence, the patch makes the PnP ACPI code more ACPI
-compliant.)
+I think by this point the BCM43xx hardware is disabled.
 
-The patch fixes the problem with some IBM ThinkPads (at least
-the 600E and the 600X) where the serial ports have a dedicated
-power source that needs to be brought up before the serial port
-can be used.  Without this patch, the serial port is enabled
-but has no power.
+>>> [  258.299173] handlers:
+>>> [  258.299176] [<f7906455>] (b43_interrupt_handler+0x0/0x1b7 [b43])
+>>> [  258.299212] Disabling IRQ #10
+>>> [  258.315148] b43-phy0: Radio hardware status changed to DISABLED
+>>> [  258.315160] b43-phy0: ******** B43_B43_MMIO_RADIO_HWENABLED_HI 0xFFFFFFFF
+>>> [  258.342341] kobject: 'rfkill0' (f43b7d78): kobject_uevent_env
+>>> [  258.342367] kobject: 'rfkill0' (f43b7d78): fill_kobj_path: path = '/class/rfkill/rfkill0'
+>>> [  258.342418] kobject: 'ssb0:0' (f40dfcd8): fill_kobj_path: path = '/devices/pci0000:00/0000:00:02.0/0000:02:00.0/ssb0:0'
+> 
+> Why does the radio hw status changes here?
+> How is the change notified to the driver?
 
-No regressions were observed on hardware that does not require
-this patch.
+By setting a bit in the appropriate register; however, device is disabled and
+all bits are set. This is a false indication.
 
-The patch is applied against 2.6.27.7 (vanilla).
+>>> [  258.391951] 
+>>> [  258.391956] =================================
+>>> [  258.391964] [ INFO: inconsistent lock state ]
+>>> [  258.391971] 2.6.28-rc5 #15
+>>> [  258.391975] ---------------------------------
+>>> [  258.391980] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+>>> [  258.391987] X/3965 [HC0[0]:SC1[1]:HE1:SE0] takes:
+>>> [  258.391993]  (&irq_desc_lock_class){++..}, at: [<c0148c60>] try_one_irq+0x15/0xe8
+>>> [  258.392016] {in-hardirq-W} state was registered at:
+>>> [  258.392021]   [<c013bc07>] __lock_acquire+0x490/0x6bc
+>>> [  258.392034]   [<c013be8d>] lock_acquire+0x5a/0x74
+>>> [  258.392043]   [<c01496f8>] handle_level_irq+0x12/0xba
+>>> [  258.392053]   [<c03c4842>] _spin_lock+0x1c/0x45
+>>> [  258.392066]   [<c01496f8>] handle_level_irq+0x12/0xba
+>>> [  258.392076]   [<c01496f8>] handle_level_irq+0x12/0xba
+>>> [  258.392085]   [<c010564e>] do_IRQ+0x89/0x9f
+>>> [  258.392096]   [<c0103ea8>] common_interrupt+0x28/0x30
+>>> [  258.392105]   [<c03c4cc2>] _spin_unlock_irqrestore+0x37/0x39
+>>> [  258.392115]   [<c01487e6>] __setup_irq+0x17a/0x1f3
+>>> [  258.392124]   [<c05ce79d>] start_kernel+0x285/0x2f1
+>>> [  258.392140]   [<ffffffff>] 0xffffffff
+>>> [  258.392159] irq event stamp: 1844456
+>>> [  258.392164] hardirqs last  enabled at (1844456): [<c03c4b6f>] _spin_unlock_irq+0x20/0x23
+>>> [  258.392175] hardirqs last disabled at (1844455): [<c03c4ac3>] _spin_lock_irq+0xa/0x4b
+>>> [  258.392186] softirqs last  enabled at (1844310): [<c0125406>] do_softirq+0x37/0x4d
+>>> [  258.392198] softirqs last disabled at (1844447): [<c0125406>] do_softirq+0x37/0x4d
+>>
+>> That's a bit weird. Looks like another bug in the IRQ layer.
+> 
+> Something happens with the hardware that confuses the kernel. It's
+> triggered by software but I don't know where.. Like Michael, I'm
+> not too convinced that it is in b43. :\
 
+>From a config file posted earlier, the OP is using SLAB. Is there any point in
+trying SLUB?
 
-Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Larry
 
-
-Index: linux/drivers/pnp/pnpacpi/core.c
-===================================================================
---- linux.orig/drivers/pnp/pnpacpi/core.c
-+++ linux/drivers/pnp/pnpacpi/core.c
-@@ -98,18 +98,24 @@ static int pnpacpi_set_resources(struct
-  	status = acpi_set_current_resources(handle, &buffer);
-  	if (ACPI_FAILURE(status))
-  		ret = -EINVAL;
-+	else if (acpi_bus_power_manageable(handle))
-+		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
-  	kfree(buffer.pointer);
-  	return ret;
-  }
-
-  static int pnpacpi_disable_resources(struct pnp_dev *dev)
-  {
-+	acpi_handle handle = dev->data;
-+	int ret = 0;
-  	acpi_status status;
-
--	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
--	status = acpi_evaluate_object((acpi_handle) dev->data,
--				      "_DIS", NULL, NULL);
--	return ACPI_FAILURE(status) ? -ENODEV : 0;
-+	if (acpi_bus_power_manageable(handle))
-+		ret = acpi_bus_set_power(handle, ACPI_STATE_D3);
-+	status = acpi_evaluate_object(handle, "_DIS", NULL, NULL);
-+	if (ACPI_FAILURE(status))
-+		ret = -ENODEV;
-+	return ret;
-  }
-
-  #ifdef CONFIG_ACPI_SLEEP
