@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYKWIXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757810AbYKWI0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbYKWIXR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 03:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYKWIXH
+	id S1757810AbYKWI0W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 03:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYKWI0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 03:23:07 -0500
-Received: from wf-out-1314.google.com ([209.85.200.171]:28837 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbYKWIXE (ORCPT
+	Sun, 23 Nov 2008 03:26:14 -0500
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:26193 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752774AbYKWI0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 03:23:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=o3mTAkuMYnPaX9VU5arIZNlEsYbCA7sM5Txyk5BV3Aj4PSMYrRUZN2i1muV83jryUK
-         kmyR84zFWJ/bBK0TEva1dKyK2meGMljZKclY8fELaG95BCx+xXECvX1ejNEO1PwsBCt9
-         eh2CYQyMGyJK6xey3ATfZJu4dJqmtqWU21Lm4=
-Message-ID: <d36bb30d0811230023i2d80d93fv2fc45d518ecaf04a@mail.gmail.com>
-Date: Sun, 23 Nov 2008 16:23:03 +0800
-From: "Yang Xi" <yangxilkm@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 2.6.28-rc4]lock_stat: Add "con-hungry" to show that how many person-time fight for the ticket spinlock
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, chyyuu <chyyuu@gmail.com>,
-       "Fu, Michael" <michael.fu@intel.com>
-In-Reply-To: <1227404426.7685.19975.camel@twins>
+	Sun, 23 Nov 2008 03:26:13 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Xg1n/9nxx9qdJA/3WurFIaUG13T1bTfoNCKuKR9kYPnrtAO7WAZhRc6sRVEm79Jk6dEYsJpyN2ZpPihxBiXBYCawDZFMLd2n8CfuOEL3z4TV+UvOB0kx2lL6S5Yqk4UbHRlEpFIVbQlqkXiq1WQu6XCFT+igSZ9NJHHjGxBJ9wY=  ;
+X-YMail-OSG: xaLk1oEVM1mkd9i7TA0caidVIcvUFGor_hBwn7WhISv8gQWkIDKNDB.rrQsYoz954r.e7mjqqUcKRT0NFm3uY7kAOb4w0sfd6mXM57OvWQkFhfXwy1DhkfA4yoQcItjDMEZNyyL9NPKz5mbvEoR2unP8CypUxaKm3gfJruw-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+Reply-To: dbrownell@users.sourceforge.net
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
+Date: Sun, 23 Nov 2008 00:26:10 -0800
+User-Agent: KMail/1.9.10
+Cc: Stefan Schmidt <stefan@datenfreihafen.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Stefan Schmidt <stefan@openmoko.org>, eric.y.miao@gmail.com,
+       linux-kernel@vger.kernel.org, sameo@openedhand.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <200811222059.59806.david-b@pacbell.net> <1227423962.3148.74.camel@brutus>
+In-Reply-To: <1227423962.3148.74.camel@brutus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <d36bb30d0811180300r77c3a13ld0a4881a8261a40@mail.gmail.com>
-	 <1227025232.29743.23.camel@lappy.programming.kicks-ass.net>
-	 <d36bb30d0811182118x1e394780n8a257fd4c44f4836@mail.gmail.com>
-	 <1227112785.29743.37.camel@lappy.programming.kicks-ass.net>
-	 <d36bb30d0811200009j742416a6nbc0519ff8d95970b@mail.gmail.com>
-	 <1227404426.7685.19975.camel@twins>
+Message-Id: <200811230026.11126.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 23, 2008 at 9:40 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Thu, 2008-11-20 at 16:09 +0800, Yang Xi wrote:
->> > I of course meant folding cpu and isspinlock into a combined bitfield
->> > (sorry for not being more clear), thereby saving space, this still takes
->> > 2*sizeof(int).
->> >
->> > We can safely take some bits from the cpu number as there currently are
->> > no plans for a 2g cpu machine, right SGI? :-)
->> Thanks, ok, 31bits enough for cpu at now stage. 1bit for isticketspinlock.
->> Here is the new one. Welcome more comments :).
->
-> Looks good, one more question :-)
->
->> --- a/include/linux/spinlock.h
->> +++ b/include/linux/spinlock.h
->> @@ -127,6 +127,12 @@ do {
->>                  \
->>  #define spin_is_contended(lock)
->> __raw_spin_is_contended(&(lock)->raw_lock)
->>  #endif
->>
->> +#ifdef CONFIG_HAVE_TICKET_SPINLOCK
->> +#define spin_nr_contended(lock) __ticket_spin_nr_contended(&(lock)->raw_lock)
->> +#else
->> +#define spin_nr_contended(lock) (0)
->> +#endif
->> +
->
-> Does it make sense to make the alternative case return
-> spin_is_contended()?
-You mean do it like this?
-#ifdef CONFIG_HAVE_TICKET_SPINLOCK
-#define spin_nr_contended(lock) __ticket_spin_nr_contended(&(lock)->raw_lock)
-#else
-#define spin_nr_contended(lock) (spin_is_contended(lock) ? 1: 0)
+On Saturday 22 November 2008, Daniel Ribeiro wrote:
+> Can you be more descriptive on "address the DMA"? Im not familiar on
+> what is the issue here.
 
-If we do it like this, for some architectures which donot have ticket
-spinlock, we can know that the percentage of contentions which involve
-more than two threads (con-hungry/ contention times). But i donot know
-whether there are some guys are interested in this number.
+You may not pass stack based buffers -- as you're now doing -- for
+the spi_transfer buffers.  Documentation/DMA-mapping.txt is very
+clear that such buffers are not DMA-safe, and the SPI kerneldoc is
+just as clear that spi_transfer.{tx,rx}_buf memory must be DMA-safe.
 
-Best regards
+- Dave
 
->
->
