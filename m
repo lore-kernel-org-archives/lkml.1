@@ -1,125 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbYKWVHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbYKWVJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbYKWVHQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 16:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYKWVHE
+	id S1752404AbYKWVJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 16:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYKWVJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 16:07:04 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:23253 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYKWVHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 16:07:01 -0500
-Message-ID: <4929C5C8.7090008@oracle.com>
-Date: Sun, 23 Nov 2008 13:06:16 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 23 Nov 2008 16:09:12 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53995 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751000AbYKWVJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 16:09:11 -0500
+X-Authenticated: #787645
+X-Provags-ID: V01U2FsdGVkX1/uIZMv46fu9WgF33YuQij+2qLpR86tKQkX78jCTr
+	2xmKFTz1Ps4Ift
+Message-ID: <4929C66F.1040206@gmx.net>
+Date: Sun, 23 Nov 2008 22:09:03 +0100
+From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>, srostedt@redhat.com,
-       a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] vfs, seqfile: make mangle_path() global
-References: <1227353328-16104-1-git-send-email-edwintorok@gmail.com> <1227353328-16104-3-git-send-email-edwintorok@gmail.com> <20081123084737.GE30453@elte.hu>
-In-Reply-To: <20081123084737.GE30453@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4929C5CD.0021:SCFSTAT928724,ss=1,fgs=0
+To: linux-acpi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] PNPACPI: Enable Power Management
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Török Edwin <edwintorok@gmail.com> wrote:
-> 
->>  fs/seq_file.c            |   14 +++++++-
->>  include/linux/seq_file.h |    1 +
-> 
-> Note, i've split these bits out into a separate patch - see it 
-> attached below.
-> 
-> 	Ingo
-> 
-> ------------------>
-> From 74e2f334f4440cbcb63e9ebbcdcea430d41bdfa3 Mon Sep 17 00:00:00 2001
-> From: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
-> Date: Sat, 22 Nov 2008 13:28:48 +0200
-> Subject: [PATCH] vfs, seqfile: make mangle_path() global
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=utf-8
-> Content-Transfer-Encoding: 8bit
-> 
-> Impact: expose new VFS API
-> 
-> make mangle_path() available, as per the suggestions of Christoph Hellwig
-> and Al Viro:
-> 
->   http://lkml.org/lkml/2008/11/4/338
-> 
-> Signed-off-by: Török Edwin <edwintorok@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  fs/seq_file.c            |   14 +++++++++++++-
->  include/linux/seq_file.h |    1 +
->  2 files changed, 14 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/seq_file.c b/fs/seq_file.c
-> index eba2eab..f5b61cc 100644
-> --- a/fs/seq_file.c
-> +++ b/fs/seq_file.c
-> @@ -357,7 +357,18 @@ int seq_printf(struct seq_file *m, const char *f, ...)
->  }
->  EXPORT_SYMBOL(seq_printf);
->  
-> -static char *mangle_path(char *s, char *p, char *esc)
-> +/**
-> + * 	mangle_path - mangle and copy path to buffer beginning
-> + * 	@s - buffer start
-> + * 	@p - beginning of path in above buffer
-> + *      @esc - set of characters that need escaping
+Subject: Enable PNPACI Power Management
 
-Format for function parameters is:
+This patch sets the power of PnP ACPI devices to D0 when they
+are activated and to D3 when they are disabled.  The latter is
+in correspondence with the ACPI 3.0 specification, whereas the
+former is added in order to be able to power up a device after
+it has been previously disabled (or when booting up a system).
+(As a consequence, the patch makes the PnP ACPI code more ACPI
+compliant.)
 
- * @esc: set of characters that need escaping
+The patch fixes the problem with some IBM ThinkPads (at least
+the 600E and the 600X) where the serial ports have a dedicated
+power source that needs to be brought up before the serial port
+can be used.  Without this patch, the serial port is enabled
+but has no power.
 
-please.  (i.e., use : instead of -)
+No regressions were observed on hardware that does not require
+this patch.
 
-> + *
-> + *      Copy the path from @p to @s, replacing each occurrence of character from
-> + *      @esc with usual octal escape.
-> + *      Returns pointer past last written character in @s, or NULL in case of
-> + *      failure.
-> + */
-> +char *mangle_path(char *s, char *p, char *esc)
->  {
->  	while (s <= p) {
->  		char c = *p++;
-> @@ -376,6 +387,7 @@ static char *mangle_path(char *s, char *p, char *esc)
->  	}
->  	return NULL;
->  }
-> +EXPORT_SYMBOL_GPL(mangle_path);
->  
->  /*
->   * return the absolute path of 'dentry' residing in mount 'mnt'.
-> diff --git a/include/linux/seq_file.h b/include/linux/seq_file.h
-> index dc50bcc..b3dfa72 100644
-> --- a/include/linux/seq_file.h
-> +++ b/include/linux/seq_file.h
-> @@ -34,6 +34,7 @@ struct seq_operations {
->  
->  #define SEQ_SKIP 1
->  
-> +char *mangle_path(char *s, char *p, char *esc);
->  int seq_open(struct file *, const struct seq_operations *);
->  ssize_t seq_read(struct file *, char __user *, size_t, loff_t *);
->  loff_t seq_lseek(struct file *, loff_t, int);
+The patch is applied against 2.6.27.7 (vanilla).
 
 
--- 
-~Randy
+Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+
+
+Index: linux/drivers/pnp/pnpacpi/core.c
+===================================================================
+--- linux.orig/drivers/pnp/pnpacpi/core.c
++++ linux/drivers/pnp/pnpacpi/core.c
+@@ -98,18 +98,24 @@ static int pnpacpi_set_resources(struct
+  	status = acpi_set_current_resources(handle, &buffer);
+  	if (ACPI_FAILURE(status))
+  		ret = -EINVAL;
++	else if (acpi_bus_power_manageable(handle))
++		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
+  	kfree(buffer.pointer);
+  	return ret;
+  }
+
+  static int pnpacpi_disable_resources(struct pnp_dev *dev)
+  {
++	acpi_handle handle = dev->data;
++	int ret = 0;
+  	acpi_status status;
+
+-	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
+-	status = acpi_evaluate_object((acpi_handle) dev->data,
+-				      "_DIS", NULL, NULL);
+-	return ACPI_FAILURE(status) ? -ENODEV : 0;
++	if (acpi_bus_power_manageable(handle))
++		ret = acpi_bus_set_power(handle, ACPI_STATE_D3);
++	status = acpi_evaluate_object(handle, "_DIS", NULL, NULL);
++	if (ACPI_FAILURE(status))
++		ret = -ENODEV;
++	return ret;
+  }
+
+  #ifdef CONFIG_ACPI_SLEEP
