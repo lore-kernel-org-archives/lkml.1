@@ -1,72 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbYKWCA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYKWCEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbYKWCA0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Nov 2008 21:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYKWCAI
+	id S1757544AbYKWCEY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Nov 2008 21:04:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbYKWCEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Nov 2008 21:00:08 -0500
-Received: from main.gmane.org ([80.91.229.2]:34772 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754949AbYKWCAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Nov 2008 21:00:06 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Why does the md/raid subsystem does not remap bad sectors in
- a raid   array?
-Date: Sat, 22 Nov 2008 19:44:32 -0600
-Message-ID: <4928B580.5040800@shaw.ca>
-References: <alpine.DEB.1.10.0811221859210.14817@p34.internal.lan>
+	Sat, 22 Nov 2008 21:04:15 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:30258 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754410AbYKWCEP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Nov 2008 21:04:15 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [RFC PATCH v4 3/7] sched: nominate preferred wakeup cpu
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+In-Reply-To: <20081121083114.27075.2113.stgit@drishya.in.ibm.com>
+References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com>
+	 <20081121083114.27075.2113.stgit@drishya.in.ibm.com>
+Content-Type: text/plain
+Date: Sun, 23 Nov 2008 03:03:58 +0100
+Message-Id: <1227405838.7685.20000.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <alpine.DEB.1.10.0811221859210.14817@p34.internal.lan>
-Cc: linux-raid@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> I asked before but it was kind of clobbered in the velociraptor mess:
+On Fri, 2008-11-21 at 14:01 +0530, Vaidyanathan Srinivasan wrote:
+> When the system utilisation is low and more cpus are idle,
+> then the process waking up from sleep should prefer to
+> wakeup an idle cpu from semi-idle cpu package (multi core
+> package) rather than a completely idle cpu package which
+> would waste power.
 > 
-> On a colleague's box:
+> Use the sched_mc balance logic in find_busiest_group() to
+> nominate a preferred wakeup cpu.
 > 
-> Aug 02, 2008 12:15.30AM(0x04:0x0023): Sector repair completed: port=7, 
-> LBA=0x4A0387F5
+> This info can be sored in appropriate sched_domain, but
+> updating this info in all copies of sched_domain is not
+> practical.  Hence this information is stored in root_domain
+> struct which is one copy per partitioned sched domain.
+> The root_domain can be accessed from each cpu's runqueue
+> and there is one copy per partitioned sched domain.
 > 
-> SMART Self-test log structure revision number 0
-> Warning: ATA Specification requires self-test log structure revision 
-> number = 1
-> Num  Test_Description    Status                  Remaining 
-> LifeTime(hours)  LBA_of_first_error
-> # 1  Extended offline    Completed: read failure       90%       305 
-> 1241745397
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
 > 
-> Even though this disk has a bad sector:
-> 198 Offline_Uncorrectable   0x0030   100   100   000    Old_age   
-> Offline -       1
+>  kernel/sched.c |   15 +++++++++++++++
+>  1 files changed, 15 insertions(+), 0 deletions(-)
 > 
-> The controller does not drop the drive from the array when it hits an 
-> error, the 3ware card "takes care of it" and the user need not worry 
-> about it, whereas with md/raid every time it hits a bad sector, it 
-> breaks the raid and it goes degraded, is this correct?  Will/can 
-> something like what 3ware does be possible in a sw-raid based 
-> configuration or is a HW raid card required?
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 79b71f3..d28cd98 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -493,6 +493,17 @@ struct root_domain {
+>  #ifdef CONFIG_SMP
+>  	struct cpupri cpupri;
+>  #endif
+> +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+> +
+> +	/*
+> +	 * Preferred wake up cpu nominated by sched_mc balance that will be
+> +	 * used when most cpus are idle in the system indicating overall very
+> +	 * low system utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP(2)
+> +	 */
+> +	unsigned int sched_mc_preferred_wakeup_cpu;
+> +
+> +#endif
+> +
+>  };
+>  
+>  /*
 
-Presumably all it's doing is writing that sector's contents back from 
-the other drive(s) in the array when the read error is detected, this is 
-something that software could do just as well. Drives only remap bad 
-sectors when they are written over, as a read failure doesn't 
-necessarily mean that the sector is entirely unreadable, but could be 
-due to environmental factors such as high temperature, vibration, etc.
+Do we really need that extra whitespace?
 
-Just rewriting the sector seems a bit questionable though, as if a drive 
-in your array is growing read errors that's not really a good thing..
+> @@ -3090,6 +3101,7 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
+>  	return 0;
+>  }
+>  
+> +
+>  /*
+>   * find_busiest_group finds and returns the busiest CPU group within the
+>   * domain. It calculates and returns the amount of weighted load which
 
-> 
-> Justin.
+Ditto?
+
+> @@ -3406,6 +3418,9 @@ out_balanced:
+>  
+>  	if (this == group_leader && group_leader != group_min) {
+>  		*imbalance = min_load_per_task;
+> +		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP)
+> +			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
+> +					first_cpu(group_leader->cpumask);
+
+While not strictly needed, I prefer braces around multi-line statments.
+It's easier on the eyes.
+
+>  		return group_min;
+>  	}
+>  #endif
 > 
 
