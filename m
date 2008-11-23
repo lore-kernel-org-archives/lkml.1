@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYKWNkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbYKWNmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbYKWNkF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 08:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbYKWNjx
+	id S1758817AbYKWNmH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 08:42:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757650AbYKWNlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 08:39:53 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38549 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757873AbYKWNjw (ORCPT
+	Sun, 23 Nov 2008 08:41:55 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:49053 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756717AbYKWNly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 08:39:52 -0500
-Subject: Re: about TRIM/DISCARD support and barriers
-From: David Woodhouse <dwmw2@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Tejun Heo <teheo@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
-       chris.mason@oracle.com
-In-Reply-To: <20081123123514.GI5707@parisc-linux.org>
-References: <4928E010.4090801@kernel.org> <4929023C.2060302@suse.de>
-	 <20081123123514.GI5707@parisc-linux.org>
-Content-Type: text/plain
-Date: Sun, 23 Nov 2008 13:39:44 +0000
-Message-Id: <1227447584.4901.405.camel@macbook.infradead.org>
+	Sun, 23 Nov 2008 08:41:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding:sender;
+        b=i0tljhMhjzz/x9krbRb6Uh23em0ZP1KtN+FIpQN4NpRyAnpt5YCLNJnUvCVS850zi1
+         /36HOFexR7RSZUeYGU5mVlNfbqaFo5yJZGUR5K8Omv58qE++Nu72Q7l+hMJ+zM9ibm/e
+         Q4Kp2FhNNUz5XUH8XsZTdf1Psnp67m7N6v+zg=
+Date: Sun, 23 Nov 2008 15:41:48 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com
+Subject: Mmiotrace regression in 2.6.28-rc6
+Message-ID: <20081123154148.04e0851a@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-23 at 05:35 -0700, Matthew Wilcox wrote:
-> The current VFAT filesystem implements DISCARD. 
+Hi Steve,
 
-As does btrfs. I think I posted ext2 patches a little while ago too? Or
-someone else did. Did they get merged?
+now that the NULL deref bug in ring buffer resize is gone, I found
+another regression.
 
->  Here's the patch I've
-> been testing -- it's not right; it causes SSDs from two different vendors
-> to hang.  I'm waiting for a free slot on the SATA protocol analyser to
-> figure out what's we're doing wrong.
-> 
-> Note that the SCSI UNMAP command does not yet have an official number,
-> so this patch cannot yet be applied (... how much longer until ATA is no
-> longer part of SCSI?)
-> 
-> We don't attempt to put non-contiguous ranges into a single TRIM yet.
+It seems I am not getting any "buffer overflow" messages anymore.
 
-We don't even merge contiguous ranges -- I still need to fix the
-elevators to stop writes crossing writes, before we can stop discards
-from also being barriers. (Discards are just writes, for the purpose of
-that conversation).
+Oh bummer, looks like I completely missed this one:
+(hope it's not in any .27 kernel)
 
-> We currently assume all SCSI devices support UNMAP instead of checking
-> the feature flag (because last time I looked, I couldn't tell what flag
-> I was supposed to check).  Once we do that, I need to set that flag in
-> libata-scsi depending on the support for the TRIM bit in the identify
-> command.
 
-The code in drivers/ide does check the feature, although I'm not 100%
-sure I got that part right.
+commit 3928a8a2d98081d1bc3c0a84a2d70e29b90ecf1c
+Author: Steven Rostedt <rostedt@goodmis.org>
+Date:   Mon Sep 29 23:02:41 2008 -0400
+
+    ftrace: make work with new ring buffer
+    
+    This patch ports ftrace over to the new ring buffer.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+<...>
+diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+index a108c32..bdbf09d 100644
+--- a/kernel/trace/trace_mmiotrace.c
++++ b/kernel/trace/trace_mmiotrace.c
+<...>
+@@ -130,10 +130,14 @@ static unsigned long count_overruns(struct trace_iterator *iter)
+ {
+        int cpu;
+        unsigned long cnt = 0;
++/* FIXME: */
++#if 0
+        for_each_online_cpu(cpu) {
+                cnt += iter->overrun[cpu];
+                iter->overrun[cpu] = 0;
+        }
++#endif
++       (void)cpu;
+        return cnt;
+ }
+
+Steve, how am I going to fix this?
+I think it's quite crucial to know when the dump is incomplete.
+
+
+There's also another issue, but I am not sure how to reproduce it.
+The symptom is, that
+echo whatever > /debug/tracing/trace_marker
+gets stuck in a loop, bash eats 100% CPU: 10% user, 90% system.
+I got that twice today, like this: after a fresh boot echoing 64, 200,
+70 to trace_entries, switching between nop and mmiotrace tracers,
+echoing 0 or 1 to tracing_enabled, and running the testmmiotrace
+module. At some point the user marker got stuck.
+
+But then I tried to do that a third time by repeating some usage
+patterns I thought might trigger it, but it didn't happen.
+
+On the positive side, the basic test using testmmiotrace.ko
+with the basic setup produces the correct output.
+
+
+Thanks.
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Pekka Paalanen
+http://www.iki.fi/pq/
