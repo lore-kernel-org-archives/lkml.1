@@ -1,94 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbYKWUjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYKWUkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbYKWUjm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 15:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYKWUjb
+	id S1754196AbYKWUkD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 15:40:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYKWUje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 15:39:31 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49417 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbYKWUja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 15:39:30 -0500
-Date: Sun, 23 Nov 2008 22:39:29 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, roland@redhat.com, mingo@elte.hu,
-       rnalumasu@gmail.com
-Subject: Re: + do_wait-wakeup-optimization.patch added to -mm tree
-Message-ID: <20081123213929.GA9097@redhat.com>
-References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 23 Nov 2008 15:39:34 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:59942 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751334AbYKWUjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 15:39:32 -0500
+Date: Sun, 23 Nov 2008 21:39:21 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-git3: no SD card reader
+Message-ID: <20081123213921.667ecb93@mjolnir.drzeus.cx>
+In-Reply-To: <20081014232759.08f5d212@werewolf.home>
+References: <20081014025453.617f2ef8@werewolf.home>
+	<20081014174536.1353d17e@mjolnir.drzeus.cx>
+	<20081014232759.08f5d212@werewolf.home>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-12286-1227472768-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Roland McGrath <roland@redhat.com>
->
-> +static int needs_wakeup(struct task_struct *task, struct do_wait_queue_entry *w)
-> +{
-> +	if ((w->options & __WNOTHREAD) && task->parent != w->wq.private)
-> +		return 0;
-> +
-> +	if (eligible_child(w->type, w->pid, w->options,
-> +			   task, task->exit_signal))
-> +		return 1;
-> +
-> +	if (thread_group_leader(task)) {
-> +		/*
-> +		 * In a group leader, do_notify_parent() may have
-> +		 * just reset task->exit_signal because SIGCHLD was
-> +		 * ignored, but that doesn't prevent the wakeup.
-> +		 */
-> +		if (!task_detached(task) ||
-> +		    !eligible_child(w->type, w->pid, w->options,
-> +				    task, SIGCHLD))
-> +			return 0;
-> +	} else {
-> +		/*
-> +		 * In a non-leader, this might be the release_task()
-> +		 * case, where it's the leader rather than task
-> +		 * whose parent is being woken.
-> +		 */
-> +		if (!eligible_child(w->type, w->pid, w->options,
-> +				    task->group_leader,
-> +				    task_detached(task->group_leader) ?
-> +				    SIGCHLD : task->group_leader->exit_signal))
-> +			return 0;
-> +	}
-> +
-> +	return 1;
-> +}
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Unless I missed something, this is not right.
+--=_freyr.drzeus.cx-12286-1227472768-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This "task" is current, iow it is the caller of do_notify_parent(). Sometime
-it is OK (release_task, exit_notify), but in general not, afaics.
+On Tue, 14 Oct 2008 23:27:59 +0200
+"J.A. Magall=C3=B3n" <jamagallon@ono.com> wrote:
 
-Let's suppose the ptracer finds the EXIT_ZOMBIE tracee and notifies its
-->real_parent which sleeps in do_wait(). In that case the usage of
-eligible_child(task == ptracer) above is bogus, and checking for
-group_leader is not rifgt too.
+>=20
+> Err, sorry if this is stupid. I can see the card reader even if I don't
+> load the jmb38x_ms.ko module,just sdhci_pci. I understand that it is need=
+ed only if
+> I want to read memstick type cards. Or not ?
 
-> +static int do_wait_wake_function(wait_queue_t *curr, unsigned mode, int sync,
-> +				 void *key)
-> +{
-> +	struct task_struct *task = current;
+That is correct.
 
-I think we can fix (and simplify) this code if we change __wake_up_parent(),
-it should call __wake_up(key => p), so we can do
+> I suppose you refer to 'settings for JMicron hardware in sdhci_pci module=
+'.
 
-	struct task_struct *task = key;
+Kind of. The JMicron controller supports 50 MHz SD cards, but it
+restricted to 25 MHz in the name of higher compatibility.
 
-> +	if (!needs_wakeup(task, w))
-> +		return 0;
-> +
-> +	return default_wake_function(curr, mode, sync, key);
+> > Have you tested more than one card?
+> >=20
+>=20
+> I have two (both unknown brands for me, but I write full names fwiw):
+> - One "MBA Executive HiSpeed SD", 2Gb
+> - One "takeMS SDHC card Class6",  8Gb
+>=20
+> Both give about 10Mb/s on read with hdparm under 2.6.27.
+>=20
 
-perhaps autoremove_wake_function() makes more sense.
+And both work fine in one of the slots, but not the other?
 
-Oleg.
+> > What machine is this?=20
+>=20
+> It's an Acer Aspire One. From what I have seen, there are two SD devices.
+> Both are capable to read SDHC cards, I have switched cards and they work
+> (or at the moment both are working as backwards-compatible in plain SD
+> mode, if that even exists...).
 
+The SD/SDHC distinction is all software, so the hardware doesn't really
+care.
+
+>=20
+> I call this half-working because I have to boot with a card inside a slot
+> to have it detected. If i boot without the card-in, it even dissapears fr=
+om
+> lspci. This is just with the left SD inserted:
+>=20
+
+No idea why this occurs. I'd guess some ACPI voodoo. You're going to
+have to check with the PCI and/or ACPI guys to figure that part of the
+mystery out.
+
+>=20
+> And now with -git4:
+>=20
+> ...
+> mmc0: error -84 whilst initialising SD card
+> ...
+> mmc1: error -84 whilst initialising SD card
+>=20
+
+Hmm... I thought you said that it was just the left reader that had
+problems? Not both?
+
+>=20
+> Mmm, looking at the logs I have seen that in 2.6.27 shpchp is loaded
+> way before sdhci, and in -git4 it loads after it. Can this have
+> any effect ?
+>=20
+
+Perhaps, but I doubt it. If you rmmod sdhci-pci and modprobe it again
+you should have the same behaviour as in .27.
+
+> I solved this in modprobe.conf:
+>=20
+> options sdhci debug_quirks=3D1
+>=20
+> If I uderstood the source, that touches the controller clock on each rese=
+t for
+> the operation to work.
+
+Actually, I think you're just seeing the side effect that the
+controller will revert back to the 25 MHz restriction.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-12286-1227472768-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkkpv38ACgkQ7b8eESbyJLg3oACg7w8h6qhCpfP7e8d3cVC9Xs7h
+L+4AnRHLQrJYSgzPbDFNkzZYX0xR2CwW
+=vkYT
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-12286-1227472768-0001-2--
