@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbYKWWgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752252AbYKWWqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280AbYKWWgR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYKWWgE
+	id S1752252AbYKWWqh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYKWWq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:36:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39384 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbYKWWgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:36:01 -0500
-Date: Sun, 23 Nov 2008 23:35:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86: introduce ENTRY(KPROBE)_X86  assembly helpers
-	to catch unbalanced declaration
-Message-ID: <20081123223553.GA3066@elte.hu>
-References: <20081123175125.GA32472@uranus.ravnborg.org> <20081123175846.GF12710@localhost> <20081123181248.GA338@uranus.ravnborg.org> <20081123182103.GH12710@localhost> <20081123185417.GA21106@elte.hu> <20081123185726.GL12710@localhost> <20081123190025.GD21106@elte.hu> <20081123192243.GP12710@localhost> <20081123193133.GA2794@elte.hu> <20081123194828.GQ12710@localhost>
+	Sun, 23 Nov 2008 17:46:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61533 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbYKWWqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 17:46:25 -0500
+Date: Sun, 23 Nov 2008 16:47:08 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
+       Kirill Korotaev <dev@openvz.org>, Herbert Poetzl <herbert@13thfloor.at>,
+       Andrey Savochkin <saw@sw.ru>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>
+Subject: Re: CLONE_NEWUTS documentation
+Message-ID: <20081123224708.GC12687@hallyn.com>
+References: <492464F8.8070101@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081123194828.GQ12710@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <492464F8.8070101@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> [Ingo Molnar - Sun, Nov 23, 2008 at 08:31:34PM +0100]
-> ...
-> | > 
-> | > Just got an error in implementation -- we have to support nested
-> | > ENTRY without problem. Will check. What a surprise :-)
-> | 
-> | do you mean:
-> | 
-> |   ENTRY(system_call)
-> |   ENTRY(system_call_after_swapgs)
-> |   ...
-> |   END(system_call)
-> | 
-> | that's more of a bug - system_call_after_swapgs is not a real entry 
-> | point, we just need the label of it. Perhaps something like __ENTRY() 
-> | for that case would be enough.
-> | 
-> | nor is this one real:
-> | 
-> |   ENTRY(interrupt)
-> |   ENTRY(irq_entries_start)
-> |   ...
-> |   END(irq_entries_start)
-> |   END(interrupt)
-> | 
-> | do we really need .irq_entries_start?
-> | 
-> | I think in general we should define a flat hierarchy of entries.
-> | 
-> | 	Ingo
-> | 
+Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
+> Serge, Eric,
 > 
-> Yeah, I meant these cases. I don't think we really need 
-> irq_entries_start (didn't find any mention of them in tree). In case 
-> of system_call_after_swapgs I'm not that sure, but since xen use it 
-> as a plain jmp (at least now) it could be converted to a plain 
-> label. [...]
+> Below is a patch to document the CLONE_NEWUTS flag that was
+> added in 2.6.19.
 
-system_call_after_swapgs is a slowpath and should be converted to a 
-simple:
+Thanks for writing this.
 
- .globl system_call_after_swapgs
- system_call_after_swapgs:
+> Could you please review and let me know of improvements
+> or inaccuracies?
+> 
+> By the way, does anyone know where the UTS name in the uname()
+> API comes from? My best guess is that it's from Unix Timesharing
+> System, but I don't know this for sure.
 
-symbol definition - with no particular jump target alignment tweaks.
+That sounds plausible - I've wondered myself and even googled a
+bit, but not found an answer.  I suppose we might need to ask
+Linus, or check one of the git repos that goes back to the early
+90s and see who created the struct.
 
-(the above sequence should be generalized as an __ENTRY() macro - i.e. 
-raw global symbol definition without any alignment tweaks)
+> Cheers,
+> 
+> Michael
+> 
+> diff --git a/man2/clone.2 b/man2/clone.2
+> index 7212332..80f9caf 100644
+> --- a/man2/clone.2
+> +++ b/man2/clone.2
+> @@ -341,6 +340,33 @@ configuration option and that the process be privileged
+>  This flag can't be specified in conjunction with
+>  .BR CLONE_THREAD .
+>  .TP
+> +.BR CLONE_NEWUTS " (since Linux 2.6.19)"
+> +If
+> +.B CLONE_NEWUTS
+> +is set, then create the process in a new UTS namespace.
 
-	Ingo
+And the new UTS namespace will initially be identical as the
+parent - same hostname and domainname.
+
+> +If this flag is not set, then (as with
+> +.BR fork (2)),
+> +the process is created in the same UTS namespace as
+> +the calling process.
+> +This flag is intended for the implementation of control groups.
+
+I'm not sure Eric was sufficiently clear - this flag is intended
+for the implementation of virtual server functionality and maybe
+checkpoint/restart (though I'm not sure any apps will care about
+being able to reset the hostname on restart :)
+
+It's not that you have to call it 'virtual server functionality',
+just that 'control groups' is definately not right.
+
+Maybe 'lightweight containers'?  "lightweight virtual servers'?
+
+thanks,
+-serge
