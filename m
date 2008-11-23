@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbYKWTtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbYKWTuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbYKWTtR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYKWTtD
+	id S1758245AbYKWTuH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYKWTtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:49:03 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44682 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbYKWTtB (ORCPT
+	Sun, 23 Nov 2008 14:49:55 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54886 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbYKWTty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:49:01 -0500
-Date: Sun, 23 Nov 2008 14:48:59 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Sun, 23 Nov 2008 14:49:54 -0500
+Date: Sun, 23 Nov 2008 20:51:16 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: don't trace kfree while
- it frees the return stack
-In-Reply-To: <20081123193554.GC2794@elte.hu>
-Message-ID: <alpine.DEB.1.10.0811231446520.13888@gandalf.stny.rr.com>
-References: <492985C8.7070205@gmail.com> <20081123164013.GC6206@elte.hu> <alpine.DEB.1.10.0811231237470.13888@gandalf.stny.rr.com> <20081123193554.GC2794@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC -tip] x86: introduce ENTRY(KPROBE)_X86  assembly helpers to catch unbalanced declaration
+Message-ID: <20081123195116.GA939@uranus.ravnborg.org>
+References: <20081123165711.GA12710@localhost> <20081123175125.GA32472@uranus.ravnborg.org> <20081123175846.GF12710@localhost> <20081123181248.GA338@uranus.ravnborg.org> <20081123182103.GH12710@localhost> <20081123185417.GA21106@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123185417.GA21106@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 23 Nov 2008, Ingo Molnar wrote:
-> > > 
-> > > note that we also need to keep gcc from reordering things here (no 
-> > > matter how unlikely in this particular case).
-> > 
-> > I first thought that too, but thinking about it, if gcc does do that, then
-> > it will break the logic for a correct C program.
-> > 
-> > t is passed in as a pointer, then it modifies the contents of t 
-> > (which could be a global pointer), then it calls a external 
-> > function, that might also reference the global pointer.
-> > 
-> > This means that if it were to reorder the two, it would break C, 
-> > because the compiler can not assume that the called function will 
-> > read the global pointer either.
-> > 
-> > In other words, the compiler should not need to worry about SMP or 
-> > modifications done by interrupts or other threads. But the compiler 
-> > should always preserve the order that is assumed by a single 
-> > context.
+On Sun, Nov 23, 2008 at 07:54:17PM +0100, Ingo Molnar wrote:
 > 
-> Correct, but this assumes that kfree is a C function. Which it might 
-> not necessarily be: it could be optimized via an inline in certain 
-> cases, etc. It's best to document such cases explicitly.
-
-Yeah, I thought about kfree being optimized out somehow, but thinking 
-about what kfree does, it seems difficult to imagine how that could 
-happen.
-
+> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 > 
-> In any case, the real solution is what i suggested in the previous 
-> mail, to do the freeing from the task-struct freeing path in 
-> kernel/fork.c:free_task() - that has other advantages as well.
+> > [Sam Ravnborg - Sun, Nov 23, 2008 at 07:12:48PM +0100]
+> > ...
+> > | > 
+> > | > I don't have -next tree on my laptop, neither cross-compile tools but
+> > | > if someone could test it -- it would be great. But I used gas macros
+> > | > here -- i doubt other architectures has the same syntax. At least
+> > | > PDP-11 would beat us with ';' symbol :)
+> > | 
+> > | If we include this in any of the 100+ trees that Stephen sucks
+> > | into -next we will get it tried out.
+> > | 
+> > | Ingo has so and so does others so getting it into -next
+> > | is rather easy. Then the automated builds will tell of if
+> > | it fails on any of the toolchains used there.
+> > | 
+> > | 	Sam
+> > | 
+> > 
+> > Sam, to be clear, you mean that I could put this stuff into general 
+> > include/linux/linkage.h with general names as ENTRY/END and the same 
+> > for KPROBE so it could be merged into -next tree for testing? If 
+> > yes, that as I said there will be a lot of errors so build will 
+> > stuck in a moment 'cause of unbalanced ENTRY. Not sure if it's a 
+> > good idea :)
+> 
+> neither do i think it's a particularly good idea. Lets first prototype 
+> it on x86, see how it works out in practice, and then see whether it 
+> can be generic. Then it can just be lifted into the generic linkage.h 
+> separately, and we can then see whether it causes new problems. 
 
-Yeah, but sometimes it's good to talk about quirks of a compiler, even on 
-obsoleted situations ;-)
+OK - I assume you guys will take action on this if we succeed in x86
+with this nice build time check.
 
--- Steve
-
+	Sam
