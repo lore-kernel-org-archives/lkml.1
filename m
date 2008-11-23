@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYKWTnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYKWTqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbYKWTnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYKWTnG
+	id S1755555AbYKWTqG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYKWTpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:43:06 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56006 "EHLO
+	Sun, 23 Nov 2008 14:45:55 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:46407 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbYKWTnE (ORCPT
+	with ESMTP id S1751010AbYKWTpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:43:04 -0500
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/4] trace: profile all if conditionals
+	Sun, 23 Nov 2008 14:45:54 -0500
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Peter Teoh" <htmldeveloper@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: A question sort_main_extable()
 From: Andi Kleen <andi@firstfloor.org>
-References: <20081121071213.365288293@goodmis.org>
-	<20081121071328.462456268@goodmis.org>
-Date: Sun, 23 Nov 2008 20:43:07 +0100
-In-Reply-To: <20081121071328.462456268@goodmis.org> (Steven Rostedt's message of "Fri, 21 Nov 2008 02:12:17 -0500")
-Message-ID: <87iqqei5ys.fsf@basil.nowhere.org>
+References: <804dabb00811202142y799fb70dxf89a1fc3514d78b1@mail.gmail.com>
+	<20081120214717.1a02a9af@infradead.org>
+Date: Sun, 23 Nov 2008 20:45:57 +0100
+In-Reply-To: <20081120214717.1a02a9af@infradead.org> (Arjan van de Ven's message of "Thu, 20 Nov 2008 21:47:17 -0800")
+Message-ID: <87ej12i5u2.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -31,22 +27,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt <rostedt@goodmis.org> writes:
+Arjan van de Ven <arjan@infradead.org> writes:
 >
-> Miss means the branch was not taken. Hit means the branch was taken.
-> The percent is the percentage the branch was taken.
+> we used to do this but it was a pain and extremely fragile. Runtime
+> sorting makes it very robust at least.
 
-I'm not sure the results are very useful? What would
-you do with it?
+It's not only extremly fragile, but just broken with out of line
+section which gcc also generates these days.
 
-It seems like a very special case of gcov, but I think I would
-rather have the full thing (patches in -mm I think)
+>
+> The sort is really quick though; I've spent a lot of time on boot time
+> and this guy never showed up for me.
 
-> This adds a significant amount of overhead and should only be used
-> by those analyzing their system.
+If you really wanted to speed it up you could actually just switch
+over to a bubble sort. It's typically the best algorithm for nearly
+already sorted input data, which this is.
 
-Often this can be also done using CPU performance counters. Might 
-be a cheaper option. 
+But then as you say it's not worth it.
 
 -Andi
 
