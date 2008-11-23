@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbYKWW3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYKWWbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbYKWW3U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 17:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYKWW3L
+	id S1752547AbYKWWbv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 17:31:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYKWWbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 17:29:11 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:55876 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbYKWW3K (ORCPT
+	Sun, 23 Nov 2008 17:31:43 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:52515 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbYKWWbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 17:29:10 -0500
-Date: 23 Nov 2008 23:28:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jkosina@suse.cz
-Cc: jonsmirl@gmail.com
-Cc: jrm8005@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Cc: pavel@suse.cz
-Message-ID: <AqQUJV3JjFB@christoph>
-In-Reply-To: <alpine.LRH.1.10.0811232128050.26670@twin.jikos.cz>
-Subject: Re: In-kernel IR remote control support
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Sun, 23 Nov 2008 17:31:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=vb3sm9qZwAr5x2J7z2F9ImzAcNS9RsH228s+nTq+sJPpce4EgyMhwhOB2ZF4YPhA2v
+         nq+viyCP5gVrmo8xkzkbHxgL7NN9OBjYt1fjxlBpd1iarNfvnWv9uEElpcORGHlfvL1J
+         PVbKLwirCWw/+YpAIymK04in0PUheBiPMJnQo=
+Message-ID: <7c86c4470811231431nff93661xbfb04b6b6f81abfe@mail.gmail.com>
+Date: Sun, 23 Nov 2008 23:31:40 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Markus Metzger" <markus.t.metzger@googlemail.com>
+Subject: Re: debugctl msr
+Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1227347491.6146.13.camel@raistlin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/LJi5cZT4QZd3jnqva26s3Xvbx6eJsQLwzgU+
- is5Y51kJ6f2v9H8DdefinxV/bIbAVYe+0AZQTIjgk84UXjDJn3
- lXlnWJ4B2a7FahvS45um2QLdMvdCu3NpANQYDdchxI=
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7c86c4470810300753v7d377092qbcd266178d8e7338@mail.gmail.com>
+	 <1227133570.6104.10.camel@raistlin>
+	 <7c86c4470811201319x2eb93d41vbdd8ce480a797fab@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F115BC@irsmsx504.ger.corp.intel.com>
+	 <7c86c4470811210538i5e6958e1p2c31effa762f5914@mail.gmail.com>
+	 <7c86c4470811210727o13006d5bk5bcbacb791e51b1c@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F3B93D@irsmsx504.ger.corp.intel.com>
+	 <7c86c4470811210833l5c8005b4l675bc51df50affaa@mail.gmail.com>
+	 <7c86c4470811211447p57b38ecy9520a9e5170d2ce1@mail.gmail.com>
+	 <1227347491.6146.13.camel@raistlin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Markus,
 
-on 23 Nov 08 at 21:33, Jiri Kosina wrote:
-> On Sun, 23 Nov 2008, Christoph Bartelmus wrote:
-
->> You can have LIRC setup to decode all common remote control protocols.
->> It's just a matter of proper packaging and pre-configuration. You don't
->> have to write a single line of code for this (I still have to add uinput
->> support, though, which I probably would have done by now, if I weren't
->> busy writing posts like this).
-
-> Just a question -- how much is the situation different to what we
-> currently have for HID devices?
+On Sat, Nov 22, 2008 at 10:51 AM, Markus Metzger
+<markus.t.metzger@googlemail.com> wrote:
 >
-> For these, we currently have common code, that is able to handle all the
-> "normal" devices by default, that are fully compliant with the HID
-> standard.
-> For the devices that don't behave that well, we have specialized drivers,
-> that use all the generic HID infrastructure to handle the
-> standard-compliant behavior of the device and allows the specialized
-> drivers to implement only the parts that violate standard.
+> ds_access() returns the pointer into the raw buffer at a given index.
+> For index 0, this is the beginning of the buffer.
+
+Ok, I missed that call.
 >
-> It's pretty lightweight and seems to work well. Wouldn't this work also
-> for LIRC drivers?
-
-No. Unlike with HID devices, with most IR receivers you can use any  
-remote. In LIRC we write drivers for the receivers and don't care about  
-the remote, which is handled in userspace. The suggested approach would  
-move both receiver and remote handling into kernel space (actually only  
-part of it because many receivers have userspace drivers, so both receiver  
-and remote handling must be done in userspace anyway for these receivers).
-
-Christoph
+>
+> I plan to replace the various access functions with a single one that
+> returns a const pointer to the configuration.
+>
+> Something like:
+>
+> struct ds_config {
+>  size_t number_of_records;
+>  size_t size_of_a_single_record;
+>  void *base;
+>  void *max;
+>  void *index;
+>  void *threshold;
+> };
+>
+> const struct ds_config *ds_config_pebs(struct pebs_tracer *tracer);
+> Would you be OK with such a change?
+>
+Looks good.
+There are two calls on the critical path for perfmon : get_index and
+get_threshold.
+So we want to make sure it is as fast as possible.
