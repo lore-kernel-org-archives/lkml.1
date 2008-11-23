@@ -1,135 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752752AbYKWUpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbYKWUxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752752AbYKWUpR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 15:45:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYKWUpF
+	id S1752138AbYKWUxZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 15:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYKWUxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 15:45:05 -0500
-Received: from smooth.piipiip.net ([194.100.76.170]:44463 "EHLO
-	smooth.piipiip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYKWUpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 15:45:04 -0500
-Date: Sun, 23 Nov 2008 22:44:59 +0200
-From: Jarkko Lavinen <jlavi@iki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net,
-       Doug Thompson <dougthompson@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: i82875p_edac: BAR 0 collision
-Message-ID: <20081123204459.GA11725@piipiip.net>
-References: <20081107114355.GA31730@piipiip.net> <20081111000152.271d9706.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Sun, 23 Nov 2008 15:53:15 -0500
+Received: from foo.birdnet.se ([213.88.146.6]:39148 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750780AbYKWUxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 15:53:14 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Nov 2008 15:53:13 EST
+Message-ID: <20081123204631.21061.qmail@stuge.se>
+Date: Sun, 23 Nov 2008 21:46:31 +0100
+From: Peter Stuge <peter@stuge.se>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Yuval Hager <yuval@avramzon.net>, LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: BCM4312 Fails when xdm is started
+Mail-Followup-To: Michael Buesch <mb@bu3sch.de>,
+	Yuval Hager <yuval@avramzon.net>,
+	LKML <linux-kernel@vger.kernel.org>,
+	wireless <linux-wireless@vger.kernel.org>,
+	bcm43xx-dev@lists.berlios.de,
+	Larry Finger <Larry.Finger@lwfinger.net>
+References: <200811151801.02369.yuval@avramzon.net> <200811221654.09399.mb@bu3sch.de> <200811231350.00207.yuval@avramzon.net> <200811231320.30289.mb@bu3sch.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111000152.271d9706.akpm@linux-foundation.org>
-X-Operating-System: Linux smooth.piipiip.net 2.6.18-5-k7
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: jlavi@piipiip.net
-X-SA-Exim-Scanned: No (on smooth.piipiip.net); SAEximRunCond expanded to false
+In-Reply-To: <200811231320.30289.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 12:01:52AM -0800, Andrew Morton wrote:
-> Might be an EDAC driver regression.  It might also be a consequence of
-> PCI address space management fiddlings, but I think most of the changes
-> there post-date 2.6.26?
+Michael Buesch wrote:
+> On Sunday 23 November 2008 12:49:55 Yuval Hager wrote:
+> > [  182.891400] ****** b43: B43_MMIO_MACCTL 0x840A0503
+> > [  182.891409] ****** b43: SSB_TMSLOW 0x20150000
+> > [  258.299027] irq 10: nobody cared (try booting with the "irqpoll" option)
+> 
+> Does the kernel disable the PCI device, if it ignores the IRQ?
 
-There were 3 issues:
- 1, PCI resources of the hidden overflow device had to be added separately
- 2. In nodule exit there is one more mci struct kobject put than
-     correspondig gets.
- 3. The edac_mc waitqueue must be stopped before the polled memory
-    area disappears.
+The kernel disables the IRQ at least internally, maybe also by
+deconfiguring the interrupt register in any devices using it, which
+would explain the change in config register 0x3c (but not the changes
+in all the other bytes, could that be a freak chain reaction inside
+the hardware?) but I haven't heard/seen the kernel disable the PCI
+device itself. I don't know if it can.
 
-Th attached patch fixes these problems. Module loads and removes now
-without problems, with pci, edac, slab and kobject debug options
-enabled.
+Why doesn't b43 care about this interrupt? Without APIC interrupt 10
+is what both device and driver should be using (according to earlier
+lspci -x output).
 
-i82875p code looks so simlar to i82875p that is has likely the same
-ref count issues as i82875p.
 
-Cheers
-Jarkko Lavinen
+> > [  258.299173] handlers:
+> > [  258.299176] [<f7906455>] (b43_interrupt_handler+0x0/0x1b7 [b43])
+> > [  258.299212] Disabling IRQ #10
+> > [  258.315148] b43-phy0: Radio hardware status changed to DISABLED
+> > [  258.315160] b43-phy0: ******** B43_B43_MMIO_RADIO_HWENABLED_HI 0xFFFFFFFF
+> > [  258.342341] kobject: 'rfkill0' (f43b7d78): kobject_uevent_env
+> > [  258.342367] kobject: 'rfkill0' (f43b7d78): fill_kobj_path: path = '/class/rfkill/rfkill0'
+> > [  258.342418] kobject: 'ssb0:0' (f40dfcd8): fill_kobj_path: path = '/devices/pci0000:00/0000:00:02.0/0000:02:00.0/ssb0:0'
 
->From 3abc62242a219d1466b32b59bb88b4c1b0e86a65 Mon Sep 17 00:00:00 2001
-From: Jarkko Lavinen <jlavi@iki.fi>
-Date: Sun, 23 Nov 2008 22:18:39 +0200
-Subject: [PATCH] i82875p_edac: Fix module init and exit
+Why does the radio hw status changes here?
+How is the change notified to the driver?
 
-The PCI resources of the hidden overflow device are missing after the overflow
-device is revealed and resources must be added separately.
 
-When exiting both edac_remove_sysfs_mci_device() in edac_mc_del_mc()
-and edac_mc_free() in i82875p_remove_one() decrement the mci ref count.
-Use an additional kobject_get() to keep mci valid edac_mc_del_mc() till the
-final edac_mc_free().
+> > [  258.391951] 
+> > [  258.391956] =================================
+> > [  258.391964] [ INFO: inconsistent lock state ]
+> > [  258.391971] 2.6.28-rc5 #15
+> > [  258.391975] ---------------------------------
+> > [  258.391980] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> > [  258.391987] X/3965 [HC0[0]:SC1[1]:HE1:SE0] takes:
+> > [  258.391993]  (&irq_desc_lock_class){++..}, at: [<c0148c60>] try_one_irq+0x15/0xe8
+> > [  258.392016] {in-hardirq-W} state was registered at:
+> > [  258.392021]   [<c013bc07>] __lock_acquire+0x490/0x6bc
+> > [  258.392034]   [<c013be8d>] lock_acquire+0x5a/0x74
+> > [  258.392043]   [<c01496f8>] handle_level_irq+0x12/0xba
+> > [  258.392053]   [<c03c4842>] _spin_lock+0x1c/0x45
+> > [  258.392066]   [<c01496f8>] handle_level_irq+0x12/0xba
+> > [  258.392076]   [<c01496f8>] handle_level_irq+0x12/0xba
+> > [  258.392085]   [<c010564e>] do_IRQ+0x89/0x9f
+> > [  258.392096]   [<c0103ea8>] common_interrupt+0x28/0x30
+> > [  258.392105]   [<c03c4cc2>] _spin_unlock_irqrestore+0x37/0x39
+> > [  258.392115]   [<c01487e6>] __setup_irq+0x17a/0x1f3
+> > [  258.392124]   [<c05ce79d>] start_kernel+0x285/0x2f1
+> > [  258.392140]   [<ffffffff>] 0xffffffff
+> > [  258.392159] irq event stamp: 1844456
+> > [  258.392164] hardirqs last  enabled at (1844456): [<c03c4b6f>] _spin_unlock_irq+0x20/0x23
+> > [  258.392175] hardirqs last disabled at (1844455): [<c03c4ac3>] _spin_lock_irq+0xa/0x4b
+> > [  258.392186] softirqs last  enabled at (1844310): [<c0125406>] do_softirq+0x37/0x4d
+> > [  258.392198] softirqs last disabled at (1844447): [<c0125406>] do_softirq+0x37/0x4d
+> 
+> 
+> That's a bit weird. Looks like another bug in the IRQ layer.
 
-Also i82875p_remove_one() should be called before pci_unregister_driver()
-to stop the polling before the checked memory area disappearr.
+Something happens with the hardware that confuses the kernel. It's
+triggered by software but I don't know where.. Like Michael, I'm
+not too convinced that it is in b43. :\
 
-Signed-off-by: Jarkko Lavinen <jlavi@iki.fi>
----
- drivers/edac/i82875p_edac.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/edac/i82875p_edac.c b/drivers/edac/i82875p_edac.c
-index e43bdc4..ebb037b 100644
---- a/drivers/edac/i82875p_edac.c
-+++ b/drivers/edac/i82875p_edac.c
-@@ -182,8 +182,6 @@ static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code has
- 					 * already registered driver
- 					 */
- 
--static int i82875p_registered = 1;
--
- static struct edac_pci_ctl_info *i82875p_pci;
- 
- static void i82875p_get_error_info(struct mem_ctl_info *mci,
-@@ -295,6 +293,7 @@ static int i82875p_setup_overfl_dev(struct pci_dev *pdev,
- 				"%s(): pci_bus_add_device() Failed\n",
- 				__func__);
- 		}
-+		pci_bus_assign_resources(dev->bus);
- 	}
- 
- 	*ovrfl_pdev = dev;
-@@ -409,6 +408,9 @@ static int i82875p_probe1(struct pci_dev *pdev, int dev_idx)
- 		goto fail0;
- 	}
- 
-+	/* Keeps mci available after edac_mc_del_mc() till edac_mc_free() */
-+	kobject_get(&mci->edac_mci_kobj);
-+
- 	debugf3("%s(): init mci\n", __func__);
- 	mci->dev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR;
-@@ -451,6 +453,7 @@ static int i82875p_probe1(struct pci_dev *pdev, int dev_idx)
- 	return 0;
- 
- fail1:
-+	kobject_put(&mci->edac_mci_kobj);
- 	edac_mc_free(mci);
- 
- fail0:
-@@ -578,12 +581,11 @@ static void __exit i82875p_exit(void)
- {
- 	debugf3("%s()\n", __func__);
- 
-+	i82875p_remove_one(mci_pdev);
-+	pci_dev_put(mci_pdev);
-+
- 	pci_unregister_driver(&i82875p_driver);
- 
--	if (!i82875p_registered) {
--		i82875p_remove_one(mci_pdev);
--		pci_dev_put(mci_pdev);
--	}
- }
- 
- module_init(i82875p_init);
--- 
-1.5.6.5
-
+//Peter
