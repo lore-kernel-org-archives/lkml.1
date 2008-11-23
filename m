@@ -1,109 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYKWUXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYKWUdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758066AbYKWUXw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 15:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYKWUXo
+	id S1756062AbYKWUdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 15:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYKWUdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 15:23:44 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:2733 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752436AbYKWUXn (ORCPT
+	Sun, 23 Nov 2008 15:33:04 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42889 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752436AbYKWUdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 15:23:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UYOKv0b/wh6UJqqEwl+yLuIYWNraQiAR4D1sicr6l57umMN5gzwvReRQwBQNc2szdE
-         2BFeXpYS4WIJRC4bABGxr4MRq0h6vsamjDiswI+wk01R8aFY0cu//77RuKvvsCHZDDv+
-         yuWU5oIu5LPm7RNtV6VLA20t4k4UR8Bungxzw=
-Message-ID: <b637ec0b0811231223r2032f221geeb19ea5804d3b91@mail.gmail.com>
-Date: Sun, 23 Nov 2008 21:23:42 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <b637ec0b0811231024t73d1b8b3x9e23e24dda94c6b8@mail.gmail.com>
+	Sun, 23 Nov 2008 15:33:02 -0500
+Date: Sun, 23 Nov 2008 15:32:59 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/4] trace: profile all if conditionals
+In-Reply-To: <20081123202434.GU6703@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0811231523070.13888@gandalf.stny.rr.com>
+References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <87iqqei5ys.fsf@basil.nowhere.org> <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com> <20081123202434.GU6703@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
-	 <200811231914.09982.rjw@sisk.pl>
-	 <b637ec0b0811231024t73d1b8b3x9e23e24dda94c6b8@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Sun, Nov 23, 2008 at 7:24 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> Hi
->
-> Yes. I started another bisection session between 2.6.27.4 and 2.6.27.5.
->
+On Sun, 23 Nov 2008, Andi Kleen wrote:
 
-Ok, this time things went much better. The bisection pointed to:
+> On Sun, Nov 23, 2008 at 02:56:42PM -0500, Steven Rostedt wrote:
+> 
+> You snipped my earlier suggestion? Can't you just use kernel gcov
+> for this? Frankly it's output is infinitely more useful than
+> the one from your patch. It also addresses Andrew's suggestion
+> of profiling other control flow constructs.
 
-------------------------------------------------------------------------------------------------------------------------------------------------
-fcomolli@hawking:~/software/GIT-TREES/linux-2.6.27.y> git bisect good
-ff0f8d16839cd02dc95bd92c212cbd5d433a4d2b is first bad commit
-commit ff0f8d16839cd02dc95bd92c212cbd5d433a4d2b
-Author: Jay Fenlason <fenlason@redhat.com>
-Date:   Mon Oct 27 23:28:14 2008 +0100
+I'll have to read up more on gcov.
 
-    firewire: fix struct fw_node memory leak
+> 
+> I know it's not ftrace, but not everything is bad just because it's
+> not seen through the ftrace spectacles @)
 
-    commit 77e557191701afa55ae7320d42ad6458a2ad292e upstream
+Actually, the only thing the full branch profiler shares with ftrace, is
+the directory.  It really does not use any of the function tracing or 
+ring buffer facilities. The "ftrace" name is just a catch all for any
+type of tracing or profiling that I do ;-)
 
-    With the bus_resets patch applied, it is easy to see this memory leak
-    by repeatedly resetting the firewire bus while running slabtop in
-    another window.  Just watch kmalloc-32 grow and grow...
+Notice, the subject is "trace:" not "ftrace:". This is because it did 
+not belong to the true ftrace facility. It really should have been 
+"profiling:" but I was tired when I wrote it.
 
-    Signed-off-by: Jay Fenlason <fenlason@redhat.com>
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> 
+> > On Sun, 23 Nov 2008, Andi Kleen wrote:
+> > > Steven Rostedt <rostedt@goodmis.org> writes:
+> > 
+> > > > This adds a significant amount of overhead and should only be used
+> > > > by those analyzing their system.
+> > > 
+> > > Often this can be also done using CPU performance counters. Might 
+> > > be a cheaper option. 
+> > 
+> > I'd love to add an option that could hook into any arch with HW support 
+> > for this. We could dump out the same information, but just a different way 
+> > to gather it.  But I'm still ignorant to the use of CPU performance 
+> > counters and how to find which branch matches which if.
+> 
+> The theory is quite simple. Typically there are events for 
+> "taken branches" and others for "non taken". So you set up
+> two counters using the existing oprofile support and collect
+> the samples.  Then combine these two sample streams.
+> 
+> [Sometimes you have to also synthesize these 
+> events because CPUs like to count predicted and mispredicted
+> (in the CPU sense) differently, but that's also quite simple
+> (on x86/core these can be all specified in the unit mask for
+> the same event)]
+> 
+> The sampling will be statistical (not every branch counted),
+> but that's ok because only branches that are executed a significant
+> time are interesting anyways.
+> 
+> The only problem is you have to map back to source code lines, which
+> can be done in user space based on the oprofile output and some
+> addr2line or similar hacks. oprofile can also do this,
+> although it gives this information only indirectly so a custom
+> tool might be easier.
 
-:040000 040000 01cadbd5f5fb81ce4f5e2023573204c4fbec3a28
-809a53f4be87bd8be133ebd7564e1139a0cfa45b M      drivers
-------------------------------------------------------------------------------------------------------------------------------------------------
+My work evolves around not adding any userspace tool that is not already
+supported by busybox. I'm not against anyone else doing this work. It's 
+just that I'm not interested in such. In otherwords, I rather have someone 
+else do that work.
 
-And this is the log:
+> 
+> Note it doesn't even need new kernel code, assuming 
+> the architecture already has a working full oprofile implementation.
+> 
+> The main advantage over gcov would be lower runtime overhead,
+> although gcov is giving the better output (and is already working
+> too)
 
-------------------------------------------------------------------------------------------------------------------------------------------------
-fcomolli@hawking:~/software/GIT-TREES/linux-2.6.27.y> git bisect log
-git-bisect start
-# good: [056c71459d3acf9fefcb2dc67abeef10e649d508] Linux 2.6.27.4
-git-bisect good 056c71459d3acf9fefcb2dc67abeef10e649d508
-# bad: [788a5f3f70e2a9c46020bdd3a195f2a866441c5d] Linux 2.6.27.5
-git-bisect bad 788a5f3f70e2a9c46020bdd3a195f2a866441c5d
-# bad: [7bdb542c453c14e54af9ebe5c4a827e4a678c47d] powerpc/numa: Make
-memory reserve code more robust
-git-bisect bad 7bdb542c453c14e54af9ebe5c4a827e4a678c47d
-# good: [f29062d0ec12ee3a58c67228dc829574b4ced378] syncookies: fix
-inclusion of tcp options in syn-ack
-git-bisect good f29062d0ec12ee3a58c67228dc829574b4ced378
-# good: [882491755d4c819de5bb593f04d06692185760aa] firewire: fix
-ioctl() return code
-git-bisect good 882491755d4c819de5bb593f04d06692185760aa
-# bad: [baae4f5fd7a75bdfa70d374b738963053df2bcaa] firewire: fw-sbp2: fix races
-git-bisect bad baae4f5fd7a75bdfa70d374b738963053df2bcaa
-# bad: [ff0f8d16839cd02dc95bd92c212cbd5d433a4d2b] firewire: fix struct
-fw_node memory leak
-git-bisect bad ff0f8d16839cd02dc95bd92c212cbd5d433a4d2b
-# good: [b6021579f54e5b6b31f03fe24de1208a2feb4aec] firewire: Survive
-more than 256 bus resets
-git-bisect good b6021579f54e5b6b31f03fe24de1208a2feb4aec
-------------------------------------------------------------------------------------------------------------------------------------------------
 
-The commit reverted cleanly and now I'm running 2.6.27.7 with that
-commit reverted. I'll post my results.
+This all sounds great, and perhaps someone might decide to do this. The 
+full branch tracer I added, I did in a few hours and tested on both x86 
+and PPC. That was because I was waiting on output from a test running on 
+another box that was taking a couple of hours, and I got bored.
 
-Hoper this helps. Regards,
-Fabio
+I'm not against any of the suggestions you make. I'm just waiting for 
+someone else to do it ;-)
 
->> Rafael
->
-> Regards,
-> Fabio
->
+-- Steve
+
