@@ -1,79 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYKWJPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbYKWJRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbYKWJPM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 04:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYKWJOy
+	id S1757879AbYKWJRt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 04:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYKWJRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 04:14:54 -0500
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:65014 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752777AbYKWJOx (ORCPT
+	Sun, 23 Nov 2008 04:17:35 -0500
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:5774 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752777AbYKWJRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 04:14:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=EV7Nvn5HRnJ6mCX7EbTXsYo13ThmKQJTom71d0a6kufBWbEW/1LwayW6b+SzQTZl2m
-         7GWhRfqVydMfPjVPR5LpFG2upL8FMYjLg5ErEudNUn83qWztzhe+3106Z1xvzVRviPyR
-         AcxfpnPYfh3fN22JmF9Lz5lnPyWcszrK9rdJ0=
-Message-ID: <49291F06.5040907@gmail.com>
-Date: Sun, 23 Nov 2008 18:14:46 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
+	Sun, 23 Nov 2008 04:17:32 -0500
+Date: Sun, 23 Nov 2008 10:15:32 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Miklos Szeredi <miklos@szeredi.hu>,
-       arjan@linux.intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       hch@infradead.org, rminnich@sandia.gov, ericvh@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: poll: allow f_op->poll to sleep, take #3
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com> <20081123085902.GI30453@elte.hu>
-In-Reply-To: <20081123085902.GI30453@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
+       Glauber Costa <gcosta@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
+Message-ID: <20081123091532.GA31515@mailshack.com>
+References: <20081119001811.GA23237@mailshack.com> <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123090828.GA31490@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sun, 23 Nov 2008 10:16:55 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.35; VDF: 7.1.0.122; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
->> On Sun, 23 Nov 2008, Tejun Heo wrote:
->>
->>> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
->>> +{
->>> +	struct poll_wqueues *pwq = wait->private;
->>> +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
->>> +
->>> +	set_mb(pwq->triggered, 1);
->>> +
->>> +	/* perform the default wake up operation */
->>> +	return default_wake_function(&dummy_wait, mode, sync, key);
->>> +}
->> Wouldn't it be nicer to un-static try_to_wake_up() (or a wrapper) 
->> instead of setting up a fake wait queue just to use 
->> default_wake_function(), just to wake up a task?
-> 
-> the already existing single-task-wakeup shortcut method made available 
-> by the scheduler is wake_up_process(). A number of primitives where 
-> waitqueue overhead is of concern already make use of it. 
-> (mutexes/rtmutexes and more)
-> 
-> if you need a different mode flag, then please extend the 
-> wake_up_process() family of APIs.
+Impact: moves some code out of .kprobes.text
 
-Well, the problem is that for wait wake up functions @mode and @sync are
-passed as parameter and should be passed over to actual wake up function
-as-is, if I add @mode and @sync to wake_up_process() family of APIs,
-it's just try_to_wake_up().
+KPROBE_ENTRY switches code generation to .kprobes.text, and KPROBE_END
+uses .popsection to get back to the previous section (.text, normally).
+Also replace ENDPROC by END, for consistency.
 
-Thanks.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
+---
+ arch/x86/kernel/entry_64.S |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
+
+Hi Ingo,
+
+One more small change for today. The xen-related functions 
+xen_do_hypervisor_callback and xen_failsafe_callback are put
+in the .kprobes.text even in the current kernel: ignore_sysret
+is enclosed in KPROBE_ENTRY / ENDPROC, instead of KPROBE_ENTRY /
+KPROBE_END, but I guess the situation is harmless.
+
+Greetings,
+	Alexander
+
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index ec0ed9c..477a428 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -1190,7 +1190,7 @@ paranoid_schedule:
+ 	TRACE_IRQS_OFF
+ 	jmp paranoid_userspace
+ 	CFI_ENDPROC
+-END(paranoid_exit)
++KPROBE_END(paranoid_exit)
+ 
+ /*
+  * Exception entry point. This expects an error code/orig_rax on the stack.
+@@ -1282,7 +1282,7 @@ gs_change:
+ 	CFI_ADJUST_CFA_OFFSET -8
+         ret
+ 	CFI_ENDPROC
+-ENDPROC(native_load_gs_index)
++END(native_load_gs_index)
+ 
+         .section __ex_table,"a"
+         .align 8
+@@ -1336,7 +1336,7 @@ ENTRY(kernel_thread)
+ 	UNFAKE_STACK_FRAME
+ 	ret
+ 	CFI_ENDPROC
+-ENDPROC(kernel_thread)
++END(kernel_thread)
+ 
+ child_rip:
+ 	pushq $0		# fake return address
+@@ -1352,7 +1352,7 @@ child_rip:
+ 	mov %eax, %edi
+ 	call do_exit
+ 	CFI_ENDPROC
+-ENDPROC(child_rip)
++END(child_rip)
+ 
+ /*
+  * execve(). This function needs to use IRET, not SYSRET, to set up all state properly.
+@@ -1383,9 +1383,7 @@ ENTRY(kernel_execve)
+ 	UNFAKE_STACK_FRAME
+ 	ret
+ 	CFI_ENDPROC
+-ENDPROC(kernel_execve)
+-
+-
++END(kernel_execve)
+ 
+ 	/* runs on exception stack */
+ KPROBE_ENTRY(nmi)
+@@ -1460,14 +1458,14 @@ ENTRY(call_softirq)
+ 	decl %gs:pda_irqcount
+ 	ret
+ 	CFI_ENDPROC
+-ENDPROC(call_softirq)
++END(call_softirq)
+ 
+ KPROBE_ENTRY(ignore_sysret)
+ 	CFI_STARTPROC
+ 	mov $-ENOSYS,%eax
+ 	sysret
+ 	CFI_ENDPROC
+-ENDPROC(ignore_sysret)
++KPROBE_END(ignore_sysret)
+ 
+ #ifdef CONFIG_XEN
+ zeroentry xen_hypervisor_callback xen_do_hypervisor_callback
 -- 
-tejun
+1.5.4.3
