@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbYKWR07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbYKWR0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757643AbYKWR07 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 12:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYKWR0Z
+	id S1756665AbYKWR0n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 12:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYKWR0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 12:26:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57042 "EHLO UNKNOWN"
+	Sun, 23 Nov 2008 12:26:20 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57039 "EHLO UNKNOWN"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750987AbYKWR0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 12:26:24 -0500
-Date: Sun, 23 Nov 2008 13:30:32 +0100
+	id S1750902AbYKWR0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 12:26:19 -0500
+Date: Sun, 23 Nov 2008 13:31:54 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Shem Multinymous <multinymous@gmail.com>,
-       "J.R. Mauro" <jrm8005@gmail.com>, tpctl-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [Tpctl-users] Inclusion of tp_smapi module into kernel?
-Message-ID: <20081123123032.GA7310@ucw.cz>
-References: <200811171455.50039.hanno@hboeck.de> <49219DF5.5040404@zytor.com> <3aaafc130811170913o761ce43fg3a2738586ebd2396@mail.gmail.com> <41840b750811171035w63c794aepaa273bc55fbaf2@mail.gmail.com> <4921C425.7020806@zytor.com> <20081117202704.GG14523@mit.edu>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Sean MacLennan <smaclennan@pikatech.com>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 4/4] leds: Let GPIO LEDs keep their current state
+Message-ID: <20081123123154.GB7310@ucw.cz>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp> <1224889741-4167-4-git-send-email-tpiepho@freescale.com> <1226933427.17109.15.camel@ted> <Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081117202704.GG14523@mit.edu>
+In-Reply-To: <Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-11-17 15:27:04, Theodore Tso wrote:
-> On Mon, Nov 17, 2008 at 11:21:09AM -0800, H. Peter Anvin wrote:
-> >> We've discussed that in private at the time, and recently on LKML too.
-> >> In summary:
-> >> I'm fine with that, and so is everybody I talked to (including Linus),
-> >> except Greg KH who vetoed it since he believes the code is irrevocably
-> >> and contagiously evil.
+On Thu 2008-11-20 17:05:56, Trent Piepho wrote:
+> On Mon, 17 Nov 2008, Richard Purdie wrote:
+> > On Fri, 2008-10-24 at 16:09 -0700, Trent Piepho wrote:
+> >> +	if (template->keep_state)
+> >> +		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
+> >> +	else
+> >> +		state = template->default_state;
 > >>
+> >>  		state = of_get_property(child, "default-state", NULL);
+> >>  		led.default_state = state && !strcmp(state, "on");
+> >> +		led.keep_state = state && !strcmp(state, "keep");
+> >>
+> >> +++ b/include/linux/leds.h
+> >> @@ -138,7 +138,8 @@ struct gpio_led {
+> >>  	const char *default_trigger;
+> >>  	unsigned 	gpio;
+> >>  	u8 		active_low;
+> >> -	u8		default_state;
+> >> +	u8		default_state;	/* 0 = off, 1 = on */
+> >> +	u8		keep_state; /* overrides default_state */
+> >>  };
 > >
-> > Signed-off-by is about copyright, it's not a review issue.  It means "I  
-> > certify that I know that the author had the rights to submit this code."  
-> >   Code quality is important but separate.
+> > How about something simpler here, just make default state have three
+> > different values - "keep", "on" and "off"? I'm not keen on having two
+> > different state variables like this.
 > 
-> Indeed; so what were Greg KH's complaints, specifically?  Were they a
-> code review issue or was just complaining about the anonymity issue?
+> I thought of that, but it ends up being more complex.  Instead of just
+> using:
+> static const struct gpio_led myled = {
+>  	.name = "something",
+>  	.keep_state = 1,
+> }
+> 
+> You'd do something like this:
+>  	.default_state = LEDS_GPIO_DEFSTATE_KEEP,
+> 
+> Is that better?
 
-Anonymity issue.
+Yes.
 
-I'm working on similar driver for HP machines, and it would be great
- to be able to test that on my thinkpad, so I'm willing to clean up
- the code if required, maintain it, whatever...
-									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
