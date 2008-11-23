@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbYKWFAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYKWFDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbYKWFAT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 00:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbYKWFAF
+	id S1756850AbYKWFDi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 00:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYKWFD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 00:00:05 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:30803 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750801AbYKWFAD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 00:00:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=j2HHrBUTYebSVo5Q7gDXM8fnjhZyPMuBE8/me8vC7YXRxUTVw/iMvSJF6CygJS4BbOgQ9Unmg6SsNJ5mF3OqSRJ+W/5pRhGYDff6zqCGN9MVo0UdPXiiY1AFtKoi0GAjzNWfF8WsUEJuxClpQMUhJHV4CWVRS4KPhB8/ev31J9A=  ;
-X-YMail-OSG: Kz_F5f8VM1nB7aIb7XqL1O1Is.txaAFV9UySuk_bcYDmLIcXmytuYI21HtQBvrmyYpKIiERdIfd1JlXEn3ll8t0LbwM42vMA5DP_TL4EeNYLtAGzgtBNz9Q1oNq4MgPUOSz6pgl.su9a2F47emKZKEpfBhqFijT5L.CBeuE-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: [spi-devel-general] [patch 05/14] mfd: PCAP2 driver
-Date: Sat, 22 Nov 2008 20:59:59 -0800
-User-Agent: KMail/1.9.10
-Cc: Stefan Schmidt <stefan@datenfreihafen.org>,
-       spi-devel-general@lists.sourceforge.net,
-       Stefan Schmidt <stefan@openmoko.org>, eric.y.miao@gmail.com,
-       linux-kernel@vger.kernel.org, sameo@openedhand.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-References: <20081121160403.073751031@dodger.lab.datenfreihafen.org> <200811221819.53186.david-b@pacbell.net> <1227411537.3148.22.camel@brutus>
-In-Reply-To: <1227411537.3148.22.camel@brutus>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200811222059.59806.david-b@pacbell.net>
+	Sun, 23 Nov 2008 00:03:28 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60954 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750801AbYKWFD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 00:03:28 -0500
+To: phillip@lougher.demon.co.uk
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Zero-clearing all zero-clearable bytes.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200811221236.FJE81778.LtMHOQFJFVFSOO@I-love.SAKURA.ne.jp>
+	<4928DBAF.4030209@lougher.demon.co.uk>
+In-Reply-To: <4928DBAF.4030209@lougher.demon.co.uk>
+Message-Id: <200811231403.BHG87011.OFOOQFHVJLFSMt@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sun, 23 Nov 2008 14:03:24 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 November 2008, Daniel Ribeiro wrote:
-> >  - You should make ezx_pcap_write() and ezx_pcap_read() switch
-> >    over to spi_write_then_read(), to ensure it's never doing
-> >    DMA to/from the stack.  I see a byte-order dependency too...
+Hello.
+
+Phillip Lougher wrote:
+> Most filesystems will not create a sparse file if zero-byte filled 
+> blocks are written.  To create a sparse file you normally have to seek 
+> beyond the file end and then write blocks, leaving a hole in-between the 
+> positions.
 > 
-> I tried spi_write_then_read before, but it didn't work. I supposed it
-> was because it was doing 2 transfers as the second transfer rx_buf
-> always came zeroed.
+> The information from stat can tell you if a file has been stored 
+> sparsely, because the blocks used count will be less than the file size 
+> suggests.
+>
+Then, I can use "dd if=/dev/zero" without worrying sparse files.
 
-You may have been using it wrong.  Also, verify against
-current kernels ... there have been bugfixes to pxa2xx_spi.
-
-
-> I see that commit 
-> f9b90e39cbc5c4d6ef60022fd1f25d541df0aad1 changed it to do a single
-> transfer, so i will try it again.
-
-Unless it needs the full duplex capability of SPI, then
-you should be able to make write_then_read work ... on
-the other hand, if you do need full duplex, then you
-should address the DMA.  (And byteswapping, either way.)
-
-
-> >  - If you're going to mark the probe() as __devinit, then mark
-> >    the remove() as __devexit and use __devexit_p() in the driver
-> >    struct.
+Phillip Lougher wrote:
+> You don't mention what you're using to compress the ext3 image file.  If 
+> you're using Squashfs then it's much better to zero-fill the blocks 
+> rather than use 255, because Squashfs detects zero-filled blocks and 
+> stores them sparsely.  This not only gets slightly better compression 
+> (than a compressed zero-filled block), but reading is also slightly faster.
 > 
-> Ok. Shouldn't i use __init instead?
+Yes, I use squashfs.
 
-I wouldn't.  There are ways that the probe() could be called
-more than once -- e.g. after rebinding either of the relevant
-SPI drivers through sysfs, or after rmmod/modprobe of the SPI
-master controller driver -- and using an __init annotation
-would make that point to memory that's unlikely to still hold
-that code.
 
-- Dave
+
+What I wanted to do is "Zero-clearing *all zero-clearable* bytes".
+Suppose blocks for inode are 8192 bytes and only 128 bytes are in use,
+I think there are 8064 bytes I can zero-fill.
+Suppose blocks for file data are 8192 bytes and a file's size is 1 byte,
+I think there are 8191 bytes I can zero-fill.
+Such bytes may have non-zero values because directory entries can be
+unlink()ed and file data can be truncate()d.
+I wished there is a utility to zero-fill such bytes.
+
+
+Thanks a lot.
