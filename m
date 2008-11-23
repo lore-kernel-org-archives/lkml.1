@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbYKWVjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbYKWVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752456AbYKWVjo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 16:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKWVjg
+	id S1752261AbYKWVsp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 16:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYKWVsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 16:39:36 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40064 "EHLO mx3.mail.elte.hu"
+	Sun, 23 Nov 2008 16:48:36 -0500
+Received: from buick.jordet.net ([193.91.240.190]:50130 "EHLO buick.jordet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbYKWVjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 16:39:35 -0500
-Date: Sun, 23 Nov 2008 22:38:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/4] trace: profile all if conditionals
-Message-ID: <20081123213855.GB16613@elte.hu>
-References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <87iqqei5ys.fsf@basil.nowhere.org> <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750990AbYKWVsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 16:48:36 -0500
+Subject: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+From: Stian Jordet <liste@jordet.net>
+To: linux-kernel@vger.kernel.org
+Cc: xfs@oss.sgi.com
+In-Reply-To: <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
+References: <1226760254.5089.11.camel@chevrolet>
+	 <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 23 Nov 2008 22:48:28 +0100
+Message-Id: <1227476908.32357.5.camel@chevrolet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ti., 18.11.2008 kl. 11.51 -0200, skrev Sergio Luis: 
+> please post your config and dmesg output. It might help people try to
+> identify something wrong.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+(see http://marc.info/?l=linux-kernel&m=122676220019858&w=2 for the
+start of this thread)
 
-> On Sun, 23 Nov 2008, Andi Kleen wrote:
-> > Steven Rostedt <rostedt@goodmis.org> writes:
-> 
-> > > This adds a significant amount of overhead and should only be 
-> > > used by those analyzing their system.
-> > 
-> > Often this can be also done using CPU performance counters. Might 
-> > be a cheaper option.
-> 
-> I'd love to add an option that could hook into any arch with HW 
-> support for this. We could dump out the same information, but just a 
-> different way to gather it.  But I'm still ignorant to the use of 
-> CPU performance counters and how to find which branch matches which 
-> if.
+Hmm. I have now converted my root and /home filesystems to ext3, and
+that actually fixed it (!). I have no idea why xfs is performing so
+extremely poorly on this machine, i'm running xfs on every filesystem on
+eight other computers (one heavy loaded server, as well).
 
-there's already new ftrace code for this and the patches are done - 
-stay tuned.
+Anyway, I'm now unpacking the 2.6.27.6 kernel in 15 seconds, with xfs on
+the same array it used between five and six minutes.
 
-but it wont be a replacement for the soft method (which is more 
-flexible - the hw can only do 'all or nothing' type of branch 
-tracing), so it's complementary.
+I still have a xfs array, and when I copy files to or from that array,
+the gnome session practically freezes, and the load average easily goes
+beyond 10.
 
-	Ingo
+How should I debug this? I'm not very eager about reformatting my 1,5TB
+xfs array... Besides, xfs have never let me down earlier.
+
+Thanks.
+
+Please cc me on any replies.
+
+Regards,
+Stian
+
