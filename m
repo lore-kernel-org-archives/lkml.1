@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbYKWTb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbYKWTeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbYKWTb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYKWTbu
+	id S1757611AbYKWTeg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYKWTe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:31:50 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32875 "EHLO mx3.mail.elte.hu"
+	Sun, 23 Nov 2008 14:34:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58159 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752229AbYKWTbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:31:49 -0500
-Date: Sun, 23 Nov 2008 20:31:34 +0100
+	id S1752229AbYKWTe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 14:34:27 -0500
+Date: Sun, 23 Nov 2008 20:34:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86: introduce ENTRY(KPROBE)_X86  assembly helpers
-	to catch unbalanced declaration
-Message-ID: <20081123193133.GA2794@elte.hu>
-References: <20081123165711.GA12710@localhost> <20081123175125.GA32472@uranus.ravnborg.org> <20081123175846.GF12710@localhost> <20081123181248.GA338@uranus.ravnborg.org> <20081123182103.GH12710@localhost> <20081123185417.GA21106@elte.hu> <20081123185726.GL12710@localhost> <20081123190025.GD21106@elte.hu> <20081123192243.GP12710@localhost>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
+Subject: Re: [PATCH 1/2] mmiotrace: fix buffer overrun detection
+Message-ID: <20081123193413.GB2794@elte.hu>
+References: <20081123154148.04e0851a@daedalus.pq.iki.fi> <alpine.DEB.1.10.0811231134150.27108@gandalf.stny.rr.com> <20081123212430.4f6700e9@daedalus.pq.iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081123192243.GP12710@localhost>
+In-Reply-To: <20081123212430.4f6700e9@daedalus.pq.iki.fi>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,85 +35,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+* Pekka Paalanen <pq@iki.fi> wrote:
 
-> [Ingo Molnar - Sun, Nov 23, 2008 at 08:00:25PM +0100]
-> | 
-> | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | 
-> | > [Ingo Molnar - Sun, Nov 23, 2008 at 07:54:17PM +0100]
-> | > | 
-> | > | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | > | 
-> | > | > [Sam Ravnborg - Sun, Nov 23, 2008 at 07:12:48PM +0100]
-> | > | > ...
-> | > | > | > 
-> | > | > | > I don't have -next tree on my laptop, neither cross-compile tools but
-> | > | > | > if someone could test it -- it would be great. But I used gas macros
-> | > | > | > here -- i doubt other architectures has the same syntax. At least
-> | > | > | > PDP-11 would beat us with ';' symbol :)
-> | > | > | 
-> | > | > | If we include this in any of the 100+ trees that Stephen sucks
-> | > | > | into -next we will get it tried out.
-> | > | > | 
-> | > | > | Ingo has so and so does others so getting it into -next
-> | > | > | is rather easy. Then the automated builds will tell of if
-> | > | > | it fails on any of the toolchains used there.
-> | > | > | 
-> | > | > | 	Sam
-> | > | > | 
-> | > | > 
-> | > | > Sam, to be clear, you mean that I could put this stuff into general 
-> | > | > include/linux/linkage.h with general names as ENTRY/END and the same 
-> | > | > for KPROBE so it could be merged into -next tree for testing? If 
-> | > | > yes, that as I said there will be a lot of errors so build will 
-> | > | > stuck in a moment 'cause of unbalanced ENTRY. Not sure if it's a 
-> | > | > good idea :)
-> | > | 
-> | > | neither do i think it's a particularly good idea. Lets first prototype 
-> | > | it on x86, see how it works out in practice, and then see whether it 
-> | > | can be generic. Then it can just be lifted into the generic linkage.h 
-> | > | separately, and we can then see whether it causes new problems. 
-> | > | 
-> | > | 	Ingo
-> | > | 
-> | > 
-> | > So be it :) Btw I think Alexander is right -- better to use .warning 
-> | > instead of .error (and without .abort) even on x86. Could you update 
-> | > Ingo?
-> | 
-> | .error is perfectly fine because that way automated tests that we do 
-> | on -tip will catch any bugs, we really dont want to mis-annotate these 
-> | things. Warnings tend to only pile up and rarely get fixed - without 
-> | enforcement mechanism that causes people to fix them.
-> | 
-> | 	Ingo
-> |
+> From d5d72f3515ba3abffa317b985d7597718a024841 Mon Sep 17 00:00:00 2001
+> From: Pekka Paalanen <pq@iki.fi>
+> Date: Sun, 23 Nov 2008 19:18:18 +0200
+> Subject: [PATCH] mmiotrace: fix buffer overrun detection
 > 
-> Just got an error in implementation -- we have to support nested
-> ENTRY without problem. Will check. What a surprise :-)
+> When ftrace framework moved to use the ring buffer facility, the buffer
+> overrun detection was broken after 2.6.27 by commit
+> 
+> commit 3928a8a2d98081d1bc3c0a84a2d70e29b90ecf1c
+> Author: Steven Rostedt <rostedt@goodmis.org>
+> Date:   Mon Sep 29 23:02:41 2008 -0400
+> 
+>     ftrace: make work with new ring buffer
+> 
+>     This patch ports ftrace over to the new ring buffer.
+> 
+> The detection is now fixed by using the ring buffer API.
+> 
+> When mmiotrace detects a buffer overrun, it will report the number of
+> lost events. People reading an mmiotrace log must know if something was
+> missed, otherwise the data may not make sense.
+> 
+> Signed-off-by: Pekka Paalanen <pq@iki.fi>
+> ---
+> 
+> Ingo, could these two patches still make it into .28?
 
-do you mean:
+Sure - applied them to tip/tracing/urgent:
 
-  ENTRY(system_call)
-  ENTRY(system_call_after_swapgs)
-  ...
-  END(system_call)
+  fb91ee6: tracing, doc: update mmiotrace documentation
+  7ee1768: x86, mmiotrace: fix buffer overrun detection
 
-that's more of a bug - system_call_after_swapgs is not a real entry 
-point, we just need the label of it. Perhaps something like __ENTRY() 
-for that case would be enough.
-
-nor is this one real:
-
-  ENTRY(interrupt)
-  ENTRY(irq_entries_start)
-  ...
-  END(irq_entries_start)
-  END(interrupt)
-
-do we really need .irq_entries_start?
-
-I think in general we should define a flat hierarchy of entries.
+Does this make mmiotrace fully functional in .28 ?
 
 	Ingo
