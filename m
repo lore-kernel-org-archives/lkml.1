@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYKWUOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYKWUOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYKWUOT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 15:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYKWUOJ
+	id S1753073AbYKWUOg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 15:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYKWUOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 15:14:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53096 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbYKWUOG (ORCPT
+	Sun, 23 Nov 2008 15:14:23 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37209 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752429AbYKWUOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 15:14:06 -0500
-Message-ID: <4929B95E.4@zytor.com>
-Date: Sun, 23 Nov 2008 12:13:18 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@mailshack.com>
-CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Jan Beulich <jbeulich@novell.com>, Glauber Costa <gcosta@redhat.com>,
-       Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] x86: include ENTRY/END in entry handlers in entry_64.S
-References: <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123092136.GC24818@localhost> <20081123112354.GA31667@mailshack.com>
-In-Reply-To: <20081123112354.GA31667@mailshack.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Nov 2008 15:14:22 -0500
+Date: Sun, 23 Nov 2008 21:24:34 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/4] trace: profile all if conditionals
+Message-ID: <20081123202434.GU6703@one.firstfloor.org>
+References: <20081121071213.365288293@goodmis.org> <20081121071328.462456268@goodmis.org> <87iqqei5ys.fsf@basil.nowhere.org> <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811231455090.13888@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
+On Sun, Nov 23, 2008 at 02:56:42PM -0500, Steven Rostedt wrote:
+
+You snipped my earlier suggestion? Can't you just use kernel gcov
+for this? Frankly it's output is infinitely more useful than
+the one from your patch. It also addresses Andrew's suggestion
+of profiling other control flow constructs.
+
+I know it's not ftrace, but not everything is bad just because it's
+not seen through the ftrace spectacles @)
+
+> On Sun, 23 Nov 2008, Andi Kleen wrote:
+> > Steven Rostedt <rostedt@goodmis.org> writes:
 > 
-> I put a ".p2align 5" in earlier in the series which caused the
-> apicinterrupts to be 32-byte aligned. But it is a hack, really,
-> relying on the generated code per stub to be between 17 and 32
-> bytes, on the default alignment to be 16 bytes and all stubs
-> to be in the .text section.
+> > > This adds a significant amount of overhead and should only be used
+> > > by those analyzing their system.
+> > 
+> > Often this can be also done using CPU performance counters. Might 
+> > be a cheaper option. 
 > 
-> I'm in favour of aligning all of the interrupt/exception stubs
-> to 32 bytes, but it should be implemented the right way ;),
-> which means that we need KPROBE_ENTRY_P5ALIGNED and so on :-/.
+> I'd love to add an option that could hook into any arch with HW support 
+> for this. We could dump out the same information, but just a different way 
+> to gather it.  But I'm still ignorant to the use of CPU performance 
+> counters and how to find which branch matches which if.
+
+The theory is quite simple. Typically there are events for 
+"taken branches" and others for "non taken". So you set up
+two counters using the existing oprofile support and collect
+the samples.  Then combine these two sample streams.
+
+[Sometimes you have to also synthesize these 
+events because CPUs like to count predicted and mispredicted
+(in the CPU sense) differently, but that's also quite simple
+(on x86/core these can be all specified in the unit mask for
+the same event)]
+
+The sampling will be statistical (not every branch counted),
+but that's ok because only branches that are executed a significant
+time are interesting anyways.
+
+The only problem is you have to map back to source code lines, which
+can be done in user space based on the oprofile output and some
+addr2line or similar hacks. oprofile can also do this,
+although it gives this information only indirectly so a custom
+tool might be easier.
+
+Note it doesn't even need new kernel code, assuming 
+the architecture already has a working full oprofile implementation.
+
+The main advantage over gcov would be lower runtime overhead,
+although gcov is giving the better output (and is already working
+too)
+
+-Andi
+
+
+
+> 
+> -- Steve
 > 
 
-I'm sorry, I really don't follow that logic at all.  Why the heck would
-KPROBE_ENTRY_P5ALIGNED be better than .p5align?
-
-For the record, I think we already have way to much macro crappage.  It
-makes the code painful to read and hard to figure out what the real
-constraints on it is.
-
-	-hpa
+-- 
+ak@linux.intel.com
