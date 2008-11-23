@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbYKWTeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYKWTgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757611AbYKWTeg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 14:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYKWTe2
+	id S1757971AbYKWTgR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 14:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYKWTgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 14:34:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58159 "EHLO mx2.mail.elte.hu"
+	Sun, 23 Nov 2008 14:36:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33747 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752229AbYKWTe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 14:34:27 -0500
-Date: Sun, 23 Nov 2008 20:34:13 +0100
+	id S1752229AbYKWTgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 14:36:00 -0500
+Date: Sun, 23 Nov 2008 20:35:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-Subject: Re: [PATCH 1/2] mmiotrace: fix buffer overrun detection
-Message-ID: <20081123193413.GB2794@elte.hu>
-References: <20081123154148.04e0851a@daedalus.pq.iki.fi> <alpine.DEB.1.10.0811231134150.27108@gandalf.stny.rr.com> <20081123212430.4f6700e9@daedalus.pq.iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/function-return-tracer: don't trace kfree
+	while it frees the return stack
+Message-ID: <20081123193554.GC2794@elte.hu>
+References: <492985C8.7070205@gmail.com> <20081123164013.GC6206@elte.hu> <alpine.DEB.1.10.0811231237470.13888@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081123212430.4f6700e9@daedalus.pq.iki.fi>
+In-Reply-To: <alpine.DEB.1.10.0811231237470.13888@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,40 +36,51 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka Paalanen <pq@iki.fi> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> From d5d72f3515ba3abffa317b985d7597718a024841 Mon Sep 17 00:00:00 2001
-> From: Pekka Paalanen <pq@iki.fi>
-> Date: Sun, 23 Nov 2008 19:18:18 +0200
-> Subject: [PATCH] mmiotrace: fix buffer overrun detection
 > 
-> When ftrace framework moved to use the ring buffer facility, the buffer
-> overrun detection was broken after 2.6.27 by commit
+> On Sun, 23 Nov 2008, Ingo Molnar wrote:
+> > > 
+> > > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> > > index 90d99fb..ffff7ec 100644
+> > > --- a/kernel/trace/ftrace.c
+> > > +++ b/kernel/trace/ftrace.c
+> > > @@ -1628,8 +1628,9 @@ void ftrace_retfunc_init_task(struct task_struct *t)
+> > >  
+> > >  void ftrace_retfunc_exit_task(struct task_struct *t)
+> > >  {
+> > > -	kfree(t->ret_stack);
+> > > +	struct ftrace_ret_stack	*ret_stack = t->ret_stack;
+> > >  	t->ret_stack = NULL;
+> > > +	kfree(ret_stack);
+> > 
+> > heh, nice one :)
+> > 
+> > note that we also need to keep gcc from reordering things here (no 
+> > matter how unlikely in this particular case).
 > 
-> commit 3928a8a2d98081d1bc3c0a84a2d70e29b90ecf1c
-> Author: Steven Rostedt <rostedt@goodmis.org>
-> Date:   Mon Sep 29 23:02:41 2008 -0400
+> I first thought that too, but thinking about it, if gcc does do that, then
+> it will break the logic for a correct C program.
 > 
->     ftrace: make work with new ring buffer
+> t is passed in as a pointer, then it modifies the contents of t 
+> (which could be a global pointer), then it calls a external 
+> function, that might also reference the global pointer.
 > 
->     This patch ports ftrace over to the new ring buffer.
+> This means that if it were to reorder the two, it would break C, 
+> because the compiler can not assume that the called function will 
+> read the global pointer either.
 > 
-> The detection is now fixed by using the ring buffer API.
-> 
-> When mmiotrace detects a buffer overrun, it will report the number of
-> lost events. People reading an mmiotrace log must know if something was
-> missed, otherwise the data may not make sense.
-> 
-> Signed-off-by: Pekka Paalanen <pq@iki.fi>
-> ---
-> 
-> Ingo, could these two patches still make it into .28?
+> In other words, the compiler should not need to worry about SMP or 
+> modifications done by interrupts or other threads. But the compiler 
+> should always preserve the order that is assumed by a single 
+> context.
 
-Sure - applied them to tip/tracing/urgent:
+Correct, but this assumes that kfree is a C function. Which it might 
+not necessarily be: it could be optimized via an inline in certain 
+cases, etc. It's best to document such cases explicitly.
 
-  fb91ee6: tracing, doc: update mmiotrace documentation
-  7ee1768: x86, mmiotrace: fix buffer overrun detection
-
-Does this make mmiotrace fully functional in .28 ?
+In any case, the real solution is what i suggested in the previous 
+mail, to do the freeing from the task-struct freeing path in 
+kernel/fork.c:free_task() - that has other advantages as well.
 
 	Ingo
