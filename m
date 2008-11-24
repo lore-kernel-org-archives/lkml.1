@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYKXQlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYKXQnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYKXQlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 11:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYKXQlI
+	id S1754148AbYKXQnB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYKXQms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 11:41:08 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:36126 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYKXQlG (ORCPT
+	Mon, 24 Nov 2008 11:42:48 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41246 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbYKXQmr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 11:41:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bGGDAn7fNnLGCGgS9GsImpWVNKD0ANiTmisHe5BOpd/SJscrKI16X5/ZW7o/lh9MkL
-         fAXPlQ/3zniHsEy2lnJFG2IPkJG3vXIHaXQKMe7Tzi/a8h3kAoEvAOpi2XCJYvrmATk/
-         GZooM24CgB2mI3AilMxZcy3godo2f+wRR2bPk=
-Message-ID: <71cd59b00811240841j69451aafje5cbb5204dbff2e5@mail.gmail.com>
-Date: Mon, 24 Nov 2008 17:41:03 +0100
-From: "Corentin Chary" <corentin.chary@gmail.com>
-To: "Thomas Renninger" <trenn@suse.de>
-Subject: Re: [Acpi4asus-user] [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
-Cc: "Tom Hughes" <tom@compton.nu>, acpi4asus-user@lists.sourceforge.net,
-       "Dave Jones" <davej@redhat.com>,
-       "Cristiano Prisciandaro" <cristiano.p@solnet.ch>,
-       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-In-Reply-To: <200811241736.53067.trenn@suse.de>
+	Mon, 24 Nov 2008 11:42:47 -0500
+Date: Mon, 24 Nov 2008 16:42:45 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Tejun Heo <teheo@suse.de>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
+       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
+	needed.
+Message-ID: <20081124164245.GD28946@ZenIV.linux.org.uk>
+References: <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org> <20081124133124.GB28946@ZenIV.linux.org.uk> <492AB480.5060207@kernel.org> <492AB98C.7030105@suse.de> <20081124144823.GC28946@ZenIV.linux.org.uk> <492AD169.9000805@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu>
-	 <200811241613.25557.trenn@suse.de> <200811241736.53067.trenn@suse.de>
+In-Reply-To: <492AD169.9000805@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 5:36 PM, Thomas Renninger <trenn@suse.de> wrote:
-> On Monday 24 November 2008 04:13:24 pm Thomas Renninger wrote:
->> On Monday 24 November 2008 10:38:58 am Tom Hughes wrote:
->> > Cristiano Prisciandaro wrote:
->> > > From: Cristiano Prisciandaro <cristiano.p@solnet.ch>
->> > >
->> > > The bios of the eeepc 900 exposes an acpi method that allows clocking
->> > > the cpu to 630/900 MHz. This driver allows controlling the frequency
->> > > switch through the cpufreq subsystem.
->> >
->> > I should perhaps add at this point that I have an alternative patch
->> > based on Cristiano's code, which adds this cpufreq driver to the
->> > existing eeepc-laptop module rather than creating a separate module for
->> > it.
->> >
->> > Personally I'm quite happy with either solution so I'll leave it to you
->> > to decide what is the best way to go, but my patch is available if you
->> > want it.
->>
-Why not just modprobe p4-clockmod ?
-It already has all we want and works perfectly well.
+On Tue, Nov 25, 2008 at 01:08:09AM +0900, Tejun Heo wrote:
+
+> Devices can be killed from userland via sysfs for SCSI or mdadm for
+> md.  It's true that such approach is less convenient for unloading but
+> if it can make usual cases easier, why not?
+
+_What_ usual cases?
+
+> > And the right way to deal with that is to have explicit boundaries for
+> > "opened or in process of being opened"; we almost have them (probe and
+> > final release), so the only point we are missing is on failure exit from
+> > __blkdev_get()...
+> > 
+> > I really think that it's much saner than trying to change the lifetime
+> > rules for gendisk, etc.
+> 
+> Well, I don't know.  It seems like a lot of trouble just to allow
+> "rmmod something" without first killing the devices and as people are
+> now so used to reference counted objects and ->release, not having it
+> on cdev or gendisk is quite a PITA.  (BTW, Greg, can you please drop
+> cdev->release patch for now, it's wrong as it currently stands).
+
+gendisks *ARE* reference counted, damnit.  So are net_device and a lot
+of other things.  And no, it's not true that "struct net_device exists"
+implies "the low-level objects that once might have been related to it
+still exist" either.
+
+> Can you see any problem with caching ->disk_release existence on
+> registration and wrap __module_get/put() around its invocation?  It
+> wouldn't change behavior of any existing drivers and md can use it if
+> it wants.  Doing "mdadm --stop --scan" would be enough to unload the
+> module and md can do whatever forward or back reference it wants to do
+> to work out the weird userland interface.
+
+Other than general ugliness and special-casing where none is really needed?
+Special-casing as "very different life cycle if special method is present"...
+
+If anything, we need to go in opposite direction - give the drivers a way
+to say "my underlying object is gone, STFU and don't bother me with that
+gendisk ever again; free it when you are done with it, but from now on
+any access to it would better fail.  Oh, and I might find a new device
+in place of that any time now, so new open() would better get not fail
+just something in VFS still has a reference to that gendisk".
+
+Which is doable - note that we can unhash block_device, dissociate inodes
+from it and let new open() DTRT.  Earlier opened files will still have
+a reference to address_space of original block_device (which is why we
+have file->f_mapping instead of going through ->f_dentry->d_inode->i_mapping),
+so we are fine.
