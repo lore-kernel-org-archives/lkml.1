@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbYKXKjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbYKXKoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbYKXKjU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 05:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYKXKjM
+	id S1752606AbYKXKoM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 05:44:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYKXKn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 05:39:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34351 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751452AbYKXKjM (ORCPT
+	Mon, 24 Nov 2008 05:43:58 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:38423 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750704AbYKXKn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 05:39:12 -0500
-Date: Mon, 24 Nov 2008 08:39:01 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Cc: "Brian Phelps" <lm317t@gmail.com>, linux-kernel@vger.kernel.org,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Mikael Pettersson" <mikpe@it.uu.se>,
-       "Alexander Shaduri" <ashaduri@gmail.com>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: kernel BUG at mm/slab.c:601
-Message-ID: <20081124083901.4689f301@pedra.chehab.org>
-In-Reply-To: <19f34abd0811211726h143c83f6obdfcb97e71fa595f@mail.gmail.com>
-References: <ea3b75ed0811181524y7cdad2afl85e0281e293922cc@mail.gmail.com>
-	<19f34abd0811191419x3f6981ady7de5bf40f9ae2983@mail.gmail.com>
-	<ea3b75ed0811200901p1bd9e746q5b3757dd6114f3bd@mail.gmail.com>
-	<19f34abd0811211710q65d6200bt3a145971cd1bc911@mail.gmail.com>
-	<19f34abd0811211725s169dc42ao195c61b6dac3e975@mail.gmail.com>
-	<19f34abd0811211726h143c83f6obdfcb97e71fa595f@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 24 Nov 2008 05:43:57 -0500
+Subject: Re: [PATCH 2.6.28-rc5 03/11] kmemleak: Add the memory
+	allocation/freeing hooks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <1227522906.3718.103.camel@penberg-laptop>
+References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
+	 <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+	 <84144f020811201130y2de91d03q7e6557e4086147ad@mail.gmail.com>
+	 <1227265627.7015.7.camel@pc1117.cambridge.arm.com>
+	 <1227514753.3718.21.camel@penberg-laptop>
+	 <1227521925.8377.37.camel@pc1117.cambridge.arm.com>
+	 <1227522906.3718.103.camel@penberg-laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 24 Nov 2008 10:43:43 +0000
+Message-Id: <1227523423.8377.39.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-OriginalArrivalTime: 24 Nov 2008 10:43:44.0425 (UTC) FILETIME=[85E84990:01C94E21]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Nov 2008 02:26:52 +0100
-"Vegard Nossum" <vegard.nossum@gmail.com> wrote:
-
-> [Resend with (I hope) working e-mail address for Mauro]
+On Mon, 2008-11-24 at 12:35 +0200, Pekka Enberg wrote:
+> On Mon, 2008-11-24 at 10:18 +0000, Catalin Marinas wrote:
+> > My understanding is that the ->s_mem value points to the slab itself but
+> > the same pointer might actually be the beginning of an allocated memory
+> > block, hence we get at least one reference to this block.
 > 
-> On Sat, Nov 22, 2008 at 2:25 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > On Sat, Nov 22, 2008 at 2:10 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> >>> [  527.562373]  ffffffff8043b157 0000000000200200 ffffffffa02810d4
-> >>> ffff88001e13c600
-> >>
-> >> LIST_POISON2 on the stack:
-> >>
-> >> include/linux/poison.h:#define LIST_POISON2  ((void *) 0x00200200)
-> >
-> > So looking at bttv source code, I wonder what the codes like these are
-> > trying to do:
-> >
-> >                        if (set->top->vb.queue.next)
-> >                                list_del(&set->top->vb.queue);
-> >
-> > Code is ancient, I'll ask Mauro.
+> Yes, ->s_mem points to the first object in the slab if CONFIG_DEBUG_SLAB
+> is disabled.
+> 
+> So if I understood this right, in case the first object in the slab is
+> leaked (it's allocated but no one references to it), we want to make
+> sure kmemleak doesn't see the ->s_mem link which would cause a false
+> negative (i.e. a leak that is not reported).
+> 
+> Did I get it correct this time?
 
-Your patch seemed correct. I'll test it later. Better alto to wait for Brian
-updates, since I never saw this bug on my environment.
+Yes.
 
-Cheers,
-Mauro
+-- 
+Catalin
+
