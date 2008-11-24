@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753712AbYKXVOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbYKXVTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753712AbYKXVOz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 16:14:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYKXVOq
+	id S1753705AbYKXVTS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 16:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYKXVTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 16:14:46 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:19700 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752434AbYKXVOp (ORCPT
+	Mon, 24 Nov 2008 16:19:09 -0500
+Received: from rv-out-0506.google.com ([209.85.198.224]:19329 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbYKXVTG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 16:14:45 -0500
-Message-ID: <154e089b0811241314t3291ea30w6268bb5b2b5c7c53@mail.gmail.com>
-Date: Mon, 24 Nov 2008 22:14:43 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "David Howells" <dhowells@redhat.com>, "James Morris" <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] CRED: fix sparse warnings
+	Mon, 24 Nov 2008 16:19:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=okE8NehF1HbgykFtmm3/8XPnR2oWW1Prze4sBE4qDV7sPUZqYJ9NOfpW42QnYZ9rW+
+         nW5N3C8yMbhfUxZj8aFydEluZ8ZH4z/XHTL6jwV581U07IADSllSWrnfLCQMNH+ROfM1
+         Xg7hufqakeVtb7Us5jVmFmLyfGOCmy/cpfghE=
+Message-ID: <19f34abd0811241319u1abf5e77xc2359b4e8d17b518@mail.gmail.com>
+Date: Mon, 24 Nov 2008 22:19:05 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: v2.6.28-rc2: x86_32 relocation regression?
+Cc: "Huang Ying" <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix sparse warnings
+Hi,
 
-Fix the following sparse warnings:
+I couldn't help noticing that addr2line no longer works for me since
+at least v2.6.28-rc2. I get this:
 
-  security/security.c:228:2: warning: returning void-valued expression
-  security/security.c:233:2: warning: returning void-valued expression
-  security/security.c:616:2: warning: returning void-valued expression
+EIP: 0060:[<c039e613>] EFLAGS: 00000202 CPU: 0
+EIP is at strcpy+0x13/0x30
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- security/security.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+    $ addr2line -e vmlinux -i c039e613
+    ??:0
 
-diff --git a/security/security.c b/security/security.c
-index 038ef04..f0d96a6 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -225,12 +225,12 @@ int security_bprm_check(struct linux_binprm *bprm)
+...even though the kernel was configured with CONFIG_DEBUG_INFO=y.
 
- void security_bprm_committing_creds(struct linux_binprm *bprm)
- {
--	return security_ops->bprm_committing_creds(bprm);
-+	security_ops->bprm_committing_creds(bprm);
- }
+    $ grep DEBUG_INFO .config
+    CONFIG_DEBUG_INFO=y
 
- void security_bprm_committed_creds(struct linux_binprm *bprm)
- {
--	return security_ops->bprm_committed_creds(bprm);
-+	security_ops->bprm_committed_creds(bprm);
- }
+gdb too:
 
- int security_bprm_secureexec(struct linux_binprm *bprm)
-@@ -613,7 +613,7 @@ int security_prepare_creds(struct cred *new, const
-struct cred *old, gfp_t gfp)
+    (gdb) disas 0xc039e613
+    No function contains specified address.
 
- void security_commit_creds(struct cred *new, const struct cred *old)
- {
--	return security_ops->cred_commit(new, old);
-+	security_ops->cred_commit(new, old);
- }
+This is a simple x86_32 defconfig with CONFIG_DEBUG_INFO toggled.
 
- int security_kernel_act_as(struct cred *new, u32 secid)
+    $ nm vmlinux | grep strcpy
+    c12a3b90 t scsi_strcpy_devinfo
+    c119e600 T strcpy
+
+It looks like everything was offset by 0xe00000:
+
+    $ addr2line -e vmlinux c119e613
+    arch/x86/lib/string_32.c:20
+
+I have also this:
+
+ virtual kernel memory layout:
+     fixmap  : 0xffc79000 - 0xfffff000   (3608 kB)
+     pkmap   : 0xff400000 - 0xff800000   (4096 kB)
+     vmalloc : 0xc87f0000 - 0xff3fe000   ( 876 MB)
+     lowmem  : 0xc0000000 - 0xc7ff0000   ( 127 MB)
+       .init : 0xc08ce000 - 0xc0932000   ( 400 kB)
+       .data : 0xc06c9a4b - 0xc08c46ec   (2027 kB)
+       .text : 0xc0200000 - 0xc06c9a4b   (4902 kB)
+
+Any ideas?
+
+Thanks,
+
+
+Vegard
+
 -- 
-1.5.6.3
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
