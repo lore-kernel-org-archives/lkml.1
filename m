@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYKXSPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYKXSPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbYKXSPf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 13:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYKXSP1
+	id S1753810AbYKXSPu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 13:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbYKXSPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 13:15:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44455 "EHLO mx2.redhat.com"
+	Mon, 24 Nov 2008 13:15:39 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48301 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbYKXSP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 13:15:26 -0500
-Date: Mon, 24 Nov 2008 16:15:15 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Human readable output for function return tracer
-Message-ID: <20081124181515.GG26466@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <c62985530811240639w574659c0nd0a54e6c1fb1197a@mail.gmail.com>
+	id S1753108AbYKXSPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 13:15:38 -0500
+Date: Mon, 24 Nov 2008 19:13:39 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20081124181339.GK26308@kernel.dk>
+References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <x49skphdtqm.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811240639w574659c0nd0a54e6c1fb1197a@mail.gmail.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <x49skphdtqm.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Nov 24, 2008 at 03:39:45PM +0100, Frédéric Weisbecker escreveu:
-> Hi,
+On Mon, Nov 24 2008, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> I'm planning to apply an idea proposed by Ingo to make the output on
-> the function return tracer
-> more "eyes-parsable".
-> The idea consists on a trace which has flow similar to C code:
+> > nfsd aside (which does seem to have some different behaviour skewing the
+> > results), the original patch came about because dump(8) has a really
+> > stupid design that offloads IO to a number of processes. This basically
+> > makes fairly sequential IO more random with CFQ, since each process gets
+> > its own io context. My feeling is that we should fix dump instead of
+> > introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
+> > aware of any other good programs out there that would do something
+> > similar, so I don't think there's a lot of merrit to spending cycles on
+> > detecting cooperating processes.
+> >
+> > Jeff will take a look at fixing dump instead, and I may have promised
+> > him that santa will bring him something nice this year if he does (since
+> > I'm sure it'll be painful on the eyes).
 > 
-> func1() {
->     func2() {
->         func3() {
->         }
->     }
->     func4() {
->     }
-> }
+> Sorry to drum up this topic once again, but we've recently run into
+> another instance where the close cooperator patch helps significantly.
+> The case is KVM using the virtio disk driver.  The host-side uses
+> posix_aio calls to issue I/O on behalf of the guest.  It's worth noting
+> that pthread_create does not pass CLONE_IO (at least that was my reading
+> of the code).  It is questionable whether it really should as that will
+> change the I/O scheduling dynamics.
 > 
-> (With time of execution added on closing braces).
+> So, Jens, what do you think?  Should we collect some performance numbers
+> to make sure that the close cooperator patch doesn't hurt the common
+> case?
 
-I do something like that in my ctracer tool[1], take a look at one of
-the callgraphs:
+No, posix aio is a piece of crap on Linux/glibc so we want to be fixing
+that instead. A quick fix is again to use CLONE_IO, though posix aio
+needs more work than that. I told the qemu guys not to use posix aio a
+long time ago since it does stink and doesn't perform well under any
+circumstance... So I don't consider that a valid use case, there's a
+reason that basically nobody is using posix aio.
 
-http://oops.ghostprotocols.net:81/ostra/dccp/tx/
+-- 
+Jens Axboe
 
-To save space I the above sequence is represented as:
-
- func1() {	
-     func2() {
-         func3()                   1us
-     }                             5us
-     func4()                       5us
- }                                12us
-
-I.e. the leaf functions doesn't use {}
-
-> The problem is that the traces arrive in the reverse order, according
-> to the fact that functions
-> are traced on return.
-> The order corresponding to the above example would be as the following:
-> 
-> func3, func2, func4, func1
-
-On ctracer I didn't had this problem as I don't trace all functions,
-just the ones that receive as one of its parameters a pointer to the
-desired struct, and this pointer is present in all the trace buffer
-entries, so as part of postprocessing it separates the callgraphs per
-object.
-
-- Arnaldo
-
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/acme/pahole.git
-    http://git.kernel.org/?p=linux/kernel/git/acme/pahole.git;a=blob_plain;f=README.ctracer
