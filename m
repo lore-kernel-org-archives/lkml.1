@@ -1,126 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbYKXTXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbYKXTY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbYKXTXx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYKXTXp
+	id S1754041AbYKXTY5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYKXTYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:23:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36819 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYKXTXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:23:45 -0500
-Message-ID: <492AFEF9.609@kernel.org>
-Date: Mon, 24 Nov 2008 11:22:33 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 24 Nov 2008 14:24:49 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:56892 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553AbYKXTYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:24:48 -0500
+Date: Mon, 24 Nov 2008 20:27:27 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Add battery health reporting for WM8350
+Message-ID: <20081124192726.GB2604@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081120152044.GA15434@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] irq: sparseirq enabling
-References: <492A1877.4090304@kernel.org> <20081124144007.GA30725@elte.hu>
-In-Reply-To: <20081124144007.GA30725@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120152044.GA15434@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> +/*
->> + * Protect the sparse_irqs_free freelist:
->> + */
->> +static DEFINE_SPINLOCK(sparse_irq_lock);
->> +LIST_HEAD(sparse_irqs_head);
->> +
->> +/*
->> + * The sparse irqs are in a hash-table as well, for fast lookup:
->> + */
->> +#define SPARSEIRQHASH_BITS          (13 - 1)
->> +#define SPARSEIRQHASH_SIZE          (1UL << SPARSEIRQHASH_BITS)
->> +#define __sparseirqhashfn(key)      hash_long((unsigned long)key, SPARSEIRQHASH_BITS)
->> +#define sparseirqhashentry(key)     (sparseirqhash_table + __sparseirqhashfn((key)))
->> +
->> +static struct list_head sparseirqhash_table[SPARSEIRQHASH_SIZE];
->> +
-> 
->> +struct irq_desc *irq_to_desc(unsigned int irq)
->> +{
->> +	struct irq_desc *desc;
->> +	struct list_head *hash_head;
->> +
->> +	hash_head = sparseirqhashentry(irq);
->> +
->> +	/*
->> +	 * We can walk the hash lockfree, because the hash only
->> +	 * grows, and we are careful when adding entries to the end:
->> +	 */
->> +	list_for_each_entry(desc, hash_head, hash_entry) {
->> +		if (desc->irq == irq)
->> +			return desc;
->> +	}
->> +
->> +	return NULL;
->> +}
-> 
-> I have talked to Thomas about the current design of sparseirq, and the 
-> current code looks pretty good already, but we'd like to suggest one 
-> more refinement to the hashing scheme:
-> 
-> Please simplify it by using a sparse pointers static array instead of 
-> a full hash. I.e. do it as a:
-> 
->        struct irq_desc *irq_desc_ptrs[NR_IRQS] __read_mostly;
-> 
-> This can scale up just fine to 4096 CPUs without measurable impact to 
-> the kernel image size on x86 distro kernels.
-> 
-> Data structure rules:
-> 
-> 1) allocation: an entry would be allocated at IRQ number creation time 
->    - never at any other time. Pure access to the desc returns NULL - 
->    it's atomic and lockless.
-> 
-> 2) freeing: we never free them. If a system allocates an irq_desc[], 
->    it signals that it uses it. This makes all access lockless.
-> 
-> 3) lookup: irq_to_desc() just does a simple irq_desc_ptrs[irq]
->    dereference (inlined) - no locking or hash lookup needed. Since 
->    irq_desc_ptrs[] is accessed __read_mostly, this will scale really 
->    well even on NUMA.
-> 
-> 4) iterators: we still keep NR_IRQS as a limit for the
->    irq_desc_ptrs[] array - but it would never be used directly by any 
->    iteration loop, in generic code.
-> 
-> 5) bootup, pre-kmalloc irq_desc access: on x86 we should preallocate a 
->    pool of ~32 irq_desc entries for allocation use. This can be a
->    simple static array of struct irq_desc that is fed into the
->    first 32 legacy irq_desc[] slots or so. No bootmem-alloc and
->    no after_bootmem flaggery needed. All SMP init and secondary CPU 
->    irq desc allocation happens after kmalloc is active already - 
->    cleaning up the allocation path.
-> 
-> 6) limits on x86: please scale NR_IRQS to this rule:
->                max(32*MAX_IO_APICS, 8*NR_CPUS)
-> 
->    That gives a minimum of 4096 IRQs on 64-bit systems. On even larger 
->    systems, we scale linearly up to 32K IRQs on 4K CPUs. That should 
->    be more than enough (and it can be increased if really needed).
-> 
-> Please keep all the irq_desc[] abstraction APIs and cleanups you did 
-> so far - they are great. In the far future we can still make irq_desc 
-> a full hash if needed - but right now we'll be just fine with such a 
-> simpler scheme as well, and scale fine up to 16K CPUs or so.
-> 
-> This should simplify quite a few things in the sparseirq code.
+Hi Mark,
 
-ok, will change to that. 
+On Thu, Nov 20, 2008 at 03:20:44PM +0000, Mark Brown wrote:
+> This (brief) series adds a new power supply health state for reporting
+> excessively cold batteries then uses it when implementing battery health
+> reporting for the WM8350.  I'm not 100% happy with the name for the new
+> state but I couldn't think of something consistent with the existing
+> OVERHEAT.
+> 
+> Since the WM8350 PMU driver is queued in the mfd tree it probably makes
+> sense to merge this via the same path?
+Fine with me. I'll wait for Anton's feedback on those patches.
 
-1. nr_irqs will be legacy number or GSI numbers. MSI will start to use irq nr from nr_irqs
-2. or MSI still to use irq from NR_IRQS - 1, and ... go smaller?
+Cheers,
+Samuel.
 
-YH
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
