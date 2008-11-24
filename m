@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYKXLHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbYKXLW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753311AbYKXLHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 06:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYKXLGe
+	id S1752693AbYKXLW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 06:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKXLWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 06:06:34 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39602 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYKXLGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 06:06:31 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC] kreplace: Rebootless kernel updates
-Date: Mon, 24 Nov 2008 16:37:43 +0530
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: ananth@in.ibm.com, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       mhiramat@redhat.com, contact@ksplice.com, jbarnold@ksplice.com,
-       tabbott@ksplice.com, wdaher@ksplice.com, andersk@ksplice.com
-References: <200811211720.26394.knikanth@suse.de> <20081121133800.GA5244@in.ibm.com> <4926DC1B.1020809@linux.vnet.ibm.com>
-In-Reply-To: <4926DC1B.1020809@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	Mon, 24 Nov 2008 06:22:47 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:35992 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbYKXLWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 06:22:47 -0500
+Date: Mon, 24 Nov 2008 12:24:10 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Jim Radford <radford@galvanix.net>
+Subject: Re: [RFC PATCH] kbuild: move tags support to a shell script
+Message-ID: <20081124112410.GA13820@uranus.ravnborg.org>
+References: <20081122231631.GA6456@uranus.ravnborg.org> <1227522668.9425.21.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200811241637.44185.knikanth@suse.de>
+In-Reply-To: <1227522668.9425.21.camel@zakaz.uk.xensource.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 November 2008 21:34:43 Balbir Singh wrote:
-> Ananth N Mavinakayanahalli wrote:
-> > On Fri, Nov 21, 2008 at 05:20:25PM +0530, Nikanth Karthikesan wrote:
->
-> I had a patch for x86 a long time ago in 2005, but I never posted it :(
->
+On Mon, Nov 24, 2008 at 10:31:08AM +0000, Ian Campbell wrote:
+> On Sun, 2008-11-23 at 00:16 +0100, Sam Ravnborg wrote:
+> > As no-one else wanted to do so - I now moved the tags support
+> > to a shell script of its own.
+> > The usage is the same: make {tags,TAGS,cscope}
+> > 
+> > The ALLSOURCE_ARCHS suppport was lost in the transition - is it actually used by anyone?
+> 
+> I'm the one who actually added it way back in
+> a0674e88d9c150e016a69e78e735f48772314c53 and to be honest I don't use it
+> anymore since I've changed jobs and only really do x86 now...
+> 
+> I can't say if anyone else is using it though.
+> 
+> > I have given the patch only some light testing.
+> > 
+> > Could those of you that actually sues tags/cscope plese give it a try.
+> 
+> I tested your second patch from the subsequent email and functionally it
+> seems fine, it currently includes include/asm-* for all architectures
+> but I suppose they will all go away shortly.
+> 
+> The output was a bit odd though:
+>         $ make cscope
+>         /bin/sh /local/scratch/ianc/devel/linux-2.6.git/scripts/tags.sh cscope
+>           GEN     cscope.out (from 13251 files)
+> I guess I would have expected "  GEN     cscope.files" instead of the
+> first line or just "  TAGS"?
 
-I just didn't wanted to say that after some time. ;)
+Thanks for testing Ian.
 
->
-> Yes and we need to be careful about licensing, tainting the kernel with
-> such an implementation.
->
+I will fix up the invocation line to something like
+  GEN    {tags,TAGS,cscope}
 
-Agreed.
+And then I will drop the extra output from the shell script
+in the cscope case.
 
-> > Kprobes themselves provide enough ammunition to users to shoot themselves
-> > in the foot, but this is way more dangerous than that.
-> > ...
->
-> Undoubtedly, but a good warning is the best way to keep people warned about
-> running such code :) It is a useful thing to have and to run, but running
-> it would take more guts than anything else.
+Is it OK that I add a:
 
-Thanks for the comments.
+Tested-by: Ian Campbell <ijc@hellion.org.uk>
 
-Thanks
-Nikanth Karthikesan
+to the patch?
 
-
+	Sam
