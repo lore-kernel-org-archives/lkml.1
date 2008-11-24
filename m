@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbYKXNOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbYKXNVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbYKXNOt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 08:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYKXNOk
+	id S1752831AbYKXNVG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 08:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKXNUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 08:14:40 -0500
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:53962 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750983AbYKXNOk (ORCPT
+	Mon, 24 Nov 2008 08:20:54 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:49903 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751175AbYKXNUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 08:14:40 -0500
-Date: Mon, 24 Nov 2008 13:14:15 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Chad Reese <kreese@caviumnetworks.com>
-Cc: "Kevin D. Kissell" <kevink@paralogos.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Is there no way to shared code with Linux and other OSes?
-Message-ID: <20081124131415.GA21403@linux-mips.org>
-References: <4927C34F.4000201@caviumnetworks.com> <4927D6E0.4020009@paralogos.com> <Pine.LNX.4.64.0811221109330.29539@anakin> <4927E2A4.5000702@paralogos.com> <20081122153542.GB31703@linux-mips.org> <49285895.6020303@caviumnetworks.com>
+	Mon, 24 Nov 2008 08:20:53 -0500
+Date: Mon, 24 Nov 2008 21:20:43 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Jarod Wilson <jarod@redhat.com>, linux-crypto@vger.kernel.org,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: ansi_cprng: fix inverted DT increment routine
+Message-ID: <20081124132043.GA18313@gondor.apana.org.au>
+References: <200811131136.15875.jarod@redhat.com> <20081113184431.GB18604@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49285895.6020303@caviumnetworks.com>
+In-Reply-To: <20081113184431.GB18604@hmsendeavour.rdu.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 11:08:05AM -0800, Chad Reese wrote:
+On Thu, Nov 13, 2008 at 01:44:31PM -0500, Neil Horman wrote:
+> On Thu, Nov 13, 2008 at 11:36:11AM -0500, Jarod Wilson wrote:
+> > The ANSI X9.31 PRNG docs aren't particularly clear on how to increment DT,
+> > but empirical testing shows we're incrementing from the wrong end. A 10,000
+> > iteration Monte Carlo RNG test currently winds up not getting the expected
+> > result.
+> > 
+> > From http://csrc.nist.gov/groups/STM/cavp/documents/rng/RNGVS.pdf :
+> > 
+> > # CAVS 4.3
+> > # ANSI931 MCT
+> > [X9.31]
+> > [AES 128-Key]
+> > 
+> > COUNT = 0
+> > Key = 9f5b51200bf334b5d82be8c37255c848
+> > DT = 6376bbe52902ba3b67c925fa701f11ac
+> > V = 572c8e76872647977e74fbddc49501d1
+> > R = 48e9bd0d06ee18fbe45790d5c3fc9b73
+> > 
+> > Currently, we get 0dd08496c4f7178bfa70a2161a79459a after 10000 loops.
+> > 
+> > Inverting the DT increment routine results in us obtaining the expected result
+> > of 48e9bd0d06ee18fbe45790d5c3fc9b73. Verified on both x86_64 and ppc64.
+> > 
+> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-> 	linux-mips@linux-mips.org
-> Subject: Re: Is there no way to shared code with Linux and other OSes?
-> Content-Type: text/plain; charset=ISO-8859-1
-
-Adding linux-kernel since this is probably of more general interest than
-just the linux-mips list.
-
-> I appreciate the info about the typedefs, but I didn't really mean to
-> signal them out. They just happened to be an example I picked.
-
-Thus it received a specific answer.
-
-> The
-> fundamental issue is that we have a large number of files written using
-> a fairly common corporate coding standard (4 space indents, no tabs,
-> javadoc comments) that is used by a number of OSes. We generate our API
-> documentation from it using doxygen, so the comments at least attempt to
-> have useful info in them. In order to use this code in the kernel, we're
-> having to basically run it through the evil indent program and strip
-> quite a bit of stuff out. Obviously indent will make a mess of some
-> stuff, so lots of hand editing is needed. The end result is code that
-> has diverged from the original in such a way that diffs are basically
-> impossible.
-> 
-> We're already having issues with bugs between the different versions and
-> the kernel submit stuff has just started. Maybe the only solution is two
-> divergent code bases, but it just feels like the gun is pointed at my
-> foot and cocked. I really don't want to pull the trigger knowing what is
-> about to happen.
-> 
-> Obviously I don't target these comments at true Linux drivers. The CF
-> libata driver is obviously a Linux specific driver and should follow all
-> Linux standards. Code for bootloader communication and networks setup is
-> completely OS agnostic, so sharing it between systems makes sense.
-
-I'll start off my answer with a bit of history.  A few years ago the Linux
-codebase was growing at exponentional speed not last from contributions
-from other projects and there were few standards in the Linux world.  As
-the result the code base was highly inconsistent in many aspects,
-including coding style and typedefs.  It made maintenance and even just
-understanding the code base painful.  Then on a few occasions Linus
-decreed certain standards such as code to be formatted to fit into 80
-colums.  Other standards arose from a common understanding.
-
-The primary purpose of all these standards, both written in the kernel
-documentation and unwritten is to improve maintainability of the code and
-as such there is little point in blind enforcing them even though the
-noise generated by automated checkers such as checkpatch.pl encourages
-that.  So take that with a grain of salt.
-
-Re divergent code base - I see your issue but the problem is both ways.
-Historic example is Broadcom which contributed the headers for the Sibyte
-SOC family.  The headers are generated using inhouse tools just as yours
-and we'd like to change them - but all those changes conflict with
-Broadcom's bi-annual contribution which are bascially are versions
-re-generated with their latest tools and from their latest RTL.
-
-OS compatibility layers are another subject.  They simplify maintenance
-for the one and make it harder for the other.  In general in the Linux
-world we've made not so positive experience with such glue code layers,
-so we tend to limit if not avoid their use.
-
-Another factor is that usually long after the contributing company has
-already forgotten about their code I'm the guy who still is stuck with it.
-For many more years ...
-
-  Ralf
+Patch applied.  Thanks!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
