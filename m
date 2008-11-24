@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbYKXVTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYKXVTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbYKXVTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 16:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYKXVTJ
+	id S1754086AbYKXVTm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 16:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYKXVTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 16:19:09 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:19329 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752981AbYKXVTG (ORCPT
+	Mon, 24 Nov 2008 16:19:31 -0500
+Received: from mail-gx0-f11.google.com ([209.85.217.11]:47566 "EHLO
+	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbYKXVTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 16:19:06 -0500
+	Mon, 24 Nov 2008 16:19:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=okE8NehF1HbgykFtmm3/8XPnR2oWW1Prze4sBE4qDV7sPUZqYJ9NOfpW42QnYZ9rW+
-         nW5N3C8yMbhfUxZj8aFydEluZ8ZH4z/XHTL6jwV581U07IADSllSWrnfLCQMNH+ROfM1
-         Xg7hufqakeVtb7Us5jVmFmLyfGOCmy/cpfghE=
-Message-ID: <19f34abd0811241319u1abf5e77xc2359b4e8d17b518@mail.gmail.com>
-Date: Mon, 24 Nov 2008 22:19:05 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: v2.6.28-rc2: x86_32 relocation regression?
-Cc: "Huang Ying" <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=hDyYXR7lGhJlKWMVo7fvKxts9M/pPOY2aRsSDih0g9e/T03eYv7BkPD1ptI8gnYENy
+         nCgoipDo2zd1gzN9prTH4PLWhXvysS9sDMBCLuN9hj9IbExX8o24s4HCCT83N0/jWMFU
+         wfqvfp5yK+LO+92d4wZkKdzOhKConWhffmIDc=
+Message-ID: <84144f020811241313o7401e3c2gd360c4226f33b28f@mail.gmail.com>
+Date: Mon, 24 Nov 2008 23:13:10 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Ying Han" <yinghan@google.com>
+Subject: Re: [PATCH][V3]Make get_user_pages interruptible
+Cc: "Paul Menage" <menage@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       "David Rientjes" <rientjes@google.com>,
+       "Rohit Seth" <rohitseth@google.com>
+In-Reply-To: <604427e00811241302t2a52e38etffca2546f319a7af@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
+	 <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
+	 <604427e00811241302t2a52e38etffca2546f319a7af@mail.gmail.com>
+X-Google-Sender-Auth: 33633f27fe064ae0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Nov 21, 2008 at 5:31 PM, Ying Han <yinghan@google.com> wrote:
+>>>                         */
+>>> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
+>>> -                               return i ? i : -ENOMEM;
+>>> +                       if (unlikely(sigkill_pending(tsk)))
+>>> +                               return i ? i : -ERESTARTSYS;
 
-I couldn't help noticing that addr2line no longer works for me since
-at least v2.6.28-rc2. I get this:
+On Mon, Nov 24, 2008 at 12:02 PM, Paul Menage <menage@google.com> wrote:
+>> You've changed the check from sigkill_pending(current) to sigkill_pending(tsk).
+>>
+>> I originally made that sigkill_pending(current) since we want to avoid
+>> tasks entering an unkillable state just because they're doing
+>> get_user_pages() on a system that's short of memory. Admittedly for
+>> the main case that we care about, mlock() (or an mmap() with
+>> MCL_FUTURE set) then tsk==current, but philosophically it seems to me
+>> to be more correct to do the check against current than tsk, since
+>> current is the thing that's actually allocating the memory. But maybe
+>> it would be better to check both?
 
-EIP: 0060:[<c039e613>] EFLAGS: 00000202 CPU: 0
-EIP is at strcpy+0x13/0x30
+On Mon, Nov 24, 2008 at 11:02 PM, Ying Han <yinghan@google.com> wrote:
+> In most of cases, tsk==current in get_user_pages(), that is why i
+> change current to tsk since
+> tsk is a superset of current, no? If that is right, why we need to check both?
 
-    $ addr2line -e vmlinux -i c039e613
-    ??:0
+I'm not sure if it's strictly necessary but as I pointed out in the
+other mail, there can be callers that are doing get_user_pages() on
+behalf of other tasks and you probably want to be able to kill the
+task that's actually _calling_ get_user_pages() as well.
 
-...even though the kernel was configured with CONFIG_DEBUG_INFO=y.
-
-    $ grep DEBUG_INFO .config
-    CONFIG_DEBUG_INFO=y
-
-gdb too:
-
-    (gdb) disas 0xc039e613
-    No function contains specified address.
-
-This is a simple x86_32 defconfig with CONFIG_DEBUG_INFO toggled.
-
-    $ nm vmlinux | grep strcpy
-    c12a3b90 t scsi_strcpy_devinfo
-    c119e600 T strcpy
-
-It looks like everything was offset by 0xe00000:
-
-    $ addr2line -e vmlinux c119e613
-    arch/x86/lib/string_32.c:20
-
-I have also this:
-
- virtual kernel memory layout:
-     fixmap  : 0xffc79000 - 0xfffff000   (3608 kB)
-     pkmap   : 0xff400000 - 0xff800000   (4096 kB)
-     vmalloc : 0xc87f0000 - 0xff3fe000   ( 876 MB)
-     lowmem  : 0xc0000000 - 0xc7ff0000   ( 127 MB)
-       .init : 0xc08ce000 - 0xc0932000   ( 400 kB)
-       .data : 0xc06c9a4b - 0xc08c46ec   (2027 kB)
-       .text : 0xc0200000 - 0xc06c9a4b   (4902 kB)
-
-Any ideas?
-
-Thanks,
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+                        Pekka
