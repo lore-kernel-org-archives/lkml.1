@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752416AbYKXJQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbYKXJRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752416AbYKXJQy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 04:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYKXJQp
+	id S1752838AbYKXJRQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 04:17:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYKXJQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 04:16:45 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:48013 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbYKXJQp convert rfc822-to-8bit (ORCPT
+	Mon, 24 Nov 2008 04:16:51 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42214 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbYKXJQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 04:16:45 -0500
-Message-Id: <492A7F39.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Mon, 24 Nov 2008 09:17:29 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Cyrill Gorcunov" <gorcunov@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Glauber Costa" <gcosta@redhat.com>, "Matt Mackall" <mpm@selenic.com>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
-References: <20081119001811.GA23237@mailshack.com>
- <20081120134011.GA3627@mailshack.com> <20081120150412.GC13550@elte.hu>
- <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu>
- <20081121154155.GA12999@mailshack.com>
- <20081121154318.GA13014@mailshack.com>
- <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu>
- <20081123090828.GA31490@mailshack.com>
- <20081123091532.GA31515@mailshack.com>
-In-Reply-To: <20081123091532.GA31515@mailshack.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 24 Nov 2008 04:16:50 -0500
+Date: Mon, 24 Nov 2008 10:18:29 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: penberg@cs.helsinki.fi, kernel list <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: w35und: fix Kconfig
+Message-ID: <20081124091829.GA30292@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Alexander van Heukelum <heukelum@mailshack.com> 23.11.08 10:15 >>>
->@@ -1282,7 +1282,7 @@ gs_change:
-> 	CFI_ADJUST_CFA_OFFSET -8
->         ret
-> 	CFI_ENDPROC
->-ENDPROC(native_load_gs_index)
->+END(native_load_gs_index)
-> 
->         .section __ex_table,"a"
->         .align 8
+4KSTACK dependency was needed when driver carried its own softmac
+layer. That layer is gone, and functions have reasonably small stack
+footprint -> dependency can be removed.
 
-I disagree to this and similar changes in this patch: Why do we need to
-get rid of the ENDPROC() here? It's a procedure that's being ended, and
-using ENDPROC() is the only (existing) way to mark something as a
-procedure in assembly code.
+Add better description of hardware this driver is targetted at.
 
-And btw., while described so in the patch comment, this change has nothing
-to do with the subject of the patch.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Jan
+--- gregkh-ofic/drivers/staging/winbond/Kconfig	2008-11-19 11:39:38.000000000 +0100
++++ gregkh/drivers/staging/winbond/Kconfig	2008-11-19 12:26:57.000000000 +0100
+@@ -1,7 +1,11 @@
+ config W35UND
+-	tristate "Winbond driver"
+-	depends on MAC80211 && WLAN_80211 && USB && EXPERIMENTAL && !4KSTACKS
++	tristate "IS89C35 WLAN USB driver"
++	depends on MAC80211 && WLAN_80211 && USB && EXPERIMENTAL
+ 	default n
+ 	---help---
+-	  This is highly experimental driver for winbond wifi card on some Kohjinsha notebooks
+-	  Check http://code.google.com/p/winbondport/ for new version
++	  This is highly experimental driver for Winbond WIFI card.
++
++	  HW is present in some Kohjinsha subnotebooks, and in some 
++	  stand-alone USB modules. Chipset name seems to be w89c35d.
++
++	  Check http://code.google.com/p/winbondport/ for new version.
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
