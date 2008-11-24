@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYKXQqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbYKXQrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbYKXQqW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 11:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYKXQqI
+	id S1754377AbYKXQrT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYKXQrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 11:46:08 -0500
-Received: from rn-out-0910.google.com ([64.233.170.188]:31167 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753175AbYKXQqG (ORCPT
+	Mon, 24 Nov 2008 11:47:11 -0500
+Received: from gate.compton.nu ([217.169.19.106]:53099 "EHLO
+	gosford.compton.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbYKXQrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 11:46:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pVjKcNyTDkZvnVpVCYTN+yWIX8m6221wz3/nUMwh3Kpfbj3llxcG5aQBY3S7tA/xs6
-         oc3m2yx08QwPdk+OUh9tVhsMaTs7On9z+mjwvB5KhK9m667rkc2gQoIbZAeA+rmQpRV5
-         Vpd0XxmOx8n97xZ2bXWBtrThteC7w5fN0w8JE=
-Subject: Re: [PATCH] UBIFS: endian handling fixes and annotations
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <492AB7F3.5020406@nokia.com>
-References: <1227287970-14684-1-git-send-email-dedekind@infradead.org>
-	 <1227287970-14684-3-git-send-email-dedekind@infradead.org>
-	 <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
-	 <492AB7F3.5020406@nokia.com>
-Content-Type: text/plain
-Date: Mon, 24 Nov 2008 08:46:01 -0800
-Message-Id: <1227545161.5511.2.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 24 Nov 2008 11:47:10 -0500
+Message-ID: <492ADA81.4070904@compton.nu>
+Date: Mon, 24 Nov 2008 16:46:57 +0000
+From: Tom Hughes <tom@compton.nu>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Thomas Renninger <trenn@suse.de>
+CC: Cristiano Prisciandaro <cristiano.p@solnet.ch>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net
+Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
+References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu> <200811241613.25557.trenn@suse.de> <200811241736.53067.trenn@suse.de>
+In-Reply-To: <200811241736.53067.trenn@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -2.6 (--)
+X-Spam-Report: Spam detection software, running on the system "gosford.compton.nu", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  Thomas Renninger wrote: > Oh, they are part of this general
+	Asus \\_SB.ATKD device, which is only > used by asus_laptop.c until now?
+	I believe eeepc-laptop is also accessing the same device - at least it is
+	calling other methods defined in the same part of the DSDT although it doesn't
+	seem to be using that name to reach them. [...] 
+	Content analysis details:   (-2.6 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-24 at 16:19 +0200, Adrian Hunter wrote:
-> Sebastian Andrzej Siewior wrote:
-> > * Artem Bityutskiy | 2008-11-21 19:19:24 [+0200]:
-> > 
-> >> index 9ee6508..3f1f16b 100644
-> >> --- a/fs/ubifs/key.h
-> >> +++ b/fs/ubifs/key.h
-> >> @@ -345,7 +345,7 @@ static inline int key_type_flash(const struct ubifs_info *c, const void *k)
-> >> {
-> >> 	const union ubifs_key *key = k;
-> >>
-> >> -	return le32_to_cpu(key->u32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
-> >> +	return le32_to_cpu(key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
-> > 
-> > If you would change such references to something like
-> > |return le32_to_cpup(&key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
-> > then on powerpc
-> > 
-> >   text    data     bss     dec     hex filename
-> > 155384    1284      24  156692   26414 ubifs-b4.ko
-> > 155372    1284      24  156680   26408 ubifs-after.ko
-> > 
-> > because now it is possible to load the value as LE from memory instead
-> > of loading it BE and swapping it afterwads.
+Thomas Renninger wrote:
+
+> Oh, they are part of this general Asus \\_SB.ATKD device, which is only
+> used by asus_laptop.c until now?
+
+I believe eeepc-laptop is also accessing the same device - at least it 
+is calling other methods defined in the same part of the DSDT although 
+it doesn't seem to be using that name to reach them.
+
+> Some more questions:
+> Why are they providing their own cpufreq interface and not following the
+> spec (providing _PSS, ..)?
+> Could it be that you are only throttling the CPU?
+>
+> Are these functions already used by the ACPI tables internally?
+>   - could be dangerous
+>   - could be helpful -> Is there some upper level device/interface in ASL?
 > 
-> Wouldn't that be true for every le32_to_cpu of an lvalue?  Shame you can't
-> do:
-> 
-> is_lvalue(x) ? le32_to_cpup(&(x)) : le32_to_cpu(x)
-> 
+> Could it happen that upcoming machines provide this interface (the two ACPI 
+> functions) and also can do real CPU frequency/volt switching, e.g. via 
+> acpi-cpufreq?
 
-No, you wouldn't want to do the above if the lvalue was on the stack as most
-of the time the extra code to setup a pointer to a stack variable ends up
-being more expensive than just using cpu_to_le32.
+Well the recent eee's are all Atom based, which I assume has proper 
+SpeedStep support but the early ones have a Celeron processor.
 
-Cheers,
+The history is that the original eee, the 701, was underclocking a 
+900MHz CPU at 630Mhz and in the 900 they added support for running at 
+full speed with the BIOS able to switch between the two speeds. I assume 
+it just changes the clock multiplier or something.
 
-Harvey
+The 901 and later of course use the Atom and presumably work differently.
 
+Tom
+
+-- 
+Tom Hughes (tom@compton.nu)
+http://www.compton.nu/
