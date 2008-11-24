@@ -1,100 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYKXOLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbYKXOWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbYKXOLH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 09:11:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYKXOKx
+	id S1752885AbYKXOWA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 09:22:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYKXOVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 09:10:53 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:53597 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbYKXOKw (ORCPT
+	Mon, 24 Nov 2008 09:21:49 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58309 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751643AbYKXOVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 09:10:52 -0500
-Message-ID: <492AB7F3.5020406@nokia.com>
-Date: Mon, 24 Nov 2008 16:19:31 +0200
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-CC: Artem Bityutskiy <dedekind@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UBIFS: endian handling fixes and annotations
-References: <1227287970-14684-1-git-send-email-dedekind@infradead.org> <1227287970-14684-3-git-send-email-dedekind@infradead.org> <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
-In-Reply-To: <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
+	Mon, 24 Nov 2008 09:21:48 -0500
+Date: Mon, 24 Nov 2008 14:21:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Pfaff <tpfaff@pcs.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: Fix async io write notifications
+Message-ID: <20081124142128.11cb3d06@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0811241401280.8443@lxtpfaff.pcs.ditec.de>
+References: <Pine.LNX.4.64.0811241401280.8443@lxtpfaff.pcs.ditec.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Nov 2008 14:10:32.0708 (UTC) FILETIME=[69D20440:01C94E3E]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastian Andrzej Siewior wrote:
-> * Artem Bityutskiy | 2008-11-21 19:19:24 [+0200]:
+On Mon, 24 Nov 2008 14:40:15 +0100 (CET)
+Thomas Pfaff <tpfaff@pcs.com> wrote:
+
+> he N_TTY ldisc layer does not send SIGIO POLL_OUTs correctly when output is 
+> possible due to flawed handling of the TTY_DO_WRITE_WAKEUP bit. It will either 
+> send no SIGIOs at all or on every tty wakeup.
 > 
->> index 9ee6508..3f1f16b 100644
->> --- a/fs/ubifs/key.h
->> +++ b/fs/ubifs/key.h
->> @@ -345,7 +345,7 @@ static inline int key_type_flash(const struct ubifs_info *c, const void *k)
->> {
->> 	const union ubifs_key *key = k;
->>
->> -	return le32_to_cpu(key->u32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
->> +	return le32_to_cpu(key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
+> The fix is to set the bit when the tty driver write would block and test and 
+> clear it on write wakeup.
 > 
-> If you would change such references to something like
-> |return le32_to_cpup(&key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
-> then on powerpc
-> 
->   text    data     bss     dec     hex filename
-> 155384    1284      24  156692   26414 ubifs-b4.ko
-> 155372    1284      24  156680   26408 ubifs-after.ko
-> 
-> because now it is possible to load the value as LE from memory instead
-> of loading it BE and swapping it afterwads.
+> Signed-off-by: Thomas Pfaff <tpfaff@pcs.com>
 
-Wouldn't that be true for every le32_to_cpu of an lvalue?  Shame you can't
-do:
+I had done a patch already but yours is somewhat nicer so I've merged
+yours instead with some tweaks as it clashed with an existing N_TTY patch
 
-is_lvalue(x) ? le32_to_cpup(&(x)) : le32_to_cpu(x)
+I left the tty->fasync check in the if (in case the user clears async I/O
+events) and I reversed the tests on the end of n_tty_write simply
+because the compiler has the variables we need to check to hand but not
+tty->fasync.
 
->> }
->>
->> /**
->> @@ -416,7 +416,7 @@ static inline unsigned int key_block_flash(const struct ubifs_info *c,
->> {
->> 	const union ubifs_key *key = k;
->>
->> -	return le32_to_cpu(key->u32[1]) & UBIFS_S_KEY_BLOCK_MASK;
->> +	return le32_to_cpu(key->j32[1]) & UBIFS_S_KEY_BLOCK_MASK;
->> }
-> 
-> This and the previous change look like a bugfix for something that
-> should trigger during recovery or something? Shouldn't I fail in
-> ubifs_validate_entry() during recovery?
+This all looks good to me. It breaks on ptys but that is another bug and
+I'll merge a patch to fix the ptys next.
 
-This is just about casting.  key->u32[1] and key->j32[1] are the same object.
-There is no "real" bug in these two cases - just compilation warnings.
-
->> /**
->> diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
->> index 77d26c1..bed9742 100644
->> --- a/fs/ubifs/recovery.c
->> +++ b/fs/ubifs/recovery.c
->> @@ -168,12 +168,12 @@ static int write_rcvrd_mst_node(struct ubifs_info *c,
->> 				struct ubifs_mst_node *mst)
->> {
->> 	int err = 0, lnum = UBIFS_MST_LNUM, sz = c->mst_node_alsz;
->> -	uint32_t save_flags;
->> +	__le32 save_flags;
->>
->> 	dbg_rcvry("recovery");
->>
->> 	save_flags = mst->flags;
->> -	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
->> +	mst->flags |= cpu_to_le32(UBIFS_MST_RCVRY);
-> 
-> another micro optimisation would be to use __constant_cpu_to_le32()
-
-As per Harvey's reply.
-
+Alan
