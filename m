@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbYKXEYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbYKXEYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280AbYKXEYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 23:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYKXEYL
+	id S1752293AbYKXEYh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 23:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYKXEYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 23:24:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48463 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbYKXEYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 23:24:10 -0500
-Date: Sun, 23 Nov 2008 21:22:31 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       zaitcev@redhat.com
-Subject: Re: linux-next: rr tree build failure
-Message-Id: <20081123212231.63cc02d6.zaitcev@redhat.com>
-In-Reply-To: <20081122064132.GA6196@suse.de>
-References: <20081121141913.90d05091.sfr@canb.auug.org.au>
-	<200811212128.52317.rusty@rustcorp.com.au>
-	<20081121183403.GC16353@suse.de>
-	<200811221301.07058.rusty@rustcorp.com.au>
-	<20081122064132.GA6196@suse.de>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Nov 2008 23:24:23 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43591 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbYKXEYW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 23:24:22 -0500
+Date: Mon, 24 Nov 2008 04:24:21 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: NeilBrown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Doug Ledford <dledford@redhat.com>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
+	needed.
+Message-ID: <20081124042421.GY28946@ZenIV.linux.org.uk>
+References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081124035530.3465.26724.stgit@notabene.brown>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Nov 2008 22:41:32 -0800, Greg KH <gregkh@suse.de> wrote:
+On Mon, Nov 24, 2008 at 02:55:30PM +1100, NeilBrown wrote:
+> Between the call
+>    __blkdev_get->get_gendisk->kobj_lookup->md_probe
+> and the call
+>    __blkdev_get->md_open
+> 
+> there is no obvious way to hold a reference on the mddev any more, so
+> unless something is done, it will disappear and gendisk will be
+> destroyed prematurely.
+> 
+> Also, once we decide to destroy the mddev, there will be an unlockable
+> moment before the gendisk is unlinked (blk_unregister_region) during
+> which a new reference to the gendisk can be created.  We need to
+> ensure that this reference can not be used.  i.e. the ->open must
+> fail.
+> 
+> So:
+>  1/  in md_probe we set a flag in the mddev (hold_active) which
+>      indicates that the array should be treated as active, even
+>      though there are no references, and no appearance of activity.
+>      This is cleared by md_release when the device is closed.
+>      This ensure that the gendisk will survive between md_probe and
+>      md_open.
 
-> > > > This reverts to the 2005 (pre- aafbf24a) behaviour where "nousb" was
-> > > > not a module parameter, just a kernel command line parameter.  That's
-> > > > more sensible anyway.
+That won't work.  Note that you are not guaranteed that md_release() will be
+called after md_probe(); there are failure exits in __blkdev_get() that do
+not reach ->open() at all.
 
-By the way, I floated the idea to remove "nousb" altogether on fedora-devel.
-Alan Cox replied that he has an actual box that requires it,
-because of a bug in SMM BIOS... Imagine my surprise. I think we're
-stuck with "nousb" for a little while still.
+What lifetime rules do you really want?  I never liked the tricks pulled
+by md wrt gendisk lifetimes and that might be a good time to sort that
+out for good...
 
--- Pete
+What should happen to things like pending IO, etc. on array destruction?
+AFAICS, that's the real question...
