@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYKXJv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbYKXJzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbYKXJv4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 04:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYKXJvr
+	id S1752606AbYKXJzQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 04:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYKXJzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 04:51:47 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38140 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751612AbYKXJvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 04:51:47 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX197Oy4yzxZ7v9LlT28Y4VxNwkZQom/FocNgtV11OD
-	ROAV+pMdShGsvt
-Date: Mon, 24 Nov 2008 10:51:51 +0100 (CET)
-From: Guennadi Liakhovetski <lg@denx.de>
-X-X-Sender: lyakh@axis700.grange
-To: rpurdie@rpsys.net
-cc: linux-kernel@vger.kernel.org
-Subject: leds/leds-pca9532.c: sleeping function called in .brightness_set()
-Message-ID: <Pine.LNX.4.64.0811241041130.4148@axis700.grange>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+	Mon, 24 Nov 2008 04:55:03 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37363 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751776AbYKXJzB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 04:55:01 -0500
+Date: Mon, 24 Nov 2008 09:55:10 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Shane McDonald <mcdonald.shane@gmail.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Resurrect IT8172 IDE controller driver
+Message-ID: <20081124095510.31cc990f@lxorguk.ukuu.org.uk>
+In-Reply-To: <E1L4UpB-0007ro-1g@localhost>
+References: <E1L4UpB-0007ro-1g@localhost>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> This patch resurrects the IT8172 IDE controller code.  I began with
+> the 2.6.18 version of the it8172.c file, and have moved it forward so
 
-this seems to explicitly violate the API as documented in 
-include/linux/leds.h:
+This appears to be a PIIX clone, is it different enough to need its own
+driver ?
 
-	/* Set LED brightness level */
-	/* Must not sleep, use a workqueue if needed */
-	void		(*brightness_set)(struct led_classdev *led_cdev,
-					  enum led_brightness brightness);
+> +static unsigned int __devinit init_chipset_it8172(struct pci_dev *dev)
+> +{
+> +	unsigned char progif;
+> +
+> +	/*
+> +	 * Place both IDE interfaces into PCI "native" mode
+> +	 */
+> +	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+> +	pci_write_config_byte(dev, PCI_CLASS_PROG, progif | 0x05);
+> +
+> +	return dev->irq;
+> +}
 
-and also contradicts some other drivers, e.g., pca955x, which do use a 
-workqueue as suggested: leds-pca9532.c::pca9532_set_brightness uses a 
-mutex for locking and calls i2c_smbus functions directly. Needs to be 
-fixed (if it hasn't been fixed yet), probably, also vor 2.6.27-stable.
+NAK. You can't do this here any more. The PCI code now understands
+'legacy' PCI IDE header types and resources so you must fix up the
+resources as a PCI quirk early on in boot or you will leave bogus
+resource assignments around.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+Alan
