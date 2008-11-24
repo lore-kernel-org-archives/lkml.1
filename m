@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYKXKdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYKXKdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbYKXKdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 05:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYKXKdL
+	id S1752939AbYKXKdl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 05:33:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYKXKda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 05:33:11 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:25973 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750806AbYKXKdK (ORCPT
+	Mon, 24 Nov 2008 05:33:30 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60541 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbYKXKd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 05:33:10 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Jim Radford <radford@galvanix.net>
-In-Reply-To: <20081122231631.GA6456@uranus.ravnborg.org>
-References: <20081122231631.GA6456@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Mon, 24 Nov 2008 10:31:08 +0000
-Message-Id: <1227522668.9425.21.camel@zakaz.uk.xensource.com>
+	Mon, 24 Nov 2008 05:33:29 -0500
+Subject: Re: [PATCH 2.6.28-rc5 03/11] kmemleak: Add the memory
+	allocation/freeing hooks
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <1227521925.8377.37.camel@pc1117.cambridge.arm.com>
+References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com>
+	 <20081120113045.16607.7462.stgit@pc1117.cambridge.arm.com>
+	 <84144f020811201130y2de91d03q7e6557e4086147ad@mail.gmail.com>
+	 <1227265627.7015.7.camel@pc1117.cambridge.arm.com>
+	 <1227514753.3718.21.camel@penberg-laptop>
+	 <1227521925.8377.37.camel@pc1117.cambridge.arm.com>
+Date: Mon, 24 Nov 2008 12:35:06 +0200
+Message-Id: <1227522906.3718.103.camel@penberg-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 62.200.22.2
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [RFC PATCH] kbuild: move tags support to a shell script
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=1JJopRNZEXkA:10 a=i2aGPtDiL5YA:10 a=pC_Hrc7NWn7NT4Jph7QA:9 a=9iW_30EiwJn4qZHaNF8A:7 a=GZvoSkQXEQmFG_p5Qe4xizR1bk8A:4 a=LY0hPdMaydYA:10
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-23 at 00:16 +0100, Sam Ravnborg wrote:
-> As no-one else wanted to do so - I now moved the tags support
-> to a shell script of its own.
-> The usage is the same: make {tags,TAGS,cscope}
-> 
-> The ALLSOURCE_ARCHS suppport was lost in the transition - is it actually used by anyone?
+Hi Catalin,
 
-I'm the one who actually added it way back in
-a0674e88d9c150e016a69e78e735f48772314c53 and to be honest I don't use it
-anymore since I've changed jobs and only really do x86 now...
+On Mon, 2008-11-24 at 10:18 +0000, Catalin Marinas wrote:
+> My understanding is that the ->s_mem value points to the slab itself but
+> the same pointer might actually be the beginning of an allocated memory
+> block, hence we get at least one reference to this block.
 
-I can't say if anyone else is using it though.
+Yes, ->s_mem points to the first object in the slab if CONFIG_DEBUG_SLAB
+is disabled.
 
-> I have given the patch only some light testing.
-> 
-> Could those of you that actually sues tags/cscope plese give it a try.
+So if I understood this right, in case the first object in the slab is
+leaked (it's allocated but no one references to it), we want to make
+sure kmemleak doesn't see the ->s_mem link which would cause a false
+negative (i.e. a leak that is not reported).
 
-I tested your second patch from the subsequent email and functionally it
-seems fine, it currently includes include/asm-* for all architectures
-but I suppose they will all go away shortly.
+Did I get it correct this time?
 
-The output was a bit odd though:
-        $ make cscope
-        /bin/sh /local/scratch/ianc/devel/linux-2.6.git/scripts/tags.sh cscope
-          GEN     cscope.out (from 13251 files)
-I guess I would have expected "  GEN     cscope.files" instead of the
-first line or just "  TAGS"?
-
-Ian.
--- 
-Ian Campbell
-Current Noise: Nine Inch Nails - Where Is Everybody?
-
-"We came.  We saw.  We kicked its ass."
-		-- Bill Murray, _Ghostbusters_
+		Pekka
 
