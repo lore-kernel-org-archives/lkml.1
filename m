@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbYKXUDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYKXUFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbYKXUDH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 15:03:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYKXUCz
+	id S1754029AbYKXUFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 15:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYKXUFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 15:02:55 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:50425 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYKXUCy (ORCPT
+	Mon, 24 Nov 2008 15:05:33 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:12695 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbYKXUFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 15:02:54 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=SN+MUiAthtvZu/vXYt8zJkHzTWH4r0aa8qqfkN7IKcUmw7Uj1+4Yn3AB2ypiVIctp
-	7CPYx4HqRW1b1x0PjYmeQ==
+	Mon, 24 Nov 2008 15:05:33 -0500
+Message-ID: <154e089b0811241205m293b5824of0fa753c1f8c33a6@mail.gmail.com>
+Date: Mon, 24 Nov 2008 21:05:31 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] hugetlb: fix sparse warnings
 MIME-Version: 1.0
-In-Reply-To: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
-References: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
-Date: Mon, 24 Nov 2008 12:02:50 -0800
-Message-ID: <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
-Subject: Re: [PATCH][V3]Make get_user_pages interruptible
-From: Paul Menage <menage@google.com>
-To: Ying Han <yinghan@google.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
-       Rohit Seth <rohitseth@google.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 5:31 PM, Ying Han <yinghan@google.com> wrote:
-> From: Paul Menage <menage@google.com>
+Impact: fix sparse warnings
 
-This patch is getting further and further from my original internal
-changes, so I'm not sure that a From: line from me is appropriate.
+Fix the following sparse warnings:
 
->                         */
-> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
-> -                               return i ? i : -ENOMEM;
-> +                       if (unlikely(sigkill_pending(tsk)))
-> +                               return i ? i : -ERESTARTSYS;
+  mm/hugetlb.c:375:3: warning: returning void-valued expression
+  mm/hugetlb.c:408:3: warning: returning void-valued expression
 
-You've changed the check from sigkill_pending(current) to sigkill_pending(tsk).
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ mm/hugetlb.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-I originally made that sigkill_pending(current) since we want to avoid
-tasks entering an unkillable state just because they're doing
-get_user_pages() on a system that's short of memory. Admittedly for
-the main case that we care about, mlock() (or an mmap() with
-MCL_FUTURE set) then tsk==current, but philosophically it seems to me
-to be more correct to do the check against current than tsk, since
-current is the thing that's actually allocating the memory. But maybe
-it would be better to check both?
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 6058b53..56e1406 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -371,8 +371,10 @@ static void clear_huge_page(struct page *page,
+ {
+ 	int i;
 
-Paul
+-	if (unlikely(sz > MAX_ORDER_NR_PAGES))
+-		return clear_gigantic_page(page, addr, sz);
++	if (unlikely(sz > MAX_ORDER_NR_PAGES)) {
++		clear_gigantic_page(page, addr, sz);
++		return;
++	}
+
+ 	might_sleep();
+ 	for (i = 0; i < sz/PAGE_SIZE; i++) {
+@@ -404,8 +406,10 @@ static void copy_huge_page(struct page *dst,
+struct page *src,
+ 	int i;
+ 	struct hstate *h = hstate_vma(vma);
+
+-	if (unlikely(pages_per_huge_page(h) > MAX_ORDER_NR_PAGES))
+-		return copy_gigantic_page(dst, src, addr, vma);
++	if (unlikely(pages_per_huge_page(h) > MAX_ORDER_NR_PAGES)) {
++		copy_gigantic_page(dst, src, addr, vma);
++		return;
++	}
+
+ 	might_sleep();
+ 	for (i = 0; i < pages_per_huge_page(h); i++) {
