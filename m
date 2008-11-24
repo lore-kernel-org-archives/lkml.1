@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbYKXPd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYKXPeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbYKXPd1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 10:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYKXPdQ
+	id S1753785AbYKXPeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 10:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYKXPdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 10:33:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40873 "EHLO mx2.redhat.com"
+	Mon, 24 Nov 2008 10:33:52 -0500
+Received: from www.tglx.de ([62.245.132.106]:51910 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752502AbYKXPdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 10:33:15 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <4917263D.2090904@telenet.dn.ua>
-	<20081110104423.GA26778@kernel.dk>
-	<x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
-	<20081110135618.GI26778@kernel.dk>
-	<x491vxgkd61.fsf@segfault.boston.devel.redhat.com>
-	<20081112190227.GS26778@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 24 Nov 2008 10:33:05 -0500
-In-Reply-To: <20081112190227.GS26778@kernel.dk> (Jens Axboe's message of "Wed,
-	12 Nov 2008 20:02:28 +0100")
-Message-ID: <x49skphdtqm.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1752523AbYKXPdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 10:33:51 -0500
+Date: Mon, 24 Nov 2008 16:32:31 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Petr Tesarik <ptesarik@suse.cz>
+cc: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: Fix clock_gettime with CLOCK_PROCESS_CPUTIME_ID
+In-Reply-To: <1227537991.20064.6.camel@nathan.suse.cz>
+Message-ID: <alpine.LFD.2.00.0811241625050.3301@localhost.localdomain>
+References: <1227537991.20064.6.camel@nathan.suse.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+On Mon, 24 Nov 2008, Petr Tesarik wrote:
 
-> nfsd aside (which does seem to have some different behaviour skewing the
-> results), the original patch came about because dump(8) has a really
-> stupid design that offloads IO to a number of processes. This basically
-> makes fairly sequential IO more random with CFQ, since each process gets
-> its own io context. My feeling is that we should fix dump instead of
-> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
-> aware of any other good programs out there that would do something
-> similar, so I don't think there's a lot of merrit to spending cycles on
-> detecting cooperating processes.
->
-> Jeff will take a look at fixing dump instead, and I may have promised
-> him that santa will bring him something nice this year if he does (since
-> I'm sure it'll be painful on the eyes).
+> Since CLOCK_PROCESS_CPUTIME_ID is in fact translated to -6, the switch
+> statement in cpu_clock_sample_group() must first mask off the irrelevant
+> bits, similar to cpu_clock_sample().
+> 
+> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 
-Sorry to drum up this topic once again, but we've recently run into
-another instance where the close cooperator patch helps significantly.
-The case is KVM using the virtio disk driver.  The host-side uses
-posix_aio calls to issue I/O on behalf of the guest.  It's worth noting
-that pthread_create does not pass CLONE_IO (at least that was my reading
-of the code).  It is questionable whether it really should as that will
-change the I/O scheduling dynamics.
+Good catch. Applied.
 
-So, Jens, what do you think?  Should we collect some performance numbers
-to make sure that the close cooperator patch doesn't hurt the common
-case?
+Thanks,
 
-Cheers,
-Jeff
+	tglx
+
+> --
+>  posix-cpu-timers.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -311,7 +311,7 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
+>  	struct task_cputime cputime;
+>  
+>  	thread_group_cputime(p, &cputime);
+> -	switch (which_clock) {
+> +	switch (CPUCLOCK_WHICH(which_clock)) {
+>  	default:
+>  		return -EINVAL;
+>  	case CPUCLOCK_PROF:
+> 
+> 
