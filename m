@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbYKXVTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYKXVU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbYKXVTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 16:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYKXVTb
+	id S1754142AbYKXVU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 16:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYKXVUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 16:19:31 -0500
-Received: from mail-gx0-f11.google.com ([209.85.217.11]:47566 "EHLO
-	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753039AbYKXVTa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 16:19:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=hDyYXR7lGhJlKWMVo7fvKxts9M/pPOY2aRsSDih0g9e/T03eYv7BkPD1ptI8gnYENy
-         nCgoipDo2zd1gzN9prTH4PLWhXvysS9sDMBCLuN9hj9IbExX8o24s4HCCT83N0/jWMFU
-         wfqvfp5yK+LO+92d4wZkKdzOhKConWhffmIDc=
-Message-ID: <84144f020811241313o7401e3c2gd360c4226f33b28f@mail.gmail.com>
-Date: Mon, 24 Nov 2008 23:13:10 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ying Han" <yinghan@google.com>
-Subject: Re: [PATCH][V3]Make get_user_pages interruptible
-Cc: "Paul Menage" <menage@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Rohit Seth" <rohitseth@google.com>
-In-Reply-To: <604427e00811241302t2a52e38etffca2546f319a7af@mail.gmail.com>
+	Mon, 24 Nov 2008 16:20:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43450 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752918AbYKXVUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 16:20:15 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: [Bug #11698] 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
+Date: Mon, 24 Nov 2008 22:19:29 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <0kQZaQnNVIL.A.BhG.FwIKJB@chimera> <V2w_GS-X2aE.A.rcH.ywIKJB@chimera> <1227560233.4881.4.camel@localhost>
+In-Reply-To: <1227560233.4881.4.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
-	 <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
-	 <604427e00811241302t2a52e38etffca2546f319a7af@mail.gmail.com>
-X-Google-Sender-Auth: 33633f27fe064ae0
+Message-Id: <200811242219.29520.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 5:31 PM, Ying Han <yinghan@google.com> wrote:
->>>                         */
->>> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
->>> -                               return i ? i : -ENOMEM;
->>> +                       if (unlikely(sigkill_pending(tsk)))
->>> +                               return i ? i : -ERESTARTSYS;
+On Monday, 24 of November 2008, Soeren Sonnenburg wrote:
+> On Sat, 2008-11-22 at 21:59 +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.26 and 2.6.27.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> > be listed and let me know (either way).
+> 
+> current mainstream hangs on *every* resume (Carlos observed the same
+> hangs on wakeup from s2ram but while the cause for him were the wireless
+> drivers it must be something else here)...
+> 
+> so this bug and the bug I am having is again hidden under something
+> else. one thing I noticed: The machine resumes and numlock still works
+> when using an external usb keyboard. still no display and also no second
+> s2ram possible :(
 
-On Mon, Nov 24, 2008 at 12:02 PM, Paul Menage <menage@google.com> wrote:
->> You've changed the check from sigkill_pending(current) to sigkill_pending(tsk).
->>
->> I originally made that sigkill_pending(current) since we want to avoid
->> tasks entering an unkillable state just because they're doing
->> get_user_pages() on a system that's short of memory. Admittedly for
->> the main case that we care about, mlock() (or an mmap() with
->> MCL_FUTURE set) then tsk==current, but philosophically it seems to me
->> to be more correct to do the check against current than tsk, since
->> current is the thing that's actually allocating the memory. But maybe
->> it would be better to check both?
+Well, this sounds quite serious, but I have no idea what the problem may be.
 
-On Mon, Nov 24, 2008 at 11:02 PM, Ying Han <yinghan@google.com> wrote:
-> In most of cases, tsk==current in get_user_pages(), that is why i
-> change current to tsk since
-> tsk is a superset of current, no? If that is right, why we need to check both?
+Please have a look at, though:
+http://bugzilla.kernel.org/show_bug.cgi?id=12031
 
-I'm not sure if it's strictly necessary but as I pointed out in the
-other mail, there can be callers that are doing get_user_pages() on
-behalf of other tasks and you probably want to be able to kill the
-task that's actually _calling_ get_user_pages() as well.
+Thanks,
+Rafael
 
-                        Pekka
