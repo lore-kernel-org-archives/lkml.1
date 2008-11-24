@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYKXP5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYKXQB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYKXP5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 10:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYKXP44
+	id S1753836AbYKXQB2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYKXQBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 10:56:56 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:41279 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbYKXP4z (ORCPT
+	Mon, 24 Nov 2008 11:01:17 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:58626 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbYKXQBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 10:56:55 -0500
-Message-ID: <492ACEC4.3020702@de.ibm.com>
-Date: Mon, 24 Nov 2008 16:56:52 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, tklein@de.ibm.com,
-       Christoph Raisch <raisch@de.ibm.com>, jb.billaud@gmail.com,
-       hering2@de.ibm.com
-Subject: [RFC PATCH] lro: ip fragment checking
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Nov 2008 11:01:16 -0500
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Mon, 24 Nov 2008 17:00:47 +0100
+Message-Id: <1227542451-31969-6-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1227542451-31969-5-git-send-email-giometti@linux.it>
+References: <>
+ <1227542451-31969-1-git-send-email-giometti@linux.it>
+ <1227542451-31969-2-git-send-email-giometti@linux.it>
+ <1227542451-31969-3-git-send-email-giometti@linux.it>
+ <1227542451-31969-4-git-send-email-giometti@linux.it>
+ <1227542451-31969-5-git-send-email-giometti@linux.it>
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH 5/9] ldisc: new dcd_change() method for line disciplines.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently there is no checking in the LRO receive path whether
-TCP packets are ip fragmented. We should not consider
-those packets for aggregation.
-I'm not sure if this checking is actually required. Does anyone
-know if it is possible to get fragmented TCP packets without
-the tcp stack changing the MSS size?
-This patch introduces explicit checking. Any objections?
-
-Regards,
-
-Jan-Bernd
-
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
+ Documentation/tty.txt     |    4 ++++
+ include/linux/tty_ldisc.h |    8 ++++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-
-
- net/ipv4/inet_lro.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/net/ipv4/inet_lro.c b/net/ipv4/inet_lro.c
-index cfd034a..1f9159d 100644
---- a/net/ipv4/inet_lro.c
-+++ b/net/ipv4/inet_lro.c
-@@ -64,6 +64,9 @@ static int lro_tcp_ip_check(struct iphdr *iph, struct tcphdr *tcph,
- 	if (iph->ihl != IPH_LEN_WO_OPTIONS)
- 		return -1;
+diff --git a/Documentation/tty.txt b/Documentation/tty.txt
+index 8e65c44..3fc812a 100644
+--- a/Documentation/tty.txt
++++ b/Documentation/tty.txt
+@@ -100,6 +100,10 @@ write_wakeup()	-	May be called at any point between open and close.
+ 			is permitted to call the driver write method from
+ 			this function. In such a situation defer it.
  
-+	if (iph->frag_off & IP_MF)
-+		return -1;
++dcd_change()	-	Report to the tty line the current DCD pin status
++			changes and the relative timestamp. The timestamp
++			can be NULL.
 +
- 	if (tcph->cwr || tcph->ece || tcph->urg || !tcph->ack
- 	    || tcph->rst || tcph->syn || tcph->fin)
- 		return -1;
+ 
+ Driver Access
+ 
+diff --git a/include/linux/tty_ldisc.h b/include/linux/tty_ldisc.h
+index 40f38d8..526fbf4 100644
+--- a/include/linux/tty_ldisc.h
++++ b/include/linux/tty_ldisc.h
+@@ -99,6 +99,12 @@
+  *	cease I/O to the tty driver. Can sleep. The driver should
+  *	seek to perform this action quickly but should wait until
+  *	any pending driver I/O is completed.
++ *
++ * void (*dcd_change)(struct tty_struct *tty, unsigned int status,
++ * 			struct timespec *ts)
++ *
++ *	Tells the discipline that the DCD pin has changed its status and
++ *	the relative timestamp. Pointer ts can be NULL.
+  */
+ 
+ #include <linux/fs.h>
+@@ -136,6 +142,8 @@ struct tty_ldisc_ops {
+ 	void	(*receive_buf)(struct tty_struct *, const unsigned char *cp,
+ 			       char *fp, int count);
+ 	void	(*write_wakeup)(struct tty_struct *);
++	void	(*dcd_change)(struct tty_struct *, unsigned int,
++				struct timespec *);
+ 
+ 	struct  module *owner;
+ 	
 -- 
-1.5.5
-
-
-
+1.5.4.3
 
