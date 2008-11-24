@@ -1,93 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYKXTUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYKXTXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbYKXTUA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYKXTTw
+	id S1753743AbYKXTXG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:23:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYKXTWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:19:52 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:49628 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750890AbYKXTTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:19:51 -0500
-Message-ID: <492AFE54.6030906@sgi.com>
-Date: Mon, 24 Nov 2008 11:19:48 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 24 Nov 2008 14:22:55 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:56713 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750837AbYKXTWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:22:54 -0500
+Date: Mon, 24 Nov 2008 20:25:32 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: Switch WM8350 revision detection to a feature
+	based model
+Message-ID: <20081124192531.GA2604@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1227113220-17468-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081124103755.GA3479@sortiz.org> <20081124133116.GA31269@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH] sched: fix-local_cpu_mask
-References: <200811250238.53883.rusty@rustcorp.com.au> <20081124171749.GB27851@elte.hu> <20081124172343.GB11971@elte.hu>
-In-Reply-To: <20081124172343.GB11971@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081124133116.GA31269@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> plus there's a build failure as well on 32-bit:
+On Mon, Nov 24, 2008 at 01:31:16PM +0000, Mark Brown wrote:
+> On Mon, Nov 24, 2008 at 11:37:55AM +0100, Samuel Ortiz wrote:
 > 
-> kernel/sched_rt.c:1561: error: 'per_cpu__local_cpu_mask' undeclared (first use in this function)
-> kernel/sched_rt.c:1561: error: (Each undeclared identifier is reported only once
-> kernel/sched_rt.c:1561: error: for each function it appears in.)
-> kernel/sched.c:8348: error: 'nohz' undeclared (first use in this function)
-> kernel/sched.c:8350: error: 'cpu_isolated_map' undeclared (first use in this function)
+> > Dont you prefer to use the WM8350_REV_* values in your code rather than some
+> > undocumented constants like that ?
+> > I understand that reading the code below will make those constants obvious,
+> > but still...
 > 
-> with the attached config, caused by your patches. Please send delta 
-> fixes against tip/cpus4096.
+> I don't find them enormously helpful, TBH - the constant gets used in
+> exactly one place and there's been a bit of skew between what some of
+> the ID registers are called and thier actual meaning which doesn't help.
 > 
-> Thanks,
-> 
-> 	Ingo
-> 
-sched: fix-local_cpu_mask
+> I'll repost with the #defines for the revisons added back, though.
+Thanks for the patches. Both of them are now sitting in my for-next branch.
 
-This should fix the errors for the i386 non-smp case.  I've also
-checked it against the 32/64 allnoconfigs and allyesconfigs.
+Cheers,
+Samuel.
 
-Based on tip/cpus4096 @ v2.6.28-rc6-254-g96f874e
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- kernel/sched.c    |    6 ++++--
- kernel/sched_rt.c |    4 +++-
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
---- linux-2.6.28-tip-cpumasks.orig/kernel/sched.c
-+++ linux-2.6.28-tip-cpumasks/kernel/sched.c
-@@ -8347,12 +8347,14 @@ void __init sched_init(void)
- 	 */
- 	current->sched_class = &fair_sched_class;
- 
--	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
--	alloc_bootmem_cpumask_var(&nohz_cpu_mask);
-+#ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
-+	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
- 	alloc_bootmem_cpumask_var(&nohz.cpu_mask);
- #endif
-+	/* Allocate the cpu_isolated_map if CONFIG_CPUMASK_OFFSTACK */
- 	alloc_bootmem_cpumask_var(&cpu_isolated_map);
-+#endif
- 
- 	scheduler_running = 1;
- }
---- linux-2.6.28-tip-cpumasks.orig/kernel/sched_rt.c
-+++ linux-2.6.28-tip-cpumasks/kernel/sched_rt.c
-@@ -1552,7 +1552,8 @@ static void print_rt_stats(struct seq_fi
- }
- #endif /* CONFIG_SCHED_DEBUG */
- 
--/* Note that this is never called for !SMP, but that's OK. */
-+#ifdef CONFIG_SMP
-+/* Note that this is never called for !SMP */
- static inline void init_sched_rt_class(void)
- {
- 	unsigned int i;
-@@ -1560,3 +1561,4 @@ static inline void init_sched_rt_class(v
- 	for_each_possible_cpu(i)
- 		alloc_cpumask_var(&per_cpu(local_cpu_mask, i), GFP_KERNEL);
- }
-+#endif
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
