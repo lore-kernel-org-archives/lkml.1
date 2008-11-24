@@ -1,249 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbYKXKeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbYKXKe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbYKXKeB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 05:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYKXKdu
+	id S1753262AbYKXKe3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 05:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYKXKeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 05:33:50 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:57785 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751933AbYKXKdt (ORCPT
+	Mon, 24 Nov 2008 05:34:18 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:45028 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbYKXKeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 05:33:49 -0500
-Message-ID: <492A8306.9000400@ru.mvista.com>
-Date: Mon, 24 Nov 2008 13:33:42 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Shane McDonald <mcdonald.shane@gmail.com>
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Resurrect IT8172 IDE controller driver
-References: <E1L4UpB-0007ro-1g@localhost>
-In-Reply-To: <E1L4UpB-0007ro-1g@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Nov 2008 05:34:16 -0500
+Subject: Re: [ath5k-devel] Unusually low speeds with ath5k and iwl3945
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Felix Fietkau <nbd@openwrt.org>
+Cc: Benoit PAPILLAULT <benoit.papillault@free.fr>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Derek Smithies <derek@indranet.co.nz>, ath5k-devel@venema.h4ckr.net,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, wally@theblackmoor.net
+In-Reply-To: <492A7733.2000205@openwrt.org>
+References: <492719ED.5000006@gmail.com>
+	 <20081122005240.GA27826@hash.localnet>
+	 <alpine.DEB.2.00.0811221643030.7067@monster> <4927FC0C.10900@gmail.com>
+	 <492A5913.3070007@free.fr>  <492A7733.2000205@openwrt.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jL3RWv5L57vxZBEb5dgW"
+Date: Mon, 24 Nov 2008 11:34:06 +0100
+Message-Id: <1227522846.3599.61.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Shane McDonald wrote:
+--=-jL3RWv5L57vxZBEb5dgW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> diff -uprN a/drivers/ide/it8172.c b/drivers/ide/it8172.c
-> --- a/drivers/ide/it8172.c	1969-12-31 18:00:00.000000000 -0600
-> +++ b/drivers/ide/it8172.c	2008-11-23 01:06:01.000000000 -0600
-> @@ -0,0 +1,205 @@
-> +/*
-> + *
-> + * BRIEF MODULE DESCRIPTION
-> + *      IT8172 IDE controller support
-> + *
-> + * Copyright 2000 MontaVista Software Inc.
-> + * Author: MontaVista Software, Inc.
-> + *              stevel@mvista.com or source@mvista.com
->   
+On Mon, 2008-11-24 at 10:43 +0100, Felix Fietkau wrote:
+> Benoit PAPILLAULT wrote:
+> > I did a similar test here and results is very strange. AP was my good
+> > old linksys WRT54G running an iperf server. Client was a laptop running
+> > either ath5k or madwifi/trunk and an iperf client. Channel is 5. Both
+> > drivers show the same behaviour.
+> >=20
+> > At the beginning, throughput was very low : 500 - 600 kbit/s. Suddenly
+> > (after few minutes), it jumps to 15 - 17 Mbit/s and then few minutes
+> > later (let's say 10 - 20 minutes maybe), it jumps back to 500 - 600
+> > kbit/s. Using a fixed rate has no effect.
+> >=20
+> > I used my latest wireless monitoring tools and I did not saw lost of
+> > duplicates or lost packets. The only difference was the number of
+> > packets sent by seconds....
+> >=20
+> > Looking a my syslog, I just saw few messages, unrelated in time with th=
+e
+> > throughput going up or down. They were:
+> > - ath5k : unsupported jumbo
+> > - switching to short barker preamble
+> > - switching to long barker preamble
+> >=20
+> > I can repeat the same test with iwl3945 as well, if needed.
+> While reading the code for calculating the frame duration, i noticed
+> something odd: It doesn't seem to be taking into account the short
+> vs long preamble distinction for ERP rates. IMHO this might be causing
+> issues like this. I've seen similar behaviour a long time ago when testin=
+g
+> iwl3945 against a Broadcom AP with exactly the same throughput drop (500-
+> 600 kbits/s).
+> When I analyzed the problem with an extra monitor mode card, I found out
+> that the throughput drop is caused by a huge number of retransmissions,
+> and if I remember correctly (I didn't look for this specifically back the=
+n),
+> the retransmissions went down the rate scaling table until they hit the
+> first non-ERP rate and that one worked on the first try.
+>=20
+> Johannes, does that sound like a probable cause? If so, it should be easy
+> to fix.
 
-   You can remove the former address, Steve Longerbeam is no longer with 
-MV (quit long ago). And I think you may add your own copyright now.
+I have no idea. Shouldn't that be easy to tell from the monitor? And if
+the short/long switching was _unrelated_ in time it seems like it
+wouldn't be a problem?
 
-> +/*
-> + * Prototypes
-> + */
->   
+johannes
 
-   I see no prototypes here...
+--=-jL3RWv5L57vxZBEb5dgW
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> +
-> +static void it8172_set_pio_mode(ide_drive_t *drive, const u8 pio)
-> +{
-> +	ide_hwif_t *hwif	= HWIF(drive);
-> +	struct pci_dev *dev	= to_pci_dev(hwif->dev);
-> +	int is_slave		= (&hwif->drives[1] == drive);
->   
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-    Use simpler "drive->dn & 1" (and drop the useless parens please) -- 
-& can be dropped though as the controller has only a single channel...
+iQIcBAABAgAGBQJJKoMaAAoJEKVg1VMiehFYSGEQALOd9p4Y+Et73/WcDVfIhy92
+SNYQdW90RXdaW1QIKaPVIWhU2uoy2EATx0enyZowPCIr66iX+Z4kzwMACmhKa2yz
+AsmujCDFCPzBy7W53ZUBDRnFjtGWOTu/t5YbxvP5lY5rAlXbTa24DP2LlFhAOj5A
+GDSeVm/QeRQGn6apugk3tKJt354HO55zl76Iuq5Mdqmu/s09dxRlbAT8bKYKNSms
+Qcfd8brnMtIdjCqteR7kkerF98rGcjpkn2g5U3MQSMzEKGdVIlwiYT8QSWVsn5H6
+CFySyqiPYm5JfUnO+jMNF/xqYh3o2oDzqxYAv2+FsKJmQAVEhZF3xchWcWb6eyOF
+27eSiTtvucCGEpkbWnzjDttLOOsji0UQgS1SsmqFeCarKwaJXQR75HlrzpIwgB8a
+2u1BX8siVy6ne8p0PVJZ5MSmbgosMQeLPZmYttMb8NpwUFTkPOzu3ALf4QjamzjQ
+lPP4g+3TrXNj/v5SiUXHCPmyx1B8sJTGHZXJDtEPtSo41Jno9osNLnYeufMGwaGt
+2rSdHpg6muM5kKWMdzF4y+mGLkLTwDL5ov3tXRtg4uRpPnHPY42C7KgTPrPWjP8N
+FYpxex0wF6mPFDgJPzcFxpruuHfWgqfzo6AR/2eWSUpxTx6buevDLCnNasV2zv60
+L1LkhRCfGwR/1BNYGq4N
+=GqjT
+-----END PGP SIGNATURE-----
 
-> +	spin_lock_irqsave(&ide_lock, flags);
->   
-
-   Don't use ide_lock here please. Moreover, since the controller has 
-only one channel, you don't need any spinlock here.
-
-> +	pci_read_config_word(dev, 0x40, &drive_enables);
-> +	pci_read_config_dword(dev, 0x44, &drive_timing);
-> +
-> +	/*
-> +	 * FIX! The DIOR/DIOW pulse width and recovery times in port 0x44
->   
-
-   It's usually FIXME. :-)
-
-> +	 * are being left at the default values of 8 PCI clocks (242 nsec
-> +	 * for a 33 MHz clock).
-
-   It's 240, not 242 ns as 33 is actually 33.333.
-
->  These can be safely shortened at higher
-> +	 * PIO modes. The DIOR/DIOW pulse width and recovery times only
-> +	 * apply to PIO modes, not to the DMA modes.
-> +	 */
->   
-
-   Not true. They do apply to SW/MW DMA modes -- and if you look at your 
-own code you'll see that.
-
-> +
-> +	/*
-> +	 * Enable port 0x44. The IT8172 spec is confused; it calls
-> +	 * this register the "Slave IDE Timing Register", but in fact,
-> +	 * it controls timing for both master and slave drives.
-> +	 */
-> +	drive_enables |= 0x4000;
->   
-
-   This is strange because this IDE controller seems to be a clone of 
-the one in the Intel PIIX chip. However, the spec. I have tellm it's not 
-an exact clone.
-I suggest that you take a close look at drivers/ide/piix.c...
-
-> +
-> +	if (is_slave) {
-> +		drive_enables &= 0xc006;
-> +		if (pio > 1)
-> +			/* enable prefetch and IORDY sample-point */
-> +			drive_enables |= 0x0060;
->   
-
-   IORDY sampling shouldn't be enabled for PIO mode 2 always, only if 
-the drive supports it.
-   Prefetch should only be enabled for ATA disks, not the ATAPI devices
-
-> +static void it8172_set_dma_mode(ide_drive_t *drive, const u8 speed)
-> +{
-> +	ide_hwif_t *hwif	= HWIF(drive);
-> +	struct pci_dev *dev	= to_pci_dev(hwif->dev);
-> +	int a_speed		= 3 << (drive->dn * 4);
-> +	int u_flag		= 1 << drive->dn;
-> +	int u_speed		= 0;
-> +	u8 reg48, reg4a;
-> +
-> +	const u8 mwdma_to_pio[] = { 0, 3, 4 };
-> +	u8 pio;
-> +
-> +	pci_read_config_byte(dev, 0x48, &reg48);
-> +	pci_read_config_byte(dev, 0x4a, &reg4a);
-> +
-> +	if (speed >= XFER_UDMA_0) {
-> +
-> +		/* Setting the DMA cycle time to 2 or 3 PCI clocks
-> +		 * (60 and 91 nsec at 33 MHz PCI clock) seems to cause
-> +		 * BadCRC errors during DMA transfers on some drives,
->   
-
-   Sigh, such drives should have been blacklisted...
-
-> +		 * even though both numbers meet the minimum ATAPI-4 spec
-> +		 * of 73 and 54 nsec for UDMA 1 and 2 respectively.
-> +		 * So the faster times are not implemented here.
-> +		 * The good news is that the slower cycle time has
-> +		 * very little affect on transfer performance.
->   
-
-   This should only affect the write performance, reads.
-
-> +		 */
-> +
-> +		u_speed = 0 << (drive->dn * 4);
->   
-
-   I think you're actually setting UltraDMA mode 2 timing regardless of 
-the mode selected.
-
-   The below code only applies to non-UltraDMA modes.
-
-> +
-> +	if (speed >= XFER_MW_DMA_0)
-> +		pio = mwdma_to_pio[speed - XFER_MW_DMA_0];
-> +	else
-> +		pio = 2;
-> +
-> +	it8172_set_pio_mode(drive, pio);
->   
-
-   Moreover, I'd suggest to reimplement it as the timing register layout 
-is different from the original PIIX and additional DMA modes can be 
-supported: MWDMA0 and SWDMA1.
-
-> +static unsigned int __devinit init_chipset_it8172(struct pci_dev *dev)
-> +{
-> +	unsigned char progif;
-> +
-> +	/*
-> +	 * Place both IDE interfaces into PCI "native" mode
-> +	 */
-> +	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
-> +	pci_write_config_byte(dev, PCI_CLASS_PROG, progif | 0x05);
-> +
-> +	return dev->irq;
-> +}
->   
-
-   As Alan have said, you can't do that here.
-
-> +static const struct ide_port_info it8172_chipset __devinitdata = {
-> +	.name		= DRV_NAME,
-> +	.init_chipset	= init_chipset_it8172,
-> +	.port_ops	= &it8172_port_ops,
-> +	.enablebits	= {{0x00, 0x00, 0x00}, {0x40, 0x00, 0x01} },
->   
-
-   Wrong, should be:
-
-	.enablebits	= {{0x41, 0x80, 0x80}, {0x00, 0x00, 0x00}},
-
-  If that doesn't work (firmware doesn't enable the channel), you can leave it all 0s...
-
-> 	.host_flags	= IDE_HFLAG_SINGLE,
-> +	.pio_mask	= ATA_PIO4,
-> +	.swdma_mask	= ATA_SWDMA2_ONLY,
-> +	.mwdma_mask	= ATA_MWDMA12_ONLY,
->   
-
-   More modes are supportable...
-
-> +static const struct ide_port_info it8172_chipset __devinitdata = {
-
-    Please rename this variable to it8172_port_info.
-
-> +};
-> +
-> +static int __devinit it8172_init_one(struct pci_dev *dev,
-> +					const struct pci_device_id *id)
-> +{
-> +	if ((!(PCI_FUNC(dev->devfn) & 1) ||
-> +		(!((dev->class >> 8) == PCI_CLASS_STORAGE_IDE))))
->   
-
-     Please, don't abuse parens, it should be just:
-
-	if (!(PCI_FUNC(dev->devfn) & 1) ||
-	     (dev->class >> 8) != PCI_CLASS_STORAGE_IDE)
-
-
-> +		return -ENODEV; /* IT8172 is more than an IDE controller */
->   
-
-   And I don't get it: why the first check is needed? Is there another 
-IDE controller on function 1 that you want to ignore? I doubt it.
-
-> +MODULE_AUTHOR("SteveL@mvista.com");
->   
-
-   I wonder why Steve didn't specify his full name... :-)
-
-MBR, Sergei
-
+--=-jL3RWv5L57vxZBEb5dgW--
 
