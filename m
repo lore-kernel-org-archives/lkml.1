@@ -1,183 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbYKXBca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbYKXBpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752571AbYKXBca (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 20:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYKXBcT
+	id S1752453AbYKXBpY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 20:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYKXBpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 20:32:19 -0500
-Received: from mga11.intel.com ([192.55.52.93]:51757 "EHLO mga11.intel.com"
+	Sun, 23 Nov 2008 20:45:09 -0500
+Received: from ns2.suse.de ([195.135.220.15]:54999 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbYKXBcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 20:32:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,655,1220252400"; 
-   d="scan'208";a="407185423"
-Subject: Re: Regression: ACPI AC driver doesn't work on Toshiba Portege
-	R500 (bisected)
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Zhao, Yakui" <yakui.zhao@intel.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       walken <walken@zoy.org>
-In-Reply-To: <200811240221.54716.rjw@sisk.pl>
-References: <200811230053.14211.rjw@sisk.pl>
-	 <200811240037.15835.rjw@sisk.pl>
-	 <1227489340.3991.54.camel@yakui_zhao.sh.intel.com>
-	 <200811240221.54716.rjw@sisk.pl>
-Content-Type: multipart/mixed; boundary="=-4y/yINMDpwqlcb5cPKCC"
-Date: Mon, 24 Nov 2008 09:31:20 +0800
-Message-Id: <1227490280.15014.291.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S1751310AbYKXBpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 20:45:09 -0500
+Date: Sun, 23 Nov 2008 17:40:54 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>,
+       John Ogness <jogness@linutronix.de>,
+       Benedikt Spranger <b.spranger@linutronix.de>
+Subject: Re: [PATCH RFC] UIO: Pass information about ioports to userspace
+Message-ID: <20081124014054.GA14143@suse.de>
+References: <20081123121419.GA3087@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123121419.GA3087@local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-4y/yINMDpwqlcb5cPKCC
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Mon, 2008-11-24 at 09:21 +0800, Rafael J. Wysocki wrote:
-> On Monday, 24 of November 2008, Zhao Yakui wrote:
-> > On Mon, 2008-11-24 at 07:37 +0800, Rafael J. Wysocki wrote:
-> > > On Sunday, 23 of November 2008, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > > 
-> > > > With current mainline (2.6.28-rc6-git1 as of today) on Toshiba Portege R500 the
-> > > > status of the AC adapter is not updated when the adapter is unplugged and
-> > > > plugged in.  Evidently, /sys/class/power_supply/ADP1/online always contains the
-> > > > same value.  Interestingly enough, though, if the box is suspended to RAM and
-> > > > resumed, the status of the AC adapter is correctly updated, but the value read
-> > > > at that time remains in /sys/class/power_supply/ADP1/online until the next
-> > > > suspend/resume cycle regardless of what's going on with the AC adapter.
-> > > > 
-> > > > 2.6.27.7 works correctly on this box so the recent EC patches don't seem to
-> > > > cause this regression to happen.
-> > > > 
-> > > > Any other ideas?
-> > Hi, Rafael
-> >     Will you please open a new bug at
-> > http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI and attach the
-> > output of acpidump, dmesg, lspci -vxxx?
-> >     If no ACPI event is reported when AC adapter is unplugged and
-> > plugged, the /sys/class interface can't display the correct AC status.
-> > Now Rui is working on this issue and the patch is already finished. But
-> > it is not sent to Lenb.
+On Sun, Nov 23, 2008 at 01:14:20PM +0100, Hans J. Koch wrote:
+> Devices sometimes have memory where all or parts of it can not be mapped to
+> userspace. But it might still be possible to access this memory from
+> userspace by other means. An example are PCI cards that advertise not only
+> mappable memory but also ioport ranges. On x86 architectures, these can be
+> accessed with ioperm, iopl, inb, outb, and friends. Mike Frysinger (CCed)
+> reported a similar problem on Blackfin arch where it doesn't seem to be easy
+> to mmap non-cached memory but it can still be accessed from userspace.
 > 
-> Can you give me a link to the patch, please?
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: power_supply: update ac status before acquiring it.
-
-Update AC status in sysfs I/F.
-http://bugzilla.kernel.org/show_bug.cgi?id=12035
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/acpi/ac.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/ac.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ac.c
-+++ linux-2.6/drivers/acpi/ac.c
-@@ -87,6 +87,7 @@ struct acpi_ac {
- 	unsigned long long state;
- };
- 
-+static int acpi_ac_get_state(struct acpi_ac *ac);
- #define to_acpi_ac(x) container_of(x, struct acpi_ac, charger);
- 
- #ifdef CONFIG_ACPI_PROCFS_POWER
-@@ -103,15 +104,18 @@ static int get_ac_property(struct power_
- 			   enum power_supply_property psp,
- 			   union power_supply_propval *val)
- {
-+	int result;
- 	struct acpi_ac *ac = to_acpi_ac(psy);
-+
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_ONLINE:
-+		result = acpi_ac_get_state(ac);
- 		val->intval = ac->state;
- 		break;
- 	default:
- 		return -EINVAL;
- 	}
--	return 0;
-+	return result;
- }
- 
- static enum power_supply_property ac_props[] = {
-
->  
-> >     From the problem description it seems that the problem is related
-> > with the AC driver. But from the git-bisect it seems that the problem is
-> > related with the button driver(Fix power button device). 
-> > 
-> >     Any-way, please attach the output of dmesg, acpidump, lspci -vxxx.
+> This patch allows kernel drivers to pass information about such ports to
+> userspace. Similar to the existing mem[] array, it adds a port[] array to
+> struct uio_info. Each port range is described by start, size, and porttype.
 > 
-> Created http://bugzilla.kernel.org/show_bug.cgi?id=12091 with the information
-> attached as requested.
-> 
-I'll take this bug. :)
+> If a driver fills in at least one such port range, the UIO core will simply
+> pass this information to userspace by creating a new directory "portio"
+> underneath /sys/class/uio/uioN/. Similar to the "mem" directory, it will
+> contain a subdirectory (portX) for each port range given.
+
+This is good, but it would really be nice to provide a way for userspace
+to access individual ports without having to have access to all ports in
+the system.  Lots of times we don't want to give root privileges to some
+programs that only need to read and write simple data to a single
+device.
 
 thanks,
-rui
 
---=-4y/yINMDpwqlcb5cPKCC
-Content-Disposition: attachment; filename=patch-12035-power_supply-update-AC-status
-Content-Type: message/rfc822; name=patch-12035-power_supply-update-AC-status
-
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: power_supply: update ac status before acquiring it.
-Date: Mon, 24 Nov 2008 09:31:07 +0800
-Message-Id: <1227490267.15014.290.camel@rzhang-dt>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-Update AC status in sysfs I/F.
-http://bugzilla.kernel.org/show_bug.cgi?id=12035
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/acpi/ac.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/ac.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ac.c
-+++ linux-2.6/drivers/acpi/ac.c
-@@ -87,6 +87,7 @@ struct acpi_ac {
- 	unsigned long long state;
- };
- 
-+static int acpi_ac_get_state(struct acpi_ac *ac);
- #define to_acpi_ac(x) container_of(x, struct acpi_ac, charger);
- 
- #ifdef CONFIG_ACPI_PROCFS_POWER
-@@ -103,15 +104,18 @@ static int get_ac_property(struct power_
- 			   enum power_supply_property psp,
- 			   union power_supply_propval *val)
- {
-+	int result;
- 	struct acpi_ac *ac = to_acpi_ac(psy);
-+
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_ONLINE:
-+		result = acpi_ac_get_state(ac);
- 		val->intval = ac->state;
- 		break;
- 	default:
- 		return -EINVAL;
- 	}
--	return 0;
-+	return result;
- }
- 
- static enum power_supply_property ac_props[] = {
-
---=-4y/yINMDpwqlcb5cPKCC--
-
+greg k-h
