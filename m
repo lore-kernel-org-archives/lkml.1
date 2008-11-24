@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYKXQnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbYKXQnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbYKXQnB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 11:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYKXQms
+	id S1754280AbYKXQnb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYKXQnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 11:42:48 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41246 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbYKXQmr (ORCPT
+	Mon, 24 Nov 2008 11:43:21 -0500
+Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:47191 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753251AbYKXQnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 11:42:47 -0500
-Date: Mon, 24 Nov 2008 16:42:45 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Tejun Heo <teheo@suse.de>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
-       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
-	needed.
-Message-ID: <20081124164245.GD28946@ZenIV.linux.org.uk>
-References: <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org> <20081124133124.GB28946@ZenIV.linux.org.uk> <492AB480.5060207@kernel.org> <492AB98C.7030105@suse.de> <20081124144823.GC28946@ZenIV.linux.org.uk> <492AD169.9000805@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492AD169.9000805@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 24 Nov 2008 11:43:20 -0500
+From: Mike Rapoport <mike@compulab.co.il>
+To: lrg@slimlogic.co.uk
+Cc: eric.miao@marvell.com, linux-kernel@vger.kernel.org,
+       Mike Rapoport <mike@compulab.co.il>
+Subject: [PATCH] regulator: da903x: add '\n' to error messages
+Date: Mon, 24 Nov 2008 18:43:00 +0200
+Message-Id: <1227544980-28694-1-git-send-email-mike@compulab.co.il>
+X-Mailer: git-send-email 1.5.6.4
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 01:08:09AM +0900, Tejun Heo wrote:
 
-> Devices can be killed from userland via sysfs for SCSI or mdadm for
-> md.  It's true that such approach is less convenient for unloading but
-> if it can make usual cases easier, why not?
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+---
+ drivers/regulator/da903x.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-_What_ usual cases?
+diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
+index 773b29c..83101d6 100644
+--- a/drivers/regulator/da903x.c
++++ b/drivers/regulator/da903x.c
+@@ -102,7 +102,7 @@ static int da903x_set_ldo_voltage(struct regulator_dev *rdev,
+ 	uint8_t val, mask;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+-		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
++		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -172,7 +172,7 @@ static int da9030_set_ldo1_15_voltage(struct regulator_dev *rdev,
+ 	int ret;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+-		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
++		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -199,7 +199,7 @@ static int da9030_set_ldo14_voltage(struct regulator_dev *rdev,
+ 	int thresh;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+-		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
++		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -248,7 +248,7 @@ static int da9034_set_dvc_voltage(struct regulator_dev *rdev,
+ 	int ret;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+-		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
++		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -273,7 +273,7 @@ static int da9034_set_ldo12_voltage(struct regulator_dev *rdev,
+ 	uint8_t val, mask;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+-		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
++		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
+ 		return -EINVAL;
+ 	}
+ 
+-- 
+1.5.6.4
 
-> > And the right way to deal with that is to have explicit boundaries for
-> > "opened or in process of being opened"; we almost have them (probe and
-> > final release), so the only point we are missing is on failure exit from
-> > __blkdev_get()...
-> > 
-> > I really think that it's much saner than trying to change the lifetime
-> > rules for gendisk, etc.
-> 
-> Well, I don't know.  It seems like a lot of trouble just to allow
-> "rmmod something" without first killing the devices and as people are
-> now so used to reference counted objects and ->release, not having it
-> on cdev or gendisk is quite a PITA.  (BTW, Greg, can you please drop
-> cdev->release patch for now, it's wrong as it currently stands).
-
-gendisks *ARE* reference counted, damnit.  So are net_device and a lot
-of other things.  And no, it's not true that "struct net_device exists"
-implies "the low-level objects that once might have been related to it
-still exist" either.
-
-> Can you see any problem with caching ->disk_release existence on
-> registration and wrap __module_get/put() around its invocation?  It
-> wouldn't change behavior of any existing drivers and md can use it if
-> it wants.  Doing "mdadm --stop --scan" would be enough to unload the
-> module and md can do whatever forward or back reference it wants to do
-> to work out the weird userland interface.
-
-Other than general ugliness and special-casing where none is really needed?
-Special-casing as "very different life cycle if special method is present"...
-
-If anything, we need to go in opposite direction - give the drivers a way
-to say "my underlying object is gone, STFU and don't bother me with that
-gendisk ever again; free it when you are done with it, but from now on
-any access to it would better fail.  Oh, and I might find a new device
-in place of that any time now, so new open() would better get not fail
-just something in VFS still has a reference to that gendisk".
-
-Which is doable - note that we can unhash block_device, dissociate inodes
-from it and let new open() DTRT.  Earlier opened files will still have
-a reference to address_space of original block_device (which is why we
-have file->f_mapping instead of going through ->f_dentry->d_inode->i_mapping),
-so we are fine.
