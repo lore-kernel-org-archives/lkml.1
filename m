@@ -1,144 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYKXKfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbYKXKjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362AbYKXKfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 05:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYKXKfZ
+	id S1752729AbYKXKjU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 05:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYKXKjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 05:35:25 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:35496 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753158AbYKXKfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 05:35:22 -0500
-Date: Mon, 24 Nov 2008 11:37:55 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mfd: Switch WM8350 revision detection to a feature
-	based model
-Message-ID: <20081124103755.GA3479@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1227113220-17468-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227113220-17468-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 24 Nov 2008 05:39:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34351 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbYKXKjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 05:39:12 -0500
+Date: Mon, 24 Nov 2008 08:39:01 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: "Brian Phelps" <lm317t@gmail.com>, linux-kernel@vger.kernel.org,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Mikael Pettersson" <mikpe@it.uu.se>,
+       "Alexander Shaduri" <ashaduri@gmail.com>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: kernel BUG at mm/slab.c:601
+Message-ID: <20081124083901.4689f301@pedra.chehab.org>
+In-Reply-To: <19f34abd0811211726h143c83f6obdfcb97e71fa595f@mail.gmail.com>
+References: <ea3b75ed0811181524y7cdad2afl85e0281e293922cc@mail.gmail.com>
+	<19f34abd0811191419x3f6981ady7de5bf40f9ae2983@mail.gmail.com>
+	<ea3b75ed0811200901p1bd9e746q5b3757dd6114f3bd@mail.gmail.com>
+	<19f34abd0811211710q65d6200bt3a145971cd1bc911@mail.gmail.com>
+	<19f34abd0811211725s169dc42ao195c61b6dac3e975@mail.gmail.com>
+	<19f34abd0811211726h143c83f6obdfcb97e71fa595f@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On Sat, 22 Nov 2008 02:26:52 +0100
+"Vegard Nossum" <vegard.nossum@gmail.com> wrote:
 
-On Wed, Nov 19, 2008 at 04:46:59PM +0000, Mark Brown wrote:
-> Rather than check for chip revisions in the WM8350 drivers have the core
-> code set flags for relevant differences.
+> [Resend with (I hope) working e-mail address for Mauro]
 > 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/mfd/wm8350-core.c         |   14 ++++++--------
->  drivers/power/wm8350_power.c      |    2 +-
->  include/linux/mfd/wm8350/core.h   |    8 --------
->  include/linux/mfd/wm8350/supply.h |    2 ++
->  4 files changed, 9 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-> index 3f2a68d..84fc90e 100644
-> --- a/drivers/mfd/wm8350-core.c
-> +++ b/drivers/mfd/wm8350-core.c
-> @@ -1238,21 +1238,19 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
->  
->  	if (id1 == 0x6143) {
->  		switch ((id2 & WM8350_CHIP_REV_MASK) >> 12) {
-> -		case WM8350_REV_E:
-> +		case 0x4:
-Dont you prefer to use the WM8350_REV_* values in your code rather than some
-undocumented constants like that ?
-I understand that reading the code below will make those constants obvious,
-but still...
+> On Sat, Nov 22, 2008 at 2:25 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > On Sat, Nov 22, 2008 at 2:10 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> >>> [  527.562373]  ffffffff8043b157 0000000000200200 ffffffffa02810d4
+> >>> ffff88001e13c600
+> >>
+> >> LIST_POISON2 on the stack:
+> >>
+> >> include/linux/poison.h:#define LIST_POISON2  ((void *) 0x00200200)
+> >
+> > So looking at bttv source code, I wonder what the codes like these are
+> > trying to do:
+> >
+> >                        if (set->top->vb.queue.next)
+> >                                list_del(&set->top->vb.queue);
+> >
+> > Code is ancient, I'll ask Mauro.
+
+Your patch seemed correct. I'll test it later. Better alto to wait for Brian
+updates, since I never saw this bug on my environment.
 
 Cheers,
-Samuel.
-
-
-
->  			dev_info(wm8350->dev, "Found Rev E device\n");
-> -			wm8350->rev = WM8350_REV_E;
->  			break;
-> -		case WM8350_REV_F:
-> +		case 0x5:
->  			dev_info(wm8350->dev, "Found Rev F device\n");
-> -			wm8350->rev = WM8350_REV_F;
->  			break;
-> -		case WM8350_REV_G:
-> +		case 0x6:
->  			dev_info(wm8350->dev, "Found Rev G device\n");
-> -			wm8350->rev = WM8350_REV_G;
-> +			wm8350->power.rev_g_coeff = 1;
->  			break;
-> -		case WM8350_REV_H:
-> +		case 0x7:
->  			dev_info(wm8350->dev, "Found Rev H device\n");
-> -			wm8350->rev = WM8350_REV_H;
-> +			wm8350->power.rev_g_coeff = 1;
->  			break;
->  		default:
->  			/* For safety we refuse to run on unknown hardware */
-> diff --git a/drivers/power/wm8350_power.c b/drivers/power/wm8350_power.c
-> index 9c0a847..74e7593 100644
-> --- a/drivers/power/wm8350_power.c
-> +++ b/drivers/power/wm8350_power.c
-> @@ -44,7 +44,7 @@ static int wm8350_read_usb_uvolts(struct wm8350 *wm8350)
->  
->  static inline int wm8350_charge_time_min(struct wm8350 *wm8350, int min)
->  {
-> -	if (wm8350->rev < WM8350_REV_G)
-> +	if (!wm8350->power.rev_g_coeff)
->  		return (((min - 30) / 15) & 0xf) << 8;
->  	else
->  		return (((min - 30) / 30) & 0xf) << 8;
-> diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-> index d2614df..8563408 100644
-> --- a/include/linux/mfd/wm8350/core.h
-> +++ b/include/linux/mfd/wm8350/core.h
-> @@ -558,12 +558,6 @@
->  #define WM8350_IRQ_WKUP_ONKEY			48
->  #define WM8350_IRQ_WKUP_GP_WAKEUP		49
->  
-> -/* wm8350 chip revisions */
-> -#define WM8350_REV_E				0x4
-> -#define WM8350_REV_F				0x5
-> -#define WM8350_REV_G				0x6
-> -#define WM8350_REV_H				0x7
-> -
->  #define WM8350_NUM_IRQ				63
->  
->  struct wm8350_reg_access {
-> @@ -585,8 +579,6 @@ struct wm8350_irq {
->  };
->  
->  struct wm8350 {
-> -	int rev;		/* chip revision */
-> -
->  	struct device *dev;
->  
->  	/* device IO */
-> diff --git a/include/linux/mfd/wm8350/supply.h b/include/linux/mfd/wm8350/supply.h
-> index 7972151..2b94793 100644
-> --- a/include/linux/mfd/wm8350/supply.h
-> +++ b/include/linux/mfd/wm8350/supply.h
-> @@ -127,6 +127,8 @@ struct wm8350_power {
->  	struct power_supply usb;
->  	struct power_supply ac;
->  	struct wm8350_charger_policy *policy;
-> +
-> +	int rev_g_coeff;
->  };
->  
->  #endif
-> -- 
-> 1.5.6.5
-> 
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Mauro
