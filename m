@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYKXR4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYKXSAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbYKXR4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 12:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYKXR4d
+	id S1754104AbYKXSAs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 13:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYKXSAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 12:56:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61689 "EHLO
+	Mon, 24 Nov 2008 13:00:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56501 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbYKXR4c (ORCPT
+	with ESMTP id S1750935AbYKXSAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 12:56:32 -0500
-Date: Mon, 24 Nov 2008 12:56:30 -0500 (EST)
+	Mon, 24 Nov 2008 13:00:39 -0500
+Date: Mon, 24 Nov 2008 13:00:36 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Paul Mackerras <paulus@samba.org>
@@ -19,11 +19,11 @@ cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
        Milton Miller <miltonm@bga.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/5] powerpc/ppc64: ftrace, handle module trampolines
- for dyn ftrace
-In-Reply-To: <18730.4326.745599.500581@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811241232570.32561@gandalf.stny.rr.com>
-References: <20081120190948.057007623@goodmis.org> <20081120191149.759009300@goodmis.org> <18730.4326.745599.500581@drongo.ozlabs.ibm.com>
+Subject: Re: [PATCH 2/5] powerpc: ftrace, convert to new dynamic ftrace arch
+ API
+In-Reply-To: <18730.1723.708467.812600@drongo.ozlabs.ibm.com>
+Message-ID: <alpine.DEB.1.10.0811241256370.32561@gandalf.stny.rr.com>
+References: <20081120190948.057007623@goodmis.org> <20081120191149.285359258@goodmis.org> <18730.1723.708467.812600@drongo.ozlabs.ibm.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -36,85 +36,55 @@ On Mon, 24 Nov 2008, Paul Mackerras wrote:
 
 > Steven Rostedt writes:
 > 
-> > +#ifdef CONFIG_PPC64
-> > +static int
-> > +__ftrace_make_nop(struct module *mod,
-> > +		  struct dyn_ftrace *rec, unsigned long addr)
+> > Thanks to Paul Mackennas for pointing out the mistakes of my original
+> 
+> Mackerras
+
+Heh, I have two reasons for that typo.
+
+ 1) I reference Paul McKenney a lot, and my fingers are programmed.
+ 2) I type with the dvorak layout, and the 'r' is just above the 'n'.
+    qwerty 'o' == dvorak 'r'
+    qwerty 'l' == dvorak 'n'
+
+;-)
+
+> 
+> > +static int test_24bit_addr(unsigned long ip, unsigned long addr)
 > > +{
-> > +	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
-> > +	unsigned int *op = (unsigned *)&replaced;
-> 
-> This makes me a little nervous, since it looks to me to be breaking
-> aliasing rules.  I know we use -fno-strict-aliasing, but still it
-> would be better to avoid doing these casts if possible - and we should
-> be able to avoid most of them by using unsigned int for instructions
-> consistently, instead of a mix of unsigned int and unsigned char.
-
-OK, I'll update this. We did a cleanup of all archs to use a 
-char[MCOUNT_INSN_SIZE] array, and I've just been keeping it.
-
-> 
-> > +	DEBUGP("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
+> > +	long diff;
 > > +
-> > +	/* Find where the trampoline jumps to */
-> > +	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-> > +		printk(KERN_ERR "Failed to read %lx\n", tramp);
-> > +		return -EFAULT;
-> > +	}
+> > +	/*
+> > +	 * Can we get to addr from ip in 24 bits?
+> > +	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
+> > +	 */
+> > +	diff = addr - ip;
 > > +
-> > +	DEBUGP(" %08x %08x",
-> > +	       (unsigned)(*ptr >> 32),
-> > +	       (unsigned)*ptr);
-> > +
-> > +	offset = (unsigned)jmp[2] << 24 |
-> > +		(unsigned)jmp[3] << 16 |
-> > +		(unsigned)jmp[6] << 8 |
-> > +		(unsigned)jmp[7];
+> > +	/*
+> > +	 * Return true if diff is less than 1 << 25
+> > +	 *  and greater than -1 << 26.
+> > +	 */
+> > +	return (diff < (1 << 25)) && (diff > (-1 << 26));
 > 
-> We don't seem to be checking that these instructions look like the
-> start of a trampoline created by module_64.c, which makes me a little
-> nervous.
+> I think this still isn't right, and the comment is one of those ones
+> that is only useful to people who can't read C, as it's just a
+> transliteration of the code.
 
-I'll add this check.
+Argh!!! That must be a misfold.  I fixed that code.  The final version 
+ad the same shift for both.
 
 > 
-> If the kernel text goes over 32MB, the linker will insert trampolines
-> automatically.  Those trampolines either look like a direct branch to
-> the target, or else they look like this:
+> The comment should say something like "Return true if diff can be
+> represented as a 26-bit twos-complement binary number" and the second
+> part of the test should be (diff >= (-1 << 25)).  However, since you
+> define a test_offset() function in patch 4/5 that does the same test
+> but using only one comparison instead of two, why don't you just say:
 > 
-> 	addis	r12,r2,xxxx
-> 	ld	r11,yyyy(r12)
-> 	mtctr	r11
-> 	bctr
+> 	return !test_offset(diff);
 > 
-> where xxxx/yyyy gives the offset from the kernel TOC to the procedure
-> descriptor for the target.
-> 
-> Now, a kernel with > 32MB of text probably won't work for other
-> reasons at the moment (like the linker putting trampolines before the
-> interrupt vectors), so in a sense it doesn't matter.  It also doesn't
-> matter since we only get here for calls in modules (something that
-> could stand to be mentioned in a comment at the top of the function).
-> Nevertheless, I think it would be worthwhile to check that the first
-> two instructions look like the addis and addi that we are expecting.
+> (having first moved test_offset() before test_24bit_addr)?
 
-I'll add the "module only" comment. If the linker ever decided to add
-more trampolines to the core kernel, then ftrace would detect that and
-print a warning and disable itself.
-
-> 
-> > +	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-> > +		return -EPERM;
-> > +
-> > +	return 0;
-> > +}
-> 
-> We don't seem to do anything to ensure I-cache consistency.  I think
-> we probably need a flush_icache_range call here.  Similarly in
-> __ftrace_make_call.
-
-Crap! you are right. I forgot to do that. Will fix.
-
-Thanks,
+OK, will fix. Thanks. Hmm, maybe I ment to do that, and miss the patch :-/
 
 -- Steve
+
