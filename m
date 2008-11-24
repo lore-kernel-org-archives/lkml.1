@@ -1,303 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbYKXTOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYKXTPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbYKXTOI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYKXTN4
+	id S1754029AbYKXTPi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYKXTP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:13:56 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:18452 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbYKXTNz (ORCPT
+	Mon, 24 Nov 2008 14:15:27 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:59453 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752191AbYKXTPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:13:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=CVM65ZIyMQAhrFtkKKW/yavCs+xOp5Q25E5ZvZslsTrkugJcugOnm9Lux5cF+dJxSb
-         Hcl1zDQADy5roPi54UUr6dPy84UeQSH5So0Vzkfa9ZRzDbk2wDr4JX3EfLVGU/ERze81
-         n1TQpkDKt0GcLGDHyLwm3b86qIW6ghnQ12ZmY=
-Subject: [PATCH-mm] kernel: add common endian load/store API
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Mon, 24 Nov 2008 14:15:25 -0500
+Subject: Re: next-20081119: general protection fault:
+	get_next_timer_interrupt()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0811241816120.3301@localhost.localdomain>
+References: <a4423d670811190714k13721ae8s125e63d520892440@mail.gmail.com>
+	 <alpine.LFD.2.00.0811191308030.3119@localhost.localdomain>
+	 <a4423d670811210250t6b75645evd9646ffb07745867@mail.gmail.com>
+	 <alpine.LFD.2.00.0811241816120.3301@localhost.localdomain>
 Content-Type: text/plain
-Date: Mon, 24 Nov 2008 11:12:51 -0800
-Message-Id: <1227553971.5511.15.camel@brick>
+Date: Mon, 24 Nov 2008 14:15:17 -0500
+Message-Id: <1227554117.25499.46.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the following API for the 6 endian types in the kernel
-__le16,__le32, __le64, __be16, __be32, __be64:
+On Mon, 2008-11-24 at 18:43 +0100, Thomas Gleixner wrote:
+> > scsi0 : LSI SAS based MegaRAID driver
+> > Driver 'sd' needs updating - please use bus_type methods
+> > scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HE160HJ  0-24 PQ: 0 ANSI: 5
+> > ------------[ cut here ]------------
+> > WARNING: at lib/debugobjects.c:215 debug_print_object+0x4f/0x57()
+> > ODEBUG: free active object type: timer_list
+> 
+> That's the cause for your boot crash. The scsi/blk code is freeing a
+> page which contains an active timer, so the timer code references gone
+> memory. You triggered it because DEBUG_PAGEALLOC unmaps the page when
+> it's freed.
+> 
+> James, or other scsi experts please.
+> 
+> > Modules linked in:
+> > Pid: 580, comm: scsi_scan_0 Tainted: G        W  2.6.28-rc5-next-20081119 #9
+> > Call Trace:
+> >  [<ffffffff80236b28>] warn_slowpath+0xae/0xd5
+> >  [<ffffffff8037f9e8>] ? debug_check_no_obj_freed+0x75/0x1c8
+> >  [<ffffffff8037f8b1>] debug_print_object+0x4f/0x57
+> >  [<ffffffff8037fa0f>] debug_check_no_obj_freed+0x9c/0x1c8
+> >  [<ffffffff8029c7b2>] kmem_cache_free+0x64/0xc0
+> >  [<ffffffff8036a6e0>] ? blk_release_queue+0x61/0x66
+> >  [<ffffffff8036a6e0>] blk_release_queue+0x61/0x66
+> >  [<ffffffff803760f2>] kobject_release+0x52/0x68
+> >  [<ffffffff803760a0>] ? kobject_release+0x0/0x68
+> >  [<ffffffff80376ec5>] kref_put+0x43/0x4f
+> >  [<ffffffff80375ffa>] kobject_put+0x47/0x4b
+> >  [<ffffffff80368c53>] blk_cleanup_queue+0x57/0x5c
+> >  [<ffffffff803f8729>] scsi_free_queue+0x9/0xb
+> >  [<ffffffff803fd3c7>] scsi_device_dev_release_usercontext+0xdc/0x127
+> >  [<ffffffff803fd2eb>] ? scsi_device_dev_release_usercontext+0x0/0x127
+> >  [<ffffffff802472a8>] execute_in_process_context+0x2a/0x70
+> >  [<ffffffff803fd2e9>] scsi_device_dev_release+0x17/0x19
+> >  [<ffffffff803e03e0>] device_release+0x43/0x68
+> >  [<ffffffff803760f2>] kobject_release+0x52/0x68
+> >  [<ffffffff803760a0>] ? kobject_release+0x0/0x68
+> >  [<ffffffff80376ec5>] kref_put+0x43/0x4f
+> >  [<ffffffff80375ffa>] kobject_put+0x47/0x4b
+> >  [<ffffffff803dfd36>] put_device+0x15/0x17
+> >  [<ffffffff803fa772>] scsi_destroy_sdev+0x48/0x4c
+> >  [<ffffffff803fba05>] scsi_probe_and_add_lun+0xb5d/0xb81
+> >  [<ffffffff803faaba>] ? scsi_alloc_target+0x22b/0x267
+> >  [<ffffffff803fbcb0>] __scsi_scan_target+0x9d/0x598
+> >  [<ffffffff8025767c>] ? trace_hardirqs_on_caller+0x1f/0x153
+> >  [<ffffffff804e39a9>] ? __mutex_lock_common+0x371/0x3be
+> >  [<ffffffff803fc2d9>] ? scsi_scan_host_selected+0xb6/0x133
+> >  [<ffffffff8025767c>] ? trace_hardirqs_on_caller+0x1f/0x153
+> >  [<ffffffff803fc2d9>] ? scsi_scan_host_selected+0xb6/0x133
+> >  [<ffffffff803fc1fd>] scsi_scan_channel+0x52/0x78
+> >  [<ffffffff803fc314>] scsi_scan_host_selected+0xf1/0x133
+> >  [<ffffffff803fc3c6>] ? do_scan_async+0x0/0x127
+> >  [<ffffffff803fc3c1>] do_scsi_scan_host+0x6b/0x70
+> >  [<ffffffff803fc3c6>] ? do_scan_async+0x0/0x127
+> >  [<ffffffff803fc3dd>] do_scan_async+0x17/0x127
+> >  [<ffffffff803fc3c6>] ? do_scan_async+0x0/0x127
+> >  [<ffffffff80249d5d>] kthread+0x49/0x76
+> >  [<ffffffff8020c899>] child_rip+0xa/0x11
+> >  [<ffffffff8020bd88>] ? restore_args+0x0/0x30
+> >  [<ffffffff80249d14>] ? kthread+0x0/0x76
+> >  [<ffffffff8020c88f>] ? child_rip+0x0/0x11
+> > ---[ end trace 4eaa2a86a8e2da22 ]---
 
-u16 load_le16(const __le16 *p)
-u16 load_le16_noalign(const __le16 *p)
+Well, not sure.  Most likely candidate is the new block timer code.
+What seems to be happening is that the queue is being released with
+either an outstanding request (refcounting problem) or ticking timer
+with no work (block timer problem).  The way scanning works is that we
+create a request queue for each device we probe and then delete it again
+if nothing appears after the bus settle time.   The argument against
+this is that it should show up on every scanned bus.  However, these are
+getting rarer; I was just about to write that I hadn't seen it when I
+remembered that all my SCSI testing systems are currently running
+hotplug reporting busses (i.e. don't do scanning).  However,
+fortunately, I've also booted voyager recently which does use parallel
+SCSI and doesn't see this either, so it could also be megaraid_sas
+specific.
 
-void store_le16(__le16 *p, u16 val)
-void store_le16_noalign(__le16 *p, u16 val)
+Could you turn on SCSI logging so we can see the sequences.  Probably
+since this is boot time, just enable all logging:
 
-get/put_unaligned are being replaced because get/put in the kernel
-usually implies some kind of reference is being taken/released, which
-is not the case here.  They work with void * pointers which defeats
-sparse checking. Also, put_unaligned takes its arguments in the
-opposite order from what is expected.  The new names are chosen
-to allow the APIs to live in parallel without breaking compilation.
-The get/put_unaligned API can be removed once all users are converted.
+echo 0xffffffff > /sys/module/scsi_mod/parameters/scsi_logging_level
 
-load_le16 is a synonym for the existing le16_to_cpup and is added to
-be symmetric with the load_le16_noalign API.  On arches where unaligned
-access is OK, the unaligned calls are replaced with aligned calls.  This
-name is also shorter than le16_to_cpup which will hopefully encourage its
-use as it is generally faster than dereferencing the pointer and using
-le16_to_cpu.  The only case where this does not hold is when taking the
-address of a stack variable, as the work to get the stack variable address
-generally outweighs just using le16_to_cpu directly.
+(kernel must be compiled with CONFIG_SCSI_LOGGING=y
 
-store_le16 is a new API and is added to be symmetric with the unaligned
-functions.  It is implemented as a macro to allow compile-time byteswapping
-when the value is a constant.  This will also allow use in many places
-currently that are of the form:
-
-*(__le16 *)ptr = cpu_to_le16(foo);
-
-In addition, some drivers/filesystems/arches already provide this API
-privately, which will allow them to be consolidated into this common
-code.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/asm-generic/unaligned.h |  100 +++++++++++++++++++++++++--------------
- include/linux/byteorder.h       |   14 +++++
- 2 files changed, 78 insertions(+), 36 deletions(-)
-
-diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index 55d1126..d2f3998 100644
---- a/include/asm-generic/unaligned.h
-+++ b/include/asm-generic/unaligned.h
-@@ -6,6 +6,20 @@
- 
- #ifdef _UNALIGNED_ACCESS_OK
- 
-+# define load_le16_noalign load_le16
-+# define load_le32_noalign load_le32
-+# define load_le64_noalign load_le64
-+# define load_be16_noalign load_be16
-+# define load_be32_noalign load_be32
-+# define load_be64_noalign load_be64
-+
-+# define store_le16_noalign store_le16
-+# define store_le32_noalign store_le32
-+# define store_le64_noalign store_le64
-+# define store_be16_noalign store_be16
-+# define store_be32_noalign store_be32
-+# define store_be64_noalign store_be64
-+
- static inline u16 get_unaligned_le16(const void *p)
- {
- 	return le16_to_cpup(p);
-@@ -102,60 +116,67 @@ static inline u64 __get_be64_noalign(const u8 *p)
- 	return ((u64)__get_be32_noalign(p) << 32) | __get_be32_noalign(p + 4);
- }
- 
--static inline u16 get_unaligned_le16(const void *p)
-+static inline u16 load_le16_noalign(const __le16 *p)
- {
- #ifdef __LITTLE_ENDIAN
--	return ((const struct __una_u16 *)p)->x;
-+	return ((__force const struct __una_u16 *)p)->x;
- #else
--	return __get_le16_noalign(p);
-+	return __get_le16_noalign((__force const u8 *)p);
- #endif
- }
- 
--static inline u32 get_unaligned_le32(const void *p)
-+static inline u32 load_le32_noalign(const __le32 *p)
- {
- #ifdef __LITTLE_ENDIAN
--	return ((const struct __una_u32 *)p)->x;
-+	return ((__force const struct __una_u32 *)p)->x;
- #else
--	return __get_le32_noalign(p);
-+	return __get_le32_noalign((__force const u8 *)p);
- #endif
- }
- 
--static inline u64 get_unaligned_le64(const void *p)
-+static inline u64 load_le64_noalign(const __le64 *p)
- {
- #ifdef __LITTLE_ENDIAN
--	return ((const struct __una_u64 *)p)->x;
-+	return ((__force const struct __una_u64 *)p)->x;
- #else
--	return __get_le64_noalign(p);
-+	return __get_le64_noalign((__force const u8 *)p);
- #endif
- }
- 
--static inline u16 get_unaligned_be16(const void *p)
-+static inline u16 load_be16_noalign(const __be16 *p)
- {
- #ifdef __BIG_ENDIAN
--	return ((const struct __una_u16 *)p)->x;
-+	return ((__force const struct __una_u16 *)p)->x;
- #else
--	return __get_be16_noalign(p);
-+	return __get_be16_noalign((__force const u8 *)p);
- #endif
- }
- 
--static inline u32 get_unaligned_be32(const void *p)
-+static inline u32 load_be32_noalign(const __be32 *p)
- {
- #ifdef __BIG_ENDIAN
--	return ((const struct __una_u32 *)p)->x;
-+	return ((__force const struct __una_u32 *)p)->x;
- #else
--	return __get_be32_noalign(p);
-+	return __get_be32_noalign((__force const u8 *)p);
- #endif
- }
- 
--static inline u64 get_unaligned_be64(const void *p)
-+static inline u64 load_be64_noalign(const __be64 *p)
- {
- #ifdef __BIG_ENDIAN
--	return ((const struct __una_u64 *)p)->x;
-+	return ((__force const struct __una_u64 *)p)->x;
- #else
--	return __get_be64_noalign(p);
-+	return __get_be64_noalign((__force const u8 *)p);
- #endif
- }
- 
-+#define get_unaligned_le16(p) load_le16_noalign((void *)(p))
-+#define get_unaligned_le32(p) load_le32_noalign((void *)(p))
-+#define get_unaligned_le64(p) load_le64_noalign((void *)(p))
-+#define get_unaligned_be16(p) load_be16_noalign((void *)(p))
-+#define get_unaligned_be32(p) load_be32_noalign((void *)(p))
-+#define get_unaligned_be64(p) load_be64_noalign((void *)(p))
-+
- static inline void __put_le16_noalign(u8 *p, u16 val)
- {
- 	*p++ = val;
-@@ -192,60 +213,67 @@ static inline void __put_be64_noalign(u8 *p, u64 val)
- 	__put_be32_noalign(p + 4, val);
- }
- 
--static inline void put_unaligned_le16(u16 val, void *p)
-+static inline void store_le16_noalign(__le16 *p, u16 val)
- {
- #ifdef __LITTLE_ENDIAN
--	((struct __una_u16 *)p)->x = val;
-+	((__force struct __una_u16 *)p)->x = val;
- #else
--	__put_le16_noalign(p, val);
-+	__put_le16_noalign((__force u8 *)p, val);
- #endif
- }
- 
--static inline void put_unaligned_le32(u32 val, void *p)
-+static inline void store_le32_noalign(__le32 *p, u32 val)
- {
- #ifdef __LITTLE_ENDIAN
--	((struct __una_u32 *)p)->x = val;
-+	((__force struct __una_u32 *)p)->x = val;
- #else
--	__put_le32_noalign(p, val);
-+	__put_le32_noalign((__force u8 *)p, val);
- #endif
- }
- 
--static inline void put_unaligned_le64(u64 val, void *p)
-+static inline void store_le64_noalign(__le64 *p, u64 val)
- {
- #ifdef __LITTLE_ENDIAN
--	((struct __una_u64 *)p)->x = val;
-+	((__force struct __una_u64 *)p)->x = val;
- #else
--	__put_le64_noalign(p, val);
-+	__put_le64_noalign((__force u8 *)p, val);
- #endif
- }
- 
--static inline void put_unaligned_be16(u16 val, void *p)
-+static inline void store_be16_noalign(__be16 *p, u16 val)
- {
- #ifdef __BIG_ENDIAN
--	((struct __una_u16 *)p)->x = val;
-+	((__force struct __una_u16 *)p)->x = val;
- #else
--	__put_be16_noalign(p, val);
-+	__put_be16_noalign((__force u8 *)p, val);
- #endif
- }
- 
--static inline void put_unaligned_be32(u32 val, void *p)
-+static inline void store_be32_noalign(__be32 *p, u32 val)
- {
- #ifdef __BIG_ENDIAN
--	((struct __una_u32 *)p)->x = val;
-+	((__force struct __una_u32 *)p)->x = val;
- #else
--	__put_be32_noalign(p, val);
-+	__put_be32_noalign((__force u8 *)p, val);
- #endif
- }
- 
--static inline void put_unaligned_be64(u64 val, void *p)
-+static inline void store_be64_noalign(__be64 *p, u64 val)
- {
- #ifdef __BIG_ENDIAN
--	((struct __una_u64 *)p)->x = val;
-+	((__force struct __una_u64 *)p)->x = val;
- #else
--	__put_be64_noalign(p, val);
-+	__put_be64_noalign((__force u8 *)p, val);
- #endif
- }
- 
-+#define put_unaligned_le16(val, p) store_le16_noalign((void *)(p), (val))
-+#define put_unaligned_le32(val, p) store_le32_noalign((void *)(p), (val))
-+#define put_unaligned_le64(val, p) store_le64_noalign((void *)(p), (val))
-+#define put_unaligned_be16(val, p) store_be16_noalign((void *)(p), (val))
-+#define put_unaligned_be32(val, p) store_be32_noalign((void *)(p), (val))
-+#define put_unaligned_be64(val, p) store_be64_noalign((void *)(p), (val))
-+
- #endif /* _UNALIGNED_ACCESS_OK */
- 
- /*
-diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
-index 29f002d..87a56e5 100644
---- a/include/linux/byteorder.h
-+++ b/include/linux/byteorder.h
-@@ -292,6 +292,20 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
- # define cpu_to_be32 __cpu_to_be32
- # define cpu_to_be64 __cpu_to_be64
- 
-+# define load_le16 __le16_to_cpup
-+# define load_le32 __le32_to_cpup
-+# define load_le64 __le64_to_cpup
-+# define load_be16 __be16_to_cpup
-+# define load_be32 __be32_to_cpup
-+# define load_be64 __be64_to_cpup
-+
-+# define store_le16(p, val) (*(__le16 *)(p) = cpu_to_le16(val))
-+# define store_le32(p, val) (*(__le32 *)(p) = cpu_to_le32(val))
-+# define store_le64(p, val) (*(__le64 *)(p) = cpu_to_le64(val))
-+# define store_be16(p, val) (*(__be16 *)(p) = cpu_to_be16(val))
-+# define store_be32(p, val) (*(__be32 *)(p) = cpu_to_be32(val))
-+# define store_be64(p, val) (*(__be64 *)(p) = cpu_to_be64(val))
-+
- # define le16_to_cpup __le16_to_cpup
- # define le32_to_cpup __le32_to_cpup
- # define le64_to_cpup __le64_to_cpup
--- 
-1.6.0.4.1013.gc6a01
-
+James
 
 
