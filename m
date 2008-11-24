@@ -1,86 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbYKXMRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYKXMTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbYKXMRR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 07:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYKXMRE
+	id S1752919AbYKXMTQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 07:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYKXMTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 07:17:04 -0500
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:35333 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751939AbYKXMRD (ORCPT
+	Mon, 24 Nov 2008 07:19:03 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:31062 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbYKXMTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 07:17:03 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAAAnKklMROB9/2dsb2JhbACBbYEwzHyCfA
-Date: Mon, 24 Nov 2008 07:16:59 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [ltt-dev] [RFC PATCH] Poll : add poll_wait_set_exclusive
-	(fixing thundering herd problem in LTTng)
-Message-ID: <20081124121659.GA18987@Krystal>
-References: <20081124203932.26BE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081124115134.GA17972@Krystal> <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
+	Mon, 24 Nov 2008 07:19:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=WbfH8DTdYOXkPP+IRDQfZab2LVk5AYSZMa+G1YY/vDAprPRgXzAuqpO1eYm5Pgt6rQ
+         jAgFnPtQAinqYITDv5PWfJFb8vYcTC9CrznFBStLLwi8U9FbEILAeQbLFKg2CCTB+91j
+         n8HSzTPhtq0hQthyaxhABrY5qT9mE3j7rc7yU=
+Date: Mon, 24 Nov 2008 13:20:13 +0100
+To: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH -tip] kmemcheck: fix dynamic enable/disable
+Message-ID: <20081124122013.GA24810@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 07:16:35 up 7 days, 12:57,  4 users,  load average: 0.69, 0.67,
-	0.64
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> > > I fully agreed this feature is needed.
-> > > Actually, I've made similar patch at one years ago.
-> > > 
-> > > http://marc.info/?l=linux-kernel&m=120257050719087&w=2
-> > > 
-> > > 
-> > > but, I have one question.
-> > > My version have epoll support, but yours donesn't have.
-> > > Is it intensionally?
-> > > 
-> > > this is just dumb question, it doesn't mean any objection.
-> > 
-> > Hrm, actually, your patch seems cleaner than mine, but it adds a branch
-> > in the standard hotpath, which mine does not do (but I am not sure it is
-> > such an important optimization...). 
-> 
-> Why do you think poll_wait() is hotpath?
-> I think sysm_poll() isn't hotpath because it often cause task sleeping.
-> 
-> 
-> > Is there any reason why your patch
-> > did not get merged ?
-> 
-> my patch was developed for a part of mem_notify patch series.
-> but the mem_notify was naked by akpm.
-> therefore it lost merging motivation ;-)
-> 
-> Ingo, I'll rebase and post my patch for -tip tommorow.
-> Could you please review it?
-> 
-> 
-> > The only reason I did not make a epoll version is simply because LTTng
-> > currently does not support it. :)
-> 
-> thanks.
-> I understand your original intension.
-> 
-
-Great, please CC me on this one so I can integrate it to the LTTng tree.
-
-Mathieu
+(Ingo: Will send pull request for this later :-))
 
 
+>From 6f505f59011e565c2dbb7a220702feb0447cc854 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Mon, 24 Nov 2008 11:52:05 +0100
+Subject: [PATCH] kmemcheck: fix dynamic enable/disable
+
+On Fri, Oct 10, 2008 at 1:40 PM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> I received a lot of errors after manually enabling kmemcheck
+> in /proc (it had been turned off due to oneshot mode). It
+> might be a good idea to put a warning that errrors found after
+> enabling it at any time other than boot might be spurious.
+
+Fixed. This was the problem: Instructions with multiple address
+operands could look up the shadow of an address that had
+previously been un-hidden. After handling the memory access, the
+page would get hidden again. The fix is to verify that the page
+is present before we return a shadow pointer.
+
+Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/mm/kmemcheck/kmemcheck.c |   10 ++++++++++
+ arch/x86/mm/kmemcheck/shadow.c    |    2 ++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
+index 056b4f1..12a4bbd 100644
+--- a/arch/x86/mm/kmemcheck/kmemcheck.c
++++ b/arch/x86/mm/kmemcheck/kmemcheck.c
+@@ -707,6 +707,16 @@ bool kmemcheck_trap(struct pt_regs *regs)
+ 	}
+ 
+ 	/*
++	 * At this point, we know that the trap was kmemcheck's. However, if
++	 * kmemcheck was disabled, we need to return immediately (and stop
++	 * emulating the REP instruction).
++	 */
++	if (!kmemcheck_enabled) {
++		kmemcheck_hide(regs);
++		return true;
++	}
++
++	/*
+ 	 * We're emulating a REP MOVS/STOS instruction. Are we done yet?
+ 	 * Of course, 64-bit needs to handle CX/ECX/RCX differently...
+ 	 */
+diff --git a/arch/x86/mm/kmemcheck/shadow.c b/arch/x86/mm/kmemcheck/shadow.c
+index 196dddc..62a0f63 100644
+--- a/arch/x86/mm/kmemcheck/shadow.c
++++ b/arch/x86/mm/kmemcheck/shadow.c
+@@ -27,6 +27,8 @@ void *kmemcheck_shadow_lookup(unsigned long address)
+ 	pte = kmemcheck_pte_lookup(address);
+ 	if (!pte)
+ 		return NULL;
++	if (pte_present(*pte))
++		return NULL;
+ 
+ 	page = virt_to_page(address);
+ 	if (!page->shadow)
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.5.6.5
+
