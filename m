@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbYKXK3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYKXKdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752592AbYKXK3j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 05:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYKXK3a
+	id S1752627AbYKXKdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 05:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYKXKdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 05:29:30 -0500
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:4973 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbYKXK33 (ORCPT
+	Mon, 24 Nov 2008 05:33:11 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:25973 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750806AbYKXKdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 05:29:29 -0500
-Date: Mon, 24 Nov 2008 11:26:00 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Glauber Costa <gcosta@redhat.com>,
-       Matt Mackall <mpm@selenic.com>, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: KPROBE_ENTRY should be paired wth KPROBE_END
-Message-ID: <20081124102600.GA8335@mailshack.com>
-References: <20081120150412.GC13550@elte.hu> <20081120152601.GA3953@mailshack.com> <20081120153954.GA22511@elte.hu> <20081121154155.GA12999@mailshack.com> <20081121154318.GA13014@mailshack.com> <20081121154428.GB13014@mailshack.com> <20081121160629.GA24839@elte.hu> <20081123090828.GA31490@mailshack.com> <20081123091532.GA31515@mailshack.com> <492A7F39.76E4.0078.0@novell.com>
+	Mon, 24 Nov 2008 05:33:10 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Jim Radford <radford@galvanix.net>
+In-Reply-To: <20081122231631.GA6456@uranus.ravnborg.org>
+References: <20081122231631.GA6456@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Mon, 24 Nov 2008 10:31:08 +0000
+Message-Id: <1227522668.9425.21.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492A7F39.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Mon, 24 Nov 2008 11:28:58 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.35; VDF: 7.1.0.126; host: AntiVir3)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.200.22.2
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [RFC PATCH] kbuild: move tags support to a shell script
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=1JJopRNZEXkA:10 a=i2aGPtDiL5YA:10 a=pC_Hrc7NWn7NT4Jph7QA:9 a=9iW_30EiwJn4qZHaNF8A:7 a=GZvoSkQXEQmFG_p5Qe4xizR1bk8A:4 a=LY0hPdMaydYA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 09:17:29AM +0000, Jan Beulich wrote:
-> >>> Alexander van Heukelum <heukelum@mailshack.com> 23.11.08 10:15 >>>
-> >@@ -1282,7 +1282,7 @@ gs_change:
-> > 	CFI_ADJUST_CFA_OFFSET -8
-> >         ret
-> > 	CFI_ENDPROC
-> >-ENDPROC(native_load_gs_index)
-> >+END(native_load_gs_index)
-> > 
-> >         .section __ex_table,"a"
-> >         .align 8
+On Sun, 2008-11-23 at 00:16 +0100, Sam Ravnborg wrote:
+> As no-one else wanted to do so - I now moved the tags support
+> to a shell script of its own.
+> The usage is the same: make {tags,TAGS,cscope}
 > 
-> I disagree to this and similar changes in this patch: Why do we need to
-> get rid of the ENDPROC() here? It's a procedure that's being ended, and
-> using ENDPROC() is the only (existing) way to mark something as a
-> procedure in assembly code.
+> The ALLSOURCE_ARCHS suppport was lost in the transition - is it actually used by anyone?
 
-Hallo Jan Beulich,
+I'm the one who actually added it way back in
+a0674e88d9c150e016a69e78e735f48772314c53 and to be honest I don't use it
+anymore since I've changed jobs and only really do x86 now...
 
-You are right. ENDPROC(name) adds ".type name, @function;" as compared
-to END(name). So I agree that using ENDPROC is in fact better.
+I can't say if anyone else is using it though.
 
-> And btw., while described so in the patch comment, this change has nothing
-> to do with the subject of the patch.
+> I have given the patch only some light testing.
+> 
+> Could those of you that actually sues tags/cscope plese give it a try.
 
-Right. I thought of END and ENDPROC as equivalent, so I added the change
-to this patch as a small cleanup only. But if we want this .type
-annotation, what about KPROBE_END? should it include one there too?
+I tested your second patch from the subsequent email and functionally it
+seems fine, it currently includes include/asm-* for all architectures
+but I suppose they will all go away shortly.
 
-I'm getting a feeling we would be better off removing KPROBE_ENTRY and
-KPROBE_END if favour of explicitly changing sections in the .S files?
-And using the ENDPROC annotation for all procedures?
+The output was a bit odd though:
+        $ make cscope
+        /bin/sh /local/scratch/ianc/devel/linux-2.6.git/scripts/tags.sh cscope
+          GEN     cscope.out (from 13251 files)
+I guess I would have expected "  GEN     cscope.files" instead of the
+first line or just "  TAGS"?
 
-Greetings,
-	Alexander
+Ian.
+-- 
+Ian Campbell
+Current Noise: Nine Inch Nails - Where Is Everybody?
 
-> Jan
+"We came.  We saw.  We kicked its ass."
+		-- Bill Murray, _Ghostbusters_
+
