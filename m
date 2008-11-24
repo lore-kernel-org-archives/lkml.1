@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbYKXMJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYKXMLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbYKXMJf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 07:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKXMJ1
+	id S1752892AbYKXMLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 07:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYKXMLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 07:09:27 -0500
-Received: from mta-blr2.sasken.com ([164.164.56.19]:56134 "EHLO
-	mta-blr2.sasken.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbYKXMJ0 (ORCPT
+	Mon, 24 Nov 2008 07:11:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55296 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbYKXMLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 07:09:26 -0500
-X-Greylist: delayed 624 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 07:09:25 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AngBAJclKkkKAQC//2dsb2JhbAAIihKCPsNEgnw
-X-IronPort-AV: E=Sophos;i="4.33,659,1220207400"; 
-   d="scan'208";a="47189783"
-From: Pradeep G <pradeepg@sasken.com>
-Subject: test mail
-Date: Mon, 24 Nov 2008 17:28:58 +0530
-Message-ID: <gge4u2$i5$1@ncc-w.sasken.com>
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Newsreader: Microsoft Outlook Express 6.00.2900.5512
-X-RFC2646: Format=Flowed; Original
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
-To: linux-kernel@vger.kernel.org
-X-News-Gateway: ncc-z.sasken.com
-X-OriginalArrivalTime: 24 Nov 2008 11:58:59.0621 (UTC) FILETIME=[092C8550:01C94E2C]
+	Mon, 24 Nov 2008 07:11:32 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [ltt-dev] [RFC PATCH] Poll : add poll_wait_set_exclusive (fixing thundering herd problem in LTTng)
+Cc: kosaki.motohiro@jp.fujitsu.com, ltt-dev@lists.casi.polymtl.ca,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       William Lee Irwin III <wli@holomorphy.com>
+In-Reply-To: <20081124115134.GA17972@Krystal>
+References: <20081124203932.26BE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081124115134.GA17972@Krystal>
+Message-Id: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Mon, 24 Nov 2008 21:11:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > I fully agreed this feature is needed.
+> > Actually, I've made similar patch at one years ago.
+> > 
+> > http://marc.info/?l=linux-kernel&m=120257050719087&w=2
+> > 
+> > 
+> > but, I have one question.
+> > My version have epoll support, but yours donesn't have.
+> > Is it intensionally?
+> > 
+> > this is just dumb question, it doesn't mean any objection.
+> 
+> Hrm, actually, your patch seems cleaner than mine, but it adds a branch
+> in the standard hotpath, which mine does not do (but I am not sure it is
+> such an important optimization...). 
+
+Why do you think poll_wait() is hotpath?
+I think sysm_poll() isn't hotpath because it often cause task sleeping.
 
 
-SASKEN BUSINESS DISCLAIMER
--------------------------
-This message may contain confidential, proprietary or legally privileged information. In 
-case you are not the original intended Recipient of the message, you must not, directly or 
-indirectly, use, Disclose, distribute, print, or copy any part of this message and you are 
-requested to delete it and inform the sender. Any views expressed in this message are 
-those of the individual sender unless otherwise stated. Nothing contained in this message 
-shall be construed as an offer or acceptance of any offer by Sasken Communication 
-Technologies Limited ("Sasken") unless sent with that express intent and with due 
-authority of Sasken. Sasken has taken enough precautions to prevent the spread of 
-viruses. However the company accepts no liability for any damage caused by any virus 
-transmitted by this email
+> Is there any reason why your patch
+> did not get merged ?
+
+my patch was developed for a part of mem_notify patch series.
+but the mem_notify was naked by akpm.
+therefore it lost merging motivation ;-)
+
+Ingo, I'll rebase and post my patch for -tip tommorow.
+Could you please review it?
+
+
+> The only reason I did not make a epoll version is simply because LTTng
+> currently does not support it. :)
+
+thanks.
+I understand your original intension.
+
+
 
