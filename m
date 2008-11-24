@@ -1,127 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYKXQEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbYKXQFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbYKXQEk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 11:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYKXQCO
+	id S1754915AbYKXQFH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:05:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYKXQC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 11:02:14 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:48336 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200AbYKXQCN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 11:02:13 -0500
-Date: Mon, 24 Nov 2008 17:02:11 +0100
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Andrey Mirkin <major@openvz.org>
-Cc: orenl@cs.columbia.edu, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Add flags for user-space and in-kernel process
-	creation
-Message-ID: <20081124160211.GE27238@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-Mail-Followup-To: Andrey Mirkin <major@openvz.org>, orenl@cs.columbia.edu,
-	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1227541175-30301-1-git-send-email-major@openvz.org> <1227541175-30301-2-git-send-email-major@openvz.org>
+	Mon, 24 Nov 2008 11:02:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53356 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754524AbYKXQC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 11:02:57 -0500
+Date: Mon, 24 Nov 2008 17:02:53 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
+Subject: [PATCH] getrusage: fill ru_maxrss value
+Message-ID: <20081124170253.741d2e6e@psychotron.englab.brq.redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-26512-1227542379-0001-2"
-Content-Disposition: inline
-In-Reply-To: <1227541175-30301-2-git-send-email-major@openvz.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Based on the patch previously posted by Frank Mayhar:
+http://kerneltrap.org/mailarchive/linux-kernel/2007/9/20/264772
 
---=_bohort-26512-1227542379-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Slightly changed to not panic and to set the value properly.
+This patch enables "time" application to show maxresident value correctly.
 
-On 24/11/08 18:39 +0300, Andrey Mirkin wrote:
-> Introduce 2 flags for user-space and in-kernel process creation during
-> restart procedure.
-> Also a stub function for in-kernel process restart is introduced.
->=20
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+---
+ include/linux/sched.h |    3 +++
+ kernel/exit.c         |   21 +++++++++++++++++++++
+ kernel/fork.c         |    2 ++
+ kernel/sys.c          |    8 ++++++++
+ 4 files changed, 34 insertions(+), 0 deletions(-)
 
-[...]
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 644ffbd..b88c538 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -560,6 +560,7 @@ struct signal_struct {
+ 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+ 	unsigned long inblock, oublock, cinblock, coublock;
+ 	struct task_io_accounting ioac;
++	unsigned long cmaxrss;
+ 
+ 	/*
+ 	 * We don't bother to synchronize most readers of this at all,
+@@ -1177,6 +1178,8 @@ struct task_struct {
+ 	struct timespec real_start_time;	/* boot based time */
+ /* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
+ 	unsigned long min_flt, maj_flt;
++/* maxrss gets the hiwater_rss in do_exit() */
++	unsigned long maxrss;
+ 
+ 	struct task_cputime cputime_expires;
+ 	struct list_head cpu_timers[3];
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 2d8be7e..e0f5fd5 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -120,6 +120,8 @@ static void __exit_signal(struct task_struct *tsk)
+ 		sig->inblock += task_io_get_inblock(tsk);
+ 		sig->oublock += task_io_get_oublock(tsk);
+ 		task_io_accounting_add(&sig->ioac, &tsk->ioac);
++		if (tsk->maxrss > sig->cmaxrss)
++			sig->cmaxrss = tsk->maxrss;
+ 		sig = NULL; /* Marker for below. */
+ 	}
+ 
+@@ -1051,6 +1053,14 @@ NORET_TYPE void do_exit(long code)
+ 	if (tsk->mm) {
+ 		update_hiwater_rss(tsk->mm);
+ 		update_hiwater_vm(tsk->mm);
++		BUG_ON(tsk->maxrss != 0);
++		/*
++		 * Store the hiwater_rss in a task field, since when we need
++		 * it in __exit_signal() the mm structure is gone; we can't
++		 * stuff it in the signal structure since then we would be
++		 * racing with wait_task_zombie().
++		 */
++		tsk->maxrss = tsk->mm->hiwater_rss;
+ 	}
+ 	group_dead = atomic_dec_and_test(&tsk->signal->live);
+ 	if (group_dead) {
+@@ -1354,6 +1364,17 @@ static int wait_task_zombie(struct task_struct *p, int options,
+ 			sig->oublock + sig->coublock;
+ 		task_io_accounting_add(&psig->ioac, &p->ioac);
+ 		task_io_accounting_add(&psig->ioac, &sig->ioac);
++		/*
++		 * Save the maximum RSS of this task and all its terminated,
++		 * waited-for children.  Don't accumulate the RSS since, one,
++		 * other operating systems (FreeBSD, AIX) do it this way and,
++		 * two, the cumulative RSS of a long-lived process with lots
++		 * of sequential child process would be meaningless.
++		 */
++		if (sig->cmaxrss > psig->cmaxrss)
++			psig->cmaxrss = sig->cmaxrss;
++		if (p->maxrss > psig->cmaxrss)
++			psig->cmaxrss = p->maxrss;
+ 		spin_unlock_irq(&p->parent->sighand->siglock);
+ 	}
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 2a372a0..a853be4 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -622,6 +622,7 @@ static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
+ 
+ 	tsk->min_flt = tsk->maj_flt = 0;
+ 	tsk->nvcsw = tsk->nivcsw = 0;
++	tsk->maxrss = 0;
+ 
+ 	tsk->mm = NULL;
+ 	tsk->active_mm = NULL;
+@@ -847,6 +848,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+ 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
+ 	task_io_accounting_init(&sig->ioac);
++	sig->cmaxrss = 0;
+ 	taskstats_tgid_init(sig);
+ 
+ 	task_lock(current->group_leader);
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 31deba8..4f3855b 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1569,6 +1569,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 			r->ru_majflt = p->signal->cmaj_flt;
+ 			r->ru_inblock = p->signal->cinblock;
+ 			r->ru_oublock = p->signal->coublock;
++			r->ru_maxrss = p->signal->cmaxrss;
+ 
+ 			if (who == RUSAGE_CHILDREN)
+ 				break;
+@@ -1588,6 +1589,13 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 				accumulate_thread_rusage(t, r);
+ 				t = next_thread(t);
+ 			} while (t != p);
++			if (p->mm) {
++				update_hiwater_rss(p->mm);
++				if (r->ru_maxrss < p->mm->hiwater_rss)
++					r->ru_maxrss = p->mm->hiwater_rss;
++			} else {
++				r->ru_maxrss = p->maxrss;
++			}
+ 			break;
+ 
+ 		default:
+-- 
+1.5.6.5
 
-> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-> index 7745500..e4a9287 100644
-> --- a/checkpoint/sys.c
-> +++ b/checkpoint/sys.c
-> @@ -264,8 +264,8 @@ asmlinkage long sys_restart(int crid, int fd, unsigne=
-d long flags)
->  	pid_t pid;
->  	int ret;
-> =20
-> -	/* no flags for now */
-> -	if (flags)
-> +	if ((flags & (CR_CTX_RSTR_IN_USERSPACE | CR_CTX_RSTR_IN_USERSPACE)) =3D=
-=3D
-> +			(CR_CTX_RSTR_IN_USERSPACE | CR_CTX_RSTR_IN_USERSPACE))
-
-I guess that the intent was:
-+	if ((flags & (CR_CTX_RSTR_IN_USERSPACE | CR_CTX_RSTR_IN_KERNEL)) =3D=3D
-+			(CR_CTX_RSTR_IN_USERSPACE | CR_CTX_RSTR_IN_KERNEL))
-
-?
-
-Louis
-
->  		return -EINVAL;
-> =20
->  	/* FIXME: for now, we use 'crid' as a pid */
-> diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-> index cab5e19..947469a 100644
-> --- a/include/linux/checkpoint.h
-> +++ b/include/linux/checkpoint.h
-> @@ -61,6 +61,8 @@ struct cr_ctx {
->  /* cr_ctx: flags */
->  #define CR_CTX_CKPT	0x1
->  #define CR_CTX_RSTR	0x2
-> +#define CR_CTX_RSTR_IN_USERSPACE	0x4
-> +#define CR_CTX_RSTR_IN_KERNEL		0x8
-> =20
->  extern int cr_kwrite(struct cr_ctx *ctx, void *buf, int count);
->  extern int cr_kread(struct cr_ctx *ctx, void *buf, int count);
-> @@ -108,6 +110,7 @@ extern int cr_write_mm(struct cr_ctx *ctx, struct tas=
-k_struct *t);
->  extern int cr_write_files(struct cr_ctx *ctx, struct task_struct *t);
-> =20
->  extern int do_restart(struct cr_ctx *ctx, pid_t pid);
-> +extern int do_restart_in_kernel(struct cr_ctx *ctx);
->  extern int cr_read_mm(struct cr_ctx *ctx);
->  extern int cr_read_files(struct cr_ctx *ctx);
-> =20
-> --=20
-> 1.5.6
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-26512-1227542379-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJKtACVKcRuvQ9Q1QRAjU7AKDEDbmB926iU/ehqNhof6qb5ASXJACfWOsV
-D8tliYbn8YOCaXugOKIofCE=
-=ZWhK
------END PGP SIGNATURE-----
-
---=_bohort-26512-1227542379-0001-2--
