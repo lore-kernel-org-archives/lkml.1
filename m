@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYKXXRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYKXXUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183AbYKXXRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 18:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbYKXXRL
+	id S1754121AbYKXXUt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 18:20:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYKXXUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 18:17:11 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:39724 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbYKXXRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 18:17:10 -0500
-Date: Mon, 24 Nov 2008 18:16:07 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>, lkml <linux-kernel@vger.kernel.org>,
-       kbuild <linux-kbuild@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH 8/8] kbuild: move tags support to a shell script
-Message-ID: <20081124231607.GA16583@c2.user-mode-linux.org>
-References: <20081124205150.GA32497@uranus.ravnborg.org> <1227560095-32597-8-git-send-email-sam@ravnborg.org> <1227564434.16868.14.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227564434.16868.14.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 24 Nov 2008 18:20:41 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49471 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751911AbYKXXUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 18:20:40 -0500
+Subject: [Patch 0/3] OProfile SPU event profiling support for IBM Cell
+	processor
+From: Carl Love <cel@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+       cel <cel@linux.vnet.ibm.com>, cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Mon, 24 Nov 2008 15:19:41 -0800
+Message-Id: <1227568781.6509.198.camel@carll-linux-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 10:07:14PM +0000, Ian Campbell wrote:
-> I'm not quite sure I understand the distinction between ARCH, SRCARCH
-> and SUBARCH either but is it expected that for ARCH=um, SUBARCH will be
-> i386/x86_64 or x86?
 
-Yes, this is for UML to be able to tell what the underlying arch is.
+This patch set consists of two kernel patches and one user level patch
+to add SPU event based profiling support to OProfile for the IBM Cell
+processor.  The first patch in the series is the user level patch that
+adds the needed events and event checking to the user tool.  The second
+patch is the first of two kernel patches.  It makes some structural
+changes to the kernel code to make it easier to add the specific
+functions for doing SPU event profiling.  The first kernel patch does
+not make any functional changes.  The third patch in the series is the
+second kernel patch where the actual SPU event profiling code support is
+added to the kernel.
 
-				Jeff
+          Carl Love
 
--- 
-Work email - jdike at linux dot intel dot com
