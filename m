@@ -1,91 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbYKXNIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbYKXNOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838AbYKXNIf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 08:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKXNIZ
+	id S1752712AbYKXNOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 08:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYKXNOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 08:08:25 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:56965 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbYKXNIY (ORCPT
+	Mon, 24 Nov 2008 08:14:40 -0500
+Received: from h4.dl5rb.org.uk ([81.2.74.4]:53962 "EHLO
+	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750983AbYKXNOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 08:08:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OLMgZEGJrw2EQ1mWD711gUJ2a6hsfkdGBdWm0HKENPgvwCw6/J5cwrh8kEdjuWJ3Qt
-         ET3Wxpe9MzhFCu2krTo2n+r+lZS6RkgHdYMX4ebJUCYJ3gOMn+pmPkalR4pjWbX+uqVa
-         eLVSiBXCRTizgyujguo4PnIOQwpZUV9B/16TI=
-Message-ID: <5d6222a80811240508k772eecc6h9f75ba46ad9873e1@mail.gmail.com>
-Date: Mon, 24 Nov 2008 11:08:22 -0200
-From: "Glauber Costa" <glommer@gmail.com>
-To: "Glauber Costa" <glommer@redhat.com>
-Subject: Re: [PATCH] always assign userspace_addr
-Cc: "Avi Kivity" <avi@redhat.com>, "Anthony Liguori" <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-In-Reply-To: <20081121181111.GA3545@poweredge.glommer>
+	Mon, 24 Nov 2008 08:14:40 -0500
+Date: Mon, 24 Nov 2008 13:14:15 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Chad Reese <kreese@caviumnetworks.com>
+Cc: "Kevin D. Kissell" <kevink@paralogos.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Is there no way to shared code with Linux and other OSes?
+Message-ID: <20081124131415.GA21403@linux-mips.org>
+References: <4927C34F.4000201@caviumnetworks.com> <4927D6E0.4020009@paralogos.com> <Pine.LNX.4.64.0811221109330.29539@anakin> <4927E2A4.5000702@paralogos.com> <20081122153542.GB31703@linux-mips.org> <49285895.6020303@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1226977462-8086-1-git-send-email-glommer@redhat.com>
-	 <492436DE.2080906@codemonkey.ws>
-	 <20081119184357.GB25917@poweredge.glommer>
-	 <49246014.5000001@codemonkey.ws> <492543CF.6040507@redhat.com>
-	 <20081121181111.GA3545@poweredge.glommer>
+In-Reply-To: <49285895.6020303@caviumnetworks.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index b1953ee..f605bba 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -735,11 +735,17 @@ int __kvm_set_memory_region(struct kvm *kvm,
->        base_gfn = mem->guest_phys_addr >> PAGE_SHIFT;
->        npages = mem->memory_size >> PAGE_SHIFT;
->
-> -       if (!npages)
-> -               mem->flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
-> -
->        new = old = *memslot;
->
-> +        if (!npages) {
-> +                mem->flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
-> +                kvm_arch_flush_shadow(kvm);
-> +                kvm_free_physmem_slot(memslot, NULL);
-> +                kvm_arch_set_memory_region(kvm, mem, old, user_alloc);
-> +                goto out;
-> +        }
-> +
-> +
->        new.base_gfn = base_gfn;
+On Sat, Nov 22, 2008 at 11:08:05AM -0800, Chad Reese wrote:
 
-Any comments about this version? In the absense of it, I'll submit a
-version with a SoB for inclusion.
->        new.npages = npages;
->        new.flags = mem->flags;
-> @@ -812,9 +818,6 @@ int __kvm_set_memory_region(struct kvm *kvm,
->        }
->  #endif /* not defined CONFIG_S390 */
->
-> -       if (!npages)
-> -               kvm_arch_flush_shadow(kvm);
-> -
->        spin_lock(&kvm->mmu_lock);
->        if (mem->slot >= kvm->nmemslots)
->                kvm->nmemslots = mem->slot + 1;
->
->
+> 	linux-mips@linux-mips.org
+> Subject: Re: Is there no way to shared code with Linux and other OSes?
+> Content-Type: text/plain; charset=ISO-8859-1
 
+Adding linux-kernel since this is probably of more general interest than
+just the linux-mips list.
 
+> I appreciate the info about the typedefs, but I didn't really mean to
+> signal them out. They just happened to be an example I picked.
 
--- 
-Glauber  Costa.
-"Free as in Freedom"
-http://glommer.net
+Thus it received a specific answer.
 
-"The less confident you are, the more serious you have to act."
+> The
+> fundamental issue is that we have a large number of files written using
+> a fairly common corporate coding standard (4 space indents, no tabs,
+> javadoc comments) that is used by a number of OSes. We generate our API
+> documentation from it using doxygen, so the comments at least attempt to
+> have useful info in them. In order to use this code in the kernel, we're
+> having to basically run it through the evil indent program and strip
+> quite a bit of stuff out. Obviously indent will make a mess of some
+> stuff, so lots of hand editing is needed. The end result is code that
+> has diverged from the original in such a way that diffs are basically
+> impossible.
+> 
+> We're already having issues with bugs between the different versions and
+> the kernel submit stuff has just started. Maybe the only solution is two
+> divergent code bases, but it just feels like the gun is pointed at my
+> foot and cocked. I really don't want to pull the trigger knowing what is
+> about to happen.
+> 
+> Obviously I don't target these comments at true Linux drivers. The CF
+> libata driver is obviously a Linux specific driver and should follow all
+> Linux standards. Code for bootloader communication and networks setup is
+> completely OS agnostic, so sharing it between systems makes sense.
+
+I'll start off my answer with a bit of history.  A few years ago the Linux
+codebase was growing at exponentional speed not last from contributions
+from other projects and there were few standards in the Linux world.  As
+the result the code base was highly inconsistent in many aspects,
+including coding style and typedefs.  It made maintenance and even just
+understanding the code base painful.  Then on a few occasions Linus
+decreed certain standards such as code to be formatted to fit into 80
+colums.  Other standards arose from a common understanding.
+
+The primary purpose of all these standards, both written in the kernel
+documentation and unwritten is to improve maintainability of the code and
+as such there is little point in blind enforcing them even though the
+noise generated by automated checkers such as checkpatch.pl encourages
+that.  So take that with a grain of salt.
+
+Re divergent code base - I see your issue but the problem is both ways.
+Historic example is Broadcom which contributed the headers for the Sibyte
+SOC family.  The headers are generated using inhouse tools just as yours
+and we'd like to change them - but all those changes conflict with
+Broadcom's bi-annual contribution which are bascially are versions
+re-generated with their latest tools and from their latest RTL.
+
+OS compatibility layers are another subject.  They simplify maintenance
+for the one and make it harder for the other.  In general in the Linux
+world we've made not so positive experience with such glue code layers,
+so we tend to limit if not avoid their use.
+
+Another factor is that usually long after the contributing company has
+already forgotten about their code I'm the guy who still is stuck with it.
+For many more years ...
+
+  Ralf
