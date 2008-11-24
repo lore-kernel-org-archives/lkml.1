@@ -1,159 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbYKXLYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYKXL2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752785AbYKXLYl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 06:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYKXLYd
+	id S1752702AbYKXL2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 06:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKXL2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 06:24:33 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:38901 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751824AbYKXLYc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 06:24:32 -0500
+	Mon, 24 Nov 2008 06:28:46 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:41486 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751911AbYKXL2o convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 06:28:44 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEABwaKklMROB9/2dsb2JhbACBbc4Pgnw
-Date: Mon, 24 Nov 2008 06:24:29 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+X-IronPort-Anti-Spam-Result: AswEAPIYKklMROB9/2dsb2JhbACBbc4Kgnw
+Date: Mon, 24 Nov 2008 06:28:42 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 To: ltt-dev@lists.casi.polymtl.ca
-Cc: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] Poll : add poll_wait_set_exclusive (fixing thundering
-	herd problem in LTTng)
-Message-ID: <20081124112429.GA15791@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Subject: LTTng kernel integration roadmap, update
+Message-ID: <20081124112842.GA15615@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 05:52:40 up 7 days, 11:33,  3 users,  load average: 0.50, 0.43,
-	0.43
+X-Uptime: 06:25:43 up 7 days, 12:06,  2 users,  load average: 2.46, 0.88,
+	0.53
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Problem description :
+(sorry for repost, I messed up lkml address in the original post, please
+reply to this one)
 
-In LTTng, all lttd readers are polling all the available debugfs files
-for data. This is principally because the number of reader threads is
-user-defined and there are typical workloads where a single CPU is
-producing most of the tracing data and all other CPUs are idle,
-available to consume data. It therefore makes sense not to tie those
-threads to specific buffers. However, when the number of threads grows,
-we face a "thundering herd" problem where many threads can be woken up
-and put back to sleep, leaving only a single thread doing useful work.
+Hi everyone,
 
-Solution :
+Let's see what the current status is and what we still have to focus on
+before submission. First I'd like to say a big thanks to Zhaolei from
+Fujitsu who did a great job for the debugfs-based LTTng control we now
+have.
 
-I just created a patch which adds a poll_wait_set_exclusive() primitive
-to poll(), so the code which implements the pollfd operation can specify
-that only a single waiter must be woken up.
+- trace_clock()
+  - Port to the -tip tree. Submit. Should be ready for inclusion after
+    the few rounds of review on LKML it had.
+  Assigned-to: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-This patch applies both on 2.6.27.7 and current -tip. It is integrated
-and used in the LTTng tree as of LTTng 0.59.
+- LTTng instrumentation
+  - Port to the -tip tree, submit incrementally.
+  Assigned-to: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-poll_wait_set_exclusive : set poll wait queue to exclusive
-Sets up a poll wait queue to use exclusive wakeups. This is useful to
-wake up only one waiter at each wakeup. Used to work-around "thundering herd"
-problem.
+- Add periodical subbuffer flush for streaming
+  - Will be required by ascii text output.
+  - Also requires modification to lttd so it can only transmit the
+    buffer data, without the padding. Some modification to LTTV might be
+    needed to cope with variable-sized subbuffers (we would need an
+    index to be able to seek with O(log(num subbuffers)) as we currently
+    do, or we would have to use sparse files for trace files).
+  Assigned-to: François Prenoveau <francois.prenoveau@polymtl.ca>
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: William Lee Irwin III <wli@holomorphy.com>
-CC: Ingo Molnar <mingo@elte.hu>
----
- fs/select.c          |   42 +++++++++++++++++++++++++++++++++++++++---
- include/linux/poll.h |    2 ++
- 2 files changed, 41 insertions(+), 3 deletions(-)
+- Marker ID management
+  Background :
+  The markers are currently used to identify the numerical event IDs
+  associated with a named event as well as the event types (format
+  string) associated with that event. Those two informations are kept in
+  a table written in the metadata channel. A "channel" could be thought
+  as being a set of per-cpu buffers, where information transits. This
+  information would typically be related to a specific tracer. Note,
+  however, that the information generated by a tracer should always be
+  parseable generically and be transformable into text output by a
+  simple parser, because we want to permit analysis across information
+  logged by the various tracer.
 
-Index: linux-2.6-lttng/fs/select.c
-===================================================================
---- linux-2.6-lttng.orig/fs/select.c	2008-11-24 05:16:33.000000000 -0500
-+++ linux-2.6-lttng/fs/select.c	2008-11-24 05:55:07.000000000 -0500
-@@ -50,6 +50,9 @@ struct poll_table_page {
-  */
- static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
- 		       poll_table *p);
-+static void __pollwait_exclusive(struct file *filp,
-+				 wait_queue_head_t *wait_address,
-+				 poll_table *p);
- 
- void poll_initwait(struct poll_wqueues *pwq)
- {
-@@ -90,6 +93,21 @@ void poll_freewait(struct poll_wqueues *
- 
- EXPORT_SYMBOL(poll_freewait);
- 
-+/**
-+ * poll_wait_set_exclusive : set poll wait queue to exclusive
-+ *
-+ * Sets up a poll wait queue to use exclusive wakeups. This is useful to
-+ * wake up only one waiter at each wakeup. Used to work-around "thundering herd"
-+ * problem.
-+ */
-+void poll_wait_set_exclusive(poll_table *p)
-+{
-+	if (p)
-+		init_poll_funcptr(p, __pollwait_exclusive);
-+}
-+
-+EXPORT_SYMBOL(poll_wait_set_exclusive);
-+
- static struct poll_table_entry *poll_get_entry(poll_table *_p)
- {
- 	struct poll_wqueues *p = container_of(_p, struct poll_wqueues, pt);
-@@ -117,8 +135,10 @@ static struct poll_table_entry *poll_get
- }
- 
- /* Add a new entry */
--static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
--				poll_table *p)
-+static void __pollwait_common(struct file *filp,
-+			      wait_queue_head_t *wait_address,
-+			      poll_table *p,
-+			      int exclusive)
- {
- 	struct poll_table_entry *entry = poll_get_entry(p);
- 	if (!entry)
-@@ -127,7 +147,23 @@ static void __pollwait(struct file *filp
- 	entry->filp = filp;
- 	entry->wait_address = wait_address;
- 	init_waitqueue_entry(&entry->wait, current);
--	add_wait_queue(wait_address, &entry->wait);
-+	if (!exclusive)
-+		add_wait_queue(wait_address, &entry->wait);
-+	else
-+		add_wait_queue_exclusive(wait_address, &entry->wait);
-+}
-+
-+static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
-+				poll_table *p)
-+{
-+	__pollwait_common(filp, wait_address, p, 0);
-+}
-+
-+static void __pollwait_exclusive(struct file *filp,
-+				 wait_queue_head_t *wait_address,
-+				 poll_table *p)
-+{
-+	__pollwait_common(filp, wait_address, p, 1);
- }
- 
- #define FDS_IN(fds, n)		(fds->in + n)
-Index: linux-2.6-lttng/include/linux/poll.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/poll.h	2008-11-24 05:16:28.000000000 -0500
-+++ linux-2.6-lttng/include/linux/poll.h	2008-11-24 05:25:35.000000000 -0500
-@@ -65,6 +65,8 @@ struct poll_wqueues {
- extern void poll_initwait(struct poll_wqueues *pwq);
- extern void poll_freewait(struct poll_wqueues *pwq);
- 
-+extern void poll_wait_set_exclusive(poll_table *p);
-+
- /*
-  * Scaleable version of the fd_set.
-  */
+  Action item :
+  The current event IDs are global to the whole kernel. It would be
+  beneficial to change their scope so they are per-channel instead,
+  because we can then encode most events in the low-order bits of the
+  event ID bits, therefore keeping events as small as possible.
+
+- Channel management
+  Background :
+  LTTng currently has the following statically declared channels :
+
+  cpu (default channel)
+  metadata (marker name, marker ID, marker format string table)
+  interrupts (interrupt handlers table, interrupt handler connexion
+  events)
+  modules (loaded module table, module load/free events)
+  network (active interfaces table, interface up/down events)
+  processes (processes existing at trace start table, scheduling events)
+
+  Action item :
+  But if we want to integrate ftrace easily within this framework, we
+  would like to offer an API so tracers can dynamically register a new
+  channel whenever they are loaded.
+
+  Note that the marker ID management and channel management are closely
+  tied together; IDs would be per-channel, and channels would be
+  registered by tracers.
+
+- trimmed-down lttv for the kernel tree
+  Need to look at
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/test.git#master
+  tests/ directory, which permits building userspace tools with the
+  Linux kernel. I recently got the idea of populating debugfs with
+  userspace tools that would sits in kernel module data. How (in)sane
+  does this idea look ? That would seems like a rather good solution to
+  ship the userspace tool with the kernel.
+
+- Port ftrace to LTTng
+  ftrace could ask LTTng to create channels for its data, and would use
+  this handle to record into the buffers. Given that LTTng allows
+  multiple traces to be taken at once, and given LTTng exports all its
+  trace control primitives as in-kernel API, ftrace could use those to
+  automatically control tracing behavior from within the kernel wrt the
+  buffers for which it produces _and_ consumes information.
+
+  I think we might need to add the notion of traces for which buffers
+  are meant to be consumed within the kernel (private) and not exported
+  to userspace. Or maybe the current reference counting which insure
+  that at most one reader is connected on a trace buffer, is enough.
+
+- ASCII text output.
+  - Merge sort done within the kernel. Binary-to-text translation also
+    done within the kernel.
+  Assigned-to: Zhaolei <zhaolei@cn.fujitsu.com>
+  Assigned-to: Lai Jiangshan <laijs@cn.fujitsu.com>
+
+Mathieu
+
 -- 
 Mathieu Desnoyers
 OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
