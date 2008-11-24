@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbYKXAtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbYKXBCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbYKXAtS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 19:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYKXAtH
+	id S1752516AbYKXBCF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 20:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYKXBBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 19:49:07 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39392 "EHLO
+	Sun, 23 Nov 2008 20:01:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43818 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYKXAtG convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751180AbYKXBBw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 19:49:06 -0500
-Date: Sun, 23 Nov 2008 16:49:58 -0800
+	Sun, 23 Nov 2008 20:01:52 -0500
+Date: Sun, 23 Nov 2008 17:02:47 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: "=?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker" <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org
-Subject: Re: [PATCH] ftrace: Add a C/P state tracer to help power
- optimization
-Message-ID: <20081123164958.21fae966@infradead.org>
-In-Reply-To: <c62985530811231312u51650cbcm2cb7b4f5c60d064@mail.gmail.com>
-References: <20081123125931.4afe16ca@infradead.org>
-	<c62985530811231312u51650cbcm2cb7b4f5c60d064@mail.gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, anssi.hannula@gmail.com,
+       akpm@linux-foundation.org, dtor@mail.ru
+Subject: [PATCH] input: replace spin_lock_bh with spin_lock_irqsave in
+ ml_ff_playback
+Message-ID: <20081123170247.311f4b8f@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -31,575 +29,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Nov 2008 22:12:44 +0100
-"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
 
-> Hi Arjan,
-> 
-> 2008/11/23 Arjan van de Ven <arjan@infradead.org>:
-> > +static void power_trace_ctrl_update(struct trace_array *tr)
-> > +{
-> > +       if (tr->ctrl)
-> > +               start_power_trace();
-> > +       else
-> > +               stop_power_trace(tr);
-> > +}
-> 
-> 
-> The ctrl_update callback doesn't exist anymore...
-
-the patch was against mainline;
-below is an updated patch against -tip:
-
->From 679db8acb007a7cb74719c5609307b79b88b18a7 Mon Sep 17 00:00:00 2001
+>From 829678fc4684defcef2139182e88a304acdfa0ad Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 23 Nov 2008 16:48:47 -0800
-Subject: [PATCH] ftrace: Add a C/P state tracer to help power optimization
+Date: Sun, 23 Nov 2008 16:57:36 -0800
+Subject: [PATCH] input: replace spin_lock_bh with spin_lock_irqsave in ml_ff_playback
 
-This patch adds a C/P-state ftrace plugin that will generate
-detailed statistics about the C/P-states that are being used,
-so that we can look at detailed decisions that the C/P-state
-code is making, rather than the too high level "average"
-that we have today.
+ml_ff_playback() uses spin_(un)lock_bh. However this function is called
+with interrupts disabled from erase_effect() in drivers/input/ff-core.c:196.
 
-An example way of using this is:
-mount -t debugfs none /sys/kernel/debug
-echo cstate > /sys/kernel/debug/tracing/current_tracer
-echo 1 > /sys/kernel/debug/tracing/tracing_enabled
-sleep 1
-echo 0 > /sys/kernel/debug/tracing/tracing_enabled
-cat /sys/kernel/debug/tracing/trace | perl scripts/trace/cstate.pl > out.svg
+This is not permitted, and will result in a WARN_ON in the bottom half handling code.
+This patch changes this function to just use spin_lock_irqsave() instead, solving
+the problem and simplifying the locking logic.
 
-Impact: New code
-Impact: Minor additions to existing code
+This was reported as entry #106559 in kerneloops.org
 
+Reported-by: kerneloops.org
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    4 +
- arch/x86/kernel/process.c                  |   16 +++
- include/linux/ftrace.h                     |   29 +++++
- kernel/trace/Kconfig                       |   11 ++
- kernel/trace/Makefile                      |    1 +
- kernel/trace/trace.h                       |    7 +
- kernel/trace/trace_power.c                 |  179 ++++++++++++++++++++++++++++
- scripts/trace/power.pl                     |  108 +++++++++++++++++
- 8 files changed, 355 insertions(+), 0 deletions(-)
- create mode 100644 kernel/trace/trace_power.c
- create mode 100644 scripts/trace/power.pl
+ drivers/input/ff-memless.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-index 8e48c5d..88ea02d 100644
---- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -33,6 +33,7 @@
- #include <linux/cpufreq.h>
- #include <linux/compiler.h>
- #include <linux/dmi.h>
-+#include <linux/ftrace.h>
+diff --git a/drivers/input/ff-memless.c b/drivers/input/ff-memless.c
+index 6790e97..bc4e40f 100644
+--- a/drivers/input/ff-memless.c
++++ b/drivers/input/ff-memless.c
+@@ -397,8 +397,9 @@ static int ml_ff_playback(struct input_dev *dev, int effect_id, int value)
+ {
+ 	struct ml_device *ml = dev->ff->private;
+ 	struct ml_effect_state *state = &ml->states[effect_id];
++	unsigned long flags;
  
- #include <linux/acpi.h>
- #include <acpi/processor.h>
-@@ -391,6 +392,7 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 	unsigned int next_perf_state = 0; /* Index into perf table */
- 	unsigned int i;
- 	int result = 0;
-+	struct power_trace it;
+-	spin_lock_bh(&ml->timer_lock);
++	spin_lock_irqsave(&ml->timer_lock, flags);
  
- 	dprintk("acpi_cpufreq_target %d (%d)\n", target_freq, policy->cpu);
- 
-@@ -427,6 +429,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 		}
+ 	if (value > 0) {
+ 		debug("initiated play");
+@@ -424,7 +425,7 @@ static int ml_ff_playback(struct input_dev *dev, int effect_id, int value)
+ 		ml_play_effects(ml);
  	}
  
-+	trace_power_mark(&it, POWER_PSTATE, next_perf_state);
-+
- 	switch (data->cpu_feature) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
- 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 8455480..d07993d 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -7,6 +7,7 @@
- #include <linux/module.h>
- #include <linux/pm.h>
- #include <linux/clockchips.h>
-+#include <linux/ftrace.h>
- #include <asm/system.h>
- #include <asm/apic.h>
+-	spin_unlock_bh(&ml->timer_lock);
++	spin_unlock_irqrestore(&ml->timer_lock, flags);
  
-@@ -101,6 +102,9 @@ static inline int hlt_use_halt(void)
- void default_idle(void)
- {
- 	if (hlt_use_halt()) {
-+		struct power_trace it;
-+
-+		trace_power_start(&it, POWER_CSTATE, 1);
- 		current_thread_info()->status &= ~TS_POLLING;
- 		/*
- 		 * TS_POLLING-cleared state must be visible before we
-@@ -113,6 +117,7 @@ void default_idle(void)
- 		else
- 			local_irq_enable();
- 		current_thread_info()->status |= TS_POLLING;
-+		trace_power_end(&it);
- 	} else {
- 		local_irq_enable();
- 		/* loop is done by the caller */
-@@ -170,24 +175,31 @@ EXPORT_SYMBOL_GPL(cpu_idle_wait);
-  */
- void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
- {
-+	struct power_trace it;
-+
-+	trace_power_start(&it, POWER_CSTATE, (ax>>4)+1);
- 	if (!need_resched()) {
- 		__monitor((void *)&current_thread_info()->flags, 0, 0);
- 		smp_mb();
- 		if (!need_resched())
- 			__mwait(ax, cx);
- 	}
-+	trace_power_end(&it);
+ 	return 0;
  }
- 
- /* Default MONITOR/MWAIT with no hints, used for default C1 state */
- static void mwait_idle(void)
- {
-+	struct power_trace it;
- 	if (!need_resched()) {
-+		trace_power_start(&it, POWER_CSTATE, 1);
- 		__monitor((void *)&current_thread_info()->flags, 0, 0);
- 		smp_mb();
- 		if (!need_resched())
- 			__sti_mwait(0, 0);
- 		else
- 			local_irq_enable();
-+		trace_power_end(&it);
- 	} else
- 		local_irq_enable();
- }
-@@ -199,9 +211,13 @@ static void mwait_idle(void)
-  */
- static void poll_idle(void)
- {
-+	struct power_trace it;
-+
-+	trace_power_start(&it, POWER_CSTATE, 0);
- 	local_irq_enable();
- 	while (!need_resched())
- 		cpu_relax();
-+	trace_power_end(&it);
- }
- 
- /*
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 7854d87..0df2886 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -311,6 +311,35 @@ ftrace_init_module(struct module *mod,
- 		   unsigned long *start, unsigned long *end) { }
- #endif
- 
-+enum {
-+	POWER_NONE = 0,
-+	POWER_CSTATE = 1,
-+	POWER_PSTATE = 2,
-+};
-+
-+struct power_trace {
-+#ifdef CONFIG_POWER_TRACER
-+	ktime_t			stamp;
-+	ktime_t			end;
-+	int			type;
-+	int			state;
-+#endif
-+};
-+
-+#ifdef CONFIG_POWER_TRACER
-+extern void trace_power_start(struct power_trace *it, unsigned int type,
-+					unsigned int state);
-+extern void trace_power_mark(struct power_trace *it, unsigned int type,
-+					unsigned int state);
-+extern void trace_power_end(struct power_trace *it);
-+#else
-+static inline void trace_power_start(struct power_trace *it, unsigned int type,
-+					unsigned int state) { }
-+static inline void trace_power_mark(struct power_trace *it, unsigned int type,
-+					unsigned int state) { }
-+static inline void trace_power_end(struct power_trace *it) { }
-+#endif
-+
- 
- /*
-  * Structure that defines a return function trace.
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 9cbf776..eabcd43 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -214,6 +214,17 @@ config BRANCH_TRACER
- 
- 	  Say N if unsure.
- 
-+config POWER_TRACER
-+	bool "Trace power consumption behavior"
-+	depends on DEBUG_KERNEL
-+	depends on X86
-+	select TRACING
-+	help
-+	  This tracer helps developers to analyze and optimize the kernels
-+	  power management decisions, specifically the C-state and P-state
-+	  behavior.
-+
-+
- config STACK_TRACER
- 	bool "Trace max stack"
- 	depends on HAVE_FUNCTION_TRACER
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 1a8c925..a5ed56b 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -31,5 +31,6 @@ obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
- obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
- obj-$(CONFIG_FUNCTION_RET_TRACER) += trace_functions_return.o
- obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
-+obj-$(CONFIG_POWER_TRACER) += trace_power.o
- 
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 28c15c2..440faca 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -27,6 +27,7 @@ enum trace_type {
- 	TRACE_BOOT_RET,
- 	TRACE_FN_RET,
- 	TRACE_USER_STACK,
-+	TRACE_POWER,
- 
- 	__TRACE_LAST_TYPE
- };
-@@ -153,6 +154,11 @@ struct trace_branch {
- 	char			correct;
- };
- 
-+struct trace_power {
-+	struct trace_entry	ent;
-+	struct power_trace	state_data;
-+};
-+
- /*
-  * trace_flag_type is an enumeration that holds different
-  * states when a trace occurs. These are:
-@@ -258,6 +264,7 @@ extern void __ftrace_bad_type(void);
- 		IF_ASSIGN(var, ent, struct trace_boot_ret, TRACE_BOOT_RET);\
- 		IF_ASSIGN(var, ent, struct trace_branch, TRACE_BRANCH); \
- 		IF_ASSIGN(var, ent, struct ftrace_ret_entry, TRACE_FN_RET);\
-+ 		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
- 		__ftrace_bad_type();					\
- 	} while (0)
- 
-diff --git a/kernel/trace/trace_power.c b/kernel/trace/trace_power.c
-new file mode 100644
-index 0000000..a7172a3
---- /dev/null
-+++ b/kernel/trace/trace_power.c
-@@ -0,0 +1,179 @@
-+/*
-+ * ring buffer based C-state tracer
-+ *
-+ * Arjan van de Ven <arjan@linux.intel.com>
-+ * Copyright (C) 2008 Intel Corporation
-+ *
-+ * Much is borrowed from trace_boot.c which is
-+ * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/debugfs.h>
-+#include <linux/ftrace.h>
-+#include <linux/kallsyms.h>
-+#include <linux/module.h>
-+
-+#include "trace.h"
-+
-+static struct trace_array *power_trace;
-+static int __read_mostly trace_power_enabled;
-+
-+
-+static void start_power_trace(struct trace_array *tr)
-+{
-+	trace_power_enabled = 1;
-+}
-+
-+static void stop_power_trace(struct trace_array *tr)
-+{
-+	trace_power_enabled = 0;
-+}
-+
-+
-+static int power_trace_init(struct trace_array *tr)
-+{
-+	int cpu;
-+	power_trace = tr;
-+
-+	trace_power_enabled = 1;
-+
-+	for_each_cpu_mask(cpu, cpu_possible_map)
-+		tracing_reset(tr, cpu);
-+	return 0;
-+}
-+
-+static enum print_line_t power_print_line(struct trace_iterator *iter)
-+{
-+	int ret = 0;
-+	struct trace_entry *entry = iter->ent;
-+	struct trace_power *field ;
-+	struct power_trace *it;
-+	struct trace_seq *s = &iter->seq;
-+	struct timespec stamp;
-+	struct timespec duration;
-+
-+	trace_assign_type(field, entry);
-+	it = &field->state_data;
-+	stamp = ktime_to_timespec(it->stamp);
-+	duration = ktime_to_timespec(ktime_sub(it->end, it->stamp));
-+
-+	if (entry->type == TRACE_POWER) {
-+		if (it->type == POWER_CSTATE)
-+			ret = trace_seq_printf(s, "[%5ld.%09ld] CSTATE: Going to C%i on cpu %i for %ld.%09ld\n",
-+					  stamp.tv_sec,
-+					  stamp.tv_nsec,
-+					  it->state, iter->cpu,
-+					  duration.tv_sec,
-+					  duration.tv_nsec);
-+		if (it->type == POWER_PSTATE)
-+			ret = trace_seq_printf(s, "[%5ld.%09ld] PSTATE: Going to P%i on cpu %i\n",
-+					  stamp.tv_sec,
-+					  stamp.tv_nsec,
-+					  it->state, iter->cpu);
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+		return TRACE_TYPE_HANDLED;
-+	}
-+	return TRACE_TYPE_UNHANDLED;
-+}
-+
-+static struct tracer power_tracer __read_mostly =
-+{
-+	.name		= "power",
-+	.init		= power_trace_init,
-+	.start		= start_power_trace,
-+	.stop		= stop_power_trace,
-+	.reset		= stop_power_trace,
-+	.print_line	= power_print_line,
-+};
-+
-+static int init_power_trace(void)
-+{
-+	return register_tracer(&power_tracer);
-+}
-+device_initcall(init_power_trace);
-+
-+void trace_power_start(struct power_trace *it, unsigned int type,
-+			 unsigned int level)
-+{
-+	if (!trace_power_enabled)
-+		return;
-+
-+	memset(it, 0, sizeof(struct power_trace));
-+	it->state = level;
-+	it->type = type;
-+	it->stamp = ktime_get();
-+}
-+EXPORT_SYMBOL_GPL(trace_power_start);
-+
-+
-+void trace_power_end(struct power_trace *it)
-+{
-+	struct ring_buffer_event *event;
-+	struct trace_power *entry;
-+	struct trace_array_cpu *data;
-+	unsigned long irq_flags;
-+	struct trace_array *tr = power_trace;
-+
-+	if (!trace_power_enabled)
-+		return;
-+
-+	preempt_disable();
-+	it->end = ktime_get();
-+	data = tr->data[smp_processor_id()];
-+
-+	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
-+					 &irq_flags);
-+	if (!event)
-+		goto out;
-+	entry	= ring_buffer_event_data(event);
-+	tracing_generic_entry_update(&entry->ent, 0, 0);
-+	entry->ent.type = TRACE_POWER;
-+	entry->state_data = *it;
-+	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
-+
-+	trace_wake_up();
-+
-+ out:
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(trace_power_end);
-+
-+void trace_power_mark(struct power_trace *it, unsigned int type,
-+			 unsigned int level)
-+{
-+	struct ring_buffer_event *event;
-+	struct trace_power *entry;
-+	struct trace_array_cpu *data;
-+	unsigned long irq_flags;
-+	struct trace_array *tr = power_trace;
-+
-+	if (!trace_power_enabled)
-+		return;
-+
-+	memset(it, 0, sizeof(struct power_trace));
-+	it->state = level;
-+	it->type = type;
-+	it->stamp = ktime_get();
-+	preempt_disable();
-+	it->end = it->stamp;
-+	data = tr->data[smp_processor_id()];
-+
-+	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
-+					 &irq_flags);
-+	if (!event)
-+		goto out;
-+	entry	= ring_buffer_event_data(event);
-+	tracing_generic_entry_update(&entry->ent, 0, 0);
-+	entry->ent.type = TRACE_POWER;
-+	entry->state_data = *it;
-+	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
-+
-+	trace_wake_up();
-+
-+ out:
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(trace_power_mark);
-diff --git a/scripts/trace/power.pl b/scripts/trace/power.pl
-new file mode 100644
-index 0000000..4f729b3
---- /dev/null
-+++ b/scripts/trace/power.pl
-@@ -0,0 +1,108 @@
-+#!/usr/bin/perl
-+
-+# Copyright 2008, Intel Corporation
-+#
-+# This file is part of the Linux kernel
-+#
-+# This program file is free software; you can redistribute it and/or modify it
-+# under the terms of the GNU General Public License as published by the
-+# Free Software Foundation; version 2 of the License.
-+#
-+# This program is distributed in the hope that it will be useful, but WITHOUT
-+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-+# for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program in a file named COPYING; if not, write to the
-+# Free Software Foundation, Inc.,
-+# 51 Franklin Street, Fifth Floor,
-+# Boston, MA 02110-1301 USA
-+#
-+# Authors:
-+# 	Arjan van de Ven <arjan@linux.intel.com>
-+
-+
-+#
-+# This script turns a cstate ftrace output into a SVG graphic that shows
-+# historic C-state information
-+#
-+#
-+# 	cat /sys/kernel/debug/tracing/trace | perl power.pl > out.svg
-+#
-+
-+my @styles;
-+my $base = 0;
-+
-+my @pstate_last;
-+my @pstate_level;
-+
-+$styles[0] = "fill:rgb(0,0,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[1] = "fill:rgb(0,255,0);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[2] = "fill:rgb(255,0,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[3] = "fill:rgb(255,255,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[4] = "fill:rgb(255,0,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[5] = "fill:rgb(0,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[6] = "fill:rgb(0,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[7] = "fill:rgb(0,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[8] = "fill:rgb(0,25,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
-+
-+
-+print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
-+print "<svg width=\"10000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
-+
-+my $scale = 30000.0;
-+while (<>) {
-+	my $line = $_;
-+	if ($line =~ /([0-9\.]+)\] CSTATE: Going to C([0-9]) on cpu ([0-9]+) for ([0-9\.]+)/) {
-+		if ($base == 0) {
-+			$base = $1;
-+		}
-+		my $time = $1 - $base;
-+		$time = $time * $scale;
-+		my $C = $2;
-+		my $cpu = $3;
-+		my $y = 400 * $cpu;
-+		my $duration = $4 * $scale;
-+		my $msec = int($4 * 100000)/100.0;
-+		my $height = $C * 20;
-+		$style = $styles[$C];
-+
-+		$y = $y + 140 - $height;
-+
-+		$x2 = $time + 4;
-+		$y2 = $y + 4;
-+
-+
-+		print "<rect x=\"$time\" width=\"$duration\" y=\"$y\" height=\"$height\" style=\"$style\"/>\n";
-+		print "<text transform=\"translate($x2,$y2) rotate(90)\">C$C $msec</text>\n";
-+	}
-+	if ($line =~ /([0-9\.]+)\] PSTATE: Going to P([0-9]) on cpu ([0-9]+)/) {
-+		my $time = $1 - $base;
-+		my $state = $2;
-+		my $cpu = $3;
-+
-+		if (defined($pstate_last[$cpu])) {
-+			my $from = $pstate_last[$cpu];
-+			my $oldstate = $pstate_state[$cpu];
-+			my $duration = ($time-$from) * $scale;
-+
-+			$from = $from * $scale;
-+			my $to = $from + $duration;
-+			my $height = 140 - ($oldstate * (140/8));
-+
-+			my $y = 400 * $cpu + 200 + $height;
-+			my $y2 = $y+4;
-+			my $style = $styles[8];
-+
-+			print "<rect x=\"$from\" y=\"$y\" width=\"$duration\" height=\"5\" style=\"$style\"/>\n";
-+			print "<text transform=\"translate($from,$y2)\">P$oldstate (cpu $cpu)</text>\n";
-+		};
-+
-+		$pstate_last[$cpu] = $time;
-+		$pstate_state[$cpu] = $state;
-+	}
-+}
-+
-+
-+print "</svg>\n";
 -- 
 1.6.0.3
-
-
 
 
 -- 
