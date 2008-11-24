@@ -1,170 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYKYAKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYKYAMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYKYAKF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 19:10:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYKYAJy
+	id S1754621AbYKYAMq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 19:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYKYAMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 19:09:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42910 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752539AbYKYAJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 19:09:53 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081121002847.c8fe7aef.akpm@linux-foundation.org>
-References: <20081121002847.c8fe7aef.akpm@linux-foundation.org> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 00/45] Permit filesystem local caching [ver #41]
-Date: Tue, 25 Nov 2008 00:09:04 +0000
-Message-ID: <5124.1227571744@redhat.com>
+	Mon, 24 Nov 2008 19:12:37 -0500
+Received: from castle.comp.uvic.ca ([142.104.5.97]:46314 "EHLO
+	castle.comp.uvic.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbYKYAMh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 19:12:37 -0500
+X-Greylist: delayed 1564 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 19:12:36 EST
+Message-ID: <42413.142.104.193.193.1227570383.squirrel@wm3.uvic.ca>
+Date: Mon, 24 Nov 2008 15:46:23 -0800 (PST)
+Subject: adaptive mode in Linux bonding driver
+From: "luming" <luming@uvic.ca>
+To: linux-kernel@vger.kernel.org
+Cc: pan@uvic.ca
+User-Agent: SquirrelMail/1.4.9a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-UVic-Virus-Scanned: OK - Passed virus scan by Sophos (sophie) on castle
+X-UVic-Spam-Scan: castle.comp.uvic.ca Not_scanned_NOT_SA_HOST
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> We would want to know the performance benefits in some detail before even 
-> looking at the code, no?  Maybe they're in here somewhere but I missed it..
+I am currently working on my project which includes some modification to
+the kernel bonding driver. I have created a new mode in which each ip
+packet will be acknowledged by a linklayer acknowledgment. This ack will
+trigger the sender to increase a counter and when the sender send out
+packets, it will decrease the SAME counter.
 
-Okay...  You wanted some benchmarks, here are some.  I should try and automate
-the procedure since it's pretty straightforward, just time consuming to do by
-hand.
+To implement this , I have defined the counter in the structure slave. I
+have registered to receive ip packet and ack packets. The problem we found
+is when we bond two links (100Mbps) together with this mode, the sending
+rate never go above 107Mbps. It seems something slows down the sending
+rate. After some investigation, we  found that if we access the same
+counter in both the sending function and the receiver handler, this
+problem will happen. If we only access this counter in one of these two
+functions, it will be fine. If we decrease the link bandwidth or the ack
+sending frequency, we will see the sending rate increasing. So we think may
+be too many acks coming in a very short time that cause too many
+interrupts and slow down the system.
+(We are using PIII 700MHz with linux 2.6.15-7)
 
+My question is do you know what causes this problem and how can it be solved?
+Thanks very much!
+I am not subscribed in the list so please reply me back at: luming@uvic.ca.
 
-ENVIRONMENT
-===========
-
-I'm using a pair of computers, one an NFS server, the other an NFS client,
-connected by ZyXEL PL-100 ethernet-over-mains adapters to throttle the network
-bandwidth.
-
-As far as I can tell, the TCP bandwidth as seen by a pair of netcats communing
-with each other maxes out at about 890KB/s or 6.95 Mbits/s.  Amazon rates the
-PL-100's as up to 85Mbits/s, but I don't seem to be getting anything like that.
-
-The client was rebooted after each test, but the server wasn't.  The server was
-persuaded to pull the entire working set for each test into RAM to eliminate
-disk I/O latencies at that end.
-
-The Ext3 partition used for the cache was tuned to have 4096-byte blocks.
-During each run, a watch was put on the FS-Cache statistics on the client
-machine:
-
-	watch -n0 cat /proc/fs/fscache/stats
-
-This went over SSH to my desktop machine by GigE ethernet.
+Thanks
+Ming
 
 
-FIRST BENCHMARK
-===============
 
-The first benchmark involved pulling a 100MB file by NFS to the client using
-cat to /dev/zero run under time as a test.  The 'Time taken' reported by time
-was logged.  The benchmark was repeated three times and the average was taken:
-
-	Cache	RUN #1		RUN #2		RUN #3		AVG
-	=======	===============	===============	===============	===============
-	SERVER	0m0.062s
-	NONE	1m59.462s	1m59.948s	2m1.852s	2.007 mins
-	COLD	1m58.448s	1m59.436s	2m5.746s	2.020 mins
-	HOT	0m2.235s	0m2.154s	0m2.171s	0.036 mins
-	PGCACHE	0m0.040s
-
-Firstly the test was run on the server twice and the second result logged
-(SERVER).
-
-Secondly, the client was rebooted and the test was run with the cachefilesd not
-started and that was logged (NONE).  After rebooting, the cache contents were
-erased (mke2fs) and cachefilesd was started and the test run again, which
-loaded the cache (COLD).  Then the box was rebooted, cachefilesd was started
-and the test run a third time, this time with a populated cache (HOT).  This
-was repeated twice.
-
-Finally, for reference, the client test was run again without unmounting,
-stopping or rebooting anything so that the client's pagecache would act as the
-cache (PGCACHE).
-
-
-SECOND BENCHMARK
-================
-
-The second benchmark involved pulling a 256MB (as reported by du -s) kernel
-tree or 1185 directories containing 19258 files using a single tar to /dev/zero
-as a tesk.  The 'Time taken' reported by time was logged.  The benchmark was
-repeated three times and the average was taken:
-
-	Cache	RUN #1		RUN #2		RUN #3		AVG
-	=======	===============	===============	===============	===============
-	SERVER	0m0.348s
-	NONE	7m35.335s	7m42.075s	7m32.797s	7.612 mins
-	COLD	7m45.117s	7m54.774s	8m2.172s	7.900 mins
-	HOT	7m14.970s	7m10.953s	7m16.390s	7.235 mins
-	PGCACHE	3m10.864s
-
-The procedure was as for the first benchmark.
-
-For the second benchmark I also gathered data from the /proc/$$/mountstats file
-to determine the network loading of run #3.  The following table shows the
-counts of three different RPC operations issued, and the number of bytes read
-over the network as part of READ RPC operations:
-
-	Cache	GETATTR (N)	ACCESS (N)	READ (N)	READ (BYTES)
-	=======	===============	===============	===============	===============
-	NONE	22371		20486		21402		221252168
-	COLD	22411		20486		21402		221252168
-	HOT	22495		20481		0		0
-
-
-CONCLUSION
-==========
-
-As can be seen, the network link I have between my test server and test client
-is at about the break-even point for a large quantity of medium-small files (as
-might be found in a source tree) with respect to the total time it takes to
-completely read the files over NFS.
-
-However, for those medium-small files, the reduction in network loading is huge
-for repeat mass reads.  The time went from 7.6mins to 7.2mins, which is nice
-but not hugely significant, but the network loading dropped by ~21,000 RPC
-operations at a grand total of >220MB of data on the wire, allowing for network
-metadata, within those 7 minutes.
-
-
-For fewer but much larger files the cache has a proportionately greater effect
-as the client incurs lower costs from Ext3 lookups as it is doing many fewer of
-them, but gains greatly from Ext3's ability to glue large groups of contiguous
-reads together and to do lookahead.  Similarly to the previous case, having
-this data in the cache will reduce the network loading for repeat reads.
-
-
-A comparison of the second benchmark test run against the server's pagecache
-versus that test run against the client's pagecache is quite interesting.  The
-server can perform the tar in a third of a second, but the client takes over
-three minutes.
-
-That would indicate that something on the order of just over 3 minutes's worth
-of time is spent by each of the NONE, COLD and HOT test runs doing things other
-than reads.  That would be GETATTR, ACCESS, and READDIRPLUS ops.
-
-Another way of looking at it is that the NONE test or the second test spends a
-little over 4 minutes doing READ ops from the network, and that the HOT test
-spends almost as much time doing lookup, getxattr and read ops against Ext3.
-
-It's also worth noting that the neither benchmark did the COLD test take very
-much more time than the NONE test, despite doing lookups, mkdirs, creates,
-setxattrs and writes in the background.
-
-
-Of course, these two benchmarks are very much artificial: there was no other
-significant loading on the network between the client and the server; there was
-no other significant load on either machine; the cache started out empty and
-probably got loaded in optimal order; the cache was large enough to never need
-culling; only one program (cat or tar) was run at once.
-
-David
