@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbYKXUr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYKXUuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbYKXUr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 15:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYKXUrv
+	id S1753833AbYKXUuh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 15:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYKXUu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 15:47:51 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33547 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbYKXUrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 15:47:51 -0500
-Message-ID: <492B12E4.1000602@sandeen.net>
-Date: Mon, 24 Nov 2008 14:47:32 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-CC: linux-kernel@vger.kernel.org, davem@davemloft.net, tony.luck@intel.com,
-       ralf@linux-mips.org, kyle@mcmartin.ca, schwidefsky@de.ibm.com
-Subject: Re: [PATCH] generic compat_sys_ustat
-References: <20081121084105.GA7155@lst.de>
-In-Reply-To: <20081121084105.GA7155@lst.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Nov 2008 15:50:29 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:50767 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbYKXUu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 15:50:28 -0500
+Date: Mon, 24 Nov 2008 21:51:50 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT] kbuild patches
+Message-ID: <20081124205150.GA32497@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
+Just a heads up of what I so far has applied to build-next.git
 
-...
+I have more queued in my mailbox pending review/applying.
 
-> Index: linux-2.6/fs/compat.c
-> ===================================================================
-> --- linux-2.6.orig/fs/compat.c	2008-11-20 20:09:52.000000000 +0100
-> +++ linux-2.6/fs/compat.c	2008-11-20 20:16:05.000000000 +0100
-> @@ -378,6 +378,24 @@ out:
->  	return error;
->  }
->  
-> +asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *u32)
-> +{
-> +	struct ustat *u = compat_alloc_user_space(sizeof(*u));
+If you use "make -s" you will see that we are now more
+silent than before.
 
-Also, Pete Zaitcev pointed out to me:
+tags support got an overhauls and presently includes
+symbols form the archs that has not yet killed include/asm-*
 
->> Isn't this supposed to be:
->> 	struct ustat __user *u = compat_alloc_user_space(sizeof(*u));
+Everything is shortly available here:
 
--Eric
+   git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-next.git master
+
+I will send patches as followup.
+
+	Sam
+
+Mike Frysinger (3):
+      kbuild: kill output in silent mode of mkcompile_h
+      kbuild: introduce $(kecho) convenience echo
+      kbuild: use KECHO convenience echo
+
+Sally, Gene (1):
+      kbuild: gen_init_cpio expands shell variables in file names
+
+Sam Ravnborg (3):
+      kbuild: expand -I in KBUILD_CPPFLAGS
+      kbuild: teach mkmakfile to be silent
+      kbuild: move tags support to a shell script
+
+Werner Almesberger (1):
+      remove bashisms from scripts/extract-ikconfig
+
+
+ Documentation/kbuild/makefiles.txt |   14 ++++
+ Makefile                           |  127 ++-----------------------------
+ arch/blackfin/boot/Makefile        |    2 +-
+ scripts/Kbuild.include             |   18 ++--
+ scripts/Makefile.lib               |   15 +++-
+ scripts/extract-ikconfig           |    8 +-
+ scripts/mkcompile_h                |    6 +-
+ scripts/mkmakefile                 |    4 +-
+ scripts/tags.sh                    |  147 ++++++++++++++++++++++++++++++++++++
+ usr/gen_init_cpio.c                |   28 +++++++-
+ 10 files changed, 227 insertions(+), 142 deletions(-)
