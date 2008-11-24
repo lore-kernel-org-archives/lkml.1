@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYKXNk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYKXOF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYKXNk1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 08:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYKXNkS
+	id S1752415AbYKXOF3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 09:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYKXOFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 08:40:18 -0500
-Received: from mail.pcs.de ([145.253.69.50]:36006 "EHLO mail.pcs.com"
+	Mon, 24 Nov 2008 09:05:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42719 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbYKXNkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 08:40:17 -0500
-Date: Mon, 24 Nov 2008 14:40:15 +0100 (CET)
-From: Thomas Pfaff <tpfaff@pcs.com>
-X-X-Sender: tpfaff@lxtpfaff.pcs.ditec.de
-To: linux-kernel@vger.kernel.org
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] tty: Fix async io write notifications
-Message-ID: <Pine.LNX.4.64.0811241401280.8443@lxtpfaff.pcs.ditec.de>
+	id S1751911AbYKXOFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 09:05:12 -0500
+Message-ID: <492AB480.5060207@kernel.org>
+Date: Mon, 24 Nov 2008 23:04:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 24 Nov 2008 13:40:15.0768 (UTC) FILETIME=[2ED6F980:01C94E3A]
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
+       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
+ needed.
+References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown> <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org> <20081124133124.GB28946@ZenIV.linux.org.uk>
+In-Reply-To: <20081124133124.GB28946@ZenIV.linux.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 24 Nov 2008 14:04:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Pfaff <tpfaff@pcs.com>
+Al Viro wrote:
+> On Mon, Nov 24, 2008 at 03:56:12PM +0900, Tejun Heo wrote:
+> 
+>> mddev holds module reference and till the gendisk is gone mddev won't
+>> be gone, so as long as gendisk is around the respective mddev and
+>> md.ko are around.
+> 
+> It doesn't and it *could* *not* - you can't drop the final reference to
+> module from within that module, period.
 
-The N_TTY ldisc layer does not send SIGIO POLL_OUTs correctly when output is 
-possible due to flawed handling of the TTY_DO_WRITE_WAKEUP bit. It will either 
-send no SIGIOs at all or on every tty wakeup.
+Yeap, right, I was confused.  Referencing self doesn't make any sense.
+Got confused with holding sub modules and the days when there was no
+preemption inside kernel.  I think there still might be some remnants
+of those in SCSI but I need to look again.
 
-The fix is to set the bit when the tty driver write would block and test and 
-clear it on write wakeup.
+>> I don't think it's necessary to allow modules to unload while devices
+>> are hot.
+> 
+> gendisk may stay referenced past the point when everything got closed
+> and unregistered.
 
-Signed-off-by: Thomas Pfaff <tpfaff@pcs.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
- drivers/char/n_tty.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+Can we then make gendisk hold owner module till it gets released?  It
+would be much nicer to write code to if we can keep the regular object
+reference counting across module boundaries and being able to taking
+down a module while devices are active isn't a too important
+requirement.  For vast majoerity (ide, scsi, md) one way or the other
+doesn't even matter at all.
 
-diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-index efbfe96..4e0f4be 100644
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -923,10 +923,8 @@ handle_newline:
- 
- static void n_tty_write_wakeup(struct tty_struct *tty)
- {
--	if (tty->fasync) {
--		set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
-+	if (test_and_clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags))
- 		kill_fasync(&tty->fasync, SIGIO, POLL_OUT);
--	}
- }
- 
- /**
-@@ -1556,6 +1554,8 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
- 		}
- 		if (!nr)
- 			break;
-+		if (tty->fasync)
-+			set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
- 		if (file->f_flags & O_NONBLOCK) {
- 			retval = -EAGAIN;
- 			break;
-@@ -1565,6 +1565,8 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
- break_out:
- 	__set_current_state(TASK_RUNNING);
- 	remove_wait_queue(&tty->write_wait, &wait);
-+	if (tty->fasync && (b - buf) != nr)
-+		set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
- 	return (b - buf) ? b - buf : retval;
- }
- 
+Thanks.
+
+-- 
+tejun
