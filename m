@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYKXPYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbYKXPd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYKXPYf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 10:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYKXPYP
+	id S1753383AbYKXPd1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 10:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYKXPdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 10:24:15 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:61554 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbYKXPYO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 10:24:14 -0500
-Message-ID: <492AC715.9080602@nortel.com>
-Date: Mon, 24 Nov 2008 09:24:05 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 24 Nov 2008 10:33:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40873 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752502AbYKXPdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 10:33:15 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+References: <4917263D.2090904@telenet.dn.ua>
+	<20081110104423.GA26778@kernel.dk>
+	<x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
+	<20081110135618.GI26778@kernel.dk>
+	<x491vxgkd61.fsf@segfault.boston.devel.redhat.com>
+	<20081112190227.GS26778@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 24 Nov 2008 10:33:05 -0500
+In-Reply-To: <20081112190227.GS26778@kernel.dk> (Jens Axboe's message of "Wed,
+	12 Nov 2008 20:02:28 +0100")
+Message-ID: <x49skphdtqm.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, bharata@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sched: Don't allow priority switch to realtime when the
- task doesn't belong to init_task_group and when CONFIG_RT_GROUP_SCHED isn't
- set
-References: <20081120061854.GA4349@in.ibm.com>	 <1227402676.7685.19942.camel@twins> <20081124035807.GA3278@in.ibm.com>	 <1227515526.7685.21861.camel@twins>	 <20081124084644.GA26526@linux.vnet.ibm.com> <1227517575.7685.21906.camel@twins>
-In-Reply-To: <1227517575.7685.21906.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Nov 2008 15:24:08.0812 (UTC) FILETIME=[B20602C0:01C94E48]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-11-24 at 14:16 +0530, Dhaval Giani wrote:
-> 
-> 
->>Which would mean the init_task_group becase it contains those tasks which are
->>not grouped.
-> 
-> 
-> Only because of implementation details (we implement the !group case by
-> having them all part of a single group), conceptually they don't belong
-> to any group, hence talking about moving it to some group is just wrong.
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-> Furthermore your statement shows another misconception, a group of
-> ungrouped tasks doesn't make sense.
+> nfsd aside (which does seem to have some different behaviour skewing the
+> results), the original patch came about because dump(8) has a really
+> stupid design that offloads IO to a number of processes. This basically
+> makes fairly sequential IO more random with CFQ, since each process gets
+> its own io context. My feeling is that we should fix dump instead of
+> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
+> aware of any other good programs out there that would do something
+> similar, so I don't think there's a lot of merrit to spending cycles on
+> detecting cooperating processes.
+>
+> Jeff will take a look at fixing dump instead, and I may have promised
+> him that santa will bring him something nice this year if he does (since
+> I'm sure it'll be painful on the eyes).
 
-Arguably there is such a group, which is "the set of all RT tasks".
+Sorry to drum up this topic once again, but we've recently run into
+another instance where the close cooperator patch helps significantly.
+The case is KVM using the virtio disk driver.  The host-side uses
+posix_aio calls to issue I/O on behalf of the guest.  It's worth noting
+that pthread_create does not pass CLONE_IO (at least that was my reading
+of the code).  It is questionable whether it really should as that will
+change the I/O scheduling dynamics.
 
-Whether or not they should map to the top-level cgroup is a different 
-question.  Maybe in the !group case there should be a second top-level 
-"rt" cgroup?  We could even make the RT sched tuning knobs available there.
+So, Jens, what do you think?  Should we collect some performance numbers
+to make sure that the close cooperator patch doesn't hurt the common
+case?
 
-Chris
-
+Cheers,
+Jeff
