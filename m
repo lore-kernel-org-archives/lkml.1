@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYKXMFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbYKXMJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbYKXMFS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 07:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYKXMFF
+	id S1752704AbYKXMJf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 07:09:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKXMJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 07:05:05 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:54070 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYKXMFD (ORCPT
+	Mon, 24 Nov 2008 07:09:27 -0500
+Received: from mta-blr2.sasken.com ([164.164.56.19]:56134 "EHLO
+	mta-blr2.sasken.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYKXMJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 07:05:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=ZJO9f3hnA+5+cBlLfVvAGY8h0/bQc89Gbi8ULxEYxZMQVsEAxjzuX4Pw2BgeED8ndc
-         YCtil25x0m3EXkM+YRf8pg1DuI6m8Je3xMpz0XiVMMLCYbNgCb9SsS2R8J8JdVXX2wgB
-         0wPdicYqPK1o4JWzd7FwKusvQ9woG9YCJyXD4=
-Message-ID: <492A986D.8030809@gmail.com>
-Date: Mon, 24 Nov 2008 20:05:01 +0800
-From: jia zhang <jia.zhang2008@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
+	Mon, 24 Nov 2008 07:09:26 -0500
+X-Greylist: delayed 624 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 07:09:25 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AngBAJclKkkKAQC//2dsb2JhbAAIihKCPsNEgnw
+X-IronPort-AV: E=Sophos;i="4.33,659,1220207400"; 
+   d="scan'208";a="47189783"
+From: Pradeep G <pradeepg@sasken.com>
+Subject: test mail
+Date: Mon, 24 Nov 2008 17:28:58 +0530
+Message-ID: <gge4u2$i5$1@ncc-w.sasken.com>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Newsreader: Microsoft Outlook Express 6.00.2900.5512
+X-RFC2646: Format=Flowed; Original
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] sched: inaccurate calculation for normal priority
-Content-Type: text/plain; charset=ISO-8859-1
+X-News-Gateway: ncc-z.sasken.com
+X-OriginalArrivalTime: 24 Nov 2008 11:58:59.0621 (UTC) FILETIME=[092C8550:01C94E2C]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Here we should check to see if the task is a rt ktherad or normal rt process, although right now MAX_USER_RT_PRIO is equal MAX_RT_PRIO.
 
-Signed-off-by: jia zhang <jia.zhang2008@gmail.com>
----
- b/kernel/sched.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 9b1e793..b3038e4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1711,7 +1711,8 @@ static inline int normal_prio(struct task_struct *p)
- 	int prio;
- 
- 	if (task_has_rt_policy(p))
--		prio = MAX_RT_PRIO-1 - p->rt_priority;
-+		prio = p->mm ? MAX_USER_RT_PRIO-1 - p->rt_priority :
-+			MAX_RT_PRIO-1 - p->rt_priority;
- 	else
- 		prio = __normal_prio(p);
- 	return prio;
+SASKEN BUSINESS DISCLAIMER
+-------------------------
+This message may contain confidential, proprietary or legally privileged information. In 
+case you are not the original intended Recipient of the message, you must not, directly or 
+indirectly, use, Disclose, distribute, print, or copy any part of this message and you are 
+requested to delete it and inform the sender. Any views expressed in this message are 
+those of the individual sender unless otherwise stated. Nothing contained in this message 
+shall be construed as an offer or acceptance of any offer by Sasken Communication 
+Technologies Limited ("Sasken") unless sent with that express intent and with due 
+authority of Sasken. Sasken has taken enough precautions to prevent the spread of 
+viruses. However the company accepts no liability for any damage caused by any virus 
+transmitted by this email
 
