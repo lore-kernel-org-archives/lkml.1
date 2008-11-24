@@ -1,97 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYKXMmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYKXMrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172AbYKXMmU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 07:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKXMmM
+	id S1753037AbYKXMrT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 07:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYKXMrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 07:42:12 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39802 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbYKXMmM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 07:42:12 -0500
-Subject: Re: [PATCH -tip] kmemcheck: fix dynamic enable/disable
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20081124122013.GA24810@localhost.localdomain>
-References: <20081124122013.GA24810@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 24 Nov 2008 14:43:48 +0200
-Message-Id: <1227530628.3718.122.camel@penberg-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 24 Nov 2008 07:47:09 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:37264 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751191AbYKXMrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 07:47:08 -0500
+Message-ID: <492AA241.6050004@openvz.org>
+Date: Mon, 24 Nov 2008 15:46:57 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+CC: Kir Kolyshkin <kir@openvz.org>, linux-man@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Documentation for CLONE_NEWPID
+References: <4923810B.7010201@gmail.com>
+In-Reply-To: <4923810B.7010201@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vegard,
-
-On Mon, 2008-11-24 at 13:20 +0100, Vegard Nossum wrote:
-> (Ingo: Will send pull request for this later :-))
+Michael Kerrisk wrote:
+> Pavel, Kir,
 > 
+> Drawing fairly heavily on your LWN.net article (http://lwn.net/Articles/259217/), plus the kernel 
+> source and some experimentation, I created the patch below to document CLONE_NEWPID for the clone(2) 
+> manual page.  Could you please review and let me know of any improvements or inaccuracies.
+
+Michael, sorry for the late response - I've been on vacation last week and didn't
+have chance to connect to check my mail. Some comments are inline.
+
+> Thanks,
 > 
-> From 6f505f59011e565c2dbb7a220702feb0447cc854 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Mon, 24 Nov 2008 11:52:05 +0100
-> Subject: [PATCH] kmemcheck: fix dynamic enable/disable
+> Michael
 > 
-> On Fri, Oct 10, 2008 at 1:40 PM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> > I received a lot of errors after manually enabling kmemcheck
-> > in /proc (it had been turned off due to oneshot mode). It
-> > might be a good idea to put a warning that errrors found after
-> > enabling it at any time other than boot might be spurious.
+> --- a/man2/clone.2
+> +++ b/man2/clone.2
+> @@ -266,6 +268,78 @@ in the same
+>  .BR clone ()
+>  call.
+>  .TP
+> +.BR CLONE_NEWPID " (since Linux 2.6.24)"
+> +.\" This explanation draws a lot of details from
+> +.\" http://lwn.net/Articles/259217/
+> +.\" Authors: Pavel Emelyanov <xemul@openvz.org>
+> +.\" and Kir Kolyshkin <kir@openvz.org>
+> +.\"
+> +.\" The primary kernel commit is 30e49c263e36341b60b735cbef5ca37912549264
+> +.\" Author: Pavel Emelyanov <xemul@openvz.org>
+> +If
+> +.B CLONE_PID
+> +is set, then create the process in a new PID namespace.
+> +If this flag is not set, then (as with
+> +.BR fork (2)),
+> +the process is created in the same PID namespace as
+> +the calling process.
+> +This flag is intended for the implementation of control groups.
+
+Well, actually this has nothing to do with control groups. This
+flag is intended to be used to facilitate the creation of containers
+along with many other clone flags. Control groups is yet another
+way to create a container.
+
+> +A PID namespace provides an isolated environment for PIDs:
+> +PIDs in a new namespace start at 1,
+> +somewhat like a standalone system, and calls to
+> +.BR fork (2),
+> +.BR vfork (2),
+> +or
+> +.BR clone (2)
+> +will produce processes whose PIDs within the namespace
+> +are only guaranteed to be unique within that namespace.
+
+Well, I'm not sure I understood correctly what was meant here, but after 
+we have a namespace each task has two pids. And _all_ of them are unique 
+in corresponding namespaces.
+
+> +The first process created in a new namespace
+> +(i.e., the process created using the
+> +.BR CLONE_NEWPID
+> +flag) has the PID 1, and is the "init" process for the namespace.
+> +Children that are orphaned within the namespace will be reparented
+> +to this process rather than
+> +.BR init (8).
+> +Unlike the traditional
+> +.B init
+> +process, the "init" process of a PID namespace can terminate,
+> +and if it does, all of the processes in the namespace are terminated.
+> +
+> +PID namespaces form a hierarchy.
+> +When a PID new namespace is created,
+> +the PIDs of the processes in that namespace are visible
+> +in the PID namespace of the process that created the new namespace;
+> +analogously, if the parent PID namespace is itself
+> +the child of another PID namespace,
+> +then PIDs of the child and parent PID namespaces will both be
+> +visible in the grandparent PID namespace.
+> +Conversely, the processes in the "child" PID namespace do not see
+> +the PIDs of the processes in the parent namespace.
+> +The existence of a namespace hierarchy means that each process
+> +may now have multiple PIDs:
+> +one for each namespace in which it is visible.
+> +(A call to
+> +.BR getpid (2)
+> +always returns the PID associated with the namespace in which
+> +the process was created.)
+
+I don't thinks it's a good example - the getpid cannot be called
+for other process other than current :)
+
+> +
+> +After creating the new namespace,
+> +it is useful for the child to change its root directory
+> +and mount a new procfs instance at
+> +.I /proc
+> +so that tools such as
+> +.BR ps (1)
+> +work correctly.
+> +
+> +Use of this flag requires: a kernel configured with the
+> +.B CONFIG_PID_NS
+> +configuration option and requires that the process be privileged
+> +.RB (CAP_SYS_ADMIN ).
+> +This flag can't be specified in conjunction with
+> +.BR CLONE_THREAD .
+> +.TP
+>  .BR CLONE_PARENT " (since Linux 2.3.12)"
+>  If
+>  .B CLONE_PARENT
+> @@ -627,6 +701,14 @@ were specified in
+>  .IR flags .
+>  .TP
+>  .B EINVAL
+> +Both
+> +.BR CLONE_NEWPID
+> +and
+> +.BR CLONE_THREAD
+> +were specified in
+> +.IR flags .
+> +.TP
+> +.B EINVAL
+>  Returned by
+>  .BR clone ()
+>  when a zero value is specified for
+> @@ -639,6 +721,8 @@ copied.
+>  .TP
+>  .B EPERM
+>  .B CLONE_NEWNS
+> +or
+> +.B CLONE_NEWPID
+>  was specified by a non-root process (process without \fBCAP_SYS_ADMIN\fP).
+>  .TP
+>  .B EPERM
 > 
-> Fixed. This was the problem: Instructions with multiple address
-> operands could look up the shadow of an address that had
-> previously been un-hidden. After handling the memory access, the
-> page would get hidden again. The fix is to verify that the page
-> is present before we return a shadow pointer.
-
-I don't quite understand the error condition nor the fix. It's probably
-because I fried my brain during the weekend but here goes...
-﻿
-> diff --git a/arch/x86/mm/kmemcheck/shadow.c b/arch/x86/mm/kmemcheck/shadow.c
-> index 196dddc..62a0f63 100644
-> --- a/arch/x86/mm/kmemcheck/shadow.c
-> +++ b/arch/x86/mm/kmemcheck/shadow.c
-> @@ -27,6 +27,8 @@ void *kmemcheck_shadow_lookup(unsigned long address)
->  	pte = kmemcheck_pte_lookup(address);
->  	if (!pte)
->  		return NULL;
-> +	if (pte_present(*pte))
-> +		return NULL;
-
-OK, so when kmemcheck is disabled in oneshot mode they're made present
-and we don't mark them as non-present when we enable kmemcheck again? Is
-there a reason we can't do that? You might want add a comment explaining
-what's going on here.
- 
->  	page = virt_to_page(address);
->  	if (!page->shadow)
-
-> diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
-> index 056b4f1..12a4bbd 100644
-> --- a/arch/x86/mm/kmemcheck/kmemcheck.c
-> +++ b/arch/x86/mm/kmemcheck/kmemcheck.c
-> @@ -707,6 +707,16 @@ bool kmemcheck_trap(struct pt_regs *regs)
->  	}
->  
->  	/*
-> +	 * At this point, we know that the trap was kmemcheck's. However, if
-> +	 * kmemcheck was disabled, we need to return immediately (and stop
-> +	 * emulating the REP instruction).
-> +	 */
-> +	if (!kmemcheck_enabled) {
-> +		kmemcheck_hide(regs);
-> +		return true;
-> +	}
-
-OK, I assume kmemcheck_hide() stops emulating the REP instruction? Why
-do we need to do it here and not at kmemcheck disable-time? Also, this
-change doesn't seem to be explained in the patch description?
-
-		Pekka
 
