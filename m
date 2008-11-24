@@ -1,436 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYKXDCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYKXDG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbYKXDCX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 22:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYKXDBt
+	id S1752725AbYKXDG5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 22:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYKXDGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 22:01:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46256 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbYKXDBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 22:01:47 -0500
-Message-ID: <492A1897.6000706@kernel.org>
-Date: Sun, 23 Nov 2008 18:59:35 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 23 Nov 2008 22:06:49 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52742 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751075AbYKXDGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 22:06:47 -0500
+Date: Sun, 23 Nov 2008 22:01:11 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Tejun Heo <teheo@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
+       chris.mason@oracle.com
+Subject: Re: about TRIM/DISCARD support and barriers
+Message-ID: <20081124030111.GC2163@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Matthew Wilcox <matthew@wil.cx>, Tejun Heo <teheo@suse.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	IDE/ATA development list <linux-ide@vger.kernel.org>,
+	Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
+	chris.mason@oracle.com
+References: <4928E010.4090801@kernel.org> <4929023C.2060302@suse.de> <20081123123514.GI5707@parisc-linux.org> <1227447584.4901.405.camel@macbook.infradead.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] irq: move irq_desc according to smp_affinity
-References: <492A180B.9030208@kernel.org>
-In-Reply-To: <492A180B.9030208@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227447584.4901.405.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 23, 2008 at 01:39:44PM +0000, David Woodhouse wrote:
+> On Sun, 2008-11-23 at 05:35 -0700, Matthew Wilcox wrote:
+> > The current VFAT filesystem implements DISCARD. 
+> 
+> As does btrfs. I think I posted ext2 patches a little while ago too? Or
+> someone else did. Did they get merged?
 
-impact: new feature move irq_desc with sparseirq
+Looks like they didn't get merged.  I thought akpm was going to merge
+them.  Ext4 has discard support though.  It doesn't port easily to
+ext3 since it ext4 has a new block allocator.
 
-if CONFIG_MOVE_IRQ_DESC is set
-  make irq_desc to go with affinity aka irq_desc moving etc
-  call move_irq_desc in irq_complete_move()
-  legacy irq_desc is not moved, because they are allocated via static array
-
-for logical apic mode, need to add move_desc_in_progress_in_same_domain. otherwise it will not get moved. ==> also could need two phase to get irq_desc moved.
-	for example: 0xff is old affinity, and need to set 0xf, and then set to 0xf0.
-	[ or we need to change domain definition to cpus on the same node ? ]
-
-LBSuse:~ # cat /proc/irq/22/smp_affinity
-00000000,00000000,00000000,000000ff
-LBSuse:~ # echo f > /proc/irq/22/smp_affinity
-LBSuse:~ # cat /proc/irq/22/smp_affinity
-00000000,00000000,00000000,0000000f
-LBSuse:~ # tail /var/log/messages
-...
-Oct 27 12:35:34 LBSuse kernel: klogd 1.4.1, log source = /proc/kmsg started.
-Oct 27 12:35:34 LBSuse kernel: eth0: no IPv6 routers present
-LBSuse:~ # echo f0 > /proc/irq/22/smp_affinity
-LBSuse:~ # tail /var/log/messages
-Oct 27 12:35:34 LBSuse kernel: klogd 1.4.1, log source = /proc/kmsg started.
-Oct 27 12:35:34 LBSuse kernel: eth0: no IPv6 routers present
-Oct 27 12:36:46 LBSuse kernel:   move irq_desc for 22 aka 0x16 to cpu 7 node 1
-Oct 27 12:36:46 LBSuse kernel:   alloc kstat_irqs on cpu 7 node 1
-Oct 27 12:36:46 LBSuse kernel:   alloc irq_cfg on cpu 7 node 1
-Oct 27 12:36:46 LBSuse kernel:   alloc irq_2_pin on cpu 7 node 1
-
-so assume the user space program should update /proc/irq/XX/smp_affinity to 03 or 0f at first on boot
-or we change irq_default_affinity ?
-
-for physical apic is much simple
-on 4 sockets 16 cores system
-irq_desc is moving..
-when
-# echo 10 > /proc/irq/134483967/smp_affinity
-# echo 100 > /proc/irq/134483967/smp_affinity
-# echo 1000 > /proc/irq/134483967/smp_affinity
-got
-Nov  9 21:39:51 LBSuse kernel:   move irq_desc for 134483967 aka 0x8040fff to cpu 4 node 1
-Nov  9 21:39:51 LBSuse kernel:   alloc kstat_irqs on cpu 4 node 1
-Nov  9 21:39:51 LBSuse kernel:   alloc irq_cfg on cpu 4 node 1
-Nov  9 21:40:05 LBSuse kernel:   move irq_desc for 134483967 aka 0x8040fff to cpu 8 node 2
-Nov  9 21:40:05 LBSuse kernel:   alloc kstat_irqs on cpu 8 node 2
-Nov  9 21:40:05 LBSuse kernel:   alloc irq_cfg on cpu 8 node 2
-Nov  9 21:40:18 LBSuse kernel:   move irq_desc for 134483967 aka 0x8040fff to cpu 12 node 3
-Nov  9 21:40:18 LBSuse kernel:   alloc kstat_irqs on cpu 12 node 3
-Nov  9 21:40:18 LBSuse kernel:   alloc irq_cfg on cpu 12 node 3
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/Kconfig          |    9 ++
- arch/x86/kernel/io_apic.c |  143 +++++++++++++++++++++++++++++++++++++++++++++-
- kernel/irq/handle.c       |  116 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 267 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -252,6 +252,15 @@ config SPARSE_IRQ
- 
- 	  If you don't know what to do here, say Y.
- 
-+config MOVE_IRQ_DESC
-+	bool "Move irq desc when changing irq smp_affinity"
-+	depends on SPARSE_IRQ && SMP
-+	default y
-+	help
-+	  This enables moving irq_desc to cpu/node that irq will use handled.
-+
-+	  If you don't know what to do here, say Y.
-+
- config X86_FIND_SMP_CONFIG
- 	def_bool y
- 	depends on X86_MPPARSE || X86_VOYAGER
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -141,6 +141,9 @@ struct irq_cfg {
- 	unsigned move_cleanup_count;
- 	u8 vector;
- 	u8 move_in_progress : 1;
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+	u8 move_desc_in_progress_in_same_domain : 1;
-+#endif
- };
- 
- /* irq_cfg is indexed by the sum of all RTEs in all I/O APICs. */
-@@ -230,6 +233,122 @@ void arch_init_chip_data(struct irq_desc
- 	}
- }
- 
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+
-+static void init_copy_irq_2_pin(struct irq_cfg *old_cfg, struct irq_cfg *cfg,
-+				 int cpu)
-+{
-+	struct irq_pin_list *old_entry, *head, *tail, *entry;
-+
-+	cfg->irq_2_pin = NULL;
-+	old_entry = old_cfg->irq_2_pin;
-+	if (!old_entry)
-+		return;
-+
-+	entry = get_one_free_irq_2_pin(cpu);
-+	if (!entry)
-+		return;
-+
-+	entry->apic = old_entry->apic;
-+	entry->pin = old_entry->pin;
-+	head = entry;
-+	tail = entry;
-+	old_entry = old_entry->next;
-+
-+	while (old_entry) {
-+		entry = get_one_free_irq_2_pin(cpu);
-+		if (!entry) {
-+			entry = head;
-+			while (entry) {
-+				head = entry->next;
-+				kfree(entry);
-+				entry = head;
-+			}
-+			/* still use the old one */
-+			return;
-+		}
-+		entry->apic = old_entry->apic;
-+		entry->pin = old_entry->pin;
-+		tail->next = entry;
-+		tail = entry;
-+		old_entry = old_entry->next;
-+	}
-+
-+	tail->next = NULL;
-+	cfg->irq_2_pin = head;
-+}
-+
-+static void free_irq_2_pin(struct irq_cfg *old_cfg, struct irq_cfg *cfg)
-+{
-+	struct irq_pin_list *entry, *next;
-+
-+	if (old_cfg->irq_2_pin == cfg->irq_2_pin)
-+		return;
-+
-+	entry = old_cfg->irq_2_pin;
-+
-+	while (entry) {
-+		next = entry->next;
-+		kfree(entry);
-+		entry = next;
-+	}
-+	old_cfg->irq_2_pin = NULL;
-+}
-+
-+void arch_init_copy_chip_data(struct irq_desc *old_desc,
-+				 struct irq_desc *desc, int cpu)
-+{
-+	struct irq_cfg *cfg;
-+	struct irq_cfg *old_cfg;
-+
-+	cfg = get_one_free_irq_cfg(cpu);
-+
-+	if (!cfg)
-+		return;
-+
-+	desc->chip_data = cfg;
-+
-+	old_cfg = old_desc->chip_data;
-+
-+	memcpy(cfg, old_cfg, sizeof(struct irq_cfg));
-+
-+	init_copy_irq_2_pin(old_cfg, cfg, cpu);
-+}
-+
-+static void free_irq_cfg(struct irq_cfg *old_cfg)
-+{
-+	kfree(old_cfg);
-+}
-+
-+void arch_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
-+{
-+	struct irq_cfg *old_cfg, *cfg;
-+
-+	old_cfg = old_desc->chip_data;
-+	cfg = desc->chip_data;
-+
-+	if (old_cfg == cfg)
-+		return;
-+
-+	if (old_cfg) {
-+		free_irq_2_pin(old_cfg, cfg);
-+		free_irq_cfg(old_cfg);
-+		old_desc->chip_data = NULL;
-+	}
-+}
-+
-+static void set_extra_move_desc(struct irq_desc *desc, cpumask_t mask)
-+{
-+	struct irq_cfg *cfg = desc->chip_data;
-+
-+	if (!cfg->move_in_progress) {
-+		/* it means that domain is not changed */
-+		if (!cpus_intersects(desc->affinity, mask))
-+			cfg->move_desc_in_progress_in_same_domain = 1;
-+	}
-+}
-+#endif
-+
- #else
- static struct irq_cfg *irq_cfg(unsigned int irq)
- {
-@@ -238,9 +357,11 @@ static struct irq_cfg *irq_cfg(unsigned
- 
- #endif
- 
-+#ifndef CONFIG_MOVE_IRQ_DESC
- static inline void set_extra_move_desc(struct irq_desc *desc, cpumask_t mask)
- {
- }
-+#endif
- 
- struct io_apic {
- 	unsigned int index;
-@@ -2351,14 +2472,34 @@ static void irq_complete_move(struct irq
- 	struct irq_cfg *cfg = desc->chip_data;
- 	unsigned vector, me;
- 
--	if (likely(!cfg->move_in_progress))
-+	if (likely(!cfg->move_in_progress)) {
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+		if (likely(!cfg->move_desc_in_progress_in_same_domain))
-+			return;
-+
-+		/* domain is not change, but affinity is changed */
-+		me = smp_processor_id();
-+		if (cpu_isset(me, desc->affinity)) {
-+			*descp = desc = move_irq_desc(desc, me);
-+			/* get the new one */
-+			cfg = desc->chip_data;
-+			cfg->move_desc_in_progress_in_same_domain = 0;
-+		}
-+#endif
- 		return;
-+	}
- 
- 	vector = ~get_irq_regs()->orig_ax;
- 	me = smp_processor_id();
- 	if ((vector == cfg->vector) && cpu_isset(me, cfg->domain)) {
- 		cpumask_t cleanup_mask;
- 
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+		*descp = desc = move_irq_desc(desc, me);
-+		/* get the new one */
-+		cfg = desc->chip_data;
-+#endif
-+
- 		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
- 		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
- 		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -90,6 +90,32 @@ static void init_kstat_irqs(struct irq_d
- 		desc->kstat_irqs = (unsigned int *)ptr;
- }
- 
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+static void init_copy_kstat_irqs(struct irq_desc *old_desc, struct irq_desc *desc,
-+				 int cpu, int nr)
-+{
-+	unsigned long bytes;
-+
-+	init_kstat_irqs(desc, cpu, nr);
-+
-+	if (desc->kstat_irqs != old_desc->kstat_irqs) {
-+		/* Compute how many bytes we need per irq and allocate them */
-+		bytes = nr * sizeof(unsigned int);
-+
-+		memcpy(desc->kstat_irqs, old_desc->kstat_irqs, bytes);
-+	}
-+}
-+
-+static void free_kstat_irqs(struct irq_desc *old_desc, struct irq_desc *desc)
-+{
-+	if (old_desc->kstat_irqs == desc->kstat_irqs)
-+		return;
-+
-+	kfree(old_desc->kstat_irqs);
-+	old_desc->kstat_irqs = NULL;
-+}
-+#endif
-+
- void __attribute__((weak)) arch_init_chip_data(struct irq_desc *desc, int cpu)
- {
- }
-@@ -110,6 +136,23 @@ static void init_one_irq_desc(int irq, s
- 	arch_init_chip_data(desc, cpu);
- }
- 
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+static void init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
-+		 struct irq_desc *desc, int cpu)
-+{
-+	memcpy(desc, old_desc, sizeof(struct irq_desc));
-+	desc->cpu = cpu;
-+	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
-+	init_copy_kstat_irqs(old_desc, desc, cpu, nr_cpu_ids);
-+	arch_init_copy_chip_data(old_desc, desc, cpu);
-+}
-+
-+static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
-+{
-+	free_kstat_irqs(old_desc, desc);
-+	arch_free_chip_data(old_desc, desc);
-+}
-+#endif
- /*
-  * Protect the sparse_irqs_free freelist:
-  */
-@@ -238,6 +281,79 @@ out_unlock:
- 	return desc;
- }
- 
-+#ifdef CONFIG_MOVE_IRQ_DESC
-+static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
-+						int cpu)
-+{
-+	struct irq_desc *desc;
-+	unsigned int irq;
-+	struct list_head *hash_head;
-+	unsigned long flags;
-+	int node;
-+
-+	irq = old_desc->irq;
-+
-+	hash_head = sparseirqhashentry(irq);
-+
-+	spin_lock_irqsave(&sparse_irq_lock, flags);
-+	/*
-+	 * We have to do the hash-walk again, to avoid races
-+	 * with another CPU:
-+	 */
-+	list_for_each_entry(desc, hash_head, hash_entry) {
-+		if (desc->irq == irq && old_desc != desc)
-+			goto out_unlock;
-+	}
-+
-+	node = cpu_to_node(cpu);
-+	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-+	printk(KERN_DEBUG "  move irq_desc for %d aka %#x to cpu %d node %d\n",
-+		 irq, irq, cpu, node);
-+	if (!desc) {
-+		printk(KERN_ERR "can not get new irq_desc for moving\n");
-+		/* still use old one */
-+		desc = old_desc;
-+		goto out_unlock;
-+	}
-+	init_copy_one_irq_desc(irq, old_desc, desc, cpu);
-+
-+	list_replace_rcu(&old_desc->hash_entry, &desc->hash_entry);
-+	list_replace_rcu(&old_desc->list, &desc->list);
-+
-+	/* free the old one */
-+	free_one_irq_desc(old_desc, desc);
-+	kfree(old_desc);
-+
-+out_unlock:
-+	spin_unlock_irqrestore(&sparse_irq_lock, flags);
-+
-+	return desc;
-+}
-+
-+struct irq_desc *move_irq_desc(struct irq_desc *desc, int cpu)
-+{
-+	int old_cpu;
-+	int node, old_node;
-+
-+	/* those all static, do move them */
-+	if (desc->irq < NR_IRQS_LEGACY)
-+		return desc;
-+
-+	old_cpu = desc->cpu;
-+	printk(KERN_DEBUG "try to move irq_desc from cpu %d to %d\n", old_cpu, cpu);
-+	if (old_cpu != cpu) {
-+		node = cpu_to_node(cpu);
-+		old_node = cpu_to_node(old_cpu);
-+		if (old_node != node)
-+			desc = __real_move_irq_desc(desc, cpu);
-+		else
-+			desc->cpu = cpu;
-+	}
-+
-+	return desc;
-+}
-+#endif
-+
- #else
- 
- struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
-
-
+					- Ted
