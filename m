@@ -1,37 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYKXUBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbYKXUDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbYKXUBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 15:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYKXUBD
+	id S1753919AbYKXUDH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 15:03:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYKXUCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 15:01:03 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:59471 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752205AbYKXUBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 15:01:03 -0500
-X-Greylist: delayed 413 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 15:01:03 EST
-Date: Mon, 24 Nov 2008 13:54:05 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, john stultz <johnstul@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 0/2 v4] SGI RTC: add clocksource/clockevent driver and generic timer vector
-Message-ID: <20081124195405.GA8339@sgi.com>
+	Mon, 24 Nov 2008 15:02:55 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:50425 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbYKXUCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 15:02:54 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=SN+MUiAthtvZu/vXYt8zJkHzTWH4r0aa8qqfkN7IKcUmw7Uj1+4Yn3AB2ypiVIctp
+	7CPYx4HqRW1b1x0PjYmeQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
+References: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
+Date: Mon, 24 Nov 2008 12:02:50 -0800
+Message-ID: <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
+Subject: Re: [PATCH][V3]Make get_user_pages interruptible
+From: Paul Menage <menage@google.com>
+To: Ying Han <yinghan@google.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches provide a driver for synchronized RTC clocksource and
-clockevents for SGI systems, as well as a generic timer system interrupt.
+On Fri, Nov 21, 2008 at 5:31 PM, Ying Han <yinghan@google.com> wrote:
+> From: Paul Menage <menage@google.com>
 
-With these patches, a module can be installed that registers the system-wide
-synchronized RTC clocksource and timers as both a clocksource and clockevents
-device running in high resolution mode.
+This patch is getting further and further from my original internal
+changes, so I'm not sure that a From: line from me is appropriate.
 
+>                         */
+> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
+> -                               return i ? i : -ENOMEM;
+> +                       if (unlikely(sigkill_pending(tsk)))
+> +                               return i ? i : -ERESTARTSYS;
 
-[PATCH 1/2 v4] SGI RTC: add generic timer system interrupt
-[PATCH 2/2 v4] SGI RTC: add clocksource driver
+You've changed the check from sigkill_pending(current) to sigkill_pending(tsk).
+
+I originally made that sigkill_pending(current) since we want to avoid
+tasks entering an unkillable state just because they're doing
+get_user_pages() on a system that's short of memory. Admittedly for
+the main case that we care about, mlock() (or an mmap() with
+MCL_FUTURE set) then tsk==current, but philosophically it seems to me
+to be more correct to do the check against current than tsk, since
+current is the thing that's actually allocating the memory. But maybe
+it would be better to check both?
+
+Paul
