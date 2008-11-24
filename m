@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYKXTMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbYKXTMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbYKXTMV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYKXTMM
+	id S1754254AbYKXTMf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYKXTMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:12:12 -0500
-Received: from vpnflf.ccur.com ([12.192.68.2]:30411 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751904AbYKXTML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:12:11 -0500
-Date: Mon, 24 Nov 2008 14:11:43 -0500
-From: Joe Korty <joe.korty@ccur.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] create /proc/timer-wheel-list
-Message-ID: <20081124191143.GA24281@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <20081121221113.GA13566@tsunami.ccur.com> <20081122173423.GC2748@x200.localdomain> <20081123015923.GA26478@tsunami.ccur.com> <20081123100424.GW30453@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Nov 2008 14:12:15 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:28536 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbYKXTMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:12:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=FPGK2ACtvgDQp0DFU2HJDEcyHOtKDmJ+C3GxK99DIdOHBzgXSalWYqlLzy2snIgju4
+         Hmms9xl/LSuixSig7mBiFuHkQ4WHpk6ChEkbwYaKu9VW0mTOU7Sg6pTzFE7zzjeqfltF
+         ue0rX36S79aZRy+7pFFXVHdLyFimtkz0IFgk8=
+Message-ID: <2f11576a0811241112p494b28a6p720da1d60ac3438c@mail.gmail.com>
+Date: Tue, 25 Nov 2008 04:12:12 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after swap_cluster_max pages
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <49283A05.1060009@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081123100424.GW30453@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+References: <20081116163915.F208.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081115235410.2d2c76de.akpm@linux-foundation.org>
+	 <20081122191258.26B0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <49283A05.1060009@redhat.com>
+X-Google-Sender-Auth: 996de2a86a553aa2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 23, 2008 at 05:04:24AM -0500, Ingo Molnar wrote:
-> 
-> * Joe Korty <joe.korty@ccur.com> wrote:
-> 
-> > On Sat, Nov 22, 2008 at 12:34:23PM -0500, Alexey Dobriyan wrote:
-> > > On Fri, Nov 21, 2008 at 05:11:13PM -0500, Joe Korty wrote:
-> > > > Create /proc/timer_wheel_list.
-> > > >
-> > > > This does for the timer wheel what /proc/timer_list
-> > > > does for hrtimers -- provide a way of displaying what
-> > > > timers are running on what cpus, and their attributes.
-> > >
-> > > The fact that it's called a timer wheel is just an implementation detail
-> > > unsuitable for permanent file.
-> >
-> > Agreed.  I'll come up with something else.  lrtimer_list is a good
-> > candidate.
-> 
-> no - please include it in /proc/timer_list instead. It already lists
-> clockevents and hrtimers - listing timer-list timers would be a
-> natural extension of that facility.
+>> Rik, sorry, I nak current your patch. because it don't fix old akpm issue.
+>
+> You are right.  We do need to keep pressure between zones
+> equivalent to the size of the zones (or more precisely, to
+> the number of pages the zones have on their LRU lists).
 
-struct tvec_base and TVR_MASK & family are all local
-to kernel/timers.c rather than in some header file,
-so parts of the display code would need to remain in
-kernel/timers.c.  Seems ugly, but is of course do-able.
+Oh, sorry.
+you are right. but I talked about reverse thing.
 
-Also, I am not sure why we are lumping all sorts of
-disparate things in one display file.  Did proc files
-become expensive somewhere along the line?
+1. shrink_zones() doesn't have any shortcut exiting way.
+    it always call all zone's shrink_zone()
+2. balance_pgdat also doesn't have shortcut.
 
-(Just asking before I go down a path that everyone will
-hate, once they see the result).
+simple shrink_zone() shortcut and lite memory pressure cause following
+bad scenario.
 
-Regards,
-Joe
+1. reclaim 32 page from ZONE_HIGHMEM
+2. reclaim 32 page from ZONE_NORMAL
+3. reclaim 32 page from ZONE_DMA
+4. exit reclaim
+5. another task call page alloc and it cause try_to_free_pages()
+6. reclaim 32 page from ZONE_HIGHMEM
+7. reclaim 32 page from ZONE_NORMAL
+8. reclaim 32 page from ZONE_DMA
+
+oops, all zone reclaimed the same pages although ZONE_HIGHMEM have
+much memory than ZONE_DMA.
+IOW, ZONE_DMA's reclaim scanning rate is much than ZONE_HIGHMEM largely.
+
+it isn't intentionally.
+
+
+
+Actually, try_to_free_pages don't need pressure fairness. it is the
+role of the balance_pgdat().
+
+
+> However, having dozens of direct reclaim tasks all getting
+> to the lower priority levels can be disastrous, causing
+> extraordinarily large amounts of memory to be swapped out
+> and minutes-long stalls to applications.
+
+agreed.
+
+>
+> I think we can come up with a middle ground here:
+> - always let kswapd continue its rounds
+
+agreed.
+
+> - have direct reclaim tasks continue when priority == DEF_PRIORITY
+
+disagreed.
+it cause above bad scenario, I think.
+
+> - break out of the loop for direct reclaim tasks, when
+>  priority < DEF_PRIORITY and enough pages have been freed
+>
+> Does that sound like it would mostly preserve memory pressure
+> between zones, while avoiding the worst of the worst when it
+> comes to excessive page eviction?
