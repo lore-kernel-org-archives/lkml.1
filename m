@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYKXWGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYKXWHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbYKXWGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 17:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYKXWGJ
+	id S1753984AbYKXWHe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 17:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYKXWH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 17:06:09 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:45288 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbYKXWGH (ORCPT
+	Mon, 24 Nov 2008 17:07:26 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:36510 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750909AbYKXWHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 17:06:07 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-References: <patchbomb.1226603398@abulafia.goop.org>
-	<d103c0da2fa147ac31af.1226603428@abulafia.goop.org>
-	<20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org>
-	<m1y6ze87w6.fsf@frodo.ebiederm.org> <4925D762.6040406@goop.org>
-	<m1prkpj3nl.fsf@frodo.ebiederm.org> <49260BE7.1080909@goop.org>
-	<m1tza1hffa.fsf@frodo.ebiederm.org> <492AFDFC.1020305@goop.org>
-Date: Mon, 24 Nov 2008 14:02:58 -0800
-In-Reply-To: <492AFDFC.1020305@goop.org> (Jeremy Fitzhardinge's message of
-	"Mon, 24 Nov 2008 11:18:20 -0800")
-Message-ID: <m1bpw4g4tp.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.3637]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Mon, 24 Nov 2008 17:07:25 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, kbuild <linux-kbuild@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <1227560095-32597-8-git-send-email-sam@ravnborg.org>
+References: <20081124205150.GA32497@uranus.ravnborg.org>
+	 <1227560095-32597-8-git-send-email-sam@ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PDHTPpob3MhAZPVFgIKK"
+Date: Mon, 24 Nov 2008 22:07:14 +0000
+Message-Id: <1227564434.16868.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH 8/8] kbuild: move tags support to a shell script
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=V84b4ZJ0d9AA:10 a=50qSNOvygccA:10 a=WWBql4ttNm7lneV60FIA:9 a=Sx3XCO0HnfTkdNAlu40rF3JeJX4A:4 a=LY0hPdMaydYA:10 a=LjMR3qvCiUwfVEDTRGkA:9 a=zmjhjhIShGHvA6gUiUWUKTCN_QcA:4 a=rPt6xJ-oxjAA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-> Notwithstanding the possibility that there'll be general changes to x86
-> interrupt handing in the future, do you have any objection to my patches as they
-> stand?  Ingo would like to see your and/or hpa's ack before accepting them.
->
-> Should I repost them?
+--=-PDHTPpob3MhAZPVFgIKK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I couldn't track down the first set.  So if you could repost them with me on
-the cc I can review them, and tell you if I have specific objections.
-My apologies for the trouble.
+On Mon, 2008-11-24 at 21:54 +0100, Sam Ravnborg wrote:
+>=20
+> +# Support um (which has SUBARCH)
+> +# FIXME: add support for ALLSOURCE_ARCHS if really used
+> +if [ "${ARCH}" =3D=3D "${SUBARCH}" ]; then
+> +       archs=3D"${ARCH} ${SUBARCH}"
+> +else
+> +       archs=3D"${SRCARCH}"
+> +fi
 
-Eric
+I've never used um but is this conditional backwards? If ${ARCH} =3D=3D
+${SUBARCH} then archs=3D"${ARCH} ${SUBARCH}" is equivalent to archs=3D"
+${ARCH} ${ARCH}", isn't it?
+
+I'm not quite sure I understand the distinction between ARCH, SRCARCH
+and SUBARCH either but is it expected that for ARCH=3Dum, SUBARCH will be
+i386/x86_64 or x86? I think it's the former in which case I'd expect
+these days nothing will be found in arch/i386 or arch/x86_64? is a
+SRCSUBARCH required?
+
+Ian.
+
+--=20
+Ian Campbell
+
+To do two things at once is to do neither.
+		-- Publilius Syrus
+
+--=-PDHTPpob3MhAZPVFgIKK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkrJZIACgkQM0+0qS9rzVlhqgCcD6WjVPkLRZcsXo83z29YS99m
+EiAAn1YrUc3lZRJGnBr+c4mBCuUrQHOj
+=tgag
+-----END PGP SIGNATURE-----
+
+--=-PDHTPpob3MhAZPVFgIKK--
+
