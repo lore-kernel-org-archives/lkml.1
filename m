@@ -1,26 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbYKXAZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbYKXAfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbYKXAZy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 19:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYKXAZo
+	id S1752332AbYKXAfz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 19:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYKXAfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 19:25:44 -0500
-Received: from smtp3.ono.com ([62.42.230.176]:29949 "EHLO resmaa05.ono.com"
+	Sun, 23 Nov 2008 19:35:45 -0500
+Received: from smtp.ono.com ([62.42.230.12]:31331 "EHLO resmaa01.ono.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750885AbYKXAZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 19:25:44 -0500
-Date: Mon, 24 Nov 2008 01:25:41 +0100
+	id S1750990AbYKXAfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 19:35:45 -0500
+Date: Mon, 24 Nov 2008 01:35:42 +0100
 From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
 To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: no SD card reader
-Message-ID: <20081124012541.616c9f84@werewolf.home>
-In-Reply-To: <20081123233007.GA3959@srcf.ucam.org>
-References: <20081014025453.617f2ef8@werewolf.home>
-	<20081014174536.1353d17e@mjolnir.drzeus.cx>
-	<20081014232759.08f5d212@werewolf.home>
-	<20081123213921.667ecb93@mjolnir.drzeus.cx>
-	<4929D803.80708@tuffmail.co.uk>
-	<20081123233007.GA3959@srcf.ucam.org>
+Subject: nForce 790i/MCP55: sata-nv or ahci ?
+Message-ID: <20081124013542.16778a41@werewolf.home>
 X-Mailer: Claws Mail 3.6.1cvs37 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,27 +22,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Nov 2008 23:30:07 +0000, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+Hi all...
 
-> On Sun, Nov 23, 2008 at 10:24:03PM +0000, Alan Jenkins wrote:
-> 
-> > Matthew, if I have confused two similar issues, could you please help by 
-> > explaining the differences?
-> 
-> You're correct. On any released version of Linux, the Aspire One's SD 
-> slot will only show up if a card was inserted when the machine was 
-> booted. That's how it's always been. I have code to fix it, which will 
-> land in the 2.6.29 timeframe with luck.
-> 
+I have read that modern nVidia SATA's are AHCI. But several distros I have
+tried use the sata-nv module for that chipset controller (MCP55).
+Is this correct or should I use standard ahci ? Anyways, it looks that the
+kernel/modprobe settings use this, can I change it via kernel cmdline
+or modprobe.conf, and force the system to try ahci module ?
+By BIOS has no kind of setting to put the controlled in AHCI vs SATA mode...
+Playing with alias pci:v000010DEd0000037Fsv*sd*bc*sc*i* ?
 
-Thanks for the info. Just a couple questions:
-
-- Is there any pointer to a patch that can be applied to current stable
- (2.6.27.6) ?
-- I have tried to load acpiphp on the aspire and it says it has
-  'No such device'. Does the patch include something to make it load and
-  recognize the Aspire's PCI ? Is this module independent or do I need
-  also pciephp or shpchp ?
+wargo:~> lspci -s 00:0e
+00:0e.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+00:0e.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+00:0e.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+wargo:~> lspci -ns 00:0e
+00:0e.0 0101: 10de:037f (rev a3)
+00:0e.1 0101: 10de:037f (rev a3)
+00:0e.2 0101: 10de:037f (rev a3)
 
 TIA
 
