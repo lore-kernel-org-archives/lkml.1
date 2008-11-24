@@ -1,166 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbYKXV0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbYKXV1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753903AbYKXV0f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 16:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbYKXV00
+	id S1752637AbYKXV1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 16:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYKXV12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 16:26:26 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38195 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbYKXV0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 16:26:25 -0500
-Subject: [Patch][RFC] Supress Buffer I/O errors when SCSI REQ_QUIET flag set
-From: Keith Mannthey <kmannth@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: axboe@kernel.dk, Chandra Seetharaman <sekharan@us.ibm.com>
-Content-Type: text/plain
-Date: Mon, 24 Nov 2008 13:26:23 -0800
-Message-Id: <1227561983.6487.32.camel@keith-laptop>
+	Mon, 24 Nov 2008 16:27:28 -0500
+Received: from gv-out-0910.google.com ([216.239.58.188]:5958 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYKXV11 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 16:27:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=CDwSHQlk5iSrMbueFWk5oiofMnRg/0UWS3z6ax7OJg8BjoKIXvEgkawTC6evviXjub
+         bVnCz0/vcgNyrzzn4zIYPA5nbIpSLZ6GWExz3TAvPB+THADe8bx2ArSXDhUF5P55ZiyD
+         s0ZrYWmR6FWW/CQyXlxrIBTfNfEYtvQmUFVzA=
+Date: Mon, 24 Nov 2008 23:27:20 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] mmiotrace: fix buffer overrun detection
+Message-ID: <20081124232720.59312c0d@daedalus.pq.iki.fi>
+In-Reply-To: <c62985530811241230x601a27e1w504b0564b9513a13@mail.gmail.com>
+References: <20081123154148.04e0851a@daedalus.pq.iki.fi>
+	<alpine.DEB.1.10.0811231134150.27108@gandalf.stny.rr.com>
+	<20081123212430.4f6700e9@daedalus.pq.iki.fi>
+	<20081123193413.GB2794@elte.hu>
+	<20081124221849.33c91bcf@daedalus.pq.iki.fi>
+	<c62985530811241230x601a27e1w504b0564b9513a13@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow the scsi request REQ_QUIET flag to be propagated to the buffer
-file system layer. The basic ideas is to pass the flag from the scsi
-request to the bio (block IO) and then to the buffer layer.  The buffer
-layer can then suppress needless printks. 
+On Mon, 24 Nov 2008 21:30:24 +0100
+"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
 
-This patch declutters the kernel log by removed the 40-50 (per lun)
-buffer io error messages seen during a boot in my multipath setup . It
-is a good chance any real errors will be missed in the "noise" it the
-logs without this patch. 
+> 2008/11/24 Pekka Paalanen <pq@iki.fi>:
+> >
+> > Oh right, the busylooping bug when echoing into trace_marker,
+> > I already forgot about that, since I couldn't reproduce it.
+> > I guess there's nothing to do, until someone finds a way to
+> > reproduce it.
+> 
+> 
+> Hi Pekka.
+> 
+> Are you talking about this old bug that broke the pipe?
+> If so, you fixed it yourself partially with a patch that corrected
+> tracing_read_pipe.
+> Another origin was the none tracer that set tracer_enabled to 0.
+> But i has been fixed with the nop tracer.
+> 
+> Perhaps you are talking of something else?
 
-During boot I see blocks of messages like 
-"
-__ratelimit: 211 callbacks suppressed
-Buffer I/O error on device sdm, logical block 5242879
-Buffer I/O error on device sdm, logical block 5242879
-Buffer I/O error on device sdm, logical block 5242847
-Buffer I/O error on device sdm, logical block 1
-Buffer I/O error on device sdm, logical block 5242878
-Buffer I/O error on device sdm, logical block 5242879
-Buffer I/O error on device sdm, logical block 5242879
-Buffer I/O error on device sdm, logical block 5242879
-Buffer I/O error on device sdm, logical block 5242879
-Buffer I/O error on device sdm, logical block 5242872
-"
-in my logs. 
+Yeah, I'm talking about the shell spinning 90% in kernel and 10% in
+user, I tried to explain it in the part you left out from the quote.
+That is, doing 'echo foo > trace_marker' makes the shell/echo spin.
+And this doesn't seem to be deterministic, or the exact triggering
+sequence is too complex. I didn't notice any other adverse effects
+than the shell getting stuck.
 
-My disk environment is multipath fiber channel using the SCSI_DH_RDAC
-code and multipathd.  This topology includes an "active" and "ghost"
-path for each lun. IO's to the "ghost" path will never complete and the
-SCSI layer, via the scsi device handler rdac code, quick returns the IOs
-to theses paths and sets the REQ_QUIET scsi flag to suppress the scsi
-layer messages. 
+Maybe a corner case related to having only a single page in the
+ring buffer... nah, more likely something unexpected under
+trace_marker callbacks. Returning zero instead of error on
+write(2) maybe... something that makes 'echo' retry again and
+again, never succeeding or really failing.
 
- I am wanting to extend the QUIET behavior to include the buffer file
-system layer to deal with these errors as well. I have been running this
-patch for a while now on several boxes without issue.  A few runs of
-bonnie++ show no noticeable difference in performance in my setup. 
-
-Thanks for John Stultz for the quiet_error finalization. 
-
-Submitted-by:  Keith Mannthey <kmannth@us.ibm.com>
-
----
-
-diff -urN linux-2.6.28-rc4-orig/block/blk-core.c linux-2.6.28-rc4/block/blk-core.c
---- linux-2.6.28-rc4-orig/block/blk-core.c	2008-11-18 11:17:59.000000000 -0800
-+++ linux-2.6.28-rc4/block/blk-core.c	2008-11-17 16:48:06.000000000 -0800
-@@ -139,6 +139,9 @@
- 			nbytes = bio->bi_size;
- 		}
- 
-+		if (unlikely(rq->cmd_flags & REQ_QUIET)) {
-+			set_bit(BIO_QUIET, &bio->bi_flags);
-+		}
- 		bio->bi_size -= nbytes;
- 		bio->bi_sector += (nbytes >> 9);
- 
-diff -urN linux-2.6.28-rc4-orig/fs/buffer.c linux-2.6.28-rc4/fs/buffer.c
---- linux-2.6.28-rc4-orig/fs/buffer.c	2008-11-18 11:18:01.000000000 -0800
-+++ linux-2.6.28-rc4/fs/buffer.c	2008-11-18 12:02:59.000000000 -0800
-@@ -99,10 +99,18 @@
- 	page_cache_release(page);
- }
- 
-+
-+static int quiet_error(struct buffer_head *bh)
-+{
-+	if (!test_bit(BH_Quiet, &bh->b_state) && printk_ratelimit())
-+		return 0;
-+	return 1;
-+}
-+
-+
- static void buffer_io_error(struct buffer_head *bh)
- {
- 	char b[BDEVNAME_SIZE];
--
- 	printk(KERN_ERR "Buffer I/O error on device %s, logical block %Lu\n",
- 			bdevname(bh->b_bdev, b),
- 			(unsigned long long)bh->b_blocknr);
-@@ -144,7 +152,7 @@
- 	if (uptodate) {
- 		set_buffer_uptodate(bh);
- 	} else {
--		if (!buffer_eopnotsupp(bh) && printk_ratelimit()) {
-+		if (!buffer_eopnotsupp(bh) && !quiet_error(bh)) {
- 			buffer_io_error(bh);
- 			printk(KERN_WARNING "lost page write due to "
- 					"I/O error on %s\n",
-@@ -394,7 +402,7 @@
- 		set_buffer_uptodate(bh);
- 	} else {
- 		clear_buffer_uptodate(bh);
--		if (printk_ratelimit())
-+		if (!quiet_error(bh))
- 			buffer_io_error(bh);
- 		SetPageError(page);
- 	}
-@@ -455,7 +463,7 @@
- 	if (uptodate) {
- 		set_buffer_uptodate(bh);
- 	} else {
--		if (printk_ratelimit()) {
-+		if (!quiet_error(bh)) {
- 			buffer_io_error(bh);
- 			printk(KERN_WARNING "lost page write due to "
- 					"I/O error on %s\n",
-@@ -2912,6 +2920,9 @@
- 		set_bit(BH_Eopnotsupp, &bh->b_state);
- 	}
- 
-+	if (unlikely (test_bit(BIO_QUIET,&bio->bi_flags)))
-+		set_bit(BH_Quiet, &bh->b_state);
-+
- 	bh->b_end_io(bh, test_bit(BIO_UPTODATE, &bio->bi_flags));
- 	bio_put(bio);
- }
-diff -urN linux-2.6.28-rc4-orig/include/linux/bio.h linux-2.6.28-rc4/include/linux/bio.h
---- linux-2.6.28-rc4-orig/include/linux/bio.h	2008-11-18 11:18:02.000000000 -0800
-+++ linux-2.6.28-rc4/include/linux/bio.h	2008-11-18 11:32:51.000000000 -0800
-@@ -117,6 +117,7 @@
- #define BIO_CPU_AFFINE	8	/* complete bio on same CPU as submitted */
- #define BIO_NULL_MAPPED 9	/* contains invalid user pages */
- #define BIO_FS_INTEGRITY 10	/* fs owns integrity data, not block layer */
-+#define BIO_QUIET	11	/* Make BIO Quiet */
- #define bio_flagged(bio, flag)	((bio)->bi_flags & (1 << (flag)))
- 
- /*
-diff -urN linux-2.6.28-rc4-orig/include/linux/buffer_head.h linux-2.6.28-rc4/include/linux/buffer_head.h
---- linux-2.6.28-rc4-orig/include/linux/buffer_head.h	2008-11-18 11:18:02.000000000 -0800
-+++ linux-2.6.28-rc4/include/linux/buffer_head.h	2008-11-17 16:48:06.000000000 -0800
-@@ -35,6 +35,7 @@
- 	BH_Ordered,	/* ordered write */
- 	BH_Eopnotsupp,	/* operation not supported (barrier) */
- 	BH_Unwritten,	/* Buffer is allocated on disk but not written */
-+	BH_Quiet,	/* Buffer Error Prinks to be quiet */
- 
- 	BH_PrivateStart,/* not a state bit, but the first bit available
- 			 * for private allocation by other entities
-
-
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
