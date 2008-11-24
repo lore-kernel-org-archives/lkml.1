@@ -1,100 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbYKXRSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYKXRSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbYKXRSa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 12:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYKXRR7
+	id S1754754AbYKXRSr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 12:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYKXRST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 12:17:59 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55049 "EHLO mx2.suse.de"
+	Mon, 24 Nov 2008 12:18:19 -0500
+Received: from mga09.intel.com ([134.134.136.24]:58256 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbYKXRR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 12:17:58 -0500
-Message-ID: <492AE1DA.2000808@suse.de>
-Date: Tue, 25 Nov 2008 02:18:18 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1754479AbYKXRSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 12:18:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,660,1220252400"; 
+   d="scan'208";a="363761362"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Hitoshi Mitake <h.mitake@gmail.com>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>,
+       "dougthompson@xmission.com" <dougthompson@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
+Date: Mon, 24 Nov 2008 09:18:13 -0800
+Subject: RE: [PATCH 1/1] edac x38: new MC driver module
+Thread-Topic: [PATCH 1/1] edac x38: new MC driver module
+Thread-Index: AclNxxnVgaOhxyaZRM693RYL6NSq+AAkVBBw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35C517F42@orsmsx505.amr.corp.intel.com>
+References: <20081105222911.d76e7e1c.mitake@clustcom.com>
+	<413709.12821.qm@web50106.mail.re2.yahoo.com>
+	<20081106164641.ed369060.akpm@linux-foundation.org>
+	<20081107152830.a42766f3.mitake@clustcom.com>
+	<20081106223122.8a255211.akpm@linux-foundation.org>
+	<20081107153824.0ec934e6.mitake@clustcom.com>
+	<20081106231102.aab83cd4.akpm@linux-foundation.org>
+	<a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
+	<20081109112646.97c594b5.akpm@linux-foundation.org>
+	<20081118121620.GB8625@linux-mips.org>
+	<20081118123215.GB30509@flint.arm.linux.org.uk>
+ <20081121011941.26e05a25.h.mitake@gmail.com> <4929ECB7.8080108@zytor.com>
+In-Reply-To: <4929ECB7.8080108@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
-       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
- needed.
-References: <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org> <20081124133124.GB28946@ZenIV.linux.org.uk> <492AB480.5060207@kernel.org> <492AB98C.7030105@suse.de> <20081124144823.GC28946@ZenIV.linux.org.uk> <492AD169.9000805@suse.de> <20081124164245.GD28946@ZenIV.linux.org.uk>
-In-Reply-To: <20081124164245.GD28946@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mAOHJ7dq027642
 
-Al Viro wrote:
-> On Tue, Nov 25, 2008 at 01:08:09AM +0900, Tejun Heo wrote:
-> 
->> Devices can be killed from userland via sysfs for SCSI or mdadm for
->> md.  It's true that such approach is less convenient for unloading but
->> if it can make usual cases easier, why not?
-> 
-> _What_ usual cases?
+>       volatile u32 __iomem *__p = addr;
+>       u32 __l, __h;
 
-Following from gendisk or whatever high level object to lower level
-object.  open is most common but there are other places.
+Do we really need all the "__" inside an inline function?  Why
+not just call these "p", "l" and "h"?
 
->> Well, I don't know.  It seems like a lot of trouble just to allow
->> "rmmod something" without first killing the devices and as people are
->> now so used to reference counted objects and ->release, not having it
->> on cdev or gendisk is quite a PITA.  (BTW, Greg, can you please drop
->> cdev->release patch for now, it's wrong as it currently stands).
-> 
-> gendisks *ARE* reference counted, damnit.  So are net_device and a lot
-> of other things.
-
-Yes it is (where did I say they weren't?) but different in that it is
-a severing boundary for module reference and thus can't tell its
-creator when it's dying.
-
-> And no, it's not true that "struct net_device exists"
-> implies "the low-level objects that once might have been related to it
-> still exist" either.
-
-No, it's not.  If it were, we wouldn't be arguing.  :-)
-
->> Can you see any problem with caching ->disk_release existence on
->> registration and wrap __module_get/put() around its invocation?  It
->> wouldn't change behavior of any existing drivers and md can use it if
->> it wants.  Doing "mdadm --stop --scan" would be enough to unload the
->> module and md can do whatever forward or back reference it wants to do
->> to work out the weird userland interface.
-> 
-> Other than general ugliness and special-casing where none is really needed?
-> Special-casing as "very different life cycle if special method is present"...
-
-The duality is ugly alright and will probably need a big fat comment
-to explain what's going on but the current situation isn't too pretty
-(or at least convenient) either.
-
-> If anything, we need to go in opposite direction - give the drivers a way
-> to say "my underlying object is gone, STFU and don't bother me with that
-> gendisk ever again; free it when you are done with it, but from now on
-> any access to it would better fail.  Oh, and I might find a new device
-> in place of that any time now, so new open() would better get not fail
-> just something in VFS still has a reference to that gendisk".
->
-> Which is doable - note that we can unhash block_device, dissociate inodes
-> from it and let new open() DTRT.  Earlier opened files will still have
-> a reference to address_space of original block_device (which is why we
-> have file->f_mapping instead of going through ->f_dentry->d_inode->i_mapping),
-> so we are fine.
-
-Yes, that will be great too.  I'm just unhappy with the current
-situation which is in the middle of the two sane positions where
-drivers have to worry about whether high level object is valid or not.
-If it's either always valid or can be told to go away into oblivion
-(proper severing, no ->release necessary at all), I won't have any
-complaint.
-
-Thanks.
-
--- 
-tejun
+-Tony
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
