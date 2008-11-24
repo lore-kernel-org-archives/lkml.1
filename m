@@ -1,59 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYKXRFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbYKXRGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYKXRFy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 12:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYKXRFr
+	id S1754384AbYKXRGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 12:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYKXRGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 12:05:47 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:53157 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753114AbYKXRFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 12:05:46 -0500
-Date: Mon, 24 Nov 2008 22:35:35 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: Don't allow priority switch to realtime when
-	the task doesn't belong to init_task_group and when
-	CONFIG_RT_GROUP_SCHED isn't set
-Message-ID: <20081124170535.GE5451@linux.vnet.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20081120061854.GA4349@in.ibm.com> <1227402676.7685.19942.camel@twins> <20081124035807.GA3278@in.ibm.com> <1227515526.7685.21861.camel@twins>
+	Mon, 24 Nov 2008 12:06:00 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:41224 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754153AbYKXRF7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 12:05:59 -0500
+Message-ID: <492AE09A.7070204@suse.de>
+Date: Tue, 25 Nov 2008 01:12:58 +0800
+From: Coly Li <coyli@suse.de>
+Reply-To: coyli@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227515526.7685.21861.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix similar typos to successfull
+References: <492A9EFF.5050301@suse.de> <492AD564.9040300@oracle.com>
+In-Reply-To: <492AD564.9040300@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 09:32:06AM +0100, Peter Zijlstra wrote:
-> >  And may be as Ingo
-> > suggested they should be moved to init_task_group.
+
+
+Randy Dunlap Wrote:
+> Coly Li wrote:
+>> When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
+>> in kernel tree, 22 typos found totally --  great minds always think alike :)
+>>
+>> This patch fixes all the similar typos.
+>>
+>> Singed-off-by: Coly Li <coyli@suse.de>
+>> ---
+>>  Documentation/hwmon/abituguru-datasheet   |    4 ++--
+>>  Documentation/scsi/scsi_fc_transport.txt  |    4 ++--
+>>  arch/powerpc/platforms/cell/spufs/spufs.h |    2 +-
+>>  drivers/infiniband/hw/nes/nes_cm.c        |    2 +-
+>>  drivers/isdn/hardware/eicon/debuglib.h    |    2 +-
+>>  drivers/isdn/hardware/eicon/os_4bri.c     |    2 +-
+>>  drivers/isdn/hardware/eicon/os_bri.c      |    2 +-
+>>  drivers/isdn/hardware/eicon/os_pri.c      |    2 +-
+>>  drivers/mtd/ubi/kapi.c                    |    2 +-
+>>  drivers/net/wireless/ath5k/dma.c          |    2 +-
+>>  drivers/net/wireless/zd1211rw/zd_mac.c    |    2 +-
+>>  drivers/s390/block/dasd_3990_erp.c        |    2 +-
+>>  drivers/s390/block/dasd_int.h             |    2 +-
+>>  drivers/s390/char/tape_3590.c             |    2 +-
+>>  drivers/s390/cio/cio.c                    |    2 +-
+>>  drivers/s390/cio/qdio_main.c              |    2 +-
+>>  fs/ext4/extents.c                         |    2 +-
+>>  fs/ocfs2/dlmglue.c                        |    4 ++--
+>>  net/sctp/auth.c                           |    2 +-
+>>  19 files changed, 22 insertions(+), 22 deletions(-)
 > 
-> Bzzt, wrong! They should not be moved to any group, they cannot be moved
-> to any group, as they are group invariant.
+> Ack all <deleted> patches.  However, I don't think that the
+> one below needs to use -ly.  Just change to "successful" IMO,
+> as in:  Log this successful return from ocfs2_dlm_lock
+> 
+So "return" here is noun, not verb ?
 
-Though what you say makes sense, the confusion arises from existing
-cgroup<->scheduler interface, which can end up showing the above
-single-set of RT-tasks to be split into multiple sets.
+Thanks for ack :)
+> Thanks.
+> 
+>> diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+>> index ec68442..d0cd0e1 100644
+>> --- a/fs/ocfs2/dlmglue.c
+>> +++ b/fs/ocfs2/dlmglue.c
+>> @@ -1290,7 +1290,7 @@ again:
+>>  			goto out;
+>>  		}
+>>
+>> -		mlog(0, "lock %s, successfull return from ocfs2_dlm_lock\n",
+>> +		mlog(0, "lock %s, successfully return from ocfs2_dlm_lock\n",
+>>  		     lockres->l_name);
+>>
+>>  		/* At this point we've gone inside the dlm and need to
+>> @@ -2923,7 +2923,7 @@ static int ocfs2_drop_lock(struct ocfs2_super *osb,
+>>  		ocfs2_dlm_dump_lksb(&lockres->l_lksb);
+>>  		BUG();
+>>  	}
+>> -	mlog(0, "lock %s, successfull return from ocfs2_dlm_unlock\n",
+>> +	mlog(0, "lock %s, successfully return from ocfs2_dlm_unlock\n",
+>>  	     lockres->l_name);
+>>
+>>  	ocfs2_wait_on_busy_lock(lockres);
 
-RT Tasks -> {RT0, RT1}
-
-can be shown as:
-
-	/a/tasks {RT0, ...}
-	/b/tasks {RT1, ...}
-
-Does this cause any problems? Perhaps no, just seems odd ..
-
-Fixing this oddity of representing single RT-tasks set as multiple is not a 
-cgroup issue IMHO.
-
-P.S :- If eventually RT_GROUP_SCHED will be merged with FAIR_GROUP_SCHED, then 
-it may make sense for us to just ignore this oddity for timebeing and look 
-forward to the options being merged.
-
-- vatsa
+-- 
+Coly Li
+SuSE PRC Labs
