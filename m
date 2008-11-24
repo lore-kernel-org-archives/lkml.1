@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYKXU53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYKXU5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYKXU53 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 15:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYKXUzY
+	id S1754096AbYKXU5q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 15:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYKXU5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 15:55:24 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:54406 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754154AbYKXUzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 15:55:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=H1WZ8TfhNk96RfahBYPJUw/fvVRUQsQoWjdL4ISFX6UOb5Sc0MevBVm2W9++fGvTv5
-         EJkIEFUsZONowCxMFDKEfuIN25NgfVkek/rmplljpEV8T913W9/7b4xzcTWrPTWNZ8BO
-         JyZL5XPYDfM2BFYg+mdnsr7Wg70Kwt/q7O3/8=
-Message-ID: <84144f020811241255v2d4de38j59ceeb967227489@mail.gmail.com>
-Date: Mon, 24 Nov 2008 22:55:20 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Paul Menage" <menage@google.com>
-Subject: Re: [PATCH][V3]Make get_user_pages interruptible
-Cc: "Ying Han" <yinghan@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Rohit Seth" <rohitseth@google.com>
-In-Reply-To: <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Nov 2008 15:57:18 -0500
+Received: from nn7.de ([85.214.94.156]:33699 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754736AbYKXU5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 15:57:16 -0500
+Subject: Re: [Bug #11698] 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: "Rafael J\. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <V2w_GS-X2aE.A.rcH.ywIKJB@chimera>
+References: <0kQZaQnNVIL.A.BhG.FwIKJB@chimera>
+	 <V2w_GS-X2aE.A.rcH.ywIKJB@chimera>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
-	 <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
-X-Google-Sender-Auth: 1e8da49ca58f4703
+Date: Mon, 24 Nov 2008 21:57:13 +0100
+Message-Id: <1227560233.4881.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+On Sat, 2008-11-22 at 21:59 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.26 and 2.6.27.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> be listed and let me know (either way).
 
-On Fri, Nov 21, 2008 at 5:31 PM, Ying Han <yinghan@google.com> wrote:
->>                         */
->> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
->> -                               return i ? i : -ENOMEM;
->> +                       if (unlikely(sigkill_pending(tsk)))
->> +                               return i ? i : -ERESTARTSYS;
+current mainstream hangs on *every* resume (Carlos observed the same
+hangs on wakeup from s2ram but while the cause for him were the wireless
+drivers it must be something else here)...
 
-On Mon, Nov 24, 2008 at 10:02 PM, Paul Menage <menage@google.com> wrote:
-> You've changed the check from sigkill_pending(current) to sigkill_pending(tsk).
->
-> I originally made that sigkill_pending(current) since we want to avoid
-> tasks entering an unkillable state just because they're doing
-> get_user_pages() on a system that's short of memory. Admittedly for
-> the main case that we care about, mlock() (or an mmap() with
-> MCL_FUTURE set) then tsk==current, but philosophically it seems to me
-> to be more correct to do the check against current than tsk, since
-> current is the thing that's actually allocating the memory. But maybe
-> it would be better to check both?
+so this bug and the bug I am having is again hidden under something
+else. one thing I noticed: The machine resumes and numlock still works
+when using an external usb keyboard. still no display and also no second
+s2ram possible :(
 
-Well, most callers seem to pass 'current' to get_user_pages() but for
-the out-of-tree revoke patches, for example, you certainly want to
-check sigkill_pending(current) as well; otherwise the revoke operation
-is unkillable while in get_user_pages().
+Soeren
 
-Not that revoke() is going to hit mainline any time soon but it does
-serve as an argument for checking both.
-
-                        Pekka
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11698
+> Subject		: 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
+> Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+> Date		: 2008-09-29 11:29 (55 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122268780926859&w=4
+> Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> 
