@@ -1,33 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYKXPky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYKXPmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYKXPky (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 10:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbYKXPkS
+	id S1753727AbYKXPmh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 10:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYKXPmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 10:40:18 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:9912 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752697AbYKXPkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 10:40:17 -0500
-From: Andrey Mirkin <major@openvz.org>
-To: orenl@cs.columbia.edu, containers@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Andrey Mirkin <major@openvz.org>
-Subject: [PATCH 0/2] In-kernel process restart
-Date: Mon, 24 Nov 2008 18:39:33 +0300
-Message-Id: <1227541175-30301-1-git-send-email-major@openvz.org>
-X-Mailer: git-send-email 1.5.6
+	Mon, 24 Nov 2008 10:42:24 -0500
+Received: from kroah.org ([198.145.64.141]:34854 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752473AbYKXPmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 10:42:23 -0500
+Date: Mon, 24 Nov 2008 07:31:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Containers <containers@lists.osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Thery <benjamin.thery@bull.net>
+Subject: Re: [patch 1/1][RFC]Handle uevent per namespace
+Message-ID: <20081124153138.GA16742@kroah.com>
+References: <492A86FA.5080804@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <492A86FA.5080804@fr.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patchset introduces OpenVZ kernel based restart procedure on top of
-Oren's checkpoint/restart patchset v9.
+On Mon, Nov 24, 2008 at 11:50:34AM +0100, Daniel Lezcano wrote:
+>
 
-For restarting a set of processes one will need to call sys_restart() once with
-new flag CR_CTX_RSTR_IN_KERNEL. All work will be done in kernel in this case.
+> Subject: Handle uevent per namespace
+> From: Daniel Lezcano <dlezcano@fr.ibm.com>
+> 
+> At present when a network device is destroyed, inside a network
+> namespace, and this device has the same name as one network device
+> belonging to the initial network namespace (eg. eth0), the udev daemon
+> will disable the interface in the initial network namespace.
+> 
+> IMHO, udev should not receive this event. The uevents should be per
+> namespace or at least do not send events when not for the initial
+> network namespace.
 
-Small changes to image format are required to make in-kernel process creation
-more easy.
+IMHO, network namespaces are a mess and not something that you should be
+doing at all :)
 
-Oren, please take a look on this patchset. I've tried to port OpenVZ
-functionality on top of yours with minimal changes.
+> The following patch is a RFC for making uevent namespace aware. I don't
+> know this part of the kernel code, so I am pretty sure t is not the 
+> right way to do that :) 
+
+Like Kay said, please don't change the kobject core for this, try just
+filtering in the network core the events that you handle there.
+
+good luck,
+
+greg k-h
