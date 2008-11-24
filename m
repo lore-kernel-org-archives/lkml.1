@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbYKXEYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbYKXEaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752293AbYKXEYh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 23:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYKXEYX
+	id S1752473AbYKXEaT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 23:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYKXEaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 23:24:23 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43591 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbYKXEYW (ORCPT
+	Sun, 23 Nov 2008 23:30:00 -0500
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:46332 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbYKXE37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 23:24:22 -0500
-Date: Mon, 24 Nov 2008 04:24:21 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: NeilBrown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Doug Ledford <dledford@redhat.com>
-Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
-	needed.
-Message-ID: <20081124042421.GY28946@ZenIV.linux.org.uk>
-References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown>
+	Sun, 23 Nov 2008 23:29:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=q699L5zBsBeVDmnmgDKymeu/iI1AjpnHRsl5RNGKwNAGB3OgFnKKja2SkJRUprYiNV
+         sqV8KarbH+dkMlzLY6WVzCe32Nyiz5kdpovtQl2HuWeySIOVZufQpCWYJQS0JZGKcvCQ
+         l6VXr1lEIHEbxP1DoeeyDroayOWu1DH48O9JU=
+Message-ID: <492A2DBF.3030208@gmail.com>
+Date: Mon, 24 Nov 2008 13:29:51 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081124035530.3465.26724.stgit@notabene.brown>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Miklos Szeredi <miklos@szeredi.hu>,
+       arjan@linux.intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       hch@infradead.org, rminnich@sandia.gov, ericvh@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: poll: allow f_op->poll to sleep, take #3
+References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com> <20081123085902.GI30453@elte.hu> <49291F06.5040907@gmail.com> <20081123093420.GN30453@elte.hu> <492925B0.9030404@gmail.com> <20081123094551.GQ30453@elte.hu>
+In-Reply-To: <20081123094551.GQ30453@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 02:55:30PM +1100, NeilBrown wrote:
-> Between the call
->    __blkdev_get->get_gendisk->kobj_lookup->md_probe
-> and the call
->    __blkdev_get->md_open
+Ingo Molnar wrote:
+>> And @sync might be useful depending on who's waking it up, so we 
+>> either need to change the wake interface or give it an easier way to 
+>> pass those parameters as received.  The callback function isn't the 
+>> right place to ignore those parameters.  It simply doesn't know why 
+>> the caller is passing them in or what they mean under the 
+>> circumstances.
 > 
-> there is no obvious way to hold a reference on the mddev any more, so
-> unless something is done, it will disappear and gendisk will be
-> destroyed prematurely.
-> 
-> Also, once we decide to destroy the mddev, there will be an unlockable
-> moment before the gendisk is unlinked (blk_unregister_region) during
-> which a new reference to the gendisk can be created.  We need to
-> ensure that this reference can not be used.  i.e. the ->open must
-> fail.
-> 
-> So:
->  1/  in md_probe we set a flag in the mddev (hold_active) which
->      indicates that the array should be treated as active, even
->      though there are no references, and no appearance of activity.
->      This is cleared by md_release when the device is closed.
->      This ensure that the gendisk will survive between md_probe and
->      md_open.
+> We'll likely eliminate the 'sync' parameter from the scheduler. It's 
+> not a flag that should be proliferated.
 
-That won't work.  Note that you are not guaranteed that md_release() will be
-called after md_probe(); there are failure exits in __blkdev_get() that do
-not reach ->open() at all.
+But it's still being used in quite hot paths (pipe, splice, socket)
+and I don't really wanna mix up a change which can cause subtle
+scheduling related performance regression into this patch.  How about
+using the dummy waitqueue hack for now and when removing the @sync
+param, switch it to one of wakeup APIs?  I'll be happy to add big /*
+TODO */ comment in the function.
 
-What lifetime rules do you really want?  I never liked the tricks pulled
-by md wrt gendisk lifetimes and that might be a good time to sort that
-out for good...
+Thanks.
 
-What should happen to things like pending IO, etc. on array destruction?
-AFAICS, that's the real question...
+-- 
+tejun
