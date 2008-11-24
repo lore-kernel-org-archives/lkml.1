@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYKXIc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbYKXIeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649AbYKXIc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 03:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYKXIcs
+	id S1752539AbYKXIeD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 03:34:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKXIdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 03:32:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:32696 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbYKXIcr (ORCPT
+	Mon, 24 Nov 2008 03:33:49 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:55485 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbYKXIds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 03:32:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kL0+V7R8asoTy/SO9dsM8v4v8PIS1oPH5snVVDYWnudH2tq0SoEfAWF2bm2i/gNyrH
-         l5QpByKD69umXTXuJOdK1+XU+1JevEQMzRxvgmSwjWvMRH/uArRghMrNd6+OaJ9qiagX
-         sSAXOVMhI2/AyDTlTpwRepsmvgjmK4Yf6Lfjw=
-Subject: Re: [Bug #12038] Suspend regression in stable kernel 2.6.27.4 on
- Mac mini Core Duo
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: Tino Keitel <tino.keitel@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <20081124080334.GA4598@dose.home.local>
-References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera>
-	 <vyitTh0pP2N.A.nJC.c7HKJB@chimera>  <20081124080334.GA4598@dose.home.local>
-Content-Type: text/plain
-Date: Mon, 24 Nov 2008 00:32:42 -0800
-Message-Id: <1227515562.3108.30.camel@LiNuX>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 24 Nov 2008 03:33:48 -0500
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Tomas Winkler <tomasw@gmail.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
+Message-Id: <3A9C0F67-8E8C-4E38-AC96-4437ED0D53DD@linux.intel.com>
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Zhu Yi <yi.zhu@intel.com>
+In-Reply-To: <1227508394.2548.307.camel@debian.sh.intel.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: pull request: wireless-2.6 2008-11-18
+Date: Mon, 24 Nov 2008 09:33:38 +0100
+References: <20081119000719.GA19756@tuxdriver.com> <1ba2fa240811182246m17a6baf0ybde19af030a65819@mail.gmail.com> <1ba2fa240811190134u7974a840i532e8ed0e18f8c72@mail.gmail.com> <20081119143919.GA3485@tuxdriver.com> <1227497655.2548.257.camel@debian.sh.intel.com> <7E134DC0-A86D-460A-B5DC-22E6D9BEED92@linux.intel.com> <1227508394.2548.307.camel@debian.sh.intel.com>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-24 at 09:03 +0100, Tino Keitel wrote:
-> On Sat, Nov 22, 2008 at 21:28:19 +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.27.  Please verify if it still should be listed and let me know
-> > (either way).
-> 
-> Hi,
-> 
-> 2.6.28-rc6 (or more precisely:
-> ed313489badef16d700f5a3be50e8fd8f8294bc8) still hangs my Mac after
-> resume, and git log drivers/acpi/sleep/main.c shows no relevant commits.
-> 
-> Regards,
-> Tino
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Hi Yi,
 
-I'm not getting a freeze here(was getting strange cpu frequencies
-though); My setup here is the latest xserver from intrepid
-readeon, and s2ram app. echo mem > /sys/power/state gives
-me a black screen, then an instant reboot. s2ram recovers
-as expected. Although I'm not sure what the setup is with macmini,
-I've a macbook pro ati chipset.
+>> http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1703
+>>
+>> and just relying on Bugzilla is not gonna be good enough. The Linux
+>> kernel development has always been done via mailing lists. And while
+>> there is a kernel and other Bugzillas, the main authority is still  
+>> the
+>> mailing list. So if you wanna get massive feedback or have testing
+>> patches for debugging, then these need to be posted to linux-wireless
+>> and not "hidden" into a Bugzilla.
+>
+> This is generally true for bugs easy to debug with. But in this  
+> example,
+> the first reporter opened this bug 4 months ago. People usually don't
+> follow thread for such a long time. There are also some reporters  
+> never
+> show up in this ML.
 
-regards;
--- 
-Justin P. Mattock <justinmattock@gmail.com>
+true to some degree, but searching mailing list archives is a lot  
+simpler then bug reports.
+
+>> I do have a perfect environment in Vancouver that allows me to  
+>> trigger
+>> this behavior within a few minutes. So if you really wanna debug  
+>> this,
+>> then just send debug patches to the mailing list and I am happy to  
+>> run
+>> such kernels.
+>
+> Can you still reproduce this bug with Johannes' patch?
+
+we will see once I am back in Vancouver. Will be some time in December  
+though.
+
+Regards
+
+Marcel
 
