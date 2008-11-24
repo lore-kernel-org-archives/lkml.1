@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYKXQMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbYKXQZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbYKXQMN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 11:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYKXQLz
+	id S1753669AbYKXQZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYKXQZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 11:11:55 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:55745 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752935AbYKXQLy (ORCPT
+	Mon, 24 Nov 2008 11:25:33 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:38930 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672AbYKXQZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 11:11:54 -0500
-Message-ID: <492AD249.3020309@lwfinger.net>
-Date: Mon, 24 Nov 2008 10:11:53 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 24 Nov 2008 11:25:32 -0500
+Message-ID: <492AD564.9040300@oracle.com>
+Date: Mon, 24 Nov 2008 08:25:08 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Yuval Hager <yuval@avramzon.net>
-CC: Michael Buesch <mb@bu3sch.de>, LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de
-Subject: Re: BCM4312 Fails when xdm is started
-References: <200811151801.02369.yuval@avramzon.net> <4929C68E.6080401@lwfinger.net> <200811241049.45734.yuval@avramzon.net> <200811241155.47079.mb@bu3sch.de>
-In-Reply-To: <200811241155.47079.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-15
+To: coyli@suse.de
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix similar typos to successfull
+References: <492A9EFF.5050301@suse.de>
+In-Reply-To: <492A9EFF.5050301@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.492AD56C.002C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Monday 24 November 2008 09:49:38 Yuval Hager wrote:
->> * Now check this out - the output of lspci -d 14e4:4312 -x
->> 02:00.0 Network controller: Broadcom Corporation BCM4312 802.11a/b/g (rev ff)
->> 00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
->> 10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
->> 20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
->> 30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
->>
->> (I double checked this)
->>
->> huh?
+Coly Li wrote:
+> When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
+> in kernel tree, 22 typos found totally --  great minds always think alike :)
 > 
-> Hah, interesting. I think your hardware may be faulty, in fact.
-> To me it really seems like the mainboard has power failures on the PCI bus.
+> This patch fixes all the similar typos.
 > 
-> This is a laptop, so you can't pull random hardware? Can you run some
-> hardware burn-in tests like mprime (http://mersenne.org/freesoft/) or memtest?
-> If that doesn't help, can you try with another operating system?
-> 
+> Singed-off-by: Coly Li <coyli@suse.de>
+> ---
+>  Documentation/hwmon/abituguru-datasheet   |    4 ++--
+>  Documentation/scsi/scsi_fc_transport.txt  |    4 ++--
+>  arch/powerpc/platforms/cell/spufs/spufs.h |    2 +-
+>  drivers/infiniband/hw/nes/nes_cm.c        |    2 +-
+>  drivers/isdn/hardware/eicon/debuglib.h    |    2 +-
+>  drivers/isdn/hardware/eicon/os_4bri.c     |    2 +-
+>  drivers/isdn/hardware/eicon/os_bri.c      |    2 +-
+>  drivers/isdn/hardware/eicon/os_pri.c      |    2 +-
+>  drivers/mtd/ubi/kapi.c                    |    2 +-
+>  drivers/net/wireless/ath5k/dma.c          |    2 +-
+>  drivers/net/wireless/zd1211rw/zd_mac.c    |    2 +-
+>  drivers/s390/block/dasd_3990_erp.c        |    2 +-
+>  drivers/s390/block/dasd_int.h             |    2 +-
+>  drivers/s390/char/tape_3590.c             |    2 +-
+>  drivers/s390/cio/cio.c                    |    2 +-
+>  drivers/s390/cio/qdio_main.c              |    2 +-
+>  fs/ext4/extents.c                         |    2 +-
+>  fs/ocfs2/dlmglue.c                        |    4 ++--
+>  net/sctp/auth.c                           |    2 +-
+>  19 files changed, 22 insertions(+), 22 deletions(-)
 
-I also think you are seeing a hardware failure. Another test to try is
-http://freshmeat.net/projects/cpuburn/?topic_id=146, which will exercise the system.
+Ack all <deleted> patches.  However, I don't think that the
+one below needs to use -ly.  Just change to "successful" IMO,
+as in:  Log this successful return from ocfs2_dlm_lock
 
-Larry
+Thanks.
+
+> diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+> index ec68442..d0cd0e1 100644
+> --- a/fs/ocfs2/dlmglue.c
+> +++ b/fs/ocfs2/dlmglue.c
+> @@ -1290,7 +1290,7 @@ again:
+>  			goto out;
+>  		}
+> 
+> -		mlog(0, "lock %s, successfull return from ocfs2_dlm_lock\n",
+> +		mlog(0, "lock %s, successfully return from ocfs2_dlm_lock\n",
+>  		     lockres->l_name);
+> 
+>  		/* At this point we've gone inside the dlm and need to
+> @@ -2923,7 +2923,7 @@ static int ocfs2_drop_lock(struct ocfs2_super *osb,
+>  		ocfs2_dlm_dump_lksb(&lockres->l_lksb);
+>  		BUG();
+>  	}
+> -	mlog(0, "lock %s, successfull return from ocfs2_dlm_unlock\n",
+> +	mlog(0, "lock %s, successfully return from ocfs2_dlm_unlock\n",
+>  	     lockres->l_name);
+> 
+>  	ocfs2_wait_on_busy_lock(lockres);
+
+
+-- 
+~Randy
