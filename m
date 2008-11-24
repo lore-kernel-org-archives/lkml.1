@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYKXOF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYKXOLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415AbYKXOF3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 09:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYKXOFN
+	id S1752837AbYKXOLH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 09:11:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYKXOKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 09:05:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42719 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYKXOFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 09:05:12 -0500
-Message-ID: <492AB480.5060207@kernel.org>
-Date: Mon, 24 Nov 2008 23:04:48 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 24 Nov 2008 09:10:53 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:53597 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYKXOKw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 09:10:52 -0500
+Message-ID: <492AB7F3.5020406@nokia.com>
+Date: Mon, 24 Nov 2008 16:19:31 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
-       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
- needed.
-References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown> <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org> <20081124133124.GB28946@ZenIV.linux.org.uk>
-In-Reply-To: <20081124133124.GB28946@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+CC: Artem Bityutskiy <dedekind@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UBIFS: endian handling fixes and annotations
+References: <1227287970-14684-1-git-send-email-dedekind@infradead.org> <1227287970-14684-3-git-send-email-dedekind@infradead.org> <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
+In-Reply-To: <20081122192747.GB21433@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 24 Nov 2008 14:04:53 +0000 (UTC)
+X-OriginalArrivalTime: 24 Nov 2008 14:10:32.0708 (UTC) FILETIME=[69D20440:01C94E3E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Mon, Nov 24, 2008 at 03:56:12PM +0900, Tejun Heo wrote:
+Sebastian Andrzej Siewior wrote:
+> * Artem Bityutskiy | 2008-11-21 19:19:24 [+0200]:
 > 
->> mddev holds module reference and till the gendisk is gone mddev won't
->> be gone, so as long as gendisk is around the respective mddev and
->> md.ko are around.
+>> index 9ee6508..3f1f16b 100644
+>> --- a/fs/ubifs/key.h
+>> +++ b/fs/ubifs/key.h
+>> @@ -345,7 +345,7 @@ static inline int key_type_flash(const struct ubifs_info *c, const void *k)
+>> {
+>> 	const union ubifs_key *key = k;
+>>
+>> -	return le32_to_cpu(key->u32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
+>> +	return le32_to_cpu(key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
 > 
-> It doesn't and it *could* *not* - you can't drop the final reference to
-> module from within that module, period.
-
-Yeap, right, I was confused.  Referencing self doesn't make any sense.
-Got confused with holding sub modules and the days when there was no
-preemption inside kernel.  I think there still might be some remnants
-of those in SCSI but I need to look again.
-
->> I don't think it's necessary to allow modules to unload while devices
->> are hot.
+> If you would change such references to something like
+> |return le32_to_cpup(&key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
+> then on powerpc
 > 
-> gendisk may stay referenced past the point when everything got closed
-> and unregistered.
+>   text    data     bss     dec     hex filename
+> 155384    1284      24  156692   26414 ubifs-b4.ko
+> 155372    1284      24  156680   26408 ubifs-after.ko
+> 
+> because now it is possible to load the value as LE from memory instead
+> of loading it BE and swapping it afterwads.
 
-Can we then make gendisk hold owner module till it gets released?  It
-would be much nicer to write code to if we can keep the regular object
-reference counting across module boundaries and being able to taking
-down a module while devices are active isn't a too important
-requirement.  For vast majoerity (ide, scsi, md) one way or the other
-doesn't even matter at all.
+Wouldn't that be true for every le32_to_cpu of an lvalue?  Shame you can't
+do:
 
-Thanks.
+is_lvalue(x) ? le32_to_cpup(&(x)) : le32_to_cpu(x)
 
--- 
-tejun
+>> }
+>>
+>> /**
+>> @@ -416,7 +416,7 @@ static inline unsigned int key_block_flash(const struct ubifs_info *c,
+>> {
+>> 	const union ubifs_key *key = k;
+>>
+>> -	return le32_to_cpu(key->u32[1]) & UBIFS_S_KEY_BLOCK_MASK;
+>> +	return le32_to_cpu(key->j32[1]) & UBIFS_S_KEY_BLOCK_MASK;
+>> }
+> 
+> This and the previous change look like a bugfix for something that
+> should trigger during recovery or something? Shouldn't I fail in
+> ubifs_validate_entry() during recovery?
+
+This is just about casting.  key->u32[1] and key->j32[1] are the same object.
+There is no "real" bug in these two cases - just compilation warnings.
+
+>> /**
+>> diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
+>> index 77d26c1..bed9742 100644
+>> --- a/fs/ubifs/recovery.c
+>> +++ b/fs/ubifs/recovery.c
+>> @@ -168,12 +168,12 @@ static int write_rcvrd_mst_node(struct ubifs_info *c,
+>> 				struct ubifs_mst_node *mst)
+>> {
+>> 	int err = 0, lnum = UBIFS_MST_LNUM, sz = c->mst_node_alsz;
+>> -	uint32_t save_flags;
+>> +	__le32 save_flags;
+>>
+>> 	dbg_rcvry("recovery");
+>>
+>> 	save_flags = mst->flags;
+>> -	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
+>> +	mst->flags |= cpu_to_le32(UBIFS_MST_RCVRY);
+> 
+> another micro optimisation would be to use __constant_cpu_to_le32()
+
+As per Harvey's reply.
+
