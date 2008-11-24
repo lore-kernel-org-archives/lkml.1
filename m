@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbYKXBpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbYKXBpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbYKXBpY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 20:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYKXBpJ
+	id S1752925AbYKXBpm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 20:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYKXBpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 20:45:09 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54999 "EHLO mx2.suse.de"
+	Sun, 23 Nov 2008 20:45:13 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35759 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbYKXBpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 20:45:09 -0500
-Date: Sun, 23 Nov 2008 17:40:54 -0800
+	id S1751904AbYKXBpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 20:45:12 -0500
+Date: Sun, 23 Nov 2008 17:41:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: "Hans J. Koch" <hjk@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>,
        John Ogness <jogness@linutronix.de>,
        Benedikt Spranger <b.spranger@linutronix.de>
 Subject: Re: [PATCH RFC] UIO: Pass information about ioports to userspace
-Message-ID: <20081124014054.GA14143@suse.de>
+Message-ID: <20081124014122.GB14143@suse.de>
 References: <20081123121419.GA3087@local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,17 +39,8 @@ On Sun, Nov 23, 2008 at 01:14:20PM +0100, Hans J. Koch wrote:
 > This patch allows kernel drivers to pass information about such ports to
 > userspace. Similar to the existing mem[] array, it adds a port[] array to
 > struct uio_info. Each port range is described by start, size, and porttype.
-> 
-> If a driver fills in at least one such port range, the UIO core will simply
-> pass this information to userspace by creating a new directory "portio"
-> underneath /sys/class/uio/uioN/. Similar to the "mem" directory, it will
-> contain a subdirectory (portX) for each port range given.
 
-This is good, but it would really be nice to provide a way for userspace
-to access individual ports without having to have access to all ports in
-the system.  Lots of times we don't want to give root privileges to some
-programs that only need to read and write simple data to a single
-device.
+Looks good, but I think you also forgot the documentation update :)
 
 thanks,
 
