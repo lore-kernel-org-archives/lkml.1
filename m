@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbYKXI5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYKXI5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332AbYKXI5Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 03:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYKXI5E
+	id S1752766AbYKXI5f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 03:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYKXI5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 03:57:04 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:10940 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbYKXI5C (ORCPT
+	Mon, 24 Nov 2008 03:57:25 -0500
+Received: from wilson.telenet-ops.be ([195.130.132.42]:51693 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbYKXI5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 03:57:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NxyZLt4t66Kmkc8tR4+aDvESWFpVAw4kvwzUk46N4ax9Nk6dngFfdvhEK58WJwa3YH
-         0svRjSZYAnyvM8xT07KzKfi2n+OoZmdfQKwZfxvOdKGcHMTjeXA/cwD0XP8Jtw5hVyRl
-         Uy3yxI2spxjssSKvtnKLg2PeqTQAdm0V/ieXM=
-Message-ID: <b637ec0b0811240057n3bc9f3f1i42b4fc94173f8f3@mail.gmail.com>
-Date: Mon, 24 Nov 2008 09:57:01 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jay Fenlason" <fenlason@redhat.com>
-In-Reply-To: <492A5557.2010404@s5r6.in-berlin.de>
+	Mon, 24 Nov 2008 03:57:24 -0500
+Date: Mon, 24 Nov 2008 09:57:20 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] __used is needed for function referenced only from inline
+ asm
+In-Reply-To: <1227514662-10848-1-git-send-email-edwintorok@gmail.com>
+Message-ID: <Pine.LNX.4.64.0811240948130.30025@anakin>
+References: <1227514662-10848-1-git-send-email-edwintorok@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
-	 <b637ec0b0811231024t73d1b8b3x9e23e24dda94c6b8@mail.gmail.com>
-	 <b637ec0b0811231223r2032f221geeb19ea5804d3b91@mail.gmail.com>
-	 <200811240031.55944.rjw@sisk.pl> <492A5557.2010404@s5r6.in-berlin.de>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon, 24 Nov 2008, Török Edwin wrote:
+> According to the gcc manual, the 'used' attribute should be applied to
+> functions referenced only from inline assembly.
+> This fixes a build failure with llvm-gcc-4.2, which deleted
+> __mutex_lock_slowpath, __mutex_unlock_slowpath.
+> 
+> Signed-off-by: Török Edwin <edwintorok@gmail.com>
+> ---
+>  kernel/mutex.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/mutex.c b/kernel/mutex.c
+> index 39a3816..4f45d4b 100644
+> --- a/kernel/mutex.c
+> +++ b/kernel/mutex.c
+> @@ -59,7 +59,7 @@ EXPORT_SYMBOL(__mutex_init);
+>   * We also put the fastpath first in the kernel image, to make sure the
+>   * branch is predicted by the CPU as default-untaken.
+>   */
+> -static void noinline __sched
+> +static __used noinline void __sched
 
-On Mon, Nov 24, 2008 at 8:18 AM, Stefan Richter
-<stefanr@s5r6.in-berlin.de> wrote:
->
-> The commit which was pointed to in the bisection does nothing else than
-> free some data in firewire-core.
->
-> (Note to myself and Jay:  See http://lkml.org/lkml/2008/11/23/123 and
-> http://lkml.org/lkml/2008/11/23/153 for the history of this bug.)
->
-> Fabio, please test a _bad_ kernel with firewire drivers unloaded before
-> hibernation.
+Perhaps we should incorporate it into `noinline'?
 
-That's what I'm already doing right now.
+Gr{oetje,eeting}s,
 
-> Also, please enable in the "Kernel hacking" kernel config
-> menu:  "Kernel debugging", "Debug slab memory allocations".  Thanks,
+						Geert
 
-Will do. Thanks
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> --
-> Stefan Richter
-> -=====-==--- =-== ==---
-> http://arcgraph.de/sr/
->
-
-Regards,
-Fabio
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
