@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYKXTK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYKXTMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYKXTK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYKXTKt
+	id S1752848AbYKXTMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYKXTMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:10:49 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:63729 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYKXTKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:10:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=o0Q7Ys/sYOCY6TWdaAGvQhCOLIZ+6Y+SCV7ftQ2mdhWtkDyTvPnYWputbDD3lN9cw4
-         fOdujrSVCYTjo7Xz6izc636gMiLXU26OAGNHY5xyJYR4Q4cTEy/icy8t/Q0ugE+7A7rr
-         0o1C89xhQz3wR5BlOCdMx9+6C49SUGu2nnmoI=
-Message-ID: <c62985530811241110o32a601ddud0cfc02a9767a7d8@mail.gmail.com>
-Date: Mon, 24 Nov 2008 20:10:47 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Arnaldo Carvalho de Melo" <acme@redhat.com>,
-       "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: Human readable output for function return tracer
-In-Reply-To: <20081124181515.GG26466@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Nov 2008 14:12:12 -0500
+Received: from vpnflf.ccur.com ([12.192.68.2]:30411 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751904AbYKXTML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:12:11 -0500
+Date: Mon, 24 Nov 2008 14:11:43 -0500
+From: Joe Korty <joe.korty@ccur.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] create /proc/timer-wheel-list
+Message-ID: <20081124191143.GA24281@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20081121221113.GA13566@tsunami.ccur.com> <20081122173423.GC2748@x200.localdomain> <20081123015923.GA26478@tsunami.ccur.com> <20081123100424.GW30453@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c62985530811240639w574659c0nd0a54e6c1fb1197a@mail.gmail.com>
-	 <20081124181515.GG26466@ghostprotocols.net>
+In-Reply-To: <20081123100424.GW30453@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/24 Arnaldo Carvalho de Melo <acme@redhat.com>:
-> I do something like that in my ctracer tool[1], take a look at one of
-> the callgraphs:
->
-> http://oops.ghostprotocols.net:81/ostra/dccp/tx/
+On Sun, Nov 23, 2008 at 05:04:24AM -0500, Ingo Molnar wrote:
+> 
+> * Joe Korty <joe.korty@ccur.com> wrote:
+> 
+> > On Sat, Nov 22, 2008 at 12:34:23PM -0500, Alexey Dobriyan wrote:
+> > > On Fri, Nov 21, 2008 at 05:11:13PM -0500, Joe Korty wrote:
+> > > > Create /proc/timer_wheel_list.
+> > > >
+> > > > This does for the timer wheel what /proc/timer_list
+> > > > does for hrtimers -- provide a way of displaying what
+> > > > timers are running on what cpus, and their attributes.
+> > >
+> > > The fact that it's called a timer wheel is just an implementation detail
+> > > unsuitable for permanent file.
+> >
+> > Agreed.  I'll come up with something else.  lrtimer_list is a good
+> > candidate.
+> 
+> no - please include it in /proc/timer_list instead. It already lists
+> clockevents and hrtimers - listing timer-list timers would be a
+> natural extension of that facility.
 
+struct tvec_base and TVR_MASK & family are all local
+to kernel/timers.c rather than in some header file,
+so parts of the display code would need to remain in
+kernel/timers.c.  Seems ugly, but is of course do-able.
 
-Oh yes, that's what I would see as an end result. Except that it would be more
-easy for me to have the time of execution on the left (I don't need the time
-they are called since it's just a cost measure).
+Also, I am not sure why we are lumping all sorts of
+disparate things in one display file.  Did proc files
+become expensive somewhere along the line?
 
+(Just asking before I go down a path that everyone will
+hate, once they see the result).
 
-> I.e. the leaf functions doesn't use {}
-
-I guess I could avoid it too..
-
-
-> On ctracer I didn't had this problem as I don't trace all functions,
-> just the ones that receive as one of its parameters a pointer to the
-> desired struct, and this pointer is present in all the trace buffer
-> entries,
-
-How do you do this tracing by only passing a structure?
-
-> so as part of postprocessing it separates the callgraphs per
-> object.
-
-I would like to separate the callgraph per thread. I'm not sure how. Perhaps
-by only drawing a simple
-
-------8<----- switch to task nr x -----------8<-------------------
+Regards,
+Joe
