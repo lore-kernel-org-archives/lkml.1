@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYKXNb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYKXNbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYKXNb3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 08:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYKXNbT
+	id S1752415AbYKXNbp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 08:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYKXNb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 08:31:19 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39502 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750983AbYKXNbS (ORCPT
+	Mon, 24 Nov 2008 08:31:27 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46290 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753270AbYKXNb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 08:31:18 -0500
-Date: Mon, 24 Nov 2008 13:31:16 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mfd: Switch WM8350 revision detection to a feature
-	based model
-Message-ID: <20081124133116.GA31269@rakim.wolfsonmicro.main>
-References: <1227113220-17468-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081124103755.GA3479@sortiz.org>
+	Mon, 24 Nov 2008 08:31:26 -0500
+Date: Mon, 24 Nov 2008 13:31:24 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Tejun Heo <tj@kernel.org>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
+       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
+	needed.
+Message-ID: <20081124133124.GB28946@ZenIV.linux.org.uk>
+References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown> <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081124103755.GA3479@sortiz.org>
-X-Cookie: Do I have a lifestyle yet?
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <492A500C.9090200@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 11:37:55AM +0100, Samuel Ortiz wrote:
+On Mon, Nov 24, 2008 at 03:56:12PM +0900, Tejun Heo wrote:
 
-> Dont you prefer to use the WM8350_REV_* values in your code rather than some
-> undocumented constants like that ?
-> I understand that reading the code below will make those constants obvious,
-> but still...
+> mddev holds module reference and till the gendisk is gone mddev won't
+> be gone, so as long as gendisk is around the respective mddev and
+> md.ko are around.
 
-I don't find them enormously helpful, TBH - the constant gets used in
-exactly one place and there's been a bit of skew between what some of
-the ID registers are called and thier actual meaning which doesn't help.
+It doesn't and it *could* *not* - you can't drop the final reference to
+module from within that module, period.
 
-I'll repost with the #defines for the revisons added back, though.
+> I don't think it's necessary to allow modules to unload while devices
+> are hot.
+
+gendisk may stay referenced past the point when everything got closed
+and unregistered.
+
