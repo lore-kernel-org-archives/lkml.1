@@ -1,275 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYKXTvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbYKXTxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbYKXTvv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbYKXTvn
+	id S1753892AbYKXTxZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbYKXTxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:51:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55501 "EHLO mx2.redhat.com"
+	Mon, 24 Nov 2008 14:53:14 -0500
+Received: from mga01.intel.com ([192.55.52.88]:13554 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYKXTvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:51:42 -0500
-Date: Mon, 24 Nov 2008 14:50:57 -0500
-From: Rik van Riel <riel@redhat.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, mel@csn.ul.ie,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       akpm@linux-foundation.org
-Subject: [PATCH] vmscan: bail out of page reclaim after swap_cluster_max
- pages
-Message-ID: <20081124145057.4211bd46@bree.surriel.com>
-Organization: Red Hat, Inc.
+	id S1751410AbYKXTxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:53:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,660,1220252400"; 
+   d="scan'208";a="643088399"
+Date: Mon, 24 Nov 2008 11:53:11 -0800
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>, Avi Kivity <avi@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, "Luck, Tony" <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       iommu@lists.linux-foundation.org, kvm@vger.kernel.org
+Subject: [PATCH 1/2] Enable Pass Through Feature in Intel IOMMU
+Message-ID: <20081124195311.GA26246@linux-os.sc.intel.com>
+References: <20081001165750.GA21272@linux-os.sc.intel.com> <200810030941.42800.bjorn.helgaas@hp.com> <A6AD88C3F2289247BE726C37303E1EB8844A6398@orsmsx505.amr.corp.intel.com> <200810060855.36880.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810060855.36880.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes the VM spends the first few priority rounds rotating back
-referenced pages and submitting IO.  Once we get to a lower priority,
-sometimes the VM ends up freeing way too many pages.
 
-The fix is relatively simple: in shrink_zone() we can check how many
-pages we have already freed, direct reclaim tasks break out of the
-scanning loop if they have already freed enough pages and have reached
-a lower priority level.
+The patch set adds kernel parameter intel_iommu=pt to set up pass through mode in
+context mapping entry. This disables DMAR in linux kernel; but KVM still runs on
+VT-d. In this mode, kernel uses swiotlb for DMA API functions but other VT-d 
+functionalities are enabled for KVM. KVM always uses multi level translation
+page table in VT-d. By default, pass though mode is disabled in kernel.
 
-However, in order to do this we do need to know how many pages we already
-freed, so move nr_reclaimed into scan_control.
+This is useful when people don't want to enable VT-d DMAR in kernel for
+reasons like kernel iommu performance concern or debug purpose but still want to
+use KVM.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
+Thanks.
+
+-Fenghua
+
+
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+Signed-off-by: Weidong Han <weidong.han@intel.com>
+Signed-off-by: Allen Kay <allen.m.kay@intel.com>
+Signed-off-by: David Woodhouse <david.woodhouse@intel.com>
+
 ---
-Kosaki, this should address the zone scanning pressure issue.
 
-Nick, this includes the cleanups suggested by you.
+ Documentation/kernel-parameters.txt |    5 +++
+ arch/ia64/include/asm/iommu.h       |    1 
+ arch/ia64/kernel/pci-swiotlb.c      |    2 -
+ arch/x86/include/asm/iommu.h        |    1 
+ arch/x86/kernel/pci-swiotlb_64.c    |    4 ++-
+ drivers/pci/intel-iommu.c           |   47 ++++++++++++++++++++++++++----------
+ include/linux/dma_remapping.h       |    3 ++
+ include/linux/intel-iommu.h         |    3 +-
+ 8 files changed, 50 insertions(+), 16 deletions(-)
 
- mm/vmscan.c |   62 +++++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 33 insertions(+), 29 deletions(-)
-
-Index: linux-2.6.28-rc5/mm/vmscan.c
-===================================================================
---- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-17 15:22:22.000000000 -0500
-+++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-24 14:47:17.000000000 -0500
-@@ -52,6 +52,9 @@ struct scan_control {
- 	/* Incremented by the number of inactive pages that were scanned */
- 	unsigned long nr_scanned;
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index e0f346d..b966185 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -931,6 +931,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			With this option on every unmap_single operation will
+ 			result in a hardware IOTLB flush operation as opposed
+ 			to batching them for performance.
++		pt	[Default no Pass Through]
++			This option enables Pass Through in context mapping if
++			Pass Through is supported in hardware. With this option
++			DMAR is disabled in kernel and kernel uses swiotlb, but
++			KVM still uses VT-d hardware.
  
-+	/* Number of pages freed so far during a call to shrink_zones() */
-+	unsigned long nr_reclaimed;
+ 	io_delay=	[X86-32,X86-64] I/O delay method
+ 		0x80
+diff --git a/arch/ia64/include/asm/iommu.h b/arch/ia64/include/asm/iommu.h
+index 0490794..37d41ca 100644
+--- a/arch/ia64/include/asm/iommu.h
++++ b/arch/ia64/include/asm/iommu.h
+@@ -9,6 +9,7 @@ extern void pci_iommu_shutdown(void);
+ extern void no_iommu_init(void);
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
++extern int iommu_pass_through;
+ extern void iommu_dma_init(void);
+ extern void machvec_init(const char *name);
+ 
+diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+index 16c5051..69135b0 100644
+--- a/arch/ia64/kernel/pci-swiotlb.c
++++ b/arch/ia64/kernel/pci-swiotlb.c
+@@ -32,7 +32,7 @@ struct dma_mapping_ops swiotlb_dma_ops = {
+ 
+ void __init pci_swiotlb_init(void)
+ {
+-	if (!iommu_detected) {
++	if (!iommu_detected || iommu_pass_through) {
+ #ifdef CONFIG_IA64_GENERIC
+ 		swiotlb = 1;
+ 		printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
+diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
+index 0b500c5..014e94f 100644
+--- a/arch/x86/include/asm/iommu.h
++++ b/arch/x86/include/asm/iommu.h
+@@ -6,6 +6,7 @@ extern void no_iommu_init(void);
+ extern struct dma_mapping_ops nommu_dma_ops;
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
++extern int iommu_pass_through;
+ 
+ extern unsigned long iommu_nr_pages(unsigned long addr, unsigned long len);
+ 
+diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+index 3c539d1..4af2425 100644
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -50,8 +50,10 @@ struct dma_mapping_ops swiotlb_dma_ops = {
+ void __init pci_swiotlb_init(void)
+ {
+ 	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
+-	if (!iommu_detected && !no_iommu && max_pfn > MAX_DMA32_PFN)
++	if ((!iommu_detected && !no_iommu && max_pfn > MAX_DMA32_PFN) ||
++		iommu_pass_through)
+ 	       swiotlb = 1;
 +
- 	/* This context's GFP mask */
- 	gfp_t gfp_mask;
+ 	if (swiotlb_force)
+ 		swiotlb = 1;
+ 	if (swiotlb) {
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index aec60ad..f164a3c 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -120,7 +120,6 @@ struct context_entry {
+ 		(c).lo &= (((u64)-1) << 4) | 3; \
+ 		(c).lo |= ((val) & 3) << 2; \
+ 	} while (0)
+-#define CONTEXT_TT_MULTI_LEVEL 0
+ #define context_set_address_root(c, val) \
+ 	do {(c).lo |= (val) & VTD_PAGE_MASK; } while (0)
+ #define context_set_address_width(c, val) do {(c).hi |= (val) & 7;} while (0)
+@@ -203,6 +202,7 @@ static long list_size;
+ static void domain_remove_dev_info(struct dmar_domain *domain);
  
-@@ -1405,12 +1408,11 @@ static void get_scan_ratio(struct zone *
- /*
-  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
-  */
--static unsigned long shrink_zone(int priority, struct zone *zone,
-+static void shrink_zone(int priority, struct zone *zone,
- 				struct scan_control *sc)
- {
- 	unsigned long nr[NR_LRU_LISTS];
- 	unsigned long nr_to_scan;
--	unsigned long nr_reclaimed = 0;
- 	unsigned long percent[2];	/* anon @ 0; file @ 1 */
- 	enum lru_list l;
- 
-@@ -1451,10 +1453,21 @@ static unsigned long shrink_zone(int pri
- 					(unsigned long)sc->swap_cluster_max);
- 				nr[l] -= nr_to_scan;
- 
--				nr_reclaimed += shrink_list(l, nr_to_scan,
-+				sc->nr_reclaimed += shrink_list(l, nr_to_scan,
- 							zone, sc, priority);
- 			}
+ int dmar_disabled;
++int iommu_pass_through;
+ static int __initdata dmar_map_gfx = 1;
+ static int dmar_forcedac;
+ static int intel_iommu_strict;
+@@ -231,6 +231,9 @@ static int __init intel_iommu_setup(char *str)
+ 			printk(KERN_INFO
+ 				"Intel-IOMMU: disable batched IOTLB flush\n");
+ 			intel_iommu_strict = 1;
++		} else if (!strncmp(str, "pt", 2)) {
++			iommu_pass_through = 1;
++			printk(KERN_INFO "Intel-IOMMU: Pass Through enabled\n");
  		}
-+		/*
-+		 * On large memory systems, scan >> priority can become
-+		 * really large. This is fine for the starting priority;
-+		 * we want to put equal scanning pressure on each zone.
-+		 * However, if the VM has a harder time of freeing pages,
-+		 * with multiple processes reclaiming pages, the total
-+		 * freeing target can get unreasonably large.
-+		 */
-+		if (sc->nr_reclaimed > sc->swap_cluster_max &&
-+			sc->priority < DEF_PRIORITY && !current_is_kswapd())
-+			break;
+ 
+ 		str += strcspn(str, ",");
+@@ -1271,7 +1274,7 @@ static void domain_exit(struct dmar_domain *domain)
+ }
+ 
+ static int domain_context_mapping_one(struct dmar_domain *domain,
+-		u8 bus, u8 devfn)
++		u8 bus, u8 devfn, int translation)
+ {
+ 	struct context_entry *context;
+ 	struct intel_iommu *iommu = domain->iommu;
+@@ -1279,7 +1282,11 @@ static int domain_context_mapping_one(struct dmar_domain *domain,
+ 
+ 	pr_debug("Set context mapping for %02x:%02x.%d\n",
+ 		bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
++
+ 	BUG_ON(!domain->pgd);
++	BUG_ON(translation != CONTEXT_TT_PASS_THROUGH &&
++		translation != CONTEXT_TT_MULTI_LEVEL);
++
+ 	context = device_to_context_entry(iommu, bus, devfn);
+ 	if (!context)
+ 		return -ENOMEM;
+@@ -1292,7 +1299,7 @@ static int domain_context_mapping_one(struct dmar_domain *domain,
+ 	context_set_domain_id(*context, domain->id);
+ 	context_set_address_width(*context, domain->agaw);
+ 	context_set_address_root(*context, virt_to_phys(domain->pgd));
+-	context_set_translation_type(*context, CONTEXT_TT_MULTI_LEVEL);
++	context_set_translation_type(*context, translation);
+ 	context_set_fault_enable(*context);
+ 	context_set_present(*context);
+ 	__iommu_flush_cache(iommu, context, sizeof(*context));
+@@ -1310,13 +1317,14 @@ static int domain_context_mapping_one(struct dmar_domain *domain,
+ }
+ 
+ static int
+-domain_context_mapping(struct dmar_domain *domain, struct pci_dev *pdev)
++domain_context_mapping(struct dmar_domain *domain, struct pci_dev *pdev,
++			int translation)
+ {
+ 	int ret;
+ 	struct pci_dev *tmp, *parent;
+ 
+ 	ret = domain_context_mapping_one(domain, pdev->bus->number,
+-		pdev->devfn);
++		pdev->devfn, translation);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1328,17 +1336,17 @@ domain_context_mapping(struct dmar_domain *domain, struct pci_dev *pdev)
+ 	parent = pdev->bus->self;
+ 	while (parent != tmp) {
+ 		ret = domain_context_mapping_one(domain, parent->bus->number,
+-			parent->devfn);
++			parent->devfn, translation);
+ 		if (ret)
+ 			return ret;
+ 		parent = parent->bus->self;
  	}
+ 	if (tmp->is_pcie) /* this is a PCIE-to-PCI bridge */
+ 		return domain_context_mapping_one(domain,
+-			tmp->subordinate->number, 0);
++			tmp->subordinate->number, 0, translation);
+ 	else /* this is a legacy PCI bridge */
+ 		return domain_context_mapping_one(domain,
+-			tmp->bus->number, tmp->devfn);
++			tmp->bus->number, tmp->devfn, translation);
+ }
+ 
+ static int domain_context_mapped(struct dmar_domain *domain,
+@@ -1583,6 +1591,8 @@ static int iommu_prepare_identity_map(struct pci_dev *pdev,
+ 	unsigned long size;
+ 	unsigned long long base;
+ 	int ret;
++	int translation = iommu_pass_through ? CONTEXT_TT_PASS_THROUGH :
++				CONTEXT_TT_MULTI_LEVEL;
+ 
+ 	printk(KERN_INFO
+ 		"IOMMU: Setting identity map for device %s [0x%Lx - 0x%Lx]\n",
+@@ -1617,7 +1627,7 @@ static int iommu_prepare_identity_map(struct pci_dev *pdev,
+ 		goto error;
+ 
+ 	/* context entry init */
+-	ret = domain_context_mapping(domain, pdev);
++	ret = domain_context_mapping(domain, pdev, translation);
+ 	if (!ret)
+ 		return 0;
+ error:
+@@ -1725,6 +1735,7 @@ static int __init init_dmars(void)
+ 	struct pci_dev *pdev;
+ 	struct intel_iommu *iommu;
+ 	int i, ret, unit = 0;
++	int pass_through = 1;
  
  	/*
-@@ -1467,7 +1480,6 @@ static unsigned long shrink_zone(int pri
- 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
- 
- 	throttle_vm_writeout(sc->gfp_mask);
--	return nr_reclaimed;
- }
- 
- /*
-@@ -1481,16 +1493,13 @@ static unsigned long shrink_zone(int pri
-  * b) The zones may be over pages_high but they must go *over* pages_high to
-  *    satisfy the `incremental min' zone defense algorithm.
-  *
-- * Returns the number of reclaimed pages.
-- *
-  * If a zone is deemed to be full of pinned pages then just give it a light
-  * scan then give up on it.
-  */
--static unsigned long shrink_zones(int priority, struct zonelist *zonelist,
-+static void shrink_zones(int priority, struct zonelist *zonelist,
- 					struct scan_control *sc)
- {
- 	enum zone_type high_zoneidx = gfp_zone(sc->gfp_mask);
--	unsigned long nr_reclaimed = 0;
- 	struct zoneref *z;
- 	struct zone *zone;
- 
-@@ -1521,10 +1530,8 @@ static unsigned long shrink_zones(int pr
- 							priority);
+ 	 * for each drhd
+@@ -1790,7 +1801,14 @@ static int __init init_dmars(void)
+ 			printk(KERN_INFO "IOMMU 0x%Lx: using Queued "
+ 			       "invalidation\n", drhd->reg_base_addr);
  		}
- 
--		nr_reclaimed += shrink_zone(priority, zone, sc);
-+		shrink_zone(priority, zone, sc);
++		if (!ecap_pass_through(iommu->ecap))
++			pass_through = 0;
  	}
--
--	return nr_reclaimed;
- }
++	if (iommu_pass_through & pass_through) {
++		iommu_pass_through = 1;
++		printk(KERN_INFO "IOMMU is using Pass Through.\n");
++	} else
++		iommu_pass_through = 0;
  
- /*
-@@ -1549,7 +1556,6 @@ static unsigned long do_try_to_free_page
- 	int priority;
- 	unsigned long ret = 0;
- 	unsigned long total_scanned = 0;
--	unsigned long nr_reclaimed = 0;
- 	struct reclaim_state *reclaim_state = current->reclaim_state;
- 	unsigned long lru_pages = 0;
- 	struct zoneref *z;
-@@ -1577,7 +1583,7 @@ static unsigned long do_try_to_free_page
- 		sc->nr_scanned = 0;
- 		if (!priority)
- 			disable_swap_token();
--		nr_reclaimed += shrink_zones(priority, zonelist, sc);
-+		shrink_zones(priority, zonelist, sc);
- 		/*
- 		 * Don't shrink slabs when reclaiming memory from
- 		 * over limit cgroups
-@@ -1585,13 +1591,13 @@ static unsigned long do_try_to_free_page
- 		if (scan_global_lru(sc)) {
- 			shrink_slab(sc->nr_scanned, sc->gfp_mask, lru_pages);
- 			if (reclaim_state) {
--				nr_reclaimed += reclaim_state->reclaimed_slab;
-+				sc->nr_reclaimed += reclaim_state->reclaimed_slab;
- 				reclaim_state->reclaimed_slab = 0;
- 			}
- 		}
- 		total_scanned += sc->nr_scanned;
--		if (nr_reclaimed >= sc->swap_cluster_max) {
--			ret = nr_reclaimed;
-+		if (sc->nr_reclaimed >= sc->swap_cluster_max) {
-+			ret = sc->nr_reclaimed;
- 			goto out;
- 		}
- 
-@@ -1614,7 +1620,7 @@ static unsigned long do_try_to_free_page
- 	}
- 	/* top priority shrink_zones still had more to do? don't OOM, then */
- 	if (!sc->all_unreclaimable && scan_global_lru(sc))
--		ret = nr_reclaimed;
-+		ret = sc->nr_reclaimed;
- out:
  	/*
- 	 * Now that we've scanned all the zones at this priority level, note
-@@ -1709,7 +1715,6 @@ static unsigned long balance_pgdat(pg_da
- 	int priority;
- 	int i;
- 	unsigned long total_scanned;
--	unsigned long nr_reclaimed;
- 	struct reclaim_state *reclaim_state = current->reclaim_state;
- 	struct scan_control sc = {
- 		.gfp_mask = GFP_KERNEL,
-@@ -1728,7 +1733,7 @@ static unsigned long balance_pgdat(pg_da
+ 	 * For each rmrr
+@@ -1921,6 +1939,8 @@ get_valid_domain_for_dev(struct pci_dev *pdev)
+ {
+ 	struct dmar_domain *domain;
+ 	int ret;
++	int translation = iommu_pass_through ? CONTEXT_TT_PASS_THROUGH :
++				CONTEXT_TT_MULTI_LEVEL;
  
- loop_again:
- 	total_scanned = 0;
--	nr_reclaimed = 0;
-+	sc.nr_reclaimed = 0;
- 	sc.may_writepage = !laptop_mode;
- 	count_vm_event(PAGEOUTRUN);
+ 	domain = get_domain_for_dev(pdev,
+ 			DEFAULT_DOMAIN_ADDRESS_WIDTH);
+@@ -1932,7 +1952,7 @@ get_valid_domain_for_dev(struct pci_dev *pdev)
  
-@@ -1814,11 +1819,11 @@ loop_again:
- 			 */
- 			if (!zone_watermark_ok(zone, order, 8*zone->pages_high,
- 						end_zone, 0))
--				nr_reclaimed += shrink_zone(priority, zone, &sc);
-+				shrink_zone(priority, zone, &sc);
- 			reclaim_state->reclaimed_slab = 0;
- 			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
- 						lru_pages);
--			nr_reclaimed += reclaim_state->reclaimed_slab;
-+			sc.nr_reclaimed += reclaim_state->reclaimed_slab;
- 			total_scanned += sc.nr_scanned;
- 			if (zone_is_all_unreclaimable(zone))
- 				continue;
-@@ -1832,7 +1837,7 @@ loop_again:
- 			 * even in laptop mode
- 			 */
- 			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
--			    total_scanned > nr_reclaimed + nr_reclaimed / 2)
-+			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
- 				sc.may_writepage = 1;
- 		}
- 		if (all_zones_ok)
-@@ -1850,7 +1855,7 @@ loop_again:
- 		 * matches the direct reclaim path behaviour in terms of impact
- 		 * on zone->*_priority.
- 		 */
--		if (nr_reclaimed >= SWAP_CLUSTER_MAX)
-+		if (sc.nr_reclaimed >= SWAP_CLUSTER_MAX)
- 			break;
- 	}
- out:
-@@ -1872,7 +1877,7 @@ out:
- 		goto loop_again;
- 	}
+ 	/* make sure context mapping is ok */
+ 	if (unlikely(!domain_context_mapped(domain, pdev))) {
+-		ret = domain_context_mapping(domain, pdev);
++		ret = domain_context_mapping(domain, pdev, translation);
+ 		if (ret) {
+ 			printk(KERN_ERR
+ 				"Domain context map for %s failed",
+@@ -2450,7 +2470,8 @@ int __init intel_iommu_init(void)
  
--	return nr_reclaimed;
-+	return sc.nr_reclaimed;
+ 	init_timer(&unmap_timer);
+ 	force_iommu = 1;
+-	dma_ops = &intel_dma_ops;
++	if (!iommu_pass_through)
++		dma_ops = &intel_dma_ops;
+ 	return 0;
  }
  
- /*
-@@ -2224,7 +2229,6 @@ static int __zone_reclaim(struct zone *z
- 	struct task_struct *p = current;
- 	struct reclaim_state reclaim_state;
- 	int priority;
--	unsigned long nr_reclaimed = 0;
- 	struct scan_control sc = {
- 		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
- 		.may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-@@ -2257,9 +2261,9 @@ static int __zone_reclaim(struct zone *z
- 		priority = ZONE_RECLAIM_PRIORITY;
- 		do {
- 			note_zone_scanning_priority(zone, priority);
--			nr_reclaimed += shrink_zone(priority, zone, &sc);
-+			shrink_zone(priority, zone, &sc);
- 			priority--;
--		} while (priority >= 0 && nr_reclaimed < nr_pages);
-+		} while (priority >= 0 && sc.nr_reclaimed < nr_pages);
- 	}
+@@ -2511,10 +2532,10 @@ struct dmar_domain *intel_iommu_domain_alloc(struct pci_dev *pdev)
+ EXPORT_SYMBOL_GPL(intel_iommu_domain_alloc);
  
- 	slab_reclaimable = zone_page_state(zone, NR_SLAB_RECLAIMABLE);
-@@ -2283,13 +2287,13 @@ static int __zone_reclaim(struct zone *z
- 		 * Update nr_reclaimed by the number of slab pages we
- 		 * reclaimed from this zone.
- 		 */
--		nr_reclaimed += slab_reclaimable -
-+		sc.nr_reclaimed += slab_reclaimable -
- 			zone_page_state(zone, NR_SLAB_RECLAIMABLE);
- 	}
- 
- 	p->reclaim_state = NULL;
- 	current->flags &= ~(PF_MEMALLOC | PF_SWAPWRITE);
--	return nr_reclaimed >= nr_pages;
-+	return sc.nr_reclaimed >= nr_pages;
+ int intel_iommu_context_mapping(
+-	struct dmar_domain *domain, struct pci_dev *pdev)
++	struct dmar_domain *domain, struct pci_dev *pdev, int translation)
+ {
+ 	int rc;
+-	rc = domain_context_mapping(domain, pdev);
++	rc = domain_context_mapping(domain, pdev, translation);
+ 	return rc;
  }
+ EXPORT_SYMBOL_GPL(intel_iommu_context_mapping);
+diff --git a/include/linux/dma_remapping.h b/include/linux/dma_remapping.h
+index 7799a85..03054a6 100644
+--- a/include/linux/dma_remapping.h
++++ b/include/linux/dma_remapping.h
+@@ -12,6 +12,9 @@
+ #define DMA_PTE_READ (1)
+ #define DMA_PTE_WRITE (2)
  
- int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
++#define CONTEXT_TT_MULTI_LEVEL	0
++#define CONTEXT_TT_PASS_THROUGH 2
++
+ struct intel_iommu;
+ struct dmar_domain;
+ struct root_entry;
+diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
+index 1bff7bf..229b101 100644
+--- a/include/linux/intel-iommu.h
++++ b/include/linux/intel-iommu.h
+@@ -120,6 +120,7 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
+ 	(ecap_iotlb_offset(e) + ecap_niotlb_iunits(e) * 16)
+ #define ecap_coherent(e)	((e) & 0x1)
+ #define ecap_qis(e)		((e) & 0x2)
++#define ecap_pass_through(e)	((e >> 6) & 0x1)
+ #define ecap_eim_support(e)	((e >> 4) & 0x1)
+ #define ecap_ir_support(e)	((e >> 3) & 0x1)
+ #define ecap_max_handle_mask(e) ((e >> 20) & 0xf)
+@@ -332,7 +333,7 @@ extern void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
+ void intel_iommu_domain_exit(struct dmar_domain *domain);
+ struct dmar_domain *intel_iommu_domain_alloc(struct pci_dev *pdev);
+ int intel_iommu_context_mapping(struct dmar_domain *domain,
+-				struct pci_dev *pdev);
++				struct pci_dev *pdev, int translation);
+ int intel_iommu_page_mapping(struct dmar_domain *domain, dma_addr_t iova,
+ 			     u64 hpa, size_t size, int prot);
+ void intel_iommu_detach_dev(struct dmar_domain *domain, u8 bus, u8 devfn);
