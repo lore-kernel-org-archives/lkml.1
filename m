@@ -1,128 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbYKXGK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750909AbYKXGLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752505AbYKXGK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 01:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYKXGKu
+	id S1750909AbYKXGLX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 01:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYKXGLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 01:10:50 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:48842 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYKXGKt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 01:10:49 -0500
-Date: Mon, 24 Nov 2008 11:44:31 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v4 3/7] sched: nominate preferred wakeup cpu
-Message-ID: <20081124061431.GB4457@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>
-References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com> <20081121083114.27075.2113.stgit@drishya.in.ibm.com> <1227405838.7685.20000.camel@twins>
+	Mon, 24 Nov 2008 01:11:03 -0500
+Received: from mx1.suse.de ([195.135.220.2]:42042 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752522AbYKXGLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 01:11:00 -0500
+From: "NeilBrown" <neilb@suse.de>
+To: "Tejun Heo" <tj@kernel.org>
+Date: Mon, 24 Nov 2008 17:10:51 +1100 (EST)
+Message-ID: <ca37dc6598bb5728423fd902ac5322f9.squirrel@neil.brown.name>
+In-Reply-To: <492A3CE6.4010206@kernel.org>
+References: <20081124035516.3465.66413.stgit@notabene.brown>
+    <20081124035530.3465.26724.stgit@notabene.brown>
+    <492A2B2B.7030606@kernel.org>
+    <18730.14324.830648.449469@notabene.brown>
+    <492A3CE6.4010206@kernel.org>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer 
+     needed.
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Doug Ledford" <dledford@redhat.com>, "Greg KH" <greg@kroah.com>,
+       "Jens Axboe" <jens.axboe@oracle.com>
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1227405838.7685.20000.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-23 03:03:58]:
+On Mon, November 24, 2008 4:34 pm, Tejun Heo wrote:
+> (cc'ing Jens)
+>
+> Neil Brown wrote:
+>> On Monday November 24, tj@kernel.org wrote:
+>>> (cc'ing Greg)
+>>>
+>>> NeilBrown wrote:
+>>>> Currently md devices, once created, never disappear until the module
+>>>> is unloaded.  This is essentially because the gendisk holds a
+>>>> reference to the mddev, and the mddev holds a reference to the
+>>>> gendisk, this a circular reference.
+>>>>
+>>>> If we drop the reference from mddev to gendisk, then we need to ensure
+>>>> that the mddev is destroyed when the gendisk is destroyed.  However it
+>>>> is not possible to hook into the gendisk destruction process to enable
+>>>> this.
+>>>>
+>>>> So we drop the reference from the gendisk to the mddev and destroy the
+>>>> gendisk when the mddev gets destroyed.  However this has a
+>>>> complication.
+>>>> Between the call
+>>>>    __blkdev_get->get_gendisk->kobj_lookup->md_probe
+>>>> and the call
+>>>>    __blkdev_get->md_open
+>>>>
+>>>> there is no obvious way to hold a reference on the mddev any more, so
+>>>> unless something is done, it will disappear and gendisk will be
+>>>> destroyed prematurely.
+>>>>
+>>>> Also, once we decide to destroy the mddev, there will be an unlockable
+>>>> moment before the gendisk is unlinked (blk_unregister_region) during
+>>>> which a new reference to the gendisk can be created.  We need to
+>>>> ensure that this reference can not be used.  i.e. the ->open must
+>>>> fail.
+>>> Ah... I'm not really sure I'm following all of this correctly but would
+>>> it be possible to just add ->release to genhd and do regular reference
+>>> counting rather than this complex dancing?  ->release was recently
+>>> added
+>>> to cdev so it'll be nicely parallel.
+>>
+>> Maybe...
+>>
+>> If genhd.c:disk_release called e.g.
+>> 	disk->fops->final_put(disk)
+>>
+>> then I could possibly link in to that to destroy the md state when the
+>> gendisk finally disappears.
+>>
+>> When I want to kill the gendisk I would call blk_unregister_region
+>> directly (not through del_gendisk) to allow it to disappear.
+>> If md_probe then gets called before the final_put, I'd need to
+>> call blk_register_region again to re-install it.
+>>
+>> I think that would work.
+>>
+>> Would 'block_device_operations' be the right place for this
+>> 'final_put' or 'final_release' ??
+>
+> I suppose so.  Maybe just void (*release)(struct gendisk *) but Jens is
+> the maintainer.  Jens, what do you think?
 
-> On Fri, 2008-11-21 at 14:01 +0530, Vaidyanathan Srinivasan wrote:
-> > When the system utilisation is low and more cpus are idle,
-> > then the process waking up from sleep should prefer to
-> > wakeup an idle cpu from semi-idle cpu package (multi core
-> > package) rather than a completely idle cpu package which
-> > would waste power.
-> > 
-> > Use the sched_mc balance logic in find_busiest_group() to
-> > nominate a preferred wakeup cpu.
-> > 
-> > This info can be sored in appropriate sched_domain, but
-> > updating this info in all copies of sched_domain is not
-> > practical.  Hence this information is stored in root_domain
-> > struct which is one copy per partitioned sched domain.
-> > The root_domain can be accessed from each cpu's runqueue
-> > and there is one copy per partitioned sched domain.
-> > 
-> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  kernel/sched.c |   15 +++++++++++++++
-> >  1 files changed, 15 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 79b71f3..d28cd98 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -493,6 +493,17 @@ struct root_domain {
-> >  #ifdef CONFIG_SMP
-> >  	struct cpupri cpupri;
-> >  #endif
-> > +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-> > +
-> > +	/*
-> > +	 * Preferred wake up cpu nominated by sched_mc balance that will be
-> > +	 * used when most cpus are idle in the system indicating overall very
-> > +	 * low system utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP(2)
-> > +	 */
-> > +	unsigned int sched_mc_preferred_wakeup_cpu;
-> > +
-> > +#endif
-> > +
-> >  };
-> >  
-> >  /*
-> 
-> Do we really need that extra whitespace?
-> 
-> > @@ -3090,6 +3101,7 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
-> >  	return 0;
-> >  }
-> >  
-> > +
-> >  /*
-> >   * find_busiest_group finds and returns the busiest CPU group within the
-> >   * domain. It calculates and returns the amount of weighted load which
-> 
-> Ditto?
-> 
-> > @@ -3406,6 +3418,9 @@ out_balanced:
-> >  
-> >  	if (this == group_leader && group_leader != group_min) {
-> >  		*imbalance = min_load_per_task;
-> > +		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP)
-> > +			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
-> > +					first_cpu(group_leader->cpumask);
-> 
-> While not strictly needed, I prefer braces around multi-line statments.
-> It's easier on the eyes.
+Note that we already have 'release' in block_device_operations.  It is
+called on last close rather than last put.
 
-Hi Peter,
+NeilBrown
 
-Thanks for the detailed review.  I will fix these issues in the next
-iteration.
-
---Vaidy
