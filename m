@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbYKXIeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbYKXIqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbYKXIeD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 03:34:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKXIdt
+	id S1752249AbYKXIqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 03:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYKXIqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 03:33:49 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:55485 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbYKXIds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 03:33:48 -0500
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Tomas Winkler <tomasw@gmail.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
-Message-Id: <3A9C0F67-8E8C-4E38-AC96-4437ED0D53DD@linux.intel.com>
-From: Marcel Holtmann <holtmann@linux.intel.com>
-To: Zhu Yi <yi.zhu@intel.com>
-In-Reply-To: <1227508394.2548.307.camel@debian.sh.intel.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: pull request: wireless-2.6 2008-11-18
-Date: Mon, 24 Nov 2008 09:33:38 +0100
-References: <20081119000719.GA19756@tuxdriver.com> <1ba2fa240811182246m17a6baf0ybde19af030a65819@mail.gmail.com> <1ba2fa240811190134u7974a840i532e8ed0e18f8c72@mail.gmail.com> <20081119143919.GA3485@tuxdriver.com> <1227497655.2548.257.camel@debian.sh.intel.com> <7E134DC0-A86D-460A-B5DC-22E6D9BEED92@linux.intel.com> <1227508394.2548.307.camel@debian.sh.intel.com>
-X-Mailer: Apple Mail (2.929.2)
+	Mon, 24 Nov 2008 03:46:45 -0500
+Received: from styx.suse.cz ([82.119.242.94]:60994 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751435AbYKXIqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 03:46:45 -0500
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frank Mayhar <fmayhar@google.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
+       adobriyan@gmail.com, akpm@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1227450296.7685.20759.camel@twins>
+References: <1224694989.8431.23.camel@oberon>
+	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
+	 <1226053744.7803.5851.camel@twins>  <200811211942.43848.ptesarik@suse.cz>
+	 <1227450296.7685.20759.camel@twins>
+Content-Type: text/plain; charset=utf-8
+Organization: SUSE LINUX
+Date: Mon, 24 Nov 2008 09:46:43 +0100
+Message-Id: <1227516403.4487.20.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Yi,
+Peter Zijlstra píše v Ne 23. 11. 2008 v 15:24 +0100:
+> On Fri, 2008-11-21 at 19:42 +0100, Petr Tesarik wrote:
+> 
+> > > > In any event, while this particular implementation may not be optimal,
+> > > > at least it's _right_.  Whatever happened to "make it right, then make
+> > > > it fast?"
+> > >
+> > > Well, I'm not thinking you did it right ;-)
+> > >
+> > > While I agree that the linear loop is sub-optimal, but it only really
+> > > becomes a problem when you have hundreds or thousands of threads in your
+> > > application, which I'll argue to be insane anyway.
+> > 
+> > This is just not true. I've seen a very real example of a lockup with a very 
+> > sane number of threads (one per CPU), but on a very large machine (1024 CPUs 
+> > IIRC). The application set per-process CPU profiling with an interval of 1 
+> > tick, which translates to 1024 timers firing off with each tick...
+> > 
+> > Well, yes, that was broken, too, but that's the way one quite popular FORTRAN 
+> > compiler works...
+> 
+> I'm not sure what side you're arguing...
 
->> http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1703
->>
->> and just relying on Bugzilla is not gonna be good enough. The Linux
->> kernel development has always been done via mailing lists. And while
->> there is a kernel and other Bugzillas, the main authority is still  
->> the
->> mailing list. So if you wanna get massive feedback or have testing
->> patches for debugging, then these need to be posted to linux-wireless
->> and not "hidden" into a Bugzilla.
->
-> This is generally true for bugs easy to debug with. But in this  
-> example,
-> the first reporter opened this bug 4 months ago. People usually don't
-> follow thread for such a long time. There are also some reporters  
-> never
-> show up in this ML.
+In this particular case I'm arguing against both, it seems. The old
+behaviour is broken and the new one is not better. :(
 
-true to some degree, but searching mailing list archives is a lot  
-simpler then bug reports.
+> The current (per-cpu) code is utterly broken on large machines too, I've
+> asked SGI to run some tests on real numa machines (something multi-brick
+> altix) and even moderately small machines with 256 cpus in them grind to
+> a halt (or make progress at a snails pace) when the itimer stuff is
+> enabled.
+> 
+> Furthermore, I really dislike the per-process-per-cpu memory cost, it
+> bloats applications and makes the new per-cpu alloc work rather more
+> difficult than it already is.
+> 
+> I basically think the whole process wide itimer stuff is broken by
+> design, there is no way to make it work on reasonably large machines,
+> the whole problem space just doesn't scale. You simply cannot maintain a
+> global count without bouncing cachelines like mad, so you might as well
+> accept it and do the process wide counter and bounce only a single line,
+> instead of bouncing a line per-cpu.
 
->> I do have a perfect environment in Vancouver that allows me to  
->> trigger
->> this behavior within a few minutes. So if you really wanna debug  
->> this,
->> then just send debug patches to the mailing list and I am happy to  
->> run
->> such kernels.
->
-> Can you still reproduce this bug with Johannes' patch?
+Very true. Unfortunately per-process itimers are prescribed by the
+Single Unix Specification, so we have to cope with them in some way,
+while not permitting a non-privileged process a DoS attack. This is
+going to be hard, and we'll probably have to twist the specification a
+bit to still conform to its wording. :((
 
-we will see once I am back in Vancouver. Will be some time in December  
-though.
+I really don't think it's a good idea to set a per-process ITIMER_PROF
+to one timer tick on a large machine, but the kernel does allow any
+process to do it, and then it can even cause hard freeze on some
+hardware. This is _not_ acceptable.
 
-Regards
+What is worse, we can't just limit the granularity of itimers, because
+threads can come into being _after_ the itimer was set.
 
-Marcel
+
+> Furthermore, I stand by my claims that anything that runs more than a
+> hand-full of threads per physical core is utterly braindead and deserves
+> all the pain it can get. (Yes, I'm a firm believer in state machines and
+> don't think just throwing threads at a problem is a sane solution).
+
+Yes, anything with many threads per-core is badly designed. My point is
+that it's not the only broken case.
+
+Petr Tesarik
+
 
