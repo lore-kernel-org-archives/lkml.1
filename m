@@ -1,88 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYKXOj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbYKXOke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbYKXOj6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 09:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYKXOjr
+	id S1752810AbYKXOke (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 09:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYKXOk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 09:39:47 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:58684 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbYKXOjr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 09:39:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ZOCghvi9lsvDDAUcjJJJKsBWH6/OIk71zUJ9Fxsh1hfpgsbXR/Pnvrhg+L2E6YOKsx
-         pUZEAxSlrYHSnGsxUzrivOIXJXg+mXueWT0puZU7l4n5Vd1hh+sfZjPeYx7i8uVi43IQ
-         LAtNtqdDWfk4O3KMEU2CZmIgMrs7V4QUbYe7Y=
-Message-ID: <c62985530811240639w574659c0nd0a54e6c1fb1197a@mail.gmail.com>
-Date: Mon, 24 Nov 2008 15:39:45 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Human readable output for function return tracer
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Mon, 24 Nov 2008 09:40:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60144 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752563AbYKXOkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 09:40:25 -0500
+Date: Mon, 24 Nov 2008 15:40:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] irq: sparseirq enabling
+Message-ID: <20081124144007.GA30725@elte.hu>
+References: <492A1877.4090304@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <492A1877.4090304@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm planning to apply an idea proposed by Ingo to make the output on
-the function return tracer
-more "eyes-parsable".
-The idea consists on a trace which has flow similar to C code:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-func1() {
-    func2() {
-        func3() {
-        }
-    }
-    func4() {
-    }
-}
+> +/*
+> + * Protect the sparse_irqs_free freelist:
+> + */
+> +static DEFINE_SPINLOCK(sparse_irq_lock);
+> +LIST_HEAD(sparse_irqs_head);
+> +
+> +/*
+> + * The sparse irqs are in a hash-table as well, for fast lookup:
+> + */
+> +#define SPARSEIRQHASH_BITS          (13 - 1)
+> +#define SPARSEIRQHASH_SIZE          (1UL << SPARSEIRQHASH_BITS)
+> +#define __sparseirqhashfn(key)      hash_long((unsigned long)key, SPARSEIRQHASH_BITS)
+> +#define sparseirqhashentry(key)     (sparseirqhash_table + __sparseirqhashfn((key)))
+> +
+> +static struct list_head sparseirqhash_table[SPARSEIRQHASH_SIZE];
+> +
 
-(With time of execution added on closing braces).
+> +struct irq_desc *irq_to_desc(unsigned int irq)
+> +{
+> +	struct irq_desc *desc;
+> +	struct list_head *hash_head;
+> +
+> +	hash_head = sparseirqhashentry(irq);
+> +
+> +	/*
+> +	 * We can walk the hash lockfree, because the hash only
+> +	 * grows, and we are careful when adding entries to the end:
+> +	 */
+> +	list_for_each_entry(desc, hash_head, hash_entry) {
+> +		if (desc->irq == irq)
+> +			return desc;
+> +	}
+> +
+> +	return NULL;
+> +}
 
-The problem is that the traces arrive in the reverse order, according
-to the fact that functions
-are traced on return.
-The order corresponding to the above example would be as the following:
+I have talked to Thomas about the current design of sparseirq, and the 
+current code looks pretty good already, but we'd like to suggest one 
+more refinement to the hashing scheme:
 
-func3, func2, func4, func1
+Please simplify it by using a sparse pointers static array instead of 
+a full hash. I.e. do it as a:
 
-Oh and we have the parent in a return trace, so we would actually have:
+       struct irq_desc *irq_desc_ptrs[NR_IRQS] __read_mostly;
 
-func2->func3
-func1->func4
-....    ->func1
+This can scale up just fine to 4096 CPUs without measurable impact to 
+the kernel image size on x86 distro kernels.
 
-This trace flow doesn't make the things easy to produce our C like code.
+Data structure rules:
 
-So I found only one solution which have both pros and cons.
-I could send a "pre-trace" to the ring-buffer to signal that function
-x with depth y is beeing called
-(when we enter the function).
+1) allocation: an entry would be allocated at IRQ number creation time 
+   - never at any other time. Pure access to the desc returns NULL - 
+   it's atomic and lockless.
 
-The pros:
+2) freeing: we never free them. If a system allocates an irq_desc[], 
+   it signals that it uses it. This makes all access lockless.
 
-_ It will be easy to draw our C 'like trace, without any special
-pre-output work.
-_ The name could be definetly full-function-tracer with this new pre-trace :-)
-_ Automatic trace parsing, tree of calls building will be more easy....
+3) lookup: irq_to_desc() just does a simple irq_desc_ptrs[irq]
+   dereference (inlined) - no locking or hash lookup needed. Since 
+   irq_desc_ptrs[] is accessed __read_mostly, this will scale really 
+   well even on NUMA.
 
-The cons:
+4) iterators: we still keep NR_IRQS as a limit for the
+   irq_desc_ptrs[] array - but it would never be used directly by any 
+   iteration loop, in generic code.
 
-_ The function-return-tracer slows down the system.
-   It will be worst with a new insertion in the ring-buffer. But if it is mostly
-   used with dynamic ftrace and a good set of filtered functions, I
-don't think that will be
-   an issue.
+5) bootup, pre-kmalloc irq_desc access: on x86 we should preallocate a 
+   pool of ~32 irq_desc entries for allocation use. This can be a
+   simple static array of struct irq_desc that is fed into the
+   first 32 legacy irq_desc[] slots or so. No bootmem-alloc and
+   no after_bootmem flaggery needed. All SMP init and secondary CPU 
+   irq desc allocation happens after kmalloc is active already - 
+   cleaning up the allocation path.
 
-If you think about an other solution, don't hesitate to tell me :-)
-Thanks....
+6) limits on x86: please scale NR_IRQS to this rule:
+               max(32*MAX_IO_APICS, 8*NR_CPUS)
+
+   That gives a minimum of 4096 IRQs on 64-bit systems. On even larger 
+   systems, we scale linearly up to 32K IRQs on 4K CPUs. That should 
+   be more than enough (and it can be increased if really needed).
+
+Please keep all the irq_desc[] abstraction APIs and cleanups you did 
+so far - they are great. In the far future we can still make irq_desc 
+a full hash if needed - but right now we'll be just fine with such a 
+simpler scheme as well, and scale fine up to 16K CPUs or so.
+
+This should simplify quite a few things in the sparseirq code.
+
+	Ingo
