@@ -1,275 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbYKXD6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbYKXEIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752404AbYKXD6y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Nov 2008 22:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYKXD6O
+	id S1752816AbYKXEIx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Nov 2008 23:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYKXEIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Nov 2008 22:58:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38676 "EHLO mx1.suse.de"
+	Sun, 23 Nov 2008 23:08:44 -0500
+Received: from ozlabs.org ([203.10.76.45]:43949 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbYKXD6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Nov 2008 22:58:12 -0500
-From: NeilBrown <neilb@suse.de>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Date: Mon, 24 Nov 2008 14:55:31 +1100
-Subject: [PATCH 2/2] Allow md devices to be created by name.
-Cc: Tejun Heo <tj@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Doug Ledford <dledford@redhat.com>, NeilBrown <neilb@suse.de>
-Message-ID: <20081124035530.3465.78537.stgit@notabene.brown>
-In-Reply-To: <20081124035516.3465.66413.stgit@notabene.brown>
-References: <20081124035516.3465.66413.stgit@notabene.brown>
-User-Agent: StGIT/0.14.2
+	id S1751075AbYKXEIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Nov 2008 23:08:43 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: linux-next: rr tree build failure
+Date: Mon, 24 Nov 2008 14:38:36 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       Pete Zaitcev <zaitcev@redhat.com>
+References: <20081121141913.90d05091.sfr@canb.auug.org.au> <200811221301.07058.rusty@rustcorp.com.au> <20081122064132.GA6196@suse.de>
+In-Reply-To: <20081122064132.GA6196@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811241438.36973.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using sequential numbers to identify md devices is somewhat artificial.
-Using names can be a lot more user-friendly.
+On Saturday 22 November 2008 17:11:32 Greg KH wrote:
+> On Sat, Nov 22, 2008 at 01:01:06PM +1030, Rusty Russell wrote:
+> > Fair enough.  Patch below does this as moduleparam.h suggests.
+> >
+> > It still means that the paremeter appears in
+> > /sys/module/kernel/parameters/nousb OR
+> > /sys/module/usbcore/parameters/nousb.
+>
+> What's the "OR" part?  What determines where it goes?
 
-Also, creating md devices by opening the device special file is a bit
-awkward.
+Whether usbcore is a module or not, of course.
 
-So this patch provides a new option for creating and naming devices.
+> > +/* To disable USB, kernel command line is 'nousb' not 'usbcore.nousb' */
+> > +#undef MODULE_PARAM_PREFIX
+> > +#define MODULE_PARAM_PREFIX
+> > +module_param(nousb, bool, 0444);
+>
+> That undef seems hacky beyond belief.
 
-Writing a name such as "md_home" to
-    /sys/modules/md_mod/parameters/new_array
-will cause an array with that name to be created.  It will appear in
-/sys/block/ /proc/partitions and /proc/mdstat as 'md_home'.
-It will have an arbitrary minor number allocated.
+*Exactly*.  And while you're not the first person to do this, you're the one 
+one to use it for code which can be a module :(
 
-md devices that a created by an open are destroyed on the last
-close when the device is inactive.
-For names md devices, they will not be destroyed until the array
-is explicitly stopped, either with the STOP_ARRAY ioctl or by
-writing 'clear' to /sys/block/md_XXXX/md/array_state.
+> How would one know to do this?
 
-The name of the array must start 'md_' to avoid conflict with
-other devices.
+The same way Pete found __module_param_call, by reading the header:
 
-Signed-off-by: NeilBrown <neilb@suse.de>
----
+ /* You can override this manually, but generally this should match the
+    module name. */
+ #ifdef MODULE
+ #define MODULE_PARAM_PREFIX /* empty */
+ #else
+ #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
+ #endif
 
- drivers/md/md.c           |  122 ++++++++++++++++++++++++++++++++++++++-------
- include/linux/raid/md_k.h |    1 
- 2 files changed, 104 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 5ebda55..89700b5 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -249,17 +249,51 @@ static mddev_t * mddev_find(dev_t unit)
- 
-  retry:
- 	spin_lock(&all_mddevs_lock);
--	list_for_each_entry(mddev, &all_mddevs, all_mddevs)
--		if (mddev->unit == unit) {
--			mddev_get(mddev);
-+
-+	if (unit) {
-+		list_for_each_entry(mddev, &all_mddevs, all_mddevs)
-+			if (mddev->unit == unit) {
-+				mddev_get(mddev);
-+				spin_unlock(&all_mddevs_lock);
-+				kfree(new);
-+				return mddev;
-+			}
-+
-+		if (new) {
-+			list_add(&new->all_mddevs, &all_mddevs);
- 			spin_unlock(&all_mddevs_lock);
--			kfree(new);
--			return mddev;
-+			new->hold_active = UNTIL_CLOSE;
-+			return new;
- 		}
--
--	if (new) {
-+	} else if (new) {
-+		/* find an unused unit number */
-+		static int next_minor = 512;
-+		int start = next_minor;
-+		int is_free = 0;
-+		int dev = 0;
-+		while (!is_free) {
-+			dev = MKDEV(MD_MAJOR, next_minor);
-+			next_minor++;
-+			if (next_minor > MINORMASK)
-+				next_minor = 0;
-+			if (next_minor == start) {
-+				/* Oh dear, all in use. */
-+				spin_unlock(&all_mddevs_lock);
-+				kfree(new);
-+				return NULL;
-+			}
-+				
-+			is_free = 1;
-+			list_for_each_entry(mddev, &all_mddevs, all_mddevs)
-+				if (mddev->unit == dev) {
-+					is_free = 0;
-+					break;
-+				}
-+		}
-+		new->unit = dev;
-+		new->md_minor = MINOR(dev);
-+		new->hold_active = UNTIL_STOP;
- 		list_add(&new->all_mddevs, &all_mddevs);
--		mddev->hold_active = UNTIL_CLOSE;
- 		spin_unlock(&all_mddevs_lock);
- 		return new;
- 	}
-@@ -3489,18 +3523,22 @@ static struct kobj_type md_ktype = {
- 
- int mdp_major = 0;
- 
--static struct kobject *md_probe(dev_t dev, int *part, void *data)
-+static int md_alloc(dev_t dev, char *name)
- {
- 	static DEFINE_MUTEX(disks_mutex);
- 	mddev_t *mddev = mddev_find(dev);
- 	struct gendisk *disk;
--	int partitioned = (MAJOR(dev) != MD_MAJOR);
--	int shift = partitioned ? MdpMinorShift : 0;
--	int unit = MINOR(dev) >> shift;
-+	int partitioned;
-+	int shift;
-+	int unit;
- 	int error;
- 
- 	if (!mddev)
--		return NULL;
-+		return -ENODEV;
-+
-+	partitioned = (MAJOR(mddev->unit) != MD_MAJOR);
-+	shift = partitioned ? MdpMinorShift : 0;
-+	unit = MINOR(mddev->unit) >> shift;
- 
- 	/* wait for any previous instance if this device
- 	 * to be completed removed (mddev_delayed_delete).
-@@ -3511,14 +3549,29 @@ static struct kobject *md_probe(dev_t dev, int *part, void *data)
- 	if (mddev->gendisk) {
- 		mutex_unlock(&disks_mutex);
- 		mddev_put(mddev);
--		return NULL;
-+		return -EEXIST;
-+	}
-+
-+	if (name) {
-+		/* Need to ensure that 'name' is not a duplicate.
-+		 */
-+		mddev_t *mddev2;
-+		spin_lock(&all_mddevs_lock);
-+
-+		list_for_each_entry(mddev2, &all_mddevs, all_mddevs)
-+			if (mddev2->gendisk &&
-+			    strcmp(mddev2->gendisk->disk_name, name) == 0) {
-+				spin_unlock(&all_mddevs_lock);
-+				return -EEXIST;
-+			}
-+		spin_unlock(&all_mddevs_lock);
- 	}
- 
- 	mddev->queue = blk_alloc_queue(GFP_KERNEL);
- 	if (!mddev->queue) {
- 		mutex_unlock(&disks_mutex);
- 		mddev_put(mddev);
--		return NULL;
-+		return -ENOMEM;
- 	}
- 	/* Can be unlocked because the queue is new: no concurrency */
- 	queue_flag_set_unlocked(QUEUE_FLAG_CLUSTER, mddev->queue);
-@@ -3531,11 +3584,13 @@ static struct kobject *md_probe(dev_t dev, int *part, void *data)
- 		blk_cleanup_queue(mddev->queue);
- 		mddev->queue = NULL;
- 		mddev_put(mddev);
--		return NULL;
-+		return -ENOMEM;
- 	}
--	disk->major = MAJOR(dev);
-+	disk->major = MAJOR(mddev->unit);
- 	disk->first_minor = unit << shift;
--	if (partitioned)
-+	if (name)
-+		strcpy(disk->disk_name, name);
-+	else if (partitioned)
- 		sprintf(disk->disk_name, "md_d%d", unit);
- 	else
- 		sprintf(disk->disk_name, "md%d", unit);
-@@ -3560,9 +3615,34 @@ static struct kobject *md_probe(dev_t dev, int *part, void *data)
- 		mddev->sysfs_state = sysfs_get_dirent(mddev->kobj.sd, "array_state");
- 	}
- 	mddev_put(mddev);
-+	return 0;
-+}
-+
-+static struct kobject *md_probe(dev_t dev, int *part, void *data)
-+{
-+	md_alloc(dev, NULL);
- 	return NULL;
- }
- 
-+static int add_named_array(const char *val, struct kernel_param *kp)
-+{
-+	/* val must be "md_*" where * is not all digits.
-+	 * We allocate an array with a large free minor number, and
-+	 * set the name to val.  val must not already be an active name.
-+	 */
-+	int len = strlen(val);
-+	char buf[DISK_NAME_LEN];
-+
-+	while (len && val[len-1] == '\n')
-+		len--;
-+	if (len >= DISK_NAME_LEN)
-+		return -E2BIG;
-+	strlcpy(buf, val, len+1);
-+	if (strncmp(buf, "md_", 3) != 0)
-+		return -EINVAL;
-+	return md_alloc(0, buf);
-+}
-+
- static void md_safemode_timeout(unsigned long data)
- {
- 	mddev_t *mddev = (mddev_t *) data;
-@@ -4023,6 +4103,8 @@ static int do_md_stop(mddev_t * mddev, int mode, int is_open)
- 		mddev->barriers_work = 0;
- 		mddev->safemode = 0;
- 		kobject_uevent(&disk_to_dev(mddev->gendisk)->kobj, KOBJ_CHANGE);
-+		if (mddev->hold_active == UNTIL_STOP)
-+			mddev->hold_active = 0;
- 
- 	} else if (mddev->pers)
- 		printk(KERN_INFO "md: %s switched to read-only mode.\n",
-@@ -5127,7 +5209,8 @@ static int md_release(struct gendisk *disk, fmode_t mode)
- 
- 	BUG_ON(!mddev);
- 	atomic_dec(&mddev->openers);
--	mddev->hold_active = 0;
-+	if (mddev->hold_active == UNTIL_CLOSE)
-+		mddev->hold_active = 0;
- 	mddev_put(mddev);
- 
- 	return 0;
-@@ -6498,6 +6581,7 @@ static int set_ro(const char *val, struct kernel_param *kp)
- module_param_call(start_ro, set_ro, get_ro, NULL, S_IRUSR|S_IWUSR);
- module_param(start_dirty_degraded, int, S_IRUGO|S_IWUSR);
- 
-+module_param_call(new_array, add_named_array, NULL, NULL, S_IWUSR);
- 
- EXPORT_SYMBOL(register_md_personality);
- EXPORT_SYMBOL(unregister_md_personality);
-diff --git a/include/linux/raid/md_k.h b/include/linux/raid/md_k.h
-index 7b6029b..19756d7 100644
---- a/include/linux/raid/md_k.h
-+++ b/include/linux/raid/md_k.h
-@@ -139,6 +139,7 @@ struct mddev_s
- 	struct kobject			kobj;
- 	int				hold_active;
- #define	UNTIL_CLOSE	1
-+#define	UNTIL_STOP	2
- 
- 	/* Superblock information */
- 	int				major_version,
-
-
+Cheers,
+Rusty.
