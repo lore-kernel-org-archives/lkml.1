@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYKXXhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYKXXjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbYKXXhD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 18:37:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYKXXgx
+	id S1754538AbYKXXjO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 18:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYKXXjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 18:36:53 -0500
-Received: from buick.jordet.net ([193.91.240.190]:41107 "EHLO buick.jordet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753104AbYKXXgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 18:36:53 -0500
-Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
-From: Stian Jordet <liste@jordet.net>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-In-Reply-To: <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan>
-References: <1226760254.5089.11.camel@chevrolet>
-	 <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
-	 <1227476908.32357.5.camel@chevrolet>
-	 <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>
-	 <1227485956.5145.10.camel@chevrolet>
-	 <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 00:36:48 +0100
-Message-Id: <1227569808.5039.6.camel@chevrolet>
+	Mon, 24 Nov 2008 18:39:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44886 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753593AbYKXXjC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 18:39:02 -0500
+Date: Mon, 24 Nov 2008 15:38:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: peterz@infradead.org, david@fromorbit.com, cl@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] mm: add dirty_background_bytes and dirty_bytes
+ sysctls
+Message-Id: <20081124153843.d3c4782c.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ma., 24.11.2008 kl. 04.50 -0500, skrev Justin Piszcz:
-> While there still may be something else wrong, the first problem I see is 
-> your sunit and swidth are set to 0.
+On Sun, 23 Nov 2008 10:55:16 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
+
+> This change introduces two new sysctls to /proc/sys/vm:
+> dirty_background_bytes and dirty_bytes.
 > 
-> Please read, a good article on what they are and how to set them:
-> http://www.socalsysadmin.com/
+>
+> ...
+>
+> @@ -365,23 +429,29 @@ void
+>  get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+>  		 unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
+>  {
+> -	int background_ratio;		/* Percentages */
+> -	int dirty_ratio;
+>  	unsigned long background;
+>  	unsigned long dirty;
+>  	unsigned long available_memory = determine_dirtyable_memory();
+>  	struct task_struct *tsk;
+>  
+> -	dirty_ratio = vm_dirty_ratio;
+> -	if (dirty_ratio < 5)
+> -		dirty_ratio = 5;
+> +	if (vm_dirty_bytes)
+> +		dirty = (vm_dirty_bytes + PAGE_SIZE) / PAGE_SIZE;
 
-Oh, this was new to me. But the setting didn't change anything. I can
-copy one large file between the xfs and ext3 disk (both ways), and I get
-speeds between 160 and 200 MB/s. But unpacking the kernel source takes
-between 5 and 10 minutes on the xfs disk, and a mere 15 seconds on the
-ext3... (and it also used to take between 5 and 10 minutes when I had
-xfs on the raid0, so it doesn't seem to be hardware related...)
+It would be conventional to use DIV_ROUND_UP() here.
 
-If anyone has anything more I can try before I do the lengthy process of
-backup 1TB, reformat and restore...
+> +	else {
+> +		int dirty_ratio;
 
-Thanks :)
+hm, I wonder why vm_dirty_ratio has a signed type.  
 
-Regards,
-Stian
+> -	background_ratio = dirty_background_ratio;
+> -	if (background_ratio >= dirty_ratio)
+> -		background_ratio = dirty_ratio / 2;
+> +		dirty_ratio = vm_dirty_ratio;
+> +		if (dirty_ratio < 5)
+> +			dirty_ratio = 5;
+> +		dirty = (dirty_ratio * available_memory) / 100;
+> +	}
+> +
+> +	if (dirty_background_bytes)
+> +		background = (dirty_background_bytes + PAGE_SIZE) / PAGE_SIZE;
 
+DIV_ROUND_UP()?
+
+> +	else
+> +		background = (dirty_background_ratio * available_memory) / 100;
+>  
+> -	background = (background_ratio * available_memory) / 100;
+> -	dirty = (dirty_ratio * available_memory) / 100;
+> +	if (background >= dirty)
+> +		background = dirty / 2;
+>  	tsk = current;
+>  	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+>  		background += background / 4;
