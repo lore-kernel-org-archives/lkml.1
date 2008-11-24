@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYKXTh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYKXTkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYKXTh0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYKXThQ
+	id S1753931AbYKXTkW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYKXTkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:37:16 -0500
-Received: from edu.joroinen.fi ([194.89.68.130]:55034 "EHLO edu.joroinen.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbYKXThO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:37:14 -0500
-X-Greylist: delayed 1412 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 14:37:14 EST
-Date: Mon, 24 Nov 2008 21:13:40 +0200
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [Xen-devel] Re: Status of Xen in vanilla?
-Message-ID: <20081124191340.GC15052@edu.joroinen.fi>
-References: <20081111113838.GA3474@outback.rfc2324.org> <4919D4B1.7080703@goop.org>
+	Mon, 24 Nov 2008 14:40:09 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39648 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbYKXTkI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:40:08 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 24 Nov 2008 20:40:00 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fix small memory leak at module removal
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.d0220c9ae409a998@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4919D4B1.7080703@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 10:53:37AM -0800, Jeremy Fitzhardinge wrote:
-> Maximilian Wilhelm wrote:
-> >Hi!
-> >
-> >I'm wondering about the status of Xen support in the vanilla kernel.
-> >I know that DomU support is inside the kernel an evolving, but I did
-> >not find an up-to-date hint about the status of Dom0 support.
-> >
-> >A while ago I read that it should be included in 2.6.28, but I do not
-> >find any current pointer about the status of this.
-> >  
-> 
-> .28 was a bit optimistic; .29 seems reasonable.  The current dom0 kernel 
-> patches can boot up to a fully functional dom0 usersmode, and you can 
-> start xend to see that domain 0 is running.  I *think* in theory you can 
-> create a deviceless domain, but I haven't tried it.  I'm currently 
-> working on blktap support.
-> 
-> I really need to put together a proper status update.  Now that dom0 
-> usermode is working, its a much better base for other people start 
-> contributing.
-> 
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-device.c      |    2 +-
+ drivers/firewire/fw-device.h      |    2 ++
+ drivers/firewire/fw-transaction.c |    2 ++
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
-This reminded me of updating http://wiki.xensource.com/xenwiki/XenParavirtOps
+Index: linux/drivers/firewire/fw-device.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.c
++++ linux/drivers/firewire/fw-device.c
+@@ -619,7 +619,7 @@ static int shutdown_unit(struct device *
+  */
+ DECLARE_RWSEM(fw_device_rwsem);
+ 
+-static DEFINE_IDR(fw_device_idr);
++DEFINE_IDR(fw_device_idr);
+ int fw_cdev_major;
+ 
+ struct fw_device *fw_device_get_by_devt(dev_t devt)
+Index: linux/drivers/firewire/fw-device.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.h
++++ linux/drivers/firewire/fw-device.h
+@@ -21,6 +21,7 @@
+ 
+ #include <linux/fs.h>
+ #include <linux/cdev.h>
++#include <linux/idr.h>
+ #include <linux/rwsem.h>
+ #include <linux/mutex.h>
+ #include <asm/atomic.h>
+@@ -103,6 +104,7 @@ void fw_device_cdev_update(struct fw_dev
+ void fw_device_cdev_remove(struct fw_device *device);
+ 
+ extern struct rw_semaphore fw_device_rwsem;
++extern struct idr fw_device_idr;
+ extern int fw_cdev_major;
+ 
+ /*
+Index: linux/drivers/firewire/fw-transaction.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.c
++++ linux/drivers/firewire/fw-transaction.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <linux/completion.h>
++#include <linux/idr.h>
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/module.h>
+@@ -968,6 +969,7 @@ static void __exit fw_core_cleanup(void)
+ {
+ 	unregister_chrdev(fw_cdev_major, "firewire");
+ 	bus_unregister(&fw_bus_type);
++	idr_destroy(&fw_device_idr);
+ }
+ 
+ module_init(fw_core_init);
 
-Now it says "Features added in 2.6.27".
+-- 
+Stefan Richter
+-=====-==--- =-== ==---
+http://arcgraph.de/sr/
 
-Maybe you can go through the page, and update/add missing stuff.. 
-
--- Pasi
