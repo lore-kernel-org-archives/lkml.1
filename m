@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbYKXTQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYKXTSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbYKXTQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYKXTQs
+	id S1753836AbYKXTSb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYKXTSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:16:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48197 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbYKXTQr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:16:47 -0500
-Subject: Re: [patch 1/2] mm: change dirty limit type specifiers to unsigned
- long
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com>
-Content-Type: text/plain
+	Mon, 24 Nov 2008 14:18:23 -0500
+Received: from gw.goop.org ([64.81.55.164]:43595 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750890AbYKXTSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:18:22 -0500
+Message-ID: <492AFDFC.1020305@goop.org>
+Date: Mon, 24 Nov 2008 11:18:20 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 30 of 38] xen: implement io_apic_ops
+References: <patchbomb.1226603398@abulafia.goop.org>	<d103c0da2fa147ac31af.1226603428@abulafia.goop.org>	<20081120093506.GB6885@elte.hu> <492597B9.8070506@goop.org>	<m1y6ze87w6.fsf@frodo.ebiederm.org> <4925D762.6040406@goop.org>	<m1prkpj3nl.fsf@frodo.ebiederm.org> <49260BE7.1080909@goop.org> <m1tza1hffa.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1tza1hffa.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Nov 2008 20:16:41 +0100
-Message-Id: <1227554201.4259.538.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-23 at 10:55 -0800, David Rientjes wrote:
-> The background dirty and dirty limits are better defined with type
-> specifiers of unsigned long since negative writeback thresholds are not
-> possible.
-> 
-> These values, as returned by get_dirty_limits(), are normally compared
-> with ZVC values to determine whether writeback shall commence or be
-> throttled.  Such page counts cannot be negative, so declaring the page
-> limits as signed is unnecessary.
-> 
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Dave Chinner <david@fromorbit.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Signed-off-by: David Rientjes <rientjes@google.com>
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> Yes, I suppose we can statically partition the irq space.  In fact the original
+>> 2.6.18-xen dom0 kernel does precisely that, but runs into limitations because of
+>> the compile-time limit on NR_IRQS in that kernel.  If we move to a purely
+>> dynamically allocated irq space, then having a sparse allocation if irqs becomes
+>> reasonable again, for msis and vectorless Xen interrupts.
+>>
+>>     
+>>> The difference is that the xen sources are not delivered using vectors.  The cpu
+>>> vector numbers we do hide and treat as an implementation detail.  And I am totally
+>>> happy not going through the vector allocation path.
+>>>
+>>>       
+>> Right.  And in the physical irq event channel case, the vector space is managed
+>> by Xen, so we need to use Xen to allocate the vector, then program that into the
+>> appropriate place in the ioapic.
+>>     
+>
+> We should be able to share code with iommu for irqs handling, at first glance you
+> are describing a pretty similar problem.  Now I don't know think the interrupt
+> remapping code is any kind of beauty but that seems to be roughly what you
+> are doing with Xen domU.  I certainly think with some careful factoring
+> we can share the ioapic munging code.  And the code to pick how we program
+> the ioapics.
+>   
 
-This didn't pop up any weird and wonderfull assumptions on the
-signed-ness of these variables I take it :-)
+Notwithstanding the possibility that there'll be general changes to x86 
+interrupt handing in the future, do you have any objection to my patches 
+as they stand?  Ingo would like to see your and/or hpa's ack before 
+accepting them.
 
+Should I repost them?
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Thanks,
+    J
