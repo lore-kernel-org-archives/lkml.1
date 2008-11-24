@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYKXSJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbYKXSJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYKXSJB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 13:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYKXSIu
+	id S1753835AbYKXSJZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 13:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbYKXSIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 13:08:50 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:8613 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804AbYKXSIt (ORCPT
+	Mon, 24 Nov 2008 13:08:55 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:62070 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbYKXSIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 13:08:49 -0500
-X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 13:08:48 EST
-Message-ID: <492AE9CB.4020302@caviumnetworks.com>
-Date: Mon, 24 Nov 2008 09:52:11 -0800
-From: Chad Reese <kreese@caviumnetworks.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.0.14eol) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.13~pre080323b-0etch3)
-MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: "Kevin D. Kissell" <kevink@paralogos.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Is there no way to shared code with Linux and other OSes?
-References: <4927C34F.4000201@caviumnetworks.com> <4927D6E0.4020009@paralogos.com> <Pine.LNX.4.64.0811221109330.29539@anakin> <4927E2A4.5000702@paralogos.com> <20081122153542.GB31703@linux-mips.org> <49285895.6020303@caviumnetworks.com> <20081124131415.GA21403@linux-mips.org>
-In-Reply-To: <20081124131415.GA21403@linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Nov 2008 13:08:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=sECLb1vO046qDOKDGQmPBYBpig2cRm+ZRF3xGVmZ0yO6/gKb1FxHZ++/PjegC+h5xC
+         IErLlouKe323D2bBL9D/J4cwBYPcL5cSPTslHmoDN+3PDRL8N8G2gACe4aqjkqCIrTFo
+         CmcJAUc4sdy/NY/0u8LqpkyW9EYsbkE3k9VA4=
+Subject: [PATCH] i2c: misannotation in i2c-pmcmsp.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 24 Nov 2008 10:08:49 -0800
+Message-Id: <1227550129.5511.4.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Nov 2008 17:52:12.0838 (UTC) FILETIME=[6150CC60:01C94E5D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle wrote:
-> I'll start off my answer with a bit of history.  A few years ago the Linux
-> codebase was growing at exponentional speed not last from contributions
-> from other projects and there were few standards in the Linux world.  As
-> the result the code base was highly inconsistent in many aspects,
-> including coding style and typedefs.  It made maintenance and even just
-> understanding the code base painful.  Then on a few occasions Linus
-> decreed certain standards such as code to be formatted to fit into 80
-> colums.  Other standards arose from a common understanding.
+tmp is used as host-endian and is loaded from a be64, fix the
+cast and the endian accessor used.
 
-I appreciate the history and agree that coding standards are a necessary
-thing. To be clear, I'm not looking for some one to say "ok, you can put
-your stuff in". I'm more looking for other people that have already had
-this problem and may have come up with a better solution. Even something
-a simple as a smarter indent program might be a good idea. I've always
-felt that an automated formatter normally causes more harm than good,
-but sometimes they are a necessary evil.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/i2c/busses/i2c-pmcmsp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Re divergent code base - I see your issue but the problem is both ways.
-> Historic example is Broadcom which contributed the headers for the Sibyte
-> SOC family.  The headers are generated using inhouse tools just as yours
-> and we'd like to change them - but all those changes conflict with
-> Broadcom's bi-annual contribution which are bascially are versions
-> re-generated with their latest tools and from their latest RTL.
+diff --git a/drivers/i2c/busses/i2c-pmcmsp.c b/drivers/i2c/busses/i2c-pmcmsp.c
+index dcf2045..0bdb2d7 100644
+--- a/drivers/i2c/busses/i2c-pmcmsp.c
++++ b/drivers/i2c/busses/i2c-pmcmsp.c
+@@ -486,7 +486,7 @@ static enum pmcmsptwi_xfer_result pmcmsptwi_xfer_cmd(
+ 
+ 	if (cmd->type == MSP_TWI_CMD_WRITE ||
+ 	    cmd->type == MSP_TWI_CMD_WRITE_READ) {
+-		__be64 tmp = cpu_to_be64p((u64 *)cmd->write_data);
++		u64 tmp = be64_to_cpup((__be64 *)cmd->write_data);
+ 		tmp >>= (MSP_MAX_BYTES_PER_RW - cmd->write_len) * 8;
+ 		dev_dbg(&pmcmsptwi_adapter.dev, "Writing 0x%016llx\n", tmp);
+ 		pmcmsptwi_writel(tmp & 0x00000000ffffffffLL,
+-- 
+1.6.0.4.1013.gc6a01
 
-In principle I agree, but in the specifics for the Octeon code I have
-trouble with this. Currently we put all hardware register definitions in
-two files, one for bit typedefs and one for the corresponding physical
-address. These two files contain nothing other than raw register
-definitions and are generated from RTL. Lots of the feedback we've
-gotten from the community want this broken up such that registers are
-defined in smaller groups where they are used. This makes sense if
-you're talking about stuff that is hand maintained. Across the various
-Octeon chip there are something around 1500 hardware specific registers.
-Nobody is going to maintain something like that by hand. I'm sure years
-from now when someone is trying to figure out how to program some Octeon
-feature having the register definitions already in the kernel will help
-tremendously.
 
-> OS compatibility layers are another subject.  They simplify maintenance
-> for the one and make it harder for the other.  In general in the Linux
-> world we've made not so positive experience with such glue code layers,
-> so we tend to limit if not avoid their use.
-> 
-> Another factor is that usually long after the contributing company has
-> already forgotten about their code I'm the guy who still is stuck with it.
-> For many more years ...
 
-The unfortunate facts of life is that this will likely happen again.
-Luckily Linux is currently requested by our customers heavily, so it
-will be supported better than other open source OSes. I'm just worried
-that code fixes will not propagate to other OSes simply because it isn't
-possible to share code. The Octeon FreeBSD port currently shares quite a
-bit of low level Octeon code with Linux. If the current Octeon Linux
-submit process continues, this will not be possible.
-
-After spending quite a bit of time making sure the Octeon "hal" code
-compiles and works cleanly under the four different mips abis, with
-either a cavium compiler or a standard one for multiple OSes, I hate to
-see that work be for nothing.
-
-Ok, I'll stop whining now...
-
-Chad
