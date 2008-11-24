@@ -1,91 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbYKXItd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752369AbYKXIxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbYKXItd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 03:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYKXItZ
+	id S1752369AbYKXIxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 03:53:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYKXIw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 03:49:25 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59276 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbYKXItY (ORCPT
+	Mon, 24 Nov 2008 03:52:59 -0500
+Received: from sd-green-bigip-83.dreamhost.com ([208.97.132.83]:44428 "EHLO
+	spunkymail-a10.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751506AbYKXIw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 03:49:24 -0500
-Date: Mon, 24 Nov 2008 14:16:44 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sched: Don't allow priority switch to realtime when
-	the task doesn't belong to init_task_group and when
-	CONFIG_RT_GROUP_SCHED isn't set
-Message-ID: <20081124084644.GA26526@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20081120061854.GA4349@in.ibm.com> <1227402676.7685.19942.camel@twins> <20081124035807.GA3278@in.ibm.com> <1227515526.7685.21861.camel@twins>
+	Mon, 24 Nov 2008 03:52:58 -0500
+From: Yuval Hager <yuval@avramzon.net>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: BCM4312 Fails when xdm is started
+Date: Mon, 24 Nov 2008 10:49:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Michael Buesch <mb@bu3sch.de>, LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de
+References: <200811151801.02369.yuval@avramzon.net> <20081123204631.21061.qmail@stuge.se> <4929C68E.6080401@lwfinger.net>
+In-Reply-To: <4929C68E.6080401@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227515526.7685.21861.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed;
+  boundary="nextPart4121756.b8sE6cYxkZ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200811241049.45734.yuval@avramzon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 09:32:06AM +0100, Peter Zijlstra wrote:
-> On Mon, 2008-11-24 at 09:28 +0530, Bharata B Rao wrote:
-> > On Sun, Nov 23, 2008 at 02:11:16AM +0100, Peter Zijlstra wrote:
-> > > On Thu, 2008-11-20 at 11:48 +0530, Bharata B Rao wrote:
-> > > > Applies on 2.6.28-rc5.
-> > > > 
-> > > > With CONFIG_RT_GROUP_SCHED not set, don't allow a task's priority switch
-> > > > to realtime if the task isn't part of init_task_group.
-> > > > 
-> > > > A task belonging to a fair group could use sched_setscheduler/sched_setparam
-> > > > to become a realtime task. If such a task belongs to one of the
-> > > > child groups of init_task_group and if CONFIG_RT_GROUP_SCHED is not set,
-> > > > then it ends up getting queued in init_task_group's runqueue.
-> > > > So we have a situation where, a task belongs to one group (child)
-> > > > but ends in the runqueue of another group (init_task_group).
-> > > > This does not look correct.
-> > > > 
-> > > > Fix this by failing such priority change requests in sched_setscheduler()
-> > > > and sched_setparam().
-> > > 
-> > > NAK
-> > > 
-> > > !RT_GROUP means the RT tasks should be fully invariant to any grouping
-> > > configuration. This patch breaks that.
-> > > 
-> > > Furthermore your justification for this is plain wrong, you write as if
-> > > an RT tasks can belong to any grouping (in the !RT_GROUP case), by the
-> > 
-> > Hmm... but that's I the impression I got when I started an RT
-> > task in a subgroup and saw it listed in the tasks list of the cgroup.
-> > So if RT tasks don't care about grouping (!RT_GROUP_SCHED), may be then
-> > such tasks shoudn't be shown in the cgroup tasks list.
-> 
-> Sure, do as you like upon the cgroup interface
-> 
-> >  And may be as Ingo
-> > suggested they should be moved to init_task_group.
-> 
-> Bzzt, wrong! They should not be moved to any group, they cannot be moved
-> to any group, as they are group invariant.
-> 
+--nextPart4121756.b8sE6cYxkZ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Which would mean the init_task_group becase it contains those tasks which are
-not grouped.
+On Sunday 23 November 2008, Larry Finger wrote:
+> From a config file posted earlier, the OP is using SLAB. Is there any poi=
+nt
+> in trying SLUB?
 
-> >  Without that it makes one
-> > think that a task is contributing to the cpu time of a group in which
-> > it was started, but it in reality it is not.
-> 
-> Until one thinks more and realizes RT tasks don't contribute anything to
-> groups as they are not part of them.
-> 
+Another try, not sure what it means:
 
-I guess this is where education/documentation would help.
+* Added CONFIG_SLUB and CONFIG_SLUB_DEBUG
 
--- 
-regards,
-Dhaval
+* boot parameters: root=3D/dev/sda3 debug memory_corruption_check=3D1 devre=
+s.log=3D1 debug_objects debugpat=20
+acpi.debug_layer=3D0x00410002 acpi.debug_level=3D0xffffffff acpi=3Doff apic=
+=3Ddebug nolapic irqpoll pci=3Dnoacpi slub_debug=3DFZPU
+
+* cat /proc/interrupts is
+           CPU0      =20
+  0:      16658    XT-PIC-XT        timer
+  1:        289    XT-PIC-XT        i8042
+  2:          0    XT-PIC-XT        cascade
+  3:         60    XT-PIC-XT        uhci_hcd:usb2, ehci_hcd:usb4
+  5:       9163    XT-PIC-XT        sata_via, HDA Intel
+  7:          0    XT-PIC-XT        uhci_hcd:usb3
+  8:          2    XT-PIC-XT        rtc
+ 10:       1712    XT-PIC-XT        b43
+ 11:        131    XT-PIC-XT        uhci_hcd:usb1
+ 12:        706    XT-PIC-XT        i8042
+ 14:          0    XT-PIC-XT        ide0
+ 15:          0    XT-PIC-XT        ide1
+NMI:          0   Non-maskable interrupts
+LOC:          0   Local timer interrupts
+RES:          0   Rescheduling interrupts
+CAL:          0   Function call interrupts
+TLB:          0   TLB shootdowns
+TRM:          0   Thermal event interrupts
+SPU:          0   Spurious interrupts
+ERR:          0
+MIS:          0
+
+* lspci -d 14e4:4312 -x
+02:00.0 Network controller: Broadcom Corporation BCM4312 802.11a/b/g (rev 0=
+2)
+00: e4 14 12 43 06 01 10 00 02 00 80 02 08 00 00 00
+10: 04 c0 ff fd 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 3c 10 71 13
+30: 00 00 00 00 40 00 00 00 00 00 00 00 0a 01 00 00
+
+* xset dpms force standby
+* wake up
+* dmesg is virtually the same as before, complaining about nobody handling =
+irq 10 and disabling it.
+* /proc/interrupts now is
+  0:      80987    XT-PIC-XT        timer
+  1:       1027    XT-PIC-XT        i8042
+  2:          0    XT-PIC-XT        cascade
+  3:         60    XT-PIC-XT        uhci_hcd:usb2, ehci_hcd:usb4
+  5:      10400    XT-PIC-XT        sata_via, HDA Intel
+  7:          0    XT-PIC-XT        uhci_hcd:usb3
+  8:          2    XT-PIC-XT        rtc
+ 10:     200000    XT-PIC-XT        b43
+ 11:        131    XT-PIC-XT        uhci_hcd:usb1
+ 12:       3059    XT-PIC-XT        i8042
+ 14:          0    XT-PIC-XT        ide0
+ 15:          0    XT-PIC-XT        ide1
+NMI:          0   Non-maskable interrupts
+LOC:          0   Local timer interrupts
+RES:          0   Rescheduling interrupts
+CAL:          0   Function call interrupts
+TLB:          0   TLB shootdowns
+TRM:          0   Thermal event interrupts
+SPU:          0   Spurious interrupts
+ERR:          0
+MIS:          0
+
+* Now check this out - the output of lspci -d 14e4:4312 -x
+02:00.0 Network controller: Broadcom Corporation BCM4312 802.11a/b/g (rev f=
+f)
+00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+(I double checked this)
+
+huh?
+
+=2D-yuval
+
+--nextPart4121756.b8sE6cYxkZ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkkqaqkACgkQl7qmwPqEj9+KSgCcDDvJdZJG6I9bqeOZ+6wsx+Fh
+1cUAniIl+yKJFmDIi/FRrfc+jUxZ/bgh
+=95vG
+-----END PGP SIGNATURE-----
+
+--nextPart4121756.b8sE6cYxkZ--
