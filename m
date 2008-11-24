@@ -1,90 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYKXSAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYKXSCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbYKXSAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 13:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYKXSAk
+	id S1754340AbYKXSCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 13:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYKXSCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 13:00:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56501 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbYKXSAj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 13:00:39 -0500
-Date: Mon, 24 Nov 2008 13:00:36 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Paul Mackerras <paulus@samba.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
-       Milton Miller <miltonm@bga.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/5] powerpc: ftrace, convert to new dynamic ftrace arch
- API
-In-Reply-To: <18730.1723.708467.812600@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811241256370.32561@gandalf.stny.rr.com>
-References: <20081120190948.057007623@goodmis.org> <20081120191149.285359258@goodmis.org> <18730.1723.708467.812600@drongo.ozlabs.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 24 Nov 2008 13:02:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37379 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752473AbYKXSCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 13:02:25 -0500
+Date: Mon, 24 Nov 2008 19:00:31 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] getrusage: fill ru_maxrss value
+Message-ID: <20081124180031.GA20155@redhat.com>
+References: <20081124170253.741d2e6e@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081124170253.741d2e6e@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/24, Jiri Pirko wrote:
+>
+> @@ -1588,6 +1589,13 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+>  				accumulate_thread_rusage(t, r);
+>  				t = next_thread(t);
+>  			} while (t != p);
+> +			if (p->mm) {
+> +				update_hiwater_rss(p->mm);
+> +				if (r->ru_maxrss < p->mm->hiwater_rss)
+> +					r->ru_maxrss = p->mm->hiwater_rss;
 
-On Mon, 24 Nov 2008, Paul Mackerras wrote:
+The task can free its ->mm right after the check. You need get_task_mm(),
+but you can't do this under ->siglock because it takes task_lock().
 
-> Steven Rostedt writes:
-> 
-> > Thanks to Paul Mackennas for pointing out the mistakes of my original
-> 
-> Mackerras
+I think you can move this code outside of lock_task_sighand().
 
-Heh, I have two reasons for that typo.
-
- 1) I reference Paul McKenney a lot, and my fingers are programmed.
- 2) I type with the dvorak layout, and the 'r' is just above the 'n'.
-    qwerty 'o' == dvorak 'r'
-    qwerty 'l' == dvorak 'n'
-
-;-)
-
-> 
-> > +static int test_24bit_addr(unsigned long ip, unsigned long addr)
-> > +{
-> > +	long diff;
-> > +
-> > +	/*
-> > +	 * Can we get to addr from ip in 24 bits?
-> > +	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
-> > +	 */
-> > +	diff = addr - ip;
-> > +
-> > +	/*
-> > +	 * Return true if diff is less than 1 << 25
-> > +	 *  and greater than -1 << 26.
-> > +	 */
-> > +	return (diff < (1 << 25)) && (diff > (-1 << 26));
-> 
-> I think this still isn't right, and the comment is one of those ones
-> that is only useful to people who can't read C, as it's just a
-> transliteration of the code.
-
-Argh!!! That must be a misfold.  I fixed that code.  The final version 
-ad the same shift for both.
-
-> 
-> The comment should say something like "Return true if diff can be
-> represented as a 26-bit twos-complement binary number" and the second
-> part of the test should be (diff >= (-1 << 25)).  However, since you
-> define a test_offset() function in patch 4/5 that does the same test
-> but using only one comparison instead of two, why don't you just say:
-> 
-> 	return !test_offset(diff);
-> 
-> (having first moved test_offset() before test_24bit_addr)?
-
-OK, will fix. Thanks. Hmm, maybe I ment to do that, and miss the patch :-/
-
--- Steve
+Oleg.
 
