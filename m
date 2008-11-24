@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYKXNbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbYKXNcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415AbYKXNbp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 08:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYKXNb1
+	id S1753688AbYKXNcA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 08:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYKXNbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 08:31:27 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46290 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbYKXNb0 (ORCPT
+	Mon, 24 Nov 2008 08:31:43 -0500
+Received: from stinky.trash.net ([213.144.137.162]:63472 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753468AbYKXNbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 08:31:26 -0500
-Date: Mon, 24 Nov 2008 13:31:24 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Tejun Heo <tj@kernel.org>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
-       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
-	needed.
-Message-ID: <20081124133124.GB28946@ZenIV.linux.org.uk>
-References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown> <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org>
+	Mon, 24 Nov 2008 08:31:42 -0500
+Message-ID: <492AACB4.9070903@trash.net>
+Date: Mon, 24 Nov 2008 14:31:32 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492A500C.9090200@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Meelis Roos <mroos@linux.ee>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Regression - Re: 2.6.28-rc2: runaway loop modprobe char-major-5-1
+References: <Pine.SOC.4.64.0810281212540.21462@math.ut.ee> <49071A84.3080706@trash.net> <Pine.SOC.4.64.0811212351200.16409@math.ut.ee>
+In-Reply-To: <Pine.SOC.4.64.0811212351200.16409@math.ut.ee>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 03:56:12PM +0900, Tejun Heo wrote:
+Meelis Roos wrote:
+>>> request_module: runaway loop modprobe char-major-5-1
+>>>
+>>> and then hangs.
+>>>
+>>> char-major-5-1 seems to mean ttyS0.
+>> I'm seeing the same problem on a Debian unstable system using
+>> initramfs and dm-crypt, but it seems to be caused by userspace
+>> changes, using an old initramfs image with just the new modules
+>> added manually works fine (well, breaks elsewhere).
+> 
+> I have done some eveninfs testing, taking apart and putting together my 
+> own initramfs. It looks like this is a kernel bug, not userspace - the 
+> hang happens after initramfs is unpacked and after VFS and quotas are 
+> installed, and after "msgmni has been set to 627" message but before BSG 
+> loading message and before io scheduler initialization. And log before 
+> init is executed from initramfs (and no modprobe is executed either, as 
+> my wrapper does not run).
+> 
+> Rerepeating, same userspace generats fine initramfs for 2.6.27 and the 
+> initramfs contents are the same except modules tree that is for 
+> different version.
+> 
+> It happens on 2 of my computers, both have custom config (serial 
+> compiled in, not modular). The hang happens before ttyS driver 
+> initialization.
 
-> mddev holds module reference and till the gendisk is gone mddev won't
-> be gone, so as long as gendisk is around the respective mddev and
-> md.ko are around.
+char-major-5-1 is /dev/console here.
 
-It doesn't and it *could* *not* - you can't drop the final reference to
-module from within that module, period.
+> Seems like a kernel regression to me.
 
-> I don't think it's necessary to allow modules to unload while devices
-> are hot.
-
-gendisk may stay referenced past the point when everything got closed
-and unregistered.
-
+It does, I changed some configuration options from =m to =y and
+it started working again. Unfortunately I'm unable to find the
+exact option that fixed it since I don't have the previous
+configuration anymore and random attempts to trigger the problem
+again failed.
