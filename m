@@ -1,317 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbYKXGJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbYKXGK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752190AbYKXGJu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 01:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYKXGJi
+	id S1752505AbYKXGK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 01:10:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYKXGKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 01:09:38 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:20336 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbYKXGJg (ORCPT
+	Mon, 24 Nov 2008 01:10:50 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:48842 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYKXGKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 01:09:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=RLZcN3xDYwTiJJnoTQmO6u7DbmuRNWGibzIWAHqi0RNDLauoakOh9igfW8oNFORa14
-         DnKsxS5tcF7us3DMhob9cPYLjX+HyDlRQQcm35at9saHhW+Ct7hW/2Tx+n4h7UQPGOih
-         PcllKOq3PNE+mGTTc4qC7MNESHzsmtMGmpPRQ=
-Message-ID: <492A4517.2020208@gmail.com>
-Date: Mon, 24 Nov 2008 15:09:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 24 Nov 2008 01:10:49 -0500
+Date: Mon, 24 Nov 2008 11:44:31 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+Subject: Re: [RFC PATCH v4 3/7] sched: nominate preferred wakeup cpu
+Message-ID: <20081124061431.GB4457@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>,
+	Gregory Haskins <gregory.haskins@gmail.com>
+References: <20081121082533.27075.12056.stgit@drishya.in.ibm.com> <20081121083114.27075.2113.stgit@drishya.in.ibm.com> <1227405838.7685.20000.camel@twins>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Miklos Szeredi <miklos@szeredi.hu>,
-       arjan@linux.intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       hch@infradead.org, rminnich@sandia.gov, ericvh@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH] poll: allow f_op->poll to sleep, take #4
-References: <E1L3oK1-0001Pz-J9@pomaz-ex.szeredi.hu> <20081122123942.GF5707@parisc-linux.org> <4927FE87.6050005@gmail.com> <20081122105356.87856d04.akpm@linux-foundation.org> <4928B162.9030404@gmail.com> <alpine.DEB.1.10.0811221831550.19456@alien.or.mcafeemobile.com> <20081123085902.GI30453@elte.hu> <49291F06.5040907@gmail.com> <20081123093420.GN30453@elte.hu> <492925B0.9030404@gmail.com> <20081123094551.GQ30453@elte.hu> <492A2DBF.3030208@gmail.com> <alpine.DEB.1.10.0811232054400.29950@alien.or.mcafeemobile.com> <alpine.DEB.1.10.0811232101330.29950@alien.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0811232101330.29950@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1227405838.7685.20000.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-f_op->poll is the only vfs operation which is not allowed to sleep.
-It's because poll and select implementation used task state to
-synchronize against wake ups, which doesn't have to be the case
-anymore as wait/wake interface can now use custom wake up functions.
-The non-sleep restriction can be a bit tricky because ->poll is not
-called from an atomic context and the result of accidentally sleeping
-in ->poll only shows up as temporary busy looping when the timing is
-right or rather wrong.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-23 03:03:58]:
 
-This patch converts poll/select to use custom wake up function and use
-separate triggered variable to synchronize against wake up events.
-The only added overhead is an extra function call during wake up and
-negligible.
+> On Fri, 2008-11-21 at 14:01 +0530, Vaidyanathan Srinivasan wrote:
+> > When the system utilisation is low and more cpus are idle,
+> > then the process waking up from sleep should prefer to
+> > wakeup an idle cpu from semi-idle cpu package (multi core
+> > package) rather than a completely idle cpu package which
+> > would waste power.
+> > 
+> > Use the sched_mc balance logic in find_busiest_group() to
+> > nominate a preferred wakeup cpu.
+> > 
+> > This info can be sored in appropriate sched_domain, but
+> > updating this info in all copies of sched_domain is not
+> > practical.  Hence this information is stored in root_domain
+> > struct which is one copy per partitioned sched domain.
+> > The root_domain can be accessed from each cpu's runqueue
+> > and there is one copy per partitioned sched domain.
+> > 
+> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> > ---
+> > 
+> >  kernel/sched.c |   15 +++++++++++++++
+> >  1 files changed, 15 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 79b71f3..d28cd98 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -493,6 +493,17 @@ struct root_domain {
+> >  #ifdef CONFIG_SMP
+> >  	struct cpupri cpupri;
+> >  #endif
+> > +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+> > +
+> > +	/*
+> > +	 * Preferred wake up cpu nominated by sched_mc balance that will be
+> > +	 * used when most cpus are idle in the system indicating overall very
+> > +	 * low system utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP(2)
+> > +	 */
+> > +	unsigned int sched_mc_preferred_wakeup_cpu;
+> > +
+> > +#endif
+> > +
+> >  };
+> >  
+> >  /*
+> 
+> Do we really need that extra whitespace?
+> 
+> > @@ -3090,6 +3101,7 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
+> >  	return 0;
+> >  }
+> >  
+> > +
+> >  /*
+> >   * find_busiest_group finds and returns the busiest CPU group within the
+> >   * domain. It calculates and returns the amount of weighted load which
+> 
+> Ditto?
+> 
+> > @@ -3406,6 +3418,9 @@ out_balanced:
+> >  
+> >  	if (this == group_leader && group_leader != group_min) {
+> >  		*imbalance = min_load_per_task;
+> > +		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP)
+> > +			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
+> > +					first_cpu(group_leader->cpumask);
+> 
+> While not strictly needed, I prefer braces around multi-line statments.
+> It's easier on the eyes.
 
-This patch removes the one non-sleep exception from vfs locking rules
-and is beneficial to userland filesystem implementations like FUSE, 9p
-or peculiar fs like spufs as it's very difficult for those to
-implement non-sleeping poll method.
+Hi Peter,
 
-While at it, make the following cosmetic changes to make poll.h and
-select.c checkpatch friendly.
+Thanks for the detailed review.  I will fix these issues in the next
+iteration.
 
-* s/type * symbol/type *symbol/		   : three places in poll.h
-* remove blank line before EXPORT_SYMBOL() : two places in select.c
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: Ron Minnich <rminnich@sandia.gov>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Cc: Davide Libenzi <davidel@xmailserver.org>
-Cc: Brad Boyer <flar@allandria.com>
----
-Added TODO comment to switch to wake_up_process() once @sync is gone.
-
-Thanks.
-
- Documentation/filesystems/Locking |    2 -
- drivers/media/video/v4l1-compat.c |    4 --
- fs/select.c                       |   58
-++++++++++++++++++++++++++++----------
- include/linux/poll.h              |   15 +++++++--
- 4 files changed, 58 insertions(+), 21 deletions(-)
-
-diff --git a/Documentation/filesystems/Locking
-b/Documentation/filesystems/Locking
-index 23d2f44..250f3c4 100644
---- a/Documentation/filesystems/Locking
-+++ b/Documentation/filesystems/Locking
-@@ -398,7 +398,7 @@ prototypes:
- };
-
- locking rules:
--	All except ->poll() may block.
-+	All may block.
- 			BKL
- llseek:			no	(see below)
- read:			no
-diff --git a/drivers/media/video/v4l1-compat.c
-b/drivers/media/video/v4l1-compat.c
-index f13c0a9..d0253da 100644
---- a/drivers/media/video/v4l1-compat.c
-+++ b/drivers/media/video/v4l1-compat.c
-@@ -203,7 +203,6 @@ static int poll_one(struct file *file, struct
-poll_wqueues *pwq)
- 	table = &pwq->pt;
- 	for (;;) {
- 		int mask;
--		set_current_state(TASK_INTERRUPTIBLE);
- 		mask = file->f_op->poll(file, table);
- 		if (mask & POLLIN)
- 			break;
-@@ -212,9 +211,8 @@ static int poll_one(struct file *file, struct
-poll_wqueues *pwq)
- 			retval = -ERESTARTSYS;
- 			break;
- 		}
--		schedule();
-+		poll_schedule(pwq, TASK_INTERRUPTIBLE);
- 	}
--	set_current_state(TASK_RUNNING);
- 	poll_freewait(pwq);
- 	return retval;
- }
-diff --git a/fs/select.c b/fs/select.c
-index 87df51e..f2ef68b 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -109,11 +109,11 @@ static void __pollwait(struct file *filp,
-wait_queue_head_t *wait_address,
- void poll_initwait(struct poll_wqueues *pwq)
- {
- 	init_poll_funcptr(&pwq->pt, __pollwait);
-+	pwq->polling_task = current;
- 	pwq->error = 0;
- 	pwq->table = NULL;
- 	pwq->inline_index = 0;
- }
--
- EXPORT_SYMBOL(poll_initwait);
-
- static void free_poll_entry(struct poll_table_entry *entry)
-@@ -142,12 +142,10 @@ void poll_freewait(struct poll_wqueues *pwq)
- 		free_page((unsigned long) old);
- 	}
- }
--
- EXPORT_SYMBOL(poll_freewait);
-
--static struct poll_table_entry *poll_get_entry(poll_table *_p)
-+static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
- {
--	struct poll_wqueues *p = container_of(_p, struct poll_wqueues, pt);
- 	struct poll_table_page *table = p->table;
-
- 	if (p->inline_index < N_INLINE_POLL_ENTRIES)
-@@ -159,7 +157,6 @@ static struct poll_table_entry
-*poll_get_entry(poll_table *_p)
- 		new_table = (struct poll_table_page *) __get_free_page(GFP_KERNEL);
- 		if (!new_table) {
- 			p->error = -ENOMEM;
--			__set_current_state(TASK_RUNNING);
- 			return NULL;
- 		}
- 		new_table->entry = new_table->entries;
-@@ -171,20 +168,57 @@ static struct poll_table_entry
-*poll_get_entry(poll_table *_p)
- 	return table->entry++;
- }
-
-+static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-+{
-+	struct poll_wqueues *pwq = wait->private;
-+	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-+
-+	set_mb(pwq->triggered, 1);
-+
-+	/*
-+	 * Perform the default wake up operation using a dummy
-+	 * waitqueue.
-+	 *
-+	 * TODO: This is hacky but there currently is no interface to
-+	 * pass in @sync.  @sync is scheduled to be removed and once
-+	 * that happens, wake_up_process() can be used directly.
-+	 */
-+	return default_wake_function(&dummy_wait, mode, sync, key);
-+}
-+
- /* Add a new entry */
- static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
- 				poll_table *p)
- {
--	struct poll_table_entry *entry = poll_get_entry(p);
-+	struct poll_wqueues *pwq = container_of(p, struct poll_wqueues, pt);
-+	struct poll_table_entry *entry = poll_get_entry(pwq);
- 	if (!entry)
- 		return;
- 	get_file(filp);
- 	entry->filp = filp;
- 	entry->wait_address = wait_address;
--	init_waitqueue_entry(&entry->wait, current);
-+	init_waitqueue_func_entry(&entry->wait, pollwake);
-+	entry->wait.private = pwq;
- 	add_wait_queue(wait_address, &entry->wait);
- }
-
-+int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-+			  ktime_t *expires, unsigned long slack)
-+{
-+	int rc = -EINTR;
-+
-+	set_current_state(state);
-+	if (!pwq->triggered)
-+		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
-+	__set_current_state(TASK_RUNNING);
-+
-+	/* clear triggered for the next iteration */
-+	pwq->triggered = 0;
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(poll_schedule_timeout);
-+
- /**
-  * poll_select_set_timeout - helper function to setup the timeout value
-  * @to:		pointer to timespec variable for the final timeout
-@@ -340,8 +374,6 @@ int do_select(int n, fd_set_bits *fds, struct
-timespec *end_time)
- 	for (;;) {
- 		unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
-
--		set_current_state(TASK_INTERRUPTIBLE);
--
- 		inp = fds->in; outp = fds->out; exp = fds->ex;
- 		rinp = fds->res_in; routp = fds->res_out; rexp = fds->res_ex;
-
-@@ -411,10 +443,10 @@ int do_select(int n, fd_set_bits *fds, struct
-timespec *end_time)
- 			to = &expire;
- 		}
-
--		if (!schedule_hrtimeout_range(to, slack, HRTIMER_MODE_ABS))
-+		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE,
-+					   to, slack))
- 			timed_out = 1;
- 	}
--	__set_current_state(TASK_RUNNING);
-
- 	poll_freewait(&table);
-
-@@ -666,7 +698,6 @@ static int do_poll(unsigned int nfds,  struct
-poll_list *list,
- 	for (;;) {
- 		struct poll_list *walk;
-
--		set_current_state(TASK_INTERRUPTIBLE);
- 		for (walk = list; walk != NULL; walk = walk->next) {
- 			struct pollfd * pfd, * pfd_end;
-
-@@ -709,10 +740,9 @@ static int do_poll(unsigned int nfds,  struct
-poll_list *list,
- 			to = &expire;
- 		}
-
--		if (!schedule_hrtimeout_range(to, slack, HRTIMER_MODE_ABS))
-+		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE, to, slack))
- 			timed_out = 1;
- 	}
--	__set_current_state(TASK_RUNNING);
- 	return count;
- }
-
-diff --git a/include/linux/poll.h b/include/linux/poll.h
-index badd98a..8c24ef8 100644
---- a/include/linux/poll.h
-+++ b/include/linux/poll.h
-@@ -46,9 +46,9 @@ static inline void init_poll_funcptr(poll_table *pt,
-poll_queue_proc qproc)
- }
-
- struct poll_table_entry {
--	struct file * filp;
-+	struct file *filp;
- 	wait_queue_t wait;
--	wait_queue_head_t * wait_address;
-+	wait_queue_head_t *wait_address;
- };
-
- /*
-@@ -56,7 +56,9 @@ struct poll_table_entry {
-  */
- struct poll_wqueues {
- 	poll_table pt;
--	struct poll_table_page * table;
-+	struct poll_table_page *table;
-+	struct task_struct *polling_task;
-+	int triggered;
- 	int error;
- 	int inline_index;
- 	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
-@@ -64,6 +66,13 @@ struct poll_wqueues {
-
- extern void poll_initwait(struct poll_wqueues *pwq);
- extern void poll_freewait(struct poll_wqueues *pwq);
-+extern int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-+				 ktime_t *expires, unsigned long slack);
-+
-+static inline int poll_schedule(struct poll_wqueues *pwq, int state)
-+{
-+	return poll_schedule_timeout(pwq, state, NULL, 0);
-+}
-
- /*
-  * Scaleable version of the fd_set.
+--Vaidy
