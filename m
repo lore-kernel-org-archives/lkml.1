@@ -1,177 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYKXN23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYKXNa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYKXN23 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 08:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYKXN14
+	id S1753229AbYKXNa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 08:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYKXNaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 08:27:56 -0500
-Received: from 1wt.eu ([62.212.114.60]:1370 "EHLO 1wt.eu"
+	Mon, 24 Nov 2008 08:30:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41803 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbYKXN1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 08:27:54 -0500
-Date: Mon, 24 Nov 2008 14:27:44 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081124132744.GB24851@1wt.eu>
-References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com> <20081118065006.GC24654@1wt.eu> <20081120031101.GD26448@xw6200.broadcom.net> <20081120053746.GB15168@1wt.eu> <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750892AbYKXNaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 08:30:16 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: Regression: ACPI AC driver doesn't work on Toshiba Portege R500 (bisected)
+Date: Mon, 24 Nov 2008 14:30:01 +0100
+User-Agent: KMail/1.9.9
+Cc: "Zhao, Yakui" <yakui.zhao@intel.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       walken <walken@zoy.org>
+References: <200811230053.14211.rjw@sisk.pl> <200811240221.54716.rjw@sisk.pl> <1227490280.15014.291.camel@rzhang-dt>
+In-Reply-To: <1227490280.15014.291.camel@rzhang-dt>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081120215318.GB27907@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+Message-Id: <200811241430.02434.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+On Monday, 24 of November 2008, Zhang Rui wrote:
+> On Mon, 2008-11-24 at 09:21 +0800, Rafael J. Wysocki wrote:
+> > On Monday, 24 of November 2008, Zhao Yakui wrote:
+> > > On Mon, 2008-11-24 at 07:37 +0800, Rafael J. Wysocki wrote:
+> > > > On Sunday, 23 of November 2008, Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > With current mainline (2.6.28-rc6-git1 as of today) on Toshiba Portege R500 the
+> > > > > status of the AC adapter is not updated when the adapter is unplugged and
+> > > > > plugged in.  Evidently, /sys/class/power_supply/ADP1/online always contains the
+> > > > > same value.  Interestingly enough, though, if the box is suspended to RAM and
+> > > > > resumed, the status of the AC adapter is correctly updated, but the value read
+> > > > > at that time remains in /sys/class/power_supply/ADP1/online until the next
+> > > > > suspend/resume cycle regardless of what's going on with the AC adapter.
+> > > > > 
+> > > > > 2.6.27.7 works correctly on this box so the recent EC patches don't seem to
+> > > > > cause this regression to happen.
+> > > > > 
+> > > > > Any other ideas?
+> > > Hi, Rafael
+> > >     Will you please open a new bug at
+> > > http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI and attach the
+> > > output of acpidump, dmesg, lspci -vxxx?
+> > >     If no ACPI event is reported when AC adapter is unplugged and
+> > > plugged, the /sys/class interface can't display the correct AC status.
+> > > Now Rui is working on this issue and the patch is already finished. But
+> > > it is not sent to Lenb.
+> > 
+> > Can you give me a link to the patch, please?
 
-On Thu, Nov 20, 2008 at 01:53:18PM -0800, Matt Carlson wrote:
-> > Today, with the notebook connected to a gig switch, I could not reproduce
-> > the problem, even after one hour of approximately the same workload. I'll
-> > retry with the original 100 Mbps switch on monday.
+Thanks.
 
-fairly easier now with the same switch. I just have to transfer 100k objects
-over HTTP via this switch to see the problem happen :
+Still, it doesn't seem to be related to the problem at hand.
 
-tg3: eth0: The system may be re-ordering memory-mapped I/O cycles to the network device, attempting to recover. Please report the problem to the driver maintainer and include system chipset information.
-tg3: tg3_stop_block timed out, ofs=1400 enable_bit=2
-tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
-tg3: eth0: Link is down.
-tg3: eth0: Link is up at 100 Mbps, full duplex.
-tg3: eth0: Flow control is on for TX and on for RX.
+> From: Zhang Rui <rui.zhang@intel.com>
+> Subject: power_supply: update ac status before acquiring it.
+> 
+> Update AC status in sysfs I/F.
+> http://bugzilla.kernel.org/show_bug.cgi?id=12035
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/acpi/ac.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/acpi/ac.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/ac.c
+> +++ linux-2.6/drivers/acpi/ac.c
+> @@ -87,6 +87,7 @@ struct acpi_ac {
+>  	unsigned long long state;
+>  };
+>  
+> +static int acpi_ac_get_state(struct acpi_ac *ac);
+>  #define to_acpi_ac(x) container_of(x, struct acpi_ac, charger);
+>  
+>  #ifdef CONFIG_ACPI_PROCFS_POWER
+> @@ -103,15 +104,18 @@ static int get_ac_property(struct power_
+>  			   enum power_supply_property psp,
+>  			   union power_supply_propval *val)
+>  {
+> +	int result;
+>  	struct acpi_ac *ac = to_acpi_ac(psy);
+> +
+>  	switch (psp) {
+>  	case POWER_SUPPLY_PROP_ONLINE:
+> +		result = acpi_ac_get_state(ac);
+>  		val->intval = ac->state;
+>  		break;
+>  	default:
+>  		return -EINVAL;
+>  	}
+> -	return 0;
+> +	return result;
+>  }
+>  
+>  static enum power_supply_property ac_props[] = {
+> 
+> >  
+> > >     From the problem description it seems that the problem is related
+> > > with the AC driver. But from the git-bisect it seems that the problem is
+> > > related with the button driver(Fix power button device). 
+> > > 
+> > >     Any-way, please attach the output of dmesg, acpidump, lspci -vxxx.
+> > 
+> > Created http://bugzilla.kernel.org/show_bug.cgi?id=12091 with the information
+> > attached as requested.
+> > 
+> I'll take this bug. :)
 
-The switch is an el-cheapo D-Link 10/100. Note that this time I did not see
-any warning. Maybe I did not wait long enough though. Here are some stats
-and information I could collect :
+Thanks again.
 
-root@wtap:/# ethtool -i eth0
-driver: tg3
-version: 3.94
-firmware-version: 5705-v3.14
-bus-info: 0000:02:0e.0
+Do I understand correctly that you intend to revert commit
+faee816b1502385dc9bc5abf2960d1cc645844d1 and provide an alternative patch
+for walken?
 
-root@wtap:/# ethtool eth0
-Settings for eth0:
-        Supported ports: [ TP ]
-        Supported link modes:   10baseT/Half 10baseT/Full 
-                                100baseT/Half 100baseT/Full 
-                                1000baseT/Half 1000baseT/Full 
-        Supports auto-negotiation: Yes
-        Advertised link modes:  10baseT/Half 10baseT/Full 
-                                100baseT/Half 100baseT/Full 
-                                1000baseT/Half 1000baseT/Full 
-        Advertised auto-negotiation: Yes
-        Speed: 100Mb/s
-        Duplex: Full
-        Port: Twisted Pair
-        PHYAD: 1
-        Transceiver: internal
-        Auto-negotiation: on
-        Supports Wake-on: g
-        Wake-on: d
-        Current message level: 0x000000ff (255)
-        Link detected: yes
-
-root@wtap:/# ethtool -k eth0
-Offload parameters for eth0:
-rx-checksumming: on
-tx-checksumming: on
-scatter-gather: on
-tcp segmentation offload: off
-
-root@wtap:/# ethtool -a eth0
-Pause parameters for eth0:
-Autonegotiate:  on
-RX:             on
-TX:             on
-
-root@wtap:/# netstat -ni
-Kernel Interface table
-Iface   MTU Met   RX-OK RX-ERR RX-DRP RX-OVR   TX-OK TX-ERR TX-DRP TX-OVR Flg
-eth0   1500   0   61665      0      0      0   65133      0      0      0 BMRU
-lo    16436   0  945938      0      0      0  945938      0      0      0 LRU
-
-root@wtap:/# ethtool -S eth0
-NIC statistics:
-     rx_octets: 52461785
-     rx_fragments: 0
-     rx_ucast_packets: 61018
-     rx_mcast_packets: 0
-     rx_bcast_packets: 476
-     rx_fcs_errors: 0
-     rx_align_errors: 0
-     rx_xon_pause_rcvd: 0
-     rx_xoff_pause_rcvd: 0
-     rx_mac_ctrl_rcvd: 0
-     rx_xoff_entered: 0
-     rx_frame_too_long_errors: 0
-     rx_jabbers: 0
-     rx_undersize_packets: 0
-     rx_in_length_errors: 0
-     rx_out_length_errors: 0
-     rx_64_or_less_octet_packets: 0
-     rx_65_to_127_octet_packets: 0
-     rx_128_to_255_octet_packets: 0
-     rx_256_to_511_octet_packets: 0
-     rx_512_to_1023_octet_packets: 0
-     rx_1024_to_1522_octet_packets: 0
-     rx_1523_to_2047_octet_packets: 0
-     rx_2048_to_4095_octet_packets: 0
-     rx_4096_to_8191_octet_packets: 0
-     rx_8192_to_9022_octet_packets: 0
-     tx_octets: 54658258
-     tx_collisions: 0
-     tx_xon_sent: 0
-     tx_xoff_sent: 0
-     tx_flow_control: 0
-     tx_mac_errors: 0
-     tx_single_collisions: 0
-     tx_mult_collisions: 0
-     tx_deferred: 0
-     tx_excessive_collisions: 0
-     tx_late_collisions: 0
-     tx_collide_2times: 0
-     tx_collide_3times: 0
-     tx_collide_4times: 0
-     tx_collide_5times: 0
-     tx_collide_6times: 0
-     tx_collide_7times: 0
-     tx_collide_8times: 0
-     tx_collide_9times: 0
-     tx_collide_10times: 0
-     tx_collide_11times: 0
-     tx_collide_12times: 0
-     tx_collide_13times: 0
-     tx_collide_14times: 0
-     tx_collide_15times: 0
-     tx_ucast_packets: 65033
-     tx_mcast_packets: 0
-     tx_bcast_packets: 0
-     tx_carrier_sense_errors: 0
-     tx_discards: 0
-     tx_errors: 0
-     dma_writeq_full: 0
-     dma_write_prioq_full: 0
-     rxbds_empty: 0
-     rx_discards: 0
-     rx_errors: 0
-     rx_threshold_hit: 0
-     dma_readq_full: 0
-     dma_read_prioq_full: 0
-     tx_comp_queue_full: 0
-     ring_set_send_prod_index: 0
-     ring_status_update: 0
-     nic_irqs: 0
-     nic_avoided_irqs: 0
-     nic_tx_threshold_hit: 0
-
-I will try to go back to older kernels then bisect tg3 changes. I
-cannot do this right now since I'm using my laptop for work ;-)
-
-Regards,
-Willy
-
+Rafael
