@@ -1,30 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbYKXIc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYKXIc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332AbYKXIc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 03:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYKXIcU
+	id S1752649AbYKXIc6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 03:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYKXIcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 03:32:20 -0500
-Received: from viefep11-int.chello.at ([62.179.121.31]:61738 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbYKXIcU (ORCPT
+	Mon, 24 Nov 2008 03:32:48 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:32696 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbYKXIcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 03:32:20 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] sched: Don't allow priority switch to realtime when
- the task doesn't belong to init_task_group and when CONFIG_RT_GROUP_SCHED
- isn't set
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>
-In-Reply-To: <20081124035807.GA3278@in.ibm.com>
-References: <20081120061854.GA4349@in.ibm.com>
-	 <1227402676.7685.19942.camel@twins>  <20081124035807.GA3278@in.ibm.com>
+	Mon, 24 Nov 2008 03:32:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kL0+V7R8asoTy/SO9dsM8v4v8PIS1oPH5snVVDYWnudH2tq0SoEfAWF2bm2i/gNyrH
+         l5QpByKD69umXTXuJOdK1+XU+1JevEQMzRxvgmSwjWvMRH/uArRghMrNd6+OaJ9qiagX
+         sSAXOVMhI2/AyDTlTpwRepsmvgjmK4Yf6Lfjw=
+Subject: Re: [Bug #12038] Suspend regression in stable kernel 2.6.27.4 on
+ Mac mini Core Duo
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Tino Keitel <tino.keitel@gmx.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <20081124080334.GA4598@dose.home.local>
+References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera>
+	 <vyitTh0pP2N.A.nJC.c7HKJB@chimera>  <20081124080334.GA4598@dose.home.local>
 Content-Type: text/plain
-Date: Mon, 24 Nov 2008 09:32:06 +0100
-Message-Id: <1227515526.7685.21861.camel@twins>
+Date: Mon, 24 Nov 2008 00:32:42 -0800
+Message-Id: <1227515562.3108.30.camel@LiNuX>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -32,50 +37,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-24 at 09:28 +0530, Bharata B Rao wrote:
-> On Sun, Nov 23, 2008 at 02:11:16AM +0100, Peter Zijlstra wrote:
-> > On Thu, 2008-11-20 at 11:48 +0530, Bharata B Rao wrote:
-> > > Applies on 2.6.28-rc5.
-> > > 
-> > > With CONFIG_RT_GROUP_SCHED not set, don't allow a task's priority switch
-> > > to realtime if the task isn't part of init_task_group.
-> > > 
-> > > A task belonging to a fair group could use sched_setscheduler/sched_setparam
-> > > to become a realtime task. If such a task belongs to one of the
-> > > child groups of init_task_group and if CONFIG_RT_GROUP_SCHED is not set,
-> > > then it ends up getting queued in init_task_group's runqueue.
-> > > So we have a situation where, a task belongs to one group (child)
-> > > but ends in the runqueue of another group (init_task_group).
-> > > This does not look correct.
-> > > 
-> > > Fix this by failing such priority change requests in sched_setscheduler()
-> > > and sched_setparam().
+On Mon, 2008-11-24 at 09:03 +0100, Tino Keitel wrote:
+> On Sat, Nov 22, 2008 at 21:28:19 +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > > 
-> > NAK
-> > 
-> > !RT_GROUP means the RT tasks should be fully invariant to any grouping
-> > configuration. This patch breaks that.
-> > 
-> > Furthermore your justification for this is plain wrong, you write as if
-> > an RT tasks can belong to any grouping (in the !RT_GROUP case), by the
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.27.  Please verify if it still should be listed and let me know
+> > (either way).
 > 
-> Hmm... but that's I the impression I got when I started an RT
-> task in a subgroup and saw it listed in the tasks list of the cgroup.
-> So if RT tasks don't care about grouping (!RT_GROUP_SCHED), may be then
-> such tasks shoudn't be shown in the cgroup tasks list.
+> Hi,
+> 
+> 2.6.28-rc6 (or more precisely:
+> ed313489badef16d700f5a3be50e8fd8f8294bc8) still hangs my Mac after
+> resume, and git log drivers/acpi/sleep/main.c shows no relevant commits.
+> 
+> Regards,
+> Tino
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Sure, do as you like upon the cgroup interface
+I'm not getting a freeze here(was getting strange cpu frequencies
+though); My setup here is the latest xserver from intrepid
+readeon, and s2ram app. echo mem > /sys/power/state gives
+me a black screen, then an instant reboot. s2ram recovers
+as expected. Although I'm not sure what the setup is with macmini,
+I've a macbook pro ati chipset.
 
->  And may be as Ingo
-> suggested they should be moved to init_task_group.
-
-Bzzt, wrong! They should not be moved to any group, they cannot be moved
-to any group, as they are group invariant.
-
->  Without that it makes one
-> think that a task is contributing to the cpu time of a group in which
-> it was started, but it in reality it is not.
-
-Until one thinks more and realizes RT tasks don't contribute anything to
-groups as they are not part of them.
+regards;
+-- 
+Justin P. Mattock <justinmattock@gmail.com>
 
