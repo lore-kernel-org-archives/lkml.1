@@ -1,35 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbYKXJks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYKXJnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbYKXJks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 04:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYKXJkk
+	id S1752629AbYKXJnu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 04:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYKXJnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 04:40:40 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58446 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751372AbYKXJkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 04:40:39 -0500
-Date: Mon, 24 Nov 2008 10:38:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Qinghuang Feng <qhfeng.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH] block/blk-tag.c: cleanup kernel-doc
-Message-ID: <20081124093841.GB26308@kernel.dk>
-References: <492a6f43.054c6e0a.7df6.368b@mx.google.com>
-MIME-Version: 1.0
+	Mon, 24 Nov 2008 04:43:42 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34388 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbYKXJnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 04:43:42 -0500
+Date: Mon, 24 Nov 2008 10:53:56 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] __used is needed for function referenced only from inline asm
+Message-ID: <20081124095356.GW6703@one.firstfloor.org>
+References: <1227514662-10848-1-git-send-email-edwintorok@gmail.com> <Pine.LNX.4.64.0811240948130.30025@anakin> <873ahhiil1.fsf@basil.nowhere.org> <je7i6twjsp.fsf@sykes.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <492a6f43.054c6e0a.7df6.368b@mx.google.com>
+In-Reply-To: <je7i6twjsp.fsf@sykes.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24 2008, Qinghuang Feng wrote:
-> There is no argument named @tags in blk_init_tags,
-> remove its' comment.
+On Mon, Nov 24, 2008 at 10:32:54AM +0100, Andreas Schwab wrote:
+> Andi Kleen <andi@firstfloor.org> writes:
+> 
+> > Geert Uytterhoeven <geert@linux-m68k.org> writes:
+> >>>   */
+> >>> -static void noinline __sched
+> >>> +static __used noinline void __sched
+> >>
+> >> Perhaps we should incorporate it into `noinline'?
+> >
+> > No, we use noinline for other reasons too. Perhaps the other way
+> > around though.
+> 
+> Or just drop noinline here (since there are no callers to inline into
+> anyway).
 
-Thanks, applied.
+That would seem fragile to me because it could hit later again when
+someone changes the code or adds debugging code. Better always
+have full annotations, even if you don't need them all at the moment.
+
+-Andi
 
 -- 
-Jens Axboe
-
+ak@linux.intel.com
