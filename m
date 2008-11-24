@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYKXRCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYKXRFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbYKXRCu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 12:02:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYKXRCm
+	id S1754029AbYKXRFy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 12:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYKXRFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 12:02:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51994 "EHLO mx2.redhat.com"
+	Mon, 24 Nov 2008 12:05:47 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53157 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbYKXRCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 12:02:41 -0500
-Date: Mon, 24 Nov 2008 15:02:02 -0200
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Cc: kvm@vger.kernel.org, Jan Kiszka <jan.kiszka@web.de>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: hrtimer_forward() semantics when using non-high-res timers
-Message-ID: <20081124170202.GD16862@blackpad>
+	id S1753114AbYKXRFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 12:05:46 -0500
+Date: Mon, 24 Nov 2008 22:35:35 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [PATCH] sched: Don't allow priority switch to realtime when
+	the task doesn't belong to init_task_group and when
+	CONFIG_RT_GROUP_SCHED isn't set
+Message-ID: <20081124170535.GE5451@linux.vnet.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20081120061854.GA4349@in.ibm.com> <1227402676.7685.19942.camel@twins> <20081124035807.GA3278@in.ibm.com> <1227515526.7685.21861.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081121170642.GH30825@blackpad>
-X-Fnord: you can see the fnord
+In-Reply-To: <1227515526.7685.21861.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Thomas,
+On Mon, Nov 24, 2008 at 09:32:06AM +0100, Peter Zijlstra wrote:
+> >  And may be as Ingo
+> > suggested they should be moved to init_task_group.
+> 
+> Bzzt, wrong! They should not be moved to any group, they cannot be moved
+> to any group, as they are group invariant.
 
-I've been looking at a timer problem on KVM recently[1] and I've got a
-question about the expected semantics of hrtimer_forward().
+Though what you say makes sense, the confusion arises from existing
+cgroup<->scheduler interface, which can end up showing the above
+single-set of RT-tasks to be split into multiple sets.
 
-The problem I am looking at is related to having proper accouting of
-missed ticks on the KVM timer code when it the host has lost timer
-ticks because of high CPU load, or because it doesn't have hrtimers
-enabled. hrtimer_forward_now() overrun accounting looked perfect for
-the task of checking how many ticks we have lost.
+RT Tasks -> {RT0, RT1}
 
-However hrtimer_forward() limits the interval parameter to the timer
-resolution, making it useless for calculating how many timer periods we've
-lost because of too-low timer resolution. I am even a bit surprised no
-other code needs a hrtimer_forward-like function for that, yet.
+can be shown as:
 
-For example: if we want to account for a tick every 1 ms and the host
-has HZ=250 and no high-resolution timers, calling hrtimer_forward_now()
-on every timer tick will normally return 1 because it will count how
-many 4 ms periods were added to the timer expiration time. However,
-I would like to calculate how many 1 ms periods I've lost, no matter
-what the real timer resolution is.
+	/a/tasks {RT0, ...}
+	/b/tasks {RT1, ...}
 
-I could do my own missed-ticks calculation, but the hrtimer_forward()
-logic would be perfect for my needs if it didn't have the resolution check
-code, and I don't feel like duplicating part of hrtimer_forward(). Do you
-think it would make sense to have on the timers API a hrtimer_forward-like
-function that doesn't have the interval lower-limit?
+Does this cause any problems? Perhaps no, just seems odd ..
 
+Fixing this oddity of representing single RT-tasks set as multiple is not a 
+cgroup issue IMHO.
 
-[1] http://marc.info/?l=kvm&m=122728725028262&w=2
+P.S :- If eventually RT_GROUP_SCHED will be merged with FAIR_GROUP_SCHED, then 
+it may make sense for us to just ignore this oddity for timebeing and look 
+forward to the options being merged.
 
--- 
-Eduardo
+- vatsa
