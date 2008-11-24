@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYKXPGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbYKXPL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYKXPGB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 10:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYKXPFx
+	id S1753255AbYKXPL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 10:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYKXPLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 10:05:53 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:38659 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbYKXPFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 10:05:53 -0500
-Message-ID: <ac3eb2510811240705q2133b4e5w6ac0ab6b41ccaa69@mail.gmail.com>
-Date: Mon, 24 Nov 2008 16:05:51 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Patrick McHardy" <kaber@trash.net>
-Subject: Re: Regression - Re: 2.6.28-rc2: runaway loop modprobe char-major-5-1
-Cc: "Meelis Roos" <mroos@linux.ee>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <492AACB4.9070903@trash.net>
+	Mon, 24 Nov 2008 10:11:19 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:37809 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752379AbYKXPLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 10:11:19 -0500
+Date: Mon, 24 Nov 2008 09:11:13 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Li Zefan <lizf@cn.fujitsu.com>, Gregory Haskins <ghaskins@novell.com>
+Cc: Max Krasnyansky <maxk@qualcomm.com>, Derek Fults <dfults@sgi.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and no load balance
+Message-ID: <20081124151113.GB2292@sgi.com>
+References: <20081104144017.GB30855@sgi.com> <4910634C.1020207@novell.com> <49246DD0.3010509@qualcomm.com> <4924762B.8000108@novell.com> <4924C770.7050107@qualcomm.com> <4926158B.9020909@novell.com> <49271449.2030804@qualcomm.com> <20081121211800.GA16647@sgi.com> <4927AECA.2040707@qualcomm.com> <4927C055.8030009@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.SOC.4.64.0810281212540.21462@math.ut.ee>
-	 <49071A84.3080706@trash.net>
-	 <Pine.SOC.4.64.0811212351200.16409@math.ut.ee>
-	 <492AACB4.9070903@trash.net>
+In-Reply-To: <4927C055.8030009@cn.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 14:31, Patrick McHardy <kaber@trash.net> wrote:
-> Meelis Roos wrote:
->>>>
->>>> request_module: runaway loop modprobe char-major-5-1
->>>>
->>>> and then hangs.
->>>>
->>>> char-major-5-1 seems to mean ttyS0.
->>>
->>> I'm seeing the same problem on a Debian unstable system using
->>> initramfs and dm-crypt, but it seems to be caused by userspace
->>> changes, using an old initramfs image with just the new modules
->>> added manually works fine (well, breaks elsewhere).
->>
->> I have done some eveninfs testing, taking apart and putting together my
->> own initramfs. It looks like this is a kernel bug, not userspace - the hang
->> happens after initramfs is unpacked and after VFS and quotas are installed,
->> and after "msgmni has been set to 627" message but before BSG loading
->> message and before io scheduler initialization. And log before init is
->> executed from initramfs (and no modprobe is executed either, as my wrapper
->> does not run).
->>
->> Rerepeating, same userspace generats fine initramfs for 2.6.27 and the
->> initramfs contents are the same except modules tree that is for different
->> version.
->>
->> It happens on 2 of my computers, both have custom config (serial compiled
->> in, not modular). The hang happens before ttyS driver initialization.
->
-> char-major-5-1 is /dev/console here.
->
->> Seems like a kernel regression to me.
->
-> It does, I changed some configuration options from =m to =y and
-> it started working again. Unfortunately I'm unable to find the
-> exact option that fixed it since I don't have the previous
-> configuration anymore and random attempts to trigger the problem
-> again failed.
+On Sat, Nov 22, 2008 at 04:18:29PM +0800, Li Zefan wrote:
+> Max Krasnyansky wrote:
+> > 
+> > Dimitri Sivanich wrote:
+> >>
+> >> Which is the way sched_load_balance is supposed to work. You need to set
+> >> sched_load_balance=0 for all cpusets containing any cpu you want to disable
+> >> balancing on, otherwise some balancing will happen.
+> > It won't be much of a balancing in this case because this just one cpu per
+> > domain.
+> > In other words no that's not how it supposed to work. There is code in
+> > cpu_attach_domain() that is supposed to remove redundant levels
+> > (sd_degenerate() stuff). There is an explicit check in there for numcpus == 1.
+> > btw The reason you got a different result that I did is because you have a
+> > NUMA box where is mine is UMA. I was able to reproduce the problem though by
+> > enabling multi-core scheduler. In which case I also get one redundant domain
+> > level CPU, with a single CPU in it.
+> > So we definitely need to fix this. I'll try to poke around tomorrow and figure
+> > out why redundant level is not dropped.
+> > 
+> 
+> You were not using latest kernel, were you?
+> 
+> There was a bug in sd degenerate code, and it has already been fixed:
+> 	http://lkml.org/lkml/2008/11/8/10
 
-Maybe you just miss /dev/console in initramfs? That would trigger the
-kernel forked modprobe with that major/minor.
-
-Some device nodes must be created or included in initramfs before any
-action is taken.
-
-Kay
+With the above patch added, we now see the results that Max is showing as far as individual root domains being created with a span of just their own cpu when sched_load_balance is turned off.
