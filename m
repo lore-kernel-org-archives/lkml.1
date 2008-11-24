@@ -1,86 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbYKXVud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYKXVxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbYKXVud (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 16:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKXVuW
+	id S1754263AbYKXVxe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 16:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYKXVxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 16:50:22 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:10479 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbYKXVuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 16:50:21 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=HZmKYl7T1PJKXN+sPqeR3hY/zfvGcv0+23oc3WnvUs6aDxrLcbLGeFXtQWGhYjQi4
-	VW0tZpWYKKZ+/pzhr/hsw==
-MIME-Version: 1.0
-In-Reply-To: <84144f020811241313o7401e3c2gd360c4226f33b28f@mail.gmail.com>
-References: <604427e00811211731l40898486r1a58e4940f3859e9@mail.gmail.com>
-	 <6599ad830811241202o74312a18m84ed86a5f4393086@mail.gmail.com>
-	 <604427e00811241302t2a52e38etffca2546f319a7af@mail.gmail.com>
-	 <84144f020811241313o7401e3c2gd360c4226f33b28f@mail.gmail.com>
-Date: Mon, 24 Nov 2008 13:50:17 -0800
-Message-ID: <604427e00811241350j25b7b483p1d171ea1b5b6f8bf@mail.gmail.com>
-Subject: Re: [PATCH][V3]Make get_user_pages interruptible
-From: Ying Han <yinghan@google.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Paul Menage <menage@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Nov 2008 16:53:07 -0500
+Received: from 1wt.eu ([62.212.114.60]:1377 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754059AbYKXVxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 16:53:00 -0500
+Date: Mon, 24 Nov 2008 22:52:47 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Roger Heflin <rogerheflin@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
+Message-ID: <20081124215247.GA29696@1wt.eu>
+References: <491954E1.2050002@gmail.com> <1226403067.7685.1598.camel@twins> <491E49AA.60407@gmail.com> <20081118065006.GC24654@1wt.eu> <20081120031101.GD26448@xw6200.broadcom.net> <20081120053746.GB15168@1wt.eu> <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net> <20081124132744.GB24851@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081124132744.GB24851@1wt.eu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks Pekka and i think one example of the case you mentioned is in
-access_process_vm() which is calling
-get_user_pages(tsk, mm, addr, 1, write, 1, &pages, &vma). However, it
-is allocating only one page here which
-much less likely to be stuck under memory pressure. Like you said, in
-order to make it more flexible for future
-changes, i might make the change like:
->>>>                         */
->>>> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
->>>> -                               return i ? i : -ENOMEM;
->>>> +                       if (unlikely(sigkill_pending(current) | | sigkill_pending(tsk)))
->>>> +                               return i ? i : -ERESTARTSYS;
+Hi Matt,
 
-is this something acceptable?
+just a follow-up.
+
+On Mon, Nov 24, 2008 at 02:27:44PM +0100, Willy Tarreau wrote:
+> Hi Matt,
+> 
+> On Thu, Nov 20, 2008 at 01:53:18PM -0800, Matt Carlson wrote:
+> > > Today, with the notebook connected to a gig switch, I could not reproduce
+> > > the problem, even after one hour of approximately the same workload. I'll
+> > > retry with the original 100 Mbps switch on monday.
+> 
+> fairly easier now with the same switch. I just have to transfer 100k objects
+> over HTTP via this switch to see the problem happen :
+> 
+> tg3: eth0: The system may be re-ordering memory-mapped I/O cycles to the network device, attempting to recover. Please report the problem to the driver maintainer and include system chipset information.
+> tg3: tg3_stop_block timed out, ofs=1400 enable_bit=2
+> tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
+> tg3: eth0: Link is down.
+> tg3: eth0: Link is up at 100 Mbps, full duplex.
+> tg3: eth0: Flow control is on for TX and on for RX.
+> 
+> The switch is an el-cheapo D-Link 10/100. Note that this time I did not see
+> any warning. Maybe I did not wait long enough though.
+
+Got it again, just had to be patient to fire a second test :
+
+WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0x1a4/0x1b0()
+NETDEV WATCHDOG: eth0 (tg3): transmit timed out
+Modules linked in: nfs lockd sunrpc mtdblock mtd_blkdevs slram mtd xt_tcpudp x_tables usbhid usb_storage ehci_hcd uhci_hcd usbcore snd_pcm_oss snd_mixer_oss snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd soundcore snd_page_alloc tg3 libphy ide_cs yenta_socket rsrc_nonstatic [last unloaded: ip_tables]
+Pid: 0, comm: swapper Not tainted 2.6.27-wt2-wtap #1
+ [<b01254a7>] warn_slowpath+0x67/0x90
+ [<b01741a9>] ? get_slab+0x9/0x70
+ [<b03d21af>] ? pskb_copy+0x2f/0x160
+ [<b03aa332>] ? input_defuzz_abs_event+0x12/0xa0
+ [<b03aa574>] ? input_handle_event+0x14/0x2a0
+ [<b03b3d76>] ? synaptics_process_packet+0x2b6/0x3d0
+ [<b0108a48>] ? native_io_delay+0x8/0x40
+ [<b02ab4c9>] ? strlen+0x9/0x20
+ [<b02a961e>] ? strlcpy+0x1e/0x60
+ [<b03dbfbc>] ? netdev_drivername+0x3c/0x40
+ [<b03e7c84>] dev_watchdog+0x1a4/0x1b0
+ [<b013a27e>] ? run_hrtimer_pending+0xe/0xb0
+ [<b03e7ae0>] ? dev_watchdog+0x0/0x1b0
+ [<b012d548>] ? timer_stats_account_timer+0x38/0x40
+ [<b03e7ae0>] ? dev_watchdog+0x0/0x1b0
+ [<b012dbbc>] run_timer_softirq+0xac/0x170
+ [<b013f863>] ? tick_periodic+0x33/0x70
+ [<b013f8b7>] ? tick_handle_periodic+0x17/0x70
+ [<b03e7ae0>] ? dev_watchdog+0x0/0x1b0
+ [<b0129ae4>] __do_softirq+0x84/0xa0
+ [<b0129b35>] do_softirq+0x35/0x40
+ [<b0129bf6>] irq_exit+0x66/0x70
+ [<b0105869>] do_IRQ+0x49/0x90
+ [<b013bc30>] ? sched_clock_cpu+0xb0/0x100
+ [<b010449b>] common_interrupt+0x23/0x28
+ [<b0305158>] ? acpi_safe_halt+0x1b/0x29
+ [<b0305b07>] acpi_idle_enter_c1+0xa6/0x117
+ [<b03c096b>] cpuidle_idle_call+0x6b/0xa0
+ [<b010206f>] cpu_idle+0x4f/0x70
+ [<b04458dd>] rest_init+0x4d/0x50
+ =======================
+---[ end trace 1cc3b74458d87dab ]---
+tg3: eth0: transmit timed out, resetting
+tg3: DEBUG: MAC_TX_STATUS[0000000b] MAC_RX_STATUS[00000006]
+tg3: DEBUG: RDMAC_STATUS[00000000] WDMAC_STATUS[00000008]
+tg3: tg3_stop_block timed out, ofs=1400 enable_bit=2
+tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
+tg3: tg3_stop_block timed out, ofs=4c00 enable_bit=2
+tg3: eth0: Link is down.
+tg3: eth0: Link is up at 100 Mbps, full duplex.
+tg3: eth0: Flow control is on for TX and on for RX.
+
+The ease with which I reproduce it here clearly indicates that this is
+related to the switch, probably just the fact that it is at 100 Mbps.
+Unfortunately this evening I must go, but I still have one 100 Mbps
+switch somewhere at home, I'll reproduce the same test ASAP in order
+to bisect the issue.
+
+Regards,
+Willy
 
 
 
-On Mon, Nov 24, 2008 at 1:13 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Fri, Nov 21, 2008 at 5:31 PM, Ying Han <yinghan@google.com> wrote:
->>>>                         */
->>>> -                       if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
->>>> -                               return i ? i : -ENOMEM;
->>>> +                       if (unlikely(sigkill_pending(tsk)))
->>>> +                               return i ? i : -ERESTARTSYS;
->
-> On Mon, Nov 24, 2008 at 12:02 PM, Paul Menage <menage@google.com> wrote:
->>> You've changed the check from sigkill_pending(current) to sigkill_pending(tsk).
->>>
->>> I originally made that sigkill_pending(current) since we want to avoid
->>> tasks entering an unkillable state just because they're doing
->>> get_user_pages() on a system that's short of memory. Admittedly for
->>> the main case that we care about, mlock() (or an mmap() with
->>> MCL_FUTURE set) then tsk==current, but philosophically it seems to me
->>> to be more correct to do the check against current than tsk, since
->>> current is the thing that's actually allocating the memory. But maybe
->>> it would be better to check both?
->
-> On Mon, Nov 24, 2008 at 11:02 PM, Ying Han <yinghan@google.com> wrote:
->> In most of cases, tsk==current in get_user_pages(), that is why i
->> change current to tsk since
->> tsk is a superset of current, no? If that is right, why we need to check both?
->
-> I'm not sure if it's strictly necessary but as I pointed out in the
-> other mail, there can be callers that are doing get_user_pages() on
-> behalf of other tasks and you probably want to be able to kill the
-> task that's actually _calling_ get_user_pages() as well.
->
->                        Pekka
->
