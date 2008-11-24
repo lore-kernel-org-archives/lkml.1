@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYKXTki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbYKXTqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbYKXTki (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYKXTkS
+	id S1753538AbYKXTqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYKXTqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:40:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43679 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753230AbYKXTkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:40:16 -0500
-Date: Mon, 24 Nov 2008 17:39:54 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Human readable output for function return tracer
-Message-ID: <20081124193954.GI26466@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <c62985530811240639w574659c0nd0a54e6c1fb1197a@mail.gmail.com> <20081124181515.GG26466@ghostprotocols.net> <c62985530811241110o32a601ddud0cfc02a9767a7d8@mail.gmail.com>
+	Mon, 24 Nov 2008 14:46:34 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:58158 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752206AbYKXTqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:46:34 -0500
+Date: Mon, 24 Nov 2008 20:49:12 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: ben@simtec.co.uk, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: section mismatches with _sm501_register_gpio() and
+	_sm501_gpio_register_chip()
+Message-ID: <20081124194911.GC2604@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <8bd0f97a0811202013r170c9906i15797ca953844cff@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811241110o32a601ddud0cfc02a9767a7d8@mail.gmail.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <8bd0f97a0811202013r170c9906i15797ca953844cff@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Nov 24, 2008 at 08:10:47PM +0100, Frédéric Weisbecker escreveu:
-> 2008/11/24 Arnaldo Carvalho de Melo <acme@redhat.com>:
-> > I do something like that in my ctracer tool[1], take a look at one of
-> > the callgraphs:
-> >
-> > http://oops.ghostprotocols.net:81/ostra/dccp/tx/
+Hi Mike,
+
+On Thu, Nov 20, 2008 at 11:13:31PM -0500, Mike Frysinger wrote:
+> WARNING: drivers/mfd/built-in.o(.text+0x8d6): Section mismatch in
+> reference from the function _sm501_register_gpio() to the function
+> .devinit.text:_sm501_gpio_register_chip()
+> The function _sm501_register_gpio() references
+> the function __devinit _sm501_gpio_register_chip().
+> This is often because _sm501_register_gpio lacks a __devinit
+> annotation or the annotation of _sm501_gpio_register_chip is wrong.
 > 
-> 
-> Oh yes, that's what I would see as an end result. Except that it would be more
-> easy for me to have the time of execution on the left (I don't need the time
-> they are called since it's just a cost measure).
-> 
-> 
-> > I.e. the leaf functions doesn't use {}
-> 
-> I guess I could avoid it too..
-> 
-> 
-> > On ctracer I didn't had this problem as I don't trace all functions,
-> > just the ones that receive as one of its parameters a pointer to the
-> > desired struct, and this pointer is present in all the trace buffer
-> > entries,
-> 
-> How do you do this tracing by only passing a structure?
+> WARNING: drivers/mfd/built-in.o(.text+0x90a): Section mismatch in
+> reference from the function _sm501_register_gpio() to the function
+> .devinit.text:_sm501_gpio_register_chip()
+> The function _sm501_register_gpio() references
+> the function __devinit _sm501_gpio_register_chip().
+> This is often because _sm501_register_gpio lacks a __devinit
+> annotation or the annotation of _sm501_gpio_register_chip is wrong.
+Which kernel are you triggering this on ?
 
-[acme@doppio linux-2.6-x86]$ pfunct --verbose --class=inode fs/ext4/ext4.ko | head
-ext4_fsblk_t ext4_new_blocks(handle_t * handle, struct inode * inode, ext4_lblk_t iblock, ext4_fsblk_t goal, long unsigned int * count, int * errp);
-ext4_fsblk_t ext4_new_meta_blocks(handle_t * handle, struct inode * inode, ext4_fsblk_t goal, long unsigned int * count, int * errp);
-ext4_fsblk_t ext4_new_meta_block(handle_t * handle, struct inode * inode, ext4_fsblk_t goal, int * errp);
-void ext4_free_blocks(handle_t * handle, struct inode * inode, ext4_fsblk_t block, long unsigned int count, int metadata);
-int ext4_check_dir_entry(const char  * function, struct inode * dir, struct ext4_dir_entry_2 * de, struct buffer_head * bh, long unsigned int offset);
-int ext4_release_dir(struct inode * inode, struct file * filp);
-int ext4_release_file(struct inode * inode, struct file * filp);
-void vfs_dq_init(struct inode * inode);
-struct inode * ext4_new_inode(handle_t * handle, struct inode * dir, int mode);
-void ext4_free_inode(handle_t * handle, struct inode * inode);
-[acme@doppio linux-2.6-x86]$ 
+Cheers,
+Samuel.
 
-My first attempt at this kind of tracing used a sparse (the kernel
-checker tool uses it too), preprocessing and inserting the calls if,
-looking that the tokens, I found I was at the start of a function source
-code, and, for return tracing I just looke for return calls, inserting
-at each return point, in the source code, the call, that way I could
-even know which one of the returns were taken, and how many times.
 
-Looking at Steven's redefinition of "if", I think we could do the same
-for returns 8)
 
-Then I used the DWARF debug info to find out which functions in the
-objects of interest have as one of its args a pointer to the struct of
-interest, i.e. I find its methods, then write a kernel module
-registering jprobes and kretprobes for the functions I was interested
-in.
+> #
+> # Multifunction device drivers
+> #
+> # CONFIG_MFD_CORE is not set
+> CONFIG_MFD_SM501=y
+> CONFIG_MFD_SM501_GPIO=y
+> CONFIG_HTC_PASIC3=y
+> CONFIG_UCB1400_CORE=m
+> # CONFIG_MFD_TMIO is not set
+> # CONFIG_MFD_WM8400 is not set
+> CONFIG_MFD_WM8350=y
+> CONFIG_MFD_WM8350_I2C=y
+> -mike
 
-Then I moved this to generate a systemtap script.
-
-Then came the mcount approach, but it lacked return hooks.
-
-Thanks to you I guess now I should rewrite this thing again :-)
-
-> > so as part of postprocessing it separates the callgraphs per
-> > object.
-> 
-> I would like to separate the callgraph per thread. I'm not sure how. Perhaps
-> by only drawing a simple
-> 
-> ------8<----- switch to task nr x -----------8<-------------------
-
-Well, you can record, for each entry, the thread id, but then you will
-not know to what file, say, a close operation relates to.
-
-- Arnaldo
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
