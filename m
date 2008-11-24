@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYKXMiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYKXMmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbYKXMiS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 07:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYKXMiJ
+	id S1753172AbYKXMmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 07:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKXMmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 07:38:09 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45887 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbYKXMiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 07:38:08 -0500
-Date: Mon, 24 Nov 2008 13:36:09 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at block/blk-barrier.c:246
-Message-ID: <20081124123609.GI26308@kernel.dk>
-References: <49281226.4070006@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49281226.4070006@gmail.com>
+	Mon, 24 Nov 2008 07:42:12 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39802 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbYKXMmM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 07:42:12 -0500
+Subject: Re: [PATCH -tip] kmemcheck: fix dynamic enable/disable
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20081124122013.GA24810@localhost.localdomain>
+References: <20081124122013.GA24810@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 24 Nov 2008 14:43:48 +0200
+Message-Id: <1227530628.3718.122.camel@penberg-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22 2008, Jiri Slaby wrote:
-> Hi,
+Hi Vegard,
+
+On Mon, 2008-11-24 at 13:20 +0100, Vegard Nossum wrote:
+> (Ingo: Will send pull request for this later :-))
 > 
-> after running mmotm a while, I got this:
-> ------------[ cut here ]------------
-> WARNING: at /home/l/latest/xxx/block/blk-barrier.c:246 blk_do_ordered+0x281/0x2e
-> 0()
-> Modules linked in: usblp usbhid ath5k hid mac80211 floppy cfg80211 rtc_cmos [las
-> t unloaded: freq_table]
-> Pid: 0, comm: swapper Tainted: G        W  2.6.28-rc5-mm1_64 #477
-> Call Trace:
->  <IRQ>  [<ffffffff8023dfef>] warn_on_slowpath+0x5f/0x90
->  [<ffffffff8034a22c>] ? elv_rb_del+0x2c/0x50
->  [<ffffffff80356020>] ? __cfq_slice_expired+0x60/0xe0
->  [<ffffffff80356c9f>] ? cfq_dispatch_requests+0x9f/0x3c0
->  [<ffffffff8034f641>] blk_do_ordered+0x281/0x2e0
->  [<ffffffff80349ff4>] elv_next_request+0x44/0x250
->  [<ffffffff80415a52>] scsi_request_fn+0x72/0x490
->  [<ffffffff8034cac7>] blk_invoke_request_fn+0x47/0x140
->  [<ffffffff8034cc75>] __blk_run_queue+0x25/0x30
->  [<ffffffff8034ccab>] blk_run_queue+0x2b/0x50
->  [<ffffffff80414e2f>] scsi_run_queue+0xdf/0x380
->  [<ffffffff803eca65>] ? put_device+0x15/0x20
->  [<ffffffff8040ef61>] ? __scsi_put_command+0x61/0xa0
->  [<ffffffff8041522d>] scsi_next_command+0x3d/0x60
->  [<ffffffff80415304>] scsi_end_request+0xb4/0xd0
->  [<ffffffff8041543c>] scsi_io_completion+0x11c/0x440
->  [<ffffffff8042308d>] ? ata_qc_complete+0xbd/0x230
->  [<ffffffff8040ec1c>] scsi_finish_command+0xac/0xe0
->  [<ffffffff80415958>] scsi_softirq_done+0xb8/0x140
->  [<ffffffff803513e5>] blk_done_softirq+0x75/0x90
->  [<ffffffff80258769>] ? ktime_get_ts+0x59/0x60
->  [<ffffffff80243d04>] __do_softirq+0x94/0x160
->  [<ffffffff8020d77c>] call_softirq+0x1c/0x30
->  [<ffffffff8020ea15>] do_softirq+0x45/0x80
->  [<ffffffff80243a8d>] irq_exit+0x8d/0xa0
->  [<ffffffff8020ecb9>] do_IRQ+0xc9/0x110
->  [<ffffffff8020ca36>] ret_from_intr+0x0/0xa
->  <EOI>  [<ffffffff80213fe2>] ? default_idle+0x42/0x50
->  [<ffffffff8020ae12>] ? enter_idle+0x22/0x30
->  [<ffffffff8020aebe>] ? cpu_idle+0x5e/0xb0
->  [<ffffffff8057c43c>] ? rest_init+0x5c/0x70
-> ---[ end trace 73ac849f8acff99f ]---
+> 
+> From 6f505f59011e565c2dbb7a220702feb0447cc854 Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Mon, 24 Nov 2008 11:52:05 +0100
+> Subject: [PATCH] kmemcheck: fix dynamic enable/disable
+> 
+> On Fri, Oct 10, 2008 at 1:40 PM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> > I received a lot of errors after manually enabling kmemcheck
+> > in /proc (it had been turned off due to oneshot mode). It
+> > might be a good idea to put a warning that errrors found after
+> > enabling it at any time other than boot might be spurious.
+> 
+> Fixed. This was the problem: Instructions with multiple address
+> operands could look up the shadow of an address that had
+> previously been un-hidden. After handling the memory access, the
+> page would get hidden again. The fix is to verify that the page
+> is present before we return a shadow pointer.
 
-The offending patch has been removed, so newer -mm or -next should not
-be suffering from this bug.
+I don't quite understand the error condition nor the fix. It's probably
+because I fried my brain during the weekend but here goes...
+﻿
+> diff --git a/arch/x86/mm/kmemcheck/shadow.c b/arch/x86/mm/kmemcheck/shadow.c
+> index 196dddc..62a0f63 100644
+> --- a/arch/x86/mm/kmemcheck/shadow.c
+> +++ b/arch/x86/mm/kmemcheck/shadow.c
+> @@ -27,6 +27,8 @@ void *kmemcheck_shadow_lookup(unsigned long address)
+>  	pte = kmemcheck_pte_lookup(address);
+>  	if (!pte)
+>  		return NULL;
+> +	if (pte_present(*pte))
+> +		return NULL;
 
--- 
-Jens Axboe
+OK, so when kmemcheck is disabled in oneshot mode they're made present
+and we don't mark them as non-present when we enable kmemcheck again? Is
+there a reason we can't do that? You might want add a comment explaining
+what's going on here.
+ 
+>  	page = virt_to_page(address);
+>  	if (!page->shadow)
+
+> diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
+> index 056b4f1..12a4bbd 100644
+> --- a/arch/x86/mm/kmemcheck/kmemcheck.c
+> +++ b/arch/x86/mm/kmemcheck/kmemcheck.c
+> @@ -707,6 +707,16 @@ bool kmemcheck_trap(struct pt_regs *regs)
+>  	}
+>  
+>  	/*
+> +	 * At this point, we know that the trap was kmemcheck's. However, if
+> +	 * kmemcheck was disabled, we need to return immediately (and stop
+> +	 * emulating the REP instruction).
+> +	 */
+> +	if (!kmemcheck_enabled) {
+> +		kmemcheck_hide(regs);
+> +		return true;
+> +	}
+
+OK, I assume kmemcheck_hide() stops emulating the REP instruction? Why
+do we need to do it here and not at kmemcheck disable-time? Also, this
+change doesn't seem to be explained in the patch description?
+
+		Pekka
 
