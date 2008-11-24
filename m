@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbYKXFfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbYKXFfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbYKXFfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 00:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbYKXFfS
+	id S1752594AbYKXFfq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 00:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYKXFff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 00:35:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54956 "EHLO hera.kernel.org"
+	Mon, 24 Nov 2008 00:35:35 -0500
+Received: from main.gmane.org ([80.91.229.2]:46894 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbYKXFfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 00:35:17 -0500
-Message-ID: <492A3CE6.4010206@kernel.org>
-Date: Mon, 24 Nov 2008 14:34:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>, Doug Ledford <dledford@redhat.com>,
-       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
- needed.
-References: <20081124035516.3465.66413.stgit@notabene.brown>	<20081124035530.3465.26724.stgit@notabene.brown>	<492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown>
-In-Reply-To: <18730.14324.830648.449469@notabene.brown>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 24 Nov 2008 05:34:34 +0000 (UTC)
+	id S1752165AbYKXFfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 00:35:34 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: nForce 790i/MCP55: sata-nv or ahci ?
+Date: Sun, 23 Nov 2008 23:35:22 -0600
+Message-ID: <492A3D1A.10907@shaw.ca>
+References: <20081124013542.16778a41@werewolf.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <20081124013542.16778a41@werewolf.home>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc'ing Jens)
+J.A. Magallón wrote:
+> Hi all...
+> 
+> I have read that modern nVidia SATA's are AHCI. But several distros I have
+> tried use the sata-nv module for that chipset controller (MCP55).
 
-Neil Brown wrote:
-> On Monday November 24, tj@kernel.org wrote:
->> (cc'ing Greg)
->>
->> NeilBrown wrote:
->>> Currently md devices, once created, never disappear until the module
->>> is unloaded.  This is essentially because the gendisk holds a
->>> reference to the mddev, and the mddev holds a reference to the
->>> gendisk, this a circular reference.
->>>
->>> If we drop the reference from mddev to gendisk, then we need to ensure
->>> that the mddev is destroyed when the gendisk is destroyed.  However it
->>> is not possible to hook into the gendisk destruction process to enable
->>> this.
->>>
->>> So we drop the reference from the gendisk to the mddev and destroy the
->>> gendisk when the mddev gets destroyed.  However this has a
->>> complication.
->>> Between the call
->>>    __blkdev_get->get_gendisk->kobj_lookup->md_probe
->>> and the call
->>>    __blkdev_get->md_open
->>>
->>> there is no obvious way to hold a reference on the mddev any more, so
->>> unless something is done, it will disappear and gendisk will be
->>> destroyed prematurely.
->>>
->>> Also, once we decide to destroy the mddev, there will be an unlockable
->>> moment before the gendisk is unlinked (blk_unregister_region) during
->>> which a new reference to the gendisk can be created.  We need to
->>> ensure that this reference can not be used.  i.e. the ->open must
->>> fail.
->> Ah... I'm not really sure I'm following all of this correctly but would
->> it be possible to just add ->release to genhd and do regular reference
->> counting rather than this complex dancing?  ->release was recently added
->> to cdev so it'll be nicely parallel.
-> 
-> Maybe...
-> 
-> If genhd.c:disk_release called e.g.
-> 	disk->fops->final_put(disk)
-> 
-> then I could possibly link in to that to destroy the md state when the
-> gendisk finally disappears.
-> 
-> When I want to kill the gendisk I would call blk_unregister_region
-> directly (not through del_gendisk) to allow it to disappear.
-> If md_probe then gets called before the final_put, I'd need to
-> call blk_register_region again to re-install it.
-> 
-> I think that would work.
-> 
-> Would 'block_device_operations' be the right place for this
-> 'final_put' or 'final_release' ??
+Only ones more modern than that (MCP65 and later) are AHCI, MCP55 still 
+uses sata_nv.
 
-I suppose so.  Maybe just void (*release)(struct gendisk *) but Jens is
-the maintainer.  Jens, what do you think?
+> Is this correct or should I use standard ahci ? Anyways, it looks that the
+> kernel/modprobe settings use this, can I change it via kernel cmdline
+> or modprobe.conf, and force the system to try ahci module ?
+> By BIOS has no kind of setting to put the controlled in AHCI vs SATA mode...
+> Playing with alias pci:v000010DEd0000037Fsv*sd*bc*sc*i* ?
+> 
+> wargo:~> lspci -s 00:0e
+> 00:0e.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> 00:0e.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> 00:0e.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> wargo:~> lspci -ns 00:0e
+> 00:0e.0 0101: 10de:037f (rev a3)
+> 00:0e.1 0101: 10de:037f (rev a3)
+> 00:0e.2 0101: 10de:037f (rev a3)
+> 
+> TIA
+> 
 
-Thanks.
-
--- 
-tejun
