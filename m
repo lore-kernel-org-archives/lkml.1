@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbYKXOWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYKXO0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752885AbYKXOWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 09:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYKXOVt
+	id S1753188AbYKXO0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 09:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKXO0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 09:21:49 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58309 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751643AbYKXOVs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 09:21:48 -0500
-Date: Mon, 24 Nov 2008 14:21:28 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Pfaff <tpfaff@pcs.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: Fix async io write notifications
-Message-ID: <20081124142128.11cb3d06@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0811241401280.8443@lxtpfaff.pcs.ditec.de>
-References: <Pine.LNX.4.64.0811241401280.8443@lxtpfaff.pcs.ditec.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 24 Nov 2008 09:26:35 -0500
+Received: from ns.suse.de ([195.135.220.2]:34028 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752575AbYKXO0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 09:26:34 -0500
+Message-ID: <492AB98C.7030105@suse.de>
+Date: Mon, 24 Nov 2008 23:26:20 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
+       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
+ needed.
+References: <20081124035516.3465.66413.stgit@notabene.brown> <20081124035530.3465.26724.stgit@notabene.brown> <492A2B2B.7030606@kernel.org> <18730.14324.830648.449469@notabene.brown> <492A3CE6.4010206@kernel.org> <20081124062417.GZ28946@ZenIV.linux.org.uk> <492A500C.9090200@kernel.org> <20081124133124.GB28946@ZenIV.linux.org.uk> <492AB480.5060207@kernel.org>
+In-Reply-To: <492AB480.5060207@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Nov 2008 14:40:15 +0100 (CET)
-Thomas Pfaff <tpfaff@pcs.com> wrote:
+Tejun Heo wrote:
+> Can we then make gendisk hold owner module till it gets released?  It
+> would be much nicer to write code to if we can keep the regular object
+> reference counting across module boundaries and being able to taking
+> down a module while devices are active isn't a too important
+> requirement.  For vast majoerity (ide, scsi, md) one way or the other
+> doesn't even matter at all.
 
-> he N_TTY ldisc layer does not send SIGIO POLL_OUTs correctly when output is 
-> possible due to flawed handling of the TTY_DO_WRITE_WAKEUP bit. It will either 
-> send no SIGIOs at all or on every tty wakeup.
-> 
-> The fix is to set the bit when the tty driver write would block and test and 
-> clear it on write wakeup.
-> 
-> Signed-off-by: Thomas Pfaff <tpfaff@pcs.com>
+If always holding reference is too much of a change, we can do
 
-I had done a patch already but yours is somewhat nicer so I've merged
-yours instead with some tweaks as it clashed with an existing N_TTY patch
+	if (gendisk->fops->disk_release) {
+		__module_get(gendisk->fops->owner);
+		gendisk->fops->disk_release(gendisk);
+		module_put(gendisk->fops->owner);
+	}
 
-I left the tty->fasync check in the if (in case the user clears async I/O
-events) and I reversed the tests on the end of n_tty_write simply
-because the compiler has the variables we need to check to hand but not
-tty->fasync.
+So that both parties - drivers which can happily unregister devices
+during exit and drivers which want to do reference counting across
+module boundaries - can be happy.
 
-This all looks good to me. It breaks on ptys but that is another bug and
-I'll merge a patch to fix the ptys next.
+Thanks.
 
-Alan
+-- 
+tejun
