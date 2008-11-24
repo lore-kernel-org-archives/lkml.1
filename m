@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbYKXQnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYKXQo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754280AbYKXQnb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 11:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYKXQnV
+	id S1754209AbYKXQo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 11:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYKXQoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 11:43:21 -0500
-Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:47191 "EHLO
+	Mon, 24 Nov 2008 11:44:20 -0500
+Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:47450 "EHLO
 	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753251AbYKXQnU (ORCPT
+	with ESMTP id S1752732AbYKXQoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 11:43:20 -0500
+	Mon, 24 Nov 2008 11:44:19 -0500
 From: Mike Rapoport <mike@compulab.co.il>
 To: lrg@slimlogic.co.uk
-Cc: eric.miao@marvell.com, linux-kernel@vger.kernel.org,
-       Mike Rapoport <mike@compulab.co.il>
-Subject: [PATCH] regulator: da903x: add '\n' to error messages
-Date: Mon, 24 Nov 2008 18:43:00 +0200
-Message-Id: <1227544980-28694-1-git-send-email-mike@compulab.co.il>
+Cc: linux-kernel@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
+Subject: [PATCH] regulator: move set_machine_constraints after regulator device initialization
+Date: Mon, 24 Nov 2008 18:44:15 +0200
+Message-Id: <1227545055-28782-1-git-send-email-mike@compulab.co.il>
 X-Mailer: git-send-email 1.5.6.4
 X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
 X-AntiAbuse: Primary Hostname - cathcart.site5.com
@@ -30,61 +29,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Calling set_machine_constraints before regulator device initialization
+causes crash when constraints have apply_uV set.
 
 Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 ---
- drivers/regulator/da903x.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/regulator/core.c |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
-index 773b29c..83101d6 100644
---- a/drivers/regulator/da903x.c
-+++ b/drivers/regulator/da903x.c
-@@ -102,7 +102,7 @@ static int da903x_set_ldo_voltage(struct regulator_dev *rdev,
- 	uint8_t val, mask;
- 
- 	if (check_range(info, min_uV, max_uV)) {
--		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
-+		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
- 		return -EINVAL;
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 02a7744..c4636da 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1768,14 +1768,6 @@ struct regulator_dev *regulator_register(struct regulator_desc *regulator_desc,
+ 		}
  	}
  
-@@ -172,7 +172,7 @@ static int da9030_set_ldo1_15_voltage(struct regulator_dev *rdev,
- 	int ret;
+-	/* set regulator constraints */
+-	ret = set_machine_constraints(rdev, &init_data->constraints);
+-	if (ret < 0) {
+-		kfree(rdev);
+-		rdev = ERR_PTR(ret);
+-		goto out;
+-	}
+-
+ 	/* register with sysfs */
+ 	rdev->dev.class = &regulator_class;
+ 	rdev->dev.parent = dev;
+@@ -1790,6 +1782,15 @@ struct regulator_dev *regulator_register(struct regulator_desc *regulator_desc,
  
- 	if (check_range(info, min_uV, max_uV)) {
--		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
-+		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
- 		return -EINVAL;
- 	}
+ 	dev_set_drvdata(&rdev->dev, rdev);
  
-@@ -199,7 +199,7 @@ static int da9030_set_ldo14_voltage(struct regulator_dev *rdev,
- 	int thresh;
- 
- 	if (check_range(info, min_uV, max_uV)) {
--		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
-+		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
- 		return -EINVAL;
- 	}
- 
-@@ -248,7 +248,7 @@ static int da9034_set_dvc_voltage(struct regulator_dev *rdev,
- 	int ret;
- 
- 	if (check_range(info, min_uV, max_uV)) {
--		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
-+		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
- 		return -EINVAL;
- 	}
- 
-@@ -273,7 +273,7 @@ static int da9034_set_ldo12_voltage(struct regulator_dev *rdev,
- 	uint8_t val, mask;
- 
- 	if (check_range(info, min_uV, max_uV)) {
--		pr_err("invalid voltage range (%d, %d) uV", min_uV, max_uV);
-+		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
- 		return -EINVAL;
- 	}
- 
++	/* set regulator constraints */
++	ret = set_machine_constraints(rdev, &init_data->constraints);
++	if (ret < 0) {
++		device_unregister(&rdev->dev);
++		kfree(rdev);
++		rdev = ERR_PTR(ret);
++		goto out;
++	}
++
+ 	/* set supply regulator if it exists */
+ 	if (init_data->supply_regulator_dev) {
+ 		ret = set_supply(rdev,
 -- 
 1.5.6.4
 
