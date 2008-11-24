@@ -1,162 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYKXMrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYKXNAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYKXMrT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 07:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYKXMrJ
+	id S1752969AbYKXNAM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 08:00:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYKXM76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 07:47:09 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:37264 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbYKXMrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 07:47:08 -0500
-Message-ID: <492AA241.6050004@openvz.org>
-Date: Mon, 24 Nov 2008 15:46:57 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-CC: Kir Kolyshkin <kir@openvz.org>, linux-man@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Documentation for CLONE_NEWPID
-References: <4923810B.7010201@gmail.com>
-In-Reply-To: <4923810B.7010201@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Nov 2008 07:59:58 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43222 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbYKXM76 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 07:59:58 -0500
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+From: Peter Zijlstra <peterz@infradead.org>
+To: Petr Tesarik <ptesarik@suse.cz>
+Cc: Frank Mayhar <fmayhar@google.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
+       adobriyan@gmail.com, akpm@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1227529968.4487.45.camel@nathan.suse.cz>
+References: <1224694989.8431.23.camel@oberon>
+	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
+	 <1226053744.7803.5851.camel@twins>  <200811211942.43848.ptesarik@suse.cz>
+	 <1227450296.7685.20759.camel@twins>
+	 <1227516403.4487.20.camel@nathan.suse.cz>
+	 <1227519208.7685.21951.camel@twins>
+	 <1227529968.4487.45.camel@nathan.suse.cz>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 24 Nov 2008 13:59:49 +0100
+Message-Id: <1227531589.4259.117.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk wrote:
-> Pavel, Kir,
+On Mon, 2008-11-24 at 13:32 +0100, Petr Tesarik wrote:
+
+> > Feel like reading the actual spec and trying to come up with a creative
+> > interpretation? :-)
 > 
-> Drawing fairly heavily on your LWN.net article (http://lwn.net/Articles/259217/), plus the kernel 
-> source and some experimentation, I created the patch below to document CLONE_NEWPID for the clone(2) 
-> manual page.  Could you please review and let me know of any improvements or inaccuracies.
+> Yes, I've just spent a few hours doing that... And I feel very
+> depressed, as expected.
 
-Michael, sorry for the late response - I've been on vacation last week and didn't
-have chance to connect to check my mail. Some comments are inline.
+Thanks for doing that though!
 
-> Thanks,
+> > > I really don't think it's a good idea to set a per-process ITIMER_PROF
+> > > to one timer tick on a large machine, but the kernel does allow any
+> > > process to do it, and then it can even cause hard freeze on some
+> > > hardware. This is _not_ acceptable.
+> > > 
+> > > What is worse, we can't just limit the granularity of itimers, because
+> > > threads can come into being _after_ the itimer was set.
+> > 
+> > Currently it has jiffy granularity, right? And jiffies are different
+> > depending on some compile time constant (HZ), so can't we, for the sake
+> > of per-process itimers, pretend to have a 1 minute jiffie?
+> > 
+> > That should be as compliant as we are now, and utterly useless for
+> > everybody, thereby discouraging its use, hmm? :-)
+> ﻿
+> I've got a copy of IEEE Std 10003.1-2004 here, and it suggests that this
+> should be generally possible. In particular, the description for
+> itimer_set says:
 > 
-> Michael
+> Implementations may place limitations on the granularity of timer values. For
+> each interval timer, if the requested timer value requires a finer granularity
+> than the implementation supports, the actual timer value shall be rounded up
+> to the next supported value.
 > 
-> --- a/man2/clone.2
-> +++ b/man2/clone.2
-> @@ -266,6 +268,78 @@ in the same
->  .BR clone ()
->  call.
->  .TP
-> +.BR CLONE_NEWPID " (since Linux 2.6.24)"
-> +.\" This explanation draws a lot of details from
-> +.\" http://lwn.net/Articles/259217/
-> +.\" Authors: Pavel Emelyanov <xemul@openvz.org>
-> +.\" and Kir Kolyshkin <kir@openvz.org>
-> +.\"
-> +.\" The primary kernel commit is 30e49c263e36341b60b735cbef5ca37912549264
-> +.\" Author: Pavel Emelyanov <xemul@openvz.org>
-> +If
-> +.B CLONE_PID
-> +is set, then create the process in a new PID namespace.
-> +If this flag is not set, then (as with
-> +.BR fork (2)),
-> +the process is created in the same PID namespace as
-> +the calling process.
-> +This flag is intended for the implementation of control groups.
-
-Well, actually this has nothing to do with control groups. This
-flag is intended to be used to facilitate the creation of containers
-along with many other clone flags. Control groups is yet another
-way to create a container.
-
-> +A PID namespace provides an isolated environment for PIDs:
-> +PIDs in a new namespace start at 1,
-> +somewhat like a standalone system, and calls to
-> +.BR fork (2),
-> +.BR vfork (2),
-> +or
-> +.BR clone (2)
-> +will produce processes whose PIDs within the namespace
-> +are only guaranteed to be unique within that namespace.
-
-Well, I'm not sure I understood correctly what was meant here, but after 
-we have a namespace each task has two pids. And _all_ of them are unique 
-in corresponding namespaces.
-
-> +The first process created in a new namespace
-> +(i.e., the process created using the
-> +.BR CLONE_NEWPID
-> +flag) has the PID 1, and is the "init" process for the namespace.
-> +Children that are orphaned within the namespace will be reparented
-> +to this process rather than
-> +.BR init (8).
-> +Unlike the traditional
-> +.B init
-> +process, the "init" process of a PID namespace can terminate,
-> +and if it does, all of the processes in the namespace are terminated.
-> +
-> +PID namespaces form a hierarchy.
-> +When a PID new namespace is created,
-> +the PIDs of the processes in that namespace are visible
-> +in the PID namespace of the process that created the new namespace;
-> +analogously, if the parent PID namespace is itself
-> +the child of another PID namespace,
-> +then PIDs of the child and parent PID namespaces will both be
-> +visible in the grandparent PID namespace.
-> +Conversely, the processes in the "child" PID namespace do not see
-> +the PIDs of the processes in the parent namespace.
-> +The existence of a namespace hierarchy means that each process
-> +may now have multiple PIDs:
-> +one for each namespace in which it is visible.
-> +(A call to
-> +.BR getpid (2)
-> +always returns the PID associated with the namespace in which
-> +the process was created.)
-
-I don't thinks it's a good example - the getpid cannot be called
-for other process other than current :)
-
-> +
-> +After creating the new namespace,
-> +it is useful for the child to change its root directory
-> +and mount a new procfs instance at
-> +.I /proc
-> +so that tools such as
-> +.BR ps (1)
-> +work correctly.
-> +
-> +Use of this flag requires: a kernel configured with the
-> +.B CONFIG_PID_NS
-> +configuration option and requires that the process be privileged
-> +.RB (CAP_SYS_ADMIN ).
-> +This flag can't be specified in conjunction with
-> +.BR CLONE_THREAD .
-> +.TP
->  .BR CLONE_PARENT " (since Linux 2.3.12)"
->  If
->  .B CLONE_PARENT
-> @@ -627,6 +701,14 @@ were specified in
->  .IR flags .
->  .TP
->  .B EINVAL
-> +Both
-> +.BR CLONE_NEWPID
-> +and
-> +.BR CLONE_THREAD
-> +were specified in
-> +.IR flags .
-> +.TP
-> +.B EINVAL
->  Returned by
->  .BR clone ()
->  when a zero value is specified for
-> @@ -639,6 +721,8 @@ copied.
->  .TP
->  .B EPERM
->  .B CLONE_NEWNS
-> +or
-> +.B CLONE_NEWPID
->  was specified by a non-root process (process without \fBCAP_SYS_ADMIN\fP).
->  .TP
->  .B EPERM
+> However, it seems to be vaguely linked to CLOCK_PROCESS_CPUTIME_ID,
+> which is defined as:
 > 
+> The identifier of the CPU-time clock associated with the process making a
+> clock ( ) or timer*( ) function call.
+> 
+> POSIX does not specify whether this clock is identical to the one used
+> for setitimer et al., or not, but it seems logical that it should. Then,
+> the kernel should probably return the coarse granularity in
+> clock_getres(), too.
+> 
+> I tried to find out how this is currently implemented in Linux, and it's
+> broken. How else. :-/
+> 
+> 1. clock_getres() always returns a resolution of 1ns
+> 
+> This is actually good news, because it means that nobody really cares
+> whether the actual granularity is greater, so I guess we can safely
+> return any bogus number in clock_getres().
+> 
+> What about using an actual granularity of NR_CPUS*HZ, which should be
+> safe for any (at least remotely) sane usage?
+
+nr_cpu_ids * 1/HZ should do I guess, although a cubic function would buy
+us even more slack.
+
+> 2. clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) returns -EINVAL
+> 
+> Should not happen. Looking further into it, I think this line in
+> cpu_clock_sample_group():
+> 
+> 	switch (which_clock) {
+> 
+> should look like a similar line in cpu_clock_sample(), ie:
+> 
+> 	switch (CPUCLOCK_WHICH(which_clock)) {
+> 
+> Shall I send a patch?
+
+Feel free - its not an area I'm intimately familiar with, I'll look into
+whipping up a patch removing all the per-cpu crap from there.
+
 
