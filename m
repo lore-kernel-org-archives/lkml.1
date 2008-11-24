@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYKXWOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKXWVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbYKXWOi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 17:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYKXWO3
+	id S1753856AbYKXWVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 17:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKXWVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 17:14:29 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:57090 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751373AbYKXWO2 (ORCPT
+	Mon, 24 Nov 2008 17:21:04 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:40934 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752869AbYKXWVC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 17:14:28 -0500
-Date: Mon, 24 Nov 2008 17:13:57 -0500 (EST)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Jeff Arnold <jbarnold@MIT.EDU>, linux-kernel@vger.kernel.org,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: [RFC v3 PATCH 6/7] Ksplice: Export symbols needed for Ksplice
-In-Reply-To: <20081122063407.GA13931@infradead.org>
-Message-ID: <alpine.DEB.2.00.0811241624330.17720@vinegar-pot.mit.edu>
-References: <1227324961-13273-1-git-send-email-jbarnold@mit.edu> <1227324961-13273-2-git-send-email-jbarnold@mit.edu> <1227324961-13273-3-git-send-email-jbarnold@mit.edu> <1227324961-13273-4-git-send-email-jbarnold@mit.edu> <1227324961-13273-5-git-send-email-jbarnold@mit.edu>
- <1227324961-13273-6-git-send-email-jbarnold@mit.edu> <1227324961-13273-7-git-send-email-jbarnold@mit.edu> <20081122063407.GA13931@infradead.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 24 Nov 2008 17:21:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nAV+WvBsrs4oCHI2PKHZFdWS+0a5dtbA1pxqi3f6uujD7rfSj8kVOmRtpFhBCmoa5Q
+         b37GSQNnacRMZb+7kvXlRSYTTsFmVPwphe7ngoxlZ3+fjNRMLFtuzzRkR507ouAeMEg+
+         VOAe8BIzxtALNgGCTvNf6QdprfmeQyHyMy80A=
+Message-ID: <c62985530811241421t1cd56b4el1ada0754df9a229@mail.gmail.com>
+Date: Mon, 24 Nov 2008 23:21:00 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 4/4] tracing/function-return-tracer: Support for dynamic ftrace on function return tracer
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0811241707240.907@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <491FA94E.9090207@gmail.com>
+	 <alpine.DEB.1.10.0811241707240.907@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Nov 2008, Christoph Hellwig wrote:
-
-> On Fri, Nov 21, 2008 at 10:36:00PM -0500, Jeff Arnold wrote:
->> Ksplice uses init_mm to get access to the ranges of addresses
->> containing core kernel text and data.  It seems that init_mm was
->> scheduled to be unexported entirely in 2.6.26, so move it to
->> EXPORT_SYMBOL_GPL (rather than back to EXPORT_SYMBOL).
+2008/11/24 Steven Rostedt <rostedt@goodmis.org>:
 >
-> Umm, no.  This is a very clear indicator that your code shouldn't be
-> modular.
+> On Sun, 16 Nov 2008, Frederic Weisbecker wrote:
+>>
+>>  static void ftrace_replace_code(int enable)
+>> @@ -1405,10 +1417,17 @@ int register_ftrace_function(struct ftrace_ops *ops)
+>>               return -1;
+>>
+>>       mutex_lock(&ftrace_sysctl_lock);
+>> +
+>> +     if (ftrace_tracing_type == FTRACE_TYPE_RETURN) {
+>> +             ret = -EBUSY;
+>> +             goto out;
+>> +     }
+>> +
+>
+> Why do we need to disable all new tracing functions when we do return
+> tracing??
+>
+> -- Steve
+>
+>>       ret = __register_ftrace_function(ops);
+>>       ftrace_startup();
+>> -     mutex_unlock(&ftrace_sysctl_lock);
+>>
+>> +out:
+>> +     mutex_unlock(&ftrace_sysctl_lock);
+>>       return ret;
+>>  }
+>>
+>
 
-Well, it's easy to eliminate the use of init_mm in Ksplice by using a 
-slightly different check for whether to use virt_to_page or 
-vmalloc_to_page.  Here is a patch:
+You will see the same test when trying to register a return handler,
+it verifies that normal ftrace is not running.
+Otherwise it will fail.
+I made ftrace and ftrace-return not abled to work simultaneously for the moment.
+That made the integration of ftrace-return into dynamic tracing much
+more simpler...
 
-Remove use of init_mm from Ksplice
-
-Since the input to map_writable is guaranteed to be a core kernel
-address or a module address, we can use __module_text_address and
-__module_data_address to determine whether the address is in the core
-kernel or a module, and thus whether to use virt_to_page or
-vmalloc_to_page.
-
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
----
- kernel/ksplice.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/ksplice.c b/kernel/ksplice.c
-index 8a05123..d12a6db 100644
---- a/kernel/ksplice.c
-+++ b/kernel/ksplice.c
-@@ -949,11 +949,10 @@ static void *map_writable(void *addr, size_t len)
- {
- 	void *vaddr;
- 	int nr_pages = 2;
--	unsigned long laddr = (unsigned long)addr;
- 	struct page *pages[2];
-
--	if ((laddr >= init_mm.start_code && laddr < init_mm.end_code) ||
--	    (laddr >= init_mm.start_data && laddr < init_mm.end_data)) {
-+	if (__module_text_address((unsigned long)addr) == NULL &&
-+	    __module_data_address((unsigned long)addr) == NULL) {
- 		pages[0] = virt_to_page(addr);
- 		WARN_ON(!PageReserved(pages[0]));
- 		pages[1] = virt_to_page(addr + PAGE_SIZE);
--- 
-1.5.6.5
-
+But if someone needs to enable both tracing at the same time, I can change it...
