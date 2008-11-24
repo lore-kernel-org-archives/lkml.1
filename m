@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYKXT2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbYKXTbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbYKXT2z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYKXT2s
+	id S1753881AbYKXTbm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYKXTbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:28:48 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:59776 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbYKXT2q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:28:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=iABgn6rcyK12ErLGTwH2rZCqYla/18G70tTJAhQwSVP0PWvlmASAtx+1j1UD85oe6q
-         6hMZbjf49oWVSgQHHNKH8k2s/K8ZcX8crrl6Pk+My07BQ34nB41ZeD6qp0PyVjifUGYv
-         6pjD1L1zH8Ytme45Q2BDdRKXGCu7l+If/J86E=
-From: Eric Lacombe <goretux@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [x86] do_arch_prctl
-Date: Mon, 24 Nov 2008 20:28:40 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7; KDE/4.1.3; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200811181835.07360.goretux@gmail.com> <200811241324.54606.goretux@gmail.com> <492AF0DA.3060702@goop.org>
-In-Reply-To: <492AF0DA.3060702@goop.org>
+	Mon, 24 Nov 2008 14:31:31 -0500
+Received: from www.tglx.de ([62.245.132.106]:47417 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752676AbYKXTba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:31:30 -0500
+Date: Mon, 24 Nov 2008 20:31:08 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Jens Axboe <jens.axboe@oracle.com>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>
+Subject: Re: next-20081119: general protection fault:
+ get_next_timer_interrupt()
+In-Reply-To: <1227554117.25499.46.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0811242018370.3235@localhost.localdomain>
+References: <a4423d670811190714k13721ae8s125e63d520892440@mail.gmail.com>  <alpine.LFD.2.00.0811191308030.3119@localhost.localdomain>  <a4423d670811210250t6b75645evd9646ffb07745867@mail.gmail.com>  <alpine.LFD.2.00.0811241816120.3301@localhost.localdomain>
+ <1227554117.25499.46.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200811242028.40865.goretux@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 24 novembre 2008 19:22:18 Jeremy Fitzhardinge, vous avez écrit :
-> Eric Lacombe wrote:
-> > Hello,
-> >
-> > Does the "doit case" (line 822 in ARCH_GET_FS, function do_arch_prctl)
-> > exist for performance reasons? Else, why "task->thread.fs" (line 824)
-> > does not contain the fs base in the "doit case"?
->
-> "doit" gets set when you're operating on yourself.  If you're operating
-> on another process, then you need to use their task structure values
-> rather than the current process's values.  If you're doing it to
-> yourself, then the task structure may be out of date because its only
-> updated on a context switch.
+On Mon, 24 Nov 2008, James Bottomley wrote:
+> On Mon, 2008-11-24 at 18:43 +0100, Thomas Gleixner wrote:
+> > > scsi0 : LSI SAS based MegaRAID driver
+> > > Driver 'sd' needs updating - please use bus_type methods
+> > > scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HE160HJ  0-24 PQ: 0 ANSI: 5
+> > > ------------[ cut here ]------------
+> > > WARNING: at lib/debugobjects.c:215 debug_print_object+0x4f/0x57()
+> > > ODEBUG: free active object type: timer_list
+> > 
+> > That's the cause for your boot crash. The scsi/blk code is freeing a
+> > page which contains an active timer, so the timer code references gone
+> > memory. You triggered it because DEBUG_PAGEALLOC unmaps the page when
+> > it's freed.
+> > 
+> > James, or other scsi experts please.
+> 
+> Well, not sure.  Most likely candidate is the new block timer code.
+> What seems to be happening is that the queue is being released with
+> either an outstanding request (refcounting problem) or ticking timer
+> with no work (block timer problem).  The way scanning works is that we
+> create a request queue for each device we probe and then delete it again
+> if nothing appears after the bus settle time.   The argument against
+> this is that it should show up on every scanned bus.  However, these are
+> getting rarer; I was just about to write that I hadn't seen it when I
+> remembered that all my SCSI testing systems are currently running
+> hotplug reporting busses (i.e. don't do scanning).  However,
+> fortunately, I've also booted voyager recently which does use parallel
+> SCSI and doesn't see this either, so it could also be megaraid_sas
+> specific.
 
-The task_struct is also updated in sys_arch_prctl (ARCH_SET_FS and 
-ARCH_SET_GS), so not just on a context switch.
-How the task structure could be out of date wrt thread.gs and thread.fs?
-What could be a typical scenario that could induced gs or fs to be modified and 
-not thread.gs and thread.fs?
+Yeah, block could it be as well. Jens, Mike ?
 
-Why we have a difference between ARCH_GET_GS :
+One note about not seeing it: We have had such bugs before where the
+page was freed but not touched and the timer survived w/o tripping the
+system over. Alexander noticed because of DEBUG_PAGEALLOC and you can
+also see it by enabling debugobjects, which will give you the nice
+backtrace.
 
-> 833                 else if (doit) {
-> 834                         asm("movl %%gs,%0" : "=r" (gsindex));
-> 835                         if (gsindex)
-> 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
-> 837                         else
-> 838                                 base = task->thread.gs;
-> 839                 }
+CONFIG_DEBUG_OBJECTS=y
+CONFIG_DEBUG_OBJECTS_FREE=y
+CONFIG_DEBUG_OBJECTS_TIMERS=Y
 
-and ARCH_GET_FS :
-
-> 821                 else if (doit)
-> 822                         rdmsrl(MSR_FS_BASE, base);
-
-If I follow what you say, why can't we have the same optimization with in 
-ARCH_GET_FS?
-
-thanks,
-
-	Eric
-
-
+and add "debug_objects" to the kernel command line.
+ 
+> Could you turn on SCSI logging so we can see the sequences.  Probably
+> since this is boot time, just enable all logging:
+> 
+> echo 0xffffffff > /sys/module/scsi_mod/parameters/scsi_logging_level
+> 
+> (kernel must be compiled with CONFIG_SCSI_LOGGING=y
+> 
+> James
+> 
+> 
