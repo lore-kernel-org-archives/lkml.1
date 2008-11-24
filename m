@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYKXTSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYKXTUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753012AbYKXTSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbYKXTSi
+	id S1754229AbYKXTUA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYKXTTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:18:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53372 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYKXTSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:18:37 -0500
-Message-ID: <492AFE04.10404@redhat.com>
-Date: Mon, 24 Nov 2008 14:18:28 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Mon, 24 Nov 2008 14:19:52 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:49628 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750890AbYKXTTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:19:51 -0500
+Message-ID: <492AFE54.6030906@sgi.com>
+Date: Mon, 24 Nov 2008 11:19:48 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after swap_cluster_max
- pages
-References: <20081116163915.F208.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <20081115235410.2d2c76de.akpm@linux-foundation.org>	 <20081122191258.26B0.KOSAKI.MOTOHIRO@jp.fujitsu.com>	 <49283A05.1060009@redhat.com> <2f11576a0811241112p494b28a6p720da1d60ac3438c@mail.gmail.com>
-In-Reply-To: <2f11576a0811241112p494b28a6p720da1d60ac3438c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH] sched: fix-local_cpu_mask
+References: <200811250238.53883.rusty@rustcorp.com.au> <20081124171749.GB27851@elte.hu> <20081124172343.GB11971@elte.hu>
+In-Reply-To: <20081124172343.GB11971@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-
-> 1. reclaim 32 page from ZONE_HIGHMEM
-> 2. reclaim 32 page from ZONE_NORMAL
-> 3. reclaim 32 page from ZONE_DMA
-> 4. exit reclaim
-> 5. another task call page alloc and it cause try_to_free_pages()
-> 6. reclaim 32 page from ZONE_HIGHMEM
-> 7. reclaim 32 page from ZONE_NORMAL
-> 8. reclaim 32 page from ZONE_DMA
-
->> - have direct reclaim tasks continue when priority == DEF_PRIORITY
+Ingo Molnar wrote:
+> plus there's a build failure as well on 32-bit:
 > 
-> disagreed.
-> it cause above bad scenario, I think.
+> kernel/sched_rt.c:1561: error: 'per_cpu__local_cpu_mask' undeclared (first use in this function)
+> kernel/sched_rt.c:1561: error: (Each undeclared identifier is reported only once
+> kernel/sched_rt.c:1561: error: for each function it appears in.)
+> kernel/sched.c:8348: error: 'nohz' undeclared (first use in this function)
+> kernel/sched.c:8350: error: 'cpu_isolated_map' undeclared (first use in this function)
+> 
+> with the attached config, caused by your patches. Please send delta 
+> fixes against tip/cpus4096.
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+sched: fix-local_cpu_mask
 
-I think I did not explain it clearly.  Let me illustrate
-with a new patch.  (one moment :))
+This should fix the errors for the i386 non-smp case.  I've also
+checked it against the 32/64 allnoconfigs and allyesconfigs.
 
--- 
-All rights reversed.
+Based on tip/cpus4096 @ v2.6.28-rc6-254-g96f874e
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ kernel/sched.c    |    6 ++++--
+ kernel/sched_rt.c |    4 +++-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+--- linux-2.6.28-tip-cpumasks.orig/kernel/sched.c
++++ linux-2.6.28-tip-cpumasks/kernel/sched.c
+@@ -8347,12 +8347,14 @@ void __init sched_init(void)
+ 	 */
+ 	current->sched_class = &fair_sched_class;
+ 
+-	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
+-	alloc_bootmem_cpumask_var(&nohz_cpu_mask);
++#ifdef CONFIG_SMP
+ #ifdef CONFIG_NO_HZ
++	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
+ 	alloc_bootmem_cpumask_var(&nohz.cpu_mask);
+ #endif
++	/* Allocate the cpu_isolated_map if CONFIG_CPUMASK_OFFSTACK */
+ 	alloc_bootmem_cpumask_var(&cpu_isolated_map);
++#endif
+ 
+ 	scheduler_running = 1;
+ }
+--- linux-2.6.28-tip-cpumasks.orig/kernel/sched_rt.c
++++ linux-2.6.28-tip-cpumasks/kernel/sched_rt.c
+@@ -1552,7 +1552,8 @@ static void print_rt_stats(struct seq_fi
+ }
+ #endif /* CONFIG_SCHED_DEBUG */
+ 
+-/* Note that this is never called for !SMP, but that's OK. */
++#ifdef CONFIG_SMP
++/* Note that this is never called for !SMP */
+ static inline void init_sched_rt_class(void)
+ {
+ 	unsigned int i;
+@@ -1560,3 +1561,4 @@ static inline void init_sched_rt_class(v
+ 	for_each_possible_cpu(i)
+ 		alloc_cpumask_var(&per_cpu(local_cpu_mask, i), GFP_KERNEL);
+ }
++#endif
+
