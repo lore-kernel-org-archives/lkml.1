@@ -1,92 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYKXTkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYKXTki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbYKXTkW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 14:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYKXTkJ
+	id S1754541AbYKXTki (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 14:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYKXTkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 14:40:09 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:39648 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYKXTkI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 14:40:08 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 24 Nov 2008 20:40:00 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fix small memory leak at module removal
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.d0220c9ae409a998@s5r6.in-berlin.de>
+	Mon, 24 Nov 2008 14:40:18 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43679 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753230AbYKXTkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 14:40:16 -0500
+Date: Mon, 24 Nov 2008 17:39:54 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Human readable output for function return tracer
+Message-ID: <20081124193954.GI26466@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <c62985530811240639w574659c0nd0a54e6c1fb1197a@mail.gmail.com> <20081124181515.GG26466@ghostprotocols.net> <c62985530811241110o32a601ddud0cfc02a9767a7d8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530811241110o32a601ddud0cfc02a9767a7d8@mail.gmail.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-device.c      |    2 +-
- drivers/firewire/fw-device.h      |    2 ++
- drivers/firewire/fw-transaction.c |    2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
+Em Mon, Nov 24, 2008 at 08:10:47PM +0100, Frédéric Weisbecker escreveu:
+> 2008/11/24 Arnaldo Carvalho de Melo <acme@redhat.com>:
+> > I do something like that in my ctracer tool[1], take a look at one of
+> > the callgraphs:
+> >
+> > http://oops.ghostprotocols.net:81/ostra/dccp/tx/
+> 
+> 
+> Oh yes, that's what I would see as an end result. Except that it would be more
+> easy for me to have the time of execution on the left (I don't need the time
+> they are called since it's just a cost measure).
+> 
+> 
+> > I.e. the leaf functions doesn't use {}
+> 
+> I guess I could avoid it too..
+> 
+> 
+> > On ctracer I didn't had this problem as I don't trace all functions,
+> > just the ones that receive as one of its parameters a pointer to the
+> > desired struct, and this pointer is present in all the trace buffer
+> > entries,
+> 
+> How do you do this tracing by only passing a structure?
 
-Index: linux/drivers/firewire/fw-device.c
-===================================================================
---- linux.orig/drivers/firewire/fw-device.c
-+++ linux/drivers/firewire/fw-device.c
-@@ -619,7 +619,7 @@ static int shutdown_unit(struct device *
-  */
- DECLARE_RWSEM(fw_device_rwsem);
- 
--static DEFINE_IDR(fw_device_idr);
-+DEFINE_IDR(fw_device_idr);
- int fw_cdev_major;
- 
- struct fw_device *fw_device_get_by_devt(dev_t devt)
-Index: linux/drivers/firewire/fw-device.h
-===================================================================
---- linux.orig/drivers/firewire/fw-device.h
-+++ linux/drivers/firewire/fw-device.h
-@@ -21,6 +21,7 @@
- 
- #include <linux/fs.h>
- #include <linux/cdev.h>
-+#include <linux/idr.h>
- #include <linux/rwsem.h>
- #include <linux/mutex.h>
- #include <asm/atomic.h>
-@@ -103,6 +104,7 @@ void fw_device_cdev_update(struct fw_dev
- void fw_device_cdev_remove(struct fw_device *device);
- 
- extern struct rw_semaphore fw_device_rwsem;
-+extern struct idr fw_device_idr;
- extern int fw_cdev_major;
- 
- /*
-Index: linux/drivers/firewire/fw-transaction.c
-===================================================================
---- linux.orig/drivers/firewire/fw-transaction.c
-+++ linux/drivers/firewire/fw-transaction.c
-@@ -19,6 +19,7 @@
-  */
- 
- #include <linux/completion.h>
-+#include <linux/idr.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/module.h>
-@@ -968,6 +969,7 @@ static void __exit fw_core_cleanup(void)
- {
- 	unregister_chrdev(fw_cdev_major, "firewire");
- 	bus_unregister(&fw_bus_type);
-+	idr_destroy(&fw_device_idr);
- }
- 
- module_init(fw_core_init);
+[acme@doppio linux-2.6-x86]$ pfunct --verbose --class=inode fs/ext4/ext4.ko | head
+ext4_fsblk_t ext4_new_blocks(handle_t * handle, struct inode * inode, ext4_lblk_t iblock, ext4_fsblk_t goal, long unsigned int * count, int * errp);
+ext4_fsblk_t ext4_new_meta_blocks(handle_t * handle, struct inode * inode, ext4_fsblk_t goal, long unsigned int * count, int * errp);
+ext4_fsblk_t ext4_new_meta_block(handle_t * handle, struct inode * inode, ext4_fsblk_t goal, int * errp);
+void ext4_free_blocks(handle_t * handle, struct inode * inode, ext4_fsblk_t block, long unsigned int count, int metadata);
+int ext4_check_dir_entry(const char  * function, struct inode * dir, struct ext4_dir_entry_2 * de, struct buffer_head * bh, long unsigned int offset);
+int ext4_release_dir(struct inode * inode, struct file * filp);
+int ext4_release_file(struct inode * inode, struct file * filp);
+void vfs_dq_init(struct inode * inode);
+struct inode * ext4_new_inode(handle_t * handle, struct inode * dir, int mode);
+void ext4_free_inode(handle_t * handle, struct inode * inode);
+[acme@doppio linux-2.6-x86]$ 
 
--- 
-Stefan Richter
--=====-==--- =-== ==---
-http://arcgraph.de/sr/
+My first attempt at this kind of tracing used a sparse (the kernel
+checker tool uses it too), preprocessing and inserting the calls if,
+looking that the tokens, I found I was at the start of a function source
+code, and, for return tracing I just looke for return calls, inserting
+at each return point, in the source code, the call, that way I could
+even know which one of the returns were taken, and how many times.
+
+Looking at Steven's redefinition of "if", I think we could do the same
+for returns 8)
+
+Then I used the DWARF debug info to find out which functions in the
+objects of interest have as one of its args a pointer to the struct of
+interest, i.e. I find its methods, then write a kernel module
+registering jprobes and kretprobes for the functions I was interested
+in.
+
+Then I moved this to generate a systemtap script.
+
+Then came the mcount approach, but it lacked return hooks.
+
+Thanks to you I guess now I should rewrite this thing again :-)
+
+> > so as part of postprocessing it separates the callgraphs per
+> > object.
+> 
+> I would like to separate the callgraph per thread. I'm not sure how. Perhaps
+> by only drawing a simple
+> 
+> ------8<----- switch to task nr x -----------8<-------------------
+
+Well, you can record, for each entry, the thread id, but then you will
+not know to what file, say, a close operation relates to.
+
+- Arnaldo
 
