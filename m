@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYKYPXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbYKYPXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbYKYPXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 10:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYKYPW4
+	id S1753665AbYKYPXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 10:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYKYPW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 10:22:56 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:31620 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbYKYPWw (ORCPT
+	Tue, 25 Nov 2008 10:22:57 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:35958 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYKYPWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Nov 2008 10:22:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=LUixU113pscqDvtl+PJf/VbT1HZJVwKP5WUC2wLH9URHQw+ZyDD/2QUeZyvpt/27Rc
-         lFn167YCif+9c7WN5SmFz8EmJsYKsrrb4EKsgz3SUnvp1adj99DlKu0+d47Kf7HIoqFp
-         LIEOIBdVNuFoKa39jGBjHNK17LclFLiC6oECk=
+        b=p4u51UJK9jA4/lTWNPuigZjZps7YgPmCykWTKTl5BjsKg7CJh/bZnr/6lL58IX3t/P
+         dySlVpOFAiiiTLzIx8sA1wIMKTIspwPlM4tbe7QaKFDK75UW7yvnbGT5Y8WAceBmOWWA
+         zqEtM3fWbVrMXw1UP6XOHZOTwJLRKQQnhT/ik=
 From: "Antonio R. Costa" <costa.antonior@gmail.com>
 To: linux@maxim.org.za, nicolas.ferre@atmel.com
 Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
        "Antonio R. Costa" <costa.antonior@gmail.com>
-Subject: [PATCH 1/5] [RFC PATCH] Support for AT572D940HF-EK [RFC PATCH]
-Date: Tue, 25 Nov 2008 16:22:41 +0100
-Message-Id: <1227626565-25209-1-git-send-email-costa.antonior@gmail.com>
+Subject: [PATCH 2/5] [RFC PATCH] Support for AT572D940HF-EK [RFC PATCH]
+Date: Tue, 25 Nov 2008 16:22:42 +0100
+Message-Id: <1227626565-25209-2-git-send-email-costa.antonior@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
+In-Reply-To: <1227626565-25209-1-git-send-email-costa.antonior@gmail.com>
 References: <>
+ <1227626565-25209-1-git-send-email-costa.antonior@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,1596 +42,256 @@ test it together with Xenomai 2.4.5.
 
 This patch, if approved, will be rebased to the latest linux kernel.
 
-New files in arch/arm/ directory:
+New files in include/asm-arm/arch-at91
 
-	arch/arm/configs/at572d940hfek_defconfig
-
-	arch/arm/mach-at91/at572d940hf.c
-	arch/arm/mach-at91/at572d940hf_devices.c
-	arch/arm/mach-at91/board-at572d940hf_ek.c
+	include/asm-arm/arch-at91/at572d940hf.h
+	include/asm-arm/arch-at91/at572d940hf_mAgicV.h
+	include/asm-arm/arch-at91/at572d940hf_matrix.h
 
 Signed-off-by: Antonio R. Costa <costa.antonior@gmail.com>
 ---
- arch/arm/configs/at572d940hfek_defconfig  | 1556 +++++++++++++++++++++++++++++
- arch/arm/mach-at91/at572d940hf.c          |  357 +++++++
- arch/arm/mach-at91/at572d940hf_devices.c  |  893 +++++++++++++++++
- arch/arm/mach-at91/board-at572d940hf_ek.c |  262 +++++
- 4 files changed, 3068 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/configs/at572d940hfek_defconfig
- create mode 100644 arch/arm/mach-at91/at572d940hf.c
- create mode 100644 arch/arm/mach-at91/at572d940hf_devices.c
- create mode 100644 arch/arm/mach-at91/board-at572d940hf_ek.c
+ include/asm-arm/arch-at91/at572d940hf.h        |  180 ++++++++++++++++++++++++
+ include/asm-arm/arch-at91/at572d940hf_mAgicV.h |   34 +++++
+ include/asm-arm/arch-at91/at572d940hf_matrix.h |   73 ++++++++++
+ 3 files changed, 287 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-arm/arch-at91/at572d940hf.h
+ create mode 100644 include/asm-arm/arch-at91/at572d940hf_mAgicV.h
+ create mode 100644 include/asm-arm/arch-at91/at572d940hf_matrix.h
 
-diff --git a/arch/arm/configs/at572d940hfek_defconfig b/arch/arm/configs/at572d940hfek_defconfig
+diff --git a/include/asm-arm/arch-at91/at572d940hf.h b/include/asm-arm/arch-at91/at572d940hf.h
 new file mode 100644
-index 0000000..8a898c4
+index 0000000..58da589
 --- /dev/null
-+++ b/arch/arm/configs/at572d940hfek_defconfig
-@@ -0,0 +1,1556 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.26.7
-+# Wed Nov 12 11:02:17 2008
-+#
-+CONFIG_ARM=y
-+CONFIG_SYS_SUPPORTS_APM_EMULATION=y
-+CONFIG_GENERIC_GPIO=y
-+CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_CLOCKEVENTS=y
-+CONFIG_MMU=y
-+# CONFIG_NO_IOPORT is not set
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_STACKTRACE_SUPPORT=y
-+CONFIG_LOCKDEP_SUPPORT=y
-+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-+CONFIG_HARDIRQS_SW_RESEND=y
-+CONFIG_GENERIC_IRQ_PROBE=y
-+CONFIG_RWSEM_GENERIC_SPINLOCK=y
-+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_ARCH_SUPPORTS_AOUT=y
-+CONFIG_ZONE_DMA=y
-+CONFIG_VECTORS_BASE=0xffff0000
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-+
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_LOCK_KERNEL=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION="-AT572D940HF"
-+# CONFIG_LOCALVERSION_AUTO is not set
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+CONFIG_POSIX_MQUEUE=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_BSD_PROCESS_ACCT_V3=y
-+CONFIG_TASKSTATS=y
-+# CONFIG_TASK_DELAY_ACCT is not set
-+CONFIG_TASK_XACCT=y
-+CONFIG_TASK_IO_ACCOUNTING=y
-+CONFIG_AUDIT=y
-+# CONFIG_IKCONFIG is not set
-+CONFIG_LOG_BUF_SHIFT=17
-+CONFIG_CGROUPS=y
-+# CONFIG_CGROUP_DEBUG is not set
-+# CONFIG_CGROUP_NS is not set
-+# CONFIG_CGROUP_DEVICE is not set
-+CONFIG_GROUP_SCHED=y
-+CONFIG_FAIR_GROUP_SCHED=y
-+CONFIG_RT_GROUP_SCHED=y
-+# CONFIG_USER_SCHED is not set
-+CONFIG_CGROUP_SCHED=y
-+CONFIG_CGROUP_CPUACCT=y
-+# CONFIG_RESOURCE_COUNTERS is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+CONFIG_SYSFS_DEPRECATED_V2=y
-+CONFIG_RELAY=y
-+# CONFIG_NAMESPACES is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_EMBEDDED=y
-+CONFIG_UID16=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_SYSCTL_SYSCALL_CHECK=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_COMPAT_BRK=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+CONFIG_PROFILING=y
-+CONFIG_MARKERS=y
-+CONFIG_OPROFILE=m
-+CONFIG_HAVE_OPROFILE=y
-+CONFIG_KPROBES=y
-+CONFIG_KRETPROBES=y
-+CONFIG_HAVE_KPROBES=y
-+CONFIG_HAVE_KRETPROBES=y
-+# CONFIG_HAVE_DMA_ATTRS is not set
-+CONFIG_PROC_PAGE_MONITOR=y
-+CONFIG_SLABINFO=y
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+CONFIG_MODULES=y
-+# CONFIG_MODULE_FORCE_LOAD is not set
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+CONFIG_MODVERSIONS=y
-+CONFIG_MODULE_SRCVERSION_ALL=y
-+CONFIG_KMOD=y
-+CONFIG_BLOCK=y
-+# CONFIG_LBD is not set
-+CONFIG_BLK_DEV_IO_TRACE=y
-+# CONFIG_LSF is not set
-+# CONFIG_BLK_DEV_BSG is not set
-+
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+# CONFIG_DEFAULT_AS is not set
-+# CONFIG_DEFAULT_DEADLINE is not set
-+CONFIG_DEFAULT_CFQ=y
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="cfq"
-+CONFIG_CLASSIC_RCU=y
-+
-+#
-+# System Type
-+#
-+# CONFIG_ARCH_AAEC2000 is not set
-+# CONFIG_ARCH_INTEGRATOR is not set
-+# CONFIG_ARCH_REALVIEW is not set
-+# CONFIG_ARCH_VERSATILE is not set
-+CONFIG_ARCH_AT91=y
-+# CONFIG_ARCH_CLPS7500 is not set
-+# CONFIG_ARCH_CLPS711X is not set
-+# CONFIG_ARCH_CO285 is not set
-+# CONFIG_ARCH_EBSA110 is not set
-+# CONFIG_ARCH_EP93XX is not set
-+# CONFIG_ARCH_FOOTBRIDGE is not set
-+# CONFIG_ARCH_NETX is not set
-+# CONFIG_ARCH_H720X is not set
-+# CONFIG_ARCH_IMX is not set
-+# CONFIG_ARCH_IOP13XX is not set
-+# CONFIG_ARCH_IOP32X is not set
-+# CONFIG_ARCH_IOP33X is not set
-+# CONFIG_ARCH_IXP23XX is not set
-+# CONFIG_ARCH_IXP2000 is not set
-+# CONFIG_ARCH_IXP4XX is not set
-+# CONFIG_ARCH_L7200 is not set
-+# CONFIG_ARCH_KS8695 is not set
-+# CONFIG_ARCH_NS9XXX is not set
-+# CONFIG_ARCH_MXC is not set
-+# CONFIG_ARCH_ORION5X is not set
-+# CONFIG_ARCH_PNX4008 is not set
-+# CONFIG_ARCH_PXA is not set
-+# CONFIG_ARCH_RPC is not set
-+# CONFIG_ARCH_SA1100 is not set
-+# CONFIG_ARCH_S3C2410 is not set
-+# CONFIG_ARCH_SHARK is not set
-+# CONFIG_ARCH_LH7A40X is not set
-+# CONFIG_ARCH_DAVINCI is not set
-+# CONFIG_ARCH_OMAP is not set
-+# CONFIG_ARCH_MSM7X00A is not set
-+
-+#
-+# Boot options
-+#
-+
-+#
-+# Power management
-+#
-+
-+#
-+# Atmel AT91 System-on-Chip
-+#
-+# CONFIG_ARCH_AT91RM9200 is not set
-+# CONFIG_ARCH_AT91SAM9260 is not set
-+# CONFIG_ARCH_AT91SAM9261 is not set
-+# CONFIG_ARCH_AT91SAM9263 is not set
-+# CONFIG_ARCH_AT91SAM9RL is not set
-+# CONFIG_ARCH_AT91CAP9 is not set
-+# CONFIG_ARCH_AT91X40 is not set
-+CONFIG_ARCH_AT572D940HF=y
-+CONFIG_AT91_PMC_UNIT=y
-+
-+#
-+# AT572D940HF Board Type
-+#
-+CONFIG_MACH_AT572D940HF_EB=y
-+
-+#
-+# AT91 Board Options
-+#
-+CONFIG_NUM_SERIAL=3
-+# CONFIG_MTD_AT91_DATAFLASH_CARD is not set
-+# CONFIG_MTD_NAND_AT91_BUSWIDTH_16 is not set
-+
-+#
-+# AT91 Feature Selections
-+#
-+CONFIG_AT91_PROGRAMMABLE_CLOCKS=y
-+CONFIG_AT91_TIMER_HZ=100
-+CONFIG_AT91_EARLY_DBGU=y
-+# CONFIG_AT91_EARLY_USART0 is not set
-+# CONFIG_AT91_EARLY_USART1 is not set
-+# CONFIG_AT91_EARLY_USART2 is not set
-+# CONFIG_AT91_EARLY_USART3 is not set
-+# CONFIG_AT91_EARLY_USART4 is not set
-+# CONFIG_AT91_EARLY_USART5 is not set
-+
-+#
-+# Processor Type
-+#
-+CONFIG_CPU_32=y
-+CONFIG_CPU_ARM926T=y
-+CONFIG_CPU_32v5=y
-+CONFIG_CPU_ABRT_EV5TJ=y
-+CONFIG_CPU_PABRT_NOIFAR=y
-+CONFIG_CPU_CACHE_VIVT=y
-+CONFIG_CPU_COPY_V4WB=y
-+CONFIG_CPU_TLB_V4WBI=y
-+CONFIG_CPU_CP15=y
-+CONFIG_CPU_CP15_MMU=y
-+
-+#
-+# Processor Features
-+#
-+CONFIG_ARM_THUMB=y
-+# CONFIG_CPU_ICACHE_DISABLE is not set
-+# CONFIG_CPU_DCACHE_DISABLE is not set
-+# CONFIG_CPU_DCACHE_WRITETHROUGH is not set
-+# CONFIG_CPU_CACHE_ROUND_ROBIN is not set
-+# CONFIG_OUTER_CACHE is not set
-+
-+#
-+# Bus support
-+#
-+# CONFIG_PCI_SYSCALL is not set
-+# CONFIG_ARCH_SUPPORTS_MSI is not set
-+# CONFIG_PCCARD is not set
-+
-+#
-+# Kernel Features
-+#
-+CONFIG_TICK_ONESHOT=y
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+CONFIG_PREEMPT=y
-+CONFIG_HZ=100
-+# CONFIG_AEABI is not set
-+# CONFIG_ARCH_DISCONTIGMEM_ENABLE is not set
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-+CONFIG_PAGEFLAGS_EXTENDED=y
-+CONFIG_SPLIT_PTLOCK_CPUS=4096
-+CONFIG_RESOURCES_64BIT=y
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+# CONFIG_LEDS is not set
-+CONFIG_ALIGNMENT_TRAP=y
-+
-+#
-+# Boot options
-+#
-+CONFIG_ZBOOT_ROM_TEXT=0
-+CONFIG_ZBOOT_ROM_BSS=0
-+CONFIG_CMDLINE="mem=48M console=ttyS0 initrd=0x21100000,3145728 root=/dev/ram0 rw ip=172.16.1.181"
-+# CONFIG_XIP_KERNEL is not set
-+CONFIG_KEXEC=y
-+CONFIG_ATAGS_PROC=y
-+
-+#
-+# Floating point emulation
-+#
-+
-+#
-+# At least one emulation must be selected
-+#
-+CONFIG_FPE_NWFPE=y
-+CONFIG_FPE_NWFPE_XP=y
-+# CONFIG_FPE_FASTFPE is not set
-+# CONFIG_VFP is not set
-+
-+#
-+# Userspace binary formats
-+#
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_BINFMT_AOUT is not set
-+# CONFIG_BINFMT_MISC is not set
-+# CONFIG_ARTHUR is not set
-+
-+#
-+# Power management options
-+#
-+# CONFIG_PM is not set
-+CONFIG_ARCH_SUSPEND_POSSIBLE=y
-+
-+#
-+# Networking
-+#
-+CONFIG_NET=y
-+
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=m
-+CONFIG_PACKET_MMAP=y
-+CONFIG_UNIX=y
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+# CONFIG_IP_PNP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+# CONFIG_INET_LRO is not set
-+# CONFIG_INET_DIAG is not set
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+CONFIG_IP_SCTP=m
-+# CONFIG_SCTP_DBG_MSG is not set
-+# CONFIG_SCTP_DBG_OBJCNT is not set
-+# CONFIG_SCTP_HMAC_NONE is not set
-+# CONFIG_SCTP_HMAC_SHA1 is not set
-+CONFIG_SCTP_HMAC_MD5=y
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_NET_SCHED is not set
-+
-+#
-+# Network testing
-+#
-+CONFIG_NET_PKTGEN=m
-+CONFIG_NET_TCPPROBE=m
-+# CONFIG_HAMRADIO is not set
-+CONFIG_CAN=m
-+CONFIG_CAN_RAW=m
-+CONFIG_CAN_BCM=m
-+
-+#
-+# CAN Device Drivers
-+#
-+CONFIG_CAN_VCAN=m
-+CONFIG_CAN_DEBUG_DEVICES=y
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
-+
-+#
-+# Wireless
-+#
-+# CONFIG_CFG80211 is not set
-+CONFIG_WIRELESS_EXT=y
-+# CONFIG_MAC80211 is not set
-+CONFIG_IEEE80211=m
-+# CONFIG_IEEE80211_DEBUG is not set
-+CONFIG_IEEE80211_CRYPT_WEP=m
-+# CONFIG_IEEE80211_CRYPT_CCMP is not set
-+# CONFIG_IEEE80211_CRYPT_TKIP is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
-+
-+#
-+# Device Drivers
-+#
-+
-+#
-+# Generic Driver Options
-+#
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+CONFIG_FW_LOADER=y
-+# CONFIG_SYS_HYPERVISOR is not set
-+CONFIG_CONNECTOR=m
-+CONFIG_MTD=m
-+CONFIG_MTD_DEBUG=y
-+CONFIG_MTD_DEBUG_VERBOSE=1
-+CONFIG_MTD_CONCAT=m
-+CONFIG_MTD_PARTITIONS=y
-+# CONFIG_MTD_REDBOOT_PARTS is not set
-+# CONFIG_MTD_AFS_PARTS is not set
-+# CONFIG_MTD_AR7_PARTS is not set
-+
-+#
-+# User Modules And Translation Layers
-+#
-+CONFIG_MTD_CHAR=m
-+CONFIG_MTD_BLKDEVS=m
-+CONFIG_MTD_BLOCK=m
-+CONFIG_MTD_BLOCK_RO=m
-+CONFIG_FTL=m
-+CONFIG_NFTL=m
-+CONFIG_NFTL_RW=y
-+CONFIG_INFTL=m
-+CONFIG_RFD_FTL=m
-+CONFIG_SSFDC=m
-+CONFIG_MTD_OOPS=m
-+
-+#
-+# RAM/ROM/Flash chip drivers
-+#
-+CONFIG_MTD_CFI=m
-+CONFIG_MTD_JEDECPROBE=m
-+CONFIG_MTD_GEN_PROBE=m
-+# CONFIG_MTD_CFI_ADV_OPTIONS is not set
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
-+# CONFIG_MTD_CFI_I4 is not set
-+# CONFIG_MTD_CFI_I8 is not set
-+CONFIG_MTD_CFI_INTELEXT=m
-+CONFIG_MTD_CFI_AMDSTD=m
-+CONFIG_MTD_CFI_STAA=m
-+CONFIG_MTD_CFI_UTIL=m
-+CONFIG_MTD_RAM=m
-+CONFIG_MTD_ROM=m
-+CONFIG_MTD_ABSENT=m
-+
-+#
-+# Mapping drivers for chip access
-+#
-+CONFIG_MTD_COMPLEX_MAPPINGS=y
-+CONFIG_MTD_PHYSMAP=m
-+CONFIG_MTD_PHYSMAP_START=0x8000000
-+CONFIG_MTD_PHYSMAP_LEN=0x4000000
-+CONFIG_MTD_PHYSMAP_BANKWIDTH=2
-+# CONFIG_MTD_ARM_INTEGRATOR is not set
-+# CONFIG_MTD_IMPA7 is not set
-+CONFIG_MTD_PLATRAM=m
-+
-+#
-+# Self-contained MTD device drivers
-+#
-+CONFIG_MTD_DATAFLASH=m
-+CONFIG_MTD_M25P80=m
-+CONFIG_M25PXX_USE_FAST_READ=y
-+CONFIG_MTD_SLRAM=m
-+CONFIG_MTD_PHRAM=m
-+CONFIG_MTD_MTDRAM=m
-+CONFIG_MTDRAM_TOTAL_SIZE=4096
-+CONFIG_MTDRAM_ERASE_SIZE=128
-+CONFIG_MTD_BLOCK2MTD=m
-+
-+#
-+# Disk-On-Chip Device Drivers
-+#
-+# CONFIG_MTD_DOC2000 is not set
-+# CONFIG_MTD_DOC2001 is not set
-+# CONFIG_MTD_DOC2001PLUS is not set
-+CONFIG_MTD_NAND=m
-+CONFIG_MTD_NAND_VERIFY_WRITE=y
-+# CONFIG_MTD_NAND_ECC_SMC is not set
-+# CONFIG_MTD_NAND_MUSEUM_IDS is not set
-+CONFIG_MTD_NAND_IDS=m
-+CONFIG_MTD_NAND_DISKONCHIP=m
-+# CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADVANCED is not set
-+CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADDRESS=0
-+# CONFIG_MTD_NAND_DISKONCHIP_BBTWRITE is not set
-+CONFIG_MTD_NAND_AT91=y
-+# CONFIG_MTD_NAND_AT91_ECC_HW is not set
-+CONFIG_MTD_NAND_AT91_ECC_SOFT=y
-+# CONFIG_MTD_NAND_AT91_ECC_NONE is not set
-+CONFIG_MTD_NAND_NANDSIM=m
-+CONFIG_MTD_NAND_PLATFORM=m
-+CONFIG_MTD_ALAUDA=m
-+# CONFIG_MTD_ONENAND is not set
-+
-+#
-+# UBI - Unsorted block images
-+#
-+CONFIG_MTD_UBI=m
-+CONFIG_MTD_UBI_WL_THRESHOLD=4096
-+CONFIG_MTD_UBI_BEB_RESERVE=1
-+CONFIG_MTD_UBI_GLUEBI=y
-+
-+#
-+# UBI debugging options
-+#
-+# CONFIG_MTD_UBI_DEBUG is not set
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_CRYPTOLOOP=m
-+CONFIG_BLK_DEV_NBD=m
-+# CONFIG_BLK_DEV_UB is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=65536
-+# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+CONFIG_ATMEL_PWM=m
-+CONFIG_ATMEL_TCLIB=y
-+CONFIG_ATMEL_TCB_CLKSRC=y
-+CONFIG_ATMEL_TCB_CLKSRC_BLOCK=0
-+# CONFIG_EEPROM_93CX6 is not set
-+CONFIG_ATMEL_SSC=m
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+CONFIG_HAVE_IDE=y
-+# CONFIG_IDE is not set
-+
-+#
-+# SCSI device support
-+#
-+CONFIG_RAID_ATTRS=m
-+CONFIG_SCSI=m
-+CONFIG_SCSI_DMA=y
-+CONFIG_SCSI_TGT=m
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_SCSI_PROC_FS is not set
-+
-+#
-+# SCSI support type (disk, tape, CD-ROM)
-+#
-+CONFIG_BLK_DEV_SD=m
-+# CONFIG_CHR_DEV_ST is not set
-+# CONFIG_CHR_DEV_OSST is not set
-+CONFIG_BLK_DEV_SR=m
-+# CONFIG_BLK_DEV_SR_VENDOR is not set
-+CONFIG_CHR_DEV_SG=m
-+CONFIG_CHR_DEV_SCH=m
-+
-+#
-+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-+#
-+CONFIG_SCSI_MULTI_LUN=y
-+CONFIG_SCSI_CONSTANTS=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SCAN_ASYNC=y
-+CONFIG_SCSI_WAIT_SCAN=m
-+
-+#
-+# SCSI Transports
-+#
-+# CONFIG_SCSI_SPI_ATTRS is not set
-+# CONFIG_SCSI_FC_ATTRS is not set
-+CONFIG_SCSI_ISCSI_ATTRS=m
-+# CONFIG_SCSI_SAS_LIBSAS is not set
-+# CONFIG_SCSI_SRP_ATTRS is not set
-+CONFIG_SCSI_LOWLEVEL=y
-+# CONFIG_ISCSI_TCP is not set
-+# CONFIG_SCSI_DEBUG is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
-+CONFIG_DUMMY=m
-+CONFIG_BONDING=m
-+CONFIG_MACVLAN=m
-+CONFIG_EQUALIZER=m
-+CONFIG_TUN=m
-+CONFIG_VETH=m
-+CONFIG_PHYLIB=y
-+
-+#
-+# MII PHY device drivers
-+#
-+CONFIG_MARVELL_PHY=m
-+CONFIG_DAVICOM_PHY=m
-+CONFIG_QSEMI_PHY=m
-+CONFIG_LXT_PHY=m
-+CONFIG_CICADA_PHY=m
-+CONFIG_VITESSE_PHY=m
-+CONFIG_SMSC_PHY=m
-+CONFIG_BROADCOM_PHY=m
-+CONFIG_ICPLUS_PHY=m
-+# CONFIG_REALTEK_PHY is not set
-+# CONFIG_FIXED_PHY is not set
-+CONFIG_MDIO_BITBANG=m
-+CONFIG_NET_ETHERNET=y
-+CONFIG_MII=m
-+CONFIG_MACB=y
-+# CONFIG_AX88796 is not set
-+# CONFIG_SMC91X is not set
-+# CONFIG_DM9000 is not set
-+# CONFIG_ENC28J60 is not set
-+# CONFIG_IBM_NEW_EMAC_ZMII is not set
-+# CONFIG_IBM_NEW_EMAC_RGMII is not set
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
-+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-+# CONFIG_B44 is not set
-+# CONFIG_NETDEV_1000 is not set
-+# CONFIG_NETDEV_10000 is not set
-+
-+#
-+# Wireless LAN
-+#
-+CONFIG_WLAN_PRE80211=y
-+CONFIG_STRIP=m
-+CONFIG_WLAN_80211=y
-+CONFIG_LIBERTAS=m
-+CONFIG_LIBERTAS_USB=m
-+CONFIG_LIBERTAS_SDIO=m
-+# CONFIG_LIBERTAS_DEBUG is not set
-+CONFIG_USB_ZD1201=m
-+# CONFIG_USB_NET_RNDIS_WLAN is not set
-+# CONFIG_IWLWIFI_LEDS is not set
-+CONFIG_HOSTAP=m
-+CONFIG_HOSTAP_FIRMWARE=y
-+CONFIG_HOSTAP_FIRMWARE_NVRAM=y
-+
-+#
-+# USB Network Adapters
-+#
-+CONFIG_USB_CATC=m
-+CONFIG_USB_KAWETH=m
-+CONFIG_USB_PEGASUS=m
-+CONFIG_USB_RTL8150=m
-+CONFIG_USB_USBNET=m
-+CONFIG_USB_NET_AX8817X=m
-+CONFIG_USB_NET_CDCETHER=m
-+CONFIG_USB_NET_DM9601=m
-+CONFIG_USB_NET_GL620A=m
-+CONFIG_USB_NET_NET1080=m
-+CONFIG_USB_NET_PLUSB=m
-+CONFIG_USB_NET_MCS7830=m
-+CONFIG_USB_NET_RNDIS_HOST=m
-+CONFIG_USB_NET_CDC_SUBSET=m
-+CONFIG_USB_ALI_M5632=y
-+CONFIG_USB_AN2720=y
-+CONFIG_USB_BELKIN=y
-+CONFIG_USB_ARMLINUX=y
-+CONFIG_USB_EPSON2888=y
-+CONFIG_USB_KC2190=y
-+# CONFIG_USB_NET_ZAURUS is not set
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+
-+#
-+# Input device support
-+#
-+CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
-+CONFIG_INPUT_POLLDEV=m
-+
-+#
-+# Userland interfaces
-+#
-+CONFIG_INPUT_MOUSEDEV=m
-+CONFIG_INPUT_MOUSEDEV_PSAUX=y
-+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-+# CONFIG_INPUT_JOYDEV is not set
-+CONFIG_INPUT_EVDEV=m
-+CONFIG_INPUT_EVBUG=m
-+
-+#
-+# Input Device Drivers
-+#
-+CONFIG_INPUT_KEYBOARD=y
-+CONFIG_KEYBOARD_ATKBD=y
-+CONFIG_KEYBOARD_SUNKBD=m
-+CONFIG_KEYBOARD_LKKBD=m
-+CONFIG_KEYBOARD_XTKBD=m
-+CONFIG_KEYBOARD_NEWTON=m
-+CONFIG_KEYBOARD_STOWAWAY=m
-+CONFIG_KEYBOARD_GPIO=m
-+CONFIG_INPUT_MOUSE=y
-+CONFIG_MOUSE_PS2=m
-+CONFIG_MOUSE_PS2_ALPS=y
-+CONFIG_MOUSE_PS2_LOGIPS2PP=y
-+CONFIG_MOUSE_PS2_SYNAPTICS=y
-+CONFIG_MOUSE_PS2_LIFEBOOK=y
-+CONFIG_MOUSE_PS2_TRACKPOINT=y
-+# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-+CONFIG_MOUSE_SERIAL=m
-+CONFIG_MOUSE_APPLETOUCH=m
-+CONFIG_MOUSE_VSXXXAA=m
-+CONFIG_MOUSE_GPIO=m
-+# CONFIG_INPUT_JOYSTICK is not set
-+# CONFIG_INPUT_TABLET is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+CONFIG_INPUT_MISC=y
-+# CONFIG_INPUT_ATI_REMOTE is not set
-+# CONFIG_INPUT_ATI_REMOTE2 is not set
-+# CONFIG_INPUT_KEYSPAN_REMOTE is not set
-+# CONFIG_INPUT_POWERMATE is not set
-+# CONFIG_INPUT_YEALINK is not set
-+CONFIG_INPUT_UINPUT=m
-+
-+#
-+# Hardware I/O ports
-+#
-+CONFIG_SERIO=y
-+CONFIG_SERIO_SERPORT=m
-+CONFIG_SERIO_LIBPS2=y
-+CONFIG_SERIO_RAW=m
-+# CONFIG_GAMEPORT is not set
-+
-+#
-+# Character devices
-+#
-+CONFIG_VT=y
-+CONFIG_VT_CONSOLE=y
-+CONFIG_HW_CONSOLE=y
-+CONFIG_VT_HW_CONSOLE_BINDING=y
-+CONFIG_DEVKMEM=y
-+CONFIG_SERIAL_NONSTANDARD=y
-+CONFIG_N_HDLC=m
-+# CONFIG_RISCOM8 is not set
-+CONFIG_SPECIALIX=m
-+# CONFIG_SPECIALIX_RTSCTS is not set
-+CONFIG_RIO=m
-+# CONFIG_RIO_OLDPCI is not set
-+CONFIG_STALDRV=y
-+
-+#
-+# Serial drivers
-+#
-+# CONFIG_SERIAL_8250 is not set
-+
-+#
-+# Non-8250 serial port support
-+#
-+CONFIG_SERIAL_ATMEL=y
-+CONFIG_SERIAL_ATMEL_CONSOLE=y
-+CONFIG_SERIAL_ATMEL_PDC=y
-+# CONFIG_SERIAL_ATMEL_TTYAT is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+CONFIG_IPMI_HANDLER=m
-+# CONFIG_IPMI_PANIC_EVENT is not set
-+CONFIG_IPMI_DEVICE_INTERFACE=m
-+CONFIG_IPMI_SI=m
-+CONFIG_IPMI_WATCHDOG=m
-+CONFIG_IPMI_POWEROFF=m
-+CONFIG_HW_RANDOM=y
-+CONFIG_NVRAM=m
-+CONFIG_R3964=m
-+CONFIG_RAW_DRIVER=m
-+CONFIG_MAX_RAW_DEVS=256
-+CONFIG_TCG_TPM=m
-+CONFIG_TCG_NSC=m
-+CONFIG_TCG_ATMEL=m
-+CONFIG_I2C=m
-+CONFIG_I2C_BOARDINFO=y
-+CONFIG_I2C_CHARDEV=m
-+CONFIG_I2C_HELPER_AUTO=y
-+
-+#
-+# I2C Hardware Bus support
-+#
-+# CONFIG_I2C_GPIO is not set
-+# CONFIG_I2C_OCORES is not set
-+# CONFIG_I2C_PARPORT_LIGHT is not set
-+# CONFIG_I2C_SIMTEC is not set
-+# CONFIG_I2C_TAOS_EVM is not set
-+# CONFIG_I2C_STUB is not set
-+# CONFIG_I2C_TINY_USB is not set
-+# CONFIG_I2C_PCA_PLATFORM is not set
-+
-+#
-+# Miscellaneous I2C Chip support
-+#
-+CONFIG_DS1682=m
-+CONFIG_SENSORS_EEPROM=m
-+CONFIG_SENSORS_PCF8574=m
-+# CONFIG_PCF8575 is not set
-+CONFIG_SENSORS_PCF8591=m
-+CONFIG_SENSORS_MAX6875=m
-+CONFIG_SENSORS_TSL2550=m
-+# CONFIG_I2C_DEBUG_CORE is not set
-+# CONFIG_I2C_DEBUG_ALGO is not set
-+# CONFIG_I2C_DEBUG_BUS is not set
-+# CONFIG_I2C_DEBUG_CHIP is not set
-+CONFIG_SPI=y
-+CONFIG_SPI_MASTER=y
-+
-+#
-+# SPI Master Controller Drivers
-+#
-+CONFIG_SPI_ATMEL=y
-+CONFIG_SPI_BITBANG=m
-+
-+#
-+# SPI Protocol Masters
-+#
-+CONFIG_SPI_AT25=m
-+CONFIG_SPI_SPIDEV=m
-+# CONFIG_SPI_TLE62X0 is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+# CONFIG_HWMON is not set
-+# CONFIG_WATCHDOG is not set
-+
-+#
-+# Sonics Silicon Backplane
-+#
-+CONFIG_SSB_POSSIBLE=y
-+# CONFIG_SSB is not set
-+
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_SM501 is not set
-+# CONFIG_MFD_ASIC3 is not set
-+# CONFIG_HTC_PASIC3 is not set
-+
-+#
-+# Multimedia devices
-+#
-+
-+#
-+# Multimedia core support
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+# CONFIG_VIDEO_MEDIA is not set
-+
-+#
-+# Multimedia drivers
-+#
-+# CONFIG_DAB is not set
-+
-+#
-+# Graphics support
-+#
-+# CONFIG_VGASTATE is not set
-+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-+# CONFIG_FB is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
-+
-+#
-+# Console display driver support
-+#
-+# CONFIG_VGA_CONSOLE is not set
-+CONFIG_DUMMY_CONSOLE=y
-+
-+#
-+# Sound
-+#
-+CONFIG_SOUND=m
-+
-+#
-+# Advanced Linux Sound Architecture
-+#
-+CONFIG_SND=m
-+CONFIG_SND_TIMER=m
-+CONFIG_SND_PCM=m
-+CONFIG_SND_HWDEP=m
-+CONFIG_SND_RAWMIDI=m
-+CONFIG_SND_SEQUENCER=m
-+CONFIG_SND_SEQ_DUMMY=m
-+CONFIG_SND_OSSEMUL=y
-+CONFIG_SND_MIXER_OSS=m
-+CONFIG_SND_PCM_OSS=m
-+# CONFIG_SND_PCM_OSS_PLUGINS is not set
-+CONFIG_SND_SEQUENCER_OSS=y
-+CONFIG_SND_DYNAMIC_MINORS=y
-+CONFIG_SND_SUPPORT_OLD_API=y
-+# CONFIG_SND_VERBOSE_PROCFS is not set
-+# CONFIG_SND_VERBOSE_PRINTK is not set
-+# CONFIG_SND_DEBUG is not set
-+
-+#
-+# Generic devices
-+#
-+CONFIG_SND_DUMMY=m
-+CONFIG_SND_VIRMIDI=m
-+# CONFIG_SND_MTPAV is not set
-+# CONFIG_SND_SERIAL_U16550 is not set
-+# CONFIG_SND_MPU401 is not set
-+
-+#
-+# ALSA ARM devices
-+#
-+
-+#
-+# SPI devices
-+#
-+# CONFIG_SND_AT73C213 is not set
-+
-+#
-+# USB devices
-+#
-+CONFIG_SND_USB_AUDIO=m
-+CONFIG_SND_USB_CAIAQ=m
-+CONFIG_SND_USB_CAIAQ_INPUT=y
-+
-+#
-+# System on Chip audio support
-+#
-+# CONFIG_SND_SOC is not set
-+
-+#
-+# ALSA SoC audio for Freescale SOCs
-+#
-+
-+#
-+# SoC Audio for the Texas Instruments OMAP
-+#
-+
-+#
-+# Open Sound System
-+#
-+# CONFIG_SOUND_PRIME is not set
-+CONFIG_HID_SUPPORT=y
-+CONFIG_HID=m
-+# CONFIG_HID_DEBUG is not set
-+CONFIG_HIDRAW=y
-+
-+#
-+# USB Input Devices
-+#
-+CONFIG_USB_HID=m
-+CONFIG_USB_HIDINPUT_POWERBOOK=y
-+# CONFIG_HID_FF is not set
-+CONFIG_USB_HIDDEV=y
-+
-+#
-+# USB HID Boot Protocol drivers
-+#
-+CONFIG_USB_KBD=m
-+CONFIG_USB_MOUSE=m
-+CONFIG_USB_SUPPORT=y
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+# CONFIG_USB_ARCH_HAS_EHCI is not set
-+CONFIG_USB=y
-+# CONFIG_USB_DEBUG is not set
-+# CONFIG_USB_ANNOUNCE_NEW_DEVICES is not set
-+
-+#
-+# Miscellaneous USB options
-+#
-+CONFIG_USB_DEVICEFS=y
-+# CONFIG_USB_DEVICE_CLASS is not set
-+CONFIG_USB_DYNAMIC_MINORS=y
-+# CONFIG_USB_OTG is not set
-+# CONFIG_USB_OTG_WHITELIST is not set
-+# CONFIG_USB_OTG_BLACKLIST_HUB is not set
-+
-+#
-+# USB Host Controller Drivers
-+#
-+# CONFIG_USB_C67X00_HCD is not set
-+# CONFIG_USB_ISP116X_HCD is not set
-+# CONFIG_USB_ISP1760_HCD is not set
-+CONFIG_USB_OHCI_HCD=y
-+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-+# CONFIG_USB_SL811_HCD is not set
-+# CONFIG_USB_R8A66597_HCD is not set
-+
-+#
-+# USB Device Class drivers
-+#
-+# CONFIG_USB_ACM is not set
-+# CONFIG_USB_PRINTER is not set
-+# CONFIG_USB_WDM is not set
-+
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
-+
-+#
-+# may also be needed; see USB_STORAGE Help for more information
-+#
-+CONFIG_USB_STORAGE=m
-+# CONFIG_USB_STORAGE_DEBUG is not set
-+CONFIG_USB_STORAGE_DATAFAB=y
-+CONFIG_USB_STORAGE_FREECOM=y
-+CONFIG_USB_STORAGE_ISD200=y
-+CONFIG_USB_STORAGE_DPCM=y
-+CONFIG_USB_STORAGE_USBAT=y
-+CONFIG_USB_STORAGE_SDDR09=y
-+CONFIG_USB_STORAGE_SDDR55=y
-+CONFIG_USB_STORAGE_JUMPSHOT=y
-+CONFIG_USB_STORAGE_ALAUDA=y
-+# CONFIG_USB_STORAGE_ONETOUCH is not set
-+CONFIG_USB_STORAGE_KARMA=y
-+# CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
-+CONFIG_USB_LIBUSUAL=y
-+
-+#
-+# USB Imaging devices
-+#
-+# CONFIG_USB_MDC800 is not set
-+# CONFIG_USB_MICROTEK is not set
-+CONFIG_USB_MON=y
-+
-+#
-+# USB port drivers
-+#
-+CONFIG_USB_SERIAL=m
-+CONFIG_USB_EZUSB=y
-+CONFIG_USB_SERIAL_GENERIC=y
-+# CONFIG_USB_SERIAL_AIRCABLE is not set
-+# CONFIG_USB_SERIAL_AIRPRIME is not set
-+# CONFIG_USB_SERIAL_ARK3116 is not set
-+# CONFIG_USB_SERIAL_BELKIN is not set
-+# CONFIG_USB_SERIAL_CH341 is not set
-+# CONFIG_USB_SERIAL_WHITEHEAT is not set
-+# CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set
-+# CONFIG_USB_SERIAL_CP2101 is not set
-+# CONFIG_USB_SERIAL_CYPRESS_M8 is not set
-+# CONFIG_USB_SERIAL_EMPEG is not set
-+# CONFIG_USB_SERIAL_FTDI_SIO is not set
-+# CONFIG_USB_SERIAL_FUNSOFT is not set
-+# CONFIG_USB_SERIAL_VISOR is not set
-+# CONFIG_USB_SERIAL_IPAQ is not set
-+# CONFIG_USB_SERIAL_IR is not set
-+# CONFIG_USB_SERIAL_EDGEPORT is not set
-+# CONFIG_USB_SERIAL_EDGEPORT_TI is not set
-+# CONFIG_USB_SERIAL_GARMIN is not set
-+# CONFIG_USB_SERIAL_IPW is not set
-+# CONFIG_USB_SERIAL_IUU is not set
-+# CONFIG_USB_SERIAL_KEYSPAN_PDA is not set
-+# CONFIG_USB_SERIAL_KEYSPAN is not set
-+# CONFIG_USB_SERIAL_KLSI is not set
-+# CONFIG_USB_SERIAL_KOBIL_SCT is not set
-+# CONFIG_USB_SERIAL_MCT_U232 is not set
-+# CONFIG_USB_SERIAL_MOS7720 is not set
-+# CONFIG_USB_SERIAL_MOS7840 is not set
-+# CONFIG_USB_SERIAL_MOTOROLA is not set
-+# CONFIG_USB_SERIAL_NAVMAN is not set
-+CONFIG_USB_SERIAL_PL2303=m
-+# CONFIG_USB_SERIAL_OTI6858 is not set
-+CONFIG_USB_SERIAL_SPCP8X5=m
-+# CONFIG_USB_SERIAL_HP4X is not set
-+# CONFIG_USB_SERIAL_SAFE is not set
-+# CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
-+# CONFIG_USB_SERIAL_TI is not set
-+# CONFIG_USB_SERIAL_CYBERJACK is not set
-+# CONFIG_USB_SERIAL_XIRCOM is not set
-+# CONFIG_USB_SERIAL_OPTION is not set
-+# CONFIG_USB_SERIAL_OMNINET is not set
-+CONFIG_USB_SERIAL_DEBUG=m
-+
-+#
-+# USB Miscellaneous drivers
-+#
-+CONFIG_USB_EMI62=m
-+CONFIG_USB_EMI26=m
-+CONFIG_USB_ADUTUX=m
-+# CONFIG_USB_AUERSWALD is not set
-+# CONFIG_USB_RIO500 is not set
-+# CONFIG_USB_LEGOTOWER is not set
-+# CONFIG_USB_LCD is not set
-+# CONFIG_USB_BERRY_CHARGE is not set
-+# CONFIG_USB_LED is not set
-+# CONFIG_USB_CYPRESS_CY7C63 is not set
-+# CONFIG_USB_CYTHERM is not set
-+# CONFIG_USB_PHIDGET is not set
-+# CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_FTDI_ELAN is not set
-+# CONFIG_USB_APPLEDISPLAY is not set
-+# CONFIG_USB_LD is not set
-+# CONFIG_USB_TRANCEVIBRATOR is not set
-+# CONFIG_USB_IOWARRIOR is not set
-+CONFIG_USB_TEST=m
-+# CONFIG_USB_ISIGHTFW is not set
-+CONFIG_USB_GADGET=m
-+CONFIG_USB_GADGET_DEBUG_FILES=y
-+CONFIG_USB_GADGET_DEBUG_FS=y
-+CONFIG_USB_GADGET_SELECTED=y
-+# CONFIG_USB_GADGET_AMD5536UDC is not set
-+# CONFIG_USB_GADGET_ATMEL_USBA is not set
-+# CONFIG_USB_GADGET_FSL_USB2 is not set
-+# CONFIG_USB_GADGET_NET2280 is not set
-+# CONFIG_USB_GADGET_PXA2XX is not set
-+# CONFIG_USB_GADGET_M66592 is not set
-+# CONFIG_USB_GADGET_PXA27X is not set
-+# CONFIG_USB_GADGET_GOKU is not set
-+# CONFIG_USB_GADGET_LH7A40X is not set
-+# CONFIG_USB_GADGET_OMAP is not set
-+# CONFIG_USB_GADGET_S3C2410 is not set
-+CONFIG_USB_GADGET_AT91=y
-+CONFIG_USB_AT91=m
-+# CONFIG_USB_GADGET_DUMMY_HCD is not set
-+# CONFIG_USB_GADGET_DUALSPEED is not set
-+CONFIG_USB_ZERO=m
-+CONFIG_USB_ETH=m
-+CONFIG_USB_ETH_RNDIS=y
-+CONFIG_USB_GADGETFS=m
-+CONFIG_USB_FILE_STORAGE=m
-+# CONFIG_USB_FILE_STORAGE_TEST is not set
-+CONFIG_USB_G_SERIAL=m
-+CONFIG_USB_MIDI_GADGET=m
-+# CONFIG_USB_G_PRINTER is not set
-+CONFIG_MMC=y
-+# CONFIG_MMC_DEBUG is not set
-+# CONFIG_MMC_UNSAFE_RESUME is not set
-+
-+#
-+# MMC/SD Card Drivers
-+#
-+CONFIG_MMC_BLOCK=y
-+CONFIG_MMC_BLOCK_BOUNCE=y
-+CONFIG_SDIO_UART=m
-+# CONFIG_MMC_TEST is not set
-+
-+#
-+# MMC/SD Host Controller Drivers
-+#
-+CONFIG_MMC_AT91=y
-+CONFIG_MMC_SPI=m
-+CONFIG_NEW_LEDS=y
-+CONFIG_LEDS_CLASS=m
-+
-+#
-+# LED drivers
-+#
-+CONFIG_LEDS_ATMEL_PWM=m
-+CONFIG_LEDS_GPIO=m
-+
-+#
-+# LED Triggers
-+#
-+CONFIG_LEDS_TRIGGERS=y
-+CONFIG_LEDS_TRIGGER_TIMER=m
-+CONFIG_LEDS_TRIGGER_HEARTBEAT=m
-+# CONFIG_LEDS_TRIGGER_DEFAULT_ON is not set
-+CONFIG_RTC_LIB=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_HCTOSYS=y
-+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-+# CONFIG_RTC_DEBUG is not set
-+
-+#
-+# RTC interfaces
-+#
-+CONFIG_RTC_INTF_SYSFS=y
-+CONFIG_RTC_INTF_PROC=y
-+CONFIG_RTC_INTF_DEV=y
-+CONFIG_RTC_INTF_DEV_UIE_EMUL=y
-+# CONFIG_RTC_DRV_TEST is not set
-+
-+#
-+# I2C RTC drivers
-+#
-+CONFIG_RTC_DRV_DS1307=m
-+# CONFIG_RTC_DRV_DS1374 is not set
-+# CONFIG_RTC_DRV_DS1672 is not set
-+# CONFIG_RTC_DRV_MAX6900 is not set
-+# CONFIG_RTC_DRV_RS5C372 is not set
-+# CONFIG_RTC_DRV_ISL1208 is not set
-+# CONFIG_RTC_DRV_X1205 is not set
-+# CONFIG_RTC_DRV_PCF8563 is not set
-+# CONFIG_RTC_DRV_PCF8583 is not set
-+# CONFIG_RTC_DRV_M41T80 is not set
-+# CONFIG_RTC_DRV_S35390A is not set
-+# CONFIG_RTC_DRV_FM3130 is not set
-+
-+#
-+# SPI RTC drivers
-+#
-+# CONFIG_RTC_DRV_MAX6902 is not set
-+# CONFIG_RTC_DRV_R9701 is not set
-+# CONFIG_RTC_DRV_RS5C348 is not set
-+
-+#
-+# Platform RTC drivers
-+#
-+# CONFIG_RTC_DRV_CMOS is not set
-+# CONFIG_RTC_DRV_DS1511 is not set
-+# CONFIG_RTC_DRV_DS1553 is not set
-+# CONFIG_RTC_DRV_DS1742 is not set
-+# CONFIG_RTC_DRV_STK17TA8 is not set
-+# CONFIG_RTC_DRV_M48T86 is not set
-+# CONFIG_RTC_DRV_M48T59 is not set
-+# CONFIG_RTC_DRV_V3020 is not set
-+
-+#
-+# on-CPU RTC drivers
-+#
-+# CONFIG_RTC_DRV_AT91SAM9 is not set
-+# CONFIG_UIO is not set
-+
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+CONFIG_EXT2_FS_XATTR=y
-+CONFIG_EXT2_FS_POSIX_ACL=y
-+CONFIG_EXT2_FS_SECURITY=y
-+# CONFIG_EXT2_FS_XIP is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_EXT3_FS_XATTR=y
-+CONFIG_EXT3_FS_POSIX_ACL=y
-+CONFIG_EXT3_FS_SECURITY=y
-+CONFIG_EXT4DEV_FS=m
-+CONFIG_EXT4DEV_FS_XATTR=y
-+CONFIG_EXT4DEV_FS_POSIX_ACL=y
-+CONFIG_EXT4DEV_FS_SECURITY=y
-+CONFIG_JBD=y
-+CONFIG_JBD_DEBUG=y
-+CONFIG_JBD2=m
-+CONFIG_JBD2_DEBUG=y
-+CONFIG_FS_MBCACHE=y
-+CONFIG_REISERFS_FS=m
-+CONFIG_REISERFS_CHECK=y
-+CONFIG_REISERFS_PROC_INFO=y
-+CONFIG_REISERFS_FS_XATTR=y
-+CONFIG_REISERFS_FS_POSIX_ACL=y
-+CONFIG_REISERFS_FS_SECURITY=y
-+# CONFIG_JFS_FS is not set
-+CONFIG_FS_POSIX_ACL=y
-+# CONFIG_XFS_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+CONFIG_DNOTIFY=y
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+CONFIG_FUSE_FS=m
-+CONFIG_GENERIC_ACL=y
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+CONFIG_FAT_FS=y
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=y
-+CONFIG_FAT_DEFAULT_CODEPAGE=437
-+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-+CONFIG_NTFS_FS=m
-+# CONFIG_NTFS_DEBUG is not set
-+CONFIG_NTFS_RW=y
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+CONFIG_TMPFS_POSIX_ACL=y
-+# CONFIG_HUGETLB_PAGE is not set
-+CONFIG_CONFIGFS_FS=m
-+
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+CONFIG_JFFS2_FS=m
-+CONFIG_JFFS2_FS_DEBUG=0
-+CONFIG_JFFS2_FS_WRITEBUFFER=y
-+# CONFIG_JFFS2_FS_WBUF_VERIFY is not set
-+# CONFIG_JFFS2_SUMMARY is not set
-+# CONFIG_JFFS2_FS_XATTR is not set
-+CONFIG_JFFS2_COMPRESSION_OPTIONS=y
-+CONFIG_JFFS2_ZLIB=y
-+CONFIG_JFFS2_LZO=y
-+CONFIG_JFFS2_RTIME=y
-+# CONFIG_JFFS2_RUBIN is not set
-+# CONFIG_JFFS2_CMODE_NONE is not set
-+# CONFIG_JFFS2_CMODE_PRIORITY is not set
-+# CONFIG_JFFS2_CMODE_SIZE is not set
-+CONFIG_JFFS2_CMODE_FAVOURLZO=y
-+CONFIG_CRAMFS=m
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+CONFIG_NFS_FS=m
-+CONFIG_NFS_V3=y
-+CONFIG_NFS_V3_ACL=y
-+CONFIG_NFS_V4=y
-+CONFIG_NFSD=m
-+CONFIG_NFSD_V2_ACL=y
-+CONFIG_NFSD_V3=y
-+CONFIG_NFSD_V3_ACL=y
-+CONFIG_NFSD_V4=y
-+CONFIG_LOCKD=m
-+CONFIG_LOCKD_V4=y
-+CONFIG_EXPORTFS=m
-+CONFIG_NFS_ACL_SUPPORT=m
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=m
-+CONFIG_SUNRPC_GSS=m
-+# CONFIG_SUNRPC_BIND34 is not set
-+CONFIG_RPCSEC_GSS_KRB5=m
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+CONFIG_CIFS=m
-+# CONFIG_CIFS_STATS is not set
-+CONFIG_CIFS_WEAK_PW_HASH=y
-+# CONFIG_CIFS_XATTR is not set
-+# CONFIG_CIFS_DEBUG2 is not set
-+# CONFIG_CIFS_EXPERIMENTAL is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+
-+#
-+# Partition Types
-+#
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_ACORN_PARTITION is not set
-+# CONFIG_OSF_PARTITION is not set
-+# CONFIG_AMIGA_PARTITION is not set
-+# CONFIG_ATARI_PARTITION is not set
-+CONFIG_MAC_PARTITION=y
-+CONFIG_MSDOS_PARTITION=y
-+CONFIG_BSD_DISKLABEL=y
-+CONFIG_MINIX_SUBPARTITION=y
-+CONFIG_SOLARIS_X86_PARTITION=y
-+CONFIG_UNIXWARE_DISKLABEL=y
-+CONFIG_LDM_PARTITION=y
-+CONFIG_LDM_DEBUG=y
-+CONFIG_SGI_PARTITION=y
-+# CONFIG_ULTRIX_PARTITION is not set
-+CONFIG_SUN_PARTITION=y
-+# CONFIG_KARMA_PARTITION is not set
-+# CONFIG_EFI_PARTITION is not set
-+# CONFIG_SYSV68_PARTITION is not set
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="cp437"
-+CONFIG_NLS_CODEPAGE_437=y
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+CONFIG_NLS_CODEPAGE_850=m
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+CONFIG_NLS_ASCII=y
-+CONFIG_NLS_ISO8859_1=y
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+CONFIG_NLS_UTF8=m
-+CONFIG_DLM=m
-+# CONFIG_DLM_DEBUG is not set
-+
-+#
-+# Kernel hacking
-+#
-+CONFIG_PRINTK_TIME=y
-+CONFIG_ENABLE_WARN_DEPRECATED=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_FRAME_WARN=1024
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_UNUSED_SYMBOLS=y
-+CONFIG_DEBUG_FS=y
-+# CONFIG_HEADERS_CHECK is not set
-+# CONFIG_DEBUG_KERNEL is not set
-+# CONFIG_DEBUG_BUGVERBOSE is not set
-+CONFIG_FRAME_POINTER=y
-+# CONFIG_SAMPLES is not set
-+# CONFIG_DEBUG_USER is not set
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-+CONFIG_CRYPTO=y
-+
-+#
-+# Crypto core or helper
-+#
-+CONFIG_CRYPTO_ALGAPI=y
-+CONFIG_CRYPTO_BLKCIPHER=m
-+CONFIG_CRYPTO_HASH=y
-+CONFIG_CRYPTO_MANAGER=y
-+CONFIG_CRYPTO_GF128MUL=m
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+# CONFIG_CRYPTO_AUTHENC is not set
-+# CONFIG_CRYPTO_TEST is not set
-+
-+#
-+# Authenticated Encryption with Associated Data
-+#
-+# CONFIG_CRYPTO_CCM is not set
-+# CONFIG_CRYPTO_GCM is not set
-+# CONFIG_CRYPTO_SEQIV is not set
-+
-+#
-+# Block modes
-+#
-+CONFIG_CRYPTO_CBC=m
-+# CONFIG_CRYPTO_CTR is not set
-+# CONFIG_CRYPTO_CTS is not set
-+CONFIG_CRYPTO_ECB=m
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_PCBC is not set
-+# CONFIG_CRYPTO_XTS is not set
-+
-+#
-+# Hash modes
-+#
-+CONFIG_CRYPTO_HMAC=y
-+# CONFIG_CRYPTO_XCBC is not set
-+
-+#
-+# Digest
-+#
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+CONFIG_CRYPTO_MD5=y
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+CONFIG_CRYPTO_SHA1=m
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+
-+#
-+# Ciphers
-+#
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+CONFIG_CRYPTO_ARC4=m
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+CONFIG_CRYPTO_DES=m
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_SALSA20 is not set
-+# CONFIG_CRYPTO_SEED is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+
-+#
-+# Compression
-+#
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_LZO is not set
-+# CONFIG_CRYPTO_HW is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+# CONFIG_GENERIC_FIND_FIRST_BIT is not set
-+# CONFIG_GENERIC_FIND_NEXT_BIT is not set
-+CONFIG_CRC_CCITT=m
-+CONFIG_CRC16=m
-+CONFIG_CRC_ITU_T=m
-+CONFIG_CRC32=y
-+CONFIG_CRC7=m
-+CONFIG_LIBCRC32C=m
-+CONFIG_AUDIT_GENERIC=y
-+CONFIG_ZLIB_INFLATE=m
-+CONFIG_ZLIB_DEFLATE=m
-+CONFIG_LZO_COMPRESS=m
-+CONFIG_LZO_DECOMPRESS=m
-+CONFIG_REED_SOLOMON=m
-+CONFIG_REED_SOLOMON_DEC16=y
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-diff --git a/arch/arm/mach-at91/at572d940hf.c b/arch/arm/mach-at91/at572d940hf.c
-new file mode 100644
-index 0000000..787b606
---- /dev/null
-+++ b/arch/arm/mach-at91/at572d940hf.c
-@@ -0,0 +1,357 @@
++++ b/include/asm-arm/arch-at91/at572d940hf.h
+@@ -0,0 +1,180 @@
 +/*
-+ * arch/arm/mach-at91/at572d940hf.c
++ * include/asm-arm/arch-at91/at572d940hf.h
++ *
++ * Antonio R. Costa <costa.antonior@gmail.com>
++ * Copyright (C) 2008 Atmel
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
++
++#ifndef AT572D940HF_H
++#define AT572D940HF_H
++
++/*
++ * Peripheral identifiers/interrupts.
++ */
++#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
++#define AT91_ID_SYS		1	/* System Peripherals */
++#define AT572D940HF_ID_PIOA	2	/* Parallel IO Controller A */
++#define AT572D940HF_ID_PIOB	3	/* Parallel IO Controller B */
++#define AT572D940HF_ID_PIOC	4	/* Parallel IO Controller C */
++#define AT572D940HF_ID_MACB	5	/* MACB ethernet controller */
++#define AT572D940HF_ID_US0	6	/* USART 0 */
++#define AT572D940HF_ID_US1	7	/* USART 1 */
++#define AT572D940HF_ID_US2	8	/* USART 2 */
++#define AT572D940HF_ID_MCI	9	/* Multimedia Card Interface */
++#define AT572D940HF_ID_UDP	10	/* USB Device Port */
++#define AT572D940HF_ID_TWI0	11	/* Two-Wire Interface 0 */
++#define AT572D940HF_ID_SPI0	12	/* Serial Peripheral Interface 0 */
++#define AT572D940HF_ID_SPI1	13	/* Serial Peripheral Interface 1 */
++#define AT572D940HF_ID_SSC0	14	/* Serial Synchronous Controller 0 */
++#define AT572D940HF_ID_SSC1	15	/* Serial Synchronous Controller 1 */
++#define AT572D940HF_ID_SSC2	16	/* Serial Synchronous Controller 2 */
++#define AT572D940HF_ID_TC0	17	/* Timer Counter 0 */
++#define AT572D940HF_ID_TC1	18	/* Timer Counter 1 */
++#define AT572D940HF_ID_TC2	19	/* Timer Counter 2 */
++#define AT572D940HF_ID_UHP	20	/* USB Host port */
++#define AT572D940HF_ID_SSC3	21	/* Serial Synchronous Controller 3 */
++#define AT572D940HF_ID_TWI1	22	/* Two-Wire Interface 1 */
++#define AT572D940HF_ID_CAN0	23	/* CAN Controller 0 */
++#define AT572D940HF_ID_CAN1	24	/* CAN Controller 1 */
++#define AT572D940HF_ID_MHALT	25	/* mAgicV HALT line */
++#define AT572D940HF_ID_MSIRQ1	26	/* mAgicV SIRQ1 line */
++#define AT572D940HF_ID_MEXC	27	/* mAgicV exception line */
++#define AT572D940HF_ID_MEDMA	28	/* mAgicV end of DMA line */
++#define AT572D940HF_ID_EXT_IRQ0	29	/* External Interrupt Source (IRQ0) */
++#define AT572D940HF_ID_EXT_IRQ1	30	/* External Interrupt Source (IRQ1) */
++#define AT572D940HF_ID_EXT_IRQ2	31	/* External Interrupt Source (IRQ2) */
++
++#define AT572D940HF_ID_TWI	(AT572D940HF_ID_TWI0)
++#define AT572D940HF_ID_SPI	(AT572D940HF_ID_SPI0)
++#define AT572D940HF_ID_SSC	(AT572D940HF_ID_SSC0)
++#define AT572D940HF_ID_EMAC  	(AT572D940HF_ID_MACB)
++
++
++#define AT572D940HF_PMC_PCK4		(1 << 12)		/* Programmable Clock 4 */
++
++#define AT572D940HF_PMC_PIOA	(1 << 2)
++#define AT572D940HF_PMC_PIOB 	(1 << 3)
++#define AT572D940HF_PMC_PIOC 	(1 << 4)
++#define AT572D940HF_PMC_ETH	(1 << 5)
++#define AT572D940HF_PMC_US0	(1 << 6)
++#define AT572D940HF_PMC_US1	(1 << 7)
++#define AT572D940HF_PMC_US2	(1 << 8)
++#define AT572D940HF_PMC_MCI	(1 << 9)
++#define AT572D940HF_PMC_UDP	(1 << 10)
++#define AT572D940HF_PMC_TWI0	(1 << 11)
++#define AT572D940HF_PMC_SPI0 	(1 << 12)
++#define AT572D940HF_PMC_SPI1 	(1 << 13)
++#define AT572D940HF_PMC_SSC0 	(1 << 14)
++#define AT572D940HF_PMC_SSC1 	(1 << 15)
++#define AT572D940HF_PMC_SSC2 	(1 << 16)
++#define AT572D940HF_PMC_TC0  	(1 << 17)
++#define AT572D940HF_PMC_TC1  	(1 << 18)
++#define AT572D940HF_PMC_TC2  	(1 << 19)
++#define AT572D940HF_PMC_UHP 	(1 << 20)
++#define AT572D940HF_PMC_SSC3	(1 << 21)
++#define AT572D940HF_PMC_TWI1	(1 << 22)
++#define AT572D940HF_PMC_CAN0	(1 << 23)
++#define AT572D940HF_PMC_CAN1	(1 << 24)
++#define AT572D940HF_PMC_DSP  	(1 << 26)
++#define AT572D940HF_PMC_MAGIC	(1 << 26)
++
++
++/*
++ * User Peripheral physical base addresses.
++ */
++#define AT572D940HF_BASE_TCB0	0xfffa0000
++#define AT572D940HF_BASE_TC0	0xfffa0000
++#define AT572D940HF_BASE_TC1	0xfffa0040
++#define AT572D940HF_BASE_TC2	0xfffa0080
++#define AT572D940HF_BASE_UDP	0xfffa4000
++#define AT572D940HF_BASE_MCI	0xfffa8000
++#define AT572D940HF_BASE_TWI0	0xfffac000
++#define AT572D940HF_BASE_US0	0xfffb0000
++#define AT572D940HF_BASE_US1	0xfffb4000
++#define AT572D940HF_BASE_US2	0xfffb8000
++#define AT572D940HF_BASE_SSC0	0xfffbc000
++#define AT572D940HF_BASE_SSC1	0xfffc0000
++#define AT572D940HF_BASE_SSC2	0xfffc4000
++#define AT572D940HF_BASE_SPI0	0xfffc8000
++#define AT572D940HF_BASE_SPI1	0xfffcc000
++#define AT572D940HF_BASE_SSC3	0xfffd0000
++#define AT572D940HF_BASE_TWI1	0xfffd4000
++#define AT572D940HF_BASE_MACB	0xfffd8000
++#define AT572D940HF_BASE_CAN0	0xfffdc000
++#define AT572D940HF_BASE_CAN1	0xfffe0000
++
++#define AT572D940HF_BASE_TWI   	(AT572D940HF_BASE_TWI0)
++#define AT572D940HF_BASE_SSC   	(AT572D940HF_BASE_SSC0)
++#define AT572D940HF_BASE_SPI   	(AT572D940HF_BASE_SPI0)
++
++#define AT572D940HF_BASE_SYS   	0xffffea00
++#define AT91_BASE_SYS	    	(AT572D940HF_BASE_SYS)
++
++
++/*
++ * System Peripherals (offset from AT91_BASE_SYS)
++ */
++#define AT572D940HF_SDRAMC	(0xffffea00 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_SMC		(0xffffec00 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_MATRIX	(0xffffee00 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_AIC		(0xfffff000 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_DBGU	(0xfffff200 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_PIOA	(0xfffff400 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_PIOB	(0xfffff600 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_PIOC	(0xfffff800 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_PMC		(0xfffffc00 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_RSTC	(0xfffffd00 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_SHDWC	(0xfffffd10 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_RTT		(0xfffffd20 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_PIT		(0xfffffd30 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_WDT		(0xfffffd40 - AT572D940HF_BASE_SYS)
++#define AT572D940HF_GPBR	(0xfffffd50 - AT572D940HF_BASE_SYS)
++
++
++#define AT91_SDRAMC	(AT572D940HF_SDRAMC)
++#define AT91_SMC	(AT572D940HF_SMC)
++#define AT91_MATRIX	(AT572D940HF_MATRIX)
++#define AT91_AIC	(AT572D940HF_AIC)
++#define AT91_DBGU	(AT572D940HF_DBGU)
++#define AT91_PIOA	(AT572D940HF_PIOA)
++#define AT91_PIOB	(AT572D940HF_PIOB)
++#define AT91_PIOC	(AT572D940HF_PIOC)
++#define AT91_PMC	(AT572D940HF_PMC)
++#define AT91_RSTC	(AT572D940HF_RSTC)
++#define AT91_SHDWC	(AT572D940HF_SHDWC)
++#define AT91_RTT	(AT572D940HF_RTT)
++#define AT91_PIT	(AT572D940HF_PIT)
++#define AT91_WDT	(AT572D940HF_WDT)
++#define AT91_GPBR	(AT572D940HF_GPBR)
++
++
++
++
++/*
++ * Internal Memory.
++ */
++#define AT572D940HF_SRAM_BASE	0x00300000	/* Internal SRAM base address */
++#define AT572D940HF_SRAM_SIZE	0x000c0000 	/* Internal SRAM size (48Kb) */
++
++#define AT572D940HF_ROM_BASE	0x00400000	/* Internal ROM base address */
++#define AT572D940HF_ROM_SIZE	0x00008000	/* Internal ROM size (32Kb) */
++
++#define AT572D940HF_UHP_BASE	0x00500000	/* USB Host controller */
++
++
++#endif
+diff --git a/include/asm-arm/arch-at91/at572d940hf_mAgicV.h b/include/asm-arm/arch-at91/at572d940hf_mAgicV.h
+new file mode 100644
+index 0000000..4e6bdad
+--- /dev/null
++++ b/include/asm-arm/arch-at91/at572d940hf_mAgicV.h
+@@ -0,0 +1,34 @@
++/* mAgicV definitions */
++
++#ifndef __AT572D940HF_MAGIC_H_
++#define __AT572D940HF_MAGIC_H_
++
++#define AT572D940HF_MAGIC_BASE 0x00600000
++#define AT572D940HF_MAGIC_SIZE 0x81000
++
++#define AT572D940HF_MAGIC_PM_BASE 0x00600000
++#define AT572D940HF_MAGIC_PM_SIZE 0x20000
++
++#define AT572D940HF_MAGIC_DM_I_BASE 0x00620000
++#define AT572D940HF_MAGIC_DM_I_SIZE 0x10000
++
++#define AT572D940HF_MAGIC_DM_F_BASE 0x00640000
++#define AT572D940HF_MAGIC_DM_F_SIZE 0x10000
++
++#define AT572D940HF_MAGIC_DM_DB_BASE 0x00660000
++#define AT572D940HF_MAGIC_DM_DB_SIZE 0x20000
++
++#define AT572D940HF_MAGIC_REGS_BASE 0x00680000
++#define AT572D940HF_MAGIC_REGS_SIZE 0x1000
++
++#define AT572D940HF_MAGIC_EXTPAGE_BASE 0x23000000
++#define AT572D940HF_MAGIC_EXTPAGE_SIZE 0x1000000
++
++#define AT572D940HF_MAGIC_MSIRQ0 0
++#define AT572D940HF_MAGIC_MSIRQ1 26
++#define AT572D940HF_MAGIC_MHLT 25
++#define AT572D940HF_MAGIC_MEXC 27
++#define AT572D940HF_MAGIC_MEDMA 28
++
++
++#endif
+diff --git a/include/asm-arm/arch-at91/at572d940hf_matrix.h b/include/asm-arm/arch-at91/at572d940hf_matrix.h
+new file mode 100644
+index 0000000..239f499
+--- /dev/null
++++ b/include/asm-arm/arch-at91/at572d940hf_matrix.h
+@@ -0,0 +1,73 @@
++/*
++ * include/asm-arm/arch-at91/at572d940hf_matrix.h
 + *
 + * Antonio R. Costa <costa.antonior@gmail.com>
 + * Copyright (C) 2008 Atmel
@@ -1650,1509 +311,58 @@ index 0000000..787b606
 + * You should have received a copy of the GNU General Public License
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
 + */
 +
++#ifndef AT572D940HF_MATRIX_H
++#define AT572D940HF_MATRIX_H
 +
-+#include <linux/module.h>
++#define AT572D940HF_MATRIX_MCFG	(AT572D940HF_MATRIX + 0x00)	/* Master Configuration Register */
++#define	AT572D940HF_MATRIX_RCB0	(1 << 0)		/* Remap Command for AHB Master 0 (ARM926EJ-S Instruction Master) */
++#define	AT572D940HF_MATRIX_RCB1	(1 << 1)		/* Remap Command for AHB Master 1 (ARM926EJ-S Data Master) */
 +
-+#include <asm/mach/irq.h>
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+#include <asm/arch/at572d940hf.h>
-+#include <asm/arch/at91_pmc.h>
-+#include <asm/arch/at91_rstc.h>
++#define AT572D940HF_MATRIX_SCFG0	(AT572D940HF_MATRIX + 0x04)	/* Slave Configuration Register 0 */
++#define AT572D940HF_MATRIX_SCFG1	(AT572D940HF_MATRIX + 0x08)	/* Slave Configuration Register 1 */
++#define AT572D940HF_MATRIX_SCFG2	(AT572D940HF_MATRIX + 0x0C)	/* Slave Configuration Register 2 */
++#define AT572D940HF_MATRIX_SCFG3	(AT572D940HF_MATRIX + 0x10)	/* Slave Configuration Register 3 */
++#define AT572D940HF_MATRIX_SCFG4	(AT572D940HF_MATRIX + 0x14)	/* Slave Configuration Register 4 */
++#define	AT572D940HF_MATRIX_SLOT_CYCLE		(0xff << 0)	/* Maximum Number of Allowed Cycles for a Burst */
++#define	AT572D940HF_MATRIX_DEFMSTR_TYPE		(3 << 16)	/* Default Master Type */
++#define	AT572D940HF_MATRIX_DEFMSTR_TYPE_NONE	(0 << 16)
++#define	AT572D940HF_MATRIX_DEFMSTR_TYPE_LAST	(1 << 16)
++#define	AT572D940HF_MATRIX_DEFMSTR_TYPE_FIXED	(2 << 16)
++#define	AT572D940HF_MATRIX_FIXED_DEFMSTR	(7 << 18)	/* Fixed Index of Default Master */
 +
-+#include "generic.h"
-+#include "clock.h"
++#define AT572D940HF_MATRIX_TCR		(AT572D940HF_MATRIX + 0x24)	/* TCM Configuration Register */
++#define	AT572D940HF_MATRIX_ITCM_SIZE	(0xf << 0)	/* Size of ITCM enabled memory block */
++#define	AT572D940HF_MATRIX_ITCM_0	(0 << 0)
++#define	AT572D940HF_MATRIX_ITCM_16	(5 << 0)
++#define	AT572D940HF_MATRIX_ITCM_32	(6 << 0)
++#define	AT572D940HF_MATRIX_ITCM_64	(7 << 0)
++#define	AT572D940HF_MATRIX_DTCM_SIZE	(0xf << 4)	/* Size of DTCM enabled memory block */
++#define	AT572D940HF_MATRIX_DTCM_0	(0 << 4)
++#define	AT572D940HF_MATRIX_DTCM_16	(5 << 4)
++#define	AT572D940HF_MATRIX_DTCM_32	(6 << 4)
++#define	AT572D940HF_MATRIX_DTCM_64	(7 << 4)
 +
-+static struct map_desc at572d940hf_io_desc[] __initdata = {
-+	{
-+		.virtual	= AT91_VA_BASE_SYS,
-+		.pfn		= __phys_to_pfn(AT91_BASE_SYS),
-+		.length		= SZ_16K,
-+		.type		= MT_DEVICE,
-+	}, {
-+		.virtual	= AT91_IO_VIRT_BASE - AT572D940HF_SRAM_SIZE,
-+		.pfn		= __phys_to_pfn(AT572D940HF_SRAM_BASE),
-+		.length		= AT572D940HF_SRAM_SIZE,
-+		.type		= MT_DEVICE,
-+	},
-+};
++#define AT572D940HF_MATRIX_EBICSA	(	AT572D940HF_MATRIX + 0x30)	/* EBI Chip Select Assignment Register */
++#define	AT572D940HF_MATRIX_CS1A			(1 << 1)	/* Chip Select 1 Assignment */
++#define	AT572D940HF_MATRIX_CS1A_SMC		(0 << 1)
++#define	AT572D940HF_MATRIX_CS1A_SDRAMC		(1 << 1)
++#define	AT572D940HF_MATRIX_CS3A			(1 << 3)	/* Chip Select 3 Assignment */
++#define	AT572D940HF_MATRIX_CS3A_SMC		(0 << 3)
++#define	AT572D940HF_MATRIX_CS3A_SMC_SMARTMEDIA	(1 << 3)
++#define	AT572D940HF_MATRIX_CS4A			(1 << 4)	/* Chip Select 4 Assignment */
++#define	AT572D940HF_MATRIX_CS4A_SMC		(0 << 4)
++#define	AT572D940HF_MATRIX_CS4A_SMC_CF1		(1 << 4)
++#define	AT572D940HF_MATRIX_CS5A			(1 << 5)	/* Chip Select 5 Assignment */
++#define	AT572D940HF_MATRIX_CS5A_SMC		(0 << 5)
++#define	AT572D940HF_MATRIX_CS5A_SMC_CF2		(1 << 5)
++#define	AT572D940HF_MATRIX_DBPUC		(1 << 8)	/* Data Bus Pull-up Configuration */
 +
-+/* --------------------------------------------------------------------
-+ *  Clocks
-+ * -------------------------------------------------------------------- */
++#define AT572D940HF_MATRIX_USBPUCR	(AT572D940HF_MATRIX + 0x34)	/* USB Pad Pull-Up Control Register */
++#define	AT572D940HF_MATRIX_USBPUCR_PUON	(1 << 30)	/* USB Device PAD Pull-up Enable */
 +
-+/*
-+ * The peripheral clocks.
-+ */
-+static struct clk pioA_clk = {
-+	.name		= "pioA_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_PIOA,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk pioB_clk = {
-+	.name		= "pioB_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_PIOB,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk pioC_clk = {
-+	.name		= "pioC_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_PIOC,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk usart0_clk = {
-+	.name		= "usart0_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_US0,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk usart1_clk = {
-+	.name		= "usart1_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_US1,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk usart2_clk = {
-+	.name		= "usart2_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_US2,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk mmc_clk = {
-+	.name		= "mci_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_MCI,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk udc_clk = {
-+	.name		= "udc_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_UDP,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk twi_clk = {
-+	.name		= "twi_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_TWI,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk spi0_clk = {
-+	.name		= "spi0_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_SPI0,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk spi1_clk = {
-+	.name		= "spi1_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_SPI1,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk ssc0_clk = {
-+	.name		= "ssc0_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_SSC0,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk ssc1_clk = {
-+	.name		= "ssc1_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_SSC1,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk ssc2_clk = {
-+	.name		= "ssc2_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_SSC2,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk tc0_clk = {
-+	.name		= "tc0_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_TC0,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk tc1_clk = {
-+	.name		= "tc1_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_TC1,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk tc2_clk = {
-+	.name		= "tc2_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_TC2,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk ohci_clk = {
-+	.name		= "ohci_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_UHP,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+static struct clk macb_clk = {
-+	.name		= "macb_clk",
-+	.pmc_mask	= 1 << AT572D940HF_ID_EMAC,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+};
-+
-+
-+static struct clk *periph_clocks[] __initdata = {
-+	&pioA_clk,
-+	&pioB_clk,
-+	&pioC_clk,
-+	&usart0_clk,
-+	&usart1_clk,
-+	&usart2_clk,
-+	&mmc_clk,
-+	&udc_clk,
-+	&twi_clk,
-+	&spi0_clk,
-+	&spi1_clk,
-+	&ssc0_clk,
-+	&ssc1_clk,
-+	&ssc2_clk,
-+	&tc0_clk,
-+	&tc1_clk,
-+	&tc2_clk,
-+	&ohci_clk,
-+	&macb_clk,
-+	// irq0 .. irq2
-+};
-+
-+/*
-+ * The four programmable clocks.
-+ * You must configure pin multiplexing to bring these signals out.
-+ */
-+static struct clk pck0 = {
-+	.name		= "pck0",
-+	.pmc_mask	= AT91_PMC_PCK0,
-+	.type		= CLK_TYPE_PROGRAMMABLE,
-+	.id		= 0,
-+};
-+static struct clk pck1 = {
-+	.name		= "pck1",
-+	.pmc_mask	= AT91_PMC_PCK1,
-+	.type		= CLK_TYPE_PROGRAMMABLE,
-+	.id		= 1,
-+};
-+static struct clk pck2 = {
-+	.name		= "pck2",
-+	.pmc_mask	= AT91_PMC_PCK2,
-+	.type		= CLK_TYPE_PROGRAMMABLE,
-+	.id		= 2,
-+};
-+static struct clk pck3 = {
-+	.name		= "pck3",
-+	.pmc_mask	= AT91_PMC_PCK3,
-+	.type		= CLK_TYPE_PROGRAMMABLE,
-+	.id		= 3,
-+};
-+
-+static struct clk mAgic_mem_clk = {
-+	.name		= "mAgic_mem_clk",
-+	.pmc_mask	= AT572D940HF_PMC_PCK4,
-+	.type		= CLK_TYPE_PROGRAMMABLE,
-+	.id		= 4,
-+};
-+
-+/* HClocks */
-+static struct clk hck0 = {
-+	.name		= "hck0",
-+	.pmc_mask	= AT91_PMC_HCK0,
-+	.type		= CLK_TYPE_SYSTEM,
-+	.id		= 0,
-+};
-+static struct clk hck1 = {
-+	.name		= "hck1",
-+	.pmc_mask	= AT91_PMC_HCK1,
-+	.type		= CLK_TYPE_SYSTEM,
-+	.id		= 1,
-+};
-+
-+static struct clk mAgic_clk = {
-+	.name		= "mAgic_clk",
-+	.pmc_mask	= AT572D940HF_PMC_MAGIC,
-+	.type		= CLK_TYPE_PERIPHERAL,
-+	.id		= 2,
-+};
-+
-+static void __init at572d940hf_register_clocks(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(periph_clocks); i++)
-+		clk_register(periph_clocks[i]);
-+
-+	clk_register(&pck0);
-+	clk_register(&pck1);
-+	clk_register(&pck2);
-+	clk_register(&pck3);
-+	clk_register(&mAgic_mem_clk);
-+
-+	clk_register(&hck0);
-+	clk_register(&hck1);
-+	clk_register(&mAgic_clk);
-+}
-+
-+/* --------------------------------------------------------------------
-+ *  GPIO
-+ * -------------------------------------------------------------------- */
-+
-+static struct at91_gpio_bank at572d940hf_gpio[] = {
-+	{
-+		.id		= AT572D940HF_ID_PIOA,
-+		.offset		= AT91_PIOA,
-+		.clock		= &pioA_clk,
-+	}, {
-+		.id		= AT572D940HF_ID_PIOB,
-+		.offset		= AT91_PIOB,
-+		.clock		= &pioB_clk,
-+	}, {
-+		.id		= AT572D940HF_ID_PIOC,
-+		.offset		= AT91_PIOC,
-+		.clock		= &pioC_clk,
-+	}
-+};
-+
-+static void at572d940hf_reset(void)
-+{
-+	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_PROCRST | AT91_RSTC_PERRST);
-+}
-+
-+
-+/* --------------------------------------------------------------------
-+ *  AT572D940HF processor initialization
-+ * -------------------------------------------------------------------- */
-+
-+void __init at572d940hf_initialize(unsigned long main_clock)
-+{
-+	/* Map peripherals */
-+	iotable_init(at572d940hf_io_desc, ARRAY_SIZE(at572d940hf_io_desc));
-+
-+	at91_arch_reset = at572d940hf_reset;
-+	at91_extern_irq = (1 << AT572D940HF_ID_EXT_IRQ0) | (1 << AT572D940HF_ID_EXT_IRQ1)
-+			| (1 << AT572D940HF_ID_EXT_IRQ2);
-+
-+	/* Init clock subsystem */
-+	at91_clock_init(main_clock);
-+
-+	/* Register the processor-specific clocks */
-+	at572d940hf_register_clocks();
-+
-+	/* Register GPIO subsystem */
-+	at91_gpio_init(at572d940hf_gpio, 3);
-+}
-+
-+/* --------------------------------------------------------------------
-+ *  Interrupt initialization
-+ * -------------------------------------------------------------------- */
-+
-+/*
-+ * The default interrupt priority levels (0 = lowest, 7 = highest).
-+ */
-+static unsigned int at572d940hf_default_irq_priority[NR_AIC_IRQS] __initdata = {
-+	7,	/* Advanced Interrupt Controller */
-+	7,	/* System Peripherals */
-+	0,	/* Parallel IO Controller A */
-+	0,	/* Parallel IO Controller B */
-+	0,	/* Parallel IO Controller C */
-+	0,
-+	6,	/* USART 0 */
-+	6,	/* USART 1 */
-+	6,	/* USART 2 */
-+	0,	/* Multimedia Card Interface */
-+	4,	/* USB Device Port */
-+	0,	/* Two-Wire Interface */
-+	6,	/* Serial Peripheral Interface 0 */
-+	6,	/* Serial Peripheral Interface 1 */
-+	5,	/* Serial Synchronous Controller 0 */
-+	5,	/* Serial Synchronous Controller 1 */
-+	5,	/* Serial Synchronous Controller 2 */
-+	0,	/* Timer Counter 0 */
-+	0,	/* Timer Counter 1 */
-+	0,	/* Timer Counter 2 */
-+	3,	/* USB Host port */
-+	3,	/* LCD Controller */
-+	0,
-+	0,
-+	0,
-+	0,
-+	0,
-+	0,
-+	0,
-+	0,	/* Advanced Interrupt Controller */
-+	0,	/* Advanced Interrupt Controller */
-+	0,	/* Advanced Interrupt Controller */
-+};
-+
-+void __init at572d940hf_init_interrupts(unsigned int priority[NR_AIC_IRQS])
-+{
-+	if (!priority)
-+		priority = at572d940hf_default_irq_priority;
-+
-+	/* Initialize the AIC interrupt controller */
-+	at91_aic_init(priority);
-+
-+	/* Enable GPIO interrupts */
-+	at91_gpio_irq_setup();
-+}
-+
-+
-diff --git a/arch/arm/mach-at91/at572d940hf_devices.c b/arch/arm/mach-at91/at572d940hf_devices.c
-new file mode 100644
-index 0000000..ec648c1
---- /dev/null
-+++ b/arch/arm/mach-at91/at572d940hf_devices.c
-@@ -0,0 +1,893 @@
-+/*
-+ *
-+ * arch/arm/mach-at91/at572d940hf_devices.c
-+ *
-+ * Copyright (C) 2008 Atmel Antonio R. Costa <costa.antonior@gmail.com>
-+ * Copyright (C) 2005 Thibaut VARENE <varenet@parisc-linux.org>
-+ * Copyright (C) 2005 David Brownell
-+ *
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ */
-+
-+
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+
-+#include <linux/platform_device.h>
-+
-+#include <asm/arch/board.h>
-+#include <asm/arch/gpio.h>
-+#include <asm/arch/at572d940hf.h>
-+#include <asm/arch/at572d940hf_matrix.h>
-+#include <asm/arch/at91sam9_smc.h>
-+#include <asm/arch/at91sam9_sdramc.h>
-+
-+//#include <asm/arch/at572D940hf_mAgic.h>
-+
-+#include "generic.h"
-+
-+// *****************************
-+// *** mAgic
-+// *****************************
-+//
-+#ifdef CONFIG_MAGICV
-+static struct resource mAgic_resources[] = {
-+        {
-+                .start = AT91_MAGIC_PM_BASE,
-+                .end   = AT91_MAGIC_PM_BASE + AT91_MAGIC_PM_SIZE - 1,
-+                .flags = IORESOURCE_MEM,
-+        },
-+        {
-+                .start = AT91_MAGIC_DM_I_BASE,
-+                .end   = AT91_MAGIC_DM_I_BASE + AT91_MAGIC_DM_I_SIZE - 1,
-+                .flags = IORESOURCE_MEM,
-+        },
-+        {
-+                .start = AT91_MAGIC_DM_F_BASE,
-+                .end   = AT91_MAGIC_DM_F_BASE + AT91_MAGIC_DM_F_SIZE - 1,
-+                .flags = IORESOURCE_MEM,
-+        },
-+        {
-+                .start = AT91_MAGIC_DM_DB_BASE,
-+                .end   = AT91_MAGIC_DM_DB_BASE + AT91_MAGIC_DM_DB_SIZE - 1,
-+                .flags = IORESOURCE_MEM,
-+        },
-+        {
-+                .start = AT91_MAGIC_REGS_BASE,
-+                .end   = AT91_MAGIC_REGS_BASE + AT91_MAGIC_REGS_SIZE - 1,
-+                .flags = IORESOURCE_MEM,
-+        },
-+        {
-+                .start = AT91_MAGIC_EXTPAGE_BASE,
-+                .end   = AT91_MAGIC_EXTPAGE_BASE + AT91_MAGIC_EXTPAGE_SIZE - 1,
-+                .flags = IORESOURCE_MEM,
-+        },
-+        {
-+                .start  = AT91_MAGIC_MSIRQ1,
-+                .end    = AT91_MAGIC_MSIRQ1,
-+                .flags  = IORESOURCE_IRQ,
-+        },
-+        {
-+                .start  = AT91_MAGIC_MHLT,
-+                .end    = AT91_MAGIC_MHLT,
-+                .flags  = IORESOURCE_IRQ,
-+        },
-+        {
-+                .start  = AT91_MAGIC_MEXC,
-+                .end    = AT91_MAGIC_MEXC,
-+                .flags  = IORESOURCE_IRQ,
-+        },
-+        {
-+                .start  = AT91_MAGIC_MEDMA,
-+                .end    = AT91_MAGIC_MEDMA,
-+                .flags  = IORESOURCE_IRQ,
-+        },
-+};
-+
-+static struct platform_device mAgic_device = {
-+        .name           = "mAgic",
-+        .id             = -1,
-+        .num_resources  = ARRAY_SIZE(mAgic_resources),
-+        .resource       = mAgic_resources,
-+};
-+
-+
-+int __init at91_add_device_mAgic(void)
-+{
-+	return platform_device_register(&mAgic_device);
-+}
-+
-+#endif /* CONFIG_MAGICV */
-+
-+/* --------------------------------------------------------------------
-+ *  USB Host
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_USB_OHCI_HCD) || defined(CONFIG_USB_OHCI_HCD_MODULE)
-+static u64 ohci_dmamask = 0xffffffffUL;
-+static struct at91_usbh_data usbh_data;
-+
-+static struct resource usbh_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_UHP_BASE,
-+		.end	= AT572D940HF_UHP_BASE + SZ_1M - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_UHP,
-+		.end	= AT572D940HF_ID_UHP,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_usbh_device = {
-+	.name		= "at91_ohci",
-+	.id		= -1,
-+	.dev		= {
-+				.dma_mask		= &ohci_dmamask,
-+				.coherent_dma_mask	= 0xffffffff,
-+				.platform_data		= &usbh_data,
-+	},
-+	.resource	= usbh_resources,
-+	.num_resources	= ARRAY_SIZE(usbh_resources),
-+};
-+
-+void __init at91_add_device_usbh(struct at91_usbh_data *data)
-+{
-+	if (!data)
-+		return;
-+
-+	usbh_data = *data;
-+	platform_device_register(&at572d940hf_usbh_device);
-+
-+}
-+#else
-+void __init at91_add_device_usbh(struct at91_usbh_data *data) {}
 +#endif
-+
-+
-+/* --------------------------------------------------------------------
-+ *  USB Device (Gadget)
-+ * -------------------------------------------------------------------- */
-+
-+#ifdef CONFIG_USB_GADGET_AT91
-+
-+static struct at91_udc_data udc_data;
-+
-+static struct resource udc_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_UDP,
-+		.end	= AT572D940HF_BASE_UDP + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_UDP,
-+		.end	= AT572D940HF_ID_UDP,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_udc_device = {
-+	.name		= "at91_udc",
-+	.id		= -1,
-+	.dev		= {
-+				.platform_data		= &udc_data,
-+	},
-+	.resource	= udc_resources,
-+	.num_resources	= ARRAY_SIZE(udc_resources),
-+};
-+
-+void __init at91_add_device_udc(struct at91_udc_data *data)
-+{
-+	unsigned long x;
-+
-+	if (!data)
-+		return;
-+
-+	if (data->vbus_pin) {
-+		at91_set_gpio_input(data->vbus_pin, 0);
-+		at91_set_deglitch(data->vbus_pin, 1);
-+	}
-+
-+	/* Pullup pin is handled internally */
-+	x = at91_sys_read(AT572D940HF_MATRIX_USBPUCR);
-+	at91_sys_write(AT572D940HF_MATRIX_USBPUCR, x | AT572D940HF_MATRIX_USBPUCR_PUON);
-+
-+	udc_data = *data;
-+	platform_device_register(&at572d940hf_udc_device);
-+}
-+#else
-+void __init at91_add_device_udc(struct at91_udc_data *data) {}
-+#endif
-+
-+
-+
-+/* --------------------------------------------------------------------
-+ *  Ethernet
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_MACB) || defined(CONFIG_MACB_MODULE)
-+static u64 eth_dmamask = 0xffffffffUL;
-+static struct at91_eth_data eth_data;
-+
-+static struct resource eth_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_MACB,
-+		.end	= AT572D940HF_BASE_MACB + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_MACB,
-+		.end	= AT572D940HF_ID_MACB,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_eth_device = {
-+	.name		= "macb",
-+	.id		= -1,
-+	.dev		= {
-+			.dma_mask		= &eth_dmamask,
-+			.coherent_dma_mask	= 0xffffffff,
-+			.platform_data		= &eth_data,
-+	},
-+	.resource	= eth_resources,
-+	.num_resources	= ARRAY_SIZE(eth_resources),
-+};
-+
-+void __init at91_add_device_eth(struct at91_eth_data *data)
-+{
-+	if (!data)
-+		return;
-+
-+	printk(KERN_INFO "*** Adding MACB device...\n");
-+
-+	if (data->phy_irq_pin) {
-+		at91_set_gpio_input(data->phy_irq_pin, 0);
-+		at91_set_deglitch(data->phy_irq_pin, 1);
-+	}
-+
-+	/* Pins used for MII and RMII */
-+	at91_set_A_periph(AT91_PIN_PA16, 0);	/* ETXCK_EREFCK */
-+	at91_set_A_periph(AT91_PIN_PA17, 0);	/* ERXDV */
-+	at91_set_A_periph(AT91_PIN_PA18, 0);	/* ERX0 */
-+	at91_set_A_periph(AT91_PIN_PA19, 0);	/* ERX1 */
-+	at91_set_A_periph(AT91_PIN_PA20, 0);	/* ERXER */
-+	at91_set_A_periph(AT91_PIN_PA23, 0);	/* ETXEN */
-+	at91_set_A_periph(AT91_PIN_PA21, 0);	/* ETX0 */
-+	at91_set_A_periph(AT91_PIN_PA22, 0);	/* ETX1 */
-+	at91_set_A_periph(AT91_PIN_PA13, 0);	/* EMDIO */
-+	at91_set_A_periph(AT91_PIN_PA14, 0);	/* EMDC */
-+
-+	eth_data = *data;
-+	platform_device_register(&at572d940hf_eth_device);
-+}
-+#else
-+void __init at91_add_device_eth(struct at91_eth_data *data) {}
-+#endif
-+
-+/* --------------------------------------------------------------------
-+ *  MMC / SD
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_MMC_AT91) || defined(CONFIG_MMC_AT91_MODULE)
-+static u64 mmc_dmamask = 0xffffffffUL;
-+static struct at91_mmc_data mmc_data;
-+
-+static struct resource mmc_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_MCI,
-+		.end	= AT572D940HF_BASE_MCI + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_MCI,
-+		.end	= AT572D940HF_ID_MCI,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_mmc_device = {
-+	.name		= "at91_mci",
-+	.id		= -1,
-+	.dev		= {
-+				.dma_mask		= &mmc_dmamask,
-+				.coherent_dma_mask	= 0xffffffff,
-+				.platform_data		= &mmc_data,
-+	},
-+	.resource	= mmc_resources,
-+	.num_resources	= ARRAY_SIZE(mmc_resources),
-+};
-+
-+void __init at91_add_device_mmc(short mmc_id, struct at91_mmc_data *data)
-+{
-+	if (!data)
-+		return;
-+
-+	/* input/irq */
-+	if (data->det_pin) {
-+		at91_set_gpio_input(data->det_pin, 1);
-+		at91_set_deglitch(data->det_pin, 1);
-+	}
-+	if (data->wp_pin)
-+		at91_set_gpio_input(data->wp_pin, 1);
-+	if (data->vcc_pin)
-+		at91_set_gpio_output(data->vcc_pin, 0);
-+
-+	/* CLK */
-+	at91_set_A_periph(AT91_PIN_PC22, 0);
-+
-+	/* CMD */
-+	at91_set_A_periph(AT91_PIN_PC23, 1);
-+
-+	/* DAT0, maybe DAT1..DAT3 */
-+	at91_set_A_periph(AT91_PIN_PC24, 1);
-+	if (data->wire4) {
-+		at91_set_A_periph(AT91_PIN_PC25, 1);
-+		at91_set_A_periph(AT91_PIN_PC26, 1);
-+		at91_set_A_periph(AT91_PIN_PC27, 1);
-+	}
-+
-+	mmc_data = *data;
-+	platform_device_register(&at572d940hf_mmc_device);
-+}
-+#else
-+void __init at91_add_device_mmc(short mmc_id, struct at91_mmc_data *data) {}
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-+ *  NAND / SmartMedia
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_MTD_NAND_AT91) || defined(CONFIG_MTD_NAND_AT91_MODULE)
-+static struct at91_nand_data nand_data;
-+
-+#define NAND_BASE	AT91_CHIPSELECT_3
-+
-+static struct resource nand_resources[] = {
-+	{
-+		.start	= NAND_BASE,
-+		.end	= NAND_BASE + SZ_256M - 1,
-+		.flags	= IORESOURCE_MEM,
-+	}
-+};
-+
-+static struct platform_device at572d940hf_nand_device = {
-+	.name		= "at91_nand",
-+	.id		= -1,
-+	.dev		= {
-+				.platform_data	= &nand_data,
-+	},
-+	.resource	= nand_resources,
-+	.num_resources	= ARRAY_SIZE(nand_resources),
-+};
-+
-+void __init at91_add_device_nand(struct at91_nand_data *data)
-+{
-+	unsigned long csa, mode;
-+
-+	if (!data)
-+		return;
-+
-+	csa = at91_sys_read(AT572D940HF_MATRIX_EBICSA);
-+	at91_sys_write(AT572D940HF_MATRIX_EBICSA, csa | AT572D940HF_MATRIX_CS3A_SMC);
-+
-+	/* set the bus interface characteristics */
-+	at91_sys_write(AT91_SMC_SETUP(3), AT91_SMC_NWESETUP_(3) | AT91_SMC_NCS_WRSETUP_(3)
-+			| AT91_SMC_NRDSETUP_(3) | AT91_SMC_NCS_RDSETUP_(3));
-+
-+	at91_sys_write(AT91_SMC_PULSE(3), AT91_SMC_NWEPULSE_(4) | AT91_SMC_NCS_WRPULSE_(4)
-+			| AT91_SMC_NRDPULSE_(4) | AT91_SMC_NCS_RDPULSE_(4));
-+
-+	at91_sys_write(AT91_SMC_CYCLE(3), AT91_SMC_NWECYCLE_(10) | AT91_SMC_NRDCYCLE_(10));
-+
-+	if (data->bus_width_16)
-+		mode = AT91_SMC_DBW_16;
-+	else
-+		mode = AT91_SMC_DBW_8;
-+	at91_sys_write(AT91_SMC_MODE(3), mode | AT91_SMC_READMODE | AT91_SMC_WRITEMODE | AT91_SMC_EXNWMODE_DISABLE | AT91_SMC_TDF_(1));
-+
-+	/* enable pin */
-+	if (data->enable_pin)
-+		at91_set_gpio_output(data->enable_pin, 1);
-+
-+	/* ready/busy pin */
-+	if (data->rdy_pin)
-+		at91_set_gpio_input(data->rdy_pin, 1);
-+
-+	/* card detect pin */
-+	if (data->det_pin)
-+		at91_set_gpio_input(data->det_pin, 1);
-+
-+	at91_set_A_periph(AT91_PIN_PB28, 0);		/* A[22] */
-+	at91_set_B_periph(AT91_PIN_PA28, 0);		/* NANDOE */
-+	at91_set_B_periph(AT91_PIN_PA29, 0);		/* NANDWE */
-+
-+	nand_data = *data;
-+	platform_device_register(&at572d940hf_nand_device);
-+}
-+
-+#else
-+void __init at91_add_device_nand(struct at91_nand_data *data) {}
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-+ *  TWI (i2c)
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_I2C_AT91) || defined(CONFIG_I2C_AT91_MODULE)
-+
-+static struct resource twi0_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_TWI0,
-+		.end	= AT572D940HF_BASE_TWI0 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_TWI0,
-+		.end	= AT572D940HF_ID_TWI0,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_twi0_device = {
-+	.name		= "at91_i2c",
-+	.id			= 0,
-+	.resource	= twi0_resources,
-+	.num_resources	= ARRAY_SIZE(twi0_resources),
-+};
-+
-+static struct resource twi1_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_TWI1,
-+		.end	= AT572D940HF_BASE_TWI1 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_TWI1,
-+		.end	= AT572D940HF_ID_TWI1,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_twi1_device = {
-+	.name		= "at91_i2c",
-+	.id			= 1,
-+	.resource	= twi1_resources,
-+	.num_resources	= ARRAY_SIZE(twi1_resources),
-+};
-+
-+
-+
-+
-+void __init at91_add_device_i2c(void)
-+{
-+	/* pins used for TWI0 interface */
-+	at91_set_A_periph(AT91_PIN_PC7, 0);		/* TWD */
-+	at91_set_multi_drive(AT91_PIN_PC7, 1);
-+
-+	at91_set_A_periph(AT91_PIN_PC8, 0);		/* TWCK */
-+	at91_set_multi_drive(AT91_PIN_PC8, 1);
-+
-+	/* pins used for TWI1 interface */
-+	at91_set_A_periph(AT91_PIN_PC20, 0);		/* TWD */
-+	at91_set_multi_drive(AT91_PIN_PC20, 1);
-+
-+	at91_set_A_periph(AT91_PIN_PC21, 0);		/* TWCK */
-+	at91_set_multi_drive(AT91_PIN_PC21, 1);
-+
-+
-+	platform_device_register(&at572d940hf_twi0_device);
-+	platform_device_register(&at572d940hf_twi1_device);
-+
-+}
-+#else
-+void __init at91_add_device_i2c(struct i2c_board_info *devices, int nr_devices){};
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-+ *  SPI
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_SPI_ATMEL) || defined(CONFIG_SPI_ATMEL_MODULE)
-+static u64 spi_dmamask = 0xffffffffUL;
-+
-+static struct resource spi0_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_SPI0,
-+		.end	= AT572D940HF_BASE_SPI0 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_SPI0,
-+		.end	= AT572D940HF_ID_SPI0,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_spi0_device = {
-+	.name		= "atmel_spi",
-+	.id		= 0,
-+	.dev		= {
-+				.dma_mask		= &spi_dmamask,
-+				.coherent_dma_mask	= 0xffffffff,
-+	},
-+	.resource	= spi0_resources,
-+	.num_resources	= ARRAY_SIZE(spi0_resources),
-+};
-+
-+static const unsigned spi0_standard_cs[4] = { AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PA5, AT91_PIN_PA6 };
-+
-+static struct resource spi1_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_SPI1,
-+		.end	= AT572D940HF_BASE_SPI1 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_SPI1,
-+		.end	= AT572D940HF_ID_SPI1,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_spi1_device = {
-+	.name		= "atmel_spi",
-+	.id		= 1,
-+	.dev		= {
-+				.dma_mask		= &spi_dmamask,
-+				.coherent_dma_mask	= 0xffffffff,
-+	},
-+	.resource	= spi1_resources,
-+	.num_resources	= ARRAY_SIZE(spi1_resources),
-+};
-+
-+static const unsigned spi1_standard_cs[4] = { AT91_PIN_PC3, AT91_PIN_PC4, AT91_PIN_PC5, AT91_PIN_PC6 };
-+
-+void __init at91_add_device_spi(struct spi_board_info *devices, int nr_devices)
-+{
-+	int i;
-+	unsigned long cs_pin;
-+	short enable_spi0 = 0;
-+	short enable_spi1 = 0;
-+
-+	/* Choose SPI chip-selects */
-+	for (i = 0; i < nr_devices; i++) {
-+		if (devices[i].controller_data)
-+			cs_pin = (unsigned long) devices[i].controller_data;
-+		else if (devices[i].bus_num == 0)
-+			cs_pin = spi0_standard_cs[devices[i].chip_select];
-+		else
-+			cs_pin = spi1_standard_cs[devices[i].chip_select];
-+
-+		if (devices[i].bus_num == 0)
-+			enable_spi0 = 1;
-+		else
-+			enable_spi1 = 1;
-+
-+		/* enable chip-select pin */
-+		at91_set_gpio_output(cs_pin, 1);
-+
-+		/* pass chip-select pin to driver */
-+		devices[i].controller_data = (void *) cs_pin;
-+	}
-+
-+	spi_register_board_info(devices, nr_devices);
-+
-+	/* Configure SPI bus(es) */
-+	if (enable_spi0) {
-+		at91_set_A_periph(AT91_PIN_PA0, 0);	/* SPI0_MISO */
-+		at91_set_A_periph(AT91_PIN_PA1, 0);	/* SPI0_MOSI */
-+		at91_set_A_periph(AT91_PIN_PA2, 0);	/* SPI0_SPCK */
-+
-+		at91_clock_associate("spi0_clk", &at572d940hf_spi0_device.dev, "spi_clk");
-+		platform_device_register(&at572d940hf_spi0_device);
-+	}
-+	if (enable_spi1) {
-+		at91_set_A_periph(AT91_PIN_PC0, 0);	/* SPI1_MISO */
-+		at91_set_A_periph(AT91_PIN_PC1, 0);	/* SPI1_MOSI */
-+		at91_set_A_periph(AT91_PIN_PC2, 0);	/* SPI1_SPCK */
-+
-+		at91_clock_associate("spi1_clk", &at572d940hf_spi1_device.dev, "spi_clk");
-+		platform_device_register(&at572d940hf_spi1_device);
-+	}
-+}
-+#else
-+void __init at91_add_device_spi(struct spi_board_info *devices, int nr_devices) {}
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-+ *  UART
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_SERIAL_ATMEL)
-+static struct resource dbgu_resources[] = {
-+	[0] = {
-+		.start	= AT91_VA_BASE_SYS + AT91_DBGU,
-+		.end	= AT91_VA_BASE_SYS + AT91_DBGU + SZ_512 - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT91_ID_SYS,
-+		.end	= AT91_ID_SYS,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct atmel_uart_data dbgu_data = {
-+	.use_dma_tx	= 0,
-+	.use_dma_rx	= 0,		/* DBGU not capable of receive DMA */
-+	.regs		= (void __iomem *)(AT91_VA_BASE_SYS + AT91_DBGU),
-+};
-+
-+static struct platform_device at572d940hf_dbgu_device = {
-+	.name		= "atmel_usart",
-+	.id		= 0,
-+	.dev		= {
-+				.platform_data	= &dbgu_data,
-+				.coherent_dma_mask = 0xffffffff,
-+	},
-+	.resource	= dbgu_resources,
-+	.num_resources	= ARRAY_SIZE(dbgu_resources),
-+};
-+
-+static inline void configure_dbgu_pins(void)
-+{
-+	at91_set_A_periph(AT91_PIN_PC30, 0);		/* DRXD */
-+	at91_set_A_periph(AT91_PIN_PC31, 1);		/* DTXD */
-+}
-+
-+static struct resource uart0_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_US0,
-+		.end	= AT572D940HF_BASE_US0 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_US0,
-+		.end	= AT572D940HF_ID_US0,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct atmel_uart_data uart0_data = {
-+	.use_dma_tx	= 1,
-+	.use_dma_rx	= 1,
-+};
-+
-+static struct platform_device at572d940hf_uart0_device = {
-+	.name		= "atmel_usart",
-+	.id		= 1,
-+	.dev		= {
-+				.platform_data	= &uart0_data,
-+				.coherent_dma_mask = 0xffffffff,
-+	},
-+	.resource	= uart0_resources,
-+	.num_resources	= ARRAY_SIZE(uart0_resources),
-+};
-+
-+static inline void configure_usart0_pins(void)
-+{
-+	at91_set_A_periph(AT91_PIN_PA8, 1);		/* TXD0 */
-+	at91_set_A_periph(AT91_PIN_PA7, 0);		/* RXD0 */
-+	at91_set_A_periph(AT91_PIN_PA10, 0);		/* RTS0 */
-+	at91_set_A_periph(AT91_PIN_PA9, 0);		/* CTS0 */
-+}
-+
-+static struct resource uart1_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_US1,
-+		.end	= AT572D940HF_BASE_US1 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_US1,
-+		.end	= AT572D940HF_ID_US1,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct atmel_uart_data uart1_data = {
-+	.use_dma_tx	= 1,
-+	.use_dma_rx	= 1,
-+};
-+
-+static struct platform_device at572d940hf_uart1_device = {
-+	.name		= "atmel_usart",
-+	.id		= 2,
-+	.dev		= {
-+				.platform_data	= &uart1_data,
-+				.coherent_dma_mask = 0xffffffff,
-+	},
-+	.resource	= uart1_resources,
-+	.num_resources	= ARRAY_SIZE(uart1_resources),
-+};
-+
-+static inline void configure_usart1_pins(void)
-+{
-+	at91_set_A_periph(AT91_PIN_PC9 , 0);		/* RXD1 */
-+	at91_set_A_periph(AT91_PIN_PC10, 1);		/* TXD1 */
-+}
-+
-+static struct resource uart2_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_US2,
-+		.end	= AT572D940HF_BASE_US2 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_US2,
-+		.end	= AT572D940HF_ID_US2,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct atmel_uart_data uart2_data = {
-+	.use_dma_tx	= 1,
-+	.use_dma_rx	= 1,
-+};
-+
-+static struct platform_device at572d940hf_uart2_device = {
-+	.name		= "atmel_usart",
-+	.id		= 3,
-+	.dev		= {
-+				.platform_data	= &uart2_data,
-+				.coherent_dma_mask = 0xffffffff,
-+	},
-+	.resource	= uart2_resources,
-+	.num_resources	= ARRAY_SIZE(uart2_resources),
-+};
-+
-+static inline void configure_usart2_pins(void)
-+{
-+	at91_set_A_periph(AT91_PIN_PC14, 0);		/* RXD2 */
-+	at91_set_A_periph(AT91_PIN_PC15, 1);		/* TXD2 */
-+}
-+
-+struct platform_device *at91_uarts[ATMEL_MAX_UART];	/* the UARTs to use */
-+struct platform_device *atmel_default_console_device;	/* the serial console device */
-+
-+void __init at91_init_serial(struct at91_uart_config *config)
-+{
-+	int i;
-+
-+	/* Fill in list of supported UARTs */
-+	for (i = 0; i < config->nr_tty; i++) {
-+		switch (config->tty_map[i]) {
-+			case 0:
-+				configure_usart0_pins();
-+				at91_uarts[i] = &at572d940hf_uart0_device;
-+				at91_clock_associate("usart0_clk", &at572d940hf_uart0_device.dev, "usart");
-+				break;
-+			case 1:
-+				configure_usart1_pins();
-+				at91_uarts[i] = &at572d940hf_uart1_device;
-+				at91_clock_associate("usart1_clk", &at572d940hf_uart1_device.dev, "usart");
-+				break;
-+			case 2:
-+				configure_usart2_pins();
-+				at91_uarts[i] = &at572d940hf_uart2_device;
-+				at91_clock_associate("usart2_clk", &at572d940hf_uart2_device.dev, "usart");
-+				break;
-+			case 3:
-+				configure_dbgu_pins();
-+				at91_uarts[i] = &at572d940hf_dbgu_device;
-+				at91_clock_associate("mck", &at572d940hf_dbgu_device.dev, "usart");
-+				break;
-+			default:
-+				continue;
-+		}
-+		at91_uarts[i]->id = i;		/* update ID number to mapped ID */
-+	}
-+
-+	/* Set serial console device */
-+	if (config->console_tty < ATMEL_MAX_UART)
-+		atmel_default_console_device = at91_uarts[config->console_tty];
-+	if (!atmel_default_console_device)
-+		printk(KERN_INFO "AT91: No default serial console defined.\n");
-+}
-+
-+void __init at91_add_device_serial(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < ATMEL_MAX_UART; i++) {
-+		if (at91_uarts[i])
-+			platform_device_register(at91_uarts[i]);
-+	}
-+}
-+#else
-+void __init at91_init_serial(struct at91_uart_config *config) {}
-+void __init at91_add_device_serial(void) {}
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-+ *  Timer/Counter block
-+ * -------------------------------------------------------------------- */
-+
-+#ifdef CONFIG_ATMEL_TCLIB
-+
-+static struct resource tcb_resources[] = {
-+	[0] = {
-+		.start	= AT572D940HF_BASE_TCB0,
-+		.end	= AT572D940HF_BASE_TCB0 + SZ_16K - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT572D940HF_ID_TC0,
-+		.end	= AT572D940HF_ID_TC0,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+	[2] = {
-+		.start	= AT572D940HF_ID_TC1,
-+		.end	= AT572D940HF_ID_TC1,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+	[3] = {
-+		.start	= AT572D940HF_ID_TC2,
-+		.end	= AT572D940HF_ID_TC2,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at572d940hf_tcb_device = {
-+	.name		= "atmel_tcb",
-+	.id		= 0,
-+	.resource	= tcb_resources,
-+	.num_resources	= ARRAY_SIZE(tcb_resources),
-+};
-+
-+static void __init at91_add_device_tc(void)
-+{
-+	/* this chip has a separate clock and irq for each TC channel */
-+	at91_clock_associate("tc0_clk", &at572d940hf_tcb_device.dev, "t0_clk");
-+	at91_clock_associate("tc1_clk", &at572d940hf_tcb_device.dev, "t1_clk");
-+	at91_clock_associate("tc2_clk", &at572d940hf_tcb_device.dev, "t2_clk");
-+	platform_device_register(&at572d940hf_tcb_device);
-+}
-+#else
-+static void __init at91_add_device_tc(void) { }
-+#endif
-+
-+
-+
-+/* -------------------------------------------------------------------- */
-+
-+/*
-+ * These devices are always present and don't need any board-specific
-+ * setup.
-+ */
-+static int __init at91_add_standard_devices(void)
-+{
-+	at91_add_device_tc();
-+	return 0;
-+}
-+
-+arch_initcall(at91_add_standard_devices);
-diff --git a/arch/arm/mach-at91/board-at572d940hf_ek.c b/arch/arm/mach-at91/board-at572d940hf_ek.c
-new file mode 100644
-index 0000000..ab9b5a0
---- /dev/null
-+++ b/arch/arm/mach-at91/board-at572d940hf_ek.c
-@@ -0,0 +1,262 @@
-+/*
-+ * arch/arm/mach-at91/board-at572d940hf_ek.c
-+ *
-+ * Copyright (C) 2008 Atmel Antonio R. Costa <costa.antonior@gmail.com>
-+ * Copyright (C) 2005 SAN People
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/spi/spi.h>
-+#include <linux/irq.h>
-+
-+#include <asm/hardware.h>
-+#include <asm/setup.h>
-+#include <asm/mach-types.h>
-+#include <asm/irq.h>
-+
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+#include <asm/mach/irq.h>
-+
-+#include <asm/arch/board.h>
-+#include <asm/arch/gpio.h>
-+#include <asm/arch/at91sam9_smc.h>
-+#include <asm/arch/at91sam9_sdramc.h>
-+
-+#include <asm/arch/at572d940hf.h>
-+#include "generic.h"
-+
-+
-+/*
-+ * Serial port configuration.
-+ *    0 .. 2 = USART0 .. USART2
-+ *    3      = DBGU
-+ */
-+
-+static struct at91_uart_config __initdata eb_uart_config = {
-+	.console_tty	= 0,				/* ttyS0 */
-+	.nr_tty		= CONFIG_NUM_SERIAL,
-+	.tty_map	= { 3, 0, 1, 2 }		/* ttyS0, ..., ttyS3 */
-+};
-+
-+static void __init eb_map_io(void)
-+{
-+	/* Initialize processor: 12.500 MHz crystal */
-+	at572d940hf_initialize(12000000);
-+
-+	/* Setup the LEDs */
-+	// at91_init_leds(AT91_PIN_PA13, AT91_PIN_PA14);
-+
-+	/* Setup the serial ports and console */
-+	at91_init_serial(&eb_uart_config);
-+}
-+
-+static void __init eb_init_irq(void)
-+{
-+	at572d940hf_init_interrupts(NULL);
-+
-+#ifdef CONFIG_MAGICV
-+	{
-+		struct irq_chip *ichip = get_irq_chip(AT572D940HF_ID_MSIRQ1);
-+		ichip->set_type(AT572D940HF_ID_MSIRQ1,IRQT_RISING);
-+	}
-+#endif /* CONFIG_MAGICV */
-+}
-+
-+
-+/*
-+ * USB Host Port
-+ */
-+static struct at91_usbh_data __initdata eb_usbh_data = {
-+	.ports		= 2,
-+};
-+
-+
-+/*
-+ * USB Device Port
-+ */
-+static struct at91_udc_data __initdata eb_udc_data = {
-+	.vbus_pin	= 0,		/* no VBUS detection,UDC always on */
-+	.pullup_pin	= 0,		/* pull-up driven by UDC */
-+};
-+
-+
-+/*
-+ * MCI (SD/MMC)
-+ */
-+static struct at91_mmc_data __initdata eb_mmc_data = {
-+	.wire4		= 1,
-+//	.det_pin	= ... not connected
-+//	.wp_pin		= ... not connected
-+//	.vcc_pin	= ... not connected
-+};
-+
-+
-+/*
-+ * MACB Ethernet device
-+ */
-+static struct at91_eth_data __initdata at572d940hf_eb_eth_data = {
-+	.phy_irq_pin	= AT91_PIN_PB25,
-+	.is_rmii	= 1,
-+};
-+
-+
-+/*
-+ * NAND flash
-+ */
-+static struct mtd_partition __initdata eb_nand_partition[] = {
-+	{
-+		.name	= "Partition 1",
-+		.offset	= 0,
-+		.size	= MTDPART_SIZ_FULL,
-+	},
-+#if 0
-+	{
-+		.name	= "Partition 2",
-+		.offset	= 256 * 1024 ,
-+		.size	= MTDPART_SIZ_FULL,
-+	},
-+#endif
-+};
-+
-+static struct mtd_partition * __init nand_partitions(int size, int *num_partitions)
-+{
-+	*num_partitions = ARRAY_SIZE(eb_nand_partition);
-+	return eb_nand_partition;
-+}
-+
-+static struct at91_nand_data __initdata eb_nand_data = {
-+	.ale		= 22,
-+	.cle		= 21,
-+//	.det_pin	= ... not connected
-+//	.rdy_pin	= AT91_PIN_PC16,
-+	.enable_pin	= AT91_PIN_PA15,
-+	.partition_info	= nand_partitions,
-+#if defined(CONFIG_MTD_NAND_AT91_BUSWIDTH_16)
-+	.bus_width_16	= 1,
-+#else
-+	.bus_width_16	= 0,
-+#endif
-+};
-+
-+
-+/*
-+ * SPI devices
-+ */
-+
-+static struct resource rtc_resources[] = {
-+	[0] = {
-+		.start = AT572D940HF_ID_EXT_IRQ1,
-+		.end   = AT572D940HF_ID_EXT_IRQ1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct spi_board_info eb_spi_devices[] = {
-+#if 0
-+	{	/* Generic data spi stream */
-+		.modalias	= "spidev",
-+		.chip_select	= 0,
-+		.max_speed_hz	= 10000000,
-+		.bus_num	= 0,
-+		.irq		= -1,
-+		.platform_data	= NULL,
-+	},
-+#endif
-+	{	/* RTC Dallas DS1306 */
-+		.modalias	= "rtc-ds1306",
-+		.chip_select	= 3,
-+		.max_speed_hz	= 500000,
-+		.bus_num	= 0,
-+		.irq		= AT572D940HF_ID_EXT_IRQ1,
-+		.platform_data  = (void*) rtc_resources,
-+	},
-+	{	/* Generic data spi stream */
-+		.modalias	= "spidev",
-+		.chip_select	= 0,
-+		.max_speed_hz	= 10000000,
-+		.bus_num	= 1,
-+		.irq		= -1,
-+		.platform_data	= NULL,
-+	},
-+#if defined(CONFIG_MTD_AT91_DATAFLASH_CARD)
-+	{
-+		.modalias	= "mtd_dataflash",
-+		.chip_select	= 0,
-+		.max_speed_hz	= 15 * 1000 * 1000,
-+		.bus_num	= 0,
-+	},
-+#endif
-+};
-+
-+#if defined(CONFIG_RTC_DRV_DS1306)
-+static void __init at91_config_rtc_resources(struct resource rtc_res[]) {
-+
-+#ifdef CONFIG_DS1306_RTC_IRQ
-+	at91_set_A_periph(AT91_PIN_PA12,0); /* EXT_IRQ 1  */
-+#endif
-+#ifdef CONFIG_DS1306_RTC_HZ
-+	at91_set_A_periph(AT91_PIN_PB24,0); /* TIMER_IN 0 */
-+#endif
-+}
-+#endif
-+
-+static void __init eb_board_init(void)
-+{
-+	/* Serial */
-+	at91_add_device_serial();
-+	/* USB Host */
-+	at91_add_device_usbh(&eb_usbh_data);
-+	/* USB Device */
-+	at91_add_device_udc(&eb_udc_data);
-+	/* I2C */
-+	at91_add_device_i2c(NULL,0);
-+	/* NAND */
-+	at91_add_device_nand(&eb_nand_data);
-+
-+#if defined(CONFIG_SPI_ATMEL) || defined(CONFIG_SPI_ATMEL_MODULE)
-+	/* SPI */
-+	at91_add_device_spi(eb_spi_devices, ARRAY_SIZE(eb_spi_devices));
-+
-+#if defined(CONFIG_RTC_DRV_DS1306)
-+	at91_config_rtc_resources(rtc_resources);
-+#endif
-+#endif
-+	/* MMC */
-+	at91_add_device_mmc(0, &eb_mmc_data);
-+	at91_add_device_eth(&at572d940hf_eb_eth_data);
-+// mAgic
-+#ifdef CONFIG_MAGICV
-+	at91_add_device_mAgic();
-+#endif /* CONFIG_MAGICV */
-+}
-+
-+MACHINE_START(AT572D940HF_EB, "Atmel AT91D940HF-EB")
-+	/* Maintainer: Atmel <costa.antonior@gmail.com> */
-+	.phys_io	= AT91_BASE_SYS,
-+	.io_pg_offst	= (AT91_VA_BASE_SYS >> 18) & 0xfffc,
-+	.boot_params	= AT91_SDRAM_BASE + 0x100,
-+	.timer		= &at91sam926x_timer,
-+	.map_io		= eb_map_io,
-+	.init_irq	= eb_init_irq,
-+	.init_machine	= eb_board_init,
-+MACHINE_END
 -- 
 1.5.4.3
 
