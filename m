@@ -1,71 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbYKYBGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbYKYBU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755258AbYKYBGl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 20:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYKYBGd
+	id S1754706AbYKYBU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 20:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYKYBUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 20:06:33 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:59324 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754264AbYKYBGc (ORCPT
+	Mon, 24 Nov 2008 20:20:15 -0500
+Received: from mailgw3.netgear.com ([207.211.82.138]:2473 "EHLO
+	mailgw3.netgear.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754130AbYKYBUN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 20:06:32 -0500
-Date: Mon, 24 Nov 2008 19:06:30 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Linux Containers <containers@lists.osdl.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: [PATCH 3/3] user namespaces: let user_ns be cloned with fairsched
-Message-ID: <20081125010630.GA12548@us.ibm.com>
+	Mon, 24 Nov 2008 20:20:13 -0500
+X-Greylist: delayed 1319 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 20:20:13 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: Kernel bug in md 
+Date: Mon, 24 Nov 2008 16:58:09 -0800
+Message-ID: <27B42A4AA8DFBC469235CC563303016B01A78AE3@MAIL2.netgear.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Kernel bug in md 
+Thread-Index: AclOmOIWcLXJ5N4cSVGv8gN2LbpVSA==
+From: "Justin Maggard" <justin.maggard@netgear.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fairsched creates a per-uid directory under /sys/kernel/uids/.
-So when you clone(CLONE_NEWUSER), it tries to create
-/sys/kernel/uids/0, which already exists, and you get back
--ENOMEM.
+Hi all,
 
-This was supposed to be fixed by sysfs tagging, but that
-was postponed (ok, rejected until sysfs locking is fixed).
-So, just as with network namespaces, we just don't create
-those directories for user namespaces other than the init.
+I just ran across a kernel bug seemingly in md.  It's not something people should run across normally, but here are details.
+* System is a regular x86 running a Core2 processor in 32-bit mode.
+* The issue happens with raid1, raid5, and raid6 personalities (that's all I tested with).
+* It showed up for me starting with vanilla 2.6.27, and is still an issue with 2.6.27.7 and 2.6.28-rc6, but it did not happen with 2.6.26.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+To reproduce:
+1) Create an md array with >= 3 disks
+2) Start a task writing to the array ("dd if=/dev/zero of=/dev/md0 bs=1M count=10000 &" does the trick for me)
+3) Force an improper reboot with reboot -fn
 
----
+If anyone needs any more information, let me know.
 
- kernel/user.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Console capture is below:
 
-2d00643e7a4eda47526be7bca9600fda0d96c1c0
-diff --git a/kernel/user.c b/kernel/user.c
-index 97202cb..6c924bc 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -246,6 +246,8 @@ static int uids_user_create(struct user_
- 	int error;
- 
- 	memset(kobj, 0, sizeof(struct kobject));
-+	if (up->user_ns != &init_user_ns)
-+		return 0;
- 	kobj->kset = uids_kset;
- 	error = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid);
- 	if (error) {
-@@ -281,6 +283,8 @@ static void remove_user_sysfs_dir(struct
- 	unsigned long flags;
- 	int remove_user = 0;
- 
-+	if (up->user_ns != &init_user_ns)
-+		return;
- 	/* Make uid_hash_remove() + sysfs_remove_file() + kobject_del()
- 	 * atomic.
- 	 */
--- 
-1.1.6
+nv6-j1:/mnt# reboot -nf
+
+md: stopping all md devices.
+
+------------[ cut here ]------------
+
+Kernel BUG at c0682ca7 [verbose debug info unavailable]
+
+invalid opcode: 0000 [#1] SMP 
+
+Modules linked in:
+
+
+
+Pid: 3661, comm: kjournald Not tainted (2.6.27.6 #1)
+
+EIP: 0060:[<c0682ca7>] EFLAGS: 00010246 CPU: 1
+
+EIP is at md_write_start+0x157/0x160
+
+EAX: 00000001 EBX: f71c7e00 ECX: f2bb7940 EDX: f2bb7940
+
+ESI: 000000ff EDI: f2bb7940 EBP: 00000008 ESP: f65d3da4
+
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+
+Process kjournald (pid: 3661, ti=f65d2000 task=f6cef540 task.ti=f65d2000)
+
+Stack: f717bdc0 c06890e5 007f40a0 00000000 00000000 f7144920 000000ff f2bb7940 
+
+       c06783e0 00000000 00000001 00000008 f73c1ca0 007f4218 00000000 f702b96c 
+
+       f2bb7840 f71b2bc0 11027f60 f2bb7940 f702b880 f71c7e00 007f4220 ef326398 
+
+Call Trace:
+
+ [<c06890e5>] __map_bio+0x35/0xa0
+
+ [<c06783e0>] make_request+0x40/0x6b0
+
+ [<c068a444>] dm_request+0xd4/0x120
+
+ [<c0581b1f>] generic_make_request+0x12f/0x280
+
+ [<c044a5ed>] mempool_alloc+0x2d/0xe0
+
+ [<c0583108>] submit_bio+0x58/0xf0
+
+ [<c048d5c5>] bvec_alloc_bs+0x65/0x110
+
+ [<c048d891>] bio_alloc_bioset+0x61/0x90
+
+ [<c0489a31>] submit_bh+0xd1/0x110
+
+ [<c04c8eaa>] journal_do_submit_data+0x2a/0x40
+
+ [<c04c9c0d>] journal_commit_transaction+0xcad/0xcf0
+
+ [<c0430fe0>] autoremove_wake_function+0x0/0x40
+
+ [<c0427b75>] try_to_del_timer_sync+0x45/0x50
+
+ [<c04cc429>] kjournald+0xa9/0x1c0
+
+ [<c0430fe0>] autoremove_wake_function+0x0/0x40
+
+ [<c04cc380>] kjournald+0x0/0x1c0
+
+ [<c0430ce2>] kthread+0x42/0x70
+
+ [<c0430ca0>] kthread+0x0/0x70
+
+ [<c0403c13>] kernel_thread_helper+0x7/0x14
+
+ =======================
+
+Code: ff ff e9 f9 fe ff ff c7 83 34 01 00 00 00 00 00 00 f0 80 4b 18 02 8b 83 dc 00 00 00 be 01 00 0
+
+0 00 e8 ee 9a ff ff e9 7c ff ff ff <0f> 0b eb fe 90 8d 74 26 00 83 ec 10 89 74 24 04 89 7c 24 08 89 
+
+EIP: [<c0682ca7>] md_write_start+0x157/0x160 SS:ESP 0068:f65d3da4
+
+------------[ cut here ]------------
+
+---[ end trace 02aba934bad77262 ]---
+
+Kernel BUG at c0682ca7 [verbose debug info unavailable]
+
+invalid opcode: 0000 [#2] SMP 
+
+Modules linked in:
+
+
+
+Pid: 3665, comm: pdflush Tainted: G      D   (2.6.27.6 #1)
+
+EIP: 0060:[<c0682ca7>] EFLAGS: 00010246 CPU: 0
+
+EIP is at md_write_start+0x157/0x160
+
+EAX: 00000001 EBX: f71c7e00 ECX: f2bb7cc0 EDX: f2bb7cc0
+
+ESI: 000000ff EDI: f2bb7cc0 EBP: 00000008 ESP: c5b25c44
+
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+
+Process pdflush (pid: 3665, ti=c5b24000 task=f701a040 task.ti=c5b24000)
+
+Stack: f717bdc0 c06890e5 007f50a0 00000000 00000000 f7144920 000000ff f2bb7cc0 
+
+       c06783e0 00000000 00000001 00000008 f73c1ca0 007f4210 00000000 f702b96c 
+
+       f2bb7a40 f71b2bc0 11026f60 f2bb7cc0 f702b880 f71c7e00 007f4218 efc04fa8 
+
+Call Trace:
+
+ [<c06890e5>] __map_bio+0x35/0xa0
+
+ [<c06783e0>] make_request+0x40/0x6b0
+
+ [<c068a444>] dm_request+0xd4/0x120
+
+ [<c0581b1f>] generic_make_request+0x12f/0x280
+
+ [<c044a5ed>] mempool_alloc+0x2d/0xe0
+
+ [<c0583108>] submit_bio+0x58/0xf0
+
+ [<c048d5c5>] bvec_alloc_bs+0x65/0x110
+
+ [<c048d891>] bio_alloc_bioset+0x61/0x90
+
+ [<c0489a31>] submit_bh+0xd1/0x110
+
+ [<c048b8bd>] __block_write_full_page+0x1ed/0x360
+
+ [<c04c7d9f>] start_this_handle+0x8f/0x330
+
+ [<c04b7e00>] ext3_get_block+0x0/0x110
+
+ [<c048bb1a>] block_write_full_page+0xea/0x100
+
+ [<c04b7e00>] ext3_get_block+0x0/0x110
+
+ [<c04b9713>] ext3_ordered_writepage+0xa3/0x170
+
+ [<c04b64d0>] bget_one+0x0/0x10
+
+ [<c044dbe8>] __writepage+0x8/0x30
+
+ [<c044e13f>] write_cache_pages+0x20f/0x320
+
+ [<c044dbe0>] __writepage+0x0/0x30
+
+ [<c044e270>] generic_writepages+0x20/0x30
+
+ [<c044e2c9>] do_writepages+0x49/0x50
+
+ [<c0485aea>] __writeback_single_inode+0x8a/0x2e0
+
+ [<c068bb7a>] dm_table_any_congested+0x2a/0x60
+
+ [<c04860fe>] generic_sync_sb_inodes+0x1ce/0x2d0
+
+ [<c048656b>] writeback_inodes+0x7b/0xa0
+
+ [<c044eba8>] background_writeout+0x98/0xc0
+
+ [<c044f0b0>] pdflush+0x0/0x1a0
+
+ [<c044f19b>] pdflush+0xeb/0x1a0
+
+ [<c044eb10>] background_writeout+0x0/0xc0
+
+ [<c0430ce2>] kthread+0x42/0x70
+
+ [<c0430ca0>] kthread+0x0/0x70
+
+ [<c0403c13>] kernel_thread_helper+0x7/0x14
+
+ =======================
+
+Code: ff ff e9 f9 fe ff ff c7 83 34 01 00 00 00 00 00 00 f0 80 4b 18 02 8b 83 dc 00 00 00 be 01 00 0
+
+0 00 e8 ee 9a ff ff e9 7c ff ff ff <0f> 0b eb fe 90 8d 74 26 00 83 ec 10 89 74 24 04 89 7c 24 08 89 
+
+EIP: [<c0682ca7>] md_write_start+0x157/0x160 SS:ESP 0068:c5b25c44
+
+---[ end trace 02aba934bad77262 ]---
+
+This e-mail, including attachments, may include confidential 
+and/or 
+proprietary information, and may be used only by the person or 
+entity to which it is addressed.  If the reader of this e-mail is 
+not the intended recipient or his or her authorized agent, the 
+reader is hereby notified that any dissemination, distribution or 
+copying of this e-mail is prohibited. If you have received this e-
+mail in error, please notify the sender by replying to this message 
+and delete this e-mail immediately
