@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYKYVov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbYKYVpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbYKYVov (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:44:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYKYVg5
+	id S1754415AbYKYVpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYKYVhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:36:57 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:48603 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbYKYVg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:36:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=to:subject:from:date:message-id;
-        b=ijCdaWD0WE+G/RY/eQmGt8LVru5rHlvmUL6sWQmQjYgSMFHZArWHudxQmDklVPievE
-         ioNND73VnFMqUxnnsu/r4bwxtYhlHlBqEmDIzwBWYvzuu9KbZpv3/JYG09nkCIY7/z4c
-         M3uXK8Bmomzbss2lcCF5iWHWswXvYMRfHi2oU=
-To: linux-kernel@vger.kernel.org
-Subject: [patch 24/24] perfmon: Makefiles
-From: eranian@googlemail.com
-Date: Tue, 25 Nov 2008 13:36:46 -0800 (PST)
-Message-ID: <492c6fee.0b38560a.4ae6.0d16@mx.google.com>
+	Tue, 25 Nov 2008 16:37:07 -0500
+Received: from www.tglx.de ([62.245.132.106]:34885 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753891AbYKYVhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:37:05 -0500
+Date: Tue, 25 Nov 2008 22:36:48 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joe Korty <joe.korty@ccur.com>
+cc: Michael Kerrisk <mtk.manpages@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
+Subject: Re: [PATCH] Display active jiffie timers in /proc/timer_list
+In-Reply-To: <20081125185740.GA21806@tsunami.ccur.com>
+Message-ID: <alpine.LFD.2.00.0811252224430.3235@localhost.localdomain>
+References: <20081121221113.GA13566@tsunami.ccur.com> <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com> <20081125185740.GA21806@tsunami.ccur.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the makefiles for the perfmon generic
-and x86 code.
+Joe,
 
-Signed-off-by: Stephane Eranian <eranian@gmail.com>
---
+On Tue, 25 Nov 2008, Joe Korty wrote:
+> Add to /proc/timer_list a display of the active jiffie timers.
+> 
+> Tested on i386 and x86_64, with 'less /proc/timer_list' and
+> through SysRq-Q.
+> 
+> Signed-off-by: Joe Korty <joe.korty@ccur.com>
+> 
+> Index: 2.6.28-rc6/kernel/timer.c
+> ===================================================================
+> --- 2.6.28-rc6.orig/kernel/timer.c	2008-11-25 11:59:07.000000000 -0500
+> +++ 2.6.28-rc6/kernel/timer.c	2008-11-25 13:49:05.000000000 -0500
+> @@ -36,6 +36,8 @@
+>  #include <linux/syscalls.h>
+>  #include <linux/delay.h>
+>  #include <linux/tick.h>
+> +#include <linux/proc_fs.h>
+> +#include <linux/seq_file.h>
+>  #include <linux/kallsyms.h>
+>  
+>  #include <asm/uaccess.h>
+> @@ -1568,6 +1570,87 @@
+>  	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+>  }
+>  
+> +#if defined(CONFIG_PROC_FS) || defined(CONFIG_MAGIC_SYSRQ)
 
-Index: o3/Makefile
-===================================================================
---- o3.orig/Makefile	2008-11-25 18:09:47.000000000 +0100
-+++ o3/Makefile	2008-11-25 18:15:34.000000000 +0100
-@@ -621,6 +621,8 @@
- ifeq ($(KBUILD_EXTMOD),)
- core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
- 
-+core-$(CONFIG_PERFMON) += perfmon/
-+
- vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
- 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
- 		     $(net-y) $(net-m) $(libs-y) $(libs-m)))
-Index: o3/perfmon/Makefile
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o3/perfmon/Makefile	2008-11-25 18:15:34.000000000 +0100
-@@ -0,0 +1,10 @@
-+#
-+# Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
-+# Contributed by Stephane Eranian <eranian@gmail.com>
-+#
-+obj-y =	perfmon_ctx.o perfmon_file.o      \
-+	perfmon_attach.o perfmon_res.o    \
-+	perfmon_init.o perfmon_activate.o \
-+	perfmon_intr.o perfmon_rw.o	  \
-+	perfmon_ctxsw.o perfmon_pmu.o	  \
-+	perfmon_syscalls.o perfmon_sysfs.o
-Index: o3/arch/x86/Kconfig
-===================================================================
---- o3.orig/arch/x86/Kconfig	2008-11-25 18:09:47.000000000 +0100
-+++ o3/arch/x86/Kconfig	2008-11-25 18:15:34.000000000 +0100
-@@ -1487,6 +1487,8 @@
- 	  This is used to work around broken boot loaders.  This should
- 	  be set to 'N' under normal conditions.
- 
-+source "arch/x86/perfmon/Kconfig"
-+
- endmenu
- 
- config ARCH_ENABLE_MEMORY_HOTPLUG
-Index: o3/arch/x86/Makefile
-===================================================================
---- o3.orig/arch/x86/Makefile	2008-11-25 18:09:47.000000000 +0100
-+++ o3/arch/x86/Makefile	2008-11-25 18:15:34.000000000 +0100
-@@ -150,6 +150,9 @@
- core-y += arch/x86/kernel/
- core-y += arch/x86/mm/
- 
-+# perfmon support
-+core-$(CONFIG_PERFMON) += arch/x86/perfmon/
-+
- # Remaining sub architecture files
- core-y += $(mcore-y)
- 
+This belongs into kernel/time/timer_list.c and there is no need to
+copy that code around.
 
--- 
+> +void print_cpu_jtimers(struct seq_file *m, int cpu)
+> +{
+> +	int i;
+> +	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+> +
+> +	SEQ_printf(m, "active jiffie timers:\n");
+> +	spin_lock_irq(&base->lock);
 
+Yuck. We really do _NOT_ stop everything just to print timers. Check
+the hrtimer print code in timer_list.c
+
+> Index: 2.6.28-rc6/kernel/time/timer_list.c
+> ===================================================================
+> --- 2.6.28-rc6.orig/kernel/time/timer_list.c	2008-11-25 11:59:07.000000000 -0500
+> +++ 2.6.28-rc6/kernel/time/timer_list.c	2008-11-25 13:47:30.000000000 -0500
+> @@ -17,6 +17,7 @@
+>  #include <linux/seq_file.h>
+>  #include <linux/kallsyms.h>
+>  #include <linux/tick.h>
+> +#include <linux/jiffies.h>
+>  
+>  #include <asm/uaccess.h>
+>  
+> @@ -139,6 +140,7 @@
+>  		SEQ_printf(m, " clock %d:\n", i);
+>  		print_base(m, cpu_base->clock_base + i, now);
+>  	}
+> +
+
+random whitespace change
+
+>  #define P(x) \
+>  	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
+>  		   (unsigned long long)(cpu_base->x))
+> @@ -176,9 +178,11 @@
+>  		P(last_jiffies);
+>  		P(next_jiffies);
+>  		P_ns(idle_expires);
+> -		SEQ_printf(m, "jiffies: %Lu\n",
+> +		SEQ_printf(m, "jiffies: %llu (0x%llx)\n",
+> +			   (unsigned long long)jiffies,
+>  			   (unsigned long long)jiffies);
+
+The exact purpose of this change ?
+
+> @@ -286,7 +290,7 @@
+>  {
+>  	struct proc_dir_entry *pe;
+>  
+> -	pe = proc_create("timer_list", 0644, NULL, &timer_list_fops);
+> +	pe = proc_create("timer_list", 0444, NULL, &timer_list_fops);
+>  	if (!pe)
+>  		return -ENOMEM;
+>  	return 0;
+
+Correct, but unrelated $subject. Separate patch please. 
+
+Thanks,
+
+	tglx
