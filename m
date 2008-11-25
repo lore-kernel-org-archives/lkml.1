@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbYKYQzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYKYQzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbYKYQzH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 11:55:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYKYQyt
+	id S1753352AbYKYQzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 11:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYKYQzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 11:54:49 -0500
-Received: from ik-out-1112.google.com ([66.249.90.178]:29463 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786AbYKYQys convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 11:54:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=iCp13eY7DGhbGqHhpfsfgvT6wLH/Z1yM7syVKijTfNjZu4u3mr498l8FpGdCEoBK1v
-         Jf3QT7iIqMGthz21cv25NAgvOmulfo1bOIMXdROgUZNVaWwsCbj1MYvQaEYEVNI1CBeI
-         VtXtSMmkk7znMzPAQYQhkksgwjBQ08LZ9noV0=
-Message-ID: <cfd18e0f0811250854r20707d53u629245e478fb8d69@mail.gmail.com>
-Date: Tue, 25 Nov 2008 11:54:46 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Rodolfo Giometti" <giometti@enneenne.com>
-Subject: Re: [PATCH 1/9] LinuxPPS core support.
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Dave Jones" <davej@redhat.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Greg KH" <greg@kroah.com>, "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20081125164512.GE26417@tekkaman>
+	Tue, 25 Nov 2008 11:55:42 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:43686 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751449AbYKYQzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 11:55:41 -0500
+Message-ID: <492C2E0B.4020209@sgi.com>
+Date: Tue, 25 Nov 2008 08:55:39 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Slight fix for locking-fix patch to remove compiler
+ warning
+References: <200811250238.53883.rusty@rustcorp.com.au> <200811250957.52031.rusty@rustcorp.com.au> <200811250958.41573.rusty@rustcorp.com.au> <200811250959.20652.rusty@rustcorp.com.au>
+In-Reply-To: <200811250959.20652.rusty@rustcorp.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1227542451-31969-1-git-send-email-giometti@linux.it>
-	 <1227542451-31969-2-git-send-email-giometti@linux.it>
-	 <517f3f820811250824ubb4ca0bn5a8be62a180581e4@mail.gmail.com>
-	 <20081125164512.GE26417@tekkaman>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 11:45 AM, Rodolfo Giometti
-<giometti@enneenne.com> wrote:
-> Thanks for your suggestions! I'm going to fix them ASAP.
->
-> On Tue, Nov 25, 2008 at 11:24:57AM -0500, Michael Kerrisk wrote:
->>
->> Antennas is I believe the more common English plural.
->
-> In the past I got a suggestion in using «antennae» instead of
-> «antennas»... do you think I can leave it anyway? :)
+Rusty Russell wrote:
+> We can't call cpuset_cpus_allowed_locked() with the rq lock held.
+> However, the rq lock merely protects us from (1) cpu_online_mask changing
+> and (2) someone else changing p->cpus_allowed.
+> 
+> The first can't happen because we're being called from a cpu hotplug
+> notifier.  The second doesn't really matter: we are forcing the task off
+> a CPU it was affine to, so we're not doing very well anyway.
+> 
+> So we remove the rq lock from this path, and all is good.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
 
-Take a look at this thread:
+Remove rq since it's no longer referenced.
 
-http://forum.wordreference.com/showthread.php?t=93958
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ kernel/sched.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-and
-
-this article:
-
-http://en.wikipedia.org/wiki/Antenna_(radio)
-
-Weight of usage seems to be "antennas" when we are talking about radio devices.
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+--- linux-2.6.28-tip-cpumasks.orig/kernel/sched.c
++++ linux-2.6.28-tip-cpumasks/kernel/sched.c
+@@ -6126,7 +6126,6 @@ static int __migrate_task_irq(struct tas
+  */
+ static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+ {
+-	struct rq *rq;
+ 	int dest_cpu;
+ 	/* FIXME: Use cpumask_of_node here. */
+ 	cpumask_t _nodemask = node_to_cpumask(cpu_to_node(dead_cpu));
