@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYKYEbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYKYCeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbYKYEbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 23:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYKYEbD
+	id S1754709AbYKYCeh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 21:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYKYCe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 23:31:03 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47039 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbYKYEbC (ORCPT
+	Mon, 24 Nov 2008 21:34:28 -0500
+Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:2034 "EHLO
+	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbYKYCe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 23:31:02 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] mm: make vread() and vwrite() declaration
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20081125131942.26CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081125131942.26CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081125132959.26E2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 24 Nov 2008 21:34:28 -0500
+Date: Tue, 25 Nov 2008 03:33:46 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       linux-kbuild@vger.kernel.org, ariveira@gmail.com, rdunlap@xenotime.net,
+       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de,
+       Nir Tzachar <nir@tzachar.com>
+Subject: Re: [PATCH] ncurses based config V2
+In-Reply-To: <20081124184428.GA17085@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0811250333060.13549@localhost.localdomain>
+References: <1220469076-16487-1-git-send-email-nir@tzachar.com>
+ <1220603220-17090-1-git-send-email-nir@tzachar.com> <20080905195930.GA27913@1wt.eu>
+ <20081124184428.GA17085@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 25 Nov 2008 13:30:56 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparse output following warnings.
+Hi,
 
-mm/vmalloc.c:1436:6: warning: symbol 'vread' was not declared. Should it be static?
-mm/vmalloc.c:1474:6: warning: symbol 'vwrite' was not declared. Should it be static?
+On Mon, 24 Nov 2008, Sam Ravnborg wrote:
 
+> >   - colors are too dark.
+> Seconded. Please try to find a lighter set of default colors.
+> You may be inspired by one of the menuconfig color-sets.
+> 
+> I agree that we could use a lift here - so please do not go for the
+> default color set of menuconfig.
 
-However, it is used by /dev/kmem. fixed here.
+Well, the current colors seems to usable on wide variety of terminals, but 
+I'm not colorblind, so I can't really complain. :)
+Before we keep discussing the colors, I'd rather suggest to drop them 
+completely and maybe use colors for what actually needs attention.
 
+> >   - I'm not convinced that the parenthesis around hotkeys make the menu
+> >     that much readable, especially when there are lots of short words or
+> >     even acronyms. Eg :
+> >         [ ]   (U)TS namespace
+> >         [ ]   (I)PC namespace
+> >         [ ]   (U)ser namespace (EXPERIMENTAL)
+> >         [ ]   (P)ID Namespaces (EXPERIMENTAL)
+> 
+> This looks like some ancient stuff and it must be a better way to
+> show the short-cuts.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- drivers/char/mem.c      |    3 ---
- include/linux/vmalloc.h |    4 ++++
- 2 files changed, 4 insertions(+), 3 deletions(-)
+The parenthesis make it really annoying to read...
 
-Index: b/drivers/char/mem.c
-===================================================================
---- a/drivers/char/mem.c	2008-11-05 01:10:59.000000000 +0900
-+++ b/drivers/char/mem.c	2008-11-22 22:09:49.000000000 +0900
-@@ -425,9 +425,6 @@ static ssize_t read_oldmem(struct file *
- }
- #endif
- 
--extern long vread(char *buf, char *addr, unsigned long count);
--extern long vwrite(char *buf, char *addr, unsigned long count);
--
- #ifdef CONFIG_DEVKMEM
- /*
-  * This function reads the *virtual* memory as seen by the kernel.
-Index: b/include/linux/vmalloc.h
-===================================================================
---- a/include/linux/vmalloc.h	2008-11-05 01:11:55.000000000 +0900
-+++ b/include/linux/vmalloc.h	2008-11-22 22:09:28.000000000 +0900
-@@ -97,6 +97,10 @@ extern void unmap_kernel_range(unsigned 
- extern struct vm_struct *alloc_vm_area(size_t size);
- extern void free_vm_area(struct vm_struct *area);
- 
-+/* for /dev/kmem */
-+extern long vread(char *buf, char *addr, unsigned long count);
-+extern long vwrite(char *buf, char *addr, unsigned long count);
-+
- /*
-  *	Internals.  Dont't use..
-  */
+> I would really appreciate if you could look into the above issues.
+> If you do a repost with this fixed I will try to do a proper review,
+> including code-review next time.
 
+The code is rather large, so it might be better to split the code into two 
+sources, one for kconfig logic and the other for the interface logic, so 
+it becomes easier to read and maintain.
 
+bye, Roman
