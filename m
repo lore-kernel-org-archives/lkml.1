@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYKYQDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYKYQD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbYKYQDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 11:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYKYQDI
+	id S1754023AbYKYQD4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 11:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYKYQDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 11:03:08 -0500
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:1808 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbYKYQDH (ORCPT
+	Tue, 25 Nov 2008 11:03:48 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:59305 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752008AbYKYQDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 11:03:07 -0500
-Date: Tue, 25 Nov 2008 17:02:46 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: Nir Tzachar <nir.tzachar@gmail.com>
-cc: Sam Ravnborg <sam@ravnborg.org>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       linux-kbuild@vger.kernel.org, ariveira@gmail.com, rdunlap@xenotime.net,
-       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de
-Subject: Re: [PATCH] ncurses based config V2
-In-Reply-To: <9b2db90b0811250004k5494cff7sfb22a91e0f6f6ab@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811251655230.13549@localhost.localdomain>
-References: <1220469076-16487-1-git-send-email-nir@tzachar.com> 
- <1220603220-17090-1-git-send-email-nir@tzachar.com>  <20080905195930.GA27913@1wt.eu>
-  <20081124184428.GA17085@uranus.ravnborg.org> 
- <Pine.LNX.4.64.0811250333060.13549@localhost.localdomain>
- <9b2db90b0811250004k5494cff7sfb22a91e0f6f6ab@mail.gmail.com>
+	Tue, 25 Nov 2008 11:03:47 -0500
+X-Greylist: delayed 307 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Nov 2008 11:03:47 EST
+From: Arnd Bergmann <arnd@arndb.de>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [Patch 2/3] OProfile SPU event profiling support for IBM Cell processor
+Date: Tue, 25 Nov 2008 16:58:26 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
+       cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+References: <1227569201.6509.214.camel@carll-linux-desktop>
+In-Reply-To: <1227569201.6509.214.camel@carll-linux-desktop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811251658.27387.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/0DhQQzgq+6gktTHDPBm+KzGThVx4rbSGE2n4
+ uq/7fsYU/EarYgHKUwEUfdBPQw48Wq1Bi82nfirhrRXCqUDSeq
+ p/tpOQYXsj6vYfBYi2w+g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 25 Nov 2008, Nir Tzachar wrote:
-
-> > Before we keep discussing the colors, I'd rather suggest to drop them
-> > completely and maybe use colors for what actually needs attention.
+On Tuesday 25 November 2008, Carl Love wrote:
 > 
-> The idea is using colors to give it a more modern look. Dropping
-> colors will bring us back to the "dark ages"...
+> This patch basically rearranges the code a bit to make it easier to
+> just add the needed SPU event based profiling routines.   The second 
+> kernel patch contains the new spu event based profiling code.
 
-After that came the "child ages", where every available color was used 
-because it was there. :-)
-For modern interfaces less is more, so if color is used, it should have a 
-purpose.
+The cleanup looks fine, but should get a unique patch name, e.g. 
+'[PATCH 2/3] powerpc/cell/oprofile: clean up event handling' to
+make the shortlog more meaningful. No need to mention in the changelog
+what the other patch does.
 
-bye, Roman
+Please mention that this patch is not supposed to change any behaviour.
+
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
