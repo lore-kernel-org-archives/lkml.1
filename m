@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYKYQLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbYKYQRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbYKYQLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 11:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYKYQLI
+	id S1752890AbYKYQRT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 11:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYKYQRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 11:11:08 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:61058 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752207AbYKYQLF (ORCPT
+	Tue, 25 Nov 2008 11:17:08 -0500
+Received: from mout-xforward.kundenserver.de ([212.227.17.5]:55688 "EHLO
+	mout-xforward.kundenserver.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751676AbYKYQRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 11:11:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=piKUUWobh7KaJdzu7qGeEy6CKkTlb2mdo5deK80+LSxnejOEjP9dm1Cm4OCm/Qj1qi
-         SvIGkYdRpGvfFjuEkH/TqJU9aisALPB+BTS5RZpTmAtP0oRbtkvVv6YKfvMt+TQtrgqK
-         gFJd1qqEE3DQniJKB57INV/C/M1GftvImiRtA=
-Date: Wed, 26 Nov 2008 01:10:59 +0900
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Doug Thompson <norsk5@yahoo.com>,
-       "dougthompson@xmission.com" <dougthompson@xmission.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-Id: <20081126011059.afb1e8e6.h.mitake@gmail.com>
-In-Reply-To: <Pine.LNX.4.64.0811251645530.25595@anakin>
-References: <20081105222911.d76e7e1c.mitake@clustcom.com>
-	<413709.12821.qm@web50106.mail.re2.yahoo.com>
-	<20081106164641.ed369060.akpm@linux-foundation.org>
-	<20081107152830.a42766f3.mitake@clustcom.com>
-	<20081106223122.8a255211.akpm@linux-foundation.org>
-	<20081107153824.0ec934e6.mitake@clustcom.com>
-	<20081106231102.aab83cd4.akpm@linux-foundation.org>
-	<a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
-	<20081109112646.97c594b5.akpm@linux-foundation.org>
-	<20081118121620.GB8625@linux-mips.org>
-	<20081118123215.GB30509@flint.arm.linux.org.uk>
-	<20081121011941.26e05a25.h.mitake@gmail.com>
-	<4929ECB7.8080108@zytor.com>
-	<57C9024A16AD2D4C97DC78E552063EA35C517F42@orsmsx505.amr.corp.intel.com>
-	<492AEC40.5060009@zytor.com>
-	<20081125115510.108fa886.h.mitake@gmail.com>
-	<492B8996.2020302@zytor.com>
-	<20081126003025.85f19670.h.mitake@gmail.com>
-	<Pine.LNX.4.64.0811251645530.25595@anakin>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Nov 2008 11:17:07 -0500
+Message-ID: <492C2502.7070709@vlnb.net>
+Date: Tue, 25 Nov 2008 19:17:06 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Vladislav Bolkhovitin <vst@vlnb.net>, Wu Fengguang <wfg@linux.intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+References: <4917263D.2090904@telenet.dn.ua>	<20081110104423.GA26778@kernel.dk>	<x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>	<20081110135618.GI26778@kernel.dk>	<x491vxgkd61.fsf@segfault.boston.devel.redhat.com>	<20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de>	<20081113085439.GZ26778@kernel.dk> <1226626590.681364.9398@de>	<492BDB55.3050407@vlnb.net> <x498wr7de6u.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x498wr7de6u.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/GBMlKzXdsiV3UEC4MVhEuj+M50PGQC5O7YzU
+ 87nHJx398TXjCnoagbuRNS/EElXwqwr43bZw0pwdJzgjcncjhU
+ FSBV9EU55tsPowkFgqJNg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 16:46:18 +0100 (CET)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> On Wed, 26 Nov 2008, Hitoshi Mitake wrote:
-> > On Mon, 24 Nov 2008 21:13:58 -0800
-> > "H. Peter Anvin" <hpa@zytor.com> wrote:
-> > > Are you planning to add writeq() as well?
-> > 
-> > Yes, I want to add writeq().
-> > But there's a problem that
-> > I don't have a plan to use writeq() now, so I can't test writeq() soon.
-> > 
-> > How is this? I think it isn't bad. I want to hear your opinion.
-> > 
-> > static inline void writeq(__u64 val, volatile void __iomem *addr)
-> > {
-> > 	writel((unsigned int)val, addr);
-> > 	writel((unsigned int)(val >> 32), addr+1);
->                                                ^
-> 					       4
+Jeff Moyer wrote:
+> Vladislav Bolkhovitin <vst@vlnb.net> writes:
 > 
-> > }
+>> Wu Fengguang wrote:
+>>> Another scheme is to detect the sequential pattern via looking up
+>>> the page cache, which provides one single and consistent view of the
+>>> pages recently accessed. That makes sequential detection possible.
+>>>
+>>> The cost will be one extra page cache lookup per random read.
+>>> If it's not acceptable, the corresponding code could be disabled
+>>> by default. 
+>> I think, this should be the best and the simplest way to go. Since in
+>> most case data from the cache should be later copied to user, one more
+>> page cache lookup should be negligible.
 > 
+> I haven't thought about your suggestion in any detail, but it seems to
+> me that you will not handle O_DIRECT I/O with this scheme.
 
-Thanks, I missed about void pointer...
+And shouldn't. One using O_DIRECT is supposed to understand and accept 
+that no features provided by page cache, including read ahead, will be 
+available to him. Hence, if necessary, he must implement own read ahead 
+procedures.
 
+> Cheers,
+> Jeff
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
