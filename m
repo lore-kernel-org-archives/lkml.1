@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYKZDxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYKZEB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbYKZDxU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 22:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKZDxM
+	id S1753664AbYKZEB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 23:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKZEBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 22:53:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45540 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Nov 2008 23:01:49 -0500
+Received: from waste.org ([66.93.16.53]:37474 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbYKZDxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 22:53:12 -0500
-Date: Wed, 26 Nov 2008 04:52:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       lethal@linux-sh.org, mingo@redhat.com
-Subject: Re: [RFC] Reentrant clock sources
-Message-ID: <20081126035251.GA3707@elte.hu>
-References: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se> <alpine.LFD.2.00.0811252215270.3235@localhost.localdomain> <20081126030720.GC8242@elte.hu> <1227669624.6298.11.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227669624.6298.11.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751832AbYKZEBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 23:01:48 -0500
+Subject: Re: [PATCH] random: add a way to get some random bits into the
+	entropy pools early on
+From: Matt Mackall <mpm@selenic.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20081125132600.5112fb24@infradead.org>
+References: <20081125132600.5112fb24@infradead.org>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 15:41:22 -0600
+Message-Id: <1227649282.3196.3.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* john stultz <johnstul@us.ibm.com> wrote:
-
-> On Wed, 2008-11-26 at 04:07 +0100, Ingo Molnar wrote:
-> > * Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > > +	cycle_t (*vread)(struct clocksource *cs);
-> > > 
-> > > This is crap. vread can not access the clocksource.
-> > 
-> > i think 'reentrant' in the sense of creating self-sufficient driver 
-> > entities. vread wont (and shouldnt) call ->vread() recursively - but 
-> > it might want to access fields on the clocksource.
+On Tue, 2008-11-25 at 13:26 -0800, Arjan van de Ven wrote:
+> >From 5b3b09ac82316c2d4000460d586ebe59303c12c2 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Tue, 25 Nov 2008 11:41:37 -0800
+> Subject: [PATCH] random: add a way to get some random bits into the entropy pools early on
 > 
-> I think Thomas' issue is that vread() *cannot* access fields on the 
-> clocksource (since vread has to be careful not to access any 
-> non-vsyscall mapped memory).
-
-ah, yeah - i was thinking about ->read().
-
-in a more dynamic driver model the clocksource driver could store 
-dynamic data like target port/memory address next to the clocksource 
-driver, and access that - if the driver pointer is passed in.
-
-> However not all clocksources use vread(), but really I'm not quite 
-> clear on what one would want to access in the clocksource structure 
-> when making a ->read() call.
+> currently the entropy pool gets seeded on the module_init() level, but there
+> is at least one consumer of random bits (the oops ID that is printed as part
+> of the oops).
+> As a result of this, kerneloops.org is seeing a lot of oopses that all share
+> the same 'random' number; which used to get filed away as "duplicate".
 > 
-> So maybe a further description of what specific need motivates this 
-> change would be helpful? The brief description of power management 
-> doesn't quite click in my head yet.
+> This patch adds a function to the random driver so that various pieces of
+> the kernel can add random bits (but not entropy!) to the pool, to avoid
+> this dupicate ID problem.
 
-yeah, that would be nice.
+This appears to be equivalent to making random initialize earlier,
+except with more code?
 
-	Ingo
+If we're going down a route like this, I'd like to see the ability to
+actually mix in data (ie MAC addresses, DMI data, etc.) rather than just
+timing.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
