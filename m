@@ -1,127 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbYKYMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYKYMGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbYKYMDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 07:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYKYMDJ
+	id S1753531AbYKYMGx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 07:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYKYMGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 07:03:09 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:65077 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYKYMDI (ORCPT
+	Tue, 25 Nov 2008 07:06:45 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:38252 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751856AbYKYMGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 07:03:08 -0500
-Message-ID: <492BE97A.3050606@vlnb.net>
-Date: Tue, 25 Nov 2008 15:03:06 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Wu Fengguang <wfg@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de> <492BDAA9.4090405@vlnb.net> <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost>
-In-Reply-To: <20081125114908.GA16545@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 25 Nov 2008 07:06:44 -0500
+Date: Tue, 25 Nov 2008 20:58:32 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       nishimura@mxp.nes.nec.co.jp
+Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v4)
+Message-Id: <20081125205832.38f8c365.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081116081055.25166.85066.sendpatchset@balbir-laptop>
+References: <20081116081034.25166.7586.sendpatchset@balbir-laptop>
+	<20081116081055.25166.85066.sendpatchset@balbir-laptop>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18S1u5fxH258mmwurv8K6219xGOl+roLqyfA0d
- k3rmrAVst0+Uv7B2p8bII6JqZaTXFJriSIG1TC6TDA0hIpEqjX
- mnCOOb2Y6vIIpekNrcCTg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> On Tue, Nov 25, 2008 at 02:41:47PM +0300, Vladislav Bolkhovitin wrote:
->> Wu Fengguang wrote:
->>> On Tue, Nov 25, 2008 at 01:59:53PM +0300, Vladislav Bolkhovitin wrote:
->>>> Wu Fengguang wrote:
->>>>> Hi all,
->>>>>
->>>>> //Sorry for being late. 
->>>>>
->>>>> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
->>>>> [...]
->>>>>> I already talked about this with Jeff on irc, but I guess should post it
->>>>>> here as well.
->>>>>>
->>>>>> nfsd aside (which does seem to have some different behaviour skewing the
->>>>>> results), the original patch came about because dump(8) has a really
->>>>>> stupid design that offloads IO to a number of processes. This basically
->>>>>> makes fairly sequential IO more random with CFQ, since each process gets
->>>>>> its own io context. My feeling is that we should fix dump instead of
->>>>>> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
->>>>>> aware of any other good programs out there that would do something
->>>>>> similar, so I don't think there's a lot of merrit to spending cycles on
->>>>>> detecting cooperating processes.
->>>>>>
->>>>>> Jeff will take a look at fixing dump instead, and I may have promised
->>>>>> him that santa will bring him something nice this year if he does (since
->>>>>> I'm sure it'll be painful on the eyes).
->>>>> This could also be fixed at the VFS readahead level.
->>>>>
->>>>> In fact I've seen many kinds of interleaved accesses:
->>>>> - concurrently reading 40 files that are in fact hard links of one single file
->>>>> - a backup tool that splits a big file into 8k chunks, and serve the
->>>>>   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
->>>>>   chunks in another one
->>>>> - a pool of NFSDs randomly serving some originally sequential read  
->>>>> requests - now dump(8) seems to have some similar problem.
->>>>>
->>>>> In summary there have been all kinds of efforts on trying to
->>>>> parallelize I/O tasks, but unfortunately they can easily screw up the
->>>>> sequential pattern. It may not be easily fixable for many of them.
->>>>>
->>>>> It is however possible to detect most of these patterns at the
->>>>> readahead layer and restore sequential I/Os, before they propagate
->>>>> into the block layer and hurt performance.
->>>> I believe this would be the most effective way to go, especially in 
->>>> case  if data delivery path to the original client has its own 
->>>> latency  depended from the amount of transferred data as it is in the 
->>>> case of  remote NFS mount, which does synchronous sequential reads. 
->>>> In this case  it is essential for performance to make both links 
->>>> (local to the storage  and network to the client) be always busy and 
->>>> transfer data  simultaneously. Since the reads are synchronous, the 
->>>> only way to achieve  that is perform read ahead on the server 
->>>> sufficient to cover the network  link latency. Otherwise you would 
->>>> end up with only half of possible  throughput.
->>>>
->>>> However, from one side, server has to have a pool of 
->>>> threads/processes  to perform well, but, from other side, current 
->>>> read ahead code doesn't  detect too well that those threads/processes 
->>>> are doing joint sequential  read, so the read ahead window gets 
->>>> smaller, hence the overall read  performance gets considerably 
->>>> smaller too.
->>>>
->>>>> Vitaly, if that's what you need, I can try to prepare a patch for testing out.
->>>> I can test it with SCST SCSI target sybsystem (http://scst.sf.net). 
->>>> SCST  needs such feature very much, otherwise it can't get full 
->>>> backstorage  read speed. The maximum I can see is about ~80MB/s from 
->>>> ~130MB/s 15K RPM  disk over 1Gbps iSCSI link (maximum possible is 
->>>> ~110MB/s).
->>> Thank you very much!
->>>
->>> BTW, do you implicate that the SCSI system (or its applications) has
->>> similar behaviors that the current readahead code cannot handle well?
->> No. SCSI target subsystem is not the same as SCSI initiator subsystem,  
->> which usually called simply SCSI (sub)system. SCSI target is a SCSI  
->> server. It has the same amount of common with SCSI initiator as there  
->> is, e.g., between Apache (HTTP server) and Firefox (HTTP client).
-> 
-> Got it. So the SCSI server will split&spread sequential IO of one
-> single file to cooperative threads?
+Hi.
 
-Yes. It has to do so, because Linux doesn't have async. cached IO and a 
-client can queue several tens of commands at time. Then, on the 
-sequential IO with 1 command at time, CPU scheduler comes to play and 
-spreads those commands over those threads, so read ahead gets too small 
-to cover the external link latency and fill both links with data, so 
-that uncovered latency kills throughput.
+Unfortunately, trying to hold cgroup_mutex at reclaim causes dead lock.
 
-> I'm trying to understand why the
-> proposed page cache context based readahead would help a SCSI server.
-> 
-> Thanks,
-> Fengguang
-> 
+For example, when attaching a task to some cpuset directory(memory_migrate=on),
 
+    cgroup_tasks_write (hold cgroup_mutex)
+        attach_task_by_pid
+            cgroup_attach_task
+                cpuset_attach
+                    cpuset_migrate_mm
+                        :
+                        unmap_and_move
+                            mem_cgroup_prepare_migration
+                                mem_cgroup_try_charge
+                                    mem_cgroup_hierarchical_reclaim
+
+I think similar problem can also happen when removing memcg's directory.
+
+Any ideas?
+
+
+Thanks,
+Daisuke Nishimura.
+
+On Sun, 16 Nov 2008 13:40:55 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> This patch introduces hierarchical reclaim. When an ancestor goes over its
+> limit, the charging routine points to the parent that is above its limit.
+> The reclaim process then starts from the last scanned child of the ancestor
+> and reclaims until the ancestor goes below its limit.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/memcontrol.c |  170 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 167 insertions(+), 3 deletions(-)
+> 
+> diff -puN mm/memcontrol.c~memcg-hierarchical-reclaim mm/memcontrol.c
+> --- linux-2.6.28-rc4/mm/memcontrol.c~memcg-hierarchical-reclaim	2008-11-16 13:17:33.000000000 +0530
+> +++ linux-2.6.28-rc4-balbir/mm/memcontrol.c	2008-11-16 13:17:33.000000000 +0530
+> @@ -142,6 +142,13 @@ struct mem_cgroup {
+>  	struct mem_cgroup_lru_info info;
+>  
+>  	int	prev_priority;	/* for recording reclaim priority */
+> +
+> +	/*
+> +	 * While reclaiming in a hiearchy, we cache the last child we
+> +	 * reclaimed from. Protected by cgroup_lock()
+> +	 */
+> +	struct mem_cgroup *last_scanned_child;
+> +
+>  	int		obsolete;
+>  	atomic_t	refcnt;
+>  	/*
+> @@ -460,6 +467,153 @@ unsigned long mem_cgroup_isolate_pages(u
+>  	return nr_taken;
+>  }
+>  
+> +static struct mem_cgroup *
+> +mem_cgroup_from_res_counter(struct res_counter *counter)
+> +{
+> +	return container_of(counter, struct mem_cgroup, res);
+> +}
+> +
+> +/*
+> + * This routine finds the DFS walk successor. This routine should be
+> + * called with cgroup_mutex held
+> + */
+> +static struct mem_cgroup *
+> +mem_cgroup_get_next_node(struct mem_cgroup *curr, struct mem_cgroup *root_mem)
+> +{
+> +	struct cgroup *cgroup, *curr_cgroup, *root_cgroup;
+> +
+> +	curr_cgroup = curr->css.cgroup;
+> +	root_cgroup = root_mem->css.cgroup;
+> +
+> +	if (!list_empty(&curr_cgroup->children)) {
+> +		/*
+> +		 * Walk down to children
+> +		 */
+> +		mem_cgroup_put(curr);
+> +		cgroup = list_entry(curr_cgroup->children.next,
+> +						struct cgroup, sibling);
+> +		curr = mem_cgroup_from_cont(cgroup);
+> +		mem_cgroup_get(curr);
+> +		goto done;
+> +	}
+> +
+> +visit_parent:
+> +	if (curr_cgroup == root_cgroup) {
+> +		mem_cgroup_put(curr);
+> +		curr = root_mem;
+> +		mem_cgroup_get(curr);
+> +		goto done;
+> +	}
+> +
+> +	/*
+> +	 * Goto next sibling
+> +	 */
+> +	if (curr_cgroup->sibling.next != &curr_cgroup->parent->children) {
+> +		mem_cgroup_put(curr);
+> +		cgroup = list_entry(curr_cgroup->sibling.next, struct cgroup,
+> +						sibling);
+> +		curr = mem_cgroup_from_cont(cgroup);
+> +		mem_cgroup_get(curr);
+> +		goto done;
+> +	}
+> +
+> +	/*
+> +	 * Go up to next parent and next parent's sibling if need be
+> +	 */
+> +	curr_cgroup = curr_cgroup->parent;
+> +	goto visit_parent;
+> +
+> +done:
+> +	root_mem->last_scanned_child = curr;
+> +	return curr;
+> +}
+> +
+> +/*
+> + * Visit the first child (need not be the first child as per the ordering
+> + * of the cgroup list, since we track last_scanned_child) of @mem and use
+> + * that to reclaim free pages from.
+> + */
+> +static struct mem_cgroup *
+> +mem_cgroup_get_first_node(struct mem_cgroup *root_mem)
+> +{
+> +	struct cgroup *cgroup;
+> +	struct mem_cgroup *ret;
+> +	bool obsolete = (root_mem->last_scanned_child &&
+> +				root_mem->last_scanned_child->obsolete);
+> +
+> +	/*
+> +	 * Scan all children under the mem_cgroup mem
+> +	 */
+> +	cgroup_lock();
+> +	if (list_empty(&root_mem->css.cgroup->children)) {
+> +		ret = root_mem;
+> +		goto done;
+> +	}
+> +
+> +	if (!root_mem->last_scanned_child || obsolete) {
+> +
+> +		if (obsolete)
+> +			mem_cgroup_put(root_mem->last_scanned_child);
+> +
+> +		cgroup = list_first_entry(&root_mem->css.cgroup->children,
+> +				struct cgroup, sibling);
+> +		ret = mem_cgroup_from_cont(cgroup);
+> +		mem_cgroup_get(ret);
+> +	} else
+> +		ret = mem_cgroup_get_next_node(root_mem->last_scanned_child,
+> +						root_mem);
+> +
+> +done:
+> +	root_mem->last_scanned_child = ret;
+> +	cgroup_unlock();
+> +	return ret;
+> +}
+> +
+> +/*
+> + * Dance down the hierarchy if needed to reclaim memory. We remember the
+> + * last child we reclaimed from, so that we don't end up penalizing
+> + * one child extensively based on its position in the children list.
+> + *
+> + * root_mem is the original ancestor that we've been reclaim from.
+> + */
+> +static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+> +						gfp_t gfp_mask, bool noswap)
+> +{
+> +	struct mem_cgroup *next_mem;
+> +	int ret = 0;
+> +
+> +	/*
+> +	 * Reclaim unconditionally and don't check for return value.
+> +	 * We need to reclaim in the current group and down the tree.
+> +	 * One might think about checking for children before reclaiming,
+> +	 * but there might be left over accounting, even after children
+> +	 * have left.
+> +	 */
+> +	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap);
+> +	if (res_counter_check_under_limit(&root_mem->res))
+> +		return 0;
+> +
+> +	next_mem = mem_cgroup_get_first_node(root_mem);
+> +
+> +	while (next_mem != root_mem) {
+> +		if (next_mem->obsolete) {
+> +			mem_cgroup_put(next_mem);
+> +			cgroup_lock();
+> +			next_mem = mem_cgroup_get_first_node(root_mem);
+> +			cgroup_unlock();
+> +			continue;
+> +		}
+> +		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap);
+> +		if (res_counter_check_under_limit(&root_mem->res)) {
+> +			return 0;
+> +		}
+> +		cgroup_lock();
+> +		next_mem = mem_cgroup_get_next_node(next_mem, root_mem);
+> +		cgroup_unlock();
+> +	}
+> +	return ret;
+> +}
+> +
+>  /*
+>   * Unlike exported interface, "oom" parameter is added. if oom==true,
+>   * oom-killer can be invoked.
+> @@ -468,7 +622,7 @@ static int __mem_cgroup_try_charge(struc
+>  			gfp_t gfp_mask, struct mem_cgroup **memcg,
+>  			bool oom)
+>  {
+> -	struct mem_cgroup *mem;
+> +	struct mem_cgroup *mem, *mem_over_limit;
+>  	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+>  	struct res_counter *fail_res;
+>  	/*
+> @@ -514,8 +668,16 @@ static int __mem_cgroup_try_charge(struc
+>  		if (!(gfp_mask & __GFP_WAIT))
+>  			goto nomem;
+>  
+> -		if (try_to_free_mem_cgroup_pages(mem, gfp_mask, noswap))
+> -			continue;
+> +		/*
+> +		 * Is one of our ancestors over their limit?
+> +		 */
+> +		if (fail_res)
+> +			mem_over_limit = mem_cgroup_from_res_counter(fail_res);
+> +		else
+> +			mem_over_limit = mem;
+> +
+> +		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
+> +							noswap);
+>  
+>  		/*
+>  		 * try_to_free_mem_cgroup_pages() might not give us a full
+> @@ -1710,6 +1872,8 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	res_counter_init(&mem->memsw, parent ? &parent->memsw : NULL);
+>  
+>  
+> +	mem->last_scanned_child = NULL;
+> +
+>  	return &mem->css;
+>  free_out:
+>  	for_each_node_state(node, N_POSSIBLE)
+> _
+> 
+> -- 
+> 	Balbir
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
