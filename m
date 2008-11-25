@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbYKYSAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYKYSCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbYKYSAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 13:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYKYR76
+	id S1753850AbYKYSCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 13:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYKYSCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 12:59:58 -0500
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:34978 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752028AbYKYR75 (ORCPT
+	Tue, 25 Nov 2008 13:02:46 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54677 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752138AbYKYSCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 12:59:57 -0500
-Date: Tue, 25 Nov 2008 12:59:37 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@lists.casi.polymtl.ca,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: LTTng kernel integration roadmap, update
-Message-ID: <20081125175937.GA525@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Christoph Hellwig <hch@infradead.org>,
-	ltt-dev@lists.casi.polymtl.ca, Zhaolei <zhaolei@cn.fujitsu.com>,
-	Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20081124112842.GA15615@Krystal> <20081124114124.GA32459@infradead.org> <20081124122055.GA18626@Krystal> <alpine.DEB.1.10.0811241156030.20122@gandalf.stny.rr.com> <20081125055744.c3377164.akpm@linux-foundation.org> <20081125154011.GA4883@uranus.ravnborg.org>
+	Tue, 25 Nov 2008 13:02:45 -0500
+X-Sasl-enc: iIZRNC9k/6XilDtNXBdMtTmZgmn7w1tR+MAqJisq+xqt 1227636164
+Date: Tue, 25 Nov 2008 16:02:41 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Guennadi Liakhovetski <lg@denx.de>
+Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] LEDs: allow led-drivers to use a wider than 0...255
+	range of brightness values
+Message-ID: <20081125180241.GA4783@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0811251751480.6290@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081125154011.GA4883@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <Pine.LNX.4.64.0811251751480.6290@axis700.grange>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 04:40:11PM +0100, Sam Ravnborg wrote:
-> > 
-> > Mathieu, if you're feeling keen I'd suggest that you just type `mkdir
-> > -p userspace/lttng' and build your userspace tools in there.
-> 
-> Maybe this can help...
-> 
-> 	Sam
-> 
-> diff --git a/usr/lttng/Makefile b/usr/lttng/Makefile
-> new file mode 100644
-> index 0000000..8667998
-> --- /dev/null
-> +++ b/usr/lttng/Makefile
-> @@ -0,0 +1,4 @@
-> +
-> +always := ltt
-> +
-> +hostprogs-y := ltt
+On Tue, 25 Nov 2008, Guennadi Liakhovetski wrote:
+> This patch allows drivers to override the default maximum brightness value of
+> 255. We take care to preserve backwards-compatibility, so that user-space
+> ABI doesn't change for existing drivers. All existing drivers have been verified
+> to use a zero-initialised memory for their struct led_classdev objects, so that
+> they will get the default maximum value of 255. New user-space software 
+> can use a new read-only sysfs file /sys/class/leds/*/max_brightness to 
+> retrieve maximum supported brightness of a specific LED.
 
-hostprogs are intended to be run on the host during the compilation
-process, right?  What we really want is something that allows us to
-build userspace programs intended for use on the target, not the host,
-since they aren't going to be used when the system is compiled, but
-when the system is run.
+I am not speaking AGAINST this change, I actually like the idea, especially
+if we can set max_brightness to 1 and support binary (on/off) leds in a much
+easier way :p
 
-This also brings up some interesting questions such as where would we
-install these userspace programs (which could be kernel version
-specific), and how they would be packaged.  In some ways, this is
-similar to a previously unsolved and unresolved problem with firmware
-which people want to move out of the kernel (but not for legal
-reasons, they swear, but because most of the time the firmware stays
-constant from version to version --- except when it doesn't).
+However, you must be aware that it IS still an ABI and API change.  Generic
+LED drivers and triggers expect the [0, 255] scale, and expect 0 and 255 to
+have special meanings (LED_OFF and LED_FULL).
 
-The same arguments that are used for ejecting firmware from the kernel
-and not wanting to ship multiple versions of binaries with the kernel
-can also be used for these sorts of low-level userspace binaries which
-may be kernel version specific which are often duplicated.
+I'd suggest that you set the new max_brightness field PROPERLY for all LEDs
+(i.e. set it to 255), and fix all of the LED trigger code to use
+max_brightness when it wants LED_FULL.
 
-I happen to disagree with those who wish to eject firmware from the
-kernel sources (because I don't believe it is for technology reasons,
-but because they want to be able to chant, "Unclean, Unclean!" as they
-type rm -rf firmware).  And I think we should need to be able to
-distribute userspace binaries in the kernel, because of the versioning
-issues and so we can guarantee that we get upgraded userspace tools
-into the hands of users when they upgrade to the latest kernel.org
-kernel and need certian updated userspace utilities where we want the
-stable kernel interface to be located at a kernel-shipped userspace
-program or library.   
+In fact, LED_FULL probably will need to become a function (inlineable), so
+that triggers can just call led_set_to_max_brightness(theled), or
+whatever...
 
-However, we do need to understand that there are issues around
-building target userspace progs, where they get installed, changing
-the kernel packaging systems to include them in the kernel image
-package, creating some convention so users can set the appropriate
-search path in their shells depending on which kernel they have
-booted, etc.  These are not insurmountable problems.  But they are
-ones that we need to solve first.
+That would still leave us with non-updated userspace not doing the right
+thing when faced with a led with a range different from [0, 255], but there is
+probably not a big set of userland doing generic LED control (and specific
+LEDs have no reason to change their range from the default [0, 255]).
 
-					- Ted
+Either that, or maybe you could use an alternative way, like adding a
+fractional component to the scale (which has its own problems, but it
+probably can be done cleanly).  In that case, it is best to also add an
+attribute to disclose the granularity supported by the LED driver.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
