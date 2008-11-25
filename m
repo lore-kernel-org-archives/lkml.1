@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbYKYT3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbYKYTek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752983AbYKYT3I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 14:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbYKYT24
+	id S1752773AbYKYTek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 14:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKYTeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 14:28:56 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:48104 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbYKYT2z (ORCPT
+	Tue, 25 Nov 2008 14:34:31 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:34672 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbYKYTea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 14:28:55 -0500
-Date: Tue, 25 Nov 2008 20:30:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@lists.casi.polymtl.ca,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: LTTng kernel integration roadmap, update
-Message-ID: <20081125193017.GA6550@uranus.ravnborg.org>
-References: <20081124112842.GA15615@Krystal> <20081124114124.GA32459@infradead.org> <20081124122055.GA18626@Krystal> <alpine.DEB.1.10.0811241156030.20122@gandalf.stny.rr.com> <20081125055744.c3377164.akpm@linux-foundation.org> <20081125154011.GA4883@uranus.ravnborg.org> <20081125175937.GA525@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081125175937.GA525@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 25 Nov 2008 14:34:30 -0500
+Message-ID: <492C5334.2090801@oracle.com>
+Date: Tue, 25 Nov 2008 11:34:12 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, p_gortmaker@yahoo.com,
+       netdev@vger.kernel.org, mel@csn.ul.ie
+Subject: Re: [BUILD_FAILURE] linux-next: 20081125 - 8390 network driver build
+ fails
+References: <20081125213738.881b425e.sfr@canb.auug.org.au>	<20081125182542.GA4914@linux.vnet.ibm.com>	<492C464D.4080704@oracle.com> <20081125185154.2845e8f1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081125185154.2845e8f1@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.492C5332.0106:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 12:59:37PM -0500, Theodore Tso wrote:
-> On Tue, Nov 25, 2008 at 04:40:11PM +0100, Sam Ravnborg wrote:
-> > > 
-> > > Mathieu, if you're feeling keen I'd suggest that you just type `mkdir
-> > > -p userspace/lttng' and build your userspace tools in there.
-> > 
-> > Maybe this can help...
-> > 
-> > 	Sam
-> > 
-> > diff --git a/usr/lttng/Makefile b/usr/lttng/Makefile
-> > new file mode 100644
-> > index 0000000..8667998
-> > --- /dev/null
-> > +++ b/usr/lttng/Makefile
-> > @@ -0,0 +1,4 @@
-> > +
-> > +always := ltt
-> > +
-> > +hostprogs-y := ltt
+Alan Cox wrote:
+>> I just reported this on netdev and said that DaveM might want to drop a patch
+>> that I had submitted.  Anyway, I'm looking into it.
 > 
-> hostprogs are intended to be run on the host during the compilation
-> process, right?  What we really want is something that allows us to
-> build userspace programs intended for use on the target, not the host,
-> since they aren't going to be used when the system is compiled, but
-> when the system is run.
-
-Yes. And if this fly I will add support for that.
-The majority build their kernel on the same host where they run it,
-or at least a binary compatible host.
-
+> Ditto and the only sane interpretation I can see is that someone
+> somewhere has crap in their tree that does
 > 
-> This also brings up some interesting questions such as where would we
-> install these userspace programs (which could be kernel version
-> specific), and how they would be packaged.
-We already have similar userspace tools which we have no problem distributing.
-Think of checkpatch, bloat-o-meter, cleanfile etc.
+> #define static
+> 
+> and this is leaking out.
 
-They happens to be scripts and not binaries. But otherwise I 
-see no big difference.
+The problem is that both 8390.c and 8390p.c #include lib8390.c
+and when they are both linked to built-in drivers (not loadable
+modules), the symbols in lib8390.c are duplicated.  I think.
 
-	Sam
+~Randy
+
