@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYKYNMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbYKYNOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbYKYNMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 08:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYKYNMh
+	id S1752876AbYKYNOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 08:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYKYNOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 08:12:37 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:55806 "EHLO mgw1.diku.dk"
+	Tue, 25 Nov 2008 08:14:36 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34101 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbYKYNMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 08:12:36 -0500
-Date: Tue, 25 Nov 2008 14:12:32 +0100 (CET)
+	id S1750769AbYKYNOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 08:14:35 -0500
+Date: Tue, 25 Nov 2008 14:14:32 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/5] arch/mips/alchemy: change strict_strtol to strict_strtoul
-Message-ID: <Pine.LNX.4.64.0811251412010.11897@pc-004.diku.dk>
+To: ericvh@gmail.com, rminnich@sandia.gov, lucho@ionkov.net,
+       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/5] fs/9p: change simple_strtol to simple_strtoul
+Message-ID: <Pine.LNX.4.64.0811251413050.11897@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,131 +24,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Since memsize is unsigned, it would seem better to use strict_strtoul that
-strict_strtol.
+Since v9ses->uid is unsigned, it would seem better to use simple_strtoul that
+simple_strtol.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
-@s2@
+@r2@
 long e;
 position p;
 @@
 
-strict_strtol@p(...,&e)
+e = simple_strtol@p(...)
 
 @@
-position p != s2.p;
+position p != r2.p;
 type T;
 T e;
 @@
 
-- strict_strtol@p
-+ strict_strtoul
-  (...,&e)
+e = 
+- simple_strtol@p
++ simple_strtoul
+  (...)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
- arch/mips/alchemy/db1x00/init.c  |    2 +-
- arch/mips/alchemy/mtx-1/init.c   |    2 +-
- arch/mips/alchemy/pb1000/init.c  |    2 +-
- arch/mips/alchemy/pb1100/init.c  |    2 +-
- arch/mips/alchemy/pb1200/init.c  |    2 +-
- arch/mips/alchemy/pb1500/init.c  |    2 +-
- arch/mips/alchemy/pb1550/init.c  |    2 +-
- arch/mips/alchemy/xxs1500/init.c |    2 +-
- 8 files changed, 8 insertions(+), 8 deletions(-)
+ fs/9p/v9fs.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/arch/mips/alchemy/db1x00/init.c b/arch/mips/alchemy/db1x00/init.c
---- a/arch/mips/alchemy/db1x00/init.c
-+++ b/arch/mips/alchemy/db1x00/init.c
-@@ -57,6 +57,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x04000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/mtx-1/init.c b/arch/mips/alchemy/mtx-1/init.c
---- a/arch/mips/alchemy/mtx-1/init.c
-+++ b/arch/mips/alchemy/mtx-1/init.c
-@@ -55,6 +55,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x04000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/pb1000/init.c b/arch/mips/alchemy/pb1000/init.c
---- a/arch/mips/alchemy/pb1000/init.c
-+++ b/arch/mips/alchemy/pb1000/init.c
-@@ -52,6 +52,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x04000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/pb1100/init.c b/arch/mips/alchemy/pb1100/init.c
---- a/arch/mips/alchemy/pb1100/init.c
-+++ b/arch/mips/alchemy/pb1100/init.c
-@@ -54,7 +54,7 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x04000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/pb1200/init.c b/arch/mips/alchemy/pb1200/init.c
---- a/arch/mips/alchemy/pb1200/init.c
-+++ b/arch/mips/alchemy/pb1200/init.c
-@@ -53,6 +53,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x08000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/pb1500/init.c b/arch/mips/alchemy/pb1500/init.c
---- a/arch/mips/alchemy/pb1500/init.c
-+++ b/arch/mips/alchemy/pb1500/init.c
-@@ -53,6 +53,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x04000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/pb1550/init.c b/arch/mips/alchemy/pb1550/init.c
---- a/arch/mips/alchemy/pb1550/init.c
-+++ b/arch/mips/alchemy/pb1550/init.c
-@@ -53,6 +53,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x08000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
-diff -u -p a/arch/mips/alchemy/xxs1500/init.c b/arch/mips/alchemy/xxs1500/init.c
---- a/arch/mips/alchemy/xxs1500/init.c
-+++ b/arch/mips/alchemy/xxs1500/init.c
-@@ -53,6 +53,6 @@ void __init prom_init(void)
- 	if (!memsize_str)
- 		memsize = 0x04000000;
- 	else
--		strict_strtol(memsize_str, 0, &memsize);
-+		strict_strtoul(memsize_str, 0, &memsize);
- 	add_memory_region(0, memsize, BOOT_MEM_RAM);
- }
+diff -u -p a/fs/9p/v9fs.c b/fs/9p/v9fs.c
+--- a/fs/9p/v9fs.c
++++ b/fs/9p/v9fs.c
+@@ -160,7 +160,7 @@ static int v9fs_parse_options(struct v9f
+ 				v9ses->flags |= V9FS_ACCESS_ANY;
+ 			else {
+ 				v9ses->flags |= V9FS_ACCESS_SINGLE;
+-				v9ses->uid = simple_strtol(s, &e, 10);
++				v9ses->uid = simple_strtoul(s, &e, 10);
+ 				if (*e != '\0')
+ 					v9ses->uid = ~0;
+ 			}
