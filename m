@@ -1,111 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbYKYVDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYKYVEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752846AbYKYVDn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKYVDg
+	id S1753105AbYKYVEe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKYVEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:03:36 -0500
-Received: from buick.jordet.net ([193.91.240.190]:58521 "EHLO buick.jordet.net"
+	Tue, 25 Nov 2008 16:04:24 -0500
+Received: from mail.atheros.com ([12.36.123.2]:24312 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbYKYVDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:03:35 -0500
-Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
-From: Stian Jordet <liste@jordet.net>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-In-Reply-To: <492B5684.2080107@sandeen.net>
-References: <1226760254.5089.11.camel@chevrolet>
-	 <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
-	 <1227476908.32357.5.camel@chevrolet>
-	 <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>
-	 <1227485956.5145.10.camel@chevrolet>
-	 <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan>
-	 <1227569808.5039.6.camel@chevrolet>  <492B5684.2080107@sandeen.net>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 22:03:30 +0100
-Message-Id: <1227647010.7992.34.camel@chevrolet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	id S1751193AbYKYVEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:04:23 -0500
+Date: Tue, 25 Nov 2008 13:04:21 -0800
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: <linux-wireless@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC: <ath5k-devel@venema.h4ckr.net>, <ath9k-devel@venema.h4ckr.net>,
+       <bkuhn@softwarefreedom.org>
+Subject: License of changes to ath5k/ath9k
+Message-ID: <20081125210421.GF5950@tesla>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ma., 24.11.2008 kl. 19.36 -0600, skrev Eric Sandeen:
-> I don't know if the storage you're on passes barriers or not, but xfs
-> has barriers on by default, while ext3 does not.  ext3 will still
-> likely
-> win the "untar a kernel" race, but for a fairer test, make the barrier
-> settings consistent between the two.
+Just a friendly reminder:
 
+For those of you who have not read yet what "Signed-off-by" means,
+specially those who are new to contributing to the Linux kernel on
+linux-wireless I'd like to encourage you to go and review it and
+read what this means. You can find it under Documentation/SubmittingPatches,
+on the: "Developer's Certificate of Origin 1.1"
 
-As I wrote earlier, the point wasn't to find the fastest fs. That's not
-what I'm looking for. I just want xfs to perform at least as good on my
-new workstation as it did on my six years old other workstation.
+Specifically the part that mentions how you right to submit it under
+the same open source license indicated in the file. This is
+particularly important for ath5k/ath9k as these drivers do have
+some files licensed the 3-clause BSD license (only in ath5k) and ISC license
+(ath9k is completely ISC). In the future we would like to point the BSD
+community and even Solaris (yeah they seem interested in such a driver
+it seems) toward ath5k and ath9k updates for the latest updates on INI file
+updates, and hardare access routines so we want to remove any
+legal ambiguity with respect for them to be able to copy+paste code
+(even though that's not likely what they'll do exactly, but this should
+help).
 
-Which disabling barriers helped (notice the rm -rf with barriers...
-nobarrier is almost 200 times faster, 10 times faster on the unpacking):
+Technically speaking there are also some enhancements that can come our
+way towards that we can use towards our Windows driver too but
+realistically this has been minimal so far. If you could use GPL
+licensed drivers under Windows that would remove all this silly
+ISC/BSD licening preferences but the real reason to this e-mail is
+more towards helping the BSD / Solaris community out. Realistically
+speaking you cannot also expect all OSes to be license compatible,
+at least at this point :).
 
-With barrier:
+We have been using the Changes-licensed-under tag [1] for ath5k development
+but for ath9k we tend to ask developers individually if they are willing
+submit their changes and any future ath9k changes under the ISC. We keep
+this for our records just in case you haven't read the Singed-off-by.
+I think it'd be easier too if we ensure developers really read that document
+too and ensure they understand it and also understood why are are doing this.
 
-time bash -c 'tar xjf linux-2.6.27.7.tar.bz2 ; sync'
+We'll keep using the ath5k Changes-licensed-under tag until we get
+advice from SFLC if we have done enough to ensure this is no longer
+necessary. For ath9k, if we are not sure if you have read the
+"Developer's Certificate of Origin 1.1" we may ping you with an e-mail
+just to be sure.
 
-real 9m57.320s
-user 0m16.253s
-sys 0m2.692s
+While you're at it please subscribe to the wireless.kernel.org
+SubmittingPatches page so you can get updates in case there are changes
+there.
 
-time bash -c 'rm -rf linux-2.6.27.7 ; sync'
+Ps. Please do not open any can of worms here, this is just informational.
 
-real 4m46.130s
-user 0m0.032s
-sys 0m1.300s
+[1] http://wireless.kernel.org/en/developers/Documentation/SubmittingPatches#Changes-licensed-undertag
 
+Thanks,
 
-No barrier: 
-
-bash -c 'tar xjf linux-2.6.27.7.tar.bz2 ; sync'
-
-real 0m57.028s
-user 0m15.157s
-sys 0m2.632s
-
-
-time bash -c 'rm -rf linux-2.6.27.7 ; sync'
-
-real 0m1.502s
-user 0m0.032s
-sys 0m1.436s
-
-### Ext3
-
-time bash -c 'tar xjf linux-2.6.27.7.tar.bz2 ; sync'
-
-real 0m18.663s
-user 0m14.693s
-sys 0m2.828s
-
-
-time bash -c 'rm -r linux-2.6.27.7 ; sync'
-real 0m0.635s
-user 0m0.028s
-sys 0m0.564s
-
-
-Altough I find it weird that both Michael and Justin does it faster on a
-single disk than I do on my beefy hardware raid. But either way, finally
-the system works ok, so I'm happy :) Ohh, wait. Justin is using just
-the .tar... Well, that didn't really help that much here:
-
-time bash -c 'tar xf linux-2.6.27.7.tar ; sync'
-
-real	0m43.703s
-user	0m0.256s
-sys	0m3.312s
-
-
-Thanks!
-
-Regards,
-Stian
-
+  Luis
