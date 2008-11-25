@@ -1,79 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYKYVEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbYKYVJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbYKYVEe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKYVEY
+	id S1752834AbYKYVJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYKYVJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:04:24 -0500
-Received: from mail.atheros.com ([12.36.123.2]:24312 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbYKYVEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:04:23 -0500
-Date: Tue, 25 Nov 2008 13:04:21 -0800
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: <linux-wireless@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC: <ath5k-devel@venema.h4ckr.net>, <ath9k-devel@venema.h4ckr.net>,
-       <bkuhn@softwarefreedom.org>
-Subject: License of changes to ath5k/ath9k
-Message-ID: <20081125210421.GF5950@tesla>
+	Tue, 25 Nov 2008 16:09:03 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:60171 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbYKYVJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:09:01 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 25 Nov 2008 13:08:58 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Tejun Heo <tj@kernel.org>, Eric Van Hensbergen <ericvh@gmail.com>,
+       Ron Minnich <rminnich@sandia.gov>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Miklos Szeredi <mszeredi@suse.cz>, Brad Boyer <flar@allandria.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Roland McGrath <roland@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: + poll-allow-f_op-poll-to-sleep-take-4.patch added to -mm tree
+In-Reply-To: <20081125173032.GA21539@redhat.com>
+Message-ID: <alpine.DEB.1.10.0811251151540.32523@alien.or.mcafeemobile.com>
+References: <20081125173032.GA21539@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a friendly reminder:
+On Tue, 25 Nov 2008, Oleg Nesterov wrote:
 
-For those of you who have not read yet what "Signed-off-by" means,
-specially those who are new to contributing to the Linux kernel on
-linux-wireless I'd like to encourage you to go and review it and
-read what this means. You can find it under Documentation/SubmittingPatches,
-on the: "Developer's Certificate of Origin 1.1"
+> > +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> > +{
+> > +	struct poll_wqueues *pwq = wait->private;
+> > +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
+> > +
+> > +	set_mb(pwq->triggered, 1);
+> > +
+> > +	/*
+> > +	 * Perform the default wake up operation using a dummy
+> > +	 * waitqueue.
+> > +	 *
+> > +	 * TODO: This is hacky but there currently is no interface to
+> > +	 * pass in @sync.  @sync is scheduled to be removed and once
+> > +	 * that happens, wake_up_process() can be used directly.
+> > +	 */
+> > +	return default_wake_function(&dummy_wait, mode, sync, key);
+> > +}
+> > +
+> > +int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
+> > +			  ktime_t *expires, unsigned long slack)
+> > +{
+> > +	int rc = -EINTR;
+> > +
+> > +	set_current_state(state);
+> > +	if (!pwq->triggered)
+> > +		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
+> > +	__set_current_state(TASK_RUNNING);
+> 
+> So, why do we need this mb() in pollwake() ?
+> 
+> try_to_wake_up() has a full barrier semantics, note the wmb() before
+> task_rq_lock(). Since spin_lock() itself is STORE, the setting of
+> pwq->triggered can't be further re-ordered with the reading of p->state.
 
-Specifically the part that mentions how you right to submit it under
-the same open source license indicated in the file. This is
-particularly important for ath5k/ath9k as these drivers do have
-some files licensed the 3-clause BSD license (only in ath5k) and ISC license
-(ath9k is completely ISC). In the future we would like to point the BSD
-community and even Solaris (yeah they seem interested in such a driver
-it seems) toward ath5k and ath9k updates for the latest updates on INI file
-updates, and hardare access routines so we want to remove any
-legal ambiguity with respect for them to be able to copy+paste code
-(even though that's not likely what they'll do exactly, but this should
-help).
+Agreed.
 
-Technically speaking there are also some enhancements that can come our
-way towards that we can use towards our Windows driver too but
-realistically this has been minimal so far. If you could use GPL
-licensed drivers under Windows that would remove all this silly
-ISC/BSD licening preferences but the real reason to this e-mail is
-more towards helping the BSD / Solaris community out. Realistically
-speaking you cannot also expect all OSes to be license compatible,
-at least at this point :).
 
-We have been using the Changes-licensed-under tag [1] for ath5k development
-but for ath9k we tend to ask developers individually if they are willing
-submit their changes and any future ath9k changes under the ISC. We keep
-this for our records just in case you haven't read the Singed-off-by.
-I think it'd be easier too if we ensure developers really read that document
-too and ensure they understand it and also understood why are are doing this.
 
-We'll keep using the ath5k Changes-licensed-under tag until we get
-advice from SFLC if we have done enough to ensure this is no longer
-necessary. For ath9k, if we are not sure if you have read the
-"Developer's Certificate of Origin 1.1" we may ping you with an e-mail
-just to be sure.
+> > +	/* clear triggered for the next iteration */
+> > +	pwq->triggered = 0;
+> 
+> And don't we (in theory) actually need the mb() here instead?
+> 
+> Let's suppose do_poll() starts the next iteration, so we are doing
+> 
+> 	pwq->triggered = 0;
+> 
+> 	->poll(file)
+> 		if (!check_file(file))
+> 			return 0;
+> 
+> 		return POLLXXX;
+> 
+> We don't have any barriers in between (unless fget_light bumps
+> ->f_count), so this can be reordered as
+> 
+> 	->poll(file)
+> 		if (!check_file(file))
+> 			return 0;
+> 
+> 		pwq->triggered = 0;
+> 
+> And, if pollwake() happens in between we can miss the event, no?
 
-While you're at it please subscribe to the wireless.kernel.org
-SubmittingPatches page so you can get updates in case there are changes
-there.
+About ->triggered, on the sys_poll() side we have:
 
-Ps. Please do not open any can of worms here, this is just informational.
+do_pollfd()
+	file->f_op->poll()
+		poll_wait(file, QUEUE, WAIT);
+			add_wait_queue(QUEUE, WAIT);
+				spin_lock(QUEUE->lock);
+				...
+				spin_unlock(QUEUE->lock);
+		return dev->events;
+...
+set_current_state(TASK_INTERRUPTIBLE);
+if (!got_events && !triggered)
+	schedule();
 
-[1] http://wireless.kernel.org/en/developers/Documentation/SubmittingPatches#Changes-licensed-undertag
+Device side:
 
-Thanks,
+dev->events = XXXX;
+__wake_up(QUEUE);
+	spin_lock(QUEUE->lock);
+	pollwake(WAIT);
+		triggered = 1;
+		default_wake_function();
+			__try_to_wake_up();
+	spin_unlock(QUEUE->lock);
 
-  Luis
+AFAICS,  because of  the  lock taken,  and  because of the 
+set_current_state()/schedule() logic, there's no need on any ->triggered 
+synchronization.
+Either we're on the device QUEUE, or we see the new dev->events, so no 
+wakeup or events can be lost.
+The only thing that can happen, is that a device before this reported 
+events ready, so we're following up the loop with WAIT==NULL and 
+poll_wait() not dropping into the QUEUE (hence not grabbing the QUEUE 
+lock). But at that point it doesn't matter because got_events!=0.
+IMO there's no need for any mb() on ->triggered. Check?
+
+
+
+- Davide
+
+
