@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYKYI6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYKYI7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbYKYI6q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 03:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYKYI6h
+	id S1752095AbYKYI7G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 03:59:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYKYI6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 03:58:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60516 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbYKYI6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 03:58:36 -0500
-Date: Tue, 25 Nov 2008 09:58:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: [PATCH] crypto: fix error flow of crypto/testmgr.c:test_comp()
-Message-ID: <20081125085820.GA11401@elte.hu>
-References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au> <20081010070918.GA28057@gondor.apana.org.au> <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org> <20081011021357.GB3685@gondor.apana.org.au>
+	Tue, 25 Nov 2008 03:58:52 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34188 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751995AbYKYI6v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 03:58:51 -0500
+Date: Tue, 25 Nov 2008 03:57:22 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       ltt-dev@lists.casi.polymtl.ca, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: LTTng kernel integration roadmap, update
+Message-ID: <20081125085722.GJ20928@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	ltt-dev@lists.casi.polymtl.ca, Zhaolei <zhaolei@cn.fujitsu.com>,
+	Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+	Sam Ravnborg <sam@ravnborg.org>
+References: <20081124112842.GA15615@Krystal> <20081124114124.GA32459@infradead.org> <20081124122055.GA18626@Krystal> <20081125082414.GA28031@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081011021357.GB3685@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081125082414.GA28031@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 25, 2008 at 03:24:14AM -0500, Christoph Hellwig wrote:
+> On Mon, Nov 24, 2008 at 07:20:55AM -0500, Mathieu Desnoyers wrote:
+> > The key idea behind this is to answer to Thomas Gleixner concerns, who
+> > supports that a tracer should output data in text-format only so it can
+> > be used with tools kernel developers have on their system, like "cat".
+> 
+> Last time I talked to Thomas and others it wasn't "text only" but text
+> also in that you can just cat a debugfs file for simple tracing.  And I
+> totally agree with that.  If you don't trace too much that's absolutely
+> enough.  It's not enough for large traces on highly loaded enterprise
+> or high-end embedded systems or things like flight recorder tracing, but
+> for those requiring an external viewer is just fine.
 
-Noticed the bug below while running our -Werror x86 randconfig build 
-tests against tip/master. Please double check my control flow 
-analysis.
+I agree that we should have a text-based output format for kernel
+hackers, as well as a binary high volume format.  I'd argue also that
+since the text-based one would be used by kernel hackers, we don't
+need to worry so much about keeping the format absolutely stable from
+kernel version to kernel version (and it's not worth it to add version
+tags to the text stream); people who care about a long-term, stable
+interface should use the binary output format, IMHO.  
 
-	Ingo
+I'm not sure everyone will agree with me, but I think it helps to
+simplify the effort behind the text-based output.
 
----------->
->From e5c3b90a18b73d593bba2a3f927a79469b6218d7 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 25 Nov 2008 09:47:28 +0100
-Subject: [PATCH] crypto: fix error flow of crypto/testmgr.c:test_comp()
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-this warning:
-
-  crypto/testmgr.c: In function ‘test_comp’:
-  crypto/testmgr.c:829: warning: ‘ret’ may be used uninitialized in this function
-
-triggers because GCC correctly notices that in the ctcount == 0 &&
-dtcount != 0 input condition case this function can return an undefined
-value, if the second loop fails.
-
-Remove the shadowed 'ret' variable from the second loop that was probably
-unintended.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- crypto/testmgr.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index b828c6c..0cf0ae3 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -853,7 +853,7 @@ static int test_comp(struct crypto_comp *tfm, struct comp_testvec *ctemplate,
- 	}
- 
- 	for (i = 0; i < dtcount; i++) {
--		int ilen, ret, dlen = COMP_BUF_SIZE;
-+		int ilen, dlen = COMP_BUF_SIZE;
- 
- 		memset(result, 0, sizeof (result));
- 
-
+	  	     	 	       	       - Ted
