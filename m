@@ -1,40 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYKYNAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYKYNMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbYKYNAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 08:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYKYM77
+	id S1752737AbYKYNMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 08:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYKYNMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 07:59:59 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:60031 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbYKYM77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 07:59:59 -0500
-In-Reply-To: <200811220020.30658.rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/3] cpumask: use new cpumask API in drivers/infiniband/hw/ehca
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Raisch <raisch@de.ibm.com>, linux-kernel@vger.kernel.org
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OFEB8798B7.9589F9FC-ONC125750C.0047594E-C125750C.00476863@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Tue, 25 Nov 2008 13:59:56 +0100
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 8.0.1|February 07, 2008) at
- 25/11/2008 13:59:56
+	Tue, 25 Nov 2008 08:12:37 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55806 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750745AbYKYNMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 08:12:36 -0500
+Date: Tue, 25 Nov 2008 14:12:32 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: ralf@linux-mips.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] arch/mips/alchemy: change strict_strtol to strict_strtoul
+Message-ID: <Pine.LNX.4.64.0811251412010.11897@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Impact: cleanup
->
-> We're moving from handing around cpumask_t's to handing around struct
-> cpumask *'s.  cpus_*, cpumask_t and cpu_*_map are deprecated: convert
-> to cpumask_*, cpu_*_mask.
->
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+From: Julia Lawall <julia@diku.dk>
 
-Tested with latest kernel. Thanks for this!
-Nam
+Since memsize is unsigned, it would seem better to use strict_strtoul that
+strict_strtol.
 
+A simplified version of the semantic patch that makes this change is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@s2@
+long e;
+position p;
+@@
+
+strict_strtol@p(...,&e)
+
+@@
+position p != s2.p;
+type T;
+T e;
+@@
+
+- strict_strtol@p
++ strict_strtoul
+  (...,&e)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+
+ arch/mips/alchemy/db1x00/init.c  |    2 +-
+ arch/mips/alchemy/mtx-1/init.c   |    2 +-
+ arch/mips/alchemy/pb1000/init.c  |    2 +-
+ arch/mips/alchemy/pb1100/init.c  |    2 +-
+ arch/mips/alchemy/pb1200/init.c  |    2 +-
+ arch/mips/alchemy/pb1500/init.c  |    2 +-
+ arch/mips/alchemy/pb1550/init.c  |    2 +-
+ arch/mips/alchemy/xxs1500/init.c |    2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
+
+diff -u -p a/arch/mips/alchemy/db1x00/init.c b/arch/mips/alchemy/db1x00/init.c
+--- a/arch/mips/alchemy/db1x00/init.c
++++ b/arch/mips/alchemy/db1x00/init.c
+@@ -57,6 +57,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x04000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/mtx-1/init.c b/arch/mips/alchemy/mtx-1/init.c
+--- a/arch/mips/alchemy/mtx-1/init.c
++++ b/arch/mips/alchemy/mtx-1/init.c
+@@ -55,6 +55,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x04000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/pb1000/init.c b/arch/mips/alchemy/pb1000/init.c
+--- a/arch/mips/alchemy/pb1000/init.c
++++ b/arch/mips/alchemy/pb1000/init.c
+@@ -52,6 +52,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x04000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/pb1100/init.c b/arch/mips/alchemy/pb1100/init.c
+--- a/arch/mips/alchemy/pb1100/init.c
++++ b/arch/mips/alchemy/pb1100/init.c
+@@ -54,7 +54,7 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x04000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/pb1200/init.c b/arch/mips/alchemy/pb1200/init.c
+--- a/arch/mips/alchemy/pb1200/init.c
++++ b/arch/mips/alchemy/pb1200/init.c
+@@ -53,6 +53,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x08000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/pb1500/init.c b/arch/mips/alchemy/pb1500/init.c
+--- a/arch/mips/alchemy/pb1500/init.c
++++ b/arch/mips/alchemy/pb1500/init.c
+@@ -53,6 +53,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x04000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/pb1550/init.c b/arch/mips/alchemy/pb1550/init.c
+--- a/arch/mips/alchemy/pb1550/init.c
++++ b/arch/mips/alchemy/pb1550/init.c
+@@ -53,6 +53,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x08000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
+diff -u -p a/arch/mips/alchemy/xxs1500/init.c b/arch/mips/alchemy/xxs1500/init.c
+--- a/arch/mips/alchemy/xxs1500/init.c
++++ b/arch/mips/alchemy/xxs1500/init.c
+@@ -53,6 +53,6 @@ void __init prom_init(void)
+ 	if (!memsize_str)
+ 		memsize = 0x04000000;
+ 	else
+-		strict_strtol(memsize_str, 0, &memsize);
++		strict_strtoul(memsize_str, 0, &memsize);
+ 	add_memory_region(0, memsize, BOOT_MEM_RAM);
+ }
