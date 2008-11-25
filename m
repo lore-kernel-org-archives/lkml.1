@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKYXBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbYKYXBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYKYXBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 18:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYKYXBE
+	id S1754006AbYKYXBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 18:01:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYKYXBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 18:01:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46427
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752121AbYKYXBD (ORCPT
+	Tue, 25 Nov 2008 18:01:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56548 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752872AbYKYXBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 18:01:03 -0500
-Date: Tue, 25 Nov 2008 15:01:01 -0800 (PST)
-Message-Id: <20081125.150101.153225254.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-11-25
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081125220824.GB25962@tuxdriver.com>
-References: <20081125220824.GB25962@tuxdriver.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 18:01:08 -0500
+Date: Tue, 25 Nov 2008 18:01:06 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       srostedt@redhat.com
+Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
+In-Reply-To: <20081125144221.66eb99ad.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0811251800130.26424@gandalf.stny.rr.com>
+References: <20081125223421.795046329@goodmis.org> <20081125223456.976670734@goodmis.org> <20081125144221.66eb99ad.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Tue, 25 Nov 2008 17:08:24 -0500
 
-> These fixes are intended for 2.6.28.  Included are a build fix,
-> a security issue (debugfs permissions), a fixup to a previous patch
-> from Johannes to correct some DMA API usage, a fix to prevent mac80211
-> from allowing the use of IBSS mode on channels that don't allow it,
-> an ath5k fix to limit wakeups when not associate, and some ath9k DMA
-> fixes for a problem that led to disk corruption...
+On Tue, 25 Nov 2008, Andrew Morton wrote:
+
+> On Tue, 25 Nov 2008 17:34:22 -0500
+> Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> Please let me know if there are problems!
+> > This patch adds the ability to function trace a single thread.
+> > The file:
+> > 
+> >   /debugfs/tracing/set_ftrace_pid
+> > 
+> > contains the pid to trace.
+> 
+> What happens if the same pid exists in two or more pid namespaces?
 
-Pulled, thanks a lot John.
+I think we had this discussion before. It tests current->pid, would that 
+be different among the name spaces?
+
+-- Steve
+
