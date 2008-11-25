@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYKYLZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbYKYL0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbYKYLZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYKYLZU
+	id S1753771AbYKYL0D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:26:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbYKYLZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 06:25:20 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:62564 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbYKYLZS (ORCPT
+	Tue, 25 Nov 2008 06:25:53 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:62460 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbYKYLZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 06:25:18 -0500
+	Tue, 25 Nov 2008 06:25:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=inpvqlEdgRmpd2PpuXki2uPWUMSDwWFRjmldcBH+i6NQln1hCDcZ534PbIkpuNzXNR
-         eNFUVD6Xa3Sf1daOOcs6SyK+2GmPqFVy7+oJCWU2sHWPPfthQHdtcQYRplsHFjFC6qea
-         K6nNT+hcSEPASijhdVwZmcLwjyGnWf0GrTnfM=
-Date: Tue, 25 Nov 2008 14:25:12 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Samuel Ortiz <sameo@openedhand.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] power_supply: Add cold to the POWER_SUPPLY_HEALTH
-	report values
-Message-ID: <20081125112512.GA1110@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20081120152044.GA15434@rakim.wolfsonmicro.main> <1227194621-16442-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=axlzHEguToPiJ50xYxD4sfHJTa92dq6eCIKXEzjw3wLeT0jcSp28g1iWXsW58Azwn8
+         mjkdkSQlvXwysjqs1zJDYBjaHn8WLW55nAPJircznujCTQASKTEDCaKAMCG7r4HF0AnY
+         8gEcE87fP9tmCXf6WdU73qo5fsVzKo8Vrk9n8=
+Message-ID: <c62985530811250325h63ba1a08j610eb0be5ed73a45@mail.gmail.com>
+Date: Tue, 25 Nov 2008 12:25:51 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH] ftrace: Add a C/P state tracer to help power optimization
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org
+In-Reply-To: <20081123164958.21fae966@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1227194621-16442-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081123125931.4afe16ca@infradead.org>
+	 <c62985530811231312u51650cbcm2cb7b4f5c60d064@mail.gmail.com>
+	 <20081123164958.21fae966@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 03:23:40PM +0000, Mark Brown wrote:
-> Some systems are able to report problems with batteries being under
-> temperature.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+That looks good...
 
-Looks good to me.
+2008/11/24 Arjan van de Ven <arjan@infradead.org>:
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index 7854d87..0df2886 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -311,6 +311,35 @@ ftrace_init_module(struct module *mod,
+>                   unsigned long *start, unsigned long *end) { }
+>  #endif
+>
+> +enum {
+> +       POWER_NONE = 0,
+> +       POWER_CSTATE = 1,
+> +       POWER_PSTATE = 2,
+> +};
+> +
+> +struct power_trace {
+> +#ifdef CONFIG_POWER_TRACER
+> +       ktime_t                 stamp;
+> +       ktime_t                 end;
+> +       int                     type;
+> +       int                     state;
+> +#endif
+> +};
+> +
+> +#ifdef CONFIG_POWER_TRACER
+> +extern void trace_power_start(struct power_trace *it, unsigned int type,
+> +                                       unsigned int state);
+> +extern void trace_power_mark(struct power_trace *it, unsigned int type,
+> +                                       unsigned int state);
+> +extern void trace_power_end(struct power_trace *it);
+> +#else
+> +static inline void trace_power_start(struct power_trace *it, unsigned int type,
+> +                                       unsigned int state) { }
+> +static inline void trace_power_mark(struct power_trace *it, unsigned int type,
+> +                                       unsigned int state) { }
+> +static inline void trace_power_end(struct power_trace *it) { }
+> +#endif
+> +
 
-Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-> ---
->  drivers/power/power_supply_sysfs.c |    2 +-
->  include/linux/power_supply.h       |    1 +
->  2 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> index 23ae846..ac01e06 100644
-> --- a/drivers/power/power_supply_sysfs.c
-> +++ b/drivers/power/power_supply_sysfs.c
-> @@ -45,7 +45,7 @@ static ssize_t power_supply_show_property(struct device *dev,
->  	};
->  	static char *health_text[] = {
->  		"Unknown", "Good", "Overheat", "Dead", "Over voltage",
-> -		"Unspecified failure"
-> +		"Unspecified failure", "Cold",
->  	};
->  	static char *technology_text[] = {
->  		"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index f9348cb..8ff25e0 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -45,6 +45,7 @@ enum {
->  	POWER_SUPPLY_HEALTH_DEAD,
->  	POWER_SUPPLY_HEALTH_OVERVOLTAGE,
->  	POWER_SUPPLY_HEALTH_UNSPEC_FAILURE,
-> +	POWER_SUPPLY_HEALTH_COLD,
->  };
->  
->  enum {
-> -- 
-> 1.5.6.5
-> 
+Sorry I didn't see it on my last mail.
+But these headers seem to relate more on "power tracing" rather than "ftrace".
+Perhaps these would find a better place on trace/power.h
+I guess that could be done on a delta patch as well....
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+Just for curiosity, do you have an example of trace and/or graph from
+this tracer?
