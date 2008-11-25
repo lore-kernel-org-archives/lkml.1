@@ -1,99 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbYKYVuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYKYVuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbYKYVuO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYKYVsR
+	id S1754844AbYKYVuk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbYKYVsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:48:17 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46580 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754273AbYKYVsQ (ORCPT
+	Tue, 25 Nov 2008 16:48:24 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:46795 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbYKYVsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:48:16 -0500
-Date: Tue, 25 Nov 2008 21:46:56 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Woodhouse <dwmw2@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, Joern Engel <joern@logfs.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Donjun Shin <djshin90@gmail.com>, Tejun Heo <teheo@suse.de>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 8/9] swapfile: swapon randomize if nonrot
-In-Reply-To: <Pine.LNX.4.64.0811252140230.17555@blonde.site>
-Message-ID: <Pine.LNX.4.64.0811252146090.20455@blonde.site>
-References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
- <Pine.LNX.4.64.0811252140230.17555@blonde.site>
+	Tue, 25 Nov 2008 16:48:21 -0500
+Date: Tue, 25 Nov 2008 21:48:14 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-pci@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kristen.c.accardi@intel.com
+Subject: [PATCH (resend)] acpiphp: Identify more removable slots
+Message-ID: <20081125214814.GA17248@srcf.ucam.org>
+References: <20081113235255.GA17709@srcf.ucam.org> <20081117134952.GA12932@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081117134952.GA12932@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Swap allocation has always started from the beginning of the swap area;
-but if we're dealing with a solidstate swap device which can only remap
-blocks within limited zones, that would sooner wear out the first zone.
+According to section 6.3.6 of the ACPI spec, the presence of an _RMV 
+method that evaluates to 1 is sufficient to indicate that a slot is 
+removable without needing an eject method. This patch refactors the 
+ejectable slot detection code a little in order to flag these slots as 
+ejectable and register them. Acpihp then binds to the expresscard slot 
+on my HP test machine.
 
-Therefore sys_swapon() test whether blk_queue is non-rotational,
-and if so randomize the cluster_next starting position for allocation.
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-If blk_queue is nonrot, note SWP_SOLIDSTATE for later use, and report it
-with an "SS" at the right end of the kernel's "Adding ... swap" message
-(so that if it's both nonrot and discardable, "SSD" will be shown there).
-Perhaps something should be shown in /proc/swaps (swapon -s), but we
-have to be more cautious before making any addition to that format.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
-But how to get my SD card, accessed by USB card reader, reported as NONROT?
 
- include/linux/swap.h |    1 +
- mm/swapfile.c        |   11 +++++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+The _LCK handling code requires some more cleanup and ideally some 
+hardware that actually implements it
 
---- swapfile7/include/linux/swap.h	2008-11-25 12:41:40.000000000 +0000
-+++ swapfile8/include/linux/swap.h	2008-11-25 12:41:42.000000000 +0000
-@@ -122,6 +122,7 @@ enum {
- 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
- 	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
- 	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
-+	SWP_SOLIDSTATE	= (1 << 4),	/* blkdev seeks are cheap */
- 					/* add others here before... */
- 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
- };
---- swapfile7/mm/swapfile.c	2008-11-25 12:41:40.000000000 +0000
-+++ swapfile8/mm/swapfile.c	2008-11-25 12:41:42.000000000 +0000
-@@ -16,6 +16,7 @@
- #include <linux/namei.h>
- #include <linux/shm.h>
- #include <linux/blkdev.h>
-+#include <linux/random.h>
- #include <linux/writeback.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-@@ -1797,6 +1798,11 @@ asmlinkage long sys_swapon(const char __
- 		goto bad_swap;
+ drivers/pci/hotplug/acpiphp_glue.c |   32 +++++++++++++++++---------------
+ 1 files changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index 955aae4..e8cef99 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -74,7 +74,7 @@ static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *contex
+  * Ejectable slot should satisfy at least these conditions:
+  *
+  *  1. has _ADR method
+- *  2. has _EJ0 method
++ *  2. has _EJ0 method or _RMV method
+  *
+  * optionally
+  *
+@@ -87,18 +87,25 @@ static int is_ejectable(acpi_handle handle)
+ {
+ 	acpi_status status;
+ 	acpi_handle tmp;
++	unsigned long long removable;
+ 
+ 	status = acpi_get_handle(handle, "_ADR", &tmp);
+-	if (ACPI_FAILURE(status)) {
++	if (ACPI_FAILURE(status))
+ 		return 0;
+-	}
+ 
+ 	status = acpi_get_handle(handle, "_EJ0", &tmp);
+-	if (ACPI_FAILURE(status)) {
+-		return 0;
++	if (ACPI_SUCCESS(status))
++		return 1;
++
++	status = acpi_get_handle(handle, "_RMV", &tmp);
++	if (ACPI_SUCCESS(status)) {
++		status = acpi_evaluate_integer(handle, "_RMV", NULL,
++					       &removable);
++		if (ACPI_SUCCESS(status) && removable)
++			return 1;
  	}
  
-+	if (blk_queue_nonrot(bdev_get_queue(p->bdev))) {
-+		p->flags |= SWP_SOLIDSTATE;
-+		srandom32((u32)get_seconds());
-+		p->cluster_next = 1 + (random32() % p->highest_bit);
-+	}
- 	if (discard_swap(p) == 0)
- 		p->flags |= SWP_DISCARDABLE;
+-	return 1;
++	return 0;
+ }
  
-@@ -1813,10 +1819,11 @@ asmlinkage long sys_swapon(const char __
- 	total_swap_pages += nr_good_pages;
  
- 	printk(KERN_INFO "Adding %uk swap on %s.  "
--			"Priority:%d extents:%d across:%lluk%s\n",
-+			"Priority:%d extents:%d across:%lluk %s%s\n",
- 		nr_good_pages<<(PAGE_SHIFT-10), name, p->prio,
- 		nr_extents, (unsigned long long)span<<(PAGE_SHIFT-10),
--		(p->flags & SWP_DISCARDABLE) ? " D" : "");
-+		(p->flags & SWP_SOLIDSTATE) ? "SS" : "",
-+		(p->flags & SWP_DISCARDABLE) ? "D" : "");
+@@ -185,16 +192,10 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	unsigned long long adr, sun;
+ 	int device, function, retval;
  
- 	/* insert swap space into swap_list: */
- 	prev = -1;
+-	status = acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
+-
+-	if (ACPI_FAILURE(status))
+-		return AE_OK;
+-
+-	status = acpi_get_handle(handle, "_EJ0", &tmp);
+-
+-	if (ACPI_FAILURE(status) && !(is_dock_device(handle)))
++	if (!is_ejectable(handle) && !is_dock_device(handle))
+ 		return AE_OK;
+ 
++	acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
+ 	device = (adr >> 16) & 0xffff;
+ 	function = adr & 0xffff;
+ 
+@@ -205,7 +206,8 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	INIT_LIST_HEAD(&newfunc->sibling);
+ 	newfunc->handle = handle;
+ 	newfunc->function = function;
+-	if (ACPI_SUCCESS(status))
++
++	if (ACPI_SUCCESS(acpi_get_handle(handle, "_EJ0", &tmp)))
+ 		newfunc->flags = FUNC_HAS_EJ0;
+ 
+ 	if (ACPI_SUCCESS(acpi_get_handle(handle, "_STA", &tmp)))
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
