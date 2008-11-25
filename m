@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYKYK7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYKYK7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbYKYK7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 05:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYKYK7I
+	id S1753667AbYKYK7f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 05:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYKYK7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:59:08 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:65364 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbYKYK7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:59:07 -0500
-To: Martin@lichtvoll.de
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Zero-clearing all zero-clearable bytes.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200811221236.FJE81778.LtMHOQFJFVFSOO@I-love.SAKURA.ne.jp>
-	<200811231403.BHG87011.OFOOQFHVJLFSMt@I-love.SAKURA.ne.jp>
-	<20081123112517.GB17607@khazad-dum.debian.net>
-	<200811241556.17213.Martin@lichtvoll.de>
-In-Reply-To: <200811241556.17213.Martin@lichtvoll.de>
-Message-Id: <200811251959.CFG45845.FtQFHOJFSMVLOO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Tue, 25 Nov 2008 19:59:03 +0900
+	Tue, 25 Nov 2008 05:59:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58122 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbYKYK7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 05:59:16 -0500
+Date: Tue, 25 Nov 2008 12:09:35 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Robert Richter <robert.richter@amd.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.28-rc6] oprofile: "opcontrol --start" output two warnings
+Message-ID: <20081125110935.GF6703@one.firstfloor.org>
+References: <20081125121212.26C3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <87ljv8ce2j.fsf@basil.nowhere.org> <20081125192316.26E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081125192316.26E5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+> if so, I think get_stagger() is a bit strange.
+> it depend on caller cpu. then if PREEMPT=Y, it return radom result.
 
-Martin Steigerwald wrote:
-> There are at least 2 tools - I think there was even another one. I did not 
-> test them and do not know whether they work on singular inode basis.
+Even without PREEMPT it is random because there is no guarantee the
+init code is executing on CPU 0
 
-> Debian Package zerofree:
-> Debian Package wipe2fs:
-Great!
+> 
+> I'm not sure about oprofile design.
+> but if you are right, I think p4_fill_in_addresses shoudn't use smp_processor_id().
 
-They must be what I wished.
+Correct.
 
-Thank you.
+> 
+> Am I missing any point?
+
+No you're right. Always returning 0 in get_stagger() should be ok
+I think, at least it wouldn't make anything worse.
+
+Or perhaps figure out if the per cpu addresses are really needed,
+if yes then this would need much more changes. But I hope 
+that would not be needed.
+
+But someone should better test it, the P4 perfmon handling is certainly
+hairy and I don't claim to understand all its intricate details.
+
+-Andi
+
+-- 
+ak@linux.intel.com
