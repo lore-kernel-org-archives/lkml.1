@@ -1,100 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYKYRjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086AbYKYRpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbYKYRjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 12:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYKYRjA
+	id S1752086AbYKYRpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 12:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYKYRpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 12:39:00 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59695 "EHLO mx2.redhat.com"
+	Tue, 25 Nov 2008 12:45:11 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57689 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbYKYRi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 12:38:59 -0500
-Date: Tue, 25 Nov 2008 18:30:32 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>, Ron Minnich <rminnich@sandia.gov>,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Miklos Szeredi <mszeredi@suse.cz>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Brad Boyer <flar@allandria.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + poll-allow-f_op-poll-to-sleep-take-4.patch added to -mm tree
-Message-ID: <20081125173032.GA21539@redhat.com>
+	id S1751857AbYKYRpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 12:45:10 -0500
+Date: Tue, 25 Nov 2008 18:43:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: next-20081119: general protection fault: get_next_timer_interrupt()
+Message-ID: <20081125174308.GA26308@kernel.dk>
+References: <1227554117.25499.46.camel@localhost.localdomain> <alpine.LFD.2.00.0811242018370.3235@localhost.localdomain> <20081124213517.GA25898@linux.vnet.ibm.com> <alpine.LFD.2.00.0811242327130.3235@localhost.localdomain> <20081125000902.GA24251@us.ibm.com> <20081125115710.6c249f32.sfr@canb.auug.org.au> <20081125020852.GA27280@us.ibm.com> <20081125085109.GR26308@kernel.dk> <20081125165955.GB529@us.ibm.com> <a4423d670811250914x3a42e56egd1bf06e6229666ba@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a4423d670811250914x3a42e56egd1bf06e6229666ba@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, Nov 25 2008, Alexander Beregalov wrote:
+> 2008/11/25  <malahal@us.ibm.com>:
+> > Jens Axboe [jens.axboe@oracle.com] wrote:
+> >> On Mon, Nov 24 2008, malahal@us.ibm.com wrote:
+> >> > Stephen Rothwell [sfr@canb.auug.org.au] wrote:
+> >> > > > The block timer code calls del_timer(), should it call del_timer_sync()?
+> >> > > > It is possible although unlikely that you are hitting del_timer_sync vs
+> >> > > > del_timer problem in the block timeout code. Can only be seen on SMP
+> >> > > > systems though!
+> >> > >
+> >> > > Is this still a problem in next-20081121? In that tree, the block commit
+> >> > > "block: leave the request timeout timer running even on an empty list"
+> >> > > was changed to add this:
+> >> > >
+> >> > > diff --git a/block/blk-core.c b/block/blk-core.c
+> >> > > index 04267d6..44f547c 100644
+> >> > > --- a/block/blk-core.c
+> >> > > +++ b/block/blk-core.c
+> >> > > @@ -391,6 +391,7 @@ EXPORT_SYMBOL(blk_stop_queue);
+> >> > >  void blk_sync_queue(struct request_queue *q)
+> >> > >  {
+> >> > >   del_timer_sync(&q->unplug_timer);
+> >> > > + del_timer_sync(&q->timeout);
+> >> > >   kblockd_flush_work(&q->unplug_work);
+> >> > >  }
+> >> > >  EXPORT_SYMBOL(blk_sync_queue);
+> >> >
+> >> > I was looking at the Linux tree. Clearly same problem doesn't exist with
+> >> > the above commit! I wonder why kblockd_flush_work() is called after the
+> >> > del_timer_sync(). It makes sense to cancel the work and then shutdown
+> >> > the timer(s). I doubt if you are running into this problem though.
+> >>
+> >> If the kernel tested doesn't include the above fix, it'll surely go
+> >> boom. Can someone verify that this is the case?
+> >
+> > Just looked, next-20081119 doesn't have the above fix. It is included in
+> > next-20081120. Also note that the above fix is only partially copied,
+> > there is other part that removed deleting the timer when there are no
+> > outstanding requests.
+> >
+> Yes, I can not reproduce it anymore on linux-next 1121 and newer. (I
+> did not try 1120) It seems the fix works pretty good.  Is it still
+> needed and reasonable  to investigate the problem on next-20081119?
+> Unfortunately I do not have much time for it.
 
-Minor question about mbs, just trying to understand the patch...
+No, you don't have to investigate further. This was a known bug that is
+fixed in -next and mainline basically right after next-20081119.
 
-> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> +{
-> +	struct poll_wqueues *pwq = wait->private;
-> +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-> +
-> +	set_mb(pwq->triggered, 1);
-> +
-> +	/*
-> +	 * Perform the default wake up operation using a dummy
-> +	 * waitqueue.
-> +	 *
-> +	 * TODO: This is hacky but there currently is no interface to
-> +	 * pass in @sync.  @sync is scheduled to be removed and once
-> +	 * that happens, wake_up_process() can be used directly.
-> +	 */
-> +	return default_wake_function(&dummy_wait, mode, sync, key);
-> +}
-> +
-> +int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-> +			  ktime_t *expires, unsigned long slack)
-> +{
-> +	int rc = -EINTR;
-> +
-> +	set_current_state(state);
-> +	if (!pwq->triggered)
-> +		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
-> +	__set_current_state(TASK_RUNNING);
+> 
+> All these problems have gone away on next-1125 except ODEBUG warning
+> on HPET.
 
-So, why do we need this mb() in pollwake() ?
-
-try_to_wake_up() has a full barrier semantics, note the wmb() before
-task_rq_lock(). Since spin_lock() itself is STORE, the setting of
-pwq->triggered can't be further re-ordered with the reading of p->state.
-
-Or any other reason ?
-
-> +	/* clear triggered for the next iteration */
-> +	pwq->triggered = 0;
-
-And don't we (in theory) actually need the mb() here instead?
-
-Let's suppose do_poll() starts the next iteration, so we are doing
-
-	pwq->triggered = 0;
-
-	->poll(file)
-		if (!check_file(file))
-			return 0;
-
-		return POLLXXX;
-
-We don't have any barriers in between (unless fget_light bumps
-->f_count), so this can be reordered as
-
-	->poll(file)
-		if (!check_file(file))
-			return 0;
-
-		pwq->triggered = 0;
-
-And, if pollwake() happens in between we can miss the event, no?
-
-Oleg.
+-- 
+Jens Axboe
 
