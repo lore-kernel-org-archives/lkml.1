@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYKYIKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbYKYIMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbYKYIKk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 03:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYKYIKb
+	id S1752710AbYKYIMs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 03:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYKYIMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 03:10:31 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:57603 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYKYIKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 03:10:30 -0500
-Date: Tue, 25 Nov 2008 09:11:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Nir Tzachar <nir.tzachar@gmail.com>
-Cc: Willy Tarreau <w@1wt.eu>, Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>,
-       linux-kernel@vger.kernel.org, bzolnier@gmail.com, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, ariveira@gmail.com, rdunlap@xenotime.net,
-       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de
-Subject: Re: [PATCH] ncurses based config V2
-Message-ID: <20081125081153.GA12275@uranus.ravnborg.org>
-References: <1220469076-16487-1-git-send-email-nir@tzachar.com> <1220603220-17090-1-git-send-email-nir@tzachar.com> <20080905195930.GA27913@1wt.eu> <20081124184428.GA17085@uranus.ravnborg.org> <9b2db90b0811250001k6e0c609frca073f3221a3e8ed@mail.gmail.com>
+	Tue, 25 Nov 2008 03:12:40 -0500
+Received: from mga02.intel.com ([134.134.136.20]:4984 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751939AbYKYIMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 03:12:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,663,1220252400"; 
+   d="scan'208";a="467050944"
+Date: Tue, 25 Nov 2008 09:12:31 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       akpm@linux-foundation.org, mtk.manpages@gmail.com,
+       eranian@googlemail.com, juan.villacis@intel.com
+Subject: [patch 8/9] x86, ftrace: call trace->open() before stopping tracing; add trace->print_header()
+Message-ID: <20081125091231.A31411@sedona.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9b2db90b0811250001k6e0c609frca073f3221a3e8ed@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nir.
+Add a callback to allow an ftrace plug-in to write its own header.
 
-> >>         [ ]   (U)TS namespace
-> >>         [ ]   (I)PC namespace
-> >>         [ ]   (U)ser namespace (EXPERIMENTAL)
-> >>         [ ]   (P)ID Namespaces (EXPERIMENTAL)
-> >
-> > This looks like some ancient stuff and it must be a better way to
-> > show the short-cuts.
-> 
-> This was the best I could come up with, as ncurses does not let you
-> use color attributed for menu items. I'll try a different scheme,
-> where the first capitalized letter is the shortcut. What do u say?
+Move the call to trace->open() up a few lines.
 
-Better than the above - let me see it in action and I will judge.
-I had preferred something with a colored highlight - but if ncurses
-do not support that then I think first catital letter i ok.
+The changes are required by the BTS ftrace plug-in.
 
-Alternative is to use first letter in the prompt and accept the
-ambiguity.
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-> > I would really appreciate if you could look into the above issues.
-> > If you do a repost with this fixed I will try to do a proper review,
-> > including code-review next time.
-> 
-> Sure. I'll have a patch ready in a few days.
+Index: ftrace/kernel/trace/trace.c
+===================================================================
+--- ftrace.orig/kernel/trace/trace.c	2008-11-24 13:46:26.000000000 +0100
++++ ftrace/kernel/trace/trace.c	2008-11-25 08:18:05.000000000 +0100
+@@ -2298,7 +2298,9 @@
+ 			seq_printf(m, "# tracer: %s\n", iter->trace->name);
+ 			seq_puts(m, "#\n");
+ 		}
+-		if (iter->iter_flags & TRACE_FILE_LAT_FMT) {
++		if (iter->trace && iter->trace->print_header)
++			iter->trace->print_header(m);
++		else if (iter->iter_flags & TRACE_FILE_LAT_FMT) {
+ 			/* print nothing if the buffers are empty */
+ 			if (trace_empty(iter))
+ 				return 0;
+@@ -2350,6 +2352,10 @@
+ 	iter->trace = current_trace;
+ 	iter->pos = -1;
+ 
++	/* Notify the tracer early; before we stop tracing. */
++	if (iter->trace && iter->trace->open)
++			iter->trace->open(iter);
++
+ 	/* Annotate start of buffers if we had overruns */
+ 	if (ring_buffer_overruns(iter->tr->buffer))
+ 		iter->iter_flags |= TRACE_FILE_ANNOTATE;
+@@ -2375,9 +2381,6 @@
+ 	/* stop the trace while dumping */
+ 	tracing_stop();
+ 
+-	if (iter->trace && iter->trace->open)
+-			iter->trace->open(iter);
+-
+ 	mutex_unlock(&trace_types_lock);
+ 
+  out:
+Index: ftrace/kernel/trace/trace.h
+===================================================================
+--- ftrace.orig/kernel/trace/trace.h	2008-11-24 13:46:26.000000000 +0100
++++ ftrace/kernel/trace/trace.h	2008-11-25 08:18:05.000000000 +0100
+@@ -311,6 +311,7 @@
+ 	int			(*selftest)(struct tracer *trace,
+ 					    struct trace_array *tr);
+ #endif
++	void			(*print_header)(struct seq_file *m);
+ 	enum print_line_t	(*print_line)(struct trace_iterator *iter);
+ 	/* If you handled the flag setting, return 0 */
+ 	int			(*set_flag)(u32 old_flags, u32 bit, int set);
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-Great - loks forward to see it.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-	Sam
