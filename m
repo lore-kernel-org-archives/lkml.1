@@ -1,87 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbYKYImY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbYKYInY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbYKYImY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 03:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYKYImP
+	id S1752786AbYKYInY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 03:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYKYInP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 03:42:15 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:4742 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbYKYImO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 03:42:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=aoBmNRneWqFkPWMdcoscuHCihlZDbgtonbHNEhS6oqVYBPslYhTYlJssb3EIS1GJrf
-         p6RzdsujyQu539sSEkZGi6nQDcLULSqdufHnhTWhx+iCHS10CGl2FKY4EOezpJ7YarjT
-         U10gtJ7E6cpBbgDmMJ8loDrq1c8EUq7CEQZME=
-To: =?iso-8859-1?q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-Subject: Re: Still some problems with the rt2x00 driver
-Date: Tue, 25 Nov 2008 09:42:09 +0100
-User-Agent: KMail/1.9.9
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org
-References: <20080620175729.GA3151@ime.usp.br> <200808041526.08332.IvDoorn@gmail.com> <3977BB08-9149-41E4-B187-235F36204E4E@ime.usp.br>
-In-Reply-To: <3977BB08-9149-41E4-B187-235F36204E4E@ime.usp.br>
+	Tue, 25 Nov 2008 03:43:15 -0500
+Received: from usul.saidi.cx ([204.11.33.34]:45091 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751836AbYKYInP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 03:43:15 -0500
+Message-ID: <492BBA91.5010302@overt.org>
+Date: Tue, 25 Nov 2008 00:42:57 -0800
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200811250942.09259.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+To: linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
+       Pierre Ossman <drzeus@drzeus.cx>
+CC: Frank Seidel <fseidel@suse.de>, Mathias Weyland <weyland@library.ethz.ch>
+Subject: [PATCH] ricoh_mmc: Handle newer models of Ricoh controllers
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The latest generation of laptops are shipping with a newer
+model of Ricoh chip where the firewire controller is the
+primary PCI function but a cardbus controller is also present.
 
-> There are two strange things that I've noticed, though and that I  
-> feel need to be fixed:
+The existing code assumes that if a cardbus controller is,
+present, then it must be the one to manipulate - but the real
+rule is that you manipulate PCI function 0. This patch adds an
+additional constraint that the target must be function 0.
 
-For both cases:
-Is there anything in the log regading the drivers or mac80211?
+Signed-off-by: Philip Langdale <philipl@overt.org>
+---
 
-Ivo
+  ricoh_mmc.c |   17 +++++++++++------
+  1 file changed, 11 insertions(+), 6 deletions(-)
 
-> 1 - the rt63 driver used by a PCMCIA card DWL-G630 model has, for  
-> many kernels (from 2.6.24 and up to and including kernel 2.6.27, as  
-> shipped by Ubuntu for ia32), shown a strange behavior: after  
-> everything is working correctly, the network simply becomes  
-> unavailable, with the gnome network monitor showing that the card has  
-> no signal. If I issue the command "iwconfig ra0 ap any", for example,  
-> the card starts working again.
-> 
-> (Actually, I put this on a cron job to be executed every minute, but  
-> even then, there are time windows where the card is not working). I'm  
-> not in front of the notebook (a very old Armada V300 that my parents  
-> are using for production), so I don't know if the card looses  
-> association with the Access Point or not. I can check that, if nobody  
-> else reported this problem yet.
-> 
-> 2 - the rt2500usb driver that I use on a very old iBook G3 (powerpc)  
-> also works fine and has a similar, but not identical behaviour: the  
-> DWL-G122 USB stick that I have works fine once associated and when it  
-> is transferring data. Once I leave the network unused for, say, 2  
-> minutes, the connection with the AP is dropped. Here, also, issuing  
-> "iwconfig wlan0 ap any" makes it work again.
-> 
-> Notice the difference in both cases: with the PCMCIA/ia32 case, no  
-> matter if there is traffic on the network or not, the the connection  
-> is interrupted. With the USB/powerpc case, if there is traffic, the  
-> connection remains working fine.
-> 
-> > Note that I am not going to push it to 2.6.26 since I don't know if  
-> > the
-> > patch will cause problems in other parts of the driver.
-> 
-> There's no problem. I can compile vanilla kernels from kernel.org  
-> without any problems.
-> 
-> 
-> Thanks for your kind help, Rogério Brito.
-> 
+diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
+index a16d760..be9e7b3 100644
+--- a/drivers/mmc/host/ricoh_mmc.c
++++ b/drivers/mmc/host/ricoh_mmc.c
+@@ -11,9 +11,10 @@
+
+  /*
+   * This is a conceptually ridiculous driver, but it is required by the way
+- * the Ricoh multi-function R5C832 works. This chip implements firewire
+- * and four different memory card controllers. Two of those controllers are
+- * an SDHCI controller and a proprietary MMC controller. The linux SDHCI
++ * the Ricoh multi-function chips (R5CXXX) work. These chips implement
++ * the four main memory card controllers (SD, MMC, MS, xD) and one or both
++ * of cardbus or firewire. It happens that they implement SD and MMC
++ * support as separate controllers (and PCI functions). The linux SDHCI
+   * driver supports MMC cards but the chip detects MMC cards in hardware
+   * and directs them to the MMC controller - so the SDHCI driver never sees
+   * them. To get around this, we must disable the useless MMC controller.
+@@ -21,8 +22,10 @@
+   * a detection event occurs immediately, even if the MMC card is already
+   * in the reader.
+   *
+- * The relevant registers live on the firewire function, so this is unavoidably
+- * ugly. Such is life.
++ * It seems to be the case that the relevant PCI registers to deactivate the
++ * MMC controller live on PCI function 0, which might be the cardbus controller
++ * or the firewire controller, depending on the particular chip in question. As
++ * such, it makes what this driver has to do unavoidably ugly. Such is life.
+   */
+
+  #include <linux/pci.h>
+@@ -143,6 +146,7 @@ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+  		pci_get_device(PCI_VENDOR_ID_RICOH,
+  			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
+  		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
++		    PCI_FUNC(fw_dev->devfn) == 0 &&
+  		    pdev->bus == fw_dev->bus) {
+  			if (ricoh_mmc_disable(fw_dev) != 0)
+  				return -ENODEV;
+@@ -160,6 +164,7 @@ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+  	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
+  					PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
+  		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
++		    PCI_FUNC(fw_dev->devfn) == 0 &&
+  		    pdev->bus == fw_dev->bus) {
+  			if (ricoh_mmc_disable(fw_dev) != 0)
+  				return -ENODEV;
+@@ -172,7 +177,7 @@ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+
+  	if (!ctrlfound) {
+  		printk(KERN_WARNING DRIVER_NAME
+-		       ": Main firewire function not found. Cannot disable controller.\n");
++		       ": Main Ricoh function not found. Cannot disable controller.\n");
+  		return -ENODEV;
+  	}
 
 
