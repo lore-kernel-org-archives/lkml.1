@@ -1,120 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbYKYVpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYKYVpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbYKYVpY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYKYVhH
+	id S1755205AbYKYVpr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:45:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYKYVmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:37:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:34885 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753891AbYKYVhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:37:05 -0500
-Date: Tue, 25 Nov 2008 22:36:48 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Joe Korty <joe.korty@ccur.com>
-cc: Michael Kerrisk <mtk.manpages@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-Subject: Re: [PATCH] Display active jiffie timers in /proc/timer_list
-In-Reply-To: <20081125185740.GA21806@tsunami.ccur.com>
-Message-ID: <alpine.LFD.2.00.0811252224430.3235@localhost.localdomain>
-References: <20081121221113.GA13566@tsunami.ccur.com> <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com> <20081125185740.GA21806@tsunami.ccur.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Nov 2008 16:42:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40025
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754880AbYKYVmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:42:16 -0500
+Date: Tue, 25 Nov 2008 13:42:15 -0800 (PST)
+Message-Id: <20081125.134215.146717314.davem@davemloft.net>
+To: randy.dunlap@oracle.com
+Cc: alan@lxorguk.ukuu.org.uk, kamalesh@linux.vnet.ibm.com,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com,
+       netdev@vger.kernel.org, mel@csn.ul.ie, shemminger@linux-foundation.org
+Subject: Re: [BUILD_FAILURE] linux-next: 20081125 - 8390 network driver
+ build fails
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <492C5B52.6090803@oracle.com>
+References: <492C562E.9090302@oracle.com>
+	<20081125195756.12317499@lxorguk.ukuu.org.uk>
+	<492C5B52.6090803@oracle.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe,
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Tue, 25 Nov 2008 12:08:50 -0800
 
-On Tue, 25 Nov 2008, Joe Korty wrote:
-> Add to /proc/timer_list a display of the active jiffie timers.
-> 
-> Tested on i386 and x86_64, with 'less /proc/timer_list' and
-> through SysRq-Q.
-> 
-> Signed-off-by: Joe Korty <joe.korty@ccur.com>
-> 
-> Index: 2.6.28-rc6/kernel/timer.c
-> ===================================================================
-> --- 2.6.28-rc6.orig/kernel/timer.c	2008-11-25 11:59:07.000000000 -0500
-> +++ 2.6.28-rc6/kernel/timer.c	2008-11-25 13:49:05.000000000 -0500
-> @@ -36,6 +36,8 @@
->  #include <linux/syscalls.h>
->  #include <linux/delay.h>
->  #include <linux/tick.h>
-> +#include <linux/proc_fs.h>
-> +#include <linux/seq_file.h>
->  #include <linux/kallsyms.h>
->  
->  #include <asm/uaccess.h>
-> @@ -1568,6 +1570,87 @@
->  	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
->  }
->  
-> +#if defined(CONFIG_PROC_FS) || defined(CONFIG_MAGIC_SYSRQ)
+> Looks like it's due to CONFIG_COMPAT_NET_DEV_OPS.
 
-This belongs into kernel/time/timer_list.c and there is no need to
-copy that code around.
+Right, I've asked Stephen Hemminger to fix this.
 
-> +void print_cpu_jtimers(struct seq_file *m, int cpu)
-> +{
-> +	int i;
-> +	struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> +
-> +	SEQ_printf(m, "active jiffie timers:\n");
-> +	spin_lock_irq(&base->lock);
+> Dave, no need to drop my hp-plus driver patch.
 
-Yuck. We really do _NOT_ stop everything just to print timers. Check
-the hrtimer print code in timer_list.c
-
-> Index: 2.6.28-rc6/kernel/time/timer_list.c
-> ===================================================================
-> --- 2.6.28-rc6.orig/kernel/time/timer_list.c	2008-11-25 11:59:07.000000000 -0500
-> +++ 2.6.28-rc6/kernel/time/timer_list.c	2008-11-25 13:47:30.000000000 -0500
-> @@ -17,6 +17,7 @@
->  #include <linux/seq_file.h>
->  #include <linux/kallsyms.h>
->  #include <linux/tick.h>
-> +#include <linux/jiffies.h>
->  
->  #include <asm/uaccess.h>
->  
-> @@ -139,6 +140,7 @@
->  		SEQ_printf(m, " clock %d:\n", i);
->  		print_base(m, cpu_base->clock_base + i, now);
->  	}
-> +
-
-random whitespace change
-
->  #define P(x) \
->  	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
->  		   (unsigned long long)(cpu_base->x))
-> @@ -176,9 +178,11 @@
->  		P(last_jiffies);
->  		P(next_jiffies);
->  		P_ns(idle_expires);
-> -		SEQ_printf(m, "jiffies: %Lu\n",
-> +		SEQ_printf(m, "jiffies: %llu (0x%llx)\n",
-> +			   (unsigned long long)jiffies,
->  			   (unsigned long long)jiffies);
-
-The exact purpose of this change ?
-
-> @@ -286,7 +290,7 @@
->  {
->  	struct proc_dir_entry *pe;
->  
-> -	pe = proc_create("timer_list", 0644, NULL, &timer_list_fops);
-> +	pe = proc_create("timer_list", 0444, NULL, &timer_list_fops);
->  	if (!pe)
->  		return -ENOMEM;
->  	return 0;
-
-Correct, but unrelated $subject. Separate patch please. 
-
-Thanks,
-
-	tglx
+Yes, I knew this :)
