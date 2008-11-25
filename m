@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbYKYLDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbYKYLGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752730AbYKYLDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYKYLDV
+	id S1753406AbYKYLGb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:06:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYKYLGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 06:03:21 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54310 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbYKYLDV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 06:03:21 -0500
-Date: Tue, 25 Nov 2008 12:05:08 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: acpi_evaluate_integer broken by design
-Message-ID: <20081125110508.GA1943@elf.ucw.cz>
+	Tue, 25 Nov 2008 06:06:21 -0500
+Received: from bu3sch.de ([62.75.166.246]:39148 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbYKYLGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 06:06:20 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Yuval Hager <yuval@avramzon.net>
+Subject: Re: BCM4312 Fails when xdm is started
+Date: Tue, 25 Nov 2008 12:05:49 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de
+References: <200811151801.02369.yuval@avramzon.net> <492AD249.3020309@lwfinger.net> <200811250745.22487.yuval@avramzon.net>
+In-Reply-To: <200811250745.22487.yuval@avramzon.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811251205.49929.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 25 November 2008 06:43:22 Yuval Hager wrote:
+> However, I have some few interesting findings. 
+> First, this is totally unrelated to b43, but to the PCI. I get the flawed 1's 
+> read from lspci even without loading b43.
+> 
+> I played around with different video drivers and the results are:
+> * If using the 'via' driver, I lose the PCIe card immediately upon 
+> initialization
+> * Using the 'openchrome' (trunk version), It works well in the beginning. 
+> After first blanking the register reads are all 1's, and then when the screen 
+> is blank I get a different read (some registers are correct, some are wrong), 
+> and when the screen is unblanked, I get 0xff's again. Very consistent and 
+> predictabe (same read every time).
+> * Using the 'vesa' driver I could not recreate the problem. I could not get 
+> the screen to blank for some reason, but closing the lid, going on 
+> standby/hibernate, restarting X - all didn't matter much to the PCI and the 
+> wireless card kept on working.
 
-Now I know why I had strange "scheduling in atomic" problems:
-acpi_evaluate_integer() does malloc(..., irqs_disabled() ? GFP_ATOMIC
-: GFP_KERNEL)... which is (of course) broken.
-
-There's no way to reliably tell if we need GFP_ATOMIC or not from
-code, this one for example fails to detect spinlocks held.
-
-Fortunately, allocation seems small enough to be done on stack.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
-index e827be3..f844941 100644
---- a/drivers/acpi/utils.c
-+++ b/drivers/acpi/utils.c
-@@ -259,34 +259,26 @@ acpi_evaluate_integer(acpi_handle handle
- 		      struct acpi_object_list *arguments, unsigned long long *data)
- {
- 	acpi_status status = AE_OK;
--	union acpi_object *element;
-+	union acpi_object element;
- 	struct acpi_buffer buffer = { 0, NULL };
- 
--
- 	if (!data)
- 		return AE_BAD_PARAMETER;
- 
--	element = kzalloc(sizeof(union acpi_object), irqs_disabled() ? GFP_ATOMIC: GFP_KERNEL);
--	if (!element)
--		return AE_NO_MEMORY;
--
- 	buffer.length = sizeof(union acpi_object);
--	buffer.pointer = element;
-+	buffer.pointer = &element;
- 	status = acpi_evaluate_object(handle, pathname, arguments, &buffer);
- 	if (ACPI_FAILURE(status)) {
- 		acpi_util_eval_error(handle, pathname, status);
--		kfree(element);
- 		return status;
- 	}
- 
--	if (element->type != ACPI_TYPE_INTEGER) {
-+	if (element.type != ACPI_TYPE_INTEGER) {
- 		acpi_util_eval_error(handle, pathname, AE_BAD_DATA);
--		kfree(element);
- 		return AE_BAD_DATA;
- 	}
- 
--	*data = element->integer.value;
--	kfree(element);
-+	*data = element.integer.value;
- 
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Return value [%llu]\n", *data));
- 
-
-
+Ok, then you should report the stuff to the X guys. This is not a b43 problem
+and I also don't think it's a kernel problem.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings Michael.
