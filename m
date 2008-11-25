@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYKYTrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYKYT6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621AbYKYTrX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 14:47:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYKYTrM
+	id S1753073AbYKYT6Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 14:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYKYT6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 14:47:12 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:63887 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbYKYTrK (ORCPT
+	Tue, 25 Nov 2008 14:58:09 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49156 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752141AbYKYT6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 14:47:10 -0500
-X-Greylist: delayed 760 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Nov 2008 14:47:10 EST
-Message-ID: <492C562E.9090302@oracle.com>
-Date: Tue, 25 Nov 2008 11:46:54 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
+	Tue, 25 Nov 2008 14:58:04 -0500
+Date: Tue, 25 Nov 2008 19:57:56 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
        Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
        Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>, p_gortmaker@yahoo.com,
        netdev@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: [BUILD_FAILURE] linux-next: 20081125 - 8390 network driver build
- fails
-References: <20081125213738.881b425e.sfr@canb.auug.org.au>	<20081125182542.GA4914@linux.vnet.ibm.com>	<492C464D.4080704@oracle.com>	<20081125185154.2845e8f1@lxorguk.ukuu.org.uk>	<492C5334.2090801@oracle.com> <20081125193853.076c7b58@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081125193853.076c7b58@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-2022-JP
+Subject: Re: [BUILD_FAILURE] linux-next: 20081125 - 8390 network driver
+ build fails
+Message-ID: <20081125195756.12317499@lxorguk.ukuu.org.uk>
+In-Reply-To: <492C562E.9090302@oracle.com>
+References: <20081125213738.881b425e.sfr@canb.auug.org.au>
+	<20081125182542.GA4914@linux.vnet.ibm.com>
+	<492C464D.4080704@oracle.com>
+	<20081125185154.2845e8f1@lxorguk.ukuu.org.uk>
+	<492C5334.2090801@oracle.com>
+	<20081125193853.076c7b58@lxorguk.ukuu.org.uk>
+	<492C562E.9090302@oracle.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.492C562C.0145:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> The problem is that both 8390.c and 8390p.c #include lib8390.c
->> and when they are both linked to built-in drivers (not loadable
->> modules), the symbols in lib8390.c are duplicated.  I think.
+> drivers/net/8390p.o: In function `ei_get_stats':
+> (.text+0x1050): multiple definition of `ei_get_stats'
+> drivers/net/8390.o:(.text+0xe20): first defined here
+> drivers/net/8390p.o: In function `ei_start_xmit':
+> (.text+0x1100): multiple definition of `ei_start_xmit'
+> drivers/net/8390.o:(.text+0xef0): first defined here
+> drivers/net/8390p.o: In function `ei_tx_timeout':
+> (.text+0xec0): multiple definition of `ei_tx_timeout'
+> drivers/net/8390.o:(.text+0xce0): first defined here
+> drivers/net/8390p.o: In function `ei_set_multicast_list':
+> (.text+0x1000): multiple definition of `ei_set_multicast_list'
+> drivers/net/8390.o:(.text+0xea0): first defined here
+> make[2]: *** [drivers/net/built-in.o] Error 1
 > 
-> And the symbols in question are static so are scoped within the file
-> only. Thats why it looks to me as if someone has done "#define static" in
-> another patch somewhere in -next.
+> and none of these functions is static in lib8390.c.
 
-Try again:
+They seem to be just fine in the base tree, so somebody has merged
+something stoopid.
 
-  LD      drivers/net/built-in.o
-drivers/net/8390p.o: In function `ei_get_stats':
-(.text+0x1050): multiple definition of `ei_get_stats'
-drivers/net/8390.o:(.text+0xe20): first defined here
-drivers/net/8390p.o: In function `ei_start_xmit':
-(.text+0x1100): multiple definition of `ei_start_xmit'
-drivers/net/8390.o:(.text+0xef0): first defined here
-drivers/net/8390p.o: In function `ei_tx_timeout':
-(.text+0xec0): multiple definition of `ei_tx_timeout'
-drivers/net/8390.o:(.text+0xce0): first defined here
-drivers/net/8390p.o: In function `ei_set_multicast_list':
-(.text+0x1000): multiple definition of `ei_set_multicast_list'
-drivers/net/8390.o:(.text+0xea0): first defined here
-make[2]: *** [drivers/net/built-in.o] Error 1
 
-and none of these functions is static in lib8390.c.
+ */
 
-~Randy
+static int ei_start_xmit(struct sk_buff *skb, struct net_device *dev)  
+{
+   
+
+
+Alan
