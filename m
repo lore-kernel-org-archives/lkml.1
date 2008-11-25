@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYKYN2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbYKYN3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbYKYN2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 08:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbYKYN21
+	id S1752899AbYKYN3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 08:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYKYN3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 08:28:27 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:36616 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbYKYN20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 08:28:26 -0500
-Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
- 120 seconds"
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: linux-nfs@vger.kernel.org, Max Kellermann <mk@cm4all.com>,
-       linux-kernel@vger.kernel.org, gcosta@redhat.com,
-       Grant Coady <grant_lkml@dodo.com.au>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Tom Tucker <tom@opengridcomputing.com>
-In-Reply-To: <1227596962.16868.22.camel@localhost.localdomain>
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>
-	 <1224484046.23068.14.camel@localhost.localdomain>
-	 <1225539927.2221.3.camel@localhost.localdomain>
-	 <1225546878.4390.3.camel@heimdal.trondhjem.org>
-	 <1227596962.16868.22.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 08:28:16 -0500
-Message-Id: <1227619696.7057.19.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: D6B5410FCC3461C6E0BA2648D9E2A7E410546546
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 217 max/h 9 blacklist 0 greylist 0 ratelimit 0
+	Tue, 25 Nov 2008 08:29:37 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:33215 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYKYN3g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 08:29:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=bCluSHWbHbU7w/XcNzCm251qRgv7W9OoFVokDqdLUpurP5YSq0THlXhflne+FIbtmP
+         9Ag1UBx7hPN2h2xLy/kPPDHLf+JZqmxZhia4avi0mvmNuCw2lTg2X3HbNPbzCDF9NiFc
+         MNb5/reWQi6km659nMYdVcYQLqmwAnGXTuDIs=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, lethal@linux-sh.org, johnstul@us.ibm.com,
+       magnus.damm@gmail.com, mingo@redhat.com,
+       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
+Date: Tue, 25 Nov 2008 22:28:23 +0900
+Message-Id: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se>
+Subject: [RFC] Reentrant clock sources
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-25 at 07:09 +0000, Ian Campbell wrote:
-> On Sat, 2008-11-01 at 09:41 -0400, Trond Myklebust wrote:
-> > On Sat, 2008-11-01 at 11:45 +0000, Ian Campbell wrote:
-> > > On Mon, 2008-10-20 at 07:27 +0100, Ian Campbell wrote:
-> > > > So far I have bisected down to this range and am currently testing
-> > > > acee478 which has been up for >4days.
-> > > 
-> > > Another update. It has now bisected down to a small range 
-> > > 
-> > > 7272dcd31d56580dee7693c21e369fd167e137fe SUNRPC: xprt_autoclose() should not call xprt_disconnect()
-> > > e06799f958bf7f9f8fae15f0c6f519953fb0257c SUNRPC: Use shutdown() instead of close() when disconnecting a TCP socket
-> > > ef80367071dce7d2533e79ae8f3c84ec42708dc8 SUNRPC: TCP clear XPRT_CLOSE_WAIT when the socket is closed for writes
-> > > 3b948ae5be5e22532584113e2e02029519bbad8f SUNRPC: Allow the client to detect if the TCP connection is closed
-> > > 67a391d72ca7efb387c30ec761a487e50a3ff085 SUNRPC: Fix TCP rebinding logic
-> > > 66af1e558538137080615e7ad6d1f2f80862de01 SUNRPC: Fix a race in xs_tcp_state_change()
-> > > 
-> > > I'm currently testing 3b948ae5be5e22532584113e2e02029519bbad8f.
-> > > 
-> > > 7272dcd31d56580dee7693c21e369fd167e137fe repro'd in half a day while
-> > > ef818a28fac9bd214e676986d8301db0582b92a9 (parent of
-> > > 66af1e558538137080615e7ad6d1f2f80862de01) survived for 7 days.
-> 
-> According to bisect:
-> 
-> e06799f958bf7f9f8fae15f0c6f519953fb0257c is first bad commit
-> commit e06799f958bf7f9f8fae15f0c6f519953fb0257c
-> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:   Mon Nov 5 15:44:12 2007 -0500
-> 
->     SUNRPC: Use shutdown() instead of close() when disconnecting a TCP socket
->     
->     By using shutdown() rather than close() we allow the RPC client to wait
->     for the TCP close handshake to complete before we start trying to reconnect
->     using the same port.
->     We use shutdown(SHUT_WR) only instead of shutting down both directions,
->     however we wait until the server has closed the connection on its side.
->     
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> 
-> I've started testing 2.6.26 + revert. It's been a long while since I
-> started this process so I'll also have a go at an up to date version.
-> 
-> Cheers,
+Hi everyone,
 
-That would indicate that the server is failing to close the TCP
-connection when the client closes on its end.
+Is there any special reason behind the non-reentrant clock source
+code? I'm writing some timer help code and getting the struct
+clocksource as argument to the callbacks would make the code much
+cleaner and better.
 
-Could you remind me what server you are using? Also, does 'netstat -t'
-show connections that are stuck in the CLOSE_WAIT state when you see the
-hang?
+Extending the callbacks to be able to start and stop clock sources
+for improved power management would be good too in my opinion.
+Any thoughts?
 
-Trond
+I realize that there are quite a few clock source drivers
+that need to be modified, any recommendation on which tree
+to do it against and how to split up the patch? Thanks.
 
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
+
+ include/linux/clocksource.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- 0001/include/linux/clocksource.h
++++ work/include/linux/clocksource.h	2008-11-25 21:07:13.000000000 +0900
+@@ -61,14 +61,14 @@ struct clocksource {
+ 	char *name;
+ 	struct list_head list;
+ 	int rating;
+-	cycle_t (*read)(void);
++	cycle_t (*read)(struct clocksource *cs);
+ 	cycle_t mask;
+ 	u32 mult;
+ 	u32 mult_orig;
+ 	u32 shift;
+ 	unsigned long flags;
+-	cycle_t (*vread)(void);
+-	void (*resume)(void);
++	cycle_t (*vread)(struct clocksource *cs);
++	void (*resume)(struct clocksource *cs);
+ #ifdef CONFIG_IA64
+ 	void *fsys_mmio;        /* used by fsyscall asm code */
+ #define CLKSRC_FSYS_MMIO_SET(mmio, addr)      ((mmio) = (addr))
+@@ -170,7 +170,7 @@ static inline u32 clocksource_hz2mult(u3
+  */
+ static inline cycle_t clocksource_read(struct clocksource *cs)
+ {
+-	return cs->read();
++	return cs->read(cs);
+ }
+ 
+ /**
