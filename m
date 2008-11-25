@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYKYKqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYKYKth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbYKYKqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 05:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYKYKqF
+	id S1753347AbYKYKth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 05:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYKYKt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:46:05 -0500
-Received: from lucidpixels.com ([75.144.35.66]:57722 "EHLO lucidpixels.com"
+	Tue, 25 Nov 2008 05:49:28 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41196 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752302AbYKYKqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:46:03 -0500
-Date: Tue, 25 Nov 2008 05:46:01 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Eric Sandeen <sandeen@sandeen.net>, Stian Jordet <liste@jordet.net>,
-       Alan Piszcz <ap@solarrain.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
-In-Reply-To: <20081125104415.GA17304@infradead.org>
-Message-ID: <alpine.DEB.1.10.0811250544530.19316@p34.internal.lan>
-References: <1226760254.5089.11.camel@chevrolet> <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com> <1227476908.32357.5.camel@chevrolet> <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan> <1227485956.5145.10.camel@chevrolet>
- <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan> <1227569808.5039.6.camel@chevrolet> <492B5684.2080107@sandeen.net> <alpine.DEB.1.10.0811250456010.16346@p34.internal.lan> <20081125104415.GA17304@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1752472AbYKYKt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 05:49:27 -0500
+Message-ID: <492BD807.4000002@redhat.com>
+Date: Tue, 25 Nov 2008 12:48:39 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: suparna@in.ibm.com
+CC: Zach Brown <zach.brown@oracle.com>, linux-aio@kvack.org,
+       Jeff Moyer <jmoyer@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: kvm aio wishlist
+References: <492B0CDD.7080000@redhat.com> <492B2348.9090008@oracle.com> <492B2976.3010209@redhat.com> <492B3912.3030707@oracle.com> <492BC5CB.6000609@redhat.com> <20081125101923.GA28123@in.ibm.com>
+In-Reply-To: <20081125101923.GA28123@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 25 Nov 2008, Christoph Hellwig wrote:
-
-> On Tue, Nov 25, 2008 at 04:56:24AM -0500, Justin Piszcz wrote:
->> barriers enabled:
->>
->> $ time bash -c 'tar xf linux-2.6.27.7.tar; sync'
->> block 573932: ** Block of NULs **
->> Total bytes read: 293857280 (281MiB, 1.9MiB/s)
->>
->> real    2m40.643s
->> user    0m0.194s
->> sys     0m1.541s
->>
->> barriers disabled:
->>
->> time bash -c 'tar xf linux-2.6.27.7.tar; sync'
->> block 573932: ** Block of NULs **
->> Total bytes read: 293857280 (281MiB, 11MiB/s)
->>
->> real    0m27.612s
->> user    0m0.182s
->> sys     0m1.617s
+Suparna Bhattacharya wrote:
+>> Why not extend io_submit() to use a thread pool when going through a 
+>> non-aio-ready path?  Yet a new interface, with another round of integrating 
+>> to the previous interfaces, is not a comforting thought.  I still haven't 
+>> got used to the fact that aio can work with fd polling.
+>>     
 >
-> That's worse than usual, and even the no-barriers numbers are still
-> really bad.  What kind of disk and controller is this?  Did you
-> try to disable the cache with hdparm and see what that gives?
+> Even paths that provide fop->aio_read/write can be synchronous (like non
+> O_DIRECT filesystem read/writes) underneath, and then there could be multiple
+> blocking points.
+>   
+
+If they are known to be synchronous when execution starts, they could 
+just return -ENOSYS and fall back to threads, until someone implements a 
+truly async path.
+
+> BTW, Ben had implemented a fallback approach that spawned kernel threads
+> - it was an initial patch and didn't do any thread pooling at that time.
 >
+> I had a fallback path for pollable fds which did not require thread pools
+> http://lwn.net/Articles/216443/ 
+> (limited to fds which support non blocking semantics)
+>   
 
-WD 750G on ICH7
+These are good solutions for the complex-blocking and never blocking cases.
 
-Device Model:     WDC WD7500AAKS-00RBA0
-00:1f.2 SATA controller: Intel Corporation 82801GR/GH (ICH7 Family) SATA 
-AHCI Controller (rev 01)
+> OR
+>
+> Maybe we could use a very simple version of syslets to do an io_submit
+> in libaio :) 
+>
+> Does the syslet approach of continuing in a different thread (different
+> thread id) affect kvm ?
+>   
 
-I've not tried playing with the cache.
+Yes, we like to pthread_kill() threads from time to time, and even 
+expose the thread IDs to management tools so they can control pinning.
 
-Justin.
+Perhaps a variant of syslet, that is kernel-only, and does:
+
+- always allocate a new kernel stack at io_submit() time, but not a new 
+thread
+- start executing the rarely-blocking path of the request (like block 
+mapping and get_users_pages_fast) on the new stack
+- if we block here, clone a new thread and graft the stack onto it
+- start the always-blocking portion of the call (enqueuing a bio)
+- exit the new thead if we hit the slowpath, or deallocate the stack and 
+longjmp back to the main stack if we did not
+
+This does not expose any new semantics to userspace.  It does twist the 
+guts of the kernel in that we have to duplicate thread_info, but if 
+thread_info is only accessed from current, I think that is managable.
+
+(I think I just described fibrils, no?  I think that was a good idea.  
+Why can't we go back to it?)
+
+-- 
+error compiling committee.c: too many arguments to function
+
