@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKYWx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYKYW5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYKYWx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:53:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKYWxs
+	id S1753481AbYKYW5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 17:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYKYW46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:53:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752284AbYKYWxr (ORCPT
+	Tue, 25 Nov 2008 17:56:58 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52792 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752121AbYKYW45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 17:53:47 -0500
-Date: Tue, 25 Nov 2008 14:53:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Coly Li <coyli@suse.de>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
-Subject: Re: [PATCH] fix similar typos to successfull, v2
-Message-Id: <20081125145308.8633bf4a.akpm@linux-foundation.org>
-In-Reply-To: <492AE7ED.8040304@suse.de>
-References: <492AE7ED.8040304@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 25 Nov 2008 17:56:57 -0500
+Date: Tue, 25 Nov 2008 22:57:08 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: andy <rootstrap@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Need to pay to use the word "Linux" in commercial
+ products/services!
+Message-ID: <20081125225708.6399ba14@lxorguk.ukuu.org.uk>
+In-Reply-To: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
+References: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,35 +30,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 01:44:13 +0800
-Coly Li <coyli@suse.de> wrote:
+On Tue, 25 Nov 2008 22:39:27 +0000
+andy <rootstrap@googlemail.com> wrote:
 
-> When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
-> in kernel tree, 22 typos found totally --  great minds always think alike  :)
+> Hi
+> 
+> I found it a bit strange that the word "Linux" has to be licensed!
+> The "word" is protected under GPL v2, as it is appear first in 1991
+> in GPL code.  Trademarks and Patents are not allowed in GPL!
+> The registration of the name at later point of time, and now the
+> licensing terms are very confusing to me, could someone help
+> me to understand better please?
 
-Mutter.  I have a super-strict (lol) policy of "I don't take patches
-which fix typos/spellos in comments", because we have so many such
-errors, and I'd get buried in silly patches.  But I do take patches
-which fix documentation and user-visible printks, etc.
+The GPL protects copyrights not trademarks. The Linux trademarking is an
+interesting question and I know a lot of companies take the view that the
+mark is unenforcable. On the other hand it stops abuse of the name for
+other unrelated software.
 
->  Documentation/hwmon/abituguru-datasheet   |    4 ++--
->  Documentation/scsi/scsi_fc_transport.txt  |    4 ++--
->  arch/powerpc/platforms/cell/spufs/spufs.h |    2 +-
->  drivers/infiniband/hw/nes/nes_cm.c        |    2 +-
->  drivers/isdn/hardware/eicon/debuglib.h    |    2 +-
->  drivers/isdn/hardware/eicon/os_4bri.c     |    2 +-
->  drivers/isdn/hardware/eicon/os_bri.c      |    2 +-
->  drivers/isdn/hardware/eicon/os_pri.c      |    2 +-
->  drivers/mtd/ubi/kapi.c                    |    2 +-
->  drivers/net/wireless/ath5k/dma.c          |    2 +-
->  drivers/net/wireless/zd1211rw/zd_mac.c    |    2 +-
->  drivers/s390/block/dasd_3990_erp.c        |    2 +-
->  drivers/s390/block/dasd_int.h             |    2 +-
->  drivers/s390/char/tape_3590.c             |    2 +-
->  drivers/s390/cio/cio.c                    |    2 +-
->  drivers/s390/cio/qdio_main.c              |    2 +-
->  fs/ext4/extents.c                         |    2 +-
->  fs/ocfs2/dlmglue.c                        |    4 ++--
->  net/sctp/auth.c                           |    2 +-
+A lot of others of course simply omit the 'Linux' from official names of
+commercial projects ;) and I've not seen any attempt to charge licensing
+fees to anyone else.
 
-This patch sneakily mixed the two up, so I merged it ;)
+Alan
