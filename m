@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbYKYVjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbYKYVkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbYKYVjp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbYKYVgW
+	id S1754222AbYKYVkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYKYVg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:36:22 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:11940 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753210AbYKYVgU (ORCPT
+	Tue, 25 Nov 2008 16:36:26 -0500
+Received: from gv-out-0910.google.com ([216.239.58.184]:55788 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbYKYVgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:36:20 -0500
+	Tue, 25 Nov 2008 16:36:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:subject:from:date:message-id;
-        b=QyUf32EcxAF2Ho4VsVdrk2u3dyseD28ncS6ZZsgidcv6mUxhZJofugz2lc/zEwBO6B
-         XXpS0wdX+XrjKvPxu1IrOqqui7aHa5QASwU4+xU/TiyUaU3zbADQI8AuNNJWPnrINVPv
-         2hzgZipk4d0a5Fa9DxJdz9csp389byYpeXPdQ=
+        b=rOMB6Tth02Ljhhue0Nw/juSUR1aWtWBbKpS55VHxvx1bDNyBDLt6VFlXPRopU2Oagv
+         9g9vWD3nxAvycZ82neEGRNSnU5WwPc0Gn09evDN7A1P5lGi3QQnXfVKSWzVmWyMDNr8u
+         sW/vEwVRvpjvekc1b5zEGcnHEM0qlrMDlM/8k=
 To: linux-kernel@vger.kernel.org
-Subject: [patch 10/24] perfmon: PMU mapping
+Subject: [patch 12/24] perfmon: read and write registers
 From: eranian@googlemail.com
-Date: Tue, 25 Nov 2008 13:36:17 -0800 (PST)
-Message-ID: <492c6fd1.1358560a.5149.0bb8@mx.google.com>
+Date: Tue, 25 Nov 2008 13:36:22 -0800 (PST)
+Message-ID: <492c6fd6.01b7660a.15b0.57af@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds PMU resource description management functions.
-Perfmon exports a logical view of the PMU with uniform register
-names across all architectures. Each logical register is then
-mapped onto an actual PMU register via a mapping table. Such table
-exists for each PMU model.
-
-PMU description tables are hardcoded into the kernel and one
-is selected during boot.
+This patch adds the functions to read and write PMU data and
+config registers.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
 --
 
-Index: o3/perfmon/perfmon_pmu.c
+Index: o3/perfmon/perfmon_rw.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o3/perfmon/perfmon_pmu.c	2008-11-25 18:58:26.000000000 +0100
-@@ -0,0 +1,265 @@
++++ o3/perfmon/perfmon_rw.c	2008-11-25 18:59:05.000000000 +0100
+@@ -0,0 +1,449 @@
 +/*
-+ * perfmon_pmu.c: perfmon2 PMU configuration management
++ * perfmon.c: perfmon2 PMC/PMD read/write system calls
 + *
 + * This file implements the perfmon2 interface which
 + * provides access to the hardware performance counters
@@ -63,7 +57,7 @@ Index: o3/perfmon/perfmon_pmu.c
 + *                David Mosberger-Tang <davidm@hpl.hp.com>
 + *
 + * More information about perfmon available at:
-+ * 	http://perfmon2.sf.net
++ * 	http://perfmon2.sf.net/
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -80,247 +74,460 @@ Index: o3/perfmon/perfmon_pmu.c
 + * 02111-1307 USA
 + */
 +#include <linux/module.h>
++#include <linux/kernel.h>
 +#include <linux/perfmon_kern.h>
 +#include "perfmon_priv.h"
 +
-+#ifndef CONFIG_MODULE_UNLOAD
-+#define module_refcount(n)	1
-+#endif
-+
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_conf_lock);
-+
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_acq_lock);
-+static u32 pfm_pmu_acquired;
-+
-+/*
-+ * perfmon core must acces PMU information ONLY through pfm_pmu_conf
-+ * if pfm_pmu_conf is NULL, then no description is registered
++/**
++ * is_invalid -- check if register index is within limits
++ * @cnum: register index
++ * @impl: bitmask of implemented registers
++ * @max: highest implemented registers + 1
++ *
++ * return:
++ *    0 is register index is valid
++ *    1 if invalid
 + */
-+struct pfm_pmu_config	*pfm_pmu_conf;
-+EXPORT_SYMBOL(pfm_pmu_conf);
++static inline int is_invalid(u16 cnum, u64 *impl, u16 max)
++{
++	return cnum >= max || !pfm_arch_bv_test_bit(cnum, impl);
++}
 +
 +/**
-+ * pfm_pmu_regdesc_init -- initialize regdesc structure from PMU table
-+ * @regs: the regdesc structure to initialize
-+ * @excl_type: the register type(s) to exclude from this regdesc
-+ * @unvail_pmcs: unavailable PMC registers
-+ * @unavail_pmds: unavailable PMD registers
++ * update_used_reg -- updated used_pmcs for a single PMD
++ * @set: set to update
++ * @cnum: new PMD to add
++ *
++ * This function adds the pmds and pmcs depending on PMD cnum
 + */
-+static void pfm_pmu_regdesc_init(struct pfm_regdesc *regs, int excl_type,
-+				 u64 *unavail_pmcs, u64 *unavail_pmds)
++static inline void update_used_reg(struct pfm_context *ctx,
++				   struct pfm_event_set *set, u16 cnum)
 +{
-+	struct pfm_regmap_desc *d;
-+	u16 n, n2, n_counters, i;
-+	int max1, max2, max3;
-+
-+	/*
-+	 * compute the number of implemented PMC from the
-+	 * description table
-+	 */
-+	n = 0;
-+	max1 = max2 = -1;
-+	d = pfm_pmu_conf->pmc_desc;
-+	for (i = 0; i < pfm_pmu_conf->num_pmc_entries;  i++, d++) {
-+		if (!(d->type & PFM_REG_I))
-+			continue;
-+
-+		if (pfm_arch_bv_test_bit(i, unavail_pmcs))
-+			continue;
-+
-+		if (d->type & excl_type)
-+			continue;
-+
-+		pfm_arch_bv_set_bit(i, regs->pmcs);
-+
-+		max1 = i;
-+		n++;
-+	}
-+
-+	regs->max_pmc = max1 + 1;
-+	regs->num_pmcs = n;
-+
-+	n = n_counters = n2 = 0;
-+	max1 = max2 = max3 = -1;
-+	d = pfm_pmu_conf->pmd_desc;
-+	for (i = 0; i < pfm_pmu_conf->num_pmd_entries;  i++, d++) {
-+		if (!(d->type & PFM_REG_I))
-+			continue;
-+
-+		if (pfm_arch_bv_test_bit(i, unavail_pmds))
-+			continue;
-+
-+		if (d->type & excl_type)
-+			continue;
-+
-+		pfm_arch_bv_set_bit(i, regs->pmds);
-+		max1 = i;
-+		n++;
-+
-+		/*
-+		 * read-write registers
-+		 */
-+		if (!(d->type & PFM_REG_RO)) {
-+			pfm_arch_bv_set_bit(i, regs->rw_pmds);
-+			max3 = i;
-+			n2++;
-+		}
-+
-+		/*
-+		 * counter registers
-+		 */
-+		if (d->type & PFM_REG_C64) {
-+			pfm_arch_bv_set_bit(i, regs->cnt_pmds);
-+			n_counters++;
-+		}
-+
-+		/*
-+		 * PMD with intr capabilities
-+		 */
-+		if (d->type & PFM_REG_INTR) {
-+			pfm_arch_bv_set_bit(i, regs->intr_pmds);
-+			max2 = i;
-+		}
-+	}
-+
-+	regs->max_pmd = max1 + 1;
-+	regs->max_intr_pmd  = max2 + 1;
-+
-+	regs->num_counters = n_counters;
-+	regs->num_pmds = n;
-+	regs->max_rw_pmd = max3 + 1;
-+	regs->num_rw_pmd = n2;
++	pfm_arch_bv_or(set->used_pmcs,
++		       set->used_pmcs,
++		       pfm_pmu_conf->pmd_desc[cnum].dep_pmcs,
++		       ctx->regs.max_pmc);
 +}
 +
-+int pfm_pmu_register(struct pfm_pmu_config *cfg)
++/**
++ * update_changes -- update nused_pmcs, nused_pmds, write newly touched pmcs
++ * @ctx: context to use
++ * @set: event set to use
++ * @old_used_pmcs: former used_pmc bitmask
++ *
++ * This function updates nused_pmcs and nused_pmds after the last modificiation
++ * to an event set. When new pmcs are used, then they must be initialized such
++ * that we do not pick up stale values from another session.
++ */
++static inline int update_changes(struct pfm_context *ctx, struct pfm_event_set *set,
++				 u64 *old_used_pmcs)
 +{
-+	int ret = -EBUSY;
++	struct pfarg_pmr req;
++	u16 max_pmc, max_pmd;
++	int n, p, q, ret = 0;
 +
-+	if (perfmon_disabled) {
-+		PFM_INFO("perfmon disabled, cannot add PMU description");
-+		return -ENOSYS;
++	max_pmd = ctx->regs.max_pmd;
++	max_pmc = ctx->regs.max_pmc;
++
++	/*
++	 * update used counts
++	 */
++	set->nused_pmds = pfm_arch_bv_weight(set->used_pmds, max_pmd);
++	set->nused_pmcs = pfm_arch_bv_weight(set->used_pmcs, max_pmc);
++
++	PFM_DBG("u_pmds=0x%llx nu_pmds=%u u_pmcs=0x%llx nu_pmcs=%u",
++		(unsigned long long)set->used_pmds[0],
++		set->nused_pmds,
++		(unsigned long long)set->used_pmcs[0],
++		set->nused_pmcs);
++
++	memset(&req, 0, sizeof(req));
++
++	n = pfm_arch_bv_weight(set->used_pmcs, max_pmc);
++	for(p = 0; n; n--, p = q+1) {
++		q = pfm_arch_bv_find_next_bit(set->used_pmcs, max_pmc, p);
++
++		if (pfm_arch_bv_test_bit(q, old_used_pmcs))
++			continue;
++
++		req.reg_num = q;
++		req.reg_value = set->pmcs[q];
++
++		ret = __pfm_write_pmcs(ctx, &req, 1);
++		if (ret)
++			break;
 +	}
-+
-+	spin_lock(&pfm_pmu_conf_lock);
-+
-+	if (pfm_pmu_conf)
-+		goto unlock;
-+
-+	pfm_pmu_conf = cfg;
-+	pfm_pmu_conf->ovfl_mask = (1ULL << cfg->counter_width) - 1;
-+
-+unlock:
-+	spin_unlock(&pfm_pmu_conf_lock);
-+
-+	if (ret)
-+		PFM_INFO("register %s PMU error %d", cfg->pmu_name, ret);
-+	else
-+		PFM_INFO("%s PMU installed", cfg->pmu_name);
 +	return ret;
 +}
 +
-+/*
-+ * acquire PMU resource from lower-level PMU register allocator
-+ * (currently perfctr-watchdog.c)
++/**
++ * __pfm_write_pmds - modify data registers
++ * @ctx: context to operate on
++ * @req: pfarg_pmd_t request from user
++ * @count: number of element in the pfarg_pmd_t vector
 + *
-+ * acquisition is done when the first context is created (and not
-+ * when it is loaded). We grab all that is defined in the description
-+ * module and then we make adjustments at the arch-specific level.
++ * The function succeeds whether the context is attached or not.
++ * When attached to another thread, that thread must be stopped.
 + *
-+ * The PMU resource is released when the last perfmon context is
-+ * destroyed.
-+ *
-+ * interrupts are not masked
++ * The context is locked and interrupts are disabled.
 + */
-+int pfm_pmu_acquire(struct pfm_context *ctx)
++int __pfm_write_pmds(struct pfm_context *ctx, struct pfarg_pmr *req, int count)
 +{
-+	u64 unavail_pmcs[PFM_PMC_BV];
-+	u64 unavail_pmds[PFM_PMD_BV];
-+	int ret = 0;
++	struct pfm_event_set *set;
++	u64 old_used_pmcs[PFM_PMC_BV];
++	u64 value, ovfl_mask;
++	u64 *impl_pmds;
++	u16 cnum, pmd_type, max_pmd;
++	int i, can_access_pmu;
++	int ret;
++	pfm_pmd_check_t	wr_func;
 +
-+	spin_lock(&pfm_pmu_acq_lock);
++	ovfl_mask = pfm_pmu_conf->ovfl_mask;
++	max_pmd	= ctx->regs.max_pmd;
++	impl_pmds = ctx->regs.pmds;
++	wr_func = pfm_pmu_conf->pmd_write_check;
 +
-+	PFM_DBG("pmu_acquired=%d", pfm_pmu_acquired);
++	can_access_pmu = 0;
 +
-+	pfm_pmu_acquired++;
-+
-+	if (pfm_pmu_acquired == 1) {
-+
-+		memset(unavail_pmcs, 0, sizeof(unavail_pmcs));
-+		memset(unavail_pmds, 0, sizeof(unavail_pmds));
-+
-+		ret = pfm_arch_pmu_acquire(unavail_pmcs, unavail_pmds);
-+		if (ret) {
-+			pfm_pmu_acquired--;
-+		} else {
-+			memset(&pfm_pmu_conf->regs_all, 0, sizeof(struct pfm_regdesc));
-+
-+			pfm_pmu_regdesc_init(&pfm_pmu_conf->regs_all, 0,
-+				  	     unavail_pmcs,
-+					     unavail_pmds);
-+
-+			PFM_DBG("regs_all.pmcs=0x%llx",
-+				(unsigned long long)pfm_pmu_conf->regs_all.pmcs[0]);
-+
-+			/* available PMU ressources */
-+			PFM_DBG("PMU acquired: %u PMCs, %u PMDs, %u counters",
-+				pfm_pmu_conf->regs_all.num_pmcs,
-+				pfm_pmu_conf->regs_all.num_pmds,
-+				pfm_pmu_conf->regs_all.num_counters);
-+		}
-+	}
-+	spin_unlock(&pfm_pmu_acq_lock);
 +	/*
-+	 * copy global regdesc to context (for future extensions)
++	 * we cannot access the actual PMD registers when monitoring is masked
 +	 */
-+	ctx->regs = pfm_pmu_conf->regs_all;
++	if (unlikely(ctx->state == PFM_CTX_LOADED))
++		can_access_pmu = __get_cpu_var(pmu_owner) == ctx->task;
++
++	ret = -EINVAL;
++	set = ctx->active_set;
++
++	pfm_arch_bv_copy(old_used_pmcs, set->used_pmcs,
++			 ctx->regs.max_pmc);
++
++	for (i = 0; i < count; i++, req++) {
++
++		cnum = req->reg_num;
++
++		/*
++		 * cannot write to unexisting
++		 * writes to read-only register are ignored
++		 */
++		if (unlikely(is_invalid(cnum, impl_pmds, max_pmd))) {
++			PFM_DBG("pmd%u is not available", cnum);
++			goto error;
++		}
++
++		pmd_type = pfm_pmu_conf->pmd_desc[cnum].type;
++
++		/*
++		 * execute write checker, if any
++		 */
++		if (unlikely(wr_func && (pmd_type & PFM_REG_WC))) {
++			ret = (*wr_func)(ctx, set, req);
++			if (ret)
++				goto error;
++
++		}
++
++		value = req->reg_value;
++
++		/*
++		 * we reprogram the PMD hence, we clear any pending
++		 * ovfl. Does affect ovfl switch on restart but new
++		 * value has already been established here
++		 */
++		if (pfm_arch_bv_test_bit(cnum, set->povfl_pmds)) {
++			set->npend_ovfls--;
++			pfm_arch_bv_clear_bit(cnum, set->povfl_pmds);
++		}
++
++		/*
++		 * update value
++		 */
++		set->pmds[cnum] = value;
++
++		pfm_arch_bv_set_bit(cnum, set->used_pmds);
++		update_used_reg(ctx, set, cnum);
++
++		set->priv_flags |= PFM_SETFL_PRIV_MOD_PMDS;
++		if (can_access_pmu)
++			pfm_write_pmd(ctx, cnum, value);
++
++		/*
++		 * update number of used PMD registers
++		 */
++		set->nused_pmds = pfm_arch_bv_weight(set->used_pmds,
++						     max_pmd);
++
++		PFM_DBG("pmd%u=0x%llx a_pmu=%d "
++			"ctx_pmd=0x%llx "
++			" u_pmds=0x%llx nu_pmds=%u ",
++			cnum,
++			(unsigned long long)value,
++			can_access_pmu,
++			(unsigned long long)set->pmds[cnum],
++			(unsigned long long)set->used_pmds[0],
++			set->nused_pmds);
++	}
++	ret = 0;
++error:
++	update_changes(ctx, set, old_used_pmcs);
++	/*
++	 * make changes visible
++	 */
++	if (can_access_pmu)
++		pfm_arch_serialize();
 +
 +	return ret;
 +}
 +
-+/*
-+ * release the PMU resource
++/**
++ * __pfm_write_pmcs - modify config registers
++ * @ctx: context to operate on
++ * @req: pfarg_pmc_t request from user
++ * @count: number of element in the pfarg_pmc_t vector
 + *
-+ * actual release happens when last context is destroyed
 + *
-+ * interrupts are not masked
++ * The function succeeds whether the context is * attached or not.
++ * When attached to another thread, that thread must be stopped.
++ *
++ * The context is locked and interrupts are disabled.
 + */
-+void pfm_pmu_release(void)
++int __pfm_write_pmcs(struct pfm_context *ctx, struct pfarg_pmr *req, int count)
 +{
-+	BUG_ON(irqs_disabled());
++	struct pfm_event_set *set;
++	u64 value, dfl_val, rsvd_msk;
++	u64 *impl_pmcs;
++	int i, can_access_pmu;
++	int ret;
++	u16 cnum, pmc_type, max_pmc;
++	pfm_pmc_check_t	wr_func;
++
++	wr_func = pfm_pmu_conf->pmc_write_check;
++	max_pmc = ctx->regs.max_pmc;
++	impl_pmcs = ctx->regs.pmcs;
++
++	can_access_pmu = 0;
 +
 +	/*
-+	 * we need to use a spinlock because release takes some time
-+	 * and we may have a race with pfm_pmu_acquire()
++	 * we cannot access the actual PMC registers when monitoring is masked
 +	 */
-+	spin_lock(&pfm_pmu_acq_lock);
++	if (unlikely(ctx->state == PFM_CTX_LOADED))
++		can_access_pmu = __get_cpu_var(pmu_owner) == ctx->task;
 +
-+	PFM_DBG("pmu_acquired=%d", pfm_pmu_acquired);
++	ret = -EINVAL;
++	set = ctx->active_set;
 +
-+	/*
-+	 * we decouple test and decrement because if we had errors
-+	 * in pfm_pmu_acquire(), we still come here on pfm_context_free()
-+	 * but with pfm_pmu_acquire=0
-+	 */
-+	if (pfm_pmu_acquired > 0 && --pfm_pmu_acquired == 0) {
-+		pfm_arch_pmu_release();
-+		PFM_DBG("PMU released");
++	for (i = 0; i < count; i++, req++) {
++
++		cnum = req->reg_num;
++		value = req->reg_value;
++
++		/*
++		 * no access to unavailable PMC register
++		 */
++		if (unlikely(is_invalid(cnum, impl_pmcs, max_pmc))) {
++			PFM_DBG("pmc%u is not available", cnum);
++			goto error;
++		}
++
++		pmc_type = pfm_pmu_conf->pmc_desc[cnum].type;
++		dfl_val = pfm_pmu_conf->pmc_desc[cnum].dfl_val;
++		rsvd_msk = pfm_pmu_conf->pmc_desc[cnum].rsvd_msk;
++
++		/*
++		 * set reserved bits to default values
++		 * (reserved bits must be 1 in rsvd_msk)
++		 */
++		value = (value & ~rsvd_msk) | (dfl_val & rsvd_msk);
++
++		/*
++		 * execute write checker, if any
++		 */
++		if (likely(wr_func && (pmc_type & PFM_REG_WC))) {
++			req->reg_value = value;
++			ret = (*wr_func)(ctx, set, req);
++			if (ret)
++				goto error;
++			value = req->reg_value;
++		}
++
++		/*
++		 * Now we commit the changes
++		 */
++
++		/*
++		 * mark PMC register as used
++		 * We do not track associated PMC register based on
++		 * the fact that they will likely need to be written
++		 * in order to become useful at which point the statement
++		 * below will catch that.
++		 *
++		 * The used_pmcs bitmask is only useful on architectures where
++		 * the PMC needs to be modified for particular bits, especially
++		 * on overflow or to stop/start.
++		 */
++		if (!pfm_arch_bv_test_bit(cnum, set->used_pmcs)) {
++			pfm_arch_bv_set_bit(cnum, set->used_pmcs);
++			set->nused_pmcs++;
++		}
++
++		set->pmcs[cnum] = value;
++
++		set->priv_flags |= PFM_SETFL_PRIV_MOD_PMCS;
++		if (can_access_pmu)
++			pfm_arch_write_pmc(ctx, cnum, value);
++
++		PFM_DBG("pmc%u=0x%llx a_pmu=%d "
++			"u_pmcs=0x%llx nu_pmcs=%u",
++			cnum,
++			(unsigned long long)value,
++			can_access_pmu,
++			(unsigned long long)set->used_pmcs[0],
++			set->nused_pmcs);
 +	}
-+	spin_unlock(&pfm_pmu_acq_lock);
++	ret = 0;
++error:
++	/*
++	 * make sure the changes are visible
++	 */
++	if (can_access_pmu)
++		pfm_arch_serialize();
++
++	return ret;
 +}
-Index: o3/perfmon/perfmon_priv.h
++
++/**
++ * __pfm_read_pmds - read data registers
++ * @ctx: context to operate on
++ * @req: pfarg_pmd_t request from user
++ * @count: number of element in the pfarg_pmd_t vector
++ *
++ *
++ * The function succeeds whether the context is attached or not.
++ * When attached to another thread, that thread must be stopped.
++ *
++ * The context is locked and interrupts are disabled.
++ */
++int __pfm_read_pmds(struct pfm_context *ctx, struct pfarg_pmr *req, int count)
++{
++	u64 val = 0, ovfl_mask, hw_val;
++	u64 *impl_pmds;
++	struct pfm_event_set *set;
++	int i, ret, can_access_pmu = 0;
++	u16 cnum, pmd_type, max_pmd;
++
++	ovfl_mask = pfm_pmu_conf->ovfl_mask;
++	impl_pmds = ctx->regs.pmds;
++	max_pmd   = ctx->regs.max_pmd;
++
++	if (likely(ctx->state == PFM_CTX_LOADED)) {
++		can_access_pmu = __get_cpu_var(pmu_owner) == ctx->task;
++		if (can_access_pmu)
++			pfm_arch_serialize();
++	}
++
++	/*
++	 * on both UP and SMP, we can only read the PMD from the hardware
++	 * register when the task is the owner of the local PMU.
++	 */
++	ret = -EINVAL;
++	set = ctx->active_set;
++
++	for (i = 0; i < count; i++, req++) {
++
++		cnum = req->reg_num;
++
++		if (unlikely(is_invalid(cnum, impl_pmds, max_pmd))) {
++			PFM_DBG("pmd%u is not implemented/unaccessible", cnum);
++			goto error;
++		}
++
++		pmd_type = pfm_pmu_conf->pmd_desc[cnum].type;
++
++		/*
++		 * it is not possible to read a PMD which was not requested:
++		 * 	- explicitly written via pfm_write_pmds()
++		 * 	- provided as a reg_smpl_pmds[] to another PMD during
++		 * 	  pfm_write_pmds()
++		 *
++		 * This is motivated by security and for optimization purposes:
++		 * 	- on context switch restore, we can restore only what
++		 * 	  we use (except when regs directly readable at user
++		 * 	  level, e.g., IA-64 self-monitoring, I386 RDPMC).
++		 * 	- do not need to maintain PMC -> PMD dependencies
++		 */
++		if (unlikely(!pfm_arch_bv_test_bit(cnum, set->used_pmds))) {
++			PFM_DBG("pmd%u cannot read, because not used", cnum);
++			goto error;
++		}
++
++		val = set->pmds[cnum];
++
++		/*
++		 * If the task is not the current one, then we check if the
++		 * PMU state is still in the local live register due to lazy
++		 * ctxsw. If true, then we read directly from the registers.
++		 */
++		if (can_access_pmu) {
++			hw_val = pfm_read_pmd(ctx, cnum);
++			if (pmd_type & PFM_REG_C64)
++				val = (val & ~ovfl_mask)
++				    | (hw_val & ovfl_mask);
++			else
++				val = hw_val;
++		}
++
++		PFM_DBG("pmd%u=0x%llx ",
++			cnum,
++			(unsigned long long)val);
++
++		req->reg_value = val;
++	}
++	ret = 0;
++error:
++	return ret;
++}
+Index: o3/include/linux/perfmon.h
 ===================================================================
---- o3.orig/perfmon/perfmon_priv.h	2008-11-25 18:56:15.000000000 +0100
-+++ o3/perfmon/perfmon_priv.h	2008-11-25 18:58:04.000000000 +0100
-@@ -52,6 +52,9 @@
- 
- void pfm_free_context(struct pfm_context *ctx);
- 
-+int pfm_pmu_acquire(struct pfm_context *ctx);
-+void pfm_pmu_release(void);
-+
- void pfm_save_pmds(struct pfm_context *ctx);
+--- o3.orig/include/linux/perfmon.h	2008-11-25 18:29:29.000000000 +0100
++++ o3/include/linux/perfmon.h	2008-11-25 18:58:39.000000000 +0100
+@@ -46,6 +46,22 @@
+ #define PFM_PMC_BV	PFM_BVSIZE(PFM_MAX_PMCS)
  
  /*
++ * PMC and PMD generic register description
++ */
++struct pfarg_pmr {
++	__u16 reg_num;		/* which register */
++	__u16 reg_res1;		/* reserved */
++	__u32 reg_flags;	/* REGFL flags */
++	__u64 reg_value;	/* 64-bit value */
++};
++
++/*
++ * pfm_write, pfm_read type:
++ */
++#define PFM_RW_PMD	0x01 /* accessing PMD registers */
++#define PFM_RW_PMC	0x02 /* accessing PMC registers */
++
++/*
+  * default value for the user and group security parameters in
+  * /proc/sys/kernel/perfmon/sys_group
+  * /proc/sys/kernel/perfmon/task_group
+Index: o3/perfmon/perfmon_priv.h
+===================================================================
+--- o3.orig/perfmon/perfmon_priv.h	2008-11-25 18:58:32.000000000 +0100
++++ o3/perfmon/perfmon_priv.h	2008-11-25 18:58:39.000000000 +0100
+@@ -44,6 +44,11 @@
+ }
+ 
+ int pfm_init_ctx(void);
++int __pfm_write_pmcs(struct pfm_context *ctx, struct pfarg_pmr *req,
++		     int count);
++int __pfm_write_pmds(struct pfm_context *ctx, struct pfarg_pmr *req,
++		     int count);
++int __pfm_read_pmds(struct pfm_context *ctx, struct pfarg_pmr *req, int count);
+ 
+ int pfm_session_acquire(void);
+ void pfm_session_release(void);
 
 -- 
 
