@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYKYRB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYKYREi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbYKYRB4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 12:01:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYKYRBq
+	id S1753575AbYKYREi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 12:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYKYRE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 12:01:46 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57454 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbYKYRBp (ORCPT
+	Tue, 25 Nov 2008 12:04:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42612 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYKYRE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 12:01:45 -0500
-Date: Tue, 25 Nov 2008 12:01:41 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, sandeen@sandeen.net, davem@davemloft.net,
-       tony.luck@intel.com, ralf@linux-mips.org, kyle@mcmartin.ca,
-       schwidefsky@de.ibm.com
-Subject: Re: [PATCH] generic compat_sys_ustat
-Message-ID: <20081125170141.GA30056@bombadil.infradead.org>
-References: <20081121084105.GA7155@lst.de>
+	Tue, 25 Nov 2008 12:04:28 -0500
+Message-ID: <492C2EE3.8080104@zytor.com>
+Date: Tue, 25 Nov 2008 08:59:15 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121084105.GA7155@lst.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: mtk.manpages@gmail.com
+CC: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/9] LinuxPPS core support.
+References: <1227542451-31969-1-git-send-email-giometti@linux.it>	 <1227542451-31969-2-git-send-email-giometti@linux.it>	 <517f3f820811250824ubb4ca0bn5a8be62a180581e4@mail.gmail.com>	 <20081125164512.GE26417@tekkaman> <cfd18e0f0811250854r20707d53u629245e478fb8d69@mail.gmail.com>
+In-Reply-To: <cfd18e0f0811250854r20707d53u629245e478fb8d69@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 09:41:05AM +0100, Christoph Hellwig wrote:
-> Due to a different size of ino_t ustat needs a compat handler, but
-> currently only x86 and mips provide one.  Add a generic compat_sys_ustat
-> and switch all architectures over to it.
+Michael Kerrisk wrote:
 > 
-> Found by Eric Sandeen when running xfstests/017 on ppc64, which causes
-> stack smashing warnings on RHEL/Fedora due to the too large amount of
-> data writen by the syscall.
-> 
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Weight of usage seems to be "antennas" when we are talking about radio devices.
 > 
 
-Interesting we've been missing this without noticing...
+"antennas" in American English, "aerials" in British English ;)
 
-Acked-by: Kyle McMartin <kyle@mcmartin.ca>
+	-hpa
