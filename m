@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYKYPAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbYKYPBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYKYPAe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 10:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYKYPA0
+	id S1752890AbYKYPBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 10:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYKYPBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 10:00:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58849 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbYKYPA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 10:00:26 -0500
-Date: Tue, 25 Nov 2008 15:59:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: suparna@in.ibm.com, Zach Brown <zach.brown@oracle.com>,
-       linux-aio@kvack.org, Jeff Moyer <jmoyer@redhat.com>,
-       Anthony Liguori <aliguori@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: kvm aio wishlist
-Message-ID: <20081125145949.GD14147@elte.hu>
-References: <492B0CDD.7080000@redhat.com> <492B2348.9090008@oracle.com> <492B2976.3010209@redhat.com> <492B3912.3030707@oracle.com> <492BC5CB.6000609@redhat.com> <20081125101923.GA28123@in.ibm.com> <492BD807.4000002@redhat.com>
+	Tue, 25 Nov 2008 10:01:34 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:55889 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbYKYPBd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 10:01:33 -0500
+Message-ID: <492C1345.9090201@linux.vnet.ibm.com>
+Date: Tue, 25 Nov 2008 20:31:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492BD807.4000002@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v4)
+References: <20081116081034.25166.7586.sendpatchset@balbir-laptop> <20081116081055.25166.85066.sendpatchset@balbir-laptop> <20081125205832.38f8c365.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081125205832.38f8c365.nishimura@mxp.nes.nec.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Daisuke Nishimura wrote:
+> Hi.
+> 
+> Unfortunately, trying to hold cgroup_mutex at reclaim causes dead lock.
+> 
+> For example, when attaching a task to some cpuset directory(memory_migrate=on),
+> 
+>     cgroup_tasks_write (hold cgroup_mutex)
+>         attach_task_by_pid
+>             cgroup_attach_task
+>                 cpuset_attach
+>                     cpuset_migrate_mm
+>                         :
+>                         unmap_and_move
+>                             mem_cgroup_prepare_migration
+>                                 mem_cgroup_try_charge
+>                                     mem_cgroup_hierarchical_reclaim
+> 
 
-* Avi Kivity <avi@redhat.com> wrote:
+Did lockdep complain about it?
 
-> Perhaps a variant of syslet, that is kernel-only, and does:
->
-> - always allocate a new kernel stack at io_submit() time, but not a 
->   new thread
+1. We could probably move away from cgroup_mutex to a memory controller specific
+mutex.
+2. We could give up cgroup_mutex before migrate_mm, since it seems like we'll
+hold the cgroup lock for long and holding it during reclaim will definitely be
+visible to users trying to create/delete nodes.
 
-such a N:M threading design is a loss - sooner or later we arrive to a 
-point where people actually start using it and then we want to 
-load-balance and schedule these entities.
+I prefer to do (2), I'll look at the code more closely
 
-So i'd suggest the kthread based async engine i wrote for syslets. It 
-worked well and for kernel-only entities it schedules super-fast - it 
-can do up to 20 million events per second on a 16-way box i'm testing 
-on. The objections about syslets were not related to the scheduling of 
-it but were mostly about the userspace API/ABI: you dont have to use 
-that.
+> I think similar problem can also happen when removing memcg's directory.
+> 
 
-	Ingo
+Why removing a directory? memcg (now) marks the directory as obsolete and we
+check for obsolete directories and get/put references.
+
+Thanks for the bug report!
+
+-- 
+	Balbir
