@@ -1,145 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYKYVu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYKYVvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbYKYVu4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbYKYVtF
+	id S1753818AbYKYVvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYKYVvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:49:05 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46676 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbYKYVtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:49:04 -0500
-Date: Tue, 25 Nov 2008 21:47:44 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Woodhouse <dwmw2@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, Joern Engel <joern@logfs.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Donjun Shin <djshin90@gmail.com>, Tejun Heo <teheo@suse.de>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 9/9] swapfile: swap allocation cycle if nonrot
-In-Reply-To: <Pine.LNX.4.64.0811252140230.17555@blonde.site>
-Message-ID: <Pine.LNX.4.64.0811252147040.20455@blonde.site>
-References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
- <Pine.LNX.4.64.0811252140230.17555@blonde.site>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Nov 2008 16:51:40 -0500
+Received: from buick.jordet.net ([193.91.240.190]:36130 "EHLO buick.jordet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750963AbYKYVvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:51:40 -0500
+Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+From: Stian Jordet <liste@jordet.net>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Stian Jordet <liste@jordet.net>, Sven-Haegar Koch <haegar@sdinet.de>,
+       xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+In-Reply-To: <492C6C9B.3060000@sandeen.net>
+References: <1226760254.5089.11.camel@chevrolet>
+	 <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
+	 <1227476908.32357.5.camel@chevrolet>
+	 <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>
+	 <1227485956.5145.10.camel@chevrolet>
+	 <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan>
+	 <1227569808.5039.6.camel@chevrolet>
+	 <alpine.DEB.2.00.0811250057510.27010@aurora.sdinet.de>
+	 <1227645887.7992.10.camel@chevrolet>  <492C6C9B.3060000@sandeen.net>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 22:51:33 +0100
+Message-Id: <1227649893.6557.10.camel@oldsmobile>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Though attempting to find free clusters (Andrea), swap allocation has
-always restarted its searches from the beginning of the swap area (sct),
-to reduce seek times between swap pages, by not scattering them all over
-the partition.
+ti., 25.11.2008 kl. 15.22 -0600, skrev Eric Sandeen:
+> Depending on the old system, perhaps its storage did not allow the
+> barriers to be honored, so after xfs saw a test barrier write fail at
+> mount time, it disabled them ... you'd see a message if that were the
+> case, FWIW.
 
-But on a solidstate swap device, seeks are cheap, and block remapping
-to level the wear may be limited by zones: in that case it's better to
-cycle around the whole partition.
+I know those messages, I get them on my old server. But my old
+workstation did not disable the barrier...
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+But I still don't understand this. On my laptop (HP EliteBook 8530w,
+very very powerful, but still a laptop, not an eight core, hardware raid
+workstation...), I get this (xfs partition):
 
- mm/swapfile.c |   50 ++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 46 insertions(+), 4 deletions(-)
+barrier:
 
---- swapfile8/mm/swapfile.c	2008-11-25 12:41:42.000000000 +0000
-+++ swapfile9/mm/swapfile.c	2008-11-25 12:41:44.000000000 +0000
-@@ -169,6 +169,7 @@ static int wait_for_discard(void *word)
- static inline unsigned long scan_swap_map(struct swap_info_struct *si)
- {
- 	unsigned long offset;
-+	unsigned long scan_base;
- 	unsigned long last_in_cluster = 0;
- 	int latency_ration = LATENCY_LIMIT;
- 	int found_free_cluster = 0;
-@@ -181,10 +182,11 @@ static inline unsigned long scan_swap_ma
- 	 * all over the entire swap partition, so that we reduce
- 	 * overall disk seek times between swap pages.  -- sct
- 	 * But we do now try to find an empty cluster.  -Andrea
-+	 * And we let swap pages go all over an SSD partition.  Hugh
- 	 */
- 
- 	si->flags += SWP_SCANNING;
--	offset = si->cluster_next;
-+	scan_base = offset = si->cluster_next;
- 
- 	if (unlikely(!si->cluster_nr--)) {
- 		if (si->pages - si->inuse_pages < SWAPFILE_CLUSTER) {
-@@ -206,7 +208,16 @@ static inline unsigned long scan_swap_ma
- 		}
- 		spin_unlock(&swap_lock);
- 
--		offset = si->lowest_bit;
-+		/*
-+		 * If seek is expensive, start searching for new cluster from
-+		 * start of partition, to minimize the span of allocated swap.
-+		 * But if seek is cheap, search from our current position, so
-+		 * that swap is allocated from all over the partition: if the
-+		 * Flash Translation Layer only remaps within limited zones,
-+		 * we don't want to wear out the first zone too quickly.
-+		 */
-+		if (!(si->flags & SWP_SOLIDSTATE))
-+			scan_base = offset = si->lowest_bit;
- 		last_in_cluster = offset + SWAPFILE_CLUSTER - 1;
- 
- 		/* Locate the first empty (unaligned) cluster */
-@@ -228,6 +239,27 @@ static inline unsigned long scan_swap_ma
- 		}
- 
- 		offset = si->lowest_bit;
-+		last_in_cluster = offset + SWAPFILE_CLUSTER - 1;
-+
-+		/* Locate the first empty (unaligned) cluster */
-+		for (; last_in_cluster < scan_base; offset++) {
-+			if (si->swap_map[offset])
-+				last_in_cluster = offset + SWAPFILE_CLUSTER;
-+			else if (offset == last_in_cluster) {
-+				spin_lock(&swap_lock);
-+				offset -= SWAPFILE_CLUSTER - 1;
-+				si->cluster_next = offset;
-+				si->cluster_nr = SWAPFILE_CLUSTER - 1;
-+				found_free_cluster = 1;
-+				goto checks;
-+			}
-+			if (unlikely(--latency_ration < 0)) {
-+				cond_resched();
-+				latency_ration = LATENCY_LIMIT;
-+			}
-+		}
-+
-+		offset = scan_base;
- 		spin_lock(&swap_lock);
- 		si->cluster_nr = SWAPFILE_CLUSTER - 1;
- 		si->lowest_alloc = 0;
-@@ -239,7 +271,7 @@ checks:
- 	if (!si->highest_bit)
- 		goto no_page;
- 	if (offset > si->highest_bit)
--		offset = si->lowest_bit;
-+		scan_base = offset = si->lowest_bit;
- 	if (si->swap_map[offset])
- 		goto scan;
- 
-@@ -323,8 +355,18 @@ scan:
- 			latency_ration = LATENCY_LIMIT;
- 		}
- 	}
-+	offset = si->lowest_bit;
-+	while (++offset < scan_base) {
-+		if (!si->swap_map[offset]) {
-+			spin_lock(&swap_lock);
-+			goto checks;
-+		}
-+		if (unlikely(--latency_ration < 0)) {
-+			cond_resched();
-+			latency_ration = LATENCY_LIMIT;
-+		}
-+	}
- 	spin_lock(&swap_lock);
--	goto checks;
- 
- no_page:
- 	si->flags -= SWP_SCANNING;
+time bash -c 'tar xjf linux-2.6.27.7.tar.bz2; sync'
+
+real	1m30.855s
+user	0m23.265s
+sys	0m4.096s
+
+nobarrier:
+
+time bash -c 'tar xjf linux-2.6.27.7.tar.bz2; sync'
+
+real	0m37.602s
+user	0m15.281s
+sys	0m4.184s
+
+With no barriers, it's 22s faster than my workstation. That can't be the
+way it's supposed to be?
+
+-Stian
+
