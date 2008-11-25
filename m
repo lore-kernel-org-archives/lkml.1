@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbYKYSwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYKYSw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbYKYSwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 13:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYKYSwe
+	id S1753012AbYKYSw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 13:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYKYSwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 13:52:34 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50324 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751976AbYKYSwd (ORCPT
+	Tue, 25 Nov 2008 13:52:40 -0500
+Received: from smtprelay03.ispgateway.de ([80.67.18.15]:42286 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbYKYSwk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 13:52:33 -0500
-Date: Tue, 25 Nov 2008 18:51:54 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, p_gortmaker@yahoo.com,
-       netdev@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: [BUILD_FAILURE] linux-next: 20081125 - 8390 network driver
- build fails
-Message-ID: <20081125185154.2845e8f1@lxorguk.ukuu.org.uk>
-In-Reply-To: <492C464D.4080704@oracle.com>
-References: <20081125213738.881b425e.sfr@canb.auug.org.au>
-	<20081125182542.GA4914@linux.vnet.ibm.com>
-	<492C464D.4080704@oracle.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 25 Nov 2008 13:52:40 -0500
+X-Greylist: delayed 413 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Nov 2008 13:52:39 EST
+Subject: Re: ALPS input driver problem with DualPoint on Dell E6400/E6500
+From: Alexander Hofbauer <alex@derhofbauer.at>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bUfIO/qYrs4zUXCzyPJL"
+Date: Tue, 25 Nov 2008 19:45:42 +0100
+Message-Id: <1227638742.5353.5.camel@mobian>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
+X-Df-Sender: 420630
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I just reported this on netdev and said that DaveM might want to drop a patch
-> that I had submitted.  Anyway, I'm looking into it.
 
-Ditto and the only sane interpretation I can see is that someone
-somewhere has crap in their tree that does
+--=-bUfIO/qYrs4zUXCzyPJL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-#define static
+Hi!
 
-and this is leaking out.
+> I can put together a patch, but it's a non-trivial change... I'm
+> interested in hearing whether anyone else has the same problem with
+> their E6400/E6500 or other DualPoint laptop, or has better ideas
+> regarding how to deal with this.
+
+I'm facing the same problem here on my "Latitude E5500" and 2.6.27.7
+with no found workarounds so far ("synclient TouchpadOff=3D0" works until
+reset but doesn't avoid the touchpad getting reset eventually).
+
+
+If there was a patch to test I'd be happy to do so :-).
+
+
+Thank you,
+Alex
+
+--=-bUfIO/qYrs4zUXCzyPJL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Dies ist ein digital signierter Nachrichtenteil
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkksR84ACgkQER+ES1ZqwmWp5QCeOdHfwauueZchHEtU9eitQJNX
+gDgAn3TI66F9Vov0aSBXWgCbHVFp5TmJ
+=bcso
+-----END PGP SIGNATURE-----
+
+--=-bUfIO/qYrs4zUXCzyPJL--
 
