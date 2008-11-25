@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbYKYKYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbYKYKZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbYKYKYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 05:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYKYKYm
+	id S1753288AbYKYKZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 05:25:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYKYKZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:24:42 -0500
-Received: from mga14.intel.com ([143.182.124.37]:22090 "EHLO mga14.intel.com"
+	Tue, 25 Nov 2008 05:25:49 -0500
+Received: from mga09.intel.com ([134.134.136.24]:17658 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbYKYKYl convert rfc822-to-8bit (ORCPT
+	id S1752290AbYKYKZt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:24:41 -0500
+	Tue, 25 Nov 2008 05:25:49 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,663,1220252400"; 
-   d="scan'208";a="82359522"
+   d="scan'208";a="364041121"
 From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
 CC: "hpa@zytor.com" <hpa@zytor.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
        "tglx@linutronix.de" <tglx@linutronix.de>,
        "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
        "roland@redhat.com" <roland@redhat.com>,
@@ -24,14 +25,14 @@ CC: "hpa@zytor.com" <hpa@zytor.com>,
        "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>,
        "eranian@googlemail.com" <eranian@googlemail.com>,
        "Villacis, Juan" <juan.villacis@intel.com>
-Date: Tue, 25 Nov 2008 10:24:13 +0000
-Subject: RE: [patch 7/9] x86, pebs: export ds.c symbols
-Thread-Topic: [patch 7/9] x86, pebs: export ds.c symbols
-Thread-Index: AclO3gR0K89A1ov2Q8OtQgq+ejSM8wACcQxw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E08F3C31E@irsmsx504.ger.corp.intel.com>
-References: <20081125090847.A31384@sedona.ch.intel.com>
- <20081125082603.GB28031@infradead.org> <20081125091229.GA22027@elte.hu>
-In-Reply-To: <20081125091229.GA22027@elte.hu>
+Date: Tue, 25 Nov 2008 10:25:14 +0000
+Subject: RE: [patch 9/9] x86, bts, ftrace: a BTS ftrace plug-in prototype
+Thread-Topic: [patch 9/9] x86, bts, ftrace: a BTS ftrace plug-in prototype
+Thread-Index: AclO5mWQbbu4Yl4IRuiGJBnW2RCxhQAAJ1Iw
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E08F3C320@irsmsx504.ger.corp.intel.com>
+References: <20081125092415.A31432@sedona.ch.intel.com>
+ <87hc5wcdwu.fsf@basil.nowhere.org>
+In-Reply-To: <87hc5wcdwu.fsf@basil.nowhere.org>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -45,29 +46,92 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 >-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu] 
->Sent: Dienstag, 25. November 2008 10:12
->To: Christoph Hellwig
->Cc: Metzger, Markus T; hpa@zytor.com; 
+>From: Andi Kleen [mailto:andi@firstfloor.org] 
+>Sent: Dienstag, 25. November 2008 11:13
+>To: Metzger, Markus T
 
->* Christoph Hellwig <hch@infradead.org> wrote:
+>Markus Metzger <markus.t.metzger@intel.com> writes:
 >
->> On Tue, Nov 25, 2008 at 09:08:47AM +0100, Markus Metzger wrote:
->> > Export symbols in ds.c.
->> > 
->> > The changes are required to allow perfmon2 to access DS.
->> 
->> So put them into the perform2 patchset.
+>Basic idea looks very useful. Thanks.
 >
->yes - and they need to be EXPORT_SYMBOL_GPL() as well.
+>> +static void bts_trace_cpuinit(struct cpuinfo_x86 *c)
+>
+>That should be somewhere generic I think. Doesn't ptrace have it too?
 
-OK.
+It does. All the BTS bits currently live in ptrace.c - that had been the only user, so far. I will move them into ds.c, but this will take a few patches.
 
-I will send a patch to Stephane, then, so he can include it into the perfmon2 series.
+Ingo said its important to have an early prototype. So I did the first version with very restricted functionality and some duplicate code.
 
 
 regards,
 markus.
+
+>
+>-Andi
+>
+>
+>> +{
+>> +	switch (c->x86) {
+>> +	case 0x6:
+>> +		switch (c->x86_model) {
+>> +		case 0x0 ... 0xC:
+>> +			break;
+>> +		case 0xD:
+>> +		case 0xE: /* Pentium M */
+>> +			sizeof_field = sizeof(long);
+>> +			debugctl_mask = (1<<6)|(1<<7);
+>> +			break;
+>> +		default:
+>> +			sizeof_field = 8;
+>> +			debugctl_mask = (1<<6)|(1<<7);
+>> +			break;
+>> +		}
+>> +		break;
+>> +	case 0xF:
+>> +		switch (c->x86_model) {
+>> +		case 0x0:
+>> +		case 0x1:
+>> +		case 0x2: /* Netburst */
+>> +			sizeof_field = sizeof(long);
+>> +			debugctl_mask = (1<<2)|(1<<3);
+>> +			break;
+>> +		default:
+>> +			/* sorry, don't know about them */
+>> +			break;
+>> +		}
+>> +		break;
+>> +	default:
+>> +		/* sorry, don't know about them */
+>> +		break;
+>> +	}
+>> +}
+>> +
+>> +static inline void bts_enable(void)
+>> +{
+>> +	unsigned long debugctl;
+>> +
+>> +	rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
+>> +	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl | debugctl_mask);
+>> +}
+>> +
+>> +static inline void bts_disable(void)
+>> +{
+>> +	unsigned long debugctl;
+>> +
+>> +	rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
+>> +	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl & ~debugctl_mask);
+>> +}
+>> +
+>> +static void bts_trace_reset(struct trace_array *tr)
+>> +{
+>> +	int cpu;
+>> +
+>> +	tr->time_start = ftrace_now(tr->cpu);
+>> +
+>
+>-- 
+>ak@linux.intel.com
+>
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
