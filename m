@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYKYLcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbYKYLf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbYKYLcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYKYLcM
+	id S1753411AbYKYLf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYKYLfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 06:32:12 -0500
-Received: from mga10.intel.com ([192.55.52.92]:32292 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751304AbYKYLcL (ORCPT
+	Tue, 25 Nov 2008 06:35:17 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38368 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbYKYLfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 06:32:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,663,1220252400"; 
-   d="scan'208";a="407802449"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] 8250: Eliminate compile warning of 8250.c
-Date: Tue, 25 Nov 2008 19:32:07 +0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27-7-generic; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-References: <1227585320-3711-1-git-send-email-sheng@linux.intel.com> <200811251851.44768.sheng@linux.intel.com> <20081125111342.5383c957@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081125111342.5383c957@lxorguk.ukuu.org.uk>
+	Tue, 25 Nov 2008 06:35:15 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] vmscan: bail out of page reclaim after swap_cluster_max pages
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
+In-Reply-To: <20081124145057.4211bd46@bree.surriel.com>
+References: <20081124145057.4211bd46@bree.surriel.com>
+Message-Id: <20081125203333.26F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811251932.08050.sheng@linux.intel.com>
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 25 Nov 2008 20:35:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 November 2008 19:13:42 Alan Cox wrote:
-> > The logic here is strange...
->
-> Why
->
-> > If you used old compiler, you would get a warning, and you thought that's
-> > ensured we won't delete a intended assignment by mistake.
->
-> No.. if you hid the warning by hacking around the compiler mistake with
-> extra bogus assignments you would hide a future mistake.
+> Sometimes the VM spends the first few priority rounds rotating back
+> referenced pages and submitting IO.  Once we get to a lower priority,
+> sometimes the VM ends up freeing way too many pages.
+> 
+> The fix is relatively simple: in shrink_zone() we can check how many
+> pages we have already freed, direct reclaim tasks break out of the
+> scanning loop if they have already freed enough pages and have reached
+> a lower priority level.
+> 
+> However, in order to do this we do need to know how many pages we already
+> freed, so move nr_reclaimed into scan_control.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+> Kosaki, this should address the zone scanning pressure issue.
 
-OK, I got it now. 
+hmmmm. I still don't like the behavior when priority==DEF_PRIORITY.
+but I also should explain by code and benchmark.
 
-Comparing the result of deleting a meaningful line, this modification result in 
-no more warning.  And you also think one additional BUG_ON just for fixing 
-compiler's mistake, so it's unacceptable. 
+therefore, I'll try to mesure this patch in this week.
 
-So leave the patch as it was. Seems many people need to upgrade compiler to 
-avoid this thing. :)
+thanks.
 
--- 
-regards
-Yang, Sheng
-
->
-> > If you used new compiler, you wouldn't get a warning, and you think this
-> > time the compiler get it right.
->
-> The compiler does now get it right - I checked.
->
-> Alan
 
