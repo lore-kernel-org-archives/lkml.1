@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbYKYJeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbYKYJhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbYKYJeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 04:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYKYJeQ
+	id S1752838AbYKYJhf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 04:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYKYJh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 04:34:16 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33781 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbYKYJeP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 04:34:15 -0500
-Date: Tue, 25 Nov 2008 18:33:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "xemul@openvz.org" <xemul@openvz.org>
-Subject: [BUGFIX][PATCH] memcg: force_emtpy fix to confirm cgroup has no
- tasks.
-Message-Id: <20081125183326.21f2067d.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Nov 2008 04:37:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44839 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751038AbYKYJhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 04:37:25 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] ACPI: Revert commit faee816b150238 due to regression
+Date: Tue, 25 Nov 2008 10:36:52 +0100
+User-Agent: KMail/1.9.9
+Cc: Zhang Rui <rui.zhang@intel.com>, "Zhao, Yakui" <yakui.zhao@intel.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, walken <walken@zoy.org>
+References: <200811230053.14211.rjw@sisk.pl> <200811241430.02434.rjw@sisk.pl> <1227576051.15014.305.camel@rzhang-dt>
+In-Reply-To: <1227576051.15014.305.camel@rzhang-dt>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811251036.53084.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a fix to memcg-new-force_empty-to-free-pages-under-group.patch
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI: Revert commit faee816b150238 due to regression
 
-Thanks,
--Kame
-==
-Now, force_empty can be called and do reclaim pages
-while there are tasks. fix it.
-(reclaim occurs but move doesn't occur in this case.)
+Commit faee816b1502385dc9bc5abf2960d1cc645844d1
+"ACPI: don't enable control method power button as wakeup device
+when Fixed Power button is used" caused the regression tracked
+as http://bugzilla.kernel.org/show_bug.cgi?id=12091 (there are no
+AC adapter events on Toshiba Portege R500) and the problem this
+commit was intended to fix can be fixed differently.
 
-And, we have interface to count # of tasks under cgroup.
-Using it is better.
+For this reason, the author of the commit, Zhang Rui, has requested
+that it be reverted.
 
-Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
- mm/memcontrol.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/acpi/scan.c |   10 ----------
+ 1 file changed, 10 deletions(-)
 
-Index: mmotm-2.6.28-Nov24/mm/memcontrol.c
+Index: linux-2.6/drivers/acpi/scan.c
 ===================================================================
---- mmotm-2.6.28-Nov24.orig/mm/memcontrol.c
-+++ mmotm-2.6.28-Nov24/mm/memcontrol.c
-@@ -1481,6 +1481,7 @@ static int mem_cgroup_force_empty(struct
- 	int ret;
- 	int node, zid, shrink;
- 	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-+	struct cgroup *cgrp = mem->css.cgroup;
+--- linux-2.6.orig/drivers/acpi/scan.c
++++ linux-2.6/drivers/acpi/scan.c
+@@ -751,16 +751,6 @@ static int acpi_bus_get_wakeup_device_fl
+ 	if (!acpi_match_device_ids(device, button_device_ids))
+ 		device->wakeup.flags.run_wake = 1;
  
- 	css_get(&mem->css);
- 
-@@ -1491,7 +1492,7 @@ static int mem_cgroup_force_empty(struct
- move_account:
- 	while (mem->res.usage > 0) {
- 		ret = -EBUSY;
--		if (atomic_read(&mem->css.cgroup->count) > 0)
-+		if (cgroup_task_count(cgrp) || !list_empty(&cgrp->children))
- 			goto out;
- 		ret = -EINTR;
- 		if (signal_pending(current))
-@@ -1523,8 +1524,10 @@ out:
- 	return ret;
- 
- try_to_free:
--	/* returns EBUSY if we come here twice. */
--	if (shrink) {
-+	/* returns EBUSY if there is a task or if we come here twice. */
-+	if (cgroup_task_count(cgrp)
-+	    || !list_empty(&cgrp->children)
-+	    || shrink) {
- 		ret = -EBUSY;
- 		goto out;
- 	}
-
+-	/*
+-	 * Don't set Power button GPE as run_wake
+-	 * if Fixed Power button is used
+-	 */
+-	if (!strcmp(device->pnp.hardware_id, "PNP0C0C") &&
+-		!(acpi_gbl_FADT.flags & ACPI_FADT_POWER_BUTTON)) {
+-		device->wakeup.flags.run_wake = 0;
+-		device->wakeup.flags.valid = 0;
+-	}
+-
+       end:
+ 	if (ACPI_FAILURE(status))
+ 		device->flags.wake_capable = 0;
