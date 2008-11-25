@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYKYOrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbYKYOr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbYKYOrA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 09:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYKYOqw
+	id S1752846AbYKYOr6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 09:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYKYOrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 09:46:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57360 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbYKYOqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 09:46:51 -0500
-Date: Tue, 25 Nov 2008 15:46:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       socketcan-users@lists.berlios.de
-Subject: Re: [RFC PATCH] hrtimer: removing all ur callback modes
-Message-ID: <20081125144633.GB14147@elte.hu>
-References: <1227613431.4259.1537.camel@twins>
+	Tue, 25 Nov 2008 09:47:49 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:40247 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbYKYOrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 09:47:48 -0500
+Date: Tue, 25 Nov 2008 16:43:55 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: jdmason@kudzu.us, discuss@x86-64.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/5] arch/x86/kernel/pci-calgary_64.c: change
+	simple_strtol to simple_strtoul
+Message-ID: <20081125144355.GB9912@il.ibm.com>
+References: <Pine.LNX.4.64.0811251412330.11897@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1227613431.4259.1537.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0811251412330.11897@pc-004.diku.dk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> Hi,
+On Tue, Nov 25, 2008 at 02:13:03PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> This is an attempt at removing some of the hrtimer complexity by 
-> reducing the number of callback modes to 1.
+> Since bridge is unsigned, it would seem better to use simple_strtoul that
+> simple_strtol.
 > 
-> This means that all hrtimer callback functions will be ran from 
-> HARD-irq context.
+> A simplified version of the semantic patch that makes this change is as
+> follows: (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r2@
+> long e;
+> position p;
+> @@
+> 
+> e = simple_strtol@p(...)
+> 
+> @@
+> position p != r2.p;
+> type T;
+> T e;
+> @@
+> 
+> e = 
+> - simple_strtol@p
+> + simple_strtoul
+>   (...)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
->  9 files changed, 37 insertions(+), 293 deletions(-)
+Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
 
-very nice :-)
+Ingo, can you please push?
 
-Applied to tip/timers/hrtimers and started testing it, lets see what 
-happens ;-)
-
-	Ingo
+Thanks,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                       <->
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
