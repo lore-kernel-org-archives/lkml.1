@@ -1,108 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbYKYWXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYKYW21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752779AbYKYWXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYKYWXm
+	id S1752821AbYKYW21 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 17:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYKYW2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:23:42 -0500
-Received: from flusers.ccur.com ([12.192.68.2]:43368 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751390AbYKYWXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 17:23:41 -0500
-Date: Tue, 25 Nov 2008 17:23:20 -0500
-From: Joe Korty <joe.korty@ccur.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Michael Kerrisk <mtk.manpages@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-Subject: Re: [PATCH] Display active jiffie timers in /proc/timer_list
-Message-ID: <20081125222320.GA23612@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <20081121221113.GA13566@tsunami.ccur.com> <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com> <20081125185740.GA21806@tsunami.ccur.com> <alpine.LFD.2.00.0811252224430.3235@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 25 Nov 2008 17:28:17 -0500
+Received: from mail.atheros.com ([12.36.123.2]:46313 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751562AbYKYW2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 17:28:16 -0500
+Date: Tue, 25 Nov 2008 14:28:14 -0800
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Bob Copeland <me@bobcopeland.com>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
+       "bkuhn@softwarefreedom.org" <bkuhn@softwarefreedom.org>
+Subject: Re: [ath5k-devel] License of changes to ath5k/ath9k
+Message-ID: <20081125222814.GG5950@tesla>
+References: <20081125210421.GF5950@tesla> <b6c5339f0811251329h1130fd4aladcbfda52f0542eb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811252224430.3235@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <b6c5339f0811251329h1130fd4aladcbfda52f0542eb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 04:36:48PM -0500, Thomas Gleixner wrote:
-> > --- 2.6.28-rc6.orig/kernel/timer.c    2008-11-25 11:59:07.000000000 -0500
-> > +++ 2.6.28-rc6/kernel/timer.c 2008-11-25 13:49:05.000000000 -0500
-> > +#if defined(CONFIG_PROC_FS) || defined(CONFIG_MAGIC_SYSRQ)
+On Tue, Nov 25, 2008 at 01:29:55PM -0800, Bob Copeland wrote:
+> On Tue, Nov 25, 2008 at 4:04 PM, Luis R. Rodriguez
+> <lrodriguez@atheros.com> wrote:
+> > We'll keep using the ath5k Changes-licensed-under tag until we get
+> > advice from SFLC if we have done enough to ensure this is no longer
+> > necessary. For ath9k, if we are not sure if you have read the
+> > "Developer's Certificate of Origin 1.1" we may ping you with an e-mail
+> > just to be sure.
 > 
-> This belongs into kernel/time/timer_list.c and there is no need to
-> copy that code around.
-
-Everything to do with jiffy timer implementation is static
-local to kernel/timer.c, and not available to code in
-kernel/time/timer_list.c or anywhere else.  I consider that
-localization to be a rather nice feature of kernel/timer.c,
-and I wasn't willing to globalize it just for a debug
-data dump.
-
-Also, other features implement their 'show' functions
-elsewhere, for example, show_interrupts.  So doing the
-same thing here is certainly not out of line.
-
-
-> > +void print_cpu_jtimers(struct seq_file *m, int cpu)
-> > +{
-> > +     int i;
-> > +     struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> > +
-> > +     SEQ_printf(m, "active jiffie timers:\n");
-> > +     spin_lock_irq(&base->lock);
+> I don't consider any of my changes significant enough to confer copyright,
+> so by my Signed-off-by, I agree that whatever license the file currently
+> has is alright by me.  Even if the changes were significant, the previous
+> holds.
 > 
-> Yuck. We really do _NOT_ stop everything just to print timers. Check
-> the hrtimer print code in timer_list.c
+> However, if everyone + SFLC prefers that we strictly use
+> Changes-licensed-under even if we don't claim copyright, then I'll
+> happily add the tag generator script to a git commit hook :)
 
-I'm not sure there is a safe way to reference the timers without
-holding the lock.  But I will look into this and see what can
-be done.
+Sure, BTW I had created such a script a long time ago, the files just
+need to be updated (so update them if you download this thingy):
 
+http://www.kernel.org/pub/linux/kernel/people/mcgrof/scripts/ath5k-license.pl.txt
 
+Understood.
 
-> >
-> > @@ -139,6 +140,7 @@
-> >               SEQ_printf(m, " clock %d:\n", i);
-> >               print_base(m, cpu_base->clock_base + i, now);
-> >       }
-> > +
-> 
-> random whitespace change
-
-Will fix.
-
-
-> >               P_ns(idle_expires);
-> > -             SEQ_printf(m, "jiffies: %Lu\n",
-> > +             SEQ_printf(m, "jiffies: %llu (0x%llx)\n",
-> > +                        (unsigned long long)jiffies,
-> >                          (unsigned long long)jiffies);
-> 
-> The exact purpose of this change ?
-
-In the 'active jiffie timer' section I print timer_jiffies
-etc in hex format.  It's probably just me, but I found that
-to be easier to read than the rather longer decimal format.
-So this change was to get a hex version of the global jiffies
-out, for easy comparison to values appearing in that section.
-
-Certainly everything can be changed to decimal, if that is
-the consensus.
-
-> > -     pe = proc_create("timer_list", 0644, NULL, &timer_list_fops);
-> > +     pe = proc_create("timer_list", 0444, NULL, &timer_list_fops);
-> >       if (!pe)
-> >               return -ENOMEM;
-> >       return 0;
-> 
-> Correct, but unrelated $subject. Separate patch please.
-
-Will do.
-
-Thanks for the review,
-Joe
+  Luis
