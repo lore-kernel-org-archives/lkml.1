@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYKYWnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYKYWns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbYKYWnc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKYWnP
+	id S1753867AbYKYWns (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 17:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYKYWnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:43:15 -0500
-Received: from mga10.intel.com ([192.55.52.92]:63506 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752670AbYKYWnO (ORCPT
+	Tue, 25 Nov 2008 17:43:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39777 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752801AbYKYWnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 17:43:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,666,1220252400"; 
-   d="scan'208";a="643608264"
-Message-ID: <492C7F7F.3020801@foo-projects.org>
-Date: Tue, 25 Nov 2008 14:43:11 -0800
-From: "Kok, Auke" <sofar@foo-projects.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081103)
-MIME-Version: 1.0
-To: andy <rootstrap@googlemail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Need to pay to use the word "Linux" in commercial products/services!
-References: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
-In-Reply-To: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Nov 2008 17:43:16 -0500
+Date: Tue, 25 Nov 2008 14:42:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       srostedt@redhat.com
+Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
+Message-Id: <20081125144221.66eb99ad.akpm@linux-foundation.org>
+In-Reply-To: <20081125223456.976670734@goodmis.org>
+References: <20081125223421.795046329@goodmis.org>
+	<20081125223456.976670734@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Nov 2008 22:43:13.0543 (UTC) FILETIME=[331EB170:01C94F4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-andy wrote:
-> Hi
+On Tue, 25 Nov 2008 17:34:22 -0500
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> This patch adds the ability to function trace a single thread.
+> The file:
 > 
-> I found it a bit strange that the word "Linux" has to be licensed!
-> The "word" is protected under GPL v2, as it is appear first in 1991
-> in GPL code.  Trademarks and Patents are not allowed in GPL!
-> The registration of the name at later point of time, and now the
-> licensing terms are very confusing to me, could someone help
-> me to understand better please?
+>   /debugfs/tracing/set_ftrace_pid
+> 
+> contains the pid to trace.
 
-please talk to a laywer, they can explain everything to you.
-
-Cheers,
-
-Auke
+What happens if the same pid exists in two or more pid namespaces?
