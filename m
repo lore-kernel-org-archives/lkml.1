@@ -1,256 +1,469 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYKYWfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYKYWgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621AbYKYWfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYKYWfB
+	id S1753853AbYKYWgS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 17:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYKYWfC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:35:01 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56882 "EHLO
+	Tue, 25 Nov 2008 17:35:02 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56869 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbYKYWe7 (ORCPT
+	with ESMTP id S1752068AbYKYWe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Nov 2008 17:34:59 -0500
-Message-Id: <20081125223457.162461633@goodmis.org>
+Message-Id: <20081125223456.976670734@goodmis.org>
 References: <20081125223421.795046329@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Nov 2008 17:34:23 -0500
+Date: Tue, 25 Nov 2008 17:34:22 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/3] ftrace: use code patching for ftrace return tracer
-Content-Disposition: inline; filename=0002-ftrace-use-code-patching-for-ftrace-return-tracer.patch
+Subject: [PATCH 1/3] ftrace: add function tracing to single thread
+Content-Disposition: inline; filename=0001-ftrace-add-function-tracing-to-single-thread.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <rostedt@goodmis.org>
+From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: more efficient code for ftrace return tracer
+Impact: feature to function trace a single thread
 
-This patch uses the dynamic patching, when available, to patch
-the function return code into the kernel.
+This patch adds the ability to function trace a single thread.
+The file:
 
-This patch will ease the way for letting both function tracing
-and function return tracing run together.
+  /debugfs/tracing/set_ftrace_pid
+
+contains the pid to trace. Valid pids are any positive integer.
+Writing any negative number to this file will disable the pid
+tracing and the function tracer will go back to tracing all of
+threads.
+
+This feature works with both static and dynamic function tracing.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/entry_32.S |    5 ++++
- arch/x86/kernel/ftrace.c   |   46 +++++++++++++++++++++++++++++++++++++++++++-
- include/linux/ftrace.h     |    5 ++++
- kernel/trace/ftrace.c      |   34 ++++++++++++++------------------
- 4 files changed, 70 insertions(+), 20 deletions(-)
+ Documentation/ftrace.txt |   79 +++++++++++++++++
+ kernel/trace/ftrace.c    |  209 ++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 262 insertions(+), 26 deletions(-)
 
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index 7a934c0..d6f0333 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -1185,6 +1185,11 @@ ftrace_call:
- 	popl %edx
- 	popl %ecx
- 	popl %eax
-+#ifdef CONFIG_FUNCTION_RET_TRACER
-+.globl ftrace_return_call
-+ftrace_return_call:
-+	jmp ftrace_stub
-+#endif
+diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+index 35a78bc..de05042 100644
+--- a/Documentation/ftrace.txt
++++ b/Documentation/ftrace.txt
+@@ -127,6 +127,8 @@ of ftrace. Here is a list of some of the key files:
+ 		be traced. If a function exists in both set_ftrace_filter
+ 		and set_ftrace_notrace,	the function will _not_ be traced.
  
- .globl ftrace_stub
- ftrace_stub:
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index bb137f7..81f8581 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -111,7 +111,6 @@ static void ftrace_mod_code(void)
- 	 */
- 	mod_code_status = probe_kernel_write(mod_code_ip, mod_code_newcode,
- 					     MCOUNT_INSN_SIZE);
--
++  set_ftrace_pid: Have the function tracer only trace a single thread.
++
+   available_filter_functions: This lists the functions that ftrace
+ 		has processed and can trace. These are the function
+ 		names that you can pass to "set_ftrace_filter" or
+@@ -1073,6 +1075,83 @@ For simple one time traces, the above is sufficent. For anything else,
+ a search through /proc/mounts may be needed to find where the debugfs
+ file-system is mounted.
+ 
++
++Single thread tracing
++---------------------
++
++By writing into /debug/tracing/set_ftrace_pid you can trace a
++single thread. For example:
++
++# cat /debug/tracing/set_ftrace_pid
++no pid
++# echo 3111 > /debug/tracing/set_ftrace_pid
++# cat /debug/tracing/set_ftrace_pid
++3111
++# echo function > /debug/tracing/current_tracer
++# cat /debug/tracing/trace | head
++ # tracer: function
++ #
++ #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
++ #              | |       |          |         |
++     yum-updatesd-3111  [003]  1637.254676: finish_task_switch <-thread_return
++     yum-updatesd-3111  [003]  1637.254681: hrtimer_cancel <-schedule_hrtimeout_range
++     yum-updatesd-3111  [003]  1637.254682: hrtimer_try_to_cancel <-hrtimer_cancel
++     yum-updatesd-3111  [003]  1637.254683: lock_hrtimer_base <-hrtimer_try_to_cancel
++     yum-updatesd-3111  [003]  1637.254685: fget_light <-do_sys_poll
++     yum-updatesd-3111  [003]  1637.254686: pipe_poll <-do_sys_poll
++# echo -1 > /debug/tracing/set_ftrace_pid
++# cat /debug/tracing/trace |head
++ # tracer: function
++ #
++ #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
++ #              | |       |          |         |
++ ##### CPU 3 buffer started ####
++     yum-updatesd-3111  [003]  1701.957688: free_poll_entry <-poll_freewait
++     yum-updatesd-3111  [003]  1701.957689: remove_wait_queue <-free_poll_entry
++     yum-updatesd-3111  [003]  1701.957691: fput <-free_poll_entry
++     yum-updatesd-3111  [003]  1701.957692: audit_syscall_exit <-sysret_audit
++     yum-updatesd-3111  [003]  1701.957693: path_put <-audit_syscall_exit
++
++If you want to trace a function when executing, you could use
++something like this simple program:
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <unistd.h>
++
++int main (int argc, char **argv)
++{
++        if (argc < 1)
++                exit(-1);
++
++        if (fork() > 0) {
++                int fd, ffd;
++                char line[64];
++                int s;
++
++                ffd = open("/debug/tracing/current_tracer", O_WRONLY);
++                if (ffd < 0)
++                        exit(-1);
++                write(ffd, "nop", 3);
++
++                fd = open("/debug/tracing/set_ftrace_pid", O_WRONLY);
++                s = sprintf(line, "%d\n", getpid());
++                write(fd, line, s);
++
++                write(ffd, "function", 8);
++
++                close(fd);
++                close(ffd);
++
++                execvp(argv[1], argv+1);
++        }
++
++        return 0;
++}
++
+ dynamic ftrace
+ --------------
+ 
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 53042f1..e8cf629 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -47,6 +47,9 @@
+ int ftrace_enabled __read_mostly;
+ static int last_ftrace_enabled;
+ 
++/* ftrace_pid_trace >= 0 will only trace threads with this pid */
++static int ftrace_pid_trace = -1;
++
+ /* Quick disabling of function tracer. */
+ int function_trace_stop;
+ 
+@@ -61,6 +64,7 @@ static int ftrace_disabled __read_mostly;
+ 
+ static DEFINE_SPINLOCK(ftrace_lock);
+ static DEFINE_MUTEX(ftrace_sysctl_lock);
++static DEFINE_MUTEX(ftrace_start_lock);
+ 
+ static struct ftrace_ops ftrace_list_end __read_mostly =
+ {
+@@ -70,6 +74,7 @@ static struct ftrace_ops ftrace_list_end __read_mostly =
+ static struct ftrace_ops *ftrace_list __read_mostly = &ftrace_list_end;
+ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
+ ftrace_func_t __ftrace_trace_function __read_mostly = ftrace_stub;
++ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
+ 
+ static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+ {
+@@ -86,6 +91,21 @@ static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+ 	};
  }
  
- void ftrace_nmi_enter(void)
-@@ -258,6 +257,51 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
++static void ftrace_pid_func(unsigned long ip, unsigned long parent_ip)
++{
++	if (current->pid != ftrace_pid_trace)
++		return;
++
++	ftrace_pid_function(ip, parent_ip);
++}
++
++static void set_ftrace_pid_function(ftrace_func_t func)
++{
++	/* do not set ftrace_pid_function to itself! */
++	if (func != ftrace_pid_func)
++		ftrace_pid_function = func;
++}
++
+ /**
+  * clear_ftrace_function - reset the ftrace function
+  *
+@@ -96,6 +116,7 @@ void clear_ftrace_function(void)
+ {
+ 	ftrace_trace_function = ftrace_stub;
+ 	__ftrace_trace_function = ftrace_stub;
++	ftrace_pid_function = ftrace_stub;
+ }
+ 
+ #ifndef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+@@ -128,20 +149,26 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
+ 	ftrace_list = ops;
+ 
+ 	if (ftrace_enabled) {
++		ftrace_func_t func;
++
++		if (ops->next == &ftrace_list_end)
++			func = ops->func;
++		else
++			func = ftrace_list_func;
++
++		if (ftrace_pid_trace >= 0) {
++			set_ftrace_pid_function(func);
++			func = ftrace_pid_func;
++		}
++
+ 		/*
+ 		 * For one func, simply call it directly.
+ 		 * For more than one func, call the chain.
+ 		 */
+ #ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+-		if (ops->next == &ftrace_list_end)
+-			ftrace_trace_function = ops->func;
+-		else
+-			ftrace_trace_function = ftrace_list_func;
++		ftrace_trace_function = func;
+ #else
+-		if (ops->next == &ftrace_list_end)
+-			__ftrace_trace_function = ops->func;
+-		else
+-			__ftrace_trace_function = ftrace_list_func;
++		__ftrace_trace_function = func;
+ 		ftrace_trace_function = ftrace_test_stop_func;
+ #endif
+ 	}
+@@ -182,8 +209,19 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
+ 
+ 	if (ftrace_enabled) {
+ 		/* If we only have one func left, then call that directly */
+-		if (ftrace_list->next == &ftrace_list_end)
+-			ftrace_trace_function = ftrace_list->func;
++		if (ftrace_list->next == &ftrace_list_end) {
++			ftrace_func_t func = ftrace_list->func;
++
++			if (ftrace_pid_trace >= 0) {
++				set_ftrace_pid_function(func);
++				func = ftrace_pid_func;
++			}
++#ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
++			ftrace_trace_function = func;
++#else
++			__ftrace_trace_function = func;
++#endif
++		}
+ 	}
+ 
+  out:
+@@ -192,6 +230,38 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
  	return ret;
  }
  
-+#ifdef CONFIG_FUNCTION_RET_TRACER
-+extern void ftrace_return_call(void);
-+
-+static int ftrace_mod_jmp(unsigned long ip,
-+			  int old_offset, int new_offset)
++static void ftrace_update_pid_func(void)
 +{
-+	unsigned char code[MCOUNT_INSN_SIZE];
++	ftrace_func_t func;
 +
-+	if (probe_kernel_read(code, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
++	/* should not be called from interrupt context */
++	spin_lock(&ftrace_lock);
 +
-+	if (code[0] != 0xe9 || old_offset != *(int *)(&code[1]))
-+		return -EINVAL;
++	if (ftrace_trace_function == ftrace_stub)
++		goto out;
 +
-+	*(int *)(&code[1]) = new_offset;
++	func = ftrace_trace_function;
 +
-+	if (do_ftrace_mod_code(ip, &code))
-+		return -EPERM;
++	if (ftrace_pid_trace >= 0) {
++		set_ftrace_pid_function(func);
++		func = ftrace_pid_func;
++	} else {
++		if (func != ftrace_pid_func)
++			goto out;
 +
-+	return 0;
-+}
++		set_ftrace_pid_function(func);
++	}
 +
-+int ftrace_enable_ftrace_return_caller(void)
-+{
-+	unsigned long ip = (unsigned long)(&ftrace_return_call);
-+	int old_offset, new_offset;
-+
-+	old_offset = (unsigned long)(&ftrace_stub) - (ip + MCOUNT_INSN_SIZE);
-+	new_offset = (unsigned long)(&ftrace_return_caller) - (ip + MCOUNT_INSN_SIZE);
-+
-+	return ftrace_mod_jmp(ip, old_offset, new_offset);
-+}
-+
-+int ftrace_disable_ftrace_return_caller(void)
-+{
-+	unsigned long ip = (unsigned long)(&ftrace_return_call);
-+	int old_offset, new_offset;
-+
-+	old_offset = (unsigned long)(&ftrace_return_caller) - (ip + MCOUNT_INSN_SIZE);
-+	new_offset = (unsigned long)(&ftrace_stub) - (ip + MCOUNT_INSN_SIZE);
-+
-+	return ftrace_mod_jmp(ip, old_offset, new_offset);
-+}
-+#endif /* CONFIG_FUNCTION_RET_TRACER */
-+
- int __init ftrace_dyn_arch_init(void *data)
- {
- 	extern const unsigned char ftrace_test_p6nop[];
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 7854d87..73147eb 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -117,6 +117,11 @@ extern void ftrace_call(void);
- extern void mcount_call(void);
- #ifdef CONFIG_FUNCTION_RET_TRACER
- extern void ftrace_return_caller(void);
-+extern int ftrace_enable_ftrace_return_caller(void);
-+extern int ftrace_disable_ftrace_return_caller(void);
++#ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
++	ftrace_trace_function = func;
 +#else
-+static inline int ftrace_enable_ftrace_return_caller(void) { }
-+static inline int ftrace_disable_ftrace_return_caller(void) { }
- #endif
- 
- /**
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index e8cf629..03223b5 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -281,6 +281,8 @@ enum {
- 	FTRACE_UPDATE_TRACE_FUNC	= (1 << 2),
- 	FTRACE_ENABLE_MCOUNT		= (1 << 3),
- 	FTRACE_DISABLE_MCOUNT		= (1 << 4),
-+	FTRACE_START_FUNC_RET		= (1 << 5),
-+	FTRACE_STOP_FUNC_RET		= (1 << 6),
- };
- 
- static int ftrace_filtered;
-@@ -465,14 +467,7 @@ __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
- 	unsigned long ip, fl;
- 	unsigned long ftrace_addr;
- 
--#ifdef CONFIG_FUNCTION_RET_TRACER
--	if (ftrace_tracing_type == FTRACE_TYPE_ENTER)
--		ftrace_addr = (unsigned long)ftrace_caller;
--	else
--		ftrace_addr = (unsigned long)ftrace_return_caller;
--#else
- 	ftrace_addr = (unsigned long)ftrace_caller;
--#endif
- 
- 	ip = rec->ip;
- 
-@@ -605,6 +600,11 @@ static int __ftrace_modify_code(void *data)
- 	if (*command & FTRACE_UPDATE_TRACE_FUNC)
- 		ftrace_update_ftrace_func(ftrace_trace_function);
- 
-+	if (*command & FTRACE_START_FUNC_RET)
-+		ftrace_enable_ftrace_return_caller();
-+	else if (*command & FTRACE_STOP_FUNC_RET)
-+		ftrace_disable_ftrace_return_caller();
++	__ftrace_trace_function = func;
++#endif
 +
- 	return 0;
- }
++ out:
++	spin_unlock(&ftrace_lock);
++}
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ #ifndef CONFIG_FTRACE_MCOUNT_RECORD
+ # error Dynamic ftrace depends on MCOUNT_RECORD
+@@ -545,7 +615,19 @@ static void ftrace_run_update_code(int command)
  
-@@ -629,10 +629,8 @@ static void ftrace_startup_enable(int command)
- 	ftrace_run_update_code(command);
- }
+ static ftrace_func_t saved_ftrace_func;
+ static int ftrace_start_up;
+-static DEFINE_MUTEX(ftrace_start_lock);
++
++static void ftrace_startup_enable(int command)
++{
++	if (saved_ftrace_func != ftrace_trace_function) {
++		saved_ftrace_func = ftrace_trace_function;
++		command |= FTRACE_UPDATE_TRACE_FUNC;
++	}
++
++	if (!command || !ftrace_enabled)
++		return;
++
++	ftrace_run_update_code(command);
++}
  
--static void ftrace_startup(void)
-+static void ftrace_startup(int command)
+ static void ftrace_startup(void)
  {
--	int command = 0;
--
- 	if (unlikely(ftrace_disabled))
- 		return;
+@@ -558,16 +640,8 @@ static void ftrace_startup(void)
+ 	ftrace_start_up++;
+ 	command |= FTRACE_ENABLE_CALLS;
  
-@@ -645,10 +643,8 @@ static void ftrace_startup(void)
+-	if (saved_ftrace_func != ftrace_trace_function) {
+-		saved_ftrace_func = ftrace_trace_function;
+-		command |= FTRACE_UPDATE_TRACE_FUNC;
+-	}
+-
+-	if (!command || !ftrace_enabled)
+-		goto out;
++	ftrace_startup_enable(command);
+ 
+-	ftrace_run_update_code(command);
+- out:
  	mutex_unlock(&ftrace_start_lock);
  }
  
--static void ftrace_shutdown(void)
-+static void ftrace_shutdown(int command)
+@@ -1262,13 +1336,10 @@ static struct file_operations ftrace_notrace_fops = {
+ 	.release = ftrace_notrace_release,
+ };
+ 
+-static __init int ftrace_init_debugfs(void)
++static __init int ftrace_init_dyn_debugfs(struct dentry *d_tracer)
  {
--	int command = 0;
+-	struct dentry *d_tracer;
+ 	struct dentry *entry;
+ 
+-	d_tracer = tracing_init_dentry();
 -
- 	if (unlikely(ftrace_disabled))
- 		return;
+ 	entry = debugfs_create_file("available_filter_functions", 0444,
+ 				    d_tracer, NULL, &ftrace_avail_fops);
+ 	if (!entry)
+@@ -1295,8 +1366,6 @@ static __init int ftrace_init_debugfs(void)
+ 	return 0;
+ }
  
-@@ -1453,8 +1449,8 @@ device_initcall(ftrace_nodyn_init);
+-fs_initcall(ftrace_init_debugfs);
+-
+ static int ftrace_convert_nops(struct module *mod,
+ 			       unsigned long *start,
+ 			       unsigned long *end)
+@@ -1382,12 +1451,100 @@ static int __init ftrace_nodyn_init(void)
+ }
+ device_initcall(ftrace_nodyn_init);
  
- static inline int ftrace_init_dyn_debugfs(struct dentry *d_tracer) { return 0; }
- static inline void ftrace_startup_enable(int command) { }
--# define ftrace_startup()		do { } while (0)
--# define ftrace_shutdown()		do { } while (0)
-+static inline void ftrace_startup(int command) { }
-+static inline void ftrace_shutdown(int command) { }
++static inline int ftrace_init_dyn_debugfs(struct dentry *d_tracer) { return 0; }
++static inline void ftrace_startup_enable(int command) { }
+ # define ftrace_startup()		do { } while (0)
+ # define ftrace_shutdown()		do { } while (0)
  # define ftrace_startup_sysctl()	do { } while (0)
  # define ftrace_shutdown_sysctl()	do { } while (0)
  #endif /* CONFIG_DYNAMIC_FTRACE */
-@@ -1585,7 +1581,7 @@ int register_ftrace_function(struct ftrace_ops *ops)
- 	}
  
- 	ret = __register_ftrace_function(ops);
--	ftrace_startup();
-+	ftrace_startup(0);
- 
- out:
- 	mutex_unlock(&ftrace_sysctl_lock);
-@@ -1604,7 +1600,7 @@ int unregister_ftrace_function(struct ftrace_ops *ops)
- 
- 	mutex_lock(&ftrace_sysctl_lock);
- 	ret = __unregister_ftrace_function(ops);
--	ftrace_shutdown();
-+	ftrace_shutdown(0);
- 	mutex_unlock(&ftrace_sysctl_lock);
- 
- 	return ret;
-@@ -1747,8 +1743,8 @@ int register_ftrace_return(trace_function_return_t func)
- 		goto out;
- 	}
- 	ftrace_tracing_type = FTRACE_TYPE_RETURN;
-+	ftrace_startup(FTRACE_START_FUNC_RET);
- 	ftrace_function_return = func;
--	ftrace_startup();
- 
- out:
- 	mutex_unlock(&ftrace_sysctl_lock);
-@@ -1761,7 +1757,7 @@ void unregister_ftrace_return(void)
- 
- 	atomic_dec(&ftrace_retfunc_active);
- 	ftrace_function_return = (trace_function_return_t)ftrace_stub;
--	ftrace_shutdown();
-+	ftrace_shutdown(FTRACE_STOP_FUNC_RET);
- 	/* Restore normal tracing type */
- 	ftrace_tracing_type = FTRACE_TYPE_ENTER;
- 
++static ssize_t
++ftrace_pid_read(struct file *file, char __user *ubuf,
++		       size_t cnt, loff_t *ppos)
++{
++	char buf[64];
++	int r;
++
++	if (ftrace_pid_trace >= 0)
++		r = sprintf(buf, "%u\n", ftrace_pid_trace);
++	else
++		r = sprintf(buf, "no pid\n");
++
++	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
++}
++
++static ssize_t
++ftrace_pid_write(struct file *filp, const char __user *ubuf,
++		   size_t cnt, loff_t *ppos)
++{
++	char buf[64];
++	long val;
++	int ret;
++
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	ret = strict_strtol(buf, 10, &val);
++	if (ret < 0)
++		return ret;
++
++	mutex_lock(&ftrace_start_lock);
++	if (ret < 0) {
++		/* disable pid tracing */
++		if (ftrace_pid_trace < 0)
++			goto out;
++		ftrace_pid_trace = -1;
++
++	} else {
++
++		if (ftrace_pid_trace == val)
++			goto out;
++
++		ftrace_pid_trace = val;
++	}
++
++	/* update the function call */
++	ftrace_update_pid_func();
++	ftrace_startup_enable(0);
++
++ out:
++	mutex_unlock(&ftrace_start_lock);
++
++	return cnt;
++}
++
++static struct file_operations ftrace_pid_fops = {
++	.read = ftrace_pid_read,
++	.write = ftrace_pid_write,
++};
++
++static __init int ftrace_init_debugfs(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++	if (!d_tracer)
++		return 0;
++
++	ftrace_init_dyn_debugfs(d_tracer);
++
++	entry = debugfs_create_file("set_ftrace_pid", 0644, d_tracer,
++				    NULL, &ftrace_pid_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'set_ftrace_pid' entry\n");
++	return 0;
++}
++
++fs_initcall(ftrace_init_debugfs);
++
+ /**
+  * ftrace_kill - kill ftrace
+  *
 -- 
 1.5.6.5
 
