@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYKYKnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbYKYKoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbYKYKnc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 05:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbYKYKnY
+	id S1753399AbYKYKoc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 05:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYKYKoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:43:24 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60710 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752189AbYKYKnX (ORCPT
+	Tue, 25 Nov 2008 05:44:24 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49914 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbYKYKoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:43:23 -0500
-Date: Tue, 25 Nov 2008 10:43:34 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sheng Yang <sheng@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH] 8250: Eliminate compile warning of 8250.c
-Message-ID: <20081125104334.351e94ee@lxorguk.ukuu.org.uk>
-In-Reply-To: <200811251831.34737.sheng@linux.intel.com>
-References: <1227585320-3711-1-git-send-email-sheng@linux.intel.com>
-	<1227585503-3833-1-git-send-email-sheng@linux.intel.com>
-	<20081125102230.791fa168@lxorguk.ukuu.org.uk>
-	<200811251831.34737.sheng@linux.intel.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 05:44:23 -0500
+Date: Tue, 25 Nov 2008 05:44:15 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Eric Sandeen <sandeen@sandeen.net>, Stian Jordet <liste@jordet.net>,
+       Alan Piszcz <ap@solarrain.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+Message-ID: <20081125104415.GA17304@infradead.org>
+References: <1226760254.5089.11.camel@chevrolet> <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com> <1227476908.32357.5.camel@chevrolet> <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan> <1227485956.5145.10.camel@chevrolet> <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan> <1227569808.5039.6.camel@chevrolet> <492B5684.2080107@sandeen.net> <alpine.DEB.1.10.0811250456010.16346@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811250456010.16346@p34.internal.lan>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can't understand initializing got "risk hiding future ones". As I know, didn't 
+On Tue, Nov 25, 2008 at 04:56:24AM -0500, Justin Piszcz wrote:
+> barriers enabled:
+> 
+> $ time bash -c 'tar xf linux-2.6.27.7.tar; sync'
+> block 573932: ** Block of NULs **
+> Total bytes read: 293857280 (281MiB, 1.9MiB/s)
+> 
+> real    2m40.643s
+> user    0m0.194s
+> sys     0m1.541s
+> 
+> barriers disabled:
+> 
+> time bash -c 'tar xf linux-2.6.27.7.tar; sync'
+> block 573932: ** Block of NULs **
+> Total bytes read: 293857280 (281MiB, 11MiB/s)
+> 
+> real    0m27.612s
+> user    0m0.182s
+> sys     0m1.617s
 
-Because if you set it to NULL and later delete a line which does the
-intended assignment you will no longer get a warning.
-
-> think BUG_ON(n==null) cover this. And I don't think leave it to compiler is 
-> more proper here.
-
-The BUG_ON covers it, the current gcc gets this right and works it out.
-
-NAK again
+That's worse than usual, and even the no-barriers numbers are still
+really bad.  What kind of disk and controller is this?  Did you
+try to disable the cache with hdparm and see what that gives?
 
