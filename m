@@ -1,273 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYKYToc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbYKYTqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbYKYToc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 14:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYKYToX
+	id S1753195AbYKYTqi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 14:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKYTq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 14:44:23 -0500
-Received: from matrixpower.ru ([195.178.208.66]:41146 "EHLO tservice.net.ru"
+	Tue, 25 Nov 2008 14:46:28 -0500
+Received: from smtp4-g19.free.fr ([212.27.42.30]:52238 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbYKYToW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 14:44:22 -0500
-Date: Tue, 25 Nov 2008 22:44:20 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: John McCutchan <john@johnmccutchan.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, mtk.manpages@gmail.com,
-       Christoph Hellwig <hch@lst.de>, Robert Love <rlove@rlove.org>,
-       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@suse.cz>,
-       David Newall <davidn@davidnewall.com>
-Subject: [take2] Inotify: nested attributes test application.
-Message-ID: <20081125194420.GA24835@ioremap.net>
-References: <20081125194234.GA24449@ioremap.net>
+	id S1750816AbYKYTq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 14:46:28 -0500
+Message-ID: <492C55FC.2040506@free.fr>
+Date: Tue, 25 Nov 2008 20:46:04 +0100
+From: Benoit PAPILLAULT <benoit.papillault@free.fr>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="mYCpIKhGyMATD0i+"
-Content-Disposition: inline
-In-Reply-To: <20081125194234.GA24449@ioremap.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Felix Fietkau <nbd@openwrt.org>
+CC: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Derek Smithies <derek@indranet.co.nz>, ath5k-devel@venema.h4ckr.net,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, wally@theblackmoor.net,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [ath5k-devel] Unusually low speeds with ath5k and iwl3945
+References: <492719ED.5000006@gmail.com> <20081122005240.GA27826@hash.localnet>	<alpine.DEB.2.00.0811221643030.7067@monster> <4927FC0C.10900@gmail.com> <492A5913.3070007@free.fr> <492A7733.2000205@openwrt.org>
+In-Reply-To: <492A7733.2000205@openwrt.org>
+X-Enigmail-Version: 0.95.7
+OpenPGP: url=http://benoit.papillault.free.fr/pgp/benoit.papillault.pgp
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Felix Fietkau a écrit :
+> While reading the code for calculating the frame duration, i noticed
+> something odd: It doesn't seem to be taking into account the short
+> vs long preamble distinction for ERP rates. IMHO this might be causing
+> issues like this. I've seen similar behaviour a long time ago when testing
+> iwl3945 against a Broadcom AP with exactly the same throughput drop (500-
+> 600 kbits/s).
+> When I analyzed the problem with an extra monitor mode card, I found out
+> that the throughput drop is caused by a huge number of retransmissions,
 
-$ ./iotest -h
-Usage: ./iotest -f path -t <tid> -p <pid> -i <io details> -n <name> -h <help>
+In the test I've done, there was no retransmission at all (no
+duplicates). I don't save a capture file, so I cannot tell for sure.
 
-$ ./iotest -f /tmp/ -t -i
-2008-11-25 22:40:30.201286 pid: 1928, tid: 1928, name: /tmp/, wd: 1, mask: 303, attributes: pid: 0, tid: 1, io: 1, name: 0.
-event: 2, wd: 1, cookie: 0, len: 36.
-	tid: 1672.
-	io details: start: 0, size: 0.
+What is the code computing frame duration you are referring to? How it
+could affect the hardware behavior?
 
-$ echo qwe11 > /tmp/test
+> and if I remember correctly (I didn't look for this specifically back then),
+> the retransmissions went down the rate scaling table until they hit the
+> first non-ERP rate and that one worked on the first try.
+> 
+> Johannes, does that sound like a probable cause? If so, it should be easy
+> to fix.
+> 
+> - Felix
+> 
 
--- 
-	Evgeniy Polyakov
+Regards,
+Benoit
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
---mYCpIKhGyMATD0i+
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="iotest.c"
-
-/*
- * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
- * All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
-
-#define _GNU_SOURCE
-#define __USE_FILE_OFFSET64
-#define __USE_LARGEFILE64
-#define _FILE_OFFSET_BITS	64
-
-#include <sys/ioctl.h>
-#include <sys/time.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <time.h>
-#include <stdarg.h>
-
-#include <linux/types.h>
-#include <linux/inotify.h>
-#include <linux/unistd.h>
-
-#include <asm/unistd.h>
-
-extern int inotify_add_watch(int __fd, const char *__name, unsigned int __mask);
-
-void iotest_log(const char *f, ...)
-{
-	char str[64];
-	struct tm tm;
-	struct timeval tv;
-	va_list ap;
-
-	gettimeofday(&tv, NULL);
-	localtime_r((time_t *)&tv.tv_sec, &tm);
-	strftime(str, sizeof(str), "%F %R:%S", &tm);
-
-	fprintf(stderr, "%s.%lu ", str, tv.tv_usec);
-
-	va_start(ap, f);
-	vfprintf(stderr, f, ap);
-	va_end(ap);
-
-	fflush(stderr);
-}
-
-#define iotest_err(f, a...) iotest_log(f ": %s [%d].\n", ##a, strerror(errno), errno)
-
-static void iotest_usage(char *p)
-{
-	fprintf(stderr, "Usage: %s -f path -t <tid> -p <pid> -i <io details> -n <name> -h <help>\n", p);
-}
-
-int main(int argc, char *argv[])
-{
-	int fd, ch, err;
-	int tid, pid, io, name, wd;
-	char *file;
-	unsigned int mask;
-	char buf[4096];
-	void *data;
-	struct inotify_event *e;
-	struct inotify_attribute *a;
-	struct inotify_io_details *det;
-	unsigned int id;
-
-	file = NULL;
-	tid = 0;
-	pid = 0;
-	io = 0;
-	name = 0;
-
-	while ((ch = getopt(argc, argv, "f:tpinh")) != -1) {
-		switch (ch) {
-			case 'f':
-				file = optarg;
-				break;
-			case 't':
-				tid = 1;
-				break;
-			case 'p':
-				pid = 1;
-				break;
-			case 'i':
-				io = 1;
-				break;
-			case 'n':
-				name = 1;
-				break;
-			case 'h':
-			default:
-				iotest_usage(argv[0]);
-				return -1;
-		}
-	}
-
-	if (!file) {
-		fprintf(stderr, "You have to provide file to watch IO against.\n");
-		iotest_usage(argv[0]);
-		return -1;
-	}
-
-	fd = syscall(__NR_inotify_init1, IN_ATTRS);
-	if (fd < 0) {
-		iotest_err("Failed to call inotify_init1");
-		return -1;
-	}
-
-	if (tid) {
-		id = INOTIFY_ATTR_TID;
-		err = ioctl(fd, TIOCSETD, &id, 4);
-		if (err) {
-			iotest_err("Failed to setup TID attribute");
-			return err;
-		}
-	}
-	
-	if (pid) {
-		id = INOTIFY_ATTR_PID;
-		err = ioctl(fd, TIOCSETD, &id, 4);
-		if (err) {
-			iotest_err("Failed to setup PID attribute");
-			return err;
-		}
-	}
-	
-	if (io) {
-		id = INOTIFY_ATTR_IO;
-		err = ioctl(fd, TIOCSETD, &id, 4);
-		if (err) {
-			iotest_err("Failed to setup IO attribute");
-			return err;
-		}
-	}
-	
-	if (name) {
-		id = INOTIFY_ATTR_NAME;
-		err = ioctl(fd, TIOCSETD, &id, 4);
-		if (err) {
-			iotest_err("Failed to setup name attribute");
-			return err;
-		}
-	}
-
-	mask = IN_MODIFY | IN_CREATE | IN_DELETE | IN_ACCESS;
-	wd = inotify_add_watch(fd, file, mask);
-	if (wd < 0) {
-		iotest_err("Failed to add %x watch for file '%s'", mask, file);
-		return -1;
-	}
-
-	iotest_log("pid: %d, tid: %d, name: %s, wd: %d, mask: %x, attributes: "
-			"pid: %d, tid: %d, io: %d, name: %d.\n",
-			getpid(), syscall(__NR_gettid), file, wd, mask,
-			pid, tid, io, name);
-
-	while (1) {
-		sleep(5);
-		data = buf;
-		err = read(fd, buf, sizeof(buf));
-		if (err <= 0) {
-			iotest_err("Failed to read event");
-			return err;
-		}
-
-		e = data;
-		printf("event: %x, wd: %d, cookie: %u, len: %u.\n", e->mask, e->wd, e->cookie, e->len);
-
-		data += sizeof(struct inotify_event);
-		while (e->len) {
-			a = data;
-
-			switch (a->id) {
-				case INOTIFY_ATTR_PID:
-					id = *(unsigned int *)a->data;
-					printf("       pid: %u.\n", id);
-					break;
-				case INOTIFY_ATTR_TID:
-					id = *(unsigned int *)a->data;
-					printf("       tid: %u.\n", id);
-					break;
-				case INOTIFY_ATTR_IO:
-					det = (struct inotify_io_details *)a->data;
-					printf("       io details: start: %llu, size: %llu.\n",
-							(unsigned long long)det->start,
-							(unsigned long long)det->size);
-					break;
-				case INOTIFY_ATTR_NAME:
-					printf("       name: %s.\n", (char *)a->data);
-					break;
-				default:
-					printf("       unsupported id: %u, size: %u.\n", a->id, a->size);
-					break;
-			}
-
-			data += a->size + sizeof(struct inotify_attribute);
-			e->len -= a->size + sizeof(struct inotify_attribute);
-		}
-	}
-
-	close(fd);
-	return 0;
-}
-
-
---mYCpIKhGyMATD0i+--
+iD8DBQFJLFX8OR6EySwP7oIRAp2pAJ0batdz64sh9L82CIKzkmVcLyANygCeOq5q
+D18DQ/Ko9ggdGn5lmshlMJs=
+=3efH
+-----END PGP SIGNATURE-----
