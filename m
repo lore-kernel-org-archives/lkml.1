@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYKYREi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbYKYREz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbYKYREi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 12:04:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYKYRE3
+	id S1752863AbYKYREz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 12:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYKYREn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 12:04:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:42612 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbYKYRE2 (ORCPT
+	Tue, 25 Nov 2008 12:04:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40946 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbYKYREm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 12:04:28 -0500
-Message-ID: <492C2EE3.8080104@zytor.com>
-Date: Tue, 25 Nov 2008 08:59:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 25 Nov 2008 12:04:42 -0500
+Date: Tue, 25 Nov 2008 12:04:41 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, Kyle Mc Martin <kyle@hera.kernel.org>,
+       linux-parisc@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] parisc: fix bug in compat_arch_ptrace
+Message-ID: <20081125170441.GC30056@bombadil.infradead.org>
+References: <200811201054.09930.deller@gmx.de>
 MIME-Version: 1.0
-To: mtk.manpages@gmail.com
-CC: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/9] LinuxPPS core support.
-References: <1227542451-31969-1-git-send-email-giometti@linux.it>	 <1227542451-31969-2-git-send-email-giometti@linux.it>	 <517f3f820811250824ubb4ca0bn5a8be62a180581e4@mail.gmail.com>	 <20081125164512.GE26417@tekkaman> <cfd18e0f0811250854r20707d53u629245e478fb8d69@mail.gmail.com>
-In-Reply-To: <cfd18e0f0811250854r20707d53u629245e478fb8d69@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811201054.09930.deller@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk wrote:
+On Thu, Nov 20, 2008 at 10:54:09AM +0100, Helge Deller wrote:
+> This commit in 2.6.28-rc:
+> 	81e192d6ce303b6792aa38ff35f41a1a7357f23a
+> 	parisc: convert to generic compat_sys_ptrace
 > 
-> Weight of usage seems to be "antennas" when we are talking about radio devices.
+> introduced a bug which segfaults the parisc 64bit kernel 
+> when stracing 32bit applications:
 > 
 
-"antennas" in American English, "aerials" in British English ;)
+Thanks, looks fine.
 
-	-hpa
