@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYKYKpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbYKYKqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbYKYKpr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 05:45:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYKYKpg
+	id S1753722AbYKYKqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 05:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYKYKqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:45:36 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:36397 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752602AbYKYKpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:45:35 -0500
-Date: Tue, 25 Nov 2008 11:45:26 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Philip Langdale <philipl@overt.org>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       Frank Seidel <fseidel@suse.de>,
-       Mathias Weyland <weyland@library.ethz.ch>
-Subject: Re: [PATCH] ricoh_mmc: Handle newer models of Ricoh controllers
-Message-ID: <20081125114526.715ebb23@mjolnir.drzeus.cx>
-In-Reply-To: <492BBA91.5010302@overt.org>
-References: <492BBA91.5010302@overt.org>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-1700-1227609931-0001-2"
+	Tue, 25 Nov 2008 05:46:05 -0500
+Received: from lucidpixels.com ([75.144.35.66]:57722 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752302AbYKYKqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 05:46:03 -0500
+Date: Tue, 25 Nov 2008 05:46:01 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Christoph Hellwig <hch@infradead.org>
+cc: Eric Sandeen <sandeen@sandeen.net>, Stian Jordet <liste@jordet.net>,
+       Alan Piszcz <ap@solarrain.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+In-Reply-To: <20081125104415.GA17304@infradead.org>
+Message-ID: <alpine.DEB.1.10.0811250544530.19316@p34.internal.lan>
+References: <1226760254.5089.11.camel@chevrolet> <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com> <1227476908.32357.5.camel@chevrolet> <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan> <1227485956.5145.10.camel@chevrolet>
+ <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan> <1227569808.5039.6.camel@chevrolet> <492B5684.2080107@sandeen.net> <alpine.DEB.1.10.0811250456010.16346@p34.internal.lan> <20081125104415.GA17304@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-1700-1227609931-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, 25 Nov 2008 00:42:57 -0800
-Philip Langdale <philipl@overt.org> wrote:
+On Tue, 25 Nov 2008, Christoph Hellwig wrote:
 
-> The latest generation of laptops are shipping with a newer
-> model of Ricoh chip where the firewire controller is the
-> primary PCI function but a cardbus controller is also present.
->=20
-> The existing code assumes that if a cardbus controller is,
-> present, then it must be the one to manipulate - but the real
-> rule is that you manipulate PCI function 0. This patch adds an
-> additional constraint that the target must be function 0.
->=20
-> Signed-off-by: Philip Langdale <philipl@overt.org>
-> ---
+> On Tue, Nov 25, 2008 at 04:56:24AM -0500, Justin Piszcz wrote:
+>> barriers enabled:
+>>
+>> $ time bash -c 'tar xf linux-2.6.27.7.tar; sync'
+>> block 573932: ** Block of NULs **
+>> Total bytes read: 293857280 (281MiB, 1.9MiB/s)
+>>
+>> real    2m40.643s
+>> user    0m0.194s
+>> sys     0m1.541s
+>>
+>> barriers disabled:
+>>
+>> time bash -c 'tar xf linux-2.6.27.7.tar; sync'
+>> block 573932: ** Block of NULs **
+>> Total bytes read: 293857280 (281MiB, 11MiB/s)
+>>
+>> real    0m27.612s
+>> user    0m0.182s
+>> sys     0m1.617s
+>
+> That's worse than usual, and even the no-barriers numbers are still
+> really bad.  What kind of disk and controller is this?  Did you
+> try to disable the cache with hdparm and see what that gives?
+>
 
-Mathias, please try to test this ASAP so that I can push it to Linus
-for .28 (provided it works).
+WD 750G on ICH7
 
-Frank, if possibly it would be useful if you could also test this on
-the hardware you wrote your patch for. Just so we don't break
-anything. :)
+Device Model:     WDC WD7500AAKS-00RBA0
+00:1f.2 SATA controller: Intel Corporation 82801GR/GH (ICH7 Family) SATA 
+AHCI Controller (rev 01)
 
-Rgds
---=20
-     -- Pierre Ossman
+I've not tried playing with the cache.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-1700-1227609931-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkkr10sACgkQ7b8eESbyJLjVoQCgwQLs4DXEePAJTXey4DWvqs08
-7agAn1xTCtuF0lgyBk+aKVfIkC1jVTVn
-=MVSy
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-1700-1227609931-0001-2--
+Justin.
