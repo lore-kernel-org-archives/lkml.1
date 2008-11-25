@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYKYUCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYKYUDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbYKYUCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 15:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYKYUCh
+	id S1753518AbYKYUDg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 15:03:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYKYUD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 15:02:37 -0500
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:32883 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbYKYUCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 15:02:36 -0500
-Message-ID: <492C59DD.5070401@cs.columbia.edu>
-Date: Tue, 25 Nov 2008 15:02:37 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 25 Nov 2008 15:03:27 -0500
+Received: from ping.pong.ch ([212.103.71.101]:55293 "EHLO ping.pong.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbYKYUD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 15:03:27 -0500
+X-Greylist: delayed 1099 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Nov 2008 15:03:26 EST
+Date: Tue, 25 Nov 2008 20:44:58 +0100
+From: Gaudenz Steinlin <gaudenz@debian.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: commit b1ee26b "radeonfb: accelerate imageblit and other
+	improvements" freezes system on switching from X to text console
+Message-ID: <20081125194457.GA4929@soziologie.ch>
 MIME-Version: 1.0
-To: Andrey Mirkin <major@openvz.org>
-CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] In-kernel process restart
-References: <1227541175-30301-1-git-send-email-major@openvz.org>
-In-Reply-To: <1227541175-30301-1-git-send-email-major@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ben
 
-Andrey Mirkin wrote:
-> These patchset introduces OpenVZ kernel based restart procedure on top of
-> Oren's checkpoint/restart patchset v9.
-> 
-> For restarting a set of processes one will need to call sys_restart() once with
-> new flag CR_CTX_RSTR_IN_KERNEL. All work will be done in kernel in this case.
-> 
-> Small changes to image format are required to make in-kernel process creation
-> more easy.
-> 
-> Oren, please take a look on this patchset. I've tried to port OpenVZ
-> functionality on top of yours with minimal changes.
-> 
+The changes in the commit mentioned in the subject freeze my system when
+changing from X to a text console. The system freezes with a garbled
+display. Reverting this commit fixes the problem.
 
-Thanks, Andrey. The patch looks simple and good.
+The freeze only happens if DRI is enabled in X. It also does not happen
+if I simply switch between different text consoles. 
 
-Did you look at my (user-space) process creation code ?  specifically, it
-uses the task-pids array (that is saved during checkpoint) to figure out
-how many children a task has to spawn and their corresponding pids.
+My system is a PowerPC PowerBook G4 15" (PowerBook5,8) with a ATI
+Mobility Radeon 9600 M10 graphics card. I'm running X.org 1.5.1 with the
+radeon driver version 6.9.0+git20080826.a3cc1d7a from Debian
+experimental.
 
-Is there a particular reason that you chose not to use that data during
-restart ?  eventually, you'll need to add the rest of it, too, to the task
-data, like you did with the number of children in this patch.
+Sorry, I don't have the knowledge nor the time to fix this myself, but I
+would be happy to test an improved patch. Please also feel free to ask
+if you need more information.
 
-Instead, since the data is available and the logic is available, we can
-have each new thread call do_restart_task(), and the container init
-should call do_restart_root().
+Gaudenz
 
-What do you think ?  I can go ahead and make the changes on top of your
-patch.
-
-Oren.
-
-
+-- 
+Ever tried. Ever failed. No matter.
+Try again. Fail again. Fail better.
+~ Samuel Beckett ~
