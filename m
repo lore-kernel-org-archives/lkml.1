@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYKYWns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYKYWpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbYKYWns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYKYWnR
+	id S1753413AbYKYWpK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 17:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYKYWo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:43:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39777 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752801AbYKYWnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 17:43:16 -0500
-Date: Tue, 25 Nov 2008 14:42:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       srostedt@redhat.com
-Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
-Message-Id: <20081125144221.66eb99ad.akpm@linux-foundation.org>
-In-Reply-To: <20081125223456.976670734@goodmis.org>
-References: <20081125223421.795046329@goodmis.org>
-	<20081125223456.976670734@goodmis.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 25 Nov 2008 17:44:58 -0500
+Received: from vpnflf.ccur.com ([12.192.68.2]:50491 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751386AbYKYWo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 17:44:57 -0500
+Date: Tue, 25 Nov 2008 17:44:39 -0500
+From: Joe Korty <joe.korty@ccur.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix overbroad /proc/timer_list file permissions
+Message-ID: <20081125224439.GA24042@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 17:34:22 -0500
-Steven Rostedt <rostedt@goodmis.org> wrote:
+Fix overbroad file permissions on /proc/timer_list.
 
-> This patch adds the ability to function trace a single thread.
-> The file:
-> 
->   /debugfs/tracing/set_ftrace_pid
-> 
-> contains the pid to trace.
+/proc/timer_list has 0644 permissions, this should be 0444.
 
-What happens if the same pid exists in two or more pid namespaces?
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
+
+Index: 2.6.28-rc6/kernel/time/timer_list.c
+===================================================================
+--- 2.6.28-rc6.orig/kernel/time/timer_list.c	2008-11-25 17:32:46.000000000 -0500
++++ 2.6.28-rc6/kernel/time/timer_list.c	2008-11-25 17:33:16.000000000 -0500
+@@ -286,7 +286,7 @@
+ {
+ 	struct proc_dir_entry *pe;
+ 
+-	pe = proc_create("timer_list", 0644, NULL, &timer_list_fops);
++	pe = proc_create("timer_list", 0444, NULL, &timer_list_fops);
+ 	if (!pe)
+ 		return -ENOMEM;
+ 	return 0;
+
