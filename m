@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYKYECV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYKYE0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYKYECV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 23:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYKYECN
+	id S1755167AbYKYE0w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 23:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYKYE0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 23:02:13 -0500
-Received: from mga11.intel.com ([192.55.52.93]:23685 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751964AbYKYECM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 23:02:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,661,1220252400"; 
-   d="scan'208";a="407690342"
-From: Sheng Yang <sheng@linux.intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-serial@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH] 8250: Eliminate compile warning of 8250.c
-Date: Tue, 25 Nov 2008 11:58:23 +0800
-Message-Id: <1227585503-3833-1-git-send-email-sheng@linux.intel.com>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1227585320-3711-1-git-send-email-sheng@linux.intel.com>
-References: <1227585320-3711-1-git-send-email-sheng@linux.intel.com>
+	Mon, 24 Nov 2008 23:26:44 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46631 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbYKYE0n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 23:26:43 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] mm: make mem_cgroup_resize_limit() static
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20081125131942.26CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081125131942.26CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081125132556.26D6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 25 Nov 2008 13:26:40 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Something wrong with encoding of the first mail...)
+Sparse output following warnings.
 
-The patch based on linux-2.6 upstream and elimiate this compile warning
-info:
+mm/memcontrol.c:782:5: warning: symbol 'mem_cgroup_resize_limit' was not declared. Should it be static?
 
-drivers/serial/8250.c: In function 'serial8250_shutdown':
-drivers/serial/8250.c:1612: warning: 'i' may be used uninitialized in this
-function
+cleanup here.
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- drivers/serial/8250.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ mm/memcontrol.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 303272a..c78eee6 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1609,7 +1609,7 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
+Index: b/mm/memcontrol.c
+===================================================================
+--- a/mm/memcontrol.c	2008-11-05 01:11:45.000000000 +0900
++++ b/mm/memcontrol.c	2008-11-22 22:23:12.000000000 +0900
+@@ -779,7 +779,8 @@ int mem_cgroup_shrink_usage(struct mm_st
+ 	return 0;
+ }
  
- static void serial_unlink_irq_chain(struct uart_8250_port *up)
+-int mem_cgroup_resize_limit(struct mem_cgroup *memcg, unsigned long long val)
++static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
++				   unsigned long long val)
  {
--	struct irq_info *i;
-+	struct irq_info *i = NULL;
- 	struct hlist_node *n;
- 	struct hlist_head *h;
  
--- 
-1.5.4.5
+ 	int retry_count = MEM_CGROUP_RECLAIM_RETRIES;
+
 
