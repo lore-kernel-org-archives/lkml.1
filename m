@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbYKYR0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYKYR1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752748AbYKYR0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 12:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYKYRZN
+	id S1754628AbYKYR1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 12:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYKYR1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 12:25:13 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54019 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754310AbYKYRZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 12:25:09 -0500
-Date: Tue, 25 Nov 2008 12:24:08 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/16] Markers auto enable tracepoints (new API : trace_mark_tp())
-Message-ID: <20081125172407.GB16372@redhat.com>
-References: <20081114224948.134716055@polymtl.ca> <20081116075928.GB530@elte.hu> <20081125211750.26F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081125211750.26F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.4.1i
+	Tue, 25 Nov 2008 12:27:10 -0500
+Received: from stinky.trash.net ([213.144.137.162]:64776 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbYKYR1J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 12:27:09 -0500
+Message-ID: <492C3560.8030904@trash.net>
+Date: Tue, 25 Nov 2008 18:26:56 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH] crypto: fix error flow of crypto/testmgr.c:test_comp()
+References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au> <20081010070918.GA28057@gondor.apana.org.au> <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org> <20081011021357.GB3685@gondor.apana.org.au> <20081125085820.GA11401@elte.hu> <20081125152014.GB29096@gondor.apana.org.au> <20081125171438.GK22504@elte.hu>
+In-Reply-To: <20081125171438.GK22504@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+Ingo Molnar wrote:
+> btw, on a related note, there's a couple of networking related warning 
+> fixes/annotations i've got queued up.
+> 
+> I've got 37 commits of that nature in the tip/warnings/* topic 
+> branches:
+> [...]
+> 
+> They are done mainly so that we can notice the warnings we introduce 
+> via any of the -tip trees - but we analyze and look at all other types 
+> of upstream kernel warnings as well.
+> 
+> I'll thus keep these commits indefinitely - but if someone from the 
+> networking side would like to work with us to pick them up and 
+> eventually nurse them upstream, that would be great!
+> 
+> One thing is not really feasible: there's just too many of them for me 
+> to spend 10 minutes on each to submit them with a proper Cc:, etc. 
+> (such overhead mounts up quickly if you do the numbers)
+> 
+> So i've attached them below as a dump of patches. If someone wants to 
+> cherry-pick bits of them, they are also available in 
+> tip/auto-warnings-next:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git auto-warnings-next
+> 
+> Warning: some of them might be bad, so please double check the 
+> analysis.
 
-On Tue, Nov 25, 2008 at 09:23:57PM +0900, KOSAKI Motohiro wrote:
-> Sorry for very late response.
-> However, if you do marker removing discussion, I hope CC to Frank Eigler.
+> commit c390a3784564c1fb2183e4a31ea39a9beb47d034
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Nov 25 11:31:28 2008 +0100
+> 
+>     fix warning in net/netfilter/nf_conntrack_ftp.c
 
-Thanks!
+I've picked up this one in my nf-next-2.6.git tree.
 
-> because SystemTap also use marker and tracepoint.  and this patch
-> also improvement SystemTap marker support, I think.
+> commit decc1656e870c9e5bd94f2357b8496b8da6c2e73
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Sat Oct 18 19:14:40 2008 +0200
+> 
+>     fix warning in net/netfilter/nf_conntrack_proto_sctp.c
 
-I believe that this trace_mark_tp variant would operate at a level
-below systemtap's.  It would mainly improve the kernel performance and
-simplify kernel code.
+This one is already fixed differently in my tree.
 
-> IIRC, Currently, Systemtap also have marker/tracepoint on/off
-> synchronization problem.
+> commit b5a7c2b9e1a1b4d80da5d66b330545fdeafe1dad
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Fri Oct 17 19:48:51 2008 +0200
+> 
+>     fix warning in net/netfilter/nf_conntrack_proto_tcp.c 
 
-Right, to the extent that systemtap can currently connect to markers
-and not yet tracepoints, so tracepoints need to be converted to
-markers or another systemtap-visible hooking mechanism at some point.
-This is a temporary state of affairs though, as we hope to talk to
-tracepoints directly before too long.
-
-
-mingo wrote:
-
-> > I was actually hoping for markers (the in-kernel API) to go away 
-> > completely - and be replaced with tracepoints.
-
-(If you're seriously contemplating outright removal of this API, then
-the earlier worries about how markers would somehow tie its users'
-hands to keep them around forever was surely exaggerated.)
-
-
-> > Markers are the wrong design on several levels. They couple the kernel 
-> > dynamically with unknown (to the kernel) entities -  [...]
-> > Tracepoints are much more specific - typed and enumerated function 
-> > call callback points in essence [...]
-
-You are confusing type safety and "unknown (to the kernel)"-ness.
-
-Markers provide some type safety via the format string; tracepoints
-via individual C declarations.
-
-Markers can connect to "unknown (to the kernel)" clients since their
-API is EXPORT_SYMBOL_GPL'd.  Tracepoints do exactly the same thing.
-
-There are certainly differences between them, but these two particular
-ones are immaterial.
-
-
-- FChE
+I've also picked up this one.
