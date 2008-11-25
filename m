@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYKYD1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYKYEvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbYKYD1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 22:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYKYD1g
+	id S1754132AbYKYEvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 23:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYKYEvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 22:27:36 -0500
-Received: from smtp.flash.net.br ([201.46.240.48]:37405 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbYKYD1f convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 22:27:35 -0500
-X-Greylist: delayed 491 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 22:27:34 EST
-In-Reply-To: <200808041526.08332.IvDoorn@gmail.com>
-References: <20080620175729.GA3151@ime.usp.br> <20080620195815.GA2703@ime.usp.br> <20080625194937.GA13636@ime.usp.br> <200808041526.08332.IvDoorn@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <3977BB08-9149-41E4-B187-235F36204E4E@ime.usp.br>
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8BIT
-From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-Subject: Still some problems with the rt2x00 driver
-Date: Tue, 25 Nov 2008 01:19:10 -0200
-To: Ivo van Doorn <ivdoorn@gmail.com>
-X-Mailer: Apple Mail (2.753.1)
+	Mon, 24 Nov 2008 23:51:22 -0500
+Received: from blaine.gmane.org ([80.91.229.8]:57396 "EHLO hugh.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753188AbYKYEvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 23:51:22 -0500
+Date: Mon, 24 Nov 2008 20:20:51 -0800
+From: Greg KH <gregkh@suse.de>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: Linus Torvalds 
+	<public-torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@hugh.gmane.org>,
+       Andrew Morton 
+	<public-akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@hugh.gmane.org>,
+       Linux Kernel Mailing List 
+	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
+       public-linux-usb-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org
+Subject: Re: [GIT PATCH] USB fixes for 2.6.28-git
+Message-ID: <20081125042051.GA17345@suse.de>
+References: <20081120055026.GA10709@kroah.com> <alpine.LFD.2.00.0811201322350.21698@nehalem.linux-foundation.org> <20081120214826.GA15769@suse.de> <7vprkklaob.fsf@gitster.siamese.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7vprkklaob.fsf@gitster.siamese.dyndns.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-TMDA-Confirmed: Tue, 25 Nov 2008 05:51:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again, Ivo, John and others.
-
-On Aug 04 2008, Ivo van Doorn wrote:
-> I have found the problem and have send it upstream so the patch  
-> should be
-> present in 2.6.27.
-
-Well, it works ok (but see below) on powerpc, with a 2.6.27 kernel (I  
-still have not upgraded it).
-
-There are two strange things that I've noticed, though and that I  
-feel need to be fixed:
-
-1 - the rt63 driver used by a PCMCIA card DWL-G630 model has, for  
-many kernels (from 2.6.24 and up to and including kernel 2.6.27, as  
-shipped by Ubuntu for ia32), shown a strange behavior: after  
-everything is working correctly, the network simply becomes  
-unavailable, with the gnome network monitor showing that the card has  
-no signal. If I issue the command "iwconfig ra0 ap any", for example,  
-the card starts working again.
-
-(Actually, I put this on a cron job to be executed every minute, but  
-even then, there are time windows where the card is not working). I'm  
-not in front of the notebook (a very old Armada V300 that my parents  
-are using for production), so I don't know if the card looses  
-association with the Access Point or not. I can check that, if nobody  
-else reported this problem yet.
-
-2 - the rt2500usb driver that I use on a very old iBook G3 (powerpc)  
-also works fine and has a similar, but not identical behaviour: the  
-DWL-G122 USB stick that I have works fine once associated and when it  
-is transferring data. Once I leave the network unused for, say, 2  
-minutes, the connection with the AP is dropped. Here, also, issuing  
-"iwconfig wlan0 ap any" makes it work again.
-
-Notice the difference in both cases: with the PCMCIA/ia32 case, no  
-matter if there is traffic on the network or not, the the connection  
-is interrupted. With the USB/powerpc case, if there is traffic, the  
-connection remains working fine.
-
-> Note that I am not going to push it to 2.6.26 since I don't know if  
-> the
-> patch will cause problems in other parts of the driver.
-
-There's no problem. I can compile vanilla kernels from kernel.org  
-without any problems.
 
 
-Thanks for your kind help, Rogério Brito.
 
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+On Mon, Nov 24, 2008 at 07:57:40PM -0800, Junio C Hamano wrote:
+> 
+> 
+> Greg KH <gregkh-l3A5Bk7waGM@public.gmane.org> writes:
+> 
+> > On Thu, Nov 20, 2008 at 01:23:51PM -0800, Linus Torvalds wrote:
+> >> 
+> >> 
+> >> On Wed, 19 Nov 2008, Greg KH wrote:
+> >> > 
+> >> > Please pull from:
+> >> > 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+> >> 
+> >> "Already up-to-date". 
+> >> 
+> >> I think you forgot to actually push them out.
+> >
+> > Crap, you're right, they are now there, sorry about that.
+> 
+> I've been wondering if git can do something to avoid things like this.
+> 
+> For example, if you push into a particular branch of a particular
+> repository _only_ to ask Linus to pull and for no other purpose, one
+> possible solution may be to trigger a hook on the receiving end of your
+> push (i.e. the public repository Linus is asked to pull from) to send out
+> the "Please pull from" message (I presume this would be a no-go as there
+> is not much room for you to customize the message).
+> 
+> Alternatively, we may want to give an option to git-request-pull to
+> actually run "git push" to the destination.
+> 
+> Thoughts?  Is it "none of Git's business"?
+
+In this case, it was just my fault.  I just forgot to push the tree.  I
+have my own scripts that I use to create my "please pull" message, that
+don't really tie into git's infrastructure and I don't know if I would
+want them to either.
+
+thanks,
+
+greg k-h
+
+
