@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbYKYISv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752626AbYKYIUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbYKYISv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 03:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYKYISm
+	id S1752626AbYKYIUK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 03:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYKYIT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 03:18:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33366
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751519AbYKYISm (ORCPT
+	Tue, 25 Nov 2008 03:19:58 -0500
+Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:38988 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910AbYKYIT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 03:18:42 -0500
-Date: Tue, 25 Nov 2008 00:18:41 -0800 (PST)
-Message-Id: <20081125.001841.57751578.davem@davemloft.net>
-To: hch@lst.de
-Cc: torvalds@osdl.org, roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove __ARCH_WANT_COMPAT_SYS_PTRACE
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081125071003.GA592@lst.de>
-References: <20081125071003.GA592@lst.de>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 03:19:57 -0500
+From: Mike Rapoport <mike@compulab.co.il>
+To: lrg@slimlogic.co.uk
+Cc: linux-kernel@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
+Subject: [PATCH] regulator: da903x: make da903x_is_enabled return 0 or 1
+Date: Tue, 25 Nov 2008 10:19:52 +0200
+Message-Id: <1227601192-23348-1-git-send-email-mike@compulab.co.il>
+X-Mailer: git-send-email 1.5.6.4
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 25 Nov 2008 08:10:03 +0100
 
-> All architectures now use the generic compat_sys_ptrace, as should every
-> new architecture that needs 32bit compat (if we'll ever get another).
-> 
-> Remove the now superflous __ARCH_WANT_COMPAT_SYS_PTRACE define, and also
-> kill a comment about __ARCH_SYS_PTRACE that was added after
-> __ARCH_SYS_PTRACE was already gone.
-> 
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+---
+ drivers/regulator/da903x.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Acked-by: David S. Miller <davem@davemloft.net>
+diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
+index 83101d6..fe77730 100644
+--- a/drivers/regulator/da903x.c
++++ b/drivers/regulator/da903x.c
+@@ -159,7 +159,7 @@ static int da903x_is_enabled(struct regulator_dev *rdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	return reg_val & (1 << info->enable_bit);
++	return !!(reg_val & (1 << info->enable_bit));
+ }
+ 
+ /* DA9030 specific operations */
+-- 
+1.5.6.4
+
