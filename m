@@ -1,88 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYKYKth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbYKYKuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbYKYKth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 05:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYKYKt2
+	id S1753411AbYKYKuo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 05:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYKYKug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:49:28 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41196 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752472AbYKYKt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:49:27 -0500
-Message-ID: <492BD807.4000002@redhat.com>
-Date: Tue, 25 Nov 2008 12:48:39 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 25 Nov 2008 05:50:36 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45622 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbYKYKuf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 05:50:35 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Poll : introduce poll_wait_exclusive() new function
+Cc: kosaki.motohiro@jp.fujitsu.com, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org,
+       William Lee Irwin III <wli@holomorphy.com>
+In-Reply-To: <20081124121659.GA18987@Krystal>
+References: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081124121659.GA18987@Krystal>
+Message-Id: <20081125194700.26EB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: suparna@in.ibm.com
-CC: Zach Brown <zach.brown@oracle.com>, linux-aio@kvack.org,
-       Jeff Moyer <jmoyer@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: kvm aio wishlist
-References: <492B0CDD.7080000@redhat.com> <492B2348.9090008@oracle.com> <492B2976.3010209@redhat.com> <492B3912.3030707@oracle.com> <492BC5CB.6000609@redhat.com> <20081125101923.GA28123@in.ibm.com>
-In-Reply-To: <20081125101923.GA28123@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 25 Nov 2008 19:50:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suparna Bhattacharya wrote:
->> Why not extend io_submit() to use a thread pool when going through a 
->> non-aio-ready path?  Yet a new interface, with another round of integrating 
->> to the previous interfaces, is not a comforting thought.  I still haven't 
->> got used to the fact that aio can work with fd polling.
->>     
->
-> Even paths that provide fop->aio_read/write can be synchronous (like non
-> O_DIRECT filesystem read/writes) underneath, and then there could be multiple
-> blocking points.
->   
 
-If they are known to be synchronous when execution starts, they could 
-just return -ENOSYS and fall back to threads, until someone implements a 
-truly async path.
+patch againt: tip/tracing/marker
 
-> BTW, Ben had implemented a fallback approach that spawned kernel threads
-> - it was an initial patch and didn't do any thread pooling at that time.
->
-> I had a fallback path for pollable fds which did not require thread pools
-> http://lwn.net/Articles/216443/ 
-> (limited to fds which support non blocking semantics)
->   
+==========
+Currently, wake_up() function behavior depend on the way of
+wait queue adding function.
 
-These are good solutions for the complex-blocking and never blocking cases.
 
-> OR
->
-> Maybe we could use a very simple version of syslets to do an io_submit
-> in libaio :) 
->
-> Does the syslet approach of continuing in a different thread (different
-> thread id) affect kvm ?
->   
+                              wake_up()          wake_up_all()
+---------------------------------------------------------------
+add_wait_queue()              wake up all        wake up all
+add_wait_queue_exclusive()    wake up one task   wake up all
 
-Yes, we like to pthread_kill() threads from time to time, and even 
-expose the thread IDs to management tools so they can control pinning.
 
-Perhaps a variant of syslet, that is kernel-only, and does:
+Unforunately, poll_wait() always use add_wait_queue().
+it means there is no way that wake up only one process in polled processes.
+wake_up() also wake up all sleeping processes, not 1 process.
 
-- always allocate a new kernel stack at io_submit() time, but not a new 
-thread
-- start executing the rarely-blocking path of the request (like block 
-mapping and get_users_pages_fast) on the new stack
-- if we block here, clone a new thread and graft the stack onto it
-- start the always-blocking portion of the call (enqueuing a bio)
-- exit the new thead if we hit the slowpath, or deallocate the stack and 
-longjmp back to the main stack if we did not
 
-This does not expose any new semantics to userspace.  It does twist the 
-guts of the kernel in that we have to duplicate thread_info, but if 
-thread_info is only accessed from current, I think that is managable.
+Mathieu Desnoyers explained it cause following problem to LTTng.
 
-(I think I just described fibrils, no?  I think that was a good idea.  
-Why can't we go back to it?)
+   In LTTng, all lttd readers are polling all the available debugfs files
+   for data. This is principally because the number of reader threads is
+   user-defined and there are typical workloads where a single CPU is
+   producing most of the tracing data and all other CPUs are idle,
+   available to consume data. It therefore makes sense not to tie those
+   threads to specific buffers. However, when the number of threads grows,
+   we face a "thundering herd" problem where many threads can be woken up
+   and put back to sleep, leaving only a single thread doing useful work.
 
--- 
-error compiling committee.c: too many arguments to function
+
+this patch introduce poll_wait_exclusive() new API for allow wake up
+only one process.
+
+<usage example>
+unsigned int foo_device_poll(struct file *file,
+		         struct poll_table_struct *wait)
+{
+	poll_wait_exclusive(file, &foo_wait_queue, wait);
+	if (data_exist)
+		return POLLIN | POLLRDNORM;
+	return 0;
+}
+</usage example>
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ fs/eventpoll.c       |    7 +++++--
+ fs/select.c          |    9 ++++++---
+ include/linux/poll.h |   13 +++++++++++--
+ 3 files changed, 22 insertions(+), 7 deletions(-)
+
+
+
+Index: b/fs/eventpoll.c
+===================================================================
+--- a/fs/eventpoll.c	2008-11-25 19:05:28.000000000 +0900
++++ b/fs/eventpoll.c	2008-11-25 19:15:50.000000000 +0900
+@@ -655,7 +655,7 @@ out_unlock:
+  * target file wakeup lists.
+  */
+ static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
+-				 poll_table *pt)
++				 poll_table *pt, int exclusive)
+ {
+ 	struct epitem *epi = ep_item_from_epqueue(pt);
+ 	struct eppoll_entry *pwq;
+@@ -664,7 +664,10 @@ static void ep_ptable_queue_proc(struct 
+ 		init_waitqueue_func_entry(&pwq->wait, ep_poll_callback);
+ 		pwq->whead = whead;
+ 		pwq->base = epi;
+-		add_wait_queue(whead, &pwq->wait);
++		if (exclusive)
++			add_wait_queue_exclusive(whead, &pwq->wait);
++		else
++			add_wait_queue(whead, &pwq->wait);
+ 		list_add_tail(&pwq->llink, &epi->pwqlist);
+ 		epi->nwait++;
+ 	} else {
+Index: b/fs/select.c
+===================================================================
+--- a/fs/select.c	2008-11-25 19:04:26.000000000 +0900
++++ b/fs/select.c	2008-11-25 19:15:50.000000000 +0900
+@@ -104,7 +104,7 @@ struct poll_table_page {
+  * poll table.
+  */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+-		       poll_table *p);
++		       poll_table *p, int exclusive);
+ 
+ void poll_initwait(struct poll_wqueues *pwq)
+ {
+@@ -173,7 +173,7 @@ static struct poll_table_entry *poll_get
+ 
+ /* Add a new entry */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+-				poll_table *p)
++		       poll_table *p, int exclusive)
+ {
+ 	struct poll_table_entry *entry = poll_get_entry(p);
+ 	if (!entry)
+@@ -182,7 +182,10 @@ static void __pollwait(struct file *filp
+ 	entry->filp = filp;
+ 	entry->wait_address = wait_address;
+ 	init_waitqueue_entry(&entry->wait, current);
+-	add_wait_queue(wait_address, &entry->wait);
++	if (exclusive)
++		add_wait_queue_exclusive(wait_address, &entry->wait);
++	else
++		add_wait_queue(wait_address, &entry->wait);
+ }
+ 
+ /**
+Index: b/include/linux/poll.h
+===================================================================
+--- a/include/linux/poll.h	2008-11-25 19:04:26.000000000 +0900
++++ b/include/linux/poll.h	2008-11-25 19:19:54.000000000 +0900
+@@ -28,7 +28,8 @@ struct poll_table_struct;
+ /* 
+  * structures and helpers for f_op->poll implementations
+  */
+-typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
++typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *,
++				struct poll_table_struct *, int);
+ 
+ typedef struct poll_table_struct {
+ 	poll_queue_proc qproc;
+@@ -37,7 +38,15 @@ typedef struct poll_table_struct {
+ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+ {
+ 	if (p && wait_address)
+-		p->qproc(filp, wait_address, p);
++		p->qproc(filp, wait_address, p, 0);
++}
++
++static inline void poll_wait_exclusive(struct file *filp,
++				       wait_queue_head_t *wait_address,
++				       poll_table *p)
++{
++	if (p && wait_address)
++		p->qproc(filp, wait_address, p, 1);
+ }
+ 
+ static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
+
 
