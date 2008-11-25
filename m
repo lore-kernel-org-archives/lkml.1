@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYKYFbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYKYFmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbYKYFbu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 00:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYKYFbi
+	id S1752948AbYKYFmu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 00:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYKYFmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 00:31:38 -0500
-Received: from 1wt.eu ([62.212.114.60]:1382 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbYKYFbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 00:31:38 -0500
-Date: Tue, 25 Nov 2008 06:31:28 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081125053128.GA32426@1wt.eu>
-References: <491E49AA.60407@gmail.com> <20081118065006.GC24654@1wt.eu> <20081120031101.GD26448@xw6200.broadcom.net> <20081120053746.GB15168@1wt.eu> <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net> <20081124132744.GB24851@1wt.eu> <20081124215247.GA29696@1wt.eu> <20081125015223.GA9151@xw6200.broadcom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081125015223.GA9151@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+	Tue, 25 Nov 2008 00:42:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40188 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbYKYFmk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 00:42:40 -0500
+Date: Tue, 25 Nov 2008 00:42:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+Subject: [PATCH] use limited register constraint for setnz
+Message-ID: <alpine.DEB.1.10.0811250040060.2977@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 05:52:23PM -0800, Matt Carlson wrote:
-(...)
-> > tg3: eth0: transmit timed out, resetting
-> > tg3: DEBUG: MAC_TX_STATUS[0000000b] MAC_RX_STATUS[00000006]
-> > tg3: DEBUG: RDMAC_STATUS[00000000] WDMAC_STATUS[00000008]
-> > tg3: tg3_stop_block timed out, ofs=1400 enable_bit=2
-> > tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
-> > tg3: tg3_stop_block timed out, ofs=4c00 enable_bit=2
-> > tg3: eth0: Link is down.
-> > tg3: eth0: Link is up at 100 Mbps, full duplex.
-> > tg3: eth0: Flow control is on for TX and on for RX.
-> > 
-> > The ease with which I reproduce it here clearly indicates that this is
-> > related to the switch, probably just the fact that it is at 100 Mbps.
-> > Unfortunately this evening I must go, but I still have one 100 Mbps
-> > switch somewhere at home, I'll reproduce the same test ASAP in order
-> > to bisect the issue.
-> > 
-> > Regards,
-> > Willy
-> 
-> Does turning off flow control help at all?
 
-I have not tested but I will. I hope to be able to trigger the problem
-on other similar switches, because I'm only once a week connected to
-the culprit...
+Impact: fix in compiling
 
-Regards,
-Willy
+GCC can decide to use %dil when "r" is used, which is not valid for
+setnz.
+
+This bug was brought out by Stephen Rothwell's merging of the
+branch tracer into linux-next.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/arch/x86/boot/tty.c b/arch/x86/boot/tty.c
+index 0be77b3..c2121d2 100644
+--- a/arch/x86/boot/tty.c
++++ b/arch/x86/boot/tty.c
+@@ -74,7 +74,7 @@ static int kbd_pending(void)
+ {
+ 	u8 pending;
+ 	asm volatile("int $0x16; setnz %0"
+-		     : "=rm" (pending)
++		     : "=Qm" (pending)
+ 		     : "a" (0x0100));
+ 	return pending;
+ }
 
