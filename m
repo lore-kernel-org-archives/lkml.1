@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYKYL0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYKYLag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbYKYL0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYKYL0X
+	id S1753531AbYKYLag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYKYLa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 06:26:23 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:28039 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753849AbYKYL0V (ORCPT
+	Tue, 25 Nov 2008 06:30:28 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:50543 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbYKYLa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 06:26:21 -0500
+	Tue, 25 Nov 2008 06:30:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=g2vgmk2pOz2AKGJzjtkIW5N2ifCrOFx3mt8EcwaiXlvtynRBQfT2BjBNsyeDF4yYlR
-         Dw76/LMdLZNMRKE0UW9yKK29YEV37UpFw6ImWO/sZZ3gu5Pd9AUYgi0K0gDH6OVpqZ2+
-         5M5hmsYwFPEXkDlInIILye3f9SWaqkCvLqLj0=
-Date: Tue, 25 Nov 2008 14:26:17 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Samuel Ortiz <sameo@openedhand.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] power_supply: Add battery health reporting for
-	WM8350
-Message-ID: <20081125112617.GB1110@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20081120152044.GA15434@rakim.wolfsonmicro.main> <1227194621-16442-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1227194621-16442-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cLPnF7aAfQuEbF7jXuz/eYBWfXa+uojHa5PBomRrpqbJSL7oON4Vws90EG902rdYY3
+         PO00i2r3Wae2qbUfz+/0/RfGU7ZqSMbtQWMr1Wl8MHkwzJjkvqHUtIn69K7SgpznpVmT
+         5dj+TTpTdftDsvRihYU4DCqjF5RV6SS4Wmaoo=
+Message-ID: <c62985530811250330y5c4b2bb0m2a238d7510dc5f79@mail.gmail.com>
+Date: Tue, 25 Nov 2008 12:30:26 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Subject: Re: [patch 9/9] x86, bts, ftrace: a BTS ftrace plug-in prototype
+Cc: "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E08F3C3A1@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1227194621-16442-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081125092415.A31432@sedona.ch.intel.com>
+	 <c62985530811250239v4a51cd1p4de5f1616a41ef36@mail.gmail.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E08F3C3A1@irsmsx504.ger.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 20, 2008 at 03:23:41PM +0000, Mark Brown wrote:
-> Implement support for reporting battery health in the WM8350 battery
-> interface. Since we are now able to report this via the classs remove
-> the diagnostics from the interrupt handler.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+2008/11/25 Metzger, Markus T <markus.t.metzger@intel.com>:
+>>If you look at the struct trace_entry, you will see find the cpu
+>>field. It is already inserted automatically :-)
+>
+> I am using that field in struct trace_entry.
 
-Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-> ---
->  drivers/mfd/wm8350-regmap.c     |    2 +-
->  drivers/power/wm8350_power.c    |   33 +++++++++++++++++++++++++--------
->  include/linux/mfd/wm8350/core.h |    7 +++++++
->  3 files changed, 33 insertions(+), 9 deletions(-)
+Right, I misread.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+> Without the assignment, though, I've seen funny cpu numbers. It seems that the field is not filled automatically.
+>
+
+Sorry, I thought it was done by tracing_generic_entry_update() but all
+of the fields in struct trace_entry are filled inside
+this function except the cpu one.... Perhaps it should, I don't know.
