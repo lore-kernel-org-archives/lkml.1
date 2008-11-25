@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYKYAMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbYKYAOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbYKYAMq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 19:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYKYAMh
+	id S1754673AbYKYAOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 19:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbYKYAOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 19:12:37 -0500
-Received: from castle.comp.uvic.ca ([142.104.5.97]:46314 "EHLO
-	castle.comp.uvic.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753995AbYKYAMh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 19:12:37 -0500
-X-Greylist: delayed 1564 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 19:12:36 EST
-Message-ID: <42413.142.104.193.193.1227570383.squirrel@wm3.uvic.ca>
-Date: Mon, 24 Nov 2008 15:46:23 -0800 (PST)
-Subject: adaptive mode in Linux bonding driver
-From: "luming" <luming@uvic.ca>
-To: linux-kernel@vger.kernel.org
-Cc: pan@uvic.ca
-User-Agent: SquirrelMail/1.4.9a
+	Mon, 24 Nov 2008 19:14:14 -0500
+Received: from mail.sdinet.de ([78.47.32.153]:57992 "EHLO mail.sdinet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754032AbYKYAON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 19:14:13 -0500
+X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Nov 2008 19:14:13 EST
+Date: Tue, 25 Nov 2008 01:09:02 +0100 (CET)
+From: Sven-Haegar Koch <haegar@sdinet.de>
+To: Stian Jordet <liste@jordet.net>
+cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+In-Reply-To: <1227569808.5039.6.camel@chevrolet>
+Message-ID: <alpine.DEB.2.00.0811250057510.27010@aurora.sdinet.de>
+References: <1226760254.5089.11.camel@chevrolet>  <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>  <1227476908.32357.5.camel@chevrolet>  <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>  <1227485956.5145.10.camel@chevrolet> 
+ <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan> <1227569808.5039.6.camel@chevrolet>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-UVic-Virus-Scanned: OK - Passed virus scan by Sophos (sophie) on castle
-X-UVic-Spam-Scan: castle.comp.uvic.ca Not_scanned_NOT_SA_HOST
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Nov 2008, Stian Jordet wrote:
 
-I am currently working on my project which includes some modification to
-the kernel bonding driver. I have created a new mode in which each ip
-packet will be acknowledged by a linklayer acknowledgment. This ack will
-trigger the sender to increase a counter and when the sender send out
-packets, it will decrease the SAME counter.
+> ma., 24.11.2008 kl. 04.50 -0500, skrev Justin Piszcz:
+> > While there still may be something else wrong, the first problem I see is 
+> > your sunit and swidth are set to 0.
+> > 
+> > Please read, a good article on what they are and how to set them:
+> > http://www.socalsysadmin.com/
+> 
+> Oh, this was new to me. But the setting didn't change anything. I can
+> copy one large file between the xfs and ext3 disk (both ways), and I get
+> speeds between 160 and 200 MB/s. But unpacking the kernel source takes
+> between 5 and 10 minutes on the xfs disk, and a mere 15 seconds on the
+> ext3... (and it also used to take between 5 and 10 minutes when I had
+> xfs on the raid0, so it doesn't seem to be hardware related...)
 
-To implement this , I have defined the counter in the structure slave. I
-have registered to receive ip packet and ack packets. The problem we found
-is when we bond two links (100Mbps) together with this mode, the sending
-rate never go above 107Mbps. It seems something slows down the sending
-rate. After some investigation, we  found that if we access the same
-counter in both the sending function and the receiver handler, this
-problem will happen. If we only access this counter in one of these two
-functions, it will be fine. If we decrease the link bandwidth or the ack
-sending frequency, we will see the sending rate increasing. So we think may
-be too many acks coming in a very short time that cause too many
-interrupts and slow down the system.
-(We are using PIII 700MHz with linux 2.6.15-7)
+I had the same problem when I tried it on my laptop (T60) - using it on 
+the unencrypted root filesystem (with /usr/src) took ages, using it on 
+the LUKS encrypted /home was blasing fast - on the same disk.
 
-My question is do you know what causes this problem and how can it be solved?
-Thanks very much!
-I am not subscribed in the list so please reply me back at: luming@uvic.ca.
+This test was some time ago with something like 2.6.20 or 2.6.24 - I 
+gave up and reformatted / with ext3 as I needed the machine.
 
-Thanks
-Ming
+I think barriers were the problem, they seem to cost performance like 
+hell, especially for operations with many small files. My laptop used 
+barriers for xfs on the direct partition, but not on crypto drivermapper 
+mounts.
 
+So perhaps try mounting with nobarrier and see if the speed problem goes 
+away - but know that you sacrifice some crash-resilience when doing so.
 
+c'ya
+sven
 
+-- 
+
+The Internet treats censorship as a routing problem, and routes around
+it. (John Gilmore on http://www.cygnus.com/~gnu/)
