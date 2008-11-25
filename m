@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbYKYN3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbYKYNdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752899AbYKYN3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 08:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYKYN3h
+	id S1752801AbYKYNdb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 08:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYKYNdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 08:29:37 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:33215 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbYKYN3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 08:29:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=bCluSHWbHbU7w/XcNzCm251qRgv7W9OoFVokDqdLUpurP5YSq0THlXhflne+FIbtmP
-         9Ag1UBx7hPN2h2xLy/kPPDHLf+JZqmxZhia4avi0mvmNuCw2lTg2X3HbNPbzCDF9NiFc
-         MNb5/reWQi6km659nMYdVcYQLqmwAnGXTuDIs=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, lethal@linux-sh.org, johnstul@us.ibm.com,
-       magnus.damm@gmail.com, mingo@redhat.com,
-       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
-Date: Tue, 25 Nov 2008 22:28:23 +0900
-Message-Id: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se>
-Subject: [RFC] Reentrant clock sources
+	Tue, 25 Nov 2008 08:33:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39038 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750745AbYKYNdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 08:33:22 -0500
+Message-ID: <492BFE6F.5090902@redhat.com>
+Date: Tue, 25 Nov 2008 08:32:31 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] vmscan: bail out of page reclaim after swap_cluster_max
+ pages
+References: <20081124145057.4211bd46@bree.surriel.com> <20081125203333.26F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081125203333.26F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+KOSAKI Motohiro wrote:
+>> Sometimes the VM spends the first few priority rounds rotating back
+>> referenced pages and submitting IO.  Once we get to a lower priority,
+>> sometimes the VM ends up freeing way too many pages.
+>>
+>> The fix is relatively simple: in shrink_zone() we can check how many
+>> pages we have already freed, direct reclaim tasks break out of the
+>> scanning loop if they have already freed enough pages and have reached
+>> a lower priority level.
+>>
+>> However, in order to do this we do need to know how many pages we already
+>> freed, so move nr_reclaimed into scan_control.
+>>
+>> Signed-off-by: Rik van Riel <riel@redhat.com>
+>> ---
+>> Kosaki, this should address the zone scanning pressure issue.
+> 
+> hmmmm. I still don't like the behavior when priority==DEF_PRIORITY.
+> but I also should explain by code and benchmark.
 
-Is there any special reason behind the non-reentrant clock source
-code? I'm writing some timer help code and getting the struct
-clocksource as argument to the callbacks would make the code much
-cleaner and better.
+Well, the behaviour when priority==DEF_PRIORITY is the
+same as the kernel's behaviour without the patch...
 
-Extending the callbacks to be able to start and stop clock sources
-for improved power management would be good too in my opinion.
-Any thoughts?
+> therefore, I'll try to mesure this patch in this week.
 
-I realize that there are quite a few clock source drivers
-that need to be modified, any recommendation on which tree
-to do it against and how to split up the patch? Thanks.
+Looking forward to it.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- include/linux/clocksource.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- 0001/include/linux/clocksource.h
-+++ work/include/linux/clocksource.h	2008-11-25 21:07:13.000000000 +0900
-@@ -61,14 +61,14 @@ struct clocksource {
- 	char *name;
- 	struct list_head list;
- 	int rating;
--	cycle_t (*read)(void);
-+	cycle_t (*read)(struct clocksource *cs);
- 	cycle_t mask;
- 	u32 mult;
- 	u32 mult_orig;
- 	u32 shift;
- 	unsigned long flags;
--	cycle_t (*vread)(void);
--	void (*resume)(void);
-+	cycle_t (*vread)(struct clocksource *cs);
-+	void (*resume)(struct clocksource *cs);
- #ifdef CONFIG_IA64
- 	void *fsys_mmio;        /* used by fsyscall asm code */
- #define CLKSRC_FSYS_MMIO_SET(mmio, addr)      ((mmio) = (addr))
-@@ -170,7 +170,7 @@ static inline u32 clocksource_hz2mult(u3
-  */
- static inline cycle_t clocksource_read(struct clocksource *cs)
- {
--	return cs->read();
-+	return cs->read(cs);
- }
- 
- /**
+-- 
+All rights reversed.
