@@ -1,94 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYKYPal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYKYPfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbYKYPal (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 10:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYKYPac
+	id S1752868AbYKYPfP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 10:35:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYKYPfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 10:30:32 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:57139 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYKYPab (ORCPT
+	Tue, 25 Nov 2008 10:35:00 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44641 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751410AbYKYPe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 10:30:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=NqvebWsnUFbglqyCilMkWhQv8NsGnOor0swNK9yMK9TU+KEXxCL3bRhHpgyZQ2D+xQ
-         tY2/dck56Fek1cl5JvMK7yVu+R4G52r+x6ddctxhYFB3ijoVjybA6HTwaxyK9I22ejd7
-         IkJ4BEMYxZE6oX/qOTJoxSJYK16+5kbdKEV0o=
-Date: Wed, 26 Nov 2008 00:30:25 +0900
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Doug Thompson <norsk5@yahoo.com>,
-       "dougthompson@xmission.com" <dougthompson@xmission.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-Id: <20081126003025.85f19670.h.mitake@gmail.com>
-In-Reply-To: <492B8996.2020302@zytor.com>
-References: <20081105222911.d76e7e1c.mitake@clustcom.com>
-	<413709.12821.qm@web50106.mail.re2.yahoo.com>
-	<20081106164641.ed369060.akpm@linux-foundation.org>
-	<20081107152830.a42766f3.mitake@clustcom.com>
-	<20081106223122.8a255211.akpm@linux-foundation.org>
-	<20081107153824.0ec934e6.mitake@clustcom.com>
-	<20081106231102.aab83cd4.akpm@linux-foundation.org>
-	<a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
-	<20081109112646.97c594b5.akpm@linux-foundation.org>
-	<20081118121620.GB8625@linux-mips.org>
-	<20081118123215.GB30509@flint.arm.linux.org.uk>
-	<20081121011941.26e05a25.h.mitake@gmail.com>
-	<4929ECB7.8080108@zytor.com>
-	<57C9024A16AD2D4C97DC78E552063EA35C517F42@orsmsx505.amr.corp.intel.com>
-	<492AEC40.5060009@zytor.com>
-	<20081125115510.108fa886.h.mitake@gmail.com>
-	<492B8996.2020302@zytor.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 10:34:59 -0500
+Date: Tue, 25 Nov 2008 10:34:58 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       <stable@kernel.org>
+Subject: [PATCH] Fix SCSI regression in 2.6.27 [was [Bugme-new] [Bug 12099]
+ New: Nokia 5310 storage-mode]
+In-Reply-To: <20081125055939.a96796ec.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0811251026500.2457-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Nov 2008 21:13:58 -0800
-"H. Peter Anvin" <hpa@zytor.com> wrote:
+This patch is intended for 2.6.27.stable and 2.6.28.  It's a temporary 
+fix for a problem affecting a number of USB mass-storage devices 
+(including many Nokia phones): When trying to access a nonexistent 
+"last" sector, the SCSI midlayer gets caught in an endless retry loop.
 
-> Hitoshi Mitake wrote:
-> > I think which need __ is variable type name, not each variable name.
-> > Name of each local variables can't effect namespace.
+See for example Bugzilla #11843 and #12099.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+On Tue, 25 Nov 2008, Andrew Morton wrote:
+
+> On Tue, 25 Nov 2008 01:07:43 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
 > 
-> Wrong.  It affects the namespace in the sense that it can interfere with
-> user-created macros.  Again, this is only an issue for user space.
-
-Sorry, I've misunderstood. I didn't think about macros.
-
-> 
-> > And I found this comment in asm-generic/int-ll64.h,
-> > /*
-> >  * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-> >  * header files exported to user space
-> >  */
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12099
 > > 
-> > According to your advice, I rewrote the patch, how is this?
+> >            Summary: Nokia 5310 storage-mode
+> >            Product: Drivers
+> >            Version: 2.5
+> >      KernelVersion: 2.6.27
+> >           Platform: All
+> >         OS/Version: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: normal
+> >           Priority: P1
+> >          Component: USB
+> >         AssignedTo: greg@kroah.com
+> >         ReportedBy: robsonpeixoto@gmail.com
+> > 
+> > 
+> > Latest working kernel version: 2.6.26
+> > Earliest failing kernel version: 2.6.27
 > 
-> Are you planning to add writeq() as well?
+> A regression.
 > 
+> > Distribution: ArchLinux
+> > Hardware Environment: USB(ohci,ehci)
+> > Software Environment: gcc 4.3.2, glibc 2.8
+> > Problem Description: 
+> > 
+> > When I plug in my Nokia 5310 show a msg in cel "Transferring data" and in
+> > computer nothing happend.
 
-Yes, I want to add writeq().
-But there's a problem that
-I don't have a plan to use writeq() now, so I can't test writeq() soon.
+Unless we want to keep on receiving regression reports like this one,
+this patch or something like it needs to be applied.  We can hope
+2.6.29 will work better...  But unhappily, to date James has not
+responded to any of my patch submissions in this area.
 
-How is this? I think it isn't bad. I want to hear your opinion.
+Alan Stern
 
-static inline void writeq(__u64 val, volatile void __iomem *addr)
-{
-	writel((unsigned int)val, addr);
-	writel((unsigned int)(val >> 32), addr+1);
-}
+
+
+Index: 2.6.27.4/drivers/scsi/scsi_lib.c
+===================================================================
+--- 2.6.27.4.orig/drivers/scsi/scsi_lib.c
++++ 2.6.27.4/drivers/scsi/scsi_lib.c
+@@ -611,6 +611,11 @@ static void scsi_requeue_command(struct 
+ 	struct request *req = cmd->request;
+ 	unsigned long flags;
+ 
++	if (--req->retries < 0) {
++		blk_end_request(req, -EIO, blk_rq_bytes(req));
++		scsi_next_command(cmd);
++		return;
++	}
+ 	scsi_unprep_request(req);
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 	blk_requeue_request(q, req);
+@@ -690,6 +695,8 @@ static struct scsi_cmnd *scsi_end_reques
+ 				 * leftovers in the front of the
+ 				 * queue, and goose the queue again.
+ 				 */
++				if (bytes > 0)		/* Made progress */
++					++req->retries;
+ 				scsi_requeue_command(q, cmd);
+ 				cmd = NULL;
+ 			}
 
