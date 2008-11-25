@@ -1,57 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbYKYUpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbYKYUuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbYKYUpH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 15:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYKYUoz
+	id S1752816AbYKYUuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 15:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYKYUuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 15:44:55 -0500
-Received: from buick.jordet.net ([193.91.240.190]:54496 "EHLO buick.jordet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbYKYUoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 15:44:54 -0500
-Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
-From: Stian Jordet <liste@jordet.net>
-To: Sven-Haegar Koch <haegar@sdinet.de>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-In-Reply-To: <alpine.DEB.2.00.0811250057510.27010@aurora.sdinet.de>
-References: <1226760254.5089.11.camel@chevrolet>
-	 <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com>
-	 <1227476908.32357.5.camel@chevrolet>
-	 <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan>
-	 <1227485956.5145.10.camel@chevrolet>
-	 <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan>
-	 <1227569808.5039.6.camel@chevrolet>
-	 <alpine.DEB.2.00.0811250057510.27010@aurora.sdinet.de>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 21:44:47 +0100
-Message-Id: <1227645887.7992.10.camel@chevrolet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 25 Nov 2008 15:50:06 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:32842 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752086AbYKYUuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 15:50:04 -0500
+From: John Keller <jpk@sgi.com>
+Message-Id: <200811252050.mAPKo2CL087992@fcbayern.americas.sgi.com>
+Subject: Re: [PATCH] ia64: SN specific version of dma_get_required_mask()
+To: bwalle@suse.de (Bernhard Walle)
+Date: Tue, 25 Nov 2008 14:50:01 -0600 (CST)
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081123143722.03dbbfcc@kopernikus.site> from "Bernhard Walle" at Nov 23, 2008 02:37:22 PM
+X-Mailer: ELM [version 2.5 PL2]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ti., 25.11.2008 kl. 01.09 +0100, skrev Sven-Haegar Koch:
-> I had the same problem when I tried it on my laptop (T60) - using it on 
-> the unencrypted root filesystem (with /usr/src) took ages, using it on 
-> the LUKS encrypted /home was blasing fast - on the same disk.
 > 
-> This test was some time ago with something like 2.6.20 or 2.6.24 - I 
-> gave up and reformatted / with ext3 as I needed the machine.
+> Hi,
 > 
-> I think barriers were the problem, they seem to cost performance like 
-> hell, especially for operations with many small files. My laptop used 
-> barriers for xfs on the direct partition, but not on crypto drivermapper 
-> mounts.
+> [Sorry for the late reply and for not following the whole thread, I'm
+> just busy.]
 > 
-> So perhaps try mounting with nobarrier and see if the speed problem goes 
-> away - but know that you sacrifice some crash-resilience when doing so.
+> * John Keller [2008-11-18 08:08]:
+> > 
+> > This patch addresses a problem on SN Altix systems with < 4GB, where
+> > device drivers using the dma_get_required_mask() API would be told
+> > to use 32 bit DMA, when 64 bit is more efficient.
+> > 
+> > How exactly the use of dma_get_required_mask() relates to the crash
+> > kernel code you refer to is unclear to me.
+> 
+> I'm not sure myself. The crashkernel reservation code on IA64 (for
+> other architectures I don't know any machines that have basically their
+> whole memory except a small amount which is used for booting mapped
+> above 4 GiB physical address space) needs to check if it's okay to
+> use memory for the crashkernel that is *all* above 4 GiB.
+> 
+> This is only possible if a hardware IO/MMU is present (and working
+> correctly in the kdump case which isn't the case on HP IA64) and SWIOTBL
+> is not used because SWIOTBL needs some memory below that 4 GiB margin.
+> 
+> Now I thought that there's a relationship between "memory above 4 GiB
+> can be used for DMA" and the return value of dma_get_required_mask().
+> My assumption was:
+> 
+>   (dma_get_required_mask() & 0xffffffff00000000ull) > 0
+>   -> memory above 4 GiB can be used for DMA and so the
+>      crashkernel memory can reside above 4 GiB
+> 
+>   (dma_get_required_mask() & 0xffffffff00000000ull) == 0
+>   -> memory above 4 GiB can not be used for DMA and so the
+>      crashkernel memory can not all reside above 4 GiB
+> 
+> Is that wrong?
 
-Barriers were the problem indeed. My old system had no problems with
-barriers, but here it did an incredible difference.
+In the case of SN Altix, the return value (with my patch) will always
+be 0xffffffffffffffffull. So, your check would work. And just as the
+current code's ia64_platform_is("sn2") check would always return TRUE
+on any SN2 system, so would your proposed use of dma_get_required_mask().
 
-Thanks!
--Stian
+However, for SN2, memory size or location cannot be inferred from the
+return value, as it has no affect on the returned value.
+As Documentation/DMA-API.txt says:
+    "This API returns the mask that the platform requires to
+    operate efficiently."
+
+And for SN2, this is always a 64 bit mask, irregardless of memory size,
+location, etc.
+
+
+> 
+> > If, for all platforms, the crash kernel code could use the mask returned
+> > from dma_get_required_mask() to do its check, then switching the code
+> > might be OK. But, if that's not possible for some platforms, then I'd
+> > wonder if dma_get_required_mask() is being used in the wrong context in
+> > this case.
+> 
+> The crashkernel reservation code is different for every platform, so it
+> does not matter. However, in theory I think the check would return
+> correct results.
+
+OK, I must not be understanding something. check_crashkernel_memory()
+appears to be coded to handle 3 or more platforms (sn2, uv, and others).
+
+
+> 
+> 
+> Regards,
+> Bernhard
+> -- 
+> Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+> 
 
