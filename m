@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbYKYJvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbYKYJ4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752935AbYKYJvu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 04:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYKYJvl
+	id S1752952AbYKYJ4e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 04:56:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYKYJ40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 04:51:41 -0500
-Received: from host2.marvell.com ([65.219.4.2]:53348 "EHLO maili.marvell.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752307AbYKYJvk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 04:51:40 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 25 Nov 2008 04:56:26 -0500
+Received: from lucidpixels.com ([75.144.35.66]:45629 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752320AbYKYJ4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 04:56:25 -0500
+Date: Tue, 25 Nov 2008 04:56:24 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+cc: Stian Jordet <liste@jordet.net>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, Alan Piszcz <ap@solarrain.com>
+Subject: Re: Extreme slowness with xfs [WAS: Re: Slowness with new pc]
+In-Reply-To: <492B5684.2080107@sandeen.net>
+Message-ID: <alpine.DEB.1.10.0811250456010.16346@p34.internal.lan>
+References: <1226760254.5089.11.camel@chevrolet> <430c4fa50811180551r67d5d680tf1ffa493604ac4ea@mail.gmail.com> <1227476908.32357.5.camel@chevrolet> <alpine.DEB.1.10.0811231721350.22594@p34.internal.lan> <1227485956.5145.10.camel@chevrolet>
+ <alpine.DEB.1.10.0811240448570.25866@p34.internal.lan> <1227569808.5039.6.camel@chevrolet> <492B5684.2080107@sandeen.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] drivers/video/backlight: rename da903x to da903x_bl
-Date: Tue, 25 Nov 2008 01:51:38 -0800
-Message-ID: <E913911567467945BBEB9277E27868B00153DC31@msiexch01.marvell.com>
-In-Reply-To: <1227606164-12659-1-git-send-email-mike@compulab.co.il>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/video/backlight: rename da903x to da903x_bl
-Thread-Index: AclO4jAmZSWP9a+9RwmXk00ss4cBYQAAB/Jw
-References: <1227606164-12659-1-git-send-email-mike@compulab.co.il>
-From: "Eric Miao" <ymiao3@marvell.com>
-To: "Mike Rapoport" <mike@compulab.co.il>, <rpurdie@rpsys.net>
-Cc: <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isn't modprobe supposed to be smart enough for things like this?
 
-I'm afraid if modprobe isn't so capable, we may encounter the same
-issue with other drivers and sometimes it is not so easy for
-developers of aphasia like me to choose a better name :)
 
-- eric
+On Mon, 24 Nov 2008, Eric Sandeen wrote:
 
------Original Message-----
-From: Mike Rapoport [mailto:mike@compulab.co.il] 
-Sent: Tuesday, November 25, 2008 5:43 PM
-To: rpurdie@rpsys.net
-Cc: Eric Miao; linux-kernel@vger.kernel.org; Mike Rapoport
-Subject: [PATCH] drivers/video/backlight: rename da903x to da903x_bl
+> Stian Jordet wrote:
+>> ma., 24.11.2008 kl. 04.50 -0500, skrev Justin Piszcz:
+>>> While there still may be something else wrong, the first problem I see is
+>>> your sunit and swidth are set to 0.
+>>>
+>>> Please read, a good article on what they are and how to set them:
+>>> http://www.socalsysadmin.com/
+>>
+>> Oh, this was new to me. But the setting didn't change anything. I can
+>> copy one large file between the xfs and ext3 disk (both ways), and I get
+>> speeds between 160 and 200 MB/s. But unpacking the kernel source takes
+>> between 5 and 10 minutes on the xfs disk, and a mere 15 seconds on the
+>> ext3... (and it also used to take between 5 and 10 minutes when I had
+>> xfs on the raid0, so it doesn't seem to be hardware related...)
+>>
+>> If anyone has anything more I can try before I do the lengthy process of
+>> backup 1TB, reformat and restore...
+>
+> I don't know if the storage you're on passes barriers or not, but xfs
+> has barriers on by default, while ext3 does not.  ext3 will still likely
+> win the "untar a kernel" race, but for a fairer test, make the barrier
+> settings consistent between the two.
+>
+> -Eric
+>
 
-Currently both da903x backlight and voltage reulator drivers have the
-same name. Rename the backlight driver to allow use of both drivers as
-modules.
+barriers enabled:
 
-Signed-off-by: Mike Rapoport <mike@compulab.co.il>
----
- drivers/video/backlight/Makefile                  |    2 +-
- drivers/video/backlight/{da903x.c => da903x_bl.c} |    0 
- 2 files changed, 1 insertions(+), 1 deletions(-)
- rename drivers/video/backlight/{da903x.c => da903x_bl.c} (100%)
+$ time bash -c 'tar xf linux-2.6.27.7.tar; sync'
+block 573932: ** Block of NULs **
+Total bytes read: 293857280 (281MiB, 1.9MiB/s)
 
-diff --git a/drivers/video/backlight/Makefile
-b/drivers/video/backlight/Makefile
-index 103427d..2d8f7cb 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -18,7 +18,7 @@ obj-$(CONFIG_BACKLIGHT_OMAP1)	+= omap1_bl.o
- obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
- obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
- obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
--obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x.o
-+obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x_bl.o
- obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
- obj-$(CONFIG_BACKLIGHT_TOSA)	+= tosa_bl.o
- obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
-diff --git a/drivers/video/backlight/da903x.c
-b/drivers/video/backlight/da903x_bl.c
-similarity index 100%
-rename from drivers/video/backlight/da903x.c
-rename to drivers/video/backlight/da903x_bl.c
--- 
-1.5.6.4
+real    2m40.643s
+user    0m0.194s
+sys     0m1.541s
+
+barriers disabled:
+
+time bash -c 'tar xf linux-2.6.27.7.tar; sync'
+block 573932: ** Block of NULs **
+Total bytes read: 293857280 (281MiB, 11MiB/s)
+
+real    0m27.612s
+user    0m0.182s
+sys     0m1.617s
+
 
