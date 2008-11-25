@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYKYAl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYKYAqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYKYAl1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 19:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYKYAlU
+	id S1754631AbYKYAqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 19:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYKYAqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 19:41:20 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:25755 "EHLO
+	Mon, 24 Nov 2008 19:46:12 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:14345 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbYKYAlT (ORCPT
+	with ESMTP id S1754107AbYKYAqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 19:41:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VNehuAag4XkE8IANsZPj2GIn4Nmz0uCM2ojm6wkknUqk0gOhXVQ4duBTB0BxNnCrp7
-         fmNYKFmu28q9ZZy41i/L37ATldxxwHwVdUrm8hCWgTH/D7dEqJ4AUaeVAlkNA/IRqljj
-         1Y4n/LBQxmVS2yoycwIk8tupwmVaTalZb1pPU=
-Date: Tue, 25 Nov 2008 03:45:11 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrey Mirkin <major@openvz.org>
-Cc: orenl@cs.columbia.edu, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Add support for in-kernel process creation during
-	restart
-Message-ID: <20081125004024.GA4440@x200.localdomain>
-References: <1227541175-30301-1-git-send-email-major@openvz.org> <1227541175-30301-2-git-send-email-major@openvz.org> <1227541175-30301-3-git-send-email-major@openvz.org>
+	Mon, 24 Nov 2008 19:46:12 -0500
+Message-ID: <154e089b0811241646y6ada2c97l5e45284969729e29@mail.gmail.com>
+Date: Tue, 25 Nov 2008 01:46:10 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH] CRED: fix sparse warnings
+Cc: "James Morris" <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <5008.1227568869@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1227541175-30301-3-git-send-email-major@openvz.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <154e089b0811241314t3291ea30w6268bb5b2b5c7c53@mail.gmail.com>
+	 <5008.1227568869@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 06:39:35PM +0300, Andrey Mirkin wrote:
-> +static int cr_rstr_task_struct(struct cr_ctx *ctx, struct cr_hdr_task *ht)
-> +{
-> +	struct task_struct *t = current;
-> +	char *buf;
-> +	int ret = -EINVAL;
-> +
-> +	/* upper limit for task_comm_len to prevent DoS */
-> +	if (ht->task_comm_len < 0 || ht->task_comm_len > PAGE_SIZE)
-> +		goto out;
-> +
-> +	buf = kmalloc(ht->task_comm_len, GFP_KERNEL);
-> +	if (!buf)
-> +		goto out;
-> +	ret = cr_read_string(ctx, buf, ht->task_comm_len);
-> +	if (!ret) {
-> +		/* if t->comm is too long, silently truncate */
-> +		memset(t->comm, 0, TASK_COMM_LEN);
-> +		memcpy(t->comm, buf, min(ht->task_comm_len, TASK_COMM_LEN));
-> +	}
-> +	kfree(buf);
-> +
-> +	/* FIXME: restore remaining relevant task_struct fields */
-> +out:
-> +	return ret;
-> +}
+On Tue, Nov 25, 2008 at 12:21 AM, David Howells <dhowells@redhat.com> wrote:
+> Hannes Eder <hannes@hanneseder.net> wrote:
+>
+>>   security/security.c:228:2: warning: returning void-valued expression
+>>   security/security.c:233:2: warning: returning void-valued expression
+>>   security/security.c:616:2: warning: returning void-valued expression
+>
+> What's wrong with that?
 
-->comm is only 16 bytes wide, you can just use on-stack variable.
+In my opinion the following quotes give good argument:
+
+> On Thu, 2008-05-01 at 13:00 +0100, Al Viro wrote:
+[snip|
+> > 3.  6.8.6.4(1): A return statement with an expression shall not appear in
+> > a function whose return type is void.
+> >
+> > Write in C, please.
+
+see http://lkml.org/lkml/2008/5/1/88
+
+On Thu, 1 May 2008 at 13:53:39 +0100, Al Viro wrote:
+> On Thu, May 01, 2008 at 03:42:14PM +0300, Boaz Harrosh wrote:
+> > > 3.  6.8.6.4(1): A return statement with an expression shall not appear in
+> > > a function whose return type is void.
+> > >
+> >
+> > Please forgive my ignorance, where is this quote from?
+>
+> C99.  I don't have C90 in front of me, so I can't give you exact quote from
+> there, but it's been explicitly banned in C90 as well.
+
+see http://lkml.org/lkml/2008/5/1/112
+
+There have been a couple of such patches, see
+
+http://www.google.at/search?q=site:lkml.org+%22warning:+returning+void-valued+expression%22
+
+Furthermore in the next-tree from today and 'defconfig' are only 5 of
+such warnings left, 3 of them would be resolved with this patch.
+
+Hannes
