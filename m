@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbYKYWxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKYWx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbYKYWxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYKYWxY
+	id S1753900AbYKYWx6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 17:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKYWxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:53:24 -0500
-Received: from www.tglx.de ([62.245.132.106]:41761 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752371AbYKYWxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 17:53:23 -0500
-Date: Tue, 25 Nov 2008 23:53:02 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Joe Korty <joe.korty@ccur.com>
-cc: Michael Kerrisk <mtk.manpages@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-Subject: Re: [PATCH] Display active jiffie timers in /proc/timer_list
-In-Reply-To: <20081125222320.GA23612@tsunami.ccur.com>
-Message-ID: <alpine.LFD.2.00.0811252330140.3235@localhost.localdomain>
-References: <20081121221113.GA13566@tsunami.ccur.com> <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com> <20081125185740.GA21806@tsunami.ccur.com> <alpine.LFD.2.00.0811252224430.3235@localhost.localdomain>
- <20081125222320.GA23612@tsunami.ccur.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Nov 2008 17:53:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35244 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752284AbYKYWxr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 17:53:47 -0500
+Date: Tue, 25 Nov 2008 14:53:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Coly Li <coyli@suse.de>
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
+Subject: Re: [PATCH] fix similar typos to successfull, v2
+Message-Id: <20081125145308.8633bf4a.akpm@linux-foundation.org>
+In-Reply-To: <492AE7ED.8040304@suse.de>
+References: <492AE7ED.8040304@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Nov 2008 01:44:13 +0800
+Coly Li <coyli@suse.de> wrote:
 
+> When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
+> in kernel tree, 22 typos found totally --  great minds always think alike  :)
 
-On Tue, 25 Nov 2008, Joe Korty wrote:
+Mutter.  I have a super-strict (lol) policy of "I don't take patches
+which fix typos/spellos in comments", because we have so many such
+errors, and I'd get buried in silly patches.  But I do take patches
+which fix documentation and user-visible printks, etc.
 
-> On Tue, Nov 25, 2008 at 04:36:48PM -0500, Thomas Gleixner wrote:
-> > > --- 2.6.28-rc6.orig/kernel/timer.c    2008-11-25 11:59:07.000000000 -0500
-> > > +++ 2.6.28-rc6/kernel/timer.c 2008-11-25 13:49:05.000000000 -0500
-> > > +#if defined(CONFIG_PROC_FS) || defined(CONFIG_MAGIC_SYSRQ)
-> > 
-> > This belongs into kernel/time/timer_list.c and there is no need to
-> > copy that code around.
-> 
-> Everything to do with jiffy timer implementation is static
-> local to kernel/timer.c, and not available to code in
-> kernel/time/timer_list.c or anywhere else.  I consider that
-> localization to be a rather nice feature of kernel/timer.c,
-> and I wasn't willing to globalize it just for a debug
-> data dump.
->
-> Also, other features implement their 'show' functions
-> elsewhere, for example, show_interrupts.  So doing the
-> same thing here is certainly not out of line.
+>  Documentation/hwmon/abituguru-datasheet   |    4 ++--
+>  Documentation/scsi/scsi_fc_transport.txt  |    4 ++--
+>  arch/powerpc/platforms/cell/spufs/spufs.h |    2 +-
+>  drivers/infiniband/hw/nes/nes_cm.c        |    2 +-
+>  drivers/isdn/hardware/eicon/debuglib.h    |    2 +-
+>  drivers/isdn/hardware/eicon/os_4bri.c     |    2 +-
+>  drivers/isdn/hardware/eicon/os_bri.c      |    2 +-
+>  drivers/isdn/hardware/eicon/os_pri.c      |    2 +-
+>  drivers/mtd/ubi/kapi.c                    |    2 +-
+>  drivers/net/wireless/ath5k/dma.c          |    2 +-
+>  drivers/net/wireless/zd1211rw/zd_mac.c    |    2 +-
+>  drivers/s390/block/dasd_3990_erp.c        |    2 +-
+>  drivers/s390/block/dasd_int.h             |    2 +-
+>  drivers/s390/char/tape_3590.c             |    2 +-
+>  drivers/s390/cio/cio.c                    |    2 +-
+>  drivers/s390/cio/qdio_main.c              |    2 +-
+>  fs/ext4/extents.c                         |    2 +-
+>  fs/ocfs2/dlmglue.c                        |    4 ++--
+>  net/sctp/auth.c                           |    2 +-
 
-I prefer a global variable over duplicate code and stuff which I have
-to find out from random places.
-
-show_interrupts is arch specific. timers are not.
- 
-> > > +void print_cpu_jtimers(struct seq_file *m, int cpu)
-> > > +{
-> > > +     int i;
-> > > +     struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> > > +
-> > > +     SEQ_printf(m, "active jiffie timers:\n");
-> > > +     spin_lock_irq(&base->lock);
-> > 
-> > Yuck. We really do _NOT_ stop everything just to print timers. Check
-> > the hrtimer print code in timer_list.c
-> 
-> I'm not sure there is a safe way to reference the timers without
-> holding the lock.  But I will look into this and see what can
-> be done.
- 
-You can't do a real snapshot of the timer wheel. All you can do is
-walk it carefully and make a copy of the timer_list structure and then
-print it. The timer wheel can be pretty full and we definitely do not
-want to stop a CPU fully just to print debug information.
-
-> > >               P_ns(idle_expires);
-> > > -             SEQ_printf(m, "jiffies: %Lu\n",
-> > > +             SEQ_printf(m, "jiffies: %llu (0x%llx)\n",
-> > > +                        (unsigned long long)jiffies,
-> > >                          (unsigned long long)jiffies);
-> > 
-> > The exact purpose of this change ?
-> 
-> In the 'active jiffie timer' section I print timer_jiffies
-> etc in hex format.  It's probably just me, but I found that
-> to be easier to read than the rather longer decimal format.
-> So this change was to get a hex version of the global jiffies
-> out, for easy comparison to values appearing in that section.
-> 
-> Certainly everything can be changed to decimal, if that is
-> the consensus.
-
-We want a consistent format for all the printouts.
- 
-Thanks,
-
-	tglx
+This patch sneakily mixed the two up, so I merged it ;)
