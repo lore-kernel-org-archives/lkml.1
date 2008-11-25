@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbYKYHpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbYKYHrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752292AbYKYHpc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 02:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYKYHpW
+	id S1752529AbYKYHrd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 02:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYKYHrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 02:45:22 -0500
-Received: from mga01.intel.com ([192.55.52.88]:39942 "EHLO mga01.intel.com"
+	Tue, 25 Nov 2008 02:47:25 -0500
+Received: from mga01.intel.com ([192.55.52.88]:34922 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbYKYHpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 02:45:22 -0500
+	id S1751534AbYKYHrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 02:47:24 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,663,1220252400"; 
-   d="scan'208";a="643310457"
-Date: Tue, 25 Nov 2008 08:45:13 +0100
+   d="scan'208";a="407752015"
+Date: Tue, 25 Nov 2008 08:47:19 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
        tglx@linutronix.de
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        akpm@linux-foundation.org, mtk.manpages@gmail.com,
        eranian@googlemail.com, juan.villacis@intel.com
-Subject: [patch 1/9] x86, bts: exclude ds.c from build when disabled
-Message-ID: <20081125084513.A30615@sedona.ch.intel.com>
+Subject: [patch 2/9] x86, bts: turn macro into static inline function
+Message-ID: <20081125084719.A30957@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,43 +30,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the CONFIG guard from the .c file into the makefile.
+Replace a macro with a static inline function.
 
-Reported-by: Andi Kleen <andi-suse@firstfloor.org>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: ftrace/arch/x86/kernel/Makefile
+Index: ftrace/arch/x86/include/asm/ds.h
 ===================================================================
---- ftrace.orig/arch/x86/kernel/Makefile	2008-11-24 12:57:07.000000000 +0100
-+++ ftrace/arch/x86/kernel/Makefile	2008-11-24 12:58:31.000000000 +0100
-@@ -48,7 +48,7 @@
- obj-y				+= process.o
- obj-y				+= i387.o xsave.o
- obj-y				+= ptrace.o
--obj-y				+= ds.o
-+obj-$(CONFIG_X86_DS)		+= ds.o
- obj-$(CONFIG_X86_32)		+= tls.o
- obj-$(CONFIG_IA32_EMULATION)	+= tls.o
- obj-y				+= step.o
-Index: ftrace/arch/x86/kernel/ds.c
-===================================================================
---- ftrace.orig/arch/x86/kernel/ds.c	2008-11-24 12:57:08.000000000 +0100
-+++ ftrace/arch/x86/kernel/ds.c	2008-11-24 12:58:31.000000000 +0100
-@@ -21,8 +21,6 @@
-  */
- 
+--- ftrace.orig/arch/x86/include/asm/ds.h	2008-11-25 08:17:08.000000000 +0100
++++ ftrace/arch/x86/include/asm/ds.h	2008-11-25 08:17:48.000000000 +0100
+@@ -23,12 +23,13 @@
+ #ifndef _ASM_X86_DS_H
+ #define _ASM_X86_DS_H
  
 -#ifdef CONFIG_X86_DS
--
- #include <asm/ds.h>
  
- #include <linux/errno.h>
-@@ -877,4 +875,3 @@
- 	while (leftovers--)
- 		ds_put_context(context);
- }
--#endif /* CONFIG_X86_DS */
+ #include <linux/types.h>
+ #include <linux/init.h>
+ 
+ 
++#ifdef CONFIG_X86_DS
++
+ struct task_struct;
+ 
+ /*
+@@ -232,7 +233,8 @@
+ 
+ #else /* CONFIG_X86_DS */
+ 
+-#define ds_init_intel(config) do {} while (0)
++struct cpuinfo_x86;
++static inline void __cpuinit ds_init_intel(struct cpuinfo_x86 *ignored) {}
+ 
+ #endif /* CONFIG_X86_DS */
+ #endif /* _ASM_X86_DS_H */
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
