@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYKYXch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbYKYXon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbYKYXch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 18:32:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYKYXc1
+	id S1752808AbYKYXon (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 18:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYKYXof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 18:32:27 -0500
-Received: from ping.pong.ch ([212.103.71.101]:48229 "EHLO ping.pong.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbYKYXc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 18:32:27 -0500
-X-Greylist: delayed 1118 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Nov 2008 18:32:27 EST
-Date: Wed, 26 Nov 2008 00:13:44 +0100
-From: Gaudenz Steinlin <gaudenz@soziologie.ch>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: commit b1ee26b "radeonfb: accelerate imageblit and other
-	improvements" freezes system on switching from X to text console
-Message-ID: <20081125231344.GA5190@soziologie.ch>
-References: <20081125194457.GA4929@soziologie.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081125194457.GA4929@soziologie.ch>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Nov 2008 18:44:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57876 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751334AbYKYXoe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 18:44:34 -0500
+Date: Tue, 25 Nov 2008 15:43:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: yinghan@google.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       menage@google.com, rientjes@google.com, rohitseth@google.com
+Subject: Re: [PATCH][V4]Make get_user_pages interruptible
+Message-Id: <20081125154354.001a6ae0.akpm@linux-foundation.org>
+In-Reply-To: <1227605300.1566.17.camel@penberg-laptop>
+References: <604427e00811241521t3e75650ft48bc60cdfb16df0e@mail.gmail.com>
+	<1227605300.1566.17.camel@penberg-laptop>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 08:44:57PM +0100, Gaudenz Steinlin wrote:
-> Hi Ben
-> 
-> The changes in the commit mentioned in the subject freeze my system when
-> changing from X to a text console. The system freezes with a garbled
-> display. Reverting this commit fixes the problem.
-> 
-> The freeze only happens if DRI is enabled in X. It also does not happen
-> if I simply switch between different text consoles. 
-> 
+On Tue, 25 Nov 2008 11:28:20 +0200
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-OK, I searched a bit more and found
-http://bugzilla.kernel.org/show_bug.cgi?id=11875 which is possibly
-related. I also found the patch Ben proposed to fix this at
-http://lkml.org/lkml/2008/11/10/12. Unfortunately this patch did not fix
-my problem. 
+> ___You might want to add an explanation why we check both 'tsk' and
+> 'current' in either in the patch description or as a comment, though. Or
+> just add a link to the mailing list archives in the description or
+> something.
 
-Gaudenz
+As a code comment, I'd suggest.
 
--- 
-Ever tried. Ever failed. No matter.
-Try again. Fail again. Fail better.
-~ Samuel Beckett ~
+> > Signed-off-by:	Paul Menage <menage@google.com>
+> > Singed-off-by:	Ying Han <yinghan@google.com>
+>   ^^^^^^
+> 
+> I'm sure you have a beautiful singing voice but from legal point of
+> view, it's probably better to just sign it off. ;-)
+
+That's my favorite typo.
