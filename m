@@ -1,196 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYKYQG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYKYQLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbYKYQG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 11:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYKYQGs
+	id S1753287AbYKYQLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 11:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYKYQLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 11:06:48 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:18745 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYKYQGq (ORCPT
+	Tue, 25 Nov 2008 11:11:08 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:61058 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752207AbYKYQLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 11:06:46 -0500
+	Tue, 25 Nov 2008 11:11:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=axqsExLuFiR89E4ufHic7+jm5NTfd57wWa/Y7zpqLv3FcY/18svOB2bhfymHDBuR1C
-         czIsi4+WAPSKP3lTpLDoRRWo9MUJN0SXrfshB6S60nMhB7dv1qUXvvQcaj2I1FF0l819
-         gG37oH9d5NQjISSiG00GpeQZxA24wYVPYTs5Y=
-Message-ID: <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com>
-Date: Tue, 25 Nov 2008 11:06:44 -0500
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "Joe Korty" <joe.korty@ccur.com>
-Subject: Re: [PATCH] create /proc/timer-wheel-list
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, linux-api@vger.kernel.org
-In-Reply-To: <20081121221113.GA13566@tsunami.ccur.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=piKUUWobh7KaJdzu7qGeEy6CKkTlb2mdo5deK80+LSxnejOEjP9dm1Cm4OCm/Qj1qi
+         SvIGkYdRpGvfFjuEkH/TqJU9aisALPB+BTS5RZpTmAtP0oRbtkvVv6YKfvMt+TQtrgqK
+         gFJd1qqEE3DQniJKB57INV/C/M1GftvImiRtA=
+Date: Wed, 26 Nov 2008 01:10:59 +0900
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>,
+       "dougthompson@xmission.com" <dougthompson@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-Id: <20081126011059.afb1e8e6.h.mitake@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0811251645530.25595@anakin>
+References: <20081105222911.d76e7e1c.mitake@clustcom.com>
+	<413709.12821.qm@web50106.mail.re2.yahoo.com>
+	<20081106164641.ed369060.akpm@linux-foundation.org>
+	<20081107152830.a42766f3.mitake@clustcom.com>
+	<20081106223122.8a255211.akpm@linux-foundation.org>
+	<20081107153824.0ec934e6.mitake@clustcom.com>
+	<20081106231102.aab83cd4.akpm@linux-foundation.org>
+	<a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
+	<20081109112646.97c594b5.akpm@linux-foundation.org>
+	<20081118121620.GB8625@linux-mips.org>
+	<20081118123215.GB30509@flint.arm.linux.org.uk>
+	<20081121011941.26e05a25.h.mitake@gmail.com>
+	<4929ECB7.8080108@zytor.com>
+	<57C9024A16AD2D4C97DC78E552063EA35C517F42@orsmsx505.amr.corp.intel.com>
+	<492AEC40.5060009@zytor.com>
+	<20081125115510.108fa886.h.mitake@gmail.com>
+	<492B8996.2020302@zytor.com>
+	<20081126003025.85f19670.h.mitake@gmail.com>
+	<Pine.LNX.4.64.0811251645530.25595@anakin>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081121221113.GA13566@tsunami.ccur.com>
-X-Google-Sender-Auth: 4e0b5ad4e99786b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe,
+On Tue, 25 Nov 2008 16:46:18 +0100 (CET)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-On Fri, Nov 21, 2008 at 5:11 PM, Joe Korty <joe.korty@ccur.com> wrote:
-> Create /proc/timer_wheel_list.
->
-> This does for the timer wheel what /proc/timer_list
-> does for hrtimers -- provide a way of displaying what
-> timers are running on what cpus, and their attributes.
+> On Wed, 26 Nov 2008, Hitoshi Mitake wrote:
+> > On Mon, 24 Nov 2008 21:13:58 -0800
+> > "H. Peter Anvin" <hpa@zytor.com> wrote:
+> > > Are you planning to add writeq() as well?
+> > 
+> > Yes, I want to add writeq().
+> > But there's a problem that
+> > I don't have a plan to use writeq() now, so I can't test writeq() soon.
+> > 
+> > How is this? I think it isn't bad. I want to hear your opinion.
+> > 
+> > static inline void writeq(__u64 val, volatile void __iomem *addr)
+> > {
+> > 	writel((unsigned int)val, addr);
+> > 	writel((unsigned int)(val >> 32), addr+1);
+>                                                ^
+> 					       4
+> 
+> > }
+> 
 
-Please CC linux-api on kernel-userland API changes.
+Thanks, I missed about void pointer...
 
-See Documentation/SubmitChecklist and
-http://thread.gmane.org/gmane.linux.ltp/5658.
-
-Cheers,
-
-Michael
-
-> Index: 2.6.28-rc6/kernel/timer.c
-> ===================================================================
-> --- 2.6.28-rc6.orig/kernel/timer.c      2008-11-21 17:02:04.000000000 -0500
-> +++ 2.6.28-rc6/kernel/timer.c   2008-11-21 17:04:25.000000000 -0500
-> @@ -36,6 +36,8 @@
->  #include <linux/syscalls.h>
->  #include <linux/delay.h>
->  #include <linux/tick.h>
-> +#include <linux/proc_fs.h>
-> +#include <linux/seq_file.h>
->  #include <linux/kallsyms.h>
->
->  #include <asm/uaccess.h>
-> @@ -1568,6 +1570,113 @@
->        open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
->  }
->
-> +#ifdef CONFIG_PROC_FS
-> +
-> +static void seq_printf_symbol(struct seq_file *m, void *symaddr, int width)
-> +{
-> +       char symname[KSYM_NAME_LEN];
-> +       int stat, len = m->count;
-> +
-> +       if (lookup_symbol_name((unsigned long)symaddr, symname) < 0)
-> +               stat = seq_printf(m, "<%p>", symaddr);
-> +       else
-> +               stat = seq_printf(m, "%s", symname);
-> +       if (width && stat == 0) {
-> +               len += (width - m->count);
-> +               if (len > 0)
-> +                       seq_printf(m, "%*s", len, " ");
-> +       }
-> +}
-> +
-> +static void print_single_timer(struct seq_file *m, struct timer_list *timer)
-> +{
-> +       unsigned long base_jiffies = tbase_get_base(timer->base)->timer_jiffies;
-> +
-> +       seq_printf(m, " %p - ", (void *)(timer->expires - base_jiffies));
-> +       seq_printf_symbol(m, timer->function, 24);
-> +       seq_printf(m, " (data ");
-> +       seq_printf_symbol(m, (void *)(timer->data), 24);
-> +       seq_printf(m, ")");
-> +#ifdef CONFIG_TIMER_STATS
-> +       seq_printf(m, " from ");
-> +       seq_printf_symbol(m, timer->start_site, 28);
-> +       seq_printf(m, " %*s/%d",
-> +               TASK_COMM_LEN, timer->start_comm,
-> +               timer->start_pid);
-> +#endif
-> +       seq_printf(m, "\n");
-> +}
-> +
-> +static void print_timer_list(struct seq_file *m, struct list_head *head)
-> +{
-> +       struct timer_list *timer;
-> +       struct list_head *item;
-> +
-> +       for (item = head->next; item != head; item = item->next) {
-> +               timer = list_entry(item, struct timer_list, entry);
-> +               print_single_timer(m, timer);
-> +       }
-> +}
-> +
-> +static void print_cpu_timers(struct seq_file *m, int cpu)
-> +{
-> +       int i;
-> +       struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> +
-> +       spin_lock_irq(&base->lock);
-> +       seq_printf(m, "\ncpu: %d, base jiffies: %p\n\n",
-> +               cpu, (void *)(base->timer_jiffies));
-> +
-> +       for (i = 0; i < TVR_SIZE; i++)
-> +               print_timer_list(m, base->tv1.vec + i);
-> +       for (i = 0; i < TVN_SIZE; i++) {
-> +               print_timer_list(m, base->tv2.vec + i);
-> +               print_timer_list(m, base->tv3.vec + i);
-> +               print_timer_list(m, base->tv4.vec + i);
-> +               print_timer_list(m, base->tv5.vec + i);
-> +       }
-> +       spin_unlock_irq(&base->lock);
-> +}
-> +
-> +static int timer_list_show(struct seq_file *m, void *v)
-> +{
-> +       int cpu;
-> +
-> +       seq_printf(m, "Timer Wheel List Version: 1\n");
-> +       seq_printf(m, "Jiffies: %px\n", (void *)jiffies);
-> +
-> +       for_each_online_cpu(cpu) {
-> +               print_cpu_timers(m, cpu);
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static int timer_list_open(struct inode *inode, struct file *filp)
-> +{
-> +       return single_open(filp, timer_list_show, NULL);
-> +}
-> +
-> +static struct file_operations timer_list_fops = {
-> +       .open           = timer_list_open,
-> +       .read           = seq_read,
-> +       .llseek         = seq_lseek,
-> +       .release        = single_release,
-> +};
-> +
-> +static int __init init_timer_list_procfs(void)
-> +{
-> +       struct proc_dir_entry *pe;
-> +
-> +       pe = proc_create("timer_wheel_list", 0444, NULL, &timer_list_fops);
-> +       if (!pe)
-> +               return -ENOMEM;
-> +       return 0;
-> +}
-> +late_initcall(init_timer_list_procfs);
-> +
-> +#endif /* CONFIG_PROC_FS */
-> +
->  /**
->  * msleep - sleep safely even with waitqueue interruptions
->  * @msecs: Time in milliseconds to sleep for
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
--- 
-Michael Kerrisk Linux man-pages maintainer;
-http://www.kernel.org/doc/man-pages/ Found a documentation bug?
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
