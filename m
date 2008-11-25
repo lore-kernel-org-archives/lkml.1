@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYKYVnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYKYVoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbYKYVnv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:43:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYKYVgp
+	id S1754856AbYKYVoO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:44:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYKYVgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:36:45 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:55788 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753735AbYKYVgm (ORCPT
+	Tue, 25 Nov 2008 16:36:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:11940 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753775AbYKYVgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:36:42 -0500
+	Tue, 25 Nov 2008 16:36:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:subject:from:date:message-id;
-        b=h8tXOD1qTEa1U7ywHwlsbsJRe9yYxHarBdjO0m10vJjQFgy1o0irFgX3oByPux3ScS
-         UryRjiabsXmJYYqqdbGqSSdcyzcVHmSESxJJdfP3F1CF2peVTumCgZgM8JdXkfv+7QfZ
-         20WjVJAH6YU6LDRhguD6jyi4Gc6cDNLk3oECs=
+        b=pU60fqBlfUbxyJlZ85WrJs03bUOboSG9Zi1TXa6aobS9iGYh+7ia+C7T3oFTH4SsPi
+         VU9nV670kThCbeQg1DgTmYJ+q5tVGN6tA4KUQbklIT1gOXswN/1oPnInxu5O4LCfnvI1
+         mRLSIheFg1ccRTKoxRWr9kJhrPmgej3PzcIHY=
 To: linux-kernel@vger.kernel.org
-Subject: [patch 21/24] perfmon: Intel architectural PMU support (x86)
+Subject: [patch 22/24] perfmon: AMD64 processor support (x86)
 From: eranian@googlemail.com
-Date: Tue, 25 Nov 2008 13:36:40 -0800 (PST)
-Message-ID: <492c6fe8.0aec660a.5c95.ffffac54@mx.google.com>
+Date: Tue, 25 Nov 2008 13:36:42 -0800 (PST)
+Message-ID: <492c6fea.0a4d5e0a.16d1.ffff9370@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds Intel architectural PMU support (version 1, 2, and 3).
+Adds support for AMD64 processors for Family 6, 15, and 16.
+Both 32-bit and 64-bit modes are supported.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
+
 --
 
-Index: o3/arch/x86/perfmon/Makefile
-===================================================================
---- o3.orig/arch/x86/perfmon/Makefile	2008-11-25 18:09:47.000000000 +0100
-+++ o3/arch/x86/perfmon/Makefile	2008-11-25 18:21:33.000000000 +0100
-@@ -3,3 +3,4 @@
- # Contributed by Stephane Eranian <eranian@hpl.hp.com>
- #
- obj-$(CONFIG_PERFMON)			+= perfmon.o
-+obj-$(CONFIG_X86_PERFMON_INTEL_ARCH)	+= perfmon_intel_arch.o
-Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
+Index: o3/arch/x86/perfmon/perfmon_amd64.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o3/arch/x86/perfmon/perfmon_intel_arch.c	2008-11-25 18:22:00.000000000 +0100
-@@ -0,0 +1,628 @@
++++ o3/arch/x86/perfmon/perfmon_amd64.c	2008-11-25 18:21:24.000000000 +0100
+@@ -0,0 +1,483 @@
 +/*
-+ * This file contains the Intel architectural perfmon v1, v2, v3
-+ * description tables.
++ * This file contains the PMU description for the Athlon64 and Opteron64
++ * processors. It supports 32 and 64-bit modes.
 + *
-+ * Architectural perfmon was introduced with Intel Core Solo/Duo
-+ * processors.
-+ *
-+ * Copyright (c) 2006-2007 Hewlett-Packard Development Company, L.P.
++ * Copyright (c) 2005-2007 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * Copyright (c) 2007 Advanced Micro Devices, Inc.
++ * Contributed by Robert Richter <robert.richter@amd.com>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -67,405 +60,343 @@ Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
-+ */
++  */
 +#include <linux/kprobes.h>
++#include <linux/vmalloc.h>
++#include <linux/topology.h>
++#include <linux/pci.h>
 +#include <linux/perfmon_kern.h>
-+#include <asm/msr.h>
++#include <asm/hw_irq.h>
 +#include <asm/apic.h>
++
++static void __kprobes pfm_amd64_quiesce(void);
++static int pfm_amd64_has_ovfls(struct pfm_context *ctx);
++static int pfm_amd64_stop_save(struct pfm_context *ctx,
++			       struct pfm_event_set *set);
 +
 +static u64 enable_mask[PFM_MAX_PMCS];
 +static u16 max_enable;
-+static int pfm_intel_arch_version;
 +
-+DEFINE_PER_CPU(u64, saved_global_ctrl);
-+
-+/*
-+ * - upper 32 bits are reserved
-+ * - INT: APIC enable bit is reserved (forced to 1)
-+ * - bit 21 is reserved
-+ *
-+ * RSVD: reserved bits are 1
-+ */
-+#define PFM_IA_PMC_RSVD	((~((1ULL<<32)-1)) \
-+			| (1ULL<<20) \
-+			| (1ULL<<21))
++static struct pfm_arch_pmu_info pfm_amd64_pmu_info = {
++	.stop_save = pfm_amd64_stop_save,
++	.has_ovfls = pfm_amd64_has_ovfls,
++	.quiesce = pfm_amd64_quiesce,
++};
 +
 +/*
 + * force Local APIC interrupt on overflow
-+ * disable with NO_EMUL64
 + */
-+#define PFM_IA_PMC_VAL	(1ULL<<20)
-+#define PFM_IA_NO64	(1ULL<<20)
++#define PFM_K8_VAL	(1ULL<<20)
++#define PFM_K8_NO64	(1ULL<<20)
 +
 +/*
-+ * architectuture specifies that:
-+ * IA32_PMCx MSR        : starts at 0x0c1 & occupy a contiguous block of MSR
-+ * IA32_PERFEVTSELx MSR : starts at 0x186 & occupy a contiguous block of MSR
-+ * MSR_GEN_FIXED_CTR0   : starts at 0x309 & occupy a contiguous block of MSR
++ * reserved bits must be 1
++ *
++ * for family 15:
++ * - upper 32 bits are reserved
++ * - bit 20, bit 21
++ *
++ * for family 16:
++ * - bits 36-39 are reserved
++ * - bits 42-63 are reserved
++ * - bit 20, bit 21
++ *
 + */
-+#define MSR_GEN_SEL_BASE	MSR_P6_EVNTSEL0
-+#define MSR_GEN_PMC_BASE	MSR_P6_PERFCTR0
-+#define MSR_GEN_FIXED_PMC_BASE	MSR_CORE_PERF_FIXED_CTR0
++#define PFM_K8_RSVD 	((~((1ULL<<32)-1)) | (1ULL<<20) | (1ULL<<21))
++#define PFM_16_RSVD ((0x3fffffULL<<42) | (0xfULL<<36) | (1ULL<<20) | (1ULL<<21))
 +
-+/*
-+ * layout of EAX for CPUID.0xa leaf function
-+ */
-+struct pmu_eax {
-+	unsigned int version:8;		/* architectural perfmon version */
-+	unsigned int num_cnt:8; 	/* number of generic counters */
-+	unsigned int cnt_width:8;	/* width of generic counters */
-+	unsigned int ebx_length:8;	/* number of architected events */
++static struct pfm_regmap_desc pfm_amd64_pmc_desc[] = {
++/* pmc0  */ PMC_D(PFM_REG_I64, "PERFSEL0", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL0),
++/* pmc1  */ PMC_D(PFM_REG_I64, "PERFSEL1", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL1),
++/* pmc2  */ PMC_D(PFM_REG_I64, "PERFSEL2", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL2),
++/* pmc3  */ PMC_D(PFM_REG_I64, "PERFSEL3", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL3),
 +};
++#define PFM_AMD_NUM_PMCS ARRAY_SIZE(pfm_amd64_pmc_desc)
 +
 +/*
-+ * layout of EDX for CPUID.0xa leaf function when perfmon v2 is detected
++ * AMD64 counters are 48 bits, upper bits are reserved
 + */
-+struct pmu_edx {
-+	unsigned int num_cnt:5;		/* number of fixed counters */
-+	unsigned int cnt_width:8;	/* width of fixed counters */
-+	unsigned int reserved:19;
-+};
++#define PFM_AMD64_CTR_RSVD	(~((1ULL<<48)-1))
 +
-+static void pfm_intel_arch_acquire_pmu_percpu(void);
-+static void pfm_intel_arch_release_pmu_percpu(void);
-+static int pfm_intel_arch_stop_save(struct pfm_context *ctx,
-+				    struct pfm_event_set *set);
-+static int pfm_intel_arch_has_ovfls(struct pfm_context *ctx);
-+static void __kprobes pfm_intel_arch_quiesce(void);
-+
-+/*
-+ * physical addresses of MSR controlling the perfevtsel and counter registers
-+ */
-+struct pfm_arch_pmu_info pfm_intel_arch_pmu_info = {
-+	.stop_save = pfm_intel_arch_stop_save,
-+	.has_ovfls = pfm_intel_arch_has_ovfls,
-+	.quiesce = pfm_intel_arch_quiesce,
-+	.acquire_pmu_percpu = pfm_intel_arch_acquire_pmu_percpu,
-+	.release_pmu_percpu = pfm_intel_arch_release_pmu_percpu
-+};
-+
-+#define PFM_IA_C(n) {                   \
-+	.type = PFM_REG_I64,            \
-+	.desc = "PERFEVTSEL"#n,         \
-+	.dfl_val = PFM_IA_PMC_VAL,      \
-+	.rsvd_msk = PFM_IA_PMC_RSVD,    \
-+	.no_emul64_msk = PFM_IA_NO64,   \
-+	.hw_addr = MSR_GEN_SEL_BASE+(n) \
-+	}
-+
-+#define PFM_IA_D(n) \
++#define PFM_AMD_D(n) \
 +	{ .type = PFM_REG_C,			\
-+	  .desc = "PMC"#n,			\
-+	  .hw_addr = MSR_P6_PERFCTR0+n,		\
++	  .desc = "PERFCTR"#n,			\
++	  .hw_addr = MSR_K7_PERFCTR0+n,		\
++	  .rsvd_msk = PFM_AMD64_CTR_RSVD,	\
 +	  .dep_pmcs[0] = 1ULL << n		\
 +	}
 +
-+#define PFM_IA_FD(n) \
-+	{ .type = PFM_REG_C,			\
-+	  .desc = "FIXED_CTR"#n,		\
-+	  .hw_addr = MSR_CORE_PERF_FIXED_CTR0+n,\
-+	  .dep_pmcs[0] = 1ULL << 16		\
-+	}
-+
-+
-+static struct pfm_regmap_desc pfm_intel_arch_pmc_desc[] = {
-+/* pmc0  */ PFM_IA_C(0),  PFM_IA_C(1),   PFM_IA_C(2),  PFM_IA_C(3),
-+/* pmc4  */ PFM_IA_C(4),  PFM_IA_C(5),   PFM_IA_C(6),  PFM_IA_C(7),
-+/* pmc8  */ PFM_IA_C(8),  PFM_IA_C(9),  PFM_IA_C(10), PFM_IA_C(11),
-+/* pmc12 */ PFM_IA_C(12), PFM_IA_C(13), PFM_IA_C(14), PFM_IA_C(15),
-+
-+/* pmc16 */ { .type = PFM_REG_I,
-+	      .desc = "FIXED_CTRL",
-+	      .dfl_val = 0x8888888888888888ULL, /* force PMI */
-+	      .rsvd_msk = 0, /* set dynamically */
-+	      .no_emul64_msk = 0,
-+	      .hw_addr = MSR_CORE_PERF_FIXED_CTR_CTRL
-+	    },
++static struct pfm_regmap_desc pfm_amd64_pmd_desc[] = {
++/* pmd0  */ PFM_AMD_D(0),
++/* pmd1  */ PFM_AMD_D(1),
++/* pmd2  */ PFM_AMD_D(2),
++/* pmd3  */ PFM_AMD_D(3)
 +};
-+#define PFM_IA_MAX_PMCS	ARRAY_SIZE(pfm_intel_arch_pmc_desc)
++#define PFM_AMD_NUM_PMDS ARRAY_SIZE(pfm_amd64_pmd_desc)
 +
-+static struct pfm_regmap_desc pfm_intel_arch_pmd_desc[] = {
-+/* pmd0  */  PFM_IA_D(0),  PFM_IA_D(1),  PFM_IA_D(2),  PFM_IA_D(3),
-+/* pmd4  */  PFM_IA_D(4),  PFM_IA_D(5),  PFM_IA_D(6),  PFM_IA_D(7),
-+/* pmd8  */  PFM_IA_D(8),  PFM_IA_D(9), PFM_IA_D(10), PFM_IA_D(11),
-+/* pmd12 */ PFM_IA_D(12), PFM_IA_D(13), PFM_IA_D(14), PFM_IA_D(15),
++static struct pfm_context *pfm_nb_task_owner;
 +
-+/* pmd16 */ PFM_IA_FD(0), PFM_IA_FD(1), PFM_IA_FD(2), PFM_IA_FD(3),
-+/* pmd20 */ PFM_IA_FD(4), PFM_IA_FD(5), PFM_IA_FD(6), PFM_IA_FD(7),
-+/* pmd24 */ PFM_IA_FD(8), PFM_IA_FD(9), PFM_IA_FD(10), PFM_IA_FD(11),
-+/* pmd28 */ PFM_IA_FD(16), PFM_IA_FD(17), PFM_IA_FD(18), PFM_IA_FD(19)
-+};
-+#define PFM_IA_MAX_PMDS	ARRAY_SIZE(pfm_intel_arch_pmd_desc)
++static struct pfm_pmu_config pfm_amd64_pmu_conf;
 +
-+#define PFM_IA_MAX_CNT		16 /* # generic counters in mapping table */
-+#define PFM_IA_MAX_FCNT		16 /* # of fixed counters in mapping table */
-+#define PFM_IA_FCNT_BASE	16 /* base index of fixed counters PMD */
-+
-+static struct pfm_pmu_config pfm_intel_arch_pmu_conf;
-+
-+static void pfm_intel_arch_check_errata(void)
++/**
++ * pfm_amd64_acquire_nb -- ensure mutual exclusion for Northbridge events
++ * @ctx: context to use
++ *
++ * There can only be one user per socket for the Northbridge (NB) events,
++ * so we enforce mutual exclusion as follows:
++ * 	- per-thread : only one context machine-wide can use NB events
++ *
++ * Exclusion is enforced at:
++ * 	- pfm_load_context()
++ * 	- pfm_write_pmcs() for attached contexts
++ *
++ * Exclusion is released at:
++ * 	- pfm_unload_context() or any calls that implicitely uses it
++ *
++ * return:
++ * 	0  : successfully acquire NB access
++ * 	< 0:  errno, failed to acquire NB access
++ */
++static int pfm_amd64_acquire_nb(struct pfm_context *ctx)
 +{
-+	/*
-+	 * Core Duo errata AE49 (no fix). Both counters share a single
-+	 * enable bit in PERFEVTSEL0
-+	 */
-+	if (current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 14)
-+		pfm_intel_arch_pmu_info.flags |= PFM_X86_FL_NO_SHARING;
++	struct pfm_context **entry, *old;
++	int proc_id;
++
++#ifdef CONFIG_SMP
++	proc_id = cpu_data(smp_processor_id()).phys_proc_id;
++#else
++	proc_id = 0;
++#endif
++
++	entry = &pfm_nb_task_owner;
++
++	old = cmpxchg(entry, NULL, ctx);
++	if (!old) {
++		PFM_DBG("acquired Northbridge event access globally");
++	} else if (old != ctx) {
++		PFM_DBG("global NorthBridge event conflict");
++		return -EBUSY;
++	}
++	return 0;
 +}
 +
-+static inline void set_enable_mask(unsigned int i)
++/**
++ * pfm_amd64_pmc_write_check -- check validity of pmc writes
++ * @ctx: context to use
++ * @set: event set to use
++ * @req: user request to modify the pmc
++ *
++ * invoked from pfm_write_pmcs() when pfm_nb_sys_owners is not NULL,i.e.,
++ * when we have detected a multi-core processor.
++ *
++ * context is locked, interrupts are masked
++ */
++static int pfm_amd64_pmc_write_check(struct pfm_context *ctx,
++			     struct pfm_event_set *set,
++			     struct pfarg_pmr *req)
 +{
-+	pfm_arch_bv_set_bit(i, enable_mask);
++	unsigned int event;
 +
-+	/* max_enable = highest + 1 */
-+	if ((i+1) > max_enable)
-+		max_enable = i+ 1;
++	/*
++	 * delay checking NB event until we load the context
++	 */
++	if (ctx->state == PFM_CTX_UNLOADED)
++		return 0;
++
++	/*
++	 * check event is NB event
++	 */
++	event = (unsigned int)(req->reg_value & 0xff);
++	if (event < 0xee)
++		return 0;
++
++	return pfm_amd64_acquire_nb(ctx);
 +}
 +
-+static void pfm_intel_arch_setup_generic(unsigned int version,
-+					 unsigned int width,
-+					 unsigned int count)
++/**
++ * pfm_amd64_load_context - amd64 model-specific load callback
++ * @ctx: context to use
++ *
++ * invoked on pfm_load_context().
++ * context is locked, interrupts are masked
++ */
++static int pfm_amd64_load_context(struct pfm_context *ctx)
 +{
-+	u64 rsvd;
-+	unsigned int i;
++	struct pfm_event_set *set;
++	unsigned int i, n;
 +
-+	/*
-+	 * first we handle the generic counters:
-+	 *
-+	 * - ensure HW does not have more registers than hardcoded in the tables
-+	 * - adjust rsvd_msk to actual counter width
-+	 * - initialize enable_mask (list of PMC with start/stop capability)
-+	 * - mark unused hardcoded generic counters as unimplemented
-+	 */
++	set = ctx->active_set;
++	n = set->nused_pmcs;
++	for (i = 0; n; i++) {
++		if (!pfm_arch_bv_test_bit(i, set->used_pmcs))
++			continue;
 +
-+	/*
-+	 * min of number of Hw counters and hardcoded in the tables
-+	 */
-+	if (count >= PFM_IA_MAX_CNT) {
-+		printk(KERN_INFO "perfmon: Limiting number of generic counters"
-+				 " to %u, HW supports %u",
-+				 PFM_IA_MAX_CNT, count);
-+		count = PFM_IA_MAX_CNT;
++		if ((set->pmcs[i] & 0xff) >= 0xee)
++			goto found;
++		n--;
 +	}
-+
-+	/*
-+	 * adjust rsvd_msk for generic counters based on actual width
-+	 * initialize enable_mask (1 per pmd)
-+	 */
-+	rsvd = ~((1ULL << width)-1);
-+	for (i = 0; i < count; i++) {
-+		pfm_intel_arch_pmd_desc[i].rsvd_msk = rsvd;
-+		set_enable_mask(i);
-+	}
-+
-+	/*
-+	 * handle version 3 new anythread bit (21)
-+	 */
-+	if (version == 3) {
-+		for (i = 0; i < count; i++)
-+			pfm_intel_arch_pmc_desc[i].rsvd_msk &= ~(1ULL << 21);
-+	}
-+
-+
-+	/*
-+	 * mark unused generic counters as not available
-+	 */
-+	for (i = count ; i < PFM_IA_MAX_CNT; i++) {
-+		pfm_intel_arch_pmd_desc[i].type = PFM_REG_NA;
-+		pfm_intel_arch_pmc_desc[i].type = PFM_REG_NA;
-+	}
++	return 0;
++found:
++	return pfm_amd64_acquire_nb(ctx);
 +}
 +
-+static void pfm_intel_arch_setup_fixed(unsigned int version,
-+				       unsigned int width,
-+				       unsigned int count)
++/**
++ * pfm_amd64_unload_context -- amd64 mdoels-specific unload callback
++ * @ctx: context to use
++ *
++ * invoked on pfm_unload_context()
++ */
++static void pfm_amd64_unload_context(struct pfm_context *ctx)
 +{
-+	u64 rsvd, dfl;
-+	unsigned int i;
++	struct pfm_context **entry, *old;
++	int proc_id;
 +
-+	/*
-+	 * handle the fixed counters (if any):
-+	 *
-+	 * - ensure HW does not have more registers than hardcoded in the tables
-+	 * - adjust rsvd_msk to actual counter width
-+	 * - initialize enable_mask (list of PMC with start/stop capability)
-+	 * - mark unused hardcoded generic counters as unimplemented
-+	 */
-+	if (count >= PFM_IA_MAX_FCNT) {
-+		printk(KERN_INFO "perfmon: Limiting number of fixed counters"
-+				 " to %u, HW supports %u",
-+				 PFM_IA_MAX_FCNT, count);
-+		count = PFM_IA_MAX_FCNT;
-+	}
-+	/*
-+	 * adjust rsvd_msk for fixed counters based on actual width
-+	 */
-+	rsvd = ~((1ULL << width)-1);
-+	for (i = 0; i < count; i++)
-+		pfm_intel_arch_pmd_desc[PFM_IA_FCNT_BASE+i].rsvd_msk = rsvd;
++#ifdef CONFIG_SMP
++	proc_id = cpu_data(smp_processor_id()).phys_proc_id;
++#else
++	proc_id = 0;
++#endif
 +
-+	/*
-+	 * handle version new anythread bit (bit 2)
-+	 */
-+	if (version == 3)
-+		rsvd = 1ULL << 3;
-+	else
-+		rsvd = 3ULL << 2;
++	entry = &pfm_nb_task_owner;
 +
-+	pfm_intel_arch_pmc_desc[16].rsvd_msk = 0;
-+	for (i = 0; i < count; i++)
-+		pfm_intel_arch_pmc_desc[16].rsvd_msk |= rsvd << (i<<2);
-+
-+	/*
-+	 * mark unused fixed counters as unimplemented
-+	 *
-+	 * update the rsvd_msk, dfl_val in FIXED_CTRL:
-+	 * 	- rsvd_msk: set all 4 bits
-+	 *	- dfl_val : clear all 4 bits
-+	 */
-+	dfl = pfm_intel_arch_pmc_desc[16].dfl_val;
-+	rsvd = pfm_intel_arch_pmc_desc[16].rsvd_msk;
-+
-+	for (i = count ; i < PFM_IA_MAX_FCNT; i++) {
-+		pfm_intel_arch_pmd_desc[PFM_IA_FCNT_BASE+i].type = PFM_REG_NA;
-+		rsvd |= 0xfULL << (i<<2);
-+		dfl &= ~(0xfULL << (i<<2));
-+	}
-+
-+	/*
-+	 * FIXED_CTR_CTRL unavailable when no fixed counters are defined
-+	 */
-+	if (!count) {
-+		pfm_intel_arch_pmc_desc[16].type = PFM_REG_NA;
-+	} else {
-+		/* update rsvd_mask and dfl_val */
-+		pfm_intel_arch_pmc_desc[16].rsvd_msk = rsvd;
-+		pfm_intel_arch_pmc_desc[16].dfl_val = dfl;
-+		set_enable_mask(16);
-+	}
++	old = cmpxchg(entry, ctx, NULL);
++	if (old == ctx)
++		PFM_DBG("released NorthBridge events globally");
 +}
 +
-+static int pfm_intel_arch_probe_pmu(void)
++/**
++ * pfm_amd64_setup_nb_event_ctrl -- initialize NB event controls
++ *
++ * detect if we need to activate NorthBridge event access control
++ */
++static int pfm_amd64_setup_nb_event_ctrl(void)
 +{
-+	union {
-+		unsigned int val;
-+		struct pmu_eax eax;
-+		struct pmu_edx edx;
-+	} eax, edx;
-+	unsigned int ebx, ecx;
-+	unsigned int width = 0;
++	unsigned int c, n = 0;
++	unsigned int max_phys = 0;
 +
-+	edx.val = 0;
-+
-+	if (!cpu_has_arch_perfmon) {
-+		PFM_INFO("no support for Intel architectural PMU");
-+		return -1;
++#ifdef CONFIG_SMP
++	for_each_possible_cpu(c) {
++		if (cpu_data(c).phys_proc_id > max_phys)
++			max_phys = cpu_data(c).phys_proc_id;
++	}
++#else
++	max_phys = 0;
++#endif
++	if (max_phys > 255) {
++		PFM_INFO("socket id %d is too big to handle", max_phys);
++		return -ENOMEM;
 +	}
 +
-+	if (!cpu_has_apic) {
-+		PFM_INFO("no Local APIC, try rebooting with lapic option");
-+		return -1;
-+	}
++	n = max_phys + 1;
++	if (n < 2)
++		return 0;
 +
-+	/* cpuid() call protected by cpu_has_arch_perfmon */
-+	cpuid(0xa, &eax.val, &ebx, &ecx, &edx.val);
++	pfm_nb_task_owner = NULL;
 +
 +	/*
-+	 * some 6/15 models have buggy BIOS
++	 * activate write-checker for PMC registers
 +	 */
-+	if (eax.eax.version == 0
-+	    && current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 15) {
-+		PFM_INFO("buggy v2 BIOS, adjusting for 2 generic counters");
-+		eax.eax.version = 2;
-+		eax.eax.num_cnt = 2;
-+		eax.eax.cnt_width = 40;
-+	}
++	for (c = 0; c < PFM_AMD_NUM_PMCS; c++)
++		pfm_amd64_pmc_desc[c].type |= PFM_REG_WC;
 +
-+	/*
-+	 * some v2 BIOSes are incomplete
-+	 */
-+	if (eax.eax.version == 2 && !edx.edx.num_cnt) {
-+		PFM_INFO("buggy v2 BIOS, adjusting for 3 fixed counters");
-+		edx.edx.num_cnt = 3;
-+		edx.edx.cnt_width = 40;
-+	}
++	pfm_amd64_pmu_info.load_context = pfm_amd64_load_context;
++	pfm_amd64_pmu_info.unload_context = pfm_amd64_unload_context;
 +
-+	/*
-+	 * no fixed counters on earlier versions
-+	 */
-+	if (eax.eax.version < 2) {
-+		edx.val = 0;
-+	} else {
-+		/*
-+		 * use the min value of both widths until we support
-+		 * variable width counters
-+		 */
-+		width = eax.eax.cnt_width < edx.edx.cnt_width ?
-+			eax.eax.cnt_width : edx.edx.cnt_width;
-+	}
++	pfm_amd64_pmu_conf.pmc_write_check = pfm_amd64_pmc_write_check;
 +
-+ 	/*
-+	 * Intel Atom processors have a buggy firmware which does not report
-+	 * the correct number of fixed counters
-+	 */
-+	if (eax.eax.version == 3 && edx.edx.num_cnt < 3
-+	    && current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 28) {
-+		PFM_INFO("buggy v3 BIOS, adjusting for 3 fixed counters");
-+		edx.edx.num_cnt = 3;
-+	}
-+
-+	PFM_INFO("detected architecural perfmon v%d", eax.eax.version);
-+	PFM_INFO("num_gen=%d width=%d num_fixed=%d width=%d",
-+		  eax.eax.num_cnt,
-+		  eax.eax.cnt_width,
-+		  edx.edx.num_cnt,
-+		  edx.edx.cnt_width);
-+
-+	pfm_intel_arch_setup_generic(eax.eax.version,
-+				     width,
-+				     eax.eax.num_cnt);
-+
-+	pfm_intel_arch_setup_fixed(eax.eax.version,
-+				   width,
-+				   edx.edx.num_cnt);
-+
-+	pfm_intel_arch_check_errata();
-+
-+	pfm_intel_arch_version = eax.eax.version;
++	PFM_INFO("NorthBridge event access control enabled");
 +
 +	return 0;
 +}
 +
 +/**
-+ * pfm_intel_arch_has_ovfls - check for pending overflow condition
-+ * @ctx: context to work on
++ * pfm_amd64_setup_register -- initialize register table
 + *
-+ * detect if counters have overflowed.
++ * modify register table based on actual host CPU
++ */
++static void pfm_amd64_setup_registers(void)
++{
++	u16 i;
++
++	pfm_arch_bv_set_bit(0, enable_mask);
++	pfm_arch_bv_set_bit(1, enable_mask);
++	pfm_arch_bv_set_bit(2, enable_mask);
++	pfm_arch_bv_set_bit(3, enable_mask);
++	max_enable = 3+1;
++
++	/*
++	 * adjust reserved bit fields for family 16
++	 */
++	if (current_cpu_data.x86 == 16) {
++		for (i = 0; i < PFM_AMD_NUM_PMCS; i++)
++			if (pfm_amd64_pmc_desc[i].rsvd_msk == PFM_K8_RSVD)
++				pfm_amd64_pmc_desc[i].rsvd_msk = PFM_16_RSVD;
++	}
++}
++
++/**
++ * pfm_amd64_probe_pmu -- detect host PMU
++ */
++static int pfm_amd64_probe_pmu(void)
++{
++	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD)
++		return -1;
++
++	switch (current_cpu_data.x86) {
++	case  6:
++	case 15:
++	case 16:
++		PFM_INFO("found family=%d", current_cpu_data.x86);
++		break;
++	default:
++		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
++		return -1;
++	}
++
++	/*
++	 * check for local APIC (required)
++	 */
++	if (!cpu_has_apic) {
++		PFM_INFO("no local APIC, unsupported");
++		return -1;
++	}
++
++	if (current_cpu_data.x86_max_cores > 1
++	    && pfm_amd64_setup_nb_event_ctrl())
++		return -1;
++
++	pfm_amd64_setup_registers();
++
++	return 0;
++}
++
++/**
++ * pfm_amd64_has_ovfls -- detect if pending overflows
++ * @ctx: context to use
++ *
++ * detect is counters have overflowed.
 + * return:
 + * 	0 : no overflow
 + * 	1 : at least one overflow
 + */
-+static int __kprobes pfm_intel_arch_has_ovfls(struct pfm_context *ctx)
++static int __kprobes pfm_amd64_has_ovfls(struct pfm_context *ctx)
 +{
++	struct pfm_regmap_desc *xrd;
 +	u64 *cnt_mask;
 +	u64 wmask, val;
 +	u16 i, num;
 +
++	/*
++	 * Check regular counters
++	 */
 +	cnt_mask = ctx->regs.cnt_pmds;
 +	num = ctx->regs.num_counters;
 +	wmask = 1ULL << pfm_pmu_conf->counter_width;
++	xrd = pfm_amd64_pmd_desc;
 +
-+	/*
-+	 * we can leverage the fact that we know the mapping
-+	 * to hardcode the MSR address and avoid accessing
-+	 * more cachelines
-+	 *
-+	 * We need to check cnt_mask because not all registers
-+	 * may be available.
-+	 */
 +	for (i = 0; num; i++) {
 +		if (pfm_arch_bv_test_bit(i, cnt_mask)) {
-+			rdmsrl(pfm_intel_arch_pmd_desc[i].hw_addr, val);
++			rdmsrl(xrd[i].hw_addr, val);
 +			if (!(val & wmask))
 +				return 1;
 +			num--;
@@ -474,19 +405,30 @@ Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
 +	return 0;
 +}
 +
-+static int pfm_intel_arch_stop_save(struct pfm_context *ctx,
-+				    struct pfm_event_set *set)
++/**
++ * pfm_amd64_stop_save - stop monitoring, collect pending overflows
++ * @ctx: context to use
++ * @set: event set to stop
++ *
++ * interrupts are masked, PMU access guaranteed
++ */
++static int pfm_amd64_stop_save(struct pfm_context *ctx,
++			       struct pfm_event_set *set)
 +{
++	struct pfm_arch_pmu_info *pmu_info;
 +	u64 used_mask[PFM_PMC_BV];
++	u64 *cnt_pmds;
 +	u64 val, wmask, ovfl_mask;
 +	u32 i, count;
++
++	pmu_info = pfm_pmu_info();
 +
 +	wmask = 1ULL << pfm_pmu_conf->counter_width;
 +
 +	pfm_arch_bv_and(used_mask,
-+			set->used_pmcs,
-+			enable_mask,
-+			max_enable);
++		        set->used_pmcs,
++		        enable_mask,
++		        max_enable);
 +
 +	count = pfm_arch_bv_weight(used_mask, max_enable);
 +
@@ -510,24 +452,25 @@ Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
 +		return 1;
 +
 +	ovfl_mask = pfm_pmu_conf->ovfl_mask;
++	cnt_pmds = ctx->regs.cnt_pmds;
 +
 +	/*
 +	 * check for pending overflows and save PMDs (combo)
 +	 * we employ used_pmds because we also need to save
 +	 * and not just check for pending interrupts.
-+	 *
-+	 * all pmds are counters
 +	 */
 +	count = set->nused_pmds;
 +	for (i = 0; count; i++) {
 +		if (pfm_arch_bv_test_bit(i, set->used_pmds)) {
 +			val = pfm_arch_read_pmd(ctx, i);
-+			if (!(val & wmask)) {
-+				pfm_arch_bv_set_bit(i, set->povfl_pmds);
-+				set->npend_ovfls++;
++			if (likely(pfm_arch_bv_test_bit(i, cnt_pmds))) {
++				if (!(val & wmask)) {
++					pfm_arch_bv_set_bit(i,set->povfl_pmds);
++					set->npend_ovfls++;
++				}
++				val = (set->pmds[i] & ~ovfl_mask)
++				    | (val & ovfl_mask);
 +			}
-+			val = (set->pmds[i] & ~ovfl_mask)
-+				| (val & ovfl_mask);
 +			set->pmds[i] = val;
 +			count--;
 +		}
@@ -537,157 +480,73 @@ Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
 +}
 +
 +/**
-+ * pfm_intel_arch_quiesce - stop monitoring without grabbing any lock
++ * pfm_amd64_quiesce_pmu -- stop monitoring without grabbing any lock
 + *
 + * called from NMI interrupt handler to immediately stop monitoring
 + * cannot grab any lock, including perfmon related locks
 + */
-+static void __kprobes pfm_intel_arch_quiesce(void)
++static void __kprobes pfm_amd64_quiesce(void)
 +{
-+	u16 i;
-+
 +	/*
-+	 * PMC16 is the fixed control register so it has a
-+	 * distinct MSR address
-+	 *
-+	 * We do not use the hw_addr field in the table to avoid touching
-+	 * too many cachelines
++	 * quiesce PMU by clearing available registers that have
++	 * the start/stop capability
 +	 */
-+	for (i = 0; i < pfm_pmu_conf->regs_all.max_pmc; i++) {
-+		if (pfm_arch_bv_test_bit(i, pfm_pmu_conf->regs_all.pmcs)) {
-+			if (i == 16)
-+				wrmsrl(MSR_CORE_PERF_FIXED_CTR_CTRL, 0);
-+			else
-+				wrmsrl(MSR_P6_EVNTSEL0+i, 0);
-+		}
-+	}
-+}
-+/**
-+* pfm_intel_arch_release_pmu_percpu - release PMU resource per CPU
-+*
-+* Since v2, there exists global control MSR, to start/stop and
-+* also collect overflow status information. In particular,
-+* GLOBAL_CTRL controls start/stop and has one bit per counter.
-+* To maintain backward compatibility with v1, the power-on value
-+* of GLOBAL_CTRL should be such that generic counters are enabled
-+* but fixed counters are disabled (true on Penryn and Atom currently).
-+*
-+* Here, we simply make sure that all available counters are enabled.
-+* After that, start/stop is controlled on a per-counter basis.
-+*/
-+static void pfm_intel_arch_acquire_pmu_percpu(void)
-+{
-+	struct pfm_regmap_desc *d;
-+	u64 mask = 0;
-+	unsigned int i;
-+
-+	/* nothing to do for v1 */
-+	if (pfm_intel_arch_version < 2)
-+		return;
-+
-+	/*
-+	 * build bitmask of registers that are available to
-+	 * us. In some cases, there may be fewer registers than
-+	 * what the PMU supports due to sharing with other kernel
-+	 * subsystems, such as NMI
-+	 */
-+	d = pfm_pmu_conf->pmd_desc;
-+	for (i=0; i < 16; i++) {
-+		if ((d[i].type & PFM_REG_I) == 0)
-+			continue;
-+		mask |= 1ull << i;
-+	}
-+	for (i=16; i < PFM_IA_MAX_PMDS; i++) {
-+		if ((d[i].type & PFM_REG_I) == 0)
-+			continue;
-+		mask |= 1ull << (32+i-16);
-+	}
-+	/*
-+	 * keep a local copy of the current MSR_CORE_PERF_GLOBAL_CTRL
-+	 */
-+	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, __get_cpu_var(saved_global_ctrl));
-+
-+	PFM_DBG("global=0x%llx set to 0x%llx",
-+		__get_cpu_var(saved_global_ctrl),
-+		mask);
-+	/*
-+	 * enable all registers
-+	 *
-+	 * No need to quiesce PMU. If there is a overflow, it will be
-+	 * treated as spurious by the handler
-+	 */
-+	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, mask);
++	if (pfm_arch_bv_test_bit(0, pfm_pmu_conf->regs_all.pmcs))
++		wrmsrl(MSR_K7_EVNTSEL0, 0);
++	if (pfm_arch_bv_test_bit(1, pfm_pmu_conf->regs_all.pmcs))
++		wrmsrl(MSR_K7_EVNTSEL0+1, 0);
++	if (pfm_arch_bv_test_bit(2, pfm_pmu_conf->regs_all.pmcs))
++		wrmsrl(MSR_K7_EVNTSEL0+2, 0);
++	if (pfm_arch_bv_test_bit(3, pfm_pmu_conf->regs_all.pmcs))
++		wrmsrl(MSR_K7_EVNTSEL0+3, 0);
 +}
 +
-+/**
-+* pfm_intel_arch_release_pmu_percpu - release PMU resource per CPU
-+*
-+* Since v2, there exists global control MSR, to start/stop and
-+* also collect overflow status information. In particular,
-+* GLOBAL_CTRL controls start/stop and has one bit per counter.
-+* To maintain backward compatibility with v1, the power-on value
-+* of GLOBAL_CTRL should be such that generic counters are enabled
-+* but fixed counters are disabled (true on Penryn and Atom currently).
-+*
-+* Here, we are done using the PMU. so we restore the power-on value.
-+*/
-+static void pfm_intel_arch_release_pmu_percpu(void)
-+{
-+	/* nothing to do for v1 */
-+	if (pfm_intel_arch_version < 2)
-+		return;
-+
-+	PFM_DBG("global_ctrl restored to 0x%llx\n",
-+		__get_cpu_var(saved_global_ctrl));
-+
-+	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, __get_cpu_var(saved_global_ctrl));
-+}
-+
-+/*
-+ * Counters may have model-specific width. Yet the documentation says
-+ * that only the lower 32 bits can be written to due to the specification
-+ * of wrmsr. bits [32-(w-1)] are sign extensions of bit 31. Bits [w-63] must
-+ * not be set (see rsvd_msk for PMDs). As such the effective width of a
-+ * counter is 31 bits only regardless of what CPUID.0xa returns.
-+ *
-+ * See IA-32 Intel Architecture Software developer manual Vol 3B chapter 18
-+ */
-+static struct pfm_pmu_config pfm_intel_arch_pmu_conf = {
-+	.pmu_name = "Intel architectural",
-+	.pmd_desc = pfm_intel_arch_pmd_desc,
-+	.counter_width   = 31,
-+	.num_pmc_entries = PFM_IA_MAX_PMCS,
-+	.num_pmd_entries = PFM_IA_MAX_PMDS,
-+	.pmc_desc = pfm_intel_arch_pmc_desc,
-+	.version = "1.0",
-+	.pmu_info = &pfm_intel_arch_pmu_info
++static struct pfm_pmu_config pfm_amd64_pmu_conf = {
++	.pmu_name = "AMD64",
++	.counter_width = 47,
++	.pmd_desc = pfm_amd64_pmd_desc,
++	.pmc_desc = pfm_amd64_pmc_desc,
++	.num_pmc_entries = PFM_AMD_NUM_PMCS,
++	.num_pmd_entries = PFM_AMD_NUM_PMDS,
++	.version = "1.2",
++	.pmu_info = &pfm_amd64_pmu_info
 +};
 +
-+static int __init pfm_intel_arch_pmu_init_module(void)
++static int __init pfm_amd64_pmu_init_module(void)
 +{
-+	if (pfm_intel_arch_probe_pmu())
++	if (pfm_amd64_probe_pmu())
 +		return -ENOSYS;
-+
-+	return pfm_pmu_register(&pfm_intel_arch_pmu_conf);
++	return pfm_pmu_register(&pfm_amd64_pmu_conf);
 +}
 +
-+device_initcall(pfm_intel_arch_pmu_init_module);
++device_initcall(pfm_amd64_pmu_init_module);
+Index: o3/arch/x86/perfmon/Makefile
+===================================================================
+--- o3.orig/arch/x86/perfmon/Makefile	2008-11-25 18:15:31.000000000 +0100
++++ o3/arch/x86/perfmon/Makefile	2008-11-25 18:15:32.000000000 +0100
+@@ -4,3 +4,4 @@
+ #
+ obj-$(CONFIG_PERFMON)			+= perfmon.o
+ obj-$(CONFIG_X86_PERFMON_INTEL_ARCH)	+= perfmon_intel_arch.o
++obj-$(CONFIG_X86_PERFMON_AMD64)		+= perfmon_amd64.o
 Index: o3/arch/x86/perfmon/Kconfig
 ===================================================================
---- o3.orig/arch/x86/perfmon/Kconfig	2008-11-25 18:09:47.000000000 +0100
-+++ o3/arch/x86/perfmon/Kconfig	2008-11-25 18:21:33.000000000 +0100
-@@ -15,4 +15,11 @@
+--- o3.orig/arch/x86/perfmon/Kconfig	2008-11-25 18:15:31.000000000 +0100
++++ o3/arch/x86/perfmon/Kconfig	2008-11-25 18:15:32.000000000 +0100
+@@ -22,4 +22,12 @@
  	help
- 	Enables perfmon debugging support
- 
-+config  X86_PERFMON_INTEL_ARCH
-+	bool "Support for Intel architectural perfmon v1/v2/v3"
+ 	Enables support for Intel architectural performance counters.
+ 	This feature was introduced with Intel Core Solo/Core Duo processors.
+-endmenu
++
++config	X86_PERFMON_AMD64
++	bool "Support AMD Athlon/Opteron hardware performance counters"
 +	depends on PERFMON
 +	default n
 +	help
-+	Enables support for Intel architectural performance counters.
-+	This feature was introduced with Intel Core Solo/Core Duo processors.
- endmenu
++	Enables support for Athlon/Opterton hardware performance counters.
++	Support for  family 6, 15 and 16 processors.
++ endmenu
 
 -- 
 
