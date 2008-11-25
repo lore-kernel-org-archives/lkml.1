@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYKYNPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbYKYNPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYKYNPO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 08:15:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYKYNOz
+	id S1752188AbYKYNPi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 08:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYKYNO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 08:14:55 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:30455 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbYKYNOy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 08:14:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=Q+1rvh2w8UFwf/LCx1ulw9dzzydlSt+HjiYVqei9DQDp5QI7lcMLzQOo7ifCa+lSMX
-         PiacRJg1zmAsOHACu3SPlo/OjTlF/K5D7aZhE3wKQ5OqelfujQM2G52slck075p/slUi
-         ZA0GnIkdq4JC6STO5SBKINRtEZSbt9fnBsiN8=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org,
-       akpm@linux-foundation.org
-Date: Tue, 25 Nov 2008 22:13:41 +0900
-Message-Id: <20081125131341.8640.69069.sendpatchset@rx1.opensource.se>
-Subject: [PATCH] Free setup_irq() interrupt using free_irq()
+	Tue, 25 Nov 2008 08:14:59 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34120 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbYKYNO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 08:14:57 -0500
+Date: Tue, 25 Nov 2008 14:14:54 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/5] drivers/bluetooth: change simple_strtol to simple_strtoul
+Message-ID: <Pine.LNX.4.64.0811251414330.11897@pc-004.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+From: Julia Lawall <julia@diku.dk>
 
-This patch adds support for using free_irq() on interrupts
-allocated with setup_irq(). Without this patch the kernel
-will try to kfree() the struct irqaction passed as argument
-to setup_irq().
+Since size, addr, fcs, and tmp are unsigned, it would seem better to use
+simple_strtoul that simple_strtol.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
+A simplified version of the semantic patch that makes this change is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r2@
+long e;
+position p;
+@@
+
+e = simple_strtol@p(...)
+
+@@
+position p != r2.p;
+type T;
+T e;
+@@
+
+e = 
+- simple_strtol@p
++ simple_strtoul
+  (...)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
 
- include/linux/interrupt.h |    2 ++
- kernel/irq/manage.c       |    4 +++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/bluetooth/bt3c_cs.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- 0001/include/linux/interrupt.h
-+++ work/include/linux/interrupt.h	2008-11-25 19:43:40.000000000 +0900
-@@ -48,6 +48,7 @@
-  * IRQF_IRQPOLL - Interrupt is used for polling (only the interrupt that is
-  *                registered first in an shared interrupt is considered for
-  *                performance reasons)
-+ * IRQF_STATIC - Interrupt requested with setup_irq(), do not kfree().
-  */
- #define IRQF_DISABLED		0x00000020
- #define IRQF_SAMPLE_RANDOM	0x00000040
-@@ -57,6 +58,7 @@
- #define IRQF_PERCPU		0x00000400
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
-+#define IRQF_STATIC		0x00002000
+diff -u -p a/drivers/bluetooth/bt3c_cs.c b/drivers/bluetooth/bt3c_cs.c
+--- a/drivers/bluetooth/bt3c_cs.c
++++ b/drivers/bluetooth/bt3c_cs.c
+@@ -502,15 +502,15 @@ static int bt3c_load_firmware(bt3c_info_
  
- typedef irqreturn_t (*irq_handler_t)(int, void *);
+ 		memset(b, 0, sizeof(b));
+ 		memcpy(b, ptr + 2, 2);
+-		size = simple_strtol(b, NULL, 16);
++		size = simple_strtoul(b, NULL, 16);
  
---- 0001/kernel/irq/manage.c
-+++ work/kernel/irq/manage.c	2008-11-25 19:44:14.000000000 +0900
-@@ -509,6 +509,7 @@ int setup_irq(unsigned int irq, struct i
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
+ 		memset(b, 0, sizeof(b));
+ 		memcpy(b, ptr + 4, 8);
+-		addr = simple_strtol(b, NULL, 16);
++		addr = simple_strtoul(b, NULL, 16);
  
-+	act->flags |= IRQF_STATIC;
- 	return __setup_irq(irq, desc, act);
- }
+ 		memset(b, 0, sizeof(b));
+ 		memcpy(b, ptr + (size * 2) + 2, 2);
+-		fcs = simple_strtol(b, NULL, 16);
++		fcs = simple_strtoul(b, NULL, 16);
  
-@@ -585,7 +586,8 @@ void free_irq(unsigned int irq, void *de
- 				local_irq_restore(flags);
+ 		memset(b, 0, sizeof(b));
+ 		for (tmp = 0, i = 0; i < size; i++) {
+@@ -530,7 +530,7 @@ static int bt3c_load_firmware(bt3c_info_
+ 			memset(b, 0, sizeof(b));
+ 			for (i = 0; i < (size - 4) / 2; i++) {
+ 				memcpy(b, ptr + (i * 4) + 12, 4);
+-				tmp = simple_strtol(b, NULL, 16);
++				tmp = simple_strtoul(b, NULL, 16);
+ 				bt3c_put(iobase, tmp);
  			}
- #endif
--			kfree(action);
-+			if (!(action->flags & IRQF_STATIC))
-+				kfree(action);
- 			return;
  		}
- 		printk(KERN_ERR "Trying to free already-free IRQ %d\n", irq);
