@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYKYQAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYKYQAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbYKYQAm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 11:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYKYQAd
+	id S1754030AbYKYQAz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 11:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYKYQAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 11:00:33 -0500
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:46789 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751193AbYKYQAc (ORCPT
+	Tue, 25 Nov 2008 11:00:39 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:54201 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbYKYQAi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 11:00:32 -0500
-Date: Tue, 25 Nov 2008 16:00:25 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/5] arch/mips/alchemy: change strict_strtol to
-	strict_strtoul
-Message-ID: <20081125160025.GA18083@linux-mips.org>
-References: <Pine.LNX.4.64.0811251412010.11897@pc-004.diku.dk>
+	Tue, 25 Nov 2008 11:00:38 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [Patch 0/3] OProfile SPU event profiling support for IBM Cell processor
+Date: Tue, 25 Nov 2008 17:00:30 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
+       cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+References: <1227568781.6509.198.camel@carll-linux-desktop>
+In-Reply-To: <1227568781.6509.198.camel@carll-linux-desktop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811251412010.11897@pc-004.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811251700.30926.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+VdaYRhUiRREQ/leS5fYKZm47R8vwxQmtJNi5
+ PjBKXNXrTOeqk70s5wF5SKNjOtbpoz70C/tMSkMqREBEIY+HWe
+ 1mZs4vP59vP4xNDN2BDoA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 02:12:32PM +0100, Julia Lawall wrote:
+On Tuesday 25 November 2008, Carl Love wrote:
+> This patch set consists of two kernel patches and one user level patch
+> to add SPU event based profiling support to OProfile for the IBM Cell
+> processor.  The first patch in the series is the user level patch that
+> adds the needed events and event checking to the user tool.  The second
+> patch is the first of two kernel patches.  It makes some structural
+> changes to the kernel code to make it easier to add the specific
+> functions for doing SPU event profiling.  The first kernel patch does
+> not make any functional changes.  The third patch in the series is the
+> second kernel patch where the actual SPU event profiling code support is
+> added to the kernel.
 
-> Since memsize is unsigned, it would seem better to use strict_strtoul that
-> strict_strtol.
+Thanks for your submission!
 
-Thanks, applied.
+I can't comment on the oprofile user code, but I have some comments
+on the implementation in the third patch.
 
-  Ralf
+Are the patches interdependent, or will old versions of the oprofile
+tool work with new kernels and vice versa?
+
+	Arnd <><
