@@ -1,71 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYKYAqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYKYAx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbYKYAqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 19:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYKYAqM
+	id S1754486AbYKYAx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 19:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYKYAxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 19:46:12 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:14345 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbYKYAqM (ORCPT
+	Mon, 24 Nov 2008 19:53:19 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:59638 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753229AbYKYAxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 19:46:12 -0500
-Message-ID: <154e089b0811241646y6ada2c97l5e45284969729e29@mail.gmail.com>
-Date: Tue, 25 Nov 2008 01:46:10 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH] CRED: fix sparse warnings
-Cc: "James Morris" <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <5008.1227568869@redhat.com>
+	Mon, 24 Nov 2008 19:53:18 -0500
+Message-ID: <492B4C43.8020506@oracle.com>
+Date: Mon, 24 Nov 2008 16:52:19 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Rientjes <rientjes@google.com>, peterz@infradead.org,
+       david@fromorbit.com, cl@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] mm: add dirty_background_bytes and dirty_bytes sysctls
+References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com>	<alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com> <20081124153843.d3c4782c.akpm@linux-foundation.org>
+In-Reply-To: <20081124153843.d3c4782c.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <154e089b0811241314t3291ea30w6268bb5b2b5c7c53@mail.gmail.com>
-	 <5008.1227568869@redhat.com>
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.492B4C47.0018:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 12:21 AM, David Howells <dhowells@redhat.com> wrote:
-> Hannes Eder <hannes@hanneseder.net> wrote:
->
->>   security/security.c:228:2: warning: returning void-valued expression
->>   security/security.c:233:2: warning: returning void-valued expression
->>   security/security.c:616:2: warning: returning void-valued expression
->
-> What's wrong with that?
+Andrew Morton wrote:
+> On Sun, 23 Nov 2008 10:55:16 -0800 (PST)
+> David Rientjes <rientjes@google.com> wrote:
+> 
+>> This change introduces two new sysctls to /proc/sys/vm:
+>> dirty_background_bytes and dirty_bytes.
+>>
+>>
+>> ...
+>>
+>> @@ -365,23 +429,29 @@ void
+>>  get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+>>  		 unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
+>>  {
+>> -	int background_ratio;		/* Percentages */
+>> -	int dirty_ratio;
+>>  	unsigned long background;
+>>  	unsigned long dirty;
+>>  	unsigned long available_memory = determine_dirtyable_memory();
+>>  	struct task_struct *tsk;
+>>  
+>> -	dirty_ratio = vm_dirty_ratio;
+>> -	if (dirty_ratio < 5)
+>> -		dirty_ratio = 5;
+>> +	if (vm_dirty_bytes)
+>> +		dirty = (vm_dirty_bytes + PAGE_SIZE) / PAGE_SIZE;
+> 
+> It would be conventional to use DIV_ROUND_UP() here.
+> 
+>> +	else {
+>> +		int dirty_ratio;
+> 
+> hm, I wonder why vm_dirty_ratio has a signed type.  
+> 
+>> -	background_ratio = dirty_background_ratio;
+>> -	if (background_ratio >= dirty_ratio)
+>> -		background_ratio = dirty_ratio / 2;
+>> +		dirty_ratio = vm_dirty_ratio;
+>> +		if (dirty_ratio < 5)
+>> +			dirty_ratio = 5;
+>> +		dirty = (dirty_ratio * available_memory) / 100;
+>> +	}
+>> +
+>> +	if (dirty_background_bytes)
+>> +		background = (dirty_background_bytes + PAGE_SIZE) / PAGE_SIZE;
+> 
+> DIV_ROUND_UP()?
 
-In my opinion the following quotes give good argument:
+Note that DIV_ROUND_UP() would make that
 
-> On Thu, 2008-05-01 at 13:00 +0100, Al Viro wrote:
-[snip|
-> > 3.  6.8.6.4(1): A return statement with an expression shall not appear in
-> > a function whose return type is void.
-> >
-> > Write in C, please.
+		background = (dirty_background_byte + PAGE_SIZE - 1) / PAGE_SIZE;
 
-see http://lkml.org/lkml/2008/5/1/88
+but that's usually what is needed/intended.
 
-On Thu, 1 May 2008 at 13:53:39 +0100, Al Viro wrote:
-> On Thu, May 01, 2008 at 03:42:14PM +0300, Boaz Harrosh wrote:
-> > > 3.  6.8.6.4(1): A return statement with an expression shall not appear in
-> > > a function whose return type is void.
-> > >
-> >
-> > Please forgive my ignorance, where is this quote from?
->
-> C99.  I don't have C90 in front of me, so I can't give you exact quote from
-> there, but it's been explicitly banned in C90 as well.
+>> +	else
+>> +		background = (dirty_background_ratio * available_memory) / 100;
+>>  
+>> -	background = (background_ratio * available_memory) / 100;
+>> -	dirty = (dirty_ratio * available_memory) / 100;
+>> +	if (background >= dirty)
+>> +		background = dirty / 2;
+>>  	tsk = current;
+>>  	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+>>  		background += background / 4;
 
-see http://lkml.org/lkml/2008/5/1/112
-
-There have been a couple of such patches, see
-
-http://www.google.at/search?q=site:lkml.org+%22warning:+returning+void-valued+expression%22
-
-Furthermore in the next-tree from today and 'defconfig' are only 5 of
-such warnings left, 3 of them would be resolved with this patch.
-
-Hannes
+-- 
+~Randy
