@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbYKYQeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYKYQef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbYKYQeV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 11:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYKYQeE
+	id S1753201AbYKYQef (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 11:34:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYKYQeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 11:34:04 -0500
-Received: from rtr.ca ([76.10.145.34]:37730 "EHLO mail.rtr.ca"
+	Tue, 25 Nov 2008 11:34:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40728 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751AbYKYQeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 11:34:03 -0500
-Message-ID: <492C2936.9080608@rtr.ca>
-Date: Tue, 25 Nov 2008 11:35:02 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	id S1752442AbYKYQeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 11:34:13 -0500
+Date: Tue, 25 Nov 2008 17:33:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       markus.t.metzger@gmail.com, roland@redhat.com,
+       akpm@linux-foundation.org, mtk.manpages@gmail.com,
+       eranian@googlemail.com, juan.villacis@intel.com
+Subject: Re: [patch 9/9] x86, bts, ftrace: a BTS ftrace plug-in prototype
+Message-ID: <20081125163350.GC22504@elte.hu>
+References: <20081125092415.A31432@sedona.ch.intel.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Tejun Heo <tj@kernel.org>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: 2.6.27.6 question: ata_sff_hsm_move: ata15 (why always ata15)?
-References: <alpine.DEB.1.10.0811141850590.6217@p34.internal.lan>	<491E4092.5030804@shaw.ca>	<20081115103424.34f01370@lxorguk.ukuu.org.uk>	<491FBA29.3000803@kernel.org>	<20081116112511.3913123a@lxorguk.ukuu.org.uk>	<492AF06A.8020004@rtr.ca> <20081124183204.2d3734e3@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081124183204.2d3734e3@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081125092415.A31432@sedona.ch.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Well ata_piix for starters.  Verified here by me.
+
+* Markus Metzger <markus.t.metzger@intel.com> wrote:
+
+> A prototype for a BTS ftrace plug-in.
 > 
-> Some piix are fine (mine are) so maybe its a device property in part.
-> Certainly it is needed for some combinations including current stuff like
-> jmicron PATA ports.
-..
+> The tracer collects branch trace in a cyclic buffer for each cpu.
+> 
+> The tracer is not configurable and the trace for each snapshot is 
+> appended when doing cat /debug/tracing/trace.
+> 
+> This is a proof of concept that will be extended with future patches 
+> to become a (hopefully) useful tool.
+> 
+> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 
-Agreed -- here it was a notebook (Dell Inspiron 9300) with ata_piix
-and a PATA drive.  So the mainboard in the notebook had an onboard bridge
-chip to adapt the PATA drive to the internal SATA port.
+very nice stuff!
 
-The subsequent model notebook (Dell Inspiron 9400) has very similar innards,
-except it now uses SATA drives, so no bridge chip.
+i've created a new topic branch for this: 
 
-The former needs DRQ draining, the latter does not.
-So, yeah, it's probably the bridge chip in this case.
+   tip/tracing/hw-branch-tracing
 
-Cheers
+and applied your patches there. (applied the earlier x86 patches in 
+their appropriate x86 topic branches)
+
+Integrated the end result into tip/master and have started testing it.
+
+I've got a few more review comments as well - will post them as a 
+reply to the respective patches.
+
+	Ingo
