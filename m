@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYKYXzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbYKYX5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbYKYXzj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 18:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYKYXzb
+	id S1753255AbYKYX5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 18:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYKYX5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 18:55:31 -0500
-Received: from smtp139.mail.mud.yahoo.com ([209.191.107.122]:37233 "HELO
-	smtp139.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750974AbYKYXzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 18:55:31 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Nov 2008 18:55:30 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.br;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Subject:From:To:Cc:In-Reply-To:References:Content-Type:Date:Message-Id:Mime-Version:X-Mailer:Content-Transfer-Encoding;
-  b=zo2846SlqTmniuz/6NzO2aU9Zc8XsoC5M3ypvahtiVgkiLuJiOCn7DMB6QfAfp7uJjZFMIUBBM2fZXj/jfQm325yZwYwuL6yZoBe1e1kkuG8DQnjbD+0OQKpifGNoLx5RnqwYi/0No6U2+nw54NaQ1reDkD70Ak3HZ0bf3brcY0=  ;
-X-YMail-OSG: BpURaewVM1mYTZABZ8DYjUgeHUzz.ymniD5aYrEOs_56IEEDVNgI2oQGvHHNrGU5XJRZktan3CdNEORylkgu_UEas6_iML2D1GYl_oOl.nQVepfxoGBYHTi1UhkpmGtn08zDMaXzdhGAtib_WydhQ2t7
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] fix similar typos to successfull, v2
-From: Fernando Carrijo <fcarrijo@yahoo.com.br>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081125145308.8633bf4a.akpm@linux-foundation.org>
-References: <492AE7ED.8040304@suse.de>
-	 <20081125145308.8633bf4a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 21:49:13 -0200
-Message-Id: <1227656953.18268.13.camel@pc-fernando>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 18:57:00 -0500
+Received: from www.tglx.de ([62.245.132.106]:46133 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbYKYX47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 18:56:59 -0500
+Date: Wed, 26 Nov 2008 00:56:48 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier@gentoo.org>, John Ogness <jogness@linutronix.de>,
+       Benedikt Spranger <b.spranger@linutronix.de>
+Subject: Re: [PATCH RFC] UIO: Pass information about ioports to userspace
+Message-ID: <20081125235647.GD4534@local>
+References: <20081123121419.GA3087@local> <20081124014054.GA14143@suse.de> <20081124101914.GC3086@local> <20081125041116.GC17033@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081125041116.GC17033@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-25 at 14:53 -0800, Andrew Morton wrote:
-> On Tue, 25 Nov 2008 01:44:13 +0800
-> Coly Li <coyli@suse.de> wrote:
+On Mon, Nov 24, 2008 at 08:11:16PM -0800, Greg KH wrote:
+> On Mon, Nov 24, 2008 at 11:19:15AM +0100, Hans J. Koch wrote:
+> > On Sun, Nov 23, 2008 at 05:40:54PM -0800, Greg KH wrote:
+> > > On Sun, Nov 23, 2008 at 01:14:20PM +0100, Hans J. Koch wrote:
+> > > > Devices sometimes have memory where all or parts of it can not be mapped to
+> > > > userspace. But it might still be possible to access this memory from
+> > > > userspace by other means. An example are PCI cards that advertise not only
+> > > > mappable memory but also ioport ranges. On x86 architectures, these can be
+> > > > accessed with ioperm, iopl, inb, outb, and friends. Mike Frysinger (CCed)
+> > > > reported a similar problem on Blackfin arch where it doesn't seem to be easy
+> > > > to mmap non-cached memory but it can still be accessed from userspace.
+> > > > 
+> > > > This patch allows kernel drivers to pass information about such ports to
+> > > > userspace. Similar to the existing mem[] array, it adds a port[] array to
+> > > > struct uio_info. Each port range is described by start, size, and porttype.
+> > > > 
+> > > > If a driver fills in at least one such port range, the UIO core will simply
+> > > > pass this information to userspace by creating a new directory "portio"
+> > > > underneath /sys/class/uio/uioN/. Similar to the "mem" directory, it will
+> > > > contain a subdirectory (portX) for each port range given.
+> > > 
+> > > This is good, but it would really be nice to provide a way for userspace
+> > > to access individual ports without having to have access to all ports in
+> > > the system.  Lots of times we don't want to give root privileges to some
+> > > programs that only need to read and write simple data to a single
+> > > device.
+> > 
+> > Yes, of course, that'd be nice. But it's very much arch dependent. For
+> > example, these x86 ioports need special handling on x86, but you can simply
+> > mmap them on powerpc. Port-like memory ranges on other archs might require
+> > something completely different.
+> > Yes, some generic port access layer would really be good, but I'm not sure
+> > if the UIO core is the right place to implement it. Do you already have a
+> > solution in mind?
 > 
-> > When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
-> > in kernel tree, 22 typos found totally --  great minds always think alike  :)
+> No I don't, sorry, it's just come up a few times recently and I was
+> hoping that you would have something :)
+
+No such luck :) But I'll think about it...
+
 > 
-> Mutter.  I have a super-strict (lol) policy of "I don't take patches
-> which fix typos/spellos in comments", because we have so many such
-> errors, and I'd get buried in silly patches.  But I do take patches
-> which fix documentation and user-visible printks, etc.
+> > Maybe we can look at that in a second step. ATM I just want to avoid these
+> > situations where userspace needs ugly tricks to find out which ioports
+> > belong to a certain card.
+> 
+> Agreed, I'm not saying that this patch is not ok at all, sorry if you
+> misinterpreted it that way.
 
-Since you started the thread, I feel less guilty to talk about the
-existence of tons of another kind of typo spread around the kernel
-sources: null statements created by duplicated semi-colons at the end of
-statements. Something like foo();;
+I didn't ;-)
 
-Cheers,
-Fernando
+> I have no objection to this patch, as long
+> as it includes the needed documentation.
 
+Agreed. And I found another flaw. I think that the porttype attribute should
+not be an int. A string constant would be much better, what do you think?
+
+I think I'll come up with a second version soon, a new patch and another one
+with the documentation.
+
+Thanks,
+Hans
 
