@@ -1,240 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbYKYHxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbYKYIBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523AbYKYHxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 02:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYKYHxG
+	id S1752472AbYKYIBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 03:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbYKYIBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 02:53:06 -0500
-Received: from mga14.intel.com ([143.182.124.37]:65340 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbYKYHxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 02:53:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,663,1220252400"; 
-   d="scan'208";a="82310675"
-Date: Tue, 25 Nov 2008 08:52:56 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com,
-       eranian@googlemail.com, juan.villacis@intel.com
-Subject: [patch 4/9] x86, bts: fix wrmsr and spinlock over kmalloc
-Message-ID: <20081125085256.A31105@sedona.ch.intel.com>
-Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 25 Nov 2008 03:01:22 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:32848 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbYKYIBV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 03:01:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=r63nI9HJGhghQPtwU9hdOxkwMsAWMQ+10MEB3ehOQBv053IVL5o4n0W5IpWJmawglw
+         yeKwfYc8Wy2uTWSm31GN7qJAPqjGj4JL9MIWgOWnZZjYKHHVukf9UbGCCwV+mzyYNUf/
+         kdEEevpASeqyBlchpgC3RbYU28Ou1UzXv2lvI=
+Message-ID: <9b2db90b0811250001k6e0c609frca073f3221a3e8ed@mail.gmail.com>
+Date: Tue, 25 Nov 2008 10:01:19 +0200
+From: "Nir Tzachar" <nir.tzachar@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH] ncurses based config V2
+Cc: "Willy Tarreau" <w@1wt.eu>, "Nir Tzachar" <tzachar@grad120a.cs.bgu.ac.il>,
+       linux-kernel@vger.kernel.org, bzolnier@gmail.com, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, ariveira@gmail.com, rdunlap@xenotime.net,
+       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de
+In-Reply-To: <20081124184428.GA17085@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220469076-16487-1-git-send-email-nir@tzachar.com>
+	 <1220603220-17090-1-git-send-email-nir@tzachar.com>
+	 <20080905195930.GA27913@1wt.eu>
+	 <20081124184428.GA17085@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn a wrmsr to write the DS_AREA MSR into a wrmsrl.
+Hello Sam.
 
-Use irqsave variants of spinlocks.
+On Mon, Nov 24, 2008 at 8:44 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> Hi Nir.
+>
+> Some comments as followup to Willy.
+>
+>> OK, I've just tried it. Here are the first comments I can make :
+>>
+>>   - colors are too dark.
+> Seconded. Please try to find a lighter set of default colors.
+> You may be inspired by one of the menuconfig color-sets.
+>
+> I agree that we could use a lift here - so please do not go for the
+> default color set of menuconfig.
 
-Do not allocate memory while holding spinlocks.
+Personally, I like lighter text on a dark background. But this is just
+me. I'll try to implement an easier color scheme chooser so everyone
+will be able to play with it and come up with something they like.
 
-Reported-by: Stephane Eranian <eranian@googlemail.com>
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+>>   - entering text in boxes (eg: local version) does not move the cursor,
+>>     it remains at the beginning of the line. If I press any arrow, the
+>>     box immediately closes (most likely the Esc prefix again).
+>
 
-Index: ftrace/arch/x86/kernel/ds.c
-===================================================================
---- ftrace.orig/arch/x86/kernel/ds.c	2008-11-25 08:17:57.000000000 +0100
-+++ ftrace/arch/x86/kernel/ds.c	2008-11-25 08:17:59.000000000 +0100
-@@ -209,14 +209,15 @@
- static inline struct ds_context *ds_get_context(struct task_struct *task)
- {
- 	struct ds_context *context;
-+	unsigned long irq;
- 
--	spin_lock(&ds_lock);
-+	spin_lock_irqsave(&ds_lock, irq);
- 
- 	context = (task ? task->thread.ds_ctx : this_system_context);
- 	if (context)
- 		context->count++;
- 
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- 
- 	return context;
- }
-@@ -224,55 +225,46 @@
- /*
-  * Same as ds_get_context, but allocates the context and it's DS
-  * structure, if necessary; returns NULL; if out of memory.
-- *
-- * pre: requires ds_lock to be held
-  */
- static inline struct ds_context *ds_alloc_context(struct task_struct *task)
- {
- 	struct ds_context **p_context =
- 		(task ? &task->thread.ds_ctx : &this_system_context);
- 	struct ds_context *context = *p_context;
-+	unsigned long irq;
- 
- 	if (!context) {
--		spin_unlock(&ds_lock);
--
- 		context = kzalloc(sizeof(*context), GFP_KERNEL);
--
--		if (!context) {
--			spin_lock(&ds_lock);
-+		if (!context)
- 			return NULL;
--		}
- 
- 		context->ds = kzalloc(ds_cfg.sizeof_ds, GFP_KERNEL);
- 		if (!context->ds) {
- 			kfree(context);
--			spin_lock(&ds_lock);
- 			return NULL;
- 		}
- 
--		spin_lock(&ds_lock);
--		/*
--		 * Check for race - another CPU could have allocated
--		 * it meanwhile:
--		 */
-+		spin_lock_irqsave(&ds_lock, irq);
-+
- 		if (*p_context) {
- 			kfree(context->ds);
- 			kfree(context);
--			return *p_context;
--		}
--
--		*p_context = context;
--
--		context->this = p_context;
--		context->task = task;
--
--		if (task)
--			set_tsk_thread_flag(task, TIF_DS_AREA_MSR);
--
--		if (!task || (task == current))
--			wrmsr(MSR_IA32_DS_AREA, (unsigned long)context->ds, 0);
- 
--		get_tracer(task);
-+			context = *p_context;
-+		} else {
-+			*p_context = context;
-+
-+			context->this = p_context;
-+			context->task = task;
-+
-+			if (task)
-+				set_tsk_thread_flag(task, TIF_DS_AREA_MSR);
-+
-+			if (!task || (task == current))
-+				wrmsrl(MSR_IA32_DS_AREA,
-+				       (unsigned long)context->ds);
-+		}
-+		spin_unlock_irqrestore(&ds_lock, irq);
- 	}
- 
- 	context->count++;
-@@ -286,10 +278,12 @@
-  */
- static inline void ds_put_context(struct ds_context *context)
- {
-+	unsigned long irq;
-+
- 	if (!context)
- 		return;
- 
--	spin_lock(&ds_lock);
-+	spin_lock_irqsave(&ds_lock, irq);
- 
- 	if (--context->count)
- 		goto out;
-@@ -311,7 +305,7 @@
- 	kfree(context->ds);
- 	kfree(context);
-  out:
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- }
- 
- 
-@@ -382,6 +376,7 @@
- 	struct ds_context *context;
- 	unsigned long buffer, adj;
- 	const unsigned long alignment = (1 << 3);
-+	unsigned long irq;
- 	int error = 0;
- 
- 	if (!ds_cfg.sizeof_ds)
-@@ -396,26 +391,27 @@
- 		return -EOPNOTSUPP;
- 
- 
--	spin_lock(&ds_lock);
--
--	error = -ENOMEM;
- 	context = ds_alloc_context(task);
- 	if (!context)
--		goto out_unlock;
-+		return -ENOMEM;
-+
-+	spin_lock_irqsave(&ds_lock, irq);
- 
- 	error = -EPERM;
- 	if (!check_tracer(task))
- 		goto out_unlock;
- 
-+	get_tracer(task);
-+
- 	error = -EALREADY;
- 	if (context->owner[qual] == current)
--		goto out_unlock;
-+		goto out_put_tracer;
- 	error = -EPERM;
- 	if (context->owner[qual] != NULL)
--		goto out_unlock;
-+		goto out_put_tracer;
- 	context->owner[qual] = current;
- 
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- 
- 
- 	error = -ENOMEM;
-@@ -463,10 +459,17 @@
-  out_release:
- 	context->owner[qual] = NULL;
- 	ds_put_context(context);
-+	put_tracer(task);
-+	return error;
-+
-+ out_put_tracer:
-+	spin_unlock_irqrestore(&ds_lock, irq);
-+	ds_put_context(context);
-+	put_tracer(task);
- 	return error;
- 
-  out_unlock:
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- 	ds_put_context(context);
- 	return error;
- }
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+This is fixed in my current version (I have not subitted a patch yet)
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+> I do not see any cursor which is annoying. menuconfig has the same issue.
 
+also fixed.
+
+>>   - I noticed I was tempted a lot to press "?" to get help, but the key is
+>>     not bound. It would be nice to have it bound to Help since make oldconfig
+>>     and menuconfig to both report help that way.
+>
+> Please bound this.
+
+consider it bounded..
+
+>>   - I'm not convinced that the parenthesis around hotkeys make the menu
+>>     that much readable, especially when there are lots of short words or
+>>     even acronyms. Eg :
+>>         [ ]   (U)TS namespace
+>>         [ ]   (I)PC namespace
+>>         [ ]   (U)ser namespace (EXPERIMENTAL)
+>>         [ ]   (P)ID Namespaces (EXPERIMENTAL)
+>
+> This looks like some ancient stuff and it must be a better way to
+> show the short-cuts.
+
+This was the best I could come up with, as ncurses does not let you
+use color attributed for menu items. I'll try a different scheme,
+where the first capitalized letter is the shortcut. What do u say?
+
+> I would really appreciate if you could look into the above issues.
+> If you do a repost with this fixed I will try to do a proper review,
+> including code-review next time.
+
+Sure. I'll have a patch ready in a few days.
+Cheers.
