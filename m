@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYKYBFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbYKYBGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbYKYBFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 20:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYKYBFe
+	id S1755258AbYKYBGl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 20:06:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYKYBGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 20:05:34 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:54664 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbYKYBFd (ORCPT
+	Mon, 24 Nov 2008 20:06:33 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:59324 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754264AbYKYBGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 20:05:33 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type;
-	b=UhHUMBq7YUlN76490xd9bH10niFTXA9yHc7kL/7xG1u93eCOJ50YCUbleW1GwTaY9
-	ACTLxpidScf1g5WxmBjrA==
-Date: Mon, 24 Nov 2008 17:05:03 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, peterz@infradead.org,
-       david@fromorbit.com, cl@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] mm: add dirty_background_bytes and dirty_bytes
- sysctls
-In-Reply-To: <492B4C43.8020506@oracle.com>
-Message-ID: <alpine.DEB.2.00.0811241702040.1550@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com> <alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com> <20081124153843.d3c4782c.akpm@linux-foundation.org> <492B4C43.8020506@oracle.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 24 Nov 2008 20:06:32 -0500
+Date: Mon, 24 Nov 2008 19:06:30 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Linux Containers <containers@lists.osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: [PATCH 3/3] user namespaces: let user_ns be cloned with fairsched
+Message-ID: <20081125010630.GA12548@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Nov 2008, Randy Dunlap wrote:
+fairsched creates a per-uid directory under /sys/kernel/uids/.
+So when you clone(CLONE_NEWUSER), it tries to create
+/sys/kernel/uids/0, which already exists, and you get back
+-ENOMEM.
 
-> >> -	if (background_ratio >= dirty_ratio)
-> >> -		background_ratio = dirty_ratio / 2;
-> >> +		dirty_ratio = vm_dirty_ratio;
-> >> +		if (dirty_ratio < 5)
-> >> +			dirty_ratio = 5;
-> >> +		dirty = (dirty_ratio * available_memory) / 100;
-> >> +	}
-> >> +
-> >> +	if (dirty_background_bytes)
-> >> +		background = (dirty_background_bytes + PAGE_SIZE) / PAGE_SIZE;
-> > 
-> > DIV_ROUND_UP()?
-> 
-> Note that DIV_ROUND_UP() would make that
-> 
-> 		background = (dirty_background_byte + PAGE_SIZE - 1) / PAGE_SIZE;
-> 
-> but that's usually what is needed/intended.
-> 
+This was supposed to be fixed by sysfs tagging, but that
+was postponed (ok, rejected until sysfs locking is fixed).
+So, just as with network namespaces, we just don't create
+those directories for user namespaces other than the init.
 
-Good point.  If we were to do this, then dirty_bytes and 
-dirty_background_bytes should use 1 instead of 0 as the minimum acceptable 
-value in proc_dointvec_minmax().  Otherwise, get_dirty_limits() would 
-return 0 pages for the dirty limit when 0 is written to either file since 
-integer division truncates and we'd be in a constant state of writeback :)
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+
+---
+
+ kernel/user.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+2d00643e7a4eda47526be7bca9600fda0d96c1c0
+diff --git a/kernel/user.c b/kernel/user.c
+index 97202cb..6c924bc 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -246,6 +246,8 @@ static int uids_user_create(struct user_
+ 	int error;
+ 
+ 	memset(kobj, 0, sizeof(struct kobject));
++	if (up->user_ns != &init_user_ns)
++		return 0;
+ 	kobj->kset = uids_kset;
+ 	error = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid);
+ 	if (error) {
+@@ -281,6 +283,8 @@ static void remove_user_sysfs_dir(struct
+ 	unsigned long flags;
+ 	int remove_user = 0;
+ 
++	if (up->user_ns != &init_user_ns)
++		return;
+ 	/* Make uid_hash_remove() + sysfs_remove_file() + kobject_del()
+ 	 * atomic.
+ 	 */
+-- 
+1.1.6
