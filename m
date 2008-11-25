@@ -1,108 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYKYLAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKYLBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbYKYLAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:00:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYKYK77
+	id S1753536AbYKYLBn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYKYLBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 05:59:59 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:57216 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbYKYK76 (ORCPT
+	Tue, 25 Nov 2008 06:01:34 -0500
+Received: from antispam.upcomillas.es ([130.206.70.245]:35661 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbYKYLBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 05:59:58 -0500
-Message-ID: <492BDAA9.4090405@vlnb.net>
-Date: Tue, 25 Nov 2008 13:59:53 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 25 Nov 2008 06:01:33 -0500
+Message-ID: <492BDB0A.80203@upcomillas.es>
+Date: Tue, 25 Nov 2008 12:01:30 +0100
+From: "Romano Giannetti (lists)" <romanol@upcomillas.es>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Wu Fengguang <wfg@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de>
-In-Reply-To: <1226566313.199910.29888@de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+6zfq31i6ghSzuZRsJMgQQQ0B64eCQRraCvHW
- zerLRuuYy+NfPySF0aaFwBuFKZdBBTae43PcX+Gw1tMNp0eqRY
- Z83ERm7mQsvY8DyvRzANg==
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andreas Mohr <andi@lisas.de>, Bernhard Schmidt <berni@birkenwald.de>,
+       devsk <kernel-bugs.dev1world@spamgourmet.com>,
+       Johan Bilien <jobi@via.ecp.fr>
+Subject: Re: [Bug #11947] 2.6.28-rc VC switching with Intel graphics broken
+References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera> <vyitTh0pP2N.A.IHD.O8HKJB@chimera> <492A6A20.4080106@upcomillas.es> <200811241101.55121.jbarnes@virtuousgeek.org>
+In-Reply-To: <200811241101.55121.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> Hi all,
-> 
-> //Sorry for being late. 
-> 
-> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
-> [...]
->> I already talked about this with Jeff on irc, but I guess should post it
->> here as well.
->>
->> nfsd aside (which does seem to have some different behaviour skewing the
->> results), the original patch came about because dump(8) has a really
->> stupid design that offloads IO to a number of processes. This basically
->> makes fairly sequential IO more random with CFQ, since each process gets
->> its own io context. My feeling is that we should fix dump instead of
->> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
->> aware of any other good programs out there that would do something
->> similar, so I don't think there's a lot of merrit to spending cycles on
->> detecting cooperating processes.
->>
->> Jeff will take a look at fixing dump instead, and I may have promised
->> him that santa will bring him something nice this year if he does (since
->> I'm sure it'll be painful on the eyes).
-> 
-> This could also be fixed at the VFS readahead level.
-> 
-> In fact I've seen many kinds of interleaved accesses:
-> - concurrently reading 40 files that are in fact hard links of one single file
-> - a backup tool that splits a big file into 8k chunks, and serve the
->   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
->   chunks in another one
-> - a pool of NFSDs randomly serving some originally sequential read requests 
-> - now dump(8) seems to have some similar problem.
-> 
-> In summary there have been all kinds of efforts on trying to
-> parallelize I/O tasks, but unfortunately they can easily screw up the
-> sequential pattern. It may not be easily fixable for many of them.
-> 
-> It is however possible to detect most of these patterns at the
-> readahead layer and restore sequential I/Os, before they propagate
-> into the block layer and hurt performance.
 
-I believe this would be the most effective way to go, especially in case 
-if data delivery path to the original client has its own latency 
-depended from the amount of transferred data as it is in the case of 
-remote NFS mount, which does synchronous sequential reads. In this case 
-it is essential for performance to make both links (local to the storage 
-and network to the client) be always busy and transfer data 
-simultaneously. Since the reads are synchronous, the only way to achieve 
-that is perform read ahead on the server sufficient to cover the network 
-link latency. Otherwise you would end up with only half of possible 
-throughput.
-
-However, from one side, server has to have a pool of threads/processes 
-to perform well, but, from other side, current read ahead code doesn't 
-detect too well that those threads/processes are doing joint sequential 
-read, so the read ahead window gets smaller, hence the overall read 
-performance gets considerably smaller too.
-
-> Vitaly, if that's what you need, I can try to prepare a patch for testing out.
-
-I can test it with SCST SCSI target sybsystem (http://scst.sf.net). SCST 
-needs such feature very much, otherwise it can't get full backstorage 
-read speed. The maximum I can see is about ~80MB/s from ~130MB/s 15K RPM 
-disk over 1Gbps iSCSI link (maximum possible is ~110MB/s).
-
-> Thank you,
-> Fengguang
+[resent - sorry, LKML sent it back --- my bad]
+Jesse Barnes wrote:
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Just added to the bug, it looks like a DUP of an issue Keith just fixed last 
+> week (now to make sure the patch makes it upstream quickly).
 > 
+Tried the patch and tested, it works ok. VC switching and suspend/resume 
+fixed. More details on bugzilla.
+
+Tested-by: Romano Giannetti <romano.giannetti@gmail.com>
+
+Thanks to all!
+     Romano
+
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
