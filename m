@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYKYW5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKYXBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbYKYW5O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 17:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYKYW46
+	id S1753536AbYKYXBQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 18:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYKYXBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 17:56:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52792 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752121AbYKYW45 (ORCPT
+	Tue, 25 Nov 2008 18:01:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46427
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752121AbYKYXBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 17:56:57 -0500
-Date: Tue, 25 Nov 2008 22:57:08 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: andy <rootstrap@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Need to pay to use the word "Linux" in commercial
- products/services!
-Message-ID: <20081125225708.6399ba14@lxorguk.ukuu.org.uk>
-In-Reply-To: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
-References: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 25 Nov 2008 18:01:03 -0500
+Date: Tue, 25 Nov 2008 15:01:01 -0800 (PST)
+Message-Id: <20081125.150101.153225254.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-11-25
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081125220824.GB25962@tuxdriver.com>
+References: <20081125220824.GB25962@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 22:39:27 +0000
-andy <rootstrap@googlemail.com> wrote:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 25 Nov 2008 17:08:24 -0500
 
-> Hi
+> These fixes are intended for 2.6.28.  Included are a build fix,
+> a security issue (debugfs permissions), a fixup to a previous patch
+> from Johannes to correct some DMA API usage, a fix to prevent mac80211
+> from allowing the use of IBSS mode on channels that don't allow it,
+> an ath5k fix to limit wakeups when not associate, and some ath9k DMA
+> fixes for a problem that led to disk corruption...
 > 
-> I found it a bit strange that the word "Linux" has to be licensed!
-> The "word" is protected under GPL v2, as it is appear first in 1991
-> in GPL code.  Trademarks and Patents are not allowed in GPL!
-> The registration of the name at later point of time, and now the
-> licensing terms are very confusing to me, could someone help
-> me to understand better please?
+> Please let me know if there are problems!
 
-The GPL protects copyrights not trademarks. The Linux trademarking is an
-interesting question and I know a lot of companies take the view that the
-mark is unenforcable. On the other hand it stops abuse of the name for
-other unrelated software.
-
-A lot of others of course simply omit the 'Linux' from official names of
-commercial projects ;) and I've not seen any attempt to charge licensing
-fees to anyone else.
-
-Alan
+Pulled, thanks a lot John.
