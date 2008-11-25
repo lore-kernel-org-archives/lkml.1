@@ -1,111 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbYKYBCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbYKYBDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbYKYBCn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 20:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYKYA5e
+	id S1754972AbYKYBDD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 20:03:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbYKYBAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 19:57:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39695 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755321AbYKYA5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 19:57:32 -0500
-Date: Tue, 25 Nov 2008 11:57:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: malahal@us.ibm.com
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Mike Anderson <andmike@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: next-20081119: general protection fault:
- get_next_timer_interrupt()
-Message-Id: <20081125115710.6c249f32.sfr@canb.auug.org.au>
-In-Reply-To: <20081125000902.GA24251@us.ibm.com>
-References: <a4423d670811190714k13721ae8s125e63d520892440@mail.gmail.com>
-	<alpine.LFD.2.00.0811191308030.3119@localhost.localdomain>
-	<a4423d670811210250t6b75645evd9646ffb07745867@mail.gmail.com>
-	<alpine.LFD.2.00.0811241816120.3301@localhost.localdomain>
-	<1227554117.25499.46.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0811242018370.3235@localhost.localdomain>
-	<20081124213517.GA25898@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0811242327130.3235@localhost.localdomain>
-	<20081125000902.GA24251@us.ibm.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__25_Nov_2008_11_57_10_+1100_aE__mXCzjPipdqJT"
+	Mon, 24 Nov 2008 20:00:41 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:53989 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755682AbYKYBAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 20:00:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=rnXH6JoItY3+4p0UXGqDHRe86uNrCc9FT5P0mhqoVrRPbnNn01Yp8JpXj42XKDjHl
+	aMCaq0UwBiShsQnQ/ja2g==
+Date: Mon, 24 Nov 2008 17:00:08 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: peterz@infradead.org, david@fromorbit.com, cl@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] mm: add dirty_background_bytes and dirty_bytes
+ sysctls
+In-Reply-To: <20081124153843.d3c4782c.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0811241651370.1550@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com> <alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com> <20081124153843.d3c4782c.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__25_Nov_2008_11_57_10_+1100_aE__mXCzjPipdqJT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 24 Nov 2008, Andrew Morton wrote:
 
-On Mon, 24 Nov 2008 16:09:02 -0800 malahal@us.ibm.com wrote:
->
-> Thomas Gleixner [tglx@linutronix.de] wrote:
-> > On Mon, 24 Nov 2008, Mike Anderson wrote:
-> > > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > > Yeah, block could it be as well. Jens, Mike ?
-> > >=20
-> > > I added a comment to bug 12020 on Thursday about a few other systems =
-that
-> > > where seeing the signature shown in bug 12020. It appeared from debug=
- that
-> > > there where a few paths that where adding timers for requests that wh=
-ere
-> > > not expected.
-> > >=20
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=3D12020
-> > >=20
-> > > It would be good to know if the debug patch below effects your proble=
-m as while.
-> > >=20
-> > > If it does we need to investigated a solution to resolve not adding a
-> > > timer for these requests.
->=20
-> The block timer code calls del_timer(), should it call del_timer_sync()?
-> It is possible although unlikely that you are hitting del_timer_sync vs
-> del_timer problem in the block timeout code. Can only be seen on SMP
-> systems though!
+> > @@ -365,23 +429,29 @@ void
+> >  get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+> >  		 unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
+> >  {
+> > -	int background_ratio;		/* Percentages */
+> > -	int dirty_ratio;
+> >  	unsigned long background;
+> >  	unsigned long dirty;
+> >  	unsigned long available_memory = determine_dirtyable_memory();
+> >  	struct task_struct *tsk;
+> >  
+> > -	dirty_ratio = vm_dirty_ratio;
+> > -	if (dirty_ratio < 5)
+> > -		dirty_ratio = 5;
+> > +	if (vm_dirty_bytes)
+> > +		dirty = (vm_dirty_bytes + PAGE_SIZE) / PAGE_SIZE;
+> 
+> It would be conventional to use DIV_ROUND_UP() here.
+> 
 
-Is this still a problem in next-20081121? In that tree, the block commit
-"block: leave the request timeout timer running even on an empty list"
-was changed to add this:
+Ah, indeed.  I forgot about those.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 04267d6..44f547c 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -391,6 +391,7 @@ EXPORT_SYMBOL(blk_stop_queue);
- void blk_sync_queue(struct request_queue *q)
- {
- 	del_timer_sync(&q->unplug_timer);
-+	del_timer_sync(&q->timeout);
- 	kblockd_flush_work(&q->unplug_work);
- }
- EXPORT_SYMBOL(blk_sync_queue);
+> > +	else {
+> > +		int dirty_ratio;
+> 
+> hm, I wonder why vm_dirty_ratio has a signed type.  
+> 
 
-After I spent some time bisecting a boot failure in PowerPC.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+vm_dirty_ratio only has an acceptable range between 0 and 100 since it 
+uses proc_dointvec_minmax(), so it's not really important.  It could 
+definitely be changed, however.
 
---Signature=_Tue__25_Nov_2008_11_57_10_+1100_aE__mXCzjPipdqJT
-Content-Type: application/pgp-signature
+There's a limitation in the sysctl interface where we don't handle 
+unsigned ints very well (ignore the reference to unsigned int in the 
+proc_dointvec comment).  We lack an unsigned int handler, so all 
+proc_dointvec() users are implicitly signed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+For example, if a sysctl's data object were declared with a type specifier 
+of unsigned int and it uses proc_dointvec() as the handler, it would have 
+a x86_64 max of 2147483648, that of a signed integer.
 
-iEYEARECAAYFAkkrTWYACgkQjjKRsyhoI8xNIACgqG9aZ8bVpf+KQAVhDkRKMrSp
-TBwAnjx4aD72iIEIt0OReFySaKSa77n8
-=Jtea
------END PGP SIGNATURE-----
-
---Signature=_Tue__25_Nov_2008_11_57_10_+1100_aE__mXCzjPipdqJT--
+> > -	background_ratio = dirty_background_ratio;
+> > -	if (background_ratio >= dirty_ratio)
+> > -		background_ratio = dirty_ratio / 2;
+> > +		dirty_ratio = vm_dirty_ratio;
+> > +		if (dirty_ratio < 5)
+> > +			dirty_ratio = 5;
+> > +		dirty = (dirty_ratio * available_memory) / 100;
+> > +	}
+> > +
+> > +	if (dirty_background_bytes)
+> > +		background = (dirty_background_bytes + PAGE_SIZE) / PAGE_SIZE;
+> 
+> DIV_ROUND_UP()?
+> 
+> > +	else
+> > +		background = (dirty_background_ratio * available_memory) / 100;
+> >  
+> > -	background = (background_ratio * available_memory) / 100;
+> > -	dirty = (dirty_ratio * available_memory) / 100;
+> > +	if (background >= dirty)
+> > +		background = dirty / 2;
+> >  	tsk = current;
+> >  	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+> >  		background += background / 4;
+> 
