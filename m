@@ -1,53 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYKYVWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYKYVYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbYKYVWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYKYVWe
+	id S1753172AbYKYVYf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYKYVY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:22:34 -0500
-Received: from www.tglx.de ([62.245.132.106]:51624 "EHLO www.tglx.de"
+	Tue, 25 Nov 2008 16:24:27 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:33897 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbYKYVWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:22:33 -0500
-Date: Tue, 25 Nov 2008 22:22:11 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Magnus Damm <magnus.damm@gmail.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       lethal@linux-sh.org, johnstul@us.ibm.com, mingo@redhat.com
-Subject: Re: [RFC] Reentrant clock sources
-In-Reply-To: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se>
-Message-ID: <alpine.LFD.2.00.0811252215270.3235@localhost.localdomain>
-References: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752023AbYKYVY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:24:26 -0500
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] fakephp: Allocate PCI resources before adding the device
+To: "Darrick J. Wong" <djwong@us.ibm.com>, Greg K-H <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Date: Tue, 25 Nov 2008 13:24:22 -0800
+Message-ID: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008, Magnus Damm wrote:
-> Hi everyone,
-> 
-> Is there any special reason behind the non-reentrant clock source
-> code? I'm writing some timer help code and getting the struct
-> clocksource as argument to the callbacks would make the code much
-> cleaner and better.
+For PCI devices, pci_bus_assign_resources() must be called to set up the
+pci_device->resource array before pci_bus_add_devices() can be called, else
+attempts to load drivers results in BAR collision errors where there are none.
+This is not done in fakephp, so devices can be "unplugged" but scanning the
+parent bus won't bring the devices back due to resource unallocation.  Move the
+pci_bus_add_device-calling logic into pci_rescan_bus and preface it with a call
+to pci_bus_assign_resources so that we only have to (re)allocate resources once
+per bus where a new device is found.
 
-Why do you want that ? And what has reentrancy to do with the
-clocksource argument to read() ?
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
+ drivers/pci/hotplug/fakephp.c |   42 +++++++++++++++++++++++++----------------
+ 1 files changed, 26 insertions(+), 16 deletions(-)
 
-> Extending the callbacks to be able to start and stop clock sources
-> for improved power management would be good too in my opinion.
-> Any thoughts?
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 3a2637a..a3826e6 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -195,13 +195,13 @@ static void remove_slot_worker(struct work_struct *work)
+  * Tries hard not to re-enable already existing devices;
+  * also handles scanning of subfunctions.
+  */
+-static void pci_rescan_slot(struct pci_dev *temp)
++static int pci_rescan_slot(struct pci_dev *temp)
+ {
+ 	struct pci_bus *bus = temp->bus;
+ 	struct pci_dev *dev;
+ 	int func;
+-	int retval;
+ 	u8 hdr_type;
++	int count = 0;
+ 
+ 	if (!pci_read_config_byte(temp, PCI_HEADER_TYPE, &hdr_type)) {
+ 		temp->hdr_type = hdr_type & 0x7f;
+@@ -213,17 +213,12 @@ static void pci_rescan_slot(struct pci_dev *temp)
+ 				dbg("New device on %s function %x:%x\n",
+ 					bus->name, temp->devfn >> 3,
+ 					temp->devfn & 7);
+-				retval = pci_bus_add_device(dev);
+-				if (retval)
+-					dev_err(&dev->dev, "error adding "
+-						"device, continuing.\n");
+-				else
+-					add_slot(dev);
++				count++;
+ 			}
+ 		}
+ 		/* multifunction device? */
+ 		if (!(hdr_type & 0x80))
+-			return;
++			return count;
+ 
+ 		/* continue scanning for other functions */
+ 		for (func = 1, temp->devfn++; func < 8; func++, temp->devfn++) {
+@@ -239,16 +234,13 @@ static void pci_rescan_slot(struct pci_dev *temp)
+ 					dbg("New device on %s function %x:%x\n",
+ 						bus->name, temp->devfn >> 3,
+ 						temp->devfn & 7);
+-					retval = pci_bus_add_device(dev);
+-					if (retval)
+-						dev_err(&dev->dev, "error adding "
+-							"device, continuing.\n");
+-					else
+-						add_slot(dev);
++					count++;
+ 				}
+ 			}
+ 		}
+ 	}
++
++	return count;
+ }
+ 
+ 
+@@ -262,6 +254,8 @@ static void pci_rescan_bus(const struct pci_bus *bus)
+ {
+ 	unsigned int devfn;
+ 	struct pci_dev *dev;
++	int retval;
++	int found = 0;
+ 	dev = alloc_pci_dev();
+ 	if (!dev)
+ 		return;
+@@ -270,7 +264,23 @@ static void pci_rescan_bus(const struct pci_bus *bus)
+ 	dev->sysdata = bus->sysdata;
+ 	for (devfn = 0; devfn < 0x100; devfn += 8) {
+ 		dev->devfn = devfn;
+-		pci_rescan_slot(dev);
++		found += pci_rescan_slot(dev);
++	}
++
++	if (found) {
++		pci_bus_assign_resources(bus);
++		list_for_each_entry(dev, &bus->devices, bus_list) {
++			/* Skip already-added devices */
++			if (dev->is_added)
++					continue;
++			retval = pci_bus_add_device(dev);
++			if (retval)
++				dev_err(&dev->dev,
++					"Error adding device, continuing\n");
++			else
++				add_slot(dev);
++		}
++		pci_bus_add_devices(bus);
+ 	}
+ 	kfree(dev);
+ }
 
-What have you in mind there ? Starting / stopping a clocksource when
-what happens ? You can't stop them randomly except you want to screw
-timekeeping.
-
-> +	cycle_t (*vread)(struct clocksource *cs);
-
-This is crap. vread can not access the clocksource.
-
-Thanks,
-
-	tglx
