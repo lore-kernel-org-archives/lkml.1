@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYKYD3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYKYBac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbYKYD3U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Nov 2008 22:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYKYD3K
+	id S1754683AbYKYBac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Nov 2008 20:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYKYBaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Nov 2008 22:29:10 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:36774 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbYKYD3J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Nov 2008 22:29:09 -0500
-Date: Mon, 24 Nov 2008 20:28:52 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Tejun Heo <teheo@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Dongjun Shin <djshin90@gmail.com>,
-       chris.mason@oracle.com
-Subject: Re: about TRIM/DISCARD support and barriers
-Message-ID: <20081125032851.GC25548@parisc-linux.org>
-References: <4928E010.4090801@kernel.org> <4929023C.2060302@suse.de> <20081123123514.GI5707@parisc-linux.org> <1227447584.4901.405.camel@macbook.infradead.org> <1227480776.25499.3.camel@localhost.localdomain> <1227517430.26957.20.camel@macbook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227517430.26957.20.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 24 Nov 2008 20:30:22 -0500
+Received: from mga11.intel.com ([192.55.52.93]:29842 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753102AbYKYBaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Nov 2008 20:30:22 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,661,1220252400"; 
+   d="asc'?scan'208";a="407652106"
+Subject: Re: v2.6.28-rc2: x86_32 relocation regression?
+From: Huang Ying <ying.huang@intel.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <19f34abd0811241319u1abf5e77xc2359b4e8d17b518@mail.gmail.com>
+References: <19f34abd0811241319u1abf5e77xc2359b4e8d17b518@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Svkht938fP7Rm6EZcp0j"
+Date: Tue, 25 Nov 2008 09:30:20 +0800
+Message-Id: <1227576620.2442.7.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 09:03:50AM +0000, David Woodhouse wrote:
-> And _then_ we can think about special cases which let us merge
-> non-contiguous discards.
 
-I've been thinking about what a solution would look like that lets us
-send non-contiguous discards down, and I don't like the look of any of
-them.  Right now, discard bios get turned into discard requests and
-those are handled by the block device drivers as being a discard of the
-range (sector, sector + nr_sectors).
+--=-Svkht938fP7Rm6EZcp0j
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-If we're going to allow discontiguous ranges to be merged into one
-request, then we need somewhere to store the ranges.  The obvious answer
-is in the ->bio list.  But then, an unconverted driver will discard the
-wrong sectors (presuming nr_sectors gets updated to the length of all
-discarded sectors).
+Hi, Vegard,
 
-There's also murmurings from vendors that they want to restrict the
-number of ranges transmitted in a single UNMAP/TRIM command, and that's
-more information to be passed to the elevator.
+On Tue, 2008-11-25 at 05:19 +0800, Vegard Nossum wrote:
+[...]
+> It looks like everything was offset by 0xe00000:
+>=20
+>     $ addr2line -e vmlinux c119e613
+>     arch/x86/lib/string_32.c:20
 
-How about an interface that lets the driver's discard function scan back
-through the queue and see if there are any more discard bios queued up?
-If there are, (and it has room for them) it can retire them from the
-queue early. 
+Because relocation is supported in recent Linux kernel, it is possible
+that the run-time address is different with compile-time address. In
+most cases, the kernel will be loaded into 0x100000 during boot, so the
+kernel run-time address range from 0xc0100000 on. But it seems that your
+kernel compile-time address range from 0xc0f00000 on. Please check
+CONFIG_PHYSICAL_START in your .config. In most cases, it will be set to
+0x100000, so that it is same as run-time address in most cases.
 
-I'm open to other ideas, of course.
+Best Regards,
+Huang Ying
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+--=-Svkht938fP7Rm6EZcp0j
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkrVSkACgkQKhFGF+eHlpi5kwCfXNPG1NIuPW7c69ScV7nWiC0s
+dwMAnRyYNTGKNBsHrqdCbow5wXdb79SD
+=dHgw
+-----END PGP SIGNATURE-----
+
+--=-Svkht938fP7Rm6EZcp0j--
+
