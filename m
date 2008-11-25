@@ -1,132 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbYKYPqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYKYPqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbYKYPqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 10:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYKYPqV
+	id S1753543AbYKYPqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 10:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYKYPqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 10:46:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:11732 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbYKYPqU (ORCPT
+	Tue, 25 Nov 2008 10:46:34 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:36692 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752954AbYKYPqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 10:46:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=H4eOvcYd/29lw2dWVinmwNf6JqDMZ2uGqThNm1LpSCQJvDy9f1t0WRpZNE5NQm8wK4
-         V7ooVqiAdcsja5Di8svJp/SZ5+GXZ/oBby8YDpHLAXkEIQ4zTdMNAnT4xFQjUQMpYNYY
-         fe5B58TvbGy+MZ1iyR1fFIJoWEnb40IWl44Ag=
-Message-ID: <cfd18e0f0811250746i711205dej6b98f2fba6cecc42@mail.gmail.com>
-Date: Tue, 25 Nov 2008 10:46:17 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Pavel Emelyanov" <xemul@openvz.org>
-Subject: Re: Documentation for CLONE_NEWPID
-Cc: "Kir Kolyshkin" <kir@openvz.org>, linux-man@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <492AA241.6050004@openvz.org>
+	Tue, 25 Nov 2008 10:46:33 -0500
+Date: Tue, 25 Nov 2008 16:46:18 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Hitoshi Mitake <h.mitake@gmail.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>,
+       "dougthompson@xmission.com" <dougthompson@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+In-Reply-To: <20081126003025.85f19670.h.mitake@gmail.com>
+Message-ID: <Pine.LNX.4.64.0811251645530.25595@anakin>
+References: <20081105222911.d76e7e1c.mitake@clustcom.com>
+ <413709.12821.qm@web50106.mail.re2.yahoo.com> <20081106164641.ed369060.akpm@linux-foundation.org>
+ <20081107152830.a42766f3.mitake@clustcom.com> <20081106223122.8a255211.akpm@linux-foundation.org>
+ <20081107153824.0ec934e6.mitake@clustcom.com> <20081106231102.aab83cd4.akpm@linux-foundation.org>
+ <a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
+ <20081109112646.97c594b5.akpm@linux-foundation.org> <20081118121620.GB8625@linux-mips.org>
+ <20081118123215.GB30509@flint.arm.linux.org.uk> <20081121011941.26e05a25.h.mitake@gmail.com>
+ <4929ECB7.8080108@zytor.com> <57C9024A16AD2D4C97DC78E552063EA35C517F42@orsmsx505.amr.corp.intel.com>
+ <492AEC40.5060009@zytor.com> <20081125115510.108fa886.h.mitake@gmail.com>
+ <492B8996.2020302@zytor.com> <20081126003025.85f19670.h.mitake@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4923810B.7010201@gmail.com> <492AA241.6050004@openvz.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+On Wed, 26 Nov 2008, Hitoshi Mitake wrote:
+> On Mon, 24 Nov 2008 21:13:58 -0800
+> "H. Peter Anvin" <hpa@zytor.com> wrote:
+> > Are you planning to add writeq() as well?
+> 
+> Yes, I want to add writeq().
+> But there's a problem that
+> I don't have a plan to use writeq() now, so I can't test writeq() soon.
+> 
+> How is this? I think it isn't bad. I want to hear your opinion.
+> 
+> static inline void writeq(__u64 val, volatile void __iomem *addr)
+> {
+> 	writel((unsigned int)val, addr);
+> 	writel((unsigned int)(val >> 32), addr+1);
+                                               ^
+					       4
 
-On Mon, Nov 24, 2008 at 7:46 AM, Pavel Emelyanov <xemul@openvz.org> wrote:
-> Michael Kerrisk wrote:
->> Pavel, Kir,
->>
->> Drawing fairly heavily on your LWN.net article (http://lwn.net/Articles/259217/), plus the kernel
->> source and some experimentation, I created the patch below to document CLONE_NEWPID for the clone(2)
->> manual page.  Could you please review and let me know of any improvements or inaccuracies.
->
-> Michael, sorry for the late response - I've been on vacation last week and didn't
-> have chance to connect to check my mail.
+> }
 
-No problem.
+Gr{oetje,eeting}s,
 
-> Some comments are inline.
+						Geert
 
-Thanks!
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-[...]
-
->> +This flag is intended for the implementation of control groups.
->
-> Well, actually this has nothing to do with control groups. This
-> flag is intended to be used to facilitate the creation of containers
-> along with many other clone flags. Control groups is yet another
-> way to create a container.
-
-Yep, after an earlier mail from Eric, I already changed this to "containers".
-
->> +A PID namespace provides an isolated environment for PIDs:
->> +PIDs in a new namespace start at 1,
->> +somewhat like a standalone system, and calls to
->> +.BR fork (2),
->> +.BR vfork (2),
->> +or
->> +.BR clone (2)
->> +will produce processes whose PIDs within the namespace
->> +are only guaranteed to be unique within that namespace.
->
-> Well, I'm not sure I understood correctly what was meant here, but after
-
-I've simplified that sentence somewhat.  Now it just reads:
-
-              A  PID  namespace  provides  an isolated environment for
-              PIDs: PIDs in a new namespace start at 1, somewhat  like
-              a  standalone system, and calls to fork(2), vfork(2), or
-              clone(2) will  produce  processes  with  PIDs  that  are
-              unique within the namespace.
-
-> we have a namespace each task has two pids. And _all_ of them are unique
-> in corresponding namespaces.
-
-And I already make that point lower down in the text (see ***), but
-now I extended the sentence there a little.
-
-[...]
-
-*** Here's where I make the point about each process having multiple PIDs"
-
->> +The existence of a namespace hierarchy means that each process
->> +may now have multiple PIDs:
->> +one for each namespace in which it is visible.
-
-I added some words here:
-
-"each of these PIDs is unique within the corresponding namespace".
-
->> +(A call to
->> +.BR getpid (2)
->> +always returns the PID associated with the namespace in which
->> +the process was created.)
->
-> I don't thinks it's a good example - the getpid cannot be called
-> for other process other than current :)
-
-It wasn't meant as an example.  The point was, with a process
-potentially being a member of multiple namespaces, the reader might
-wonder: what does getpid(2) return?  This sentence was intended to
-clarify that.  With that explanation, does this sentence now seem
-okay?
-
-[...]
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
