@@ -1,48 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYKYVtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbYKYVtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbYKYVtb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYKYVrH
+	id S1753210AbYKYVtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYKYVrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:47:07 -0500
-Received: from kroah.org ([198.145.64.141]:41339 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754290AbYKYVrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:47:06 -0500
-Date: Tue, 25 Nov 2008 13:43:24 -0800
-From: Greg KH <greg@kroah.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fakephp: Allocate PCI resources before adding the
-	device
-Message-ID: <20081125214324.GA23177@kroah.com>
-References: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com>
+	Tue, 25 Nov 2008 16:47:39 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46528 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755456AbYKYVrh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 16:47:37 -0500
+Date: Tue, 25 Nov 2008 21:46:00 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Woodhouse <dwmw2@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Matthew Wilcox <matthew@wil.cx>, Joern Engel <joern@logfs.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Donjun Shin <djshin90@gmail.com>, Tejun Heo <teheo@suse.de>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 7/9] swapfile: swap allocation use discard
+In-Reply-To: <Pine.LNX.4.64.0811252140230.17555@blonde.site>
+Message-ID: <Pine.LNX.4.64.0811252145190.20455@blonde.site>
+References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
+ <Pine.LNX.4.64.0811252140230.17555@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 01:24:22PM -0800, Darrick J. Wong wrote:
-> For PCI devices, pci_bus_assign_resources() must be called to set up the
-> pci_device->resource array before pci_bus_add_devices() can be called, else
-> attempts to load drivers results in BAR collision errors where there are none.
-> This is not done in fakephp, so devices can be "unplugged" but scanning the
-> parent bus won't bring the devices back due to resource unallocation.  Move the
-> pci_bus_add_device-calling logic into pci_rescan_bus and preface it with a call
-> to pci_bus_assign_resources so that we only have to (re)allocate resources once
-> per bus where a new device is found.
-> 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+When scan_swap_map() finds a free cluster of swap pages to allocate,
+discard the old contents of the cluster if the device supports discard.
+But don't bother when swap is so fragmented that we allocate single pages.
 
-Darrick, I am no longer the PCI maintainer, Jesse is.
+Be careful about racing allocations made while we're scanning for
+a cluster; and hold up allocations made while we're discarding.
 
-Please resend this to him, and the linux-pci mailing list if you want it
-to have a chance to get accepted.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-thanks,
+ include/linux/swap.h |    3 +
+ mm/swapfile.c        |  119 ++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 121 insertions(+), 1 deletion(-)
 
-greg k-h
+--- swapfile6/include/linux/swap.h	2008-11-25 12:41:34.000000000 +0000
++++ swapfile7/include/linux/swap.h	2008-11-25 12:41:40.000000000 +0000
+@@ -121,6 +121,7 @@ enum {
+ 	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
+ 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
+ 	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
++	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
+ 					/* add others here before... */
+ 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
+ };
+@@ -144,6 +145,8 @@ struct swap_info_struct {
+ 	unsigned short *swap_map;
+ 	unsigned int lowest_bit;
+ 	unsigned int highest_bit;
++	unsigned int lowest_alloc;	/* while preparing discard cluster */
++	unsigned int highest_alloc;	/* while preparing discard cluster */
+ 	unsigned int cluster_next;
+ 	unsigned int cluster_nr;
+ 	unsigned int pages;
+--- swapfile6/mm/swapfile.c	2008-11-25 12:41:34.000000000 +0000
++++ swapfile7/mm/swapfile.c	2008-11-25 12:41:40.000000000 +0000
+@@ -115,14 +115,62 @@ static int discard_swap(struct swap_info
+ 	return err;		/* That will often be -EOPNOTSUPP */
+ }
+ 
++/*
++ * swap allocation tell device that a cluster of swap can now be discarded,
++ * to allow the swap device to optimize its wear-levelling.
++ */
++static void discard_swap_cluster(struct swap_info_struct *si,
++				 pgoff_t start_page, pgoff_t nr_pages)
++{
++	struct swap_extent *se = si->curr_swap_extent;
++	int found_extent = 0;
++
++	while (nr_pages) {
++		struct list_head *lh;
++
++		if (se->start_page <= start_page &&
++		    start_page < se->start_page + se->nr_pages) {
++			pgoff_t offset = start_page - se->start_page;
++			sector_t start_block = se->start_block + offset;
++			pgoff_t nr_blocks = se->nr_pages - offset;
++
++			if (nr_blocks > nr_pages)
++				nr_blocks = nr_pages;
++			start_page += nr_blocks;
++			nr_pages -= nr_blocks;
++
++			if (!found_extent++)
++				si->curr_swap_extent = se;
++
++			start_block <<= PAGE_SHIFT - 9;
++			nr_blocks <<= PAGE_SHIFT - 9;
++			if (blkdev_issue_discard(si->bdev, start_block,
++							nr_blocks, GFP_NOIO))
++				break;
++		}
++
++		lh = se->list.next;
++		if (lh == &si->extent_list)
++			lh = lh->next;
++		se = list_entry(lh, struct swap_extent, list);
++	}
++}
++
++static int wait_for_discard(void *word)
++{
++	schedule();
++	return 0;
++}
++
+ #define SWAPFILE_CLUSTER	256
+ #define LATENCY_LIMIT		256
+ 
+ static inline unsigned long scan_swap_map(struct swap_info_struct *si)
+ {
+ 	unsigned long offset;
+-	unsigned long last_in_cluster;
++	unsigned long last_in_cluster = 0;
+ 	int latency_ration = LATENCY_LIMIT;
++	int found_free_cluster = 0;
+ 
+ 	/*
+ 	 * We try to cluster swap pages by allocating them sequentially
+@@ -142,6 +190,19 @@ static inline unsigned long scan_swap_ma
+ 			si->cluster_nr = SWAPFILE_CLUSTER - 1;
+ 			goto checks;
+ 		}
++		if (si->flags & SWP_DISCARDABLE) {
++			/*
++			 * Start range check on racing allocations, in case
++			 * they overlap the cluster we eventually decide on
++			 * (we scan without swap_lock to allow preemption).
++			 * It's hardly conceivable that cluster_nr could be
++			 * wrapped during our scan, but don't depend on it.
++			 */
++			if (si->lowest_alloc)
++				goto checks;
++			si->lowest_alloc = si->max;
++			si->highest_alloc = 0;
++		}
+ 		spin_unlock(&swap_lock);
+ 
+ 		offset = si->lowest_bit;
+@@ -156,6 +217,7 @@ static inline unsigned long scan_swap_ma
+ 				offset -= SWAPFILE_CLUSTER - 1;
+ 				si->cluster_next = offset;
+ 				si->cluster_nr = SWAPFILE_CLUSTER - 1;
++				found_free_cluster = 1;
+ 				goto checks;
+ 			}
+ 			if (unlikely(--latency_ration < 0)) {
+@@ -167,6 +229,7 @@ static inline unsigned long scan_swap_ma
+ 		offset = si->lowest_bit;
+ 		spin_lock(&swap_lock);
+ 		si->cluster_nr = SWAPFILE_CLUSTER - 1;
++		si->lowest_alloc = 0;
+ 	}
+ 
+ checks:
+@@ -191,6 +254,60 @@ checks:
+ 	si->swap_map[offset] = 1;
+ 	si->cluster_next = offset + 1;
+ 	si->flags -= SWP_SCANNING;
++
++	if (si->lowest_alloc) {
++		/*
++		 * Only set when SWP_DISCARDABLE, and there's a scan
++		 * for a free cluster in progress or just completed.
++		 */
++		if (found_free_cluster) {
++			/*
++			 * To optimize wear-levelling, discard the
++			 * old data of the cluster, taking care not to
++			 * discard any of its pages that have already
++			 * been allocated by racing tasks (offset has
++			 * already stepped over any at the beginning).
++			 */
++			if (offset < si->highest_alloc &&
++			    si->lowest_alloc <= last_in_cluster)
++				last_in_cluster = si->lowest_alloc - 1;
++			si->flags |= SWP_DISCARDING;
++			spin_unlock(&swap_lock);
++
++			if (offset < last_in_cluster)
++				discard_swap_cluster(si, offset,
++					last_in_cluster - offset + 1);
++
++			spin_lock(&swap_lock);
++			si->lowest_alloc = 0;
++			si->flags &= ~SWP_DISCARDING;
++
++			smp_mb();	/* wake_up_bit advises this */
++			wake_up_bit(&si->flags, ilog2(SWP_DISCARDING));
++
++		} else if (si->flags & SWP_DISCARDING) {
++			/*
++			 * Delay using pages allocated by racing tasks
++			 * until the whole discard has been issued. We
++			 * could defer that delay until swap_writepage,
++			 * but it's easier to keep this self-contained.
++			 */
++			spin_unlock(&swap_lock);
++			wait_on_bit(&si->flags, ilog2(SWP_DISCARDING),
++				wait_for_discard, TASK_UNINTERRUPTIBLE);
++			spin_lock(&swap_lock);
++		} else {
++			/*
++			 * Note pages allocated by racing tasks while
++			 * scan for a free cluster is in progress, so
++			 * that its final discard can exclude them.
++			 */
++			if (offset < si->lowest_alloc)
++				si->lowest_alloc = offset;
++			if (offset > si->highest_alloc)
++				si->highest_alloc = offset;
++		}
++	}
+ 	return offset;
+ 
+ scan:
