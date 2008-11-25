@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYKYLbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYKYLcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbYKYLbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYKYLbM
+	id S1753830AbYKYLcV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYKYLcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 06:31:12 -0500
-Received: from mga07.intel.com ([143.182.124.22]:57013 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751607AbYKYLbK (ORCPT
+	Tue, 25 Nov 2008 06:32:12 -0500
+Received: from mga10.intel.com ([192.55.52.92]:32292 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751304AbYKYLcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 06:31:10 -0500
+	Tue, 25 Nov 2008 06:32:11 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,663,1220252400"; 
-   d="scan'208";a="82380433"
-Date: Tue, 25 Nov 2008 19:30:48 +0800
-From: Wu Fengguang <wfg@linux.intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081125113048.GB16422@localhost>
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de> <492BDAA9.4090405@vlnb.net>
+   d="scan'208";a="407802449"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] 8250: Eliminate compile warning of 8250.c
+Date: Tue, 25 Nov 2008 19:32:07 +0800
+User-Agent: KMail/1.10.3 (Linux/2.6.27-7-generic; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+References: <1227585320-3711-1-git-send-email-sheng@linux.intel.com> <200811251851.44768.sheng@linux.intel.com> <20081125111342.5383c957@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081125111342.5383c957@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <492BDAA9.4090405@vlnb.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811251932.08050.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 01:59:53PM +0300, Vladislav Bolkhovitin wrote:
-> Wu Fengguang wrote:
->> Hi all,
->>
->> //Sorry for being late. 
->>
->> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
->> [...]
->>> I already talked about this with Jeff on irc, but I guess should post it
->>> here as well.
->>>
->>> nfsd aside (which does seem to have some different behaviour skewing the
->>> results), the original patch came about because dump(8) has a really
->>> stupid design that offloads IO to a number of processes. This basically
->>> makes fairly sequential IO more random with CFQ, since each process gets
->>> its own io context. My feeling is that we should fix dump instead of
->>> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
->>> aware of any other good programs out there that would do something
->>> similar, so I don't think there's a lot of merrit to spending cycles on
->>> detecting cooperating processes.
->>>
->>> Jeff will take a look at fixing dump instead, and I may have promised
->>> him that santa will bring him something nice this year if he does (since
->>> I'm sure it'll be painful on the eyes).
->>
->> This could also be fixed at the VFS readahead level.
->>
->> In fact I've seen many kinds of interleaved accesses:
->> - concurrently reading 40 files that are in fact hard links of one single file
->> - a backup tool that splits a big file into 8k chunks, and serve the
->>   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
->>   chunks in another one
->> - a pool of NFSDs randomly serving some originally sequential read 
->> requests - now dump(8) seems to have some similar problem.
->>
->> In summary there have been all kinds of efforts on trying to
->> parallelize I/O tasks, but unfortunately they can easily screw up the
->> sequential pattern. It may not be easily fixable for many of them.
->>
->> It is however possible to detect most of these patterns at the
->> readahead layer and restore sequential I/Os, before they propagate
->> into the block layer and hurt performance.
+On Tuesday 25 November 2008 19:13:42 Alan Cox wrote:
+> > The logic here is strange...
 >
-> I believe this would be the most effective way to go, especially in case  
-> if data delivery path to the original client has its own latency  
-> depended from the amount of transferred data as it is in the case of  
-> remote NFS mount, which does synchronous sequential reads. In this case  
-> it is essential for performance to make both links (local to the storage  
-> and network to the client) be always busy and transfer data  
-> simultaneously. Since the reads are synchronous, the only way to achieve  
-> that is perform read ahead on the server sufficient to cover the network  
-> link latency. Otherwise you would end up with only half of possible  
-> throughput.
+> Why
 >
-> However, from one side, server has to have a pool of threads/processes  
-> to perform well, but, from other side, current read ahead code doesn't  
-> detect too well that those threads/processes are doing joint sequential  
-> read, so the read ahead window gets smaller, hence the overall read  
-> performance gets considerably smaller too.
+> > If you used old compiler, you would get a warning, and you thought that's
+> > ensured we won't delete a intended assignment by mistake.
 >
->> Vitaly, if that's what you need, I can try to prepare a patch for testing out.
->
-> I can test it with SCST SCSI target sybsystem (http://scst.sf.net). SCST  
-> needs such feature very much, otherwise it can't get full backstorage  
-> read speed. The maximum I can see is about ~80MB/s from ~130MB/s 15K RPM  
-> disk over 1Gbps iSCSI link (maximum possible is ~110MB/s).
+> No.. if you hid the warning by hacking around the compiler mistake with
+> extra bogus assignments you would hide a future mistake.
 
-Thank you very much!
+OK, I got it now. 
 
-BTW, do you implicate that the SCSI system (or its applications) has
-similar behaviors that the current readahead code cannot handle well?
+Comparing the result of deleting a meaningful line, this modification result in 
+no more warning.  And you also think one additional BUG_ON just for fixing 
+compiler's mistake, so it's unacceptable. 
 
-Thanks,
-Fengguang
+So leave the patch as it was. Seems many people need to upgrade compiler to 
+avoid this thing. :)
+
+-- 
+regards
+Yang, Sheng
+
+>
+> > If you used new compiler, you wouldn't get a warning, and you think this
+> > time the compiler get it right.
+>
+> The compiler does now get it right - I checked.
+>
+> Alan
+
