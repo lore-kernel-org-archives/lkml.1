@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKYLBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbYKYLDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYKYLBn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 06:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYKYLBe
+	id S1752730AbYKYLDb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 06:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYKYLDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 06:01:34 -0500
-Received: from antispam.upcomillas.es ([130.206.70.245]:35661 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYKYLBd (ORCPT
+	Tue, 25 Nov 2008 06:03:21 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54310 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYKYLDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 06:01:33 -0500
-Message-ID: <492BDB0A.80203@upcomillas.es>
-Date: Tue, 25 Nov 2008 12:01:30 +0100
-From: "Romano Giannetti (lists)" <romanol@upcomillas.es>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 25 Nov 2008 06:03:21 -0500
+Date: Tue, 25 Nov 2008 12:05:08 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: acpi_evaluate_integer broken by design
+Message-ID: <20081125110508.GA1943@elf.ucw.cz>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andreas Mohr <andi@lisas.de>, Bernhard Schmidt <berni@birkenwald.de>,
-       devsk <kernel-bugs.dev1world@spamgourmet.com>,
-       Johan Bilien <jobi@via.ecp.fr>
-Subject: Re: [Bug #11947] 2.6.28-rc VC switching with Intel graphics broken
-References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera> <vyitTh0pP2N.A.IHD.O8HKJB@chimera> <492A6A20.4080106@upcomillas.es> <200811241101.55121.jbarnes@virtuousgeek.org>
-In-Reply-To: <200811241101.55121.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[resent - sorry, LKML sent it back --- my bad]
-Jesse Barnes wrote:
-> 
-> Just added to the bug, it looks like a DUP of an issue Keith just fixed last 
-> week (now to make sure the patch makes it upstream quickly).
-> 
-Tried the patch and tested, it works ok. VC switching and suspend/resume 
-fixed. More details on bugzilla.
+Now I know why I had strange "scheduling in atomic" problems:
+acpi_evaluate_integer() does malloc(..., irqs_disabled() ? GFP_ATOMIC
+: GFP_KERNEL)... which is (of course) broken.
 
-Tested-by: Romano Giannetti <romano.giannetti@gmail.com>
+There's no way to reliably tell if we need GFP_ATOMIC or not from
+code, this one for example fails to detect spinlocks held.
 
-Thanks to all!
-     Romano
+Fortunately, allocation seems small enough to be done on stack.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+index e827be3..f844941 100644
+--- a/drivers/acpi/utils.c
++++ b/drivers/acpi/utils.c
+@@ -259,34 +259,26 @@ acpi_evaluate_integer(acpi_handle handle
+ 		      struct acpi_object_list *arguments, unsigned long long *data)
+ {
+ 	acpi_status status = AE_OK;
+-	union acpi_object *element;
++	union acpi_object element;
+ 	struct acpi_buffer buffer = { 0, NULL };
+ 
+-
+ 	if (!data)
+ 		return AE_BAD_PARAMETER;
+ 
+-	element = kzalloc(sizeof(union acpi_object), irqs_disabled() ? GFP_ATOMIC: GFP_KERNEL);
+-	if (!element)
+-		return AE_NO_MEMORY;
+-
+ 	buffer.length = sizeof(union acpi_object);
+-	buffer.pointer = element;
++	buffer.pointer = &element;
+ 	status = acpi_evaluate_object(handle, pathname, arguments, &buffer);
+ 	if (ACPI_FAILURE(status)) {
+ 		acpi_util_eval_error(handle, pathname, status);
+-		kfree(element);
+ 		return status;
+ 	}
+ 
+-	if (element->type != ACPI_TYPE_INTEGER) {
++	if (element.type != ACPI_TYPE_INTEGER) {
+ 		acpi_util_eval_error(handle, pathname, AE_BAD_DATA);
+-		kfree(element);
+ 		return AE_BAD_DATA;
+ 	}
+ 
+-	*data = element->integer.value;
+-	kfree(element);
++	*data = element.integer.value;
+ 
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Return value [%llu]\n", *data));
+ 
+
+
 
 -- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
