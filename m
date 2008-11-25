@@ -1,273 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYKYUSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYKYUZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbYKYUSa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 15:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYKYUSW
+	id S1752665AbYKYUZF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 15:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYKYUYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 15:18:22 -0500
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:34198 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbYKYUSV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 15:18:21 -0500
-Message-ID: <492C5D74.7040302@cs.columbia.edu>
-Date: Tue, 25 Nov 2008 15:17:56 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Andrey Mirkin <major@openvz.org>
-CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Add support for in-kernel process creation during
- restart
-References: <1227541175-30301-1-git-send-email-major@openvz.org> <1227541175-30301-2-git-send-email-major@openvz.org> <1227541175-30301-3-git-send-email-major@openvz.org>
-In-Reply-To: <1227541175-30301-3-git-send-email-major@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Nov 2008 15:24:54 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:33953 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbYKYUYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 15:24:53 -0500
+Subject: Re: [RFC][PATCH -tip] kmemcheck: add hooks for the page allocator
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20081125170231.GA19260@localhost.localdomain>
+References: <20081125170231.GA19260@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 12:24:49 -0800
+Message-Id: <1227644689.12109.32.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-11-25 at 18:02 +0100, Vegard Nossum wrote:
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/bootmem.h>
+>  #include <linux/compiler.h>
+>  #include <linux/kernel.h>
+> +#include <linux/kmemcheck.h>
+>  #include <linux/module.h>
+>  #include <linux/suspend.h>
+>  #include <linux/pagevec.h>
+> @@ -511,6 +512,9 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+>  	int i;
+>  	int reserved = 0;
+> 
+> +	if (kmemcheck_page_is_tracked(page))
+> +		kmemcheck_free_shadow(page, order);
+> +
+>  	for (i = 0 ; i < (1 << order) ; ++i)
+>  		reserved += free_pages_check(page + i);
+>  	if (reserved)
+> @@ -974,6 +978,9 @@ static void free_hot_cold_page(struct page *page, int cold)
+>  	struct per_cpu_pages *pcp;
+>  	unsigned long flags;
+> 
+> +	if (kmemcheck_page_is_tracked(page))
+> +		kmemcheck_free_shadow(page, 0);
 
-Andrey Mirkin wrote:
-> All work (process tree creation and process state restore) now can be
-> done in kernel.
-> 
-> Task structure in image file is extended with 2 fields to make in-kernel
-> process creation more easy.
-> 
-> Signed-off-by: Andrey Mirkin <major@openvz.org>
-> ---
->  checkpoint/checkpoint.c        |   17 ++++
->  checkpoint/restart.c           |    4 +-
->  checkpoint/rstr_process.c      |  201 +++++++++++++++++++++++++++++++++++++++-
->  include/linux/checkpoint.h     |    2 +
->  include/linux/checkpoint_hdr.h |    2 +
->  5 files changed, 223 insertions(+), 3 deletions(-)
-> 
-> diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-> index 04b0c4a..ae3326e 100644
-> --- a/checkpoint/checkpoint.c
-> +++ b/checkpoint/checkpoint.c
-> @@ -173,6 +173,21 @@ static int cr_write_tail(struct cr_ctx *ctx)
->  	return ret;
+I think it would be best to just integrate the
+kmemcheck_page_is_tracked() inside of kmemcheck_free_shadow().  It will
+be shorter and less error-prone.
+
+>  	if (PageAnon(page))
+>  		page->mapping = NULL;
+>  	if (free_pages_check(page))
+> @@ -1637,7 +1644,28 @@ nopage:
+>  		dump_stack();
+>  		show_mem();
+>  	}
+> +	return page;
+>  got_pg:
+> +	if (kmemcheck_enabled
+> +		&& !(gfp_mask & (__GFP_HIGHMEM | __GFP_IO | __GFP_NOTRACK)))
+> +	{
+> +		int nr_pages = 1 << order;
+> +
+> +		/*
+> +		 * NOTE: We choose to track GFP_ZERO pages too; in fact, they
+> +		 * can become uninitialized by copying uninitialized memory
+> +		 * into them.
+> +		 */
+> +
+> +		/* XXX: Can use zone->node for node? */
+> +		kmemcheck_alloc_shadow(page, order, gfp_mask, -1);
+> +
+> +		if (gfp_mask & __GFP_ZERO)
+> +			kmemcheck_mark_initialized_pages(page, nr_pages);
+> +		else
+> +			kmemcheck_mark_uninitialized_pages(page, nr_pages);
+> +	}
+> +
+>  	return page;
 >  }
->  
-> +static int cr_count_children(struct cr_ctx *ctx, struct task_struct *tsk)
-> +{
-> +	int num = 0;
-> +	struct task_struct *child;
+
+That's too much gunk to add to a core function like
+free_hot_cold_page().  Can you please break this out into a function?
+
+Does 'kmemcheck_enabled' get compiled down to a constant if !
+CONFIG_KMEMCHECK?  If not, it should.
+
+>  EXPORT_SYMBOL(__alloc_pages_internal);
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 37deade..286c6a6 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -1600,7 +1600,7 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+>  	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
+>  		flags |= __GFP_RECLAIMABLE;
+> 
+> -	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
+> +	page = alloc_pages_node(nodeid, flags & ~__GFP_NOTRACK, cachep->gfporder);
+>  	if (!page)
+>  		return NULL;
+> 
+> @@ -1614,8 +1614,14 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+>  	for (i = 0; i < nr_pages; i++)
+>  		__SetPageSlab(page + i);
+> 
+> -	if (kmemcheck_enabled && !(cachep->flags & SLAB_NOTRACK))
+> -		kmemcheck_alloc_shadow(cachep, flags, nodeid, page, cachep->gfporder);
+> +	if (kmemcheck_enabled && !(cachep->flags & SLAB_NOTRACK)) {
+> +		kmemcheck_alloc_shadow(page, cachep->gfporder, flags, nodeid);
 > +
-> +	read_lock(&tasklist_lock);
-> +	list_for_each_entry(child, &tsk->children, sibling) {
-> +		if (child->parent != tsk)
-> +			continue;
-> +		num++;
+> +		if (cachep->ctor)
+> +			kmemcheck_mark_uninitialized_pages(page, nr_pages);
+> +		else
+> +			kmemcheck_mark_unallocated_pages(page, nr_pages);
 > +	}
-> +	read_unlock(&tasklist_lock);
-> +	return num;
-> +}
-> +
-
-This information (and the pids of children) is already available in
-the ctx->pids_arr.
-
->  /* dump the task_struct of a given task */
->  static int cr_write_task_struct(struct cr_ctx *ctx, struct task_struct *t)
+> 
+>  	return page_address(page);
+>  }
+> @@ -1630,7 +1636,7 @@ static void kmem_freepages(struct kmem_cache *cachep, void *addr)
+>  	const unsigned long nr_freed = i;
+> 
+>  	if (kmemcheck_page_is_tracked(page))
+> -		kmemcheck_free_shadow(cachep, page, cachep->gfporder);
+> +		kmemcheck_free_shadow(page, cachep->gfporder);
+> 
+>  	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
+>  		sub_zone_page_state(page_zone(page),
+> diff --git a/mm/slub.c b/mm/slub.c
+> index adcb5e3..eb9855f 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1064,6 +1064,8 @@ static inline struct page *alloc_slab_page(gfp_t flags, int node,
 >  {
-> @@ -189,6 +204,8 @@ static int cr_write_task_struct(struct cr_ctx *ctx, struct task_struct *t)
->  	hh->exit_code = t->exit_code;
->  	hh->exit_signal = t->exit_signal;
->  
-> +	hh->vpid = task_pid_nr_ns(t, ctx->root_nsproxy->pid_ns);
-> +	hh->children_nr = cr_count_children(ctx, t);
->  	hh->task_comm_len = TASK_COMM_LEN;
-
-Same here (hmm... well, if it weren't skipped below, actually...)
-
->  
->  	/* FIXME: save remaining relevant task_struct fields */
-> diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-
-[...]
-
-> +static int restart_thread(void *arg)
-> +{
-> +	struct thr_context *thr_ctx = arg;
-> +	struct cr_ctx *ctx;
-> +	struct cr_hdr_task *ht;
-> +	int ret;
-> +	int i;
+>  	int order = oo_order(oo);
+> 
+> +	flags |= __GFP_NOTRACK;
 > +
-> +	current->state = TASK_UNINTERRUPTIBLE;
-
-Why do you not want it to be interruptible ?
-
+>  	if (node == -1)
+>  		return alloc_pages(flags, order);
+>  	else
+> @@ -1095,7 +1097,18 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
+>  	if (kmemcheck_enabled
+>  		&& !(s->flags & (SLAB_NOTRACK | DEBUG_DEFAULT_FLAGS)))
+>  	{
+> -		kmemcheck_alloc_shadow(s, flags, node, page, compound_order(page));
+> +		int pages = 1 << oo_order(oo);
 > +
-> +	ctx = thr_ctx->ctx;
-> +	ht = thr_ctx->ht;
+> +		kmemcheck_alloc_shadow(page, oo_order(oo), flags, node);
 > +
-> +	if (ht->vpid == 1) {
-> +		ctx->root_task = current;
-> +		ctx->root_nsproxy = current->nsproxy;
-> +
-> +		get_task_struct(ctx->root_task);
-> +		get_nsproxy(ctx->root_nsproxy);
-> +	}
-> +
-> +	ret = cr_rstr_task_struct(ctx, ht);
-> +	cr_debug("rstr_task_struct: ret %d\n", ret);
-> +	if (ret < 0)
-> +		goto out;
-> +	ret = cr_read_mm(ctx);
-> +	cr_debug("memory: ret %d\n", ret);
-> +	if (ret < 0)
-> +		goto out;
-> +	ret = cr_read_files(ctx);
-> +	cr_debug("files: ret %d\n", ret);
-> +	if (ret < 0)
-> +		goto out;
-> +	ret = cr_read_thread(ctx);
-> +	cr_debug("thread: ret %d\n", ret);
-> +	if (ret < 0)
-> +		goto out;
-> +	ret = cr_read_cpu(ctx);
-> +	cr_debug("cpu: ret %d\n", ret);
-> +
-> +	for (i = 0; i < ht->children_nr; i++) {
-> +		ret = cr_restart_process(ctx);
-> +		if (ret < 0)
-> +			break;
-> +	}
-
-Here, eventually we'll need the pids of those processes; instead of
-keeping 'ht->children_nr', you could loop through the pids array in
-the ctx and create those who have their parent set to us.
-
-> +
-> +out:
-> +	thr_ctx->error = ret;
-> +	complete(&thr_ctx->complete);
-> +
-> +	if (!ret && (ht->state & (EXIT_ZOMBIE|EXIT_DEAD))) {
-> +		do_exit(ht->exit_code);
-> +	} else {
-> +		__set_current_state(TASK_UNINTERRUPTIBLE);
-> +	}
-> +	schedule();
-
-Using TASK_UNINTERRUPTIBLE, may keep a task unkill-able for potentially
-long time. Any reason not to use TASK_INTERRUPTIBLE ?
-
-> +
-> +	cr_debug("leaked %d/%d %p\n", task_pid_nr(current), task_pid_vnr(current), current->mm);
-> +
-> +	complete_and_exit(NULL, 0);
-> +	return ret;
-> +}
-> +
-> +static int cr_restart_process(struct cr_ctx *ctx)
-> +{
-> +	struct thr_context thr_ctx;
-> +	struct task_struct *tsk;
-> +	struct cr_hdr_task *ht = cr_hbuf_get(ctx, sizeof(*ht));
-> +	int pid, parent, ret = -EINVAL;
-> +
-> +	thr_ctx.ctx = ctx;
-> +	thr_ctx.error = 0;
-> +	init_completion(&thr_ctx.complete);
-> +
-> +	parent = cr_read_obj_type(ctx, ht, sizeof(*ht), CR_HDR_TASK);
-> +	if (parent < 0) {
-> +		ret = parent;
-> +		goto out;
-> +	} else if (parent != 0)
-> +		goto out;
-> +
-> +	thr_ctx.ht = ht;
-> +
-> +	if (ht->vpid == 1) {
-> +		/* We should also create container here */
-> +		pid = cr_kernel_thread(restart_thread, &thr_ctx,
-> +				CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
-> +				CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET, 0);
-
-why do you want to start the container in the kernel ?
-
-instead, we can create a new containers in user space, and have the init task
-call the restart syscall from inside there.
-
-
-> +	} else {
-> +		/* We should fork here a child with saved pid and
-> +		   correct flags */
-> +		pid = cr_kernel_thread(restart_thread, &thr_ctx, 0, ht->vpid);
-> +	}
-> +	if (pid < 0) {
-> +		ret = pid;
-> +		goto out;
-> +	}
-> +	read_lock(&tasklist_lock);
-> +	tsk = find_task_by_vpid(pid);
-> +	if (tsk)
-> +		get_task_struct(tsk);
-> +	read_unlock(&tasklist_lock);
-> +	if (tsk == NULL) {
-> +		ret = -ESRCH;
-> +		goto out;
-> +	}
-> +
-> +	wait_for_completion(&thr_ctx.complete);
-> +	wait_task_inactive(tsk, 0);
-> +	ret = thr_ctx.error;
-> +	put_task_struct(tsk);
-> +
-> +out:
-> +	cr_hbuf_put(ctx, sizeof(*ht));
-> +	return ret;
-> +}
-> +
->  
->  int do_restart_in_kernel(struct cr_ctx *ctx)
+> +		/*
+> +		 * Objects from caches that have a constructor don't get
+> +		 * cleared when they're allocated, so we need to do it here.
+> +		 */
+> +		if (s->ctor)
+> +			kmemcheck_mark_uninitialized_pages(page, pages);
+> +		else
+> +			kmemcheck_mark_unallocated_pages(page, pages);
+>  	}
+> 
+>  	page->objects = oo_objects(oo);
+> @@ -1172,7 +1185,7 @@ static void __free_slab(struct kmem_cache *s, struct page *page)
+>  	}
+> 
+>  	if (kmemcheck_page_is_tracked(page))
+> -		kmemcheck_free_shadow(s, page, compound_order(page));
+> +		kmemcheck_free_shadow(page, compound_order(page));
+> 
+>  	mod_zone_page_state(page_zone(page),
+>  		(s->flags & SLAB_RECLAIM_ACCOUNT) ?
+> @@ -2679,8 +2692,8 @@ EXPORT_SYMBOL(__kmalloc);
+> 
+>  static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
 >  {
-> -	return -ENOSYS;
-> +	int ret, size, parent;
-> +	struct cr_hdr_tree *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> +
-> +	ret = cr_read_head(ctx);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = -EINVAL;
-> +	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_TREE);
-> +	if (parent < 0) {
-> +		ret = parent;
-> +		goto out;
-> +	} else if (parent != 0)
-> +		goto out;
-> +
-> +	size = sizeof(*ctx->pids_arr) * hh->tasks_nr;
-> +	if (size < 0)
-> +		goto out;
-> +	ctx->file->f_pos += size;
+> -	struct page *page = alloc_pages_node(node, flags | __GFP_COMP,
+> -						get_order(size));
+> +	struct page *page = alloc_pages_node(node,
+> +		flags | __GFP_COMP | __GFP_NOTRACK, get_order(size));
+> 
+>  	if (page)
+>  		return page_address(page);
 
-You can't do that - the file may be non-seekable (e.g. a socket); must read
-the data in.
-Besides, if instead of skipping this data you read it in, then you could use
-it as noted above.
+Adding the new flag made that pretty ugly.  Can you fix it up?
 
-> +
-> +	ret = cr_restart_process(ctx);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = cr_read_tail(ctx);
-
-[...]
-
-Thanks,
-
-Oren.
+-- Dave
 
