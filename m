@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbYKYVaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbYKYVgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753633AbYKYVaN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 16:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYKYV35
+	id S1753008AbYKYVgO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 16:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYKYVf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 16:29:57 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:59276 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbYKYV34 (ORCPT
+	Tue, 25 Nov 2008 16:35:58 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:45238 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbYKYVf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 16:29:56 -0500
+	Tue, 25 Nov 2008 16:35:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wXc9MPYdSpG7GukRgava5laG6jroj3pdGMA6vVBo4Rp5K86dbvib08aT/7Sv+l60/O
-         Tud9YoR6v2FtN2fxsg3jcbD8hJLWi4yQ5uxeNsGOqaJIz4YwElp3JJJWmmKkgcXZaZ7E
-         vc2nFhDsBDgxwfNS611qN802G55NFuoiccndQ=
-Message-ID: <b6c5339f0811251329h1130fd4aladcbfda52f0542eb@mail.gmail.com>
-Date: Tue, 25 Nov 2008 16:29:55 -0500
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [ath5k-devel] License of changes to ath5k/ath9k
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ath9k-devel@venema.h4ckr.net, ath5k-devel@venema.h4ckr.net,
-       bkuhn@softwarefreedom.org
-In-Reply-To: <20081125210421.GF5950@tesla>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081125210421.GF5950@tesla>
-X-Google-Sender-Auth: 7c858c72a73cb089
+        d=googlemail.com; s=gamma;
+        h=to:subject:from:date:message-id;
+        b=xBU3TJcrpquwdROMk8H1wCic4dd0N4190EaIRJ9Bhflze5LmidN+ZpZbMnwkrKTHWN
+         1Y9nIkxTRHE0uV0BR8IdwiW6zDixF89hmVHGXKMenVl7A8Un4GjqD5HmbpCjdrfoOhwG
+         t6jC0Ro8J9BSpY3OWqCkFYsE9PNHZ0X1iUV8U=
+To: linux-kernel@vger.kernel.org
+Subject: [patch 00/24] perfmon: introduction
+From: eranian@googlemail.com
+Date: Tue, 25 Nov 2008 13:35:54 -0800 (PST)
+Message-ID: <492c6fba.1c185e0a.15fb.6b71@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 4:04 PM, Luis R. Rodriguez
-<lrodriguez@atheros.com> wrote:
-> We'll keep using the ath5k Changes-licensed-under tag until we get
-> advice from SFLC if we have done enough to ensure this is no longer
-> necessary. For ath9k, if we are not sure if you have read the
-> "Developer's Certificate of Origin 1.1" we may ping you with an e-mail
-> just to be sure.
+Hello,
 
-I don't consider any of my changes significant enough to confer copyright,
-so by my Signed-off-by, I agree that whatever license the file currently
-has is alright by me.  Even if the changes were significant, the previous
-holds.
+This series of patches implements the perfmon interface which provides access
+to the hardware performance counters of modern processors. In particular,
+this version supports per-thread counting for all AMD64 processors, and
+recent Intel processors with architectural PMU (Core Duo, Core 2, Atom,
+and Core i7).
 
-However, if everyone + SFLC prefers that we strictly use
-Changes-licensed-under even if we don't claim copyright, then I'll
-happily add the tag generator script to a git commit hook :)
+It does not supersede Oprofile in this first implementation. Oprofile
+and perfmon can be compiled in the same kernel, but only one can have
+an active session at a time.
 
-> Ps. Please do not open any can of worms here, this is just informational.
+This implementation takes into account the various comments received from
+previous reviews on LKML. This is a much simplified version compared to
+the fully featured version maintained as a GIT tree on kernel.org.
 
-Sure.  I like the ath9k way, but really it doesn't matter that much.
+This new version, named perfmon3, uses only 5 system calls (instead of 12).
+Each call was carefully designed to allow for future extensions. 
 
+Full documentation is available in Documentation/perfmon.txt and is provided
+by one of the patches.
+
+Once this basic set of perfmon functionalities is upstream, we will build
+on it and add other features such as support for sampling, event set
+multiplexing and other processor architectures.
+
+Updated versions of libpfm and pfmon able to support both perfmon2 and
+perfmon3 are available in the CVS repository on the perfmon web site, check
+out: http://perfmon2.sf.net.
+
+The patch series is against 2.6.28-rc6.
+
+Please consider adding this patch series for 2.6.29.
+
+Thanks to all the people who have contributed to this effort.
+
+S.Eranian
 -- 
-Bob Copeland %% www.bobcopeland.com
+
