@@ -1,197 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYKYUZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbYKYUij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbYKYUZF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 15:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYKYUYy
+	id S1752715AbYKYUij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 15:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYKYUib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 15:24:54 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:33953 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbYKYUYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 15:24:53 -0500
-Subject: Re: [RFC][PATCH -tip] kmemcheck: add hooks for the page allocator
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20081125170231.GA19260@localhost.localdomain>
-References: <20081125170231.GA19260@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 12:24:49 -0800
-Message-Id: <1227644689.12109.32.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 15:38:31 -0500
+Received: from ptb-relay03.plus.net ([212.159.14.147]:51574 "EHLO
+	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752008AbYKYUi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 15:38:29 -0500
+Message-ID: <492C6238.7060507@mimc.co.uk>
+Date: Tue, 25 Nov 2008 20:38:16 +0000
+From: Mark Jackson <mpfj@mimc.co.uk>
+Organization: Mercury IMC Ltd
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Help using initramfs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Plusnet-Relay: e2e2c187d69a949adeca976d9ae85d1c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-25 at 18:02 +0100, Vegard Nossum wrote:
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -23,6 +23,7 @@
->  #include <linux/bootmem.h>
->  #include <linux/compiler.h>
->  #include <linux/kernel.h>
-> +#include <linux/kmemcheck.h>
->  #include <linux/module.h>
->  #include <linux/suspend.h>
->  #include <linux/pagevec.h>
-> @@ -511,6 +512,9 @@ static void __free_pages_ok(struct page *page, unsigned int order)
->  	int i;
->  	int reserved = 0;
-> 
-> +	if (kmemcheck_page_is_tracked(page))
-> +		kmemcheck_free_shadow(page, order);
-> +
->  	for (i = 0 ; i < (1 << order) ; ++i)
->  		reserved += free_pages_check(page + i);
->  	if (reserved)
-> @@ -974,6 +978,9 @@ static void free_hot_cold_page(struct page *page, int cold)
->  	struct per_cpu_pages *pcp;
->  	unsigned long flags;
-> 
-> +	if (kmemcheck_page_is_tracked(page))
-> +		kmemcheck_free_shadow(page, 0);
+I'm not sure if this is the correct place to be asking, but I've spend a 
+while searching Google and am still no wiser.
 
-I think it would be best to just integrate the
-kmemcheck_page_is_tracked() inside of kmemcheck_free_shadow().  It will
-be shorter and less error-prone.
+I'm looking to use initramfs to create a simple bootable linux distro 
+for our AVR32 based boards.
 
->  	if (PageAnon(page))
->  		page->mapping = NULL;
->  	if (free_pages_check(page))
-> @@ -1637,7 +1644,28 @@ nopage:
->  		dump_stack();
->  		show_mem();
->  	}
-> +	return page;
->  got_pg:
-> +	if (kmemcheck_enabled
-> +		&& !(gfp_mask & (__GFP_HIGHMEM | __GFP_IO | __GFP_NOTRACK)))
-> +	{
-> +		int nr_pages = 1 << order;
-> +
-> +		/*
-> +		 * NOTE: We choose to track GFP_ZERO pages too; in fact, they
-> +		 * can become uninitialized by copying uninitialized memory
-> +		 * into them.
-> +		 */
-> +
-> +		/* XXX: Can use zone->node for node? */
-> +		kmemcheck_alloc_shadow(page, order, gfp_mask, -1);
-> +
-> +		if (gfp_mask & __GFP_ZERO)
-> +			kmemcheck_mark_initialized_pages(page, nr_pages);
-> +		else
-> +			kmemcheck_mark_uninitialized_pages(page, nr_pages);
-> +	}
-> +
->  	return page;
->  }
+However, I have hit a brick wall at nearly the first step.
 
-That's too much gunk to add to a core function like
-free_hot_cold_page().  Can you please break this out into a function?
+So far I've managed to create a "bloated" kernel containing the 
+initramfs directory structure and I'm just trying to get a simple "Hello 
+World" test app running.
 
-Does 'kmemcheck_enabled' get compiled down to a constant if !
-CONFIG_KMEMCHECK?  If not, it should.
+The kernel boots, and the app runs, but I get no output on the console.
 
->  EXPORT_SYMBOL(__alloc_pages_internal);
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 37deade..286c6a6 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -1600,7 +1600,7 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
->  	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
->  		flags |= __GFP_RECLAIMABLE;
-> 
-> -	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
-> +	page = alloc_pages_node(nodeid, flags & ~__GFP_NOTRACK, cachep->gfporder);
->  	if (!page)
->  		return NULL;
-> 
-> @@ -1614,8 +1614,14 @@ static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid)
->  	for (i = 0; i < nr_pages; i++)
->  		__SetPageSlab(page + i);
-> 
-> -	if (kmemcheck_enabled && !(cachep->flags & SLAB_NOTRACK))
-> -		kmemcheck_alloc_shadow(cachep, flags, nodeid, page, cachep->gfporder);
-> +	if (kmemcheck_enabled && !(cachep->flags & SLAB_NOTRACK)) {
-> +		kmemcheck_alloc_shadow(page, cachep->gfporder, flags, nodeid);
-> +
-> +		if (cachep->ctor)
-> +			kmemcheck_mark_uninitialized_pages(page, nr_pages);
-> +		else
-> +			kmemcheck_mark_unallocated_pages(page, nr_pages);
-> +	}
-> 
->  	return page_address(page);
->  }
-> @@ -1630,7 +1636,7 @@ static void kmem_freepages(struct kmem_cache *cachep, void *addr)
->  	const unsigned long nr_freed = i;
-> 
->  	if (kmemcheck_page_is_tracked(page))
-> -		kmemcheck_free_shadow(cachep, page, cachep->gfporder);
-> +		kmemcheck_free_shadow(page, cachep->gfporder);
-> 
->  	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
->  		sub_zone_page_state(page_zone(page),
-> diff --git a/mm/slub.c b/mm/slub.c
-> index adcb5e3..eb9855f 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -1064,6 +1064,8 @@ static inline struct page *alloc_slab_page(gfp_t flags, int node,
->  {
->  	int order = oo_order(oo);
-> 
-> +	flags |= __GFP_NOTRACK;
-> +
->  	if (node == -1)
->  		return alloc_pages(flags, order);
->  	else
-> @@ -1095,7 +1097,18 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
->  	if (kmemcheck_enabled
->  		&& !(s->flags & (SLAB_NOTRACK | DEBUG_DEFAULT_FLAGS)))
->  	{
-> -		kmemcheck_alloc_shadow(s, flags, node, page, compound_order(page));
-> +		int pages = 1 << oo_order(oo);
-> +
-> +		kmemcheck_alloc_shadow(page, oo_order(oo), flags, node);
-> +
-> +		/*
-> +		 * Objects from caches that have a constructor don't get
-> +		 * cleared when they're allocated, so we need to do it here.
-> +		 */
-> +		if (s->ctor)
-> +			kmemcheck_mark_uninitialized_pages(page, pages);
-> +		else
-> +			kmemcheck_mark_unallocated_pages(page, pages);
->  	}
-> 
->  	page->objects = oo_objects(oo);
-> @@ -1172,7 +1185,7 @@ static void __free_slab(struct kmem_cache *s, struct page *page)
->  	}
-> 
->  	if (kmemcheck_page_is_tracked(page))
-> -		kmemcheck_free_shadow(s, page, compound_order(page));
-> +		kmemcheck_free_shadow(page, compound_order(page));
-> 
->  	mod_zone_page_state(page_zone(page),
->  		(s->flags & SLAB_RECLAIM_ACCOUNT) ?
-> @@ -2679,8 +2692,8 @@ EXPORT_SYMBOL(__kmalloc);
-> 
->  static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
->  {
-> -	struct page *page = alloc_pages_node(node, flags | __GFP_COMP,
-> -						get_order(size));
-> +	struct page *page = alloc_pages_node(node,
-> +		flags | __GFP_COMP | __GFP_NOTRACK, get_order(size));
-> 
->  	if (page)
->  		return page_address(page);
+I'm sure the app is running, because I can alter a call to sleep() which 
+affects the time before a "Kernel panic" message is shown on the console.
 
-Adding the new flag made that pretty ugly.  Can you fix it up?
+I'm running:-
 
--- Dave
+Linux 2.6.27-rc8
+Buildroot (svn)
+Busybox 1.12.1
+uClibc 0.9.29
+
+The kernel command line is:-
+rw console=ttyS1 root=/dev/null rdinit=/hello
+
+"hello" is a simple app:-
+
+#include <stdio.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[])
+{
+     printf("Hello world!\n");
+     sleep(999999999);
+}
+
+The console output is shown below.
+
+I know there's not much info to go on, so if anyone can point me in the 
+right direction, I'd be most grateful.
+
+Regards
+Mark
+
+---
+Linux version 2.6.27-rc8 (mpfj@mpfj-ubuntu) (gcc version 
+4.2.2-atmel.1.0.8) #66 Tue Nov 25 20:07:45 GMT 2008
+CPU: AT32AP700x chip revision C
+CPU: AP7 [01] core revision 0 (AVR32B arch revision 1)
+CPU: MMU configuration: Shared TLB
+CPU: features: dsp simd ocd perfctr java
+CPU: Running at 150.000 MHz
+Physical memory:
+   10000000-11ffffff
+Reserved memory:
+   10000000-101ff4cd: Kernel code
+   101ff4ce-102856af: Kernel data
+Exception vectors start at 90086000
+CPU: Paging enabled
+Node 0: start_pfn = 0x10000, low = 0x12000
+Node 0: mem_map starts at 90288000
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 8128
+Kernel command line: rw console=ttyS1,115200 root=/dev/null rdinit=/hello
+PID hash table entries: 128 (order: 7, 512 bytes)
+avr32_comparator: irq 0, 150.000 MHz
+Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
+Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
+Memory: 29896k/29896k available (1509k kernel code, 2872k reserved, 107k 
+data, 536k init)
+SLUB: Genslabs=10, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+Calibrating delay using timer specific routine.. 301.73 BogoMIPS 
+(lpj=603473)
+Mount-cache hash table entries: 512
+net_namespace: 440 bytes
+NET: Registered protocol family 16
+smc smc.0: Atmel Static Memory Controller at 0xfff03400
+pdc pdc.0: Atmel Peripheral DMA Controller enabled
+at32_eic at32_eic.0: External Interrupt Controller at 0xfff00100, IRQ 19
+at32_eic at32_eic.0: Handling 4 external IRQs, starting with IRQ 64
+AVR32 AP Power Management enabled
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 1024 (order: 1, 8192 bytes)
+TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+TCP: Hash tables configured (established 1024 bind 1024)
+TCP reno registered
+NET: Registered protocol family 1
+FRAM memory driver v1.0
+JFFS2 version 2.2. (NAND) © 2001-2006 Red Hat, Inc.
+msgmni has been set to 58
+io scheduler noop registered
+io scheduler cfq registered (default)
+atmel_lcdfb atmel_lcdfb.0: 600KiB frame buffer at 11f00000 (mapped at 
+b1f00000)
+atmel_lcdfb atmel_lcdfb.0: fb0: Atmel LCDC at 0xff000000 (mapped at 
+ff000000), irq 1
+atmel_usart.0: ttyS0 at MMIO 0xffe00c00 (irq = 6) is a ATMEL_SERIAL
+atmel_usart.1: ttyS1 at MMIO 0xffe01000 (irq = 7) is a ATMEL_SERIAL
+console [ttyS1] enabled
+atmel_usart.2: ttyS2 at MMIO 0xffe01400 (irq = 8) is a ATMEL_SERIAL
+atmel_usart.3: ttyS3 at MMIO 0xffe01800 (irq = 9) is a ATMEL_SERIAL
+brd: module loaded
+loop: module loaded
+MACB_mii_bus: probed
+eth0: Atmel MACB at 0xfff01800 irq 25 (00:19:54:32:f5:4a)
+eth0: attached PHY driver [Generic PHY] (mii_bus:phy_addr=0:01, irq=-1)
+MACB_mii_bus: probed
+eth1: Atmel MACB at 0xfff01c00 irq 26 (00:19:54:32:f5:4c)
+eth1: attached PHY driver [Generic PHY] (mii_bus:phy_addr=1:03, irq=-1)
+physmap platform flash device: 00800000 at 00000000
+physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
+  Amd/Fujitsu Extended Query Table at 0x0040
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+RedBoot partition parsing not available
+Using physmap partition information
+Creating 4 MTD partitions on "physmap-flash.0":
+0x00000000-0x00020000 : "u-boot"
+0x00020000-0x007e0000 : "root"
+0x007e0000-0x007f0000 : "splash"
+0x007f0000-0x00800000 : "env"
+physmap platform flash device: 00800000 at 08000000
+physmap-flash.1: Found 1 x16 devices at 0x0 in 16-bit bank
+  Amd/Fujitsu Extended Query Table at 0x0040
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+RedBoot partition parsing not available
+Using physmap partition information
+Creating 1 MTD partitions on "physmap-flash.1":
+0x00000000-0x00800000 : "data"
+at32_wdt at32_wdt.0: AT32AP700X WDT at 0xfff000b0, timeout 2 sec 
+(nowayout=0)
+atmel_mci atmel_mci.0: Atmel MCI controller at 0xfff02400 irq 28, 1 slots
+dw_dmac.0: DesignWare DMA Controller, 3 channels
+TCP cubic registered
+Initializing XFRM netlink socket
+NET: Registered protocol family 10
+IPv6 over IPv4 tunneling driver
+NET: Registered protocol family 17
+NET: Registered protocol family 15
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+cpufreq: AT32AP CPU frequency driver
+Freeing init memory: 536K (90000000 - 90086000)
 
