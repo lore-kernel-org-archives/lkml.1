@@ -1,114 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYKYHJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYKYHKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbYKYHJz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 02:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYKYHJn
+	id S1753170AbYKYHKR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 02:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYKYHJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 02:09:43 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:22098 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750823AbYKYHJn (ORCPT
+	Tue, 25 Nov 2008 02:09:59 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:40179 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752632AbYKYHJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 02:09:43 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-nfs@vger.kernel.org
-Cc: Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
-       gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Tom Tucker <tom@opengridcomputing.com>
-In-Reply-To: <1225546878.4390.3.camel@heimdal.trondhjem.org>
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>
-	 <1224484046.23068.14.camel@localhost.localdomain>
-	 <1225539927.2221.3.camel@localhost.localdomain>
-	 <1225546878.4390.3.camel@heimdal.trondhjem.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6b1jhfOm3xmsjk4QJplq"
-Date: Tue, 25 Nov 2008 07:09:22 +0000
-Message-Id: <1227596962.16868.22.camel@localhost.localdomain>
+	Tue, 25 Nov 2008 02:09:57 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsoEAC8yK0lMROB9/2dsb2JhbACBbdADgnw
+Date: Tue, 25 Nov 2008 02:09:55 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@osdl.org>, ltt-dev@lists.casi.polymtl.ca,
+       Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [ltt-dev] LTTng kernel integration roadmap, update
+Message-ID: <20081125070955.GA24292@Krystal>
+References: <20081124112842.GA15615@Krystal> <20081124114124.GA32459@infradead.org> <20081124122055.GA18626@Krystal> <alpine.DEB.1.10.0811241156030.20122@gandalf.stny.rr.com> <20081124204622.GA6229@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
-	120 seconds"
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=6OAc2UI1ETEA:10 a=Gm1qT94b7fUA:10 a=QStd48bC5YiHwJ9Wd80A:9 a=ZX-gGUZOZfwIHXuMtPRGNGT2yMkA:4 a=Hf6muOzgCGQA:10 a=LY0hPdMaydYA:10 a=eZEE8z_ioiMgLW-9jC8A:9 a=4GE1xqV1A-q3dVtfJ-omsfAFkOwA:4 a=rPt6xJ-oxjAA:10
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081124204622.GA6229@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 01:58:12 up 8 days,  7:38,  2 users,  load average: 0.69, 0.55,
+	0.39
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > 
+> > On Mon, 24 Nov 2008, Mathieu Desnoyers wrote:
+> > > 
+> > > The key idea behind this is to answer to Thomas Gleixner concerns, who
+> > > supports that a tracer should output data in text-format only so it can
+> > > be used with tools kernel developers have on their system, like "cat".
+> > > 
+> > > However, getting data out of the kernel efficiently simply cannot be
+> > > done with such approach. Therefore, LTTng needs its own userspace tools
+> > > to splice the data out of the kernel efficiently. Another tool is used
+> > > to pretty-print the binary data into text.
+> > > 
+> > > Then the problem becomes : we have to make the userspace tool easy
+> > > enough to deploy so even Linus can find and use it. ;)
+> > > 
+> > > But indeed, the trace buffers are versioned, so if the format changes
+> > > between kernel versions, the userspace tools will detect it and the user
+> > > will know it must update its tools. So it's not really a problem there.
+> > > 
+> > > The question that prevails is therefore : should we ship userspace
+> > > binary with the kernel tree at all ? And if yes, how should the resuting
+> > > executables be packaged and deployed ? Should it be installed in the
+> > > system along with kernel modules or should it be populated into a
+> > > filesystem populated by kernelspace ?
+> > > 
+> > > Or is it better to do as we have always done and keep the userspace
+> > > tools separated from the kernel tree ?
+> > 
+> > I say keep the user space tools separate as much as possible.
+> > 
+> 
+> I'd be in favor of that too. We should just document and package it so
+> it's easy to find.
+> 
+> > What about having a meta-data file for all binary files. This meta-data 
+> > could explain the format that is read. Big endian, little endian, the 
+> > fields and offsets, the event ids etc.  This way we will not need a 
+> > "version" file, which means absolutely nothing if you do not know what 
+> > comes with that version. Any tool could look at the meta-data file and 
+> > figure out what is in the buffers.
+> > 
+> > -- Steve
+> 
+> This is exactly what I do in LTTng, modulo the fact that I repeat this
+> information also in other buffer headers, but only use the information
+> located in the metadata buffer header. I duplicated the information to
+> make sure all subbuffer headers looks the same, but I could easily
+> change that.
+> 
+> I would however keep a small subbuffer header with a version number for
+> each subbuffers though, just so the parser can "know" what file this is
+> and what metadata should be expected with it. I think about the poor
+> user who lost its metadata file and wonders what tool could open the
+> other tracefiles he has... without a header containing at least a magic
+> number and a version, those files won't be identified. But we can keep
+> this information as minimalistic as possible.
+> 
 
---=-6b1jhfOm3xmsjk4QJplq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I now remember why I duplicate the endianness and the type size
+information in the subbuffer header.
 
-On Sat, 2008-11-01 at 09:41 -0400, Trond Myklebust wrote:
-> On Sat, 2008-11-01 at 11:45 +0000, Ian Campbell wrote:
-> > On Mon, 2008-10-20 at 07:27 +0100, Ian Campbell wrote:
-> > > So far I have bisected down to this range and am currently testing
-> > > acee478 which has been up for >4days.
-> >=20
-> > Another update. It has now bisected down to a small range=20
-> >=20
-> > 7272dcd31d56580dee7693c21e369fd167e137fe SUNRPC: xprt_autoclose() shoul=
-d not call xprt_disconnect()
-> > e06799f958bf7f9f8fae15f0c6f519953fb0257c SUNRPC: Use shutdown() instead=
- of close() when disconnecting a TCP socket
-> > ef80367071dce7d2533e79ae8f3c84ec42708dc8 SUNRPC: TCP clear XPRT_CLOSE_W=
-AIT when the socket is closed for writes
-> > 3b948ae5be5e22532584113e2e02029519bbad8f SUNRPC: Allow the client to de=
-tect if the TCP connection is closed
-> > 67a391d72ca7efb387c30ec761a487e50a3ff085 SUNRPC: Fix TCP rebinding logi=
-c
-> > 66af1e558538137080615e7ad6d1f2f80862de01 SUNRPC: Fix a race in xs_tcp_s=
-tate_change()
-> >=20
-> > I'm currently testing 3b948ae5be5e22532584113e2e02029519bbad8f.
-> >=20
-> > 7272dcd31d56580dee7693c21e369fd167e137fe repro'd in half a day while
-> > ef818a28fac9bd214e676986d8301db0582b92a9 (parent of
-> > 66af1e558538137080615e7ad6d1f2f80862de01) survived for 7 days.
+The main use-case for this is userspace tracing on a mixed 32/64-bits
+system, where I'd like to be able to write from a 32-bits userspace
+program directly into their own memory buffers. I would therefore have
+one "channel" per process, or something like that. The thing is : I have
+to know the pointer size so I know how the event headers are aligned in
+the traces. However, with mixed 32/64-bits processes, I would happen to
+have specific data types for specific channels (note that size_t is also
+special : it changes depending on the compiling options for 32-bits
+executables). Therefore, it seems to make sense to export this type of
+information directly in the subbuffer headers.
 
-According to bisect:
+I think we can still iterate on the userspace tracing aspects of tracing
+later on, so we don't have to come up with a "perfect solution" right
+now. I just want us to keep an open mind for the requirements that will
+come with its implementation and try to plan a little bit ahead.
 
-e06799f958bf7f9f8fae15f0c6f519953fb0257c is first bad commit
-commit e06799f958bf7f9f8fae15f0c6f519953fb0257c
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Mon Nov 5 15:44:12 2007 -0500
+Mathieu
 
-    SUNRPC: Use shutdown() instead of close() when disconnecting a TCP sock=
-et
-   =20
-    By using shutdown() rather than close() we allow the RPC client to wait
-    for the TCP close handshake to complete before we start trying to recon=
-nect
-    using the same port.
-    We use shutdown(SHUT_WR) only instead of shutting down both directions,
-    however we wait until the server has closed the connection on its side.
-   =20
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Thanks for the feedback.
+> 
+> Mathieu
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
 
-I've started testing 2.6.26 + revert. It's been a long while since I
-started this process so I'll also have a go at an up to date version.
-
-Cheers,
-Ian.
---=20
-Ian Campbell
-
-By failing to prepare, you are preparing to fail.
-
---=-6b1jhfOm3xmsjk4QJplq
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkrpKIACgkQM0+0qS9rzVnVIQCcCLhKGIQDhnZHI+acfuPCOkFK
-9ZEAnRRrd+75WYK9/xSiOnz0fdPUNXbR
-=xhmF
------END PGP SIGNATURE-----
-
---=-6b1jhfOm3xmsjk4QJplq--
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
