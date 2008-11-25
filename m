@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbYKYM6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYKYM7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752909AbYKYM6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 07:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYKYM6K
+	id S1753291AbYKYM7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 07:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYKYM7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 07:58:10 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:47407 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751918AbYKYM6J (ORCPT
+	Tue, 25 Nov 2008 07:59:13 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:41188 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbYKYM7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 07:58:09 -0500
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       OF-General <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Change misleading error message
-User-Agent: KMail/1.9.1
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Alexander Schmidt <alexschm@de.ibm.com>
-References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
-In-Reply-To: <48499C11.7030504@gmail.com>
+	Tue, 25 Nov 2008 07:59:13 -0500
+In-Reply-To: <200811220020.07407.rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/3] cpumask: use for_each_online_cpu() in drivers/infiniband/hw/ehca/ehca_irq.c
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Christoph Raisch <raisch@de.ibm.com>, linux-kernel@vger.kernel.org
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFF6EEC56C.8E19F99D-ONC125750C.00471224-C125750C.00475612@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Tue, 25 Nov 2008 13:59:09 +0100
+X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 8.0.1|February 07, 2008) at
+ 25/11/2008 13:59:10
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2361
-Date: Tue, 25 Nov 2008 13:58:06 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200811251358.06729.fenkes@de.ibm.com>
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The error message printed when the eHCA driver prevents memory hotplug is
-misleading -- the user might think that hot-removing the lhca, hotplugging
-memory, then hot-adding the lhca again will work, but it doesn't.
+> Impact: cleanup
+>
+> In future, accessing cpu numbers beyond nr_cpu_ids (the runtime limit)
+> will be undefined.  We can avoid future problems by using
+> for_each_online_cpu() here.
+>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Acked-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_main.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index bb02a86..bec7e02 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -994,8 +994,7 @@ static int ehca_mem_notifier(struct notifier_block *nb,
- 			if (printk_timed_ratelimit(&ehca_dmem_warn_time,
- 						   30 * 1000))
- 				ehca_gen_err("DMEM operations are not allowed"
--					     "as long as an ehca adapter is"
--					     "attached to the LPAR");
-+					     "in conjunction with eHCA");
- 			return NOTIFY_BAD;
- 		}
- 	}
--- 
-1.5.5
-
+Tested with latest kernel. Thanks for this!
+Nam
 
