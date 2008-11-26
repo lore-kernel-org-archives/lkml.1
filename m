@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYKZFgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYKZFi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbYKZFgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 00:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYKZFge
+	id S1753285AbYKZFi3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 00:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbYKZFiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 00:36:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42206 "EHLO
+	Wed, 26 Nov 2008 00:38:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39886 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750718AbYKZFgd (ORCPT
+	by vger.kernel.org with ESMTP id S1750749AbYKZFiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 00:36:33 -0500
-Date: Tue, 25 Nov 2008 21:35:46 -0800
+	Wed, 26 Nov 2008 00:38:20 -0500
+Date: Tue, 25 Nov 2008 21:37:48 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
@@ -18,13 +18,12 @@ Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 2/5] ftrace: use code patching for ftrace graph tracer
-Message-Id: <20081125213546.ff4eddf4.akpm@linux-foundation.org>
-In-Reply-To: <20081126051709.774546196@goodmis.org>
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/5] ftrace: add thread comm to function graph tracer
+Message-Id: <20081125213748.2cd86b2b.akpm@linux-foundation.org>
+In-Reply-To: <20081126051710.149585354@goodmis.org>
 References: <20081126051622.134970943@goodmis.org>
-	<20081126051709.774546196@goodmis.org>
+	<20081126051710.149585354@goodmis.org>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,47 +32,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008 00:16:24 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+On Wed, 26 Nov 2008 00:16:26 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
 
 > From: Steven Rostedt <rostedt@goodmis.org>
 > 
-> Impact: more efficient code for ftrace graph tracer
+> Impact: enhancement to function graph tracer
 > 
-> This patch uses the dynamic patching, when available, to patch
-> the function graph code into the kernel.
+> Export the trace_find_cmdline so the function graph tracer can
+> use it to print the comms of the threads.
 > 
-> This patch will ease the way for letting both function tracing
-> and function graph tracing run together.
-> 
+> -static char *trace_find_cmdline(int pid)
+> +char *trace_find_cmdline(int pid)
+>
 > ...
 >
-> +static int ftrace_mod_jmp(unsigned long ip,
-> +			  int old_offset, int new_offset)
-> +{
-> +	unsigned char code[MCOUNT_INSN_SIZE];
+>  static int verif_pid(struct trace_seq *s, pid_t pid)
+>  {
+> +	char *comm;
 > +
-> +	if (probe_kernel_read(code, (void *)ip, MCOUNT_INSN_SIZE))
-> +		return -EFAULT;
+>  	if (last_pid != -1 && last_pid == pid)
+>  		return 1;
+>  
+>  	last_pid = pid;
+> -	return trace_seq_printf(s, "\n------------8<---------- thread %d"
+> +	comm = trace_find_cmdline(pid);
 > +
-> +	if (code[0] != 0xe9 || old_offset != *(int *)(&code[1]))
+> +	return trace_seq_printf(s, "\n------------8<---------- thread %s-%d"
+>  				    " ------------8<----------\n\n",
+> -				  pid);
+> +				    comm, pid);
+>  }
 
-erk.  I suspect that there's a nicer way of doing this amongst our
-forest of get_unaligned_foo() interfaces.  Harvey will know.
-
-> +		return -EINVAL;
-> +
-> +	*(int *)(&code[1]) = new_offset;
-
-Might be able to use put_unaligned_foo() here.
-
-The problem is that these functions use sizeof(*ptr) to work out what
-to do, so a cast is still needed.  A get_unaligned32(ptr) would be
-nice.  One which takes a void* and assumes CPU ordering.
-
-> +	if (do_ftrace_mod_code(ip, &code))
-> +		return -EPERM;
-> +
-> +	return 0;
-> +}
-> +
-
+This code gets its int's and pid_t's all mixed up.  It's a bit cosmetic, but
+nice to get it right for readability's sake.
