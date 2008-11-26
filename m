@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYKZSFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYKZSGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbYKZSFa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 13:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYKZSFW
+	id S1755121AbYKZSGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 13:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYKZSGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 13:05:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55831 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752256AbYKZSFV (ORCPT
+	Wed, 26 Nov 2008 13:06:08 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:50417 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbYKZSGG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 13:05:21 -0500
-Date: Wed, 26 Nov 2008 10:04:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, containers@lists.osdl.org,
+	Wed, 26 Nov 2008 13:06:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Ep7+uQoqFMTtryNg1JuwkKasHBMv+NgKADe2j/5fZZrMg8/Y8MFLnYqKySMUmYYDg1
+         ZRUmFjQWqTaoY6y8wFMw33KRMNzF2WUwSdkapN08Wl2FKyxHqvCES9Q76Yd6jRA2rn5Q
+         DYYJpQiLyYUjO4bMOcSlpD+wosAYj4wB3y/WM=
+Subject: Re: [PATCH 2/5] ftrace: use code patching for ftrace graph tracer
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       containers@lists.osdl.org,
        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/5] ftrace: add thread comm to function graph tracer
-Message-Id: <20081126100450.24b99063.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0811261147250.26743@gandalf.stny.rr.com>
+In-Reply-To: <20081126100255.d53f9347.akpm@linux-foundation.org>
 References: <20081126051622.134970943@goodmis.org>
-	<20081126051710.149585354@goodmis.org>
-	<20081125213748.2cd86b2b.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0811261147250.26743@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	 <20081126051709.774546196@goodmis.org>
+	 <20081125213546.ff4eddf4.akpm@linux-foundation.org>
+	 <alpine.DEB.1.10.0811261144360.26743@gandalf.stny.rr.com>
+	 <20081126100255.d53f9347.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 26 Nov 2008 10:06:00 -0800
+Message-Id: <1227722760.5511.75.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008 11:48:44 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> 
-> On Tue, 25 Nov 2008, Andrew Morton wrote:
-> 
-> > On Wed, 26 Nov 2008 00:16:26 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+On Wed, 2008-11-26 at 10:02 -0800, Andrew Morton wrote:
+> > > 
+> > > > +		return -EINVAL;
+> > > > +
+> > > > +	*(int *)(&code[1]) = new_offset;
+> > > 
+> > > Might be able to use put_unaligned_foo() here.
+> > > 
+> > > The problem is that these functions use sizeof(*ptr) to work out what
+> > > to do, so a cast is still needed.  A get_unaligned32(ptr) would be
+> > > nice.  One which takes a void* and assumes CPU ordering.
 > > 
-> > > From: Steven Rostedt <rostedt@goodmis.org>
-> > > 
-> > > Impact: enhancement to function graph tracer
-> > > 
-> > > Export the trace_find_cmdline so the function graph tracer can
-> > > use it to print the comms of the threads.
-> > > 
-> > > -static char *trace_find_cmdline(int pid)
-> > > +char *trace_find_cmdline(int pid)
-> > >
-> > > ...
-> > >
-> > >  static int verif_pid(struct trace_seq *s, pid_t pid)
-> > >  {
-> > > +	char *comm;
-> > > +
-> > >  	if (last_pid != -1 && last_pid == pid)
-> > >  		return 1;
-> > >  
-> > >  	last_pid = pid;
-> > > -	return trace_seq_printf(s, "\n------------8<---------- thread %d"
-> > > +	comm = trace_find_cmdline(pid);
-> > > +
-> > > +	return trace_seq_printf(s, "\n------------8<---------- thread %s-%d"
-> > >  				    " ------------8<----------\n\n",
-> > > -				  pid);
-> > > +				    comm, pid);
-> > >  }
-> > 
-> > This code gets its int's and pid_t's all mixed up.  It's a bit cosmetic, but
-> > nice to get it right for readability's sake.
+> > Is there a correctness concern here? This is arch specific code, so I'm
+> > not worried about other archs.
 > 
-> Hmm, I think I would like to keep all pids as ints. Perhaps because we do 
-> not have namespaces here ;-)
+> No, the code is OK as-is.
 > 
-> I'm totally confused by what to do. I'll have to think about it.
+> It's just that "read a word from an [maybe-]unaligned address" is such
+> a common operation that there should be a nice clean simple function to
+> do it, rather than doing open-coded (and different) weird C tricks at each
+> and\ every site.
+> 
 
-Well.  Any variable which contains a process ID should have type pid_t.
+Also it is arch-specific, so if you know unaligned access is OK, just doing the
+cast+deref is OK.
 
-It gets more complicated in places where these values are passed to and
-from userspace (including via printk!).  It would be defensive (but
-unnecessary) to cast the pid_t's to and from known-size types at the
-kernel boundaries.
-
+Harvey
 
