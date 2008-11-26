@@ -1,163 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYKZXeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYKZXey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYKZXeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 18:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYKZXdg
+	id S1752919AbYKZXey (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 18:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYKZXeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 18:33:36 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:42606 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786AbYKZXdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 18:33:33 -0500
-Message-ID: <492DDCAB.1070204@cosmosbay.com>
-Date: Thu, 27 Nov 2008 00:32:59 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 26 Nov 2008 18:34:19 -0500
+Received: from ozlabs.org ([203.10.76.45]:42541 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752666AbYKZXeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 18:34:17 -0500
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [PATCH 6/6] fs: Introduce kern_mount_special() to mount special vfs
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu>
-In-Reply-To: <20081121153453.GA23713@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------080807060404030309070807"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 27 Nov 2008 00:33:00 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18733.56480.373527.669097@cargo.ozlabs.ibm.com>
+Date: Thu, 27 Nov 2008 10:32:48 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: avorontsov@ru.mvista.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+In-Reply-To: <Pine.LNX.4.64.0811261423120.5161@t2.domain.actdsltmp>
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+	<1225418589-8545-1-git-send-email-tpiepho@freescale.com>
+	<20081126162033.GA13397@oksana.dev.rtsoft.ru>
+	<18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0811261423120.5161@t2.domain.actdsltmp>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080807060404030309070807
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Trent Piepho writes:
 
-This function arms a flag (MNT_SPECIAL) on the vfs, to avoid
-refcounting on permanent system vfs.
-Use this function for sockets, pipes, anonymous fds.
+> > Alternatively you could add a new function (called, for instance,
+> > of_get_gpio_flags) with the extra parameter to eliminate the need to
+> > change any drivers at this stage, since they all seem to pass NULL for
+> > the flags argument.
+> 
+> But if we did this every time any exported function needs to change, think
+> how bloated the API would be with cruft.
 
-(socket8 bench result : from 2.94s to 2.23s)
+I don't buy the argument that we can't add one thing because if we
+added a hundred that would be too much.  You could add
+of_get_gpio_flags, get that upstream, then get the driver patches
+upstream, then submit a patch to remove of_get_gpio.  Alternatively
+you could make of_get_gpio a macro or inline function in of_gpio.h.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
----
- fs/anon_inodes.c      |    2 +-
- fs/pipe.c             |    2 +-
- fs/super.c            |    9 +++++++++
- include/linux/fs.h    |    1 +
- include/linux/mount.h |    5 +++--
- net/socket.c          |    2 +-
- 6 files changed, 16 insertions(+), 5 deletions(-)
+If you really want to change everything in one hit you'll have to get
+acks + agreement for the change to go upstream via my tree from all
+the relevant driver maintainers first.  I don't see any particular
+advantage to doing it that way, though.
 
-
---------------080807060404030309070807
-Content-Type: text/plain;
- name="mnt_special.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mnt_special.patch"
-
-diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
-index a0212b3..42dfe28 100644
---- a/fs/anon_inodes.c
-+++ b/fs/anon_inodes.c
-@@ -153,7 +153,7 @@ static int __init anon_inode_init(void)
- 	error = register_filesystem(&anon_inode_fs_type);
- 	if (error)
- 		goto err_exit;
--	anon_inode_mnt = kern_mount(&anon_inode_fs_type);
-+	anon_inode_mnt = kern_mount_special(&anon_inode_fs_type);
- 	if (IS_ERR(anon_inode_mnt)) {
- 		error = PTR_ERR(anon_inode_mnt);
- 		goto err_unregister_filesystem;
-diff --git a/fs/pipe.c b/fs/pipe.c
-index 6fca681..391d4fe 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -1074,7 +1074,7 @@ static int __init init_pipe_fs(void)
- 	int err = register_filesystem(&pipe_fs_type);
- 
- 	if (!err) {
--		pipe_mnt = kern_mount(&pipe_fs_type);
-+		pipe_mnt = kern_mount_special(&pipe_fs_type);
- 		if (IS_ERR(pipe_mnt)) {
- 			err = PTR_ERR(pipe_mnt);
- 			unregister_filesystem(&pipe_fs_type);
-diff --git a/fs/super.c b/fs/super.c
-index 400a760..a8e14f7 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -982,3 +982,12 @@ struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
- }
- 
- EXPORT_SYMBOL_GPL(kern_mount_data);
-+
-+struct vfsmount *kern_mount_special(struct file_system_type *type)
-+{
-+	struct vfsmount *res = kern_mount_data(type, NULL);
-+
-+	if (!IS_ERR(res))
-+		res->mnt_flags |= MNT_SPECIAL;
-+	return res;
-+}
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index dd0e8a5..a92544a 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1591,6 +1591,7 @@ extern int register_filesystem(struct file_system_type *);
- extern int unregister_filesystem(struct file_system_type *);
- extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
- #define kern_mount(type) kern_mount_data(type, NULL)
-+extern struct vfsmount *kern_mount_special(struct file_system_type *);
- extern int may_umount_tree(struct vfsmount *);
- extern int may_umount(struct vfsmount *);
- extern long do_mount(char *, char *, char *, unsigned long, void *);
-diff --git a/include/linux/mount.h b/include/linux/mount.h
-index cab2a85..cb4fa90 100644
---- a/include/linux/mount.h
-+++ b/include/linux/mount.h
-@@ -30,6 +30,7 @@ struct mnt_namespace;
- 
- #define MNT_SHRINKABLE	0x100
- #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
-+#define MNT_SPECIAL	0x400	/* special mount (pipes,sockets,...) */
- 
- #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
- #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
-@@ -73,7 +74,7 @@ struct vfsmount {
- 
- static inline struct vfsmount *mntget(struct vfsmount *mnt)
- {
--	if (mnt)
-+	if (mnt && !(mnt->mnt_flags & MNT_SPECIAL))
- 		atomic_inc(&mnt->mnt_count);
- 	return mnt;
- }
-@@ -87,7 +88,7 @@ extern int __mnt_is_readonly(struct vfsmount *mnt);
- 
- static inline void mntput(struct vfsmount *mnt)
- {
--	if (mnt) {
-+	if (mnt && !(mnt->mnt_flags & MNT_SPECIAL)) {
- 		mnt->mnt_expiry_mark = 0;
- 		mntput_no_expire(mnt);
- 	}
-diff --git a/net/socket.c b/net/socket.c
-index 4177456..2857d70 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -2204,7 +2204,7 @@ static int __init sock_init(void)
- 
- 	init_inodecache();
- 	register_filesystem(&sock_fs_type);
--	sock_mnt = kern_mount(&sock_fs_type);
-+	sock_mnt = kern_mount_special(&sock_fs_type);
- 	sock_mnt->mnt_sb->s_flags |= MS_SPECIAL;
- 
- 	/* The real protocol initialization is performed in later initcalls.
-
---------------080807060404030309070807--
+Paul.
