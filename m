@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYKZLcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYKZLeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbYKZLcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 06:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbYKZLcn
+	id S1753897AbYKZLeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 06:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYKZLeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 06:32:43 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:51727 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbYKZLcm (ORCPT
+	Wed, 26 Nov 2008 06:34:22 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51681 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbYKZLeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 06:32:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=aSSXe81JqDbjyVid7kzmHJ2AIFVPjnOJuV7+OetyBfXneHfaK+bPh0pcjAO8h69+FR
-         OvqH8CwpqOm5qeytSk/BqbYDWOPCR25LP72cKg+zyI1YsTnQM72s1FsVeWWe/K+tovA9
-         mntI2Z0EgFnLoVTV1hZx8TAWqozCtHzybkj2Y=
-Message-ID: <c62985530811260332m20a3388dy7bdc1fc15811898d@mail.gmail.com>
-Date: Wed, 26 Nov 2008 12:32:41 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: set a more human readable output
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0811252113270.26424@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu>
-	 <20081126020459.GA16374@elte.hu>
-	 <alpine.DEB.1.10.0811252113270.26424@gandalf.stny.rr.com>
+	Wed, 26 Nov 2008 06:34:21 -0500
+To: tj@kernel.org
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, greg@kroah.com
+In-reply-to: <492D2224.7000302@kernel.org> (message from Tejun Heo on Wed, 26
+	Nov 2008 19:17:08 +0900)
+Subject: Re: [PATCH 5/5 UPDATED] CUSE: implement CUSE - Character device in
+ Userspace
+References: <1227190983-5820-1-git-send-email-tj@kernel.org>	<1227190983-5820-6-git-send-email-tj@kernel.org> <20081121211607.49e0ec84.akpm@linux-foundation.org> <4927BC9A.3000001@kernel.org> <4927BDC7.8020905@kernel.org> <E1L5HDg-0001Ty-1u@pomaz-ex.szeredi.hu> <492D2224.7000302@kernel.org>
+Message-Id: <E1L5Ieo-0001iE-0P@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 26 Nov 2008 12:34:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/26 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Wed, 26 Nov 2008, Ingo Molnar wrote:
->>
->> The changes would be:
->>
->> 1) Compression of non-nested calls into a single line.
->>
->>    Implementing this probably necessiates some trickery with the
->>    ring-buffer: we'd have to look at the next entry as well and see
->>    whether it closes the function call.
->
-> The latency_trace file does this already:
->
-> You can look into the trace buffer without moving it with:
->
->  entry = ring_buffer_iter_peek(iter->buffer_iter[iter->cpu], &ts);
->
-> where, ts will give you the time stamp, it can be NULL if you do not care.
->
-> When your print function is called, the item in the ring buffer has
-> already been consumed. So the peek will give you the next item in the ring
-> buffer.
->>
->> 2) Adding a closing ';' semicolon to single-line calls. It's the C
->>    syntax and i'm missing it :-)
->>
->> 3) The first column: single-character visual shortcuts for "overhead".
->>    This is a concept we used in the -rt tracer and it still lives in
->>    the latency tracer bits of ftrace and is quite useful:
->>
->>     '+' means "overhead spike": overhead is above 10 usecs.
->>     '!' means "large overhead": overhead is above 100 usecs.
->>
->>    These give at-a-glance hotspot analysis - hotspots are easier to
->>    miss as pure numbers.
->
-> The latency_trace file has this too. And it uses the above peek to figure
-> it out ;-)
+On Wed, 26 Nov 2008, Tejun Heo wrote:
+> Hello,
+> 
+> Miklos Szeredi wrote:
+> > Hi Tejun,
+> > 
+> > Apologies for the late review.
+> 
+> :-)
 
+I meant late compared to three months ago, when you first posted the
+CUSE patches :)
 
-That's right, the latency_trace does it. But it is based on a
-ring-buffer entry timestamp.
-I wanted to use ring-buffer entry timestamp, but it would be hard to
-calculate the duration
-since the return trace of a function doesn't often follow immediately
-its entry trace.
-And I can't reuse lat_print_timestamp() because I need the nsec
-remaining part....
+> Yes, I agree.  I was mostly being lazy.  I'll try to rip off mnt
+> assumption from FUSE and make CUSE bypass the mnt thing.
+> 
+> >> +	worker = kthread_run(cuse_init_worker, cuse_conn_get(cc),
+> >> +			     "cuse-init-pid%d", current->pid);
+> > 
+> > This could be done without a kthread, by setting the ->end() callback
+> > for the INIT request, no?
+> 
+> Indeed.  Will switch to ->end().
 
-This is too specific to reuse latency_trace...
+Cool, thanks.
+
+Miklos
