@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYLAQlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYLAQlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYLAQlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 11:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYLAQjy
+	id S1753897AbYLAQlu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 11:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYLAQj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 11:39:54 -0500
-Received: from zombie2.ncsc.mil ([144.51.88.133]:56877 "EHLO zombie2.ncsc.mil"
+	Mon, 1 Dec 2008 11:39:58 -0500
+Received: from zombie2.ncsc.mil ([144.51.88.133]:56887 "EHLO zombie2.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbYLAQjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751253AbYLAQjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 1 Dec 2008 11:39:49 -0500
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
        labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
        "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
-Subject: [PATCH 02/14] VFS: Factor out part of vfs_setxattr so it can be called from the SELinux hook for inode_setsecctx.
-Date: Wed, 26 Nov 2008 16:03:02 -0500
-Message-Id: <1227733394-1114-3-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 13/14] NFS: Extend NFS xattr handlers to accept the security namespace
+Date: Wed, 26 Nov 2008 16:03:13 -0500
+Message-Id: <1227733394-1114-14-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -27,106 +27,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This factors out the part of the vfs_setxattr function that performs the
-setting of the xattr and its notification. This is needed so the SELinux
-implementation of inode_setsecctx can handle the setting of it's xattr while
-maintaining the proper separation of layers.
+The existing NFSv4 xattr handlers do not accept xattr calls to the security
+namespace. This patch extends these handlers to accept xattrs from the security
+namespace in addition to the default NFSv4 ACL namespace.
 
 Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- fs/xattr.c            |   55 +++++++++++++++++++++++++++++++++++++-----------
- include/linux/xattr.h |    1 +
- 2 files changed, 43 insertions(+), 13 deletions(-)
+ fs/nfs/nfs4proc.c   |   48 +++++++++++++++++++++++++++++++++++++-----------
+ security/security.c |    1 +
+ 2 files changed, 38 insertions(+), 11 deletions(-)
 
-diff --git a/fs/xattr.c b/fs/xattr.c
-index 468377e..2f93006 100644
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -66,22 +66,28 @@ xattr_permission(struct inode *inode, const char *name, int mask)
- 	return inode_permission(inode, mask);
- }
- 
--int
--vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
--		size_t size, int flags)
-+/**
-+ *  __vfs_setxattr_noperm - perform setxattr operation without performing
-+ *  permission checks.
-+ *
-+ *  @dentry - object to perform setxattr on
-+ *  @name - xattr name to set
-+ *  @value - value to set @name to
-+ *  @size - size of @value
-+ *  @flags - flags to pass into filesystem operations
-+ *
-+ *  returns the result of the internal setxattr or setsecurity operations.
-+ *
-+ *  This function requires the caller to lock the inode's i_mutex before it
-+ *  is executed. It also assumes that the caller will make the appropriate
-+ *  permission checks.
-+ */
-+int __vfs_setxattr_noperm(struct dentry *dentry, const char *name,
-+		const void *value, size_t size, int flags)
+diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+index 9db51ea..eeb41fa 100644
+--- a/fs/nfs/nfs4proc.c
++++ b/fs/nfs/nfs4proc.c
+@@ -3974,10 +3974,13 @@ int nfs4_setxattr(struct dentry *dentry, const char *key, const void *buf,
  {
  	struct inode *inode = dentry->d_inode;
--	int error;
+ 
+-	if (strcmp(key, XATTR_NAME_NFSV4_ACL) != 0)
+-		return -EOPNOTSUPP;
 -
--	error = xattr_permission(inode, name, MAY_WRITE);
--	if (error)
--		return error;
-+	int error = -EOPNOTSUPP;
+-	return nfs4_proc_set_acl(inode, buf, buflen);
++	if (strcmp(key, XATTR_NAME_NFSV4_ACL) == 0)
++		return nfs4_proc_set_acl(inode, buf, buflen);
++#ifdef CONFIG_NFS_V4_SECURITY_LABEL
++	if (security_ismaclabel(key))
++		return nfs4_set_security_label(dentry, buf, buflen);
++#endif
++	return -EOPNOTSUPP;
+ }
  
--	mutex_lock(&inode->i_mutex);
--	error = security_inode_setxattr(dentry, name, value, size, flags);
--	if (error)
--		goto out;
--	error = -EOPNOTSUPP;
- 	if (inode->i_op->setxattr) {
- 		error = inode->i_op->setxattr(dentry, name, value, size, flags);
- 		if (!error) {
-@@ -97,6 +103,29 @@ vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
- 		if (!error)
- 			fsnotify_xattr(dentry);
- 	}
-+
-+	return error;
-+}
-+
-+
-+int
-+vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
-+		size_t size, int flags)
-+{
-+	struct inode *inode = dentry->d_inode;
-+	int error;
-+
-+	error = xattr_permission(inode, name, MAY_WRITE);
-+	if (error)
-+		return error;
-+
-+	mutex_lock(&inode->i_mutex);
-+	error = security_inode_setxattr(dentry, name, value, size, flags);
-+	if (error)
-+		goto out;
-+
-+	error = __vfs_setxattr_noperm(dentry, name, value, size, flags);
-+
- out:
- 	mutex_unlock(&inode->i_mutex);
- 	return error;
-diff --git a/include/linux/xattr.h b/include/linux/xattr.h
-index d131e35..5c84af8 100644
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -49,6 +49,7 @@ struct xattr_handler {
- ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
- ssize_t vfs_getxattr(struct dentry *, const char *, void *, size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
-+int __vfs_setxattr_noperm(struct dentry *, const char *, const void *, size_t, int);
- int vfs_setxattr(struct dentry *, const char *, const void *, size_t, int);
- int vfs_removexattr(struct dentry *, const char *);
+ /* The getxattr man page suggests returning -ENODATA for unknown attributes,
+@@ -3989,22 +3992,45 @@ ssize_t nfs4_getxattr(struct dentry *dentry, const char *key, void *buf,
+ {
+ 	struct inode *inode = dentry->d_inode;
  
+-	if (strcmp(key, XATTR_NAME_NFSV4_ACL) != 0)
+-		return -EOPNOTSUPP;
++	if (strcmp(key, XATTR_NAME_NFSV4_ACL) == 0)
++		return nfs4_proc_get_acl(inode, buf, buflen);
+ 
+-	return nfs4_proc_get_acl(inode, buf, buflen);
++#ifdef CONFIG_NFS_V4_SECURITY_LABEL
++	if (security_ismaclabel(key))
++		return nfs4_get_security_label(inode, buf, buflen);
++#endif
++	return -EOPNOTSUPP;
+ }
+ 
+ ssize_t nfs4_listxattr(struct dentry *dentry, char *buf, size_t buflen)
+ {
+-	size_t len = strlen(XATTR_NAME_NFSV4_ACL) + 1;
++	size_t len = 0, l;
++	char *p;
+ 
+-	if (!nfs4_server_supports_acls(NFS_SERVER(dentry->d_inode)))
++	if (nfs4_server_supports_acls(NFS_SERVER(dentry->d_inode)))
++		len += strlen(XATTR_NAME_NFSV4_ACL) + 1;
++#ifdef CONFIG_NFS_V4_SECURITY_LABEL
++	if (nfs_server_capable(dentry->d_inode, NFS_CAP_SECURITY_LABEL))
++		len += security_inode_listsecurity(dentry->d_inode, NULL, 0);
++#endif
++	if (!len)
+ 		return 0;
+ 	if (buf && buflen < len)
+ 		return -ERANGE;
+-	if (buf)
+-		memcpy(buf, XATTR_NAME_NFSV4_ACL, len);
++	if (!buf)
++		return len;
++
++	p = buf;
++	if (nfs4_server_supports_acls(NFS_SERVER(dentry->d_inode))) {
++		l = strlen(XATTR_NAME_NFSV4_ACL) + 1;
++		memcpy(p, XATTR_NAME_NFSV4_ACL, l);
++		p += l;
++	}
++#ifdef CONFIG_NFS_V4_SECURITY_LABEL
++	if (nfs_server_capable(dentry->d_inode, NFS_CAP_SECURITY_LABEL))
++		p += security_inode_listsecurity(dentry->d_inode, p,
++			buflen - (p - buf));
++#endif
+ 	return len;
+ }
+ 
+diff --git a/security/security.c b/security/security.c
+index d3194e1..b5e59fb 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -545,6 +545,7 @@ int security_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer
+ 		return 0;
+ 	return security_ops->inode_listsecurity(inode, buffer, buffer_size);
+ }
++EXPORT_SYMBOL(security_inode_listsecurity);
+ 
+ void security_inode_getsecid(const struct inode *inode, u32 *secid)
+ {
 -- 
 1.5.5.1
 
