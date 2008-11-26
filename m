@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYKZJk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbYKZJuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753337AbYKZJk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 04:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYKZJkO
+	id S1752809AbYKZJuq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 04:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYKZJuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 04:40:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:52615 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbYKZJkL (ORCPT
+	Wed, 26 Nov 2008 04:50:37 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:41600 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbYKZJug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 04:40:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=mZ24GPm+Ch2Hfg2y1ucFvmeMHYT/xmmw7n2vKVjS8b8i4eSJn0bmei1GrNJJPGkm4y
-         t4H7YXe3LCxfbbJVyDLf/Xl77tGw4gIgNPQYuiSV4cqNioXxq3y6PZoKCgmiUSZyIBEG
-         0UMlOp/n8UkB9chjYltvQBZE3CGeog9deES/M=
-Message-ID: <7c86c4470811260140x7e838c06v7236b196d0641786@mail.gmail.com>
-Date: Wed, 26 Nov 2008 10:40:09 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [patch 01/24] perfmon: generic headers
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <20081126.004609.15230324.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492d0bd6.0f345e0a.167c.3b37@mx.google.com>
-	 <20081126.004609.15230324.davem@davemloft.net>
+	Wed, 26 Nov 2008 04:50:36 -0500
+To: penberg@cs.helsinki.fi
+CC: cl@linux-foundation.org, miklos@szeredi.hu, linux-mm@kvack.org,
+       david@fromorbit.com, peterz@infradead.org, linux-kernel@vger.kernel.org
+In-reply-to: <1227687021.31128.3.camel@penberg-laptop> (message from Pekka
+	Enberg on Wed, 26 Nov 2008 10:10:21 +0200)
+Subject: Re: [RFC PATCH] slab: __GFP_NOWARN not being propagated from
+	mempool_alloc()
+References: <E1L4jMt-0006OW-5J@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0811250038030.11825@melkki.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0811251258010.18908@quilx.com> <1227687021.31128.3.camel@penberg-laptop>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1L5H2E-0001Ro-Da@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 26 Nov 2008 10:50:14 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+On Wed, 26 Nov 2008, Pekka Enberg wrote:
+> On Tue, 25 Nov 2008, Pekka J Enberg wrote:
+> > > Yes, it does but looking at mm/slab.c history I think we want something
+> > > like the following instead. Christoph?
+> 
+> ﻿On Tue, 2008-11-25 at 12:58 -0600, Christoph Lameter wrote:
+> > Right.
+> 
+> OK, even though no tester showed up, I went ahead and merged my version
+> of the patch as it's a pretty obvious one-liner fix.
 
-Fixed now.
-Thanks
+Thanks.  I merged your version in the suse tree as well, so there'll
+be lots of testers :)
 
-On Wed, Nov 26, 2008 at 9:46 AM, David Miller <davem@davemloft.net> wrote:
-> From: eranian@googlemail.com
-> Date: Wed, 26 Nov 2008 00:41:58 -0800 (PST)
->
->> +/*
->> + * system adminstrator configuration controls available via
->> + * the /sys/kerne/perfmon interface
->> + */
->
-> This sysfs path typo I pointed out a few hours ago remains :-)
-> It should be "/sys/kernel/perfmon", the 'l' is missing.
->
->
->
+Miklos
