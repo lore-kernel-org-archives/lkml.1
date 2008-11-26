@@ -1,102 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbYKZNnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbYKZNnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191AbYKZNnd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 08:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYKZNnL
+	id S1754406AbYKZNnv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYKZNn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 08:43:11 -0500
-Received: from mga14.intel.com ([143.182.124.37]:16271 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754007AbYKZNnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 08:43:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,668,1220252400"; 
-   d="scan'208";a="83174749"
-Date: Wed, 26 Nov 2008 21:42:54 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: Latchesar Ionkov <lucho@ionkov.net>, v9fs-developer@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH] 9p: convert d_iname references to d_name.name
-Message-ID: <20081126134254.GA1573@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 26 Nov 2008 08:43:26 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:54873 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754119AbYKZNnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 08:43:24 -0500
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Date: Wed, 26 Nov 2008 14:42:40 +0100
+Message-Id: <1227706969-20003-1-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: LinuxPPS (Version 10): the PPS Linux implementation.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-d_iname is rubbish for long file names.
-Use d_name.name in printks instead.
+Note: Very few changes since last post! Please, add this patch set
+      into next available merge window.
 
-Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
----
-diff --git a/fs/9p/fid.c b/fs/9p/fid.c
-index 3031e32..2a983d4 100644
---- a/fs/9p/fid.c
-+++ b/fs/9p/fid.c
-@@ -45,7 +45,7 @@ int v9fs_fid_add(struct dentry *dentry, struct p9_fid *fid)
- 	struct v9fs_dentry *dent;
- 
- 	P9_DPRINTK(P9_DEBUG_VFS, "fid %d dentry %s\n",
--					fid->fid, dentry->d_iname);
-+					fid->fid, dentry->d_name.name);
- 
- 	dent = dentry->d_fsdata;
- 	if (!dent) {
-@@ -79,7 +79,7 @@ static struct p9_fid *v9fs_fid_find(struct dentry *dentry, u32 uid, int any)
- 	struct p9_fid *fid, *ret;
- 
- 	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p) uid %d any %d\n",
--		dentry->d_iname, dentry, uid, any);
-+		dentry->d_name.name, dentry, uid, any);
- 	dent = (struct v9fs_dentry *) dentry->d_fsdata;
- 	ret = NULL;
- 	if (dent) {
-diff --git a/fs/9p/vfs_dentry.c b/fs/9p/vfs_dentry.c
-index f9534f1..9fcfbaf 100644
---- a/fs/9p/vfs_dentry.c
-+++ b/fs/9p/vfs_dentry.c
-@@ -52,7 +52,7 @@
- 
- static int v9fs_dentry_delete(struct dentry *dentry)
- {
--	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_iname, dentry);
-+	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_name.name, dentry);
- 
- 	return 1;
- }
-@@ -69,7 +69,7 @@ static int v9fs_dentry_delete(struct dentry *dentry)
- static int v9fs_cached_dentry_delete(struct dentry *dentry)
- {
- 	struct inode *inode = dentry->d_inode;
--	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_iname, dentry);
-+	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_name.name, dentry);
- 
- 	if(!inode)
- 		return 1;
-@@ -88,7 +88,7 @@ void v9fs_dentry_release(struct dentry *dentry)
- 	struct v9fs_dentry *dent;
- 	struct p9_fid *temp, *current_fid;
- 
--	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_iname, dentry);
-+	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_name.name, dentry);
- 	dent = dentry->d_fsdata;
- 	if (dent) {
- 		list_for_each_entry_safe(current_fid, temp, &dent->fidlist,
-diff --git a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
-index 8314d3f..e7f6838 100644
---- a/fs/9p/vfs_inode.c
-+++ b/fs/9p/vfs_inode.c
-@@ -963,7 +963,7 @@ static int v9fs_vfs_readlink(struct dentry *dentry, char __user * buffer,
- 	if (buflen > PATH_MAX)
- 		buflen = PATH_MAX;
- 
--	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_iname, dentry);
-+	P9_DPRINTK(P9_DEBUG_VFS, " dentry: %s (%p)\n", dentry->d_name.name, dentry);
- 
- 	retval = v9fs_readlink(dentry, link, buflen);
- 
+This patch set adds the PPS support into Linux.
+
+PPS means "pulse per second" and its API is specified by RFC 2783
+(Pulse-Per-Second API for UNIX-like Operating Systems, Version 1.0).
+
+The code has been tested with the NTPD program
+(http://www.eecis.udel.edu/~mills/ntp/html/index.html) and several GPS
+antennae.
+
+
+Changelog
+=========
+
+Version 9 -> 10:
+---------------
+
+* Fixes for 2.6.28-rc6
+
+Version 8 -> 9:
+---------------
+
+* language fix up.
+
+Version 7 -> 8:
+---------------
+
+* PPS ldisc module locking fix up.
+
+* race during ldisc initialization fix up.
+
+Version 6 -> 7:
+---------------
+
+* A new line discipline has been added in order to leave untouched
+  the serial ports code (as suggested by Alan).
+
+* n_tty.c exports only GPL symbols.
+
+* ioctl numbers fixed in order to avoid any conflicts.
+
+Note: Last patch (0009-PPS-low-level-IRQ-timestamps-recording.patch)
+      implements low level IRQs timestamps recording which improves
+      PPS precision but can be dropped for kernel inclusion! As
+      suggested by Alan: "After that is sorted/merged we can come back
+      to working out the best way to improve the IRQ and HARDPPS
+      hacks."
+
+Rodolfo
+
+--
+
+ b/Documentation/ABI/testing/sysfs-pps  |   73 +++++++
+ b/Documentation/ioctl/ioctl-number.txt |    2
+ b/Documentation/pps/Makefile           |   28 ++
+ b/Documentation/pps/pps.txt            |  172 ++++++++++++++++
+ b/Documentation/pps/ppsfind            |   17 +
+ b/Documentation/pps/ppsldisc.c         |   46 ++++
+ b/Documentation/pps/ppstest.c          |  151 ++++++++++++++
+ b/Documentation/pps/timepps.h          |  195 +++++++++++++++++++
+ b/Documentation/serial/tty.txt         |    4
+ b/MAINTAINERS                          |    7
+ b/arch/x86/kernel/irq_32.c             |   16 +
+ b/arch/x86/kernel/irq_64.c             |   21 +-
+ b/drivers/Kconfig                      |    2
+ b/drivers/Makefile                     |    1
+ b/drivers/char/lp.c                    |   61 ++++++
+ b/drivers/char/n_tty.c                 |   32 ++-
+ b/drivers/pps/Kconfig                  |   33 +++
+ b/drivers/pps/Makefile                 |    8
+ b/drivers/pps/clients/Kconfig          |   18 +
+ b/drivers/pps/clients/Makefile         |    9
+ b/drivers/pps/clients/ktimer.c         |  124 ++++++++++++
+ b/drivers/pps/clients/pps-ldisc.c      |  155 +++++++++++++++
+ b/drivers/pps/kapi.c                   |  322 +++++++++++++++++++++++++++++++
+ b/drivers/pps/pps.c                    |  335 +++++++++++++++++++++++++++++++++
+ b/drivers/pps/sysfs.c                  |  104 ++++++++++
+ b/drivers/serial/8250.c                |   13 +
+ b/include/linux/Kbuild                 |    1
+ b/include/linux/parport.h              |   22 ++
+ b/include/linux/pps.h                  |  202 +++++++++++++++++++
+ b/include/linux/serial_core.h          |   11 -
+ b/include/linux/tty.h                  |   16 +
+ b/include/linux/tty_ldisc.h            |    8
+ drivers/pps/Kconfig                    |   14 +
+ drivers/pps/Makefile                   |    1
+ drivers/pps/clients/Kconfig            |   17 +
+ drivers/pps/clients/Makefile           |    1
+ include/linux/pps.h                    |    1
+ include/linux/serial_core.h            |    7
+ 38 files changed, 2235 insertions(+), 15 deletions(-)
+
+
