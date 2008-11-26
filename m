@@ -1,229 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYKZQUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbYKZQVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbYKZQUu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 11:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYKZQUj
+	id S1752922AbYKZQVK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 11:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYKZQUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 11:20:39 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:24707 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752248AbYKZQUi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 11:20:38 -0500
-Date: Wed, 26 Nov 2008 19:20:33 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
-Message-ID: <20081126162033.GA13397@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081030111500.GB22008@oksana.dev.rtsoft.ru> <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 26 Nov 2008 11:20:43 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38274 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752747AbYKZQUl (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 11:20:41 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.28-rc6-mmotm1126 - BUG in disk quota code
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1227716433_3559P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Nov 2008 11:20:33 -0500
+Message-ID: <4270.1227716433@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 07:03:09PM -0700, Trent Piepho wrote:
-> The device binding spec for OF GPIOs defines a flags field, but there is
-> currently no way to get it.  This patch adds a parameter to of_get_gpio()
-> where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
-> the parameter to the of_gpio_chip's xlate method, which can extract any
-> flags present from the gpio_spec.
-> 
-> The default (and currently only) of_gpio_chip xlate method,
-> of_gpio_simple_xlate(), is modified to do this.
-> 
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> Since this patch changes an API, it would be nice to get it into powerpc-next
-> soon so that people who have new patches that use this API, like Anton, can
-> base off it.
+--==_Exmh_1227716433_3559P
+Content-Type: text/plain; charset=us-ascii
 
-Can we apply it? Paul, Benjamin?
+System blew out when /etc/rc.sysinit did a 'quotaon -a'.  Not sure which
+of the many quota-related commits in linux-next.patch or in -mm did this...
 
-The patchwork url for this patch is:
-http://patchwork.ozlabs.org/patch/6650/
+[   39.588815] BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+[   39.589715] IP: [<0000000000000000>] 0x0
+[   39.589715] PGD 0
+[   39.589715] Oops: 0010 [#1] PREEMPT SMP
+[   39.589715] last sysfs file: /sys/devices/virtual/block/dm-13/dev
+[   39.589715] Dumping ftrace buffer:
+[   39.589715]    (ftrace buffer empty)
+[   39.589715] CPU 0
+[   39.589715] Modules linked in: rtc acpi_cpufreq tpm_tis tpm tpm_bios arc4 ecb pcmcia iwl3945 rfkill mac80211 led_class lib80211 video yenta_socket output intel_agp cfg80211 button rsrc_nonstatic uhci_hcd ohci1394 thermal battery pcmcia_core iTCO_wdt dcdbas ac ieee1394 processor iTCO_vendor_support snd_hda_intel
+[   39.589715] Pid: 1526, comm: quotaon Not tainted 2.6.28-rc6-mmotm1126 #1
+[   39.589715] RIP: 0010:[<0000000000000000>]  [<0000000000000000>] 0x0
+[   39.589715] RSP: 0018:ffff88007e12fd00  EFLAGS: 00010246
+[   39.589715] RAX: ffffffff80740bb0 RBX: 0000000000000000 RCX: 0000000000000fe8
+[   39.589715] RDX: 0000000000001514 RSI: 0000000000000001 RDI: ffff88007dc69c00
+[   39.589715] RBP: ffff88007e12fd38 R08: ffff88007e12fcf8 R09: 00000000ffffffff
+[   39.589715] R10: ffffffff8020ab8e R11: ffff88007e12faa8 R12: ffff88007bc47cb8
+[   39.589715] R13: 0000000000000001 R14: ffff88007dc69c00 R15: 0000000000000000
+[   39.589715] FS:  00007f1b84c616f0(0000) GS:ffffffff807b5500(0000) knlGS:0000000000000000
+[   39.589715] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[   39.589715] CR2: 0000000000000000 CR3: 000000007ec7b000 CR4: 00000000000006e0
+[   39.589715] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   39.589715] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[   39.589715] Process quotaon (pid: 1526, threadinfo ffff88007e12e000, task ffff88007f308040)
+[   39.589715] Stack:
+[   39.589715]  ffffffff802e974d 0000000000000fe8 0000000000000001 ffff88007bc47cb8
+[   39.589715]  ffff88007bc47cc0 0000000000000000 0000000000000001 ffff88007e12fd78
+[   39.589715]  ffffffff802e99ce ffff88007e12fd68 000000007bc6b3e0 ffff88007bc6b3e0
+[   39.589715] Call Trace:
+[   39.589715]  [<ffffffff802e974d>] ? dqget+0x104/0x2fd
+[   39.589715]  [<ffffffff802e99ce>] dquot_initialize+0x88/0xbd
+[   39.589715]  [<ffffffff8030d853>] ext3_dquot_initialize+0x56/0x77
+[   39.589715]  [<ffffffff802e7854>] vfs_load_quota_inode+0x361/0x45e
+[   39.589715]  [<ffffffff802e7c1b>] vfs_quota_on_path+0x4c/0x59
+[   39.589715]  [<ffffffff80309dcc>] ext3_quota_on+0x153/0x170
+[   39.589715]  [<ffffffff802ebff6>] sys_quotactl+0x408/0x6b6
+[   39.589715]  [<ffffffff802a7431>] ? __fput+0x1c4/0x1d1
+[   39.589715]  [<ffffffff8056a573>] ? trace_hardirqs_off_thunk+0x3a/0x6c
+[   39.589715]  [<ffffffff8056a537>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+[   39.589715]  [<ffffffff8020bb3b>] system_call_fastpath+0x16/0x1b
+[   39.589715] Code:  Bad RIP value.
+[   39.589715] RIP  [<0000000000000000>] 0x0
+[   39.589715]  RSP <ffff88007e12fd00>
+[   39.589715] CR2: 0000000000000000
+[   49.575587] ---[ end trace f5b21e7d583dfbbd ]---
+
+I wonder where the system went for the 10 seconds between CR2 and 'end trace'?
 
 
-Thanks!
+--==_Exmh_1227716433_3559P
+Content-Type: application/pgp-signature
 
->  drivers/mtd/nand/fsl_upm.c              |    2 +-
->  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
->  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
->  drivers/of/gpio.c                       |   13 ++++++++++---
->  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
->  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
->  6 files changed, 32 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-> index 024e3ff..a25d962 100644
-> --- a/drivers/mtd/nand/fsl_upm.c
-> +++ b/drivers/mtd/nand/fsl_upm.c
-> @@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
->  	}
->  	fun->upm_cmd_offset = *prop;
->  
-> -	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
-> +	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
->  	if (fun->rnb_gpio >= 0) {
->  		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
->  		if (ret) {
-> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-> index cb51c1f..5a3c7ee 100644
-> --- a/drivers/net/fs_enet/fs_enet-main.c
-> +++ b/drivers/net/fs_enet/fs_enet-main.c
-> @@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
->  		goto out_put_phy;
->  	}
->  
-> -	bus_id = of_get_gpio(mdionode, 0);
-> +	bus_id = of_get_gpio(mdionode, 0, NULL);
->  	if (bus_id < 0) {
->  		struct resource res;
->  		ret = of_address_to_resource(mdionode, 0, &res);
-> diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
-> index 2ff9775..e3757c6 100644
-> --- a/drivers/net/phy/mdio-ofgpio.c
-> +++ b/drivers/net/phy/mdio-ofgpio.c
-> @@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
->  {
->  	struct mdio_gpio_info *bitbang = bus->priv;
->  
-> -	bitbang->mdc = of_get_gpio(np, 0);
-> -	bitbang->mdio = of_get_gpio(np, 1);
-> +	bitbang->mdc = of_get_gpio(np, 0, NULL);
-> +	bitbang->mdio = of_get_gpio(np, 1, NULL);
->  
->  	if (bitbang->mdc < 0 || bitbang->mdio < 0)
->  		return -ENODEV;
-> diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-> index 7cd7301..ae14215 100644
-> --- a/drivers/of/gpio.c
-> +++ b/drivers/of/gpio.c
-> @@ -22,11 +22,12 @@
->   * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
->   * @np:		device node to get GPIO from
->   * @index:	index of the GPIO
-> + * @flags:	GPIO's flags are returned here if non-NULL
->   *
->   * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
->   * value on the error condition.
->   */
-> -int of_get_gpio(struct device_node *np, int index)
-> +int of_get_gpio(struct device_node *np, int index, enum of_gpio_flags *flags)
->  {
->  	int ret;
->  	struct device_node *gc;
-> @@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
->  		goto err1;
->  	}
->  
-> -	ret = of_gc->xlate(of_gc, np, gpio_spec);
-> +	if (flags)
-> +		*flags = 0;
-> +	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
->  	if (ret < 0)
->  		goto err1;
->  
-> @@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
->   * @of_gc:	pointer to the of_gpio_chip structure
->   * @np:		device node of the GPIO chip
->   * @gpio_spec:	gpio specifier as found in the device tree
-> + * @flags:	if non-NULL flags are returned here
->   *
->   * This is simple translation function, suitable for the most 1:1 mapped
->   * gpio chips. This function performs only one sanity check: whether gpio
->   * is less than ngpios (that is specified in the gpio_chip).
->   */
->  int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
-> -			 const void *gpio_spec)
-> +			 const void *gpio_spec, enum of_gpio_flags *flags)
->  {
->  	const u32 *gpio = gpio_spec;
->  
->  	if (*gpio > of_gc->gc.ngpio)
->  		return -EINVAL;
->  
-> +	if (flags && of_gc->gpio_cells > 1)
-> +		*flags = gpio[1];
-> +
->  	return *gpio;
->  }
->  EXPORT_SYMBOL(of_gpio_simple_xlate);
-> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-> index bde4b4b..7835cd4 100644
-> --- a/drivers/serial/cpm_uart/cpm_uart_core.c
-> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-> @@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
->  	}
->  
->  	for (i = 0; i < NUM_GPIOS; i++)
-> -		pinfo->gpios[i] = of_get_gpio(np, i);
-> +		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
->  
->  	return cpm_uart_request_port(&pinfo->port);
->  
-> diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-> index 67db101..d611746 100644
-> --- a/include/linux/of_gpio.h
-> +++ b/include/linux/of_gpio.h
-> @@ -20,13 +20,23 @@
->  #ifdef CONFIG_OF_GPIO
->  
->  /*
-> + * Flags as returned by OF GPIO chip's xlate method.
-> + * The GPIO specifier in the OF device tree does not need to use this
-> + * same format for its flags, but it's convenient if it does.  For
-> + * example, the of_mm_gpio_chip driver works this way.
-> + */
-> +enum of_gpio_flags {
-> +	OF_GPIO_ACTIVE_LOW = 1,
-> +};
-> +
-> +/*
->   * Generic OF GPIO chip
->   */
->  struct of_gpio_chip {
->  	struct gpio_chip gc;
->  	int gpio_cells;
->  	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
-> -		     const void *gpio_spec);
-> +		     const void *gpio_spec, enum of_gpio_flags *flags);
->  };
->  
->  static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
-> @@ -50,16 +60,19 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
->  	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
->  }
->  
-> -extern int of_get_gpio(struct device_node *np, int index);
-> +extern int of_get_gpio(struct device_node *np, int index,
-> +		       enum of_gpio_flags *flags);
->  extern int of_mm_gpiochip_add(struct device_node *np,
->  			      struct of_mm_gpio_chip *mm_gc);
->  extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
->  				struct device_node *np,
-> -				const void *gpio_spec);
-> +				const void *gpio_spec,
-> +				enum of_gpio_flags *flags);
->  #else
->  
->  /* Drivers may not strictly depend on the GPIO support, so let them link. */
-> -static inline int of_get_gpio(struct device_node *np, int index)
-> +static inline int of_get_gpio(struct device_node *np, int index,
-> +			      enum of_gpio_flags *flags)
->  {
->  	return -ENOSYS;
->  }
-> -- 
-> 1.5.4.3
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJLXdRcC3lWbTT17ARAuGdAKCxR8GxRnGsulNJtkKhN/OE+iNY/QCgxJWw
+bY5aciyUhvwz+YdcJNHPhRU=
+=zo/q
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1227716433_3559P--
