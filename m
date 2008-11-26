@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYKZOTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYKZOTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbYKZOTW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 09:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYKZOTO
+	id S1754590AbYKZOTg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 09:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYKZOTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 09:19:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:5719 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbYKZOTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 09:19:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=BpcAvDWi1tuFoej7Qp9SypFz6YvrIhST3IPOZLll228VOgO8+XQDb4NlzP/p+OtvHG
-         6yY2KqWkVZPZLyibVgp6oyVt5+o6CKaXXsa60ndKwMXmRbSHzdwjn2qnqhW0rKREUhQg
-         i4VY0awnpSIHHa6Ljen+VIrNPRpFSY7sn+oyU=
-Message-ID: <7c86c4470811260619y5c4c788er61c8704a5c62d17e@mail.gmail.com>
-Date: Wed, 26 Nov 2008 15:19:10 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 06/24] perfmon: generic x86 definitions (x86)
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <alpine.LFD.2.00.0811261440330.3325@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492d0be4.09b6660a.1678.ffffa78b@mx.google.com>
-	 <alpine.LFD.2.00.0811261440330.3325@localhost.localdomain>
+	Wed, 26 Nov 2008 09:19:18 -0500
+Received: from vena.lwn.net ([206.168.112.25]:49316 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753155AbYKZOTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 09:19:17 -0500
+Date: Wed, 26 Nov 2008 07:19:15 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: ext3: unwelcome journal abort
+Message-ID: <20081126071915.0decaf2c@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+Twice now I've gotten the following with 2.6.28-rc3:
 
-On Wed, Nov 26, 2008 at 2:41 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 26 Nov 2008, eranian@googlemail.com wrote:
->
->> This patch adds definitions for the perfmon interrupt vector
->> and thread info flags. It is common to i386 and x86_64 code.
->
->> +#define TIF_PERFMON_WORK     9       /* work for pfm_handle_work() */
->
-> I can see the requirement for an apic vector, but why do you need a
-> TIF flag ?
->
-Ok, this is a good question, so let me explain.
+Nov 26 00:15:49 bike kernel: [282457.819704] __log_wait_for_space: no transactions
+Nov 26 00:15:49 bike kernel: [282457.819707] Aborting journal on device sda6.
+Nov 26 00:15:49 bike kernel: [282457.820824] ext3_abort called.
+Nov 26 00:15:49 bike kernel: [282457.820829] EXT3-fs error (device sda6): ext3_journal_start_sb: Detected aborted journal
+Nov 26 00:15:49 bike kernel: [282457.820832] Remounting filesystem read-only
+Nov 26 00:15:49 bike kernel: [282457.905000] __journal_remove_journal_head: freeing b_committed_data
+Nov 26 00:15:49 bike kernel: [282457.905010] __journal_remove_journal_head: freeing b_committed_data
+Nov 26 00:15:49 bike kernel: [282457.905273] __journal_remove_journal_head: freeing b_committed_data
+Nov 26 00:15:49 bike kernel: [282457.905276] __journal_remove_journal_head: freeing b_committed_data
+Nov 26 00:15:49 bike kernel: [282457.905288] __journal_remove_journal_head: freeing b_committed_data
+Nov 26 00:15:49 bike kernel: [282457.905298] __journal_remove_journal_head: freeing b_committed_data
 
-The goal of the TIF flag is to force the thread to go do some extra work on
-kernel exit. There are two situations where this is necessary, there is one
-in the current patchset, the other is related to sampling (not yet provided).
+Both times, it has happened in the middle of the night; I just find
+my /home partition mounted read-only in the morning.  And that, in
+turn, makes keeping up with linux-kernel really hard.
 
-With per-thread monitoring, a tool is monitoring another thread, possibly in
-another process. The monitored process and the tool may not be parent
-of each other.
+I'm pulling the system up to -rc6 now, will yell if it happens again.
+Is there anything else I can be looking at in the mean time?
 
-What happens if the tool dies BEFORE it can cleanly close the
-monitoring session?
+Thanks,
 
-There are 2 scenarios:
-  1- the monitored process also had the perfmon file descriptor open,
-e.g., inherited
-     on fork/exec. In that case the monitored thread will keep on
-running to completion
-     with an attached perfmon context.
-
-  2- the monitoring had the last reference to the file descriptor. In
-that case, we have a
-     perfmon context attached to a thread but no mean to get to it
-from userland. This is
-     the case where we declare the context as ZOMBIE.
-
-     I think Andi confused it with the meaning of ZOMBIE for the
-process. In this situation,
-     we want to cleanup the context and make sure monitoring is stopped.
-
-     That has to be done by the monitored thread. The issue is that
-the thread may notice
-     the context is ZOMBIE during context switch in. At this level, we
-run with interrupts
-     disabled, and it is not possible to free certain resources. So
-instead, we set the TIF
-     flag, and let the thread clean things up at a much higher level
-in the kernel execution
-     somewhere where we know we can safely call certain kernel APIs, e.g, kfree.
-
-Another possible solution (which is not implemented):
-     - just let the context attached and run the thread to completion.
-If another tool wants to
-       attach to the same thread, it will detect there is already a
-context attached, and that it is
-       marked ZOMBIE, so it will clean it up. This is a lazy cleanup approach.
+jon
