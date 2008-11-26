@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYKZCWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKZCZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYKZCWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYKZCWE
+	id S1753856AbYKZCZI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYKZCY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:22:04 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:35801 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753159AbYKZCWD (ORCPT
+	Tue, 25 Nov 2008 21:24:57 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56170 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbYKZCY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:22:03 -0500
-Date: Tue, 25 Nov 2008 21:21:50 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, andy <rootstrap@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Need to pay to use the word "Linux" in commercial
-	products/services!
-Message-ID: <20081126022150.GA1410@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jon Masters <jonathan@jonmasters.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	andy <rootstrap@googlemail.com>, linux-kernel@vger.kernel.org
-References: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com> <20081125225708.6399ba14@lxorguk.ukuu.org.uk> <1227659082.3744.5.camel@jcmlaptop>
+	Tue, 25 Nov 2008 21:24:56 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] vmscan: bail out of page reclaim after swap_cluster_max pages
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
+In-Reply-To: <20081124145057.4211bd46@bree.surriel.com>
+References: <20081124145057.4211bd46@bree.surriel.com>
+Message-Id: <20081126112329.3CB2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227659082.3744.5.camel@jcmlaptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 26 Nov 2008 11:24:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 07:24:42PM -0500, Jon Masters wrote:
-> > 
-> > The GPL protects copyrights not trademarks. The Linux trademarking is an
-> > interesting question and I know a lot of companies take the view that the
-> > mark is unenforcable. On the other hand it stops abuse of the name for
-> > other unrelated software.
-> 
+> +		/*
+> +		 * On large memory systems, scan >> priority can become
+> +		 * really large. This is fine for the starting priority;
+> +		 * we want to put equal scanning pressure on each zone.
+> +		 * However, if the VM has a harder time of freeing pages,
+> +		 * with multiple processes reclaiming pages, the total
+> +		 * freeing target can get unreasonably large.
+> +		 */
+> +		if (sc->nr_reclaimed > sc->swap_cluster_max &&
+> +			sc->priority < DEF_PRIORITY && !current_is_kswapd())
+> +			break;
 
-In addition, the Linux Mark Institute will give sublicenses free of
-charge for pretty much any reasonable uses where the Linux Kernel is
-used.  (i.e., if someone wrote a Microsoft .NET application that whose
-only use was to send scary legal letters to Linux users, and some
-software company wanted to market this "Linux Blackmail Generator" as
-a program marketed to companies which held Patents but produced no
-useful products or services --- i.e., Patent Trolls --- I might well
-imagine that someone from LMI might cough, and say, "I don't think
-we'll give you a sublicense to use Linux in such a way).
+typo.
+this patch can't compile.
 
-> Personally, I love washing my clothes with Linux detergent :)
-> 
-> They tell me it's also a popular Operating System kernel.
+---
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Trademarks are specific to a specific area.  My favorite example was
-the British advertisements for vacuum cleaners, "Nothing sucks like a
-Vax" back when I was hacking BSD 4.3 systems on a Digital Vax/750.  Of
-course there can be problems when companies expand beyond their
-original areas of their trademark registration --- hence the conflict
-between Apple Computers, Inc., and Apple Corps (a holding company
-which owned Apple Records and the copyrights to Beatle's music) when
-Apple started expanding into their iPod and iTunes store business.
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1469,7 +1469,7 @@ static void shrink_zone(int priority, st
+ 		 * freeing target can get unreasonably large.
+ 		 */
+ 		if (sc->nr_reclaimed > sc->swap_cluster_max &&
+-		    sc->priority < DEF_PRIORITY && !current_is_kswapd())
++		    priority < DEF_PRIORITY && !current_is_kswapd())
+ 			break;
+ 	}
+ 
 
-      	      		     	   	    	   - Ted
+
