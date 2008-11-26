@@ -1,85 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYKZCPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYKZCTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbYKZCPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYKZCPG
+	id S1753571AbYKZCTc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYKZCTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:15:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55162 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067AbYKZCPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:15:04 -0500
-Date: Wed, 26 Nov 2008 03:14:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
+	Tue, 25 Nov 2008 21:19:24 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50625 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067AbYKZCTY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 21:19:24 -0500
+Date: Tue, 25 Nov 2008 21:19:21 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: set a more human
-	readable output
-Message-ID: <20081126021450.GA17617@elte.hu>
-References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu>
+Subject: Re: [PATCH] tracing/function-return-tracer: set a more human readable
+ output
+In-Reply-To: <20081126020459.GA16374@elte.hu>
+Message-ID: <alpine.DEB.1.10.0811252113270.26424@gandalf.stny.rr.com>
+References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu> <20081126020459.GA16374@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081126003936.GA26937@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-the regex filter doesnt work well yet when used with the graph tracer:
+On Wed, 26 Nov 2008, Ingo Molnar wrote:
+> 
+> The changes would be:
+> 
+> 1) Compression of non-nested calls into a single line.
+> 
+>    Implementing this probably necessiates some trickery with the
+>    ring-buffer: we'd have to look at the next entry as well and see 
+>    whether it closes the function call.
 
-[ 2994.079079] ------------[ cut here ]------------
-[ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
-[ 2994.079079] Modules linked in:
-[ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
-[ 2994.079079] Call Trace:
-[ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
-[ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-[ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-[ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-[ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
-[ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
-[ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
-[ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
-[ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-[ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
-[ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-[ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
-[ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-[ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
-[ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-[ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
-[ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
-[ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
-[ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
-[ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
-[ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-[ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-[ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
-[ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
-[ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
-[ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
-[ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
-[ 2994.079079] ---[ end trace bff97d149b80ecde ]---
-[ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
-[ 2994.079079]  actual: e8:0c:1a:fa:ff
+The latency_trace file does this already:
 
-produced via:
+You can look into the trace buffer without moving it with:
 
- # cd /debug/tracing/
- # cat set_ftrace_filter
- # echo schedule > set_ftrace_filter
- # cat set_ftrace_filter
- cat: set_ftrace_filter: No such device
+  entry = ring_buffer_iter_peek(iter->buffer_iter[iter->cpu], &ts);
 
-	Ingo
+where, ts will give you the time stamp, it can be NULL if you do not care.
+
+When your print function is called, the item in the ring buffer has 
+already been consumed. So the peek will give you the next item in the ring 
+buffer.
+
+> 
+> 2) Adding a closing ';' semicolon to single-line calls. It's the C 
+>    syntax and i'm missing it :-)
+> 
+> 3) The first column: single-character visual shortcuts for "overhead". 
+>    This is a concept we used in the -rt tracer and it still lives in 
+>    the latency tracer bits of ftrace and is quite useful:
+> 
+>     '+' means "overhead spike": overhead is above 10 usecs.
+>     '!' means "large overhead": overhead is above 100 usecs.
+> 
+>    These give at-a-glance hotspot analysis - hotspots are easier to 
+>    miss as pure numbers.
+
+The latency_trace file has this too. And it uses the above peek to figure 
+it out ;-)
+
+> 
+> 4) Printing out in units of microseconds, with a decimal point and by
+>    explicitly mentioning the 'us' unit.
+> 
+>    All of these are important properties: microseconds is still the 
+>    most common 'overhead' unit in kernel circles. It also gives rather 
+>    human single-digit or two-digit results. Nanoseconds is three or- 
+>    four-digit - which is too much. Repeating 'us' so many times is not 
+>    a problem - these lines will be grepped, quoted, etc - constant 
+>    reminder about the unit is just fine.
+> 
+> 5) Nesting the overhead numbers aligned to the right end of the graph. 
+>  
+>    This cleans up the view of the source code printout, but not 
+>    cluttering it with numbers. It also structures the numbers some 
+>    more. Visual cues are given via '-' and '+' signs, to follow 
+>    nesting. This nesting aligns up with the function nesting levels on 
+>    the left side - so it's easy to pair up number and function name. 
+>    It also separates the numbers from the symbol length effects in the 
+>    single-line case. (which is the most common trace line)
+> 
+> What do you think? It's lots of work (sorry! :-), but it would produce 
+> even more stunning graph-tracer output IMO.
+
+I like it, and I hope Frederic has enough time on his hands to do it ;)
+
+-- Steve
+
