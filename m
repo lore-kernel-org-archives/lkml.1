@@ -1,153 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbYKZNAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYKZNBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbYKZNAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 08:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYKZM6I
+	id S1754617AbYKZNBK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:01:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYKZM6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:58:08 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:46184 "EHLO smtp.polymtl.ca"
+	Wed, 26 Nov 2008 07:58:16 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:46214 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbYKZM6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:58:04 -0500
-Message-Id: <20081126124636.075638361@polymtl.ca>
+	id S1753717AbYKZM6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 07:58:11 -0500
+Message-Id: <20081126124636.395127092@polymtl.ca>
 References: <20081126124246.800751190@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Nov 2008 07:42:57 -0500
+Date: Wed, 26 Nov 2008 07:42:59 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Cc: Giuseppe Cavallaro <peppe.cavallaro@st.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
-Subject: [patch 11/17] LTTng timestamp sh
-Content-Disposition: inline; filename=sh-trace-clock.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:41 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [patch 13/17] x86 : remove arch-specific tsc_sync.c
+Content-Disposition: inline; filename=x86-remove-arch-specific-tsc_sync.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the timestamping mechanism in the trace-clock.h arch header
-file. The new timestamp functions use the TMU channel 1.
+Depends on the new arch. independent kernel/time/tsc-sync.c
 
-This code only works if the TMU channel 1 is initialized during the kernel boot.
-
-Big fat warning(TM) from Mathieu Desnoyers :
-
-This patch seems to assume TMU channel 1 is setup at boot. Is it always true on
-all SuperH boards ? Is there some Kconfig selection that should be done here ?
-Make sure this patch does not break get_cycles on SuperH before merging.
-
-From: Giuseppe Cavallaro <peppe.cavallaro@st.com>
-Signed-off-by: Giuseppe Cavallaro <peppe.cavallaro@st.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Paul Mundt <lethal@linux-sh.org>
-CC: linux-sh@vger.kernel.org
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/sh/Kconfig                   |    2 +
- arch/sh/include/asm/timex.h       |    7 +++-
- arch/sh/include/asm/trace-clock.h |   58 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 65 insertions(+), 2 deletions(-)
+ arch/x86/Kconfig           |    1 
+ arch/x86/include/asm/tsc.h |    8 +
+ arch/x86/kernel/Makefile   |    4 
+ arch/x86/kernel/tsc_sync.c |  199 ---------------------------------------------
+ 4 files changed, 10 insertions(+), 202 deletions(-)
 
-Index: linux.trees.git/arch/sh/include/asm/timex.h
+Index: linux.trees.git/arch/x86/kernel/Makefile
 ===================================================================
---- linux.trees.git.orig/arch/sh/include/asm/timex.h	2008-11-12 18:15:48.000000000 -0500
-+++ linux.trees.git/arch/sh/include/asm/timex.h	2008-11-26 06:52:23.000000000 -0500
-@@ -6,13 +6,16 @@
- #ifndef __ASM_SH_TIMEX_H
- #define __ASM_SH_TIMEX_H
+--- linux.trees.git.orig/arch/x86/kernel/Makefile	2008-11-26 05:46:29.000000000 -0500
++++ linux.trees.git/arch/x86/kernel/Makefile	2008-11-26 06:53:15.000000000 -0500
+@@ -63,9 +63,9 @@ obj-$(CONFIG_PCI)		+= early-quirks.o
+ apm-y				:= apm_32.o
+ obj-$(CONFIG_APM)		+= apm.o
+ obj-$(CONFIG_X86_SMP)		+= smp.o
+-obj-$(CONFIG_X86_SMP)		+= smpboot.o tsc_sync.o ipi.o tlb_$(BITS).o
++obj-$(CONFIG_X86_SMP)		+= smpboot.o ipi.o tlb_$(BITS).o
+ obj-$(CONFIG_X86_32_SMP)	+= smpcommon.o
+-obj-$(CONFIG_X86_64_SMP)	+= tsc_sync.o smpcommon.o
++obj-$(CONFIG_X86_64_SMP)	+= smpcommon.o
+ obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline_$(BITS).o
+ obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
+ obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o nmi.o
+Index: linux.trees.git/arch/x86/kernel/tsc_sync.c
+===================================================================
+--- linux.trees.git.orig/arch/x86/kernel/tsc_sync.c	2008-11-18 06:44:11.000000000 -0500
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,199 +0,0 @@
+-/*
+- * check TSC synchronization.
+- *
+- * Copyright (C) 2006, Red Hat, Inc., Ingo Molnar
+- *
+- * We check whether all boot CPUs have their TSC's synchronized,
+- * print a warning if not and turn off the TSC clock-source.
+- *
+- * The warp-check is point-to-point between two CPUs, the CPU
+- * initiating the bootup is the 'source CPU', the freshly booting
+- * CPU is the 'target CPU'.
+- *
+- * Only two CPUs may participate - they can enter in any order.
+- * ( The serial nature of the boot logic and the CPU hotplug lock
+- *   protects against more than 2 CPUs entering this code. )
+- */
+-#include <linux/spinlock.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/smp.h>
+-#include <linux/nmi.h>
+-#include <asm/tsc.h>
+-
+-/*
+- * Entry/exit counters that make sure that both CPUs
+- * run the measurement code at once:
+- */
+-static __cpuinitdata atomic_t start_count;
+-static __cpuinitdata atomic_t stop_count;
+-
+-/*
+- * We use a raw spinlock in this exceptional case, because
+- * we want to have the fastest, inlined, non-debug version
+- * of a critical section, to be able to prove TSC time-warps:
+- */
+-static __cpuinitdata raw_spinlock_t sync_lock = __RAW_SPIN_LOCK_UNLOCKED;
+-static __cpuinitdata cycles_t last_tsc;
+-static __cpuinitdata cycles_t max_warp;
+-static __cpuinitdata int nr_warps;
+-
+-/*
+- * TSC-warp measurement loop running on both CPUs:
+- */
+-static __cpuinit void check_tsc_warp(void)
+-{
+-	cycles_t start, now, prev, end;
+-	int i;
+-
+-	rdtsc_barrier();
+-	start = get_cycles();
+-	rdtsc_barrier();
+-	/*
+-	 * The measurement runs for 20 msecs:
+-	 */
+-	end = start + tsc_khz * 20ULL;
+-	now = start;
+-
+-	for (i = 0; ; i++) {
+-		/*
+-		 * We take the global lock, measure TSC, save the
+-		 * previous TSC that was measured (possibly on
+-		 * another CPU) and update the previous TSC timestamp.
+-		 */
+-		__raw_spin_lock(&sync_lock);
+-		prev = last_tsc;
+-		rdtsc_barrier();
+-		now = get_cycles();
+-		rdtsc_barrier();
+-		last_tsc = now;
+-		__raw_spin_unlock(&sync_lock);
+-
+-		/*
+-		 * Be nice every now and then (and also check whether
+-		 * measurement is done [we also insert a 10 million
+-		 * loops safety exit, so we dont lock up in case the
+-		 * TSC readout is totally broken]):
+-		 */
+-		if (unlikely(!(i & 7))) {
+-			if (now > end || i > 10000000)
+-				break;
+-			cpu_relax();
+-			touch_nmi_watchdog();
+-		}
+-		/*
+-		 * Outside the critical section we can now see whether
+-		 * we saw a time-warp of the TSC going backwards:
+-		 */
+-		if (unlikely(prev > now)) {
+-			__raw_spin_lock(&sync_lock);
+-			max_warp = max(max_warp, prev - now);
+-			nr_warps++;
+-			__raw_spin_unlock(&sync_lock);
+-		}
+-	}
+-	WARN(!(now-start),
+-		"Warning: zero tsc calibration delta: %Ld [max: %Ld]\n",
+-			now-start, end-start);
+-}
+-
+-/*
+- * Source CPU calls into this - it waits for the freshly booted
+- * target CPU to arrive and then starts the measurement:
+- */
+-void __cpuinit check_tsc_sync_source(int cpu)
+-{
+-	int cpus = 2;
+-
+-	/*
+-	 * No need to check if we already know that the TSC is not
+-	 * synchronized:
+-	 */
+-	if (unsynchronized_tsc())
+-		return;
+-
+-	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE)) {
+-		printk(KERN_INFO
+-		       "Skipping synchronization checks as TSC is reliable.\n");
+-		return;
+-	}
+-
+-	printk(KERN_INFO "checking TSC synchronization [CPU#%d -> CPU#%d]:",
+-			  smp_processor_id(), cpu);
+-
+-	/*
+-	 * Reset it - in case this is a second bootup:
+-	 */
+-	atomic_set(&stop_count, 0);
+-
+-	/*
+-	 * Wait for the target to arrive:
+-	 */
+-	while (atomic_read(&start_count) != cpus-1)
+-		cpu_relax();
+-	/*
+-	 * Trigger the target to continue into the measurement too:
+-	 */
+-	atomic_inc(&start_count);
+-
+-	check_tsc_warp();
+-
+-	while (atomic_read(&stop_count) != cpus-1)
+-		cpu_relax();
+-
+-	if (nr_warps) {
+-		printk("\n");
+-		printk(KERN_WARNING "Measured %Ld cycles TSC warp between CPUs,"
+-				    " turning off TSC clock.\n", max_warp);
+-		mark_tsc_unstable("check_tsc_sync_source failed");
+-	} else {
+-		printk(" passed.\n");
+-	}
+-
+-	/*
+-	 * Reset it - just in case we boot another CPU later:
+-	 */
+-	atomic_set(&start_count, 0);
+-	nr_warps = 0;
+-	max_warp = 0;
+-	last_tsc = 0;
+-
+-	/*
+-	 * Let the target continue with the bootup:
+-	 */
+-	atomic_inc(&stop_count);
+-}
+-
+-/*
+- * Freshly booted CPUs call into this:
+- */
+-void __cpuinit check_tsc_sync_target(void)
+-{
+-	int cpus = 2;
+-
+-	if (unsynchronized_tsc() || boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
+-		return;
+-
+-	/*
+-	 * Register this CPU's participation and wait for the
+-	 * source CPU to start the measurement:
+-	 */
+-	atomic_inc(&start_count);
+-	while (atomic_read(&start_count) != cpus)
+-		cpu_relax();
+-
+-	check_tsc_warp();
+-
+-	/*
+-	 * Ok, we are done:
+-	 */
+-	atomic_inc(&stop_count);
+-
+-	/*
+-	 * Wait for the source CPU to print stuff:
+-	 */
+-	while (atomic_read(&stop_count) != cpus)
+-		cpu_relax();
+-}
+-#undef NR_LOOPS
+-
+Index: linux.trees.git/arch/x86/Kconfig
+===================================================================
+--- linux.trees.git.orig/arch/x86/Kconfig	2008-11-26 06:48:49.000000000 -0500
++++ linux.trees.git/arch/x86/Kconfig	2008-11-26 06:55:19.000000000 -0500
+@@ -171,6 +171,7 @@ config GENERIC_PENDING_IRQ
+ config X86_SMP
+ 	bool
+ 	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
++	select HAVE_UNSYNCHRONIZED_TSC
+ 	default y
  
--#define CLOCK_TICK_RATE		(CONFIG_SH_PCLK_FREQ / 4) /* Underlying HZ */
-+#include <linux/io.h>
-+#include <asm/cpu/timer.h>
-+
-+#define CLOCK_TICK_RATE		(HZ * 100000UL)
+ config USE_GENERIC_SMP_HELPERS
+Index: linux.trees.git/arch/x86/include/asm/tsc.h
+===================================================================
+--- linux.trees.git.orig/arch/x86/include/asm/tsc.h	2008-11-26 06:48:49.000000000 -0500
++++ linux.trees.git/arch/x86/include/asm/tsc.h	2008-11-26 06:56:00.000000000 -0500
+@@ -48,7 +48,7 @@ static __always_inline cycles_t vget_cyc
+ extern void tsc_init(void);
+ extern void mark_tsc_unstable(char *reason);
+ extern int unsynchronized_tsc(void);
+-int check_tsc_unstable(void);
++extern int check_tsc_unstable(void);
  
- typedef unsigned long long cycles_t;
- 
- static __inline__ cycles_t get_cycles (void)
+ static inline cycles_t get_cycles_rate(void)
  {
--	return 0;
-+	return 0xffffffff - ctrl_inl(TMU1_TCNT);
- }
+@@ -71,4 +71,10 @@ extern void check_tsc_sync_target(void);
  
- #endif /* __ASM_SH_TIMEX_H */
-Index: linux.trees.git/arch/sh/Kconfig
-===================================================================
---- linux.trees.git.orig/arch/sh/Kconfig	2008-11-12 18:15:47.000000000 -0500
-+++ linux.trees.git/arch/sh/Kconfig	2008-11-26 06:52:23.000000000 -0500
-@@ -11,6 +11,8 @@ config SUPERH
- 	select HAVE_CLK
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
-+	select HAVE_TRACE_CLOCK
-+	select HAVE_TRACE_CLOCK_32_TO_64
- 	select HAVE_GENERIC_DMA_COHERENT
- 	select HAVE_IOREMAP_PROT if MMU
- 	help
-Index: linux.trees.git/arch/sh/include/asm/trace-clock.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux.trees.git/arch/sh/include/asm/trace-clock.h	2008-11-26 06:52:23.000000000 -0500
-@@ -0,0 +1,58 @@
-+/*
-+ * Copyright (C) 2007,2008 Giuseppe Cavallaro <peppe.cavallaro@st.com>
-+ *                         Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * Trace clock definitions for SuperH.
-+ */
-+
-+#ifndef _ASM_SH_TRACE_CLOCK_H
-+#define _ASM_SH_TRACE_CLOCK_H
-+
-+#include <linux/timer.h>
-+#include <asm/clock.h>
-+
-+extern u64 trace_clock_read_synthetic_tsc(void);
-+
-+static inline u32 trace_clock_get_timestamp32(void)
+ extern int notsc_setup(char *);
+ 
++extern int test_tsc_synchronization(void);
++extern int _tsc_is_sync;
++static inline int tsc_is_sync(void)
 +{
-+	return get_cycles();
++	return _tsc_is_sync;
 +}
-+
-+static inline u64 trace_clock_get_timestamp64(void)
-+{
-+	return trace_clock_read_synthetic_tsc();
-+}
-+
-+static inline u64 trace_clock_frequency(void)
-+{
-+	u64 rate;
-+	struct clk *tmu1_clk;
-+
-+	tmu1_clk = clk_get(NULL, "tmu1_clk");
-+	rate = clk_get_rate(tmu1_clk);
-+
-+	return rate;
-+}
-+
-+static inline u32 trace_clock_freq_scale(void)
-+{
-+	return 1;
-+}
-+
-+extern void get_synthetic_tsc(void);
-+extern void put_synthetic_tsc(void);
-+
-+static inline void get_trace_clock(void)
-+{
-+	get_synthetic_tsc();
-+}
-+
-+static inline void put_trace_clock(void)
-+{
-+	put_synthetic_tsc();
-+}
-+
-+static inline void set_trace_clock_is_sync(int state)
-+{
-+}
-+#endif /* _ASM_SH_TRACE_CLOCK_H */
+ #endif /* _ASM_X86_TSC_H */
 
 -- 
 Mathieu Desnoyers
