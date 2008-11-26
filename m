@@ -1,108 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYLAQmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbYLAQm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbYLAQmg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 11:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYLAQkG
+	id S1754159AbYLAQm5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 11:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYLAQkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 11:40:06 -0500
-Received: from zombie2.ncsc.mil ([144.51.88.133]:56964 "EHLO zombie2.ncsc.mil"
+	Mon, 1 Dec 2008 11:40:09 -0500
+Received: from zombie2.ncsc.mil ([144.51.88.133]:56955 "EHLO zombie2.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751655AbYLAQjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 11:39:52 -0500
+	id S1751647AbYLAQjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 11:39:51 -0500
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
        sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
        bfields@fieldses.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       labeled-nfs@linux-nfs.org
-Subject: [Labeled-nfs] [RFC v4] Security Label Support for NFSv4
-Date: Wed, 26 Nov 2008 16:03:00 -0500
-Message-Id: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
+       labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
+Subject: [PATCH 11/14] NFSv4: Introduce new label structure
+Date: Wed, 26 Nov 2008 16:03:11 -0500
+Message-Id: <1227733394-1114-12-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
+References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In order to mimic the way that NFSv4 ACLs are implemented we have created a
+structure to be used to pass label data up and down the call chain. This patch
+adds the new structure and new members to the required NFSv4 call structures.
 
-Hello,
+Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
+Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+---
+ include/linux/nfs4.h      |    6 ++++++
+ include/linux/nfs_xdr.h   |    3 +++
+ include/linux/nfsd/xdr4.h |    3 +++
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-This is the latest version of the NFS label support patch set. The set
-contains one patch which will be removed when it makes it's way upstream from
-the NFS maintainers' trees. This is the patch to fix a use before init bug in
-the nfs4recovery code. Changes since the last patchset are listed below.
-
-If you want a tree with the patches already applied we have posted a public
-git tree that is ready for cloning and use. This tree can be found at
-http://git.selinuxproject.org/git. You can find information on how to build
-and setup a labeled nfs at http://www.selinuxproject.org/page/Labeled_NFS. 
-
-Features:
-
-* Client
-	* Obtains labels from server for NFS files while still allowing for
-	SELinux context mounts to override untrusted labeled servers.
-	* Allows setting labels on files over NFS via xattr interface.
-* Server
-	* Exports labels to clients. As of the moment there is no ability to
-	restrict this based on label components such as MLS levels.
-	* Persistent storage of labels assuming exported file system supports
-	it.
-
-Changes since last patchset:
-
-The life cycle management patch has been fixed to return the error from kmalloc
-up the call stack. The patch use to have a panic in the case of memory
-allocation failure which was a temporary measure until this was ready.
-
-Inode locking was added around the functions in the NFS server code which
-assign the label to the inode when received from the wire.
-
-Memory allocations were changed from GFP_ATOMIC to GFP_KERNEL
-
-An bug that resulted in memory corruption when MLS support was enabled has
-also been fixed.
-
-The process label transport mechanism has been removed from the patchset since
-a new version of it is in the works. This new method provides the security
-guarantees needed for our purposes while providing compatibility with
-existing rpcsec flavors and fixing a potential MITM attack against kerberos. A
-more detailed explanation of the mechanism will be given when the design has
-been solidified and we have an initial implementation.
-
- fs/Kconfig                          |   30 +++
- fs/nfs/client.c                     |   16 ++
- fs/nfs/dir.c                        |   32 +++-
- fs/nfs/getroot.c                    |   44 +++-
- fs/nfs/inode.c                      |   69 +++++-
- fs/nfs/namespace.c                  |    3 +
- fs/nfs/nfs3proc.c                   |    7 +
- fs/nfs/nfs4proc.c                   |  489 +++++++++++++++++++++++++++++++---
- fs/nfs/nfs4xdr.c                    |   55 ++++-
- fs/nfs/proc.c                       |   12 +-
- fs/nfs/super.c                      |   46 ++++-
- fs/nfs/unlink.c                     |   12 +-
- fs/nfsd/export.c                    |    3 +
- fs/nfsd/nfs4proc.c                  |   35 +++-
- fs/nfsd/nfs4recover.c               |    6 +-
- fs/nfsd/nfs4xdr.c                   |  106 +++++++-
- fs/nfsd/vfs.c                       |   28 ++
- fs/xattr.c                          |   55 +++-
- include/linux/nfs4.h                |    8 +
- include/linux/nfs4_mount.h          |    6 +-
- include/linux/nfs_fs.h              |   26 ++
- include/linux/nfs_fs_sb.h           |    2 +-
- include/linux/nfs_xdr.h             |    7 +
- include/linux/nfsd/export.h         |    5 +-
- include/linux/nfsd/nfsd.h           |    9 +-
- include/linux/nfsd/xdr4.h           |    3 +
- include/linux/security.h            |   88 +++++++
- include/linux/xattr.h               |    1 +
- security/capability.c               |   29 ++
- security/security.c                 |   32 +++
- security/selinux/hooks.c            |  141 +++++++++--
- security/selinux/include/security.h |    4 +
- security/selinux/ss/policydb.c      |    5 +-
- security/smack/smack_lsm.c          |   10 +
- 34 files changed, 1315 insertions(+), 109 deletions(-)
+diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
+index 144eacf..dd99b27 100644
+--- a/include/linux/nfs4.h
++++ b/include/linux/nfs4.h
+@@ -112,6 +112,12 @@ struct nfs4_acl {
+ 	struct nfs4_ace	aces[0];
+ };
+ 
++struct nfs4_label {
++	void		*label;
++	u32		len;
++};
++
++
+ typedef struct { char data[NFS4_VERIFIER_SIZE]; } nfs4_verifier;
+ typedef struct { char data[NFS4_STATEID_SIZE]; } nfs4_stateid;
+ 
+diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+index 58532cb..177a62c 100644
+--- a/include/linux/nfs_xdr.h
++++ b/include/linux/nfs_xdr.h
+@@ -136,6 +136,7 @@ struct nfs_openargs {
+ 	const struct nfs_server *server;	 /* Needed for ID mapping */
+ 	const u32 *		bitmask;
+ 	__u32			claim;
++	const struct nfs4_label *label;
+ };
+ 
+ struct nfs_openres {
+@@ -354,6 +355,7 @@ struct nfs_setattrargs {
+ 	struct iattr *                  iap;
+ 	const struct nfs_server *	server; /* Needed for name mapping */
+ 	const u32 *			bitmask;
++	const struct nfs4_label *	label;
+ };
+ 
+ struct nfs_setaclargs {
+@@ -578,6 +580,7 @@ struct nfs4_create_arg {
+ 	const struct iattr *		attrs;
+ 	const struct nfs_fh *		dir_fh;
+ 	const u32 *			bitmask;
++	const struct nfs4_label *	label;
+ };
+ 
+ struct nfs4_create_res {
+diff --git a/include/linux/nfsd/xdr4.h b/include/linux/nfsd/xdr4.h
+index 27bd3e3..a0f3d79 100644
+--- a/include/linux/nfsd/xdr4.h
++++ b/include/linux/nfsd/xdr4.h
+@@ -94,6 +94,7 @@ struct nfsd4_create {
+ 	struct iattr	cr_iattr;           /* request */
+ 	struct nfsd4_change_info  cr_cinfo; /* response */
+ 	struct nfs4_acl *cr_acl;
++	struct nfs4_label *cr_label;
+ };
+ #define cr_linklen	u.link.namelen
+ #define cr_linkname	u.link.name
+@@ -223,6 +224,7 @@ struct nfsd4_open {
+ 	int		op_truncate;        /* used during processing */
+ 	struct nfs4_stateowner *op_stateowner; /* used during processing */
+ 	struct nfs4_acl *op_acl;
++	struct nfs4_label *op_label;
+ };
+ #define op_iattr	u.iattr
+ #define op_verf		u.verf
+@@ -304,6 +306,7 @@ struct nfsd4_setattr {
+ 	u32		sa_bmval[2];        /* request */
+ 	struct iattr	sa_iattr;           /* request */
+ 	struct nfs4_acl *sa_acl;
++	struct nfs4_label *sa_label;
+ };
+ 
+ struct nfsd4_setclientid {
+-- 
+1.5.5.1
 
