@@ -1,103 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYKZOUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYKZOea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbYKZOUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 09:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYKZOUP
+	id S1753152AbYKZOea (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 09:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYKZOeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 09:20:15 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:11103 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbYKZOUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 09:20:13 -0500
-To: linux-kernel@vger.kernel.org
-Cc: Robert Love <rlove@google.com>
-Subject: Re: [PATCH] Fix incorrect refcount while dispatching unmount event
-References: <1227708509-1561-1-git-send-email-dmonakhov@openvz.org>
-From: Dmitri Monakhov <dmonakhov@openvz.org>
-Date: Wed, 26 Nov 2008 17:19:32 +0300
-In-Reply-To: <1227708509-1561-1-git-send-email-dmonakhov@openvz.org> (Dmitri Monakhov's message of "Wed\, 26 Nov 2008 17\:08\:29 +0300")
-Message-ID: <m3bpw2wowb.fsf@dmon-lap.sw.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Wed, 26 Nov 2008 09:34:20 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:36584 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751827AbYKZOeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 09:34:19 -0500
+Date: Wed, 26 Nov 2008 09:34:17 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ext3: unwelcome journal abort
+Message-ID: <20081126143416.GB17991@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jonathan Corbet <corbet@lwn.net>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20081126071915.0decaf2c@bike.lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081126071915.0decaf2c@bike.lwn.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 26, 2008 at 07:19:15AM -0700, Jonathan Corbet wrote:
+> Twice now I've gotten the following with 2.6.28-rc3:
+> 
+> Nov 26 00:15:49 bike kernel: [282457.819704] __log_wait_for_space: no transactions
+>
+> I'm pulling the system up to -rc6 now, will yell if it happens again.
+> Is there anything else I can be looking at in the mean time?
 
-Robert, i've had error from email server because of unknown
-"rml@novell.com" addr. MAINTAINERS file contains several different
-emails. Please update your emails in.
+That should fix it.   The fix is in commit e219cca0 which was in -rc4.
 
-Dmitri Monakhov <dmonakhov@openvz.org> writes:
-> On umount two event will be dispatched to watcher:
-> 1: inotify_dev_queue_event(.., IN_UNMOUNT,..)
-> 2: remove_watch(watch, dev)
->     ->inotify_dev_queue_event(.., IN_IGNORED, ..)
-> But if watcher has IN_ONESHOT bit set then the watcher will be released
-> inside first event. Which result in accessing invalid object later.
-> IMHO it is not pure regression. This bug wasn't triggered while initial
-> inotify interface testing phase because of another bug in IN_ONESHOT
-> handling logic :)
->   commit ac74c00e499ed276a965e5b5600667d5dc04a84a
->   Author: Ulisses Furquim <ulissesf@gmail.com>
->   Date:   Fri Feb 8 04:18:16 2008 -0800
->     inotify: fix check for one-shot watches before destroying them
->     As the IN_ONESHOT bit is never set when an event is sent we must check it
->     in the watch's mask and not in the event's mask.
->
-> TESTCASE:
-> mkdir mnt
-> mount -ttmpfs none mnt
-> mkdir mnt/d
-> ./inotify mnt/d&
-> umount mnt ## << lockup or crash here
->
-> TESTSOURCE:
-> /* gcc -oinotify inotify.c */
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <sys/inotify.h>
->
-> int main(int argc, char **argv)
-> {
->         char buf[1024];
->         struct inotify_event *ie;
->         char *p;
->         int i;
->         ssize_t l;
->
->         p = argv[1];
->         i = inotify_init();
->         inotify_add_watch(i, p, ~0);
->
->         l = read(i, buf, sizeof(buf));
->         printf("read %d bytes\n", l);
->         ie = (struct inotify_event *) buf;
->         printf("event mask: %d\n", ie->mask);
-> 	return 0;
-> }
->
-> Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
-> ---
->  fs/inotify.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/fs/inotify.c b/fs/inotify.c
-> index 7bbed1b..dae3f28 100644
-> --- a/fs/inotify.c
-> +++ b/fs/inotify.c
-> @@ -428,11 +428,13 @@ void inotify_unmount_inodes(struct list_head *list)
->  		watches = &inode->inotify_watches;
->  		list_for_each_entry_safe(watch, next_w, watches, i_list) {
->  			struct inotify_handle *ih= watch->ih;
-> +			get_inotify_watch(watch);
->  			mutex_lock(&ih->mutex);
->  			ih->in_ops->handle_event(watch, watch->wd, IN_UNMOUNT, 0,
->  						 NULL, NULL);
->  			inotify_remove_watch_locked(ih, watch);
->  			mutex_unlock(&ih->mutex);
-> +			put_inotify_watch(watch);
->  		}
->  		mutex_unlock(&inode->inotify_mutex);
->  		iput(inode);		
+     	    	      	      	    	   - Ted
