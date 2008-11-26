@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbYKZQzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYKZQ4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbYKZQzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 11:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYKZQzm
+	id S1754823AbYKZQ4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 11:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYKZQ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 11:55:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45949 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbYKZQzm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 11:55:42 -0500
-Date: Wed, 26 Nov 2008 11:55:37 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, containers@lists.osdl.org,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/5] ftrace: add function tracing to single thread
-In-Reply-To: <20081126065425.GA26036@elte.hu>
-Message-ID: <alpine.DEB.1.10.0811261155200.26743@gandalf.stny.rr.com>
-References: <20081126051622.134970943@goodmis.org> <20081126051709.571204072@goodmis.org> <m1hc5vasye.fsf@frodo.ebiederm.org> <20081126065425.GA26036@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Nov 2008 11:56:13 -0500
+Received: from vena.lwn.net ([206.168.112.25]:37726 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbYKZQ4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 11:56:12 -0500
+Date: Wed, 26 Nov 2008 09:56:10 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
+       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Document sysfs interface to RTC system wakeup
+Message-ID: <20081126095610.13195e15@bike.lwn.net>
+In-Reply-To: <20081126161524.GD1983@elf.ucw.cz>
+References: <20081126161524.GD1983@elf.ucw.cz>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 26 Nov 2008 17:15:24 +0100
+Pavel Machek <pavel@suse.cz> wrote:
 
-On Wed, 26 Nov 2008, Ingo Molnar wrote:
+> +How to use /sys/class/rtc/rtcX/wakealarm
+> +^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> +This file takes the seconds since epoch to enable a wake event at the
+> +specified time.
 
-> 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> 
-> > > +/* ftrace_pid_trace >= 0 will only trace threads with this pid */
-> > > +static int ftrace_pid_trace = -1;
-> > 
-> > Why not?
-> > static struct pid *ftrace_pid_trace = NULL;
-> 
-> ok, looks reasonably simple at first sight.
-> 
-> Steve, mind sending the conversion of this facility to struct pid as a 
-> delta patch? (that would have education purposes as well, for similar 
-> situations)
+More documentation is cool.  In this case, though, I'm left with an
+immediate question: *why* am I interested in wakealarm?  Reading
+through, I eventually figure out that it can maybe be used to get a
+system to start up at some point in the future, maybe.  It seems like
+that should be said at the outset.
 
-If I can trace specific kernel threads too, then I have no problem with 
-it.
+Also; why do I want to migrate from /proc/acpi/alarm?
 
--- Steve
-
+jon
