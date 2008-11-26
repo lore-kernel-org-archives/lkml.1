@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYKZRFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYKZRIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYKZRFT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 12:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYKZRFE
+	id S1754611AbYKZRIB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 12:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYKZRHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 12:05:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40166 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbYKZRFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 12:05:02 -0500
-Date: Wed, 26 Nov 2008 15:04:13 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 8250: fix boot hang with serial console when using with
- Serial Over Lan port
-Message-ID: <20081126150413.7ceac766@pedra.chehab.org>
-In-Reply-To: <20081126155551.2f05f456@lxorguk.ukuu.org.uk>
-References: <20081126134812.573d3d9e@pedra.chehab.org>
-	<20081126155551.2f05f456@lxorguk.ukuu.org.uk>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Nov 2008 12:07:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43940 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbYKZRHw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 12:07:52 -0500
+Date: Wed, 26 Nov 2008 11:08:51 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: mtk.manpages@gmail.com
+Cc: Pavel Emelyanov <xemul@openvz.org>, Kir Kolyshkin <kir@openvz.org>,
+       linux-man@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: Documentation for CLONE_NEWPID
+Message-ID: <20081126170851.GA24943@hallyn.com>
+References: <4923810B.7010201@gmail.com> <20081123222023.GB12687@hallyn.com> <cfd18e0f0811250709x4e2cc5cdhafb9ccf494890442@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0811250709x4e2cc5cdhafb9ccf494890442@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
-
-On Wed, 26 Nov 2008 15:55:51 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > +	/* Serial over Lan (SoL) hack:
-> > +	   Intel 8257x Gigabit ethernet chips have a
-> > +	   16550 emulation, to be used for Serial Over Lan.
-> > +	   Those chips take a longer time than a normal
-> > +	   serial device to signalize that a transmission
-> > +	   data was queued. Due to that, the above test generally
-> > +	   fails. One solution would be to delay the reading of
-> > +	   iir. However, this is not reliable, since the timeout
-> > +	   is variable. So, let's just don't test if we receive
-> > +	   TX irq. This way, we'll never enable UART_BUG_TXEN.
-> > +	 */
-> > +	if (up->port.flags & UPF_SOL_UART)
-> > +		goto dont_test_tx_irq;
-> > +
+Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
+> Hi Serge,
+> > I assume you've considered the pros and cons of mentioning
+> > signal semantics with respect to init tasks of child pid namespaces,
+> > and decided it's not worth mentioning yet as the semantics are not
+> > yet finalized?
+> >
+> > The goal is to treat the process as a system-wide init with respect
+> > to signals coming from its own namespace, and treat it as an ordinary
+> > task for signals coming from its ancestor namespaces.  But as you've
+> > probably read, the implementation may result in some unfortunate
+> > side-effects regarding blocked signals etc.
 > 
-> In the interest of trying to keep the driver sane can that become
-> "UPF_NO_TXEN_TEST" or similar so the same quirk can be applied to other
-> devices with the problem (ditto the pci_intel_sol_setup name could be
-> generalised and the message could give a pci id and "skipping TxEn test"
-> as a debug level note)
+> No I haven't considered this at all.  Could you provide some pointers
+> to relevant discussions on this?
 
-Done. I'm submitting the resulting patch in the sequence.
+The discussions are going on right now on lkml (see for instance
+http://lkml.org/lkml/2008/11/15/124).  But I think Nadia has already
+written something up.  Nadia, could you send what you have to
+Michael?
 
-> Otherwise looks fine to me
-> 
-> (please cc me on serial patches: I think you meant to cc me and Andrew as
-> you cc'd the mysterious "Alan Morton").
-
-Yes, that was the idea :)
-
-Thanks,
-Mauro
+thanks,
+-serge
