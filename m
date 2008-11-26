@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYKZRIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYKZRJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYKZRIB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 12:08:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYKZRHx
+	id S1754680AbYKZRJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 12:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYKZRJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 12:07:53 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43940 "EHLO
+	Wed, 26 Nov 2008 12:09:32 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53546 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbYKZRHw (ORCPT
+	with ESMTP id S1752339AbYKZRJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 12:07:52 -0500
-Date: Wed, 26 Nov 2008 11:08:51 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: mtk.manpages@gmail.com
-Cc: Pavel Emelyanov <xemul@openvz.org>, Kir Kolyshkin <kir@openvz.org>,
-       linux-man@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: Documentation for CLONE_NEWPID
-Message-ID: <20081126170851.GA24943@hallyn.com>
-References: <4923810B.7010201@gmail.com> <20081123222023.GB12687@hallyn.com> <cfd18e0f0811250709x4e2cc5cdhafb9ccf494890442@mail.gmail.com>
+	Wed, 26 Nov 2008 12:09:31 -0500
+Date: Wed, 26 Nov 2008 12:09:30 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/function-return-tracer: set a more human readable
+ output
+In-Reply-To: <c62985530811260311k4237012asd27ebd8599328cea@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0811261206120.26743@gandalf.stny.rr.com>
+References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu>  <20081126020459.GA16374@elte.hu> <c62985530811260311k4237012asd27ebd8599328cea@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0811250709x4e2cc5cdhafb9ccf494890442@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
-> Hi Serge,
-> > I assume you've considered the pros and cons of mentioning
-> > signal semantics with respect to init tasks of child pid namespaces,
-> > and decided it's not worth mentioning yet as the semantics are not
-> > yet finalized?
+
+On Wed, 26 Nov 2008, Fr?d?ric Weisbecker wrote:
+
+> 2008/11/26 Ingo Molnar <mingo@elte.hu>:
+> > 1) Compression of non-nested calls into a single line.
 > >
-> > The goal is to treat the process as a system-wide init with respect
-> > to signals coming from its own namespace, and treat it as an ordinary
-> > task for signals coming from its ancestor namespaces.  But as you've
-> > probably read, the implementation may result in some unfortunate
-> > side-effects regarding blocked signals etc.
+> >   Implementing this probably necessiates some trickery with the
+> >   ring-buffer: we'd have to look at the next entry as well and see
+> >   whether it closes the function call.
 > 
-> No I haven't considered this at all.  Could you provide some pointers
-> to relevant discussions on this?
+> 
+> I wanted to do so. That's not so easy, I guess I will not only have to read
+> the next entry. I'll have to modify it to avoid the next entry to
+> print a closing brace.
 
-The discussions are going on right now on lkml (see for instance
-http://lkml.org/lkml/2008/11/15/124).  But I think Nadia has already
-written something up.  Nadia, could you send what you have to
-Michael?
+You could run a ring_buffer_read(iter->buffer_iter[iter->cpu], NULL)
+and that will consume the next entry, so it will not print.
 
-thanks,
--serge
+> But I don't think that would be a problem.
+> Note with this method that if there is a context switch or an
+> interrupt between the entry and
+> the return of a leaf function, it will not anymore be considered as a non-nested
+> function on its output.
+> But the case would be rare enough, so I will apply this.
+
+Yeah, we would not care about that case. In fact it may be best to keep it 
+as is.
+
+-- Steve
+
