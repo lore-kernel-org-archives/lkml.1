@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYKZAEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYKZAFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbYKZAEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 19:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYKZAE1
+	id S1753497AbYKZAFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 19:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYKZAF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 19:04:27 -0500
-Received: from kroah.org ([198.145.64.141]:33194 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750998AbYKZAE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 19:04:27 -0500
-Date: Tue, 25 Nov 2008 16:03:40 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ian Campbell <ijc@hellion.org.uk>,
-       Daniel =?iso-8859-1?Q?Schr=F6der?= <mail@dschroeder.info>,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] Change 5c371b31be3203 in stable breaks Xen
-Message-ID: <20081126000340.GB1091@kroah.com>
-References: <492C6D8D.3040600@goop.org> <1227654364.27529.3.camel@localhost.localdomain> <492C897E.1010509@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492C897E.1010509@goop.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 25 Nov 2008 19:05:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36844 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750998AbYKZAF1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 19:05:27 -0500
+Date: Tue, 25 Nov 2008 16:05:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fernando Carrijo <fcarrijo@yahoo.com.br>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix similar typos to successfull, v2
+Message-Id: <20081125160524.102a2b3a.akpm@linux-foundation.org>
+In-Reply-To: <1227656953.18268.13.camel@pc-fernando>
+References: <492AE7ED.8040304@suse.de>
+	<20081125145308.8633bf4a.akpm@linux-foundation.org>
+	<1227656953.18268.13.camel@pc-fernando>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 03:25:50PM -0800, Jeremy Fitzhardinge wrote:
-> Ian Campbell wrote:
-> > On Tue, 2008-11-25 at 13:26 -0800, Jeremy Fitzhardinge wrote:
-> >   
-> >> I have a report of Xen breaking between 2.6.27.5 and .6.  I bisected
-> >> it 
-> >> down to change:
-> >>
-> >> commit 5c371b31be32033b0a4a993431484da8a2305369
-> >> Author: Yinghai Lu <yhlu.kernel@gmail.com>
-> >> Date:   Mon Sep 22 02:52:26 2008 -0700
-> >>
-> >>     x86: fix CONFIG_X86_RESERVE_LOW_64K=y
-> >>    
-> >>     commit 2216d199b1430d1c0affb1498a9ebdbd9c0de439 upstream
-> >>     
-> >
-> > Looks like 5dc64a3442b98eaa0e3730c35fcf00cf962a93e7 might be needed in
-> > stable too?
-> >   
+On Tue, 25 Nov 2008 21:49:13 -0200
+Fernando Carrijo <fcarrijo@yahoo.com.br> wrote:
+
+> On Tue, 2008-11-25 at 14:53 -0800, Andrew Morton wrote:
+> > On Tue, 25 Nov 2008 01:44:13 +0800
+> > Coly Li <coyli@suse.de> wrote:
+> > 
+> > > When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
+> > > in kernel tree, 22 typos found totally --  great minds always think alike  :)
+> > 
+> > Mutter.  I have a super-strict (lol) policy of "I don't take patches
+> > which fix typos/spellos in comments", because we have so many such
+> > errors, and I'd get buried in silly patches.  But I do take patches
+> > which fix documentation and user-visible printks, etc.
 > 
-> Ah, yes, that looks like the right fix.  I'll see if it helps.
+> Since you started the thread, I feel less guilty to talk about the
+> existence of tons of another kind of typo spread around the kernel
+> sources: null statements created by duplicated semi-colons at the end of
+> statements. Something like foo();;
 
-If so, let us know and we will add it to the next -stable release.
-
-thanks,
-
-greg k-h
+We should just fix those.
