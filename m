@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbYKZTmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYKZTqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754396AbYKZTmJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 14:42:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYKZTlz
+	id S1753914AbYKZTqB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 14:46:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYKZTpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 14:41:55 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:61891 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbYKZTly (ORCPT
+	Wed, 26 Nov 2008 14:45:53 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:28196 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbYKZTpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 14:41:54 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=l/1ybmYQPNY7DfRpvC0qa9Zzra1G8Pyrh6MLkOIIalzBuYXWg5+38nSqYlaESVOnb
-	dPR5MI2MtPnCHlIDCLweQ==
+	Wed, 26 Nov 2008 14:45:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=R74ycDcdYEoxtVswVV9+X1rt65QZiN5jrjIGbQtmcyZzDLnyWKx1mVSpDGLV6vpdst
+         wreXAyU6M7fEQq0oHbAkiBMDOwcTAs7IM9o6YRm2QEn6fhca63hvpSnbGhrcPumAfoAK
+         R5L+Ac6H73doAFei7V4oM690nBNnrOlkcRBPk=
+Message-ID: <b637ec0b0811261145q3c7af010l1db0480d13b41715@mail.gmail.com>
+Date: Wed, 26 Nov 2008 20:45:50 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jay Fenlason" <fenlason@redhat.com>
+In-Reply-To: <492D40F7.2040605@s5r6.in-berlin.de>
 MIME-Version: 1.0
-In-Reply-To: <492D57E1.5090608@unimore.it>
-References: <20081113221304.GH7542@redhat.com>
-	 <20081120.182053.220301508585579959.ryov@valinux.co.jp>
-	 <20081120134701.GB29306@redhat.com>
-	 <20081125.113359.623571555980951312.ryov@valinux.co.jp>
-	 <20081125162720.GH341@redhat.com>
-	 <e98e18940811251438v245f79aegfdc92bee737af64c@mail.gmail.com>
-	 <492D57E1.5090608@unimore.it>
-Date: Wed, 26 Nov 2008 11:41:46 -0800
-Message-ID: <e98e18940811261141x307cf06fldd5e481e85da5c2d@mail.gmail.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Nauman Rafique <nauman@google.com>
-To: Paolo Valente <paolo.valente@unimore.it>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       fchecconi@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
+	 <492A5557.2010404@s5r6.in-berlin.de> <200811260015.24549.rjw@sisk.pl>
+	 <200811260031.20079.rjw@sisk.pl> <492CA046.9010501@s5r6.in-berlin.de>
+	 <b637ec0b0811260019q38564411qf586282984236e22@mail.gmail.com>
+	 <492D40F7.2040605@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 6:06 AM, Paolo Valente <paolo.valente@unimore.it> wrote:
-> Fabio and I are a little bit worried about the fact that the problem
-> of working in the time domain instead of the service domain is not
-> being properly dealt with.  Probably we did not express ourselves very
-> clearly, so we will try to put in more practical terms.  Using B-WF2Q+
-> in the time domain instead of using CFQ (Round-Robin) means introducing
-> higher complexity than CFQ to get almost the same service properties
-> of CFQ.  With regard to fairness (long term) B-WF2Q+ in the time domain
+Ok, I reproduced the bug with 2.6.27.7 without firewire. So the
+firewire stack is innocent after all.
+FWIW, it happened after the resume, as soon as I plugged the AC
+adapter. The system became unresponsive for at least two minutes and
+then "resurrected" as nothing happened. Nothing in the logs and the
+dmesg is clean.
 
-Are we talking about a case where all the contenders have equal
-weights and are continuously backlogged? That seems to be the only
-case when B-WF2Q+ would behave like Round-Robin. Am I missing
-something here?
+I ran out of ideas. I'm trying 2.6.27.4, the kernel then never showed
+the problem.
 
-I can see that the only direct advantage of using WF2Q+ scheduling is
-reduced jitter or latency in certain cases. But under heavy loads,
-that might result in request latencies seen by RT threads to be
-reduced from a few seconds to a few msec.
+I will also launch a full SMART test on my hd, in case it is the guilty.
 
-> has exactly the same (un)fairness problems of CFQ.  As far as bandwidth
-> differentiation is concerned, it can be obtained with CFQ by just
-> increasing the time slice (e.g., double weight => double slice).  This
-> has no impact on long term guarantees and certainly does not decrease
-> the throughput.
->
-> With regard to short term guarantees (request completion time), one of
-> the properties of the reference ideal system of Wf2Q+ is that, assuming
-> for simplicity that all the queues have the same weight, as the ideal
-> system serves each queue at the same speed, shorter budgets are completed
-> in a shorter time intervals than longer budgets.  B-WF2Q+ guarantees
-> O(1) deviation from this ideal service.  Hence, the tight delay/jitter
-> measured in our experiments with BFQ is a consequence of the simple (and
-> probably still improvable) budget assignment mechanism of (the overall)
-> BFQ.  In contrast, if all the budgets are equal, as it happens if we use
-> time slices, the resulting scheduler is exactly a Round-Robin, again
-> as in CFQ (see [1]).
+Regards,
+Fabio
 
-Can the budget assignment mechanism of BFQ be converted to time slice
-assignment mechanism? What I am trying to say here is that we can have
-variable time slices, just like we have variable budgets.
-
+On Wed, Nov 26, 2008 at 1:28 PM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Fabio Comolli wrote:
+>> I haven't reproduced the problem so far without the drivers compiled
+>> in (and with the debug option you suggested). I'll post some more info
+>> in a few days.
 >
-> Finally, with regard to completion time delay differentiation through
-> weight differentiation, this is probably the only case in which B-WF2Q+
-> would perform better than CFQ, because, in case of CFQ, reducing the
-> time slices may reduce the throughput, whereas increasing the time slice
-> would increase the worst-case delay/jitter.
->
-> In the end, BFQ succeeds in guaranteeing fairness (or in general the
-> desired bandwidth distribution) because it works in the service domain
-> (and this is probably the only way to achieve this goal), not because
-> it uses WF2Q+ instead of Round-Robin.  Similarly, it provides tight
-> delay/jitter only because B-WF2Q+ is used in combination with a simple
-> budget assignment (differentiation) mechanism (again in the service
-> domain).
->
-> [1] http://feanor.sssup.it/~fabio/linux/bfq/results.php
->
+> Sounds like I urgently need to set up hibernation on a test PC here.
+> Thanks,
 > --
-> -----------------------------------------------------------
-> | Paolo Valente              |                            |
-> | Algogroup                  |                            |
-> | Dip. Ing. Informazione     | tel:   +39 059 2056318     |
-> | Via Vignolese 905/b        | fax:   +39 059 2056199     |
-> | 41100 Modena               |                            |
-> |     home:  http://algo.ing.unimo.it/people/paolo/       |
-> -----------------------------------------------------------
->
+> Stefan Richter
+> -=====-==--- =-== ==-=-
+> http://arcgraph.de/sr/
 >
