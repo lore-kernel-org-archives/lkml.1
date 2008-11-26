@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYKZQLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYKZQNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYKZQLj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 11:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYKZQLb
+	id S1753523AbYKZQNj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 11:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYKZQN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 11:11:31 -0500
-Received: from www.tglx.de ([62.245.132.106]:34285 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751128AbYKZQLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 11:11:31 -0500
-Date: Wed, 26 Nov 2008 17:10:27 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: eranian@gmail.com
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-Subject: Re: [patch 21/24] perfmon: Intel architectural PMU support (x86)
-In-Reply-To: <7c86c4470811260745s293ae0bbw1cf53642d4f88416@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0811261656040.3325@localhost.localdomain>
-References: <492d0c0e.06e2660a.1583.ffffcc0a@mx.google.com>  <alpine.LFD.2.00.0811261446070.3325@localhost.localdomain> <7c86c4470811260745s293ae0bbw1cf53642d4f88416@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 26 Nov 2008 11:13:29 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49914 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbYKZQN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 11:13:28 -0500
+Date: Wed, 26 Nov 2008 17:15:16 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: penberg@cs.helsinki.fi, kernel list <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, rdunlap@xenotime.net
+Subject: Re: w35und: fix Kconfig
+Message-ID: <20081126161516.GB1983@elf.ucw.cz>
+References: <20081124091829.GA30292@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081124091829.GA30292@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, stephane eranian wrote:
-> In anycase, the idea is to encapsulate as much as possible code
-> related into a PMU model
-> into each module. That is why you are seing some redundancy.
 
-Makes sense.
- 
-> There is a difference between enable_mask and used_pmcs. The used_pmcs
-> bitmasks shows
-> all the config registers in use. Whereas enable_mask shows the all
-> config registers which have
-> start/stop capabilities. For the basic AMD64 PMU (4 counters)
-> used_pmcs and enable_mask
-> are equivalent, but that is not the case on Barcelona once we support
-> IBS and sampling. So
-> for now, I could clean this up and drop enable_mask to use plain used_pmcs.
+4KSTACK dependency was needed when driver carried its own softmac
+layer. That layer is gone, and functions have reasonably small stack
+footprint -> dependency can be removed.
 
-Understood. If we need that in the near future then it's ok to keep
-it, it just did not make any sense from the current code.
+Add better description of hardware this driver is targetted at (now
+with fixed whitespace)
 
-But I think you should do this once when you set up the context and
-keep that as a separate mask. Right now you evaluate enable_mask and
-used_pmcs over and over again.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> >> +     count = pfm_arch_bv_weight(used_mask, max_enable);
-> >
-> > So we have:
-> >
-> >   set->used_pmcs and enable_mask and max_enable.
-> >
-> > Why can set->used_pmcs contain bits which are not in the enable_mask
-> > in the first place ? Why does the arch code not tell the generic code
-> > which pmcs are available so we can avoid all this mask, weight
-> > whatever magic ?
-> >
-> 
-> Because used_pmcs is part of generic code and enable_mask is a x86 construct.
-> As I said above, for now, I could drop enable_mask.
-> The arch code already export the list of available pmcs and pmds in
-> impl_pmcs and impl_pmds.
+diff -ur gregkh-ofic/drivers/staging/winbond/Kconfig gregkh/drivers/staging/winbond/Kconfig
+--- gregkh-ofic/drivers/staging/winbond/Kconfig	2008-11-19 11:39:38.000000000 +0100
++++ gregkh/drivers/staging/winbond/Kconfig	2008-11-26 10:33:36.000000000 +0100
+@@ -1,7 +1,11 @@
+ config W35UND
+-	tristate "Winbond driver"
+-	depends on MAC80211 && WLAN_80211 && USB && EXPERIMENTAL && !4KSTACKS
++	tristate "IS89C35 WLAN USB driver"
++	depends on MAC80211 && WLAN_80211 && USB && EXPERIMENTAL
+ 	default n
+ 	---help---
+-	  This is highly experimental driver for winbond wifi card on some Kohjinsha notebooks
+-	  Check http://code.google.com/p/winbondport/ for new version
++	  This is highly experimental driver for Winbond WIFI card.
++
++	  Hardware is present in some Kohjinsha subnotebooks, and in some
++	  stand-alone USB modules. Chipset name seems to be w89c35d.
++
++	  Check http://code.google.com/p/winbondport/ for new version.
 
-See above.
- 
-> > Why are the counters enabled at all when an overflow is pending, which
-> > stopped the counters anyway ?
-> >
-> Because on Intel and AMD64, counters are not automatically frozen on interrupt.
-> On Intel X86, they can be configured to do so, but it is an all or
-> nothing setting.
-> I am not using this option because we would then have a problem with the NMI
-> watchdog given that it is also using a counter.
-
-Well, my question was: why do we have to stop the counters when an
-overflow is pending already ?
-
-The overflow pending is set inside of stop_save() and cleared
-somewhere else. 
-
-stop_save() is called from pfm_arch_stop() and
-pfm_arch_ctxswout_thread(). The first thing it does is to disable the
-counters.
-
-Now at some points the counters are obviously reenabled for this
-context, but why are they reenabled _before_ the pending overflow has
-been resolved ? For N counters that N * 2 wrmsrl() overhead.
-
-Thanks,
-
-	tglx
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
