@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYKZM7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYKZNA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYKZM7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 07:59:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYKZM6D
+	id S1754508AbYKZNA3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYKZM6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:58:03 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:46128 "EHLO smtp.polymtl.ca"
+	Wed, 26 Nov 2008 07:58:06 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:46185 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbYKZM54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:57:56 -0500
-Message-Id: <20081126124636.558224073@polymtl.ca>
+	id S1752762AbYKZM6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 07:58:04 -0500
+Message-Id: <20081126124636.882679235@polymtl.ca>
 References: <20081126124246.800751190@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Nov 2008 07:43:00 -0500
+Date: Wed, 26 Nov 2008 07:43:02 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -20,81 +20,348 @@ To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Ralf Baechle <ralf@linux-mips.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [patch 14/17] MIPS use tsc_sync.c
-Content-Disposition: inline; filename=mips-use-tsc_sync.patch
+Subject: [patch 16/17] MIPS : Trace clock
+Content-Disposition: inline; filename=mips-trace-clock.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tsc-sync.c is now available to test if TSC is synchronized across cores. Given
-I currently don't have access to a MIPS board myself, help trying to use it
-when CPUs go online and testing the implementation would be welcome.
+MIPS get_cycles only returns a 32 bits TSC (see timex.h). The assumption there
+is that the reschedule is done every 8 seconds or so. Given that tracing needs
+to detect delays longer than 8 seconds, we need a full 64-bits TSC, which is
+provided by trace-clock-32-to-64.
+
+I leave the "depends on !CPU_R4400_WORKAROUNDS" in Kconfig because the solution
+proposed by Ralf to deal with the R4400 bug is racy, so let's just not support
+this broken architecture. :(
+
+This patch uses the same cache-line bouncing algorithm used for x86. This is a
+best-effort to support architectures lacking synchronized TSC without adding a
+lot of complexity too soon. This keeps room for improvement in a second phase.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Ralf Baechle <ralf@linux-mips.org>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/mips/include/asm/timex.h |   26 ++++++++++++++++++++++++++
- arch/mips/kernel/smp.c        |    1 +
- 2 files changed, 27 insertions(+)
+ arch/mips/Kconfig                   |    3 
+ arch/mips/include/asm/timex.h       |   17 +++
+ arch/mips/include/asm/trace-clock.h |   65 +++++++++++++
+ arch/mips/kernel/Makefile           |    4 
+ arch/mips/kernel/trace-clock.c      |  172 ++++++++++++++++++++++++++++++++++++
+ 5 files changed, 260 insertions(+), 1 deletion(-)
 
-Index: linux.trees.git/arch/mips/kernel/smp.c
+Index: linux.trees.git/arch/mips/Kconfig
 ===================================================================
---- linux.trees.git.orig/arch/mips/kernel/smp.c	2008-11-12 18:15:47.000000000 -0500
-+++ linux.trees.git/arch/mips/kernel/smp.c	2008-11-26 06:57:38.000000000 -0500
-@@ -178,6 +178,7 @@ void __init smp_cpus_done(unsigned int m
- {
- 	mp_ops->cpus_done();
- 	synchronise_count_master();
-+	test_tsc_synchronization();
- }
+--- linux.trees.git.orig/arch/mips/Kconfig	2008-11-26 07:25:31.000000000 -0500
++++ linux.trees.git/arch/mips/Kconfig	2008-11-26 07:26:44.000000000 -0500
+@@ -1614,6 +1614,9 @@ config CPU_R4400_WORKAROUNDS
+ config HAVE_GET_CYCLES_32
+ 	def_bool y
+ 	depends on !CPU_R4400_WORKAROUNDS
++	select HAVE_TRACE_CLOCK
++	select HAVE_TRACE_CLOCK_32_TO_64
++	select HAVE_UNSYNCHRONIZED_TSC
  
- /* called from main before smp_init() */
+ #
+ # Use the generic interrupt handling code in kernel/irq/:
+Index: linux.trees.git/arch/mips/include/asm/trace-clock.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/arch/mips/include/asm/trace-clock.h	2008-11-26 07:26:44.000000000 -0500
+@@ -0,0 +1,65 @@
++/*
++ * Copyright (C) 2005,2008 Mathieu Desnoyers
++ *
++ * Trace clock MIPS definitions.
++ */
++
++#ifndef _ASM_MIPS_TRACE_CLOCK_H
++#define _ASM_MIPS_TRACE_CLOCK_H
++
++#include <linux/timex.h>
++#include <asm/processor.h>
++
++#define TRACE_CLOCK_MIN_PROBE_DURATION 200
++
++extern u64 trace_clock_read_synthetic_tsc(void);
++
++/*
++ * MIPS get_cycles only returns a 32 bits TSC (see timex.h). The assumption
++ * there is that the reschedule is done every 8 seconds or so. Given that
++ * tracing needs to detect delays longer than 8 seconds, we need a full 64-bits
++ * TSC, whic is provided by trace-clock-32-to-64.
++*/
++extern u64 trace_clock_async_tsc_read(void);
++
++static inline u32 trace_clock_read32(void)
++{
++	u32 cycles;
++
++	if (likely(tsc_is_sync()))
++		cycles = (u32)get_cycles(); /* only need the 32 LSB */
++	else
++		cycles = (u32)trace_clock_async_tsc_read();
++	return cycles;
++}
++
++static inline u64 trace_clock_read64(void)
++{
++	u64 cycles;
++
++	if (likely(tsc_is_sync()))
++		cycles = trace_clock_read_synthetic_tsc();
++	else
++		cycles = trace_clock_async_tsc_read();
++	return cycles;
++}
++
++static inline u64 trace_clock_frequency(void)
++{
++	return get_cycles_rate();
++}
++
++static inline u32 trace_clock_freq_scale(void)
++{
++	return 1;
++}
++
++extern void get_trace_clock(void);
++extern void put_trace_clock(void);
++extern void get_synthetic_tsc(void);
++extern void put_synthetic_tsc(void);
++
++static inline void set_trace_clock_is_sync(int state)
++{
++}
++#endif /* _ASM_MIPS_TRACE_CLOCK_H */
+Index: linux.trees.git/arch/mips/kernel/trace-clock.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/arch/mips/kernel/trace-clock.c	2008-11-26 07:26:44.000000000 -0500
+@@ -0,0 +1,172 @@
++/*
++ * arch/mips/kernel/trace-clock.c
++ *
++ * Trace clock for mips.
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, October 2008
++ */
++
++#include <linux/module.h>
++#include <linux/trace-clock.h>
++#include <linux/jiffies.h>
++#include <linux/mutex.h>
++#include <linux/timer.h>
++#include <linux/spinlock.h>
++
++static u64 trace_clock_last_tsc;
++static DEFINE_PER_CPU(struct timer_list, update_timer);
++static DEFINE_MUTEX(async_tsc_mutex);
++static int async_tsc_refcount;	/* Number of readers */
++static int async_tsc_enabled;	/* Async TSC enabled on all online CPUs */
++
++/*
++ * Support for architectures with non-sync TSCs.
++ * When the local TSC is discovered to lag behind the highest TSC counter, we
++ * increment the TSC count of an amount that should be, ideally, lower than the
++ * execution time of this routine, in cycles : this is the granularity we look
++ * for : we must be able to order the events.
++ */
++
++#if BITS_PER_LONG == 64
++notrace u64 trace_clock_async_tsc_read(void)
++{
++	u64 new_tsc, last_tsc;
++
++	WARN_ON(!async_tsc_refcount || !async_tsc_enabled);
++	new_tsc = trace_clock_read_synthetic_tsc();
++	do {
++		last_tsc = trace_clock_last_tsc;
++		if (new_tsc < last_tsc)
++			new_tsc = last_tsc + TRACE_CLOCK_MIN_PROBE_DURATION;
++		/*
++		 * If cmpxchg fails with a value higher than the new_tsc, don't
++		 * retry : the value has been incremented and the events
++		 * happened almost at the same time.
++		 * We must retry if cmpxchg fails with a lower value :
++		 * it means that we are the CPU with highest frequency and
++		 * therefore MUST update the value.
++		 */
++	} while (cmpxchg64(&trace_clock_last_tsc, last_tsc, new_tsc) < new_tsc);
++	return new_tsc;
++}
++EXPORT_SYMBOL_GPL(trace_clock_async_tsc_read);
++#else
++/*
++ * Emulate an atomic 64-bits update with a spinlock.
++ * Note : preempt_disable or irq save must be explicit with raw_spinlock_t.
++ * Given we use a spinlock for this time base, we should never be called from
++ * NMI context.
++ */
++static raw_spinlock_t trace_clock_lock =
++	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
++
++static inline u64 trace_clock_cmpxchg64(u64 *ptr, u64 old, u64 new)
++{
++	u64 val;
++
++	val = *ptr;
++	if (likely(val == old))
++		*ptr = val = new;
++	return val;
++}
++
++notrace u64 trace_clock_async_tsc_read(void)
++{
++	u64 new_tsc, last_tsc;
++	unsigned long flags;
++
++	WARN_ON(!async_tsc_refcount || !async_tsc_enabled);
++	local_irq_save(flags);
++	__raw_spin_lock(&trace_clock_lock);
++	new_tsc = trace_clock_read_synthetic_tsc();
++	do {
++		last_tsc = trace_clock_last_tsc;
++		if (new_tsc < last_tsc)
++			new_tsc = last_tsc + TRACE_CLOCK_MIN_PROBE_DURATION;
++		/*
++		 * If cmpxchg fails with a value higher than the new_tsc, don't
++		 * retry : the value has been incremented and the events
++		 * happened almost at the same time.
++		 * We must retry if cmpxchg fails with a lower value :
++		 * it means that we are the CPU with highest frequency and
++		 * therefore MUST update the value.
++		 */
++	} while (trace_clock_cmpxchg64(&trace_clock_last_tsc, last_tsc,
++				       new_tsc) < new_tsc);
++	__raw_spin_unlock(&trace_clock_lock);
++	local_irq_restore(flags);
++	return new_tsc;
++}
++EXPORT_SYMBOL_GPL(trace_clock_async_tsc_read);
++#endif
++
++
++static void update_timer_ipi(void *info)
++{
++	(void)trace_clock_async_tsc_read();
++}
++
++/*
++ * update_timer_fct : - Timer function to resync the clocks
++ * @data: unused
++ *
++ * Fires every jiffy.
++ */
++static void update_timer_fct(unsigned long data)
++{
++	(void)trace_clock_async_tsc_read();
++
++	per_cpu(update_timer, smp_processor_id()).expires = jiffies + 1;
++	add_timer_on(&per_cpu(update_timer, smp_processor_id()),
++		     smp_processor_id());
++}
++
++static void enable_trace_clock(int cpu)
++{
++	init_timer(&per_cpu(update_timer, cpu));
++	per_cpu(update_timer, cpu).function = update_timer_fct;
++	per_cpu(update_timer, cpu).expires = jiffies + 1;
++	smp_call_function_single(cpu, update_timer_ipi, NULL, 1);
++	add_timer_on(&per_cpu(update_timer, cpu), cpu);
++}
++
++static void disable_trace_clock(int cpu)
++{
++	del_timer_sync(&per_cpu(update_timer, cpu));
++}
++
++void get_trace_clock(void)
++{
++	int cpu;
++
++	get_synthetic_tsc();
++	mutex_lock(&async_tsc_mutex);
++	if (async_tsc_refcount++ || tsc_is_sync())
++		goto end;
++
++	async_tsc_enabled = 1;
++	for_each_online_cpu(cpu)
++		enable_trace_clock(cpu);
++end:
++	mutex_unlock(&async_tsc_mutex);
++}
++EXPORT_SYMBOL_GPL(get_trace_clock);
++
++void put_trace_clock(void)
++{
++	int cpu;
++
++	mutex_lock(&async_tsc_mutex);
++	WARN_ON(async_tsc_refcount <= 0);
++	if (async_tsc_refcount != 1 || !async_tsc_enabled)
++		goto end;
++
++	for_each_online_cpu(cpu)
++		disable_trace_clock(cpu);
++	async_tsc_enabled = 0;
++end:
++	async_tsc_refcount--;
++	mutex_unlock(&async_tsc_mutex);
++	put_synthetic_tsc();
++}
++EXPORT_SYMBOL_GPL(put_trace_clock);
 Index: linux.trees.git/arch/mips/include/asm/timex.h
 ===================================================================
---- linux.trees.git.orig/arch/mips/include/asm/timex.h	2008-11-26 06:49:34.000000000 -0500
-+++ linux.trees.git/arch/mips/include/asm/timex.h	2008-11-26 06:57:38.000000000 -0500
-@@ -58,13 +58,39 @@ static inline cycles_t get_cycles_rate(v
- {
- 	return mips_hpt_frequency;
- }
-+
-+extern int test_tsc_synchronization(void);
-+extern int _tsc_is_sync;
-+static inline int tsc_is_sync(void)
-+{
-+	return _tsc_is_sync;
-+}
- #else
+--- linux.trees.git.orig/arch/mips/include/asm/timex.h	2008-11-26 07:26:35.000000000 -0500
++++ linux.trees.git/arch/mips/include/asm/timex.h	2008-11-26 07:26:44.000000000 -0500
+@@ -44,7 +44,7 @@ extern unsigned int mips_hpt_frequency;
+ 
+ typedef unsigned int cycles_t;
+ 
+-#ifdef HAVE_GET_CYCLES_32
++#ifdef CONFIG_HAVE_GET_CYCLES_32
  static inline cycles_t get_cycles(void)
  {
- 	return 0;
+ 	return read_c0_count();
+@@ -91,6 +91,21 @@ static inline void write_tsc(u32 val1, u
+ 	write_c0_compare(read_c0_count() + DELAY_INTERRUPT);
  }
-+static inline int test_tsc_synchronization(void)
-+{
-+	return 0;
-+}
-+static inline int tsc_is_sync(void)
-+{
-+	return 0;
-+}
- #endif
  
-+#define DELAY_INTERRUPT 100
 +/*
-+ * Only updates 32 LSB.
++ * Currently unused, should update internal tsc-related timekeeping sources.
 + */
-+static inline void write_tsc(u32 val1, u32 val2)
++static inline void mark_tsc_unstable(char *reason)
 +{
-+	write_c0_count(val1);
-+	/* Arrange for an interrupt in a short while */
-+	write_c0_compare(read_c0_count() + DELAY_INTERRUPT);
++}
++
++/*
++ * Currently simply use the tsc_is_sync value.
++ */
++static inline int unsynchronized_tsc(void)
++{
++	return !tsc_is_sync();
 +}
 +
  #endif /* __KERNEL__ */
  
  #endif /*  _ASM_TIMEX_H */
+Index: linux.trees.git/arch/mips/kernel/Makefile
+===================================================================
+--- linux.trees.git.orig/arch/mips/kernel/Makefile	2008-11-26 07:25:24.000000000 -0500
++++ linux.trees.git/arch/mips/kernel/Makefile	2008-11-26 07:28:04.000000000 -0500
+@@ -85,6 +85,10 @@ obj-$(CONFIG_GPIO_TXX9)		+= gpio_txx9.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ 
++ifdef CONFIG_TRACING
++obj-$(CONFIG_HAVE_TRACE_CLOCK)	+= trace-clock.o
++endif
++
+ CFLAGS_cpu-bugs64.o	= $(shell if $(CC) $(KBUILD_CFLAGS) -Wa,-mdaddi -c -o /dev/null -xc /dev/null >/dev/null 2>&1; then echo "-DHAVE_AS_SET_DADDI"; fi)
+ 
+ obj-$(CONFIG_HAVE_STD_PC_SERIAL_PORT)	+= 8250-platform.o
 
 -- 
 Mathieu Desnoyers
