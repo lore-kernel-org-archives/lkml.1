@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYKZRp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYKZRua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbYKZRp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 12:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYKZRpN
+	id S1753811AbYKZRua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 12:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYKZRuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 12:45:13 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:59911 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbYKZRpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 12:45:11 -0500
-Date: Wed, 26 Nov 2008 09:44:39 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
-Message-ID: <20081126174439.GA427@us.ibm.com>
-References: <20081115212133.GA32140@us.ibm.com> <20081118175336.GA14178@redhat.com> <20081119012207.GA19092@us.ibm.com> <20081123231014.GA2424@redhat.com> <20081126031619.GA19756@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081126031619.GA19756@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 26 Nov 2008 12:50:22 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:52448 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbYKZRuV (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 12:50:21 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28-rc6-mmotm1126 - BUG in disk quota code
+In-Reply-To: Your message of "Wed, 26 Nov 2008 17:49:06 +0100."
+             <20081126164906.GG23124@duck.suse.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <4270.1227716433@turing-police.cc.vt.edu>
+            <20081126164906.GG23124@duck.suse.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1227721812_3730P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Nov 2008 12:50:13 -0500
+Message-ID: <3893.1227721813@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-| |    Actually, I think this is enough to solve most problems,
-| |    the further changes can be discussed later. OK, the only
-| |    "real" problem is SIGSTOP, afaics. This looks solveable.
-| 
-| Yes, SIGSTOP even from parent is ignored due to the SIGNAL_UNKILLABLE
-| check in get_signal_to_deliver.
+--==_Exmh_1227721812_3730P
+Content-Type: text/plain; charset=us-ascii
 
-Actually with sig_task_ignored() patch, http://lkml.org/lkml/2008/11/18/251
-SIGSTOP gets dropped early. To eventually allow SIGSTOP from ancestor ns,
-we need to pass 'from_ancestor_ns' into sig_ignored() ?
+On Wed, 26 Nov 2008 17:49:06 +0100, Jan Kara said:
+> On Wed 26-11-08 11:20:33, Valdis.Kletnieks@vt.edu wrote:
+> > System blew out when /etc/rc.sysinit did a 'quotaon -a'.  Not sure which
+> > of the many quota-related commits in linux-next.patch or in -mm did this...
+>   Thanks for report. Already hit it myself and Mark should have the fix in
+> his tree (I sent it to him yesterday) so it should propagate into -mm
+> quickly.
+
+Good enough - I'll wait for Andrew to drop the next -mmotm, and I'll
+yell if it's still broken then...
+
+
+--==_Exmh_1227721812_3730P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJLYxUcC3lWbTT17ARArqqAKCOK/HQzySAUCrH0tpXfCHagiueKACfT3qI
+oY4ygjgeT4V+GGQCeeMlMGs=
+=+h1S
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1227721812_3730P--
