@@ -1,45 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbYKZFBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYKZFIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710AbYKZFBV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 00:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYKZFBM
+	id S1752878AbYKZFIE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 00:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYKZFHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 00:01:12 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58759 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbYKZFBM (ORCPT
+	Wed, 26 Nov 2008 00:07:52 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47966 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750760AbYKZFHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 00:01:12 -0500
-Date: Wed, 26 Nov 2008 00:01:08 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       fweisbec@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, srostedt@redhat.com,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
-In-Reply-To: <m1zljndrb6.fsf@frodo.ebiederm.org>
-Message-ID: <alpine.DEB.1.10.0811260000400.26424@gandalf.stny.rr.com>
-References: <20081125223421.795046329@goodmis.org> <20081125223456.976670734@goodmis.org> <20081125144221.66eb99ad.akpm@linux-foundation.org> <alpine.DEB.1.10.0811251800130.26424@gandalf.stny.rr.com> <20081125153104.ecdceed4.akpm@linux-foundation.org>
- <alpine.DEB.1.10.0811251909320.26424@gandalf.stny.rr.com> <1227660839.12109.52.camel@nimitz> <alpine.DEB.1.10.0811251956570.26424@gandalf.stny.rr.com> <m1zljndrb6.fsf@frodo.ebiederm.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Nov 2008 00:07:51 -0500
+Subject: Re: [PATCH] Fix SCSI regression in 2.6.27 [was [Bugme-new] [Bug
+	12099] New: Nokia 5310 storage-mode]
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.0811251026500.2457-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0811251026500.2457-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 23:07:47 -0600
+Message-Id: <1227676067.3415.63.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-11-25 at 10:34 -0500, Alan Stern wrote:
+> This patch is intended for 2.6.27.stable and 2.6.28.  It's a temporary 
+> fix for a problem affecting a number of USB mass-storage devices 
+> (including many Nokia phones): When trying to access a nonexistent 
+> "last" sector, the SCSI midlayer gets caught in an endless retry loop.
 
+Can't we just invoke the last sector handling flag for all Nokia
+devices?
 
-On Tue, 25 Nov 2008, Eric W. Biederman wrote:
-
+> See for example Bugzilla #11843 and #12099.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> ---
+> 
+> On Tue, 25 Nov 2008, Andrew Morton wrote:
+> 
+> > On Tue, 25 Nov 2008 01:07:43 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+> > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=12099
+> > > 
+> > >            Summary: Nokia 5310 storage-mode
+> > >            Product: Drivers
+> > >            Version: 2.5
+> > >      KernelVersion: 2.6.27
+> > >           Platform: All
+> > >         OS/Version: Linux
+> > >               Tree: Mainline
+> > >             Status: NEW
+> > >           Severity: normal
+> > >           Priority: P1
+> > >          Component: USB
+> > >         AssignedTo: greg@kroah.com
+> > >         ReportedBy: robsonpeixoto@gmail.com
+> > > 
+> > > 
+> > > Latest working kernel version: 2.6.26
+> > > Earliest failing kernel version: 2.6.27
+> > 
+> > A regression.
+> > 
+> > > Distribution: ArchLinux
+> > > Hardware Environment: USB(ohci,ehci)
+> > > Software Environment: gcc 4.3.2, glibc 2.8
+> > > Problem Description: 
+> > > 
+> > > When I plug in my Nokia 5310 show a msg in cel "Transferring data" and in
+> > > computer nothing happend.
+> 
+> Unless we want to keep on receiving regression reports like this one,
+> this patch or something like it needs to be applied.  We can hope
+> 2.6.29 will work better...  But unhappily, to date James has not
+> responded to any of my patch submissions in this area.
+> 
+> Alan Stern
 > 
 > 
+> 
+> Index: 2.6.27.4/drivers/scsi/scsi_lib.c
+> ===================================================================
+> --- 2.6.27.4.orig/drivers/scsi/scsi_lib.c
+> +++ 2.6.27.4/drivers/scsi/scsi_lib.c
+> @@ -611,6 +611,11 @@ static void scsi_requeue_command(struct 
+>  	struct request *req = cmd->request;
+>  	unsigned long flags;
+>  
+> +	if (--req->retries < 0) {
+> +		blk_end_request(req, -EIO, blk_rq_bytes(req));
+> +		scsi_next_command(cmd);
+> +		return;
+> +	}
 
-I'm speechless too.
+This would cause tape errors on unit attention (fairly common
+condition).  It can be argued that we get more users of USB mobile
+phones than tapes, but I'd rather keep both communities happy
 
--- Steve
+By and large, the reason we backport from head if at all possible is so
+we can avoid bugs like this creeping into stable.  (And backporting from
+head is far easier if the bug fixes are small and don't contain
+miscellaneous code clean ups, control flow changes and comment fixes)
+
+> Unless we want to keep on receiving regression reports like this one,
+> this patch or something like it needs to be applied.  We can hope
+> 2.6.29 will work better...  But unhappily, to date James has not
+> responded to any of my patch submissions in this area.
+
+I tried to untangle it on the 'plane yesterday.  I've just got a bit
+more testing to do then I'll post the patch to your patch.
+
+James
+
 
