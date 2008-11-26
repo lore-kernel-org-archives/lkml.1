@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbYKZADB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYKZAEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbYKZADB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 19:03:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYKZACw
+	id S1753287AbYKZAEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 19:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYKZAE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 19:02:52 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:57203 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbYKZACw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 19:02:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=S1NVlrFlTUtnq5XN87LUbmK73O3U3EPWvr64TceLcfU6XC0gQ4wtXk4N9AMpiQezBy
-         tD4CmiWbG6KAb0JZTpOu38u6RUOxRf73cUw2OIxg9HkaM1Z2zvM5S+VkwOWtTySTWm9v
-         1BszDNz3HePVI8pX8xvO5d/PPP36Pv5uKOrUg=
-Message-ID: <c62985530811251602w4823d984wf744e75fe21b61af@mail.gmail.com>
-Date: Wed, 26 Nov 2008 01:02:50 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <20081125223456.976670734@goodmis.org>
+	Tue, 25 Nov 2008 19:04:27 -0500
+Received: from kroah.org ([198.145.64.141]:33194 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750998AbYKZAE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 19:04:27 -0500
+Date: Tue, 25 Nov 2008 16:03:40 -0800
+From: Greg KH <greg@kroah.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ian Campbell <ijc@hellion.org.uk>,
+       Daniel =?iso-8859-1?Q?Schr=F6der?= <mail@dschroeder.info>,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Stable Kernel <stable@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] Change 5c371b31be3203 in stable breaks Xen
+Message-ID: <20081126000340.GB1091@kroah.com>
+References: <492C6D8D.3040600@goop.org> <1227654364.27529.3.camel@localhost.localdomain> <492C897E.1010509@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081125223421.795046329@goodmis.org>
-	 <20081125223456.976670734@goodmis.org>
+In-Reply-To: <492C897E.1010509@goop.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/25 Steven Rostedt <rostedt@goodmis.org>:
-> From: Steven Rostedt <srostedt@redhat.com>
->
-> Impact: feature to function trace a single thread
->
-> This patch adds the ability to function trace a single thread.
-> The file:
->
->  /debugfs/tracing/set_ftrace_pid
+On Tue, Nov 25, 2008 at 03:25:50PM -0800, Jeremy Fitzhardinge wrote:
+> Ian Campbell wrote:
+> > On Tue, 2008-11-25 at 13:26 -0800, Jeremy Fitzhardinge wrote:
+> >   
+> >> I have a report of Xen breaking between 2.6.27.5 and .6.  I bisected
+> >> it 
+> >> down to change:
+> >>
+> >> commit 5c371b31be32033b0a4a993431484da8a2305369
+> >> Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> >> Date:   Mon Sep 22 02:52:26 2008 -0700
+> >>
+> >>     x86: fix CONFIG_X86_RESERVE_LOW_64K=y
+> >>    
+> >>     commit 2216d199b1430d1c0affb1498a9ebdbd9c0de439 upstream
+> >>     
+> >
+> > Looks like 5dc64a3442b98eaa0e3730c35fcf00cf962a93e7 might be needed in
+> > stable too?
+> >   
+> 
+> Ah, yes, that looks like the right fix.  I'll see if it helps.
 
+If so, let us know and we will add it to the next -stable release.
 
-That's a good idea!
+thanks,
 
-About the pid, I think they are unique (which is not the case for tgid
-for multiple threads).
-pid are tgid + number of the thread....
-
-But perhaps I'm wrong....
+greg k-h
