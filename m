@@ -1,67 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbYKZX3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYKZXbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbYKZX3v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 18:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYKZX3k
+	id S1755432AbYKZXbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 18:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYKZXbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 18:29:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43342 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755380AbYKZX3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 18:29:39 -0500
-Date: Thu, 27 Nov 2008 10:29:20 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-arch@vger.kernel.org,
-       Linux Kernel List <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [RESEND:PATCH] [ARM] clearpage: provide our own
- clear_user_highpage()
-Message-Id: <20081127102920.660303a5.sfr@canb.auug.org.au>
-In-Reply-To: <1227719999.3387.0.camel@localhost.localdomain>
-References: <20081126171321.GA4719@dyn-67.arm.linux.org.uk>
-	<1227719999.3387.0.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__27_Nov_2008_10_29_20_+1100_A_H1BS4hZ8UrVxla"
+	Wed, 26 Nov 2008 18:31:33 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:58250 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbYKZXbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 18:31:31 -0500
+Message-ID: <492DDC0B.8060804@cosmosbay.com>
+Date: Thu, 27 Nov 2008 00:30:19 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH 1/6] fs: Introduce a per_cpu nr_dentry
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu>
+In-Reply-To: <20081121153453.GA23713@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------080405000100050008020707"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 27 Nov 2008 00:30:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__27_Nov_2008_10_29_20_+1100_A_H1BS4hZ8UrVxla
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
+--------------080405000100050008020707
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Russell,
+Adding a per_cpu nr_dentry avoids cache line ping pongs between
+cpus to maintain this metric.
 
-On Wed, 26 Nov 2008 11:19:59 -0600 James Bottomley <James.Bottomley@HansenP=
-artnership.com> wrote:
->
-> We'd like to pull this trick on parisc as well (another VIPT
-> architecture), so you can add my ack.
+We centralize decrements of nr_dentry in d_free(),
+and increments in d_alloc().
 
-If this is going to be used by more than one architecture during the next
-merge window, then maybe the change to include/linux/highmem.h could be
-extracted to its own patch and sent to Linus for inclusion in 2.6.28.
-This way we avoid some conflicts and the architectures can do their
-updates independently.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+d_alloc() can avoid taking dcache_lock if parent is NULL
 
---Signature=_Thu__27_Nov_2008_10_29_20_+1100_A_H1BS4hZ8UrVxla
-Content-Type: application/pgp-signature
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+ fs/dcache.c        |   55 ++++++++++++++++++++++++++++---------------
+ include/linux/fs.h |    2 +
+ kernel/sysctl.c    |    2 -
+ 3 files changed, 40 insertions(+), 19 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+--------------080405000100050008020707
+Content-Type: text/plain;
+ name="per_cpu_nr_dentry.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="per_cpu_nr_dentry.patch"
 
-iEYEARECAAYFAkkt29AACgkQjjKRsyhoI8xlNwCdGtzz8Xqry+Mfoeqsp2kwONKg
-QngAmwXaEVGMYIhL6oXlTDd1UfEWjmu9
-=nQwJ
------END PGP SIGNATURE-----
+diff --git a/fs/dcache.c b/fs/dcache.c
+index a1d86c7..42ed9fc 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -61,12 +61,38 @@ static struct kmem_cache *dentry_cache __read_mostly;
+ static unsigned int d_hash_mask __read_mostly;
+ static unsigned int d_hash_shift __read_mostly;
+ static struct hlist_head *dentry_hashtable __read_mostly;
++static DEFINE_PER_CPU(int, nr_dentry);
+ 
+ /* Statistics gathering. */
+ struct dentry_stat_t dentry_stat = {
+ 	.age_limit = 45,
+ };
+ 
++/*
++ * Handle nr_dentry sysctl
++ */
++#if defined(CONFIG_SYSCTL) && defined(CONFIG_PROC_FS)
++int proc_nr_dentry(ctl_table *table, int write, struct file *filp,
++		   void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	int cpu;
++	int counter = 0;
++
++	for_each_possible_cpu(cpu)
++	    counter += per_cpu(nr_dentry, cpu);
++	if (counter < 0)
++		counter = 0;
++	dentry_stat.nr_dentry = counter;
++	return proc_dointvec(table, write, filp, buffer, lenp, ppos);
++}
++#else
++int proc_nr_dentry(ctl_table *table, int write, struct file *filp,
++		   void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	return -ENOSYS;
++}
++#endif
++
+ static void __d_free(struct dentry *dentry)
+ {
+ 	WARN_ON(!list_empty(&dentry->d_alias));
+@@ -82,8 +108,7 @@ static void d_callback(struct rcu_head *head)
+ }
+ 
+ /*
+- * no dcache_lock, please.  The caller must decrement dentry_stat.nr_dentry
+- * inside dcache_lock.
++ * no dcache_lock, please.
+  */
+ static void d_free(struct dentry *dentry)
+ {
+@@ -94,6 +119,8 @@ static void d_free(struct dentry *dentry)
+ 		__d_free(dentry);
+ 	else
+ 		call_rcu(&dentry->d_u.d_rcu, d_callback);
++	get_cpu_var(nr_dentry)--;
++	put_cpu_var(nr_dentry);
+ }
+ 
+ /*
+@@ -172,7 +199,6 @@ static struct dentry *d_kill(struct dentry *dentry)
+ 	struct dentry *parent;
+ 
+ 	list_del(&dentry->d_u.d_child);
+-	dentry_stat.nr_dentry--;	/* For d_free, below */
+ 	/*drops the locks, at that point nobody can reach this dentry */
+ 	dentry_iput(dentry);
+ 	if (IS_ROOT(dentry))
+@@ -619,7 +645,6 @@ void shrink_dcache_sb(struct super_block * sb)
+ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+ {
+ 	struct dentry *parent;
+-	unsigned detached = 0;
+ 
+ 	BUG_ON(!IS_ROOT(dentry));
+ 
+@@ -678,7 +703,6 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+ 			}
+ 
+ 			list_del(&dentry->d_u.d_child);
+-			detached++;
+ 
+ 			inode = dentry->d_inode;
+ 			if (inode) {
+@@ -696,7 +720,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+ 			 * otherwise we ascend to the parent and move to the
+ 			 * next sibling if there is one */
+ 			if (!parent)
+-				goto out;
++				return;
+ 
+ 			dentry = parent;
+ 
+@@ -705,11 +729,6 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+ 		dentry = list_entry(dentry->d_subdirs.next,
+ 				    struct dentry, d_u.d_child);
+ 	}
+-out:
+-	/* several dentries were freed, need to correct nr_dentry */
+-	spin_lock(&dcache_lock);
+-	dentry_stat.nr_dentry -= detached;
+-	spin_unlock(&dcache_lock);
+ }
+ 
+ /*
+@@ -943,8 +962,6 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+ 	dentry->d_flags = DCACHE_UNHASHED;
+ 	spin_lock_init(&dentry->d_lock);
+ 	dentry->d_inode = NULL;
+-	dentry->d_parent = NULL;
+-	dentry->d_sb = NULL;
+ 	dentry->d_op = NULL;
+ 	dentry->d_fsdata = NULL;
+ 	dentry->d_mounted = 0;
+@@ -959,15 +976,17 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+ 	if (parent) {
+ 		dentry->d_parent = dget(parent);
+ 		dentry->d_sb = parent->d_sb;
++		spin_lock(&dcache_lock);
++		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
++		spin_unlock(&dcache_lock);
+ 	} else {
++		dentry->d_parent = NULL;
++		dentry->d_sb = NULL;
+ 		INIT_LIST_HEAD(&dentry->d_u.d_child);
+ 	}
+ 
+-	spin_lock(&dcache_lock);
+-	if (parent)
+-		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
+-	dentry_stat.nr_dentry++;
+-	spin_unlock(&dcache_lock);
++	get_cpu_var(nr_dentry)++;
++	put_cpu_var(nr_dentry);
+ 
+ 	return dentry;
+ }
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 0dcdd94..c5e7aa5 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2216,6 +2216,8 @@ static inline void free_secdata(void *secdata)
+ struct ctl_table;
+ int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
+ 		  void __user *buffer, size_t *lenp, loff_t *ppos);
++int proc_nr_dentry(struct ctl_table *table, int write, struct file *filp,
++		   void __user *buffer, size_t *lenp, loff_t *ppos);
+ 
+ int get_filesystem_list(char * buf);
+ 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 9d048fa..eebddef 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1243,7 +1243,7 @@ static struct ctl_table fs_table[] = {
+ 		.data		= &dentry_stat,
+ 		.maxlen		= 6*sizeof(int),
+ 		.mode		= 0444,
+-		.proc_handler	= &proc_dointvec,
++		.proc_handler	= &proc_nr_dentry,
+ 	},
+ 	{
+ 		.ctl_name	= FS_OVERFLOWUID,
 
---Signature=_Thu__27_Nov_2008_10_29_20_+1100_A_H1BS4hZ8UrVxla--
+--------------080405000100050008020707--
