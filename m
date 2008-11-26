@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYLAQo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYLAQpC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYLAQo0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 11:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYLAQka
+	id S1754115AbYLAQpC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 11:45:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYLAQkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 11:40:30 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:34878 "EHLO mummy.ncsc.mil"
+	Mon, 1 Dec 2008 11:40:37 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:34895 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752019AbYLAQjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 11:39:54 -0500
+	id S1752086AbYLAQjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 11:39:55 -0500
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
        sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
        labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
        "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
-Subject: [PATCH 06/14] SELinux: Add new labeling type native labels
-Date: Wed, 26 Nov 2008 16:03:06 -0500
-Message-Id: <1227733394-1114-7-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 03/14] LSM/SELinux: inode_{get,set,notify}secctx hooks to access LSM security context information.
+Date: Wed, 26 Nov 2008 16:03:03 -0500
+Message-Id: <1227733394-1114-4-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -27,273 +27,235 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There currently doesn't exist a labeling type that is adequate for use with
-labeled NFS. Since NFS doesn't really support xattrs we can't use the use xattr
-labeling behavior. For this we developed a new labeling type. The native
-labeling type is used solely by NFS to ensure NFS inodes are labeled at runtime
-by the NFS code instead of relying on the SELinux security server on the client
-end.
+This patch introduces three new hooks. The inode_getsecctx hook is used to get
+all relevant information from an LSM about an inode. The inode_setsecctx is
+used to set both the in-core and on-disk state for the inode based on a context
+derived from inode_getsecctx.The final hook inode_notifysecctx will notify the
+LSM of a change for the in-core state of the inode in question. These hooks are
+for use in the labeled NFS code and addresses concerns of how to set security
+on an inode in a multi-xattr LSM. For historical reasons Stephen Smalley's
+explanation of the reason for these hooks is pasted below.
+
+Quote Stephen Smalley
+
+inode_setsecctx:  Change the security context of an inode.  Updates the
+in core security context managed by the security module and invokes the
+fs code as needed (via __vfs_setxattr_noperm) to update any backing
+xattrs that represent the context.  Example usage:  NFS server invokes
+this hook to change the security context in its incore inode and on the
+backing file system to a value provided by the client on a SETATTR
+operation.
+
+inode_notifysecctx:  Notify the security module of what the security
+context of an inode should be.  Initializes the incore security context
+managed by the security module for this inode.  Example usage:  NFS
+client invokes this hook to initialize the security context in its
+incore inode to the value provided by the server for the file when the
+server returned the file's attributes to the client.
 
 Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- security/selinux/hooks.c            |   74 +++++++++++++++++++++++++++-------
- security/selinux/include/security.h |    4 ++
- security/selinux/ss/policydb.c      |    5 ++-
- 3 files changed, 66 insertions(+), 17 deletions(-)
+ include/linux/security.h |   55 ++++++++++++++++++++++++++++++++++++++++++++++
+ security/capability.c    |   17 ++++++++++++++
+ security/security.c      |   18 +++++++++++++++
+ security/selinux/hooks.c |   25 +++++++++++++++++++++
+ 4 files changed, 115 insertions(+), 0 deletions(-)
 
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 60d6bcc..9e73750 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -89,7 +89,7 @@
- #define XATTR_SELINUX_SUFFIX "selinux"
- #define XATTR_NAME_SELINUX XATTR_SECURITY_PREFIX XATTR_SELINUX_SUFFIX
+diff --git a/include/linux/security.h b/include/linux/security.h
+index c13f1ce..7229ef1 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1289,6 +1289,41 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+  *	audit_rule_init.
+  *	@rule contains the allocated rule
+  *
++ * @inode_notifysecctx:
++ *	Notify the security module of what the security context of an inode
++ *	should be.  Initializes the incore security context managed by the
++ *	security module for this inode.  Example usage:  NFS client invokes
++ *	this hook to initialize the security context in its incore inode to the
++ *	value provided by the server for the file when the server returned the
++ *	file's attributes to the client.
++ *
++ * 	Must be called with inode->i_mutex locked.
++ *
++ * 	@inode we wish to set the security context of.
++ * 	@ctx contains the string which we wish to set in the inode.
++ * 	@ctxlen contains the length of @ctx.
++ *
++ * @inode_setsecctx:
++ * 	Change the security context of an inode.  Updates the
++ * 	incore security context managed by the security module and invokes the
++ * 	fs code as needed (via __vfs_setxattr_noperm) to update any backing
++ * 	xattrs that represent the context.  Example usage:  NFS server invokes
++ * 	this hook to change the security context in its incore inode and on the
++ * 	backing filesystem to a value provided by the client on a SETATTR
++ * 	operation.
++ *
++ * 	Must be called with inode->i_mutex locked.
++ *
++ * 	@dentry contains the inode we wish to set the security context of.
++ * 	@ctx contains the string which we wish to set in the inode.
++ * 	@ctxlen contains the length of @ctx.
++ *
++ * @inode_getsecctx:
++ * 	Returns a string containing all relavent security context information
++ *
++ * 	@inode we wish to set the security context of.
++ *	@ctx is a pointer in which to place the allocated security context.
++ *	@ctxlen points to the place to put the length of @ctx.
+  * This is the main security structure.
+  */
+ struct security_operations {
+@@ -1479,6 +1514,10 @@ struct security_operations {
+ 	int (*secctx_to_secid) (const char *secdata, u32 seclen, u32 *secid);
+ 	void (*release_secctx) (char *secdata, u32 seclen);
  
--#define NUM_SEL_MNT_OPTS 4
-+#define NUM_SEL_MNT_OPTS 5
++	int (*inode_notifysecctx)(struct inode *inode, void *ctx, u32 ctxlen);
++	int (*inode_setsecctx)(struct dentry *dentry, void *ctx, u32 ctxlen);
++	int (*inode_getsecctx)(struct inode *inode, void **ctx, u32 *ctxlen);
++
+ #ifdef CONFIG_SECURITY_NETWORK
+ 	int (*unix_stream_connect) (struct socket *sock,
+ 				    struct socket *other, struct sock *newsk);
+@@ -1723,6 +1762,9 @@ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
+ int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
+ void security_release_secctx(char *secdata, u32 seclen);
  
- extern unsigned int policydb_loaded_version;
- extern int selinux_nlmsg_lookup(u16 sclass, u16 nlmsg_type, u32 *perm);
-@@ -302,13 +302,14 @@ extern int ss_initialized;
- 
- /* The file system's label must be initialized prior to use. */
- 
--static char *labeling_behaviors[6] = {
-+static char *labeling_behaviors[7] = {
- 	"uses xattr",
- 	"uses transition SIDs",
- 	"uses task SIDs",
- 	"uses genfs_contexts",
- 	"not configured for labeling",
- 	"uses mountpoint labeling",
-+	"uses native labels",
++int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen);
++int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen);
++int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen);
+ #else /* CONFIG_SECURITY */
+ struct security_mnt_opts {
  };
- 
- static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dentry);
-@@ -324,6 +325,7 @@ enum {
- 	Opt_fscontext = 2,
- 	Opt_defcontext = 3,
- 	Opt_rootcontext = 4,
-+	Opt_native_labels = 5,
- };
- 
- static const match_table_t tokens = {
-@@ -331,6 +333,7 @@ static const match_table_t tokens = {
- 	{Opt_fscontext, FSCONTEXT_STR "%s"},
- 	{Opt_defcontext, DEFCONTEXT_STR "%s"},
- 	{Opt_rootcontext, ROOTCONTEXT_STR "%s"},
-+	{Opt_native_labels, NATIVELABELS_STR},
- 	{Opt_error, NULL},
- };
- 
-@@ -518,6 +521,10 @@ static int selinux_get_mnt_opts(const struct super_block *sb,
- 		opts->mnt_opts[i] = context;
- 		opts->mnt_opts_flags[i++] = ROOTCONTEXT_MNT;
- 	}
-+	if (sbsec->flags == NATIVE_LABELS_MNT) {
-+		opts->mnt_opts[i] = NULL;
-+		opts->mnt_opts_flags[i++] = NATIVE_LABELS_MNT;
-+	}
- 
- 	BUG_ON(i != opts->num_mnt_opts);
- 
-@@ -606,12 +613,16 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 	 */
- 	for (i = 0; i < num_opts; i++) {
- 		u32 sid;
-+		if (flags[i] == NATIVE_LABELS_MNT) {
-+			sbsec->flags |= NATIVE_LABELS_MNT;
-+			continue;
-+		}
- 		rc = security_context_to_sid(mount_options[i],
--					     strlen(mount_options[i]), &sid);
-+				strlen(mount_options[i]), &sid);
- 		if (rc) {
- 			printk(KERN_WARNING "SELinux: security_context_to_sid"
--			       "(%s) failed for (dev %s, type %s) errno=%d\n",
--			       mount_options[i], sb->s_id, name, rc);
-+					"(%s) failed for (dev %s, type %s) errno=%d\n",
-+					mount_options[i], sb->s_id, name, rc);
- 			goto out;
- 		}
- 		switch (flags[i]) {
-@@ -670,14 +681,15 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 	if (strcmp(sb->s_type->name, "proc") == 0)
- 		sbsec->proc = 1;
- 
--	/* Determine the labeling behavior to use for this filesystem type. */
--	rc = security_fs_use(sb->s_type->name, &sbsec->behavior, &sbsec->sid);
--	if (rc) {
--		printk(KERN_WARNING "%s: security_fs_use(%s) returned %d\n",
--		       __func__, sb->s_type->name, rc);
--		goto out;
-+	if (!sbsec->behavior) {
-+		/* Determine the labeling behavior to use for this filesystem type. */
-+		rc = security_fs_use(sb->s_type->name, &sbsec->behavior, &sbsec->sid);
-+		if (rc) {
-+			printk(KERN_WARNING "%s: security_fs_use(%s) returned %d\n",
-+					__func__, sb->s_type->name, rc);
-+			goto out;
-+		}
- 	}
--
- 	/* sets the context of the superblock for the fs being mounted. */
- 	if (fscontext_sid) {
- 
-@@ -693,6 +705,11 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 	 * sets the label used on all file below the mountpoint, and will set
- 	 * the superblock context if not already set.
- 	 */
-+	/* NATIVE_LABELS can be overridden by 'context=' mounts, below. */
-+	if (sbsec->flags & NATIVE_LABELS_MNT) {
-+		sbsec->behavior = SECURITY_FS_USE_NATIVE;
-+	}
+@@ -2440,6 +2482,19 @@ static inline int security_secctx_to_secid(const char *secdata,
+ static inline void security_release_secctx(char *secdata, u32 seclen)
+ {
+ }
 +
- 	if (context_sid) {
- 		if (!fscontext_sid) {
- 			rc = may_context_mount_sb_relabel(context_sid, sbsec, tsec);
-@@ -709,6 +726,7 @@ static int selinux_set_mnt_opts(struct super_block *sb,
++static inline int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
++{
++	return -EOPNOTSUPP;
++}
++static inline int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
++{
++	return -EOPNOTSUPP;
++}
++static inline int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
++{
++	return -EOPNOTSUPP;
++}
+ #endif	/* CONFIG_SECURITY */
  
- 		sbsec->mntpoint_sid = context_sid;
- 		sbsec->behavior = SECURITY_FS_USE_MNTPOINT;
-+		sbsec->flags &= ~NATIVE_LABELS_MNT; /* Exclusive */
- 	}
- 
- 	if (rootcontext_sid) {
-@@ -721,7 +739,8 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 	}
- 
- 	if (defcontext_sid) {
--		if (sbsec->behavior != SECURITY_FS_USE_XATTR) {
-+		if (sbsec->behavior != SECURITY_FS_USE_XATTR &&
-+			sbsec->behavior != SECURITY_FS_USE_NATIVE) {
- 			rc = -EINVAL;
- 			printk(KERN_WARNING "SELinux: defcontext option is "
- 			       "invalid for this filesystem type\n");
-@@ -818,6 +837,7 @@ static int selinux_parse_opts_str(char *options,
- 	char *p;
- 	char *context = NULL, *defcontext = NULL;
- 	char *fscontext = NULL, *rootcontext = NULL;
-+	int native_labels = 0;
- 	int rc, num_mnt_opts = 0;
- 
- 	opts->num_mnt_opts = 0;
-@@ -885,9 +905,15 @@ static int selinux_parse_opts_str(char *options,
- 			}
- 			break;
- 
-+		case Opt_native_labels:
-+			printk("%s() got Opt_native_labels\n", __func__);
-+			native_labels = 1;
-+			break;
-+
-+
- 		default:
- 			rc = -EINVAL;
--			printk(KERN_WARNING "SELinux:  unknown mount option\n");
-+			printk(KERN_WARNING "SELinux: unknown mount option \"%s\"\n", p);
- 			goto out_err;
- 
- 		}
-@@ -920,6 +946,10 @@ static int selinux_parse_opts_str(char *options,
- 		opts->mnt_opts[num_mnt_opts] = defcontext;
- 		opts->mnt_opts_flags[num_mnt_opts++] = DEFCONTEXT_MNT;
- 	}
-+	if (native_labels) {
-+		opts->mnt_opts[num_mnt_opts] = NULL;
-+		opts->mnt_opts_flags[num_mnt_opts++] = NATIVE_LABELS_MNT;
-+	}
- 
- 	opts->num_mnt_opts = num_mnt_opts;
- 	return 0;
-@@ -966,7 +996,12 @@ static void selinux_write_opts(struct seq_file *m,
- 	char *prefix;
- 
- 	for (i = 0; i < opts->num_mnt_opts; i++) {
--		char *has_comma = strchr(opts->mnt_opts[i], ',');
-+		char *has_comma;
-+
-+		if (opts->mnt_opts[i])
-+			has_comma = strchr(opts->mnt_opts[i], ',');
-+		else
-+			has_comma = NULL;
- 
- 		switch (opts->mnt_opts_flags[i]) {
- 		case CONTEXT_MNT:
-@@ -981,6 +1016,10 @@ static void selinux_write_opts(struct seq_file *m,
- 		case DEFCONTEXT_MNT:
- 			prefix = DEFCONTEXT_STR;
- 			break;
-+		case NATIVE_LABELS_MNT:
-+			seq_putc(m, ',');
-+			seq_puts(m, NATIVELABELS_STR);
-+			continue;
- 		default:
- 			BUG();
- 		};
-@@ -1188,6 +1227,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
- 	}
- 
- 	switch (sbsec->behavior) {
-+	case SECURITY_FS_USE_NATIVE:
-+		break;
- 	case SECURITY_FS_USE_XATTR:
- 		if (!inode->i_op->getxattr) {
- 			isec->sid = sbsec->def_sid;
-@@ -2358,7 +2399,8 @@ static inline int selinux_option(char *option, int len)
- 	return (match_prefix(CONTEXT_STR, sizeof(CONTEXT_STR)-1, option, len) ||
- 		match_prefix(FSCONTEXT_STR, sizeof(FSCONTEXT_STR)-1, option, len) ||
- 		match_prefix(DEFCONTEXT_STR, sizeof(DEFCONTEXT_STR)-1, option, len) ||
--		match_prefix(ROOTCONTEXT_STR, sizeof(ROOTCONTEXT_STR)-1, option, len));
-+		match_prefix(ROOTCONTEXT_STR, sizeof(ROOTCONTEXT_STR)-1, option, len) ||
-+		match_prefix(NATIVELABELS_STR, sizeof(NATIVELABELS_STR)-1, option, len));
+ #ifdef CONFIG_SECURITY_NETWORK
+diff --git a/security/capability.c b/security/capability.c
+index 2458748..27985c5 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -749,6 +749,20 @@ static void cap_release_secctx(char *secdata, u32 seclen)
+ {
  }
  
- static inline void take_option(char **to, char *from, int *first, int len)
-diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
-index 7244737..b38fd98 100644
---- a/security/selinux/include/security.h
-+++ b/security/selinux/include/security.h
-@@ -41,11 +41,13 @@
- #define FSCONTEXT_MNT	0x02
- #define ROOTCONTEXT_MNT	0x04
- #define DEFCONTEXT_MNT	0x08
-+#define	NATIVE_LABELS_MNT	0x10
++static int cap_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
++{
++	return 0;
++}
++
++static int cap_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
++{
++	return 0;
++}
++
++static int cap_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
++{
++	return 0;
++}
+ #ifdef CONFIG_KEYS
+ static int cap_key_alloc(struct key *key, struct task_struct *ctx,
+ 			 unsigned long flags)
+@@ -940,6 +954,9 @@ void security_fixup_ops(struct security_operations *ops)
+ 	set_to_cap_if_null(ops, secid_to_secctx);
+ 	set_to_cap_if_null(ops, secctx_to_secid);
+ 	set_to_cap_if_null(ops, release_secctx);
++	set_to_cap_if_null(ops, inode_notifysecctx);
++	set_to_cap_if_null(ops, inode_setsecctx);
++	set_to_cap_if_null(ops, inode_getsecctx);
+ #ifdef CONFIG_SECURITY_NETWORK
+ 	set_to_cap_if_null(ops, unix_stream_connect);
+ 	set_to_cap_if_null(ops, unix_may_send);
+diff --git a/security/security.c b/security/security.c
+index c0acfa7..1d8d3b0 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -878,6 +878,24 @@ void security_release_secctx(char *secdata, u32 seclen)
+ }
+ EXPORT_SYMBOL(security_release_secctx);
  
- #define CONTEXT_STR	"context="
- #define FSCONTEXT_STR	"fscontext="
- #define ROOTCONTEXT_STR	"rootcontext="
- #define DEFCONTEXT_STR	"defcontext="
-+#define NATIVELABELS_STR "native_labels"
++int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
++{
++	return security_ops->inode_notifysecctx(inode, ctx, ctxlen);
++}
++EXPORT_SYMBOL(security_inode_notifysecctx);
++
++int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
++{
++	return security_ops->inode_setsecctx(dentry, ctx, ctxlen);
++}
++EXPORT_SYMBOL(security_inode_setsecctx);
++
++int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
++{
++	return security_ops->inode_getsecctx(inode, ctx, ctxlen);
++}
++EXPORT_SYMBOL(security_inode_getsecctx);
++
+ #ifdef CONFIG_SECURITY_NETWORK
  
- struct netlbl_lsm_secattr;
+ int security_unix_stream_connect(struct socket *sock, struct socket *other,
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index f85597a..7ed038c 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -5399,6 +5399,28 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
+ 	kfree(secdata);
+ }
  
-@@ -147,6 +149,8 @@ int security_get_allow_unknown(void);
- #define SECURITY_FS_USE_GENFS		4 /* use the genfs support */
- #define SECURITY_FS_USE_NONE		5 /* no labeling support */
- #define SECURITY_FS_USE_MNTPOINT	6 /* use mountpoint labeling */
-+#define SECURITY_FS_USE_NATIVE		7 /* use native label support */
-+#define SECURITY_FS_USE_MAX		7 /* Highest SECURITY_FS_USE_XXX */
++/*
++ *	called with inode->i_mutex locked
++ */
++static int selinux_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
++{
++	return selinux_inode_setsecurity(inode, XATTR_SELINUX_SUFFIX, ctx, ctxlen, 0);
++}
++
++/*
++ *	called with inode->i_mutex locked
++ */
++static int selinux_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
++{
++	return __vfs_setxattr_noperm(dentry, XATTR_NAME_SELINUX, ctx, ctxlen, 0);
++}
++
++static int selinux_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
++{
++	*ctxlen = selinux_inode_getsecurity(inode, XATTR_SELINUX_SUFFIX,
++						ctx, true);
++	return *ctxlen;
++}
+ #ifdef CONFIG_KEYS
  
- int security_fs_use(const char *fstype, unsigned int *behavior,
- 	u32 *sid);
-diff --git a/security/selinux/ss/policydb.c b/security/selinux/ss/policydb.c
-index 72e4a54..6dfe138 100644
---- a/security/selinux/ss/policydb.c
-+++ b/security/selinux/ss/policydb.c
-@@ -1937,7 +1937,10 @@ int policydb_read(struct policydb *p, void *fp)
- 				if (rc < 0)
- 					goto bad;
- 				c->v.behavior = le32_to_cpu(buf[0]);
--				if (c->v.behavior > SECURITY_FS_USE_NONE)
-+				/* Determined at runtime, not in policy DB. */
-+				if (c->v.behavior == SECURITY_FS_USE_MNTPOINT)
-+					goto bad;
-+				if (c->v.behavior > SECURITY_FS_USE_MAX)
- 					goto bad;
- 				len = le32_to_cpu(buf[1]);
- 				c->u.name = kmalloc(len + 1, GFP_KERNEL);
+ static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
+@@ -5605,6 +5627,9 @@ static struct security_operations selinux_ops = {
+ 	.secid_to_secctx =		selinux_secid_to_secctx,
+ 	.secctx_to_secid =		selinux_secctx_to_secid,
+ 	.release_secctx =		selinux_release_secctx,
++	.inode_notifysecctx =		selinux_inode_notifysecctx,
++	.inode_setsecctx =		selinux_inode_setsecctx,
++	.inode_getsecctx =		selinux_inode_getsecctx,
+ 
+ 	.unix_stream_connect =		selinux_socket_unix_stream_connect,
+ 	.unix_may_send =		selinux_socket_unix_may_send,
 -- 
 1.5.5.1
 
