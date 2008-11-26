@@ -1,205 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYKZOpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYKZOqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbYKZOpf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 09:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYKZOp0
+	id S1753916AbYKZOqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 09:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYKZOqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 09:45:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51050 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbYKZOpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 09:45:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [Bug #11947] 2.6.28-rc VC switching with Intel graphics broken
-Date: Wed, 26 Nov 2008 15:44:31 +0100
-User-Agent: KMail/1.9.9
-Cc: Bernhard Schmidt <berni@birkenwald.de>,
-       "Romano Giannetti (lists)" <romanol@upcomillas.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andreas Mohr <andi@lisas.de>,
-       devsk <kernel-bugs.dev1world@spamgourmet.com>,
-       Johan Bilien <jobi@via.ecp.fr>
-References: <sBqd4qMeLzC.A.mgB.B7HKJB@chimera> <492AFCC3.4090602@birkenwald.de> <20081126083528.GM26036@elte.hu>
-In-Reply-To: <20081126083528.GM26036@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811261544.32461.rjw@sisk.pl>
+	Wed, 26 Nov 2008 09:46:10 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:38748 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752168AbYKZOqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 09:46:09 -0500
+Date: Wed, 26 Nov 2008 15:45:52 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Philip Langdale <philipl@overt.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       sdhci-devel@list.drzeus.cx, fseidel@suse.de, weyland@library.ethz.ch,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] ricoh_mmc: Handle newer models of Ricoh controllers
+Message-ID: <20081126154552.6ec5ec47@mjolnir.drzeus.cx>
+In-Reply-To: <492D604C.10707@overt.org>
+References: <492BBA91.5010302@overt.org>
+	<200811261436.57946.elendil@planet.nl>
+	<492D604C.10707@overt.org>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-17142-1227710764-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 26 of November 2008, Ingo Molnar wrote:
-> 
-> * Bernhard Schmidt <berni@birkenwald.de> wrote:
-> 
-> > Hello,
-> >
-> >> On Monday, November 24, 2008 12:47 am Romano Giannetti (lists) wrote:
-> >>> Rafael J. Wysocki wrote:
-> >>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11947
-> >>>> Subject		: 2.6.28-rc VC switching with Intel graphics broken
-> >>>> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-> >>>> Date		: 2008-11-03 12:10 (20 days old)
-> >>>> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-> >>> Still with us on -rc6, nasty, reproducible, no clues on what can be.
-> >>>
-> >>> VC switch locks or delay the systems minutes, resuming from suspend locks
-> >>> hard the machine.
-> >>>
-> >>> 2.6.28-rc is unusable here.
-> >>>
-> >>> Jesse, any hints? My suspicion that it can be the same thing happened with
-> >>> bug 10620 is wrong? (It was a very similar error about vblank...)
-> >>
-> >> Just added to the bug, it looks like a DUP of an issue Keith just fixed 
-> >> last week (now to make sure the patch makes it upstream quickly).
-> >
-> > I can confirm that, with the patch from  
-> > http://lists.freedesktop.org/archives/intel-gfx/2008-November/000614.html 
-> > applied on top of current git head (rejected hunk in  
-> > drivers/gpu/drm/i915/915_irq.c due to the additional  
-> > dev_priv->irq_mask_reg = ~0; in git between the removed lines, I kept  
-> > it) I can suspend/resume and do a VC switch again.
-> >
-> > Big thanks!
-> 
-> here it is below plaintext as well, merged up to latest -git.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Well, I still have a resume issue with this patch applied on Toshiba Portege
-R500 (please see http://bugzilla.kernel.org/show_bug.cgi?id=12031#c9 for
-details).
+--=_freyr.drzeus.cx-17142-1227710764-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Rafael
+On Wed, 26 Nov 2008 06:42:20 -0800
+Philip Langdale <philipl@overt.org> wrote:
 
- 
-> ------------------->
-> From 60174462808051477793776c67282364bc94ded3 Mon Sep 17 00:00:00 2001
-> From: Keith Packard <keithp@keithp.com>
-> Date: Tue, 18 Nov 2008 09:30:25 -0800
-> Subject: [PATCH] drm: move drm vblank initialization/cleanup to driver load/unload
-> 
-> drm vblank initialization keeps track of the changes in driver-supplied
-> frame counts across vt switch and mode setting, but only if you let it by
-> not tearing down the drm vblank structure.
-> 
-> Signed-off-by: Keith Packard <keithp@keithp.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/gpu/drm/drm_drv.c       |    2 ++
->  drivers/gpu/drm/drm_irq.c       |    4 +---
->  drivers/gpu/drm/i915/i915_dma.c |    5 +++++
->  drivers/gpu/drm/i915/i915_drv.h |    2 ++
->  drivers/gpu/drm/i915/i915_irq.c |    5 -----
->  include/drm/drmP.h              |    1 +
->  6 files changed, 11 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/drm_drv.c b/drivers/gpu/drm/drm_drv.c
-> index 3ab1e9c..996097a 100644
-> --- a/drivers/gpu/drm/drm_drv.c
-> +++ b/drivers/gpu/drm/drm_drv.c
-> @@ -305,6 +305,8 @@ static void drm_cleanup(struct drm_device * dev)
->  		return;
->  	}
->  
-> +	drm_vblank_cleanup(dev);
-> +
->  	drm_lastclose(dev);
->  
->  	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) &&
-> diff --git a/drivers/gpu/drm/drm_irq.c b/drivers/gpu/drm/drm_irq.c
-> index 15c8dab..1e787f8 100644
-> --- a/drivers/gpu/drm/drm_irq.c
-> +++ b/drivers/gpu/drm/drm_irq.c
-> @@ -94,7 +94,7 @@ static void vblank_disable_fn(unsigned long arg)
->  	}
->  }
->  
-> -static void drm_vblank_cleanup(struct drm_device *dev)
-> +void drm_vblank_cleanup(struct drm_device *dev)
->  {
->  	/* Bail if the driver didn't call drm_vblank_init() */
->  	if (dev->num_crtcs == 0)
-> @@ -278,8 +278,6 @@ int drm_irq_uninstall(struct drm_device * dev)
->  
->  	free_irq(dev->pdev->irq, dev);
->  
-> -	drm_vblank_cleanup(dev);
-> -
->  	return 0;
->  }
->  EXPORT_SYMBOL(drm_irq_uninstall);
-> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-> index 0d215e3..9a1450e 100644
-> --- a/drivers/gpu/drm/i915/i915_dma.c
-> +++ b/drivers/gpu/drm/i915/i915_dma.c
-> @@ -856,6 +856,11 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
->  
->  	spin_lock_init(&dev_priv->user_irq_lock);
->  
-> +	ret = drm_vblank_init(dev, I915_NUM_PIPE);
-> +
-> +	if (ret)
-> +		return ret;
-> +
->  	return ret;
->  }
->  
-> diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
-> index ef1c0b8..ec78190 100644
-> --- a/drivers/gpu/drm/i915/i915_drv.h
-> +++ b/drivers/gpu/drm/i915/i915_drv.h
-> @@ -47,6 +47,8 @@ enum pipe {
->  	PIPE_B,
->  };
->  
-> +#define I915_NUM_PIPE	2
-> +
->  /* Interface history:
->   *
->   * 1.1: Original.
-> diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
-> index 82752d6..a60af31 100644
-> --- a/drivers/gpu/drm/i915/i915_irq.c
-> +++ b/drivers/gpu/drm/i915/i915_irq.c
-> @@ -483,14 +483,9 @@ void i915_driver_irq_preinstall(struct drm_device * dev)
->  int i915_driver_irq_postinstall(struct drm_device *dev)
->  {
->  	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-> -	int ret, num_pipes = 2;
-> -
->  	/* Set initial unmasked IRQs to just the selected vblank pipes. */
->  	dev_priv->irq_mask_reg = ~0;
->  
-> -	ret = drm_vblank_init(dev, num_pipes);
-> -	if (ret)
-> -		return ret;
->  
->  	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B;
->  	dev_priv->irq_mask_reg &= ~I915_DISPLAY_PIPE_A_VBLANK_INTERRUPT;
-> diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-> index 28c7f16..d5e8e5c 100644
-> --- a/include/drm/drmP.h
-> +++ b/include/drm/drmP.h
-> @@ -1151,6 +1151,7 @@ extern u32 drm_vblank_count(struct drm_device *dev, int crtc);
->  extern void drm_handle_vblank(struct drm_device *dev, int crtc);
->  extern int drm_vblank_get(struct drm_device *dev, int crtc);
->  extern void drm_vblank_put(struct drm_device *dev, int crtc);
-> +extern void drm_vblank_cleanup(struct drm_device *dev);
->  /* Modesetting support */
->  extern int drm_modeset_ctl(struct drm_device *dev, void *data,
->  			   struct drm_file *file_priv);
-> 
-> 
+> Frans Pop wrote:
+> >> The latest generation of laptops are shipping with a newer
+> >> model of Ricoh chip where the firewire controller is the
+> >> primary PCI function but a cardbus controller is also present.
+> >=20
+> > Note that the current separate ricoh_mmc disabling module approach has=
+=20
+> > been shown to break during suspend/resume. Matthew Garret proposed a=20
+> > patch for that which (with minor fixups) I tested successfully.
+>=20
+> Hmm. Well, I'm interested as to what Pierre thinks. He explicitly didn't
+> want a quirk when we originally looked at the problem and that's why
+> ricoh_mmc exists - but maybe this is a good enough reason to revisit that
+> decision.
+>=20
 
+Actually, what I didn't want was a _sdhci_ quirk. I'm fine with a PCI one. =
+In fact,
+that's probably the best approach as that register fiddling hides some
+PCI devices, so it's best if it is done before enumeration.
 
+(Side note: sdhci has now undergone the architectural change that would
+allow a quirk like this, but the PCI version is probably still best)
 
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-17142-1227710764-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkktYSUACgkQ7b8eESbyJLhYyACfaevhweNf04ihMlsmsPuBnVYA
+CSkAoJkh4jQOjhhnWAH0JYAKHp5gw+xq
+=dxoK
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-17142-1227710764-0001-2--
