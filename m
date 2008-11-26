@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYKZVPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYKZVP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYKZVPo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 16:15:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYKZVNQ
+	id S1755466AbYKZVP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 16:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbYKZVPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 16:13:16 -0500
-Received: from 1wt.eu ([62.212.114.60]:1395 "EHLO 1wt.eu"
+	Wed, 26 Nov 2008 16:15:38 -0500
+Received: from ceres.twam.info ([84.16.224.131]:49442 "EHLO smtp.twam.info"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753361AbYKZVNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 16:13:09 -0500
-Date: Wed, 26 Nov 2008 22:12:20 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081126211220.GA22374@1wt.eu>
-References: <20081120031101.GD26448@xw6200.broadcom.net> <20081120053746.GB15168@1wt.eu> <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net> <20081124132744.GB24851@1wt.eu> <20081124215247.GA29696@1wt.eu> <20081125015223.GA9151@xw6200.broadcom.net> <20081125053128.GA32426@1wt.eu> <20081125175413.GA9808@xw6200.broadcom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081125175413.GA9808@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+	id S1755763AbYKZVPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 16:15:37 -0500
+X-Greylist: delayed 564 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Nov 2008 16:15:37 EST
+Message-ID: <4b04f768614db905a9e9e8f7bfb88393.squirrel@twam.homeip.net>
+In-Reply-To: <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz>
+References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de>
+    <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>
+    <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz>
+    <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>
+    <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz>
+Date: Wed, 26 Nov 2008 22:06:00 +0100 (CET)
+Subject: Re: [PATCH 1/1] HID: Apple alu wireless keyboards are bluetooth 
+     devices
+From: Tobias =?iso-8859-1?Q?M=FCller?= <Tobias_Mueller@twam.info>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Cc: "Jan Scholz" <scholz@fias.uni-frankfurt.de>,
+       "Tobias Mueller" <tobias_mueller@twam.info>, jirislaby@gmail.com,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+>> The one I own is a USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, german layout,
+>> with bluetooth, unfortunately I don't have access to a usb variant.
+>
+> Tobias Mueller added these device IDs, so persumably he has tested it and
+> could provide some insight. I don't have the hardware myself, so I have no
+> idea whether there are only Bluetooht variants, or even USB are available.
+>
+> Tobias?
 
-On Tue, Nov 25, 2008 at 09:54:13AM -0800, Matt Carlson wrote:
-> On Mon, Nov 24, 2008 at 09:31:28PM -0800, Willy Tarreau wrote:
-> > On Mon, Nov 24, 2008 at 05:52:23PM -0800, Matt Carlson wrote:
-> > (...)
-> > > > tg3: eth0: transmit timed out, resetting
-> > > > tg3: DEBUG: MAC_TX_STATUS[0000000b] MAC_RX_STATUS[00000006]
-> > > > tg3: DEBUG: RDMAC_STATUS[00000000] WDMAC_STATUS[00000008]
-> > > > tg3: tg3_stop_block timed out, ofs=1400 enable_bit=2
-> > > > tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
-> > > > tg3: tg3_stop_block timed out, ofs=4c00 enable_bit=2
-> > > > tg3: eth0: Link is down.
-> > > > tg3: eth0: Link is up at 100 Mbps, full duplex.
-> > > > tg3: eth0: Flow control is on for TX and on for RX.
-> > > > 
-> > > > The ease with which I reproduce it here clearly indicates that this is
-> > > > related to the switch, probably just the fact that it is at 100 Mbps.
-> > > > Unfortunately this evening I must go, but I still have one 100 Mbps
-> > > > switch somewhere at home, I'll reproduce the same test ASAP in order
-> > > > to bisect the issue.
-> > > > 
-> > > > Regards,
-> > > > Willy
-> > > 
-> > > Does turning off flow control help at all?
-> > 
-> > I have not tested but I will. I hope to be able to trigger the problem
-> > on other similar switches, because I'm only once a week connected to
-> > the culprit...
-> 
-> I can't say for certain, but I suspect the problem might be more
-> associated with the link speed than the particular switch you are using.
-> Can you try autoneg'ing down to a slower speed and see if that helps
-> make the problem more reproducable?
+I own the USB variant and these are the right id for that. The wireless
+IDs were from another patch I merged together with mine. I don't have a
+wireless version.
 
-I've run a new test on a switch I have here at home (another el-cheapo,
-non-manageable 100 Mbps, netgear this time). Unfortunately I cannot
-reproduce the problem at all. I have disabled FC on my laptop, it did
-not have any effect. I have disabled auto-neg and manually forced the
-speed to 100/Full on my laptop, and could not reproduce the problem
-either (though the speed was much lower due to the switch obviously
-negociating 100/Half when not seeing my NWay frames).
-
-I have tried unplugging the cable during transfers and changing negociation
-during transfers, trying to trigger artifacts, but with no result. So I
-think that I will really need to debug this on the "faulty" switch on
-next monday. It does not surprize me much, because we don't see that
-many reports for a similar problem, eventhough the tg3 is very common
-in laptops. I just hope it's a recent regression, as I'd prefer avoid
-having to bisect from a very old kernel.
-
-I'll keep you informed,
-Willy
+Regards
+  Tobias
 
