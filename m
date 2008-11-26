@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYKZQNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYKZQOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbYKZQNy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 11:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYKZQNe
+	id S1754580AbYKZQOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 11:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYKZQNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 11:13:34 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49922 "EHLO
+	Wed, 26 Nov 2008 11:13:37 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49936 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYKZQNd (ORCPT
+	with ESMTP id S1753156AbYKZQNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 11:13:33 -0500
-Date: Wed, 26 Nov 2008 17:15:21 +0100
+	Wed, 26 Nov 2008 11:13:36 -0500
+Date: Wed, 26 Nov 2008 17:15:24 +0100
 From: Pavel Machek <pavel@suse.cz>
 To: kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
        dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: Document hadling of bad memory
-Message-ID: <20081126161521.GC1983@elf.ucw.cz>
+       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Document sysfs interface to RTC system wakeup
+Message-ID: <20081126161524.GD1983@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,62 +26,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Document how to deal with bad memory reported with memtest.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/Documentation/bad_memory.txt b/Documentation/bad_memory.txt
-new file mode 100644
-index 0000000..df84162
---- /dev/null
-+++ b/Documentation/bad_memory.txt
-@@ -0,0 +1,45 @@
-+March 2008
-+Jan-Simon Moeller, dl9pf@gmx.de
+diff --git a/Documentation/rtc.txt b/Documentation/rtc.txt
+index 8deffcd..ac843ab 100644
+--- a/Documentation/rtc.txt
++++ b/Documentation/rtc.txt
+@@ -187,6 +187,88 @@ driver returns ENOIOCTLCMD.  Some common
+ 
+ If all else fails, check out the rtc-test.c driver!
+ 
++	    Even newer /sys interface
++	    ~~~~~~~~~~~~~~~~~~~~~~~~~
++
++tino.keitel@gmx.de
++
++How to use /sys/class/rtc/rtcX/wakealarm
++^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++This file takes the seconds since epoch to enable a wake event at the
++specified time.
++
++If a '0' is written, the alarm is disabled.
++
++If the alarm was already enabled, a new alarm can only be set after the
++old alarm is disabled.
 +
 +
-+How to deal with bad memory e.g. reported by memtest86+ ?
-+#########################################################
++Migration from /proc/acpi/alarm
++^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++Users of /proc/acpi/alarm have to change their code to supply the
++seconds since epoch instead of a date string.
 +
-+There are three possibilities I know of:
++For shell scripts, this can be done using the date command, e.g. like
++this:
 +
-+1) Reinsert/swap the memory modules
++date -d tomorrow "+%s"
 +
-+2) Buy new modules (best!) or try to exchange the memory
-+   if you have spare-parts
++This returns the seconds since epoch of the current time on the
++following day.
 +
-+3) Use BadRAM or memmap
++Please note that you have to disable the old alarm first, if you want
++to set a new alarm. Otherwise, you get an error. Example:
 +
-+This Howto is about number 3) .
++echo 12345 > /sys/class/rtc/rtc0/wakealarm
++echo 0 > /sys/class/rtc/rtc0/wakealarm
++echo 23456 > /sys/class/rtc/rtc0/wakealarm
 +
 +
-+BadRAM
-+######
-+BadRAM is the actively developed and available as kernel-patch
-+here:  http://rick.vanrein.org/linux/badram/
++cd /proc/acpi
++echo EXP0 > wakeup
++echo PCI1 > wakeup
++echo USB0 > wakeup
++echo USB1 > wakeup
++echo USB2 > wakeup
++echo USB7 > wakeup
++echo HDEF > wakeup
++cd /sys/class/rtc/rtc0
++echo $(( $(cat since_epoch) + 20 )) > wakealarm
 +
-+For more details see the BadRAM documentation.
++    [PATCH] RTC gets sysfs wakealarm attribute
 +
-+memmap
-+######
++    This adds a new "wakealarm" sysfs attribute to RTC class devices which support
++    alarm operations and are wakeup-capable:
 +
-+memmap is already in the kernel and usable as kernel-parameter at
-+boot-time.  Its syntax is slightly strange and you may need to
-+calculate the values by yourself!
++     - It reads as either empty, or the scheduled alarm time as seconds
++       since the POSIX epoch.  (That time may already have passed, since
++       nothing currently enforces one-shot alarm semantics.)
 +
-+Syntax to exclude a memory area (see kernel-parameters.txt for details):
-+memmap=<size>$<address>
++     - It can be written with an alarm time in the future, again seconds
++       since the POSIX epoch, which enables the alarm.
 +
-+Example: memtest86+ reported here errors at address 0x18691458, 0x18698424 and
-+         some others. All had 0x1869xxxx in common, so I chose a pattern of
-+         0x18690000,0xffff0000.
++     - It can be written with an alarm time not in the future (such as 0,
++       the start of the POSIX epoch) to disable the alarm.
 +
-+With the numbers of the example above:
-+memmap=64K$0x18690000
-+ or
-+memmap=0x10000$0x18690000
++    Usage examples (some need GNU date) after "cd /sys/class/rtc/rtcN":
 +
++        alarm after 10 minutes:
++        # echo $(( $(cat since_epoch) + 10 * 60 )) > wakealarm
++        alarm tuesday evening 10pm:
++        # date -d '10pm tuesday' "+%s" > wakealarm
++        disable alarm:
++                # echo 0 > wakealarm
++
++    This resembles the /proc/acpi/alarm file in that nothing happens when the
++    alarm triggers ...  except possibly waking the system from sleep.  It's also
++    like that in a nasty way: not much can be done to prevent one task from
++    clobbering another task's alarm settings.
++
++    It differs from that file in that there's no in-kernel date parser.
++
++    Note that a few RTCs ignore rtc_wkalrm.enabled when setting alarms, or aren't
++    set up correctly, so they won't yet behave with this attribute.
++
+ 
+ -------------------- 8< ---------------- 8< -----------------------------
+ 
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
