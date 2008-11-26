@@ -1,120 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYKZWQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYKZWTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbYKZWQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 17:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYKZWQs
+	id S1753684AbYKZWTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 17:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYKZWTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 17:16:48 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:59725 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751847AbYKZWQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 17:16:47 -0500
-Date: Wed, 26 Nov 2008 23:21:03 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Paolo Valente <paolo.valente@unimore.it>, Vivek Goyal <vgoyal@redhat.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081126222103.GD29897@gandalf.sssup.it>
-References: <20081113221304.GH7542@redhat.com> <20081120.182053.220301508585579959.ryov@valinux.co.jp> <20081120134701.GB29306@redhat.com> <20081125.113359.623571555980951312.ryov@valinux.co.jp> <20081125162720.GH341@redhat.com> <e98e18940811251438v245f79aegfdc92bee737af64c@mail.gmail.com> <492D57E1.5090608@unimore.it> <e98e18940811261141x307cf06fldd5e481e85da5c2d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e98e18940811261141x307cf06fldd5e481e85da5c2d@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 26 Nov 2008 17:19:03 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:29937 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752369AbYKZWTB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 17:19:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=EGs7gmD+I0TSgSF9f1PofNBHQSDxRRn/yY/k2/+AVUflJCVOCR3B/WB/pjz9PG72Kf
+         AUBclMepKIZ3fgxiPpXjkSQF0ffWTmDjUKJgaMNXgW2OVUkVmlIK2SdpUPrsTXwZO21f
+         UhBaNs0F/LI2kyuQUrZM3QyjpAFbko1VKqr9A=
+Message-ID: <492DCB50.9040005@gmail.com>
+Date: Wed, 26 Nov 2008 17:18:56 -0500
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: adaplas@gmail.com
+CC: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] gbefb: unsigned var->pixclock cannot be less than 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Nauman Rafique <nauman@google.com>
-> Date: Wed, Nov 26, 2008 11:41:46AM -0800
->
-> On Wed, Nov 26, 2008 at 6:06 AM, Paolo Valente <paolo.valente@unimore.it> wrote:
-> > Fabio and I are a little bit worried about the fact that the problem
-> > of working in the time domain instead of the service domain is not
-> > being properly dealt with.  Probably we did not express ourselves very
-> > clearly, so we will try to put in more practical terms.  Using B-WF2Q+
-> > in the time domain instead of using CFQ (Round-Robin) means introducing
-> > higher complexity than CFQ to get almost the same service properties
-> > of CFQ.  With regard to fairness (long term) B-WF2Q+ in the time domain
-> 
-> Are we talking about a case where all the contenders have equal
-> weights and are continuously backlogged? That seems to be the only
-> case when B-WF2Q+ would behave like Round-Robin. Am I missing
-> something here?
-> 
+unsigned var->pixclock cannot be less than 0
 
-It is the case with equal weights, but it is really a common one.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+var->pixclock has type __u32, see
+vi include/linux/fb.h +231
 
+compute_gbe_timing() returns int, see
+vi drivers/video/gbefb.c +466
 
-> I can see that the only direct advantage of using WF2Q+ scheduling is
-> reduced jitter or latency in certain cases. But under heavy loads,
-> that might result in request latencies seen by RT threads to be
-> reduced from a few seconds to a few msec.
-> 
-> > has exactly the same (un)fairness problems of CFQ.  As far as bandwidth
-> > differentiation is concerned, it can be obtained with CFQ by just
-> > increasing the time slice (e.g., double weight => double slice).  This
-> > has no impact on long term guarantees and certainly does not decrease
-> > the throughput.
-> >
-> > With regard to short term guarantees (request completion time), one of
-> > the properties of the reference ideal system of Wf2Q+ is that, assuming
-> > for simplicity that all the queues have the same weight, as the ideal
-> > system serves each queue at the same speed, shorter budgets are completed
-> > in a shorter time intervals than longer budgets.  B-WF2Q+ guarantees
-> > O(1) deviation from this ideal service.  Hence, the tight delay/jitter
-> > measured in our experiments with BFQ is a consequence of the simple (and
-> > probably still improvable) budget assignment mechanism of (the overall)
-> > BFQ.  In contrast, if all the budgets are equal, as it happens if we use
-> > time slices, the resulting scheduler is exactly a Round-Robin, again
-> > as in CFQ (see [1]).
-> 
-> Can the budget assignment mechanism of BFQ be converted to time slice
-> assignment mechanism? What I am trying to say here is that we can have
-> variable time slices, just like we have variable budgets.
-> 
+diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+index f89c3cc..fe5b519 100644
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -912,6 +912,7 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	unsigned int line_length;
+ 	struct gbe_timing_info timing;
++	int ret;
+ 
+ 	/* Limit bpp to 8, 16, and 32 */
+ 	if (var->bits_per_pixel <= 8)
+@@ -930,8 +931,10 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 
+ 	var->grayscale = 0;	/* No grayscale for now */
+ 
+-	if ((var->pixclock = compute_gbe_timing(var, &timing)) < 0)
+-		return(-EINVAL);
++	ret = compute_gbe_timing(var, &timing);
++	var->pixclock = ret;
++	if (ret < 0)
++		return -EINVAL;
+ 
+ 	/* Adjust virtual resolution, if necessary */
+ 	if (var->xres > var->xres_virtual || (!ywrap && !ypan))
 
-Yes, it could be converted, and it would do in the time domain the
-same differentiation it does now in the service domain.  What we would
-lose in the process is the fairness in the service domain.  The service
-properties/guarantees of the resulting scheduler would _not_ be the same
-as the BFQ ones.  Both long term and short term guarantees would be
-affected by the unfairness given by the different service rate
-experienced by the scheduled entities.
-
-
-> >
-> > Finally, with regard to completion time delay differentiation through
-> > weight differentiation, this is probably the only case in which B-WF2Q+
-> > would perform better than CFQ, because, in case of CFQ, reducing the
-> > time slices may reduce the throughput, whereas increasing the time slice
-> > would increase the worst-case delay/jitter.
-> >
-> > In the end, BFQ succeeds in guaranteeing fairness (or in general the
-> > desired bandwidth distribution) because it works in the service domain
-> > (and this is probably the only way to achieve this goal), not because
-> > it uses WF2Q+ instead of Round-Robin.  Similarly, it provides tight
-> > delay/jitter only because B-WF2Q+ is used in combination with a simple
-> > budget assignment (differentiation) mechanism (again in the service
-> > domain).
-> >
-> > [1] http://feanor.sssup.it/~fabio/linux/bfq/results.php
-> >
-> > --
-> > -----------------------------------------------------------
-> > | Paolo Valente              |                            |
-> > | Algogroup                  |                            |
-> > | Dip. Ing. Informazione     | tel:   +39 059 2056318     |
-> > | Via Vignolese 905/b        | fax:   +39 059 2056199     |
-> > | 41100 Modena               |                            |
-> > |     home:  http://algo.ing.unimo.it/people/paolo/       |
-> > -----------------------------------------------------------
-> >
-> >
