@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbYKZGDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYKZGFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144AbYKZGDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 01:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYKZGDX
+	id S1753347AbYKZGFj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 01:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYKZGFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 01:03:23 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38461 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbYKZGDW (ORCPT
+	Wed, 26 Nov 2008 01:05:31 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49182 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750864AbYKZGFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 01:03:22 -0500
-Date: Wed, 26 Nov 2008 06:02:46 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: dwmw2@infradead.org, jens.axboe@oracle.com, matthew@wil.cx,
-       joern@logfs.org, James.Bottomley@HansenPartnership.com,
-       djshin90@gmail.com, teheo@suse.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/9] swapfile: swapon use discard (trim)
-In-Reply-To: <20081125171748.57450cb5.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0811260530570.26081@blonde.site>
-References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
- <Pine.LNX.4.64.0811252140230.17555@blonde.site> <20081125171748.57450cb5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Nov 2008 01:05:31 -0500
+Date: Tue, 25 Nov 2008 22:06:27 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] random: add a way to get some random bits into the
+ entropy pools early on
+Message-ID: <20081125220627.4a07f6b7@infradead.org>
+In-Reply-To: <1227649282.3196.3.camel@calx>
+References: <20081125132600.5112fb24@infradead.org>
+	<1227649282.3196.3.camel@calx>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008, Andrew Morton wrote:
-> On Tue, 25 Nov 2008 21:44:34 +0000 (GMT)
-> Hugh Dickins <hugh@veritas.com> wrote:
-> 
-> > When adding swap, all the old data on swap can be forgotten: sys_swapon()
-> > discard all but the header page of the swap partition (or every extent
-> > but the header of the swap file), to give a solidstate swap device the
-> > opportunity to optimize its wear-levelling.
+On Tue, 25 Nov 2008 15:41:22 -0600
+Matt Mackall <mpm@selenic.com> wrote:
+
+
 > > 
-> > If that succeeds, note SWP_DISCARDABLE for later use, and report it
-> > with a "D" at the right end of the kernel's "Adding ... swap" message.
-> > Perhaps something should be shown in /proc/swaps (swapon -s), but we
-> > have to be more cautious before making any addition to that format.
+> > This patch adds a function to the random driver so that various
+> > pieces of the kernel can add random bits (but not entropy!) to the
+> > pool, to avoid this dupicate ID problem.
 > 
-> When reading the above text it's a bit hard to tell whether it's
-> talking about "this is how things are at present" or "this is how
-> things are after the patch".  This is fairly common with Hugh
-> changelogs.
+> This appears to be equivalent to making random initialize earlier,
+> except with more code?
 
-;)  Sorry about that - yes, that's often true.  In this case, it's
-all talking about how things are after the patch.  I think it's that
-first sentence which bothers you - "all the old data on swap can be
-forgotten".  In this case, I'm meaning "it's a good idea to let the
-device know that it can forget about all the old data"; but it's easy
-to imagine another patch coming from me in which the same sentence
-would mean "we've got a terrible data-loss bug, such that all the
-data already written to swap gets erased".  Let's hope I didn't
-implement the latter.
+well sort of kinda, but arbitrarily early (eg I made the oops ID just
+call this whenever it's called first)
 
-> > +static int discard_swap(struct swap_info_struct *si)
-> > +{
-> > +	struct swap_extent *se;
-> > +	int err = 0;
-> > +
-> > +	list_for_each_entry(se, &si->extent_list, list) {
-> > +		sector_t start_block = se->start_block << (PAGE_SHIFT - 9);
-> > +		pgoff_t nr_blocks = se->nr_pages << (PAGE_SHIFT - 9);
 > 
-> I trust we don't have any shift overflows here.
-> 
-> It's a bit dissonant to see a pgoff_t with "blocks" in its name.  But
-> swap is like that..
+> If we're going down a route like this, I'd like to see the ability to
+> actually mix in data (ie MAC addresses, DMI data, etc.) rather than
+> just timing.
 
-In fact we don't have a shift overflow there, but you've such a good eye.
+I'll make a second patch for that; it does make sense to do this,
+but it also makes sense to just have a "just do the time" helper
 
-I noticed that "pgoff_t nr_blocks" line just as I was about to send off
-the patches, and had a little worry about it.  By that time I was at
-the stage that if I went into the patch and changed a few pgoff_ts
-to sector_ts at the last minute, likelihood was I'd screw something
-up badly, in one CONFIG combination or another, and if I delayed
-it'd be tomorrow.
 
-It would be good to make that change when built and tested,
-just for reassurance.  There isn't a shift overflow as it stands,
-but the reasons are too contingent for my liking: on 64-bit there
-isn't an issue because pgoff_t is as big as sector_t; on 32-bit,
-it's because a swp_entry_t is an unsigned long, and it has to
-contain five bits for the "type" (which of the 30 or 32 swapfiles
-is addressed), and the pages-to-sectors shift is less than 5 on
-all 32-bit machines for the foreseeable future.  Oh, and it also
-relies on the fact that by the time we're setting up swap extents,
-we've already curtailed the size to what's usable by a swp_entry_t,
-if that's less than the size given in the swap header.
 
-So, not actually a bug there, but certainly a source of anxiety,
-better eliminated.
-
-Hugh
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
