@@ -1,124 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYKZFIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYKZFI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbYKZFIE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 00:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYKZFHw
+	id S1753241AbYKZFI2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 00:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYKZFIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 00:07:52 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47966 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750760AbYKZFHv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 00:07:51 -0500
-Subject: Re: [PATCH] Fix SCSI regression in 2.6.27 [was [Bugme-new] [Bug
-	12099] New: Nokia 5310 storage-mode]
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0811251026500.2457-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0811251026500.2457-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Tue, 25 Nov 2008 23:07:47 -0600
-Message-Id: <1227676067.3415.63.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Nov 2008 00:08:04 -0500
+Received: from sous-sol.org ([216.99.217.87]:60327 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752644AbYKZFIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 00:08:01 -0500
+Date: Tue, 25 Nov 2008 21:07:58 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Greg KH <greg@kroah.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, allen.m.kay@intel.com, jun.nakajima@intel.com
+Subject: Re: [PATCH 2/2] PCI: pci-stub module to reserve pci device
+Message-ID: <20081126050758.GA22700@sequoia.sous-sol.org>
+References: <20081126033610.GB19881@sequoia.sous-sol.org> <20081126033839.GC19881@sequoia.sous-sol.org> <20081126041946.GA18816@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081126041946.GA18816@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-25 at 10:34 -0500, Alan Stern wrote:
-> This patch is intended for 2.6.27.stable and 2.6.28.  It's a temporary 
-> fix for a problem affecting a number of USB mass-storage devices 
-> (including many Nokia phones): When trying to access a nonexistent 
-> "last" sector, the SCSI midlayer gets caught in an endless retry loop.
-
-Can't we just invoke the last sector handling flag for all Nokia
-devices?
-
-> See for example Bugzilla #11843 and #12099.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> ---
-> 
-> On Tue, 25 Nov 2008, Andrew Morton wrote:
-> 
-> > On Tue, 25 Nov 2008 01:07:43 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+* Greg KH (greg@kroah.com) wrote:
+> On Tue, Nov 25, 2008 at 07:38:39PM -0800, Chris Wright wrote:
+> > When doing device assignment with KVM there's currently nothing to
+> > protect the device from having a driver in the host as well as the guest.
+> > This trivial module just binds the pci device on the host to a stub
+> > driver so that a real host driver can't bind to the device.  It has no
+> > pci id table, it supports only dynamic ids.
 > > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=12099
-> > > 
-> > >            Summary: Nokia 5310 storage-mode
-> > >            Product: Drivers
-> > >            Version: 2.5
-> > >      KernelVersion: 2.6.27
-> > >           Platform: All
-> > >         OS/Version: Linux
-> > >               Tree: Mainline
-> > >             Status: NEW
-> > >           Severity: normal
-> > >           Priority: P1
-> > >          Component: USB
-> > >         AssignedTo: greg@kroah.com
-> > >         ReportedBy: robsonpeixoto@gmail.com
-> > > 
-> > > 
-> > > Latest working kernel version: 2.6.26
-> > > Earliest failing kernel version: 2.6.27
+> >  # echo "8086 10f5" > /sys/bus/pci/drivers/pci-stub/new_id
+> >  # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/e1000e/unbind
+> >  # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/pci-stub/bind
+> >  # ls -l /sys/bus/pci/devices/0000:00:19.0/driver
+> >  lrwxrwxrwx 1 root root 0 2008-11-25 19:10 /sys/bus/pci/devices/0000:00:19.0/driver -> ../../../bus/pci/drivers/pci-stub
+> 
+> You might want to put this somewhere in the .c or documentation files
+> somewhere as well.
+
+OK, I'll add this to the .c file for now.
+
+> > Cc: "Kay, Allen M" <allen.m.kay@intel.com>
+> > Cc: "Nakajima, Jun" <jun.nakajima@intel.com>
+> > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> > ---
+> >  drivers/pci/Kconfig    |    9 +++++++++
+> >  drivers/pci/Makefile   |    2 ++
+> >  drivers/pci/pci-stub.c |   38 ++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 49 insertions(+), 0 deletions(-)
+> >  create mode 100644 drivers/pci/pci-stub.c
 > > 
-> > A regression.
-> > 
-> > > Distribution: ArchLinux
-> > > Hardware Environment: USB(ohci,ehci)
-> > > Software Environment: gcc 4.3.2, glibc 2.8
-> > > Problem Description: 
-> > > 
-> > > When I plug in my Nokia 5310 show a msg in cel "Transferring data" and in
-> > > computer nothing happend.
+> > diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+> > index e1ca425..f6183df 100644
+> > --- a/drivers/pci/Kconfig
+> > +++ b/drivers/pci/Kconfig
+> > @@ -42,6 +42,15 @@ config PCI_DEBUG
+> >  
+> >  	  When in doubt, say N.
+> >  
+> > +config PCI_STUB
+> > +	tristate "PCI Stub driver"
+> > +	depends on PCI
+> > +	help
+> > +	  Say Y or M here if you want be able to reserve a PCI device
+> > +	  when it is going to be assigned to a guest.
 > 
-> Unless we want to keep on receiving regression reports like this one,
-> this patch or something like it needs to be applied.  We can hope
-> 2.6.29 will work better...  But unhappily, to date James has not
-> responded to any of my patch submissions in this area.
+> "guest operating system"?  Otherwise, just "guest" doesn't mean much
+> here in this context.
+
+fixed
+
+> Other than that minor thing, looks great.
 > 
-> Alan Stern
-> 
-> 
-> 
-> Index: 2.6.27.4/drivers/scsi/scsi_lib.c
-> ===================================================================
-> --- 2.6.27.4.orig/drivers/scsi/scsi_lib.c
-> +++ 2.6.27.4/drivers/scsi/scsi_lib.c
-> @@ -611,6 +611,11 @@ static void scsi_requeue_command(struct 
->  	struct request *req = cmd->request;
->  	unsigned long flags;
->  
-> +	if (--req->retries < 0) {
-> +		blk_end_request(req, -EIO, blk_rq_bytes(req));
-> +		scsi_next_command(cmd);
-> +		return;
-> +	}
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-This would cause tape errors on unit attention (fairly common
-condition).  It can be argued that we get more users of USB mobile
-phones than tapes, but I'd rather keep both communities happy
-
-By and large, the reason we backport from head if at all possible is so
-we can avoid bugs like this creeping into stable.  (And backporting from
-head is far easier if the bug fixes are small and don't contain
-miscellaneous code clean ups, control flow changes and comment fixes)
-
-> Unless we want to keep on receiving regression reports like this one,
-> this patch or something like it needs to be applied.  We can hope
-> 2.6.29 will work better...  But unhappily, to date James has not
-> responded to any of my patch submissions in this area.
-
-I tried to untangle it on the 'plane yesterday.  I've just got a bit
-more testing to do then I'll post the patch to your patch.
-
-James
-
-
+thanks,
+-chris
