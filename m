@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYKZLeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYKZLiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYKZLeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 06:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYKZLeW
+	id S1753398AbYKZLiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 06:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYKZLim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 06:34:22 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51681 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbYKZLeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 06:34:21 -0500
-To: tj@kernel.org
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, greg@kroah.com
-In-reply-to: <492D2224.7000302@kernel.org> (message from Tejun Heo on Wed, 26
-	Nov 2008 19:17:08 +0900)
-Subject: Re: [PATCH 5/5 UPDATED] CUSE: implement CUSE - Character device in
- Userspace
-References: <1227190983-5820-1-git-send-email-tj@kernel.org>	<1227190983-5820-6-git-send-email-tj@kernel.org> <20081121211607.49e0ec84.akpm@linux-foundation.org> <4927BC9A.3000001@kernel.org> <4927BDC7.8020905@kernel.org> <E1L5HDg-0001Ty-1u@pomaz-ex.szeredi.hu> <492D2224.7000302@kernel.org>
-Message-Id: <E1L5Ieo-0001iE-0P@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 26 Nov 2008 12:34:10 +0100
+	Wed, 26 Nov 2008 06:38:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56264 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbYKZLim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 06:38:42 -0500
+Date: Wed, 26 Nov 2008 12:38:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/function-return-tracer: set a more human
+	readable output
+Message-ID: <20081126113830.GB25861@elte.hu>
+References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu> <20081126021450.GA17617@elte.hu> <c62985530811260319vd5fcfcdtc0140fba8bd7e8b9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530811260319vd5fcfcdtc0140fba8bd7e8b9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, Tejun Heo wrote:
-> Hello,
-> 
-> Miklos Szeredi wrote:
-> > Hi Tejun,
-> > 
-> > Apologies for the late review.
-> 
-> :-)
 
-I meant late compared to three months ago, when you first posted the
-CUSE patches :)
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-> Yes, I agree.  I was mostly being lazy.  I'll try to rip off mnt
-> assumption from FUSE and make CUSE bypass the mnt thing.
+> 2008/11/26 Ingo Molnar <mingo@elte.hu>:
+> >
+> > the regex filter doesnt work well yet when used with the graph tracer:
+> >
+> > [ 2994.079079] ------------[ cut here ]------------
+> > [ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
+> > [ 2994.079079] Modules linked in:
+> > [ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
+> > [ 2994.079079] Call Trace:
+> > [ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
+> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
+> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
+> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
+> > [ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
+> > [ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
+> > [ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
+> > [ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
+> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
+> > [ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
+> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
+> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
+> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
+> > [ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
+> > [ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
+> > [ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
+> > [ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
+> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
+> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
+> > [ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
+> > [ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
+> > [ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
+> > [ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
+> > [ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
+> > [ 2994.079079] ---[ end trace bff97d149b80ecde ]---
+> > [ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  actual: e8:0c:1a:fa:ff
+> >
+> > produced via:
+> >
+> >  # cd /debug/tracing/
+> >  # cat set_ftrace_filter
+> >  # echo schedule > set_ftrace_filter
+> >  # cat set_ftrace_filter
+> >  cat: set_ftrace_filter: No such device
 > 
-> >> +	worker = kthread_run(cuse_init_worker, cuse_conn_get(cc),
-> >> +			     "cuse-init-pid%d", current->pid);
-> > 
-> > This could be done without a kthread, by setting the ->end() callback
-> > for the INIT request, no?
 > 
-> Indeed.  Will switch to ->end().
+> I didn't met this problem by the past with dynamic filtering on 
+> return tracer. Did it occur only with schedule ? Do the last patches 
+> from Steve correct the issue?
 
-Cool, thanks.
+yep. Will re-report it if it occurs again.
 
-Miklos
+	Ingo
