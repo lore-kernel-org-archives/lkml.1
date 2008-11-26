@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYKZPzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYKZP4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbYKZPzM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbYKZPy4
+	id S1754099AbYKZP4h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYKZP43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:54:56 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:29667 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752425AbYKZPyz (ORCPT
+	Wed, 26 Nov 2008 10:56:29 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46583 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751676AbYKZP42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:54:55 -0500
-Message-ID: <154e089b0811260754y191856bfl522f33febfc6e633@mail.gmail.com>
-Date: Wed, 26 Nov 2008 16:54:53 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "David Chinner" <david@fromorbit.com>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] [XFS] fix sparse warning
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 26 Nov 2008 10:56:28 -0500
+Date: Wed, 26 Nov 2008 15:55:51 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Alan Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 8250: fix boot hang with serial console when using with
+ Serial Over Lan port
+Message-ID: <20081126155551.2f05f456@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081126134812.573d3d9e@pedra.chehab.org>
+References: <20081126134812.573d3d9e@pedra.chehab.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix sparse warning
+> +	/* Serial over Lan (SoL) hack:
+> +	   Intel 8257x Gigabit ethernet chips have a
+> +	   16550 emulation, to be used for Serial Over Lan.
+> +	   Those chips take a longer time than a normal
+> +	   serial device to signalize that a transmission
+> +	   data was queued. Due to that, the above test generally
+> +	   fails. One solution would be to delay the reading of
+> +	   iir. However, this is not reliable, since the timeout
+> +	   is variable. So, let's just don't test if we receive
+> +	   TX irq. This way, we'll never enable UART_BUG_TXEN.
+> +	 */
+> +	if (up->port.flags & UPF_SOL_UART)
+> +		goto dont_test_tx_irq;
+> +
 
-Fix the following sparse warning:
+In the interest of trying to keep the driver sane can that become
+"UPF_NO_TXEN_TEST" or similar so the same quirk can be applied to other
+devices with the problem (ditto the pci_intel_sol_setup name could be
+generalised and the message could give a pci id and "skipping TxEn test"
+as a debug level note)
 
-  fs/xfs/xfs_inode.h:326:2: warning: returning void-valued expression
+Otherwise looks fine to me
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- fs/xfs/xfs_inode.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+(please cc me on serial patches: I think you meant to cc me and Andrew as
+you cc'd the mysterious "Alan Morton").
 
-diff --git a/fs/xfs/xfs_inode.h b/fs/xfs/xfs_inode.h
-index c6e295e..7a828cb 100644
---- a/fs/xfs/xfs_inode.h
-+++ b/fs/xfs/xfs_inode.h
-@@ -323,7 +323,7 @@ static inline struct inode *VFS_I(struct xfs_inode *ip)
- static inline void xfs_destroy_inode(struct xfs_inode *ip)
- {
- 	make_bad_inode(VFS_I(ip));
--	return destroy_inode(VFS_I(ip));
-+	destroy_inode(VFS_I(ip));
- }
-
- /*
