@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYKZLiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbYKZLol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbYKZLiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 06:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYKZLim
+	id S1753327AbYKZLol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 06:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYKZLob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 06:38:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56264 "EHLO mx2.mail.elte.hu"
+	Wed, 26 Nov 2008 06:44:31 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:9847 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbYKZLim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 06:38:42 -0500
-Date: Wed, 26 Nov 2008 12:38:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: set a more human
-	readable output
-Message-ID: <20081126113830.GB25861@elte.hu>
-References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu> <20081126021450.GA17617@elte.hu> <c62985530811260319vd5fcfcdtc0140fba8bd7e8b9@mail.gmail.com>
+	id S1751255AbYKZLob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 06:44:31 -0500
+From: Andrey Mirkin <major@openvz.org>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH 0/2] In-kernel process restart
+Date: Wed, 26 Nov 2008 15:44:24 +0400
+User-Agent: KMail/1.8.2
+Cc: Andrey Mirkin <major@openvz.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1227541175-30301-1-git-send-email-major@openvz.org> <492C59DD.5070401@cs.columbia.edu>
+In-Reply-To: <492C59DD.5070401@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811260319vd5fcfcdtc0140fba8bd7e8b9@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200811261444.26345.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> 2008/11/26 Ingo Molnar <mingo@elte.hu>:
+On Tuesday 25 November 2008 23:02 Oren Laadan wrote:
+> Andrey Mirkin wrote:
+> > These patchset introduces OpenVZ kernel based restart procedure on top of
+> > Oren's checkpoint/restart patchset v9.
 > >
-> > the regex filter doesnt work well yet when used with the graph tracer:
+> > For restarting a set of processes one will need to call sys_restart()
+> > once with new flag CR_CTX_RSTR_IN_KERNEL. All work will be done in kernel
+> > in this case.
 > >
-> > [ 2994.079079] ------------[ cut here ]------------
-> > [ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
-> > [ 2994.079079] Modules linked in:
-> > [ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
-> > [ 2994.079079] Call Trace:
-> > [ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
-> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-> > [ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
-> > [ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
-> > [ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
-> > [ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
-> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-> > [ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
-> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
-> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
-> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
-> > [ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
-> > [ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
-> > [ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
-> > [ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
-> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-> > [ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
-> > [ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
-> > [ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
-> > [ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
-> > [ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
-> > [ 2994.079079] ---[ end trace bff97d149b80ecde ]---
-> > [ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  actual: e8:0c:1a:fa:ff
+> > Small changes to image format are required to make in-kernel process
+> > creation more easy.
 > >
-> > produced via:
-> >
-> >  # cd /debug/tracing/
-> >  # cat set_ftrace_filter
-> >  # echo schedule > set_ftrace_filter
-> >  # cat set_ftrace_filter
-> >  cat: set_ftrace_filter: No such device
-> 
-> 
-> I didn't met this problem by the past with dynamic filtering on 
-> return tracer. Did it occur only with schedule ? Do the last patches 
-> from Steve correct the issue?
+> > Oren, please take a look on this patchset. I've tried to port OpenVZ
+> > functionality on top of yours with minimal changes.
+>
+> Thanks, Andrey. The patch looks simple and good.
+>
+> Did you look at my (user-space) process creation code ?  specifically, it
+> uses the task-pids array (that is saved during checkpoint) to figure out
+> how many children a task has to spawn and their corresponding pids.
 
-yep. Will re-report it if it occurs again.
+Yes, I've take a look on mktree tool. The algorithm of process creation is 
+quite clear.
 
-	Ingo
+> Is there a particular reason that you chose not to use that data during
+> restart ?  eventually, you'll need to add the rest of it, too, to the task
+> data, like you did with the number of children in this patch.
+
+Agree, I'll rework my patchset to use already existing data.
+
+> Instead, since the data is available and the logic is available, we can
+> have each new thread call do_restart_task(), and the container init
+> should call do_restart_root().
+>
+> What do you think ?  I can go ahead and make the changes on top of your
+> patch.
+
+I'll take a closer look on these functions and maybe we can use them for 
+created threads too. But from our experience during in-kernel process 
+creation and restore it is needed to perfrorm some restore procedures when 
+process is inactive. That is why I think we can't reuse all existing code for 
+in-kernel restart. Anyway I'll check everything once again.
+
+Andrey
