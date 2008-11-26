@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYKZDGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYKZDIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbYKZDGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 22:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYKZDGK
+	id S1753575AbYKZDIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 22:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYKZDIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 22:06:10 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:8340 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751668AbYKZDGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 22:06:09 -0500
-Date: Wed, 26 Nov 2008 12:04:46 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Liming Wang <liming.wang@windriver.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ftrace: adding other non-leaving .text sections
-Message-ID: <20081126030446.GA14685@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Liming Wang <liming.wang@windriver.com>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-References: <1227666566-9044-1-git-send-email-liming.wang@windriver.com> <alpine.DEB.1.10.0811252201270.26424@gandalf.stny.rr.com>
+	Tue, 25 Nov 2008 22:08:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39201 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751668AbYKZDIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 22:08:05 -0500
+Date: Wed, 26 Nov 2008 04:07:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, lethal@linux-sh.org, johnstul@us.ibm.com,
+       mingo@redhat.com
+Subject: Re: [RFC] Reentrant clock sources
+Message-ID: <20081126030720.GC8242@elte.hu>
+References: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se> <alpine.LFD.2.00.0811252215270.3235@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811252201270.26424@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.2.00.0811252215270.3235@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 10:03:35PM -0500, Steven Rostedt wrote:
+
+* Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> > +	cycle_t (*vread)(struct clocksource *cs);
 > 
-> On Wed, 26 Nov 2008, Liming Wang wrote:
-> 
-> > Please review this patch, and I don't know whether new sections will conflict 
-> > with sched tracer or others. 
-> > This patch is against Steven tree's tip/devel latest commit.
-> > 
-> > Impact: improve recordmcount.pl
-> > 
-> > Besides .text section, there are three .text sections that won't
-> > be freed after kernel booting. They are: .sched.text, .spinlock.text
-> > and .kprobes.text, which contain functions we can trace. But the last
-> > section ".kprobes.text" is particular, which has been marked as "notrace",
-> > we ignore it. Thus we add other two sections.
-> 
-> Yep, only those sections that we know will not disappear are OK. I was
-> conservative with only using ".text" but I knew there were other sections 
-> that were OK, so I used the hash array to make it easy to add others.
-> 
-Does your .text cover .text.head by the way?
+> This is crap. vread can not access the clocksource.
+
+i think 'reentrant' in the sense of creating self-sufficient driver 
+entities. vread wont (and shouldnt) call ->vread() recursively - but 
+it might want to access fields on the clocksource.
+
+this way more dynamic clocksource drivers could be written. Am i 
+missing something?
+
+	Ingo
