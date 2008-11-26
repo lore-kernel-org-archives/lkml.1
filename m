@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYKZMh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbYKZMjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbYKZMh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 07:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYKZMhQ
+	id S1753903AbYKZMjd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 07:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYKZMjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:37:16 -0500
-Received: from mga14.intel.com ([143.182.124.37]:38469 "EHLO mga14.intel.com"
+	Wed, 26 Nov 2008 07:39:22 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38336 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYKZMhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:37:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,668,1220252400"; 
-   d="scan'208";a="83146823"
-Date: Wed, 26 Nov 2008 20:36:52 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [PATCH] markers: comment usage of marker_synchronize_unregister()
-Message-ID: <20081126123652.GA9446@localhost>
+	id S1752227AbYKZMjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 07:39:21 -0500
+Date: Wed, 26 Nov 2008 14:39:19 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: virtualization@lists.linux-foundation.org
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Host<->guest channel interface advice needed
+Message-ID: <20081126123919.GC3521@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add more comments to marker_synchronize_unregister() in order to
-reduce the chance of misusing.
+Hello,
 
-Based on comments from Lai Jiangshan <laijs@cn.fujitsu.com>.
+ I'd like to ask what would be the best user space interface for generic
+guest<->host communication channel. The channel will be used to pass
+mouse events to/from a guest or by managements software to communicate
+with agents running in a guests or for something similar.
 
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
----
+The interfaces that are being considered are netlink socket (only datagram
+semantics, linux specific), new socket family or character device with
+different minor number for each channel. Which one better suits for
+the purpose?  Is there other kind of interface to consider? New socket
+family looks like a good choice, but it would be nice to hear other
+opinions before starting to work on it.
 
-I'm still not sure about the last sentence. Can anyone clarify on
-this? Thanks!
+Thanks,
 
-diff --git a/include/linux/marker.h b/include/linux/marker.h
-index 889196c..89ce1b8 100644
---- a/include/linux/marker.h
-+++ b/include/linux/marker.h
-@@ -164,6 +164,12 @@ extern void *marker_get_private_data(const char *name, marker_probe_func *probe,
-  * marker_synchronize_unregister must be called between the last marker probe
-  * unregistration and the end of module exit to make sure there is no caller
-  * executing a probe when it is freed.
-+ *
-+ * It must be called _also_ between unregistration and destruction the data
-+ * that unregistration-ed probes need to make sure there is no caller executing
-+ * a probe when it's data is destroyed.
-+ *
-+ * It works reliably only when all probe routines do not sleep and reschedule.
-  */
- #define marker_synchronize_unregister() synchronize_sched()
- 
+--
+			Gleb.
