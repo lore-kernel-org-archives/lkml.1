@@ -1,116 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYKZA0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbYKZAes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbYKZA0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 19:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYKZA0W
+	id S1753010AbYKZAes (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 19:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYKZAei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 19:26:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35083 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751193AbYKZA0V (ORCPT
+	Tue, 25 Nov 2008 19:34:38 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38997 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbYKZAeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 19:26:21 -0500
-Date: Tue, 25 Nov 2008 16:24:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: john@johnmccutchan.com, arnd@arndb.de, mtk.manpages@gmail.com, hch@lst.de,
-       rlove@rlove.org, linux-api@vger.kernel.org,
-       linux-kernel@vger.kernel.org, pavel@suse.cz, davidn@davidnewall.com,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [take2] Inotify: nested attributes support.
-Message-Id: <20081125162434.4feacbbf.akpm@linux-foundation.org>
-In-Reply-To: <20081125194234.GA24449@ioremap.net>
-References: <20081125194234.GA24449@ioremap.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Nov 2008 19:34:37 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 26 Nov 2008 01:34:25 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee1394: fix list corruption (reported at module removal)
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.f8f7746d95c4ceee@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 22:42:35 +0300
-Evgeniy Polyakov <zbr@ioremap.net> wrote:
+If there is more than one FireWire controller present, dummy_zero_addr
+and dummy_max_addr were added multiple times to different lists, thus
+corrupting the lists.  Fix this by allocating them dynamically per host
+instead of just once globally.
 
-> Hi.
-> 
-> Attached patch (also attached test application) implementes
-> scalable nested attributes which are transferred on behalf the inotify
-> mechanism. It uses inotify_init1() to show that new event format should
-> be returned when reading from inotify file descriptor.
-> 
-> Attributes are attached to given inotify instance via TIOCSETD ioctl,
-> where ID of the attribute is transferred. If entry with given ID exists,
-> it is removed and -EEXIST is returned.
-> 
-> There is a set of callbacks indexed by ID (currently 4 attributes are
-> supported: pid, tid, io details (start/size of the written block) and
-> name), which are attached to given inotify device.
-> When new event is created, each callback is executed and may queue some
-> data into event structure, based on its internal details. When event is
-> read from the userspace, first its header is transferred (old
-> inotify_event structure) and then all attributes data in the order of
-> its registration via above ioctl. Nested attributes have following
-> structure: 
-> 
-> struct inotify_attribute
-> {
-> 	unsigned int		id;
-> 	unsigned int		size;
-> 	unsigned char		data[0];
-> };
-> 
-> where size is nuber of attached bytes for given attribute.
-> inotify_event.len contains number of bytes used to store all attached
-> attributes and data.
-> 
-> Attribute callback can check if mask contains its bits and do some steps
-> based on that information, for example io details attribute does not add
-> own data (and header) if event mask does not contain IN_MODIFY bit.
-> 
-> It is possible to infinitely extend number of attributes processed, so
-> we will be no longer limited by inotify API and ABI.
-> 
-> Test application usage:
-> $ gcc ./iotest.c -W -Wall -I/path/to/kernel/include/ -o iotest
-> $ ./iotest -f /tmp/ -t -n -p -i
-> 2008-11-25 22:29:47.8477 pid: 1850, tid: 1850, name: /tmp/, wd: 1, mask: 303, attributes: pid: 1, tid: 1, io: 1, name: 1.
-> event: 2, wd: 1, cookie: 0, len: 61.
-> 	tid: 1672.
-> 	pid: 1672.
-> 	io details: start: 0, size: 0.
-> 	name: test.
-> event: 2, wd: 1, cookie: 0, len: 61.
-> 	tid: 1672.
-> 	pid: 1672.
-> 	io details: start: 0, size: 6.
-> 	name: test.
-> 
-> Example with only tid and io details:
-> $ $ ./iotest -f /tmp/ -t -i
-> 2008-11-25 22:40:30.201286 pid: 1928, tid: 1928, name: /tmp/, wd: 1,
-> mask: 303, attributes: pid: 0, tid: 1, io: 1, name: 0.
-> event: 2, wd: 1, cookie: 0, len: 36.
-> 	tid: 1672.
-> 	io details: start: 0, size: 0.
-> 
-> 
-> while in parallel I did:
-> $ echo qwe11 > /tmp/test
-> 
-> Two events were sent because of two calls for fsnotify_modify(), invoked
-> lkely from attribute change and write. Events are not combined since
-> because attributes may be different. Not having a name always combines
-> (read: skips next event) events because of old logic.
-> 
+(Perhaps a better address space allocation algorithm could rid us of the
+two dummy address spaces.)
 
-I guess I'm being more than usually thick, but I don't understand what
-this is all about, why it was implemented, what value it provides to
-users, etc, etc?  Why do I want scalable nested attributes in inotify??
+Fixes http://bugzilla.kernel.org/show_bug.cgi?id=10129 .
 
-I'm buried in patches which I don't understand lately, and having
-hundreds of people send patches at one guy who doesn't understand them
-isn't a good system.  Eric Paris is working on inotify-type things as
-well.  It would be neat if you guys were to understand and review each
-other's work.  Please.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/highlevel.c |   25 ++++++++++++-------------
+ drivers/ieee1394/hosts.h     |    4 ++++
+ 2 files changed, 16 insertions(+), 13 deletions(-)
+
+Index: linux/drivers/ieee1394/highlevel.c
+===================================================================
+--- linux.orig/drivers/ieee1394/highlevel.c
++++ linux/drivers/ieee1394/highlevel.c
+@@ -46,10 +46,6 @@ static DEFINE_RWLOCK(hl_irqs_lock);
+ 
+ static DEFINE_RWLOCK(addr_space_lock);
+ 
+-/* addr_space list will have zero and max already included as bounds */
+-static struct hpsb_address_ops dummy_ops = { NULL, NULL, NULL, NULL };
+-static struct hpsb_address_serve dummy_zero_addr, dummy_max_addr;
+-
+ 
+ static struct hl_host_info *hl_get_hostinfo(struct hpsb_highlevel *hl,
+ 					    struct hpsb_host *host)
+@@ -481,20 +477,23 @@ int hpsb_unregister_addrspace(struct hps
+ 	return retval;
+ }
+ 
++static struct hpsb_address_ops dummy_ops;
++
++/* dummy address spaces as lower and upper bounds of the host's a.s. list */
+ static void init_hpsb_highlevel(struct hpsb_host *host)
+ {
+-	INIT_LIST_HEAD(&dummy_zero_addr.host_list);
+-	INIT_LIST_HEAD(&dummy_zero_addr.hl_list);
+-	INIT_LIST_HEAD(&dummy_max_addr.host_list);
+-	INIT_LIST_HEAD(&dummy_max_addr.hl_list);
++	INIT_LIST_HEAD(&host->dummy_zero_addr.host_list);
++	INIT_LIST_HEAD(&host->dummy_zero_addr.hl_list);
++	INIT_LIST_HEAD(&host->dummy_max_addr.host_list);
++	INIT_LIST_HEAD(&host->dummy_max_addr.hl_list);
+ 
+-	dummy_zero_addr.op = dummy_max_addr.op = &dummy_ops;
++	host->dummy_zero_addr.op = host->dummy_max_addr.op = &dummy_ops;
+ 
+-	dummy_zero_addr.start = dummy_zero_addr.end = 0;
+-	dummy_max_addr.start = dummy_max_addr.end = ((u64) 1) << 48;
++	host->dummy_zero_addr.start = host->dummy_zero_addr.end = 0;
++	host->dummy_max_addr.start = host->dummy_max_addr.end = ((u64) 1) << 48;
+ 
+-	list_add_tail(&dummy_zero_addr.host_list, &host->addr_space);
+-	list_add_tail(&dummy_max_addr.host_list, &host->addr_space);
++	list_add_tail(&host->dummy_zero_addr.host_list, &host->addr_space);
++	list_add_tail(&host->dummy_max_addr.host_list, &host->addr_space);
+ }
+ 
+ void highlevel_add_host(struct hpsb_host *host)
+Index: linux/drivers/ieee1394/hosts.h
+===================================================================
+--- linux.orig/drivers/ieee1394/hosts.h
++++ linux/drivers/ieee1394/hosts.h
+@@ -13,6 +13,7 @@ struct module;
+ 
+ #include "ieee1394_types.h"
+ #include "csr.h"
++#include "highlevel.h"
+ 
+ struct hpsb_packet;
+ struct hpsb_iso;
+@@ -72,6 +73,9 @@ struct hpsb_host {
+ 	struct { DECLARE_BITMAP(map, 64); } tl_pool[ALL_NODES];
+ 
+ 	struct csr_control csr;
++
++	struct hpsb_address_serve dummy_zero_addr;
++	struct hpsb_address_serve dummy_max_addr;
+ };
+ 
+ enum devctl_cmd {
+
+-- 
+Stefan Richter
+-=====-==--- =-== ==-=-
+http://arcgraph.de/sr/
 
