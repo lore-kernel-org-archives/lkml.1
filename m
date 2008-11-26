@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbYKZKCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbYKZKJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbYKZKCc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 05:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYKZKCV
+	id S1752668AbYKZKJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 05:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKZKJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 05:02:21 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44818 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbYKZKCU (ORCPT
+	Wed, 26 Nov 2008 05:09:09 -0500
+Received: from wilson.telenet-ops.be ([195.130.132.42]:38997 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbYKZKJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 05:02:20 -0500
-To: tj@kernel.org
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, miklos@szeredi.hu, greg@kroah.com
-In-reply-to: <4927BDC7.8020905@kernel.org> (message from Tejun Heo on Sat, 22
-	Nov 2008 17:07:35 +0900)
-Subject: Re: [PATCH 5/5 UPDATED] CUSE: implement CUSE - Character device in Userspace
-References: <1227190983-5820-1-git-send-email-tj@kernel.org>	<1227190983-5820-6-git-send-email-tj@kernel.org> <20081121211607.49e0ec84.akpm@linux-foundation.org> <4927BC9A.3000001@kernel.org> <4927BDC7.8020905@kernel.org>
-Message-Id: <E1L5HDg-0001Ty-1u@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 26 Nov 2008 11:02:04 +0100
+	Wed, 26 Nov 2008 05:09:07 -0500
+Date: Wed, 26 Nov 2008 11:08:59 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Ben Gardner <bgardner@wabtec.com>, Eric Miao <eric.miao@marvell.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [Linux-fbdev-devel] [RFC 2.6.27 1/1] gpiolib: add support for
+ batch set of pins
+In-Reply-To: <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811261106180.2632@anakin>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
+ <492D125D.5010607@teltonika.lt> <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
+On Wed, 26 Nov 2008, Jaya Kumar wrote:
+> On Wed, Nov 26, 2008 at 4:09 AM, Paulius Zaleckas
+> <paulius.zaleckas@teltonika.lt> wrote:
+> > Jaya Kumar wrote:
+> >>   * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
+> >>   *   implementation may not sleep
+> >>   * @dbg_show: optional routine to show contents in debugfs; default code
+> >> @@ -84,6 +86,9 @@ struct gpio_chip {
+> >>                                               unsigned offset, int value);
+> >>       void                    (*set)(struct gpio_chip *chip,
+> >>                                               unsigned offset, int value);
+> >> +     void                    (*set_bus)(struct gpio_chip *chip,
+> >> +                                             unsigned offset, int values,
+> >
+> > I think values should be unsigned
+> >
+> 
+> Okay, can do but it is unusual no? since set uses int value, i figured
+> set_bus should be similar right?
 
-Apologies for the late review.
+->set() sets one pin, right? So it's either 0 or 1.
 
-On Sat, 22 Nov 2008, Tejun Heo wrote:
-> + * cuse_conn	: contains fuse_conn and serves as bonding structure
-> + * channel	: file handle connected to the userland CUSE server
-> + * cdev		: the implemented character device
-> + * mnt		: vfsmount which serves dentry and inode for cdev
+->set_bus() sets multiple pins. With `int', it will fail for bit 31, as that's
+the sign bit.
 
-Hmm, this mount thing seems rather pointless to me.  I understand the
-motivation: to let the unmodified fuse functions use
-get_fuse_conn(inode) and get_node_id(inode).  But I think we should
-really bite the bullet and reimplement these functions so that they
-take fuse_conn and node_id as arguments instead of the inode (and
-separate out those parts which do really need the inode for the
-memory mappings).
+Perhaps you even want u32, to make it clear what's the maximum number of pins
+you can set in one shot?
 
-It's a bit more work on the fuse side, but overall it results in a
-much cleaner architecture, don't you think?
+Gr{oetje,eeting}s,
 
-> +	worker = kthread_run(cuse_init_worker, cuse_conn_get(cc),
-> +			     "cuse-init-pid%d", current->pid);
+						Geert
 
-This could be done without a kthread, by setting the ->end() callback
-for the INIT request, no?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks,
-Miklos
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
