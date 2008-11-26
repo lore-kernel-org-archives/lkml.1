@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYKZPyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYKZPzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbYKZPyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYKZPyh
+	id S1752939AbYKZPzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbYKZPy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:54:37 -0500
-Received: from mail.sflc.info ([216.27.154.199]:42955 "EHLO mail.sflc.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752343AbYKZPyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:54:36 -0500
-X-Greylist: delayed 1156 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Nov 2008 10:54:36 EST
-From: "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>
-To: <linux-wireless@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <ath5k-devel@venema.h4ckr.net>, <ath9k-devel@venema.h4ckr.net>
-Cc: karen@softwarefreedom.org
-Subject: Re: License of changes to ath5k/ath9k
-Organization: Software Freedom Law Center
-References: <20081125210421.GF5950@tesla>
-X-Archive: no
-X-No-Archive: yes
-Date: Wed, 26 Nov 2008 09:59:25 -0500
-In-Reply-To: <20081125210421.GF5950@tesla> (Luis R. Rodriguez's message of
-	"Tue, 25 Nov 2008 13:04:21 -0800")
-Message-ID: <87d4gi4joy.fsf@ebb.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Wed, 26 Nov 2008 10:54:56 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:29667 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbYKZPyz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:54:55 -0500
+Message-ID: <154e089b0811260754y191856bfl522f33febfc6e633@mail.gmail.com>
+Date: Wed, 26 Nov 2008 16:54:53 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "David Chinner" <david@fromorbit.com>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] [XFS] fix sparse warning
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis Rodriguez wrote at 16:04 (EST) on Tuesday:
+Impact: fix sparse warning
 
-> We have been using the Changes-licensed-under tag [1] for ath5k
-> development but for ath9k we tend to ask developers individually if
-> they are willing submit their changes and any future ath9k changes
-> under the ISC. We keep this for our records just in case you haven't
-> read the Singed-off-by.  I think it'd be easier too if we ensure
-> developers really read that document too and ensure they understand it
-> and also understood why are are doing this.
+Fix the following sparse warning:
 
-> We'll keep using the ath5k Changes-licensed-under tag until we get
-> advice from SFLC if we have done enough to ensure this is no longer
-> necessary.
+  fs/xfs/xfs_inode.h:326:2: warning: returning void-valued expression
 
-I should note that there's no specific magic to the
-Changes-licensed-under tag; we developed with with Luis as a mechanism
-and tool to do the the thing that mattered: Carefully catalog the fact
-that each person who makes a change on an ISC-licensed codebase agrees
-to keep the code under ISC license for later sharing with BSD folks.
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ fs/xfs/xfs_inode.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There are probably a dozen methods you could use to do this job, and
-really you should use whatever method works for the development team.
-The only fundamental requirement is that it be rigorous, detailed and
-complete.
+diff --git a/fs/xfs/xfs_inode.h b/fs/xfs/xfs_inode.h
+index c6e295e..7a828cb 100644
+--- a/fs/xfs/xfs_inode.h
++++ b/fs/xfs/xfs_inode.h
+@@ -323,7 +323,7 @@ static inline struct inode *VFS_I(struct xfs_inode *ip)
+ static inline void xfs_destroy_inode(struct xfs_inode *ip)
+ {
+ 	make_bad_inode(VFS_I(ip));
+-	return destroy_inode(VFS_I(ip));
++	destroy_inode(VFS_I(ip));
+ }
 
-Of course, if situations change and become more complicated, the Linux
-Wireless team is welcome to contact me and Karen at the Software Freedom
-Law Center for additional legal advice on this subject.
-
-Bob Copeland wrote on at 16:28 (EST) on Tuesday:
-> I don't consider any of my changes significant enough to confer
-> copyright,
-
-Most non-lawyers like myself are amazed to find how little it takes for
-something to confer copyright.  If you did anything more than correct a
-spelling error, it's always better to assume you have a copyright
-interest in the work.  Sometimes, you'll be wrong, but more often than
-not, it will turn out the thing that looked uncopyrightable actually
-*is* copyrightable under the Draconian copyright laws that now exist in
-most industrialized countries.
-
-> However, if everyone + SFLC prefers that we strictly use
-> Changes-licensed-under even if we don't claim copyright, then I'll
-> happily add the tag generator script to a git commit hook :)
-
-Yeah, exactly, it's an easy thing to do just to be sure.  The worst that
-happens is that you didn't have copyright in the thing, and your consent
-to the ISC licensing of the work wasn't actually needed, but you gave it
-anyway.  (It's like saying: "I consent to you going to the store today".
-You didn't need my consent, but it doesn't hurt that you have it.)  This
-is far better than the alternative: that the consent was needed but it
-wasn't given because it seemed the changes weren't copyrightable but
-they actually were.
-
-
-BTW, SFLC published a white paper on this issue that might be of interest:
-
-http://www.softwarefreedom.org/resources/2007/gpl-non-gpl-collaboration.html
--- 
-Bradley M. Kuhn, Policy Analyst and Technology Director
-                 Software Freedom Law Center
+ /*
