@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYKZG2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYKZGcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbYKZG2O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 01:28:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYKZG16
+	id S1752782AbYKZGcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 01:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbYKZGcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 01:27:58 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:41905 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbYKZG15 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 01:27:57 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 25 Nov 2008 22:27:38 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Tejun Heo <htejun@gmail.com>
-cc: Oleg Nesterov <oleg@redhat.com>, Eric Van Hensbergen <ericvh@gmail.com>,
-       Ron Minnich <rminnich@sandia.gov>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Miklos Szeredi <mszeredi@suse.cz>, Brad Boyer <flar@allandria.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Roland McGrath <roland@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] poll: allow f_op->poll to sleep, take#5
-In-Reply-To: <492CD358.2020603@gmail.com>
-Message-ID: <alpine.DEB.1.10.0811252148540.32523@alien.or.mcafeemobile.com>
-References: <20081125173032.GA21539@redhat.com> <492CD1AB.3000802@kernel.org> <492CD358.2020603@gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 26 Nov 2008 01:32:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46615 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750718AbYKZGcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 01:32:24 -0500
+Date: Wed, 26 Nov 2008 07:32:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
+       fweisbec@gmail.com, LKML <linux-kernel@vger.kernel.org>,
+       srostedt@redhat.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
+Message-ID: <20081126063201.GF9732@elte.hu>
+References: <20081125223456.976670734@goodmis.org> <20081125144221.66eb99ad.akpm@linux-foundation.org> <alpine.DEB.1.10.0811251800130.26424@gandalf.stny.rr.com> <20081125153104.ecdceed4.akpm@linux-foundation.org> <alpine.DEB.1.10.0811251909320.26424@gandalf.stny.rr.com> <1227660839.12109.52.camel@nimitz> <alpine.DEB.1.10.0811251956570.26424@gandalf.stny.rr.com> <m1zljndrb6.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0811260000400.26424@gandalf.stny.rr.com> <m1abbnc8ff.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1abbnc8ff.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, Tejun Heo wrote:
 
-> +static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> +{
-> +	struct poll_wqueues *pwq = wait->private;
-> +	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
-> +
-> +	/*
-> +	 * Wake up functions have full barrier semantics, no need for
-> +	 * barrier here.
-> +	 */
-> +	pwq->triggered = 1;
-> +
-> +	/*
-> +	 * Perform the default wake up operation using a dummy
-> +	 * waitqueue.
-> +	 *
-> +	 * TODO: This is hacky but there currently is no interface to
-> +	 * pass in @sync.  @sync is scheduled to be removed and once
-> +	 * that happens, wake_up_process() can be used directly.
-> +	 */
-> +	return default_wake_function(&dummy_wait, mode, sync, key);
-> +}
-> +int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-> +			  ktime_t *expires, unsigned long slack)
-> +{
-> +	int rc = -EINTR;
-> +
-> +	set_current_state(state);
-> +	if (!pwq->triggered)
-> +		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
-> +	__set_current_state(TASK_RUNNING);
-> +
-> +	/*
-> +	 * Prepare for the next iteration.  ->poll() might not have
-> +	 * enough barrier semantics from the second round as waits are
-> +	 * registered only during the first one.  Use set_mb().
-> +	 */
-> +	set_mb(pwq->triggered, 0);
-> +
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL(poll_schedule_timeout);
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-Look, pollwake() does:
+> Steven Rostedt <rostedt@goodmis.org> writes:
+> 
+> > On Tue, 25 Nov 2008, Eric W. Biederman wrote:
+> >
+> > I'm speechless too.
+> 
+> I'm a bit tired so probably am pushing to hard.
+> 
+> At the same time I don't see a single reason not to use struct pid 
+> for what it was designed for.  Identifying tasks. pid_t's really 
+> only belong at the border.
+> 
+> I can see in the tracer when grabbing numbers you might not be able 
+> to follow pointers.  For that I see justification for using 
+> task->pid.  For the comparison I just don't see it.
 
-w1) WR triggered (1)
-w2) WMB
-w3) WR task->state (RUNNING)
+i dont see the point of the complexity you are advocating. 99.9% of 
+the users run a unique PID space.
 
-While poll_schedule_timeout() does:
+Tracing is about keeping stuff simple. On containers we could also 
+trace the namespace ID (is there an easy ID for the namespace, as an 
+easy extension to the very nice PID concept that Unix introduced 
+decades ago?) and be done with it.
 
-s1) WR task->state (TASK_INTERRUPTIBLE)
-s2) MB
-s3) RD triggered
-s4) IF0 => RD task->state (if !RUNNING -> sleep)
-
-
-The only risk is that w3 preceed s1, so that we go to sleep even though a 
-wakeup has been issued. But if w3 is visible, w1 is visible too, that 
-means that 'triggered' is visible in s3 (there's a MB in s2). So we skip 
-the schedule_hrtimeout_range(). So IMO you need no barriers on 'triggered'.
-If you feel you need barriers, do you mind explaning a sequence of events 
-that makes a barrier-free version break?
-
-
-
-- Davide
-
-
+	Ingo
