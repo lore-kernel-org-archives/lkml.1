@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbYKZHTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYKZHZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752783AbYKZHTJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 02:19:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYKZHS4
+	id S1752696AbYKZHZZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 02:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbYKZHZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 02:18:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34069 "EHLO mx2.mail.elte.hu"
+	Wed, 26 Nov 2008 02:25:11 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35845 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbYKZHS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 02:18:56 -0500
-Date: Wed, 26 Nov 2008 08:18:34 +0100
+	id S1750696AbYKZHZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 02:25:10 -0500
+Date: Wed, 26 Nov 2008 08:24:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       fweisbec@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       srostedt@redhat.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
-Message-ID: <20081126071834.GF26036@elte.hu>
-References: <alpine.DEB.1.10.0811251800130.26424@gandalf.stny.rr.com> <20081125153104.ecdceed4.akpm@linux-foundation.org> <alpine.DEB.1.10.0811251909320.26424@gandalf.stny.rr.com> <1227660839.12109.52.camel@nimitz> <alpine.DEB.1.10.0811251956570.26424@gandalf.stny.rr.com> <m1zljndrb6.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0811260000400.26424@gandalf.stny.rr.com> <m1abbnc8ff.fsf@frodo.ebiederm.org> <20081126063201.GF9732@elte.hu> <m1zljn7yx9.fsf@frodo.ebiederm.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, akpm@linux-foundation.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] scripts: script from kerneloops.org to pretty print
+	oops dumps
+Message-ID: <20081126072445.GG26036@elte.hu>
+References: <20081123130042.1d194768@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1zljn7yx9.fsf@frodo.ebiederm.org>
+In-Reply-To: <20081123130042.1d194768@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,31 +36,68 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-> Ingo Molnar <mingo@elte.hu> writes:
+> From 57b0deb1ad706a94e3118baee4127676f465c4ab Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Wed, 5 Nov 2008 19:00:36 -0800
+> Subject: [PATCH] scripts: script from kerneloops.org to pretty print oops dumps
 > 
-> > i dont see the point of the complexity you are advocating. 99.9% of 
-> > the users run a unique PID space.
+> We're strugling all the time to figure out where the code came from
+> that oopsed.. The script below (a adaption from a script used by kerneloops.org)
+> can help developers quite a bit, at least for non-module cases.
 > 
-> I'm not advocating complexity.  I'm advocating using the same APIs as
-> the rest of the kernel, for doing the same functions.
+> It works and looks like this:
 > 
-> > Tracing is about keeping stuff simple. On containers we could also 
-> > trace the namespace ID (is there an easy ID for the namespace, as an 
-> > easy extension to the very nice PID concept that Unix introduced 
-> > decades ago?) and be done with it.
+> [/home/arjan/linux]$ dmesg | perl scripts/markup_oops.pl vmlinux
+>  {
+>  	struct agp_memory *memory;
 > 
-> I don't really care about the pid namespace in this context.
+>  	memory = agp_allocate_memory(agp_bridge, pg_count, type);
+>  c055c10f:	89 c2                	mov    %eax,%edx
+>  	if (memory == NULL)
+>  c055c111:	74 19                	je     c055c12c <agp_allocate_memory_wrap+0x30>
+>  /* This function must only be called when current_controller != NULL */
+>  static void agp_insert_into_pool(struct agp_memory * temp)
+>  {
+>  	struct agp_memory *prev;
 > 
-> I am just asking that we compare a different field in the task 
-> struct.
+>  	prev = agp_fe.current_controller->pool;
+>  c055c113:	a1 ec dc 8f c0       	mov    0xc08fdcec,%eax
+> *c055c118:	8b 40 10             	mov    0x10(%eax),%eax     <----- faulting instruction
 > 
-> I am asking that we don't accumulate new users of an old crufty bug 
-> prone API, for no good reason.
+>  	if (prev != NULL) {
+>  c055c11b:	85 c0                	test   %eax,%eax
+>  c055c11d:	74 05                	je     c055c124 <agp_allocate_memory_wrap+0x28>
+>  		prev->prev = temp;
+>  c055c11f:	89 50 04             	mov    %edx,0x4(%eax)
+>  		temp->next = prev;
+>  c055c122:	89 02                	mov    %eax,(%edx)
+>  	}
+>  	agp_fe.current_controller->pool = temp;
+>  c055c124:	a1 ec dc 8f c0       	mov    0xc08fdcec,%eax
+>  c055c129:	89 50 10             	mov    %edx,0x10(%eax)
+>  	if (memory == NULL)
+>  		return NULL;
+> 
+>  	agp_insert_into_pool(memory);
+> 
+> so in this case, we faulted while dereferencing agp_fe.current_controller pointer, and we get to see
+> exactly which function and line it affects... Personally I find this very useful, and I can
+> see value for having this script in the kernel for more-than-just-me to use.
+> 
+> Caveats:
+> * It only works for oopses not-in-modules
+> * It only works nicely for kernels compiled with CONFIG_DEBUG_INFO
+> * It's not very fast.
+> * It only works on x86
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  scripts/markup_oops.pl |  162 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 162 insertions(+), 0 deletions(-)
+>  create mode 100644 scripts/markup_oops.pl
 
-i dont disagree about the change, but i'm curious, what's bug-prone 
-about current->pid? It certainly worked quite well for the first 15 
-years.
+looks useful - Andrew, Sam, any objections to this?
 
 	Ingo
