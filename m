@@ -1,302 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYKZEPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYKZEQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbYKZEPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 23:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYKZEOz
+	id S1753926AbYKZEQU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 23:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYKZEQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 23:14:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59634 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbYKZEOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 23:14:55 -0500
-Date: Wed, 26 Nov 2008 05:14:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: signal: unify signal_{32|64}.c
-Message-ID: <20081126041438.GB9732@elte.hu>
-References: <492B6131.7070902@ct.jp.nec.com> <492B61CB.7030808@ct.jp.nec.com>
+	Tue, 25 Nov 2008 23:16:03 -0500
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:47781 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752923AbYKZEQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 23:16:00 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LNQ7wCGxRPRDMn5WGu1nh4S5PBG+zthgzw+QItmav6PetvPLiFjsGxv7Onh8VGQo6c8Id5PTAKx4eNCiHNkkLsazAnTNByKMYDwZ26OlnjwwzvDEcKbVBQpza1IDIz5U77TZyhx5J/mp523avz+FM5ET3lJrJR5C1O6XP6gb8Yo=  ;
+X-YMail-OSG: w22UhCAVM1n84v_EkFSUFoWJOh0H8AF6Hv1wdDufBBRiw5L.eCxTRJQ.28aSG99ZJL9Wo2ixpbJGupPemZ2Y_Y8E1SlGCdosLaomNMUGStd6tC_oI57JMz8w4oBTH7P8Sp5JptyY3rXfplrEFTAPa.4kw5AFktQ.kEvoFco-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Eric Miao" <eric.y.miao@gmail.com>,
+       "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Tue, 25 Nov 2008 20:15:56 -0800
+User-Agent: KMail/1.9.10
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Jean Delvare" <khali@linux-fr.org>,
+       "Eric Miao" <eric.miao@marvell.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Philipp Zabel" <philipp.zabel@gmail.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Ben Gardner" <bgardner@wabtec.com>, "Greg KH" <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <f17812d70811251720u47bec50dt3734f5b2bb0d339@mail.gmail.com>
+In-Reply-To: <f17812d70811251720u47bec50dt3734f5b2bb0d339@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <492B61CB.7030808@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200811252015.57870.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 25 November 2008, Eric Miao wrote:
+> Using a bit mask will be more generic if the GPIOs are not contiguous.
+> Yet I still doubt this will be generic enough to be added to gpiolib.
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+My expectation for this kind of mechanism was that systems who need
+to craft another parallel bus out of GPIO pins would be doing this
+with some system-specific utility functions.
 
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> Impact: cleanup
-> 
-> Add #ifdef directive for 32-bit only code and unify signal_{32|64}.c
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  arch/x86/kernel/Makefile    |    2 +-
->  arch/x86/kernel/signal.c    |  915 +++++++++++++++++++++++++++++++++++++++++++
->  arch/x86/kernel/signal_32.c |  909 ------------------------------------------
->  arch/x86/kernel/signal_64.c |  801 -------------------------------------
->  4 files changed, 916 insertions(+), 1711 deletions(-)
->  create mode 100644 arch/x86/kernel/signal.c
->  delete mode 100644 arch/x86/kernel/signal_32.c
->  delete mode 100644 arch/x86/kernel/signal_64.c
+So my "is it generic enough" question is more at the level of "Are
+there enough Linux systems that need this sort of thing to justify
+generic support?".  I happen not to have come across the need for
+such ganged access from Linux (yet).  Whereas I've yet to use non-x86
+Linux systems that don't need to manipulate individual GPIO pins...
 
-yay! :-)
 
-applied to tip/x86/signal, thanks Hiroshi!
+> The user of this gpio_set_value_bus() may assume too much about
+> the internal, e.g. how many GPIOs on the chip and whether these GPIOs
+> are contiguous or not, and whether this GPIO chip support bitwise
+> operations.
 
-One small detail, i inserted yet another commit in the middle:
+Actually I would expect that to be addressed by the hardware designer.
 
- 5ceb40d: x86: signal: unify signal_{32|64}.c
- e5fa2d0: x86: signal: unify signal_{32|64}.c, prepare
- bfeb91a: x86: signal: cosmetic unification of __setup_sigframe() and __setup_rt_sigframe()
- 2601657: x86: signal: move {setup|restore}_sigcontext()
+As in, if you're bitbanging a 16-bit parallel bus (plus several
+control signals -- chip select lines, address latch, r/w, etc) the
+board would be designed for efficient bitbanging, by taking care
+that the software bus ops aren't stupidly complex.  So I guess I'm
+agreeing with Eric there:  wanting this kind of stuff at all seems
+to imply being fairly low-down'n'dirty.
 
-the e5fa2d0 commit (see it below) contains all the non-mechanic 
-modifications that you did in the final unification commit. It's best 
-to keep this separate - because a big unification commit is hard to 
-review and debug, should it cause any problems.
 
-the 5ceb40d commit can thus do pure unification:
+Example, assuming a 32 bit GPIO bank, the data lines would probably
+be all adjacent and politely ordered by the board designer so that
 
- arch/x86/kernel/signal.c    |  915 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/signal_32.c |  915 -------------------------------------------
- arch/x86/kernel/signal_64.c |  915 -------------------------------------------
+	/* write a 16 bit value on the specfied data lines,
+	 * assuming the intermediate state doesn't matter...
+	 */
+	writew(0xffff << N, &bank->clear_bits);
+	writew(value << N, &bank->set_bits);
 
-... and the end result is still the same as with your series.
+instead of needing to compute some complex permutation of those
+bits ... and similarly
 
-Thanks,
+	/* read a 16 bit value from the specified data lines */
+	value = 0xffff & (readw(&bank->read_bits) >> N);
 
-	Ingo
+possibly after handshaking with the device on the other side
+about changing signal direction, again without permutation.
 
------------------->
->From e5fa2d063cf2ca38eae5fb3469315db669d5c041 Mon Sep 17 00:00:00 2001
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Mon, 24 Nov 2008 18:24:11 -0800
-Subject: [PATCH] x86: signal: unify signal_{32|64}.c, prepare
+But heck, maybe there just aren't that many adjacent GPIOs free,
+because of alternate functions that are used... ugh.
 
-Impact: cleanup
 
-Add #ifdef directive for 32-bit only code.
+Note also that this proposal only includes
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/signal_32.c |    6 ++
- arch/x86/kernel/signal_64.c |  116 ++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 121 insertions(+), 1 deletions(-)
+> > +       void                    (*set_bus)(struct gpio_chip *chip,
+> > +                                          unsigned offset, int values,
+> > +                                          int bitwidth); 
 
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index e9f7129..b1f4d34 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -1,8 +1,10 @@
- /*
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-+ *  Copyright (C) 2000, 2001, 2002 Andi Kleen SuSE Labs
-  *
-  *  1997-11-28  Modified for POSIX.1b signals by Richard Henderson
-  *  2000-06-20  Pentium III FXSR, SSE support by Gareth Hughes
-+ *  2000-2002   x86-64 support by Andi Kleen
-  */
- 
- #include <linux/sched.h>
-@@ -481,6 +483,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- }
- #endif /* CONFIG_X86_32 */
- 
-+#ifdef CONFIG_X86_32
- /*
-  * Atomically swap in the new signal mask, and wait for a signal.
-  */
-@@ -535,6 +538,7 @@ sys_sigaction(int sig, const struct old_sigaction __user *act,
- 
- 	return ret;
- }
-+#endif /* CONFIG_X86_32 */
- 
- #ifdef CONFIG_X86_32
- asmlinkage int sys_sigaltstack(unsigned long bx)
-@@ -561,6 +565,7 @@ sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
- /*
-  * Do a signal return; undo the signal stack.
-  */
-+#ifdef CONFIG_X86_32
- asmlinkage unsigned long sys_sigreturn(unsigned long __unused)
- {
- 	struct sigframe __user *frame;
-@@ -603,6 +608,7 @@ badframe:
- 
- 	return 0;
- }
-+#endif /* CONFIG_X86_32 */
- 
- static long do_rt_sigreturn(struct pt_regs *regs)
- {
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 2da7e6e..b1f4d34 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -54,12 +54,24 @@
- 	err |= __get_user(regs->x, &sc->x);	\
- }
- 
-+#define COPY_SEG(seg)		{			\
-+		unsigned short tmp;			\
-+		err |= __get_user(tmp, &sc->seg);	\
-+		regs->seg = tmp;			\
-+}
-+
- #define COPY_SEG_CPL3(seg)	{			\
- 		unsigned short tmp;			\
- 		err |= __get_user(tmp, &sc->seg);	\
- 		regs->seg = tmp | 3;			\
- }
- 
-+#define GET_SEG(seg)		{			\
-+		unsigned short tmp;			\
-+		err |= __get_user(tmp, &sc->seg);	\
-+		loadsegment(seg, tmp);			\
-+}
-+
- static int
- restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
- 		   unsigned long *pax)
-@@ -472,6 +484,63 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- #endif /* CONFIG_X86_32 */
- 
- #ifdef CONFIG_X86_32
-+/*
-+ * Atomically swap in the new signal mask, and wait for a signal.
-+ */
-+asmlinkage int
-+sys_sigsuspend(int history0, int history1, old_sigset_t mask)
-+{
-+	mask &= _BLOCKABLE;
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->saved_sigmask = current->blocked;
-+	siginitset(&current->blocked, mask);
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	current->state = TASK_INTERRUPTIBLE;
-+	schedule();
-+	set_restore_sigmask();
-+
-+	return -ERESTARTNOHAND;
-+}
-+
-+asmlinkage int
-+sys_sigaction(int sig, const struct old_sigaction __user *act,
-+	      struct old_sigaction __user *oact)
-+{
-+	struct k_sigaction new_ka, old_ka;
-+	int ret;
-+
-+	if (act) {
-+		old_sigset_t mask;
-+
-+		if (!access_ok(VERIFY_READ, act, sizeof(*act)) ||
-+		    __get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
-+		    __get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
-+			return -EFAULT;
-+
-+		__get_user(new_ka.sa.sa_flags, &act->sa_flags);
-+		__get_user(mask, &act->sa_mask);
-+		siginitset(&new_ka.sa.sa_mask, mask);
-+	}
-+
-+	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
-+
-+	if (!ret && oact) {
-+		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)) ||
-+		    __put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
-+		    __put_user(old_ka.sa.sa_restorer, &oact->sa_restorer))
-+			return -EFAULT;
-+
-+		__put_user(old_ka.sa.sa_flags, &oact->sa_flags);
-+		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
-+	}
-+
-+	return ret;
-+}
-+#endif /* CONFIG_X86_32 */
-+
-+#ifdef CONFIG_X86_32
- asmlinkage int sys_sigaltstack(unsigned long bx)
- {
- 	/*
-@@ -496,6 +565,51 @@ sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
- /*
-  * Do a signal return; undo the signal stack.
-  */
-+#ifdef CONFIG_X86_32
-+asmlinkage unsigned long sys_sigreturn(unsigned long __unused)
-+{
-+	struct sigframe __user *frame;
-+	struct pt_regs *regs;
-+	unsigned long ax;
-+	sigset_t set;
-+
-+	regs = (struct pt_regs *) &__unused;
-+	frame = (struct sigframe __user *)(regs->sp - 8);
-+
-+	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-+		goto badframe;
-+	if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
-+		&& __copy_from_user(&set.sig[1], &frame->extramask,
-+				    sizeof(frame->extramask))))
-+		goto badframe;
-+
-+	sigdelsetmask(&set, ~_BLOCKABLE);
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->blocked = set;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	if (restore_sigcontext(regs, &frame->sc, &ax))
-+		goto badframe;
-+	return ax;
-+
-+badframe:
-+	if (show_unhandled_signals && printk_ratelimit()) {
-+		printk("%s%s[%d] bad frame in sigreturn frame:"
-+			"%p ip:%lx sp:%lx oeax:%lx",
-+		    task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
-+		    current->comm, task_pid_nr(current), frame, regs->ip,
-+		    regs->sp, regs->orig_ax);
-+		print_vma_addr(" in ", regs->ip);
-+		printk(KERN_CONT "\n");
-+	}
-+
-+	force_sig(SIGSEGV, current);
-+
-+	return 0;
-+}
-+#endif /* CONFIG_X86_32 */
-+
- static long do_rt_sigreturn(struct pt_regs *regs)
- {
- 	struct rt_sigframe __user *frame;
-@@ -542,7 +656,7 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- #endif /* CONFIG_X86_32 */
- 
- /*
-- * OK, we're invoking a handler
-+ * OK, we're invoking a handler:
-  */
- static int signr_convert(int sig)
- {
+not its sibling read operation.
+
+
+> Let's have a concrete example: what if the user gives a bunch of GPIOs
+> that crosses the chip boundary, say, GPIO29 - GPIO35 (with each chip
+> covering 32 GPIOs).
+
+I'd care more about the upper level operation being performed ... like the
+control protocol for passing the address of a word being read or written
+and then switching the bus from address to data read (or write) mode to
+get the word, then yielding the bus access.
+
+- Dave
+
