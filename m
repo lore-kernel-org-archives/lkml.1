@@ -1,299 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbYKZMl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbYKZMoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbYKZMl1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 07:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYKZMlT
+	id S1753630AbYKZMoc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 07:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKZMoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:41:19 -0500
-Received: from verein.lst.de ([213.95.11.210]:58619 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbYKZMlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:41:17 -0500
-Date: Wed, 26 Nov 2008 13:40:46 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: linux-kernel@vger.kernel.org
-Cc: sandeen@sandeen.net, davem@davemloft.net, tony.luck@intel.com,
-       ralf@linux-mips.org, kyle@mcmartin.ca, schwidefsky@de.ibm.com
-Subject: Re: [PATCH] generic compat_sys_ustat
-Message-ID: <20081126124046.GA22340@lst.de>
-References: <20081121084105.GA7155@lst.de>
+	Wed, 26 Nov 2008 07:44:23 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:40773 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751506AbYKZMoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 07:44:23 -0500
+Date: Wed, 26 Nov 2008 21:47:07 +0900 (JST)
+Message-Id: <20081126.214707.653026525707335397.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
+       fchecconi@gmail.com, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20081125162720.GH341@redhat.com>
+References: <20081120134701.GB29306@redhat.com>
+	<20081125.113359.623571555980951312.ryov@valinux.co.jp>
+	<20081125162720.GH341@redhat.com>
+X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121084105.GA7155@lst.de>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0.499 () BAYES_44,REMOVE_REMOVAL_2WORD
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 09:41:05AM +0100, Christoph Hellwig wrote:
-> Due to a different size of ino_t ustat needs a compat handler, but
-> currently only x86 and mips provide one.  Add a generic compat_sys_ustat
-> and switch all architectures over to it.
+Hi Vivek,
+
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Date: Tue, 25 Nov 2008 11:27:20 -0500
+
+> On Tue, Nov 25, 2008 at 11:33:59AM +0900, Ryo Tsuruta wrote:
+> > Hi Vivek,
+> > 
+> > > > > Ryo, do you still want to stick to two level scheduling? Given the problem
+> > > > > of it breaking down underlying scheduler's assumptions, probably it makes
+> > > > > more sense to the IO control at each individual IO scheduler.
+> > > > 
+> > > > I don't want to stick to it. I'm considering implementing dm-ioband's
+> > > > algorithm into the block I/O layer experimentally.
+> > > 
+> > > Thanks Ryo. Implementing a control at block layer sounds like another
+> > > 2 level scheduling. We will still have the issue of breaking underlying
+> > > CFQ and other schedulers. How to plan to resolve that conflict.
+> > 
+> > I think there is no conflict against I/O schedulers.
+> > Could you expain to me about the conflict?
 > 
-> Found by Eric Sandeen when running xfstests/017 on ppc64, which causes
-> stack smashing warnings on RHEL/Fedora due to the too large amount of
-> data writen by the syscall.
+> Because we do the buffering at higher level scheduler and mostly release
+> the buffered bios in the FIFO order, it might break the underlying IO
+> schedulers. Generally it is the decision of IO scheduler to determine in
+> what order to release buffered bios.
+> 
+> For example, If there is one task of io priority 0 in a cgroup and rest of
+> the tasks are of io prio 7. All the tasks belong to best effort class. If
+> tasks of lower priority (7) do lot of IO, then due to buffering there is
+> a chance that IO from lower prio tasks is seen by CFQ first and io from
+> higher prio task is not seen by cfq for quite some time hence that task
+> not getting it fair share with in the cgroup. Similiar situations can
+> arise with RT tasks also.
 
-Updayed version fixing the naming issues Eric pointed out and
-some mess with kernel vs user pointers fixed by sparse.
+Thanks for your explanation. 
+I think that the same thing occurs without the higher level scheduler,
+because all the tasks issuing I/Os are blocked while the underlying
+device's request queue is full before those I/Os are sent to the I/O
+scheduler.
 
+> > > What do you think about the solution at IO scheduler level (like BFQ) or
+> > > may be little above that where one can try some code sharing among IO
+> > > schedulers? 
+> > 
+> > I would like to support any type of block device even if I/Os issued
+> > to the underlying device doesn't go through IO scheduler. Dm-ioband
+> > can be made use of for the devices such as loop device.
+> > 
+> 
+> What do you mean by that IO issued to underlying device does not go
+> through IO scheduler? loop device will be associated with a file and
+> IO will ultimately go to the IO scheduler which is serving those file
+> blocks?
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+How about if the files is on an NFS-mounted file system?
 
-Index: linux-2.6/arch/x86/ia32/ia32entry.S
-===================================================================
---- linux-2.6.orig/arch/x86/ia32/ia32entry.S	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/arch/x86/ia32/ia32entry.S	2008-11-26 16:07:53.000000000 +0530
-@@ -555,7 +555,7 @@ ia32_sys_call_table:
- 	.quad sys32_olduname
- 	.quad sys_umask		/* 60 */
- 	.quad sys_chroot
--	.quad sys32_ustat
-+	.quad compat_sys_ustat
- 	.quad sys_dup2
- 	.quad sys_getppid
- 	.quad sys_getpgrp		/* 65 */
-Index: linux-2.6/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/arch/x86/ia32/sys_ia32.c	2008-11-26 16:07:53.000000000 +0530
-@@ -638,28 +638,6 @@ long sys32_uname(struct old_utsname __us
- 	return err ? -EFAULT : 0;
- }
- 
--long sys32_ustat(unsigned dev, struct ustat32 __user *u32p)
--{
--	struct ustat u;
--	mm_segment_t seg;
--	int ret;
--
--	seg = get_fs();
--	set_fs(KERNEL_DS);
--	ret = sys_ustat(dev, (struct ustat __user *)&u);
--	set_fs(seg);
--	if (ret < 0)
--		return ret;
--
--	if (!access_ok(VERIFY_WRITE, u32p, sizeof(struct ustat32)) ||
--	    __put_user((__u32) u.f_tfree, &u32p->f_tfree) ||
--	    __put_user((__u32) u.f_tinode, &u32p->f_tfree) ||
--	    __copy_to_user(&u32p->f_fname, u.f_fname, sizeof(u.f_fname)) ||
--	    __copy_to_user(&u32p->f_fpack, u.f_fpack, sizeof(u.f_fpack)))
--		ret = -EFAULT;
--	return ret;
--}
--
- asmlinkage long sys32_execve(char __user *name, compat_uptr_t __user *argv,
- 			     compat_uptr_t __user *envp, struct pt_regs *regs)
- {
-Index: linux-2.6/arch/x86/include/asm/ia32.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/ia32.h	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/arch/x86/include/asm/ia32.h	2008-11-26 16:07:53.000000000 +0530
-@@ -147,13 +147,6 @@ struct rt_sigframe32 {
- 	struct _fpstate_ia32 fpstate;
- };
- 
--struct ustat32 {
--	__u32			f_tfree;
--	compat_ino_t		f_tinode;
--	char			f_fname[6];
--	char			f_fpack[6];
--};
--
- #define IA32_STACK_TOP IA32_PAGE_OFFSET
- 
- #ifdef __KERNEL__
-Index: linux-2.6/fs/compat.c
-===================================================================
---- linux-2.6.orig/fs/compat.c	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/fs/compat.c	2008-11-26 16:12:53.000000000 +0530
-@@ -378,6 +378,24 @@ out:
- 	return error;
- }
- 
-+asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *cu)
-+{
-+	struct ustat __user *u = compat_alloc_user_space(sizeof(*u));
-+	int ret;
-+
-+	ret = sys_ustat(dev, u);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!access_ok(VERIFY_WRITE, cu, sizeof(*cu)) ||
-+	    __copy_in_user(&cu->f_tfree, &u->f_tfree, sizeof(compat_daddr_t)) ||
-+	    __copy_in_user(&cu->f_tinode, &u->f_tinode, sizeof(compat_ino_t)) ||
-+	    __copy_in_user(&cu->f_fname, u->f_fname, sizeof(cu->f_fname)) ||
-+	    __copy_in_user(&cu->f_fpack, u->f_fpack, sizeof(cu->f_fpack)))
-+		return -EFAULT;
-+	return 0;
-+}
-+
- static int get_compat_flock(struct flock *kfl, struct compat_flock __user *ufl)
- {
- 	if (!access_ok(VERIFY_READ, ufl, sizeof(*ufl)) ||
-Index: linux-2.6/include/linux/compat.h
-===================================================================
---- linux-2.6.orig/include/linux/compat.h	2008-11-26 16:07:39.000000000 +0530
-+++ linux-2.6/include/linux/compat.h	2008-11-26 16:07:53.000000000 +0530
-@@ -125,6 +125,13 @@ struct compat_dirent {
- 	char		d_name[256];
- };
- 
-+struct compat_ustat {
-+	compat_daddr_t		f_tfree;
-+	compat_ino_t		f_tinode;
-+	char			f_fname[6];
-+	char			f_fpack[6];
-+};
-+
- typedef union compat_sigval {
- 	compat_int_t	sival_int;
- 	compat_uptr_t	sival_ptr;
-@@ -178,6 +185,7 @@ long compat_sys_semtimedop(int semid, st
- 		unsigned nsems, const struct compat_timespec __user *timeout);
- asmlinkage long compat_sys_keyctl(u32 option,
- 			      u32 arg2, u32 arg3, u32 arg4, u32 arg5);
-+asmlinkage long compat_sys_ustat(unsigned dev, struct compat_ustat __user *u32);
- 
- asmlinkage ssize_t compat_sys_readv(unsigned long fd,
- 		const struct compat_iovec __user *vec, unsigned long vlen);
-Index: linux-2.6/arch/ia64/ia32/ia32_entry.S
-===================================================================
---- linux-2.6.orig/arch/ia64/ia32/ia32_entry.S	2008-11-21 20:35:01.000000000 +0530
-+++ linux-2.6/arch/ia64/ia32/ia32_entry.S	2008-11-26 16:07:53.000000000 +0530
-@@ -240,7 +240,7 @@ ia32_syscall_table:
- 	data8 sys_ni_syscall
- 	data8 sys_umask		  /* 60 */
- 	data8 sys_chroot
--	data8 sys_ustat
-+	data8 compat_sys_ustat
- 	data8 sys_dup2
- 	data8 sys_getppid
- 	data8 sys_getpgrp	  /* 65 */
-Index: linux-2.6/arch/mips/kernel/linux32.c
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/linux32.c	2008-11-21 20:35:01.000000000 +0530
-+++ linux-2.6/arch/mips/kernel/linux32.c	2008-11-26 16:07:53.000000000 +0530
-@@ -347,40 +347,6 @@ asmlinkage int sys32_personality(unsigne
- 	return ret;
- }
- 
--/* ustat compatibility */
--struct ustat32 {
--	compat_daddr_t	f_tfree;
--	compat_ino_t	f_tinode;
--	char		f_fname[6];
--	char		f_fpack[6];
--};
--
--extern asmlinkage long sys_ustat(dev_t dev, struct ustat __user * ubuf);
--
--asmlinkage int sys32_ustat(dev_t dev, struct ustat32 __user * ubuf32)
--{
--	int err;
--	struct ustat tmp;
--	struct ustat32 tmp32;
--	mm_segment_t old_fs = get_fs();
--
--	set_fs(KERNEL_DS);
--	err = sys_ustat(dev, (struct ustat __user *)&tmp);
--	set_fs(old_fs);
--
--	if (err)
--		goto out;
--
--	memset(&tmp32, 0, sizeof(struct ustat32));
--	tmp32.f_tfree = tmp.f_tfree;
--	tmp32.f_tinode = tmp.f_tinode;
--
--	err = copy_to_user(ubuf32, &tmp32, sizeof(struct ustat32)) ? -EFAULT : 0;
--
--out:
--	return err;
--}
--
- asmlinkage int sys32_sendfile(int out_fd, int in_fd, compat_off_t __user *offset,
- 	s32 count)
- {
-Index: linux-2.6/arch/mips/kernel/scall64-n32.S
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/scall64-n32.S	2008-11-21 20:35:01.000000000 +0530
-+++ linux-2.6/arch/mips/kernel/scall64-n32.S	2008-11-26 16:07:53.000000000 +0530
-@@ -253,7 +253,7 @@ EXPORT(sysn32_call_table)
- 	PTR	compat_sys_utime		/* 6130 */
- 	PTR	sys_mknod
- 	PTR	sys32_personality
--	PTR	sys32_ustat
-+	PTR	compat_sys_ustat
- 	PTR	compat_sys_statfs
- 	PTR	compat_sys_fstatfs		/* 6135 */
- 	PTR	sys_sysfs
-Index: linux-2.6/arch/mips/kernel/scall64-o32.S
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/scall64-o32.S	2008-11-21 20:35:01.000000000 +0530
-+++ linux-2.6/arch/mips/kernel/scall64-o32.S	2008-11-26 16:07:53.000000000 +0530
-@@ -267,7 +267,7 @@ sys_call_table:
- 	PTR	sys_olduname
- 	PTR	sys_umask			/* 4060 */
- 	PTR	sys_chroot
--	PTR	sys32_ustat
-+	PTR	compat_sys_ustat
- 	PTR	sys_dup2
- 	PTR	sys_getppid
- 	PTR	sys_getpgrp			/* 4065 */
-Index: linux-2.6/arch/parisc/kernel/syscall_table.S
-===================================================================
---- linux-2.6.orig/arch/parisc/kernel/syscall_table.S	2008-11-21 20:35:01.000000000 +0530
-+++ linux-2.6/arch/parisc/kernel/syscall_table.S	2008-11-26 16:07:53.000000000 +0530
-@@ -130,7 +130,7 @@
- 	ENTRY_OURS(newuname)
- 	ENTRY_SAME(umask)		/* 60 */
- 	ENTRY_SAME(chroot)
--	ENTRY_SAME(ustat)
-+	ENTRY_COMP(ustat)
- 	ENTRY_SAME(dup2)
- 	ENTRY_SAME(getppid)
- 	ENTRY_SAME(getpgrp)		/* 65 */
-Index: linux-2.6/arch/powerpc/include/asm/systbl.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/systbl.h	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/arch/powerpc/include/asm/systbl.h	2008-11-26 16:07:53.000000000 +0530
-@@ -65,7 +65,7 @@ SYSCALL(ni_syscall)
- SYSX(sys_ni_syscall,sys_olduname, sys_olduname)
- COMPAT_SYS_SPU(umask)
- SYSCALL_SPU(chroot)
--SYSCALL(ustat)
-+COMPAT_SYS(ustat)
- SYSCALL_SPU(dup2)
- SYSCALL_SPU(getppid)
- SYSCALL_SPU(getpgrp)
-Index: linux-2.6/arch/s390/kernel/compat_wrapper.S
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/compat_wrapper.S	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/arch/s390/kernel/compat_wrapper.S	2008-11-26 16:07:53.000000000 +0530
-@@ -252,7 +252,7 @@ sys32_chroot_wrapper:
- sys32_ustat_wrapper:
- 	llgfr	%r2,%r2			# dev_t
- 	llgtr	%r3,%r3			# struct ustat *
--	jg	sys_ustat
-+	jg	compat_sys_ustat
- 
- 	.globl	sys32_dup2_wrapper
- sys32_dup2_wrapper:
-Index: linux-2.6/arch/sparc64/kernel/systbls.S
-===================================================================
---- linux-2.6.orig/arch/sparc64/kernel/systbls.S	2008-11-21 20:35:00.000000000 +0530
-+++ linux-2.6/arch/sparc64/kernel/systbls.S	2008-11-26 16:07:53.000000000 +0530
-@@ -51,7 +51,7 @@ sys_call_table32:
- /*150*/	.word sys_nis_syscall, sys_inotify_init, sys_inotify_add_watch, sys_poll, sys_getdents64
- 	.word compat_sys_fcntl64, sys_inotify_rm_watch, compat_sys_statfs, compat_sys_fstatfs, sys_oldumount
- /*160*/	.word compat_sys_sched_setaffinity, compat_sys_sched_getaffinity, sys32_getdomainname, sys32_setdomainname, sys_nis_syscall
--	.word sys_quotactl, sys_set_tid_address, compat_sys_mount, sys_ustat, sys32_setxattr
-+	.word sys_quotactl, sys_set_tid_address, compat_sys_mount, compat_sys_ustat, sys32_setxattr
- /*170*/	.word sys32_lsetxattr, sys32_fsetxattr, sys_getxattr, sys_lgetxattr, compat_sys_getdents
- 	.word sys_setsid, sys_fchdir, sys32_fgetxattr, sys_listxattr, sys_llistxattr
- /*180*/	.word sys32_flistxattr, sys_removexattr, sys_lremovexattr, compat_sys_sigpending, sys_ni_syscall
+> What's the use case scenario of doing IO control at loop device?
+> Ultimately the resource contention will take place on actual underlying
+> physical device where the file blocks are. Will doing the resource control
+> there not solve the issue for you?
+
+I don't come up with any use case, but I would like to make the
+resource controller more flexible. Actually, a certain block device
+that I'm using does not use the I/O scheduler.
+
+Thanks,
+Ryo Tsuruta
