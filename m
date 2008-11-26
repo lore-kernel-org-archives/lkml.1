@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbYKZPNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYKZPRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753465AbYKZPNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYKZPNJ
+	id S1753544AbYKZPRe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYKZPR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:13:09 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:40645 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752132AbYKZPNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:13:08 -0500
-Date: Wed, 26 Nov 2008 16:12:54 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Philip Langdale <philipl@overt.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, sdhci-devel@list.drzeus.cx,
-       fseidel@suse.de, weyland@library.ethz.ch
-Subject: Re: [PATCH] ricoh_mmc: Handle newer models of Ricoh controllers
-Message-ID: <20081126161254.25ee531f@mjolnir.drzeus.cx>
-In-Reply-To: <492D6300.2060401@overt.org>
-References: <492BBA91.5010302@overt.org>
-	<200811261436.57946.elendil@planet.nl>
-	<492D604C.10707@overt.org>
-	<20081126145039.GA31043@srcf.ucam.org>
-	<492D6300.2060401@overt.org>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+	Wed, 26 Nov 2008 10:17:26 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:31173 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbYKZPRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:17:25 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [patch] fix for sched_clock() when using jiffies
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ron <ron@debian.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081126150645.GA28153@homer.shelbyville.oz>
+References: <20081126150645.GA28153@homer.shelbyville.oz>
+Content-Type: text/plain
+Date: Wed, 26 Nov 2008 16:16:38 +0100
+Message-Id: <1227712598.4454.199.camel@twins>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-18541-1227712385-0001-2"
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, 2008-11-27 at 01:36 +1030, Ron wrote:
+> Hi,
+> 
+> I'm in the process of updating a port for an ARM based chip we've been
+> working on, from 2.6.22-rc4'ish to the current HEAD of Linus' tree, and
+> I started seeing the following:
+> 
+> [    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
+> [42949372.970000] Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+> 
+> The reason appears to be that printk_clock() has been replaced with a
+> call to cpu_clock, which in our case currently falls back to the default
+> (weak) implementation of sched_clock() that uses jiffies -- but doesn't
+> account for the initial offset of the jiffy count.  The following simple
+> patch fixes it for me, in line with what printk_clock used to do.
+> 
 
---=_freyr.drzeus.cx-18541-1227712385-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Looks good, except I suspect this line will now be longer than 80
+characters and you forgot to provide your signed-off-by line.
 
-On Wed, 26 Nov 2008 06:53:52 -0800
-Philip Langdale <philipl@overt.org> wrote:
+> 
+> diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+> index 8178724..d76814e 100644
+> --- a/kernel/sched_clock.c
+> +++ b/kernel/sched_clock.c
+> @@ -37,7 +37,7 @@
+>   */
+>  unsigned long long __attribute__((weak)) sched_clock(void)
+>  {
+> -       return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
+> +       return (unsigned long long)(jiffies - INITIAL_JIFFIES) * (NSEC_PER_SEC / HZ);
+>  }
+>  
+> 
 
-> Matthew Garrett wrote:
-> >=20
-> > Thinking about it, it could possibly be handled by changing to=20
-> > suspend_noirq and resume_noirq rather than the normal suspend and resum=
-e=20
-> > functions? That ought to get the ordering constraints right. The proble=
-m=20
-> > occurs when ricoh_mmc suspends before sdhci and resumes after it.
->=20
-> I'll investigate that and see what happens.
->=20
-
-Or you integrate it into sdhci_pci. Look at the register fiddling for
-JMicron chips in there.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-18541-1227712385-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkktZ3sACgkQ7b8eESbyJLjZcQCeNuMSpIjTI+o00WN3UVyeOtaY
-qjUAoJFsQdGaKKZhFWcLRn/GhVx0Ayeg
-=s11R
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-18541-1227712385-0001-2--
