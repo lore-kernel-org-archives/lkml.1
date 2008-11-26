@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYKZHGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYKZHOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbYKZHGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 02:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYKZHGI
+	id S1752733AbYKZHOH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 02:14:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYKZHNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 02:06:08 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:35642 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYKZHGF (ORCPT
+	Wed, 26 Nov 2008 02:13:53 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:46240 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYKZHNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 02:06:05 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       fweisbec@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       srostedt@redhat.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <20081125223456.976670734@goodmis.org>
-	<20081125144221.66eb99ad.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0811251800130.26424@gandalf.stny.rr.com>
-	<20081125153104.ecdceed4.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0811251909320.26424@gandalf.stny.rr.com>
-	<1227660839.12109.52.camel@nimitz>
-	<alpine.DEB.1.10.0811251956570.26424@gandalf.stny.rr.com>
-	<m1zljndrb6.fsf@frodo.ebiederm.org>
-	<alpine.DEB.1.10.0811260000400.26424@gandalf.stny.rr.com>
-	<m1abbnc8ff.fsf@frodo.ebiederm.org> <20081126063201.GF9732@elte.hu>
-Date: Tue, 25 Nov 2008 23:02:10 -0800
-In-Reply-To: <20081126063201.GF9732@elte.hu> (Ingo Molnar's message of "Wed,
-	26 Nov 2008 07:32:01 +0100")
-Message-ID: <m1zljn7yx9.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 26 Nov 2008 02:13:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:to:cc:in-reply-to:references:content-type:date:message-id
+         :mime-version:x-mailer:content-transfer-encoding:from;
+        b=ibudBJg2TcUh8JupXDe6+HFNeULndugr00VqdlrK3aGK2rs6Mz6XFNollpbrJA0oD/
+         4oXYvZMlUpHWCuLAoQLs3ER/cKMPYKfMUq9LMsior4z4NhS/zWX/ieTQfhDAdLTZ6v1N
+         7dWJCOeDM6P+wPWFwtx7H2tJkoA/XTNIkRnk4=
+Subject: Re: ndiswrapper 1.54-2.6.27 released
+To: jmerkey@wolfmountaingroup.com
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46697.166.70.238.44.1227679338.squirrel@webmail.wolfmountaingroup.com>
+References: <46697.166.70.238.44.1227679338.squirrel@webmail.wolfmountaingroup.com>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 23:13:47 -0800
+Message-Id: <1227683627.3145.5.camel@LiNuX>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+From: "Justin P. Mattock" <justinmattock@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Tue, 2008-11-25 at 23:02 -0700, jmerkey@wolfmountaingroup.com wrote:
+> 
+> ndiswrapper with the 2.6.27 breakage corrected.  The current maintainers
+> have not put out a release for 2.6.27 or later kernels, so I went ahead
+> and fixed it for 2.6.27.
+> 
+> ftp://ftp.wolfmountaingroup.org/pub/ndiswrapper/ndiswrapper-1.54-2.6.27.7.tar.gz
+> 
+> Linux wireless drivers still do not work on most of my laptops and USB
+> wireless devices due to lack of firmware drivers and other problems with
+> native Linux wireless.  Anyone else with busted laptop wireless who need
+> ndiswrapper might as well be able to get it since the maintainers have not
+> posted recent releases for recent kernels.
+> 
+> 
+> Jeff
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> i dont see the point of the complexity you are advocating. 99.9% of 
-> the users run a unique PID space.
+Cool; glad to see it working
+with the latest kernel. 
+BTW who is the author
+of this patch?(this has baffled me for sometime);
+http://www.slackware.com/~alien/slackbuilds/ndiswrapper/build/ndiswrapper_kernel_2.6.27.patch
+(not to imped you in anyway);
 
-I'm not advocating complexity.  I'm advocating using the same APIs as
-the rest of the kernel, for doing the same functions.
+regards;
 
-> Tracing is about keeping stuff simple. On containers we could also 
-> trace the namespace ID (is there an easy ID for the namespace, as an 
-> easy extension to the very nice PID concept that Unix introduced 
-> decades ago?) and be done with it.
+-- 
+Justin P. Mattock <Justinmattock@gmail.com>
 
-I don't really care about the pid namespace in this context.
-
-I am just asking that we compare a different field in the task struct.
-
-I am asking that we don't accumulate new users of an old crufty bug prone
-API, for no good reason.
-
-I'm asking that we don't be different for no good reason.
-
-Eric
