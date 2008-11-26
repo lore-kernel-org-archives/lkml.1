@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYKZRyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYKZR6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYKZRyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 12:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYKZRyj
+	id S1754535AbYKZR6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 12:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYKZR6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 12:54:39 -0500
-Received: from sous-sol.org ([216.99.217.87]:52458 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752239AbYKZRyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 12:54:38 -0500
-Date: Wed, 26 Nov 2008 09:54:27 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Greg KH <greg@kroah.com>
-Cc: Yu Zhao <yu.zhao@intel.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [SR-IOV driver example 2/3] PF driver: integrate with SR-IOV
-	core
-Message-ID: <20081126175427.GE19881@sequoia.sous-sol.org>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081126140303.GA13641@yzhao12-linux.sh.intel.com> <20081126142156.GB13668@yzhao12-linux.sh.intel.com> <20081126165859.GA28251@kroah.com>
+	Wed, 26 Nov 2008 12:58:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:7470 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYKZR6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 12:58:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=N2J7H5fRoLuVD9SHDfQfNfcCevLSDxvDOsGlTsFD8ylp8A2JQBmYWJaEmGNAB+qN02
+         CbGu4sTXwLh5r40tpyWnArjvk/gteQooTgvvLZRT4edYiMdANOBSDTrwmMGtTb7/UW7N
+         vDrMzn6LoouRRubDZoO8zJ5RwsUHb91efLBcE=
+Message-ID: <7c86c4470811260958r6861c2a9vdbf34318fd0da4e9@mail.gmail.com>
+Date: Wed, 26 Nov 2008 18:58:01 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [patch 17/24] perfmon: X86 64-bit system calls support (x86)
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, sfr@canb.auug.org.au
+In-Reply-To: <20081126110510.GP6703@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081126165859.GA28251@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <492d0c02.02a1660a.15f1.ffffdbb5@mx.google.com>
+	 <20081126110510.GP6703@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (greg@kroah.com) wrote:
-> > +static	int
-> > +igb_virtual(struct pci_dev *pdev, int nr_virtfn)
-> > +{
-> > +	unsigned char my_mac_addr[6] = {0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0xFF};
-> > +	struct net_device *netdev = pci_get_drvdata(pdev);
-> > +	struct igb_adapter *adapter = netdev_priv(netdev);
-> > +	int i;
-> > +
-> > +	if (nr_virtfn > 7)
-> > +		return -EINVAL;
-> 
-> Why the check for 7?  Is that the max virtual functions for this card?
-> Shouldn't that be a define somewhere so it's easier to fix in future
-> versions of this hardware?  :)
+Done
+Thanks.
 
-IIRC it's 8 for the card, 1 reserved for PF.  I think both notions
-should be captured w/ commented constants.
-
-thanks,
--chris
+On Wed, Nov 26, 2008 at 12:05 PM, Andi Kleen <andi@firstfloor.org> wrote:
+>> +#define __NR_pfm_create                              295
+>> +__SYSCALL(__NR_pfm_create, sys_pfm_create)
+>> +#define __NR_pfm_write                               (__NR_pfm_create+1)
+>> +__SYSCALL(__NR_pfm_write, sys_pfm_write)
+>> +#define __NR_pfm_read                                (__NR_pfm_create+2)
+>> + __SYSCALL(__NR_pfm_read, sys_pfm_read)
+>> +#define __NR_pfm_attach                              (__NR_pfm_create+3)
+>> +__SYSCALL(__NR_pfm_attach, sys_pfm_attach)
+>> +#define __NR_pfm_set_state                   (__NR_pfm_create+4)
+>> +__SYSCALL(__NR_pfm_set_state, sys_pfm_set_state)
+>
+> Please use always absolute numbers. That's much nicer for people
+> who grep for them.
+>
+> -Andi
+>
+>
