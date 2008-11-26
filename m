@@ -1,62 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYKZJCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbYKZJCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbYKZJCL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 04:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYKZJBw
+	id S1753700AbYKZJCk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 04:02:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbYKZJCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 04:01:52 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:40644 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbYKZJBv convert rfc822-to-8bit (ORCPT
+	Wed, 26 Nov 2008 04:02:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55082
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750916AbYKZJCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 04:01:51 -0500
-Message-ID: <492D107B.1060303@cosmosbay.com>
-Date: Wed, 26 Nov 2008 10:01:47 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: ut <mchan@broadcom.com>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [BUG] linux-2.6.28-rc3 regression: IRQ smp_affinities not respected
-References: <C27F8246C663564A84BB7AB343977242151F4B18B5@IRVEXCHCCR01.corp.ad.broadcom.com> <491154C8.3040401@cosmosbay.com>
-In-Reply-To: <491154C8.3040401@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 26 Nov 2008 10:01:48 +0100 (CET)
+	Wed, 26 Nov 2008 04:02:10 -0500
+Date: Wed, 26 Nov 2008 01:02:09 -0800 (PST)
+Message-Id: <20081126.010209.72961304.davem@davemloft.net>
+To: viro@ftp.linux.org.uk
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/32] sparc64 trivial section misannotations
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1L3wMu-0006Jy-IU@ZenIV.linux.org.uk>
+References: <E1L3wMu-0006Jy-IU@ZenIV.linux.org.uk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Michael Chan a écrit :
->> I believe this may be the patch that broke it:
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd 
->>
->>
->> I don't remember all the details, but the Broadcom 5708 chip is
->> affected because it does not support MSI per-vector masking.
->>
->> One way to get around is to disable MSI with bnx2 parameter
->> disable_msi=1.
->>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sat, 22 Nov 2008 17:34:04 +0000
 
-> 
-> I tried this MSI disabling and yes, it now works.
-> 
-> 16:      42726        128        105        106         89         
-> 89        145        152   IO-APIC-fasteoi   uhci_hcd:usb1, eth0, eth1
-> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-I believe the bnx2 driver doesnt work at all if !disable_msi (default setting)
-
-Doing a "echo 0 >/sys/devices/system/cpu/cpu1/online" just freeze network
-
-No messages logged
-
-If loaded with disable_msi=1, the cpu unplug works as expected.
-
-Thats a pretty serious issue.
-
+Applied, thanks Al.
 
