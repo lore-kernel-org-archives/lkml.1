@@ -1,438 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbYKZNE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbYKZNFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbYKZNE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 08:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYKZM6j
+	id S1755772AbYKZNFB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:05:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbYKZNDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:58:39 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:46297 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754116AbYKZM6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:58:32 -0500
-Message-Id: <20081126124635.419728733@polymtl.ca>
-References: <20081126124246.800751190@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Wed, 26 Nov 2008 07:42:53 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Nicolas Pitre <nico@cam.org>, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: [patch 07/17] Trace clock core
-Content-Disposition: inline; filename=trace-clock-core.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:41 +0000
+	Wed, 26 Nov 2008 08:03:42 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35100 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755419AbYKZNDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 08:03:41 -0500
+Message-ID: <492D4927.8040204@davidnewall.com>
+Date: Wed, 26 Nov 2008 23:33:35 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Evgeniy Polyakov <zbr@ioremap.net>
+CC: Andrew Morton <akpm@linux-foundation.org>, john@johnmccutchan.com,
+       arnd@arndb.de, mtk.manpages@gmail.com, hch@lst.de, rlove@rlove.org,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@suse.cz,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [take2] Inotify: nested attributes support.
+References: <20081125194234.GA24449@ioremap.net> <20081125162434.4feacbbf.akpm@linux-foundation.org> <20081126074239.GA17525@ioremap.net> <20081126001538.4b1c7c99.akpm@linux-foundation.org> <20081126082936.GB17525@ioremap.net> <492D4560.8000302@davidnewall.com> <20081126125113.GA8921@ioremap.net>
+In-Reply-To: <20081126125113.GA8921@ioremap.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-32 to 64 bits clock extension. Extracts 64 bits tsc from a [1..32]
-bits counter, kept up to date by periodical timer interrupt. Lockless.
+Evgeniy Polyakov wrote:
+> On Wed, Nov 26, 2008 at 11:17:28PM +1030, David Newall (davidn@davidnewall.com) wrote:
+>   
+>> I don't think so.  As discussed,
+>> (http://marc.info/?l=linux-kernel&m=122735413932519), you already can
+>> differentiate I/O made by local users, so you don't need to modify inotify.
+>>     
+>
+> And as was shown it does not work for all cases and introduces unneded
+> performance overhead.
+>   
 
-It's actually a specialized version of cnt_32_to_63.h which does the following
-in addition :
-- Uses per-cpu data to keep track of counters.
-  - It limits cache-line bouncing
-  - I supports machines with non-synchronized TSCs.
-  - Does not require read barriers, which can be slow on some architectures.
-- Supports a full 64-bits counter (well, just one bit more than 63 is not really
-  a big deal when we talk about timestamp counters). If 2^64 is considered long
-  enough between overflows, 2^63 is normally considered long enough too.
-- The periodical update of the value is insured by the infrastructure. There is
-  no assumption that the counter is read frequently, because we cannot assume
-  that given the events for which tracing is enabled can be dynamically
-  selected.
-- Supports counters of various width (32-bits and below) by changing the
-  HW_BITS define.
+If the performance using a local loopback is insufficient, or even when
+using a UNIX domain socket, then it's going to be even worse for the
+actual network-connected clients.  And the cases were it doesn't work
+amount to poor system administration, which is a solvable problem.
 
-What cnt_32_to_63.h does that this patch doesn't do :
-- It has a global counter, which removes the need to do an update periodically
-  on _each_ cpu. This can be important in a dynamic tick system where CPUs need
-  to sleep to save power. It is therefore well suited for systems reading a
-  global clock expected to be _exactly_ synchronized across cores (where time
-  can never ever go backward).
 
-Q:
+>> This change violates my first rule of programming: If there's two or
+>> more ways of solving a problem, pick one; don't pick them all.
+>>     
+>
+> Then we should go back to caves, raw meat was so tasty...
 
-> do you actually use the RCU internals? or do you just reimplement an RCU
-> algorithm?
-> 
-
-A:
-
-Nope, I don't use RCU internals in this code. Preempt disable seemed
-like the best way to handle this utterly short code path and I wanted
-the write side to be fast enough to be called periodically. What I do is:
-
-- Disable preemption at the read-side :
-  it makes sure the pointer I get will point to a data structure that
-  will never change while I am in the preempt disabled code. (see *)
-- I use per-cpu data to allow the read-side to be as fast as possible
-  (only need to disable preemption, does not race against other CPUs and
-  won't generate cache line bouncing). It also allows dealing with
-  unsynchronized TSCs if needed.
-- Periodical write side : it's called from an IPI running on each CPU.
-
-(*) We expect the read-side (preempt off region) to last shorter than
-the interval between IPI updates so we can guarantee the data structure
-it uses won't be modified underneath it. Since the IPI update is
-launched each seconds or so (depends on the frequency of the counter we
-are trying to extend), it's more than ok.
-
-Changelog:
-
-- Support [1..32] bits -> 64 bits.
-
-I volountarily limit the code to use at most 32 bits of the hardware clock for
-performance considerations. If this is a problem it could be changed. Also, the
-algorithm is aimed at a 32 bits architecture. The code becomes muuuch simpler on
-a 64 bits arch, since we can do the updates atomically.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Nicolas Pitre <nico@cam.org>
-CC: Ralf Baechle <ralf@linux-mips.org>
-CC: benh@kernel.crashing.org
-CC: paulus@samba.org
-CC: David Miller <davem@davemloft.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-arch@vger.kernel.org
----
- init/Kconfig                        |   12 +
- kernel/trace/Makefile               |    1 
- kernel/trace/trace-clock-32-to-64.c |  281 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 294 insertions(+)
-
-Index: linux.trees.git/kernel/trace/Makefile
-===================================================================
---- linux.trees.git.orig/kernel/trace/Makefile	2008-11-26 07:00:51.000000000 -0500
-+++ linux.trees.git/kernel/trace/Makefile	2008-11-26 07:01:38.000000000 -0500
-@@ -33,5 +33,6 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER) += t
- obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
- obj-$(CONFIG_BTS_TRACER) += trace_bts.o
- obj-$(CONFIG_POWER_TRACER) += trace_power.o
-+obj-$(CONFIG_HAVE_TRACE_CLOCK_32_TO_64) += trace-clock-32-to-64.o
- 
- libftrace-y := ftrace.o
-Index: linux.trees.git/kernel/trace/trace-clock-32-to-64.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux.trees.git/kernel/trace/trace-clock-32-to-64.c	2008-11-26 07:01:38.000000000 -0500
-@@ -0,0 +1,281 @@
-+/*
-+ * kernel/trace/trace-clock-32-to-64.c
-+ *
-+ * (C) Copyright	2006,2007,2008 -
-+ * 		Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
-+ *
-+ * Extends a 32 bits clock source to a full 64 bits count, readable atomically
-+ * from any execution context.
-+ *
-+ * notes :
-+ * - trace clock 32->64 bits extended timer-based clock cannot be used for early
-+ *   tracing in the boot process, as it depends on timer interrupts.
-+ * - The timer is only on one CPU to support hotplug.
-+ * - We have the choice between schedule_delayed_work_on and an IPI to get each
-+ *   CPU to write the heartbeat. IPI has been chosen because it is considered
-+ *   faster than passing through the timer to get the work scheduled on all the
-+ *   CPUs.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/timer.h>
-+#include <linux/workqueue.h>
-+#include <linux/cpu.h>
-+#include <linux/timex.h>
-+#include <linux/bitops.h>
-+#include <linux/trace-clock.h>
-+#include <linux/smp.h>
-+#include <linux/sched.h> /* needed due to include order problem on m68k */
-+
-+/*
-+ * Number of hardware clock bits. The higher order bits are expected to be 0.
-+ * If the hardware clock source has more than 32 bits, the bits higher than the
-+ * 32nd will be truncated by a cast to a 32 bits unsigned. Range : 1 - 32.
-+ * (too few bits would be unrealistic though, since we depend on the timer to
-+ * detect the overflows).
-+ */
-+#define HW_BITS				32
-+
-+#define HW_BITMASK			((1ULL << HW_BITS) - 1)
-+#define HW_LS32(hw)			((hw) & HW_BITMASK)
-+#define SW_MS32(sw)			((sw) & ~HW_BITMASK)
-+
-+/* Expected maximum interrupt latency in ms : 15ms, *2 for security */
-+#define EXPECTED_INTERRUPT_LATENCY	30
-+
-+static DEFINE_MUTEX(synthetic_tsc_mutex);
-+static int synthetic_tsc_refcount;  /* Number of readers */
-+static int synthetic_tsc_enabled;   /* synth. TSC enabled on all online CPUs */
-+
-+static DEFINE_PER_CPU(struct timer_list, tsc_timer);
-+static unsigned int precalc_expire;
-+
-+struct synthetic_tsc_struct {
-+	union {
-+		u64 val;
-+		struct {
-+#ifdef __BIG_ENDIAN
-+			u32 ms32;
-+			u32 ls32;
-+#else
-+			u32 ls32;
-+			u32 ms32;
-+#endif
-+		} sel;
-+	} tsc[2];
-+	unsigned int index;	/* Index of the current synth. tsc. */
-+};
-+
-+static DEFINE_PER_CPU(struct synthetic_tsc_struct, synthetic_tsc);
-+
-+/* Called from IPI or timer interrupt */
-+static void update_synthetic_tsc(void)
-+{
-+	struct synthetic_tsc_struct *cpu_synth;
-+	u32 tsc;
-+
-+	cpu_synth = &per_cpu(synthetic_tsc, smp_processor_id());
-+	tsc = trace_clock_read32();		/* Hardware clocksource read */
-+
-+	if (tsc < HW_LS32(cpu_synth->tsc[cpu_synth->index].sel.ls32)) {
-+		unsigned int new_index = 1 - cpu_synth->index; /* 0 <-> 1 */
-+		/*
-+		 * Overflow
-+		 * Non atomic update of the non current synthetic TSC, followed
-+		 * by an atomic index change. There is no write concurrency,
-+		 * so the index read/write does not need to be atomic.
-+		 */
-+		cpu_synth->tsc[new_index].val =
-+			(SW_MS32(cpu_synth->tsc[cpu_synth->index].val)
-+				| (u64)tsc) + (1ULL << HW_BITS);
-+		cpu_synth->index = new_index;	/* atomic change of index */
-+	} else {
-+		/*
-+		 * No overflow : We know that the only bits changed are
-+		 * contained in the 32 LS32s, which can be written to atomically.
-+		 */
-+		cpu_synth->tsc[cpu_synth->index].sel.ls32 =
-+			SW_MS32(cpu_synth->tsc[cpu_synth->index].sel.ls32) | tsc;
-+	}
-+}
-+
-+/* Called from buffer switch : in _any_ context (even NMI) */
-+u64 notrace trace_clock_read_synthetic_tsc(void)
-+{
-+	struct synthetic_tsc_struct *cpu_synth;
-+	u64 ret;
-+	unsigned int index;
-+	u32 tsc;
-+
-+	preempt_disable_notrace();
-+	cpu_synth = &per_cpu(synthetic_tsc, smp_processor_id());
-+	index = cpu_synth->index;		/* atomic read */
-+	tsc = trace_clock_read32();		/* Hardware clocksource read */
-+
-+	/* Overflow detection */
-+	if (unlikely(tsc < HW_LS32(cpu_synth->tsc[index].sel.ls32)))
-+		ret = (SW_MS32(cpu_synth->tsc[index].val) | (u64)tsc)
-+			+ (1ULL << HW_BITS);
-+	else
-+		ret = SW_MS32(cpu_synth->tsc[index].val) | (u64)tsc;
-+	preempt_enable_notrace();
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(trace_clock_read_synthetic_tsc);
-+
-+static void synthetic_tsc_ipi(void *info)
-+{
-+	update_synthetic_tsc();
-+}
-+
-+/*
-+ * tsc_timer_fct : - Timer function synchronizing synthetic TSC.
-+ * @data: unused
-+ *
-+ * Guarantees at least 1 execution before low word of TSC wraps.
-+ */
-+static void tsc_timer_fct(unsigned long data)
-+{
-+	update_synthetic_tsc();
-+
-+	per_cpu(tsc_timer, smp_processor_id()).expires =
-+		jiffies + precalc_expire;
-+	add_timer_on(&per_cpu(tsc_timer, smp_processor_id()),
-+		     smp_processor_id());
-+}
-+
-+/*
-+ * precalc_stsc_interval: - Precalculates the interval between the clock
-+ * wraparounds.
-+ */
-+static int __init precalc_stsc_interval(void)
-+{
-+	precalc_expire =
-+		(HW_BITMASK / ((trace_clock_frequency() / HZ
-+			* trace_clock_freq_scale()) << 1)
-+			- 1 - (EXPECTED_INTERRUPT_LATENCY * HZ / 1000)) >> 1;
-+	WARN_ON(precalc_expire == 0);
-+	printk(KERN_DEBUG "Synthetic TSC timer will fire each %u jiffies.\n",
-+		precalc_expire);
-+	return 0;
-+}
-+
-+static void prepare_synthetic_tsc(int cpu)
-+{
-+	struct synthetic_tsc_struct *cpu_synth;
-+	u64 local_count;
-+
-+	cpu_synth = &per_cpu(synthetic_tsc, cpu);
-+	local_count = trace_clock_read_synthetic_tsc();
-+	cpu_synth->tsc[0].val = local_count;
-+	cpu_synth->index = 0;
-+	smp_wmb();	/* Writing in data of CPU about to come up */
-+	init_timer(&per_cpu(tsc_timer, cpu));
-+	per_cpu(tsc_timer, cpu).function = tsc_timer_fct;
-+	per_cpu(tsc_timer, cpu).expires = jiffies + precalc_expire;
-+}
-+
-+static void enable_synthetic_tsc(int cpu)
-+{
-+	smp_call_function_single(cpu, synthetic_tsc_ipi, NULL, 1);
-+	add_timer_on(&per_cpu(tsc_timer, cpu), cpu);
-+}
-+
-+static void disable_synthetic_tsc(int cpu)
-+{
-+	del_timer_sync(&per_cpu(tsc_timer, cpu));
-+}
-+
-+/*
-+ * 	hotcpu_callback - CPU hotplug callback
-+ * 	@nb: notifier block
-+ * 	@action: hotplug action to take
-+ * 	@hcpu: CPU number
-+ *
-+ *	Sets the new CPU's current synthetic TSC to the same value as the
-+ *	currently running CPU.
-+ *
-+ * 	Returns the success/failure of the operation. (NOTIFY_OK, NOTIFY_BAD)
-+ */
-+static int __cpuinit hotcpu_callback(struct notifier_block *nb,
-+				unsigned long action,
-+				void *hcpu)
-+{
-+	unsigned int hotcpu = (unsigned long)hcpu;
-+
-+	switch (action) {
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+		if (synthetic_tsc_refcount)
-+			prepare_synthetic_tsc(hotcpu);
-+		break;
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		if (synthetic_tsc_refcount)
-+			enable_synthetic_tsc(hotcpu);
-+		break;
-+#ifdef CONFIG_HOTPLUG_CPU
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		if (synthetic_tsc_refcount)
-+			disable_synthetic_tsc(hotcpu);
-+		break;
-+#endif /* CONFIG_HOTPLUG_CPU */
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+void get_synthetic_tsc(void)
-+{
-+	int cpu;
-+
-+	get_online_cpus();
-+	mutex_lock(&synthetic_tsc_mutex);
-+	if (synthetic_tsc_refcount++)
-+		goto end;
-+
-+	synthetic_tsc_enabled = 1;
-+	for_each_online_cpu(cpu) {
-+		prepare_synthetic_tsc(cpu);
-+		enable_synthetic_tsc(cpu);
-+	}
-+end:
-+	mutex_unlock(&synthetic_tsc_mutex);
-+	put_online_cpus();
-+}
-+EXPORT_SYMBOL_GPL(get_synthetic_tsc);
-+
-+void put_synthetic_tsc(void)
-+{
-+	int cpu;
-+
-+	get_online_cpus();
-+	mutex_lock(&synthetic_tsc_mutex);
-+	WARN_ON(synthetic_tsc_refcount <= 0);
-+	if (synthetic_tsc_refcount != 1 || !synthetic_tsc_enabled)
-+		goto end;
-+
-+	for_each_online_cpu(cpu)
-+		disable_synthetic_tsc(cpu);
-+	synthetic_tsc_enabled = 0;
-+end:
-+	synthetic_tsc_refcount--;
-+	mutex_unlock(&synthetic_tsc_mutex);
-+	put_online_cpus();
-+}
-+EXPORT_SYMBOL_GPL(put_synthetic_tsc);
-+
-+/* Called from CPU 0, before any tracing starts, to init each structure */
-+static int __init init_synthetic_tsc(void)
-+{
-+	precalc_stsc_interval();
-+	hotcpu_notifier(hotcpu_callback, 3);
-+	return 0;
-+}
-+
-+/* Before SMP is up */
-+early_initcall(init_synthetic_tsc);
-Index: linux.trees.git/init/Kconfig
-===================================================================
---- linux.trees.git.orig/init/Kconfig	2008-11-26 07:00:51.000000000 -0500
-+++ linux.trees.git/init/Kconfig	2008-11-26 07:01:38.000000000 -0500
-@@ -340,6 +340,18 @@ config HAVE_UNSTABLE_SCHED_CLOCK
- config HAVE_GET_CYCLES
- 	def_bool n
- 
-+#
-+# Architectures with a specialized tracing clock should select this.
-+#
-+config HAVE_TRACE_CLOCK
-+	def_bool n
-+
-+#
-+# Architectures with only a 32-bits clock source should select this.
-+#
-+config HAVE_TRACE_CLOCK_32_TO_64
-+	def_bool n
-+
- config GROUP_SCHED
- 	bool "Group CPU scheduler"
- 	depends on EXPERIMENTAL
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Amusing, but irrelevant to programming.
