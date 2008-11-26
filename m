@@ -1,695 +1,349 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYKZIti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750932AbYKZIu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755376AbYKZIti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 03:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYKZInB
+	id S1750932AbYKZIu2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 03:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYKZInH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 03:43:01 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:45489 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754129AbYKZIm5 (ORCPT
+	Wed, 26 Nov 2008 03:43:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:25617 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754160AbYKZInC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 03:42:57 -0500
+	Wed, 26 Nov 2008 03:43:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:from:date:message-id;
-        b=wmYc5yHMUhpjwcV6dUf1/ISmNWvDwYURnCZmgGgWRfk+jQXVqXgDAkZh+quvjd0Dsy
-         5yblww2yuoiakXW7M9vczZjew9JfZEK/mQiiVhjTGvStjybwIv5e5SA0ssx17xHmI9aI
-         x76gIjaBv72TPXdcy+6JBI2nLCHEEN4nBCRmY=
+        b=tC+xsb8pNUqXX2fYCflH5u+eVtigwtGh3SYv+VKfbTFBPdFF583FktJEOFr9zkqA2A
+         E7q9fLSsxP1Z6BmEItqnCCi1gEDn6ALuRtBwDPTQSHjOBaqFxmq1R+7yooj16itNpwn5
+         zwTU1+5u9/GxSXSlseqV8zvNZdvvs6JO1yWeM=
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
        andi@firstfloor.org, eranian@gmail.com, sfr@canb.auug.org.au
-Subject: [patch 21/24] perfmon: Intel architectural PMU support (x86)
+Subject: [patch 23/24] perfmon: kernel documentation
 From: eranian@googlemail.com
-Date: Wed, 26 Nov 2008 00:42:54 -0800 (PST)
-Message-ID: <492d0c0e.06e2660a.1583.ffffcc0a@mx.google.com>
+Date: Wed, 26 Nov 2008 00:43:00 -0800 (PST)
+Message-ID: <492d0c14.02225e0a.15ab.6f8e@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds Intel architectural PMU support (version 1, 2, and 3).
+This patch adds the perfmon interface documentation text file
+under Documentation.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
 --
 
-Index: o3/arch/x86/perfmon/Makefile
-===================================================================
---- o3.orig/arch/x86/perfmon/Makefile	2008-11-25 18:09:47.000000000 +0100
-+++ o3/arch/x86/perfmon/Makefile	2008-11-25 18:21:33.000000000 +0100
-@@ -3,3 +3,4 @@
- # Contributed by Stephane Eranian <eranian@hpl.hp.com>
- #
- obj-$(CONFIG_PERFMON)			+= perfmon.o
-+obj-$(CONFIG_X86_PERFMON_INTEL_ARCH)	+= perfmon_intel_arch.o
-Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
+Index: o3/Documentation/perfmon.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o3/arch/x86/perfmon/perfmon_intel_arch.c	2008-11-25 18:22:00.000000000 +0100
-@@ -0,0 +1,628 @@
-+/*
-+ * This file contains the Intel architectural perfmon v1, v2, v3
-+ * description tables.
-+ *
-+ * Architectural perfmon was introduced with Intel Core Solo/Duo
-+ * processors.
-+ *
-+ * Copyright (c) 2006-2007 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+ */
-+#include <linux/kprobes.h>
-+#include <linux/perfmon_kern.h>
-+#include <asm/msr.h>
-+#include <asm/apic.h>
-+
-+static u64 enable_mask[PFM_MAX_PMCS];
-+static u16 max_enable;
-+static int pfm_intel_arch_version;
-+
-+DEFINE_PER_CPU(u64, saved_global_ctrl);
-+
-+/*
-+ * - upper 32 bits are reserved
-+ * - INT: APIC enable bit is reserved (forced to 1)
-+ * - bit 21 is reserved
-+ *
-+ * RSVD: reserved bits are 1
-+ */
-+#define PFM_IA_PMC_RSVD	((~((1ULL<<32)-1)) \
-+			| (1ULL<<20) \
-+			| (1ULL<<21))
-+
-+/*
-+ * force Local APIC interrupt on overflow
-+ * disable with NO_EMUL64
-+ */
-+#define PFM_IA_PMC_VAL	(1ULL<<20)
-+#define PFM_IA_NO64	(1ULL<<20)
-+
-+/*
-+ * architectuture specifies that:
-+ * IA32_PMCx MSR        : starts at 0x0c1 & occupy a contiguous block of MSR
-+ * IA32_PERFEVTSELx MSR : starts at 0x186 & occupy a contiguous block of MSR
-+ * MSR_GEN_FIXED_CTR0   : starts at 0x309 & occupy a contiguous block of MSR
-+ */
-+#define MSR_GEN_SEL_BASE	MSR_P6_EVNTSEL0
-+#define MSR_GEN_PMC_BASE	MSR_P6_PERFCTR0
-+#define MSR_GEN_FIXED_PMC_BASE	MSR_CORE_PERF_FIXED_CTR0
-+
-+/*
-+ * layout of EAX for CPUID.0xa leaf function
-+ */
-+struct pmu_eax {
-+	unsigned int version:8;		/* architectural perfmon version */
-+	unsigned int num_cnt:8; 	/* number of generic counters */
-+	unsigned int cnt_width:8;	/* width of generic counters */
-+	unsigned int ebx_length:8;	/* number of architected events */
-+};
-+
-+/*
-+ * layout of EDX for CPUID.0xa leaf function when perfmon v2 is detected
-+ */
-+struct pmu_edx {
-+	unsigned int num_cnt:5;		/* number of fixed counters */
-+	unsigned int cnt_width:8;	/* width of fixed counters */
-+	unsigned int reserved:19;
-+};
-+
-+static void pfm_intel_arch_acquire_pmu_percpu(void);
-+static void pfm_intel_arch_release_pmu_percpu(void);
-+static int pfm_intel_arch_stop_save(struct pfm_context *ctx,
-+				    struct pfm_event_set *set);
-+static int pfm_intel_arch_has_ovfls(struct pfm_context *ctx);
-+static void __kprobes pfm_intel_arch_quiesce(void);
-+
-+/*
-+ * physical addresses of MSR controlling the perfevtsel and counter registers
-+ */
-+struct pfm_arch_pmu_info pfm_intel_arch_pmu_info = {
-+	.stop_save = pfm_intel_arch_stop_save,
-+	.has_ovfls = pfm_intel_arch_has_ovfls,
-+	.quiesce = pfm_intel_arch_quiesce,
-+	.acquire_pmu_percpu = pfm_intel_arch_acquire_pmu_percpu,
-+	.release_pmu_percpu = pfm_intel_arch_release_pmu_percpu
-+};
-+
-+#define PFM_IA_C(n) {                   \
-+	.type = PFM_REG_I64,            \
-+	.desc = "PERFEVTSEL"#n,         \
-+	.dfl_val = PFM_IA_PMC_VAL,      \
-+	.rsvd_msk = PFM_IA_PMC_RSVD,    \
-+	.no_emul64_msk = PFM_IA_NO64,   \
-+	.hw_addr = MSR_GEN_SEL_BASE+(n) \
-+	}
-+
-+#define PFM_IA_D(n) \
-+	{ .type = PFM_REG_C,			\
-+	  .desc = "PMC"#n,			\
-+	  .hw_addr = MSR_P6_PERFCTR0+n,		\
-+	  .dep_pmcs[0] = 1ULL << n		\
-+	}
-+
-+#define PFM_IA_FD(n) \
-+	{ .type = PFM_REG_C,			\
-+	  .desc = "FIXED_CTR"#n,		\
-+	  .hw_addr = MSR_CORE_PERF_FIXED_CTR0+n,\
-+	  .dep_pmcs[0] = 1ULL << 16		\
-+	}
-+
-+
-+static struct pfm_regmap_desc pfm_intel_arch_pmc_desc[] = {
-+/* pmc0  */ PFM_IA_C(0),  PFM_IA_C(1),   PFM_IA_C(2),  PFM_IA_C(3),
-+/* pmc4  */ PFM_IA_C(4),  PFM_IA_C(5),   PFM_IA_C(6),  PFM_IA_C(7),
-+/* pmc8  */ PFM_IA_C(8),  PFM_IA_C(9),  PFM_IA_C(10), PFM_IA_C(11),
-+/* pmc12 */ PFM_IA_C(12), PFM_IA_C(13), PFM_IA_C(14), PFM_IA_C(15),
-+
-+/* pmc16 */ { .type = PFM_REG_I,
-+	      .desc = "FIXED_CTRL",
-+	      .dfl_val = 0x8888888888888888ULL, /* force PMI */
-+	      .rsvd_msk = 0, /* set dynamically */
-+	      .no_emul64_msk = 0,
-+	      .hw_addr = MSR_CORE_PERF_FIXED_CTR_CTRL
-+	    },
-+};
-+#define PFM_IA_MAX_PMCS	ARRAY_SIZE(pfm_intel_arch_pmc_desc)
-+
-+static struct pfm_regmap_desc pfm_intel_arch_pmd_desc[] = {
-+/* pmd0  */  PFM_IA_D(0),  PFM_IA_D(1),  PFM_IA_D(2),  PFM_IA_D(3),
-+/* pmd4  */  PFM_IA_D(4),  PFM_IA_D(5),  PFM_IA_D(6),  PFM_IA_D(7),
-+/* pmd8  */  PFM_IA_D(8),  PFM_IA_D(9), PFM_IA_D(10), PFM_IA_D(11),
-+/* pmd12 */ PFM_IA_D(12), PFM_IA_D(13), PFM_IA_D(14), PFM_IA_D(15),
-+
-+/* pmd16 */ PFM_IA_FD(0), PFM_IA_FD(1), PFM_IA_FD(2), PFM_IA_FD(3),
-+/* pmd20 */ PFM_IA_FD(4), PFM_IA_FD(5), PFM_IA_FD(6), PFM_IA_FD(7),
-+/* pmd24 */ PFM_IA_FD(8), PFM_IA_FD(9), PFM_IA_FD(10), PFM_IA_FD(11),
-+/* pmd28 */ PFM_IA_FD(16), PFM_IA_FD(17), PFM_IA_FD(18), PFM_IA_FD(19)
-+};
-+#define PFM_IA_MAX_PMDS	ARRAY_SIZE(pfm_intel_arch_pmd_desc)
-+
-+#define PFM_IA_MAX_CNT		16 /* # generic counters in mapping table */
-+#define PFM_IA_MAX_FCNT		16 /* # of fixed counters in mapping table */
-+#define PFM_IA_FCNT_BASE	16 /* base index of fixed counters PMD */
-+
-+static struct pfm_pmu_config pfm_intel_arch_pmu_conf;
-+
-+static void pfm_intel_arch_check_errata(void)
-+{
-+	/*
-+	 * Core Duo errata AE49 (no fix). Both counters share a single
-+	 * enable bit in PERFEVTSEL0
-+	 */
-+	if (current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 14)
-+		pfm_intel_arch_pmu_info.flags |= PFM_X86_FL_NO_SHARING;
-+}
-+
-+static inline void set_enable_mask(unsigned int i)
-+{
-+	pfm_arch_bv_set_bit(i, enable_mask);
-+
-+	/* max_enable = highest + 1 */
-+	if ((i+1) > max_enable)
-+		max_enable = i+ 1;
-+}
-+
-+static void pfm_intel_arch_setup_generic(unsigned int version,
-+					 unsigned int width,
-+					 unsigned int count)
-+{
-+	u64 rsvd;
-+	unsigned int i;
-+
-+	/*
-+	 * first we handle the generic counters:
-+	 *
-+	 * - ensure HW does not have more registers than hardcoded in the tables
-+	 * - adjust rsvd_msk to actual counter width
-+	 * - initialize enable_mask (list of PMC with start/stop capability)
-+	 * - mark unused hardcoded generic counters as unimplemented
-+	 */
-+
-+	/*
-+	 * min of number of Hw counters and hardcoded in the tables
-+	 */
-+	if (count >= PFM_IA_MAX_CNT) {
-+		printk(KERN_INFO "perfmon: Limiting number of generic counters"
-+				 " to %u, HW supports %u",
-+				 PFM_IA_MAX_CNT, count);
-+		count = PFM_IA_MAX_CNT;
-+	}
-+
-+	/*
-+	 * adjust rsvd_msk for generic counters based on actual width
-+	 * initialize enable_mask (1 per pmd)
-+	 */
-+	rsvd = ~((1ULL << width)-1);
-+	for (i = 0; i < count; i++) {
-+		pfm_intel_arch_pmd_desc[i].rsvd_msk = rsvd;
-+		set_enable_mask(i);
-+	}
-+
-+	/*
-+	 * handle version 3 new anythread bit (21)
-+	 */
-+	if (version == 3) {
-+		for (i = 0; i < count; i++)
-+			pfm_intel_arch_pmc_desc[i].rsvd_msk &= ~(1ULL << 21);
-+	}
-+
-+
-+	/*
-+	 * mark unused generic counters as not available
-+	 */
-+	for (i = count ; i < PFM_IA_MAX_CNT; i++) {
-+		pfm_intel_arch_pmd_desc[i].type = PFM_REG_NA;
-+		pfm_intel_arch_pmc_desc[i].type = PFM_REG_NA;
-+	}
-+}
-+
-+static void pfm_intel_arch_setup_fixed(unsigned int version,
-+				       unsigned int width,
-+				       unsigned int count)
-+{
-+	u64 rsvd, dfl;
-+	unsigned int i;
-+
-+	/*
-+	 * handle the fixed counters (if any):
-+	 *
-+	 * - ensure HW does not have more registers than hardcoded in the tables
-+	 * - adjust rsvd_msk to actual counter width
-+	 * - initialize enable_mask (list of PMC with start/stop capability)
-+	 * - mark unused hardcoded generic counters as unimplemented
-+	 */
-+	if (count >= PFM_IA_MAX_FCNT) {
-+		printk(KERN_INFO "perfmon: Limiting number of fixed counters"
-+				 " to %u, HW supports %u",
-+				 PFM_IA_MAX_FCNT, count);
-+		count = PFM_IA_MAX_FCNT;
-+	}
-+	/*
-+	 * adjust rsvd_msk for fixed counters based on actual width
-+	 */
-+	rsvd = ~((1ULL << width)-1);
-+	for (i = 0; i < count; i++)
-+		pfm_intel_arch_pmd_desc[PFM_IA_FCNT_BASE+i].rsvd_msk = rsvd;
-+
-+	/*
-+	 * handle version new anythread bit (bit 2)
-+	 */
-+	if (version == 3)
-+		rsvd = 1ULL << 3;
-+	else
-+		rsvd = 3ULL << 2;
-+
-+	pfm_intel_arch_pmc_desc[16].rsvd_msk = 0;
-+	for (i = 0; i < count; i++)
-+		pfm_intel_arch_pmc_desc[16].rsvd_msk |= rsvd << (i<<2);
-+
-+	/*
-+	 * mark unused fixed counters as unimplemented
-+	 *
-+	 * update the rsvd_msk, dfl_val in FIXED_CTRL:
-+	 * 	- rsvd_msk: set all 4 bits
-+	 *	- dfl_val : clear all 4 bits
-+	 */
-+	dfl = pfm_intel_arch_pmc_desc[16].dfl_val;
-+	rsvd = pfm_intel_arch_pmc_desc[16].rsvd_msk;
-+
-+	for (i = count ; i < PFM_IA_MAX_FCNT; i++) {
-+		pfm_intel_arch_pmd_desc[PFM_IA_FCNT_BASE+i].type = PFM_REG_NA;
-+		rsvd |= 0xfULL << (i<<2);
-+		dfl &= ~(0xfULL << (i<<2));
-+	}
-+
-+	/*
-+	 * FIXED_CTR_CTRL unavailable when no fixed counters are defined
-+	 */
-+	if (!count) {
-+		pfm_intel_arch_pmc_desc[16].type = PFM_REG_NA;
-+	} else {
-+		/* update rsvd_mask and dfl_val */
-+		pfm_intel_arch_pmc_desc[16].rsvd_msk = rsvd;
-+		pfm_intel_arch_pmc_desc[16].dfl_val = dfl;
-+		set_enable_mask(16);
-+	}
-+}
-+
-+static int pfm_intel_arch_probe_pmu(void)
-+{
-+	union {
-+		unsigned int val;
-+		struct pmu_eax eax;
-+		struct pmu_edx edx;
-+	} eax, edx;
-+	unsigned int ebx, ecx;
-+	unsigned int width = 0;
-+
-+	edx.val = 0;
-+
-+	if (!cpu_has_arch_perfmon) {
-+		PFM_INFO("no support for Intel architectural PMU");
-+		return -1;
-+	}
-+
-+	if (!cpu_has_apic) {
-+		PFM_INFO("no Local APIC, try rebooting with lapic option");
-+		return -1;
-+	}
-+
-+	/* cpuid() call protected by cpu_has_arch_perfmon */
-+	cpuid(0xa, &eax.val, &ebx, &ecx, &edx.val);
-+
-+	/*
-+	 * some 6/15 models have buggy BIOS
-+	 */
-+	if (eax.eax.version == 0
-+	    && current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 15) {
-+		PFM_INFO("buggy v2 BIOS, adjusting for 2 generic counters");
-+		eax.eax.version = 2;
-+		eax.eax.num_cnt = 2;
-+		eax.eax.cnt_width = 40;
-+	}
-+
-+	/*
-+	 * some v2 BIOSes are incomplete
-+	 */
-+	if (eax.eax.version == 2 && !edx.edx.num_cnt) {
-+		PFM_INFO("buggy v2 BIOS, adjusting for 3 fixed counters");
-+		edx.edx.num_cnt = 3;
-+		edx.edx.cnt_width = 40;
-+	}
-+
-+	/*
-+	 * no fixed counters on earlier versions
-+	 */
-+	if (eax.eax.version < 2) {
-+		edx.val = 0;
-+	} else {
-+		/*
-+		 * use the min value of both widths until we support
-+		 * variable width counters
-+		 */
-+		width = eax.eax.cnt_width < edx.edx.cnt_width ?
-+			eax.eax.cnt_width : edx.edx.cnt_width;
-+	}
-+
-+ 	/*
-+	 * Intel Atom processors have a buggy firmware which does not report
-+	 * the correct number of fixed counters
-+	 */
-+	if (eax.eax.version == 3 && edx.edx.num_cnt < 3
-+	    && current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 28) {
-+		PFM_INFO("buggy v3 BIOS, adjusting for 3 fixed counters");
-+		edx.edx.num_cnt = 3;
-+	}
-+
-+	PFM_INFO("detected architecural perfmon v%d", eax.eax.version);
-+	PFM_INFO("num_gen=%d width=%d num_fixed=%d width=%d",
-+		  eax.eax.num_cnt,
-+		  eax.eax.cnt_width,
-+		  edx.edx.num_cnt,
-+		  edx.edx.cnt_width);
-+
-+	pfm_intel_arch_setup_generic(eax.eax.version,
-+				     width,
-+				     eax.eax.num_cnt);
-+
-+	pfm_intel_arch_setup_fixed(eax.eax.version,
-+				   width,
-+				   edx.edx.num_cnt);
-+
-+	pfm_intel_arch_check_errata();
-+
-+	pfm_intel_arch_version = eax.eax.version;
-+
-+	return 0;
-+}
-+
-+/**
-+ * pfm_intel_arch_has_ovfls - check for pending overflow condition
-+ * @ctx: context to work on
-+ *
-+ * detect if counters have overflowed.
-+ * return:
-+ * 	0 : no overflow
-+ * 	1 : at least one overflow
-+ */
-+static int __kprobes pfm_intel_arch_has_ovfls(struct pfm_context *ctx)
-+{
-+	u64 *cnt_mask;
-+	u64 wmask, val;
-+	u16 i, num;
-+
-+	cnt_mask = ctx->regs.cnt_pmds;
-+	num = ctx->regs.num_counters;
-+	wmask = 1ULL << pfm_pmu_conf->counter_width;
-+
-+	/*
-+	 * we can leverage the fact that we know the mapping
-+	 * to hardcode the MSR address and avoid accessing
-+	 * more cachelines
-+	 *
-+	 * We need to check cnt_mask because not all registers
-+	 * may be available.
-+	 */
-+	for (i = 0; num; i++) {
-+		if (pfm_arch_bv_test_bit(i, cnt_mask)) {
-+			rdmsrl(pfm_intel_arch_pmd_desc[i].hw_addr, val);
-+			if (!(val & wmask))
-+				return 1;
-+			num--;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int pfm_intel_arch_stop_save(struct pfm_context *ctx,
-+				    struct pfm_event_set *set)
-+{
-+	u64 used_mask[PFM_PMC_BV];
-+	u64 val, wmask, ovfl_mask;
-+	u32 i, count;
-+
-+	wmask = 1ULL << pfm_pmu_conf->counter_width;
-+
-+	pfm_arch_bv_and(used_mask,
-+			set->used_pmcs,
-+			enable_mask,
-+			max_enable);
-+
-+	count = pfm_arch_bv_weight(used_mask, max_enable);
-+
-+	/*
-+	 * stop monitoring
-+	 * Unfortunately, this is very expensive!
-+	 * wrmsrl() is serializing.
-+	 */
-+	for (i = 0; count; i++) {
-+		if (pfm_arch_bv_test_bit(i, used_mask)) {
-+			wrmsrl(pfm_pmu_conf->pmc_desc[i].hw_addr, 0);
-+			count--;
-+		}
-+	}
-+
-+	/*
-+	 * if we already having a pending overflow condition, we simply
-+	 * return to take care of this first.
-+	 */
-+	if (set->npend_ovfls)
-+		return 1;
-+
-+	ovfl_mask = pfm_pmu_conf->ovfl_mask;
-+
-+	/*
-+	 * check for pending overflows and save PMDs (combo)
-+	 * we employ used_pmds because we also need to save
-+	 * and not just check for pending interrupts.
-+	 *
-+	 * all pmds are counters
-+	 */
-+	count = set->nused_pmds;
-+	for (i = 0; count; i++) {
-+		if (pfm_arch_bv_test_bit(i, set->used_pmds)) {
-+			val = pfm_arch_read_pmd(ctx, i);
-+			if (!(val & wmask)) {
-+				pfm_arch_bv_set_bit(i, set->povfl_pmds);
-+				set->npend_ovfls++;
-+			}
-+			val = (set->pmds[i] & ~ovfl_mask)
-+				| (val & ovfl_mask);
-+			set->pmds[i] = val;
-+			count--;
-+		}
-+	}
-+	/* 0 means: no need to save PMDs at upper level */
-+	return 0;
-+}
-+
-+/**
-+ * pfm_intel_arch_quiesce - stop monitoring without grabbing any lock
-+ *
-+ * called from NMI interrupt handler to immediately stop monitoring
-+ * cannot grab any lock, including perfmon related locks
-+ */
-+static void __kprobes pfm_intel_arch_quiesce(void)
-+{
-+	u16 i;
-+
-+	/*
-+	 * PMC16 is the fixed control register so it has a
-+	 * distinct MSR address
-+	 *
-+	 * We do not use the hw_addr field in the table to avoid touching
-+	 * too many cachelines
-+	 */
-+	for (i = 0; i < pfm_pmu_conf->regs_all.max_pmc; i++) {
-+		if (pfm_arch_bv_test_bit(i, pfm_pmu_conf->regs_all.pmcs)) {
-+			if (i == 16)
-+				wrmsrl(MSR_CORE_PERF_FIXED_CTR_CTRL, 0);
-+			else
-+				wrmsrl(MSR_P6_EVNTSEL0+i, 0);
-+		}
-+	}
-+}
-+/**
-+* pfm_intel_arch_release_pmu_percpu - release PMU resource per CPU
-+*
-+* Since v2, there exists global control MSR, to start/stop and
-+* also collect overflow status information. In particular,
-+* GLOBAL_CTRL controls start/stop and has one bit per counter.
-+* To maintain backward compatibility with v1, the power-on value
-+* of GLOBAL_CTRL should be such that generic counters are enabled
-+* but fixed counters are disabled (true on Penryn and Atom currently).
-+*
-+* Here, we simply make sure that all available counters are enabled.
-+* After that, start/stop is controlled on a per-counter basis.
-+*/
-+static void pfm_intel_arch_acquire_pmu_percpu(void)
-+{
-+	struct pfm_regmap_desc *d;
-+	u64 mask = 0;
-+	unsigned int i;
-+
-+	/* nothing to do for v1 */
-+	if (pfm_intel_arch_version < 2)
-+		return;
-+
-+	/*
-+	 * build bitmask of registers that are available to
-+	 * us. In some cases, there may be fewer registers than
-+	 * what the PMU supports due to sharing with other kernel
-+	 * subsystems, such as NMI
-+	 */
-+	d = pfm_pmu_conf->pmd_desc;
-+	for (i=0; i < 16; i++) {
-+		if ((d[i].type & PFM_REG_I) == 0)
-+			continue;
-+		mask |= 1ull << i;
-+	}
-+	for (i=16; i < PFM_IA_MAX_PMDS; i++) {
-+		if ((d[i].type & PFM_REG_I) == 0)
-+			continue;
-+		mask |= 1ull << (32+i-16);
-+	}
-+	/*
-+	 * keep a local copy of the current MSR_CORE_PERF_GLOBAL_CTRL
-+	 */
-+	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, __get_cpu_var(saved_global_ctrl));
-+
-+	PFM_DBG("global=0x%llx set to 0x%llx",
-+		__get_cpu_var(saved_global_ctrl),
-+		mask);
-+	/*
-+	 * enable all registers
-+	 *
-+	 * No need to quiesce PMU. If there is a overflow, it will be
-+	 * treated as spurious by the handler
-+	 */
-+	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, mask);
-+}
-+
-+/**
-+* pfm_intel_arch_release_pmu_percpu - release PMU resource per CPU
-+*
-+* Since v2, there exists global control MSR, to start/stop and
-+* also collect overflow status information. In particular,
-+* GLOBAL_CTRL controls start/stop and has one bit per counter.
-+* To maintain backward compatibility with v1, the power-on value
-+* of GLOBAL_CTRL should be such that generic counters are enabled
-+* but fixed counters are disabled (true on Penryn and Atom currently).
-+*
-+* Here, we are done using the PMU. so we restore the power-on value.
-+*/
-+static void pfm_intel_arch_release_pmu_percpu(void)
-+{
-+	/* nothing to do for v1 */
-+	if (pfm_intel_arch_version < 2)
-+		return;
-+
-+	PFM_DBG("global_ctrl restored to 0x%llx\n",
-+		__get_cpu_var(saved_global_ctrl));
-+
-+	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, __get_cpu_var(saved_global_ctrl));
-+}
-+
-+/*
-+ * Counters may have model-specific width. Yet the documentation says
-+ * that only the lower 32 bits can be written to due to the specification
-+ * of wrmsr. bits [32-(w-1)] are sign extensions of bit 31. Bits [w-63] must
-+ * not be set (see rsvd_msk for PMDs). As such the effective width of a
-+ * counter is 31 bits only regardless of what CPUID.0xa returns.
-+ *
-+ * See IA-32 Intel Architecture Software developer manual Vol 3B chapter 18
-+ */
-+static struct pfm_pmu_config pfm_intel_arch_pmu_conf = {
-+	.pmu_name = "Intel architectural",
-+	.pmd_desc = pfm_intel_arch_pmd_desc,
-+	.counter_width   = 31,
-+	.num_pmc_entries = PFM_IA_MAX_PMCS,
-+	.num_pmd_entries = PFM_IA_MAX_PMDS,
-+	.pmc_desc = pfm_intel_arch_pmc_desc,
-+	.version = "1.0",
-+	.pmu_info = &pfm_intel_arch_pmu_info
-+};
-+
-+static int __init pfm_intel_arch_pmu_init_module(void)
-+{
-+	if (pfm_intel_arch_probe_pmu())
-+		return -ENOSYS;
-+
-+	return pfm_pmu_register(&pfm_intel_arch_pmu_conf);
-+}
-+
-+device_initcall(pfm_intel_arch_pmu_init_module);
-Index: o3/arch/x86/perfmon/Kconfig
++++ o3/Documentation/perfmon.txt	2008-10-16 12:25:49.000000000 +0200
+@@ -0,0 +1,206 @@
++              The perfmon hardware monitoring interface
++              ------------------------------------------
++		           Stephane Eranian
++			  <eranian@gmail.com>
++
++I/ Introduction
++
++   The perfmon interface provides access to the hardware performance counters
++   of major processors. Nowadays, all processors implement some flavor of
++   performance counters which capture micro-architectural level information
++   such as the number of elapsed cycles, number of cache misses, and so on.
++
++   The interface is implemented as a set of new system calls and a set of
++   config files in /sys.
++
++   It is possible to monitor a single thread or a CPU. In either mode,
++   applications can count or sample. System-wide monitoring is supported by
++   running a monitoring session on each CPU. The interface supports event-based
++   sampling where the sampling period is expressed as the number of occurrences
++   of event, instead of just a timeout. This approach provides a better
++   granularity and flexibility.
++
++   For performance reason, it is possible to use a kernel-level sampling buffer
++   to minimize the overhead incurred by sampling. The format of the buffer,
++   what is recorded, how it is recorded, and how it is exported to user is
++   controlled by a kernel module called a sampling format. The current
++   implementation comes with a default format but it is possible to create
++   additional formats. There is an kernel registration interface for formats.
++   Each format is identified by a simple string which a tool can pass when a
++   monitoring session is created.
++
++   The interface also provides support for event set and multiplexing to work
++   around hardware limitations in the number of available counters or in how
++   events can be combined. Each set defines as many counters as the hardware
++   can support. The kernel then multiplexes the sets. The interface supports
++   time-based switching but also overflow-based switching, i.e., after n
++   overflows of designated counters.
++
++   Applications never manipulates the actual performance counter registers.
++   Instead they see a logical Performance Monitoring Unit (PMU) composed of a
++   set of config registers (PMC) and a set of data registers (PMD). Note that
++   PMD are not necessarily counters, they can be buffers. The logical PMU is
++   then mapped onto the actual PMU using a mapping table which is implemented
++   as a kernel module. The mapping is chosen once for each new processor. It is
++   visible in /sys/kernel/perfmon/pmu_desc. The kernel module is automatically
++   loaded on first use.
++
++   A monitoring session is uniquely identified by a file descriptor obtained
++   when the session is created. File sharing semantics apply to access the
++   session inside a process. A session is never inherited across fork. The file
++   descriptor can be used to receive counter overflow notifications or when the
++   sampling buffer is full. It is possible to use poll/select on the descriptor
++   to wait for notifications from multiple sessions. Similarly, the descriptor
++   supports asynchronous notifications via SIGIO.
++
++   Counters are always exported as being 64-bit wide regardless of what the
++   underlying hardware implements.
++
++II/ Kernel compilation
++
++    To enable perfmon, you need to enable CONFIG_PERFMON and also some of the
++    model-specific PMU modules.
++
++III/ OProfile interactions
++
++    The set of features offered by perfmon is rich enough to support migrating
++    Oprofile on top of it. That means that PMU programming and low-level
++    interrupt handling could be done by perfmon. The Oprofile sampling buffer
++    management code in the kernel as well as how samples are exported to users
++    could remain through the use of a sampling format. This is how Oprofile
++    works on Itanium.
++
++    The current interactions with Oprofile are:
++	- on X86: Both subsystems can be compiled into the same kernel. There
++		  is enforced mutual exclusion between the two subsystems. When
++		  there is an Oprofile session, no perfmon session can exist
++		  and vice-versa.
++
++	- On IA-64: Oprofile works on top of perfmon. Oprofile being a
++		    system-wide monitoring tool, the regular per-thread vs.
++		    system-wide session restrictions apply.
++
++	- on PPC: no integration yet. Only one subsystem can be enabled.
++	- on MIPS: no integration yet.  Only one subsystem can be enabled.
++
++IV/ User tools
++
++    We have released a simple monitoring tool to demonstrate the features of
++    the interface. The tool is called pfmon and it comes with a simple helper
++    library called libpfm. The library comes with a set of examples to show
++    how to use the kernel interface. Visit http://perfmon2.sf.net for details.
++
++    There maybe other tools available for perfmon.
++
++V/ How to program?
++
++   The best way to learn how to program perfmon, is to take a look at the
++   source code for the examples in libpfm. The source code is available from:
++
++		http://perfmon2.sf.net
++
++VI/ System calls overview
++
++   In this section, we describe the state of the interface as submitted to the
++   kernel. There are more extensions available, and we will update the section
++   as they get implemented in the upstream kernel.
++
++   The interface is implemented by the following system calls:
++
++   * int pfm_create(int flags, pfarg_sinfo_t *s);
++
++      This function creates a perfmon per-thread session.
++      The flags parameter is currently unused and must be set to 0.
++
++      Upon return and if s is not NULL, the kernel return the list of available
++      PMC and PMD registers. Tools should not assume, they have access to the
++      entire PMU, it may be shared with other kernel subsystems, e.g., on X86
++      the NMI watchdog timer.
++
++      The function returns the file descriptor identifying the session.
++
++   * int pfm_write(int fd, int flags, int type, void *d, size_t sz)
++
++      This function is used to write PMU registers for the session identified
++      by fd.
++
++      The flags parameter is currently unused and must be set to 0.
++
++      The type reflects the type of registers to write and determines the type
++      of the d parameter. The following types are defined:
++
++         - PFM_RW_PMC: write PMC registers, expect pfarg_pmr_t pointer for d
++         - PFM_RW_PMD: write PMD registers, expect pfarg_pmr_t pointer for d
++
++     The type field is not a bitmask, only one type can be passed per call.
++
++     the sz parameter describes the size of the vector of elements passed in d.
++
++   * int pfm_read(int fd, int flags, int type, void *d, size_t sz);
++
++      This function is used to read PMU registers for the session identified
++      by fd.
++
++      This function is used to write PMU registers for the session identified
++      by fd.
++
++      The flags parameter is currently unused and must be set to 0.
++
++      The type reflects the type of registers to write and determines the type
++      of the d parameter. The following types are supported:
++
++         - PFM_RW_PMD: write PMD registers, expect pfarg_pmr_t pointer for d
++
++     The type field is not a bitmask, only one type can be passed per call.
++
++     Reading of PMC registers is not allowed.
++
++     the sz parameter describes the size of the vector of elements passed in d.
++
++
++   * int pfm_attach(int fd, int flags, int target);
++
++      This function is used to attach and detach the session to and from
++      thread.
++
++      To attach the thread is identified by target which must have the
++      value returned by gettid() (not pthread_self). For a single threaded
++      process, that value is equal to the value returned by getpid().
++
++      To detach, the special target PFM_NO_TARGET must be passed.
++
++      The flags parameter is currently unused and must be set to 0.
++
++      The session is always attached as stopped, i.e., with monitoring
++      inactive. Monitoring is always stopped as a consequence of detaching.
++
++   * int pfm_set_state(int fd, int flags, int state);
++
++     The function is used to set the running state of the session. The state to
++     go to is indicated by state.
++
++     The following states are defined, only one can be specified at a time:
++
++        - PFM_ST_START: start monitoring
++        - PFM_ST_STOP: stop monitoring
++
++      The flags parameter is currently unused and must be set to 0.
++
++   * int close(int fd)
++
++   To destroy a session, the regular close() system call is used.
++
++
++VII/ /sys interface overview
++
++   Refer to Documentation/ABI/testing/sysfs-perfmon-* for a detailed
++   description of the sysfs interface of perfmon2.
++
++VIII/ debugfs interface overview
++
++  Refer to Documentation/perfmon-debugfs.txt for a detailed description of the
++  debug and statistics interface of perfmon.
++
++IX/ Documentation
++
++   Visit http://perfmon2.sf.net
+Index: o3/Documentation/ABI/testing/sysfs-perfmon
 ===================================================================
---- o3.orig/arch/x86/perfmon/Kconfig	2008-11-25 18:09:47.000000000 +0100
-+++ o3/arch/x86/perfmon/Kconfig	2008-11-25 18:21:33.000000000 +0100
-@@ -15,4 +15,11 @@
- 	help
- 	Enables perfmon debugging support
- 
-+config  X86_PERFMON_INTEL_ARCH
-+	bool "Support for Intel architectural perfmon v1/v2/v3"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables support for Intel architectural performance counters.
-+	This feature was introduced with Intel Core Solo/Core Duo processors.
- endmenu
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o3/Documentation/ABI/testing/sysfs-perfmon	2008-10-16 12:25:18.000000000 +0200
+@@ -0,0 +1,42 @@
++What:		/sys/kernel/perfmon
++Date:		Oct 2008
++KernelVersion:	2.6.27
++Contact:	eranian@gmail.com
++
++Description:	provide the configuration interface for the perfmon subsystems.
++	        The tree contains information about the detected hardware,
++		current state of the subsystem as well as some configuration
++		parameters.
++
++		The tree consists of the following entries:
++
++	/sys/kernel/perfmon/debug (read-write):
++
++		Enable perfmon debugging output. The traces are rate-limited
++		to avoid flooding the console. It is possible to change the
++		throttling via /proc/sys/kernel/printk_ratelimit.
++
++		The value is interpreted as a bitmask.  Each bit enables a
++		particular type of debug messages. Refer to the file
++		include/linux/perfmon_kern.h for more information.
++
++	/sys/kernel/perfmon/task_group (read-write):
++
++		Users group allowed to create a per-thread context (session).
++   		-1 means any group.
++
++	/sys/kernel/perfmon/task_sessions_count (read-only):
++
++		Number of per-thread contexts (sessions) currently attached
++		to threads.
++
++   	/sys/kernel/perfmon/version (read-only):
++
++		Perfmon interface revision number.
++
++	/sys/kernel/perfmon/arg_mem_max(read-write):
++
++		Maximum size of vector arguments expressed in bytes.
++		It can be modified but must be at least a page.
++		Default: PAGE_SIZE
++
+Index: o3/Documentation/ABI/testing/sysfs-perfmon-pmu
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o3/Documentation/ABI/testing/sysfs-perfmon-pmu	2008-10-16 12:25:04.000000000 +0200
+@@ -0,0 +1,48 @@
++What:		/sys/kernel/perfmon/pmu
++Date:		Nov 2007
++KernelVersion:	2.6.24
++Contact:	eranian@gmail.com
++
++Description:	Provides information about the active PMU description
++		module.  The module contains the mapping of the actual
++		performance counter registers onto the logical PMU exposed by
++		perfmon.  There is at most one PMU description module loaded
++		at any time.
++
++		The sysfs PMU tree provides a description of the mapping for
++		each register. There is one subdir per config and data register
++		along an entry for the name of the PMU model.
++
++		The entries are as follows:
++
++	/sys/kernel/perfmon/pmu_desc/model (read-only):
++
++		Name of the PMU model is clear text and zero terminated.
++
++	Then, for each logical PMU register, XX, gets a subtree with the
++	following entries:
++
++	/sys/kernel/perfmon/pmu_desc/pm*XX/addr (read-only):
++
++		The physical address or index of the actual underlying hardware
++		register.  On Itanium, it corresponds to the index. But on X86
++		processor, this is the actual MSR address.
++
++	/sys/kernel/perfmon/pmu_desc/pm*XX/dfl_val (read-only):
++
++		The default value of the register in hexadecimal.
++
++	/sys/kernel/perfmon/pmu_desc/pm*XX/name (read-only):
++
++		The name of the hardware register.
++
++	/sys/kernel/perfmon/pmu_desc/pm*XX/rsvd_msk (read-only):
++
++		Bitmask of reserved bits, i.e., bits which cannot be changed
++		by applications. When a bit is set, it means the corresponding
++		bit in the actual register is reserved.
++
++	/sys/kernel/perfmon/pmu_desc/pm*XX/width (read-only):
++
++		The width in bits of the registers. This field is only
++		relevant for counter registers.
 
 -- 
 
