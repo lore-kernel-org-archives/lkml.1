@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYKZI4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYKZJCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYKZI4e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 03:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYKZI4I
+	id S1753245AbYKZJCL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 04:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYKZJBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 03:56:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35497
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752141AbYKZI4H (ORCPT
+	Wed, 26 Nov 2008 04:01:52 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:40644 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbYKZJBv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 03:56:07 -0500
-Date: Wed, 26 Nov 2008 00:56:07 -0800 (PST)
-Message-Id: <20081126.005607.141892563.davem@davemloft.net>
-To: viro@ftp.linux.org.uk
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/32] sparc32 cpuinit flase positives
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <E1L3wMk-0006Iq-IO@ZenIV.linux.org.uk>
-References: <E1L3wMk-0006Iq-IO@ZenIV.linux.org.uk>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Nov 2008 04:01:51 -0500
+Message-ID: <492D107B.1060303@cosmosbay.com>
+Date: Wed, 26 Nov 2008 10:01:47 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: ut <mchan@broadcom.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [BUG] linux-2.6.28-rc3 regression: IRQ smp_affinities not respected
+References: <C27F8246C663564A84BB7AB343977242151F4B18B5@IRVEXCHCCR01.corp.ad.broadcom.com> <491154C8.3040401@cosmosbay.com>
+In-Reply-To: <491154C8.3040401@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 26 Nov 2008 10:01:48 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sat, 22 Nov 2008 17:33:54 +0000
+Eric Dumazet a écrit :
+> Michael Chan a écrit :
+>> I believe this may be the patch that broke it:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd 
+>>
+>>
+>> I don't remember all the details, but the Broadcom 5708 chip is
+>> affected because it does not support MSI per-vector masking.
+>>
+>> One way to get around is to disable MSI with bnx2 parameter
+>> disable_msi=1.
+>>
 
 > 
-> All noise since we don't have CPU hotplug there.  However, they
-> did expose something very odd-looking in there - poke_viking()
-> does a bunch of identical btfixup each time it's called (i.e.
-> for each CPU).  That one is left alone for now; just the trivial
-> misannotation fixes.
+> I tried this MSI disabling and yes, it now works.
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> 16:      42726        128        105        106         89         
+> 89        145        152   IO-APIC-fasteoi   uhci_hcd:usb1, eth0, eth1
+> 
 
-Applied, thanks Al.
+I believe the bnx2 driver doesnt work at all if !disable_msi (default setting)
 
-The local MMU register inits do need to happen for all cpus,
-so what I'll do is move the btfixups to where we assign
-poke_srmmu to poke_viking, so that they occur only once.
+Doing a "echo 0 >/sys/devices/system/cpu/cpu1/online" just freeze network
+
+No messages logged
+
+If loaded with disable_msi=1, the cpu unplug works as expected.
+
+Thats a pretty serious issue.
+
+
