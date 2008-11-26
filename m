@@ -1,139 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKZBT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbYKZBVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbYKZBT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 20:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYKZBSu
+	id S1753813AbYKZBVN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 20:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbYKZBUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 20:18:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52371 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752689AbYKZBSq (ORCPT
+	Tue, 25 Nov 2008 20:20:54 -0500
+Received: from rv-out-0506.google.com ([209.85.198.233]:30235 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbYKZBUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 20:18:46 -0500
-Date: Tue, 25 Nov 2008 17:17:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: dwmw2@infradead.org, jens.axboe@oracle.com, matthew@wil.cx,
-       joern@logfs.org, James.Bottomley@HansenPartnership.com,
-       djshin90@gmail.com, teheo@suse.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/9] swapfile: swapon use discard (trim)
-Message-Id: <20081125171748.57450cb5.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0811252140230.17555@blonde.site>
-References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
-	<Pine.LNX.4.64.0811252140230.17555@blonde.site>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Nov 2008 20:20:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OV/tC1IvBkH1ci6agU9UK0yHBJHgBL8i8aLbJmleB25IDJZFd34FwJJO9f70FgbMBl
+         9dV0br6K7rZActiDk8RxQUEjcj03Vcm3vNJwfcQSmN+Wl7W5RljaW6WEPTGyau2MogHY
+         qThFdTgU5jpPMKIhu2VYskL/3+6+HMqL0gz78=
+Message-ID: <f17812d70811251720u47bec50dt3734f5b2bb0d339@mail.gmail.com>
+Date: Wed, 26 Nov 2008 09:20:51 +0800
+From: "Eric Miao" <eric.y.miao@gmail.com>
+To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Cc: "David Brownell" <dbrownell@users.sourceforge.net>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Sam Ravnborg" <sam@ravnborg.org>, "Jean Delvare" <khali@linux-fr.org>,
+       "Eric Miao" <eric.miao@marvell.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Philipp Zabel" <philipp.zabel@gmail.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Ben Gardner" <bgardner@wabtec.com>, "Greg KH" <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008 21:44:34 +0000 (GMT)
-Hugh Dickins <hugh@veritas.com> wrote:
+On Wed, Nov 26, 2008 at 6:52 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> Beloved friends,
+>
+> I would like to request your feedback on the following idea. I hope I have
+> made sure to CC all the right people and the right lists! If not, PLEASE
+> let me know! I couldn't find a MAINTAINERS entry for gpiolib so I just
+> used what I saw in the git log and have also added people and lists that
+> I think may be interested.
+>
+> This is just an RFC. If you all feel it is looking like the right approach
+> then I'll clean it up and make it a patch.
+>
+> Thanks,
+> jaya
+>
+> am300epd was doing 800*600*16*gpio_set_value for each framebuffer transfer
+> (it uses 16-pins of gpio as its data bus). I found this caused a wee
+> performance limitation. This patch adds an API for gpio_set_value_bus
+> which allows users to set batches of consecutive gpio together in a single
+> call. I have done a test implementation on gumstix (pxa255) with am300epd
+> and it provides a nice improvement in performance.
 
-> When adding swap, all the old data on swap can be forgotten: sys_swapon()
-> discard all but the header page of the swap partition (or every extent
-> but the header of the swap file), to give a solidstate swap device the
-> opportunity to optimize its wear-levelling.
-> 
-> If that succeeds, note SWP_DISCARDABLE for later use, and report it
-> with a "D" at the right end of the kernel's "Adding ... swap" message.
-> Perhaps something should be shown in /proc/swaps (swapon -s), but we
-> have to be more cautious before making any addition to that format.
-> 
+Using a bit mask will be more generic if the GPIOs are not contiguous.
+Yet I still doubt this will be generic enough to be added to gpiolib.
+The user of this gpio_set_value_bus() may assume too much about
+the internal, e.g. how many GPIOs on the chip and whether these GPIOs
+are contiguous or not, and whether this GPIO chip support bitwise
+operations.
 
-
-When reading the above text it's a bit hard to tell whether it's
-talking about "this is how things are at present" or "this is how
-things are after the patch".  This is fairly common with Hugh
-changelogs.
-
-> ---
-> swapfile.c cleanup patches 0-5 just went to linux-mm: patches 6-9
-> may be of wider interest, so I'm extending the Cc list for them.
-> 
->  include/linux/swap.h |    1 +
->  mm/swapfile.c        |   39 +++++++++++++++++++++++++++++++++++++--
->  2 files changed, 38 insertions(+), 2 deletions(-)
-> 
-> --- swapfile5/include/linux/swap.h	2008-11-25 12:41:31.000000000 +0000
-> +++ swapfile6/include/linux/swap.h	2008-11-25 12:41:34.000000000 +0000
-> @@ -120,6 +120,7 @@ struct swap_extent {
->  enum {
->  	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
->  	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
-> +	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
->  					/* add others here before... */
->  	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
->  };
-> --- swapfile5/mm/swapfile.c	2008-11-25 12:41:31.000000000 +0000
-> +++ swapfile6/mm/swapfile.c	2008-11-25 12:41:34.000000000 +0000
-> @@ -84,6 +84,37 @@ void swap_unplug_io_fn(struct backing_de
->  	up_read(&swap_unplug_sem);
->  }
->  
-> +/*
-> + * swapon tell device that all the old swap contents can be discarded,
-> + * to allow the swap device to optimize its wear-levelling.
-> + */
-> +static int discard_swap(struct swap_info_struct *si)
-> +{
-> +	struct swap_extent *se;
-> +	int err = 0;
-> +
-> +	list_for_each_entry(se, &si->extent_list, list) {
-> +		sector_t start_block = se->start_block << (PAGE_SHIFT - 9);
-> +		pgoff_t nr_blocks = se->nr_pages << (PAGE_SHIFT - 9);
-
-I trust we don't have any shift overflows here.
-
-It's a bit dissonant to see a pgoff_t with "blocks" in its name.  But
-swap is like that..
-
-
-> +		if (se->start_page == 0) {
-> +			/* Do not discard the swap header page! */
-> +			start_block += 1 << (PAGE_SHIFT - 9);
-> +			nr_blocks -= 1 << (PAGE_SHIFT - 9);
-> +			if (!nr_blocks)
-> +				continue;
-> +		}
-> +
-> +		err = blkdev_issue_discard(si->bdev, start_block,
-> +						nr_blocks, GFP_KERNEL);
-> +		if (err)
-> +			break;
-> +
-> +		cond_resched();
-> +	}
-> +	return err;		/* That will often be -EOPNOTSUPP */
-> +}
-> +
->  #define SWAPFILE_CLUSTER	256
->  #define LATENCY_LIMIT		256
->  
-> @@ -1649,6 +1680,9 @@ asmlinkage long sys_swapon(const char __
->  		goto bad_swap;
->  	}
->  
-> +	if (discard_swap(p) == 0)
-> +		p->flags |= SWP_DISCARDABLE;
-> +
->  	mutex_lock(&swapon_mutex);
->  	spin_lock(&swap_lock);
->  	if (swap_flags & SWAP_FLAG_PREFER)
-> @@ -1662,9 +1696,10 @@ asmlinkage long sys_swapon(const char __
->  	total_swap_pages += nr_good_pages;
->  
->  	printk(KERN_INFO "Adding %uk swap on %s.  "
-> -			"Priority:%d extents:%d across:%lluk\n",
-> +			"Priority:%d extents:%d across:%lluk%s\n",
->  		nr_good_pages<<(PAGE_SHIFT-10), name, p->prio,
-> -		nr_extents, (unsigned long long)span<<(PAGE_SHIFT-10));
-> +		nr_extents, (unsigned long long)span<<(PAGE_SHIFT-10),
-> +		(p->flags & SWP_DISCARDABLE) ? " D" : "");
->  
->  	/* insert swap space into swap_list: */
->  	prev = -1;
+Let's have a concrete example: what if the user gives a bunch of GPIOs
+that crosses the chip boundary, say, GPIO29 - GPIO35 (with each chip
+covering 32 GPIOs).
