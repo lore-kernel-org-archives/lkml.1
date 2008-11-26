@@ -1,143 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbYKZTMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYKZTQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbYKZTMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 14:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYKZTMI
+	id S1753531AbYKZTQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 14:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYKZTQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 14:12:08 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:14128 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752571AbYKZTMG (ORCPT
+	Wed, 26 Nov 2008 14:16:18 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:29667 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbYKZTQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 14:12:06 -0500
+	Wed, 26 Nov 2008 14:16:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
+        d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=V0bzJQlL/YJsQuL07qqclHztg98XoNsBXJTCw2mj30Nsk2NI6uFOkSwAKz08tjU+if
-         FbWsVHQtrUHcuBQXTurSU2TBaBeHhpADTjgeL9EEVeCRm7JF3ioLxWaO6WOwg+v4268i
-         CEo5905cgMhLeleW928IxF7Tl0Ha+R4xHh/KU=
-Message-ID: <c8b4dbe10811261112w6cbbec73mb468870f206d9f97@mail.gmail.com>
-Date: Wed, 26 Nov 2008 19:12:04 +0000
-From: "Aidan Thornton" <makosoft@googlemail.com>
-To: "Markus Rechberger" <mrechberger@gmail.com>
-Subject: Re: [PATCH 1/7] Adding empia base driver
-Cc: "Greg KH" <greg@kroah.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx <em28xx@mcentral.de>, acano@fastmail.fm,
-       "Andre Kelmanson" <akelmanson@gmail.com>,
-       "Bouwsma Barry" <freebeer.bouwsma@gmail.com>,
-       "Dan Kreiser" <kreiser@informatik.hu-berlin.de>,
-       "Frank Neuber" <fn@kernelport.de>,
-       "Jelle de Jong" <jelledejong@powercraft.nl>,
-       "John Stowers" <john.stowers.lists@gmail.com>,
-       "Lukas Kuna" <lukas.kuna@evkanet.net>,
-       "Stefan Vonolfen" <stefan.vonolfen@gmail.com>,
-       "Stephan Berberig" <s.berberig@arcor.de>,
-       "Thomas Giesecke" <thomas.giesecke@ibgmbh-naumburg.de>,
-       "Vitaly Wool" <vwool@ru.mvista.com>, "Zhenyu Wang" <zhen78@gmail.com>
-In-Reply-To: <d9def9db0810221524m738b838bs681c0b9159531c64@mail.gmail.com>
+        b=C6yqViAKQ5NMPJj2S2IgFxP5e1yvF5NgbcDuIXm/H95QfS1Z/ZdhYvEi8u8jtTbpVF
+         VJfo/RsDY6Enc9dJFzaALrPXYR8B+VO7ikV4t1Yd91v8gdmpEe5tobKirrhrY5QhVfoS
+         Fy3ih7bCkDclhf0MDxHsunUrNR7dcxSyMmItk=
+Message-ID: <c62985530811261116n301d5a9t375e0cfb203b5cc8@mail.gmail.com>
+Date: Wed, 26 Nov 2008 20:16:15 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Tim Bird" <tim.bird@am.sony.com>
+Subject: Re: [PATCH 4/4] tracing/function-return-tracer: Support for dynamic ftrace on function return tracer
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <492D940F.6090500@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-References: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
-	 <20081022220903.GA15278@kroah.com>
-	 <d9def9db0810221524m738b838bs681c0b9159531c64@mail.gmail.com>
+References: <491FA94E.9090207@gmail.com>
+	 <alpine.DEB.1.10.0811241707240.907@gandalf.stny.rr.com>
+	 <c62985530811241421t1cd56b4el1ada0754df9a229@mail.gmail.com>
+	 <492D940F.6090500@am.sony.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mAQJGUdq021420
 
-On 10/22/08, Markus Rechberger <mrechberger@gmail.com> wrote:
-> On Thu, Oct 23, 2008 at 12:09 AM, Greg KH <greg@kroah.com> wrote:
->> On Wed, Oct 22, 2008 at 11:14:36PM +0200, Markus Rechberger wrote:
->>>     em2880-dvb:
->>>     * supporting the digital part of Empia based devices, which
->>> includes ATSC, ISDB-T and DVB-T
->>
->> <snip>
->>
->> Doesn't this driver duplicate some of the existing devices we already
->> support with the current in-kernel driver?  If so, why not just add the
->> new device support to the existing driver instead of duplicating
->> everything?
->>
->> This is going to cause a big problem for distros as they will not know
->> which to enable, so they will probably just disable this one, which is
->> what I don't think you want to have happen :(
->>
->
-> the current driver doesn't support most devices which are in there,
-> also the alsa
-> audio driver can easily crash the whole system. (It's my code so I
-> know what was wrong there).
->
-> The core video code is already too much off, the VBI code added alot
-> complexity
-> to it it does frame slicing on the fly.
->
-> Those devices ship VBI+VIDEO within 1 datastream, VBI and Video aren't
-> that different
-> in the system. both interfaces provide framebuffers through a mmap'ed
-> interface.
-> If all the VBI buffers are filled the data has to be sliced off in any
-> case while providing
-> the same bottom data ot the Video interface
+Hi Tim,
+2008/11/26 Tim Bird <tim.bird@am.sony.com>:> ÔøΩ wrote:> Very sorry I'm coming to this thread late.  I didn't notice it until> today.>> Not to question the whole approach, and sorry if this was> discussed before, but why wasn't -finstrument-functions used> to instrument the function exits.  This worked well for KFT> (See http://elinux.org/Kernel_Function_Trace).  I'm not sure if the> function prologue and epilogue modifications done by -mcount are> different than -finstrument-functions, but I thought I remember something> about Steven testing -finstrument-functions in an early version of ftrace.
 
-Hi,
+Yes, we discussed it earlier but because of some reasons (kernel size,dynamic patchingcost), we used a stack of return address for each task.See the discussion about using -finstrument-functions:http://lkml.org/lkml/2008/10/30/372
 
-Just to check, your driver does handle this correctly now, right? Last
-time I checked, it was a buggy mess with severely broken locking that
-caused a kernel panic half the time when recording whith MythTV (and
-indeed, had been for years). It looks, at a glance, like this may have
-been fixed, but since I never quite managed to pin down the exact
-cause, I can't say for sure.
+> By the way, I'm really excited to see this "function_cost" stuff being> worked on.  It has proven to be extremely useful for analyzing early boot> latencies at Sony.>> Sorry again I didn't catch this and previous related threads> earlier.  I have some post-processing tools which might be useful here.
 
-(The code is, alas, still somewhat ugly compared to the existing
-videobuf-based code in the in-kernel driver - it should be possible to
-add VBI support to that fairly cleanly and easily. I actually
-attempted this a while back, but ran into issues due to not having
-access to the datasheets. Of course, the fact that Markus works there
-and is actively aggressive to any Linux driver development that
-doesn't go through him.)
-
-> http://mcentral.de/hg/~mrec/em28xx-new/shortlog (there are more than
-> 200 changelog entries
-> what happened in detail).
->
-> The development has been split off (first due limitations in the
-> kernel, afterwards due ..., and finally
-> due the restriction that all that has to work without a framework
-> upgrade on the eeePC).
-
-This doesn't exactly inspire confidence; it seems to basically mean
-you forked or rewrote existing drivers rather than just using code
-that was already there.
-
-> diffing the 2 available drivers shows up that only the core is twice
-> as big as the one which is currently
-> in the driver (the result of 2-3 years asynchronous development).
-
-Actually, part of the reason for this is probably that there's a
-massive bunch of video buffer handling code in your driver that mostly
-repeats stuff handled by the videobuf module in the in-kernel driver.
-(Admittedly, your does slightly more in that it handles raw VBI, but
-as I've said it should be possible to do that cleanly and in a smaller
-amount of code using videobuf.)
-
-> The driver is currently also tested with signal generators (different
-> inputs, and different video standards).
->
-> Very likely the best would be to replace the available driver with it
-> but I don't care, alot people use and have been using the driver from
-> mcentral.de for a long time, development has always been opensource
-> there too.
-
-Just not necessarily open source under a GPL compliant license, as I recall.
-
-As I've said before, it'd be really nice if you'd make an effort to
-actually integrate your changes, but this looks like more of the same
-old mess.
-
-Aidan
+That would be welcome. Note that the output of this tracer is a bit differentfrom KFT. I'm currently working on the a C-like output:http://lkml.org/lkml/2008/11/25/389So perhaps the post-processing would have to be done in a way quitedifferent from thisused on KFT traces. I don't know.
+> Also, I've found it very handy to have the capability to filter by minimum> function duration.  Is there any work to do that with the> current system.  If not, maybe I could take a look at that and see if> I can add something.
+Yes there would be some modifications to do so.I guess the best thing to do that would be to use the trace_optionsfiles in whichany tracer can set some custom flags. See set_flag callback in struct tracer.
+For now, this file can only receive boolean value on particular options.For example if you have a tracepid option. You either echo tracepid ornotracepid toset the value on trace_option. Your needs would require this file, andthis set_flag callback,to receive string values, like kernel parameters, by using get_option().This way you could set duration=50 as an example.This work is more tracing specific than function-return-tracerspecific (it was renamed function_branchtracer recently).
+After that, handling this minimal duration set on function branchtracer will be pretty easy. :-)
+One other solution would be to have a dedicated debugfs file for thistracer but that would be a pity, IMHO,to not let too other tracers having custom options with string values.
+If you want to have a look on the current state, see the -tip tree.
+I will add you in Cc for next patches....ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
