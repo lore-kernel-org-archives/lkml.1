@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYKZPcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYKZPd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbYKZPcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYKZPcD
+	id S1754137AbYKZPd7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYKZPdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:32:03 -0500
-Received: from ppp121-45-197-80.lns10.adl2.internode.on.net ([121.45.197.80]:44120
-	"EHLO homer.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752132AbYKZPcC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:32:02 -0500
-X-Greylist: delayed 1505 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Nov 2008 10:32:01 EST
-Date: Thu, 27 Nov 2008 02:01:52 +1030
-From: Ron <ron@debian.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] fix for sched_clock() when using jiffies
-Message-ID: <20081126153152.GB28153@homer.shelbyville.oz>
-References: <20081126150645.GA28153@homer.shelbyville.oz> <1227712598.4454.199.camel@twins>
+	Wed, 26 Nov 2008 10:33:50 -0500
+Received: from styx.suse.cz ([82.119.242.94]:40377 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752173AbYKZPdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:33:50 -0500
+Date: Wed, 26 Nov 2008 16:33:49 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       Tobias Mueller <Tobias_Mueller@twam.info>
+cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] HID: Apple alu wireless keyboards are bluetooth
+ devices
+In-Reply-To: <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>
+Message-ID: <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz>
+References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de> <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de> <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz> <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1227712598.4454.199.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ron@debian.org
-X-SA-Exim-Scanned: No (on homer.shelbyville.oz); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 04:16:38PM +0100, Peter Zijlstra wrote:
-> On Thu, 2008-11-27 at 01:36 +1030, Ron wrote:
-> > Hi,
-> > 
-> > I'm in the process of updating a port for an ARM based chip we've been
-> > working on, from 2.6.22-rc4'ish to the current HEAD of Linus' tree, and
-> > I started seeing the following:
-> > 
-> > [    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
-> > [42949372.970000] Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
-> > 
-> > The reason appears to be that printk_clock() has been replaced with a
-> > call to cpu_clock, which in our case currently falls back to the default
-> > (weak) implementation of sched_clock() that uses jiffies -- but doesn't
-> > account for the initial offset of the jiffy count.  The following simple
-> > patch fixes it for me, in line with what printk_clock used to do.
-> > 
+On Wed, 26 Nov 2008, Jan Scholz wrote:
+
+> Jiri Kosina <jkosina@suse.cz> writes:
 > 
-> Looks good, except I suspect this line will now be longer than 80
-> characters and you forgot to provide your signed-off-by line.
+> > On Wed, 26 Nov 2008, Jan Scholz wrote:
+> >
+> >> Changed HID_USB_DEVICE to HID_BLUETOOTH_DEVICE for the apple alu
+> >> wireless keyboards
+> >> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> >> ---
+> >>  drivers/hid/hid-apple.c |    6 +++---
+> >>  drivers/hid/hid-core.c  |    6 +++---
+> >>  2 files changed, 6 insertions(+), 6 deletions(-)
+> >> 
+> >> diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+> >> index 9b97795..aa28aed 100644
+> >> --- a/drivers/hid/hid-apple.c
+> >> +++ b/drivers/hid/hid-apple.c
+> >> @@ -400,12 +400,12 @@ static const struct hid_device_id apple_devices[] = {
+> >>  	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_JIS),
+> >>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
+> >>  			APPLE_RDESC_JIS },
+> >> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
+> >> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
+> >>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+> >> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
+> >> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
+> >>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
+> >>  			APPLE_ISO_KEYBOARD },
+> >> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
+> >> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
+> >>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+> >>  	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
+> >>  		.driver_data = APPLE_HAS_FN },
+> >
+> > Hi Jan,
+> >
+> > shouldn't we rather have both USB and Bluetooth variants?
+> >
+> > Thanks,
+> 
+> Hi Jiri,
+> 
+> Hm, I thought the USB_DEVICE_ID_APPLE_ALU_{ANSI,ISO,JIS} were apples usb
+> aluminum keyboards (standard desktop size), while the
+> USB_DEVICE_ID_APPLE_ALU_WIRELESS_{ANSI,ISO,JIS} ones were the aluminum
+> bluetooth keyboards (notebook sized, no numeric keypad, etc).
+> 
+> The one I own is a USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, german layout,
+> with bluetooth, unfortunately I don't have access to a usb variant.
 
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index 8178724..1ce2e53 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -37,7 +37,8 @@
-  */
- unsigned long long __attribute__((weak)) sched_clock(void)
- {
--       return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
-+       return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-+                                  * (NSEC_PER_SEC / HZ);
- }
- 
- static __read_mostly int sched_clock_running;
+Tobias Mueller added these device IDs, so persumably he has tested it and 
+could provide some insight. I don't have the hardware myself, so I have no 
+idea whether there are only Bluetooht variants, or even USB are available.
 
+Tobias?
 
- Signed-off-by: Ron Lee <ron@debian.org>
+Thanks,
 
-
-Thanks!
-
-
+-- 
+Jiri Kosina
+SUSE Labs
