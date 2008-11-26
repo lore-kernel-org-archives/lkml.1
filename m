@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYKZItU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYKZIti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYKZItU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 03:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYKZImz
+	id S1755376AbYKZIti (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 03:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYKZInB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 03:42:55 -0500
-Received: from ik-out-1112.google.com ([66.249.90.176]:59696 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbYKZImx (ORCPT
+	Wed, 26 Nov 2008 03:43:01 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:45489 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754129AbYKZIm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 03:42:53 -0500
+	Wed, 26 Nov 2008 03:42:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:from:date:message-id;
-        b=u7qfO8/8F1PmKH0X+WWl7zrqssNe4cirITpjLLZuu5l3kDhRS6ZOnQsuhP0o3UpQIC
-         8Z/HNS6grxuAuGkHAacLyXzE9MZuDJhKuJwAf8bIv1xzUNbmN5QP7DFypHdLe3pDbPIh
-         UnyCXy6olE1D2z5IWxIInWhsc6/fhVU99Pvzs=
+        b=wmYc5yHMUhpjwcV6dUf1/ISmNWvDwYURnCZmgGgWRfk+jQXVqXgDAkZh+quvjd0Dsy
+         5yblww2yuoiakXW7M9vczZjew9JfZEK/mQiiVhjTGvStjybwIv5e5SA0ssx17xHmI9aI
+         x76gIjaBv72TPXdcy+6JBI2nLCHEEN4nBCRmY=
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
        andi@firstfloor.org, eranian@gmail.com, sfr@canb.auug.org.au
-Subject: [patch 20/24] perfmon: system calls interface
+Subject: [patch 21/24] perfmon: Intel architectural PMU support (x86)
 From: eranian@googlemail.com
-Date: Wed, 26 Nov 2008 00:42:51 -0800 (PST)
-Message-ID: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
+Date: Wed, 26 Nov 2008 00:42:54 -0800 (PST)
+Message-ID: <492d0c0e.06e2660a.1583.ffffcc0a@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the top level perfmon system calls.
+This patch adds Intel architectural PMU support (version 1, 2, and 3).
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
 --
 
-Index: o3/perfmon/perfmon_syscalls.c
+Index: o3/arch/x86/perfmon/Makefile
+===================================================================
+--- o3.orig/arch/x86/perfmon/Makefile	2008-11-25 18:09:47.000000000 +0100
++++ o3/arch/x86/perfmon/Makefile	2008-11-25 18:21:33.000000000 +0100
+@@ -3,3 +3,4 @@
+ # Contributed by Stephane Eranian <eranian@hpl.hp.com>
+ #
+ obj-$(CONFIG_PERFMON)			+= perfmon.o
++obj-$(CONFIG_X86_PERFMON_INTEL_ARCH)	+= perfmon_intel_arch.o
+Index: o3/arch/x86/perfmon/perfmon_intel_arch.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o3/perfmon/perfmon_syscalls.c	2008-11-25 17:55:04.000000000 +0100
-@@ -0,0 +1,741 @@
++++ o3/arch/x86/perfmon/perfmon_intel_arch.c	2008-11-25 18:22:00.000000000 +0100
+@@ -0,0 +1,628 @@
 +/*
-+ * perfmon_syscalls.c: perfmon2 system call interface
++ * This file contains the Intel architectural perfmon v1, v2, v3
++ * description tables.
 + *
-+ * This file implements the perfmon2 interface which
-+ * provides access to the hardware performance counters
-+ * of the host processor.
++ * Architectural perfmon was introduced with Intel Core Solo/Duo
++ * processors.
 + *
-+ * The initial version of perfmon.c was written by
-+ * Ganesh Venkitachalam, IBM Corp.
-+ *
-+ * Then it was modified for perfmon-1.x by Stephane Eranian and
-+ * David Mosberger, Hewlett Packard Co.
-+ *
-+ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
-+ * by Stephane Eranian, Hewlett Packard Co.
-+ *
-+ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Copyright (c) 2006-2007 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *                David Mosberger-Tang <davidm@hpl.hp.com>
-+ *
-+ * More information about perfmon available at:
-+ * 	http://perfmon2.sf.net
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -74,752 +70,626 @@ Index: o3/perfmon/perfmon_syscalls.c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
 + */
-+#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/ptrace.h>
++#include <linux/kprobes.h>
 +#include <linux/perfmon_kern.h>
-+#include <linux/uaccess.h>
-+#include "perfmon_priv.h"
++#include <asm/msr.h>
++#include <asm/apic.h>
++
++static u64 enable_mask[PFM_MAX_PMCS];
++static u16 max_enable;
++static int pfm_intel_arch_version;
++
++DEFINE_PER_CPU(u64, saved_global_ctrl);
 +
 +/*
-+ * Context locking rules:
-+ * ---------------------
-+ * 	- any thread with access to the file descriptor of a context can
-+ * 	  potentially issue perfmon calls
++ * - upper 32 bits are reserved
++ * - INT: APIC enable bit is reserved (forced to 1)
++ * - bit 21 is reserved
 + *
-+ * 	- calls must be serialized to guarantee correctness
-+ *
-+ * 	- as soon as a context is attached to a thread or CPU, it may be
-+ * 	  actively monitoring. On some architectures, such as IA-64, this
-+ * 	  is true even though the pfm_start() call has not been made. This
-+ * 	  comes from the fact that on some architectures, it is possible to
-+ * 	  start/stop monitoring from userland.
-+ *
-+ *	- If monitoring is active, then there can PMU interrupts. Because
-+ *	  context accesses must be serialized, the perfmon system calls
-+ *	  must mask interrupts as soon as the context is attached.
-+ *
-+ *	- perfmon system calls that operate with the context unloaded cannot
-+ *	  assume it is actually unloaded when they are called. They first need
-+ *	  to check and for that they need interrupts masked. Then, if the
-+ *	  context is actually unloaded, they can unmask interrupts.
-+ *
-+ *	- interrupt masking holds true for other internal perfmon functions as
-+ *	  well. Except for PMU interrupt handler because those interrupts
-+ *	  cannot be nested.
-+ *
-+ * 	- we mask ALL interrupts instead of just the PMU interrupt because we
-+ * 	  also need to protect against timer interrupts which could trigger
-+ * 	  a set switch.
++ * RSVD: reserved bits are 1
 + */
++#define PFM_IA_PMC_RSVD	((~((1ULL<<32)-1)) \
++			| (1ULL<<20) \
++			| (1ULL<<21))
 +
-+struct pfm_syscall_cookie {
-+	struct file *filp;
-+	int fput_needed;
++/*
++ * force Local APIC interrupt on overflow
++ * disable with NO_EMUL64
++ */
++#define PFM_IA_PMC_VAL	(1ULL<<20)
++#define PFM_IA_NO64	(1ULL<<20)
++
++/*
++ * architectuture specifies that:
++ * IA32_PMCx MSR        : starts at 0x0c1 & occupy a contiguous block of MSR
++ * IA32_PERFEVTSELx MSR : starts at 0x186 & occupy a contiguous block of MSR
++ * MSR_GEN_FIXED_CTR0   : starts at 0x309 & occupy a contiguous block of MSR
++ */
++#define MSR_GEN_SEL_BASE	MSR_P6_EVNTSEL0
++#define MSR_GEN_PMC_BASE	MSR_P6_PERFCTR0
++#define MSR_GEN_FIXED_PMC_BASE	MSR_CORE_PERF_FIXED_CTR0
++
++/*
++ * layout of EAX for CPUID.0xa leaf function
++ */
++struct pmu_eax {
++	unsigned int version:8;		/* architectural perfmon version */
++	unsigned int num_cnt:8; 	/* number of generic counters */
++	unsigned int cnt_width:8;	/* width of generic counters */
++	unsigned int ebx_length:8;	/* number of architected events */
 +};
 +
 +/*
-+ * cannot attach if :
-+ * 	- kernel task
-+ * 	- task not owned by caller (checked by ptrace_may_attach())
-+ * 	- task is dead or zombie
-+ * 	- cannot use blocking notification when self-monitoring
++ * layout of EDX for CPUID.0xa leaf function when perfmon v2 is detected
 + */
-+static int pfm_task_incompatible(struct pfm_context *ctx,
-+				 struct task_struct *task)
++struct pmu_edx {
++	unsigned int num_cnt:5;		/* number of fixed counters */
++	unsigned int cnt_width:8;	/* width of fixed counters */
++	unsigned int reserved:19;
++};
++
++static void pfm_intel_arch_acquire_pmu_percpu(void);
++static void pfm_intel_arch_release_pmu_percpu(void);
++static int pfm_intel_arch_stop_save(struct pfm_context *ctx,
++				    struct pfm_event_set *set);
++static int pfm_intel_arch_has_ovfls(struct pfm_context *ctx);
++static void __kprobes pfm_intel_arch_quiesce(void);
++
++/*
++ * physical addresses of MSR controlling the perfevtsel and counter registers
++ */
++struct pfm_arch_pmu_info pfm_intel_arch_pmu_info = {
++	.stop_save = pfm_intel_arch_stop_save,
++	.has_ovfls = pfm_intel_arch_has_ovfls,
++	.quiesce = pfm_intel_arch_quiesce,
++	.acquire_pmu_percpu = pfm_intel_arch_acquire_pmu_percpu,
++	.release_pmu_percpu = pfm_intel_arch_release_pmu_percpu
++};
++
++#define PFM_IA_C(n) {                   \
++	.type = PFM_REG_I64,            \
++	.desc = "PERFEVTSEL"#n,         \
++	.dfl_val = PFM_IA_PMC_VAL,      \
++	.rsvd_msk = PFM_IA_PMC_RSVD,    \
++	.no_emul64_msk = PFM_IA_NO64,   \
++	.hw_addr = MSR_GEN_SEL_BASE+(n) \
++	}
++
++#define PFM_IA_D(n) \
++	{ .type = PFM_REG_C,			\
++	  .desc = "PMC"#n,			\
++	  .hw_addr = MSR_P6_PERFCTR0+n,		\
++	  .dep_pmcs[0] = 1ULL << n		\
++	}
++
++#define PFM_IA_FD(n) \
++	{ .type = PFM_REG_C,			\
++	  .desc = "FIXED_CTR"#n,		\
++	  .hw_addr = MSR_CORE_PERF_FIXED_CTR0+n,\
++	  .dep_pmcs[0] = 1ULL << 16		\
++	}
++
++
++static struct pfm_regmap_desc pfm_intel_arch_pmc_desc[] = {
++/* pmc0  */ PFM_IA_C(0),  PFM_IA_C(1),   PFM_IA_C(2),  PFM_IA_C(3),
++/* pmc4  */ PFM_IA_C(4),  PFM_IA_C(5),   PFM_IA_C(6),  PFM_IA_C(7),
++/* pmc8  */ PFM_IA_C(8),  PFM_IA_C(9),  PFM_IA_C(10), PFM_IA_C(11),
++/* pmc12 */ PFM_IA_C(12), PFM_IA_C(13), PFM_IA_C(14), PFM_IA_C(15),
++
++/* pmc16 */ { .type = PFM_REG_I,
++	      .desc = "FIXED_CTRL",
++	      .dfl_val = 0x8888888888888888ULL, /* force PMI */
++	      .rsvd_msk = 0, /* set dynamically */
++	      .no_emul64_msk = 0,
++	      .hw_addr = MSR_CORE_PERF_FIXED_CTR_CTRL
++	    },
++};
++#define PFM_IA_MAX_PMCS	ARRAY_SIZE(pfm_intel_arch_pmc_desc)
++
++static struct pfm_regmap_desc pfm_intel_arch_pmd_desc[] = {
++/* pmd0  */  PFM_IA_D(0),  PFM_IA_D(1),  PFM_IA_D(2),  PFM_IA_D(3),
++/* pmd4  */  PFM_IA_D(4),  PFM_IA_D(5),  PFM_IA_D(6),  PFM_IA_D(7),
++/* pmd8  */  PFM_IA_D(8),  PFM_IA_D(9), PFM_IA_D(10), PFM_IA_D(11),
++/* pmd12 */ PFM_IA_D(12), PFM_IA_D(13), PFM_IA_D(14), PFM_IA_D(15),
++
++/* pmd16 */ PFM_IA_FD(0), PFM_IA_FD(1), PFM_IA_FD(2), PFM_IA_FD(3),
++/* pmd20 */ PFM_IA_FD(4), PFM_IA_FD(5), PFM_IA_FD(6), PFM_IA_FD(7),
++/* pmd24 */ PFM_IA_FD(8), PFM_IA_FD(9), PFM_IA_FD(10), PFM_IA_FD(11),
++/* pmd28 */ PFM_IA_FD(16), PFM_IA_FD(17), PFM_IA_FD(18), PFM_IA_FD(19)
++};
++#define PFM_IA_MAX_PMDS	ARRAY_SIZE(pfm_intel_arch_pmd_desc)
++
++#define PFM_IA_MAX_CNT		16 /* # generic counters in mapping table */
++#define PFM_IA_MAX_FCNT		16 /* # of fixed counters in mapping table */
++#define PFM_IA_FCNT_BASE	16 /* base index of fixed counters PMD */
++
++static struct pfm_pmu_config pfm_intel_arch_pmu_conf;
++
++static void pfm_intel_arch_check_errata(void)
 +{
 +	/*
-+	 * cannot attach to a kernel thread
++	 * Core Duo errata AE49 (no fix). Both counters share a single
++	 * enable bit in PERFEVTSEL0
 +	 */
-+	if (!task->mm) {
-+		PFM_DBG("cannot attach to kernel thread [%d]", task->pid);
-+		return -EPERM;
++	if (current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 14)
++		pfm_intel_arch_pmu_info.flags |= PFM_X86_FL_NO_SHARING;
++}
++
++static inline void set_enable_mask(unsigned int i)
++{
++	pfm_arch_bv_set_bit(i, enable_mask);
++
++	/* max_enable = highest + 1 */
++	if ((i+1) > max_enable)
++		max_enable = i+ 1;
++}
++
++static void pfm_intel_arch_setup_generic(unsigned int version,
++					 unsigned int width,
++					 unsigned int count)
++{
++	u64 rsvd;
++	unsigned int i;
++
++	/*
++	 * first we handle the generic counters:
++	 *
++	 * - ensure HW does not have more registers than hardcoded in the tables
++	 * - adjust rsvd_msk to actual counter width
++	 * - initialize enable_mask (list of PMC with start/stop capability)
++	 * - mark unused hardcoded generic counters as unimplemented
++	 */
++
++	/*
++	 * min of number of Hw counters and hardcoded in the tables
++	 */
++	if (count >= PFM_IA_MAX_CNT) {
++		printk(KERN_INFO "perfmon: Limiting number of generic counters"
++				 " to %u, HW supports %u",
++				 PFM_IA_MAX_CNT, count);
++		count = PFM_IA_MAX_CNT;
 +	}
 +
 +	/*
-+	 * cannot attach to a zombie task
++	 * adjust rsvd_msk for generic counters based on actual width
++	 * initialize enable_mask (1 per pmd)
 +	 */
-+	if (task->exit_state == EXIT_ZOMBIE || task->exit_state == EXIT_DEAD) {
-+		PFM_DBG("cannot attach to zombie/dead task [%d]", task->pid);
-+		return -EBUSY;
++	rsvd = ~((1ULL << width)-1);
++	for (i = 0; i < count; i++) {
++		pfm_intel_arch_pmd_desc[i].rsvd_msk = rsvd;
++		set_enable_mask(i);
 +	}
++
++	/*
++	 * handle version 3 new anythread bit (21)
++	 */
++	if (version == 3) {
++		for (i = 0; i < count; i++)
++			pfm_intel_arch_pmc_desc[i].rsvd_msk &= ~(1ULL << 21);
++	}
++
++
++	/*
++	 * mark unused generic counters as not available
++	 */
++	for (i = count ; i < PFM_IA_MAX_CNT; i++) {
++		pfm_intel_arch_pmd_desc[i].type = PFM_REG_NA;
++		pfm_intel_arch_pmc_desc[i].type = PFM_REG_NA;
++	}
++}
++
++static void pfm_intel_arch_setup_fixed(unsigned int version,
++				       unsigned int width,
++				       unsigned int count)
++{
++	u64 rsvd, dfl;
++	unsigned int i;
++
++	/*
++	 * handle the fixed counters (if any):
++	 *
++	 * - ensure HW does not have more registers than hardcoded in the tables
++	 * - adjust rsvd_msk to actual counter width
++	 * - initialize enable_mask (list of PMC with start/stop capability)
++	 * - mark unused hardcoded generic counters as unimplemented
++	 */
++	if (count >= PFM_IA_MAX_FCNT) {
++		printk(KERN_INFO "perfmon: Limiting number of fixed counters"
++				 " to %u, HW supports %u",
++				 PFM_IA_MAX_FCNT, count);
++		count = PFM_IA_MAX_FCNT;
++	}
++	/*
++	 * adjust rsvd_msk for fixed counters based on actual width
++	 */
++	rsvd = ~((1ULL << width)-1);
++	for (i = 0; i < count; i++)
++		pfm_intel_arch_pmd_desc[PFM_IA_FCNT_BASE+i].rsvd_msk = rsvd;
++
++	/*
++	 * handle version new anythread bit (bit 2)
++	 */
++	if (version == 3)
++		rsvd = 1ULL << 3;
++	else
++		rsvd = 3ULL << 2;
++
++	pfm_intel_arch_pmc_desc[16].rsvd_msk = 0;
++	for (i = 0; i < count; i++)
++		pfm_intel_arch_pmc_desc[16].rsvd_msk |= rsvd << (i<<2);
++
++	/*
++	 * mark unused fixed counters as unimplemented
++	 *
++	 * update the rsvd_msk, dfl_val in FIXED_CTRL:
++	 * 	- rsvd_msk: set all 4 bits
++	 *	- dfl_val : clear all 4 bits
++	 */
++	dfl = pfm_intel_arch_pmc_desc[16].dfl_val;
++	rsvd = pfm_intel_arch_pmc_desc[16].rsvd_msk;
++
++	for (i = count ; i < PFM_IA_MAX_FCNT; i++) {
++		pfm_intel_arch_pmd_desc[PFM_IA_FCNT_BASE+i].type = PFM_REG_NA;
++		rsvd |= 0xfULL << (i<<2);
++		dfl &= ~(0xfULL << (i<<2));
++	}
++
++	/*
++	 * FIXED_CTR_CTRL unavailable when no fixed counters are defined
++	 */
++	if (!count) {
++		pfm_intel_arch_pmc_desc[16].type = PFM_REG_NA;
++	} else {
++		/* update rsvd_mask and dfl_val */
++		pfm_intel_arch_pmc_desc[16].rsvd_msk = rsvd;
++		pfm_intel_arch_pmc_desc[16].dfl_val = dfl;
++		set_enable_mask(16);
++	}
++}
++
++static int pfm_intel_arch_probe_pmu(void)
++{
++	union {
++		unsigned int val;
++		struct pmu_eax eax;
++		struct pmu_edx edx;
++	} eax, edx;
++	unsigned int ebx, ecx;
++	unsigned int width = 0;
++
++	edx.val = 0;
++
++	if (!cpu_has_arch_perfmon) {
++		PFM_INFO("no support for Intel architectural PMU");
++		return -1;
++	}
++
++	if (!cpu_has_apic) {
++		PFM_INFO("no Local APIC, try rebooting with lapic option");
++		return -1;
++	}
++
++	/* cpuid() call protected by cpu_has_arch_perfmon */
++	cpuid(0xa, &eax.val, &ebx, &ecx, &edx.val);
++
++	/*
++	 * some 6/15 models have buggy BIOS
++	 */
++	if (eax.eax.version == 0
++	    && current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 15) {
++		PFM_INFO("buggy v2 BIOS, adjusting for 2 generic counters");
++		eax.eax.version = 2;
++		eax.eax.num_cnt = 2;
++		eax.eax.cnt_width = 40;
++	}
++
++	/*
++	 * some v2 BIOSes are incomplete
++	 */
++	if (eax.eax.version == 2 && !edx.edx.num_cnt) {
++		PFM_INFO("buggy v2 BIOS, adjusting for 3 fixed counters");
++		edx.edx.num_cnt = 3;
++		edx.edx.cnt_width = 40;
++	}
++
++	/*
++	 * no fixed counters on earlier versions
++	 */
++	if (eax.eax.version < 2) {
++		edx.val = 0;
++	} else {
++		/*
++		 * use the min value of both widths until we support
++		 * variable width counters
++		 */
++		width = eax.eax.cnt_width < edx.edx.cnt_width ?
++			eax.eax.cnt_width : edx.edx.cnt_width;
++	}
++
++ 	/*
++	 * Intel Atom processors have a buggy firmware which does not report
++	 * the correct number of fixed counters
++	 */
++	if (eax.eax.version == 3 && edx.edx.num_cnt < 3
++	    && current_cpu_data.x86 == 6 && current_cpu_data.x86_model == 28) {
++		PFM_INFO("buggy v3 BIOS, adjusting for 3 fixed counters");
++		edx.edx.num_cnt = 3;
++	}
++
++	PFM_INFO("detected architecural perfmon v%d", eax.eax.version);
++	PFM_INFO("num_gen=%d width=%d num_fixed=%d width=%d",
++		  eax.eax.num_cnt,
++		  eax.eax.cnt_width,
++		  edx.edx.num_cnt,
++		  edx.edx.cnt_width);
++
++	pfm_intel_arch_setup_generic(eax.eax.version,
++				     width,
++				     eax.eax.num_cnt);
++
++	pfm_intel_arch_setup_fixed(eax.eax.version,
++				   width,
++				   edx.edx.num_cnt);
++
++	pfm_intel_arch_check_errata();
++
++	pfm_intel_arch_version = eax.eax.version;
++
 +	return 0;
 +}
 +
 +/**
-+ * pfm_get_task -- check permission and acquire task to monitor
-+ * @ctx: perfmon context
-+ * @pid: identification of the task to check
-+ * @task: upon return, a pointer to the task to monitor
++ * pfm_intel_arch_has_ovfls - check for pending overflow condition
++ * @ctx: context to work on
 + *
-+ * This function  is used in per-thread mode only AND when not
-+ * self-monitoring. It finds the task to monitor and checks
-+ * that the caller has permissions to attach. It also checks
-+ * that the task is stopped via ptrace so that we can safely
-+ * modify its state.
-+ *
-+ * task refcount is incremented when succesful.
++ * detect if counters have overflowed.
++ * return:
++ * 	0 : no overflow
++ * 	1 : at least one overflow
 + */
-+static int pfm_get_task(struct pfm_context *ctx, pid_t pid,
-+			struct task_struct **task)
++static int __kprobes pfm_intel_arch_has_ovfls(struct pfm_context *ctx)
 +{
-+	struct task_struct *p;
-+	int ret = 0, ret1 = 0;
++	u64 *cnt_mask;
++	u64 wmask, val;
++	u16 i, num;
++
++	cnt_mask = ctx->regs.cnt_pmds;
++	num = ctx->regs.num_counters;
++	wmask = 1ULL << pfm_pmu_conf->counter_width;
 +
 +	/*
-+	 * When attaching to another thread we must ensure
-+	 * that the thread is actually stopped. Just like with
-+	 * perfmon system calls, we enforce that the thread
-+	 * be ptraced and STOPPED by using ptrace_check_attach().
++	 * we can leverage the fact that we know the mapping
++	 * to hardcode the MSR address and avoid accessing
++	 * more cachelines
 +	 *
-+	 * As a consequence, only the ptracing parent can actually
-+	 * attach a context to a thread. Obviously, this constraint
-+	 * does not exist for self-monitoring threads.
-+	 *
-+	 * We use ptrace_may_access() to check for permission.
++	 * We need to check cnt_mask because not all registers
++	 * may be available.
 +	 */
-+	read_lock(&tasklist_lock);
-+
-+	p = find_task_by_vpid(pid);
-+	if (p)
-+		get_task_struct(p);
-+
-+	read_unlock(&tasklist_lock);
-+
-+	if (!p) {
-+		PFM_DBG("task not found %d", pid);
-+		return -ESRCH;
-+	}
-+
-+	ret = -EPERM;
-+
-+	/*
-+	 * returns 0 if cannot attach
-+	 */
-+	ret1 = ptrace_may_access(p, PTRACE_MODE_ATTACH);
-+	if (ret1)
-+		ret = ptrace_check_attach(p, 0);
-+
-+	PFM_DBG("may_attach=%d check_attach=%d", ret1, ret);
-+
-+	if (ret || !ret1)
-+		goto error;
-+
-+	ret = pfm_task_incompatible(ctx, p);
-+	if (ret)
-+		goto error;
-+
-+	*task = p;
-+
-+	return 0;
-+error:
-+	if (!(ret1 || ret))
-+		ret = -EPERM;
-+
-+	put_task_struct(p);
-+
-+	return ret;
-+}
-+
-+/*
-+ * context must be locked when calling this function
-+ */
-+int __pfm_check_task_state(struct pfm_context *ctx, int check_mask,
-+			 unsigned long *flags)
-+{
-+	struct task_struct *task;
-+	unsigned long local_flags, new_flags;
-+	int state, ret;
-+
-+recheck:
-+	/*
-+	 * task is NULL for system-wide context
-+	 */
-+	task = ctx->task;
-+	state = ctx->state;
-+	local_flags = *flags;
-+
-+	PFM_DBG("state=%d check_mask=0x%x task=[%d]",
-+		state, check_mask, task ? task->pid:-1);
-+	/*
-+	 * if the context is detached, then we do not touch
-+	 * hardware, therefore there is not restriction on when we can
-+	 * access it.
-+	 */
-+	if (state == PFM_CTX_UNLOADED)
-+		return 0;
-+	/*
-+	 * no command can operate on a zombie context.
-+	 * A context becomes zombie when the file that identifies
-+	 * it is closed while the context is still attached to the
-+	 * thread it monitors.
-+	 */
-+	if (state == PFM_CTX_ZOMBIE)
-+		return -EINVAL;
-+
-+	/*
-+	 * at this point, state is PFM_CTX_LOADED
-+	 */
-+
-+	/*
-+	 * some commands require the context to be unloaded to operate
-+	 */
-+	if (check_mask & PFM_CMD_UNLOADED)  {
-+		PFM_DBG("state=%d, cmd needs context unloaded", state);
-+		return -EBUSY;
-+	}
-+
-+	/*
-+	 * self-monitoring always ok.
-+	 */
-+	if (task == current)
-+		return 0;
-+
-+	/*
-+	 * at this point, monitoring another thread
-+	 */
-+
-+	/*
-+	 * When we operate on another thread, we must wait for it to be
-+	 * stopped and completely off any CPU as we need to access the
-+	 * PMU state (or machine state).
-+	 *
-+	 * A thread can be put in the STOPPED state in various ways
-+	 * including PTRACE_ATTACH, or when it receives a SIGSTOP signal.
-+	 * We enforce that the thread must be ptraced, so it is stopped
-+	 * AND it CANNOT wake up while we operate on it because this
-+	 * would require an action from the ptracing parent which is the
-+	 * thread that is calling this function.
-+	 *
-+	 * The dependency on ptrace, imposes that only the ptracing
-+	 * parent can issue command on a thread. This is unfortunate
-+	 * but we do not know of a better way of doing this.
-+	 */
-+	if (check_mask & PFM_CMD_STOPPED) {
-+
-+		spin_unlock_irqrestore(&ctx->lock, local_flags);
-+
-+		/*
-+		 * check that the thread is ptraced AND STOPPED
-+		 */
-+		ret = ptrace_check_attach(task, 0);
-+
-+		spin_lock_irqsave(&ctx->lock, new_flags);
-+
-+		/*
-+		 * flags may be different than when we released the lock
-+		 */
-+		*flags = new_flags;
-+
-+		if (ret)
-+			return ret;
-+		/*
-+		 * we must recheck to verify if state has changed
-+		 */
-+		if (unlikely(ctx->state != state)) {
-+			PFM_DBG("old_state=%d new_state=%d",
-+				state,
-+				ctx->state);
-+			goto recheck;
++	for (i = 0; num; i++) {
++		if (pfm_arch_bv_test_bit(i, cnt_mask)) {
++			rdmsrl(pfm_intel_arch_pmd_desc[i].hw_addr, val);
++			if (!(val & wmask))
++				return 1;
++			num--;
 +		}
 +	}
 +	return 0;
 +}
 +
-+int pfm_check_task_state(struct pfm_context *ctx, int check_mask,
-+			 unsigned long *flags)
++static int pfm_intel_arch_stop_save(struct pfm_context *ctx,
++				    struct pfm_event_set *set)
 +{
-+	int ret;
-+	ret  = __pfm_check_task_state(ctx, check_mask, flags);
-+	PFM_DBG("ret=%d",ret);
-+	return ret;
-+}
++	u64 used_mask[PFM_PMC_BV];
++	u64 val, wmask, ovfl_mask;
++	u32 i, count;
 +
-+/**
-+ * pfm_get_args - Function used to copy the syscall argument into kernel memory
-+ * @ureq: user argument
-+ * @sz: user argument size
-+ * @lsz: size of stack buffer
-+ * @laddr: stack buffer address
-+ * @req: point to start of kernel copy of the argument
-+ * @ptr_free: address of kernel copy to free
-+ *
-+ * There are two options:
-+ * 	- use a stack buffer described by laddr (addresses) and lsz (size)
-+ * 	- allocate memory
-+ *
-+ * return:
-+ * 	< 0 : in case of error (ptr_free may not be updated)
-+ * 	  0 : success
-+ *      - req: points to base of kernel copy of arguments
-+ *	- ptr_free: address of buffer to free by caller on exit.
-+ *		    NULL if using the stack buffer
-+ *
-+ * when ptr_free is not NULL upon return, the caller must kfree()
-+ */
-+int pfm_get_args(void __user *ureq, size_t sz, size_t lsz, void *laddr,
-+		 void **req, void **ptr_free)
-+{
-+	void *addr;
++	wmask = 1ULL << pfm_pmu_conf->counter_width;
++
++	pfm_arch_bv_and(used_mask,
++			set->used_pmcs,
++			enable_mask,
++			max_enable);
++
++	count = pfm_arch_bv_weight(used_mask, max_enable);
 +
 +	/*
-+	 * check syadmin argument limit
++	 * stop monitoring
++	 * Unfortunately, this is very expensive!
++	 * wrmsrl() is serializing.
 +	 */
-+	if (unlikely(sz > pfm_controls.arg_mem_max)) {
-+		PFM_DBG("argument too big %zu max=%zu",
-+			sz,
-+			pfm_controls.arg_mem_max);
-+		return -E2BIG;
++	for (i = 0; count; i++) {
++		if (pfm_arch_bv_test_bit(i, used_mask)) {
++			wrmsrl(pfm_pmu_conf->pmc_desc[i].hw_addr, 0);
++			count--;
++		}
 +	}
 +
 +	/*
-+	 * check if vector fits on stack buffer
++	 * if we already having a pending overflow condition, we simply
++	 * return to take care of this first.
 +	 */
-+	if (sz > lsz) {
-+		addr = kmalloc(sz, GFP_KERNEL);
-+		if (unlikely(addr == NULL))
-+			return -ENOMEM;
-+		*ptr_free = addr;
-+	} else {
-+		addr = laddr;
-+		*req = laddr;
-+		*ptr_free = NULL;
-+	}
++	if (set->npend_ovfls)
++		return 1;
++
++	ovfl_mask = pfm_pmu_conf->ovfl_mask;
 +
 +	/*
-+	 * bring the data in
++	 * check for pending overflows and save PMDs (combo)
++	 * we employ used_pmds because we also need to save
++	 * and not just check for pending interrupts.
++	 *
++	 * all pmds are counters
 +	 */
-+	if (unlikely(copy_from_user(addr, ureq, sz))) {
-+		if (addr != laddr)
-+			kfree(addr);
-+		return -EFAULT;
++	count = set->nused_pmds;
++	for (i = 0; count; i++) {
++		if (pfm_arch_bv_test_bit(i, set->used_pmds)) {
++			val = pfm_arch_read_pmd(ctx, i);
++			if (!(val & wmask)) {
++				pfm_arch_bv_set_bit(i, set->povfl_pmds);
++				set->npend_ovfls++;
++			}
++			val = (set->pmds[i] & ~ovfl_mask)
++				| (val & ovfl_mask);
++			set->pmds[i] = val;
++			count--;
++		}
 +	}
-+
-+	/*
-+	 * base address of kernel buffer
-+	 */
-+	*req = addr;
-+
++	/* 0 means: no need to save PMDs at upper level */
 +	return 0;
 +}
 +
 +/**
-+ * pfm_acquire_ctx_from_fd -- get ctx from file descriptor
-+ * @fd: file descriptor
-+ * @ctx: pointer to pointer of context updated on return
-+ * @cookie: opaque structure to use for release
++ * pfm_intel_arch_quiesce - stop monitoring without grabbing any lock
 + *
-+ * This helper function extracts the ctx from the file descriptor.
-+ * It also increments the refcount of the file structure. Thus
-+ * it updates the cookie so the refcount can be decreased when
-+ * leaving the perfmon syscall via pfm_release_ctx_from_fd
++ * called from NMI interrupt handler to immediately stop monitoring
++ * cannot grab any lock, including perfmon related locks
 + */
-+static int pfm_acquire_ctx_from_fd(int fd, struct pfm_context **ctx,
-+				   struct pfm_syscall_cookie *cookie)
++static void __kprobes pfm_intel_arch_quiesce(void)
 +{
-+	struct file *filp;
-+	int fput_needed;
++	u16 i;
 +
-+	filp = fget_light(fd, &fput_needed);
-+	if (unlikely(filp == NULL)) {
-+		PFM_DBG("invalid fd %d", fd);
-+		return -EBADF;
++	/*
++	 * PMC16 is the fixed control register so it has a
++	 * distinct MSR address
++	 *
++	 * We do not use the hw_addr field in the table to avoid touching
++	 * too many cachelines
++	 */
++	for (i = 0; i < pfm_pmu_conf->regs_all.max_pmc; i++) {
++		if (pfm_arch_bv_test_bit(i, pfm_pmu_conf->regs_all.pmcs)) {
++			if (i == 16)
++				wrmsrl(MSR_CORE_PERF_FIXED_CTR_CTRL, 0);
++			else
++				wrmsrl(MSR_P6_EVNTSEL0+i, 0);
++		}
 +	}
++}
++/**
++* pfm_intel_arch_release_pmu_percpu - release PMU resource per CPU
++*
++* Since v2, there exists global control MSR, to start/stop and
++* also collect overflow status information. In particular,
++* GLOBAL_CTRL controls start/stop and has one bit per counter.
++* To maintain backward compatibility with v1, the power-on value
++* of GLOBAL_CTRL should be such that generic counters are enabled
++* but fixed counters are disabled (true on Penryn and Atom currently).
++*
++* Here, we simply make sure that all available counters are enabled.
++* After that, start/stop is controlled on a per-counter basis.
++*/
++static void pfm_intel_arch_acquire_pmu_percpu(void)
++{
++	struct pfm_regmap_desc *d;
++	u64 mask = 0;
++	unsigned int i;
 +
-+	*ctx = filp->private_data;
++	/* nothing to do for v1 */
++	if (pfm_intel_arch_version < 2)
++		return;
 +
-+	if (unlikely(!*ctx || filp->f_op != &pfm_file_ops)) {
-+		PFM_DBG("fd %d not related to perfmon", fd);
-+		return -EBADF;
++	/*
++	 * build bitmask of registers that are available to
++	 * us. In some cases, there may be fewer registers than
++	 * what the PMU supports due to sharing with other kernel
++	 * subsystems, such as NMI
++	 */
++	d = pfm_pmu_conf->pmd_desc;
++	for (i=0; i < 16; i++) {
++		if ((d[i].type & PFM_REG_I) == 0)
++			continue;
++		mask |= 1ull << i;
 +	}
-+	cookie->filp = filp;
-+	cookie->fput_needed = fput_needed;
++	for (i=16; i < PFM_IA_MAX_PMDS; i++) {
++		if ((d[i].type & PFM_REG_I) == 0)
++			continue;
++		mask |= 1ull << (32+i-16);
++	}
++	/*
++	 * keep a local copy of the current MSR_CORE_PERF_GLOBAL_CTRL
++	 */
++	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, __get_cpu_var(saved_global_ctrl));
 +
-+	return 0;
++	PFM_DBG("global=0x%llx set to 0x%llx",
++		__get_cpu_var(saved_global_ctrl),
++		mask);
++	/*
++	 * enable all registers
++	 *
++	 * No need to quiesce PMU. If there is a overflow, it will be
++	 * treated as spurious by the handler
++	 */
++	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, mask);
 +}
 +
 +/**
-+ * pfm_release_ctx_from_fd -- decrease refcount of file associated with context
-+ * @cookie: the cookie structure initialized by pfm_acquire_ctx_from_fd
-+ */
-+static inline void pfm_release_ctx_from_fd(struct pfm_syscall_cookie *cookie)
++* pfm_intel_arch_release_pmu_percpu - release PMU resource per CPU
++*
++* Since v2, there exists global control MSR, to start/stop and
++* also collect overflow status information. In particular,
++* GLOBAL_CTRL controls start/stop and has one bit per counter.
++* To maintain backward compatibility with v1, the power-on value
++* of GLOBAL_CTRL should be such that generic counters are enabled
++* but fixed counters are disabled (true on Penryn and Atom currently).
++*
++* Here, we are done using the PMU. so we restore the power-on value.
++*/
++static void pfm_intel_arch_release_pmu_percpu(void)
 +{
-+	fput_light(cookie->filp, cookie->fput_needed);
-+}
++	/* nothing to do for v1 */
++	if (pfm_intel_arch_version < 2)
++		return;
 +
-+/**
-+ * pfm_validate_type_sz -- validate sz based on type
-+ * @type : PFM_RW_XX type passed to pfm_write or pfm_read
-+ * @sz   : vector size in bytes
-+ *
-+ * return:
-+ *    the number of elements in the vector, 0 if error
-+ */
-+static size_t pfm_validate_type_sz(int type, size_t sz)
-+{
-+	size_t count, sz_type;
++	PFM_DBG("global_ctrl restored to 0x%llx\n",
++		__get_cpu_var(saved_global_ctrl));
 +
-+	switch(type) {
-+	case PFM_RW_PMD:
-+	case PFM_RW_PMC:
-+		sz_type = sizeof(struct pfarg_pmr);
-+		break;
-+	default:
-+		PFM_DBG("invalid type=%d", type);
-+		return 0;
-+	}
-+
-+	count = sz / sz_type;
-+
-+	if ((count * sz_type) != sz) {
-+		PFM_DBG("invalid size=%zu for type=%d", sz, type);
-+		return 0;
-+	}
-+
-+	PFM_DBG("sz=%zu sz_type=%zu count=%zu",
-+		sz,
-+		sz_type,
-+		count);
-+
-+	return count;
++	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, __get_cpu_var(saved_global_ctrl));
 +}
 +
 +/*
-+ * unlike the other perfmon system calls, this one returns a file descriptor
-+ * or a value < 0 in case of error, very much like open() or socket()
++ * Counters may have model-specific width. Yet the documentation says
++ * that only the lower 32 bits can be written to due to the specification
++ * of wrmsr. bits [32-(w-1)] are sign extensions of bit 31. Bits [w-63] must
++ * not be set (see rsvd_msk for PMDs). As such the effective width of a
++ * counter is 31 bits only regardless of what CPUID.0xa returns.
++ *
++ * See IA-32 Intel Architecture Software developer manual Vol 3B chapter 18
 + */
-+asmlinkage long sys_pfm_create(int flags, struct pfarg_sinfo __user *ureq)
++static struct pfm_pmu_config pfm_intel_arch_pmu_conf = {
++	.pmu_name = "Intel architectural",
++	.pmd_desc = pfm_intel_arch_pmd_desc,
++	.counter_width   = 31,
++	.num_pmc_entries = PFM_IA_MAX_PMCS,
++	.num_pmd_entries = PFM_IA_MAX_PMDS,
++	.pmc_desc = pfm_intel_arch_pmc_desc,
++	.version = "1.0",
++	.pmu_info = &pfm_intel_arch_pmu_info
++};
++
++static int __init pfm_intel_arch_pmu_init_module(void)
 +{
-+	struct pfm_context *new_ctx;
-+	struct pfarg_sinfo sif;
-+	int ret;
-+
-+	PFM_DBG("flags=0x%x sif=%p", flags, ureq);
-+
-+	if (perfmon_disabled)
++	if (pfm_intel_arch_probe_pmu())
 +		return -ENOSYS;
 +
-+	if (flags) {
-+		PFM_DBG("no flags accepted yet");
-+		return -EINVAL;
-+	}
-+	ret = __pfm_create_context(flags, &sif, &new_ctx);
-+
-+	/*
-+	 * copy sif to user level argument, if requested
-+	 */
-+	if (ureq && copy_to_user(ureq, &sif, sizeof(sif))) {
-+		pfm_undo_create(ret, new_ctx);
-+		ret  = -EFAULT;
-+	}
-+	return ret;
++	return pfm_pmu_register(&pfm_intel_arch_pmu_conf);
 +}
 +
-+asmlinkage long sys_pfm_write(int fd, int uflags,
-+			      int type,
-+			      void __user *ureq,
-+			      size_t sz)
-+{
-+	u64 buf[PFM_STK_ARG];
-+	struct pfm_context *ctx;
-+	struct pfm_syscall_cookie cookie;
-+	void *req, *fptr;
-+	unsigned long flags;
-+	size_t count;
-+	int ret;
-+
-+	PFM_DBG("fd=%d flags=0x%x type=%d req=%p sz=%zu",
-+		fd, uflags, type, ureq, sz);
-+
-+	if (uflags) {
-+		PFM_DBG("no flags defined");
-+		return -EINVAL;
-+	}
-+
-+	count = pfm_validate_type_sz(type, sz);
-+	if (!count)
-+		return -EINVAL;
-+
-+	ret = pfm_acquire_ctx_from_fd(fd, &ctx, &cookie);
-+	if (ret)
-+		return ret;
-+
-+	ret = pfm_get_args(ureq, sz, sizeof(buf), buf, (void **)&req, &fptr);
-+	if (ret)
-+		goto error;
-+
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
-+	if (ret)
-+		goto skip;
-+	switch(type) {
-+	case PFM_RW_PMC:
-+		ret = __pfm_write_pmcs(ctx, req, count);
-+		break;
-+	case PFM_RW_PMD:
-+		ret = __pfm_write_pmds(ctx, req, count);
-+		break;
-+	default:
-+		PFM_DBG("invalid type=%d", type);
-+		ret = -EINVAL;
-+	}
-+skip:
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+
-+	/*
-+	 * This function may be on the critical path.
-+	 * We want to avoid the branch if unecessary.
-+	 */
-+	if (fptr)
-+		kfree(fptr);
-+error:
-+	pfm_release_ctx_from_fd(&cookie);
-+	return ret;
-+}
-+
-+asmlinkage long sys_pfm_read(int fd, int uflags,
-+			     int type,
-+			     void __user *ureq,
-+			     size_t sz)
-+{
-+	u64 buf[PFM_STK_ARG];
-+	struct pfm_context *ctx;
-+	struct pfm_syscall_cookie cookie;
-+	void *req, *fptr;
-+	unsigned long flags;
-+	size_t count;
-+	int ret;
-+
-+	PFM_DBG("fd=%d flags=0x%x type=%d req=%p sz=%zu",
-+		fd, uflags, type, ureq, sz);
-+
-+	if (uflags) {
-+		PFM_DBG("no flags defined");
-+		return -EINVAL;
-+	}
-+
-+	count = pfm_validate_type_sz(type, sz);
-+	if (!count)
-+		return -EINVAL;
-+
-+	ret = pfm_acquire_ctx_from_fd(fd, &ctx, &cookie);
-+	if (ret)
-+		return ret;
-+
-+	ret = pfm_get_args(ureq, sz, sizeof(buf), buf, (void **)&req, &fptr);
-+	if (ret)
-+		goto error;
-+
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
-+	if (ret)
-+		goto skip;
-+
-+	switch(type) {
-+	case PFM_RW_PMD:
-+		ret = __pfm_read_pmds(ctx, req, count);
-+		break;
-+	default:
-+		PFM_DBG("invalid type=%d", type);
-+		ret = -EINVAL;
-+	}
-+skip:
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+
-+	if (copy_to_user(ureq, req, sz))
-+		ret = -EFAULT;
-+
-+	if (fptr)
-+		kfree(fptr);
-+error:
-+	pfm_release_ctx_from_fd(&cookie);
-+	return ret;
-+}
-+
-+asmlinkage long sys_pfm_set_state(int fd, int uflags, int state)
-+{
-+	struct pfm_context *ctx;
-+	struct pfm_syscall_cookie cookie;
-+	unsigned long flags;
-+	int ret;
-+
-+	PFM_DBG("fd=%d uflags=0x%x state=0x%x", fd, uflags, state);
-+
-+	if (uflags) {
-+		PFM_DBG("no flags defined");
-+		return -EINVAL;
-+	}
-+
-+	switch(state) {
-+	case PFM_ST_START:
-+	case PFM_ST_STOP:
-+		break;
-+	default:
-+		PFM_DBG("invalid state=0x%x", state);
-+		return -EINVAL;
-+	}
-+
-+	ret = pfm_acquire_ctx_from_fd(fd, &ctx, &cookie);
-+	if (ret)
-+		return ret;
-+
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
-+	if (!ret) {
-+		if (state == PFM_ST_STOP)
-+			ret = __pfm_stop(ctx);
-+		else
-+			ret = __pfm_start(ctx);
-+	}
-+
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+
-+	pfm_release_ctx_from_fd(&cookie);
-+
-+	return ret;
-+}
-+
-+static long pfm_detach(int fd, int uflags)
-+{
-+	struct pfm_context *ctx;
-+	struct pfm_syscall_cookie cookie;
-+	unsigned long flags;
-+	int ret;
-+
-+	ret = pfm_acquire_ctx_from_fd(fd, &ctx, &cookie);
-+	if (ret)
-+		return ret;
-+
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED|PFM_CMD_UNLOAD, &flags);
-+	if (!ret)
-+		ret = __pfm_unload_context(ctx);
-+
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+
-+	/*
-+	 * if unload was successful, then release the session
-+	 * must be called with interrupts enabled, thus we need
-+	 * to defer until are out of __pfm_unload_context()
-+	 */
-+	if (!ret)
-+		pfm_session_release();
-+
-+	pfm_release_ctx_from_fd(&cookie);
-+
-+	return ret;
-+}
-+
-+asmlinkage long sys_pfm_attach(int fd, int uflags, int target)
-+{
-+	struct pfm_context *ctx;
-+	struct task_struct *task;
-+	struct pfm_syscall_cookie cookie;
-+	unsigned long flags;
-+	int ret;
-+
-+	PFM_DBG("fd=%d uflags=0x%x target=%d", fd, uflags, target);
-+
-+	if (uflags) {
-+		PFM_DBG("invalid flags");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+ 	 * handle detach in a separate function
-+ 	 */
-+	if (target == PFM_NO_TARGET)
-+		return pfm_detach(fd, uflags);
-+
-+	ret = pfm_acquire_ctx_from_fd(fd, &ctx, &cookie);
-+	if (ret)
-+		return ret;
-+
-+	task = current;
-+
-+	/*
-+	 * in per-thread mode (not self-monitoring), get a reference
-+	 * on task to monitor. This must be done with interrupts enabled
-+	 * Upon succesful return, refcount on task has increased.
-+	 *
-+	 * fget_light() is protecting the context.
-+	 */
-+   	if (target != current->pid) {
-+		ret = pfm_get_task(ctx, target, &task);
-+		if (ret)
-+			goto error;
-+	}
-+
-+	/*
-+	 * irqsave is required to avoid race in case context is already
-+	 * loaded or with switch timeout in the case of self-monitoring
-+	 */
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	ret = pfm_check_task_state(ctx, PFM_CMD_UNLOADED, &flags);
-+	if (!ret)
-+		ret = __pfm_load_context(ctx, task);
-+
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+
-+	/*
-+	 * in per-thread mode (not self-monitoring), we need
-+	 * to decrease refcount on task to monitor:
-+	 *   - attach successful: we have a reference in ctx->task
-+	 *   - attach failed    : undo the effect of pfm_get_task()
-+	 */
-+	if (task != current)
-+		put_task_struct(task);
-+error:
-+	pfm_release_ctx_from_fd(&cookie);
-+	return ret;
-+}
-Index: o3/include/linux/perfmon.h
++device_initcall(pfm_intel_arch_pmu_init_module);
+Index: o3/arch/x86/perfmon/Kconfig
 ===================================================================
---- o3.orig/include/linux/perfmon.h	2008-11-25 17:54:59.000000000 +0100
-+++ o3/include/linux/perfmon.h	2008-11-25 17:55:04.000000000 +0100
-@@ -72,6 +72,17 @@
- #define PFM_RW_PMC	0x02 /* accessing PMC registers */
+--- o3.orig/arch/x86/perfmon/Kconfig	2008-11-25 18:09:47.000000000 +0100
++++ o3/arch/x86/perfmon/Kconfig	2008-11-25 18:21:33.000000000 +0100
+@@ -15,4 +15,11 @@
+ 	help
+ 	Enables perfmon debugging support
  
- /*
-+ * pfm_set_state state:
-+ */
-+#define PFM_ST_START	0x01 /* start monitoring */
-+#define PFM_ST_STOP	0x02 /* stop monitoring */
-+
-+/*
-+ * pfm_attach special target to trigger detach
-+ */
-+#define PFM_NO_TARGET	-1 /* detach session target */
-+
-+/*
-  * default value for the user and group security parameters in
-  * /proc/sys/kernel/perfmon/sys_group
-  * /proc/sys/kernel/perfmon/task_group
-Index: o3/include/linux/syscalls.h
-===================================================================
---- o3.orig/include/linux/syscalls.h	2008-11-25 18:10:58.000000000 +0100
-+++ o3/include/linux/syscalls.h	2008-11-25 18:11:06.000000000 +0100
-@@ -624,4 +624,15 @@
- 
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
-+#ifdef CONFIG_PERFMON
-+struct pfarg_sinfo;
-+asmlinkage long sys_pfm_create(int flags, struct pfarg_sinfo *s,
-+			       char  __user *f, void __user *uarg, size_t uarg_size);
-+
-+asmlinkage long sys_pfm_write(int fd, int flags, int type, void __user *arg, size_t s);
-+asmlinkage long sys_pfm_read(int fd, int flags, int type, void __user *arg, size_t s);
-+asmlinkage long sys_pfm_attach(int fd, int flags, int target);
-+asmlinkage long sys_pfm_set_state(int fd, int flags, int state);
-+#endif /* CONFIG_PERFMON */
-+
- #endif
++config  X86_PERFMON_INTEL_ARCH
++	bool "Support for Intel architectural perfmon v1/v2/v3"
++	depends on PERFMON
++	default n
++	help
++	Enables support for Intel architectural performance counters.
++	This feature was introduced with Intel Core Solo/Core Duo processors.
+ endmenu
 
 -- 
 
