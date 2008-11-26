@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYKZJaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYKZJhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYKZJaT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 04:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbYKZJaG
+	id S1753155AbYKZJhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 04:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYKZJhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 04:30:06 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39520 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbYKZJaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 04:30:05 -0500
-Subject: Re: commit b1ee26b "radeonfb: accelerate imageblit and other
- improvements" freezes system on switching from X to text console
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gaudenz Steinlin <gaudenz@soziologie.ch>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081125231344.GA5190@soziologie.ch>
-References: <20081125194457.GA4929@soziologie.ch>
-	 <20081125231344.GA5190@soziologie.ch>
+	Wed, 26 Nov 2008 04:37:00 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:23640 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYKZJg7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 04:36:59 -0500
+X-IronPort-AV: E=Sophos;i="4.33,668,1220241600"; 
+   d="scan'208";a="29633598"
+Subject: Re: [PATCH 18 of 38] x86: unify pci iommu setup and allow swiotlb
+	to	compile for 32 bit
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, x86@kernel.org
+In-Reply-To: <20081126115344B.fujita.tomonori@lab.ntt.co.jp>
+References: <1227277292.7186.32.camel@zakaz.uk.xensource.com>
+	 <20081122104919X.fujita.tomonori@lab.ntt.co.jp>
+	 <1227526897.9425.38.camel@zakaz.uk.xensource.com>
+	 <20081126115344B.fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain
-Date: Wed, 26 Nov 2008 20:29:57 +1100
-Message-Id: <1227691797.7185.370.camel@pasglop>
+Organization: Citrix Systems, Inc.
+Date: Wed, 26 Nov 2008 09:36:49 +0000
+Message-Id: <1227692209.9425.117.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Nov 2008 09:36:58.0199 (UTC) FILETIME=[86D63670:01C94FAA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-26 at 00:13 +0100, Gaudenz Steinlin wrote:
-> On Tue, Nov 25, 2008 at 08:44:57PM +0100, Gaudenz Steinlin wrote:
-> > Hi Ben
-> > 
-> > The changes in the commit mentioned in the subject freeze my system when
-> > changing from X to a text console. The system freezes with a garbled
-> > display. Reverting this commit fixes the problem.
-> > 
-> > The freeze only happens if DRI is enabled in X. It also does not happen
-> > if I simply switch between different text consoles. 
-> > 
+On Wed, 2008-11-26 at 11:53 +0900, FUJITA Tomonori wrote:
 > 
-> OK, I searched a bit more and found
-> http://bugzilla.kernel.org/show_bug.cgi?id=11875 which is possibly
-> related. I also found the patch Ben proposed to fix this at
-> http://lkml.org/lkml/2008/11/10/12. Unfortunately this patch did not fix
-> my problem. 
+> > +     BUG_ON(max_slots > 1UL << (BITS_PER_LONG - IO_TLB_SHIFT));
+> 
+> How can this BUG_ON happen? Using u64 for the mask is fine though.
 
-The fix is for a different problem. I suspect the root cause is a bug in
-X but I'm still trying to track it down.
+It covers the cases where the previous code would have overflowed. It
+can't happen right now because although mask is 64 bits the value
+assigned to it is currently sizeof(unsigned long). If someone changes
+the type of that field then we would start seeing unexpected values.
 
-I think I'll just do a patch that make the new acceleration conditional
-on a kernel command line option for .28 final ...
-
-Cheers,
-Ben.
- 
+Ian.
 
