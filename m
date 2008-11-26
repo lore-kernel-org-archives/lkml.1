@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbYKZCWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYKZCWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbYKZCWP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYKZCV7
+	id S1754028AbYKZCWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYKZCWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:21:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52186 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbYKZCV7 (ORCPT
+	Tue, 25 Nov 2008 21:22:04 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:35801 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753159AbYKZCWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:21:59 -0500
-Date: Tue, 25 Nov 2008 21:21:58 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: set a more human readable
- output
-In-Reply-To: <20081126021450.GA17617@elte.hu>
-Message-ID: <alpine.DEB.1.10.0811252121440.26424@gandalf.stny.rr.com>
-References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu> <20081126021450.GA17617@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 25 Nov 2008 21:22:03 -0500
+Date: Tue, 25 Nov 2008 21:21:50 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, andy <rootstrap@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Need to pay to use the word "Linux" in commercial
+	products/services!
+Message-ID: <20081126022150.GA1410@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jon Masters <jonathan@jonmasters.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	andy <rootstrap@googlemail.com>, linux-kernel@vger.kernel.org
+References: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com> <20081125225708.6399ba14@lxorguk.ukuu.org.uk> <1227659082.3744.5.camel@jcmlaptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227659082.3744.5.camel@jcmlaptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 26 Nov 2008, Ingo Molnar wrote:
-
+On Tue, Nov 25, 2008 at 07:24:42PM -0500, Jon Masters wrote:
+> > 
+> > The GPL protects copyrights not trademarks. The Linux trademarking is an
+> > interesting question and I know a lot of companies take the view that the
+> > mark is unenforcable. On the other hand it stops abuse of the name for
+> > other unrelated software.
 > 
-> the regex filter doesnt work well yet when used with the graph tracer:
-> 
-> [ 2994.079079] ------------[ cut here ]------------
-> [ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
-> [ 2994.079079] Modules linked in:
-> [ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
-> [ 2994.079079] Call Trace:
-> [ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
-> [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-> [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-> [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-> [ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
-> [ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
-> [ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
-> [ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
-> [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-> [ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
-> [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> [ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
-> [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> [ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
-> [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> [ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
-> [ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
-> [ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
-> [ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
-> [ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
-> [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-> [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-> [ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
-> [ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
-> [ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
-> [ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
-> [ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
-> [ 2994.079079] ---[ end trace bff97d149b80ecde ]---
-> [ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
-> [ 2994.079079]  actual: e8:0c:1a:fa:ff
-> 
-> produced via:
-> 
->  # cd /debug/tracing/
->  # cat set_ftrace_filter
->  # echo schedule > set_ftrace_filter
->  # cat set_ftrace_filter
->  cat: set_ftrace_filter: No such device
 
-This is probably fixed with my patch set.
+In addition, the Linux Mark Institute will give sublicenses free of
+charge for pretty much any reasonable uses where the Linux Kernel is
+used.  (i.e., if someone wrote a Microsoft .NET application that whose
+only use was to send scary legal letters to Linux users, and some
+software company wanted to market this "Linux Blackmail Generator" as
+a program marketed to companies which held Patents but produced no
+useful products or services --- i.e., Patent Trolls --- I might well
+imagine that someone from LMI might cough, and say, "I don't think
+we'll give you a sublicense to use Linux in such a way).
 
--- Steve
+> Personally, I love washing my clothes with Linux detergent :)
+> 
+> They tell me it's also a popular Operating System kernel.
 
+Trademarks are specific to a specific area.  My favorite example was
+the British advertisements for vacuum cleaners, "Nothing sucks like a
+Vax" back when I was hacking BSD 4.3 systems on a Digital Vax/750.  Of
+course there can be problems when companies expand beyond their
+original areas of their trademark registration --- hence the conflict
+between Apple Computers, Inc., and Apple Corps (a holding company
+which owned Apple Records and the copyrights to Beatle's music) when
+Apple started expanding into their iPod and iTunes store business.
+
+      	      		     	   	    	   - Ted
