@@ -1,82 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYKZSR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYKZSSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYKZSR0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 13:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYKZSRQ
+	id S1754683AbYKZSSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 13:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYKZSR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 13:17:16 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1604 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbYKZSRQ (ORCPT
+	Wed, 26 Nov 2008 13:17:57 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53576 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbYKZSR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 13:17:16 -0500
-Date: Wed, 26 Nov 2008 18:17:11 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Sven Wegener <sven.wegener@stealer.net>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] leds: Add WM8350 LED driver
-Message-ID: <20081126181710.GH6234@sirena.org.uk>
-References: <1227707610-20952-1-git-send-email-broonie@opensource.wolfsonmicro.com> <alpine.LNX.2.00.0811261837420.23445@titan.stealer.net>
+	Wed, 26 Nov 2008 13:17:56 -0500
+Date: Wed, 26 Nov 2008 18:17:57 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: linux-arch@vger.kernel.org,
+       Linux Kernel List <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [RESEND:PATCH] [ARM] clearpage: provide our own clear_user_highpage()
+In-Reply-To: <20081126171321.GA4719@dyn-67.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0811261811180.5305@blonde.site>
+References: <20081126171321.GA4719@dyn-67.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0811261837420.23445@titan.stealer.net>
-X-Cookie: I smell a wumpus.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 06:39:04PM +0100, Sven Wegener wrote:
+On Wed, 26 Nov 2008, Russell King wrote:
 
-You should cut irrelevant text from your mail; it makes it much easier
-to find what you're actually saying - if you've got hundreds of lines of
-unbroken quoted text it's easy to page straight past small comments.
+> I've not had any response to this, so in liu of any response by this
+> coming weekend, I'm going to assume that everyone's happy with this
+> change (at which point it's going to become buried under a lot of
+> merges with other trees.)
+> 
+> ----- Forwarded message from Russell King <rmk+lkml@arm.linux.org.uk> -----
+> 
+> Date: Thu, 20 Nov 2008 17:50:17 +0000
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> To: linux-arch@vger.kernel.org,
+> 	Linux Kernel List <linux-kernel@vger.kernel.org>,
+> 	linux-mm@kvack.org
+> Subject: [PATCH] [ARM] clearpage: provide our own clear_user_highpage()
+> 
+> This patch is part of a larger ARM specific patch set cleaning up
+> aliasing VIPT cache support.
+> 
+> With aliasing VIPT cache support, our implementation of clear_user_page()
+> and copy_user_page() sets up a temporary kernel space mapping such that
+> we have the same cache colour as the userspace page.  This avoids having
+> to consider any userspace aliases from this operation.
+> 
+> However, when highmem is enabled, kmap_atomic() have to setup mappings.
+> The copy_user_highpage() and clear_user_highpage() call these functions
+> before delegating the copies to copy_user_page() and clear_user_page().
+> 
+> The effect of this is that each of the *_user_highpage() functions setup
+> their own kmap mapping, followed by the *_user_page() functions setting
+> up another mapping.  This is rather wasteful.
+> 
+> Thankfully, copy_user_highpage() can be overriden by architectures by
+> defining __HAVE_ARCH_COPY_USER_HIGHPAGE.  However, replacement of 
+> clear_user_highpage() is more difficult because its inline definition
+> is not conditional.  It seems that you're expected to define
+> __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE and provide a replacement
+> __alloc_zeroed_user_highpage() implementation instead.
+> 
+> The allocation itself is fine, so we don't want to override that.  What
+> we really want to do is to override clear_user_highpage() with our own
+> version which doesn't kmap_atomic() unnecessarily.
+> 
+> However, there are two drivers (drivers/media/video/videobuf-dma-sg.c
+> and drivers/staging/go7007/go7007-v4l2.c) which want to provide non-
+> highmem clear_user_page()'d pages to userspace.
+> 
+> Requiring an architecture to provide __alloc_zeroed_user_highpage(),
+> a sub-optimal clear_user_page(), and keep the sub-optimal
+> clear_user_highpage() around seems rather silly and potentially
+> error prone.
+> 
+> So, what this patch below does is allow clear_user_highpage() itself
+> to be overriden by architectures, so that they can provide just one
+> implementation.
+> 
+> What needs to follow on from this is converting those two drivers to
+> use clear_user_highpage() instead of clear_user_page() - that should
+> be a trivial patch.
+> 
+> Are there any objections to this approach?  Can I get any acked-by's
+> from any MM folk for the include/linux/highmem.h change?
 
-> On Wed, 26 Nov 2008, Mark Brown wrote:
+Looks eminently sensible to me, and the #define clear_user_highpage
+style you've chosen is indeed our favoured technique these days.
 
-> > +	isink = regulator_get(&pdev->dev, "led_isink");
-> > +	if (IS_ERR(isink) || isink == NULL) {
-> > +		printk(KERN_ERR "%s: cant get ISINK\n", __func__);
-> > +		return PTR_ERR(isink);
+I expect we might want to get away from that mixture of __HAVE_ARCH..
+and #define actual_function_name all in the same highmem.h, but
+no reason why you should have to be the one to do such cleanup.
 
-> Uhm, if isink is ever NULL, which according to your check above you
-> expect it to happen, this will return 0, meaning success. I'm not sure
-> if this is what you want and looking at regulator_get() it should never
-> be NULL.
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> Date: Mon, 17 Nov 2008 14:08:49 +0000
+> Subject: Re: [PATCH] [ARM] clearpage: provide our own clear_user_highpage()
+> 
+> From: Russell King <rmk@dyn-67.arm.linux.org.uk>
+> 
+> For similar reasons as copy_user_page(), we want to avoid the
+> additional kmap_atomic if it's unnecessary.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-No, it should never be NULL - this is was inherited from the out of tree
-history.
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
-> > +	for (i = 0; i < ARRAY_SIZE(isink_cur) - 1; i++)
-
-> This loop will skip the last array member.
-
-This is intentional, it ensures that we always end up pointing to a
-value within the array.
-
-> > +int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
-> > +			struct wm8350_led_platform_data *pdata)
-> > +{
-> > +	struct wm8350_led *led = &wm8350->pmic.led[lednum];
-> > +	struct platform_device *pdev;
-> > +	int ret;
-> > +
-> > +	if (lednum > ARRAY_SIZE(wm8350->pmic.led) || lednum < 0) {
-> > +		dev_err(wm8350->dev, "Invalid LED index %d\n", lednum);
-> > +		return -ENODEV;
-> > +	}
-
-> You already used lednum as an array index above, I'm not sure if this
-> can have any side effects. I think it shouldn't, as you only use it to
-> get a pointer.
-
-It's out of spec to index beyond the end of the array but shouldn't
-produce any actual runtime problems unless the either the implementation
-or the platform code is being silly.  I'll shuffle the code around,
-though.
-
-Fixed everything else.
+> --- a/include/linux/highmem.h
+> +++ b/include/linux/highmem.h
+> @@ -63,12 +63,14 @@ static inline void *kmap_atomic(struct page *page, enum km_type idx)
+>  #endif /* CONFIG_HIGHMEM */
+>  
+>  /* when CONFIG_HIGHMEM is not set these will be plain clear/copy_page */
+> +#ifndef clear_user_highpage
+>  static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
+>  {
+>  	void *addr = kmap_atomic(page, KM_USER0);
+>  	clear_user_page(addr, vaddr, page);
+>  	kunmap_atomic(addr, KM_USER0);
+>  }
+> +#endif
+>  
+>  #ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+>  /**
+> 
+> ----- End forwarded message -----
+> 
+> ----- End forwarded message -----
