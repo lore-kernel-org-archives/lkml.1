@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbYKZNFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbYKZNEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755772AbYKZNFB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 08:05:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbYKZNDm
+	id S1755639AbYKZNEo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYKZNDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 08:03:42 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:35100 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755419AbYKZNDl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 08:03:41 -0500
-Message-ID: <492D4927.8040204@davidnewall.com>
-Date: Wed, 26 Nov 2008 23:33:35 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 26 Nov 2008 08:03:18 -0500
+Received: from mout-bounce.kundenserver.de ([212.227.17.2]:52881 "EHLO
+	mout-bounce.kundenserver.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755017AbYKZNDQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 08:03:16 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: Host<->guest channel interface advice needed
+Date: Wed, 26 Nov 2008 14:02:57 +0100
+User-Agent: KMail/1.9.9
+Cc: virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20081126123919.GC3521@redhat.com>
+In-Reply-To: <20081126123919.GC3521@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, john@johnmccutchan.com,
-       arnd@arndb.de, mtk.manpages@gmail.com, hch@lst.de, rlove@rlove.org,
-       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@suse.cz,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [take2] Inotify: nested attributes support.
-References: <20081125194234.GA24449@ioremap.net> <20081125162434.4feacbbf.akpm@linux-foundation.org> <20081126074239.GA17525@ioremap.net> <20081126001538.4b1c7c99.akpm@linux-foundation.org> <20081126082936.GB17525@ioremap.net> <492D4560.8000302@davidnewall.com> <20081126125113.GA8921@ioremap.net>
-In-Reply-To: <20081126125113.GA8921@ioremap.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200811261402.58033.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19WD5dyinswCac4jOyDdpVARzMx7EEoSozbahG
+ 8tdMtA3m5qlgGzVqMjEuP9n4O5mNhgsHvGpyqcypTHSryjVuLv
+ tLHvnvCTDhYfTkpUWZXow==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Wed, Nov 26, 2008 at 11:17:28PM +1030, David Newall (davidn@davidnewall.com) wrote:
->   
->> I don't think so.  As discussed,
->> (http://marc.info/?l=linux-kernel&m=122735413932519), you already can
->> differentiate I/O made by local users, so you don't need to modify inotify.
->>     
->
-> And as was shown it does not work for all cases and introduces unneded
-> performance overhead.
->   
+On Wednesday 26 November 2008, Gleb Natapov wrote:
+> The interfaces that are being considered are netlink socket (only datagram
+> semantics, linux specific), new socket family or character device with
+> different minor number for each channel. Which one better suits for
+> the purpose?  Is there other kind of interface to consider? New socket
+> family looks like a good choice, but it would be nice to hear other
+> opinions before starting to work on it.
 
-If the performance using a local loopback is insufficient, or even when
-using a UNIX domain socket, then it's going to be even worse for the
-actual network-connected clients.  And the cases were it doesn't work
-amount to poor system administration, which is a solvable problem.
+I think a socket and a pty both look reasonable here, but one important
+aspect IMHO is that you only need a new kernel driver for the guest, if
+you just use the regular pty support or Unix domain sockets in the host.
 
+Obviously, there needs to be some control over permissions, as a guest
+most not be able to just open any socket or pty of the host, so a
+reasonable approach might be that the guest can only create a socket
+or pty that can be opened by the host, but not vice versa. Alternatively,
+you create the socket/pty in host userspace and then allow passing that
+down into the guest, which creates a virtio device from it.
 
->> This change violates my first rule of programming: If there's two or
->> more ways of solving a problem, pick one; don't pick them all.
->>     
->
-> Then we should go back to caves, raw meat was so tasty...
-
-Amusing, but irrelevant to programming.
+	Arnd <><
