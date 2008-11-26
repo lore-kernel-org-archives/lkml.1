@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYKZPSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbYKZPS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbYKZPSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYKZPSB
+	id S1752503AbYKZPS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYKZPSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:18:01 -0500
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:59214 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbYKZPSA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:18:00 -0500
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jan Scholz <Scholz@fias.uni-frankfurt.de>, jirislaby@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] HID: Apple alu wireless keyboards are bluetooth devices
-References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de>
-	<1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>
-	<alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz>
-Date: Wed, 26 Nov 2008 16:17:46 +0100
-In-Reply-To: <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz> (Jiri
-	Kosina's message of "Wed, 26 Nov 2008 15:54:06 +0100 (CET)")
-Message-ID: <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 26 Nov 2008 10:18:46 -0500
+Received: from mga02.intel.com ([134.134.136.20]:9984 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751832AbYKZPSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:18:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,669,1220252400"; 
+   d="scan'208";a="467573843"
+Date: Wed, 26 Nov 2008 22:21:56 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "greg@kroah.com" <greg@kroah.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: [SR-IOV driver example 2/3] PF driver: integrate with SR-IOV core
+Message-ID: <20081126142156.GB13668@yzhao12-linux.sh.intel.com>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081126140303.GA13641@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081126140303.GA13641@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina@suse.cz> writes:
+This patch integrates the IGB driver with the SR-IOV core. It shows how
+the SR-IOV API is used to support the capability. Obviously people does
+not need to put much effort to integrate the PF driver with SR-IOV core.
+All SR-IOV standard stuff are handled by SR-IOV core and PF driver only
+concerns the device specific resource allocation and deallocation once it
+gets the necessary information (i.e. number of Virtual Functions) from
+the callback function.
 
-> On Wed, 26 Nov 2008, Jan Scholz wrote:
->
->> Changed HID_USB_DEVICE to HID_BLUETOOTH_DEVICE for the apple alu
->> wireless keyboards
->> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
->> ---
->>  drivers/hid/hid-apple.c |    6 +++---
->>  drivers/hid/hid-core.c  |    6 +++---
->>  2 files changed, 6 insertions(+), 6 deletions(-)
->> 
->> diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
->> index 9b97795..aa28aed 100644
->> --- a/drivers/hid/hid-apple.c
->> +++ b/drivers/hid/hid-apple.c
->> @@ -400,12 +400,12 @@ static const struct hid_device_id apple_devices[] = {
->>  	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_JIS),
->>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
->>  			APPLE_RDESC_JIS },
->> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
->> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
->>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
->> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
->> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
->>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
->>  			APPLE_ISO_KEYBOARD },
->> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
->> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
->>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
->>  	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
->>  		.driver_data = APPLE_HAS_FN },
->
-> Hi Jan,
->
-> shouldn't we rather have both USB and Bluetooth variants?
->
-> Thanks,
+---
+ drivers/net/igb/igb_main.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-Hi Jiri,
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index bc063d4..b8c7dc6 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -139,6 +139,7 @@ void igb_set_mc_list_pools(struct igb_adapter *, struct e1000_hw *, int, u16);
+ static int igb_vmm_control(struct igb_adapter *, bool);
+ static int igb_set_vf_mac(struct net_device *, int, u8*);
+ static void igb_mbox_handler(struct igb_adapter *);
++static int igb_virtual(struct pci_dev *, int);
+ #endif
+ 
+ static int igb_suspend(struct pci_dev *, pm_message_t);
+@@ -184,6 +185,9 @@ static struct pci_driver igb_driver = {
+ #endif
+ 	.shutdown = igb_shutdown,
+ 	.err_handler = &igb_err_handler,
++#ifdef CONFIG_PCI_IOV
++	.virtual = igb_virtual
++#endif
+ };
+ 
+ static int global_quad_port_a; /* global quad port a indication */
+@@ -5107,6 +5111,32 @@ void igb_set_mc_list_pools(struct igb_adapter *adapter,
+ 	reg_data |= (1 << 25);
+ 	wr32(E1000_VMOLR(pool), reg_data);
+ }
++
++static	int
++igb_virtual(struct pci_dev *pdev, int nr_virtfn)
++{
++	unsigned char my_mac_addr[6] = {0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0xFF};
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igb_adapter *adapter = netdev_priv(netdev);
++	int i;
++
++	if (nr_virtfn > 7)
++		return -EINVAL;
++
++	if (nr_virtfn) {
++		for (i = 0; i < nr_virtfn; i++) {
++			printk(KERN_INFO "SR-IOV: VF %d is enabled\n", i);
++			my_mac_addr[5] = (unsigned char)i;
++			igb_set_vf_mac(netdev, i, my_mac_addr);
++			igb_set_vf_vmolr(adapter, i);
++		}
++	} else
++		printk(KERN_INFO "SR-IOV is disabled\n");
++
++	adapter->vfs_allocated_count = nr_virtfn;
++
++	return 0;
++}
+ #endif
+ 
+ /* igb_main.c */
+-- 
+1.5.4.4
 
-Hm, I thought the USB_DEVICE_ID_APPLE_ALU_{ANSI,ISO,JIS} were apples usb
-aluminum keyboards (standard desktop size), while the
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_{ANSI,ISO,JIS} ones were the aluminum
-bluetooth keyboards (notebook sized, no numeric keypad, etc).
-
-The one I own is a USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, german layout,
-with bluetooth, unfortunately I don't have access to a usb variant.
-
-Jan
