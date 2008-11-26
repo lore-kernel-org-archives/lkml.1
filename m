@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbYKZOyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYKZOyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753674AbYKZOyE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 09:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYKZOxv
+	id S1754146AbYKZOyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 09:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbYKZOyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 09:53:51 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:34749 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbYKZOxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 09:53:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=DnUdgZ1qpwhjG9ZYCaEfMeWkui1pZ1SDDa11KFL8fQK8YOtPlM+/jVzb9XgEPcwM2G
-         SFBkabeyj53d9K30CPCg4neUP67nW56Cmk5iAmDNCwcYprr7bibSwXb7Ke+X//HfcyRZ
-         TpcI7cU/qSNMd5tS10IsKFjthNhJ5R36qgvR4=
-Message-ID: <84144f020811260653w2f65e01boab854492bdbe5ef3@mail.gmail.com>
-Date: Wed, 26 Nov 2008 16:53:49 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "David Rientjes" <rientjes@google.com>
-Subject: Re: [patch] slub: make early_kmem_cache_node_alloc void
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0811251853250.5358@chino.kir.corp.google.com>
+	Wed, 26 Nov 2008 09:54:09 -0500
+Received: from styx.suse.cz ([82.119.242.94]:38698 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753818AbYKZOyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 09:54:07 -0500
+Date: Wed, 26 Nov 2008 15:54:06 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] HID: Apple alu wireless keyboards are bluetooth
+ devices
+In-Reply-To: <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>
+Message-ID: <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz>
+References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de> <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.2.00.0811251853250.5358@chino.kir.corp.google.com>
-X-Google-Sender-Auth: c5a8a1dd954498a3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 5:14 AM, David Rientjes <rientjes@google.com> wrote:
-> The return value for early_kmem_cache_node_alloc() is unused, so it is
-> better defined as void.
->
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Signed-off-by: David Rientjes <rientjes@google.com>
+On Wed, 26 Nov 2008, Jan Scholz wrote:
 
-Applied, thanks!
+> Changed HID_USB_DEVICE to HID_BLUETOOTH_DEVICE for the apple alu
+> wireless keyboards
+> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> ---
+>  drivers/hid/hid-apple.c |    6 +++---
+>  drivers/hid/hid-core.c  |    6 +++---
+>  2 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+> index 9b97795..aa28aed 100644
+> --- a/drivers/hid/hid-apple.c
+> +++ b/drivers/hid/hid-apple.c
+> @@ -400,12 +400,12 @@ static const struct hid_device_id apple_devices[] = {
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_JIS),
+>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
+>  			APPLE_RDESC_JIS },
+> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
+> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
+>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
+> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
+>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
+>  			APPLE_ISO_KEYBOARD },
+> -	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
+> +	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
+>  		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
+>  		.driver_data = APPLE_HAS_FN },
+
+Hi Jan,
+
+shouldn't we rather have both USB and Bluetooth variants?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
