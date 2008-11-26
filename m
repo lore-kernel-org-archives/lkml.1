@@ -1,69 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYKZI2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYKZI2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbYKZI2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 03:28:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYKZI17
+	id S1753476AbYKZI2i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 03:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYKZI20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 03:27:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39234 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbYKZI16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 03:27:58 -0500
-Date: Wed, 26 Nov 2008 09:27:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] scripts: script from kerneloops.org to pretty print
-	oops dumps
-Message-ID: <20081126082744.GL26036@elte.hu>
-References: <20081123130042.1d194768@infradead.org> <20081126072445.GG26036@elte.hu> <20081126001234.19c9a7b0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081126001234.19c9a7b0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 26 Nov 2008 03:28:26 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:1605 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbYKZI2Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 03:28:25 -0500
+Date: Wed, 26 Nov 2008 09:28:08 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: jbarnes@virtuousgeek.org, greg@kroah.com, miltonm@bga.com,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, allen.m.kay@intel.com, jun.nakajima@intel.com
+Subject: Re: [PATCH 1/2] PCI: allow pci driver to support only dynids
+Message-ID: <20081126092808.48519dcb@hyperion.delvare>
+In-Reply-To: <20081126033610.GB19881@sequoia.sous-sol.org>
+References: <20081126033610.GB19881@sequoia.sous-sol.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Chris,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, 25 Nov 2008 19:36:10 -0800, Chris Wright wrote:
+> commit b41d6cf38e27 (PCI: Check dynids driver_data value for validity)
+> requires all drivers to include an id table to try and match
+> driver_data.  Before validating driver_data check driver has an id
+> table.
 
-> On Wed, 26 Nov 2008 08:24:45 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > >  scripts/markup_oops.pl |  162 ++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  1 files changed, 162 insertions(+), 0 deletions(-)
-> > >  create mode 100644 scripts/markup_oops.pl
-> > 
-> > looks useful - Andrew, Sam, any objections to this?
-> 
-> who-me-no-i-already-merged-it.
-> 
-> I didn't test it though - I don't have particularly high hopes given 
-> the general deadness of `make mm/memory.lst' for the past numerous 
-> years.
-> 
-> But it's worth trying.  The challenge will be getting people to 
-> remember that it exists, and to use it.
-> 
-> I often turn off CONFIG_DEUG_INFO because it slows builds down so 
-> much. It is irritating when such a kernel goes splat.
+Sorry for missing this case.
 
-i keep DEBUG_INFO turned off all the time, and only turn it on if 
-really needed. But in that case i can just turn it on and rebuild: 
-recent gccs seem better at keeping the image unmodified. (or at least 
-so i kid myself)
+> Cc: Jean Delvare <khali@linux-fr.org>
+> Cc: Milton Miller <miltonm@bga.com>
+> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> ---
+>  drivers/pci/pci-driver.c |   20 +++++++++++---------
+>  1 files changed, 11 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index b4cdd69..0a5edbe 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -48,7 +48,7 @@ store_new_id(struct device_driver *driver, const char *buf, size_t count)
+>  		subdevice=PCI_ANY_ID, class=0, class_mask=0;
+>  	unsigned long driver_data=0;
+>  	int fields=0;
+> -	int retval;
+> +	int retval=0;
+>  
+>  	fields = sscanf(buf, "%x %x %x %x %x %x %lx",
+>  			&vendor, &device, &subvendor, &subdevice,
+> @@ -58,16 +58,18 @@ store_new_id(struct device_driver *driver, const char *buf, size_t count)
+>  
+>  	/* Only accept driver_data values that match an existing id_table
+>  	   entry */
+> -	retval = -EINVAL;
+> -	while (ids->vendor || ids->subvendor || ids->class_mask) {
+> -		if (driver_data == ids->driver_data) {
+> -			retval = 0;
+> -			break;
+> +	if (ids) {
+> +		retval = -EINVAL;
+> +		while (ids->vendor || ids->subvendor || ids->class_mask) {
+> +			if (driver_data == ids->driver_data) {
+> +				retval = 0;
+> +				break;
+> +			}
+> +			ids++;
+>  		}
+> -		ids++;
+> +		if (retval)	/* No match */
+> +			return retval;
+>  	}
+> -	if (retval)	/* No match */
+> -		return retval;
+>  
+>  	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+>  	if (!dynid)
 
-Years ago the image would mute a bit with DEBUG_INFO enabled, making 
-the splat info fuzzy. Seems better now.
+Do we really want to let the user add a new id to a driver which didn't
+have any? Wouldn't it be safer to simply not create the new_id sysfs
+file if driver->id_table is NULL? That's a one-line change:
 
-	Ingo
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/pci/pci-driver.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.28-rc6.orig/drivers/pci/pci-driver.c	2008-10-24 09:28:14.000000000 +0200
++++ linux-2.6.28-rc6/drivers/pci/pci-driver.c	2008-11-26 09:23:46.000000000 +0100
+@@ -113,7 +113,7 @@ static int
+ pci_create_newid_file(struct pci_driver *drv)
+ {
+ 	int error = 0;
+-	if (drv->probe != NULL)
++	if (drv->probe != NULL && drv->id_table != NULL)
+ 		error = driver_create_file(&drv->driver, &driver_attr_new_id);
+ 	return error;
+ }
+
+As a side note, I am curious what PCI driver we do have which has
+driver->probe defined but no driver->id_table. Did you hit an actual
+issue or are you fixing a theoretical one?
+
+Thanks,
+-- 
+Jean Delvare
