@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbYKZMoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYKZMqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbYKZMoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 07:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKZMoX
+	id S1753956AbYKZMqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 07:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYKZMqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:44:23 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:40773 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751506AbYKZMoX (ORCPT
+	Wed, 26 Nov 2008 07:46:12 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:34848 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751506AbYKZMqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:44:23 -0500
-Date: Wed, 26 Nov 2008 21:47:07 +0900 (JST)
-Message-Id: <20081126.214707.653026525707335397.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       fchecconi@gmail.com, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20081125162720.GH341@redhat.com>
-References: <20081120134701.GB29306@redhat.com>
-	<20081125.113359.623571555980951312.ryov@valinux.co.jp>
-	<20081125162720.GH341@redhat.com>
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Wed, 26 Nov 2008 07:46:11 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiQFADTSLElMROB9/2dsb2JhbACBbdENgn0
+Date: Wed, 26 Nov 2008 07:46:08 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] markers: comment usage of
+	marker_synchronize_unregister()
+Message-ID: <20081126124608.GA22504@Krystal>
+References: <20081126123652.GA9446@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081126123652.GA9446@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:42:37 up 9 days, 13:23,  2 users,  load average: 2.59, 1.79,
+	1.03
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Date: Tue, 25 Nov 2008 11:27:20 -0500
-
-> On Tue, Nov 25, 2008 at 11:33:59AM +0900, Ryo Tsuruta wrote:
-> > Hi Vivek,
-> > 
-> > > > > Ryo, do you still want to stick to two level scheduling? Given the problem
-> > > > > of it breaking down underlying scheduler's assumptions, probably it makes
-> > > > > more sense to the IO control at each individual IO scheduler.
-> > > > 
-> > > > I don't want to stick to it. I'm considering implementing dm-ioband's
-> > > > algorithm into the block I/O layer experimentally.
-> > > 
-> > > Thanks Ryo. Implementing a control at block layer sounds like another
-> > > 2 level scheduling. We will still have the issue of breaking underlying
-> > > CFQ and other schedulers. How to plan to resolve that conflict.
-> > 
-> > I think there is no conflict against I/O schedulers.
-> > Could you expain to me about the conflict?
+* Wu Fengguang (fengguang.wu@intel.com) wrote:
+> Add more comments to marker_synchronize_unregister() in order to
+> reduce the chance of misusing.
 > 
-> Because we do the buffering at higher level scheduler and mostly release
-> the buffered bios in the FIFO order, it might break the underlying IO
-> schedulers. Generally it is the decision of IO scheduler to determine in
-> what order to release buffered bios.
+> Based on comments from Lai Jiangshan <laijs@cn.fujitsu.com>.
 > 
-> For example, If there is one task of io priority 0 in a cgroup and rest of
-> the tasks are of io prio 7. All the tasks belong to best effort class. If
-> tasks of lower priority (7) do lot of IO, then due to buffering there is
-> a chance that IO from lower prio tasks is seen by CFQ first and io from
-> higher prio task is not seen by cfq for quite some time hence that task
-> not getting it fair share with in the cgroup. Similiar situations can
-> arise with RT tasks also.
-
-Thanks for your explanation. 
-I think that the same thing occurs without the higher level scheduler,
-because all the tasks issuing I/Os are blocked while the underlying
-device's request queue is full before those I/Os are sent to the I/O
-scheduler.
-
-> > > What do you think about the solution at IO scheduler level (like BFQ) or
-> > > may be little above that where one can try some code sharing among IO
-> > > schedulers? 
-> > 
-> > I would like to support any type of block device even if I/Os issued
-> > to the underlying device doesn't go through IO scheduler. Dm-ioband
-> > can be made use of for the devices such as loop device.
-> > 
+> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
+> ---
 > 
-> What do you mean by that IO issued to underlying device does not go
-> through IO scheduler? loop device will be associated with a file and
-> IO will ultimately go to the IO scheduler which is serving those file
-> blocks?
+> I'm still not sure about the last sentence. Can anyone clarify on
+> this? Thanks!
+> 
+> diff --git a/include/linux/marker.h b/include/linux/marker.h
+> index 889196c..89ce1b8 100644
+> --- a/include/linux/marker.h
+> +++ b/include/linux/marker.h
+> @@ -164,6 +164,12 @@ extern void *marker_get_private_data(const char *name, marker_probe_func *probe,
+>   * marker_synchronize_unregister must be called between the last marker probe
+>   * unregistration and the end of module exit to make sure there is no caller
+>   * executing a probe when it is freed.
+> + *
+> + * It must be called _also_ between unregistration and destruction the data
+> + * that unregistration-ed probes need to make sure there is no caller executing
+> + * a probe when it's data is destroyed.
 
-How about if the files is on an NFS-mounted file system?
+it's -> its
 
-> What's the use case scenario of doing IO control at loop device?
-> Ultimately the resource contention will take place on actual underlying
-> physical device where the file blocks are. Will doing the resource control
-> there not solve the issue for you?
+And the way it's written, this last sentence is a bit misleading. One
+might think that the synchronize_unregister has to be called two, when
+in fact it just has to be called once, but it must be called at a moment
+in time between unregister and free of any resource used by the probes,
+including the code which is removed by module unload.
 
-I don't come up with any use case, but I would like to make the
-resource controller more flexible. Actually, a certain block device
-that I'm using does not use the I/O scheduler.
+> + *
+> + * It works reliably only when all probe routines do not sleep and reschedule.
 
-Thanks,
-Ryo Tsuruta
+Per definition, preemption is disabled around marker probe execution, so
+I don't see why we should add this last sentence ?
+
+Mathieu
+
+>   */
+>  #define marker_synchronize_unregister() synchronize_sched()
+>  
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
