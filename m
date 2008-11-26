@@ -1,101 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYKZM7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYKZM7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYKZM7k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 07:59:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYKZM6B
+	id S1754539AbYKZM7z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 07:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYKZM6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:58:01 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:46127 "EHLO smtp.polymtl.ca"
+	Wed, 26 Nov 2008 07:58:03 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:46128 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752430AbYKZM54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752442AbYKZM54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Nov 2008 07:57:56 -0500
-Message-Id: <20081126124635.913740788@polymtl.ca>
+Message-Id: <20081126124636.558224073@polymtl.ca>
 References: <20081126124246.800751190@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Nov 2008 07:42:56 -0500
+Date: Wed, 26 Nov 2008 07:43:00 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "David S. Miller" <davem@davemloft.net>, linux-arch@vger.kernel.org
-Subject: [patch 10/17] Sparc64 : Trace clock
-Content-Disposition: inline; filename=sparc64-trace-clock.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:41 +0000
+       Ralf Baechle <ralf@linux-mips.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [patch 14/17] MIPS use tsc_sync.c
+Content-Disposition: inline; filename=mips-use-tsc_sync.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement sparc64 trace clock.
+tsc-sync.c is now available to test if TSC is synchronized across cores. Given
+I currently don't have access to a MIPS board myself, help trying to use it
+when CPUs go online and testing the implementation would be welcome.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: David S. Miller <davem@davemloft.net>
-CC: linux-arch@vger.kernel.org
+CC: Ralf Baechle <ralf@linux-mips.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/sparc/include/asm/trace-clock.h |   43 +++++++++++++++++++++++++++++++++++
- arch/sparc64/Kconfig                 |    1 
- 2 files changed, 44 insertions(+)
+ arch/mips/include/asm/timex.h |   26 ++++++++++++++++++++++++++
+ arch/mips/kernel/smp.c        |    1 +
+ 2 files changed, 27 insertions(+)
 
-Index: linux.trees.git/arch/sparc64/Kconfig
+Index: linux.trees.git/arch/mips/kernel/smp.c
 ===================================================================
---- linux.trees.git.orig/arch/sparc64/Kconfig	2008-11-26 06:48:52.000000000 -0500
-+++ linux.trees.git/arch/sparc64/Kconfig	2008-11-26 06:52:21.000000000 -0500
-@@ -18,6 +18,7 @@ config SPARC64
- 	select HAVE_ARCH_KGDB
- 	select USE_GENERIC_SMP_HELPERS if SMP
- 	select HAVE_ARCH_TRACEHOOK
-+	select HAVE_TRACE_CLOCK
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select RTC_CLASS
- 	select RTC_DRV_M48T59
-Index: linux.trees.git/arch/sparc/include/asm/trace-clock.h
+--- linux.trees.git.orig/arch/mips/kernel/smp.c	2008-11-12 18:15:47.000000000 -0500
++++ linux.trees.git/arch/mips/kernel/smp.c	2008-11-26 06:57:38.000000000 -0500
+@@ -178,6 +178,7 @@ void __init smp_cpus_done(unsigned int m
+ {
+ 	mp_ops->cpus_done();
+ 	synchronise_count_master();
++	test_tsc_synchronization();
+ }
+ 
+ /* called from main before smp_init() */
+Index: linux.trees.git/arch/mips/include/asm/timex.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux.trees.git/arch/sparc/include/asm/trace-clock.h	2008-11-26 06:52:02.000000000 -0500
-@@ -0,0 +1,43 @@
+--- linux.trees.git.orig/arch/mips/include/asm/timex.h	2008-11-26 06:49:34.000000000 -0500
++++ linux.trees.git/arch/mips/include/asm/timex.h	2008-11-26 06:57:38.000000000 -0500
+@@ -58,13 +58,39 @@ static inline cycles_t get_cycles_rate(v
+ {
+ 	return mips_hpt_frequency;
+ }
++
++extern int test_tsc_synchronization(void);
++extern int _tsc_is_sync;
++static inline int tsc_is_sync(void)
++{
++	return _tsc_is_sync;
++}
+ #else
+ static inline cycles_t get_cycles(void)
+ {
+ 	return 0;
+ }
++static inline int test_tsc_synchronization(void)
++{
++	return 0;
++}
++static inline int tsc_is_sync(void)
++{
++	return 0;
++}
+ #endif
+ 
++#define DELAY_INTERRUPT 100
 +/*
-+ * Copyright (C) 2008, Mathieu Desnoyers
-+ *
-+ * Trace clock definitions for Sparc64.
++ * Only updates 32 LSB.
 + */
-+
-+#ifndef _ASM_SPARC_TRACE_CLOCK_H
-+#define _ASM_SPARC_TRACE_CLOCK_H
-+
-+#include <linux/timex.h>
-+
-+static inline u32 trace_clock_read32(void)
++static inline void write_tsc(u32 val1, u32 val2)
 +{
-+	return get_cycles();
++	write_c0_count(val1);
++	/* Arrange for an interrupt in a short while */
++	write_c0_compare(read_c0_count() + DELAY_INTERRUPT);
 +}
 +
-+static inline u64 trace_clock_read64(void)
-+{
-+	return get_cycles();
-+}
-+
-+static inline unsigned int trace_clock_frequency(void)
-+{
-+	return get_cycles_rate();
-+}
-+
-+static inline u32 trace_clock_freq_scale(void)
-+{
-+	return 1;
-+}
-+
-+static inline void get_trace_clock(void)
-+{
-+}
-+
-+static inline void put_trace_clock(void)
-+{
-+}
-+
-+static inline void set_trace_clock_is_sync(int state)
-+{
-+}
-+#endif /* _ASM_SPARC_TRACE_CLOCK_H */
+ #endif /* __KERNEL__ */
+ 
+ #endif /*  _ASM_TIMEX_H */
 
 -- 
 Mathieu Desnoyers
