@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbYKZClH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbYKZCmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbYKZClH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:41:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYKZCkx
+	id S1753614AbYKZCmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYKZCmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:40:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36567 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Nov 2008 21:42:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37076 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbYKZCkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:40:52 -0500
-Date: Wed, 26 Nov 2008 03:40:32 +0100
+	id S1752008AbYKZCmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 21:42:44 -0500
+Date: Wed, 26 Nov 2008 03:42:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: fix error flow of crypto/testmgr.c:test_comp()
-Message-ID: <20081126024032.GA21259@elte.hu>
-References: <20081125085820.GA11401@elte.hu> <20081125152014.GB29096@gondor.apana.org.au> <20081125171438.GK22504@elte.hu> <20081125.170851.97706149.davem@davemloft.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/function-return-tracer: set a more human
+	readable output
+Message-ID: <20081126024232.GA31342@elte.hu>
+References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu> <20081126021450.GA17617@elte.hu> <alpine.DEB.1.10.0811252121440.26424@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081125.170851.97706149.davem@davemloft.net>
+In-Reply-To: <alpine.DEB.1.10.0811252121440.26424@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,36 +36,61 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> >     fix warning in drivers/net/sky2.c
-> >     fix warning in net/sunrpc/svcauth_unix.c
-> >     fix warning in security/selinux/netnode.c
-> >     fix warning in net/packet/af_packet.c
-> >     fix warning in net/rfkill/rfkill.c
 > 
-> Not applied.  Changing this from a BUG() to a panic() is wrong. 
-> BUG() kills the current execution context, and allows the system to 
-> potentially continue.  Panic() takes down the entire machine.
+> On Wed, 26 Nov 2008, Ingo Molnar wrote:
+> 
+> > 
+> > the regex filter doesnt work well yet when used with the graph tracer:
+> > 
+> > [ 2994.079079] ------------[ cut here ]------------
+> > [ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
+> > [ 2994.079079] Modules linked in:
+> > [ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
+> > [ 2994.079079] Call Trace:
+> > [ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
+> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
+> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
+> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
+> > [ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
+> > [ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
+> > [ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
+> > [ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
+> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
+> > [ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
+> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
+> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
+> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
+> > [ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
+> > [ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
+> > [ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
+> > [ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
+> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
+> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
+> > [ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
+> > [ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
+> > [ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
+> > [ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
+> > [ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
+> > [ 2994.079079] ---[ end trace bff97d149b80ecde ]---
+> > [ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
+> > [ 2994.079079]  actual: e8:0c:1a:fa:ff
+> > 
+> > produced via:
+> > 
+> >  # cd /debug/tracing/
+> >  # cat set_ftrace_filter
+> >  # echo schedule > set_ftrace_filter
+> >  # cat set_ftrace_filter
+> >  cat: set_ftrace_filter: No such device
+> 
+> This is probably fixed with my patch set.
 
-Yeah, although in practice a BUG() in some of those places will take 
-down the whole machine:
-
-  > >     fix warning in net/packet/af_packet.c
-
-That's packet receive path, holding spinlocks or in other atomic 
-context (irq/softirq)? A BUG() will take down the machine as we will 
-crash and try to schedule in atomic context.
-
-> The !CONFIG_BUG BUG() definition should be marked in such a way that 
-> gcc thinks it is noreturn.  Otherwise BUG() isn't really BUG() 
-> anymore.  The other option is to never allow BUG to be disabled or 
-> have it always evaluate to a simple bug trap.
-
-Yeah, but note that that's exactly the current behavior (and intent) 
-of !CONFIG_BUG: it is not doing anything (it's just an empty macro 
-which returns!), and we get those build warnings because the control 
-flow becomes undefined. We cannot mark it noreturn because it does 
-return.
+yeah - but note that the graph-tracer rename came in the way of them. 
+Mind redoing your two patches ontop of latest tip/master?
 
 	Ingo
