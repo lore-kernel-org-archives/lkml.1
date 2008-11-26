@@ -1,228 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbYKZDn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYKZDpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbYKZDn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 22:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYKZDm7
+	id S1754105AbYKZDpI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 22:45:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbYKZDo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 22:42:59 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:39981 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753205AbYKZDm6 (ORCPT
+	Tue, 25 Nov 2008 22:44:57 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:36475 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbYKZDo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 22:42:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:content-type
-         :content-transfer-encoding:from;
-        b=am54Itbo+CRTZ0xnkso47QqW/GvfReNCo7Kx71jSs/lLDJ/GhBrE3lb7xjcmM1Jhxd
-         Mp/cIPl9WJ4h3wPhYIlnEkhP2N/EkfTsrSSKY+b/Xkam0m7lPrvroA7i7rJEnKU81TDk
-         KX+3nszQ6mtjT1f9fp7BXGlTFG7TQf2zQCCkg=
-Message-ID: <492CC5B6.5040706@gmail.com>
-Date: Tue, 25 Nov 2008 22:42:46 -0500
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 25 Nov 2008 22:44:56 -0500
+Date: Tue, 25 Nov 2008 19:44:42 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com
+Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, sukadev@us.ibm.com
+Subject: [RFC][PATCH 1/5] pid: Implement ns_of_pid
+Message-ID: <20081126034442.GA23238@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-3.14 is released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081126034242.GA23120@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+>From f3dd53544a8a7a1c43009f686cbadec561e5a489 Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Mon, 10 Nov 2008 19:03:56 -0800
+Subject: [PATCH 1/5] pid: Implement ns_of_pid
 
-I've released man-pages-3.14.tar.gz - man pages for Linux
+A current problem with the pid namespace is that it is
+easy to do pid related work after exit_task_namespaces which
+drops the nsproxy pointer.
 
-This release is now available for download at:
+However if we are doing pid namespace related work we are
+always operating on some struct pid which retains the pid_namespace
+pointer of the pid namespace it was allocated in.
 
-  http://www.kernel.org/pub/linux/docs/man-pages
-  or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+So provide ns_of_pid which allows us to find the pid
+namespace a pid was allocated in.
 
-man-pages nowadays also has a public git repository at
+Using this we have the needed infrastructure to do pid
+namespace related work at anytime we have a struct pid,
+removing the chance of accidentally having a NULL
+pointer dereference when accessing current->nsproxy.
 
-  git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ include/linux/pid.h |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-The online changelog is available at
-http://www.kernel.org/doc/man-pages/changelog.html
-(blogged at
-http://linux-man-pages.blogspot.com/2008/11/man-pages-314-is-released.html)
-and the current version of the pages is browsable at
-http://www.kernel.org/doc/man-pages/
+diff --git a/include/linux/pid.h b/include/linux/pid.h
+index d7e98ff..e9aec85 100644
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -122,6 +122,17 @@ int next_pidmap(struct pid_namespace *pid_ns, int last);
+ extern struct pid *alloc_pid(struct pid_namespace *ns);
+ extern void free_pid(struct pid *pid);
+ 
++/* ns_of_pid returns the pid namespace in which the specified
++ * pid was allocated.
++ */
++static inline struct pid_namespace *ns_of_pid(struct pid *pid)
++{
++	struct pid_namespace *ns = NULL;
++	if (pid)
++		ns = pid->numbers[pid->level].ns;
++	return ns;
++}
++
+ /*
+  * the helpers to get the pid's id seen from different namespaces
+  *
+-- 
+1.5.2.5
 
-Cheers,
-
-Michael
-
-
-
-==================== Changes in man-pages-3.14 ====================
-
-
-New and rewritten pages
------------------------
-
-CPU_SET.3
-    Michael Kerrisk
-        New page documenting CPU_* macros
-            This page contains material moved out of sched_setscheduler(2).
-            It overwrites a previously existing link file with the same name.
-
-pthread_attr_setinheritsched.3
-    Michael Kerrisk
-        New page for pthread_attr_setinheritsched(3) and
-        pthread_attr_getinheritsched(3)
-
-pthread_cancel.3
-    Michael Kerrisk
-        New page for pthread_cancel(3)
-
-pthread_cleanup_push.3
-    Michael Kerrisk
-        New page for pthread_cleanup_push(3) and pthread_cleanup_pop(3)
-
-pthread_setcancelstate.3
-    Michael Kerrisk
-        New page for pthread_setcancelstate(3) and pthread_setcanceltype(3)
-
-pthread_testcancel.3
-    Michael Kerrisk
-        New page for pthread_testcancel(3)
-
-
-Newly documented interfaces in existing pages
----------------------------------------------
-
-clone.2
-    Jens Axboe
-        Document CLONE_IO (new in Linux 2.6.25)
-            Some text also by mtk.
-    Michael Kerrisk
-        Document CLONE_NEWNET
-    Michael Kerrisk
-        Document CLONE_NEWUTS (new in Linux 2.6.19)
-    Michael Kerrisk
-        Document CLONE_NEWIPC flag (new in Linux 2.6.19)
-    Michael Kerrisk
-        Document CLONE_NEWPID flag (new in Linux 2.6.24)
-
-mmap.2
-    Michael Kerrisk
-        Document MAP_STACK flag (new in Linux 2.6.27)
-
-arp.7
-    Michael Kerrisk
-        Document /proc file retrans_time_ms (new in Linux 2.6.12)
-    Michael Kerrisk
-        Document /proc file base_reachable_time_ms (new in Linux 2.6.12)
-
-icmp.7
-    Michael Kerrisk
-        Document icmp_ignore_bogus_error_responses (new in Linux 2.2)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document icmp_ratelimit and icmp_ratemask (new in Linux 2.4.10)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document icmp_echo_ignore_broadcasts (new in Linux 2.6.12)
-            Text taken from Documentation/networking/ip-sysctl.txt
-
-tcp.7
-    Michael Kerrisk
-        Document /proc file tcp_slow_start_after_idle (new in Linux 2.6.18)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_base_mss (new in Linux 2.6.17)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_frto_response (new in Linux 2.6.22)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_moderate_rcvbuf (new in Linux 2.4.17/2.6.7)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_congestion_control (new in Linux 2.4.13)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_no_metrics_save (new in Linux 2.6.6)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_mtu_probing (new in Linux 2.6.17)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_dma_copybreak (new in Linux 2.6.24)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_tso_win_divisor (new in Linux 2.6.9)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_allowed_congestion_control (new in Linux 2.4.20)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_workaround_signed_windows (new in Linux 2.6.26)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_available_congestion_control (new in Linux 2.4.20)
-            Text taken from Documentation/networking/ip-sysctl.txt
-    Michael Kerrisk
-        Document /proc file tcp_abc (new in Linux 2.6.15)
-            Text taken from Documentation/networking/ip-sysctl.txt
-
-udp.7
-    Michael Kerrisk
-        Document /proc files udp_mem, udp_rmem_min, and udp_wmem_min
-            All of these are new in Linux 2.6.25
-
-
-Changes to individual pages
----------------------------
-
-sysctl.2
-    Michael Kerrisk
-        Add prominent warning against using this system call
-            This was already stated under NOTES, but make it even more
-            prominent by adding a sentence at the start of the DESCRIPTION.
-
-clock_getres.3
-    Michael Kerrisk
-        CLOCK_PROCESS_CPUTIME_ID and CLOCK_THREAD_CPUTIME_ID not settable
-            According to POSIX.1-2001, the CLOCK_PROCESS_CPUTIME_ID and
-            CLOCK_THREAD_CPUTIME_ID clocks should be settable, but
-            currently they are not.
-
-makecontext.3
-    Michael Kerrisk
-        Add text on use of pointer arguments to makecontext()
-            Passing pointer arguments to makecontext() is possible,
-            but only on some architectures, and with no guarantees
-            of portability.
-
-            http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=504699
-
-syslog.3
-    Masanari Iida
-        LOG_KERN messages can't be generated from user processes
-            Masanari notes that this is an FAQ for logger(1) and that
-            Solaris and FreeBSD document this point in syslog(3).
-            The glibc info page also hides this comment in its source:
-
-                Internally, there is also LOG_KERN, but LOG_KERN == 0,
-                which means if you try to use it here, just selects default.
-
-tcp.7
-    Michael Kerrisk
-        Update description of tcp_rmem defaults for Linux 2.6
-    Michael Kerrisk
-        The tcp_bic* proc files disappeared in Linux 2.6.13
-    Michael Kerrisk
-        tcp_vegas_cong_avoid disappeared in Linux 2.6.13
-    Michael Kerrisk
-        Clarify that tcp_mem measures in units of the system page size
-    Michael Kerrisk
-        Update tcp_frto description for 2.6.22 changes
-            Linux 2.6.22 added a mode value 2 ("Enable SACK-enhanced
-            F-RTO if flow uses SACK").
-    Michael Kerrisk
-        tcp_westwood /proc file disappeared in Linux 2.6.13
-    Michael Kerrisk
-        Update description of tcp_wmem defaults for Linux 2.6
