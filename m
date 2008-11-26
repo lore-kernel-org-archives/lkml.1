@@ -1,116 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYKZPud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYKZPyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbYKZPud (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYKZPuW
+	id S1753917AbYKZPyr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYKZPyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:50:22 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:28433 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752266AbYKZPuT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:50:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=JFIGrRfTJGqqp9pFRwAz59GmL7RxREKYaM45Gl6/77sup9HK3ER0j8G7Rl3sv3z9WL
-         uqN1xiJMfHt5jvZpniXivo7rUAu2XW/a/CC3tEy/k2ex5fVZz5ZJSIrzOauCpSVNZ8fy
-         ayXNPuPGSctJNOq3i7twKt40z5sQ0Xn7Geib8=
-Message-ID: <7c86c4470811260750n4e6737c7h4518d89269f59ecb@mail.gmail.com>
-Date: Wed, 26 Nov 2008 16:50:17 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 06/24] perfmon: generic x86 definitions (x86)
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <alpine.LFD.2.00.0811261628290.3325@localhost.localdomain>
+	Wed, 26 Nov 2008 10:54:37 -0500
+Received: from mail.sflc.info ([216.27.154.199]:42955 "EHLO mail.sflc.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752343AbYKZPyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:54:36 -0500
+X-Greylist: delayed 1156 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Nov 2008 10:54:36 EST
+From: "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>
+To: <linux-wireless@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <ath5k-devel@venema.h4ckr.net>, <ath9k-devel@venema.h4ckr.net>
+Cc: karen@softwarefreedom.org
+Subject: Re: License of changes to ath5k/ath9k
+Organization: Software Freedom Law Center
+References: <20081125210421.GF5950@tesla>
+X-Archive: no
+X-No-Archive: yes
+Date: Wed, 26 Nov 2008 09:59:25 -0500
+In-Reply-To: <20081125210421.GF5950@tesla> (Luis R. Rodriguez's message of
+	"Tue, 25 Nov 2008 13:04:21 -0800")
+Message-ID: <87d4gi4joy.fsf@ebb.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492d0be4.09b6660a.1678.ffffa78b@mx.google.com>
-	 <alpine.LFD.2.00.0811261440330.3325@localhost.localdomain>
-	 <7c86c4470811260619y5c4c788er61c8704a5c62d17e@mail.gmail.com>
-	 <alpine.LFD.2.00.0811261628290.3325@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+Luis Rodriguez wrote at 16:04 (EST) on Tuesday:
 
-On Wed, Nov 26, 2008 at 4:44 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Stephane,
->
-> On Wed, 26 Nov 2008, stephane eranian wrote:
->> The goal of the TIF flag is to force the thread to go do some extra work on
->> kernel exit. There are two situations where this is necessary, there is one
->> in the current patchset, the other is related to sampling (not yet provided).
->>
->> With per-thread monitoring, a tool is monitoring another thread, possibly in
->> another process. The monitored process and the tool may not be parent
->> of each other.
->>
->> What happens if the tool dies BEFORE it can cleanly close the
->> monitoring session?
->>
->> There are 2 scenarios:
->>   1- the monitored process also had the perfmon file descriptor open,
->> e.g., inherited
->>      on fork/exec. In that case the monitored thread will keep on
->> running to completion
->>      with an attached perfmon context.
->
-> So no TIF work for this case, right ?
->
-Correct.
+> We have been using the Changes-licensed-under tag [1] for ath5k
+> development but for ath9k we tend to ask developers individually if
+> they are willing submit their changes and any future ath9k changes
+> under the ISC. We keep this for our records just in case you haven't
+> read the Singed-off-by.  I think it'd be easier too if we ensure
+> developers really read that document too and ensure they understand it
+> and also understood why are are doing this.
 
->>   2- the monitoring had the last reference to the file descriptor. In
->> that case, we have a
->>      perfmon context attached to a thread but no mean to get to it
->> from userland. This is
->>      the case where we declare the context as ZOMBIE.
->>
->>      I think Andi confused it with the meaning of ZOMBIE for the
->> process. In this situation,
->>      we want to cleanup the context and make sure monitoring is stopped.
->>
->>      That has to be done by the monitored thread. The issue is that
->> the thread may notice
->>      the context is ZOMBIE during context switch in. At this level, we
->> run with interrupts
->>      disabled, and it is not possible to free certain resources. So
->> instead, we set the TIF
->>      flag, and let the thread clean things up at a much higher level
->> in the kernel execution
->>      somewhere where we know we can safely call certain kernel APIs, e.g, kfree.
->
-> There is no harm, when the context is kept around, right ?
->
+> We'll keep using the ath5k Changes-licensed-under tag until we get
+> advice from SFLC if we have done enough to ensure this is no longer
+> necessary.
 
-Well, there are possibly PMU interrupts. If the monitored thread is
-active on the CPU
-by the time the tool dies, then it will keep on running with
-monitoring on, until it is
-context switched out or dies.
+I should note that there's no specific magic to the
+Changes-licensed-under tag; we developed with with Luis as a mechanism
+and tool to do the the thing that mattered: Carefully catalog the fact
+that each person who makes a change on an ISC-licensed codebase agrees
+to keep the code under ISC license for later sharing with BSD folks.
 
-With the approach currently implemented, the TIF bit will be set and
-as soon as the thread
-leaves the kernel for any reason,  it will execute the cleanup
-function which will stop
-monitoring and free the context.
+There are probably a dozen methods you could use to do this job, and
+really you should use whatever method works for the development team.
+The only fundamental requirement is that it be rigorous, detailed and
+complete.
 
->> Another possible solution (which is not implemented):
->>      - just let the context attached and run the thread to completion.
->> If another tool wants to
->>        attach to the same thread, it will detect there is already a
->> context attached, and that it is
->>        marked ZOMBIE, so it will clean it up. This is a lazy cleanup approach.
->
-> Looks like ctx is a couple of hundred bytes, so just keep it around
-> until thread exit time or until the other tool does the cleanup
-> possibly by recycling the context.
->
-That's true except for the caveat described above.
+Of course, if situations change and become more complicated, the Linux
+Wireless team is welcome to contact me and Karen at the Software Freedom
+Law Center for additional legal advice on this subject.
+
+Bob Copeland wrote on at 16:28 (EST) on Tuesday:
+> I don't consider any of my changes significant enough to confer
+> copyright,
+
+Most non-lawyers like myself are amazed to find how little it takes for
+something to confer copyright.  If you did anything more than correct a
+spelling error, it's always better to assume you have a copyright
+interest in the work.  Sometimes, you'll be wrong, but more often than
+not, it will turn out the thing that looked uncopyrightable actually
+*is* copyrightable under the Draconian copyright laws that now exist in
+most industrialized countries.
+
+> However, if everyone + SFLC prefers that we strictly use
+> Changes-licensed-under even if we don't claim copyright, then I'll
+> happily add the tag generator script to a git commit hook :)
+
+Yeah, exactly, it's an easy thing to do just to be sure.  The worst that
+happens is that you didn't have copyright in the thing, and your consent
+to the ISC licensing of the work wasn't actually needed, but you gave it
+anyway.  (It's like saying: "I consent to you going to the store today".
+You didn't need my consent, but it doesn't hurt that you have it.)  This
+is far better than the alternative: that the consent was needed but it
+wasn't given because it seemed the changes weren't copyrightable but
+they actually were.
+
+
+BTW, SFLC published a white paper on this issue that might be of interest:
+
+http://www.softwarefreedom.org/resources/2007/gpl-non-gpl-collaboration.html
+-- 
+Bradley M. Kuhn, Policy Analyst and Technology Director
+                 Software Freedom Law Center
