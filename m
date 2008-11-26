@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbYKZKJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYKZKKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752668AbYKZKJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 05:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKZKJJ
+	id S1753275AbYKZKKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 05:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYKZKKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 05:09:09 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:38997 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYKZKJH (ORCPT
+	Wed, 26 Nov 2008 05:10:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48700 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbYKZKKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 05:09:07 -0500
-Date: Wed, 26 Nov 2008 11:08:59 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Ben Gardner <bgardner@wabtec.com>, Eric Miao <eric.miao@marvell.com>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [Linux-fbdev-devel] [RFC 2.6.27 1/1] gpiolib: add support for
- batch set of pins
-In-Reply-To: <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811261106180.2632@anakin>
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
- <492D125D.5010607@teltonika.lt> <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
+	Wed, 26 Nov 2008 05:10:32 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+Subject: Re: [PATCH 2/3 v2] proc: Export statistics for softirq to /proc
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, h-shimamoto@ct.jp.nec.com
+In-Reply-To: <20081121202708.95ec8b3f.kobayashi.kk@ncos.nec.co.jp>
+References: <20081121202232.0489f84b.kobayashi.kk@ncos.nec.co.jp> <20081121202708.95ec8b3f.kobayashi.kk@ncos.nec.co.jp>
+Message-Id: <20081126190603.3CC3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 26 Nov 2008 19:10:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, Jaya Kumar wrote:
-> On Wed, Nov 26, 2008 at 4:09 AM, Paulius Zaleckas
-> <paulius.zaleckas@teltonika.lt> wrote:
-> > Jaya Kumar wrote:
-> >>   * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
-> >>   *   implementation may not sleep
-> >>   * @dbg_show: optional routine to show contents in debugfs; default code
-> >> @@ -84,6 +86,9 @@ struct gpio_chip {
-> >>                                               unsigned offset, int value);
-> >>       void                    (*set)(struct gpio_chip *chip,
-> >>                                               unsigned offset, int value);
-> >> +     void                    (*set_bus)(struct gpio_chip *chip,
-> >> +                                             unsigned offset, int values,
-> >
-> > I think values should be unsigned
-> >
-> 
-> Okay, can do but it is unusual no? since set uses int value, i figured
-> set_bus should be similar right?
+nit
 
-->set() sets one pin, right? So it's either 0 or 1.
+> @@ -49,6 +50,10 @@ static int show_stat(struct seq_file *p, void *v)
+>  			sum += kstat_irqs_cpu(j, i);
+>  
+>  		sum += arch_irq_stat_cpu(i);
+> +
+> +		for (j = 0; j < NR_SOFTIRQS; j++)
+> +			sum_softirq += kstat_softirqs_cpu(j, i);
+> +
+>  	}
 
-->set_bus() sets multiple pins. With `int', it will fail for bit 31, as that's
-the sign bit.
+You can calcurate per_irq_sum here.
+Typically, # of possible cpu are very big.
 
-Perhaps you even want u32, to make it clear what's the maximum number of pins
-you can set in one shot?
+So, I don't like unnecessary twrice looping.
 
-Gr{oetje,eeting}s,
 
-						Geert
+>  	sum += arch_irq_stat();
+>  
+> @@ -111,6 +116,18 @@ static int show_stat(struct seq_file *p, void *v)
+>  		nr_running(),
+>  		nr_iowait());
+>  
+> +	seq_printf(p, "softirq %llu", (unsigned long long)sum_softirq);
+> +
+> +	for (i = 0; i < NR_SOFTIRQS; i++) {
+> +		per_irq_sum = 0;
+> +
+> +		for_each_possible_cpu(j)
+> +			per_irq_sum += kstat_softirqs_cpu(i, j);
+> +
+> +		seq_printf(p, " %u", per_irq_sum);
+> +	}
+> +	seq_printf(p, "\n");
+> +
+>  	return 0;
+>  }
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
