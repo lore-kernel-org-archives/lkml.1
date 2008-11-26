@@ -1,181 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYKZPtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYKZPud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbYKZPtY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYKZPtR
+	id S1754336AbYKZPud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYKZPuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:49:17 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38977 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751038AbYKZPtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:49:16 -0500
-Date: Wed, 26 Nov 2008 13:48:12 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Alan Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] 8250: fix boot hang with serial console when using with
- Serial Over Lan port
-Message-ID: <20081126134812.573d3d9e@pedra.chehab.org>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Nov 2008 10:50:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:28433 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbYKZPuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:50:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=JFIGrRfTJGqqp9pFRwAz59GmL7RxREKYaM45Gl6/77sup9HK3ER0j8G7Rl3sv3z9WL
+         uqN1xiJMfHt5jvZpniXivo7rUAu2XW/a/CC3tEy/k2ex5fVZz5ZJSIrzOauCpSVNZ8fy
+         ayXNPuPGSctJNOq3i7twKt40z5sQ0Xn7Geib8=
+Message-ID: <7c86c4470811260750n4e6737c7h4518d89269f59ecb@mail.gmail.com>
+Date: Wed, 26 Nov 2008 16:50:17 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [patch 06/24] perfmon: generic x86 definitions (x86)
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
+In-Reply-To: <alpine.LFD.2.00.0811261628290.3325@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <492d0be4.09b6660a.1678.ffffa78b@mx.google.com>
+	 <alpine.LFD.2.00.0811261440330.3325@localhost.localdomain>
+	 <7c86c4470811260619y5c4c788er61c8704a5c62d17e@mail.gmail.com>
+	 <alpine.LFD.2.00.0811261628290.3325@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Intel 8257x Ethernet boards have a feature called Serial Over Lan.
+Thomas,
 
-This feature works by emulating a serial port, and it is detected by
-kernel as a normal 8250 port. However, this emulation is not perfect, as also
-noticed on changeset 7500b1f602aad75901774a67a687ee985d85893f.
+On Wed, Nov 26, 2008 at 4:44 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Stephane,
+>
+> On Wed, 26 Nov 2008, stephane eranian wrote:
+>> The goal of the TIF flag is to force the thread to go do some extra work on
+>> kernel exit. There are two situations where this is necessary, there is one
+>> in the current patchset, the other is related to sampling (not yet provided).
+>>
+>> With per-thread monitoring, a tool is monitoring another thread, possibly in
+>> another process. The monitored process and the tool may not be parent
+>> of each other.
+>>
+>> What happens if the tool dies BEFORE it can cleanly close the
+>> monitoring session?
+>>
+>> There are 2 scenarios:
+>>   1- the monitored process also had the perfmon file descriptor open,
+>> e.g., inherited
+>>      on fork/exec. In that case the monitored thread will keep on
+>> running to completion
+>>      with an attached perfmon context.
+>
+> So no TIF work for this case, right ?
+>
+Correct.
 
-Before this patch, the kernel were trying to check if the serial TX is
-capable of work using IRQ's. 
+>>   2- the monitoring had the last reference to the file descriptor. In
+>> that case, we have a
+>>      perfmon context attached to a thread but no mean to get to it
+>> from userland. This is
+>>      the case where we declare the context as ZOMBIE.
+>>
+>>      I think Andi confused it with the meaning of ZOMBIE for the
+>> process. In this situation,
+>>      we want to cleanup the context and make sure monitoring is stopped.
+>>
+>>      That has to be done by the monitored thread. The issue is that
+>> the thread may notice
+>>      the context is ZOMBIE during context switch in. At this level, we
+>> run with interrupts
+>>      disabled, and it is not possible to free certain resources. So
+>> instead, we set the TIF
+>>      flag, and let the thread clean things up at a much higher level
+>> in the kernel execution
+>>      somewhere where we know we can safely call certain kernel APIs, e.g, kfree.
+>
+> There is no harm, when the context is kept around, right ?
+>
 
-This were done with a code similar this:
+Well, there are possibly PMU interrupts. If the monitored thread is
+active on the CPU
+by the time the tool dies, then it will keep on running with
+monitoring on, until it is
+context switched out or dies.
 
-        serial_outp(up, UART_IER, UART_IER_THRI);
-        lsr = serial_in(up, UART_LSR);
-        iir = serial_in(up, UART_IIR);
-        serial_outp(up, UART_IER, 0);
+With the approach currently implemented, the TIF bit will be set and
+as soon as the thread
+leaves the kernel for any reason,  it will execute the cleanup
+function which will stop
+monitoring and free the context.
 
-        if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT)
-		up->bugs |= UART_BUG_TXEN;
-
-This works fine for other 8250 ports, but, on 8250-emulated SoL port, the chip
-is a little lazy to down UART_IIR_NO_INT at UART_IIR register.
-
-Due to that, UART_BUG_TXEN is sometimes enabled. However, as TX IRQ keeps
-working, and the TX polling is now enabled, the driver miss-interprets the IRQ
-received later, hanging up the machine until a key is pressed at the serial
-console.
-
-This is the 5 version of this patch. The previous versions were trying to
-introduce a delay between serial_outp and serial_in(up, UART_IIR) large enough
-to work, but not so expensive. However, the needed delay couldn't be safely
-determined.
-
-At the experimental tests, a delay of 1us solves most of the cases, but still
-hangs sometimes. Increasing the delay to 5us is better, but still doesn't solve.
-A very high delay of 50 ms seems to work every time.
-
-However, poking around with delays and pray for it to be enough doesn't seem to
-be a good approach, even for a quirk.
-
-So, instead of playing with random large arbitrary delays, let's just disable
-UART_BUG_TXEN for all SoL ports.
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 303272a..2d26d93 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2014,6 +2014,20 @@ static int serial8250_startup(struct uart_port *port)
- 
- 	serial8250_set_mctrl(&up->port, up->port.mctrl);
- 
-+	/* Serial over Lan (SoL) hack:
-+	   Intel 8257x Gigabit ethernet chips have a
-+	   16550 emulation, to be used for Serial Over Lan.
-+	   Those chips take a longer time than a normal
-+	   serial device to signalize that a transmission
-+	   data was queued. Due to that, the above test generally
-+	   fails. One solution would be to delay the reading of
-+	   iir. However, this is not reliable, since the timeout
-+	   is variable. So, let's just don't test if we receive
-+	   TX irq. This way, we'll never enable UART_BUG_TXEN.
-+	 */
-+	if (up->port.flags & UPF_SOL_UART)
-+		goto dont_test_tx_irq;
-+
- 	/*
- 	 * Do a quick test to see if we receive an
- 	 * interrupt when we enable the TX irq.
-@@ -2033,6 +2047,7 @@ static int serial8250_startup(struct uart_port *port)
- 		up->bugs &= ~UART_BUG_TXEN;
- 	}
- 
-+dont_test_tx_irq:
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- 
- 	/*
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 5450a0e..67d6829 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -758,6 +758,16 @@ pci_default_setup(struct serial_private *priv, struct pciserial_board *board,
- 	return setup_port(priv, port, bar, offset, board->reg_shift);
- }
- 
-+static int
-+pci_intel_sol_setup(struct serial_private *priv, struct pciserial_board *board,
-+		  struct uart_port *port, int idx)
-+{
-+	port->flags |= UPF_SOL_UART;
-+	printk(KERN_WARNING "serial8250: detected 8257x Serial over Lan.\n");
-+
-+	return pci_default_setup(priv, board, port, idx);
-+}
-+
- /* This should be in linux/pci_ids.h */
- #define PCI_VENDOR_ID_SBSMODULARIO	0x124B
- #define PCI_SUBVENDOR_ID_SBSMODULARIO	0x124B
-@@ -811,6 +821,29 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
- 		.init		= pci_hp_diva_init,
- 		.setup		= pci_hp_diva_setup,
- 	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_INTEL,
-+		.device		= PCI_DEVICE_ID_INTEL_8257X_SOL,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.setup		= pci_intel_sol_setup,
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_INTEL,
-+		.device		= PCI_DEVICE_ID_INTEL_82573L_SOL,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.setup		= pci_intel_sol_setup,
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_INTEL,
-+		.device		= PCI_DEVICE_ID_INTEL_82573E_SOL,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.setup		= pci_intel_sol_setup,
-+	},
-+
-+
- 	/*
- 	 * Intel
- 	 */
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 1800f1d..93b6a71 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2309,6 +2309,9 @@
- #define PCI_DEVICE_ID_INTEL_82378	0x0484
- #define PCI_DEVICE_ID_INTEL_I960	0x0960
- #define PCI_DEVICE_ID_INTEL_I960RM	0x0962
-+#define PCI_DEVICE_ID_INTEL_8257X_SOL	0x1062
-+#define PCI_DEVICE_ID_INTEL_82573E_SOL	0x1085
-+#define PCI_DEVICE_ID_INTEL_82573L_SOL	0x108F
- #define PCI_DEVICE_ID_INTEL_82815_MC	0x1130
- #define PCI_DEVICE_ID_INTEL_82815_CGC	0x1132
- #define PCI_DEVICE_ID_INTEL_82092AA_0	0x1221
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 4e4f127..eeb6c63 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -288,6 +288,7 @@ struct uart_port {
- #define UPF_HARDPPS_CD		((__force upf_t) (1 << 11))
- #define UPF_LOW_LATENCY		((__force upf_t) (1 << 13))
- #define UPF_BUGGY_UART		((__force upf_t) (1 << 14))
-+#define UPF_SOL_UART		((__force upf_t) (1 << 15))
- #define UPF_MAGIC_MULTIPLIER	((__force upf_t) (1 << 16))
- #define UPF_CONS_FLOW		((__force upf_t) (1 << 23))
- #define UPF_SHARE_IRQ		((__force upf_t) (1 << 24))
-
+>> Another possible solution (which is not implemented):
+>>      - just let the context attached and run the thread to completion.
+>> If another tool wants to
+>>        attach to the same thread, it will detect there is already a
+>> context attached, and that it is
+>>        marked ZOMBIE, so it will clean it up. This is a lazy cleanup approach.
+>
+> Looks like ctx is a couple of hundred bytes, so just keep it around
+> until thread exit time or until the other tool does the cleanup
+> possibly by recycling the context.
+>
+That's true except for the caveat described above.
