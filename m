@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYKZT5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYKZT6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbYKZT5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 14:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYKZT5J
+	id S1754817AbYKZT6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 14:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYKZT60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 14:57:09 -0500
-Received: from kroah.org ([198.145.64.141]:38773 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752301AbYKZT5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 14:57:08 -0500
-Date: Wed, 26 Nov 2008 11:55:11 -0800
-From: Greg KH <greg@kroah.com>
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-Cc: "Zhao, Yu" <yu.zhao@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [SR-IOV driver example 2/3] PF driver: integrate with SR-IOV
-	core
-Message-ID: <20081126195511.GA2386@kroah.com>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081126140303.GA13641@yzhao12-linux.sh.intel.com> <20081126142156.GB13668@yzhao12-linux.sh.intel.com> <20081126165859.GA28251@kroah.com> <0B53E02A2965CE4F9ADB38B34501A3A167E8BD7F@orsmsx505.amr.corp.intel.com>
+	Wed, 26 Nov 2008 14:58:26 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:3055 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbYKZT6Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 14:58:25 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=MZW6RvReuKeGBcfyFL33vk6e6xbhfI9pkDXla6jHumHxmQYMO/JnA5Z1TtH2Z5ny7
+	06gPgt5sPs/3jwTJh4UmQ==
+Message-ID: <492DAA24.8040100@google.com>
+Date: Wed, 26 Nov 2008 11:57:24 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A167E8BD7F@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Nick Piggin <npiggin@suse.de>
+CC: Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de>
+In-Reply-To: <20081126123246.GB23649@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.38
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 11:27:10AM -0800, Nakajima, Jun wrote:
-> On 11/26/2008 8:58:59 AM, Greg KH wrote:
-> > On Wed, Nov 26, 2008 at 10:21:56PM +0800, Yu Zhao wrote:
-> > > This patch integrates the IGB driver with the SR-IOV core. It shows
-> > > how the SR-IOV API is used to support the capability. Obviously
-> > > people does not need to put much effort to integrate the PF driver
-> > > with SR-IOV core. All SR-IOV standard stuff are handled by SR-IOV
-> > > core and PF driver once it gets the necessary information (i.e.
-> > > number of Virtual
-> > > Functions) from the callback function.
-> > >
-> > > ---
-> > >  drivers/net/igb/igb_main.c |   30 ++++++++++++++++++++++++++++++
-> > >  1 files changed, 30 insertions(+), 0 deletions(-)
-> > >
-> > > diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-> > > index bc063d4..b8c7dc6 100644
-> > > --- a/drivers/net/igb/igb_main.c
-> > > +++ b/drivers/net/igb/igb_main.c
-> > > @@ -139,6 +139,7 @@ void igb_set_mc_list_pools(struct igb_adapter *,
-> > > struct e1000_hw *, int, u16);  static int igb_vmm_control(struct
-> > > igb_adapter *, bool);  static int igb_set_vf_mac(struct net_device
-> > > *, int, u8*);  static void igb_mbox_handler(struct igb_adapter *);
-> > > +static int igb_virtual(struct pci_dev *, int);
-> > >  #endif
-> > >
-> > >  static int igb_suspend(struct pci_dev *, pm_message_t); @@ -184,6
-> > > +185,9 @@ static struct pci_driver igb_driver = {  #endif
-> > >     .shutdown = igb_shutdown,
-> > >     .err_handler = &igb_err_handler,
-> > > +#ifdef CONFIG_PCI_IOV
-> > > +   .virtual = igb_virtual
-> > > +#endif
-> >
-> > #ifdef should not be needed, right?
-> >
+Nick Piggin wrote:
+> On Tue, Nov 25, 2008 at 10:42:47AM -0800, Ying Han wrote:
+>>>> The patch flags current->flags to PF_FAULT_MAYRETRY as identify that
+>>>> the caller can tolerate the retry in the filemap_fault call patch.
+>>>>
+>>>> Benchmark is done by mmap in huge file and spaw 64 thread each
+>>>> faulting in pages in reverse order, the the result shows 8%
+>>>> porformance hit with the patch.
+>>> I suspect we also want to see the cases where this change helps?
+>> i am working on more benchmark to show performance improvement.
 > 
-> Good point. I think this is because the driver is expected to build on
-> older kernels also,
-
-That should not be an issue for patches that are being submitted, right?
-
-And if this is the case, shouldn't it be called out in the changelog
-entry?
-
-> but the problem is that the driver (and probably others) is broken
-> unless the kernel is built with CONFIG_PCI_IOV because of the
-> following hunk, for example.
+> Can't you share the actual improvement you see inside Google?
 > 
-> However, we don't want to use #ifdef for the (*virtual) field in the
-> header. One option would be to define a constant like the following
-> along with those changes.
-> #define PCI_DEV_IOV
+> Google must be doing something funky with threads, because both
+> this patch and their new malloc allocator apparently were due to
+> mmap_sem contention problems, right?
+
+One of the big improvements we see with this patch is the ability to 
+read out files in /proc/pid much faster.  Consider the following events:
+
+- an application has a high count of threads sleeping with 
+read_lock(mmap_sem) held in the fault path (on the order of hundreds).
+- one of the threads in the application then blocks in 
+write_lock(mmap_sem) in the mmap()/munmap() paths
+- now our monitoring software tries to read some of the /proc/pid files 
+and blocks behind the waiting writer due to the fairness of the rwsems. 
+  This basically has to wait for all faults ahead of the reader to 
+terminate (and let go of the reader lock) and then the writer to have a 
+go at mmap_sem.   This can take an extremely long time.
+
+This patch helps a lot in this case as it keeps the writer from waiting 
+behind all the waiting readers, so it executes much faster.
+
 > 
-> Any better idea?
+> That was before the kernel and glibc got together to fix the stupid
+> mmap_sem problem in malloc (shown up in that FreeBSD MySQL thread);
+> and before private futexes. I would be interested to know if Google
+> still has problems that require this patch...
+> 
 
-Just always declare it in your driver, which will be added _after_ this
-field gets added to the kernel tree as well.  It's not a big deal, just
-an ordering of patches issue.
-
-Because remember, don't add #ifdefs to drivers, they should not be
-needed at all.
-
-thanks,
-
-greg k-h
+I'm not very familiar with the 'malloc' problem in glibc.  Was this just 
+overhead in heap growth/shrinkage causing problems?
