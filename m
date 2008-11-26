@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYKZRlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYKZRp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbYKZRlr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 12:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYKZRlj
+	id S1754109AbYKZRp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 12:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYKZRpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 12:41:39 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:58268 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYKZRli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 12:41:38 -0500
-Date: Wed, 26 Nov 2008 18:39:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Detecting endianness in scripts/recordmcount.pl?
-Message-ID: <20081126173935.GA29692@uranus.ravnborg.org>
-References: <20081126083905.GA20472@linux-sh.org> <20081126135441.GB28170@uranus.ravnborg.org> <alpine.DEB.1.10.0811261213300.26743@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Wed, 26 Nov 2008 12:45:13 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:59911 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751788AbYKZRpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 12:45:11 -0500
+Date: Wed, 26 Nov 2008 09:44:39 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH][v2] Define/use siginfo_from_ancestor_ns()
+Message-ID: <20081126174439.GA427@us.ibm.com>
+References: <20081115212133.GA32140@us.ibm.com> <20081118175336.GA14178@redhat.com> <20081119012207.GA19092@us.ibm.com> <20081123231014.GA2424@redhat.com> <20081126031619.GA19756@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811261213300.26743@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081126031619.GA19756@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > 
-> > > The CONFIG_64BIT test could likewise be adopted for testing endianness, but
-> > > not all architectures have config options for endian selections.
-> > But we could add this - no?
-> > Much better than executing objdump one thousand times.
-> 
-> Adding a parameter would be better.
+| |    Actually, I think this is enough to solve most problems,
+| |    the further changes can be discussed later. OK, the only
+| |    "real" problem is SIGSTOP, afaics. This looks solveable.
+| 
+| Yes, SIGSTOP even from parent is ignored due to the SIGNAL_UNKILLABLE
+| check in get_signal_to_deliver.
 
-Which moves the problem to the caller which is OK.
-And then we are back to the same discussion and again we should
-introduce a CONFIG_ symbol for it.
-
-	Sam
+Actually with sig_task_ignored() patch, http://lkml.org/lkml/2008/11/18/251
+SIGSTOP gets dropped early. To eventually allow SIGSTOP from ancestor ns,
+we need to pass 'from_ancestor_ns' into sig_ignored() ?
