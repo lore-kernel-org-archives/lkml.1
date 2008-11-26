@@ -1,139 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYKZFVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYKZFWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbYKZFVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 00:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbYKZFVQ
+	id S1753389AbYKZFWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 00:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYKZFWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 00:21:16 -0500
-Received: from rn-out-0910.google.com ([64.233.170.189]:43940 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbYKZFVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 00:21:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=uk7bGcNHw8PBcEqv6m+HVbRMhu4wNdJI+C9v37rRAciLg8AFnoRUmAupuvydEG8tF1
-         mk7FxTqyk+/r2VD9L75Shfgb9L8+nolZWaJmvEnRYb/VjwQiILs7cWeHaODYlx91Wgao
-         wMaAd/9pW+SsI7ut/sr21Kj4kPSq4VHs8syak=
-Message-ID: <aec7e5c30811252121i23a719fcl19b4db4af785dd46@mail.gmail.com>
-Date: Wed, 26 Nov 2008 14:21:14 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [RFC] Reentrant clock sources
-Cc: "john stultz" <johnstul@us.ibm.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, lethal@linux-sh.org, mingo@redhat.com
-In-Reply-To: <20081126035251.GA3707@elte.hu>
+	Wed, 26 Nov 2008 00:22:01 -0500
+Received: from phunq.net ([64.81.85.152]:36730 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750749AbYKZFV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 00:21:59 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: linux-kernel@vger.kernel.org
+Subject: Tux3 Report: Now in kernel and the fun begins
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081125132823.8698.83248.sendpatchset@rx1.opensource.se>
-	 <alpine.LFD.2.00.0811252215270.3235@localhost.localdomain>
-	 <20081126030720.GC8242@elte.hu> <1227669624.6298.11.camel@localhost>
-	 <20081126035251.GA3707@elte.hu>
+Cc: linux-fsdevel@vger.kernel.org
+Date: Tue, 25 Nov 2008 21:21:58 -0800
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200811252121.58223.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+Hi,
 
-Thanks for all the feedback so far.
+If it seems a little quiet over here in Tux3 land, that is just because
+we have been busy.
 
-On Wed, Nov 26, 2008 at 12:52 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * john stultz <johnstul@us.ibm.com> wrote:
->
->> On Wed, 2008-11-26 at 04:07 +0100, Ingo Molnar wrote:
->> > * Thomas Gleixner <tglx@linutronix.de> wrote:
->> >
->> > > > +       cycle_t (*vread)(struct clocksource *cs);
->> > >
->> > > This is crap. vread can not access the clocksource.
->> >
->> > i think 'reentrant' in the sense of creating self-sufficient driver
->> > entities. vread wont (and shouldnt) call ->vread() recursively - but
->> > it might want to access fields on the clocksource.
+The start of the Tux3 kernel port was announced on the Tux3 mailing list 
+on November 14th, and two weeks later Hirofumi Ogawa had it mostly 
+working:
 
-Uhm, I should have used that wording instead. =)
+   http://tux3.org/pipermail/tux3/2008-November/000321.html
+   http://tux3.org/pipermail/tux3/2008-November/000351.html
+   http://tux3.org/tux3
 
->> I think Thomas' issue is that vread() *cannot* access fields on the
->> clocksource (since vread has to be careful not to access any
->> non-vsyscall mapped memory).
->
-> ah, yeah - i was thinking about ->read().
+Hirofumi must have set some kind of record by getting to first mount in 
+one week from a standing start!  This is a very early port with bugs 
+and missing features, including major missing functionality like atomic 
+commit, smp locking and versioning.  But it mounts, and we can read 
+files, list directories and exercise lots of other functionality.  A 
+common code base runs both in kernel and in user space under FUSE, 
+which I think is unique and also very useful.  Even though the kernel 
+port has a bug that keeps it from writing to files as of today, we can 
+already create files in user space, mount the volume in kernel and read 
+them back.
 
-My main concern is ->read(). Initially I thought that I could pass the
-clock source as argument to all callbacks, but I now understand that
-passing cs to ->vread() is difficult.
+We have two repositories: a git repostory with a full kernel tree 
+incorporating Tux3 (which I will not advertise for now because of the 
+limited bandwidth of my server) and a Mercurial repository with the 
+userspace code and the kernel code in a subdirectory:
 
-> in a more dynamic driver model the clocksource driver could store
-> dynamic data like target port/memory address next to the clocksource
-> driver, and access that - if the driver pointer is passed in.
+   hg layout for userspace: tux3/user/kernel/*
+   git layout for kernel: linux/fs/tux3/*
 
-Exactly.
+The tux3/user/* files #include the user/kernel files, which are the same 
+as the fs/tux3 kernel directory.  In user space, we build and run unit 
+tests for many tricky bits like btree operations and inode attribute 
+packing.  We also build two kinds of Tux3 filesystem in user space: 
+a "tux3fs" that runs as a FUSE filesystem and a "tux3" command that 
+provides syntax like:
 
->> However not all clocksources use vread(), but really I'm not quite
->> clear on what one would want to access in the clocksource structure
->> when making a ->read() call.
+   tux3 mkfs <volume>
+   tux3 read <volume> <file>
+   echo <text> | tux3 write <volume> <file>
 
-Below is a link to some helper functions to manage incrementing
-timers. The code is a bit rough but the idea is simple - create one
-simple interface for timers that can be used as clock source and/or
-clock event.
+Where <volume> can be a /dev/<partition> or a file.
 
-http://comments.gmane.org/gmane.linux.ports.sh.devel/4850
+Many thanks to Conrad Meyer for the original FUSE port, and to Tero 
+Roponen for the low level FUSE port:
 
-If you like this idea then similar helper code for decrementing timers
-may be useful as well.
+   http://tux3.org/pipermail/tux3/2008-September/000115.html
+   http://tux3.org/pipermail/tux3/2008-September/000128.html
 
->> So maybe a further description of what specific need motivates this
->> change would be helpful? The brief description of power management
->> doesn't quite click in my head yet.
->
-> yeah, that would be nice.
+Both of these came as welcome surprises, and proved immediately valuable 
+to the Tux3 development effort.  With FUSE, suddenly we could test real 
+filesystem functionality and spot many issues quickly.  The tux3 
+command turned out to be indispensable too, for creating filesystem 
+images to test under FUSE and later under Hirofumi's kernel port.
 
-The reason for passing the clock source as argument to the read() and
-resume() callbacks is that I want to use the same function for
-multiple timer instances and use container_of() to get access to
-per-instance private data. Without any argument I have to rely on
-global data or compile time constants which makes it difficult to
-reuse functions for multiple instances. Right now the timer_inc helper
-code only exports a single clock source because of this limitation.
+Hirofumi started his involvement with Tux3 by creating an amazing tool, 
+a hack of Tux3 that reads the structure of a tux3 volume and turns it 
+into a a graphic representation:
 
-Regarding power management, the clock event code allows us to put the
-hardware block for unused clock events in some kind of sleep mode when
-CLOCK_EVT_MODE_SHUTDOWN or CLOCK_EVT_MODE_UNUSED is passed to
-->set_mode(). I'd like to have something similar for clock sources
-where unused clock sources can be powered down. For instance, we may
-have two clock sources, one high resolution and one with not so good
-accuracy. If the system is running with performance in mind then the
-high resolution clock source should be used, but when we need to save
-energy we want to switch over to the more primitive clock source and
-disable the hight resolution clock source to be able to enter deeper
-sleep states.
+   http://userweb.kernel.org/~hirofumi/tux3.img.dot.png
 
-It is unfortunately a bit difficult to fully tie the clock framework
-to the clock event drivers today. The timer hardware that generates
-clock events for us is driven by some clock managed by the clock
-framework. We use clk_enable() and clk_disable() to dynamically gate
-off the clock for the timer hardware. This gives us basic run time
-power management - disabling the clock when the device is unused is a
-must to be able to enter deep sleep states.
+This turned out to be more than just a way to make pretty pictures - the 
+image above actually shows a bug.  The second extent of the rightmost 
+inode (number 14, hex 0xe) has a physical block number of zero, but 
+that should be 0x11 according to the tracing output:
 
-Anyway, the current clock event interface wants details such as clock
-rate and delta values at registration time. The problem is that the
-clock framework doesn't guarantee the clock rate to be stable until
-the clock is enabled, and at the time the clock is registered the
-clock is disabled. So we don't have that information at clock event
-registration time. And even if we did - after resuming from SHUTDOWN
-or UNUSED the clock rate and deltas may have changed so we need some
-way to update these parameters if we want to integrate well with the
-clock framework.
+   http://userweb.kernel.org/~hirofumi/serial.txt
+     489 1 entry groups:
+     490   0/2: 0 => f/1; 1 => 11/1;
+     491 tux3_get_block: dirty b_blocknr e
+     492 tux3_get_block: <== inum e, mapped 1, block 11, size 1000
 
-I hope this makes things a bit more clear. =)
+We see that a correct file data index leaf ("deaf") was created (the 
+second extent is 1 => 11/1, meaning logical address 1 maps to physical 
+extent 0x11 of length 1 block).  But on disk we got a zero in that 
+extent instead of 0x11.  Hmm.  Obviously, this little bug has a very 
+short life expectancy, because it is unlucky enough to find itself 
+looking straight down the barrel of a high caliber debugging cannon.  
+One thing I can say: debugging this way is much more fun than usual.
 
-/ magnus
+The mercurial repostitory is here:
+
+   http://tux3.org/tux3
+
+The kernel patch is here:
+
+   http://tux3.org/patches/tux3-2.6.26.5-0
+
+This patch only needs to be applied once, then development can be 
+tracked by pulling from the Mercurial repository and copying the 
+user/kernel/* files from there to linux-2.6.26.5/fs/tux3/.  There is a 
+git repository too, but my limited bandwidth means that pulling from 
+Mercurial and copying the files is better for now.
+
+The functionality we have today is roughly like a buggy Ext2 with 
+missing features.  While it is very definitely not something you want 
+to store your files on, this undeniably is Tux3 and demonstrates a lot 
+of new design elements that I have described in some detail over the 
+last few months.  The variable length inodes, the attribute packing, 
+the btree design, the compact extent encoding and deduplication of 
+extended attribute names are all working out really well.
+
+The Tux3 project mission has changed over the course of the last few 
+months.  At first the idea was to "be better than ZFS".  Now the main 
+goal is more specific: we wish to uphold the classic principles of Unix 
+system design.  That is, while Tux3 should do what ZFS does, it should 
+do it without rampant layer violations.  Filesystems should be 
+filesystems and volume managers should be volume managers.  We need 
+better integration between these instead of new islands of 
+functionality, breeding new sets of bugs.  Also, we do not wish to boil 
+the oceans, but to run lean and mean.  We do not need to boil the 
+oceans in order to support both the largest and the smallest 
+conceivable volumes over the course of the next few decades.
+
+I continue to take inspiration and guidance from Matt Dillon, whose 
+Dragonfly BSD Hammer design is perhaps closest in spirit to that of 
+Tux3.  Also, many thanks to Timothy Huber for cheerleading this effort 
+from the very beginning and applying his considerable graphic talent in 
+ways that will shortly become apparent.  And to Shapor Naghibzadeh for 
+making dleaf.c work, no small feat, and many other things.  And Maciej 
+Zenczykowski for contributing "junkfs", which is about to become very 
+useful as we shall see next week.
+
+There remains much to do before Tux3 gets to the point of head-to-head 
+benchmarking.  But there is also a huge amount done.  If you were 
+thinking of dropping by to see what is going on and maybe lend a hand, 
+now is the perfect time to do it:
+
+   http://tux3.org/cgi-bin/mailman/listinfo/tux3
+   irc.oftc.net #tux3
+
+Regards,
+
+Daniel
