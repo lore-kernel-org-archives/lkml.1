@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKZCZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYKZCdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbYKZCZI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYKZCY5
+	id S1753352AbYKZCdV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYKZCdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:24:57 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56170 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbYKZCY4 (ORCPT
+	Tue, 25 Nov 2008 21:33:12 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:29864 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbYKZCdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:24:56 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] vmscan: bail out of page reclaim after swap_cluster_max pages
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
-In-Reply-To: <20081124145057.4211bd46@bree.surriel.com>
-References: <20081124145057.4211bd46@bree.surriel.com>
-Message-Id: <20081126112329.3CB2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 25 Nov 2008 21:33:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=WXN1LX7Jqy4txtNCyYeuHXCd9hd2MgkuygNsVumglP/teL8BKz8CMQH5DJD0XvtKNm
+         rFgRuY7j7Ds9RYjZGSBaa2s9DgOffESHbr4BhQHCaCx1FfMrFoTleiN5gLct1Ef64tsA
+         KEBraOtrYUONTjLSaKeX2MByGrGMqWkTb08zs=
+Message-ID: <e38d12ff0811251833j6bcddech421fa240dd3f3302@mail.gmail.com>
+Date: Tue, 25 Nov 2008 21:33:09 -0500
+From: "Andrey Vul" <andrey.vul@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: uvesafb has mode switch when switching between virtual consoles
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 26 Nov 2008 11:24:52 +0900 (JST)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +		/*
-> +		 * On large memory systems, scan >> priority can become
-> +		 * really large. This is fine for the starting priority;
-> +		 * we want to put equal scanning pressure on each zone.
-> +		 * However, if the VM has a harder time of freeing pages,
-> +		 * with multiple processes reclaiming pages, the total
-> +		 * freeing target can get unreasonably large.
-> +		 */
-> +		if (sc->nr_reclaimed > sc->swap_cluster_max &&
-> +			sc->priority < DEF_PRIORITY && !current_is_kswapd())
-> +			break;
+I'm currently using uvesafb as my framebuffer.
+When I switch between virtual consoles (Alt+F{1,8}), there is a short
+blank due to mode switching. The VC switch was instantaneous when I
+used vesafb for my framebuffer.
+Any reasons why?
 
-typo.
-this patch can't compile.
-
----
- mm/vmscan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1469,7 +1469,7 @@ static void shrink_zone(int priority, st
- 		 * freeing target can get unreasonably large.
- 		 */
- 		if (sc->nr_reclaimed > sc->swap_cluster_max &&
--		    sc->priority < DEF_PRIORITY && !current_is_kswapd())
-+		    priority < DEF_PRIORITY && !current_is_kswapd())
- 			break;
- 	}
- 
-
-
+-- 
+Andrey Vul
