@@ -1,146 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYKZLzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbYKZL6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbYKZLzV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 06:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYKZLzI
+	id S1753501AbYKZL6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 06:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYKZL6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 06:55:08 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:47283 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYKZLzG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 06:55:06 -0500
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
-       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
-       peterz@infradead.org, fchecconi@gmail.com, paolo.valente@unimore.it
-In-Reply-To: <20081125162720.GH341@redhat.com>
-References: <20081113221304.GH7542@redhat.com>
-	 <20081120.182053.220301508585579959.ryov@valinux.co.jp>
-	 <20081120134701.GB29306@redhat.com>
-	 <20081125.113359.623571555980951312.ryov@valinux.co.jp>
-	 <20081125162720.GH341@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Wed, 26 Nov 2008 20:55:04 +0900
-Message-Id: <1227700504.12997.398.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 26 Nov 2008 06:58:05 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:32428 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752212AbYKZL6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 06:58:01 -0500
+From: Andrey Mirkin <major@openvz.org>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH 2/2] Add support for in-kernel process creation during restart
+Date: Wed, 26 Nov 2008 15:58:00 +0400
+User-Agent: KMail/1.8.2
+Cc: Andrey Mirkin <major@openvz.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1227541175-30301-1-git-send-email-major@openvz.org> <1227541175-30301-3-git-send-email-major@openvz.org> <492C5D74.7040302@cs.columbia.edu>
+In-Reply-To: <492C5D74.7040302@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811261458.01498.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-25 at 11:27 -0500, Vivek Goyal wrote:
-> On Tue, Nov 25, 2008 at 11:33:59AM +0900, Ryo Tsuruta wrote:
-> > Hi Vivek,
-> > 
-> > > > > Ryo, do you still want to stick to two level scheduling? Given the problem
-> > > > > of it breaking down underlying scheduler's assumptions, probably it makes
-> > > > > more sense to the IO control at each individual IO scheduler.
-> > > > 
-> > > > I don't want to stick to it. I'm considering implementing dm-ioband's
-> > > > algorithm into the block I/O layer experimentally.
-> > > 
-> > > Thanks Ryo. Implementing a control at block layer sounds like another
-> > > 2 level scheduling. We will still have the issue of breaking underlying
-> > > CFQ and other schedulers. How to plan to resolve that conflict.
-> > 
-> > I think there is no conflict against I/O schedulers.
-> > Could you expain to me about the conflict?
-> 
-> Because we do the buffering at higher level scheduler and mostly release
-> the buffered bios in the FIFO order, it might break the underlying IO
-> schedulers. Generally it is the decision of IO scheduler to determine in
-> what order to release buffered bios.
+On Tuesday 25 November 2008 23:17 Oren Laadan wrote:
+> Hi,
+>
+> Andrey Mirkin wrote:
+> > All work (process tree creation and process state restore) now can be
+> > done in kernel.
+> >
+> > Task structure in image file is extended with 2 fields to make in-kernel
+> > process creation more easy.
+> >
+> > Signed-off-by: Andrey Mirkin <major@openvz.org>
+> > ---
+> >  checkpoint/checkpoint.c        |   17 ++++
+> >  checkpoint/restart.c           |    4 +-
+> >  checkpoint/rstr_process.c      |  201
+> > +++++++++++++++++++++++++++++++++++++++- include/linux/checkpoint.h     |
+> >    2 +
+> >  include/linux/checkpoint_hdr.h |    2 +
+> >  5 files changed, 223 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+> > index 04b0c4a..ae3326e 100644
+> > --- a/checkpoint/checkpoint.c
+> > +++ b/checkpoint/checkpoint.c
+> > @@ -173,6 +173,21 @@ static int cr_write_tail(struct cr_ctx *ctx)
+> >  	return ret;
+> >  }
+> >
+> > +static int cr_count_children(struct cr_ctx *ctx, struct task_struct
+> > *tsk) +{
+> > +	int num = 0;
+> > +	struct task_struct *child;
+> > +
+> > +	read_lock(&tasklist_lock);
+> > +	list_for_each_entry(child, &tsk->children, sibling) {
+> > +		if (child->parent != tsk)
+> > +			continue;
+> > +		num++;
+> > +	}
+> > +	read_unlock(&tasklist_lock);
+> > +	return num;
+> > +}
+> > +
+>
+> This information (and the pids of children) is already available in
+> the ctx->pids_arr.
 
-It could be argued that the IO scheduler's primary goal is to maximize
-usage of the underlying device according to its physical
-characteristics. For hard disks this may imply minimizing time wasted by
-seeks; other types of devices, such as SSDs, may impose different
-requirements. This is something that clearly belongs in the elevator. On
-the other hand, it could be argued that other non-hardware-related
-scheduling disciplines would fit better in higher layers.
+Yes, as I said in my previous e-mail I'll rework this patch to use this data.
 
-That said, as you pointed out such separation could impact performance,
-so we will probably need to implement a feedback mechanism between the
-elevator, which could collect statistics and provide hints, and the
-upper layers. The elevator API looks like a good candidate for this,
-though new functions might be needed.
+> >  /* dump the task_struct of a given task */
+> >  static int cr_write_task_struct(struct cr_ctx *ctx, struct task_struct
+> > *t) {
+> > @@ -189,6 +204,8 @@ static int cr_write_task_struct(struct cr_ctx *ctx,
+> > struct task_struct *t) hh->exit_code = t->exit_code;
+> >  	hh->exit_signal = t->exit_signal;
+> >
+> > +	hh->vpid = task_pid_nr_ns(t, ctx->root_nsproxy->pid_ns);
+> > +	hh->children_nr = cr_count_children(ctx, t);
+> >  	hh->task_comm_len = TASK_COMM_LEN;
+>
+> Same here (hmm... well, if it weren't skipped below, actually...)
+>
+> >  	/* FIXME: save remaining relevant task_struct fields */
+> > diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+>
+> [...]
+>
+> > +static int restart_thread(void *arg)
+> > +{
+> > +	struct thr_context *thr_ctx = arg;
+> > +	struct cr_ctx *ctx;
+> > +	struct cr_hdr_task *ht;
+> > +	int ret;
+> > +	int i;
+> > +
+> > +	current->state = TASK_UNINTERRUPTIBLE;
+>
+> Why do you not want it to be interruptible ?
 
-> For example, If there is one task of io priority 0 in a cgroup and rest of
-> the tasks are of io prio 7. All the tasks belong to best effort class. If
-> tasks of lower priority (7) do lot of IO, then due to buffering there is
-> a chance that IO from lower prio tasks is seen by CFQ first and io from
-> higher prio task is not seen by cfq for quite some time hence that task
-> not getting it fair share with in the cgroup. Similiar situations can
-> arise with RT tasks also.
+To be sure that nobody will interrupt our process and it will finish all the 
+work it should perform while restore.
 
-Well, this issue is not intrinsic to dm-band and similar solutions. In
-the scenario you point out the problem is that the elevator and the IO
-controller are not cooperating. The same could happen even if we
-implemented everything at the elevator layer (or a little above): get
-hierarchical scheduling wrong and you are likely to have a rough ride.
+> > +
+> > +	ctx = thr_ctx->ctx;
+> > +	ht = thr_ctx->ht;
+> > +
+> > +	if (ht->vpid == 1) {
+> > +		ctx->root_task = current;
+> > +		ctx->root_nsproxy = current->nsproxy;
+> > +
+> > +		get_task_struct(ctx->root_task);
+> > +		get_nsproxy(ctx->root_nsproxy);
+> > +	}
+> > +
+> > +	ret = cr_rstr_task_struct(ctx, ht);
+> > +	cr_debug("rstr_task_struct: ret %d\n", ret);
+> > +	if (ret < 0)
+> > +		goto out;
+> > +	ret = cr_read_mm(ctx);
+> > +	cr_debug("memory: ret %d\n", ret);
+> > +	if (ret < 0)
+> > +		goto out;
+> > +	ret = cr_read_files(ctx);
+> > +	cr_debug("files: ret %d\n", ret);
+> > +	if (ret < 0)
+> > +		goto out;
+> > +	ret = cr_read_thread(ctx);
+> > +	cr_debug("thread: ret %d\n", ret);
+> > +	if (ret < 0)
+> > +		goto out;
+> > +	ret = cr_read_cpu(ctx);
+> > +	cr_debug("cpu: ret %d\n", ret);
+> > +
+> > +	for (i = 0; i < ht->children_nr; i++) {
+> > +		ret = cr_restart_process(ctx);
+> > +		if (ret < 0)
+> > +			break;
+> > +	}
+>
+> Here, eventually we'll need the pids of those processes; instead of
+> keeping 'ht->children_nr', you could loop through the pids array in
+> the ctx and create those who have their parent set to us.
 
-BFQ deals with hierarchical scheduling at just one layer which makes
-things easier. BFQ chose the elevator layer, but a similar scheduling
-discipline could be implemented higher in the block layer too. The HW
-specific-bits we cannot take out the elevator, but when it comes to
-task/cgroup based scheduling there are more possibilities, which
-includes the middle-way approach we are discussing: two level
-scheduling.
+Well, it will require a little bit more time, but in this case I can reuse 
+data about process tree from dump file.
+Ok, I'll rework my patch.
 
-The two level model is not bad per se, we just need to get the two
-levels to work in unison and for that we will certainly need to make
-changes to the existing elevators.
+> > +
+> > +out:
+> > +	thr_ctx->error = ret;
+> > +	complete(&thr_ctx->complete);
+> > +
+> > +	if (!ret && (ht->state & (EXIT_ZOMBIE|EXIT_DEAD))) {
+> > +		do_exit(ht->exit_code);
+> > +	} else {
+> > +		__set_current_state(TASK_UNINTERRUPTIBLE);
+> > +	}
+> > +	schedule();
+>
+> Using TASK_UNINTERRUPTIBLE, may keep a task unkill-able for potentially
+> long time. Any reason not to use TASK_INTERRUPTIBLE ?
 
-> > > What do you think about the solution at IO scheduler level (like BFQ) or
-> > > may be little above that where one can try some code sharing among IO
-> > > schedulers? 
-> > 
-> > I would like to support any type of block device even if I/Os issued
-> > to the underlying device doesn't go through IO scheduler. Dm-ioband
-> > can be made use of for the devices such as loop device.
-> 
-> What do you mean by that IO issued to underlying device does not go
-> through IO scheduler? loop device will be associated with a file and
-> IO will ultimately go to the IO scheduler which is serving those file
-> blocks?
+In OpenVZ we are moving tasks to uninterruptible state to be sure that they 
+won't be killed. If something went wrong we move them to interruptible state 
+and kill on error path. If undump is finished successfully then we move them 
+to interruptible state during resume stage.
 
-I think that Tsuruta-san's point is that the loop device driver uses its
-own make_request_fn which means that bios entering a loop device do not
-necessarily go through a IO scheduler after that.
+> > +
+> > +	cr_debug("leaked %d/%d %p\n", task_pid_nr(current),
+> > task_pid_vnr(current), current->mm); +
+> > +	complete_and_exit(NULL, 0);
+> > +	return ret;
+> > +}
+> > +
+> > +static int cr_restart_process(struct cr_ctx *ctx)
+> > +{
+> > +	struct thr_context thr_ctx;
+> > +	struct task_struct *tsk;
+> > +	struct cr_hdr_task *ht = cr_hbuf_get(ctx, sizeof(*ht));
+> > +	int pid, parent, ret = -EINVAL;
+> > +
+> > +	thr_ctx.ctx = ctx;
+> > +	thr_ctx.error = 0;
+> > +	init_completion(&thr_ctx.complete);
+> > +
+> > +	parent = cr_read_obj_type(ctx, ht, sizeof(*ht), CR_HDR_TASK);
+> > +	if (parent < 0) {
+> > +		ret = parent;
+> > +		goto out;
+> > +	} else if (parent != 0)
+> > +		goto out;
+> > +
+> > +	thr_ctx.ht = ht;
+> > +
+> > +	if (ht->vpid == 1) {
+> > +		/* We should also create container here */
+> > +		pid = cr_kernel_thread(restart_thread, &thr_ctx,
+> > +				CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
+> > +				CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET, 0);
+>
+> why do you want to start the container in the kernel ?
+>
+> instead, we can create a new containers in user space, and have the init
+> task call the restart syscall from inside there.
 
-We will always find ourselves in this situation when trying to manage
-devices that provide their own make_request_fn, the reason being that
-its behavior is driver and configuration dependent: in the loop device
-case whether we go through a IO scheduler or not depends on what has
-been attached to it; in stacking device configurations the effect that
-the IO scheduling at one of the devices that constitute the multi-device
-will have in the aggregate throughput depends on the topology.
+The idea is simple - do _all_ the work in the kernel. That is why creation of 
+container also done in the kernel.
 
-The only way I can think of to address all cases in a sane way is
-controlling the entry point to the block layer, which is precisely what
-dm-band does.
+> > +	} else {
+> > +		/* We should fork here a child with saved pid and
+> > +		   correct flags */
+> > +		pid = cr_kernel_thread(restart_thread, &thr_ctx, 0, ht->vpid);
+> > +	}
+> > +	if (pid < 0) {
+> > +		ret = pid;
+> > +		goto out;
+> > +	}
+> > +	read_lock(&tasklist_lock);
+> > +	tsk = find_task_by_vpid(pid);
+> > +	if (tsk)
+> > +		get_task_struct(tsk);
+> > +	read_unlock(&tasklist_lock);
+> > +	if (tsk == NULL) {
+> > +		ret = -ESRCH;
+> > +		goto out;
+> > +	}
+> > +
+> > +	wait_for_completion(&thr_ctx.complete);
+> > +	wait_task_inactive(tsk, 0);
+> > +	ret = thr_ctx.error;
+> > +	put_task_struct(tsk);
+> > +
+> > +out:
+> > +	cr_hbuf_put(ctx, sizeof(*ht));
+> > +	return ret;
+> > +}
+> > +
+> >
+> >  int do_restart_in_kernel(struct cr_ctx *ctx)
+> >  {
+> > -	return -ENOSYS;
+> > +	int ret, size, parent;
+> > +	struct cr_hdr_tree *hh = cr_hbuf_get(ctx, sizeof(*hh));
+> > +
+> > +	ret = cr_read_head(ctx);
+> > +	if (ret < 0)
+> > +		goto out;
+> > +
+> > +	ret = -EINVAL;
+> > +	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_TREE);
+> > +	if (parent < 0) {
+> > +		ret = parent;
+> > +		goto out;
+> > +	} else if (parent != 0)
+> > +		goto out;
+> > +
+> > +	size = sizeof(*ctx->pids_arr) * hh->tasks_nr;
+> > +	if (size < 0)
+> > +		goto out;
+> > +	ctx->file->f_pos += size;
+>
+> You can't do that - the file may be non-seekable (e.g. a socket); must read
+> the data in.
+> Besides, if instead of skipping this data you read it in, then you could
+> use it as noted above.
 
-The problem with dm-band is that it relies on the dm infrastructure. In
-my opinion, if we could remove that dependency it would be a huge step
-in the right direction.
-
-> What's the use case scenario of doing IO control at loop device?
-
-My guess is virtualized machines using images exported as loop devices à
-la Xen's blktap (blktap's implementation is quite different from Linux'
-loop device, though).
+Agree, I'll rework my patch that way.
 
 Thanks,
-
-Fernando
-
+Andrey
