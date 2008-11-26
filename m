@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYKZAX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbYKZAZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYKZAX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 19:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYKZAXT
+	id S1753617AbYKZAZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 19:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbYKZAY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 19:23:19 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38869 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbYKZAXT (ORCPT
+	Tue, 25 Nov 2008 19:24:58 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:37332 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbYKZAY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 19:23:19 -0500
-Date: Tue, 25 Nov 2008 19:23:17 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linux-kernel@vger.kernel.org
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/3] ftrace: use code patching for ftrace return tracer
-In-Reply-To: <20081125223457.162461633@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0811251922030.26424@gandalf.stny.rr.com>
-References: <20081125223421.795046329@goodmis.org> <20081125223457.162461633@goodmis.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Nov 2008 19:24:58 -0500
+Subject: Re: Need to pay to use the word "Linux" in commercial
+	products/services!
+From: Jon Masters <jonathan@jonmasters.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: andy <rootstrap@googlemail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081125225708.6399ba14@lxorguk.ukuu.org.uk>
+References: <2c918050811251439g713c71ddy252c37497b1199b@mail.gmail.com>
+	 <20081125225708.6399ba14@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Tue, 25 Nov 2008 19:24:42 -0500
+Message-Id: <1227659082.3744.5.camel@jcmlaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 98.99.64.6
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-11-25 at 22:57 +0000, Alan Cox wrote:
+> On Tue, 25 Nov 2008 22:39:27 +0000
+> andy <rootstrap@googlemail.com> wrote:
+> 
+> > Hi
+> > 
+> > I found it a bit strange that the word "Linux" has to be licensed!
+> > The "word" is protected under GPL v2, as it is appear first in 1991
+> > in GPL code.  Trademarks and Patents are not allowed in GPL!
+> > The registration of the name at later point of time, and now the
+> > licensing terms are very confusing to me, could someone help
+> > me to understand better please?
+> 
+> The GPL protects copyrights not trademarks. The Linux trademarking is an
+> interesting question and I know a lot of companies take the view that the
+> mark is unenforcable. On the other hand it stops abuse of the name for
+> other unrelated software.
 
-On Tue, 25 Nov 2008, Steven Rostedt wrote:
+Personally, I love washing my clothes with Linux detergent :)
 
-> From: Steven Rostedt <rostedt@goodmis.org>
->  int __init ftrace_dyn_arch_init(void *data)
->  {
->  	extern const unsigned char ftrace_test_p6nop[];
-> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> index 7854d87..73147eb 100644
-> --- a/include/linux/ftrace.h
-> +++ b/include/linux/ftrace.h
-> @@ -117,6 +117,11 @@ extern void ftrace_call(void);
->  extern void mcount_call(void);
->  #ifdef CONFIG_FUNCTION_RET_TRACER
->  extern void ftrace_return_caller(void);
-> +extern int ftrace_enable_ftrace_return_caller(void);
-> +extern int ftrace_disable_ftrace_return_caller(void);
-> +#else
-> +static inline int ftrace_enable_ftrace_return_caller(void) { }
-> +static inline int ftrace_disable_ftrace_return_caller(void) { }
->  #endif
->  
+They tell me it's also a popular Operating System kernel.
 
-This is what I get for not testing the off case :-p
+Jon.
 
-The above should be:
-
-+static inline int ftrace_enable_ftrace_return_caller(void) { return 0; }
-+static inline int ftrace_disable_ftrace_return_caller(void) { return 0; }
-
-I'll fix and push again.
-
--- Steve
 
