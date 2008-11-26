@@ -1,91 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYKZTYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYKZTYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYKZTYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 14:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYKZTYJ
+	id S1755183AbYKZTYj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 14:24:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYKZTY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 14:24:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58066 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbYKZTYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 14:24:08 -0500
-Date: Wed, 26 Nov 2008 20:34:30 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: eranian@gmail.com
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       sfr@canb.auug.org.au
-Subject: Re: [patch 23/24] perfmon: kernel documentation
-Message-ID: <20081126193429.GC6703@one.firstfloor.org>
-References: <492d0c14.02225e0a.15ab.6f8e@mx.google.com> <20081126122107.GV6703@one.firstfloor.org> <7c86c4470811261021t5a7da650w95c30a71838172c4@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 26 Nov 2008 14:24:29 -0500
+Received: from styx.suse.cz ([82.119.242.94]:47212 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752440AbYKZTY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 14:24:27 -0500
+Date: Wed, 26 Nov 2008 20:24:24 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] quota: Support 64bit quota format
+Message-ID: <20081126192424.GI23124@duck.suse.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7c86c4470811261021t5a7da650w95c30a71838172c4@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 07:21:56PM +0100, stephane eranian wrote:
-> Andi,
-> 
-> On Wed, Nov 26, 2008 at 1:21 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> > On Wed, Nov 26, 2008 at 12:43:00AM -0800, eranian@googlemail.com wrote:
-> >
-> > I assume you'll be also submitting manpages with the same information?
-> >
-> This is on my TODO list. Provide a man page for each new syscall.
+From: Andrew Perepechko <andrew.perepechko@sun.com>
 
-There should be a overview manpage as well.
+Implement conversion functions for new version (version 1) of quota format
+which supports 64-bit block and inode limits and 64-bit inode usage.  The
+original implementation has been written by Andrew Perepechko.
 
-> I have never played with that myself, even with regular file
-> descriptors. But I can only
-> assume passing a file descriptor increments its refcount. Thus you
-> simply get another
-> controlling process. There is enough context locking in place in the
-> kernel to make this
-> work.
+Signed-off-by: Andrew Perepechko <andrew.perepechko@sun.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/quota_v2.c   |  140 ++++++++++++++++++++++++++++++++++++++++++++-----------
+ fs/quotaio_v2.h |   26 ++++++++--
+ 2 files changed, 132 insertions(+), 34 deletions(-)
 
-Ok as long as it isn't a root hole or similar.
-
-> > ...
-> >
-> > Some simple syscall examples would be nice. e.g. how to set up a counter
-> > that it can be accessed using RDPMC on x86.
-> 
-> I can add this. But why go straight to RDPMC. Most people would want to use
-> the syscall instead?
-
-On recent Intel x86 a common simple useful case is to just use RDPMC
-with one of the fixed counters, especially the unscaled cycle counter.
-The only change needed here is to set the CR bit.
-
-> > to let a driver patch for that adjust it.
-> >
-> It depends on the number of registers available. It is expected that most tools
-> will want to use one call to program the config registers and one to program
-> the data registers. Pfmon is able to split vectors according to arg_mem_max.
-> 
-> It is anticipated that newer processors will increase the number of available
-> PMU registers. That was the case with Barcelona with the addition of IBS.
-> On Intel X86, I am planning on exposing the LBR as part of the PMU registers.
-> 
->  On Itanium, you already have 35 data and 27 config registers.
-
-That is still far less than a 4K page. Also 4K worth of registers would
-be a lot. I doubt that will be hit anytime soon.
-
-> 
-> But I think your suggestion is interesting. When we "register" the new PMU
-> mapping table, we can provide a minimal size to fit all PMC or all PMD registers
-> in one call. That would remove a control point for the sysadmin, though.
-
-I don't think the sysadmin wants to really know about that.
-
--Andi
-> 
-
+diff --git a/fs/quota_v2.c b/fs/quota_v2.c
+index b618b56..2c8f347 100644
+--- a/fs/quota_v2.c
++++ b/fs/quota_v2.c
+@@ -23,14 +23,24 @@ MODULE_LICENSE("GPL");
+ 
+ #define __QUOTA_V2_PARANOIA
+ 
+-static void v2_mem2diskdqb(void *dp, struct dquot *dquot);
+-static void v2_disk2memdqb(struct dquot *dquot, void *dp);
+-static int v2_is_id(void *dp, struct dquot *dquot);
+-
+-static struct qtree_fmt_operations v2_qtree_ops = {
+-	.mem2disk_dqblk = v2_mem2diskdqb,
+-	.disk2mem_dqblk = v2_disk2memdqb,
+-	.is_id = v2_is_id,
++static void v2r0_mem2diskdqb(void *dp, struct dquot *dquot);
++static void v2r0_disk2memdqb(struct dquot *dquot, void *dp);
++static int v2r0_is_id(void *dp, struct dquot *dquot);
++
++static struct qtree_fmt_operations v2r0_qtree_ops = {
++	.mem2disk_dqblk = v2r0_mem2diskdqb,
++	.disk2mem_dqblk = v2r0_disk2memdqb,
++	.is_id = v2r0_is_id,
++};
++
++static void v2r1_mem2diskdqb(void *dp, struct dquot *dquot);
++static void v2r1_disk2memdqb(struct dquot *dquot, void *dp);
++static int v2r1_is_id(void *dp, struct dquot *dquot);
++
++static struct qtree_fmt_operations v2r1_qtree_ops = {
++	.mem2disk_dqblk = v2r1_mem2diskdqb,
++	.disk2mem_dqblk = v2r1_disk2memdqb,
++	.is_id = v2r1_is_id,
+ };
+ 
+ #define QUOTABLOCK_BITS 10
+@@ -46,8 +56,7 @@ static inline qsize_t v2_qbtos(qsize_t blocks)
+ 	return blocks << QUOTABLOCK_BITS;
+ }
+ 
+-/* Check whether given file is really vfsv0 quotafile */
+-static int v2_check_quota_file(struct super_block *sb, int type)
++static int v2_check_quota_file_header(struct super_block *sb, int type)
+ {
+ 	struct v2_disk_dqheader dqhead;
+ 	ssize_t size;
+@@ -58,12 +67,20 @@ static int v2_check_quota_file(struct super_block *sb, int type)
+ 	if (size != sizeof(struct v2_disk_dqheader)) {
+ 		printk("quota_v2: failed read expected=%zd got=%zd\n",
+ 			sizeof(struct v2_disk_dqheader), size);
+-		return 0;
++		return -EIO;
+ 	}
+-	if (le32_to_cpu(dqhead.dqh_magic) != quota_magics[type] ||
+-	    le32_to_cpu(dqhead.dqh_version) != quota_versions[type])
+-		return 0;
+-	return 1;
++	if (le32_to_cpu(dqhead.dqh_magic) != quota_magics[type])
++		return -ENOENT;
++	if (le32_to_cpu(dqhead.dqh_version) > quota_versions[type])
++		return -EOPNOTSUPP;
++	return le32_to_cpu(dqhead.dqh_version);
++}
++
++
++/* Check whether given file is really vfsv0 quotafile */
++static int v2_check_quota_file(struct super_block *sb, int type)
++{
++	return v2_check_quota_file_header(sb, type) >= 0;
+ }
+ 
+ /* Read information header from quota file */
+@@ -73,7 +90,13 @@ static int v2_read_file_info(struct super_block *sb, int type)
+ 	struct mem_dqinfo *info = sb_dqinfo(sb, type);
+ 	struct qtree_mem_dqinfo *qinfo;
+ 	ssize_t size;
++	int version = v2_check_quota_file_header(sb, type);
+ 
++	if (version < 0) {
++		printk(KERN_WARNING "Cannot identify quota file version on "
++		       "device %s: %d\n", sb->s_id, version);
++		return -1;
++	}
+ 	size = sb->s_op->quota_read(sb, type, (char *)&dinfo,
+ 	       sizeof(struct v2_disk_dqinfo), V2_DQINFOOFF);
+ 	if (size != sizeof(struct v2_disk_dqinfo)) {
+@@ -88,9 +111,14 @@ static int v2_read_file_info(struct super_block *sb, int type)
+ 		return -1;
+ 	}
+ 	qinfo = info->dqi_priv;
+-	/* limits are stored as unsigned 32-bit data */
+-	info->dqi_maxblimit = 0xffffffff;
+-	info->dqi_maxilimit = 0xffffffff;
++	if (version == 0) {
++		/* limits are stored as unsigned 32-bit data */
++		info->dqi_maxblimit = 0xffffffff;
++		info->dqi_maxilimit = 0xffffffff;
++	} else {
++		info->dqi_maxblimit = 0x7fffffffffffffffULL;
++		info->dqi_maxilimit = 0x7fffffffffffffffULL;
++	}
+ 	info->dqi_bgrace = le32_to_cpu(dinfo.dqi_bgrace);
+ 	info->dqi_igrace = le32_to_cpu(dinfo.dqi_igrace);
+ 	info->dqi_flags = le32_to_cpu(dinfo.dqi_flags);
+@@ -102,8 +130,13 @@ static int v2_read_file_info(struct super_block *sb, int type)
+ 	qinfo->dqi_blocksize_bits = V2_DQBLKSIZE_BITS;
+ 	qinfo->dqi_usable_bs = 1 << V2_DQBLKSIZE_BITS;
+ 	qinfo->dqi_qtree_depth = qtree_depth(qinfo);
+-	qinfo->dqi_entry_size = sizeof(struct v2_disk_dqblk);
+-	qinfo->dqi_ops = &v2_qtree_ops;
++	if (version == 0) {
++		qinfo->dqi_entry_size = sizeof(struct v2r0_disk_dqblk);
++		qinfo->dqi_ops = &v2r0_qtree_ops;
++	} else {
++		qinfo->dqi_entry_size = sizeof(struct v2r1_disk_dqblk);
++		qinfo->dqi_ops = &v2r1_qtree_ops;
++	}
+ 	return 0;
+ }
+ 
+@@ -134,9 +167,9 @@ static int v2_write_file_info(struct super_block *sb, int type)
+ 	return 0;
+ }
+ 
+-static void v2_disk2memdqb(struct dquot *dquot, void *dp)
++static void v2r0_disk2memdqb(struct dquot *dquot, void *dp)
+ {
+-	struct v2_disk_dqblk *d = dp, empty;
++	struct v2r0_disk_dqblk *d = dp, empty;
+ 	struct mem_dqblk *m = &dquot->dq_dqb;
+ 
+ 	m->dqb_ihardlimit = le32_to_cpu(d->dqb_ihardlimit);
+@@ -148,15 +181,15 @@ static void v2_disk2memdqb(struct dquot *dquot, void *dp)
+ 	m->dqb_curspace = le64_to_cpu(d->dqb_curspace);
+ 	m->dqb_btime = le64_to_cpu(d->dqb_btime);
+ 	/* We need to escape back all-zero structure */
+-	memset(&empty, 0, sizeof(struct v2_disk_dqblk));
++	memset(&empty, 0, sizeof(struct v2r0_disk_dqblk));
+ 	empty.dqb_itime = cpu_to_le64(1);
+-	if (!memcmp(&empty, dp, sizeof(struct v2_disk_dqblk)))
++	if (!memcmp(&empty, dp, sizeof(struct v2r0_disk_dqblk)))
+ 		m->dqb_itime = 0;
+ }
+ 
+-static void v2_mem2diskdqb(void *dp, struct dquot *dquot)
++static void v2r0_mem2diskdqb(void *dp, struct dquot *dquot)
+ {
+-	struct v2_disk_dqblk *d = dp;
++	struct v2r0_disk_dqblk *d = dp;
+ 	struct mem_dqblk *m = &dquot->dq_dqb;
+ 	struct qtree_mem_dqinfo *info =
+ 			sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv;
+@@ -174,9 +207,60 @@ static void v2_mem2diskdqb(void *dp, struct dquot *dquot)
+ 		d->dqb_itime = cpu_to_le64(1);
+ }
+ 
+-static int v2_is_id(void *dp, struct dquot *dquot)
++static int v2r0_is_id(void *dp, struct dquot *dquot)
++{
++	struct v2r0_disk_dqblk *d = dp;
++	struct qtree_mem_dqinfo *info =
++			sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv;
++
++	if (qtree_entry_unused(info, dp))
++		return 0;
++	return le32_to_cpu(d->dqb_id) == dquot->dq_id;
++}
++
++static void v2r1_disk2memdqb(struct dquot *dquot, void *dp)
++{
++	struct v2r1_disk_dqblk *d = dp, empty;
++	struct mem_dqblk *m = &dquot->dq_dqb;
++
++	m->dqb_ihardlimit = le64_to_cpu(d->dqb_ihardlimit);
++	m->dqb_isoftlimit = le64_to_cpu(d->dqb_isoftlimit);
++	m->dqb_curinodes = le64_to_cpu(d->dqb_curinodes);
++	m->dqb_itime = le64_to_cpu(d->dqb_itime);
++	m->dqb_bhardlimit = v2_qbtos(le64_to_cpu(d->dqb_bhardlimit));
++	m->dqb_bsoftlimit = v2_qbtos(le64_to_cpu(d->dqb_bsoftlimit));
++	m->dqb_curspace = le64_to_cpu(d->dqb_curspace);
++	m->dqb_btime = le64_to_cpu(d->dqb_btime);
++	/* We need to escape back all-zero structure */
++	memset(&empty, 0, sizeof(struct v2r1_disk_dqblk));
++	empty.dqb_itime = cpu_to_le64(1);
++	if (!memcmp(&empty, dp, sizeof(struct v2r1_disk_dqblk)))
++		m->dqb_itime = 0;
++}
++
++static void v2r1_mem2diskdqb(void *dp, struct dquot *dquot)
++{
++	struct v2r1_disk_dqblk *d = dp;
++	struct mem_dqblk *m = &dquot->dq_dqb;
++	struct qtree_mem_dqinfo *info =
++			sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv;
++
++	d->dqb_ihardlimit = cpu_to_le64(m->dqb_ihardlimit);
++	d->dqb_isoftlimit = cpu_to_le64(m->dqb_isoftlimit);
++	d->dqb_curinodes = cpu_to_le64(m->dqb_curinodes);
++	d->dqb_itime = cpu_to_le64(m->dqb_itime);
++	d->dqb_bhardlimit = cpu_to_le64(v2_stoqb(m->dqb_bhardlimit));
++	d->dqb_bsoftlimit = cpu_to_le64(v2_stoqb(m->dqb_bsoftlimit));
++	d->dqb_curspace = cpu_to_le64(m->dqb_curspace);
++	d->dqb_btime = cpu_to_le64(m->dqb_btime);
++	d->dqb_id = cpu_to_le32(dquot->dq_id);
++	if (qtree_entry_unused(info, dp))
++		d->dqb_itime = cpu_to_le64(1);
++}
++
++static int v2r1_is_id(void *dp, struct dquot *dquot)
+ {
+-	struct v2_disk_dqblk *d = dp;
++	struct v2r1_disk_dqblk *d = dp;
+ 	struct qtree_mem_dqinfo *info =
+ 			sb_dqinfo(dquot->dq_sb, dquot->dq_type)->dqi_priv;
+ 
+diff --git a/fs/quotaio_v2.h b/fs/quotaio_v2.h
+index 530fe58..42b916a 100644
+--- a/fs/quotaio_v2.h
++++ b/fs/quotaio_v2.h
+@@ -17,8 +17,8 @@
+ }
+ 
+ #define V2_INITQVERSIONS {\
+-	0,		/* USRQUOTA */\
+-	0		/* GRPQUOTA */\
++	1,		/* USRQUOTA */\
++	1		/* GRPQUOTA */\
+ }
+ 
+ /* First generic header */
+@@ -28,11 +28,11 @@ struct v2_disk_dqheader {
+ };
+ 
+ /*
+- * The following structure defines the format of the disk quota file
+- * (as it appears on disk) - the file is a radix tree whose leaves point
+- * to blocks of these structures.
++ * The following structure defines the format of the disk quota file in version
++ * 0 - the file is a radix tree whose leaves point to blocks of these
++ * structures.
+  */
+-struct v2_disk_dqblk {
++struct v2r0_disk_dqblk {
+ 	__le32 dqb_id;		/* id this quota applies to */
+ 	__le32 dqb_ihardlimit;	/* absolute limit on allocated inodes */
+ 	__le32 dqb_isoftlimit;	/* preferred inode limit */
+@@ -44,6 +44,20 @@ struct v2_disk_dqblk {
+ 	__le64 dqb_itime;	/* time limit for excessive inode use */
+ };
+ 
++/* The same structure in quota file version 1 */
++struct v2r1_disk_dqblk {
++	__le32 dqb_id;		/* id this quota applies to */
++	__le32 dqb_padding;	/* padding field */
++	__le64 dqb_ihardlimit;	/* absolute limit on allocated inodes */
++	__le64 dqb_isoftlimit;	/* preferred inode limit */
++	__le64 dqb_curinodes;	/* current # allocated inodes */
++	__le64 dqb_bhardlimit;	/* absolute limit on disk space */
++	__le64 dqb_bsoftlimit;	/* preferred limit on disk space */
++	__le64 dqb_curspace;	/* current space occupied (in bytes) */
++	__le64 dqb_btime;	/* time limit for excessive disk use */
++	__le64 dqb_itime;	/* time limit for excessive inode use */
++};
++
+ /* Header with type and version specific information */
+ struct v2_disk_dqinfo {
+ 	__le32 dqi_bgrace;	/* Time before block soft limit becomes hard limit */
 -- 
-ak@linux.intel.com
+1.6.0.4
+
