@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYKZW12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbYKZWcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbYKZW12 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 17:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbYKZW1U
+	id S1753244AbYKZWcJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 17:32:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYKZWb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 17:27:20 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:43998 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752248AbYKZW1T (ORCPT
+	Wed, 26 Nov 2008 17:31:56 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:25882 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752302AbYKZWbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 17:27:19 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAH9YLUlMROB9/2dsb2JhbACBbdFpgn0
-Date: Wed, 26 Nov 2008 17:27:15 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andrew McDermott <andrew.mcdermott@windriver.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev@lists.casi.polymtl.ca,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [ltt-dev] [PATCH] Poll : introduce poll_wait_exclusive() new
-	function
-Message-ID: <20081126222714.GA10981@Krystal>
-References: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081124121659.GA18987@Krystal> <20081125194700.26EB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.1.10.0811251316590.32523@alien.or.mcafeemobile.com> <20081126111511.GE14826@Krystal> <v4skpeent3.fsf@swi-aim.swindon.wrsec.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Nov 2008 17:31:55 -0500
+Date: Thu, 27 Nov 2008 01:31:51 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Trent Piepho <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+Message-ID: <20081126223151.GA1178@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru> <1225418589-8545-1-git-send-email-tpiepho@freescale.com> <20081126162033.GA13397@oksana.dev.rtsoft.ru> <18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <v4skpeent3.fsf@swi-aim.swindon.wrsec.fr>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:24:12 up 9 days, 23:04,  1 user,  load average: 0.86, 0.61,
-	0.62
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <18733.49643.63081.163437@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew McDermott (andrew.mcdermott@windriver.com) wrote:
+On Thu, Nov 27, 2008 at 08:38:51AM +1100, Paul Mackerras wrote:
+[...]
+> > >  drivers/mtd/nand/fsl_upm.c              |    2 +-
+> > >  drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+> > >  drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+> > >  drivers/of/gpio.c                       |   13 ++++++++++---
+> > >  drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+> > >  include/linux/of_gpio.h                 |   21 +++++++++++++++++----
+> > >  6 files changed, 32 insertions(+), 12 deletions(-)
 > 
-> Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
+> That would need acks from Jeff Garzik and David Woodhouse.
 > 
-> [...]
-> 
-> >> > Mathieu Desnoyers explained it cause following problem to LTTng.
-> >> > 
-> >> >    In LTTng, all lttd readers are polling all the available debugfs files
-> >> >    for data. This is principally because the number of reader threads is
-> >> >    user-defined and there are typical workloads where a single CPU is
-> >> >    producing most of the tracing data and all other CPUs are idle,
-> >> >    available to consume data. It therefore makes sense not to tie those
-> >> >    threads to specific buffers. However, when the number of threads grows,
-> >> >    we face a "thundering herd" problem where many threads can be woken up
-> >> >    and put back to sleep, leaving only a single thread doing useful work.
-> >> 
-> >> Why do you need to have so many threads banging a single device/file?
-> >> Have one (or any other very little number) puller thread(s), that 
-> >> activates with chucks of pulled data the other processing threads. That 
-> >> way there's no need for a new wakeup abstraction.
-> >> 
-> >> 
-> >> 
-> >> - Davide
-> >
-> > One of the key design rule of LTTng is to do not depend on such
-> > system-wide data structures, or entity (e.g. single manager thread).
-> > Everything is per-cpu, and it does scale very well.
-> >
-> > I wonder how badly the approach you propose can scale on large NUMA
-> > systems, where having to synchronize everything through a single thread
-> > might become an important point of contention, just due to the cacheline
-> > bouncing and extra scheduler activity involved.
-> 
-> But at the end of the day these threads end up writing to the (possibly)
-> single spindle.  Isn't that the biggest bottlneck here?
-> 
+> Alternatively you could add a new function (called, for instance,
+> of_get_gpio_flags) with the extra parameter to eliminate the need to
+> change any drivers at this stage, since they all seem to pass NULL for
+> the flags argument.
 
-Not if those threads are either
+:-))
 
-- analysing the data on-the-fly without exporting it to disk
-- sending the data through more than one network card
-- Writing data to multiple disks
+This was _exactly_ my initial approach, but Trent and Grant thought
+that changing API would be easy. Hah-ha!
 
-There are therefore ways to improve scalability by adding more data
-output paths. Therefore, I don't want to limit scalability due to the
-inner design, so that if someone has the resources to send the
-information out at great speed scaleably, he can.
+Here is my initial patch implementing of_get_gpio_flags():
+http://lkml.org/lkml/2008/7/25/236
 
-Mathieu
+Trent, are you going to push your patch through all the
+maintainers, or should we, after all, revert to my approach
+instead?
+
+Thanks,
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
