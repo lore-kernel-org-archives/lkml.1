@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbYKZPCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYKZPDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915AbYKZPCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYKZPBv
+	id S1754181AbYKZPDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYKZPDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 10:01:51 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:39702 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751832AbYKZPBu (ORCPT
+	Wed, 26 Nov 2008 10:03:06 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59843 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbYKZPDD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 10:01:50 -0500
-Date: Wed, 26 Nov 2008 10:01:47 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       <stable@kernel.org>
-Subject: Re: [PATCH] Fix SCSI regression in 2.6.27 [was [Bugme-new] [Bug
- 12099] New: Nokia 5310 storage-mode]
-In-Reply-To: <1227676067.3415.63.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0811260957470.2359-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Nov 2008 10:03:03 -0500
+Subject: Re: Lockdep warning for iprune_mutex at shrink_icache_memory
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Dan =?ISO-8859-1?Q?No=E9?= <dpn@isomerica.net>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20081126072625.GH6291@disturbed>
+References: <20081125064357.5a4f1420@tuna> <20081126072625.GH6291@disturbed>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 26 Nov 2008 16:02:59 +0100
+Message-Id: <1227711779.4454.184.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Nov 2008, James Bottomley wrote:
-
-> On Tue, 2008-11-25 at 10:34 -0500, Alan Stern wrote:
-> > This patch is intended for 2.6.27.stable and 2.6.28.  It's a temporary 
-> > fix for a problem affecting a number of USB mass-storage devices 
-> > (including many Nokia phones): When trying to access a nonexistent 
-> > "last" sector, the SCSI midlayer gets caught in an endless retry loop.
+On Wed, 2008-11-26 at 18:26 +1100, Dave Chinner wrote:
+> On Tue, Nov 25, 2008 at 06:43:57AM -0500, Dan Noé wrote:
+> > I have experienced the following lockdep warning on 2.6.28-rc6.  I
+> > would be happy to help debug, but I don't know this section of code at
+> > all.
+> > 
+> > =======================================================
+> > [ INFO: possible circular locking dependency detected ]
+> > 2.6.28-rc6git #1
+> > -------------------------------------------------------
+> > rsync/21485 is trying to acquire lock:
+> >  (iprune_mutex){--..}, at: [<ffffffff80310b14>]
+> > shrink_icache_memory+0x84/0x290
+> > 
+> > but task is already holding lock:
+> >  (&(&ip->i_iolock)->mr_lock){----}, at: [<ffffffffa01fcae5>]
+> > xfs_ilock+0x75/0xb0 [xfs]
 > 
-> Can't we just invoke the last sector handling flag for all Nokia
-> devices?
+> False positive. memory reclaim can be invoked while we
+> are holding an inode lock, which means we go:
+> 
+> 	xfs_ilock -> iprune_mutex
+> 
+> And when the inode shrinker reclaims a dirty xfs inode,
+> we go:
+> 
+> 	iprune_mutex -> xfs_ilock
+> 
+> However, this cannot deadlock as the first case can
+> only occur with a referenced inode, and the second case
+> can only occur with an unreferenced inode. Hence we can
+> never get a situation where the inode being locked on
+> either side of the iprune_mutex is the same inode so
+> deadlock is impossible.
+> 
+> To avoid this false positive, either we need to turn off
+> lockdep checking on xfs inodes (not going to happen), or memory
+> reclaim needs to be able to tell lockdep that recursion on
+> filesystem lock classes may occur. Perhaps we can add a
+> simple annotation to the iprune mutex initialisation as well as
+> the xfs ilock initialisation to indicate that such recursion
+> is possible and allowed...
 
-That would work for those devices... until and unless Nokia ever 
-decides to correct their bug.  It won't help anything else.
+This is that: an inode has multiple stages in its life-cycle, thing
+again, right?
 
-> This would cause tape errors on unit attention (fairly common
-> condition).  It can be argued that we get more users of USB mobile
-> phones than tapes, but I'd rather keep both communities happy
+Last time I talked to Christoph about that, he said it would be possible
+to get (v)fs hooks for when the inode changes data structures as its not
+really too FS specific or was fully filesystem specific, I can't
+remember.
 
-Me too.  I realize this patch hasn't been tested or vetted by anyone in
-the SCSI development crowd.  That's why I've been pestering you guys
-about it!
+The thing to do is re-annotate the inode locks whenever the inode
+changes data-structure, much like we do in unlock_new_inode().
 
-> By and large, the reason we backport from head if at all possible is so
-> we can avoid bugs like this creeping into stable.  (And backporting from
-> head is far easier if the bug fixes are small and don't contain
-> miscellaneous code clean ups, control flow changes and comment fixes)
+So for each stage in the inode's life-cycle you need to create a key for
+each lock, such as:
 
-> I tried to untangle it on the 'plane yesterday.  I've just got a bit
-> more testing to do then I'll post the patch to your patch.
+struct lock_class_key xfs_active_inode_ilock;
+struct lock_class_key xfs_deleted_inode_ilock;
+...
 
-That's fine with me.  I just don't want to see the same problem 
-continuing on into 2.6.28.final.
+and on state change do something like:
 
-Alan Stern
+  BUG_ON(rwsem_is_locked(&xfs_ilock->mrlock));
 
+  init_rwsem(&xfs_ilock->mrlock);
+  lockdep_set_class(&xfs_ilock->mrlock, &xfs_deleted_inode_ilock);
+
+
+hth
