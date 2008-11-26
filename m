@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYKZFI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbYKZFIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbYKZFI2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 00:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYKZFIE
+	id S1753114AbYKZFIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 00:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYKZFIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 00:08:04 -0500
-Received: from sous-sol.org ([216.99.217.87]:60327 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752644AbYKZFIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 00:08:01 -0500
-Date: Tue, 25 Nov 2008 21:07:58 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Greg KH <greg@kroah.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, allen.m.kay@intel.com, jun.nakajima@intel.com
-Subject: Re: [PATCH 2/2] PCI: pci-stub module to reserve pci device
-Message-ID: <20081126050758.GA22700@sequoia.sous-sol.org>
-References: <20081126033610.GB19881@sequoia.sous-sol.org> <20081126033839.GC19881@sequoia.sous-sol.org> <20081126041946.GA18816@kroah.com>
+	Wed, 26 Nov 2008 00:08:23 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:45902 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751796AbYKZFIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 00:08:22 -0500
+From: Andrey Mirkin <major@openvz.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 2/2] Add support for in-kernel process creation during restart
+Date: Wed, 26 Nov 2008 09:07:43 +0400
+User-Agent: KMail/1.8.2
+Cc: Andrey Mirkin <major@openvz.org>, orenl@cs.columbia.edu,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1227541175-30301-1-git-send-email-major@openvz.org> <1227541175-30301-3-git-send-email-major@openvz.org> <20081125004024.GA4440@x200.localdomain>
+In-Reply-To: <20081125004024.GA4440@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081126041946.GA18816@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811260807.45094.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (greg@kroah.com) wrote:
-> On Tue, Nov 25, 2008 at 07:38:39PM -0800, Chris Wright wrote:
-> > When doing device assignment with KVM there's currently nothing to
-> > protect the device from having a driver in the host as well as the guest.
-> > This trivial module just binds the pci device on the host to a stub
-> > driver so that a real host driver can't bind to the device.  It has no
-> > pci id table, it supports only dynamic ids.
-> > 
-> >  # echo "8086 10f5" > /sys/bus/pci/drivers/pci-stub/new_id
-> >  # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/e1000e/unbind
-> >  # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/pci-stub/bind
-> >  # ls -l /sys/bus/pci/devices/0000:00:19.0/driver
-> >  lrwxrwxrwx 1 root root 0 2008-11-25 19:10 /sys/bus/pci/devices/0000:00:19.0/driver -> ../../../bus/pci/drivers/pci-stub
-> 
-> You might want to put this somewhere in the .c or documentation files
-> somewhere as well.
+On Tuesday 25 November 2008 03:45 Alexey Dobriyan wrote:
+> On Mon, Nov 24, 2008 at 06:39:35PM +0300, Andrey Mirkin wrote:
+> > +static int cr_rstr_task_struct(struct cr_ctx *ctx, struct cr_hdr_task
+> > *ht) +{
+> > +	struct task_struct *t = current;
+> > +	char *buf;
+> > +	int ret = -EINVAL;
+> > +
+> > +	/* upper limit for task_comm_len to prevent DoS */
+> > +	if (ht->task_comm_len < 0 || ht->task_comm_len > PAGE_SIZE)
+> > +		goto out;
+> > +
+> > +	buf = kmalloc(ht->task_comm_len, GFP_KERNEL);
+> > +	if (!buf)
+> > +		goto out;
+> > +	ret = cr_read_string(ctx, buf, ht->task_comm_len);
+> > +	if (!ret) {
+> > +		/* if t->comm is too long, silently truncate */
+> > +		memset(t->comm, 0, TASK_COMM_LEN);
+> > +		memcpy(t->comm, buf, min(ht->task_comm_len, TASK_COMM_LEN));
+> > +	}
+> > +	kfree(buf);
+> > +
+> > +	/* FIXME: restore remaining relevant task_struct fields */
+> > +out:
+> > +	return ret;
+> > +}
+>
+> ->comm is only 16 bytes wide, you can just use on-stack variable.
+Yes, you right here.
+But who knows how it can be changed later.
+Also we have almost the same function for process restore from user space.
+In next version I will use it instead of introducing new one.
 
-OK, I'll add this to the .c file for now.
-
-> > Cc: "Kay, Allen M" <allen.m.kay@intel.com>
-> > Cc: "Nakajima, Jun" <jun.nakajima@intel.com>
-> > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> > ---
-> >  drivers/pci/Kconfig    |    9 +++++++++
-> >  drivers/pci/Makefile   |    2 ++
-> >  drivers/pci/pci-stub.c |   38 ++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 49 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/pci/pci-stub.c
-> > 
-> > diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-> > index e1ca425..f6183df 100644
-> > --- a/drivers/pci/Kconfig
-> > +++ b/drivers/pci/Kconfig
-> > @@ -42,6 +42,15 @@ config PCI_DEBUG
-> >  
-> >  	  When in doubt, say N.
-> >  
-> > +config PCI_STUB
-> > +	tristate "PCI Stub driver"
-> > +	depends on PCI
-> > +	help
-> > +	  Say Y or M here if you want be able to reserve a PCI device
-> > +	  when it is going to be assigned to a guest.
-> 
-> "guest operating system"?  Otherwise, just "guest" doesn't mean much
-> here in this context.
-
-fixed
-
-> Other than that minor thing, looks great.
-> 
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-thanks,
--chris
+Andrey
