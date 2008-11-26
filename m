@@ -1,98 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYKZOIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYKZOJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbYKZOIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 09:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYKZOIk
+	id S1754519AbYKZOJO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 09:09:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYKZOI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 09:08:40 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:29650 "EHLO relay.sw.ru"
+	Wed, 26 Nov 2008 09:08:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59480 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752303AbYKZOIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 09:08:40 -0500
-From: Dmitri Monakhov <dmonakhov@openvz.org>
-To: linux-kernel@vger.kernel.org
-Cc: rml@novell.com, Dmitri Monakhov <dmonakhov@openvz.org>
-Subject: [PATCH] Fix incorrect refcount while dispatching unmount event
-Date: Wed, 26 Nov 2008 17:08:29 +0300
-Message-Id: <1227708509-1561-1-git-send-email-dmonakhov@openvz.org>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	id S1752303AbYKZOI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 09:08:56 -0500
+Date: Wed, 26 Nov 2008 15:08:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: eranian@googlemail.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, x86@kernel.org,
+       andi@firstfloor.org, eranian@gmail.com, sfr@canb.auug.org.au
+Subject: Re: [patch 20/24] perfmon: system calls interface
+Message-ID: <20081126140835.GE6562@elte.hu>
+References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On umount two event will be dispatched to watcher:
-1: inotify_dev_queue_event(.., IN_UNMOUNT,..)
-2: remove_watch(watch, dev)
-    ->inotify_dev_queue_event(.., IN_IGNORED, ..)
-But if watcher has IN_ONESHOT bit set then the watcher will be released
-inside first event. Which result in accessing invalid object later.
-IMHO it is not pure regression. This bug wasn't triggered while initial
-inotify interface testing phase because of another bug in IN_ONESHOT
-handling logic :)
-  commit ac74c00e499ed276a965e5b5600667d5dc04a84a
-  Author: Ulisses Furquim <ulissesf@gmail.com>
-  Date:   Fri Feb 8 04:18:16 2008 -0800
-    inotify: fix check for one-shot watches before destroying them
-    As the IN_ONESHOT bit is never set when an event is sent we must check it
-    in the watch's mask and not in the event's mask.
 
-TESTCASE:
-mkdir mnt
-mount -ttmpfs none mnt
-mkdir mnt/d
-./inotify mnt/d&
-umount mnt ## << lockup or crash here
+* eranian@googlemail.com <eranian@googlemail.com> wrote:
 
-TESTSOURCE:
-/* gcc -oinotify inotify.c */
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/inotify.h>
+> +/*
+> + * unlike the other perfmon system calls, this one returns a file descriptor
+> + * or a value < 0 in case of error, very much like open() or socket()
+> + */
+> +asmlinkage long sys_pfm_create(int flags, struct pfarg_sinfo __user *ureq)
+> +{
+> +	struct pfm_context *new_ctx;
+> +	struct pfarg_sinfo sif;
+> +	int ret;
+> +
+> +	PFM_DBG("flags=0x%x sif=%p", flags, ureq);
+> +
+> +	if (perfmon_disabled)
+> +		return -ENOSYS;
 
-int main(int argc, char **argv)
-{
-        char buf[1024];
-        struct inotify_event *ie;
-        char *p;
-        int i;
-        ssize_t l;
+uhm. So we have a dynamic 'we dont support perfmon' flag. Which is 
+global and defined as:
 
-        p = argv[1];
-        i = inotify_init();
-        inotify_add_watch(i, p, ~0);
+  +int perfmon_disabled;  /* >0 if perfmon is disabled */
 
-        l = read(i, buf, sizeof(buf));
-        printf("read %d bytes\n", l);
-        ie = (struct inotify_event *) buf;
-        printf("event mask: %d\n", ie->mask);
-	return 0;
-}
+(sidenote: that should be __read_mostly)
 
-Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
----
- fs/inotify.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+then we go:
 
-diff --git a/fs/inotify.c b/fs/inotify.c
-index 7bbed1b..dae3f28 100644
---- a/fs/inotify.c
-+++ b/fs/inotify.c
-@@ -428,11 +428,13 @@ void inotify_unmount_inodes(struct list_head *list)
- 		watches = &inode->inotify_watches;
- 		list_for_each_entry_safe(watch, next_w, watches, i_list) {
- 			struct inotify_handle *ih= watch->ih;
-+			get_inotify_watch(watch);
- 			mutex_lock(&ih->mutex);
- 			ih->in_ops->handle_event(watch, watch->wd, IN_UNMOUNT, 0,
- 						 NULL, NULL);
- 			inotify_remove_watch_locked(ih, watch);
- 			mutex_unlock(&ih->mutex);
-+			put_inotify_watch(watch);
- 		}
- 		mutex_unlock(&inode->inotify_mutex);
- 		iput(inode);		
--- 
-1.5.4.3
+> +	if (flags) {
+> +		PFM_DBG("no flags accepted yet");
+> +		return -EINVAL;
+> +	}
 
+that should be if (unlikely())
+
+then:
+
+> +	ret = __pfm_create_context(flags, &sif, &new_ctx);
+
+where we get:
+
++int __pfm_create_context(__u32 ctx_flags,
++                        struct pfarg_sinfo *sif,
++                        struct pfm_context **new_ctx)
++{
++       struct pfm_context *ctx;
++       struct file *filp = NULL;
++       int fd = 0, ret = -EINVAL;
++
++       if (!pfm_pmu_conf)
++               return -ENOSYS;
++
+
+_ANOTHER_ global dynamic flag to tell us that ... in essence 'we dont 
+support perfmon'. Which flag is again:
+
++struct pfm_pmu_config  *pfm_pmu_conf;
+
+... which should be __read_mostly at minimum.
+
++EXPORT_SYMBOL(pfm_pmu_conf);
+
+and _MUST_ be exported as EXPORT_SYMBOL_GPL. If exported at all. Why 
+are any symbols exported here? perfmom does core kernel system calls 
+and is non-modular:
+
++config PERFMON
++       bool "Perfmon2 performance monitoring interface"
+
+it needs _zero_ exports.
+
+	Ingo
