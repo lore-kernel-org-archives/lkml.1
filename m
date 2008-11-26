@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbYKZCmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbYKZCoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753614AbYKZCmx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYKZCmo
+	id S1753581AbYKZCoy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYKZCoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:42:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37076 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Nov 2008 21:44:46 -0500
+Received: from mail.windriver.com ([147.11.1.11]:37055 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752008AbYKZCmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:42:44 -0500
-Date: Wed, 26 Nov 2008 03:42:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-return-tracer: set a more human
-	readable output
-Message-ID: <20081126024232.GA31342@elte.hu>
-References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu> <20081126021450.GA17617@elte.hu> <alpine.DEB.1.10.0811252121440.26424@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811252121440.26424@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752280AbYKZCoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 21:44:46 -0500
+From: Liming Wang <liming.wang@windriver.com>
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Liming Wang <liming.wang@windriver.com>
+Subject: [PATCH 1/1] ftrace: adding other non-leaving .text sections
+Date: Wed, 26 Nov 2008 10:29:26 +0800
+Message-Id: <1227666566-9044-1-git-send-email-liming.wang@windriver.com>
+X-Mailer: git-send-email 1.6.0.3
+X-OriginalArrivalTime: 26 Nov 2008 02:44:32.0783 (UTC) FILETIME=[E96B61F0:01C94F70]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please review this patch, and I don't know whether new sections will conflict 
+with sched tracer or others. 
+This patch is against Steven tree's tip/devel latest commit.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Impact: improve recordmcount.pl
 
-> 
-> On Wed, 26 Nov 2008, Ingo Molnar wrote:
-> 
-> > 
-> > the regex filter doesnt work well yet when used with the graph tracer:
-> > 
-> > [ 2994.079079] ------------[ cut here ]------------
-> > [ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
-> > [ 2994.079079] Modules linked in:
-> > [ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
-> > [ 2994.079079] Call Trace:
-> > [ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
-> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-> > [ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
-> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-> > [ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
-> > [ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
-> > [ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
-> > [ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
-> > [ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
-> > [ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
-> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
-> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
-> > [ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
-> > [ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
-> > [ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
-> > [ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
-> > [ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
-> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-> > [ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
-> > [ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
-> > [ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
-> > [ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
-> > [ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
-> > [ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
-> > [ 2994.079079] ---[ end trace bff97d149b80ecde ]---
-> > [ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
-> > [ 2994.079079]  actual: e8:0c:1a:fa:ff
-> > 
-> > produced via:
-> > 
-> >  # cd /debug/tracing/
-> >  # cat set_ftrace_filter
-> >  # echo schedule > set_ftrace_filter
-> >  # cat set_ftrace_filter
-> >  cat: set_ftrace_filter: No such device
-> 
-> This is probably fixed with my patch set.
+Besides .text section, there are three .text sections that won't
+be freed after kernel booting. They are: .sched.text, .spinlock.text
+and .kprobes.text, which contain functions we can trace. But the last
+section ".kprobes.text" is particular, which has been marked as "notrace",
+we ignore it. Thus we add other two sections.
 
-yeah - but note that the graph-tracer rename came in the way of them. 
-Mind redoing your two patches ontop of latest tip/master?
+Signed-off-by: Liming Wang <liming.wang@windriver.com>
+---
+ scripts/recordmcount.pl |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-	Ingo
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 0197e2f..0b1dc9f 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -112,6 +112,8 @@ my ($arch, $bits, $objdump, $objcopy, $cc,
+ # Acceptable sections to record.
+ my %text_sections = (
+      ".text" => 1,
++     ".sched.text" => 1,
++     ".spinlock.text" => 1,
+ );
+ 
+ $objdump = "objdump" if ((length $objdump) == 0);
+-- 
+1.6.0.3
+
