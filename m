@@ -1,96 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbYKZR7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYKZSES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbYKZR7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 12:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYKZR7L
+	id S1754584AbYKZSES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 13:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYKZSEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 12:59:11 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:60200 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbYKZR7J (ORCPT
+	Wed, 26 Nov 2008 13:04:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45305 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752256AbYKZSEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 12:59:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=gH3unZhHWz2bvarfB4yZlQ8ql9KAXRYQxEMMPfgAfKtamYEfuOO+NAmdUECKJoXf6W
-         y4m0uNXg9XgtprHargT2NktbtpV0mdKM7DXkCmPPzUGl10D6X3rxiCIc4MR/G9UuOxjg
-         qYXiV+YBtMeAaFaMJ7uu97YNT9kT/H1vwzlg0=
-Message-ID: <9b2b86520811260959u633903f5o570a97ea83369f7c@mail.gmail.com>
-Date: Wed, 26 Nov 2008 17:59:07 +0000
-From: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: Document sysfs interface to RTC system wakeup
-Cc: "kernel list" <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
-       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20081126161524.GD1983@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 26 Nov 2008 13:04:05 -0500
+Date: Wed, 26 Nov 2008 10:02:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 2/5] ftrace: use code patching for ftrace graph tracer
+Message-Id: <20081126100255.d53f9347.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0811261144360.26743@gandalf.stny.rr.com>
+References: <20081126051622.134970943@goodmis.org>
+	<20081126051709.774546196@goodmis.org>
+	<20081125213546.ff4eddf4.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0811261144360.26743@gandalf.stny.rr.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081126161524.GD1983@elf.ucw.cz>
-X-Google-Sender-Auth: eac14a78932fe86e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26/08, Pavel Machek <pavel@suse.cz> wrote:
-> diff --git a/Documentation/rtc.txt b/Documentation/rtc.txt
-> index 8deffcd..ac843ab 100644
-> --- a/Documentation/rtc.txt
-> +++ b/Documentation/rtc.txt
-> @@ -187,6 +187,88 @@ driver returns ENOIOCTLCMD.  Some common
->
->  If all else fails, check out the rtc-test.c driver!
->
-> +	    Even newer /sys interface
-> +	    ~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
-> +tino.keitel@gmx.de
-> +
+On Wed, 26 Nov 2008 11:46:58 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-It's unclear what the purpose of this email address is :).
+> 
+> 
+> On Tue, 25 Nov 2008, Andrew Morton wrote:
+> 
+> > On Wed, 26 Nov 2008 00:16:24 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > From: Steven Rostedt <rostedt@goodmis.org>
+> > > 
+> > > Impact: more efficient code for ftrace graph tracer
+> > > 
+> > > This patch uses the dynamic patching, when available, to patch
+> > > the function graph code into the kernel.
+> > > 
+> > > This patch will ease the way for letting both function tracing
+> > > and function graph tracing run together.
+> > > 
+> > > ...
+> > >
+> > > +static int ftrace_mod_jmp(unsigned long ip,
+> > > +			  int old_offset, int new_offset)
+> > > +{
+> > > +	unsigned char code[MCOUNT_INSN_SIZE];
+> > > +
+> > > +	if (probe_kernel_read(code, (void *)ip, MCOUNT_INSN_SIZE))
+> > > +		return -EFAULT;
+> > > +
+> > > +	if (code[0] != 0xe9 || old_offset != *(int *)(&code[1]))
+> > 
+> > erk.  I suspect that there's a nicer way of doing this amongst our
+> > forest of get_unaligned_foo() interfaces.  Harvey will know.
+> 
+> Hmm, I may be able to make a struct out of code.
+> 
+>   struct {
+> 	unsigned char op;
+> 	unsigned int  offset;
+>   } code __attribute__((packed));
+> 
+> Would that look better?
 
-<snip>
+nah, let's do something more generic for this.
 
-> +cd /proc/acpi
-> +echo EXP0 > wakeup
-> +echo PCI1 > wakeup
-> +echo USB0 > wakeup
-> +echo USB1 > wakeup
-> +echo USB2 > wakeup
-> +echo USB7 > wakeup
-> +echo HDEF > wakeup
+> > 
+> > > +		return -EINVAL;
+> > > +
+> > > +	*(int *)(&code[1]) = new_offset;
+> > 
+> > Might be able to use put_unaligned_foo() here.
+> > 
+> > The problem is that these functions use sizeof(*ptr) to work out what
+> > to do, so a cast is still needed.  A get_unaligned32(ptr) would be
+> > nice.  One which takes a void* and assumes CPU ordering.
+> 
+> Is there a correctness concern here? This is arch specific code, so I'm
+> not worried about other archs.
 
-Can you add a comment before this block, something like
+No, the code is OK as-is.
 
-# Toggle example wakeup devices
-# "cat wakeup" will show the list of devices on your specific system,
-and their current state
+It's just that "read a word from an [maybe-]unaligned address" is such
+a common operation that there should be a nice clean simple function to
+do it, rather than doing open-coded (and different) weird C tricks at each
+and\ every site.
 
-There are two points here
-
-1) This part of the example depends on the exact system.  AFAIK the
-BIOS is free to call the devices whatever it likes.
-
-2) These commands *toggle* the enabled state of the relevant wakeup
-device.  If you naively wrote a script based on this example, it
-_might_ work once.  It would probably fail the second time, because it
-would disable all the devices again.
-
-
-For added fun, my desktop systems, has a group of wakeup devices which
-toggle as a single unit.  There are six devices in the group,
-PEX[0-5].  If you do
-
-for i in 0 1 2 3 4 5; do echo PEX$i > wakeup; done
-
-the group toggles 6 times -so the state at the end will be the same as
-the start!  Hopefully readers will read the values back after applying
-them anyway, so they will notice if anything similarly strange
-happens.
-
-Alan
