@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYKZUqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYKZUwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYKZUqI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 15:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYKZUpz
+	id S1753968AbYKZUwN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 15:52:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYKZUv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 15:45:55 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55720 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbYKZUpz (ORCPT
+	Wed, 26 Nov 2008 15:51:57 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:46478 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYKZUv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 15:45:55 -0500
-Date: Wed, 26 Nov 2008 21:56:19 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: eranian@gmail.com
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       sfr@canb.auug.org.au
-Subject: Re: [patch 23/24] perfmon: kernel documentation
-Message-ID: <20081126205619.GD6703@one.firstfloor.org>
-References: <492d0c14.02225e0a.15ab.6f8e@mx.google.com> <20081126122107.GV6703@one.firstfloor.org> <7c86c4470811261021t5a7da650w95c30a71838172c4@mail.gmail.com> <20081126193429.GC6703@one.firstfloor.org> <7c86c4470811261224k20ae2554m32af5504488664cf@mail.gmail.com>
+	Wed, 26 Nov 2008 15:51:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=CYwvR3U8ZKbVC4QR3/gwYcxQvdc2+nez+4YZvFpcT/0vktrIrDXvSO/I3bnVyKavPF
+         1XwCuW/ZNYZQDWrfCmlbF2bhr6gTkTw4QnBmdovDv+W33P2kyd6fkhxwF4GHS1A+OOc3
+         kQ8RuHxB/Xa7qo6KehHGepf7MkmLkQrkbuzLc=
+Subject: Re: [PATCH-mm 3/7] unaligned: use generic implementation on
+ packed-struct arches
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, will.newton@gmail.com,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <20081126124031.c709d597.akpm@linux-foundation.org>
+References: <1226979551.6150.268.camel@brick>
+	 <20081126124031.c709d597.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 26 Nov 2008 12:51:54 -0800
+Message-Id: <1227732714.5511.92.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c86c4470811261224k20ae2554m32af5504488664cf@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 09:24:59PM +0100, stephane eranian wrote:
+On Wed, 2008-11-26 at 12:40 -0800, Andrew Morton wrote:
+> On Mon, 17 Nov 2008 19:39:11 -0800
+> Harvey Harrison <harvey.harrison@gmail.com> wrote:
 > 
-> >> I have never played with that myself, even with regular file
-> >> descriptors. But I can only
-> >> assume passing a file descriptor increments its refcount. Thus you
-> >> simply get another
-> >> controlling process. There is enough context locking in place in the
-> >> kernel to make this
-> >> work.
-> >
-> > Ok as long as it isn't a root hole or similar.
-> >
-> I need to figure out how you actually pass a fd form one process to another.
-> I seem to remember you need a pipe or socket + some ioctl().
+> > No functional changes, convert arches that use the packed-struct
+> > implementation for native-endianness and C byteshifting for the
+> > other endianness.
+> 
+> arch/sh has gone and changed things in linux-next.
 
-Unix sockets and the SCM_RIGHTS auxilliary message. See man 7 unix  
+Yes, please drop the SH portions of my patch in -mm (your inbox should
+already have such a patch)
 
-> But then, there is one issue with RDPMC which is not clearly stated in the SDM
-> if I recall. Take Core 2, counters are 40 bits, thus RDPMC returns 40-bit worth
-> of data. But wrmsrl() can only set the bottom 32 bits. Bits 32-39 are
-> sign extension
+I also followed up with a new patch to deal with the SH changes and
+then a revised patch to deal with some fallout in
+asm-generic/unaligned.h
 
-For this usecase wrmsrl is not really needed, it would be just a free 
-running counter like the TSC.
+Hopefully this is agreable to everyone.
 
-> of bit 31. Thus, you may need some masking in case the counter is high.  On
-> Intel processors, perfmon considers that all counters are actually 31-bit wide
-> (bits 32 and up are always set) and they are all virtualized to 64-bit via the
-> overflow interrupt. The issue with RDPMC vs. wrmsrl() is important in per-thread
-> mode because on context switch we may have to restore the counter.
+> so I'll just drop the sh hunk from
+> unaligned-use-generic-implementation-on-packed-struct-arches.patch, I
+> think.
+> 
 
-Ok is there a simple way currently to just enable the counter?
+Please do and add my revised patch and the sh-specific patch.
 
-> If we all agree on this, I can have the kernel adjust the limit based
-> on the number
-> of registers. We would not necessarily need to expose that limit in
-> /sys, if we assume
-> that tools will never try to pass vector with more entries than there
-> are registers. And if
-> they do, the call will fail.
+Cheers,
 
-I would suggest to just hardcode PAGE_SIZE and only worry about
-it again if really some driver exceeds it.
+Harvey
 
--Andi
-
--- 
-ak@linux.intel.com
