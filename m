@@ -1,86 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbYKZEex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYKZEhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbYKZEex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 23:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYKZEen
+	id S1753439AbYKZEhW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 23:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYKZEhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 23:34:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52113 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbYKZEem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 23:34:42 -0500
-Message-ID: <492CD1AB.3000802@kernel.org>
-Date: Wed, 26 Nov 2008 13:33:47 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Eric Van Hensbergen <ericvh@gmail.com>, Ron Minnich <rminnich@sandia.gov>,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Miklos Szeredi <mszeredi@suse.cz>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Brad Boyer <flar@allandria.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + poll-allow-f_op-poll-to-sleep-take-4.patch added to -mm tree
-References: <20081125173032.GA21539@redhat.com>
-In-Reply-To: <20081125173032.GA21539@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Nov 2008 23:37:09 -0500
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:35240 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751832AbYKZEhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 23:37:08 -0500
+X-YMail-OSG: GjCvB3EVM1kKZL7nOYUCQrHRy4CgWPK8_642mhi4oORUyIRnYQulNZ7J06zeHFpj6UniVhNAjaeQllYg24se_.9bxMz5EBOsqpKn2RS37ucnXB_3QAPAKfOkXnuKxPgQJdW8Gn1R78DZ73orDUuC8PirR9.YXHn3T1mTlM3XIUb8V5xS9FSIRUm6tqI-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [LIO-Target]: Use modern kernel socket wrappers from
+	linux/net/socket.c:kernel_*()
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Net <linux-net@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 25 Nov 2008 20:37:04 -0800
+Message-Id: <1227674224.5023.59.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Nov 2008 04:33:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>From 09898c433f71d32b3072ef14ff3d71ad1700d639 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Tue, 25 Nov 2008 19:50:16 -0800
+Subject: [PATCH] [LIO-Target]: Use modern kernel socket wrappers from linux/net/socket.c:kernel_*()
 
-Oleg Nesterov wrote:
-> So, why do we need this mb() in pollwake() ?
-> 
-> try_to_wake_up() has a full barrier semantics, note the wmb() before
-> task_rq_lock(). Since spin_lock() itself is STORE, the setting of
-> pwq->triggered can't be further re-ordered with the reading of p->state.
-> 
-> Or any other reason ?
+Removed legacy drivers/lio-core/iscsi_linux_def.h:iscsi_sock_*() macros,
+and converted v3.0 server side kernel socket code to use kernel sockets API
+in linux/net/socket.c:kernel_*().  These functions first appeared in
+kernel.org in v2.6.19.
 
-try_to_wake_up() is a full barrier.  Is it something guaranteed and
-intentional or is it just something which just happened to be so?
-Also, as the function is doing some dirty hackery to get to
-try_to_wake_up(), I just wanted to make it clear.  I suppose it's time
-to add more comments there then.
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/iscsi_auth_kernel.h  |    5 +--
+ drivers/lio-core/iscsi_linux_defs.h   |   23 ---------------
+ drivers/lio-core/iscsi_target_login.c |   51 ++++++++++++++++++++-------------
+ 3 files changed, 33 insertions(+), 46 deletions(-)
 
->> +	/* clear triggered for the next iteration */
->> +	pwq->triggered = 0;
-> 
-> And don't we (in theory) actually need the mb() here instead?
-> 
-> Let's suppose do_poll() starts the next iteration, so we are doing
-> 
-> 	pwq->triggered = 0;
-> 
-> 	->poll(file)
-> 		if (!check_file(file))
-> 			return 0;
-> 
-> 		return POLLXXX;
-> 
-> We don't have any barriers in between (unless fget_light bumps
-> ->f_count), so this can be reordered as
-> 
-> 	->poll(file)
-> 		if (!check_file(file))
-> 			return 0;
-> 
-> 		pwq->triggered = 0;
-> 
-> And, if pollwake() happens in between we can miss the event, no?
-
-Hmmmm... yes, from the second run, ->poll doesn't grab the waitqueue
-lock, so it doesn't necessary have the required barriers.
-Heh... set_mb() should be here not in pollwake().  Thanks for spotting
-it.
-
+diff --git a/drivers/lio-core/iscsi_auth_kernel.h b/drivers/lio-core/iscsi_auth_kernel.h
+index 96dc7ae..cf789dd 100644
+--- a/drivers/lio-core/iscsi_auth_kernel.h
++++ b/drivers/lio-core/iscsi_auth_kernel.h
+@@ -101,9 +101,8 @@ extern u32 iscsi_handle_authentication (
+ 	s_addr.sin_addr.s_addr	= htonl(INADDR_LOOPBACK);
+ 	s_addr.sin_port		= htons(AUTH_PORT);
+ 
+-	if (iscsi_sock_create(&authsock, AF_INET, SOCK_DGRAM, IPPROTO_UDP,
+-			NULL, NULL) < 0) {
+-		TRACE_ERROR("iscsi_sock_create() failed!\n");
++	if (sock_create(AF_INET, SOCK_DGRAM, IPPROTO_UDP, &authsock) < 0) {
++		TRACE_ERROR("sock_create() failed!\n");
+ 		ret = -1;
+ 		goto out;
+ 	}
+diff --git a/drivers/lio-core/iscsi_linux_defs.h b/drivers/lio-core/iscsi_linux_defs.h
+index f609c9d..52b55de 100644
+--- a/drivers/lio-core/iscsi_linux_defs.h
++++ b/drivers/lio-core/iscsi_linux_defs.h
+@@ -48,29 +48,6 @@
+ 	copy_to_user((void *)(dest), (void *)(src), (len))
+ 
+ /*
+- * Sockets.
+- */
+-#define iscsi_sock_create(sock, f, t, p, uc, td) sock_create(f, t, p, sock)
+-#define iscsi_sock_connect(sock, s_in, size, td) sock->ops->connect(sock, s_in, size, 0)
+-#define iscsi_sock_bind(sock, s_in, size, td) sock->ops->bind(sock, s_in, size)
+-#define iscsi_sock_listen(sock, backlog, td) sock->ops->listen(sock, backlog)
+-#define iscsi_sock_accept(sock, newsock, td) sock->ops->accept(sock, newsock, 0)
+-#define iscsi_sock_sockopt_off(sock, p, o) \
+-	{ \
+-	int value = 0; \
+-	sock->ops->setsockopt(sock, p, o, (char *)&value, sizeof(value)); \
+-	}
+-#define iscsi_sock_sockopt_on(sock, p, o) \
+-	{ \
+-	int value = 1; \
+-	sock->ops->setsockopt(sock, p, o, (char *)&value, sizeof(value)); \
+-	}
+-#define iscsi_sock_sockopt_bindtodev(sock, dev) \
+-	{ \
+-	sock->ops->setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, dev, strlen(dev)); \
+-	}
+-
+-/*
+  * Threads.
+  */
+ #define iscsi_daemon(thread, name, sigs) \
+diff --git a/drivers/lio-core/iscsi_target_login.c b/drivers/lio-core/iscsi_target_login.c
+index 6c49e77..0b0a54a 100644
+--- a/drivers/lio-core/iscsi_target_login.c
++++ b/drivers/lio-core/iscsi_target_login.c
+@@ -737,7 +737,7 @@ static struct socket *iscsi_target_setup_login_socket (iscsi_np_t *np)
+ {
+ 	const char *end;
+ 	struct socket *sock;
+-	int backlog = 5, ip_proto, sock_type, ret;
++	int backlog = 5, ip_proto, sock_type, ret, opt = 0;
+ 	struct sockaddr_in sock_in;
+ 	struct sockaddr_in6 sock_in6;
+ 	
+@@ -763,9 +763,9 @@ static struct socket *iscsi_target_setup_login_socket (iscsi_np_t *np)
+ 		goto fail;
+ 	}
+ 	
+-	if (iscsi_sock_create(&sock, (np->np_flags & NPF_NET_IPV6) ? AF_INET6 :
+-			AF_INET, sock_type, ip_proto, NULL, NULL) < 0) {
+-		TRACE_ERROR("iscsi_sock_create() failed.\n");
++	if (sock_create((np->np_flags & NPF_NET_IPV6) ? AF_INET6 : AF_INET,
++			sock_type, ip_proto, &sock) < 0) {
++		TRACE_ERROR("sock_create() failed.\n");
+ 		goto fail;
+ 	}
+ 	np->np_socket = sock;
+@@ -814,28 +814,39 @@ static struct socket *iscsi_target_setup_login_socket (iscsi_np_t *np)
+ 
+ 	/*
+ 	 * Set SO_REUSEADDR, and disable Nagel Algorithm with TCP_NODELAY.
+-	 * NOTE: setsockopt() w/ SO_REUSEADDR on LINUX 2.4 is broken,  force it.
+ 	 */
+-	iscsi_sock_sockopt_on(sock, IPPROTO_TCP, TCP_NODELAY);
+-	iscsi_sock_sockopt_on(sock, SOL_SOCKET, SO_REUSEADDR);
+-	sock->sk->sk_reuse = 1;
++	opt = 1;
++	if (np->np_network_transport == ISCSI_TCP) {
++		if ((ret = kernel_setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
++				(char *)&opt, sizeof(opt))) < 0) {
++			printk(KERN_ERR "kernel_setsockopt() for TCP_NODELAY"
++				" failed: %d\n", ret);
++			goto fail;
++		}
++	}
++	if ((ret = kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, 
++			(char *)&opt, sizeof(opt))) < 0) {
++		printk(KERN_ERR "kernel_setsockopt() for SO_REUSEADDR"
++			" failed\n");
++		goto fail;
++	}
+ 	
+ 	if (np->np_flags & NPF_NET_IPV6) {
+-		if ((ret = iscsi_sock_bind(sock, (struct sockaddr *)&sock_in6,
+-				sizeof(struct sockaddr_in6), NULL)) < 0) {
+-			TRACE_ERROR("iscsi_sock_bind() failed: %d\n", ret);
++		if ((ret = kernel_bind(sock, (struct sockaddr *)&sock_in6,
++				sizeof(struct sockaddr_in6))) < 0) {
++			TRACE_ERROR("kernel_bind() failed: %d\n", ret);
+ 			goto fail;
+ 		}
+ 	} else {
+-		if ((ret = iscsi_sock_bind(sock, (struct sockaddr *)&sock_in,
+-				sizeof(struct sockaddr), NULL)) < 0) {
+-			TRACE_ERROR("iscsi_sock_bind() failed: %d\n", ret);
++		if ((ret = kernel_bind(sock, (struct sockaddr *)&sock_in,
++				sizeof(struct sockaddr))) < 0) {
++			TRACE_ERROR("kernel_bind() failed: %d\n", ret);
+ 			goto fail;
+ 		}
+ 	}
+ 
+-	if (iscsi_sock_listen(sock, backlog, NULL)) {
+-		TRACE_ERROR("iscsi_sock_listen() failed.\n");
++	if (kernel_listen(sock, backlog)) {
++		TRACE_ERROR("kernel_listen() failed.\n");
+ 		goto fail;
+ 	}
+ 	
+@@ -914,9 +925,9 @@ get_new_sock:
+ 		return(-1);
+ 	}
+ 	
+-	if (iscsi_sock_create(&new_sock, (np->np_flags & NPF_NET_IPV6) ? AF_INET6 :
+-			AF_INET, sock_type, ip_proto, NULL, NULL) < 0) {
+-		TRACE_ERROR("iscsi_sock_create() failed for new_sock\n");
++	if (sock_create((np->np_flags & NPF_NET_IPV6) ? AF_INET6 : AF_INET,
++			sock_type, ip_proto, &new_sock) < 0) {
++		TRACE_ERROR("sock_create() failed for new_sock\n");
+ 		if (start) {
+ 			up(&np->np_start_sem);
+ 			return(0);
+@@ -968,7 +979,7 @@ get_new_sock:
+ 	}
+ 	spin_unlock_bh(&np->np_thread_lock);
+ 	
+-	if (iscsi_sock_accept(sock, new_sock, NULL) < 0) {
++	if (kernel_accept(sock, &new_sock, 0) < 0) {
+ 		if (new_sock) {
+ 			if (set_sctp_conn_flag) {
+ 				kfree(new_sock->file);
 -- 
-tejun
+1.5.4.1
+
+
+
