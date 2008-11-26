@@ -1,29 +1,91 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbYLAQkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754342AbYK3LYg (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 30 Nov 2008 06:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYK3LYZ
+	id S1752021AbYLAQkR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 11:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYLAQju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 06:24:25 -0500
-Received: from cp-out1.libero.it ([212.52.84.101]:34679 "EHLO
-	cp-out1.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbYK3LYY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 06:24:24 -0500
-Date: Sun, 30 Nov 2008 12:23:24 +0100
-Message-Id: <KB58Z0$FF75B702614D5DDC25D424768FA99155@libero.it>
-Subject: Re:
-MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "Frank" <frankmee@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl25)
-X-SenderIP: 86.96.229.88
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 1 Dec 2008 11:39:50 -0500
+Received: from zombie2.ncsc.mil ([144.51.88.133]:56872 "EHLO zombie2.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751214AbYLAQjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 11:39:49 -0500
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       labeled-nfs@linux-nfs.org, "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
+Subject: [PATCH 07/14] KConfig: Add KConfig entries for Labeled NFS
+Date: Wed, 26 Nov 2008 16:03:07 -0500
+Message-Id: <1227733394-1114-8-git-send-email-dpquigl@tycho.nsa.gov>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
+References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754342AbYK3LYg@vger.kernel.org>
 
-I would like to invest in your country. I am a foreign investor and I would like to invest in your country. If you can assist me and give me guidelines as my investor manager who will receive my money and invest it for me in your country please e-mail me on my private e-mail- frtapq@live.com        so we can further discussions. Mr. Frank
+This patch adds two entries into the fs/KConfig file. The first entry
+NFS_V4_SECURITY_LABEL enables security label support for the NFSv4 client while
+the second entry NFSD_V4_SECURITY_LABEL enables security labeling support on
+the server side.
+
+Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
+Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+---
+ fs/Kconfig |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..db76fcb 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1216,6 +1216,22 @@ config NFS_V4
+ 
+ 	  If unsure, say N.
+ 
++config NFS_V4_SECURITY_LABEL
++	bool "Provide Security Label support for NFSv4 client"
++	depends on NFS_V4 && SECURITY
++	help
++	
++	Say Y here if you want enable fine-grained security label attribute
++	support for NFS version 4.  Security labels allow security modules like
++	SELinux and Smack to label files to facilitate enforcement of their policies.
++	Without this an NFSv4 mount will have the same label on each file.
++
++	If you do not wish to enable fine-grained security labels SELinux or
++	Smack policies on NFSv4 files, say N.  
++
++
++	  If unsure, say N.
++
+ config ROOT_NFS
+ 	bool "Root file system on NFS"
+ 	depends on NFS_FS=y && IP_PNP
+@@ -1308,6 +1324,20 @@ config NFSD_V4
+ 
+ 	  If unsure, say N.
+ 
++config NFSD_V4_SECURITY_LABEL
++	bool "Provide Security Label support for NFSv4 server"
++	depends on NFSD_V4 && SECURITY
++	help
++
++	Say Y here if you want enable fine-grained security label attribute
++	support for NFS version 4.  Security labels allow security modules like
++	SELinux and Smack to label files to facilitate enforcement of their policies.
++	Without this an NFSv4 mount will have the same label on each file.
++
++	If you do not wish to enable fine-grained security labels SELinux or
++	Smack policies on NFSv4 files, say N.  
++
++
+ config LOCKD
+ 	tristate
+ 
+-- 
+1.5.5.1
 
