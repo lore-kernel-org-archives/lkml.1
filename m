@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYKZWTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYKZWVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbYKZWTS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 17:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYKZWTD
+	id S1754171AbYKZWVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 17:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYKZWVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 17:19:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:29937 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbYKZWTB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 17:19:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=EGs7gmD+I0TSgSF9f1PofNBHQSDxRRn/yY/k2/+AVUflJCVOCR3B/WB/pjz9PG72Kf
-         AUBclMepKIZ3fgxiPpXjkSQF0ffWTmDjUKJgaMNXgW2OVUkVmlIK2SdpUPrsTXwZO21f
-         UhBaNs0F/LI2kyuQUrZM3QyjpAFbko1VKqr9A=
-Message-ID: <492DCB50.9040005@gmail.com>
-Date: Wed, 26 Nov 2008 17:18:56 -0500
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 26 Nov 2008 17:21:12 -0500
+Received: from fogou.chygwyn.com ([195.171.2.24]:34801 "EHLO fogou.chygwyn.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbYKZWVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 17:21:11 -0500
+X-Greylist: delayed 2633 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Nov 2008 17:21:11 EST
+Date: Wed, 26 Nov 2008 21:33:59 +0000
+From: steve@chygwyn.com
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       linux-netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH-mm 8/8] decnet: remove private wrappers of endian
+	helpers
+Message-ID: <20081126213359.GA20782@fogou.chygwyn.com>
+References: <1227733974.5511.130.camel@brick>
 MIME-Version: 1.0
-To: adaplas@gmail.com
-CC: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] gbefb: unsigned var->pixclock cannot be less than 0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227733974.5511.130.camel@brick>
+Organization: ChyGwyn Limited
+X-Registered-Office: Digital Technium, Singleton Park, Swansea. SA2 8PP
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsigned var->pixclock cannot be less than 0
+Hi,
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-var->pixclock has type __u32, see
-vi include/linux/fb.h +231
+On Wed, Nov 26, 2008 at 01:12:54PM -0800, Harvey Harrison wrote:
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+[snip]
+> diff --git a/include/net/dn_fib.h b/include/net/dn_fib.h
+> index 3012511..c378be7 100644
+> --- a/include/net/dn_fib.h
+> +++ b/include/net/dn_fib.h
+> @@ -181,9 +181,9 @@ static inline void dn_fib_res_put(struct dn_fib_res *res)
+>  
+>  static inline __le16 dnet_make_mask(int n)
+>  {
+> -        if (n)
+> -                return dn_htons(~((1<<(16-n))-1));
+> -        return 0;
+> +	if (n)
+> +		return cpu_to_le16(~((1 << (16 - n)) - 1));
+> +	return cpu_to_le16(0);
+>  }
+You don't need to convert 0.
 
-compute_gbe_timing() returns int, see
-vi drivers/video/gbefb.c +466
+[snip]
+>  
+> @@ -327,7 +327,7 @@ int dn_username2sockaddr(unsigned char *data, int len, struct sockaddr_dn *sdn,
+>  	int namel = 12;
+>  
+>  	sdn->sdn_objnum = 0;
+> -	sdn->sdn_objnamel = dn_htons(0);
+> +	sdn->sdn_objnamel = cpu_to_le16(0);
+Again, no need to convert 0 even though I did :-)
 
-diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
-index f89c3cc..fe5b519 100644
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -912,6 +912,7 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	unsigned int line_length;
- 	struct gbe_timing_info timing;
-+	int ret;
- 
- 	/* Limit bpp to 8, 16, and 32 */
- 	if (var->bits_per_pixel <= 8)
-@@ -930,8 +931,10 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 
- 	var->grayscale = 0;	/* No grayscale for now */
- 
--	if ((var->pixclock = compute_gbe_timing(var, &timing)) < 0)
--		return(-EINVAL);
-+	ret = compute_gbe_timing(var, &timing);
-+	var->pixclock = ret;
-+	if (ret < 0)
-+		return -EINVAL;
- 
- 	/* Adjust virtual resolution, if necessary */
- 	if (var->xres > var->xres_virtual || (!ywrap && !ypan))
+Otherwise the patch looks good.
+
+Reviewed-by: Steven Whitehouse <swhiteho@redhat.com>
+
+
+Steve.
 
