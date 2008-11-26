@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYKZUjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYKZUjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYKZUjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 15:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYKZUiz
+	id S1755212AbYKZUjr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 15:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYKZUja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 15:38:55 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:10952 "EHLO
+	Wed, 26 Nov 2008 15:39:30 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:31657 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752538AbYKZUiz (ORCPT
+	with ESMTP id S1752538AbYKZUj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 15:38:55 -0500
+	Wed, 26 Nov 2008 15:39:28 -0500
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2/4 2.6.29] cxgb3 - avoid potential memory leak.
+Subject: [PATCH 4/4 2.6.29] cxgb3 - Update FW loading patch
 To: jeff@garzik.org
 Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Wed, 26 Nov 2008 12:38:20 -0800
-Message-ID: <20081126203820.4819.17969.stgit@speedy5>
+Date: Wed, 26 Nov 2008 12:39:18 -0800
+Message-ID: <20081126203915.4896.63231.stgit@speedy5>
 User-Agent: StGIT/0.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,37 +27,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Add consistency in alloc_ring() parameter checking
-to avoid potential memory leaks.
-alloc_ring() callers are correct fo far.
+Update FW loading path to accomodate in-kernel images location
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/sge.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/cxgb3/cxgb3_main.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index 268f158..bc6a8dc 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -549,16 +549,15 @@ static void *alloc_ring(struct pci_dev *pdev, size_t nelem, size_t elem_size,
- 
- 	if (!p)
- 		return NULL;
--	if (sw_size) {
-+	if (sw_size && metadata) {
- 		s = kcalloc(nelem, sw_size, GFP_KERNEL);
- 
- 		if (!s) {
- 			dma_free_coherent(&pdev->dev, len, p, *phys);
- 			return NULL;
- 		}
--	}
--	if (metadata)
- 		*(void **)metadata = s;
-+	}
- 	memset(p, 0, len);
- 	return p;
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 96c94a4..46c114e 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -853,8 +853,8 @@ static int bind_qsets(struct adapter *adap)
+ 	return err;
  }
+ 
+-#define FW_FNAME "t3fw-%d.%d.%d.bin"
+-#define TPSRAM_NAME "t3%c_protocol_sram-%d.%d.%d.bin"
++#define FW_FNAME "cxgb3/t3fw-%d.%d.%d.bin"
++#define TPSRAM_NAME "cxgb3/t3%c_psram-%d.%d.%d.bin"
+ 
+ static int upgrade_fw(struct adapter *adap)
+ {
 
