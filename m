@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbYKZCNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYKZCPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753688AbYKZCNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 21:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYKZCM7
+	id S1753720AbYKZCPS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 21:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYKZCPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 21:12:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51225 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Nov 2008 21:15:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55162 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067AbYKZCM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 21:12:59 -0500
-Date: Wed, 26 Nov 2008 03:12:43 +0100
+	id S1752067AbYKZCPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 21:15:04 -0500
+Date: Wed, 26 Nov 2008 03:14:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] tracing/function-return-tracer: set a more human
 	readable output
-Message-ID: <20081126021243.GA17567@elte.hu>
+Message-ID: <20081126021450.GA17617@elte.hu>
 References: <492C90E5.8070907@gmail.com> <20081126003936.GA26937@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,18 +30,56 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0004]
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-there's a small inconsistency here:
+the regex filter doesnt work well yet when used with the graph tracer:
 
-# cat available_tracers 
-function-graph function sched_switch nop
+[ 2994.079079] ------------[ cut here ]------------
+[ 2994.079079] WARNING: at kernel/trace/ftrace.c:373 ftrace_bug+0x8c/0x1ce()
+[ 2994.079079] Modules linked in:
+[ 2994.079079] Pid: 12, comm: kstop/0 Not tainted 2.6.28-rc6-tip #2056
+[ 2994.079079] Call Trace:
+[ 2994.079079]  [<c02273dd>] warn_on_slowpath+0x46/0x60
+[ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
+[ 2994.079079]  [<c0268308>] ? trace_graph_return+0x89/0xa7
+[ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
+[ 2994.079079]  [<c0357f66>] ? memcpy+0xe/0x31
+[ 2994.079079]  [<c02633e6>] ? rb_commit+0x29/0x2d
+[ 2994.079079]  [<c0264c8b>] ? ring_buffer_unlock_commit+0x15/0x1a
+[ 2994.079079]  [<c0213ece>] ? ftrace_modify_code+0x21/0xa3
+[ 2994.079079]  [<c0213e85>] ? ftrace_return_to_handler+0x6b/0x74
+[ 2994.079079]  [<c026c3ce>] ? probe_kernel_read+0xe/0x5c
+[ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+[ 2994.079079]  [<c0203926>] ? return_to_handler+0xa/0x14
+[ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+[ 2994.079079]  [<c0213ee5>] ? ftrace_modify_code+0x38/0xa3
+[ 2994.079079]  [<c0261ec7>] ? trace_selftest_dynamic_test_func+0x3/0xc
+[ 2994.079079]  [<c0262749>] ftrace_bug+0x8c/0x1ce
+[ 2994.079079]  [<c026299c>] ftrace_replace_code+0x111/0x13d
+[ 2994.079079]  [<c0253b53>] ? stop_cpu+0x0/0xa5
+[ 2994.079079]  [<c02629e6>] __ftrace_modify_code+0x1e/0x32
+[ 2994.079079]  [<c0253bbe>] stop_cpu+0x6b/0xa5
+[ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
+[ 2994.079079]  [<c020391c>] return_to_handler+0x0/0x14
+[ 2994.079079]  [<c0237fc1>] ? autoremove_wake_function+0x0/0x35
+[ 2994.079079]  [<c023584b>] ? worker_thread+0x0/0xc7
+[ 2994.079079]  [<c0237eba>] kthread+0x40/0x66
+[ 2994.079079]  [<c0237e7a>] ? kthread+0x0/0x66
+[ 2994.079079]  [<c02038cb>] kernel_thread_helper+0x7/0x10
+[ 2994.079079] ---[ end trace bff97d149b80ecde ]---
+[ 2994.079079] ftrace failed to modify [<c0261ec7>] trace_selftest_dynamic_test_func+0x3/0xc
+[ 2994.079079]  actual: e8:0c:1a:fa:ff
 
-note the '-' versus '_' separators. I wouldnt mind renaming the sched 
-tracer to sched-switch. (and some of the other tracers as well)
+produced via:
+
+ # cd /debug/tracing/
+ # cat set_ftrace_filter
+ # echo schedule > set_ftrace_filter
+ # cat set_ftrace_filter
+ cat: set_ftrace_filter: No such device
 
 	Ingo
