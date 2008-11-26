@@ -1,114 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYKZQfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYKZQg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYKZQfz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 11:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYKZQfq
+	id S1754309AbYKZQg6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 11:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYKZQgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 11:35:46 -0500
-Received: from rv-out-0506.google.com ([209.85.198.235]:38764 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbYKZQfq (ORCPT
+	Wed, 26 Nov 2008 11:36:46 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60608 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYKZQgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 11:35:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RGS+wh7Wb3/aG02txAewQv4W9xjIO7uSnuGQtc8QBjYpOhc4PFBWKWRfv6hS8NnqPL
-         npSr9sr09wN01gPVM1/NMHlhdXBvozImugZ4++jlQ9ssDg0WtIzoXrH4Tr5GYYU/TzGC
-         CACMl19lNJDfbND+C5xqueeYYY88Dv8lAdK+s=
-Message-ID: <3aaafc130811260835o16107cffgee60e12218f814d9@mail.gmail.com>
-Date: Wed, 26 Nov 2008 11:35:45 -0500
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [PATCH 1/1] HID: Apple alu wireless keyboards are bluetooth devices
-Cc: "Jan Scholz" <scholz@fias.uni-frankfurt.de>,
-       "Tobias Mueller" <Tobias_Mueller@twam.info>, jirislaby@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz>
+	Wed, 26 Nov 2008 11:36:45 -0500
+Date: Wed, 26 Nov 2008 11:36:42 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
+       fweisbec@gmail.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, srostedt@redhat.com,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 1/3] ftrace: add function tracing to single thread
+In-Reply-To: <m1myfncbc0.fsf@frodo.ebiederm.org>
+Message-ID: <alpine.DEB.1.10.0811261117580.26743@gandalf.stny.rr.com>
+References: <20081125223421.795046329@goodmis.org> <20081125223456.976670734@goodmis.org> <20081125144221.66eb99ad.akpm@linux-foundation.org> <alpine.DEB.1.10.0811251800130.26424@gandalf.stny.rr.com> <20081125153104.ecdceed4.akpm@linux-foundation.org>
+ <alpine.DEB.1.10.0811251909320.26424@gandalf.stny.rr.com> <1227660839.12109.52.camel@nimitz> <alpine.DEB.1.10.0811251956570.26424@gandalf.stny.rr.com> <m1myfncbc0.fsf@frodo.ebiederm.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de>
-	 <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>
-	 <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz>
-	 <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>
-	 <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 10:33 AM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Wed, 26 Nov 2008, Jan Scholz wrote:
->
->> Jiri Kosina <jkosina@suse.cz> writes:
->>
->> > On Wed, 26 Nov 2008, Jan Scholz wrote:
->> >
->> >> Changed HID_USB_DEVICE to HID_BLUETOOTH_DEVICE for the apple alu
->> >> wireless keyboards
->> >> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
->> >> ---
->> >>  drivers/hid/hid-apple.c |    6 +++---
->> >>  drivers/hid/hid-core.c  |    6 +++---
->> >>  2 files changed, 6 insertions(+), 6 deletions(-)
->> >>
->> >> diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
->> >> index 9b97795..aa28aed 100644
->> >> --- a/drivers/hid/hid-apple.c
->> >> +++ b/drivers/hid/hid-apple.c
->> >> @@ -400,12 +400,12 @@ static const struct hid_device_id apple_devices[] = {
->> >>    { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_JIS),
->> >>            .driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
->> >>                    APPLE_RDESC_JIS },
->> >> -  { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
->> >> +  { HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI),
->> >>            .driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
->> >> -  { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
->> >> +  { HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO),
->> >>            .driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
->> >>                    APPLE_ISO_KEYBOARD },
->> >> -  { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
->> >> +  { HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
->> >>            .driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
->> >>    { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
->> >>            .driver_data = APPLE_HAS_FN },
->> >
->> > Hi Jan,
->> >
->> > shouldn't we rather have both USB and Bluetooth variants?
->> >
->> > Thanks,
->>
->> Hi Jiri,
->>
->> Hm, I thought the USB_DEVICE_ID_APPLE_ALU_{ANSI,ISO,JIS} were apples usb
->> aluminum keyboards (standard desktop size), while the
->> USB_DEVICE_ID_APPLE_ALU_WIRELESS_{ANSI,ISO,JIS} ones were the aluminum
->> bluetooth keyboards (notebook sized, no numeric keypad, etc).
->>
->> The one I own is a USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO, german layout,
->> with bluetooth, unfortunately I don't have access to a usb variant.
->
-> Tobias Mueller added these device IDs, so persumably he has tested it and
-> could provide some insight. I don't have the hardware myself, so I have no
-> idea whether there are only Bluetooht variants, or even USB are available.
 
-There is one bluetooth model and one USB model.
+On Tue, 25 Nov 2008, Eric W. Biederman wrote:
 
->
-> Tobias?
->
-> Thanks,
->
-> --
-> Jiri Kosina
-> SUSE Labs
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Steven Rostedt <rostedt@goodmis.org> writes:
+> 
+> > On Tue, 25 Nov 2008, Dave Hansen wrote:
+> >> > 
+> >> > I think the end result was, if this file can only be changed by root, then 
+> >> > we do not need to worry about namespaces. This file is a privileged file 
+> >> > that can only be modified by root.
+> >> > 
+> >> > If someday we decide to let non admin users touch this file, then we would
+> >> > need to care about this.  This file may actually be modified in the future 
+> >> > by users, so this may become an issue.
+> >> 
+> >> This really has very little to do with root vs non-root users.  In fact,
+> >> we're working towards having cases where we have many "root" users, even
+> >> those inside namespaces.  It is also quite possible for a normal root
+> >> user to fork into a new pid namespace.  In that case, root simply won't
+> >> be able to use this feature because something like:
+> >> 	
+> >> 	echo $$ /debugfs/tracing/set_ftrace_pid
+> >> 	
+> >> just won't work.  Let's look at a bit of the code.
+> >> 
+> >> +static void ftrace_pid_func(unsigned long ip, unsigned long parent_ip)
+> >> +{
+> >> +       if (current->pid != ftrace_pid_trace)
+> >> +               return;
+> >> +
+> >> +       ftrace_pid_function(ip, parent_ip);
+> >> +}
+> >> 
+> >> One thing this doesn't deal with is pid wraparound.  Does that matter?
+> >
+> > Should not.  This is just a way to trace a particular process. Currently 
+> > it traces all processes. If we wrap, then we trace the process with the 
+> > new pid. This should not be an issue.
+> 
+> So.  Using raw pid numbers in the kernel is bad form.  The internal
+> representation should be struct pid pointers as much as we can make
+> them.
+> 
+> I would 100% prefer it if ftrace_pid_func was written in terms of struct
+> pid.  That does guarantee you don't have pid wrap around issues.
+> It almost makes it clear 
+> 
+> +static void ftrace_pid_func(unsigned long ip, unsigned long parent_ip)
+> +{
+> +	if (task_pid(current) == ftrace_pid_trace)
+> +               return;
+> +
+> +       ftrace_pid_function(ip, parent_ip);
+> +}
+> 
+> We don't need locks to access the pid of current.
+
+That version does not bother me. I'm not worried about locks as much as
+I am about recursion. If that "task_pid()" ever became a function that is
+traced by mcount, then it will end up in a recursive loop, and will crash 
+the system.
+
+> 
+> 
+> >> If you want to fix this a bit, instead of saving off the pid_t in
+> >> ftrace_pid_trace, you should save a 'struct pid'.  You can get the
+> >> 'struct pid' for a particular task by doing a find_get_pid(pid_t).  You
+> >> can then compare that pid_t to current by doing a
+> >> pid_task(struct_pid_that_i_saved, PIDTYPE_PID).  That will also protect
+> >> against pid wraparound.
+> >> 
+> >> The find_get_pid() is handy because it will do the pid_t lookup in the
+> >> context of the current task's pid namespace, which is what you want, I
+> >> think.
+> >
+> > Nope, we can not call that in this context. ftrace_pid_func is called 
+> > directly from mcount, without any protection.
+> 
+> Of course you can't.  But at the same time find_get_pid() is always
+> supposed to be called on the user space pid ingress path.
+> 
+> > struct pid *find_get_pid(pid_t nr)
+> > {
+> > 	struct pid *pid;
+> >
+> > 	rcu_read_lock();
+> > 	pid = get_pid(find_vpid(nr));
+> > 	rcu_read_unlock();
+> >
+> > 	return pid;
+> > }
+> > EXPORT_SYMBOL_GPL(find_get_pid);
+> >
+> > This means find_get_pid will call mcount which will call ftrace_pid_func, 
+> > and back again. This can also happen with rcu_read_{un}lock() and 
+> > get_pid() and find_vpid().
+> >
+> > We can not do anything special here.
+> 
+> I don't see the whole path.  But here is the deal.
+> 1) Using struct pid and the proper find_get_pid() means that a user with
+>    the proper capabilities/permissions who happens to be running in a pid
+>    namespace can call this and it will just work.
+> 
+> 2) The current best practices in the current are to:
+>    - call find_get_pid() when you capture a user space pid.
+>    - call put_pid() when you are done with it.
+> 
+>    Perhaps that is just:
+>    put_pid(ftrace_pid_trace);
+>    ftrace_pid_trace = find_get_pid(user_provided_pid_value);
+
+This may be fine.
+
+> 
+> 3) If you ultimately want to support the full gamut:
+>    thread/process/process group/session.  You will need
+>    to use struct pid pointer comparisons.
+> 
+> 4) When I looked at the place you were concerned about races 
+>    a) you were concerned about the wrong race.
+>    b) I don't see a race.
+>    c) You were filtering for the tid of a linux task not
+>       the tgid of a process.  So the code didn't seem to
+>       be doing what you thought it was doing.
+> 
+> 5) I keep thinking current->pid should be removed some day.
+> 
+> So let's do this properly if we can.  This is a privileged operation
+> so we don't need to support people without the proper capabilities
+> doing this.  Or multiple comparisons or anything silly like that.  But
+> doing this with struct pid comparisons seems cleaner and more maintainable.  And that
+> really should matter.
+
+Just so you understand what I'm concerned about:
+
+$ objdump -dr kernel/pid.o
+[...]
+0000025f <find_get_pid>:
+ 25f:   55                      push   %ebp
+ 260:   89 e5                   mov    %esp,%ebp
+ 262:   53                      push   %ebx
+ 263:   e8 fc ff ff ff          call   264 <find_get_pid+0x5>
+                        264: R_386_PC32 mcount
+ 268:   89 c3                   mov    %eax,%ebx
+ 26a:   b8 01 00 00 00          mov    $0x1,%eax
+
+
+looking in arch/x86/kernel/entry_32.S:
+
+ENTRY(mcount)
+        cmpl $0, function_trace_stop
+        jne  ftrace_stub
+
+        cmpl $ftrace_stub, ftrace_trace_function
+        jnz trace
+[...]
+trace:
+        pushl %eax
+        pushl %ecx
+        pushl %edx
+        movl 0xc(%esp), %eax
+        movl 0x4(%ebp), %edx
+        subl $MCOUNT_INSN_SIZE, %eax
+
+        call *ftrace_trace_function
+
+
+
+looking in kerne/trace/ftrace.c:
+
+                        if (ftrace_pid_trace >= 0) {
+                                set_ftrace_pid_function(func);
+                                func = ftrace_pid_func;
+                        }
+                        ftrace_trace_function = func;
+
+And we then have
+
+static void ftrace_pid_func(unsigned long ip, unsigned long parent_ip)
+{
+        if (current->pid != ftrace_pid_trace)
+                return;
+
+        ftrace_pid_function(ip, parent_ip);
+}
+
+
+Now by having ftrace_pid_func call find_get_pid, we have the function flow 
+of...
+
+
+ schedule() /* any traced function */
+  --> mcount
+        --> *ftrace_trace_function == ftrace_pid_func
+          ftrace_pid_func
+               --> find_get_pid
+                    --> mcount
+                         --> *ftrace_trace_function == ftrace_pid_func
+                             ftrace_pid_func
+                                  --> find_get_pid
+                                       [ ad infinitum ]
+
+
+The comparison must be very careful not to call anything that will also 
+trace. I can add code to catch this recursion, but this is overhead I do 
+not want to add. Remember, this is called on every function call.
+
+If we do the work at the time we set ftrace_pid_trace and we can do simple 
+pointer comparisons in the ftrace_pid_func, I will be happy with that. I'm 
+still learning about this pid namespace, so I'll probably screw it up a 
+few more times ;-)
+
+-- Steve
+
