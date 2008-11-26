@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYKZIlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYKZImO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbYKZIlX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 03:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYKZIlN
+	id S1753891AbYKZImO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 03:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYKZIl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 03:41:13 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:45759 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbYKZIlL (ORCPT
+	Wed, 26 Nov 2008 03:41:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:43331 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbYKZIl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 03:41:11 -0500
-Message-ID: <492D0D4E.1040609@suse.de>
-Date: Wed, 26 Nov 2008 16:48:14 +0800
-From: Coly Li <coyli@suse.de>
-Reply-To: coyli@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix similar typos to successfull, v2
-References: <492AE7ED.8040304@suse.de> <20081125145308.8633bf4a.akpm@linux-foundation.org>
-In-Reply-To: <20081125145308.8633bf4a.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Nov 2008 03:41:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:from:date:message-id;
+        b=uQShyf9jnslLNeCqmglOgsuHU+cgCy6s27s5N3/uQhFfAXmU4j+EK0ccXEgAmXiXGs
+         EQgj2VqtDUGCDUwAt46fOycw05HWoFOoauSgljV/Kz5XKT5RJVTjWtBEY+JJv/qzZmWf
+         HYFv501F2vfEMat4kP8B+QCyG4zofjGm1btuA=
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
+       andi@firstfloor.org, eranian@gmail.com, sfr@canb.auug.org.au
+Subject: [patch 00/24] perfmon: introduction
+From: eranian@googlemail.com
+Date: Wed, 26 Nov 2008 00:41:55 -0800 (PST)
+Message-ID: <492d0bd3.1ade660a.31f9.5137@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Repost with the correct cc: list]
 
+Hello,
 
-Andrew Morton Wrote:
-> On Tue, 25 Nov 2008 01:44:13 +0800
-> Coly Li <coyli@suse.de> wrote:
-> 
->> When I review ocfs2 code, find there are 2 typos to "successfull". After doing grep "successfull "
->> in kernel tree, 22 typos found totally --  great minds always think alike  :)
-> 
-> Mutter.  I have a super-strict (lol) policy of "I don't take patches
-> which fix typos/spellos in comments", because we have so many such
-> errors, and I'd get buried in silly patches.  But I do take patches
-> which fix documentation and user-visible printks, etc.
-> 
-The first time I know this policy, remember it now ;)
+This series of patches implements the perfmon interface which provides access
+to the hardware performance counters of modern processors. In particular,
+this version supports per-thread counting for all AMD64 processors, and
+recent Intel processors with architectural PMU (Core Duo, Core 2, Atom,
+and Core i7).
 
->>  Documentation/hwmon/abituguru-datasheet   |    4 ++--
->>  Documentation/scsi/scsi_fc_transport.txt  |    4 ++--
->>  arch/powerpc/platforms/cell/spufs/spufs.h |    2 +-
->>  drivers/infiniband/hw/nes/nes_cm.c        |    2 +-
->>  drivers/isdn/hardware/eicon/debuglib.h    |    2 +-
->>  drivers/isdn/hardware/eicon/os_4bri.c     |    2 +-
->>  drivers/isdn/hardware/eicon/os_bri.c      |    2 +-
->>  drivers/isdn/hardware/eicon/os_pri.c      |    2 +-
->>  drivers/mtd/ubi/kapi.c                    |    2 +-
->>  drivers/net/wireless/ath5k/dma.c          |    2 +-
->>  drivers/net/wireless/zd1211rw/zd_mac.c    |    2 +-
->>  drivers/s390/block/dasd_3990_erp.c        |    2 +-
->>  drivers/s390/block/dasd_int.h             |    2 +-
->>  drivers/s390/char/tape_3590.c             |    2 +-
->>  drivers/s390/cio/cio.c                    |    2 +-
->>  drivers/s390/cio/qdio_main.c              |    2 +-
->>  fs/ext4/extents.c                         |    2 +-
->>  fs/ocfs2/dlmglue.c                        |    4 ++--
->>  net/sctp/auth.c                           |    2 +-
-> 
-> This patch sneakily mixed the two up, so I merged it ;)
-grep does not understand difference between code and comments ;)
-I am not 100% agreed that leaving typos/spellos in comments is a proper policy. Anyway, thanks for
-the effort to merge this patch, it's impossible for me to put so many maintainers into Cc list :)
+It does not supersede Oprofile in this first implementation. Oprofile
+and perfmon can be compiled in the same kernel, but only one can have
+an active session at a time.
 
+This implementation takes into account the various comments received from
+previous reviews on LKML. This is a much simplified version compared to
+the fully featured version maintained as a GIT tree on kernel.org.
+
+This new version, named perfmon3, uses only 5 system calls (instead of 12).
+Each call was carefully designed to allow for future extensions. 
+
+Full documentation is available in Documentation/perfmon.txt and is provided
+by one of the patches.
+
+Once this basic set of perfmon functionalities is upstream, we will build
+on it and add other features such as support for sampling, event set
+multiplexing and other processor architectures.
+
+Updated versions of libpfm and pfmon able to support both perfmon2 and
+perfmon3 are available in the CVS repository on the perfmon web site, check
+out: http://perfmon2.sf.net.
+
+The patch series is against 2.6.28-rc6.
+
+Please consider adding this patch series for 2.6.29 and send me any
+comments you may have on the code.
+
+Thanks to all the people who have contributed to this effort.
+
+S.Eranian
 -- 
-Coly Li
-SuSE PRC Labs
+
