@@ -1,439 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbYKZNCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYKZNBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbYKZNCH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 08:02:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYKZM6Z
+	id S1754500AbYKZNBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYKZM6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:58:25 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:46272 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbYKZM6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Nov 2008 07:58:22 -0500
-Message-Id: <20081126124636.235954874@polymtl.ca>
+Received: from smtp.polymtl.ca ([132.207.4.11]:46261 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754049AbYKZM6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 07:58:19 -0500
+Message-Id: <20081126124635.583452762@polymtl.ca>
 References: <20081126124246.800751190@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Nov 2008 07:42:58 -0500
+Date: Wed, 26 Nov 2008 07:42:54 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@redhat.com>, Jan Kiszka <jan.kiszka@siemens.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
+       paulus@samba.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [patch 12/17] LTTng - TSC synchronicity test
-Content-Disposition: inline; filename=test-tsc-sync.patch
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: [patch 08/17] Trace clock generic
+Content-Disposition: inline; filename=trace-clock-generic.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:41 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Test TSC synchronization across CPUs. Architecture independant and can therefore
-be used on various architectures. Aims at testing the TSC synchronization on a
-running system (not only at early boot), with minimal impact on interrupt
-latency.
+Wrapper to use the lower level clock sources available on the systems. Fall-back
+on a counter incremented by a timer interrupt every jiffy or'd with a logical
+clock for architectures lacking CPU timestamp counters.
 
-I've written this code before x86 tsc_sync.c existed and given it worked well
-for my needs, I never switched to tsc_sync.c. Although it has the same goal, it
-does it a bit differently :
+A generic fallback based on a logical clock and the timer interrupt is
+available.
 
-tsc_sync looks at the cycle counters on two CPUs to see if one compared to the
-other are going backward when read in loop. The LTTng code synchronizes both
-cores with a counter used as a memory barrier and then reads the two TSCs at a
-delta equal to the cache line exchange. Instruction and data caches are primed.
-This test is repeated in loops to insure we deal with MCE, NMIs which could skew
-the results.
-
-The problem I see with tsc_sync.c is that is one of the two CPUs is delayed by
-an interrupt handler (for way too long) while the other CPU is doing its
-check_tsc_warp() execution, and if the CPU with the lowest TSC values runs
-first, this code will fail to detect unsynchronized CPUs.
-
-This sync test code does not have this problem.
-
-A following patch replaces the x86 tsc_sync.c code by this architecture
-independant code.
-
-This code also adds the kernel parameter
-force_tsc_sync=1
-which forces resynchronization of CPU TSCs when a CPU is hotplugged.
+generic - Uses jiffies or'd with a logical clock extended to 64 bits by
+          trace-clock-32-to-64.
+i386 - Uses TSC. If detects non synchronized TSC, uses mixed TSC-logical clock.
+mips - Uses TSC extended atomically from 32 to 64 bits by trace-clock-32-to-64.
+powerpc - Uses TSC.
+sparc64 - Uses TSC.
+x86_64 - Uses TSC. If detects non synchronized TSC, uses mixed TSC-logical clock
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Jan Kiszka <jan.kiszka@siemens.com>
+CC: Ralf Baechle <ralf@linux-mips.org>
+CC: benh@kernel.crashing.org
+CC: paulus@samba.org
+CC: David Miller <davem@davemloft.net>
 CC: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@redhat.com>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-arch@vger.kernel.org
 ---
- Documentation/kernel-parameters.txt |    4 
- init/Kconfig                        |    7 
- kernel/time/Makefile                |    1 
- kernel/time/tsc-sync.c              |  313 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 325 insertions(+)
+ include/asm-generic/trace-clock.h |   64 +++++++++++++++++++++++++
+ include/linux/trace-clock.h       |   17 ++++++
+ init/Kconfig                      |    6 ++
+ kernel/trace/Makefile             |    1 
+ kernel/trace/trace-clock.c        |   97 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 185 insertions(+)
 
-Index: linux.trees.git/kernel/time/tsc-sync.c
+Index: linux.trees.git/include/asm-generic/trace-clock.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux.trees.git/kernel/time/tsc-sync.c	2008-11-26 06:52:28.000000000 -0500
-@@ -0,0 +1,313 @@
-+/*
-+ * kernel/time/tsc-sync.c
-+ *
-+ * Test TSC synchronization
-+ *
-+ * marks the tsc as unstable _and_ keep a simple "_tsc_is_sync" variable, which
-+ * is fast to read when a simple test must determine which clock source to use
-+ * for kernel tracing.
-+ *
-+ * - CPU init :
-+ *
-+ * We check whether all boot CPUs have their TSC's synchronized,
-+ * print a warning if not and turn off the TSC clock-source.
-+ *
-+ * Only two CPUs may participate - they can enter in any order.
-+ * ( The serial nature of the boot logic and the CPU hotplug lock
-+ *   protects against more than 2 CPUs entering this code.
-+ *
-+ * - When CPUs are up :
-+ *
-+ * TSC synchronicity of all CPUs can be checked later at run-time by calling
-+ * test_tsc_synchronization().
-+ *
-+ * Copyright 2007, 2008
-+ *    Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ */
-+#include <linux/module.h>
-+#include <linux/timer.h>
-+#include <linux/timex.h>
-+#include <linux/jiffies.h>
-+#include <linux/trace-clock.h>
-+#include <linux/cpu.h>
-+#include <linux/kthread.h>
-+#include <linux/mutex.h>
-+#include <linux/cpu.h>
-+
-+#define MAX_CYCLES_DELTA 1000ULL
++++ linux.trees.git/include/asm-generic/trace-clock.h	2008-11-26 06:51:47.000000000 -0500
+@@ -0,0 +1,64 @@
++#ifndef _ASM_GENERIC_TRACE_CLOCK_H
++#define _ASM_GENERIC_TRACE_CLOCK_H
 +
 +/*
-+ * Number of loops to take care of MCE, NMIs, SMIs.
++ * include/asm-generic/trace-clock.h
++ *
++ * Copyright (C) 2007 - Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * Generic tracing clock for architectures without TSC.
 + */
-+#define NR_LOOPS	10
 +
-+static DEFINE_MUTEX(tscsync_mutex);
++#include <linux/param.h>	/* For HZ */
++#include <asm/atomic.h>
 +
-+struct sync_data {
-+	int nr_waits;
-+	int wait_sync;
-+	cycles_t tsc_count;
-+} ____cacheline_aligned;
++#define TRACE_CLOCK_SHIFT 13
 +
-+/* 0 is master, 1 is slave */
-+static struct sync_data sync_data[2] = {
-+	[0 ... 1] = {
-+		.nr_waits = 3 * NR_LOOPS + 1,
-+		.wait_sync = 3 * NR_LOOPS + 1,
-+	},
-+};
++extern atomic_long_t trace_clock;
 +
-+int _tsc_is_sync = 1;
-+EXPORT_SYMBOL(_tsc_is_sync);
-+
-+static int force_tsc_sync;
-+static cycles_t slave_offset;
-+static int slave_offset_ready;	/* for 32-bits architectures */
-+
-+static int __init force_tsc_sync_setup(char *str)
++static inline u32 trace_clock_read32(void)
 +{
-+	force_tsc_sync = simple_strtoul(str, NULL, 0);
++	return (u32)atomic_long_add_return(1, &trace_clock);
++}
++
++#ifdef CONFIG_HAVE_TRACE_CLOCK_32_TO_64
++extern u64 trace_clock_read_synthetic_tsc(void);
++extern void get_synthetic_tsc(void);
++extern void put_synthetic_tsc(void);
++
++static inline u64 trace_clock_read64(void)
++{
++	return trace_clock_read_synthetic_tsc();
++}
++#else
++static inline void get_synthetic_tsc(void)
++{
++}
++
++static inline void put_synthetic_tsc(void)
++{
++}
++
++static inline u64 trace_clock_read64(void)
++{
++	return atomic_long_add_return(1, &trace_clock);
++}
++#endif
++
++static inline unsigned int trace_clock_frequency(void)
++{
++	return HZ << TRACE_CLOCK_SHIFT;
++}
++
++static inline u32 trace_clock_freq_scale(void)
++{
 +	return 1;
 +}
-+__setup("force_tsc_sync=", force_tsc_sync_setup);
 +
-+/*
-+ * Mark it noinline so we make sure it is not unrolled.
-+ * Wait until value is reached.
-+ */
-+static noinline void tsc_barrier(long this_cpu)
++extern void get_trace_clock(void);
++extern void put_trace_clock(void);
++
++static inline void set_trace_clock_is_sync(int state)
 +{
-+	sync_core();
-+	sync_data[this_cpu].wait_sync--;
-+	smp_mb();	/* order master/slave sync_data read/write */
-+	while (unlikely(sync_data[1 - this_cpu].wait_sync >=
-+			sync_data[this_cpu].nr_waits))
-+		barrier();	/*
-+				 * barrier is used because faster and
-+				 * more predictable than cpu_idle().
-+				 */
-+	smp_mb();	/* order master/slave sync_data read/write */
-+	sync_data[this_cpu].nr_waits--;
-+	get_cycles_barrier();
-+	sync_data[this_cpu].tsc_count = get_cycles();
-+	get_cycles_barrier();
 +}
-+
-+/*
-+ * Worker thread called on each CPU.
-+ * First wait with interrupts enabled, then wait with interrupt disabled,
-+ * for precision. We are already bound to one CPU.
-+ * this_cpu 0 : master
-+ * this_cpu 1 : slave
-+ */
-+static void test_sync(void *arg)
-+{
-+	long this_cpu = (long)arg;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	/* Make sure the instructions are in I-CACHE */
-+	tsc_barrier(this_cpu);
-+	tsc_barrier(this_cpu);
-+	sync_data[this_cpu].wait_sync--;
-+	smp_mb();	/* order master/slave sync_data read/write */
-+	while (unlikely(sync_data[1 - this_cpu].wait_sync >=
-+			sync_data[this_cpu].nr_waits))
-+		barrier();	/*
-+				 * barrier is used because faster and
-+				 * more predictable than cpu_idle().
-+				 */
-+	smp_mb();	/* order master/slave sync_data read/write */
-+	sync_data[this_cpu].nr_waits--;
-+	/*
-+	 * Here, only the master will wait for the slave to reach this barrier.
-+	 * This makes sure that the master, which holds the mutex and will reset
-+	 * the barriers, waits for the slave to stop using the barrier values
-+	 * before it continues. This is only done at the complete end of all the
-+	 * loops. This is why there is a + 1 in original wait_sync value.
-+	 */
-+	if (sync_data[this_cpu].nr_waits == 1)
-+		sync_data[this_cpu].wait_sync--;
-+	local_irq_restore(flags);
-+}
-+
-+/*
-+ * Each CPU (master and target) must decrement the wait_sync value twice (one
-+ * for priming in cache), and also once after the get_cycles. After all the
-+ * loops, one last synchronization is required to make sure the master waits
-+ * for the slave before resetting the barriers.
-+ */
-+static void reset_barriers(void)
-+{
-+	int i;
-+
-+	/*
-+	 * Wait until slave is done so that we don't overwrite
-+	 * wait_end_sync prematurely.
-+	 */
-+	smp_mb();	/* order master/slave sync_data read/write */
-+	while (unlikely(sync_data[1].wait_sync >= sync_data[0].nr_waits))
-+		barrier();	/*
-+				 * barrier is used because faster and
-+				 * more predictable than cpu_idle().
-+				 */
-+	smp_mb();	/* order master/slave sync_data read/write */
-+
-+	for (i = 0; i < 2; i++) {
-+		WARN_ON(sync_data[i].wait_sync != 0);
-+		WARN_ON(sync_data[i].nr_waits != 1);
-+		sync_data[i].wait_sync = 3 * NR_LOOPS + 1;
-+		sync_data[i].nr_waits = 3 * NR_LOOPS + 1;
-+	}
-+}
-+
-+/*
-+ * Do loops (making sure no unexpected event changes the timing), keep the best
-+ * one. The result of each loop is the highest tsc delta between the master CPU
-+ * and the slaves. Stop CPU hotplug when this code is executed to make sure we
-+ * are concurrency-safe wrt CPU hotplug also using this code.  Test TSC
-+ * synchronization even if we already "know" CPUs were not synchronized. This
-+ * can be used as a test to check if, for some reason, the CPUs eventually got
-+ * in sync after a CPU has been unplugged. This code is kept separate from the
-+ * CPU hotplug code because the slave CPU executes in an IPI, which we want to
-+ * keep as short as possible (this is happening while the system is running).
-+ * Therefore, we do not send a single IPI for all the test loops, but rather
-+ * send one IPI per loop.
-+ */
-+int test_tsc_synchronization(void)
-+{
-+	long cpu, master;
-+	cycles_t max_diff = 0, diff, best_loop, worse_loop = 0;
-+	int i;
-+
-+	mutex_lock(&tscsync_mutex);
-+	get_online_cpus();
-+
-+	printk(KERN_INFO
-+	       "checking TSC synchronization across all online CPUs:");
-+
-+	preempt_disable();
-+	master = smp_processor_id();
-+	for_each_online_cpu(cpu) {
-+		if (master == cpu)
-+			continue;
-+		best_loop = (cycles_t)ULLONG_MAX;
-+		for (i = 0; i < NR_LOOPS; i++) {
-+			smp_call_function_single(cpu, test_sync,
-+						(void *)1UL, 0);
-+			test_sync((void *)0UL);
-+			diff = abs(sync_data[1].tsc_count
-+				- sync_data[0].tsc_count);
-+			best_loop = min(best_loop, diff);
-+			worse_loop = max(worse_loop, diff);
-+		}
-+		reset_barriers();
-+		max_diff = max(best_loop, max_diff);
-+	}
-+	preempt_enable();
-+	if (max_diff >= MAX_CYCLES_DELTA) {
-+		printk(KERN_WARNING
-+			"Measured %llu cycles TSC offset between CPUs,"
-+			" turning off TSC clock.\n", (u64)max_diff);
-+		mark_tsc_unstable("check_tsc_sync_source failed");
-+		_tsc_is_sync = 0;
-+	} else {
-+		printk(" passed.\n");
-+	}
-+	put_online_cpus();
-+	mutex_unlock(&tscsync_mutex);
-+	return max_diff < MAX_CYCLES_DELTA;
-+}
-+EXPORT_SYMBOL_GPL(test_tsc_synchronization);
-+
-+/*
-+ * Test synchronicity of a single core when it is hotplugged.
-+ * Source CPU calls into this - waits for the freshly booted target CPU to
-+ * arrive and then start the measurement:
-+ */
-+void __cpuinit check_tsc_sync_source(int cpu)
-+{
-+	cycles_t diff, abs_diff,
-+		 best_loop = (cycles_t)ULLONG_MAX, worse_loop = 0;
-+	int i;
-+
-+	/*
-+	 * No need to check if we already know that the TSC is not synchronized:
-+	 */
-+	if (!force_tsc_sync && unsynchronized_tsc()) {
-+		/*
-+		 * Make sure we mark _tsc_is_sync to 0 if the TSC is found
-+		 * to be unsynchronized for other causes than non-synchronized
-+		 * TSCs across CPUs.
-+		 */
-+		_tsc_is_sync = 0;
-+		set_trace_clock_is_sync(0);
-+		return;
-+	}
-+
-+	printk(KERN_INFO "checking TSC synchronization [CPU#%d -> CPU#%d]:",
-+			  smp_processor_id(), cpu);
-+
-+	for (i = 0; i < NR_LOOPS; i++) {
-+		test_sync((void *)0UL);
-+		diff = sync_data[1].tsc_count - sync_data[0].tsc_count;
-+		abs_diff = abs(diff);
-+		best_loop = min(best_loop, abs_diff);
-+		worse_loop = max(worse_loop, abs_diff);
-+		if (force_tsc_sync && best_loop == abs_diff)
-+			slave_offset = diff;
-+	}
-+	reset_barriers();
-+
-+	if (!force_tsc_sync && best_loop >= MAX_CYCLES_DELTA) {
-+		printk(" failed.\n");
-+		printk(KERN_WARNING
-+			"Measured %llu cycles TSC offset between CPUs,"
-+			" turning off TSC clock.\n", (u64)best_loop);
-+		mark_tsc_unstable("check_tsc_sync_source failed");
-+		_tsc_is_sync = 0;
-+		set_trace_clock_is_sync(0);
-+	} else {
-+		printk(" %s.\n", !force_tsc_sync ? "passed" : "forced");
-+	}
-+	if (force_tsc_sync) {
-+		/* order slave_offset and slave_offset_ready writes */
-+		smp_wmb();
-+		slave_offset_ready = 1;
-+	}
-+}
-+
-+/*
-+ * Freshly booted CPUs call into this:
-+ */
-+void __cpuinit check_tsc_sync_target(void)
-+{
-+	int i;
-+
-+	if (!force_tsc_sync && unsynchronized_tsc())
-+		return;
-+
-+	for (i = 0; i < NR_LOOPS; i++)
-+		test_sync((void *)1UL);
-+
-+	/*
-+	 * Force slave synchronization if requested.
-+	 */
-+	if (force_tsc_sync) {
-+		unsigned long flags;
-+		cycles_t new_tsc;
-+
-+		while (!slave_offset_ready)
-+			cpu_relax();
-+		/* order slave_offset and slave_offset_ready reads */
-+		smp_rmb();
-+		local_irq_save(flags);
-+		/*
-+		 * slave_offset is read when master has finished writing to it,
-+		 * and is protected by cpu hotplug serialization.
-+		 */
-+		new_tsc = get_cycles() - slave_offset;
-+		write_tsc((u32)new_tsc, (u32)((u64)new_tsc >> 32));
-+		local_irq_restore(flags);
-+	}
-+}
-Index: linux.trees.git/kernel/time/Makefile
++#endif /* _ASM_GENERIC_TRACE_CLOCK_H */
+Index: linux.trees.git/include/linux/trace-clock.h
 ===================================================================
---- linux.trees.git.orig/kernel/time/Makefile	2008-11-12 18:15:47.000000000 -0500
-+++ linux.trees.git/kernel/time/Makefile	2008-11-26 06:52:28.000000000 -0500
-@@ -6,3 +6,4 @@ obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCA
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-sched.o
- obj-$(CONFIG_TIMER_STATS)			+= timer_stats.o
-+obj-$(CONFIG_HAVE_UNSYNCHRONIZED_TSC)		+= tsc-sync.o
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/include/linux/trace-clock.h	2008-11-26 06:51:47.000000000 -0500
+@@ -0,0 +1,17 @@
++#ifndef _LINUX_TRACE_CLOCK_H
++#define _LINUX_TRACE_CLOCK_H
++
++/*
++ * Trace clock
++ *
++ * Chooses between an architecture specific clock or an atomic logical clock.
++ *
++ * Copyright (C) 2007,2008 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ */
++
++#ifdef CONFIG_HAVE_TRACE_CLOCK
++#include <asm/trace-clock.h>
++#else
++#include <asm-generic/trace-clock.h>
++#endif /* CONFIG_HAVE_TRACE_CLOCK */
++#endif /* _LINUX_TRACE_CLOCK_H */
+Index: linux.trees.git/kernel/trace/trace-clock.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/kernel/trace/trace-clock.c	2008-11-26 06:51:47.000000000 -0500
+@@ -0,0 +1,97 @@
++/*
++ * kernel/trace/trace-clock.c
++ *
++ * (C) Copyright	2008 -
++ * 		Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * Generic kernel tracing clock for architectures without TSC.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/timer.h>
++#include <linux/workqueue.h>
++#include <linux/cpu.h>
++#include <linux/timex.h>
++#include <linux/bitops.h>
++#include <linux/trace-clock.h>
++#include <linux/jiffies.h>
++
++static int trace_clock_refcount;
++static DEFINE_MUTEX(trace_clock_mutex);
++static struct timer_list trace_clock_timer;
++/*
++ * bits 0..12 : counter, atomically incremented
++ * bits 13..{32,64} : time counter, incremented each jiffy.
++ */
++atomic_long_t trace_clock;
++EXPORT_SYMBOL(trace_clock);
++
++static void trace_clock_update(void)
++{
++	long old_clock, new_clock;
++	unsigned long ticks;
++
++	/*
++	 * Make sure we keep track of delayed timer.
++	 */
++	ticks = jiffies - trace_clock_timer.expires + 1;
++	/* Don't update if ticks is zero, time would go backward. */
++	if (unlikely(!ticks))
++		return;
++	do {
++		old_clock = atomic_long_read(&trace_clock);
++		new_clock = (old_clock + (ticks << TRACE_CLOCK_SHIFT))
++			& (~((1 << TRACE_CLOCK_SHIFT) - 1));
++	} while (atomic_long_cmpxchg(&trace_clock, old_clock, new_clock)
++			!= old_clock);
++}
++
++static void trace_clock_timer_fct(unsigned long data)
++{
++	trace_clock_update();
++	trace_clock_timer.expires = jiffies + 1;
++	add_timer(&trace_clock_timer);
++}
++
++static void enable_trace_clock(void)
++{
++	init_timer(&trace_clock_timer);
++	/* trace_clock_update() reads expires */
++	trace_clock_timer.function = trace_clock_timer_fct;
++	trace_clock_timer.expires = jiffies + 1;
++	trace_clock_update();
++	add_timer(&trace_clock_timer);
++}
++
++static void disable_trace_clock(void)
++{
++	del_timer_sync(&trace_clock_timer);
++}
++
++void get_trace_clock(void)
++{
++	get_synthetic_tsc();
++	mutex_lock(&trace_clock_mutex);
++	if (trace_clock_refcount++)
++		goto end;
++	enable_trace_clock();
++end:
++	mutex_unlock(&trace_clock_mutex);
++}
++EXPORT_SYMBOL_GPL(get_trace_clock);
++
++void put_trace_clock(void)
++{
++	mutex_lock(&trace_clock_mutex);
++	WARN_ON(trace_clock_refcount <= 0);
++	if (trace_clock_refcount != 1)
++		goto end;
++	disable_trace_clock();
++end:
++	trace_clock_refcount--;
++	mutex_unlock(&trace_clock_mutex);
++	put_synthetic_tsc();
++}
++EXPORT_SYMBOL_GPL(put_trace_clock);
 Index: linux.trees.git/init/Kconfig
 ===================================================================
---- linux.trees.git.orig/init/Kconfig	2008-11-26 06:51:47.000000000 -0500
-+++ linux.trees.git/init/Kconfig	2008-11-26 06:52:28.000000000 -0500
-@@ -358,6 +358,13 @@ config HAVE_TRACE_CLOCK_GENERIC
- config HAVE_TRACE_CLOCK_32_TO_64
+--- linux.trees.git.orig/init/Kconfig	2008-11-26 06:49:43.000000000 -0500
++++ linux.trees.git/init/Kconfig	2008-11-26 06:51:47.000000000 -0500
+@@ -346,6 +346,12 @@ config HAVE_GET_CYCLES
+ config HAVE_TRACE_CLOCK
  	def_bool n
  
-+#
-+# Architectures which need to dynamically detect if their TSC is unsynchronized
-+# across cpus should select this.
-+#
-+config HAVE_UNSYNCHRONIZED_TSC
-+	def_bool n
++config HAVE_TRACE_CLOCK_GENERIC
++	bool
++	default y if (!HAVE_TRACE_CLOCK)
++	default n if HAVE_TRACE_CLOCK
++	select HAVE_TRACE_CLOCK_32_TO_64 if (!64BIT)
 +
- config GROUP_SCHED
- 	bool "Group CPU scheduler"
- 	depends on EXPERIMENTAL
-Index: linux.trees.git/Documentation/kernel-parameters.txt
+ #
+ # Architectures with only a 32-bits clock source should select this.
+ #
+Index: linux.trees.git/kernel/trace/Makefile
 ===================================================================
---- linux.trees.git.orig/Documentation/kernel-parameters.txt	2008-11-26 05:46:29.000000000 -0500
-+++ linux.trees.git/Documentation/kernel-parameters.txt	2008-11-26 06:52:28.000000000 -0500
-@@ -758,6 +758,10 @@ and is between 256 and 4096 characters. 
- 	ftrace_dump_on_oops
- 			[ftrace] will dump the trace buffers on oops.
+--- linux.trees.git.orig/kernel/trace/Makefile	2008-11-26 06:50:07.000000000 -0500
++++ linux.trees.git/kernel/trace/Makefile	2008-11-26 06:51:47.000000000 -0500
+@@ -34,5 +34,6 @@ obj-$(CONFIG_TRACE_BRANCH_PROFILING) += 
+ obj-$(CONFIG_BTS_TRACER) += trace_bts.o
+ obj-$(CONFIG_POWER_TRACER) += trace_power.o
+ obj-$(CONFIG_HAVE_TRACE_CLOCK_32_TO_64) += trace-clock-32-to-64.o
++obj-$(CONFIG_HAVE_TRACE_CLOCK_GENERIC) += trace-clock.o
  
-+	force_tsc_sync
-+			Force TSC resynchronization when SMP CPUs go online.
-+			See also idle=poll and disable frequency scaling.
-+
- 	gamecon.map[2|3]=
- 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
- 			support via parallel port (up to 5 devices per port)
+ libftrace-y := ftrace.o
 
 -- 
 Mathieu Desnoyers
