@@ -1,116 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYKZBJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbYKZBJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbYKZBJF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 20:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYKZBIw
+	id S1753742AbYKZBJo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 20:09:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYKZBJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 20:08:52 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35737
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752008AbYKZBIv (ORCPT
+	Tue, 25 Nov 2008 20:09:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51485 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbYKZBJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 20:08:51 -0500
-Date: Tue, 25 Nov 2008 17:08:51 -0800 (PST)
-Message-Id: <20081125.170851.97706149.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: fix error flow of crypto/testmgr.c:test_comp()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081125171438.GK22504@elte.hu>
-References: <20081125085820.GA11401@elte.hu>
-	<20081125152014.GB29096@gondor.apana.org.au>
-	<20081125171438.GK22504@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 25 Nov 2008 20:09:32 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] Poll : introduce poll_wait_exclusive() new function
+Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
+       ltt-dev@lists.casi.polymtl.ca,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Davide Libenzi <davidel@xmailserver.org>
+In-Reply-To: <alpine.DEB.1.10.0811251316590.32523@alien.or.mcafeemobile.com>
+References: <20081125194700.26EB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.1.10.0811251316590.32523@alien.or.mcafeemobile.com>
+Message-Id: <20081126100749.3CAC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 26 Nov 2008 10:09:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 25 Nov 2008 18:14:38 +0100
+> > Mathieu Desnoyers explained it cause following problem to LTTng.
+> > 
+> >    In LTTng, all lttd readers are polling all the available debugfs files
+> >    for data. This is principally because the number of reader threads is
+> >    user-defined and there are typical workloads where a single CPU is
+> >    producing most of the tracing data and all other CPUs are idle,
+> >    available to consume data. It therefore makes sense not to tie those
+> >    threads to specific buffers. However, when the number of threads grows,
+> >    we face a "thundering herd" problem where many threads can be woken up
+> >    and put back to sleep, leaving only a single thread doing useful work.
+> 
+> Why do you need to have so many threads banging a single device/file?
+> Have one (or any other very little number) puller thread(s), that 
+> activates with chucks of pulled data the other processing threads. That 
+> way there's no need for a new wakeup abstraction.
 
->     fix warning in drivers/net/s2io.c
->     fix warnings in drivers/net/niu.c
->     fix warning in drivers/net/niu.c
->     fix warning in drivers/net/qla3xxx.c
->     fix warning in net/sunrpc/xprtrdma/svc_rdma_transport.c
->     fix warning in net/sched/sch_hfsc.c
+Mathieu, I don't hope I unstrictly explain to LTTng.
+Could you please explain LTTng design?
 
-Applied.
 
->     fix warning in net/netfilter/nf_conntrack_ftp.c
 
-Patrick got this one.
-
->     fix warning in net/ipv6/ip6_flowlabel.c
->     fix warning in net/dsa/mv88e6xxx.c
->     fix warning in net/dsa/mv88e6060.c
->     fix warning in fs/dlm/netlink.c
->     fix warning in drivers/net/sis900.c
-
-Applied
-
->     fix warning in drivers/net/wireless/iwlwifi/iwl-3945.c
->     fix warning in drivers/net/wireless/b43/main.c
->     fix warning in drivers/net/wireless/ath9k/rc.c
-
-Needs to be submitted via wireless folks at linux-wireless
-
->     fix warning in drivers/net/wan/z85230.c
->     fix error path in drivers/net/mlx4/en_rx.c
->     fix warning in drivers/net/cassini.c
->     fix warning in net/dccp/options.c
->     fix warning in drivers/net/mlx4/mcg.c
->     fix warning in net/ax25/sysctl_net_ax25.c
->     fix warning in net/sunrpc/xprtrdma/verbs.c
->     fix warning in net/bluetooth/rfcomm/sock.c
-
-Applied.
-
->     fix warning in drivers/net/wireless/ray_cs.c
-
-Submit to wireless maintainer please.
-
->     fix warning in net/netfilter/nf_conntrack_proto_sctp.c
->     fix warning in net/netfilter/ipvs/ip_vs_ctl.c
-
-Patrick got these.
-
->     fix warning in drivers/net/atlx/atl2.c
-
-Applied.
-
->     fix warning in net/netfilter/nf_conntrack_proto_tcp.c
-
-Patrick got it.
-
->     fix warning in drivers/net/wireless/iwlwifi/iwl-scan.c
-
-Wireless submission please.
-
->     fix warning in drivers/net/depca.c
->     fix warning in drivers/net/3c523.c
-
-Applied.
-
->     drivers/net/wireless/b43/phy_g.c: type check debug printouts
-
-Submit to wireless folks please.
-
->     fix warning in drivers/net/sky2.c
->     fix warning in net/sunrpc/svcauth_unix.c
->     fix warning in security/selinux/netnode.c
->     fix warning in net/packet/af_packet.c
->     fix warning in net/rfkill/rfkill.c
-
-Not applied.  Changing this from a BUG() to a panic() is wrong.
-BUG() kills the current execution context, and allows the system
-to potentially continue.  Panic() takes down the entire machine.
-
-The !CONFIG_BUG BUG() definition should be marked in such a way
-that gcc thinks it is noreturn.  Otherwise BUG() isn't really
-BUG() anymore.  The other option is to never allow BUG to be
-disabled or have it always evaluate to a simple bug trap.
