@@ -1,123 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYKZSWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbYKZSYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbYKZSWP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 13:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYKZSV7
+	id S1754849AbYKZSYd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 13:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYKZSYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 13:21:59 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:5406 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbYKZSV6 (ORCPT
+	Wed, 26 Nov 2008 13:24:23 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:50857 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbYKZSYW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 13:21:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=vC2PzzADxysVLJm7lEJ3bQO58DzXpS0OGZrSbYPa8WkJbz6FAQ8c6XmnJaSi8kiNkd
-         k8WQmqE8ZF3I7J1i4G2NHMnzXUyWZZTzQpHigN1zuJA5sAZA8hNcL839+cPKF3BNT3Yy
-         sf7nHsspw5ehxVp026P+iFPIlkzaysOFb27L4=
-Message-ID: <7c86c4470811261021t5a7da650w95c30a71838172c4@mail.gmail.com>
-Date: Wed, 26 Nov 2008 19:21:56 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [patch 23/24] perfmon: kernel documentation
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, sfr@canb.auug.org.au
-In-Reply-To: <20081126122107.GV6703@one.firstfloor.org>
+	Wed, 26 Nov 2008 13:24:22 -0500
+X-BigFish: VPS-49(z34a4jz1432R1453M98dR168aJ936eQ1805M936fO3117Kzzzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <492D940F.6090500@am.sony.com>
+Date: Wed, 26 Nov 2008 10:23:11 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492d0c14.02225e0a.15ab.6f8e@mx.google.com>
-	 <20081126122107.GV6703@one.firstfloor.org>
+To: =?UTF-8?B?77+9?= <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] tracing/function-return-tracer: Support for dynamic
+ ftrace on function return tracer
+References: <491FA94E.9090207@gmail.com>	 <alpine.DEB.1.10.0811241707240.907@gandalf.stny.rr.com> <c62985530811241421t1cd56b4el1ada0754df9a229@mail.gmail.com>
+In-Reply-To: <c62985530811241421t1cd56b4el1ada0754df9a229@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-OriginalArrivalTime: 26 Nov 2008 18:23:11.0895 (UTC) FILETIME=[0A39E270:01C94FF4]
+X-SEL-encryption-scan: scanned
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+� wrote:
+> 2008/11/24 Steven Rostedt <rostedt@goodmis.org>:
+>> On Sun, 16 Nov 2008, Frederic Weisbecker wrote:
+>>>  static void ftrace_replace_code(int enable)
+>>> @@ -1405,10 +1417,17 @@ int register_ftrace_function(struct ftrace_ops *ops)
+>>>               return -1;
+>>>
+>>>       mutex_lock(&ftrace_sysctl_lock);
+>>> +
+>>> +     if (ftrace_tracing_type == FTRACE_TYPE_RETURN) {
+>>> +             ret = -EBUSY;
+>>> +             goto out;
+>>> +     }
+>>> +
+>> Why do we need to disable all new tracing functions when we do return
+>> tracing??
+>>
+>> -- Steve
+>>
+>>>       ret = __register_ftrace_function(ops);
+>>>       ftrace_startup();
+>>> -     mutex_unlock(&ftrace_sysctl_lock);
+>>>
+>>> +out:
+>>> +     mutex_unlock(&ftrace_sysctl_lock);
+>>>       return ret;
+>>>  }
+>>>
+> 
+> You will see the same test when trying to register a return handler,
+> it verifies that normal ftrace is not running.
+> Otherwise it will fail.
+> I made ftrace and ftrace-return not abled to work simultaneously for the moment.
+> That made the integration of ftrace-return into dynamic tracing much
+> more simpler...
+> 
+> But if someone needs to enable both tracing at the same time, I can change it...
 
-On Wed, Nov 26, 2008 at 1:21 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> On Wed, Nov 26, 2008 at 12:43:00AM -0800, eranian@googlemail.com wrote:
->
-> I assume you'll be also submitting manpages with the same information?
->
-This is on my TODO list. Provide a man page for each new syscall.
+Very sorry I'm coming to this thread late.  I didn't notice it until
+today.
 
->> +
->> +   A monitoring session is uniquely identified by a file descriptor obtained
->> +   when the session is created. File sharing semantics apply to access the
->> +   session inside a process. A session is never inherited across fork. The file
->> +   descriptor can be used to receive counter overflow notifications or when the
->> +   sampling buffer is full. It is possible to use poll/select on the descriptor
->> +   to wait for notifications from multiple sessions. Similarly, the descriptor
->> +   supports asynchronous notifications via SIGIO.
->
-> What happens when the fd is passed between processes using unix sockets fd
-> passing?
->
+Not to question the whole approach, and sorry if this was
+discussed before, but why wasn't -finstrument-functions used
+to instrument the function exits.  This worked well for KFT
+(See http://elinux.org/Kernel_Function_Trace).  I'm not sure if the
+function prologue and epilogue modifications done by -mcount are
+different than -finstrument-functions, but I thought I remember something
+about Steven testing -finstrument-functions in an early version of ftrace.
 
-I have never played with that myself, even with regular file
-descriptors. But I can only
-assume passing a file descriptor increments its refcount. Thus you
-simply get another
-controlling process. There is enough context locking in place in the
-kernel to make this
-work.
+By the way, I'm really excited to see this "function_cost" stuff being
+worked on.  It has proven to be extremely useful for analyzing early boot
+latencies at Sony.
+
+Sorry again I didn't catch this and previous related threads
+earlier.  I have some post-processing tools which might be useful here.
+Also, I've found it very handy to have the capability to filter by minimum
+function duration.  Is there any work to do that with the
+current system.  If not, maybe I could take a look at that and see if
+I can add something.
+
+Regards,
+ -- Tim
 
 
->> +
->> +    We have released a simple monitoring tool to demonstrate the features of
->> +    the interface. The tool is called pfmon and it comes with a simple helper
->> +    library called libpfm. The library comes with a set of examples to show
->
-> I don't think "simple" is the right word to describe pfmon/libpfm @)
->
-The idea is simple, implementation is more complicated. Complexity of libpfm
-comes mostly from complexity of the hardware, take Cray, Power, Pentium4 and
-Itanium2 for instance ;->
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
->> +    There maybe other tools available for perfmon.
->
-> s/maybe/are/ ?
->
->> +
->> +   To destroy a session, the regular close() system call is used.
->
-There are tools.
-
-> ...
->
-> Some simple syscall examples would be nice. e.g. how to set up a counter
-> that it can be accessed using RDPMC on x86.
-
-I can add this. But why go straight to RDPMC. Most people would want to use
-the syscall instead?
-
->
->> +     /sys/kernel/perfmon/arg_mem_max(read-write):
->> +
->> +             Maximum size of vector arguments expressed in bytes.
->> +             It can be modified but must be at least a page.
->> +             Default: PAGE_SIZE
->
-> Is there any good reason ever to enlarge this beyond a page?
->
-> If it just depends on future hardware it would make more sense
-> to let a driver patch for that adjust it.
->
-It depends on the number of registers available. It is expected that most tools
-will want to use one call to program the config registers and one to program
-the data registers. Pfmon is able to split vectors according to arg_mem_max.
-
-It is anticipated that newer processors will increase the number of available
-PMU registers. That was the case with Barcelona with the addition of IBS.
-On Intel X86, I am planning on exposing the LBR as part of the PMU registers.
-
- On Itanium, you already have 35 data and 27 config registers.
-
-But I think your suggestion is interesting. When we "register" the new PMU
-mapping table, we can provide a minimal size to fit all PMC or all PMD registers
-in one call. That would remove a control point for the sysadmin, though.
