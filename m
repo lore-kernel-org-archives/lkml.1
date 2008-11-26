@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYKZTdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbYKZTgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbYKZTdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 14:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYKZTdj
+	id S1754942AbYKZTgG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 14:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYKZTfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 14:33:39 -0500
-Received: from gv-out-0910.google.com ([216.239.58.189]:26575 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbYKZTdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 14:33:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DvrJYLZNZaaLc2B0dmK81C+feKlp/r8FTblhnng7r5MRDVAScRmjofEebjIFqxw8So
-         71mp/fRqyDJTQPYGZy2sv6XGlM/Wp09fIRX6WF/YUuNYn1AxLkUc+eDVgNrd7EFZzpCw
-         qM4bA7kqHp/5wZIFZL0K6SkxXJp0ThJMsq1p4=
-Date: Wed, 26 Nov 2008 22:33:36 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, heukelum@fastmail.fm
-Subject: Re: [PATCH 2/5] x86: ret_from_fork - get rid of jump back
-Message-ID: <20081126193336.GA2624@localhost>
-References: <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com> <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 26 Nov 2008 14:35:55 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49736 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbYKZTfz (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 14:35:55 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jan Kara <jack@suse.cz>
+Cc: mfasheh@suse.de, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28-rc6-mmotm1126 - BUG in disk quota code
+In-Reply-To: Your message of "Wed, 26 Nov 2008 18:58:11 +0100."
+             <20081126175811.GH23124@duck.suse.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <4270.1227716433@turing-police.cc.vt.edu> <20081126164906.GG23124@duck.suse.cz> <3893.1227721813@turing-police.cc.vt.edu>
+            <20081126175811.GH23124@duck.suse.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1227728116_4046P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Nov 2008 14:35:16 -0500
+Message-ID: <4235.1227728116@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[gorcunov@gmail.com - Wed, Nov 26, 2008 at 10:17:01PM +0300]
-| From: Cyrill Gorcunov <gorcunov@gmail.com>
-| 
-| Impact: cleanup, microoptimization
-| 
-| Use straightforward jumping if possible, cpu like it.
+--==_Exmh_1227728116_4046P
+Content-Type: text/plain; charset=us-ascii
 
-Wrong word, not _straight_ forward but forward branch target
-in this case.
+On Wed, 26 Nov 2008 18:58:11 +0100, Jan Kara said:
 
-| 
-| Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| ---
-|  arch/x86/kernel/entry_64.S |   10 ++++------
-|  1 files changed, 4 insertions(+), 6 deletions(-)
-| 
-		- Cyrill -
+> > Good enough - I'll wait for Andrew to drop the next -mmotm, and I'll
+> > yell if it's still broken then...
+>   Hmm, I've just checked and it does not seem Mark has merged the patches
+> yet. I've attached the patches which fix the problem just in case you need
+> to boot the machine with -mm for some other purposes.
+
+Confirming the 4 patches fixed the BUG in quotaon.  Still need to track down
+the ACPI bug I'm hitting...
+
+--==_Exmh_1227728116_4046P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJLaT0cC3lWbTT17ARAhV6AKCbCSPKplnh11BzR8wrCIyeIet5SACfWNlZ
+ea8K428rYylieh7IBgxSP6k=
+=N3ep
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1227728116_4046P--
