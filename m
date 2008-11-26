@@ -1,74 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYKZLWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYKZLWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbYKZLWR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 06:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYKZLWD
+	id S1753733AbYKZLWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 06:22:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYKZLWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 06:22:03 -0500
-Received: from mail.windriver.com ([147.11.1.11]:51231 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751858AbYKZLWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 06:22:01 -0500
-From: Andrew McDermott <andrew.mcdermott@windriver.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev@lists.casi.polymtl.ca,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [ltt-dev] [PATCH] Poll : introduce poll_wait_exclusive() new	function
-In-Reply-To: <20081126111511.GE14826@Krystal> (Mathieu Desnoyers's message of
-	"Wed, 26 Nov 2008 06:15:11 -0500")
-References: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20081124121659.GA18987@Krystal>
-	<20081125194700.26EB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<alpine.DEB.1.10.0811251316590.32523@alien.or.mcafeemobile.com>
-	<20081126111511.GE14826@Krystal>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-Date: Wed, 26 Nov 2008 11:20:24 +0000
-Message-ID: <v4skpeent3.fsf@swi-aim.swindon.wrsec.fr>
-MIME-Version: 1.0
+	Wed, 26 Nov 2008 06:22:45 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33501 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752254AbYKZLWo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 06:22:44 -0500
+Date: Wed, 26 Nov 2008 12:33:09 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: eranian@googlemail.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, eranian@gmail.com,
+       sfr@canb.auug.org.au
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+Message-ID: <20081126113309.GS6703@one.firstfloor.org>
+References: <492d0be1.09cc660a.0b75.44b7@mx.google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Nov 2008 11:20:27.0822 (UTC) FILETIME=[FC0F7CE0:01C94FB8]
+Content-Disposition: inline
+In-Reply-To: <492d0be1.09cc660a.0b75.44b7@mx.google.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 26, 2008 at 12:42:09AM -0800, eranian@googlemail.com wrote:
+> + * set cannot be NULL. Context is locked. Interrupts are masked.
+> + *
+> + * Caller has already restored all PMD and PMC registers, if
+> + * necessary (i.e., lazy restore scheme).
+> + *
+> + * On x86, the only common code just needs to unsecure RDPMC if necessary
 
-Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
+What is insecure about RDPMC? (except perhaps when secure
+computing mode is on)
 
-[...]
+I think it should be enabled by default BTW because on Core2+ you
+can always read the fixed counters with it.
 
->> > Mathieu Desnoyers explained it cause following problem to LTTng.
->> > 
->> >    In LTTng, all lttd readers are polling all the available debugfs files
->> >    for data. This is principally because the number of reader threads is
->> >    user-defined and there are typical workloads where a single CPU is
->> >    producing most of the tracing data and all other CPUs are idle,
->> >    available to consume data. It therefore makes sense not to tie those
->> >    threads to specific buffers. However, when the number of threads grows,
->> >    we face a "thundering herd" problem where many threads can be woken up
->> >    and put back to sleep, leaving only a single thread doing useful work.
->> 
->> Why do you need to have so many threads banging a single device/file?
->> Have one (or any other very little number) puller thread(s), that 
->> activates with chucks of pulled data the other processing threads. That 
->> way there's no need for a new wakeup abstraction.
->> 
->> 
->> 
->> - Davide
->
-> One of the key design rule of LTTng is to do not depend on such
-> system-wide data structures, or entity (e.g. single manager thread).
-> Everything is per-cpu, and it does scale very well.
->
-> I wonder how badly the approach you propose can scale on large NUMA
-> systems, where having to synchronize everything through a single thread
-> might become an important point of contention, just due to the cacheline
-> bouncing and extra scheduler activity involved.
+> +	 */
+> +	if (using_nmi)
+> +		iip = __get_cpu_var(real_iip);
 
-But at the end of the day these threads end up writing to the (possibly)
-single spindle.  Isn't that the biggest bottlneck here?
+Call it real_rip perhaps?
+
+> +	/*
+> +	 * only NMI related calls
+> +	 */
+> +	if (val != DIE_NMI_IPI)
+> +		return NOTIFY_DONE;
+> +
+> +	/*
+> +	 * perfmon not using NMI
+> +	 */
+> +	if (!__get_cpu_var(pfm_using_nmi))
+> +		return NOTIFY_DONE;
+
+It should not register in this case. die notifiers are costly
+because they make a lot of exceptions slower.
+
+> +	/*
+> +	 * we need to register our NMI handler when the kernels boots
+> +	 * to avoid a deadlock condition with the NMI watchdog or Oprofile
+
+What deadlock? 
+
+> +	 * if we were to try and register/unregister on-demand.
+> +	 */
+> +	register_die_notifier(&pfm_nmi_nb);
+> +	return 0;
+> +
+> +/*
+> + * arch-specific user visible interface definitions
+> + */
+> +
+> +#define PFM_ARCH_MAX_PMCS	(256+64) /* 256 HW 64 SW */
+> +#define PFM_ARCH_MAX_PMDS	(256+64) /* 256 HW 64 SW */
+
+A little excessive for current x86s?
+
+> +#define _ASM_X86_PERFMON_KERN_H_
+> +
+> +#ifdef CONFIG_PERFMON
+> +#include <linux/unistd.h>
+> +#ifdef CONFIG_4KSTACKS
+> +#define PFM_ARCH_STK_ARG	8
+> +#else
+> +#define PFM_ARCH_STK_ARG	16
+> +#endif
+
+Very fancy. But is it really worth it?
+
+> +	 * bits as this may cause crash on some processors.
+> +	 */
+> +	if (pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_C64)
+> +		value = (value | ~pfm_pmu_conf->ovfl_mask)
+> +		      & ~pfm_pmu_conf->pmd_desc[cnum].rsvd_msk;
+> +
+> +	PFM_DBG_ovfl("pfm_arch_write_pmd(0x%lx, 0x%Lx)",
+> +		     pfm_pmu_conf->pmd_desc[cnum].hw_addr,
+> +		     (unsigned long long) value);
+> +
+> +	wrmsrl(pfm_pmu_conf->pmd_desc[cnum].hw_addr, value);
+
+Not sure how well error handling would fit in here, but it's
+normally a good idea to make at least the first wrmsrl to
+these counters a checking_wrmsrl because sometimes simulators
+or hypervisors don't implement them.
+
+> + */
+> +static inline void pfm_arch_unload_context(struct pfm_context *ctx)
+
+In general a lot of these inlines seem rather large. If they are
+called more than once consider out of lining for better code size.
+
+> + * x86 does not need extra alignment requirements for the sampling buffer
+> + */
+> +#define PFM_ARCH_SMPL_ALIGN_SIZE	0
+> +
+> +asmlinkage void  pmu_interrupt(void);
+> +
+> +static inline void pfm_arch_bv_copy(u64 *a, u64 *b, int nbits)
+
+All these bitmap wrappers just seem like unnecessary obfuscation.
+Could you just drop them and call the standard functions directly?
+
+
+-Andi
 
 -- 
-andy
+ak@linux.intel.com
