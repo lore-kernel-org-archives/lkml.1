@@ -1,93 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYKZK0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbYKZKoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbYKZK0Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 05:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYKZKZ6
+	id S1752742AbYKZKoy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 05:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYKZKop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 05:25:58 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:3878 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752008AbYKZKZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 05:25:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QXyeNrRPUDmhEh+QYS+iRf63o9MeRjmeEqNyeKc0yOeeluMKvPFJLlGnieDk4mIq0S
-         mifAzRxeUreAViQrBhSJCqDrKBlfAF0SJYfDXnnoUTtVHPgz3tjXtiFvQT7gunWZ+NCE
-         SL/VNso8KBuXn/pvhhToG0LvSkrvqKuGRXTNI=
-Message-ID: <45a44e480811260225k5dc2bedal41ccac33626f3b4c@mail.gmail.com>
-Date: Wed, 26 Nov 2008 05:25:57 -0500
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Cc: "Paulius Zaleckas" <paulius.zaleckas@teltonika.lt>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       "David Brownell" <david-b@pacbell.net>,
-       "Ben Gardner" <bgardner@wabtec.com>,
-       "Eric Miao" <eric.miao@marvell.com>,
-       "Philipp Zabel" <philipp.zabel@gmail.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       "Russell King" <rmk@arm.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0811261106180.2632@anakin>
+	Wed, 26 Nov 2008 05:44:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:43305 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750879AbYKZKoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 05:44:44 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
-	 <492D125D.5010607@teltonika.lt>
-	 <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
-	 <Pine.LNX.4.64.0811261106180.2632@anakin>
+Message-ID: <18733.8024.91224.512595@cargo.ozlabs.ibm.com>
+Date: Wed, 26 Nov 2008 21:05:12 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: eranian@googlemail.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, eranian@gmail.com,
+       sfr@canb.auug.org.au
+Subject: Re: [patch 00/24] perfmon: introduction
+In-Reply-To: <492d0bd3.1ade660a.31f9.5137@mx.google.com>
+References: <492d0bd3.1ade660a.31f9.5137@mx.google.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 5:08 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Wed, 26 Nov 2008, Jaya Kumar wrote:
->> On Wed, Nov 26, 2008 at 4:09 AM, Paulius Zaleckas
->> <paulius.zaleckas@teltonika.lt> wrote:
->> > Jaya Kumar wrote:
->> >>   * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
->> >>   *   implementation may not sleep
->> >>   * @dbg_show: optional routine to show contents in debugfs; default code
->> >> @@ -84,6 +86,9 @@ struct gpio_chip {
->> >>                                               unsigned offset, int value);
->> >>       void                    (*set)(struct gpio_chip *chip,
->> >>                                               unsigned offset, int value);
->> >> +     void                    (*set_bus)(struct gpio_chip *chip,
->> >> +                                             unsigned offset, int values,
->> >
->> > I think values should be unsigned
->> >
->>
->> Okay, can do but it is unusual no? since set uses int value, i figured
->> set_bus should be similar right?
->
-> ->set() sets one pin, right? So it's either 0 or 1.
->
-> ->set_bus() sets multiple pins. With `int', it will fail for bit 31, as that's
-> the sign bit.
+eranian@googlemail.com writes:
 
-I'm not sure I understood this. I imagine the usage will be like
+> This new version, named perfmon3, uses only 5 system calls (instead of 12).
+> Each call was carefully designed to allow for future extensions. 
 
-int values = 0x8000_0000;
-set_bus(..., start_pin, values);
+I notice that the userspace stuff in CVS assumes perfmon3 has 7 system
+calls, the 5 added here plus pfm_create_sets and pfm_getinfo_sets.
+Are you planning to add those two later (in which case we should
+reserve the numbers now), or are you going to implement the
+functionality of those two in pfm_write and pfm_read?
 
-write_32(register, values); // will still work to set bit 31
-(values >> 31) == 1;
-
->
-> Perhaps you even want u32, to make it clear what's the maximum number of pins
-> you can set in one shot?
-
-Yes, I agree, I will change to use u32 as it is then explicit.
-
-Thanks,
-jaya
+Regards,
+Paul.
