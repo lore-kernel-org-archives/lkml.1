@@ -1,41 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYKZBLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKZBT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYKZBLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 20:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbYKZBLa
+	id S1753856AbYKZBT1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 20:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYKZBSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 20:11:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35741
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751193AbYKZBL3 (ORCPT
+	Tue, 25 Nov 2008 20:18:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52371 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752689AbYKZBSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 20:11:29 -0500
-Date: Tue, 25 Nov 2008 17:11:29 -0800 (PST)
-Message-Id: <20081125.171129.173012464.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [warnings] 37 warning fixes in networking related files
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081126010927.GA9527@elte.hu>
-References: <20081125171438.GK22504@elte.hu>
-	<20081125.135231.81163255.davem@davemloft.net>
-	<20081126010927.GA9527@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 25 Nov 2008 20:18:46 -0500
+Date: Tue, 25 Nov 2008 17:17:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: dwmw2@infradead.org, jens.axboe@oracle.com, matthew@wil.cx,
+       joern@logfs.org, James.Bottomley@HansenPartnership.com,
+       djshin90@gmail.com, teheo@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/9] swapfile: swapon use discard (trim)
+Message-Id: <20081125171748.57450cb5.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0811252140230.17555@blonde.site>
+References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
+	<Pine.LNX.4.64.0811252140230.17555@blonde.site>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Nov 2008 21:44:34 +0000 (GMT)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-I already applied these patches, see my reply in that thread.
+> When adding swap, all the old data on swap can be forgotten: sys_swapon()
+> discard all but the header page of the swap partition (or every extent
+> but the header of the swap file), to give a solidstate swap device the
+> opportunity to optimize its wear-levelling.
+> 
+> If that succeeds, note SWP_DISCARDABLE for later use, and report it
+> with a "D" at the right end of the kernel's "Adding ... swap" message.
+> Perhaps something should be shown in /proc/swaps (swapon -s), but we
+> have to be more cautious before making any addition to that format.
+> 
 
-I was saying to submit these (individually, please!) next time
-with netdev CC:'d.
 
-Posting a ton all at once is pointless, they all get logged to
-patchwork as one big blog and I cannot annotate them individually
-and give you proper feedback.
+When reading the above text it's a bit hard to tell whether it's
+talking about "this is how things are at present" or "this is how
+things are after the patch".  This is fairly common with Hugh
+changelogs.
 
+> ---
+> swapfile.c cleanup patches 0-5 just went to linux-mm: patches 6-9
+> may be of wider interest, so I'm extending the Cc list for them.
+> 
+>  include/linux/swap.h |    1 +
+>  mm/swapfile.c        |   39 +++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 38 insertions(+), 2 deletions(-)
+> 
+> --- swapfile5/include/linux/swap.h	2008-11-25 12:41:31.000000000 +0000
+> +++ swapfile6/include/linux/swap.h	2008-11-25 12:41:34.000000000 +0000
+> @@ -120,6 +120,7 @@ struct swap_extent {
+>  enum {
+>  	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
+>  	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
+> +	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
+>  					/* add others here before... */
+>  	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
+>  };
+> --- swapfile5/mm/swapfile.c	2008-11-25 12:41:31.000000000 +0000
+> +++ swapfile6/mm/swapfile.c	2008-11-25 12:41:34.000000000 +0000
+> @@ -84,6 +84,37 @@ void swap_unplug_io_fn(struct backing_de
+>  	up_read(&swap_unplug_sem);
+>  }
+>  
+> +/*
+> + * swapon tell device that all the old swap contents can be discarded,
+> + * to allow the swap device to optimize its wear-levelling.
+> + */
+> +static int discard_swap(struct swap_info_struct *si)
+> +{
+> +	struct swap_extent *se;
+> +	int err = 0;
+> +
+> +	list_for_each_entry(se, &si->extent_list, list) {
+> +		sector_t start_block = se->start_block << (PAGE_SHIFT - 9);
+> +		pgoff_t nr_blocks = se->nr_pages << (PAGE_SHIFT - 9);
+
+I trust we don't have any shift overflows here.
+
+It's a bit dissonant to see a pgoff_t with "blocks" in its name.  But
+swap is like that..
+
+
+> +		if (se->start_page == 0) {
+> +			/* Do not discard the swap header page! */
+> +			start_block += 1 << (PAGE_SHIFT - 9);
+> +			nr_blocks -= 1 << (PAGE_SHIFT - 9);
+> +			if (!nr_blocks)
+> +				continue;
+> +		}
+> +
+> +		err = blkdev_issue_discard(si->bdev, start_block,
+> +						nr_blocks, GFP_KERNEL);
+> +		if (err)
+> +			break;
+> +
+> +		cond_resched();
+> +	}
+> +	return err;		/* That will often be -EOPNOTSUPP */
+> +}
+> +
+>  #define SWAPFILE_CLUSTER	256
+>  #define LATENCY_LIMIT		256
+>  
+> @@ -1649,6 +1680,9 @@ asmlinkage long sys_swapon(const char __
+>  		goto bad_swap;
+>  	}
+>  
+> +	if (discard_swap(p) == 0)
+> +		p->flags |= SWP_DISCARDABLE;
+> +
+>  	mutex_lock(&swapon_mutex);
+>  	spin_lock(&swap_lock);
+>  	if (swap_flags & SWAP_FLAG_PREFER)
+> @@ -1662,9 +1696,10 @@ asmlinkage long sys_swapon(const char __
+>  	total_swap_pages += nr_good_pages;
+>  
+>  	printk(KERN_INFO "Adding %uk swap on %s.  "
+> -			"Priority:%d extents:%d across:%lluk\n",
+> +			"Priority:%d extents:%d across:%lluk%s\n",
+>  		nr_good_pages<<(PAGE_SHIFT-10), name, p->prio,
+> -		nr_extents, (unsigned long long)span<<(PAGE_SHIFT-10));
+> +		nr_extents, (unsigned long long)span<<(PAGE_SHIFT-10),
+> +		(p->flags & SWP_DISCARDABLE) ? " D" : "");
+>  
+>  	/* insert swap space into swap_list: */
+>  	prev = -1;
