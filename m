@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbYKZVT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYKZVTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbYKZVT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 16:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYKZVTR
+	id S1755361AbYKZVTp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 16:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbYKZVT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 16:19:17 -0500
-Received: from www.tglx.de ([62.245.132.106]:36816 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbYKZVTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 16:19:17 -0500
-Date: Wed, 26 Nov 2008 22:18:09 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: eranian@googlemail.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       eranian@gmail.com, sfr@canb.auug.org.au
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-In-Reply-To: <20081126140054.GX6703@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0811262156390.3325@localhost.localdomain>
-References: <492d0be1.09cc660a.0b75.44b7@mx.google.com> <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain> <20081126140054.GX6703@one.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 26 Nov 2008 16:19:28 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:33791 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754813AbYKZVT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 16:19:26 -0500
+Date: Wed, 26 Nov 2008 15:18:41 -0600
+From: Cliff Wickman <cpw@sgi.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: uv bau interrupt -- use proper interrupt number
+Message-ID: <20081126211841.GA20309@sgi.com>
+References: <20081126210210.GA8671@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081126210210.GA8671@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, Andi Kleen wrote:
-
-> On Wed, Nov 26, 2008 at 02:35:18PM +0100, Thomas Gleixner wrote:
-> > > +	 * 	  does not work with other types of PMU registers.Thus, no
-> > > +	 * 	  address is ever exposed by counters
-> > > +	 *
-> > > +	 * 	- there is never a dependency between one pmd register and
-> > > +	 * 	  another
-> > > +	 */
-> > > +	for (i = 0; num; i++) {
-> > > +		if (likely(pfm_arch_bv_test_bit(i, set->used_pmds))) {
-> > > +			pfm_write_pmd(ctx, i, set->pmds[i]);
-> > > +			num--;
-> > > +		}
-> > > +	}
-> > 
-> >   This loop construct looks scary. It relies on set->nused_pmds >=
-> >   bits set in set->used_pmds. I had to look more than once to
-> >   understand that. It's used all over the code in variations.
+On Thu, Nov 27, 2008 at 12:02:10AM +0300, Cyrill Gorcunov wrote:
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> CC: Andi Kleen <andi@firstfloor.org>
+> ---
+>  arch/x86/kernel/entry_64.S |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> FWIW this loop style tripped me up during review too.
+> Index: linux-2.6.git/arch/x86/kernel/entry_64.S
+> ===================================================================
+> --- linux-2.6.git.orig/arch/x86/kernel/entry_64.S
+> +++ linux-2.6.git/arch/x86/kernel/entry_64.S
+> @@ -945,7 +945,7 @@ apicinterrupt IRQ_MOVE_CLEANUP_VECTOR \
+>  	irq_move_cleanup_interrupt smp_irq_move_cleanup_interrupt
+>  #endif
+>  
+> -apicinterrupt 220 \
+> +apicinterrupt UV_BAU_MESSAGE \
+>  	uv_bau_message_intr1 uv_bau_message_interrupt
+>  apicinterrupt LOCAL_TIMER_VECTOR \
+>  	apic_timer_interrupt smp_apic_timer_interrupt
+> --
 
-It's even worse than I thought when looking at it a second time:
+The interrupt handler does not use the hardcoded 220, but
+the declaration should indeed be fixed as above.
+(such a fix was once submitted
+ http://marc.info/?l=linux-kernel&m=122350309029050&w=2  but didn't
+ go anywhere)
+Thanks for the follow-up.
 
-All the loops iterate over an array which means in the worst case we
-do full array_size iterations. In each iteration we check whether the
-corresponding bit in the bitmask is set or not.
-
-What a nonsense. We have a bitmask already. Why not iterate over the
-bitmask and be done ?
-
-Thanks,
-
-	tglx
+-Cliff
+-- 
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
