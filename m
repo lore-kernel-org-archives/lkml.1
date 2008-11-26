@@ -1,86 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbYKZNDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYKZNCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931AbYKZNDN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 08:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYKZM6d
+	id S1754813AbYKZNCu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 08:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYKZM6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 07:58:33 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:46290 "EHLO smtp.polymtl.ca"
+	Wed, 26 Nov 2008 07:58:30 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:46285 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754107AbYKZM6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 07:58:31 -0500
-Message-Id: <20081126124634.617634769@polymtl.ca>
+	id S1754104AbYKZM61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 07:58:27 -0500
+Message-Id: <20081126124637.043515637@polymtl.ca>
 References: <20081126124246.800751190@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Nov 2008 07:42:48 -0500
+Date: Wed, 26 Nov 2008 07:43:03 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: [patch 02/17] get_cycles() : x86 HAVE_GET_CYCLES
-Content-Disposition: inline; filename=get-cycles-x86-have-get-cycles.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:40 +0000
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [patch 17/17] x86 trace clock
+Content-Disposition: inline; filename=x86-trace-clock.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 26 Nov 2008 12:57:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
-get_cycles_rate() are implemented.
+X86 trace clock. Depends on tsc_sync to detect if timestamp counters are
+synchronized on the machine.
+
+I am leaving this poorly scalable solution for now as this is the simplest, yet
+working, solution I found (compared to using the HPET which also scales very
+poorly, probably due to bus contention). This should be a good start and let us
+trace a good amount of machines out there.
+
+A "Big Fat" (TM) warning is shown on the console when the trace clock is used on
+systems without synchronized TSCs to tell the user to
+
+- use force_tsc_sync=1
+- use idle=poll
+- disable Powernow or Speedstep
+
+In order to get accurate and fast timestamps.
+
+This keeps room for further improvement in a second phase.
+
+Changelog:
+- freq_scale is not used as a divisor rather than multiplier to support systems
+  with frequency < 1HZ.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: David Miller <davem@davemloft.net>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
 CC: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@redhat.com>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-arch@vger.kernel.org
 ---
- arch/x86/Kconfig           |    1 +
- arch/x86/include/asm/tsc.h |   12 ++++++++++++
- 2 files changed, 13 insertions(+)
+ arch/x86/Kconfig                   |    1 
+ arch/x86/include/asm/trace-clock.h |   76 +++++++++++
+ arch/x86/kernel/Makefile           |    4 
+ arch/x86/kernel/trace-clock.c      |  248 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 329 insertions(+)
 
 Index: linux.trees.git/arch/x86/Kconfig
 ===================================================================
---- linux.trees.git.orig/arch/x86/Kconfig	2008-11-26 05:46:29.000000000 -0500
-+++ linux.trees.git/arch/x86/Kconfig	2008-11-26 06:48:49.000000000 -0500
-@@ -20,6 +20,7 @@ config X86
- 	def_bool y
- 	select HAVE_AOUT if X86_32
- 	select HAVE_UNSTABLE_SCHED_CLOCK
-+	select HAVE_GET_CYCLES
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_IOREMAP_PROT
-Index: linux.trees.git/arch/x86/include/asm/tsc.h
+--- linux.trees.git.orig/arch/x86/Kconfig	2008-11-26 07:38:50.000000000 -0500
++++ linux.trees.git/arch/x86/Kconfig	2008-11-26 07:39:03.000000000 -0500
+@@ -27,6 +27,7 @@ config X86
+ 	select HAVE_KPROBES
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_KRETPROBES
++	select HAVE_TRACE_CLOCK
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FUNCTION_TRACER
+Index: linux.trees.git/arch/x86/kernel/Makefile
 ===================================================================
---- linux.trees.git.orig/arch/x86/include/asm/tsc.h	2008-11-14 17:38:28.000000000 -0500
-+++ linux.trees.git/arch/x86/include/asm/tsc.h	2008-11-26 06:48:49.000000000 -0500
-@@ -50,6 +50,18 @@ extern void mark_tsc_unstable(char *reas
- extern int unsynchronized_tsc(void);
- int check_tsc_unstable(void);
+--- linux.trees.git.orig/arch/x86/kernel/Makefile	2008-11-26 07:38:50.000000000 -0500
++++ linux.trees.git/arch/x86/kernel/Makefile	2008-11-26 07:39:03.000000000 -0500
+@@ -20,6 +20,10 @@ ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ CFLAGS_REMOVE_process_32.o = -pg
+ endif
  
-+static inline cycles_t get_cycles_rate(void)
++ifdef CONFIG_TRACING
++obj-$(CONFIG_HAVE_TRACE_CLOCK)	+= trace-clock.o
++endif
++
+ #
+ # vsyscalls (which work on the user stack) should have
+ # no stack-protector checks:
+Index: linux.trees.git/arch/x86/kernel/trace-clock.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/arch/x86/kernel/trace-clock.c	2008-11-26 07:39:03.000000000 -0500
+@@ -0,0 +1,248 @@
++/*
++ * arch/x86/kernel/trace-clock.c
++ *
++ * Trace clock for x86.
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, October 2008
++ */
++
++#include <linux/module.h>
++#include <linux/trace-clock.h>
++#include <linux/jiffies.h>
++#include <linux/mutex.h>
++#include <linux/timer.h>
++#include <linux/cpu.h>
++
++static cycles_t trace_clock_last_tsc;
++static DEFINE_PER_CPU(struct timer_list, update_timer);
++static DEFINE_MUTEX(async_tsc_mutex);
++static int async_tsc_refcount;	/* Number of readers */
++static int async_tsc_enabled;	/* Async TSC enabled on all online CPUs */
++
++int _trace_clock_is_sync = 1;
++EXPORT_SYMBOL_GPL(_trace_clock_is_sync);
++
++/*
++ * Called by check_tsc_sync_source from CPU hotplug.
++ */
++void set_trace_clock_is_sync(int state)
 +{
-+	if (check_tsc_unstable())
-+		return 0;
-+	return (cycles_t)tsc_khz * 1000;
++	_trace_clock_is_sync = state;
 +}
 +
-+static inline void get_cycles_barrier(void)
++#if BITS_PER_LONG == 64
++static cycles_t read_last_tsc(void)
 +{
++	return trace_clock_last_tsc;
++}
++#else
++/*
++ * A cmpxchg64 update can happen concurrently. Based on the assumption that
++ * two cmpxchg64 will never update it to the same value (the count always
++ * increases), reading it twice insures that we read a coherent value with the
++ * same "sequence number".
++ */
++static cycles_t read_last_tsc(void)
++{
++	cycles_t val1, val2;
++
++	val1 = trace_clock_last_tsc;
++	for (;;) {
++		val2 = val1;
++		barrier();
++		val1 = trace_clock_last_tsc;
++		if (likely(val1 == val2))
++			break;
++	}
++	return val1;
++}
++#endif
++
++/*
++ * Support for architectures with non-sync TSCs.
++ * When the local TSC is discovered to lag behind the highest TSC counter, we
++ * increment the TSC count of an amount that should be, ideally, lower than the
++ * execution time of this routine, in cycles : this is the granularity we look
++ * for : we must be able to order the events.
++ */
++notrace cycles_t trace_clock_async_tsc_read(void)
++{
++	cycles_t new_tsc, last_tsc;
++
++	WARN_ON(!async_tsc_refcount || !async_tsc_enabled);
 +	rdtsc_barrier();
++	new_tsc = get_cycles();
++	rdtsc_barrier();
++	last_tsc = read_last_tsc();
++	do {
++		if (new_tsc < last_tsc)
++			new_tsc = last_tsc + TRACE_CLOCK_MIN_PROBE_DURATION;
++		/*
++		 * If cmpxchg fails with a value higher than the new_tsc, don't
++		 * retry : the value has been incremented and the events
++		 * happened almost at the same time.
++		 * We must retry if cmpxchg fails with a lower value :
++		 * it means that we are the CPU with highest frequency and
++		 * therefore MUST update the value.
++		 */
++		last_tsc = cmpxchg64(&trace_clock_last_tsc, last_tsc, new_tsc);
++	} while (unlikely(last_tsc < new_tsc));
++	return new_tsc;
++}
++EXPORT_SYMBOL_GPL(trace_clock_async_tsc_read);
++
++static void update_timer_ipi(void *info)
++{
++	(void)trace_clock_async_tsc_read();
 +}
 +
- /*
-  * Boot-time check whether the TSCs are synchronized across
-  * all CPUs/cores:
++/*
++ * update_timer_fct : - Timer function to resync the clocks
++ * @data: unused
++ *
++ * Fires every jiffy.
++ */
++static void update_timer_fct(unsigned long data)
++{
++	(void)trace_clock_async_tsc_read();
++
++	per_cpu(update_timer, smp_processor_id()).expires = jiffies + 1;
++	add_timer_on(&per_cpu(update_timer, smp_processor_id()),
++		     smp_processor_id());
++}
++
++static void enable_trace_clock(int cpu)
++{
++	init_timer(&per_cpu(update_timer, cpu));
++	per_cpu(update_timer, cpu).function = update_timer_fct;
++	per_cpu(update_timer, cpu).expires = jiffies + 1;
++	smp_call_function_single(cpu, update_timer_ipi, NULL, 1);
++	add_timer_on(&per_cpu(update_timer, cpu), cpu);
++}
++
++static void disable_trace_clock(int cpu)
++{
++	del_timer_sync(&per_cpu(update_timer, cpu));
++}
++
++/*
++ * 	hotcpu_callback - CPU hotplug callback
++ * 	@nb: notifier block
++ * 	@action: hotplug action to take
++ * 	@hcpu: CPU number
++ *
++ * 	Returns the success/failure of the operation. (NOTIFY_OK, NOTIFY_BAD)
++ */
++static int __cpuinit hotcpu_callback(struct notifier_block *nb,
++				unsigned long action,
++				void *hcpu)
++{
++	unsigned int hotcpu = (unsigned long)hcpu;
++	int cpu;
++
++	mutex_lock(&async_tsc_mutex);
++	switch (action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		break;
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		/*
++		 * trace_clock_is_sync() is updated by set_trace_clock_is_sync()
++		 * code, protected by cpu hotplug disable.
++		 * It is ok to let the hotplugged CPU read the timebase before
++		 * the CPU_ONLINE notification. It's just there to give a
++		 * maximum bound to the TSC error.
++		 */
++		if (async_tsc_refcount && !trace_clock_is_sync()) {
++			if (!async_tsc_enabled) {
++				async_tsc_enabled = 1;
++				for_each_online_cpu(cpu)
++					enable_trace_clock(cpu);
++			} else {
++				enable_trace_clock(hotcpu);
++			}
++		}
++		break;
++#ifdef CONFIG_HOTPLUG_CPU
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
++		if (!async_tsc_refcount && num_online_cpus() == 1)
++			set_trace_clock_is_sync(1);
++		break;
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		/*
++		 * We cannot stop the trace clock on other CPUs when readers are
++		 * active even if we go back to a synchronized state (1 CPU)
++		 * because the CPU left could be the one lagging behind.
++		 */
++		if (async_tsc_refcount && async_tsc_enabled)
++			disable_trace_clock(hotcpu);
++		if (!async_tsc_refcount && num_online_cpus() == 1)
++			set_trace_clock_is_sync(1);
++		break;
++#endif /* CONFIG_HOTPLUG_CPU */
++	}
++	mutex_unlock(&async_tsc_mutex);
++
++	return NOTIFY_OK;
++}
++
++void get_trace_clock(void)
++{
++	int cpu;
++
++	if (!trace_clock_is_sync()) {
++		printk(KERN_WARNING
++			"Trace clock falls back on cache-line bouncing\n"
++			"workaround due to non-synchronized TSCs.\n"
++			"This workaround preserves event order across CPUs.\n"
++			"Please consider disabling Speedstep or PowerNow and\n"
++			"using kernel parameters "
++			"\"force_tsc_sync=1 idle=poll\"\n"
++			"for accurate and fast tracing clock source.\n");
++	}
++
++	get_online_cpus();
++	mutex_lock(&async_tsc_mutex);
++	if (async_tsc_refcount++ || trace_clock_is_sync())
++		goto end;
++
++	async_tsc_enabled = 1;
++	for_each_online_cpu(cpu)
++		enable_trace_clock(cpu);
++end:
++	mutex_unlock(&async_tsc_mutex);
++	put_online_cpus();
++}
++EXPORT_SYMBOL_GPL(get_trace_clock);
++
++void put_trace_clock(void)
++{
++	int cpu;
++
++	get_online_cpus();
++	mutex_lock(&async_tsc_mutex);
++	WARN_ON(async_tsc_refcount <= 0);
++	if (async_tsc_refcount != 1 || !async_tsc_enabled)
++		goto end;
++
++	for_each_online_cpu(cpu)
++		disable_trace_clock(cpu);
++	async_tsc_enabled = 0;
++end:
++	async_tsc_refcount--;
++	if (!async_tsc_refcount && num_online_cpus() == 1)
++		set_trace_clock_is_sync(1);
++	mutex_unlock(&async_tsc_mutex);
++	put_online_cpus();
++}
++EXPORT_SYMBOL_GPL(put_trace_clock);
++
++static __init int init_unsync_trace_clock(void)
++{
++	hotcpu_notifier(hotcpu_callback, 4);
++	return 0;
++}
++early_initcall(init_unsync_trace_clock);
+Index: linux.trees.git/arch/x86/include/asm/trace-clock.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/arch/x86/include/asm/trace-clock.h	2008-11-26 07:39:44.000000000 -0500
+@@ -0,0 +1,76 @@
++#ifndef _ASM_X86_TRACE_CLOCK_H
++#define _ASM_X86_TRACE_CLOCK_H
++
++/*
++ * linux/arch/x86/include/asm/trace-clock.h
++ *
++ * Copyright (C) 2005,2006,2008
++ *   Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
++ *
++ * Trace clock definitions for x86.
++ */
++
++#include <linux/timex.h>
++#include <asm/system.h>
++#include <asm/processor.h>
++#include <asm/atomic.h>
++
++/* Minimum duration of a probe, in cycles */
++#define TRACE_CLOCK_MIN_PROBE_DURATION 200
++
++extern cycles_t trace_clock_async_tsc_read(void);
++
++extern int _trace_clock_is_sync;
++static inline int trace_clock_is_sync(void)
++{
++	return _trace_clock_is_sync;
++}
++
++static inline u32 trace_clock_read32(void)
++{
++	u32 cycles;
++
++	if (likely(trace_clock_is_sync())) {
++		get_cycles_barrier();
++		cycles = (u32)get_cycles(); /* only need the 32 LSB */
++		get_cycles_barrier();
++	} else
++		cycles = (u32)trace_clock_async_tsc_read();
++	return cycles;
++}
++
++static inline u64 trace_clock_read64(void)
++{
++	u64 cycles;
++
++	if (likely(trace_clock_is_sync())) {
++		get_cycles_barrier();
++		cycles = get_cycles();
++		get_cycles_barrier();
++	} else
++		cycles = trace_clock_async_tsc_read();
++	return cycles;
++}
++
++static inline u64 trace_clock_frequency(void)
++{
++	return (u64)cpu_khz * 1000;
++}
++
++static inline u32 trace_clock_freq_scale(void)
++{
++	return 1;
++}
++
++extern void get_trace_clock(void);
++extern void put_trace_clock(void);
++
++#ifdef CONFIG_TRACING
++extern void set_trace_clock_is_sync(int state);
++#else
++static inline void set_trace_clock_is_sync(int state)
++{
++}
++#endif
++
++#endif /* _ASM_X86_TRACE_CLOCK_H */
 
 -- 
 Mathieu Desnoyers
