@@ -1,155 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYKZSIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYKZSR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYKZSIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 13:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYKZSIg
+	id S1753932AbYKZSR0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 13:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYKZSRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 13:08:36 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:30323 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbYKZSIe (ORCPT
+	Wed, 26 Nov 2008 13:17:16 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1604 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbYKZSRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 13:08:34 -0500
-Message-ID: <492D9063.9090507@oracle.com>
-Date: Wed, 26 Nov 2008 10:07:31 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 26 Nov 2008 13:17:16 -0500
+Date: Wed, 26 Nov 2008 18:17:11 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds: Add WM8350 LED driver
+Message-ID: <20081126181710.GH6234@sirena.org.uk>
+References: <1227707610-20952-1-git-send-email-broonie@opensource.wolfsonmicro.com> <alpine.LNX.2.00.0811261837420.23445@titan.stealer.net>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: open-osd development <osd-dev@open-osd.org>,
-       Torben Mathiasen <device@lanana.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       device@lanana.org, hpa@zytor.com
-Subject: Re: [osd-dev] [PATCH 01/18] major.h: char-major number for OSD device
- driver
-References: <491073BB.4000900@panasas.com> <1225815420-5721-1-git-send-email-bharrosh@panasas.com> <492D8863.1000104@panasas.com>
-In-Reply-To: <492D8863.1000104@panasas.com>
-Content-Type: multipart/mixed;
- boundary="------------080202060701020107080205"
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.492D906C.0116:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0811261837420.23445@titan.stealer.net>
+X-Cookie: I smell a wumpus.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080202060701020107080205
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wed, Nov 26, 2008 at 06:39:04PM +0100, Sven Wegener wrote:
 
-Boaz Harrosh wrote:
-> Boaz Harrosh wrote:
->> We need a major for a char device for our OSD device driver.
->> Attached is a proposed patch for the Documentation/devices.txt
->> and include/linux/major.h files.
->>
->> I have allocated the *260* char device as it looked like the next
->> available on the lanana.org web-site
->> (http://lanana.org/docs/device-list/devices-2.6+.txt)
->>
->> Any number will do. Please allocate a number for us
->>
->> (See http:/open-osd.org for further information)
->>
->> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
->> CC: Torben Mathiasen <device@lanana.org>
-> 
-> Hi Torben Mathiasen
-> 
-> The maintainers file as well as the lanana.org website only states
-> this <device@lanana.org> email address. I hope it is the right one.
-> 
-> Please you have not confirmed or revoked my ability to use 260 
-> as a Major for a new char-device. Please review
+You should cut irrelevant text from your mail; it makes it much easier
+to find what you're actually saying - if you've got hundreds of lines of
+unbroken quoted text it's easy to page straight past small comments.
 
-Was it cc-ed to device@lanana.org?  I can't see that.  Adding it now.
+> On Wed, 26 Nov 2008, Mark Brown wrote:
 
-John Cagle, can you comment on this, please?
+> > +	isink = regulator_get(&pdev->dev, "led_isink");
+> > +	if (IS_ERR(isink) || isink == NULL) {
+> > +		printk(KERN_ERR "%s: cant get ISINK\n", __func__);
+> > +		return PTR_ERR(isink);
 
-And also have the attached patch merged into the MAINTAINERS file, please.
+> Uhm, if isink is ever NULL, which according to your check above you
+> expect it to happen, this will return 0, meaning success. I'm not sure
+> if this is what you want and looking at regulator_get() it should never
+> be NULL.
 
-The www.lanana.org web page also needs to be updated:
-  Maintained by Torben Mathiasen
-is no longer correct.
+No, it should never be NULL - this is was inherited from the out of tree
+history.
 
+> > +	for (i = 0; i < ARRAY_SIZE(isink_cur) - 1; i++)
 
-> What git tree should this go through?
-> 
-> Thanks 
-> Boaz
-> 
->> ---
->>  Documentation/devices.txt |    6 ++++++
->>  include/linux/major.h     |    1 +
->>  2 files changed, 7 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/devices.txt b/Documentation/devices.txt
->> index 05c8064..d18070b 100644
->> --- a/Documentation/devices.txt
->> +++ b/Documentation/devices.txt
->> @@ -3142,6 +3142,12 @@ Your cooperation is appreciated.
->>  		  1 = /dev/blockrom1	Second ROM card's translation layer interface
->>  		  ...
->>  
->> +260 char	OSD (Object-based-device) SCSI Device
->> +		  0 = /dev/osd0		First OSD Device
->> +		  1 = /dev/osd1		Second OSD Device
->> +		  ...
->> +		  255 = /dev/osd255	256th OSD Device
->> +
->>   ****	ADDITIONAL /dev DIRECTORY ENTRIES
->>  
->>  This section details additional entries that should or may exist in
->> diff --git a/include/linux/major.h b/include/linux/major.h
->> index 8824945..058ec15 100644
->> --- a/include/linux/major.h
->> +++ b/include/linux/major.h
->> @@ -171,5 +171,6 @@
->>  #define VIOTAPE_MAJOR		230
->>  
->>  #define BLOCK_EXT_MAJOR		259
->> +#define SCSI_OSD_MAJOR		260	/* open-osd's OSD scsi device */
->>  
->>  #endif
-> 
+> This loop will skip the last array member.
 
+This is intentional, it ensures that we always end up pointing to a
+value within the array.
 
--- 
-~Randy
+> > +int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
+> > +			struct wm8350_led_platform_data *pdata)
+> > +{
+> > +	struct wm8350_led *led = &wm8350->pmic.led[lednum];
+> > +	struct platform_device *pdev;
+> > +	int ret;
+> > +
+> > +	if (lednum > ARRAY_SIZE(wm8350->pmic.led) || lednum < 0) {
+> > +		dev_err(wm8350->dev, "Invalid LED index %d\n", lednum);
+> > +		return -ENODEV;
+> > +	}
 
---------------080202060701020107080205
-Content-Type: text/x-patch;
- name="maint-update-lanana.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="maint-update-lanana.patch"
+> You already used lednum as an array index above, I'm not sure if this
+> can have any side effects. I think it shouldn't, as you only use it to
+> get a pointer.
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+It's out of spec to index beyond the end of the array but shouldn't
+produce any actual runtime problems unless the either the implementation
+or the platform code is being silly.  I'll shuffle the code around,
+though.
 
-Update the DEVICE NUMBER REGISTRY (LANANA) maintainer entry.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20081126.orig/MAINTAINERS
-+++ linux-next-20081126/MAINTAINERS
-@@ -1372,7 +1372,7 @@ M:	Douglas_Warzecha@dell.com
- S:	Maintained
- 
- DEVICE NUMBER REGISTRY
--P:	Torben Mathiasen
-+P:	John Cagle
- M:	device@lanana.org
- W:	http://lanana.org/docs/device-list/index.html
- L:	linux-kernel@vger.kernel.org
-
---------------080202060701020107080205--
+Fixed everything else.
