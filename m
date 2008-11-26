@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYKZPAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbYKZPCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYKZPAJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 10:00:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYKZO7z
+	id S1753915AbYKZPCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 10:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYKZPBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 09:59:55 -0500
-Received: from mga02.intel.com ([134.134.136.20]:3864 "EHLO mga02.intel.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751676AbYKZO7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 09:59:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,669,1220252400"; 
-   d="scan'208";a="467569756"
-Date: Wed, 26 Nov 2008 22:03:03 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "greg@kroah.com" <greg@kroah.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       xen-devel@lists.xensource.com,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [SR-IOV driver example 0/3] introduction
-Message-ID: <20081126140303.GA13641@yzhao12-linux.sh.intel.com>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
+	Wed, 26 Nov 2008 10:01:51 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:39702 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751832AbYKZPBu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 10:01:50 -0500
+Date: Wed, 26 Nov 2008 10:01:47 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       <stable@kernel.org>
+Subject: Re: [PATCH] Fix SCSI regression in 2.6.27 [was [Bugme-new] [Bug
+ 12099] New: Nokia 5310 storage-mode]
+In-Reply-To: <1227676067.3415.63.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0811260957470.2359-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SR-IOV drivers of Intel 82576 NIC are available. There are two parts
-of the drivers: Physical Function driver and Virtual Function driver.
-The PF driver is based on the IGB driver and is used to control PF to
-allocate hardware specific resources and interface with the SR-IOV core.
-The VF driver is a new NIC driver that is same as the traditional PCI
-device driver. It works in both the host and the guest (Xen and KVM)
-environment.
+On Tue, 25 Nov 2008, James Bottomley wrote:
 
-These two drivers are testing versions and they are *only* intended to
-show how to use SR-IOV API.
+> On Tue, 2008-11-25 at 10:34 -0500, Alan Stern wrote:
+> > This patch is intended for 2.6.27.stable and 2.6.28.  It's a temporary 
+> > fix for a problem affecting a number of USB mass-storage devices 
+> > (including many Nokia phones): When trying to access a nonexistent 
+> > "last" sector, the SCSI midlayer gets caught in an endless retry loop.
+> 
+> Can't we just invoke the last sector handling flag for all Nokia
+> devices?
 
-Intel 82576 NIC specification can be found at:
-http://download.intel.com/design/network/datashts/82576_Datasheet_v2p1.pdf
+That would work for those devices... until and unless Nokia ever 
+decides to correct their bug.  It won't help anything else.
 
-[SR-IOV driver example 1/3] PF driver: allocate hardware specific resource
-[SR-IOV driver example 2/3] PF driver: integrate with SR-IOV core
-[SR-IOV driver example 3/3] VF driver tar ball
+> This would cause tape errors on unit attention (fairly common
+> condition).  It can be argued that we get more users of USB mobile
+> phones than tapes, but I'd rather keep both communities happy
+
+Me too.  I realize this patch hasn't been tested or vetted by anyone in
+the SCSI development crowd.  That's why I've been pestering you guys
+about it!
+
+> By and large, the reason we backport from head if at all possible is so
+> we can avoid bugs like this creeping into stable.  (And backporting from
+> head is far easier if the bug fixes are small and don't contain
+> miscellaneous code clean ups, control flow changes and comment fixes)
+
+> I tried to untangle it on the 'plane yesterday.  I've just got a bit
+> more testing to do then I'll post the patch to your patch.
+
+That's fine with me.  I just don't want to see the same problem 
+continuing on into 2.6.28.final.
+
+Alan Stern
+
