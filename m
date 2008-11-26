@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYKZJhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYKZJk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYKZJhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 04:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYKZJhN
+	id S1753337AbYKZJk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 04:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYKZJkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 04:37:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38721 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725AbYKZJhL (ORCPT
+	Wed, 26 Nov 2008 04:40:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:52615 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbYKZJkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 04:37:11 -0500
+	Wed, 26 Nov 2008 04:40:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=mZ24GPm+Ch2Hfg2y1ucFvmeMHYT/xmmw7n2vKVjS8b8i4eSJn0bmei1GrNJJPGkm4y
+         t4H7YXe3LCxfbbJVyDLf/Xl77tGw4gIgNPQYuiSV4cqNioXxq3y6PZoKCgmiUSZyIBEG
+         0UMlOp/n8UkB9chjYltvQBZE3CGeog9deES/M=
+Message-ID: <7c86c4470811260140x7e838c06v7236b196d0641786@mail.gmail.com>
+Date: Wed, 26 Nov 2008 10:40:09 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "David Miller" <davem@davemloft.net>
 Subject: Re: [patch 01/24] perfmon: generic headers
-From: Peter Zijlstra <peterz@infradead.org>
-To: eranian@gmail.com
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <7c86c4470811260054s2652e648i7ba44796bc40c424@mail.gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
+In-Reply-To: <20081126.004609.15230324.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 References: <492d0bd6.0f345e0a.167c.3b37@mx.google.com>
 	 <20081126.004609.15230324.davem@davemloft.net>
-	 <7c86c4470811260054s2652e648i7ba44796bc40c424@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Nov 2008 10:36:53 +0100
-Message-Id: <1227692213.4259.2879.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-26 at 09:54 +0100, stephane eranian wrote:
+David,
 
-> I will fix that. For now, I simply reposted to get the cc: list correct.
-> The script I use to mail the patches was unfortunately dropping
-> the cc-list.
+Fixed now.
+Thanks
 
-/me wonders why people still use home-brewn mailer scripts, quilt mail
-works quite well, and even git seems to be able to mail without causing
-these insanely deep threaded things, albeit with some extra effort.
+On Wed, Nov 26, 2008 at 9:46 AM, David Miller <davem@davemloft.net> wrote:
+> From: eranian@googlemail.com
+> Date: Wed, 26 Nov 2008 00:41:58 -0800 (PST)
+>
+>> +/*
+>> + * system adminstrator configuration controls available via
+>> + * the /sys/kerne/perfmon interface
+>> + */
+>
+> This sysfs path typo I pointed out a few hours ago remains :-)
+> It should be "/sys/kernel/perfmon", the 'l' is missing.
+>
+>
+>
