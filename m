@@ -1,204 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYKZWMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYKZWQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYKZWMp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 17:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYKZWMf
+	id S1753175AbYKZWQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 17:16:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYKZWQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 17:12:35 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:56856 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752167AbYKZWMe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 17:12:34 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-nfs@vger.kernel.org, Max Kellermann <mk@cm4all.com>,
-       linux-kernel@vger.kernel.org, gcosta@redhat.com,
-       Grant Coady <grant_lkml@dodo.com.au>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Tom Tucker <tom@opengridcomputing.com>
-In-Reply-To: <1227621877.9425.102.camel@zakaz.uk.xensource.com>
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>
-	 <1224484046.23068.14.camel@localhost.localdomain>
-	 <1225539927.2221.3.camel@localhost.localdomain>
-	 <1225546878.4390.3.camel@heimdal.trondhjem.org>
-	 <1227596962.16868.22.camel@localhost.localdomain>
-	 <1227619696.7057.19.camel@heimdal.trondhjem.org>
-	 <1227620339.9425.99.camel@zakaz.uk.xensource.com>
-	 <1227621434.7057.33.camel@heimdal.trondhjem.org>
-	 <1227621877.9425.102.camel@zakaz.uk.xensource.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-i4LoPGFFNSGlA47N6EHp"
-Date: Wed, 26 Nov 2008 22:12:19 +0000
-Message-Id: <1227737539.31008.2.camel@localhost.localdomain>
+	Wed, 26 Nov 2008 17:16:48 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:59725 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751847AbYKZWQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 17:16:47 -0500
+Date: Wed, 26 Nov 2008 23:21:03 +0100
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Paolo Valente <paolo.valente@unimore.it>, Vivek Goyal <vgoyal@redhat.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081126222103.GD29897@gandalf.sssup.it>
+References: <20081113221304.GH7542@redhat.com> <20081120.182053.220301508585579959.ryov@valinux.co.jp> <20081120134701.GB29306@redhat.com> <20081125.113359.623571555980951312.ryov@valinux.co.jp> <20081125162720.GH341@redhat.com> <e98e18940811251438v245f79aegfdc92bee737af64c@mail.gmail.com> <492D57E1.5090608@unimore.it> <e98e18940811261141x307cf06fldd5e481e85da5c2d@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
-	120 seconds"
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=6OAc2UI1ETEA:10 a=Gm1qT94b7fUA:10 a=VPW9pYw8AAAA:8 a=wx-4j2DldyGn3-pwW_YA:9 a=6yVstKBiskT33E6oD1oA:7 a=VazBWcaViEXCF7MKYnkobigLL1QA:4 a=FMDdsIUKT1EA:10 a=LY0hPdMaydYA:10 a=9KGEKzwB5n7towsVRe8A:9 a=N4iTw3zLBL3P2HFYltvifYWwRcUA:4 a=rPt6xJ-oxjAA:10
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e98e18940811261141x307cf06fldd5e481e85da5c2d@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> From: Nauman Rafique <nauman@google.com>
+> Date: Wed, Nov 26, 2008 11:41:46AM -0800
+>
+> On Wed, Nov 26, 2008 at 6:06 AM, Paolo Valente <paolo.valente@unimore.it> wrote:
+> > Fabio and I are a little bit worried about the fact that the problem
+> > of working in the time domain instead of the service domain is not
+> > being properly dealt with.  Probably we did not express ourselves very
+> > clearly, so we will try to put in more practical terms.  Using B-WF2Q+
+> > in the time domain instead of using CFQ (Round-Robin) means introducing
+> > higher complexity than CFQ to get almost the same service properties
+> > of CFQ.  With regard to fairness (long term) B-WF2Q+ in the time domain
+> 
+> Are we talking about a case where all the contenders have equal
+> weights and are continuously backlogged? That seems to be the only
+> case when B-WF2Q+ would behave like Round-Robin. Am I missing
+> something here?
+> 
 
---=-i4LoPGFFNSGlA47N6EHp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It is the case with equal weights, but it is really a common one.
 
-On Tue, 2008-11-25 at 14:04 +0000, Ian Campbell wrote:
-> On Tue, 2008-11-25 at 08:57 -0500, Trond Myklebust wrote:
-> > On Tue, 2008-11-25 at 13:38 +0000, Ian Campbell wrote:
-> > > > That would indicate that the server is failing to close the TCP
-> > > > connection when the client closes on its end.
-> > > >=20
-> > > > Could you remind me what server you are using?
-> > >=20
-> > > 2.6.25-2-486 which is a Debian package from backports.org, changelog
-> > > indicates that it contains 2.6.25.7.
-> >=20
-> > Hmm... It should normally close sockets when the state changes. There
-> > might be a race, though...
-> >=20
-> > > > Also, does 'netstat -t'
-> > > > show connections that are stuck in the CLOSE_WAIT state when you se=
-e the
-> > > > hang?
-> > >=20
-> > > I'd have to wait for it to reproduce again to be 100% sure but accord=
-ing
-> > > to http://lkml.indiana.edu/hypermail/linux/kernel/0808.3/0120.html
-> > > I was seeing connections in FIN_WAIT2 but not CLOSE_WAIT.
-> >=20
-> > That would be on the client side. I'm talking about the server.
->=20
-> Ah, OK. I'll abort my current test of 2.6.26+revert and wait for a repro
-> so I can netstat the server, give me a couple of days...
 
-So on the server I see the following. 192.168.1.4 is the problematic
-client and 192.168.1.6 is the server.
+> I can see that the only direct advantage of using WF2Q+ scheduling is
+> reduced jitter or latency in certain cases. But under heavy loads,
+> that might result in request latencies seen by RT threads to be
+> reduced from a few seconds to a few msec.
+> 
+> > has exactly the same (un)fairness problems of CFQ.  As far as bandwidth
+> > differentiation is concerned, it can be obtained with CFQ by just
+> > increasing the time slice (e.g., double weight => double slice).  This
+> > has no impact on long term guarantees and certainly does not decrease
+> > the throughput.
+> >
+> > With regard to short term guarantees (request completion time), one of
+> > the properties of the reference ideal system of Wf2Q+ is that, assuming
+> > for simplicity that all the queues have the same weight, as the ideal
+> > system serves each queue at the same speed, shorter budgets are completed
+> > in a shorter time intervals than longer budgets.  B-WF2Q+ guarantees
+> > O(1) deviation from this ideal service.  Hence, the tight delay/jitter
+> > measured in our experiments with BFQ is a consequence of the simple (and
+> > probably still improvable) budget assignment mechanism of (the overall)
+> > BFQ.  In contrast, if all the budgets are equal, as it happens if we use
+> > time slices, the resulting scheduler is exactly a Round-Robin, again
+> > as in CFQ (see [1]).
+> 
+> Can the budget assignment mechanism of BFQ be converted to time slice
+> assignment mechanism? What I am trying to say here is that we can have
+> variable time slices, just like we have variable budgets.
+> 
 
-Maybe not interesting but 192.168.1.5 also uses NFS for my $HOME and
-runs 2.6.26 with no lockups.
+Yes, it could be converted, and it would do in the time domain the
+same differentiation it does now in the service domain.  What we would
+lose in the process is the fairness in the service domain.  The service
+properties/guarantees of the resulting scheduler would _not_ be the same
+as the BFQ ones.  Both long term and short term guarantees would be
+affected by the unfairness given by the different service rate
+experienced by the scheduled entities.
 
-# netstat -t -n
-Active Internet connections (w/o servers)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State  =
-   =20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:723         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:920         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:890         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:698         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:705         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:943         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:915         CLOSE_W=
-AIT=20
-tcp        0      0 192.168.1.6:2049        192.168.1.5:783         ESTABLI=
-SHED
-tcp        1      0 192.168.1.6:2049        192.168.1.4:998         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:758         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:955         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:845         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:827         CLOSE_W=
-AIT=20
-tcp        0      0 192.168.1.6:58464       128.31.0.36:80          ESTABLI=
-SHED
-tcp        1      0 192.168.1.6:2049        192.168.1.4:754         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:837         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:918         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:865         CLOSE_W=
-AIT=20
-tcp        0      0 192.168.1.6:48343       192.168.1.5:832         ESTABLI=
-SHED
-tcp        1      0 192.168.1.6:2049        192.168.1.4:840         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:883         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:785         CLOSE_W=
-AIT=20
-tcp        1      0 192.168.1.6:2049        192.168.1.4:720         CLOSE_W=
-AIT=20
-tcp6       0      0 ::ffff:192.168.1.6:22   ::ffff:192.168.1.:38206 ESTABLI=
-SHED
-tcp6       0      0 ::ffff:192.168.1.6:143  ::ffff:192.168.1.:41308 ESTABLI=
-SHED
-tcp6       0      0 ::ffff:192.168.1.6:143  ::ffff:192.168.1.:55784 ESTABLI=
-SHED
-tcp6       0      0 ::ffff:192.168.1.6:22   ::ffff:192.168.1.:39046 ESTABLI=
-SHED
 
-and on the client
-
-# netstat -t -n
-Active Internet connections (w/o servers)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State  =
-   =20
-tcp        0      0 192.168.1.4:943         192.168.1.6:2049        FIN_WAI=
-T2 =20
-tcp        0      0 192.168.1.4:33959       192.168.1.4:6543        ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:6543        192.168.1.4:54157       ESTABLI=
-SHED
-tcp        0      0 127.0.0.1:13666         127.0.0.1:33364         ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:22          192.168.1.5:54696       ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:22          192.168.1.5:47599       ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:54156       192.168.1.4:6543        ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:6543        192.168.1.4:33957       ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:33957       192.168.1.4:6543        ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:54157       192.168.1.4:6543        ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:6543        192.168.1.4:54156       ESTABLI=
-SHED
-tcp        0      0 192.168.1.4:6543        192.168.1.4:33959       ESTABLI=
-SHED
-tcp        0      0 127.0.0.1:47756         127.0.0.1:6545          ESTABLI=
-SHED
-tcp        0      0 127.0.0.1:33364         127.0.0.1:13666         ESTABLI=
-SHED
-tcp        0      0 127.0.0.1:6545          127.0.0.1:47756         ESTABLI=
-SHED
-
->=20
-> Ian.
---=20
-Ian Campbell
-
-Just once, I wish we would encounter an alien menace that wasn't
-immune to bullets.
-		-- The Brigadier, "Dr. Who"
-
---=-i4LoPGFFNSGlA47N6EHp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkktyb8ACgkQM0+0qS9rzVlbbgCeLTSjvdPzUFGxg7awLCO2q38P
-ZFQAoOUacHJqEJo3bxxGXmZLHSXBa7DJ
-=hzyP
------END PGP SIGNATURE-----
-
---=-i4LoPGFFNSGlA47N6EHp--
-
+> >
+> > Finally, with regard to completion time delay differentiation through
+> > weight differentiation, this is probably the only case in which B-WF2Q+
+> > would perform better than CFQ, because, in case of CFQ, reducing the
+> > time slices may reduce the throughput, whereas increasing the time slice
+> > would increase the worst-case delay/jitter.
+> >
+> > In the end, BFQ succeeds in guaranteeing fairness (or in general the
+> > desired bandwidth distribution) because it works in the service domain
+> > (and this is probably the only way to achieve this goal), not because
+> > it uses WF2Q+ instead of Round-Robin.  Similarly, it provides tight
+> > delay/jitter only because B-WF2Q+ is used in combination with a simple
+> > budget assignment (differentiation) mechanism (again in the service
+> > domain).
+> >
+> > [1] http://feanor.sssup.it/~fabio/linux/bfq/results.php
+> >
+> > --
+> > -----------------------------------------------------------
+> > | Paolo Valente              |                            |
+> > | Algogroup                  |                            |
+> > | Dip. Ing. Informazione     | tel:   +39 059 2056318     |
+> > | Via Vignolese 905/b        | fax:   +39 059 2056199     |
+> > | 41100 Modena               |                            |
+> > |     home:  http://algo.ing.unimo.it/people/paolo/       |
+> > -----------------------------------------------------------
+> >
+> >
