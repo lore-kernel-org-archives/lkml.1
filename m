@@ -1,130 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYKZDi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbYKZDlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYKZDi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Nov 2008 22:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYKZDip
+	id S1753935AbYKZDlY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Nov 2008 22:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYKZDlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Nov 2008 22:38:45 -0500
-Received: from sous-sol.org ([216.99.217.87]:39465 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753043AbYKZDin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Nov 2008 22:38:43 -0500
-Date: Tue, 25 Nov 2008 19:38:39 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: jbarnes@virtuousgeek.org
-Cc: greg@kroah.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, allen.m.kay@intel.com, jun.nakajima@intel.com
-Subject: [PATCH 2/2] PCI: pci-stub module to reserve pci device
-Message-ID: <20081126033839.GC19881@sequoia.sous-sol.org>
-References: <20081126033610.GB19881@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081126033610.GB19881@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Nov 2008 22:41:16 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60564 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbYKZDlP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Nov 2008 22:41:15 -0500
+Date: Wed, 26 Nov 2008 11:14:47 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       nishimura@mxp.nes.nec.co.jp
+Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v4)
+Message-Id: <20081126111447.106ec275.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <492C1345.9090201@linux.vnet.ibm.com>
+References: <20081116081034.25166.7586.sendpatchset@balbir-laptop>
+	<20081116081055.25166.85066.sendpatchset@balbir-laptop>
+	<20081125205832.38f8c365.nishimura@mxp.nes.nec.co.jp>
+	<492C1345.9090201@linux.vnet.ibm.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When doing device assignment with KVM there's currently nothing to
-protect the device from having a driver in the host as well as the guest.
-This trivial module just binds the pci device on the host to a stub
-driver so that a real host driver can't bind to the device.  It has no
-pci id table, it supports only dynamic ids.
+On Tue, 25 Nov 2008 20:31:25 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Daisuke Nishimura wrote:
+> > Hi.
+> > 
+> > Unfortunately, trying to hold cgroup_mutex at reclaim causes dead lock.
+> > 
+> > For example, when attaching a task to some cpuset directory(memory_migrate=on),
+> > 
+> >     cgroup_tasks_write (hold cgroup_mutex)
+> >         attach_task_by_pid
+> >             cgroup_attach_task
+> >                 cpuset_attach
+> >                     cpuset_migrate_mm
+> >                         :
+> >                         unmap_and_move
+> >                             mem_cgroup_prepare_migration
+> >                                 mem_cgroup_try_charge
+> >                                     mem_cgroup_hierarchical_reclaim
+> > 
+> 
+> Did lockdep complain about it?
+> 
+I haven't understood lockdep so well, but I got logs like this:
 
- # echo "8086 10f5" > /sys/bus/pci/drivers/pci-stub/new_id
- # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/e1000e/unbind
- # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/pci-stub/bind
- # ls -l /sys/bus/pci/devices/0000:00:19.0/driver
- lrwxrwxrwx 1 root root 0 2008-11-25 19:10 /sys/bus/pci/devices/0000:00:19.0/driver -> ../../../bus/pci/drivers/pci-stub
+===
+INFO: task move.sh:17710 blocked for more than 480 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+move.sh       D ffff88010e1c76c0     0 17710  17597
+ ffff8800bd9edf00 0000000000000046 0000000000000000 0000000000000000
+ ffff8803afbc0000 ffff8800bd9ee270 0000000e00000000 000000010a54459c
+ ffffffffffffffff ffffffffffffffff ffffffffffffffff 7fffffffffffffff
+Call Trace:
+ [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
+ [<ffffffff804cb357>] mutex_lock_nested+0x180/0x2a2
+ [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
+ [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
+ [<ffffffff802aed9c>] __mem_cgroup_try_charge+0x27a/0x2de
+ [<ffffffff802afdfd>] mem_cgroup_prepare_migration+0x6c/0xa5
+ [<ffffffff802ad97f>] migrate_pages+0x10c/0x4a0
+ [<ffffffff802ad9c8>] migrate_pages+0x155/0x4a0
+ [<ffffffff802a14cb>] new_node_page+0x0/0x2f
+ [<ffffffff802a1adb>] check_range+0x300/0x325
+ [<ffffffff802a2374>] do_migrate_pages+0x1a5/0x1f1
+ [<ffffffff8026d272>] cpuset_migrate_mm+0x30/0x93
+ [<ffffffff8026d29c>] cpuset_migrate_mm+0x5a/0x93
+ [<ffffffff8026df41>] cpuset_attach+0x93/0xa6
+ [<ffffffff8026ae1b>] cgroup_attach_task+0x395/0x3e1
+ [<ffffffff8026af61>] cgroup_tasks_write+0xfa/0x11d
+ [<ffffffff8026aea0>] cgroup_tasks_write+0x39/0x11d
+ [<ffffffff8026b5aa>] cgroup_file_write+0xef/0x216
+ [<ffffffff802b2968>] vfs_write+0xad/0x136
+ [<ffffffff802b2dfe>] sys_write+0x45/0x6e
+ [<ffffffff8020bdab>] system_call_fastpath+0x16/0x1b
+INFO: lockdep is turned off.
+===
 
-Cc: "Kay, Allen M" <allen.m.kay@intel.com>
-Cc: "Nakajima, Jun" <jun.nakajima@intel.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- drivers/pci/Kconfig    |    9 +++++++++
- drivers/pci/Makefile   |    2 ++
- drivers/pci/pci-stub.c |   38 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 49 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pci/pci-stub.c
+And other processes trying to hold cgroup_mutex are also stuck.
 
-diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-index e1ca425..f6183df 100644
---- a/drivers/pci/Kconfig
-+++ b/drivers/pci/Kconfig
-@@ -42,6 +42,15 @@ config PCI_DEBUG
- 
- 	  When in doubt, say N.
- 
-+config PCI_STUB
-+	tristate "PCI Stub driver"
-+	depends on PCI
-+	help
-+	  Say Y or M here if you want be able to reserve a PCI device
-+	  when it is going to be assigned to a guest.
-+
-+	  When in doubt, say N.
-+
- config HT_IRQ
- 	bool "Interrupts on hypertransport devices"
- 	default y
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index af3bfe2..3d07ce2 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -53,6 +53,8 @@ obj-$(CONFIG_HOTPLUG) += setup-bus.o
- 
- obj-$(CONFIG_PCI_SYSCALL) += syscall.o
- 
-+obj-$(CONFIG_PCI_STUB) += pci-stub.o
-+
- ifeq ($(CONFIG_PCI_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
- endif
-diff --git a/drivers/pci/pci-stub.c b/drivers/pci/pci-stub.c
-new file mode 100644
-index 0000000..8b19df6
---- /dev/null
-+++ b/drivers/pci/pci-stub.c
-@@ -0,0 +1,38 @@
-+/* pci-stub - simple stub driver to reserve a pci device
-+ *
-+ * Copyright (C) 2008 Red Hat, Inc.
-+ * Author:
-+ * 	Chris Wright
-+ *
-+ * This work is licensed under the terms of the GNU GPL, version 2.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+
-+static int pci_stub_probe(struct pci_dev *dev, const struct pci_device_id *id)
-+{
-+	return 0;
-+}
-+
-+static struct pci_driver stub_driver = {
-+	.name		= "pci-stub",
-+	.id_table	= NULL,	/* only dynamic id's */
-+	.probe		= pci_stub_probe,
-+};
-+
-+static int __init pci_stub_init(void)
-+{
-+	return pci_register_driver(&stub_driver);
-+}
-+
-+static void __exit pci_stub_exit(void)
-+{
-+	pci_unregister_driver(&stub_driver);
-+}
-+
-+module_init(pci_stub_init);
-+module_exit(pci_stub_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Chris Wright <chrisw@sous-sol.org>");
--- 
-1.6.0.3
+> 1. We could probably move away from cgroup_mutex to a memory controller specific
+> mutex.
+> 2. We could give up cgroup_mutex before migrate_mm, since it seems like we'll
+> hold the cgroup lock for long and holding it during reclaim will definitely be
+> visible to users trying to create/delete nodes.
+> 
+> I prefer to do (2), I'll look at the code more closely
+> 
+I basically agree, but I think we should also consider mpol_rebind_mm.
 
+mpol_rebind_mm, which can be called from cpuset_attach, does down_write(mm->mmap_sem),
+which means down_write(mm->mmap_sem) can be called under cgroup_mutex.
+OTOH, page fault path does down_read(mm->mmap_sem) and can call mem_cgroup_try_charge,
+which means mutex_lock(cgroup_mutex) can be called under down_read(mm->mmap_sem).
+
+> > I think similar problem can also happen when removing memcg's directory.
+> > 
+> 
+> Why removing a directory? memcg (now) marks the directory as obsolete and we
+> check for obsolete directories and get/put references.
+> 
+I don't think so.
+    
+    mem_cgroup_pre_destroy (make mem->obsolete = 1)
+        mem_cgroup_force_empty(mem, **FALSE**)
+            mem_cgroup_force_empty_list
+                mem_cgroup_move_parent
+                    __mem_cgroup_try_charge
+
+hmm, but looking more closely, cgroup_call_pre_destroy is called
+outside of cgroup_mutex, so this problem doesn't happen at rmdir probably.
+
+
+Thanks,
+Daisuke Nishimura.
