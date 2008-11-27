@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYK0AmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbYK0AqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbYK0AmZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYK0AmP
+	id S1754191AbYK0AqV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYK0AqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:42:15 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53421 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752302AbYK0AmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:42:14 -0500
-Date: Thu, 27 Nov 2008 01:42:13 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Pavel Machek <pavel@suse.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
-       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>,
-       Trivial patch monkey <trivial@kernel.org>, linux-doc@vger.kernel.org
-Subject: Re: Document hadling of bad memory
-In-Reply-To: <20081126161521.GC1983@elf.ucw.cz>
-Message-ID: <alpine.LNX.1.10.0811270141370.19853@jikos.suse.cz>
-References: <20081126161521.GC1983@elf.ucw.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Nov 2008 19:46:12 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:58436 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbYK0AqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:46:12 -0500
+Subject: Re: [PATCH] Enforce valid shift values in clocksource_register()
+From: John Stultz <johnstul@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0811270105270.3325@localhost.localdomain>
+References: <1227743196.18967.36.camel@jstultz-laptop>
+	 <alpine.LFD.2.00.0811270105270.3325@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 26 Nov 2008 16:39:18 -0800
+Message-Id: <1227746358.18967.41.camel@jstultz-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-11-27 at 01:08 +0100, Thomas Gleixner wrote:
+> On Wed, 26 Nov 2008, John Stultz wrote:
+> 
+> > Thomas noted that some of the timekeeping core assumes 
+> > clocksource shift values will be less then 32. However, 
+> > we do nothing to enforce such limits.
+> > 
+> > This patch prints a warning if a clocksource with an invalid
+> > shift value is attempted to be registered, and will refuse to
+> > register the clocksource
+> > 
+> > I could not find any clocksources that use 32 or higher for a 
+> > shift value, so this should be only a preventive warning for
+> > future clocksource writers.
+> > 
+> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> > 
+> > diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+> > index 9ed2eec..4a3bb13 100644
+> > --- a/kernel/time/clocksource.c
+> > +++ b/kernel/time/clocksource.c
+> > @@ -318,7 +318,7 @@ static int clocksource_enqueue(struct clocksource *c)
+> >   * clocksource_register - Used to install new clocksources
+> >   * @t:		clocksource to be registered
+> >   *
+> > - * Returns -EBUSY if registration fails, zero otherwise.
+> > + * Returns -EBUSY or -EINVAL if registration fails, zero otherwise.
+> >   */
+> >  int clocksource_register(struct clocksource *c)
+> >  {
+> > @@ -327,7 +327,14 @@ int clocksource_register(struct clocksource *c)
+> >  
+> >  	/* save mult_orig on registration */
+> >  	c->mult_orig = c->mult;
+> > -
+> > +	if (c->shift >= 32) {
+> > +		printk(KERN_WARNING "===============================\n");
+> > +		printk(KERN_WARNING "WARNING: Cannot register %s clocksource\n",
+> > +					c->name);
+> > +		printk(KERN_WARNING "The shift value must be less then 32\n");
+> > +		printk(KERN_WARNING "===============================\n");
+> > +		return -EINVAL;
+> 
+> Just setting the shift value to 31 along with a WARN_ON() should be
+> enough. We don't need to kill the clocksource in that case, as this
+> can be nasty when it happens in the early boot code where we dont have
+> any output.
 
-[ linux-doc@vger.kernel.org added, these should be the proper guys to 
-  merge this ]
+Well, we can't tweak the shift value without changing the mult. And that
+seemed a bit overreaching (but might be safe). I'll give it a shot.
 
-On Wed, 26 Nov 2008, Pavel Machek wrote:
+Also early boot we should have the jiffies clocksource around, so unless
+I'm forgetting something, I don't think it has early boot concerns.
 
-> 
-> Document how to deal with bad memory reported with memtest.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> diff --git a/Documentation/bad_memory.txt b/Documentation/bad_memory.txt
-> new file mode 100644
-> index 0000000..df84162
-> --- /dev/null
-> +++ b/Documentation/bad_memory.txt
-> @@ -0,0 +1,45 @@
-> +March 2008
-> +Jan-Simon Moeller, dl9pf@gmx.de
-> +
-> +
-> +How to deal with bad memory e.g. reported by memtest86+ ?
-> +#########################################################
-> +
-> +There are three possibilities I know of:
-> +
-> +1) Reinsert/swap the memory modules
-> +
-> +2) Buy new modules (best!) or try to exchange the memory
-> +   if you have spare-parts
-> +
-> +3) Use BadRAM or memmap
-> +
-> +This Howto is about number 3) .
-> +
-> +
-> +BadRAM
-> +######
-> +BadRAM is the actively developed and available as kernel-patch
-> +here:  http://rick.vanrein.org/linux/badram/
-> +
-> +For more details see the BadRAM documentation.
-> +
-> +memmap
-> +######
-> +
-> +memmap is already in the kernel and usable as kernel-parameter at
-> +boot-time.  Its syntax is slightly strange and you may need to
-> +calculate the values by yourself!
-> +
-> +Syntax to exclude a memory area (see kernel-parameters.txt for details):
-> +memmap=<size>$<address>
-> +
-> +Example: memtest86+ reported here errors at address 0x18691458, 0x18698424 and
-> +         some others. All had 0x1869xxxx in common, so I chose a pattern of
-> +         0x18690000,0xffff0000.
-> +
-> +With the numbers of the example above:
-> +memmap=64K$0x18690000
-> + or
-> +memmap=0x10000$0x18690000
-> +
-> 
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> 
+thanks
+-john
 
--- 
-Jiri Kosina
-SUSE Labs
