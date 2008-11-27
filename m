@@ -1,100 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbYK0S1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYK0S3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbYK0S1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 13:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYK0S1e
+	id S1754119AbYK0S3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 13:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYK0S3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 13:27:34 -0500
-Received: from home.keithp.com ([63.227.221.253]:60889 "EHLO keithp.com"
+	Thu, 27 Nov 2008 13:29:06 -0500
+Received: from www.tglx.de ([62.245.132.106]:39093 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbYK0S1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 13:27:34 -0500
-Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
-From: Keith Packard <keithp@keithp.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: keithp@keithp.com, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <200811271531.18498.arnd@arndb.de>
-References: <1227774576-5503-1-git-send-email-keithp@keithp.com>
-	 <200811271531.18498.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NOhFEtT3jwsoNNGNhPz7"
-Date: Thu, 27 Nov 2008 10:27:04 -0800
-Message-Id: <1227810424.4277.55.camel@aiko.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1752538AbYK0S3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 13:29:05 -0500
+Date: Thu, 27 Nov 2008 19:28:31 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: eranian@gmail.com
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
+Subject: Re: [patch 02/24] perfmon: base code
+In-Reply-To: <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0811271858300.3325@localhost.localdomain>
+References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>  <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain> <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stephane,
 
---=-NOhFEtT3jwsoNNGNhPz7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Thu, 27 Nov 2008, stephane eranian wrote:
+> > What's the purpose of this being a structure if it's just a single
+> > instance ?
+> >
+> There is a single instance.
+> I was just trying to regroup related fields together instead of having them as
+> separate variables. I can make the change.
 
-On Thu, 2008-11-27 at 15:31 +0100, Arnd Bergmann wrote:
-> On Thursday 27 November 2008, Keith Packard wrote:
-> > +static long serial_compat_ioctl(struct tty_struct *tty, struct file *f=
-ile,
-> > +                              unsigned int cmd, unsigned long arg)
-> > +{
-> > +       struct usb_serial_port *port =3D tty->driver_data;
-> > +       long retval =3D -ENODEV;
-> > +
-> > +       dbg("%s - port %d, cmd 0x%.4x", __func__, port->number, cmd);
-> > +
-> > +       WARN_ON(!port->port.count);
-> > +
-> > +       /* pass on to the driver specific version of this function
-> > +          if it is available */
-> > +       if (port->serial->type->compat_ioctl) {
-> > +               lock_kernel();
-> > +               retval =3D port->serial->type->compat_ioctl(tty, file, =
-cmd, arg);
-> > +               unlock_kernel();=20
->=20
-> By convention, compat_ioctl functions should be called without the big ke=
-rnel
-> lock held.
+Well, if you do a structure then put the lock in it as well, so its on
+one cacheline.
+ 
+> >> + *   -EBUSY: if conflicting session exist
+> >
+> >  Where ?
+> 
+> Not in the patchset, conflict can arise when you add system-wide sessions.
 
-Thanks - I didn't realize these were supposed to be different.
+Well, conflicts arise when oprofile is running as well, isn't it ?
+ 
+> >  How please ? pfm_res.sys_cpumask is local to this file and you want
+> >  to check it under the lock and _before_ you increment
+> >  thread_sessions blindly.
+> >
+> Stale comment.
 
-> You should probably define compat_ioctl to return an int as well
-> so that it becomes possible to use the same function for both eventually.
+Well, where is it checked ? Where is checked whether Oprofile runs or not ?
 
-The existing tty layer compat_ioctl is defined to return long; is that
-also wrong?
+> > All what that code should do (in fact it does not) is preventing the
+> > mix of thread and system wide sessions.
+> >
+> True. That is a current limitation.
+> 
+> > It does neither need a cpumask nor tons of useless loops and debug
+> > outputs with zero value.
+> >
+> Well, the the cpumask is indeed needed but you don't see the reason
+> why in the patchset!
 
-> Then again, we can also drop the file argument, which is entirely unused
-> in all the usb-serial ioctls.
+If its not needed now, then we can either remove it or do at least
+something useful with it.
+ 
+> Perfmon in system-wide does not operate like Oprofile. In system-wide
+> a perfmon session (context) monitors only ONE CPU at a time. Each
 
-I'm not sure it's worth the effort; if some future usb serial ioctl
-needs the argument, we'd end up changing every existing driver back. I
-assume there are some serial devices for which the file is relevant
-during ioctl.
+Then it is a percpu session and not system wide. Please use less
+confusing names.
 
-> Maybe the best way for now is to make the new compat_ioctl be
-> int compat_ioctl(struct tty_struct, unsigned int cmd, unsigned long arg);
-> and leave the old ioctl as it is. When we get around to pushing the
-> BKL down into ->ioctl, we can change the prototype at the same time
-> to warn potential out-of-tree drivers.
+> session is independent of each other. You can therefore measure different
+> things on different CPUs. Reservation is thus done independently for each
+> CPU, therefore we need a cpu bitmask  to track allocation.
 
-Let's figure out what the right compat_ioctl interface is first and
-worry about fixing the existing ioctl interface later.
+Ok. Question: if you do a one CPU wide session with perfom, can you
+still do thread monitoring on the same CPU ?
 
---=20
-keith.packard@intel.com
+If no, what prevents that a monitored thread is migrated to such a CPU ?
+ 
+> The Oprofile reservation you see is built on top of the cpumask reservation.
+> It tries to allocate in one call and atomically ALL the CPUs as this is the way
+> Oprofile operates. Thus it fails if one perfmon system-wide session or one
+> perfmon per-thread exists.
 
---=-NOhFEtT3jwsoNNGNhPz7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+This only prevents oprofile from starting, but it does neither prevent
+thread sessions nor does it prevent a perfmon per cpu session on a cpu
+which was onlined after oprofile started, simply because it's bit is
+missing in the CPU mask. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Oprofile if active starts profiling on cpu hotplug, but if you look at
+the cpumask with a perfmon per cpu request it will succeed.
 
-iD8DBQBJLuZ4Qp8BWwlsTdMRAj1sAKC5FnbzTLo+W4yFtICSnjjgz789fwCePKEm
-vLI5UDC1ADcCbHNHED1T6VU=
-=VA1w
------END PGP SIGNATURE-----
+If you do resource management and that is what the file claims to do,
+then you need to do it in a consistent way:
 
---=-NOhFEtT3jwsoNNGNhPz7--
+Oprofile can only run, when no thread and per cpu perfmon jobs are active.
 
+Perfmon per cpu and thread jobs can only run when oprofile is not active.
+
+Not sure about the thread vs. per cpu perfmon situation. See question above.
+
+Thanks,
+
+	tglx
