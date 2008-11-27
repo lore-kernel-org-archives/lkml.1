@@ -1,84 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYK0MRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYK0MUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbYK0MRd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:17:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYK0MRY
+	id S1754841AbYK0MUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:20:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYK0MTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:17:24 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36064 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYK0MRX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:17:23 -0500
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-From: Peter Zijlstra <peterz@infradead.org>
-To: eranian@gmail.com
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       aris@redhat.com, Cyrill Gorcunov <gorcunov@gmail.com>,
-       marco@linux-mips.com
-In-Reply-To: <7c86c4470811270404q2ce1b503lf78c24d5c2223c44@mail.gmail.com>
-References: <492d0be1.09cc660a.0b75.44b7@mx.google.com>
-	 <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain>
-	 <20081126140054.GX6703@one.firstfloor.org>
-	 <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain>
-	 <20081127100602.GF6703@one.firstfloor.org>
-	 <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com>
-	 <20081127113115.GH6703@one.firstfloor.org>
-	 <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com>
-	 <1227786746.4454.1468.camel@twins>
-	 <7c86c4470811270404q2ce1b503lf78c24d5c2223c44@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 27 Nov 2008 13:16:38 +0100
-Message-Id: <1227788198.4454.1498.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 27 Nov 2008 07:19:54 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:37267 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750955AbYK0MTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 07:19:53 -0500
+Date: Thu, 27 Nov 2008 13:19:49 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/mtd/nand/pasemi_nand.c: Add missing pci_dev_put
+Message-ID: <Pine.LNX.4.64.0811271319070.15160@pc-004.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-27 at 13:04 +0100, stephane eranian wrote:
-> Peter,
-> 
-> On Thu, Nov 27, 2008 at 12:52 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Thu, 2008-11-27 at 12:35 +0100, stephane eranian wrote:
-> >> On Thu, Nov 27, 2008 at 12:31 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> >> >> The only reason why I have to deal with NMI is not so much to allow
-> >> >> for profiling irq-off regions but because I have to share the PMU with
-> >> >> the NMI watchdog. Otherwise I'd have to fail  or disable the NMI watchdog
-> >> >> on the fly.
-> >> >
-> >> > The NMI watchdog is now off by default so failing with it enabled
-> >> > is fine.
-> >>
-> >> Yes, but most likely it is on in distro kernels.
-> >
-> > So? You can disable it on the fly when there is a perfmon user.
-> >
-> Yes, you can. There is clearly an interface to do this. I think this is the
-> best solution. I know it can work because it experimented with this approach
-> no later than last month. But I ran into a bug which I reported on LKML. I did
-> not provide a patch because I  did not fully understand the connection to
-> suspend/resume.
-> 
-> The bug has to do with some obscure suspend/resume sequence in:
-> 
-> void setup_apic_nmi_watchdog(void *unused)
-> {
->         if (__get_cpu_var(wd_enabled))
->                 return;
-> 
->         /* cheap hack to support suspend/resume */
->         /* if cpu0 is not active neither should the other cpus */
->         if (smp_processor_id() != 0 && atomic_read(&nmi_active) <= 0)
->                 return;
-> 
-> Basically, when you re-enable the NMI watchdog, it is not always re-enabled
-> correctly on all CPUs, it depends on the order if which they process the IPI.
+From: Julia Lawall <julia@diku.dk>
 
-Hmm, either we loose that bit and fix the suspend/resume bit properly,
-or we can send the IPIs one by one in the correct order ;-)
+pci_get_device increments a reference count that should be decremented
+using pci_dev_put.  I have thus added an extra label in the error handling
+code to do this.  I don't know, however, whether there should be a
+pci_dev_put before the return 0 as well.
 
-Dunno, CC'ed all the folks who touched it last.
+The semantic match that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r exists@
+local idexpression x;
+statement S,S1;
+position p1,p2,p3;
+expression E,E1;
+type T,T1;
+expression *ptr != NULL;
+@@
+
+(
+ if ((x@p1 = pci_get_device(...)) == NULL) S
+|
+ x@p1 = pci_get_device(...);
+)
+ ... when != pci_dev_put(...,(T)x,...)
+     when != if (...) { <+... pci_dev_put(...,(T)x,...) ...+> }
+     when != true x == NULL || ...
+     when != x = E
+     when != E = (T)x
+     when any
+(
+ if (x == NULL || ...) S1
+|
+ if@p2 (...) {
+  ... when != pci_dev_put(...,(T1)x,...)
+      when != if (...) { <+... pci_dev_put(...,(T1)x,...) ...+> }
+      when != x = E1
+      when != E1 = (T1)x
+(
+  return \(0\|<+...x...+>\|ptr\);
+|
+  return@p3 ...;
+)
+}
+)
+
+@ script:python @
+p1 << r.p1;
+p3 << r.p3;
+@@
+
+print "* file: %s pci_get_device: %s return: %s" % (p1[0].file,p1[0].line,p3[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/mtd/nand/pasemi_nand.c      |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
+index 75c8990..ceae196 100644
+--- a/drivers/mtd/nand/pasemi_nand.c
++++ b/drivers/mtd/nand/pasemi_nand.c
+@@ -144,7 +144,7 @@ static int __devinit pasemi_nand_probe(struct of_device *ofdev,
+ 
+ 	if (!request_region(lpcctl, 4, driver_name)) {
+ 		err = -EBUSY;
+-		goto out_ior;
++		goto out_pdev;
+ 	}
+ 
+ 	chip->cmd_ctrl = pasemi_hwcontrol;
+@@ -176,6 +176,8 @@ static int __devinit pasemi_nand_probe(struct of_device *ofdev,
+ 
+  out_lpc:
+ 	release_region(lpcctl, 4);
++ out_pdev:
++	pci_dev_put(pdev);
+  out_ior:
+ 	iounmap(chip->IO_ADDR_R);
+  out_mtd:
