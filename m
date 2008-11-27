@@ -1,106 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYK0MUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYK0MVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYK0MUH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYK0MTy
+	id S1754833AbYK0MVc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYK0MVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:19:54 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:37267 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYK0MTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:19:53 -0500
-Date: Thu, 27 Nov 2008 13:19:49 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/mtd/nand/pasemi_nand.c: Add missing pci_dev_put
-Message-ID: <Pine.LNX.4.64.0811271319070.15160@pc-004.diku.dk>
+	Thu, 27 Nov 2008 07:21:23 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:63681 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbYK0MVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 07:21:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=sj5oDxmAFBl03fzfHOSJ45+cl49LDvSElaAaO8Q1dMP+I+eef8j1FXrEAtZpFD2pYL
+         xBkuy47UHFWZSEJbvQJ514Mv/uzKOxFJXSRasQuqBj7cmqrjJHXW8FZ8iz2GhA0ZY07R
+         P4lgn4Z6nXH6hFAyfi9wOBFHtqGzBFy6iCpGc=
+Message-ID: <492E90BC.1090208@gmail.com>
+Date: Thu, 27 Nov 2008 14:21:16 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Nick Piggin <npiggin@suse.de>
+CC: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de>
+In-Reply-To: <20081127120330.GM28285@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On 2008-11-27 14:03, Nick Piggin wrote:
+> On Thu, Nov 27, 2008 at 01:39:52PM +0200, Török Edwin wrote:
+>   
+>> On 2008-11-27 11:28, Mike Waychison wrote:
+>>     
+>>> Correct.  I don't recall the numbers from the pathelogical cases we
+>>> were seeing, but iirc, it was on the order of 10s of seconds, likely
+>>> exascerbated by slower than usual disks.  I've been digging through my
+>>> inbox to find numbers without much success -- we've been using a
+>>> variant of this patch since 2.6.11.
+>>>
+>>> Török however identified mmap taking on the order of several
+>>> milliseconds due to this exact problem:
+>>>
+>>> http://lkml.org/lkml/2008/9/12/185
+>>>       
+>> Hi,
+>>
+>> Thanks for the patch. I just tested it on top of 2.6.28-rc6-tip, see
+>> /proc/lock_stat output at the end.
+>>
+>> Running my testcase shows no significant performance difference. What am
+>> I doing wrong?
+>>     
+>  
+> Software may just be doing a lot of mmap/munmap activity. threads +
+> mmap is never going to be pretty because it is always going to involve
+> broadcasting tlb flushes to other cores... Software writers shouldn't
+> be scared of using processes (possibly with some shared memory).
+>   
 
-pci_get_device increments a reference count that should be decremented
-using pci_dev_put.  I have thus added an extra label in the error handling
-code to do this.  I don't know, however, whether there should be a
-pci_dev_put before the return 0 as well.
+It would be interesting to compare the performance of a threaded clamd,
+and of a clamd that uses multiple processes.
+Distributing tasks will be a bit more tricky, since it would need to use
+IPC, instead of mutexes and condition variables.
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+> Actually, a lot of things get faster (like malloc, or file descriptor
+> operations) because locks aren't needed.
+>
+> Despite common perception, processes are actually much *faster* than
+> threads when doing common operations like these. They are slightly slower
+> sometimes with things like creation and exit, or context switching, but
+> if you're doing huge numbers of those operations, then it is unlikely
+> to be a performance critical app... :)
+>   
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S,S1;
-position p1,p2,p3;
-expression E,E1;
-type T,T1;
-expression *ptr != NULL;
-@@
+How about distributing tasks to a set of worked threads, is the overhead
+of using IPC instead of
+mutexes/cond variables acceptable?
 
-(
- if ((x@p1 = pci_get_device(...)) == NULL) S
-|
- x@p1 = pci_get_device(...);
-)
- ... when != pci_dev_put(...,(T)x,...)
-     when != if (...) { <+... pci_dev_put(...,(T)x,...) ...+> }
-     when != true x == NULL || ...
-     when != x = E
-     when != E = (T)x
-     when any
-(
- if (x == NULL || ...) S1
-|
- if@p2 (...) {
-  ... when != pci_dev_put(...,(T1)x,...)
-      when != if (...) { <+... pci_dev_put(...,(T1)x,...) ...+> }
-      when != x = E1
-      when != E1 = (T1)x
-(
-  return \(0\|<+...x...+>\|ptr\);
-|
-  return@p3 ...;
-)
-}
-)
+> (end rant; sorry, that may not have been helpful to your immediate problem,
+> but we need to be realistic in what complexity we are ging to add where in
+> the kernel in order to speed things up. And we need to steer userspace
+> away from problems that are fundamentally hard and not going to get easier
+> with trends -- like virtual address activity with multiple threads)
+>   
 
-@ script:python @
-p1 << r.p1;
-p3 << r.p3;
-@@
+I understood that mmap() is not scalable, however look  at
+http://lkml.org/lkml/2008/9/12/185, even fopen/fdopen does
+an (anonymous) mmap internally.
+That does not affect performance that much, since the overhead of a
+file-backed mmap + pagefaults is higher.
+Rewriting libclamav to not use mmap() would take a significant amount of
+time, however  I will try to avoid using mmap()
+in new code (and prefer pread/read).
 
-print "* file: %s pci_get_device: %s return: %s" % (p1[0].file,p1[0].line,p3[0].line)
-// </smpl>
+Also clamd is a CPU bound application [given fast enough disks ;)] and
+having to wait for mmap_sem prevents it from doing "real work".
+Most of the time it reads files from /tmp, that should either be in the
+page cache, or (in my case) they are always in RAM (I use tmpfs).
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+So mmaping, and reading from these files does not involve disk I/O, yet
+threads working with /tmp files still need to wait
+for disk I/O to complete because it has to wait on mmap_sem (held by
+another thread).
 
----
- drivers/mtd/nand/pasemi_nand.c      |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+>
+>   
+>> ...............................................................................................................................................................................................
+>>
+>>                          &sem->wait_lock:        122700        
+>> 126641           0.42          77.94      125372.37       
+>> 1779026        7368894           0.27        1099.42     3085559.16
+>>                          ---------------
+>>                          &sem->wait_lock           5943         
+>> [<ffffffff8043a768>] __up_write+0x28/0x170
+>>                          &sem->wait_lock           8615         
+>> [<ffffffff805ce3ac>] __down_write_nested+0x1c/0xc0
+>>                          &sem->wait_lock          13568         
+>> [<ffffffff8043a5a0>] __down_write_trylock+0x20/0x60
+>>                          &sem->wait_lock          49377         
+>> [<ffffffff8043a600>] __down_read_trylock+0x20/0x60
+>>                          ---------------
+>>                          &sem->wait_lock           8097         
+>> [<ffffffff8043a5a0>] __down_write_trylock+0x20/0x60
+>>                          &sem->wait_lock          31540         
+>> [<ffffffff8043a768>] __up_write+0x28/0x170
+>>                          &sem->wait_lock           5501         
+>> [<ffffffff805ce3ac>] __down_write_nested+0x1c/0xc0
+>>                          &sem->wait_lock          33342         
+>> [<ffffffff8043a600>] __down_read_trylock+0x20/0x60
+>>
+>>     
+>
+> Interesting. I have some (ancient) patches to make rwsems more scalable
+> under heavy load by reducing contention on this lock. They should really
+> have been merged... Not sure how much it would help, but if you're
+> interested in testing, I could dust them off.
 
-diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
-index 75c8990..ceae196 100644
---- a/drivers/mtd/nand/pasemi_nand.c
-+++ b/drivers/mtd/nand/pasemi_nand.c
-@@ -144,7 +144,7 @@ static int __devinit pasemi_nand_probe(struct of_device *ofdev,
- 
- 	if (!request_region(lpcctl, 4, driver_name)) {
- 		err = -EBUSY;
--		goto out_ior;
-+		goto out_pdev;
- 	}
- 
- 	chip->cmd_ctrl = pasemi_hwcontrol;
-@@ -176,6 +176,8 @@ static int __devinit pasemi_nand_probe(struct of_device *ofdev,
- 
-  out_lpc:
- 	release_region(lpcctl, 4);
-+ out_pdev:
-+	pci_dev_put(pdev);
-  out_ior:
- 	iounmap(chip->IO_ADDR_R);
-  out_mtd:
+Sure, I can test patches (preferably against 2.6.28-rc6-tip ).
+
+Best regards,
+--Edwin
