@@ -1,76 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbYK0AJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYK0APw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbYK0AJU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYK0AJH
+	id S1754454AbYK0APw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:15:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYK0APm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:09:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:54613 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbYK0AJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:09:06 -0500
-Date: Thu, 27 Nov 2008 01:08:59 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: John Stultz <johnstul@us.ibm.com>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Enforce valid shift values in clocksource_register()
-In-Reply-To: <1227743196.18967.36.camel@jstultz-laptop>
-Message-ID: <alpine.LFD.2.00.0811270105270.3325@localhost.localdomain>
-References: <1227743196.18967.36.camel@jstultz-laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Nov 2008 19:15:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49057 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752129AbYK0APl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:15:41 -0500
+Date: Wed, 26 Nov 2008 16:15:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: WARN_ON out of range error in ERR_PTR?
+Message-Id: <20081126161503.6211f140.akpm@linux-foundation.org>
+In-Reply-To: <492D6FB8.80401@panasas.com>
+References: <492D6FB8.80401@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, John Stultz wrote:
+On Wed, 26 Nov 2008 17:48:08 +0200
+Benny Halevy <bhalevy@panasas.com> wrote:
 
-> Thomas noted that some of the timekeeping core assumes 
-> clocksource shift values will be less then 32. However, 
-> we do nothing to enforce such limits.
+> Andrew,
 > 
-> This patch prints a warning if a clocksource with an invalid
-> shift value is attempted to be registered, and will refuse to
-> register the clocksource
+> After hitting a bug where an nfs error -10021 wasn't handled
+> correctly since IS_ERR returned false on its ERR_PTR value
+
+That sounds like an error in NFS.  Did it get fixed?
+
+> I realized that adding a BUG_ON to make sure the mapped error
+> is in the valid range would have caught this.
 > 
-> I could not find any clocksources that use 32 or higher for a 
-> shift value, so this should be only a preventive warning for
-> future clocksource writers.
+> Since ERR_PTR is not called on the critical path
+> (unlike IS_ERR) but rather on the error handling path I believe
+> we can tolerate the extra cost.
 > 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> The reason this is just a WARN_ON and not BUG_ON is to make
+> fixing it easier, although I do consider calling ERR_PTR on an
+> out of range error a pretty dangerous bug as the error might go
+> unnoticed.
 > 
-> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-> index 9ed2eec..4a3bb13 100644
-> --- a/kernel/time/clocksource.c
-> +++ b/kernel/time/clocksource.c
-> @@ -318,7 +318,7 @@ static int clocksource_enqueue(struct clocksource *c)
->   * clocksource_register - Used to install new clocksources
->   * @t:		clocksource to be registered
->   *
-> - * Returns -EBUSY if registration fails, zero otherwise.
-> + * Returns -EBUSY or -EINVAL if registration fails, zero otherwise.
->   */
->  int clocksource_register(struct clocksource *c)
->  {
-> @@ -327,7 +327,14 @@ int clocksource_register(struct clocksource *c)
+> How about committing the following patch to -mm?
+> 
+> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+> ---
+>  include/linux/err.h |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/err.h b/include/linux/err.h
+> index ec87f31..81df84f 100644
+> --- a/include/linux/err.h
+> +++ b/include/linux/err.h
+> @@ -2,7 +2,7 @@
+>  #define _LINUX_ERR_H
 >  
->  	/* save mult_orig on registration */
->  	c->mult_orig = c->mult;
+>  #include <linux/compiler.h>
 > -
-> +	if (c->shift >= 32) {
-> +		printk(KERN_WARNING "===============================\n");
-> +		printk(KERN_WARNING "WARNING: Cannot register %s clocksource\n",
-> +					c->name);
-> +		printk(KERN_WARNING "The shift value must be less then 32\n");
-> +		printk(KERN_WARNING "===============================\n");
-> +		return -EINVAL;
+> +#include <asm/bug.h>
+>  #include <asm/errno.h>
+>  
+>  /*
+> @@ -21,6 +21,7 @@
+>  
+>  static inline void *ERR_PTR(long error)
+>  {
+> +	WARN_ON(error && !IS_ERR_VALUE(error));
+>  	return (void *) error;
+>  }
 
-Just setting the shift value to 31 along with a WARN_ON() should be
-enough. We don't need to kill the clocksource in that case, as this
-can be nasty when it happens in the early boot code where we dont have
-any output.
+We have over 2000 ERR_PTR callsites, and WARN_ON() is a big fat porky
+thing, so this change would add quite a lot of kernel text&data.
 
-Thanks,
+If this problem does occur again, I expect that the kernel will
+reliably dereference a small negative address and we'll get an oops,
+which will give us the same information as that WARN_ON would have
+done, no?
 
-	tglx
+
+
