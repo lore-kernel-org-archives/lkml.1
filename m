@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYK0XXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYK0X1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbYK0XXz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 18:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYK0XXl
+	id S1754873AbYK0X1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 18:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYK0X1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 18:23:41 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45842 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbYK0XXk (ORCPT
+	Thu, 27 Nov 2008 18:27:16 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44497 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYK0X1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 18:23:40 -0500
-Date: Thu, 27 Nov 2008 23:23:35 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH 14/32] ixgbe section fixes (against netdev)
-Message-ID: <20081127232335.GF28946@ZenIV.linux.org.uk>
-References: <E1L3wOM-0006Ti-Jt@ZenIV.linux.org.uk> <9929d2390811221143n66f3f09bu3801919a54263589@mail.gmail.com>
+	Thu, 27 Nov 2008 18:27:16 -0500
+Date: Thu, 27 Nov 2008 18:27:13 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Miles Lane <miles.lane@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request
+ at ffff8800be8b0019
+In-Reply-To: <Pine.LNX.4.64.0811272136260.1747@blonde.site>
+Message-ID: <alpine.DEB.1.10.0811271826470.7113@gandalf.stny.rr.com>
+References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com>  <200811270026.37941.rjw@sisk.pl>  <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>  <Pine.LNX.4.64.0811271349040.21910@blonde.site> <84144f020811270613t3f0258ddxac52abb9a447bf40@mail.gmail.com>
+ <Pine.LNX.4.64.0811271643250.9618@blonde.site> <492F0FEB.50805@cs.helsinki.fi> <Pine.LNX.4.64.0811272136260.1747@blonde.site>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9929d2390811221143n66f3f09bu3801919a54263589@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 11:43:17AM -0800, Jeff Kirsher wrote:
-> On Sat, Nov 22, 2008 at 9:35 AM, Al Viro <viro@ftp.linux.org.uk> wrote:
-> >
-> > ixgbe_init_interrupt_scheme() is called from ixgbe_resume().  Build that
-> > with CONFIG_PM and without CONFIG_HOTPLUG and you've got a problem.
-> > Several helpers called by it also are misannotated __devinit.
-> >
-> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > ---
-> >  drivers/net/ixgbe/ixgbe_main.c |    9 ++++-----
-> >  1 files changed, 4 insertions(+), 5 deletions(-)
-> >
-> 
-> Adding Netdev...
-> 
-> Patch does not apply to latest net-next-2.6 tree because half of the
-> requested changes are already applied to the driver in an earlier
-> commit.
-> 
-> Please re-test with
-> git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
-> if possible.
 
-ixgbe_init_interrupt_scheme() is called from ixgbe_resume().  Build that
-with CONFIG_PM and without CONFIG_HOTPLUG and you've got a problem.
-Several helpers called by it also are misannotated __devinit.
+On Thu, 27 Nov 2008, Hugh Dickins wrote:
+> I'd be _much_ happier with my proposed patch if we get an Ack from
+> Steven on the ftrace.h part of it.
+> 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- drivers/net/ixgbe/ixgbe_main.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+Acked-by: Steven Rostedt <srostedt@redhat.com>
 
-diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
-index 7e1cc6e..f7228ad 100644
---- a/drivers/net/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ixgbe/ixgbe_main.c
-@@ -2460,7 +2460,7 @@ static void ixgbe_acquire_msix_vectors(struct ixgbe_adapter *adapter,
-  * Once we know the feature-set enabled for the device, we'll cache
-  * the register offset the descriptor ring is assigned to.
-  **/
--static void __devinit ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
-+static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
- {
- 	int feature_mask = 0, rss_i;
- 	int i, txr_idx, rxr_idx;
-@@ -2565,8 +2565,7 @@ err_tx_ring_allocation:
-  * Attempt to configure the interrupts using the best available
-  * capabilities of the hardware and the kernel.
-  **/
--static int __devinit ixgbe_set_interrupt_capability(struct ixgbe_adapter
--                                                    *adapter)
-+static int ixgbe_set_interrupt_capability(struct ixgbe_adapter *adapter)
- {
- 	int err = 0;
- 	int vector, v_budget;
--- 
-1.5.6.5
+Even on Turkey day ;-)
+
+-- Steve
 
