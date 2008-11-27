@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYK0TgC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYK0Tgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbYK0TgC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 14:36:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYK0Tfv
+	id S1754507AbYK0Tgc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 14:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYK0TgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 14:35:51 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:15451 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbYK0Tfu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 14:35:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=UKbr5uqXzbsGmO9rtoIvA5K9rzDOt0Io7wnv9tLVOT8qThgwrVTEykToTObuAcs/se
-         8ZfKUeZKWPpnxxDtNXIvy43uGyOZUXH6op5ZtDXWMcSC6fKj3cC9S58WAtss0JMKkFDc
-         YC+FNNAcWD67L+mS2fmkzGGZWLdBgmmvU5jiw=
-Subject: Re: [PATCH-mm 1/8] ntfs: remove private wrapper around endian
- helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <B9FA83C0-9993-44BB-86AA-FA8B97A2D6A2@cam.ac.uk>
-References: <1227733970.5511.123.camel@brick>
-	 <B9FA83C0-9993-44BB-86AA-FA8B97A2D6A2@cam.ac.uk>
-Content-Type: text/plain
-Date: Thu, 27 Nov 2008 11:35:44 -0800
-Message-Id: <1227814545.5511.143.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Nov 2008 14:36:22 -0500
+Received: from www.tglx.de ([62.245.132.106]:37562 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649AbYK0TgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 14:36:21 -0500
+Date: Thu, 27 Nov 2008 20:35:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: eranian@gmail.com
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
+Subject: Re: [patch 02/24] perfmon: base code
+In-Reply-To: <7c86c4470811271051g66669197qb6b5fd39961668a9@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0811272031540.3325@localhost.localdomain>
+References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>  <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>  <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>  <alpine.LFD.2.00.0811271858300.3325@localhost.localdomain>
+ <7c86c4470811271051g66669197qb6b5fd39961668a9@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-27 at 08:22 +0000, Anton Altaparmakov wrote:
-> Hi,
+Stephane,
+
+On Thu, 27 Nov 2008, stephane eranian wrote:
+
+> >> session is independent of each other. You can therefore measure different
+> >> things on different CPUs. Reservation is thus done independently for each
+> >> CPU, therefore we need a cpu bitmask  to track allocation.
+> >
+> > Ok. Question: if you do a one CPU wide session with perfom, can you
+> > still do thread monitoring on the same CPU ?
+> >
+> No. They are currently mutually exclusive.
 > 
-> On 26 Nov 2008, at 21:12, Harvey Harrison wrote:
-> > The base versions handle constant folding just fine.
-> > Done with sed other than the mft.c and inode.c one-liners.
-> 
-> Have you checked the compiler output?  And on all architectures?  And  
-> on all gcc versions?
+> > If no, what prevents that a monitored thread is migrated to such a CPU ?
+> >
+> Nothing. AND you don't want to change affinity because you are monitoring.
+> So the current restriction is that cpu-wide and per-thread are
+> mutually exclusive.
 
-Yes I've checked the compiler output for the new byteorder helpers
-for gcc 3.4, 4, 4.2 on x86.
+And how is this achieved ? Currently there seems nothing which
+prevents a per-thread vs. cpu-wide monitoring.
 
-Notice this depends on the byteorder bits in -mm.  The failure of
-the old bits to properly compile-time swap I've only seen at -O0,
-which the new bits do properly.  If you can cite a particular
-version/arch that you know of where the bug arose, please let me
-know.
+Thanks,
 
-> 
-> The reason I introduced the constant version are precisely that at  
-> least some versions of gcc at least on some architectures do NOT  
-> handle the constant folding and actually put in endianness conversion  
-> code for the constants instead of converting them at compile time.
-
-Which ones....-O0 builds perhaps?
-
-> 
-> Also you are breaking sparse checking with this patch as you remove  
-> some of the necessary endianness conversions (e.g. your one liner in  
-> mft.c which causes us to apply a binary 'not' operator on a little  
-> endian which sparse complains about - in fact that is the reason the  
-> endianness conversions are in there in the first place - I added them  
-> because sparse was complaining about them).
-
-No, sparse does not complain about it.  Bitwise operations are just
-fine on types such as le16 etc.  Try running sparse again with
-my changes, there are no new warnings.
-
-> 
-> Andrew, please do not apply this patch.
-> 
-
-I hope you change you mind.
-
-Harvey
-
+	tglx
