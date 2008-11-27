@@ -1,53 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYK0Wfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYK0WgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYK0Wfn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 17:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYK0Wfc
+	id S1754131AbYK0WgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 17:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYK0Wfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 17:35:32 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:57088 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbYK0Wfb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 17:35:31 -0500
-Date: Thu, 27 Nov 2008 15:35:14 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Matthew Garrett <mjg@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com
-Subject: Re: [PATCH v4] relatime: Make relatime smarter
-Message-ID: <20081127223514.GP25548@parisc-linux.org>
-References: <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127163535.775729bf@lxorguk.ukuu.org.uk> <20081127164754.GC22963@srcf.ucam.org> <20081127165929.GA23366@srcf.ucam.org> <20081127170615.GB14991@infradead.org> <20081127175813.GA24354@srcf.ucam.org> <20081127220839.GK3186@webber.adilger.int>
+	Thu, 27 Nov 2008 17:35:46 -0500
+Received: from web27505.mail.ukl.yahoo.com ([217.146.177.209]:26885 "HELO
+	web27505.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754775AbYK0Wfo convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 17:35:44 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=h7viruJ95mNUmnnW8rjSiqj1EXNEIek1aEKBG65io3NpnjEO2cQq1Ke2PbzZazU8qGY1Sq52av/s2ad78jSCg6Tt0l+mHscBvlXuRqYZtgUNJelW5OsAgLyESQRpPhdxIEh9EgIZLSmZfWi0Cm7dN+KdOlUWuB60hqgXX4v7e4I=;
+X-YMail-OSG: sXF1rdUVM1lNPhNTXi9o1pNwWKYpTzB84PUdSGD5.uB5ZcuL4dZPWL7XapINptdxy.TcmU_h23jgL1se4gnVei0eT_A5pQJPWLeZgl1H5EZbFlHnBIJxfQ2Imx8miILE0CV.VMDaI5fOuf1W1uYBKCNs02keEfs44mVAIPiM
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Thu, 27 Nov 2008 22:35:42 +0000 (GMT)
+From: Andrea Amerini <amerini_a@yahoo.it>
+Subject: kernel 2.6.27.7 TSC calibration issue
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081127220839.GK3186@webber.adilger.int>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <495130.50092.qm@web27505.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 03:08:39PM -0700, Andreas Dilger wrote:
-> On Nov 27, 2008  17:58 +0000, Matthew Garrett wrote:
-> > +	relatime_interval=
-> > +			[FS] relative atime update frequency, in seconds.
-> > +			(default: 1 day: 86400 seconds)
-> 
-> The one problem with a 1-day default is that cron jobs like updatedb will
-> revert to updating the atime on every single file every day.  It would be
-> better to make it slightly more than 1 day (e.g. 25h) to avoid this and
-> at least defer atime updates to every other day for files that are not
-> otherwise accessed except by cron.
+- Kernel 2.6.27.7 doesn't use the right value for TSC calibration
 
-Doesn't updatedb only access directories, not files?  I don't think
-relatime implies nodiratime, but certainly the two could both be
-specified, and that would fix one of the updatedb problems.  Are there
-any other common cronjobs you're concerned about?
+I've updated my system (Slackware 12.1) to kernel 2.6.27.7 vanilla and looking in dmesg I read this:
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+TSC: PIT calibration deviates from PMTIMER: 2968361 3400012.
+TSC: Using PIT calibration value
+
+But my cpu is :
+
+cpu family      : 15
+model           : 3
+model name      : Intel(R) Pentium(R) 4 CPU 3.40GHz
+stepping        : 4
+
+So the clock frequency detected is 3Ghz instead of 3,4 Ghz.
+Also bogomips are different:
+
+for CPU0 I have this value:
+ - bogomips        : 5939.08
+and for the CPU1 this
+ one:
+ - bogomips        : 6802.52
+
+Here it is some Kernel compilation flags of my .config:
+
+# CONFIG_64BIT is not set
+CONFIG_X86_32=y
+# CONFIG_X86_64 is not set
+CONFIG_X86=y
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
+# CONFIG_GENERIC_LOCKBREAK is not set
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+# CONFIG_GENERIC_GPIO is not set
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not
+ set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+# CONFIG_GENERIC_TIME_VSYSCALL is not set
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+# CONFIG_HAVE_CPUMASK_OF_CPU_MAP is not set
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+# CONFIG_ZONE_DMA32 is not set
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+# CONFIG_AUDIT_ARCH is not set
+CONFIG_ARCH_SUPPORTS_AOUT=y
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_X86_SMP=y
+CONFIG_X86_32_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_BIOS_REBOOT=y
+CONFIG_X86_TRAMPOLINE=y
+CONFIG_KTIME_SCALAR=y
+CONFIG_PM=y
+# CONFIG_PM_DEBUG is not
+ set
+CONFIG_PM_SLEEP_SMP=y
+CONFIG_PM_SLEEP=y
+CONFIG_SUSPEND=y
+CONFIG_SUSPEND_FREEZER=y
+CONFIG_HIBERNATION=y
+CONFIG_PM_STD_PARTITION=""
+CONFIG_ACPI=y
+CONFIG_ACPI_SLEEP=y
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_PROCFS_POWER=y
+CONFIG_ACPI_SYSFS_POWER=y
+CONFIG_ACPI_PROC_EVENT=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_X86_PM_TIMER=y
+
+
+With 2.6.26.8 version of kernel everything was fine.
+
+My mainboard is an Intel D915GEV with 3 Gb of ram.
+
+Sorry if my bug-report is not totally correct,I'm a newbie with linux.
+
+If you need, I'll be happy to give you any help or other info.
+Thanks for your time.
+
+
+
+
+
+
+      
+
+
+      
