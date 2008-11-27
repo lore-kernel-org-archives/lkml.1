@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYK0Vbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYK0VoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbYK0Vbd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 16:31:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYK0VbY
+	id S1754730AbYK0VoB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 16:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYK0Vns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 16:31:24 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:50211 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbYK0VbY (ORCPT
+	Thu, 27 Nov 2008 16:43:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46624 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753008AbYK0Vnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 16:31:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OPVlBuJaTd4sKG+OyRLfiOdMMfOg3lcoyhOoN0+bmbszQgK8DoTu43C2xE1zn61Ilx
-         ILN366+o1GzJbVpUc/plKduxX3IzLYTRoTxZGWcl7rpS0hJnYrqb1PVIWMBnHdjjTpQy
-         uGIqGeD6EyBir7UdwRFGRj2z5y2eGukiBQTBg=
-Message-ID: <2375c9f90811271331q40adeef6nf1f3d27f3a92a444@mail.gmail.com>
-Date: Thu, 27 Nov 2008 21:31:22 +0000
-From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] uml: fix the highmem build error
-Cc: "Andrew Morton" <akpm@osdl.org>, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       "Al Viro" <viro@zeniv.linux.org.uk>
-In-Reply-To: <20081127181228.GA4417@hack.voiplan.pt>
+	Thu, 27 Nov 2008 16:43:47 -0500
+Message-ID: <492F1462.4020803@zytor.com>
+Date: Thu, 27 Nov 2008 13:42:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <20081127181228.GA4417@hack.voiplan.pt>
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: oops/warning report for the week of November 26, 2008
+References: <492DD792.6080302@linux.intel.com>	<20081127115236.GE29013@elte.hu>	<492EE087.80708@linux.intel.com>	<20081127201836.GA16869@elte.hu> <20081127122800.45fc0b1a@linux.intel.com>
+In-Reply-To: <20081127122800.45fc0b1a@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mARLVbdq002629
 
-On Thu, Nov 27, 2008 at 6:12 PM, Am√©rico Wang <xiyou.wangcong@gmail.com> wrote:>> This patch fixes this error:>> arch/um/kernel/mem.c: In function 'init_highmem':> arch/um/kernel/mem.c:177: error: 'pkmap_page_table' undeclared (first> use in this function)> arch/um/kernel/mem.c:177: error: (Each undeclared identifier is> reported only once> arch/um/kernel/mem.c:177: error: for each function it appears in.)>> Compile and run tested.>
-Ignore the above one, below is the updated version.
-------->
-This patch fixes this error:
-arch/um/kernel/mem.c: In function 'init_highmem':arch/um/kernel/mem.c:177: error: 'pkmap_page_table' undeclared (firstuse in this function)arch/um/kernel/mem.c:177: error: (Each undeclared identifier isreported only oncearch/um/kernel/mem.c:177: error: for each function it appears in.)
+Arjan van de Ven wrote:
+> 
+> diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+> index 1159e26..0044e61 100644
+> --- a/arch/x86/kernel/cpu/mtrr/main.c
+> +++ b/arch/x86/kernel/cpu/mtrr/main.c
+> @@ -1567,6 +1567,8 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+>  	 * Make sure we only trim uncachable memory on machines that
+>  	 * support the Intel MTRR architecture:
+>  	 */
+> +	if (!cpu_has_mtrr)
+> +		return 0;
+>  	if (!is_cpu(INTEL) || disable_mtrr_trim)
+>  		return 0;
+>  	rdmsr(MTRRdefType_MSR, def, dummy);
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>Cc: Jeff Dike <jdike@addtoit.com>Cc: Al Viro <viro@zeniv.linux.org.uk>
-diff --git a/arch/um/include/asm/fixmap.h b/arch/um/include/asm/fixmap.hindex 69c0252..a8e29e5 100644--- a/arch/um/include/asm/fixmap.h+++ b/arch/um/include/asm/fixmap.h@@ -41,6 +41,12 @@ enum fixed_addresses { 	__end_of_fixed_addresses };
-+#ifdef CONFIG_HIGHMEM+extern pte_t *pkmap_page_table;+extern pte_t *kmap_pte;+extern pgprot_t kmap_prot;+#endif+ extern void __set_fixmap (enum fixed_addresses idx, 			  unsigned long phys, pgprot_t flags);
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.cindex bcc079c..884f9e2 100644--- a/arch/x86/mm/highmem_32.c+++ b/arch/x86/mm/highmem_32.c@@ -1,3 +1,4 @@+#include <asm/fixmap.h> #include <linux/highmem.h> #include <linux/module.h>ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+Okay... is_cpu() here is defined as:
+
+#define is_cpu(vnd)      (mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
+
+... so an MTRR interface has been identified.  Therefore testing 
+cpu_has_mtrr is redundant.
+
+As far as use_intel() versus is_cpu(INTEL), it looks to me as though the 
+two are identical in the current code -- mtrr_if->vendor is never set in 
+the generic code, and so defaults to 0 - meaning X86_VENDOR_INTEL.
+
+All in all, it looks like the vendor ID stuff is a bad case of "works by 
+accident" in the MTRR code, however, *given the current code* I conclude 
+that is_cpu(INTEL) == use_intel() and that neither can be true without 
+MTRRs enabled.
+
+	-hpa
