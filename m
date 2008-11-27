@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbYK0BLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbYK0BOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756286AbYK0BLr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 20:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbYK0BJY
+	id S1755283AbYK0BOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 20:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYK0BOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 20:09:24 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:62841 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756181AbYK0BJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 20:09:23 -0500
-Date: Thu, 27 Nov 2008 10:07:55 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-arch@vger.kernel.org,
-       Linux Kernel List <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [RESEND:PATCH] [ARM] clearpage: provide our own clear_user_highpage()
-Message-ID: <20081127010755.GA30854@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	linux-arch@vger.kernel.org,
-	Linux Kernel List <linux-kernel@vger.kernel.org>,
-	linux-mm@kvack.org
-References: <20081126171321.GA4719@dyn-67.arm.linux.org.uk> <1227719999.3387.0.camel@localhost.localdomain> <20081127102920.660303a5.sfr@canb.auug.org.au>
+	Wed, 26 Nov 2008 20:14:04 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:59027 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751241AbYK0BOD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 20:14:03 -0500
+Date: Thu, 27 Nov 2008 02:17:38 +0100
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       xemul@openvz.org
+Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
+Message-ID: <20081127011738.GC13545@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, oleg@redhat.com,
+	ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+	linux-kernel@vger.kernel.org, xemul@openvz.org
+References: <20081126034242.GA23120@us.ibm.com> <20081126034528.GB23238@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081127102920.660303a5.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081126034528.GB23238@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 10:29:20AM +1100, Stephen Rothwell wrote:
-> Hi Russell,
-> 
-> On Wed, 26 Nov 2008 11:19:59 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> >
-> > We'd like to pull this trick on parisc as well (another VIPT
-> > architecture), so you can add my ack.
-> 
-> If this is going to be used by more than one architecture during the next
-> merge window, then maybe the change to include/linux/highmem.h could be
-> extracted to its own patch and sent to Linus for inclusion in 2.6.28.
-> This way we avoid some conflicts and the architectures can do their
-> updates independently.
+On Tue, Nov 25, 2008 at 07:45:28PM -0800, Sukadev Bhattiprolu wrote:
+> Currently task_active_pid_ns is not safe to call after a
+> task becomes a zombie and exit_task_namespaces is called,
+> as nsproxy becomes NULL.
 
-I plan to use it on VIPT SH also, so getting the higmem.h change in by
-itself sooner rather than later would certainly be welcome.
+Why do you need to be able to get the pid namespace from zombie
+processes? Also according to nsproxy.h this access variant is only
+allowed for the current task, anything else needs to take a rcu lock.
+
+>                           By reading the pid namespace from
+> the pid of the task we can trivially solve this problem at
+> the cost of one extra memory read in what should be the
+> same cacheline as we read the namespace from.
+
+The pid namespace may not be destructed yet?
+
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -1111,12 +1111,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  
+>  	if (pid != &init_struct_pid) {
+>  		retval = -ENOMEM;
+> -		pid = alloc_pid(task_active_pid_ns(p));
+> +		pid = alloc_pid(p->nsproxy->pid_ns);
+
+Why do you expand the old version of the function?
+
+Bastian
+
+-- 
+Women professionals do tend to over-compensate.
+		-- Dr. Elizabeth Dehaver, "Where No Man Has Gone Before",
+		   stardate 1312.9.
