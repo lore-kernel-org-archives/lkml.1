@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbYK0MDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYK0MEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbYK0MDq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:03:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYK0MDe
+	id S1755368AbYK0MEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYK0ME1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:03:34 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59413 "EHLO mx1.suse.de"
+	Thu, 27 Nov 2008 07:04:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47016 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755517AbYK0MDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:03:32 -0500
-Date: Thu, 27 Nov 2008 13:03:30 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-ID: <20081127120330.GM28285@wotan.suse.de>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <492E8708.4060601@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1752350AbYK0ME0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 07:04:26 -0500
+Date: Thu, 27 Nov 2008 13:04:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] x86: entry_64.S - use ENTRY to define child_rip
+Message-ID: <20081127120410.GC4259@elte.hu>
+References: <1227727024-2281-1-git-send-email-gorcunov@gmail.com> <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com> <1227782223.31044.1287040549@webmail.messagingengine.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <492E8708.4060601@gmail.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1227782223.31044.1287040549@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 01:39:52PM +0200, Török Edwin wrote:
-> On 2008-11-27 11:28, Mike Waychison wrote:
-> > Correct.  I don't recall the numbers from the pathelogical cases we
-> > were seeing, but iirc, it was on the order of 10s of seconds, likely
-> > exascerbated by slower than usual disks.  I've been digging through my
-> > inbox to find numbers without much success -- we've been using a
-> > variant of this patch since 2.6.11.
-> >
-> > Török however identified mmap taking on the order of several
-> > milliseconds due to this exact problem:
-> >
-> > http://lkml.org/lkml/2008/9/12/185
-> 
-> 
-> Hi,
-> 
-> Thanks for the patch. I just tested it on top of 2.6.28-rc6-tip, see
-> /proc/lock_stat output at the end.
-> 
-> Running my testcase shows no significant performance difference. What am
-> I doing wrong?
- 
-Software may just be doing a lot of mmap/munmap activity. threads +
-mmap is never going to be pretty because it is always going to involve
-broadcasting tlb flushes to other cores... Software writers shouldn't
-be scared of using processes (possibly with some shared memory).
-Actually, a lot of things get faster (like malloc, or file descriptor
-operations) because locks aren't needed.
 
-Despite common perception, processes are actually much *faster* than
-threads when doing common operations like these. They are slightly slower
-sometimes with things like creation and exit, or context switching, but
-if you're doing huge numbers of those operations, then it is unlikely
-to be a performance critical app... :)
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 
-(end rant; sorry, that may not have been helpful to your immediate problem,
-but we need to be realistic in what complexity we are ging to add where in
-the kernel in order to speed things up. And we need to steer userspace
-away from problems that are fundamentally hard and not going to get easier
-with trends -- like virtual address activity with multiple threads)
-
-
-> ...............................................................................................................................................................................................
 > 
->                          &sem->wait_lock:        122700        
-> 126641           0.42          77.94      125372.37       
-> 1779026        7368894           0.27        1099.42     3085559.16
->                          ---------------
->                          &sem->wait_lock           5943         
-> [<ffffffff8043a768>] __up_write+0x28/0x170
->                          &sem->wait_lock           8615         
-> [<ffffffff805ce3ac>] __down_write_nested+0x1c/0xc0
->                          &sem->wait_lock          13568         
-> [<ffffffff8043a5a0>] __down_write_trylock+0x20/0x60
->                          &sem->wait_lock          49377         
-> [<ffffffff8043a600>] __down_read_trylock+0x20/0x60
->                          ---------------
->                          &sem->wait_lock           8097         
-> [<ffffffff8043a5a0>] __down_write_trylock+0x20/0x60
->                          &sem->wait_lock          31540         
-> [<ffffffff8043a768>] __up_write+0x28/0x170
->                          &sem->wait_lock           5501         
-> [<ffffffff805ce3ac>] __down_write_nested+0x1c/0xc0
->                          &sem->wait_lock          33342         
-> [<ffffffff8043a600>] __down_read_trylock+0x20/0x60
+> On Wed, 26 Nov 2008 22:17:00 +0300, gorcunov@gmail.com said:
+> > From: Cyrill Gorcunov <gorcunov@gmail.com>
+> > 
+> > child_rip is called not by its name but indirectly
+> > rather so make it global and aligned.
+> > 
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> > ---
+> >  arch/x86/kernel/entry_64.S |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> > index 64688db..098ba0b 100644
+> > --- a/arch/x86/kernel/entry_64.S
+> > +++ b/arch/x86/kernel/entry_64.S
+> > @@ -1322,7 +1322,7 @@ ENTRY(kernel_thread)
+> >  	CFI_ENDPROC
+> >  END(kernel_thread)
+> >  
+> > -child_rip:
+> > +ENTRY(child_rip)
+> >  	pushq $0		# fake return address
+> >  	CFI_STARTPROC
+> >  	/*
 > 
+> Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-Interesting. I have some (ancient) patches to make rwsems more scalable
-under heavy load by reducing contention on this lock. They should really
-have been merged... Not sure how much it would help, but if you're
-interested in testing, I could dust them off.
+applied to tip/x86/irq, thanks!
 
+	Ingo
