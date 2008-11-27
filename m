@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYK0VCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYK0VTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbYK0VCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 16:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYK0VCL
+	id S1754543AbYK0VTp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 16:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYK0VTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 16:02:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:33400 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbYK0VCK (ORCPT
+	Thu, 27 Nov 2008 16:19:32 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:50396 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbYK0VTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 16:02:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=npvOSk7Ny/aKq+HbEQLtAwFJRqIZ68bsI8wZmR9jtdz1JDkiQBt4Yd3MxMaur1fynx
-         he/hjYZDdQEsynii5RsX+ZaBljDgsQNxwJxd2HJ+Vvod18RnfX7y5fbFAh9Nmedk/RZz
-         n3qWnMoJok5mgOzgfjrJNGjWNDwZre+2hRI6Q=
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: [PATCH] [STAGING] Move staging drivers back to staging-specific menu
-Date: Fri, 28 Nov 2008 00:01:28 +0300
-Message-Id: <1227819688-24035-1-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Thu, 27 Nov 2008 16:19:32 -0500
+Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Bastian Blank <bastian@waldi.eu.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, ebiederm@xmission.com,
+       containers@lists.osdl.org, roland@redhat.com, xemul@openvz.org
+In-Reply-To: <20081127011738.GC13545@wavehammer.waldi.eu.org>
+References: <20081126034242.GA23120@us.ibm.com>
+	 <20081126034528.GB23238@us.ibm.com>
+	 <20081127011738.GC13545@wavehammer.waldi.eu.org>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 22:19:25 +0100
+Message-Id: <1227820765.5108.20.camel@bahia.kalilou.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
----
- drivers/staging/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Thu, 2008-11-27 at 02:17 +0100, Bastian Blank wrote:
+> On Tue, Nov 25, 2008 at 07:45:28PM -0800, Sukadev Bhattiprolu wrote:
+> > Currently task_active_pid_ns is not safe to call after a
+> > task becomes a zombie and exit_task_namespaces is called,
+> > as nsproxy becomes NULL.
+> 
+> Why do you need to be able to get the pid namespace from zombie
+> processes? Also according to nsproxy.h this access variant is only
+> allowed for the current task, anything else needs to take a rcu lock.
+> 
 
-diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index c95b286..4089f14 100644
---- a/drivers/staging/Kconfig
-+++ b/drivers/staging/Kconfig
-@@ -22,6 +22,8 @@ menuconfig STAGING
- 	  If in doubt, say N here.
- 
- 
-+if STAGING
-+
- config STAGING_EXCLUDE_BUILD
- 	bool "Exclude Staging drivers from being built" if STAGING
- 	default y
-@@ -37,8 +39,6 @@ config STAGING_EXCLUDE_BUILD
- 	  when selecting 'make allyesconfg' and 'make allmodconfig' so
- 	  don't be all that put off, your dog will be just fine.
- 
--if !STAGING_EXCLUDE_BUILD
--
- source "drivers/staging/et131x/Kconfig"
- 
- source "drivers/staging/slicoss/Kconfig"
+That doesn't save ->nsproxy to be NULL... as shown in the very same
+example you're talking about.
+
+I agree with Eric and Sukadev that task_active_pid_ns() is unsafe. There
+isn't even a /* don't use with zombies */ in pid_namespace.h...
+
+> >                           By reading the pid namespace from
+> > the pid of the task we can trivially solve this problem at
+> > the cost of one extra memory read in what should be the
+> > same cacheline as we read the namespace from.
+> 
+> The pid namespace may not be destructed yet?
+> 
+
+Yes as long as a pid from that namespace is still in use...
+
 -- 
-1.5.6.5
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
 
