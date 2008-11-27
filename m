@@ -1,183 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYK0NwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbYK0Nyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbYK0NwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 08:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYK0NwL
+	id S1755423AbYK0Nyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 08:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYK0Nyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 08:52:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49483 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752177AbYK0NwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 08:52:10 -0500
-Date: Thu, 27 Nov 2008 14:51:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the
-	trace output
-Message-ID: <20081127135155.GA23076@elte.hu>
-References: <492DEDE9.9010109@gmail.com> <20081127103424.GA9132@elte.hu> <c62985530811270506o51195654y628f8ab68ff68ac7@mail.gmail.com>
+	Thu, 27 Nov 2008 08:54:33 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35647 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbYK0Nyc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 08:54:32 -0500
+Date: Thu, 27 Nov 2008 13:54:24 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Miles Lane <miles.lane@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request
+ at ffff8800be8b0019
+In-Reply-To: <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811271349040.21910@blonde.site>
+References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com> 
+ <200811270026.37941.rjw@sisk.pl> <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811270506o51195654y628f8ab68ff68ac7@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> 2008/11/27 Ingo Molnar <mingo@elte.hu>:
-> > But in fact, it might be even better to display the costs like this,
-> > on the left side [mockup]:
-> >
-> > ---------------------------------------------------------
-> > CPU)     cost    |  function
-> > ---------------------------------------------------------
-> >
-> >  0)             |  sys_read() {
-> >  0)    0.331 us |    fget_light();
-> >  0)             |    vfs_read() {
-> >  0)             |      rw_verify_area() {
-> >  0)             |        security_file_permission() {
-> >  0)    0.306 us |          cap_file_permission();
-> >  0)    0.300 us |          cap_file_permission();
-> >  0)    8.909 us |        }
-> >  0)    0.993 us |      }
-> >  0)   11.649 us |    }
-> >  0)             |    do_sync_read() {
-> >  0)             |      sock_aio_read() {
-> >  0)             |        __sock_recvmsg() {
-> >  0)             |          security_socket_recvmsg() {
-> >  0)  100.319 us |            cap_socket_recvmsg();
-> > ---------------------------------------------------------
-> >
-> > note the 8 small tweaks i did to optimize the visual real estate of
-> > the tracer output:
-> >
-> > 1) we done need reminders on the left side that this is about CPU
-> >   numbers. It will be obvious anyway if it's "all mixed up".
-> >   (microseconds is different - that is a unit that will be quoted and
-> >    it's also a number that actually matters more in the daily use of
-> >    such traces )
-> >
-> > 2) no need for [] on the left side - a single separator is enough. I
-> >   picked ')' as it looks pretty natural and unintrusive.
-> >
-> > 3) we should use the CPU number width on the left side that
-> >   log10(cpus_weight_nr(cpu_online_map)) tells us. So if a system has
-> >   just two cores, we should print single-width. If it has 16 CPUs, we
-> >   should print 00..01....15.
-> >
-> > 4) I left 4 decimal points for the cost. That's up to 9999.999
-> >   microseconds, after that point we should lose precision and print:
-> >   99999.99, then should print up to 999999.9, and then print up to
-> >   99999999 microseconds. Always keep the length of the number at 8
-> >   characters. Above that, just let the rest shift to the right a bit.
-> >   (but that will be about delays of more than 100 seconds - that does
-> >   not really matter in practice)
-> >
-> > 5) Note, by printing the cost at fixed width, we can leave out the '+'
-> >   and '!' visual alerts (sorry! :-). The visible width of the numbers
-> >   will be enough of an attention grabber - as you can see it in the
-> >   mockup above already.
-> >
-> > 6) Note the vertical '|' separator. I tried it with and without, and i
-> >   think the code on the right side looks more structured that way. It
-> >   looks like a sheet of paper, and it looks tidier - so please add
-> >   it.
-> >
-> > 7) Note how unobscured the right side code portion looks like this
-> >   way. Since this is the only piece of information that is heavily
-> >   variable-width, we keep it at the end and dont worry about length
-> >   problems.
+On Thu, 27 Nov 2008, Pekka Enberg wrote:
 > 
+> (I'm jumping in as Andrew forwarded the bug to us thinking it's SLUB related.)
 > 
-> Yeah, I will miss a bit the overhead signs, they were really useful 
-> to find in one quick sight a costly function call. I know that the 
-> decimal. The visible width of the duration replaces it but not as 
-> much efficiently. Moreover, put these times on the full left will be 
-> perhaps harder for the eyes to retrieve the concerned function 
-> return (thinking of a deep calls).
-
-We can still add the overhead signs.
-
-We still have a single space in the first column before the CPU number 
-(that looks better when these traces are pasted into email, which is 
-one of the most common uses of them), and we can add the sign there.
-
-I.e. something like this:
-
-> > ---------------------------------------------------------
-> > CPU)     cost   |  function
-> > ---------------------------------------------------------
+> On Thu, Nov 27, 2008 at 1:26 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> [ 3866.841128] RIP  [<ffffffff80262f07>] kallsyms_lookup+0x20/0x120
+> >> [ 3866.841134]  RSP <ffff880073d63da8>
+> >> [ 3866.841136] CR2: ffff8800be8b0019
+> >> [ 3866.841140] ---[ end trace ebccc2f1a2509fb0 ]---
 > >
-> >  0)             |  sys_read() {
-> >  0)    0.331 us |    fget_light();
-> >  0)             |    vfs_read() {
-> >  0)             |      rw_verify_area() {
-> >  0)             |        security_file_permission() {
-> >  0)    0.306 us |          cap_file_permission();
-> >  0)    0.300 us |          cap_file_permission();
-> >  0)    8.909 us |        }
-> >  0)    0.993 us |      }
-> > +0)   11.649 us |    }
-> >  0)             |    do_sync_read() {
-> >  0)             |      sock_aio_read() {
-> >  0)             |        __sock_recvmsg() {
-> >  0)             |          security_socket_recvmsg() {
-> > !0)  100.319 us |            cap_socket_recvmsg();
-> > ---------------------------------------------------------
+> > Did that happen after a resume from suspend to RAM, by chance?
+> 
+> Could be. I looked at the oops and I'm pretty sure SLUB is not at
+> fault here. Decoding the oopsing code:
+> 
+>   [ 3866.841062] Code: df e8 39 d2 ff ff 5b 41 5c c9 c3 55 48 89 e5 41 57 49 89
+>   cf 41 56 49 89 f6 41 55 49 89 d5 41 54 4d 89 c4 53 48 89 fb 48 83 ec
+> 08 <41> c6
+>   40 7f 00 41 c6 00 00 48 81 ff 00 90 20 80 72 09 48 81 ff
+> 
+> results in:
+> 
+>   0000000000000000 <.text>:
+>      0:   41 c6 40 7f 00          movb   $0x0,0x7f(%r8)   <<<<----
+>      5:   41 c6 00 00             movb   $0x0,(%r8)
+>      9:   48 81 ff 00 90 20 80    cmp    $0xffffffff80209000,%rdi
+>     10:   72 09                   jb     0x1b
+>     12:   48                      rex.W
+>     13:   81                      .byte 0x81
+>     14:   ff                      .byte 0xff
+> 
+> which looks like this:
+> 
+>   000000000000023e <kallsyms_lookup>:
+>    */
+>   const char *kallsyms_lookup(unsigned long addr,
+>                               unsigned long *symbolsize,
+>                               unsigned long *offset,
+>                               char **modname, char *namebuf)
+>   {
+>    23e:   41 56                   push   %r14
+>    240:   49 89 f6                mov    %rsi,%r14
+>    243:   41 55                   push   %r13
+>    245:   49 89 d5                mov    %rdx,%r13
+>    248:   41 54                   push   %r12
+>    24a:   49 89 cc                mov    %rcx,%r12
+>    24d:   55                      push   %rbp
+>    24e:   48 89 fd                mov    %rdi,%rbp
+>    251:   53                      push   %rbx
+>           namebuf[KSYM_NAME_LEN - 1] = 0;
+>    252:   41 c6 40 7f 00          movb   $0x0,0x7f(%r8) <<<<----
+>    */
+> 
+> That is, we're oopsing because someone is passing a bogus 'namebuf' to
+> kallsyms_lookup(). This is further confirmed by looking at the value of R8:
+> 
+>   [ 3866.840962] RBP: ffff880073d63dd8 R08: ffff8800be8aff9a R09:
+> 0000000000000000
+> 
+> and adding 0x7f to it:
+> 
+>   0xffff8800be8aff9a + 0x7f = 0xffff8800be8b0019
+> 
+> which equals to the faulting address:
+> 
+>   [ 3866.840809] BUG: unable to handle kernel paging request at ffff8800be8b0019
+> 
+> Furthermore, the value of KSYM_NAME_LEN is 128 so the offset matches as well
+> after subtracting one from it (0x7f).
+> 
+> Looking at the call trace:
+> 
+>   [ 3866.841017] Call Trace:
+>   [ 3866.841020]  [<ffffffff8026302f>] sprint_symbol+0x28/0xaa
+>   [ 3866.841025]  [<ffffffff8029e972>] list_locations+0x170/0x2ef
+>   [ 3866.841031]  [<ffffffff8029eb34>] alloc_calls_show+0x1c/0x24
+>   [ 3866.841036]  [<ffffffff8029cbbc>] slab_attr_show+0x23/0x27
+>   [ 3866.841041]  [<ffffffff802efdff>] sysfs_read_file+0xba/0x13c
+>   [ 3866.841046]  [<ffffffff802a4795>] vfs_read+0xa4/0xde
+>   [ 3866.841052]  [<ffffffff802a4893>] sys_read+0x47/0x6e
+>   [ 3866.841056]  [<ffffffff8020b6fb>] system_call_fastpath+0x16/0x1b
+> 
+> we can see that kallsyms_lookup() is being called by sprint_symbol() which is,
+> in turn, called by the SLUB code. However, SLUB never touches 'namebuf',
+> instead it's being allocated on the stack by sprint_symbol():
+> 
+>   /* Look up a kernel symbol and return it in a text buffer. */
+>   int sprint_symbol(char *buffer, unsigned long address)
+>   {
+>           char *modname;
+>           const char *name;
+>           unsigned long offset, size;
+>           char namebuf[KSYM_NAME_LEN];
+> 
+>           name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
+> 
+> Hmm?
 
-Or we could add them to the function name bit - there we have two free 
-space characters anyway:
+I think you're looking at a 2.6.28-rc5 sprint_symbol() there:
+the world has moved on since those days.  I changed it to use the
+supplied "buffer" instead of local "namebuf" in 2.6.28-rc6, so we
+have to wonder if my patch is to blame - though I don't see it.
 
-Something like this:
+Sorry, I'm eating lunch then about to go out for a couple of hours:
+can't look into it now, but maybe this info will help you to make
+better sense of what's going on.
 
-> > ---------------------------------------------------------
-> > CPU)     cost   |  function
-> > ---------------------------------------------------------
-> >
-> >  0)             |  sys_read() {
-> >  0)    0.331 us |    fget_light();
-> >  0)             |    vfs_read() {
-> >  0)             |      rw_verify_area() {
-> >  0)             |        security_file_permission() {
-> >  0)    0.306 us |          cap_file_permission();
-> >  0)    0.300 us |          cap_file_permission();
-> >  0)    8.909 us |        }
-> >  0)    0.993 us |      }
-> >  0)   11.649 us |+   }
-> >  0)             |    do_sync_read() {
-> >  0)             |      sock_aio_read() {
-> >  0)             |        __sock_recvmsg() {
-> >  0)             |          security_socket_recvmsg() {
-> >  0)  100.319 us |!           cap_socket_recvmsg();
-> > ---------------------------------------------------------
-
-Hm?
-
-> I don't know, perhaps that will actually be better in practice...
-
-i think it will be better. I'm biased, so i gave the output to two 
-people with good visual taste (one of them female), [note, i gave them 
-the mockup from the previous mail] and the first question of both of 
-them was: "why arent the times on the left?".
-
-I think we could make the time column a trace_option as well - 
-default-enabled.
-
-	Ingo
+Hugh
