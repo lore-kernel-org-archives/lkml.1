@@ -1,86 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYK0JiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbYK0JkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbYK0JiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 04:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYK0JiL
+	id S1753479AbYK0JkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYK0Jju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 04:38:11 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:20717 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYK0JiK (ORCPT
+	Thu, 27 Nov 2008 04:39:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44799 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751334AbYK0Jjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 04:38:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=q7Mp/PC5buU/V8/q2Sc9cFSgmD8HiPmPnn3iJClZZLohJ2/fBsRa16WbUQPKviztW7
-         aT3hseNVDubAXUX5n83NYBuumBhlfCw43jhKmoQe7qjnuNamUAL1msdbw6sPRGfB4SIe
-         /ncBk88HXrPR9SFk0xC7KldD9JNODE7K4LyyQ=
-Message-ID: <7c86c4470811270138l5501f53dte1e6d8d6b0817e0e@mail.gmail.com>
-Date: Thu, 27 Nov 2008 10:38:08 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       sfr@canb.auug.org.au
-In-Reply-To: <alpine.LFD.2.00.0811262355100.3325@localhost.localdomain>
+	Thu, 27 Nov 2008 04:39:49 -0500
+Date: Thu, 27 Nov 2008 04:39:42 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 0/6] fs: Scalability of sockets/pipes
+	allocation/deallocation on SMP
+Message-ID: <20081127093942.GA13860@infradead.org>
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <492d0be1.09cc660a.0b75.44b7@mx.google.com>
-	 <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain>
-	 <20081126140054.GX6703@one.firstfloor.org>
-	 <alpine.LFD.2.00.0811262156390.3325@localhost.localdomain>
-	 <7c86c4470811261337ic1ea828me5e3ba0de469f4b6@mail.gmail.com>
-	 <alpine.LFD.2.00.0811262355100.3325@localhost.localdomain>
+In-Reply-To: <492DDB6A.8090806@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
 
-On Thu, Nov 27, 2008 at 12:16 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 26 Nov 2008, stephane eranian wrote:
->> > What a nonsense. We have a bitmask already. Why not iterate over the
->> > bitmask and be done ?
->> >
->>
->> Bitmask can be sparsed. Num represents the number of bits we have to find.
->> The idea is that we don't need to scan the entire bitmask, we stop as soon as
->> we have found all the bits we care about (i.e., all the bits that are set).
->>
->> Example:
->>          num = 3
->>      bitmask=0000000010001001
->>                                     ^ we will iterate until we are
->> done with that bit.
->
-> Errm.
->
-> #define for_each_bit(bit, addr, size) \
->        for ((bit) = find_first_bit((addr), (size)); \
->             (bit) < (size); \
->             (bit) = find_next_bit((addr), (size), (bit) + 1))
->
-> find_first_bit() and find_next_bit() are single instructions on most
-> architectures. "size" is known upfront at setup time of the
-> context/set and can be cached.
->
-> This takes exactly 3 iterations, while your method needs 8. And it
-> gets worse with the following example:
->
-> Example:
->  num = 1
->  bitmask=1000 0000 0000 0000 0000 0000 0000 00000
->
->          ^ you will iterate until we are done with that bit (32 times)
->
->  for_each_bit() will iterate exactly _once_.
->
-Ok, you've convinced me. I will make the change.
-Thanks.
+As I told you before, you absolutely must include the fsdevel list and
+the VFS maintainer for a patchset like this.
