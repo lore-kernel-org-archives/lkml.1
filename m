@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbYK0RAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYK0RCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbYK0RAN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 12:00:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYK0Q7p
+	id S1753804AbYK0RCb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 12:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYK0RCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 11:59:45 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:46005 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbYK0Q7o (ORCPT
+	Thu, 27 Nov 2008 12:02:21 -0500
+Received: from outbound-mail-10.bluehost.com ([69.89.17.210]:35739 "HELO
+	outbound-mail-10.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751446AbYK0RCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 11:59:44 -0500
-Date: Thu, 27 Nov 2008 09:59:27 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, julia@diku.dk,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] FRV: Fix mmap2 error handling
-Message-ID: <20081127165926.GM25548@parisc-linux.org>
-References: <20081127151238.13728.34704.stgit@warthog.procyon.org.uk>
+	Thu, 27 Nov 2008 12:02:21 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=YHdu50pdCQjRtV8qk/uCdKF76txiGxibGQ4s/UInagsG5ductDymECbeyyfgGwlZhI8o6CQB4qXhid4bYxwuRZ0PIWlXlI1Nj4XXGSiMYsPSyjHYp7La6k9vm4tMTMpf;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: oops/warning report for the week of November 26, 2008
+Date: Thu, 27 Nov 2008 09:02:12 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <492DD792.6080302@linux.intel.com> <20081127115236.GE29013@elte.hu>
+In-Reply-To: <20081127115236.GE29013@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081127151238.13728.34704.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200811270902.18020.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 03:12:38PM +0000, David Howells wrote:
-> Fix the error handling in sys_mmap2().  Currently, if the pgoff check fails,
-> fput() might have to be called (which it isn't), so do the pgoff check first,
-> before fget() is called.
+On Thursday, November 27, 2008 3:52 am Ingo Molnar wrote:
+> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+> > Rank 8: mtrr_trim_uncached_memory (warning)
+> > 	Reported 227 times (619 total reports)
+> > 	There is a high number of machines where our MTRR checks
+> > 	trigger. I suspect we are too picky in accepting the MTRR
+> > 	configuration.
+>
+> the warning here means: "the BIOS messed up but we fixed it up for
+> you just fine".
+>
+> Should we print a DMI descriptor so that it can be tracked back to the
+> bad BIOSen in question? Or should we (partially) silence the warning
+> itself? Those BIOS bugs need fixing really: older kernels will boot up
+> with bad MTRR settings - resulting in a super-slow system or other
+> weirdnesses. We can tone down the message so that it doesnt show up in
+> kerneloops.org. It's up to you.
 
-*sigh*.
-
-My reaction was "Why do we have sys_mmap2 in every architecture?"  So I
-started looking.  Oh dear, oh dear oh dear.
-
-FRV:
-        /* As with sparc32, make sure the shift for mmap2 is constant
-           (12), no matter what PAGE_SIZE we have.... */
-ia64:
-Just uses PAGE_SIZE (currently supported values: 4k, 8k, 16k and 64k).
-
-So what is poor userspace to do?  Check which architecture it's on and
-figure out what PAGE_SIZE to use for mmap2 based on that?
-
-
-How about we introduce a sys_mmap6() in common code which takes 'off'
-in multiples of 4k.  Then FRV and other sane architectures can replace
-their sys_mmap2 entries in their syscall tables with sys_mmap6.  ia64 has
-to keep its insane sys_mmap2 entry, but it can add a sys_mmap6 entry too.
+I actually think we're doing something wrong here, since so many platforms 
+have this behavior.  It's likely that there's an undocumented, additional 
+check needed to determine whether a slot is hot pluggable.  Matthew Garrett 
+recently posted a patch to check for ACPI _RMV methods, which should be an 
+improvement.  I'll be putting that into linux-next soon for testing.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jesse Barnes, Intel Open Source Technology Center
+
