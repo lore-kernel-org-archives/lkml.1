@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYK0MWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYK0MZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYK0MWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYK0MW2
+	id S1754709AbYK0MZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYK0MZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:22:28 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:60658 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbYK0MW2 (ORCPT
+	Thu, 27 Nov 2008 07:25:10 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:2892 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbYK0MZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:22:28 -0500
-Date: Thu, 27 Nov 2008 13:32:57 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: eranian@gmail.com
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, sfr@canb.auug.org.au
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-Message-ID: <20081127123257.GI6703@one.firstfloor.org>
-References: <492d0be1.09cc660a.0b75.44b7@mx.google.com> <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain> <20081126140054.GX6703@one.firstfloor.org> <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain> <20081127100602.GF6703@one.firstfloor.org> <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com> <20081127113115.GH6703@one.firstfloor.org> <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Nov 2008 07:25:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xQcjLIGXGs8/GUern60wmJtzgNlUV4aNOCMFQRjHEi83oNmobwnn6HhBz5hr71ITCX
+         Ujc8Dtc0tOfJv3x8osNMbtJJJ9HnW0aC4N8y66nndxlG7LgyRS45QG7mo9kJ3KKOdJfp
+         +eJQtaEKqqzjaO+SFIKUwYvcnGBBor7TS+TsM=
+Message-ID: <aa79d98a0811270425o7735c950t99326512684b98e3@mail.gmail.com>
+Date: Thu, 27 Nov 2008 15:25:07 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 5/5] x86: entry_64.S - trivial: space, comments fixup
+Cc: "Alexander van Heukelum" <heukelum@fastmail.fm>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081127120230.GB4259@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <1227727024-2281-1-git-send-email-gorcunov@gmail.com>
+	 <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com>
+	 <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com>
+	 <6bc2fd402754cfa5b69a63a529bc065584c5f375.1227725632.git.gorcunov@gmail.com>
+	 <39e35cbc79237b162a0720dceaa52a72c7eb1690.1227725632.git.gorcunov@gmail.com>
+	 <fbfac26820d86fa887adfbfa8ac80b369de00075.1227725632.git.gorcunov@gmail.com>
+	 <1227782341.31610.1287042073@webmail.messagingengine.com>
+	 <20081127120230.GB4259@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 12:35:54PM +0100, stephane eranian wrote:
-> On Thu, Nov 27, 2008 at 12:31 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> >> The only reason why I have to deal with NMI is not so much to allow
-> >> for profiling irq-off regions but because I have to share the PMU with
-> >> the NMI watchdog. Otherwise I'd have to fail  or disable the NMI watchdog
-> >> on the fly.
-> >
-> > The NMI watchdog is now off by default so failing with it enabled
-> > is fine.
-> 
-> Yes, but most likely it is on in distro kernels.
+On Thu, Nov 27, 2008 at 3:02 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+>
+>> On Wed, 26 Nov 2008 22:17:04 +0300, gorcunov@gmail.com said:
+>> > From: Cyrill Gorcunov <gorcunov@gmail.com>
+>> >
+>> > Impact: cleanup
+>> >
+>> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>>
+>> Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+>
+> Cyrill, could you please rework the still relevant bits against latest
+> tip/master? Alexander's wider patch got in the way.
+>
+> Thanks,
+>
+>        Ingo
+>
 
-Really? Why?
-
-Old distros of course do it but only because they run old 
-kernels.
-
-> You have to handle the case where the NMI fires while you are holding
-> a perfmon lock. What you have in the patch (and the the fully-featured version)
-> is that we get the NMI and we stop the PMU WITHOUT grabbing any perfmon
-> lock, and the we repost the interrupt with the regular vector. We also make sure
-> we grab the RIP at NMI. That is the one we want to see reported in the sampling
-> buffer.
-> 
-> I am still wondering how Oprofile handles the case where multiple processes or
-> threads access the same file descriptor.
-
-It uses per CPU buffers (so no races on the writer) and readers can
-of course use a lock to coordinate between themselves.
-
-I wrote a similar scheme for mce_log() (although the current version
-in tree has some issues too)
-
--Andi
+yep, no problem (wait 'till evening please)
