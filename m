@@ -1,85 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYK0L1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbYK0LaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbYK0L1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 06:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYK0L1P
+	id S1754197AbYK0LaY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 06:30:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYK0LaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 06:27:15 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:40935 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbYK0L1O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 06:27:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nlDscaewoFL0dw4ru/67mJLiTqpf7gfKEI0Hyt93ixGU/jQPJT4DJtmqXuiJDJJ6te
-         5o9xd4y4HyNgcteSSAI9Us4FulThmR33cmiJja8FUySA0/9eBmeV3mOOYOoGMXHWivwM
-         HkcaSOWegXytoQPmAag0HXNLllaX9qbI+Gm2Y=
-Message-ID: <aa79d98a0811270327i28f89148w3fa0f7030ad8cd54@mail.gmail.com>
-Date: Thu, 27 Nov 2008 14:27:12 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Alexander van Heukelum" <heukelum@fastmail.fm>
-Subject: Re: [PATCH 4/5] x86: ret_from_fork - add CFI proc annotation
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1227780926.25079.1287038929@webmail.messagingengine.com>
+	Thu, 27 Nov 2008 06:30:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39374 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752659AbYK0LaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 06:30:07 -0500
+Date: Thu, 27 Nov 2008 12:29:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the
+	trace output
+Message-ID: <20081127112953.GA23702@elte.hu>
+References: <492DEDE9.9010109@gmail.com> <20081127103424.GA9132@elte.hu> <1227783300.4454.1410.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1227727024-2281-1-git-send-email-gorcunov@gmail.com>
-	 <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com>
-	 <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com>
-	 <6bc2fd402754cfa5b69a63a529bc065584c5f375.1227725632.git.gorcunov@gmail.com>
-	 <39e35cbc79237b162a0720dceaa52a72c7eb1690.1227725632.git.gorcunov@gmail.com>
-	 <1227780926.25079.1287038929@webmail.messagingengine.com>
+In-Reply-To: <1227783300.4454.1410.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 1:15 PM, Alexander van Heukelum
-<heukelum@fastmail.fm> wrote:
->
-> On Wed, 26 Nov 2008 22:17:03 +0300, gorcunov@gmail.com said:
->> From: Cyrill Gorcunov <gorcunov@gmail.com>
->>
->> ret_from_fork is definitly procedure so mark it as that.
->>
->> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->> ---
->>  arch/x86/kernel/entry_64.S |    1 +
->>  1 files changed, 1 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
->> index c409f73..a21be86 100644
->> --- a/arch/x86/kernel/entry_64.S
->> +++ b/arch/x86/kernel/entry_64.S
->> @@ -370,6 +370,7 @@ END(save_paranoid)
->>   */
->>  /* rdi:      prev */
->>  ENTRY(ret_from_fork)
->> +     CFI_STARTPROC
->>       DEFAULT_FRAME
->>       push kernel_eflags(%rip)
->>       CFI_ADJUST_CFA_OFFSET 8
->
-> This is not needed/wanted. DEFAULT_FRAME includes "CFI_STARTPROC simple"
-> already.
->
-> Alexander
->
->> 1.6.0.4.603.gbc9c0
->>
-> --
->  Alexander van Heukelum
->  heukelum@fastmail.fm
->
-> --
-> http://www.fastmail.fm - The professional email service
->
->
 
-Indeed, thanks (such an indirect and nested definition sometime confusing)
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Thu, 2008-11-27 at 11:34 +0100, Ingo Molnar wrote:
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > Here is an example of the new output:
+> > > 
+> 
+> > > CPU[000]  ------------8<---------- thread bash-2794 ------------8<----------
+> 
+> This is the most horrid thing I've ever seen.
+
+Yeah, wanted to point that out too - but i started with the more 
+commonly used (and most critical) printout portion: the function call 
+graph itself.
+
+> Please just put the comm/pid in another left column and leave a 
+> plain "---" string for context switches.
+
+That extra column should be a trace_option though - default-off. (it 
+uses up quite some screen real estate) It would have to have a width 
+of 14 characters to be practical:
+
+    ssssssss-12345
+
+mockup:
+
+----------------------------------------------------------------
+CPU)     task-PID   |     cost    |  function
+----------------------------------------------------------------
+
+  0)     bash-54320 |             |  sys_read() {
+  0)     bash-54320 |    0.331 us |    fget_light();
+  0)     bash-54320 |             |    vfs_read() {
+  0) mycomman-1234  |             |      rw_verify_area() {
+  0) mycomman-1234  |  121.444 us |        func();
+
+Note some details:
+
+1) longer comm names can be stripped off at 7 chars - 7 chars is 
+   enough to recognize most of the things and the PID is good enough 
+   for extra separation)
+
+2) the ssssssss-12345 task identifier is _center_ aligned. It's a rare 
+   alignment case but useful here: most people look at the command 
+   portion and the whole string must be greppable and useful in traces 
+   as an identifier - so right-aligning the PID is not a good 
+   solution.
+
+3) there's vertical separation after the task portion as well. This 
+   helps us ignore the task portion when we want to look at only the 
+   code and the cost of it. (the common case)
+
+> comm/pid only in the separator is useless, you cannot grep stuff 
+> like that, also, what's up with those '8's ?
+
+yeah, that context-switch separator is horrible.
+
+We can keep the separator, but as something saner, like:
+
+---------------------------------------------------------
+CPU)     cost    |  function
+---------------------------------------------------------
+
+  0)             |  sys_read() {
+  0)    0.331 us |    fget_light();
+  0)             |    vfs_read() {
+  0)             |      rw_verify_area() {
+  0)             |        security_file_permission() {
+  0)    0.306 us |          cap_file_permission();
+  0)    0.300 us |          cap_file_permission();
+  0)    8.909 us |        }
+  0)    0.993 us |      }
+  0)   11.649 us |    }
+  0)             |    do_sync_read() {
+                 .   -------------------------
+  0)             ==> [ bash-2794 => cat-1234 ]
+                     -------------------------
+
+  0)             |        __sock_recvmsg() {
+  0)             |          security_socket_recvmsg() {
+  0)  100.319 us |            cap_socket_recvmsg();
+---------------------------------------------------------
+
+Note the six small details:
+
+1) '==>' sign put to the vertical separator. This shows that something 
+   flow-intrusive (context-switch) happened.
+
+2) The context-switch printout is in a little box that separates it 
+   from the flow of the outgoing task.
+
+3) there's an extra newline for the incoming flow. Context-switches 
+   are usually attached to the outgoing flow - the incoming flow is 
+   picked semi-randomly, so the newline is a visual separator for that 
+   fact.
+
+4) it uses the ssssssss-12345 taskname convention for both the 
+   outgoing and the incoming task. That makes it greppable 
+   generally.
+
+5) the '----------' lines of the 'box' have no CPU nor task or cost 
+   field. That makes it easy to grep them out - but they are still 
+   helpful visual cues. They are variable length but that's solvable 
+   by using an 'open box' simplification:
+
+     0)    0.300 us |          cap_file_permission();
+     0)    8.909 us |        }
+     0)    0.993 us |      }
+     0)   11.649 us |    }
+     0)             |    do_sync_read() {
+                    .   -----------------------------------
+     0)             ==> [ bash-2794 => cat-1234
+                        -----------------------------------
+
+   Note how the box top and bottom is 35 characters, fixed. That looks 
+   good with most task identifiers. Even in the worst-case length 
+   length situation it looks good:
+
+                    .   -----------------------------------
+     0)             ==> [ mycomman-12345 => mycomman-12345
+                        -----------------------------------
+
+   Or it could be printed out variable length as well - it's a 
+   solvable task :-)
+
+6) note the small dot in the leadin to a context-switch: it's 
+   intentional.
+
+	Ingo
