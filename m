@@ -1,117 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbYK0PQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYK0PRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753622AbYK0PQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 10:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYK0PQG
+	id S1755618AbYK0PRX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 10:17:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYK0PRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 10:16:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:59176 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbYK0PQD (ORCPT
+	Thu, 27 Nov 2008 10:17:15 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:28397 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbYK0PRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 10:16:03 -0500
+	Thu, 27 Nov 2008 10:17:14 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=bpA4hzffiUkz9ua4flVCt6vamMDvgOF8L3H2vvDgMf1MjZ1SyrSA+m9a7hoDcnLZe5
-         InDaLsyI80tAoqN8D14vB9L3iYPMOB/DxpPbkCMIqj+ebkXENuJK/Ew7f0d1ii8jutqo
-         Vf5t+gP+fbMBvHRt9y0pyVXqiPlV3ffcb6IAg=
-Message-ID: <7c86c4470811270716o55f3b076rc8607c7640c2ef14@mail.gmail.com>
-Date: Thu, 27 Nov 2008 16:16:01 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 20/24] perfmon: system calls interface
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, x86@kernel.org,
-       andi@firstfloor.org, sfr@canb.auug.org.au,
-       "Roland McGrath" <roland@redhat.com>, "Oleg Nesterov" <oleg@redhat.com>
-In-Reply-To: <20081127144210.GA4672@elte.hu>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jhviSCsIUmcm/lTHsMurqbJqS/kUQhBkf8ATuRTc8RaZmPLKp82iR9rAv4TQvDQqZN
+         BHZOGxA7xk0N1vGefeqXEZC+R2wkboPWIhcc/9AAhTcPky6vYV+VaGe3dVhetKVLSXvk
+         xBcu//67YPZTba22YWvSTO2moB/H4z2LB+DGc=
+Message-ID: <b637ec0b0811270717t360ce5f9j3d48e8a007010b0e@mail.gmail.com>
+Date: Thu, 27 Nov 2008 16:17:13 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jay Fenlason" <fenlason@redhat.com>
+In-Reply-To: <200811270002.29537.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
-	 <20081126140027.GC6562@elte.hu>
-	 <7c86c4470811270622s540a17d8r73462dfa93d1bc6d@mail.gmail.com>
-	 <20081127144210.GA4672@elte.hu>
+References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
+	 <b637ec0b0811261145q3c7af010l1db0480d13b41715@mail.gmail.com>
+	 <492DAC81.4020803@s5r6.in-berlin.de> <200811270002.29537.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+Hi
 
-On Thu, Nov 27, 2008 at 3:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * stephane eranian <eranian@googlemail.com> wrote:
->
->> Ingo,
+On Thu, Nov 27, 2008 at 12:02 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, 26 of November 2008, Stefan Richter wrote:
 >>
->> On Wed, Nov 26, 2008 at 3:00 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> >
->> > Thirdly, the check for ->exit_state in pfm_task_incompatible() is
->> > not needed: we've just passed ptrace_check_attach() so we know we
->> > just transitioned the task to task->state == TASK_TRACED.
->> >
->> > If you _ever_ see a task exit TASK_TRACED and go zombie or dead
->> > from there without this code allowing it that means the whole
->> > state machine with ptrace is borked up by perfmon. For example i
->> > dont see where the perfmon-control task parents itself as the
->> > exclusive debugger (parent) of the debuggee-task.
->> >
->>
->> Perfmon requires ptrace ONLY to stop the thread you want to operate
->> on. For instance, to read the counters in a thread via pfm_read(),
->> you need to have that thread stopped, so perfmon can extract the
->> machine state safely. But when the monitored thread runs, it does
->> not have to remain under the control of ptrace. All that is needed
->> is that the thread is stopped while we are in the perfmon syscall. I
->> think ptrace allows this today. We will be able to drop ptrace()
->> once we switch to utrace in which case, the kernel will be able to
->> easily stop the thread when entering the perfmon syscalls. I guess I
->> don't quite understand the meaning of your last sentence.
+>> The 2.6.27.5 changelog shows a bunch of ACPI changes.  They may not be
+>> responsible, but in my uninformed opinion these are the changes to look
+>> at more closely.  Since plain bisection did not work well for you, maybe
+>> you should ask the maintainers involved in the ACPI patches for a
+>> priority list of patches to unapply for long-term tests.
 >
-> The meaning of my last sentence is the jist of my argument: you cannot
-> do it like this! You are using a bit of the ptrace infrastructure but
-> unsafely, as pointed out here.
+> Actually, yes, Fabio, you can try to revert all of the "ACPI: EC:" commits
+> applied after 2.6.27.4 and retest.
+
+Will do tonight. I see that there are some other "ACPI: EC:" commits
+in 2.6.27.6 and 2.6.27.7.
+
+I'l just compile the ec.c file from 2.6.27.4 in 2.6.27.7 and test if
+the three commits introduced in 2.6.27.5 wouldn't revert cleanly,
+
+By the way, my HD passed a "smartctl -t long" test without any problems.
+
 >
-Perfmon requires the application to use ptrace. The function you looked
-at is just there to verify that the application actually did attach before
-making a perfmon syscall. If it was not for the stop/resume feature, I would
-not require using ptrace. That's why I like the utrace functionality.
-
-Ptracing and performance monitoring are two different things. One
-is for debugging the other is for performance analysis. The requirements
-are different. There are all sorts of nasty side effects of ptrace which are
-pointless with performance monitoring, e.g., signal redirections.
-
-
-
-> and the thing is, i fail to understand the whole justification of the
-> new sys_pfm_attach()/PFM_NO_TARGET system calls.
->
-> Firstly, there's a taste issue: why didnt you add sys_pfm_detach
-> instead of adding a butt-ugly PFM_NO_TARGET special case into
-> sys_pfm_attach() that maps to pfm_detach??
->
-To tell you the truth, I had it exactly like that initially. Some
-people suggested
-I could combine attach and detach and thereby reduce the number of syscalls.
-If you have no issue with adding dedicated syscalls for attach and detach, then
-I can add this back.
-
-> But more importantly, and very fundamentally: why did you implement it
-> as a special system call? Why didnt you extend ptrace to read/write
-> the PMU context? It is _trivial_ and needs no new syscalls at all:
-> just a new ptrace parameter to arch_ptrace(). And ptrace will drive
-> the TASK_TRACED state machine safely - it already stops/starts tasks
-> to read/write hardware context safely.
+> Thanks,
+> Rafael
 >
 
-I have not looked at those ptrace extensions. But one thing to keep in mind
-is that perfmon can operate at the per-thread level but ALSO at the per-cpu
-level (system-wide). I want to the use the same syscall sequence in either case.
-You can attach to a thread for a per-thread context or a CPU for a system-wide
-context. In system-wide mode, the target designate the CPU, in per-thread the
-tid.
+Regards,
+Fabio
