@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYK0VAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYK0VCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYK0VAM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 16:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYK0U76
+	id S1754622AbYK0VCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 16:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYK0VCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 15:59:58 -0500
-Received: from www.tglx.de ([62.245.132.106]:44390 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752608AbYK0U75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 15:59:57 -0500
-Date: Thu, 27 Nov 2008 21:59:19 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: eranian@gmail.com
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-Subject: Re: [patch 02/24] perfmon: base code
-In-Reply-To: <7c86c4470811271149m5f5556c0y468be509bb6a200@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0811272157370.3325@localhost.localdomain>
-References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>  <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>  <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>  <alpine.LFD.2.00.0811271858300.3325@localhost.localdomain> 
- <7c86c4470811271051g66669197qb6b5fd39961668a9@mail.gmail.com>  <alpine.LFD.2.00.0811272031540.3325@localhost.localdomain> <7c86c4470811271149m5f5556c0y468be509bb6a200@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Nov 2008 16:02:11 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:33400 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752212AbYK0VCK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 16:02:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=npvOSk7Ny/aKq+HbEQLtAwFJRqIZ68bsI8wZmR9jtdz1JDkiQBt4Yd3MxMaur1fynx
+         he/hjYZDdQEsynii5RsX+ZaBljDgsQNxwJxd2HJ+Vvod18RnfX7y5fbFAh9Nmedk/RZz
+         n3qWnMoJok5mgOzgfjrJNGjWNDwZre+2hRI6Q=
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: [PATCH] [STAGING] Move staging drivers back to staging-specific menu
+Date: Fri, 28 Nov 2008 00:01:28 +0300
+Message-Id: <1227819688-24035-1-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Nov 2008, stephane eranian wrote:
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+---
+ drivers/staging/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> On Thu, Nov 27, 2008 at 8:35 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > Stephane,
-> >
-> > On Thu, 27 Nov 2008, stephane eranian wrote:
-> >
-> >> >> session is independent of each other. You can therefore measure different
-> >> >> things on different CPUs. Reservation is thus done independently for each
-> >> >> CPU, therefore we need a cpu bitmask  to track allocation.
-> >> >
-> >> > Ok. Question: if you do a one CPU wide session with perfom, can you
-> >> > still do thread monitoring on the same CPU ?
-> >> >
-> >> No. They are currently mutually exclusive.
-> >>
-> >> > If no, what prevents that a monitored thread is migrated to such a CPU ?
-> >> >
-> >> Nothing. AND you don't want to change affinity because you are monitoring.
-> >> So the current restriction is that cpu-wide and per-thread are
-> >> mutually exclusive.
-> >
-> > And how is this achieved ? Currently there seems nothing which
-> > prevents a per-thread vs. cpu-wide monitoring.
-> >
-> That's true, but that's because cpu-wide support is not included in the
-> patchset.
-
-That's the whole point I'm making. For the current patch set the
-simple global vs. thread exclusivity is sufficient and correct.
-
-When we gradually add stuff then we simply can add the extra checks
-and think about the impact and consequences in that context.
-
-Thanks,
-
-	tglx
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index c95b286..4089f14 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -22,6 +22,8 @@ menuconfig STAGING
+ 	  If in doubt, say N here.
+ 
+ 
++if STAGING
++
+ config STAGING_EXCLUDE_BUILD
+ 	bool "Exclude Staging drivers from being built" if STAGING
+ 	default y
+@@ -37,8 +39,6 @@ config STAGING_EXCLUDE_BUILD
+ 	  when selecting 'make allyesconfg' and 'make allmodconfig' so
+ 	  don't be all that put off, your dog will be just fine.
+ 
+-if !STAGING_EXCLUDE_BUILD
+-
+ source "drivers/staging/et131x/Kconfig"
+ 
+ source "drivers/staging/slicoss/Kconfig"
+-- 
+1.5.6.5
 
