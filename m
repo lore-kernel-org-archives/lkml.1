@@ -1,101 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbYK0PVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbYK0Pb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559AbYK0PVl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 10:21:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYK0PVc
+	id S1753032AbYK0Pb2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 10:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYK0PbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 10:21:32 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:19128 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbYK0PVb (ORCPT
+	Thu, 27 Nov 2008 10:31:18 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64175 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751868AbYK0PbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 10:21:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Xq7YO9XRMCyIJwPDpFlaaT3AGUDsk6dLK60TQIzdL4GpQkYm2CPQ3H86ATrqjjLmF9
-         XQECjG87LiG7CMSqKIJhFD1D7Z+psBP9c5A2RL29gnZUfKCZEVSzMNh3ey4WKfUR2i7W
-         mW3lvYo9mdwDGbXRyzxOFmDXOJK6EwLVLEqI0=
-Date: Thu, 27 Nov 2008 23:21:24 +0800
-From: walimis <walimisdev@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: about use wild cards for set_ftrace_filter and so on
-Message-ID: <20081127152124.GA24616@ubuntu.mshome.net>
+	Thu, 27 Nov 2008 10:31:16 -0500
+Date: Thu, 27 Nov 2008 10:31:13 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Tim Bird <tim.bird@am.sony.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the
+ trace output
+In-Reply-To: <c62985530811270644r2de621ecwfdeb1d353197bdae@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0811271028260.18691@gandalf.stny.rr.com>
+References: <492DEDE9.9010109@gmail.com> <20081127103424.GA9132@elte.hu>  <c62985530811270506o51195654y628f8ab68ff68ac7@mail.gmail.com>  <20081127135155.GA23076@elte.hu> <c62985530811270644r2de621ecwfdeb1d353197bdae@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="d6Gm4EdcadzBjdND"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Thu, 27 Nov 2008, Fr?d?ric Weisbecker wrote:
+> >
+> >> > ---------------------------------------------------------
+> >> > CPU)     cost   |  function
+> >> > ---------------------------------------------------------
+> >> >
+> >> >  0)             |  sys_read() {
+> >> >  0)    0.331 us |    fget_light();
+> >> >  0)             |    vfs_read() {
+> >> >  0)             |      rw_verify_area() {
+> >> >  0)             |        security_file_permission() {
+> >> >  0)    0.306 us |          cap_file_permission();
+> >> >  0)    0.300 us |          cap_file_permission();
+> >> >  0)    8.909 us |        }
+> >> >  0)    0.993 us |      }
+> >> >  0)   11.649 us |+   }
+> >> >  0)             |    do_sync_read() {
+> >> >  0)             |      sock_aio_read() {
+> >> >  0)             |        __sock_recvmsg() {
+> >> >  0)             |          security_socket_recvmsg() {
+> >> >  0)  100.319 us |!           cap_socket_recvmsg();
+> >> > ---------------------------------------------------------
+> >
+> > Hm?
+> 
+> I like it before the CPU number. The main purpose would be to scroll
+> quickly the file and find the overheads. That would be easy if set as
+> a first character.
 
-Hi Steven and Ingo,
+No, please keep the CPU # first.  If anything, you will want to separate 
+out the CPUs first. Otherwise you will see things all mixed up.
 
-I encountered an issue when using ftrace.
-We know that we can use wild cards to set set_ftrace_filter, but there's 
-problem when using such as "echo h* > /debug/tracing/set_ftrace_filter".
-If there are files named with "h" prefix in current directory, echo "h*" 
-will echo these files' name to set_ftrace_filter, not "h*".
-For example:
+Hmm, I could also add a per cpu files.
 
-#cat /debug/tracing/available_filter_functions |grep ^hr |wc -l
-23
-#ls
-#touch hraa hrdd
-#ls 
-hraa  hrdd
-#echo hr* > /debug/tracing/set_ftrace_filter
-#cat /debug/tracing/set_ftrace_filter
+ debugfs/tracing/buffers/cpu0
+ debugfs/tracing/buffers/cpu1
+ debugfs/tracing/buffers/cpu2
+ debugfs/tracing/buffers/cpu3
 
-No output in /debug/tracing/set_ftrace_filter!
-If we use "" to enclose wild cards, it works:
+That would print out the trace for a single CPU.
 
-#ls 
-hraa  hrdd
-#echo "hr*" > /debug/tracing/set_ftrace_filter
-#cat /debug/tracing/set_ftrace_filter |wc -l 
-23
+BTW, I'm really not here. I'm on holiday eating turkeys.
 
-This problem can lead to unexpected result if current directory has a 
-lot of files.
-I suppose that we can add some notes to document, so a patch attached.
- 
+-- Steve
 
---d6Gm4EdcadzBjdND
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0001-Impact-imporve-document.patch"
-
-
-Impact: imporve document
-
-Signed-off-by: walimis <walimisdev@gmail.com>
----
- Documentation/ftrace.txt |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index de05042..9735434 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -1251,6 +1251,9 @@ These are the only wild cards which are supported.
- 
-   <match>*<match> will not work.
- 
-+Note: you'd better to use "" to enclose wild cards, otherwise in some
-+case you can't get the correct result.
-+
-  # echo hrtimer_* > /debug/tracing/set_ftrace_filter
- 
- Produces:
--- 
-1.6.0.3
-
-
---d6Gm4EdcadzBjdND--
