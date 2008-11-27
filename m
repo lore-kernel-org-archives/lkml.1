@@ -1,133 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbYK0OCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYK0OCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbYK0OCM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 09:02:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYK0OB4
+	id S1756025AbYK0OCz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 09:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYK0OCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 09:01:56 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:43025 "EHLO mgw1.diku.dk"
+	Thu, 27 Nov 2008 09:02:46 -0500
+Received: from www.tglx.de ([62.245.132.106]:58187 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751545AbYK0OBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 09:01:55 -0500
-Date: Thu, 27 Nov 2008 15:01:51 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] sound/pci/mixart/mixart.c: Add missing snd_card_free
-In-Reply-To: <s5hk5apz3md.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.64.0811271445310.15160@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0811271423040.15160@pc-004.diku.dk>
- <Pine.LNX.4.64.0811271432350.15160@pc-004.diku.dk> <s5hk5apz3md.wl%tiwai@suse.de>
+	id S1752177AbYK0OCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 09:02:46 -0500
+Date: Thu, 27 Nov 2008 15:01:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: eranian@googlemail.com
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, eranian@gmail.com,
+       sfr@canb.auug.org.au
+Subject: Re: [patch 20/24] perfmon: system calls interface
+In-Reply-To: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
+Message-ID: <alpine.LFD.2.00.0811271454120.3325@localhost.localdomain>
+References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Nov 2008, Takashi Iwai wrote:
+On Wed, 26 Nov 2008, eranian@googlemail.com wrote:
 
-> At Thu, 27 Nov 2008 14:33:30 +0100 (CET),
-> Julia Lawall wrote:
-> > 
-> > Oops, please ignore this patch.  There is a problem, but the modification 
-> > is not correct.
-> 
-> How about the patch below?
+> +asmlinkage long sys_pfm_write(int fd, int uflags,
+> +			      int type,
+> +			      void __user *ureq,
+> +			      size_t sz)
 
-My solution was to move the initialization of mgr->chip[idx] down below 
-the last error return in snd_mixart_create.  I think it depends on what is 
-going to happen to the structure ops.  In your solution, if ops.dev_free 
-is used later on, then the link between mgr and card will be broken, and 
-no one will know to free card.
+> +asmlinkage long sys_pfm_read(int fd, int uflags,
+> +			     int type,
+> +			     void __user *ureq,
+> +			     size_t sz)
 
-There is the same code and the same problem in sound/pci/pcxhr/pcxhr.c
+After looking at both I did a diff of the two functions:
 
-I attach a proposed patch for both below.
+--- r.c	2008-11-27 14:27:54.000000000 +0100
++++ w.c	2008-11-27 14:27:52.000000000 +0100
+@@ -36,10 +36,12 @@
+ 	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
+ 	if (ret)
+ 		goto skip;
+-
+ 	switch(type) {
++	case PFM_RW_PMC:
++		ret = __pfm_write_pmcs(ctx, req, count);
++		break;
+ 	case PFM_RW_PMD:
+-		ret = __pfm_read_pmds(ctx, req, count);
++		ret = __pfm_write_pmds(ctx, req, count);
+ 		break;
+ 	default:
+ 		PFM_DBG("invalid type=%d", type);
+@@ -48,12 +50,13 @@
+ skip:
+ 	spin_unlock_irqrestore(&ctx->lock, flags);
+ 
+-	if (copy_to_user(ureq, req, sz))
+-		ret = -EFAULT;
+-
++	/*
++	 * This function may be on the critical path.
++	 * We want to avoid the branch if unecessary.
++	 */
+ 	if (fptr)
+ 		kfree(fptr);
+ error:
+ 	pfm_release_ctx_from_fd(&cookie);
+ 	return ret;
+ }
 
-julia
+Both read and write are multiplexing syscalls already and 90% of the
+code is the same.
 
-> Takashi
-> 
-> ---
-> diff --git a/sound/pci/mixart/mixart.c b/sound/pci/mixart/mixart.c
-> index ae7601f..3cccfed 100644
-> --- a/sound/pci/mixart/mixart.c
-> +++ b/sound/pci/mixart/mixart.c
-> @@ -989,6 +989,7 @@ static int snd_mixart_pcm_digital(struct snd_mixart *chip)
->  
->  static int snd_mixart_chip_free(struct snd_mixart *chip)
->  {
-> +	chip->mgr->chip[chip->chip_idx] = NULL;
->  	kfree(chip);
->  	return 0;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+	case PFM_RD_PMC:
+ 	case PFM_RD_PMD:
+	case PFM_WR_PMC:
+ 	case PFM_WR_PMD:
 
----
- sound/pci/mixart/mixart.c |    4 +++-
- sound/pci/pcxhr/pcxhr.c   |    4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+would make them the same and safe a syscall and duplicated code.
 
-diff --git a/sound/pci/mixart/mixart.c b/sound/pci/mixart/mixart.c
-index ae7601f..f23a735 100644
---- a/sound/pci/mixart/mixart.c
-+++ b/sound/pci/mixart/mixart.c
-@@ -1010,7 +1010,7 @@ static int __devinit snd_mixart_create(struct mixart_mgr *mgr, struct snd_card *
- 		.dev_free = snd_mixart_chip_dev_free,
- 	};
- 
--	mgr->chip[idx] = chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
- 	if (! chip) {
- 		snd_printk(KERN_ERR "cannot allocate chip\n");
- 		return -ENOMEM;
-@@ -1025,6 +1025,7 @@ static int __devinit snd_mixart_create(struct mixart_mgr *mgr, struct snd_card *
- 		return err;
- 	}
- 
-+	mgr->chip[idx] = chip;
- 	snd_card_set_dev(card, &mgr->pci->dev);
- 
- 	return 0;
-@@ -1377,6 +1378,7 @@ static int __devinit snd_mixart_probe(struct pci_dev *pci,
- 		sprintf(card->longname, "%s [PCM #%d]", mgr->longname, i);
- 
- 		if ((err = snd_mixart_create(mgr, card, i)) < 0) {
-+			snd_card_free(card);
- 			snd_mixart_free(mgr);
- 			return err;
- 		}
-diff --git a/sound/pci/pcxhr/pcxhr.c b/sound/pci/pcxhr/pcxhr.c
-index 73de6e9..7d2b136 100644
---- a/sound/pci/pcxhr/pcxhr.c
-+++ b/sound/pci/pcxhr/pcxhr.c
-@@ -1024,7 +1024,7 @@ static int __devinit pcxhr_create(struct pcxhr_mgr *mgr, struct snd_card *card,
- 		.dev_free = pcxhr_chip_dev_free,
- 	};
- 
--	mgr->chip[idx] = chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
- 	if (! chip) {
- 		snd_printk(KERN_ERR "cannot allocate chip\n");
- 		return -ENOMEM;
-@@ -1050,6 +1050,7 @@ static int __devinit pcxhr_create(struct pcxhr_mgr *mgr, struct snd_card *card,
- 		return err;
- 	}
- 
-+	mgr->chip[idx] = chip;
- 	snd_card_set_dev(card, &mgr->pci->dev);
- 
- 	return 0;
-@@ -1310,6 +1311,7 @@ static int __devinit pcxhr_probe(struct pci_dev *pci, const struct pci_device_id
- 		sprintf(card->longname, "%s [PCM #%d]", mgr->longname, i);
- 
- 		if ((err = pcxhr_create(mgr, card, i)) < 0) {
-+			snd_card_free(card);
- 			pcxhr_free(mgr);
- 			return err;
- 		}
+Thanks,
+
+	tglx
+
