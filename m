@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYK0Jaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYK0JdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbYK0Jaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 04:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYK0JaN
+	id S1753541AbYK0JdW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYK0JdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 04:30:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49380 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752328AbYK0JaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 04:30:10 -0500
-Date: Thu, 27 Nov 2008 10:29:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/1] sched: prevent divide by zero error in
-	cpu_avg_load_per_task
-Message-ID: <20081127092941.GA630@elte.hu>
-References: <20081127020423.460116740@goodmis.org> <20081127020554.533035163@goodmis.org>
+	Thu, 27 Nov 2008 04:33:08 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:45770 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbYK0JdG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 04:33:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=GOmgyrSVc9aEAKV3NYKXCsHJTCHKGnqLe8ZVfEgGuK2P3L6F23zr7tUXcS63RWIlOX
+         QshaLkRKjOoW+oAERhCygt0QcmCJQHhnQi6PFvzMAgS8XSSXWU6sMMf7tGxGWQjIAgvz
+         Y6TEpQsK2OPF9SDN67a7F7CXkjQJ9eazM3CQk=
+Message-ID: <84144f020811270133r179828eat69b24c067c55447@mail.gmail.com>
+Date: Thu, 27 Nov 2008 11:33:03 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Markus Rechberger" <mrechberger@gmail.com>
+Subject: Re: [PATCH 1/7] Adding empia base driver
+Cc: "Aidan Thornton" <makosoft@googlemail.com>, "Greg KH" <greg@kroah.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <d9def9db0811262025v5d1b0df4h3855cb6023be2cf7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081127020554.533035163@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
+	 <20081022220903.GA15278@kroah.com>
+	 <d9def9db0810221524m738b838bs681c0b9159531c64@mail.gmail.com>
+	 <c8b4dbe10811261112w6cbbec73mb468870f206d9f97@mail.gmail.com>
+	 <d9def9db0811262025v5d1b0df4h3855cb6023be2cf7@mail.gmail.com>
+X-Google-Sender-Auth: c01cdbd6e57285c9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 27, 2008 at 6:25 AM, Markus Rechberger
+<mrechberger@gmail.com> wrote:
+> I simply don't have the time for those games anymore, and those people here who have personal
+> issues with me and/or my work don't pay my monthly bills, neither do they have any clue how that
+> driver is used with some systems of certain customers. I constantly deliver full solutions, and not
+> driver code only. Neither am I limited to Linux only.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Again, it's not personal, it's the way we do things here. But you
+should already know that by now so whatever.
 
-> From: Steven Rostedt <rostedt@goodmis.org>
-> 
-> Impact: fix to divide by zero
-> 
-> While testing the branch profiler, I hit this crash:
-> 
-> divide error: 0000 [#1] PREEMPT SMP
-> [...]
-> Call Trace:
->  <IRQ> <0> [<ffffffff8024fd43>] find_busiest_group+0x3e5/0xcaa
->  [<ffffffff8025da75>] rebalance_domains+0x2da/0xa21
+What puzzles me the most here is why isn't Empia simply providing
+datasheets to other developers as well. I mean, even the GPU and
+wireless vendors know how to play well with the community now, so
+what's the problem? Being locked to just one developer who's unwilling
+to cooperate doesn't sound like a winning strategy to me.
 
-> The code for cpu_avg_load_per_task has:
-> 
-> 	if (rq->nr_running)
-> 		rq->avg_load_per_task = rq->load.weight / rq->nr_running;
-> 
-> The runqueue lock is not held here, and there is nothing that 
-> prevents the rq->nr_running from going to zero after it passes the 
-> if condition.
-> 
-> The branch profiler simply made the race window bigger.
-> 
-> This patch saves off the rq->nr_running to a local variable and uses 
-> that for both the condition and the division.
+Greg, is there any reason we don't have Markus' out-of-tree driver
+listed here, btw:
 
-good catch! Applied to tip/sched/urgent, thanks Steve!
+  http://www.linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
 
-the rebalancer scans remote runqueues without holding the runqueue 
-lock for performance reasons, so nr_running indeed has to be loaded 
-into a local variable here.
+Maybe there are people in the "Linux Driver Project" that could be
+interested in working on this but simply don't know about it?
 
-I think it could hit anywhere upstream as well, even without the 
-branch tracer: depends on the register pressure and GCC's choices for 
-reloading that register. If say FRAME_POINTER is enabled and we are 
-running with some more agressive optimization or just an older/suckier 
-GCC that does a spurious reload, then this might happen too.
-
-it's not a classic race, it's an SMP bug that will either trigger or 
-not trigger at all, depending on compiler behavior.
-
-	Ingo
+                               Pekka
