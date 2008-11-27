@@ -1,143 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYK0Bx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYK0CGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbYK0Bx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 20:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYK0Bxp
+	id S1753382AbYK0CGL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 21:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYK0CF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 20:53:45 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:32050 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYK0Bxo (ORCPT
+	Wed, 26 Nov 2008 21:05:56 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52208 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbYK0CF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 20:53:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:references:x-google-sender-auth;
-        b=QACfXU/+zIDheDdWtkkWd68ZEhIaa9v8D9Zo6cS1Ma67leEvRz8MCqVHMh1KZfeHQP
-         chsH7KjyFVaZ5avKd9C+Cd1ATcGIOFrDCNo/mA1IkgFjh7gR34ZffVExqsF5aRk0NZCc
-         faFI4rZpQ/lHx/gn3CCkkE6ygaBMU9WHrwH0k=
-Message-ID: <b6c5339f0811261753o345283c2g9c35d3281d8e4e6d@mail.gmail.com>
-Date: Wed, 26 Nov 2008 20:53:43 -0500
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [ath5k-devel] License of changes to ath5k/ath9k
-Cc: "Luis Rodriguez" <Luis.Rodriguez@atheros.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
-       "bkuhn@softwarefreedom.org" <bkuhn@softwarefreedom.org>
-In-Reply-To: <20081125222814.GG5950@tesla>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_29919_4212923.1227750823252"
-References: <20081125210421.GF5950@tesla>
-	 <b6c5339f0811251329h1130fd4aladcbfda52f0542eb@mail.gmail.com>
-	 <20081125222814.GG5950@tesla>
-X-Google-Sender-Auth: 1be9efd6cf49f57c
+	Wed, 26 Nov 2008 21:05:56 -0500
+Message-Id: <20081127020423.460116740@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 26 Nov 2008 21:04:23 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/1] sched: divide by 0 error
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_29919_4212923.1227750823252
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+There exists a race where we can hit a divide by zero in the scheduler
+and crash the system.
 
-On Tue, Nov 25, 2008 at 5:28 PM, Luis R. Rodriguez
-<lrodriguez@atheros.com> wrote:
-> Sure, BTW I had created such a script a long time ago, the files just
-> need to be updated (so update them if you download this thingy):
->
-> http://www.kernel.org/pub/linux/kernel/people/mcgrof/scripts/ath5k-license.pl.txt
->
+The following patches are in:
 
-Cool, that saved me some work.  I updated this so that the files are
-now up-to-date, and it can be called directly from the commit-msg hook
-(also handles existing Signed-off-by etc).  Feel free to take whatever
-you like from my version.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 
+    branch: urgent
+
+
+Steven Rostedt (1):
+      sched: prevent divide by zero error in cpu_avg_load_per_task
+
+----
+ kernel/sched.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 -- 
-Bob Copeland %% www.bobcopeland.com
-
-------=_Part_29919_4212923.1227750823252
-Content-Type: application/x-perl; name=ath5k-license.pl
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fo0r18sw0
-Content-Disposition: attachment; filename=ath5k-license.pl
-
-IyEvdXNyL2Jpbi9wZXJsCiMgQ29weXJpZ2h0IChjKSAyMDA4IEx1aXMgUi4gUm9kcmlndWV6IDxt
-Y2dyb2ZAd2lubGFiLnJ1dGdlcnMuZWR1PgojCiMgIFRoaXMgZmlsZSBpcyBmcmVlIHNvZnR3YXJl
-OiB5b3UgbWF5IGNvcHksIHJlZGlzdHJpYnV0ZSBhbmQvb3IgbW9kaWZ5IGl0CiMgIHVuZGVyIHRo
-ZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5
-IHRoZQojICBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24sIGVpdGhlciB2ZXJzaW9uIDIgb2YgdGhl
-IExpY2Vuc2UsIG9yIChhdCB5b3VyCiMgIG9wdGlvbikgYW55IGxhdGVyIHZlcnNpb24uCiMKIyAg
-VGhpcyBmaWxlIGlzIGRpc3RyaWJ1dGVkIGluIHRoZSBob3BlIHRoYXQgaXQgd2lsbCBiZSB1c2Vm
-dWwsIGJ1dAojICBXSVRIT1VUIEFOWSBXQVJSQU5UWTsgd2l0aG91dCBldmVuIHRoZSBpbXBsaWVk
-IHdhcnJhbnR5IG9mCiMgIE1FUkNIQU5UQUJJTElUWSBvciBGSVRORVNTIEZPUiBBIFBBUlRJQ1VM
-QVIgUFVSUE9TRS4gIFNlZSB0aGUgR05VCiMgIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgZm9yIG1v
-cmUgZGV0YWlscy4KIwojICBZb3Ugc2hvdWxkIGhhdmUgcmVjZWl2ZWQgYSBjb3B5IG9mIHRoZSBH
-TlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQojICBhbG9uZyB3aXRoIHRoaXMgcHJvZ3JhbS4gIElm
-IG5vdCwgc2VlIDxodHRwOi8vd3d3LmdudS5vcmcvbGljZW5zZXMvPi4KCiMgLS0tCiMKIyBVc2Vy
-IG9mIHRoaXMgZmlsZSBpcyBleHBlY3RlZCB0byBnaXZlIGEgbGlzdCBvZiBmaWxlcy4KIyBZb3Ug
-Y2FuIHJ1biBzb21ldGhpbmcgbGlrZTogZ2l0LWRpZmYtaW5kZXggLS1uYW1lLW9ubHkgSEVBRAoj
-IAojIFRvIGluc3RhbGwgdXNpbmcgZ2l0LCBkbzoKCiMJY2htb2Qgbyt4IC5naXQvaG9va3MvY29t
-bWl0LW1zZwojCiMgSXRzIHJlY29tbWVuZGVkIHlvdXIgU09CIGxpbmUgZ28gYmVsb3cgeW91cgoj
-IENoYW5nZXMtbGljZW5zZWQtdW5kZXIgdGFnLgojCiMgWW91ciBjb21taXQtbXNnIHNjcmlwdCBj
-YW4gbG9vayBsaWtlIHRoaXM6CiMKIyBnaXQtZGlmZi1pbmRleCAtLW5hbWUtb25seSBIRUFEIHwg
-JEhPTUUvYmluL2F0aDVrLWxpY2Vuc2UucGwgPj4gIiQxIgojCiMgIyBVbmNvbW1lbnQgdGhlIGJl
-bG93IHRvIGFkZCBhIFNpZ25lZC1vZmYtYnkgbGluZSB0byB0aGUgbWVzc2FnZS4KIyBTT0I9JChn
-aXQgdmFyIEdJVF9BVVRIT1JfSURFTlQgfCBzZWQgLW4gJ3MvXlwoLio+XCkuKiQvU2lnbmVkLW9m
-Zi1ieTogXDEvcCcpCiMgZ3JlcCAtcXMgIl4kU09CIiAiJDEiIHx8IGVjaG8gIiRTT0IiID4+ICIk
-MSIKIwojICMgVGhpcyBleGFtcGxlIGNhdGNoZXMgZHVwbGljYXRlIFNpZ25lZC1vZmYtYnkgbGlu
-ZXMuCiMgdGVzdCAiIiA9ICIkKGdyZXAgJ15TaWduZWQtb2ZmLWJ5OiAnICIkMSIgfAojICAgICAg
-ICAgIHNvcnQgfCB1bmlxIC1jIHwgc2VkIC1lICcvXlsgICBdKjFbICAgIF0vZCcpIiB8fCB7CiMg
-ICAgICAgICAgICAgICAgICBlY2hvID4mMiBEdXBsaWNhdGUgU2lnbmVkLW9mZi1ieSBsaW5lcy4K
-IyAgICAgICAgICAgICAgICAgICAgICAgICAgZXhpdCAxCiMgICAgICAgICAgICAgICAgICAgICAg
-ICAgIH0KCnVzZSBTd2l0Y2g7CnVzZSBGaWxlOjpCYXNlbmFtZTsKdXNlIHN0cmljdDsKCm15ICRt
-c2dfZmlsZSA9IHNoaWZ0OwoKbXkgJWF0aDVrX2ZpbGVzID0gKAoJImRyaXZlcnMvbmV0L3dpcmVs
-ZXNzL2F0aDVrL2F0dGFjaC5jIiA9PiAiSVNDIiwKCSJkcml2ZXJzL25ldC93aXJlbGVzcy9hdGg1
-ay9jYXBzLmMiID0+ICJJU0MiLAoJImRyaXZlcnMvbmV0L3dpcmVsZXNzL2F0aDVrL2Rlc2MuYyIg
-PT4gIklTQyIsCgkiZHJpdmVycy9uZXQvd2lyZWxlc3MvYXRoNWsvZGVzYy5oIiA9PiAiSVNDIiwK
-CSJkcml2ZXJzL25ldC93aXJlbGVzcy9hdGg1ay9kbWEuYyIgPT4gIklTQyIsCgkiZHJpdmVycy9u
-ZXQvd2lyZWxlc3MvYXRoNWsvZWVwcm9tLmMiID0+ICJJU0MiLAoJImRyaXZlcnMvbmV0L3dpcmVs
-ZXNzL2F0aDVrL2VlcHJvbS5oIiA9PiAiSVNDIiwKCSJkcml2ZXJzL25ldC93aXJlbGVzcy9hdGg1
-ay9ncGlvLmMiID0+ICJJU0MiLAoJImRyaXZlcnMvbmV0L3dpcmVsZXNzL2F0aDVrL2luaXR2YWxz
-LmMiID0+ICJJU0MiLAoJImRyaXZlcnMvbmV0L3dpcmVsZXNzL2F0aDVrL3BjdS5jIiA9PiAiSVND
-IiwKCSJkcml2ZXJzL25ldC93aXJlbGVzcy9hdGg1ay9waHkuYyIgPT4gIklTQyIsCgkiZHJpdmVy
-cy9uZXQvd2lyZWxlc3MvYXRoNWsvcWN1LmMiID0+ICJJU0MiLAoJImRyaXZlcnMvbmV0L3dpcmVs
-ZXNzL2F0aDVrL3Jlc2V0LmMiID0+ICJJU0MiLAoJImRyaXZlcnMvbmV0L3dpcmVsZXNzL2F0aDVr
-L3JlZy5oIiA9PiAiSVNDIiwKCSJkcml2ZXJzL25ldC93aXJlbGVzcy9hdGg1ay9hdGg1ay5oIiA9
-PiAiMy1DbGF1c2UtQlNEIiwKCSJkcml2ZXJzL25ldC93aXJlbGVzcy9hdGg1ay9iYXNlLmMiID0+
-ICIzLUNsYXVzZS1CU0QiLAoJImRyaXZlcnMvbmV0L3dpcmVsZXNzL2F0aDVrL2Jhc2UuaCIgPT4g
-IjMtQ2xhdXNlLUJTRCIsCgkiZHJpdmVycy9uZXQvd2lyZWxlc3MvYXRoNWsvZGVidWcuYyIgPT4g
-IkdQTCIsCgkiZHJpdmVycy9uZXQvd2lyZWxlc3MvYXRoNWsvZGVidWcuaCIgPT4gIkdQTCIsCik7
-CgpteSBAaXNjX2ZpbGVzID0gKCk7Cm15IEBic2RfZmlsZXMgPSAoKTsKbXkgQGdwbF9maWxlcyA9
-ICgpOwoKb3BlbihGSUxFUywgImdpdC1kaWZmLWluZGV4IC0tbmFtZS1vbmx5IEhFQUQgfCIpIHx8
-IGRpZSAiUmVhZGluZyBpbmRleDogJD8iOwoKd2hpbGUgKDxGSUxFUz4pIHsKCWNob21wOwoJaWYg
-KGV4aXN0cygkYXRoNWtfZmlsZXN7JF99KSkgewoJCXN3aXRjaCAoJGF0aDVrX2ZpbGVzeyRffSkg
-ewoJCQljYXNlICJJU0MiIHsgcHVzaCAoQGlzY19maWxlcywgJF8pIH0KCQkJY2FzZSAiMy1DbGF1
-c2UtQlNEIiB7IHB1c2ggKEBic2RfZmlsZXMsICRfKSB9CgkJCWNhc2UgIkdQTCIgeyBwdXNoIChA
-Z3BsX2ZpbGVzLCAkXykgfQoJCX0KCX0KfQpjbG9zZShGSUxFUyk7CgpvcGVuIChNU0csICRtc2df
-ZmlsZSkgfHwgZGllICJDb3VsZCBub3Qgb3BlbiBtc2c6ICQ/IjsKbXkgQG1zZyA9IDxNU0c+Owpj
-bG9zZSAoTVNHKTsKCiMgaG9sZHMgIkNoYW5nZXMtbGljZW5zZWQtdW5kZXIiIGxpbmVzCm15IEBj
-aGFuZ2VzID0gKCk7CgpteSBAY2hhbmdlZF9maWxlcyA9IChcQGlzY19maWxlcywgXEBic2RfZmls
-ZXMsIFxAZ3BsX2ZpbGVzKTsgCgojIGNoZWNrIGlmIGFsbCBzYW1lIGxpY2Vuc2UKbXkgJHR5cGVz
-ID0gMDsKZm9yZWFjaCBteSAkc2V0IChAY2hhbmdlZF9maWxlcykgewoJJHR5cGVzKysgaWYgKEB7
-JHNldH0gPiAwKTsKfQoKZm9yZWFjaCBteSAkbmV3X3NldCAoQGNoYW5nZWRfZmlsZXMpIHsKCW15
-IEBhcnJheSA9IEAkbmV3X3NldDsKCW5leHQgaWYgKEBhcnJheSA9PSAwKTsKCglteSAkbGljZW5z
-ZSA9ICRhdGg1a19maWxlc3skYXJyYXlbMF19OwoKCW15IEBiYXNlX25hbWVzID0gbWFwIHsgYmFz
-ZW5hbWUoJF8pIH0gQGFycmF5OwoJIyBPciBzb21ldGhpbmcgbGlrZSB0aGlzLi4uIHRvIG5vdCB1
-c2UgRmlsZTo6QmFzZW5hbWUKCSMgQGJhc2VfbmFtZXMgPSBtYXAgeyAkXyA9fiBzIV4oPzouKi8p
-PyguKz8pKD86XC5bXi5dKik/JCEkMSEgfSBAYXJyYXk7CglteSAkc2V0X2ZpbGVzID0gam9pbigi
-LCAiLCBAYmFzZV9uYW1lcyk7CgoJaWYgKCR0eXBlcyA+IDEpIHsKCQlwdXNoIEBjaGFuZ2VzLCAi
-Q2hhbmdlcyB0byAkc2V0X2ZpbGVzIjsKCX0KCglwdXNoIEBjaGFuZ2VzLCAiQ2hhbmdlcy1saWNl
-bnNlZC11bmRlcjogJGxpY2Vuc2VcbiI7Cn0KCiMgcmVhZCB0aHJvdWdoIHVudGlsIHMtby1iLCBw
-dXQgY2hhbmdlcyBqdXN0IGJlZm9yZQpvcGVuKE9VVCwgIj4kbXNnX2ZpbGUiKTsKbXkgJHByaW50
-ZWQgPSAwOwpmb3JlYWNoIG15ICRsaW5lIChAbXNnKSB7CglpZiAoJGxpbmUgPX4gL15TaWduZWQt
-b2ZmLWJ5Oi8gJiYgISRwcmludGVkKSB7CgkJcHJpbnQgT1VUIGpvaW4oIlxuIiwgQGNoYW5nZXMp
-LCAiXG4iOwoJCSRwcmludGVkID0gMTsKCX0KCXByaW50IE9VVCAkbGluZTsKfQoKcHJpbnQgT1VU
-ICJcbiIsIGpvaW4oIlxuIiwgQGNoYW5nZXMpIHVubGVzcyAkcHJpbnRlZDsKY2xvc2UoT1VUKTsK
-
-------=_Part_29919_4212923.1227750823252--
