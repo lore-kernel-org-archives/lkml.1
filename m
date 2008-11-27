@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbYK0QVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYK0QWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbYK0QVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 11:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbYK0QVX
+	id S1754279AbYK0QWG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 11:22:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbYK0QVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 11:21:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58442 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754435AbYK0QVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 11:21:23 -0500
-Date: Thu, 27 Nov 2008 17:21:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: walimis <walimisdev@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: about use wild cards for set_ftrace_filter and so on
-Message-ID: <20081127162117.GA3467@elte.hu>
-References: <20081127152124.GA24616@ubuntu.mshome.net> <alpine.DEB.1.10.0811271032360.18691@gandalf.stny.rr.com> <20081127155047.GB24616@ubuntu.mshome.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081127155047.GB24616@ubuntu.mshome.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 27 Nov 2008 11:21:37 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:30623 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754717AbYK0QVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 11:21:36 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH -v3 5/8] fsnotify: unified filesystem notification
+ backend
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, hch@infradead.org
+In-Reply-To: <20081125172117.17115.4875.stgit@paris.rdu.redhat.com>
+References: <20081125171714.17115.82625.stgit@paris.rdu.redhat.com>
+	 <20081125172117.17115.4875.stgit@paris.rdu.redhat.com>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 17:21:34 +0100
+Message-Id: <1227802894.4454.1768.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-11-25 at 12:21 -0500, Eric Paris wrote:
 
-* walimis <walimisdev@gmail.com> wrote:
-
-> I only add a note, but I wonder whether enough.
-> If needed, I can add a example to this document.
-> 
-> Impact: imporve document
-
-[ You need to slightly improve the commit log as well ;-) ]
-
-> +Note: you'd better to use '' to enclose wild cards, otherwise in some
-> +case you can't get the correct result.
+> +void fsnotify_kill_group(struct fsnotify_group *group)
+> +{
+> +       /* clear the notification queue of all events */
+> +       fsnotify_clear_notif(group);
 > +
->   # echo hrtimer_* > /debug/tracing/set_ftrace_filter
+> +       kfree(group);
+> +}
 
-Why not fix the example too? Something like:
+We're not sending any signals ;-) destroy or free perhaps?
 
-> +Note: you'd better to use '' to enclose wild cards, otherwise in some
-> +case you can't get the correct result due to shell wildcard 
-> +extension:.
-> +
->   # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
-
-looks good otherwise.
-
-	Ingo
