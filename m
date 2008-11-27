@@ -1,116 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYK0M5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYK0NDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYK0M5s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYK0M5j
+	id S1754201AbYK0NDS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 08:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYK0NDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:57:39 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:45947 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYK0M5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:57:38 -0500
-Date: Thu, 27 Nov 2008 13:57:34 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/media/video/cx88/cx88-alsa.c: Adjust error-handling
- code
-Message-ID: <Pine.LNX.4.64.0811271357100.15160@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Nov 2008 08:03:07 -0500
+Received: from viefep11-int.chello.at ([62.179.121.31]:54930 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYK0NDG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 08:03:06 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH 2/2] tracing: identify which executable object the
+ userspace address belongs to
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>, mingo@elte.hu,
+       srostedt@redhat.com, sandmann@daimi.au.dk, linux-kernel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk
+In-Reply-To: <20081127124851.GC23480@redhat.com>
+References: <1227353328-16104-1-git-send-email-edwintorok@gmail.com>
+	 <1227353328-16104-3-git-send-email-edwintorok@gmail.com>
+	 <y0my6z798de.fsf@ton.toronto.redhat.com> <1227782505.4454.1393.camel@twins>
+	 <20081127124851.GC23480@redhat.com>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 14:02:56 +0100
+Message-Id: <1227790976.4454.1559.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Thu, 2008-11-27 at 07:48 -0500, Frank Ch. Eigler wrote:
+> Hi -
+> 
+> On Thu, Nov 27, 2008 at 11:41:45AM +0100, Peter Zijlstra wrote:
+> > > > Impact: modify+improve the userstacktrace tracing visualization feature
+> > > > [...]
+> > > > You'll see stack entries like:
+> > > >    /lib/libpthread-2.7.so[+0xd370]
+> > > > [...]
+> > > 
+> > > Can you suggest an actual distribution & architecture where this
+> > > facility may be tested/used?  It appears to require frame-pointer
+> > > stuff that AFAIK is not generally turned on for user-space.
+> > 
+> > gentoo, just rebuild world with frame pointers ;-)
+> 
+> Well, that only goes so far.  If this feature turns out unable to work
+> without distributors recompiling all their stuff on, for example, x86-64,
+> then expectations need to be reset.
 
-In the function cx88_audio_initdev, the value card has been created using
-snd_card_new.  The other error handling code in this function frees the
-value using snd_card_free.  I have thus changed the first error case to do
-the same.  On the other hand, it may be that card is not sufficiently
-initialized at this point to use snd_card_free, in which case something
-else should be done to free the memory in the error case.
+Who says you need a distributor to recompile stuff.. there are plenty
+people running gentoo, and it doesn't take all that long to rebuild
+world on these multi-socket quad core boxen we have today ;-)
 
-In the function snd_cx88_create the call kfree(chip) in one error case looks
-suspicious, both because it is not done in the other error code, and
-because chip points into the middle of the memory allocated by
-snd_card_new, ie it is not itself associated with a separate kmalloc.
-Therefore I have removed it.
+Although with gcc getting ever slower and desktop software ever more
+bloated who knows,.. but then its your own fault if you install gnome
+and such, gentoo comes lean and mean from the stage3 cage.
 
-The semantic match that finds the first problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+I wish more distros would be as easy to rebuild as gentoo is, its a real
+feature.
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S,S1;
-position p1,p2,p3;
-expression E,E1;
-type T,T1;
-expression *ptr != NULL;
-@@
-
-(
- if ((x@p1 = snd_card_new(...)) == NULL) S
-|
- x@p1 = snd_card_new(...);
-)
- ... when != snd_card_free(...,(T)x,...)
-     when != if (...) { <+... snd_card_free(...,(T)x,...) ...+> }
-     when != true x == NULL || ...
-     when != x = E
-     when != E = (T)x
-     when any
-(
- if (x == NULL || ...) S1
-|
- if@p2 (...) {
-  ... when != snd_card_free(...,(T1)x,...)
-      when != if (...) { <+... snd_card_free(...,(T1)x,...) ...+> }
-      when != x = E1
-      when != E1 = (T1)x
-(
-  return \(0\|<+...x...+>\|ptr\);
-|
-  return@p3 ...;
-)
-}
-)
-
-@ script:python @
-p1 << r.p1;
-p3 << r.p3;
-@@
-
-print "* file: %s snd_card_new: %s return: %s" % (p1[0].file,p1[0].line,p3[0].line)
-
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/media/video/cx88/cx88-alsa.c           |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/video/cx88/cx88-alsa.c b/drivers/media/video/cx88/cx88-alsa.c
-index 06f171a..66c755c 100644
---- a/drivers/media/video/cx88/cx88-alsa.c
-+++ b/drivers/media/video/cx88/cx88-alsa.c
-@@ -742,7 +742,6 @@ static int __devinit snd_cx88_create(struct snd_card *card,
- 	core = cx88_core_get(pci);
- 	if (NULL == core) {
- 		err = -EINVAL;
--		kfree (chip);
- 		return err;
- 	}
- 
-@@ -812,7 +811,7 @@ static int __devinit cx88_audio_initdev(struct pci_dev *pci,
- 
- 	err = snd_cx88_create(card, pci, &chip);
- 	if (err < 0)
--		return (err);
-+		goto error;
- 
- 	err = snd_cx88_pcm(chip, 0, "CX88 Digital");
- 	if (err < 0)
