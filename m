@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYK0KOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYK0KPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbYK0KOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 05:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYK0KOj
+	id S1754303AbYK0KPg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 05:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYK0KP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 05:14:39 -0500
-Received: from ns2.suse.de ([195.135.220.15]:46425 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbYK0KOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 05:14:38 -0500
-Date: Thu, 27 Nov 2008 11:14:36 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       edwintorok@gmail.com
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-ID: <20081127101436.GI28285@wotan.suse.de>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <1227780007.4454.1344.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Nov 2008 05:15:28 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57811 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752377AbYK0KP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 05:15:27 -0500
+Message-Id: <1227780926.25079.1287038929@webmail.messagingengine.com>
+X-Sasl-Enc: ugAr1Azd/qB1Iena2dO71UYVAmh075zhEhWbMit7hYXz 1227780926
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, "Cyrill Gorcunov" <gorcunov@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <1227780007.4454.1344.camel@twins>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: Re: [PATCH 4/5] x86: ret_from_fork - add CFI proc annotation
+In-Reply-To: <39e35cbc79237b162a0720dceaa52a72c7eb1690.1227725632.git.gorcunov@gmail.com>
+Date: Thu, 27 Nov 2008 11:15:26 +0100
+References: <1227727024-2281-1-git-send-email-gorcunov@gmail.com>
+ <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com>
+ <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com>
+ <6bc2fd402754cfa5b69a63a529bc065584c5f375.1227725632.git.gorcunov@gmail.com>
+ <39e35cbc79237b162a0720dceaa52a72c7eb1690.1227725632.git.gorcunov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 11:00:07AM +0100, Peter Zijlstra wrote:
-> On Thu, 2008-11-27 at 01:28 -0800, Mike Waychison wrote:
-> 
-> > Correct.  I don't recall the numbers from the pathelogical cases we were 
-> > seeing, but iirc, it was on the order of 10s of seconds, likely 
-> > exascerbated by slower than usual disks.  I've been digging through my 
-> > inbox to find numbers without much success -- we've been using a variant 
-> > of this patch since 2.6.11.
-> 
-> > We generally try to avoid such things, but sometimes it a) can't be 
-> > easily avoided (third party libraries for instance) and b) when it hits 
-> > us, it affects the overall health of the machine/cluster (the monitoring 
-> > daemons get blocked, which isn't very healthy).
-> 
-> If its only monitoring, there might be another solution. If you can keep
-> the required data in a separate (approximate) copy so that you don't
-> need mmap_sem at all to show them.
-> 
-> If your mmap_sem is so contended your latencies are unacceptable, adding
-> more users to it - even statistics gathering, just isn't going to cure
-> the situation.
-> 
-> Furthermore, /proc code usually isn't written with performance in mind,
-> so its usually simple and robust code. Adding it to a 'hot'-path like
-> you're doing doesn't seem advisable.
-> 
-> Also, releasing and re-acquiring mmap_sem can significantly add to the
-> cacheline bouncing that thing already has.
 
-Yes, it would be nice to reduce mmap_sem load regardless of any other
-fixes or problems. I guess they're not very worried about cacheline
-bouncing but more about hold time (how many sockets in these systems?
-4 at most?)
+On Wed, 26 Nov 2008 22:17:03 +0300, gorcunov@gmail.com said:
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> 
+> ret_from_fork is definitly procedure so mark it as that.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+>  arch/x86/kernel/entry_64.S |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index c409f73..a21be86 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -370,6 +370,7 @@ END(save_paranoid)
+>   */
+>  /* rdi:	prev */
+>  ENTRY(ret_from_fork)
+> +	CFI_STARTPROC
+>  	DEFAULT_FRAME
+>  	push kernel_eflags(%rip)
+>  	CFI_ADJUST_CFA_OFFSET 8
 
-I guess it is the pagemap stuff that they use most heavily?
+This is not needed/wanted. DEFAULT_FRAME includes "CFI_STARTPROC simple"
+already.
 
-pagemap_read looks like it can use get_user_pages_fast. The smaps and
-clear_refs stuff might have been nicer if they could work on ranges
-like pagemap. Then they could avoid mmap_sem as well (although maps
-would need to be sampled and take mmap_sem I guess).
+Alexander
 
-One problem with dropping mmap_sem is that it hurts priority/fairness.
-And it opens a bit of a (maybe theoretical but not something to completely
-ignore) forward progress hole AFAIKS. If mmap_sem is very heavily
-contended, then the refault is going to take a while to get through,
-and then the page might get reclaimed etc).
+> 1.6.0.4.603.gbc9c0
+> 
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-
+-- 
+http://www.fastmail.fm - The professional email service
 
