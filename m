@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYK0Lud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYK0Lww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbYK0Lud (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 06:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYK0LuW
+	id S1754788AbYK0Lww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 06:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYK0Lwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 06:50:22 -0500
-Received: from www.tglx.de ([62.245.132.106]:40679 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752500AbYK0LuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 06:50:22 -0500
-Date: Thu, 27 Nov 2008 12:49:37 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Miller <davem@davemloft.net>
-cc: eranian@gmail.com, eranian@googlemail.com, andi@firstfloor.org,
+	Thu, 27 Nov 2008 06:52:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59532 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbYK0Lwn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 06:52:43 -0500
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+From: Peter Zijlstra <peterz@infradead.org>
+To: eranian@gmail.com
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
        x86@kernel.org, sfr@canb.auug.org.au
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-In-Reply-To: <20081127.034247.72331360.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.00.0811271246200.3325@localhost.localdomain>
-References: <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com> <20081127113115.GH6703@one.firstfloor.org> <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com> <20081127.034247.72331360.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com>
+References: <492d0be1.09cc660a.0b75.44b7@mx.google.com>
+	 <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain>
+	 <20081126140054.GX6703@one.firstfloor.org>
+	 <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain>
+	 <20081127100602.GF6703@one.firstfloor.org>
+	 <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com>
+	 <20081127113115.GH6703@one.firstfloor.org>
+	 <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 27 Nov 2008 12:52:26 +0100
+Message-Id: <1227786746.4454.1468.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Nov 2008, David Miller wrote:
-
-> From: "stephane eranian" <eranian@googlemail.com>
-> Date: Thu, 27 Nov 2008 12:35:54 +0100
+On Thu, 2008-11-27 at 12:35 +0100, stephane eranian wrote:
+> On Thu, Nov 27, 2008 at 12:31 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> >> The only reason why I have to deal with NMI is not so much to allow
+> >> for profiling irq-off regions but because I have to share the PMU with
+> >> the NMI watchdog. Otherwise I'd have to fail  or disable the NMI watchdog
+> >> on the fly.
+> >
+> > The NMI watchdog is now off by default so failing with it enabled
+> > is fine.
 > 
-> > I am still wondering how Oprofile handles the case where multiple
-> > processes or threads access the same file descriptor.
-> 
-> There's only one profiling buffer active on a given cpu,
-> so it's pure per-cpu value insertion.
-> 
-> In any event I think that NMI profiling is a must, especially
-> for the kernel.  You get total unusable crap otherwise.  I
-> just learned this the hard way having gotten an NMI'ish scheme
-> working on sparc64 just the other day.
+> Yes, but most likely it is on in distro kernels.
 
-Not arguing about that, I'm just not agreeing with the implementation.
-
-So for the moment we can go w/o the NMI and implement it cleanly after
-we got the initial lot in.
-
-Thanks,
-
-	tglx
-
+So? You can disable it on the fly when there is a perfmon user.
