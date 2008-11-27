@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYK0FRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbYK0G1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbYK0FRY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 00:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbYK0FRK
+	id S1752637AbYK0G1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 01:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYK0G1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 00:17:10 -0500
-Received: from 1wt.eu ([62.212.114.60]:1401 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYK0FRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 00:17:09 -0500
-Date: Thu, 27 Nov 2008 06:16:59 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081127051659.GA26057@1wt.eu>
-References: <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net> <20081124132744.GB24851@1wt.eu> <20081124215247.GA29696@1wt.eu> <20081125015223.GA9151@xw6200.broadcom.net> <20081125053128.GA32426@1wt.eu> <20081125175413.GA9808@xw6200.broadcom.net> <20081126211220.GA22374@1wt.eu> <20081126225421.GA8906@xw6200.broadcom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081126225421.GA8906@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+	Thu, 27 Nov 2008 01:27:31 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:17236 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751290AbYK0G1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 01:27:30 -0500
+Message-ID: <492E3DE7.9040107@panasas.com>
+Date: Thu, 27 Nov 2008 08:27:51 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: WARN_ON out of range error in ERR_PTR?
+References: <492D6FB8.80401@panasas.com> <20081126161503.6211f140.akpm@linux-foundation.org>
+In-Reply-To: <20081126161503.6211f140.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Nov 2008 06:26:02.0977 (UTC) FILETIME=[0567CD10:01C95059]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 02:54:21PM -0800, Matt Carlson wrote:
-(...)
-> > I've run a new test on a switch I have here at home (another el-cheapo,
-> > non-manageable 100 Mbps, netgear this time). Unfortunately I cannot
-> > reproduce the problem at all. I have disabled FC on my laptop, it did
-> > not have any effect.
+On Nov. 27, 2008, 2:15 +0200, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 26 Nov 2008 17:48:08 +0200
+> Benny Halevy <bhalevy@panasas.com> wrote:
 > 
-> Disabling FC should have a positive effect, not a negative one.  It
-> might be the case that the switch does not advertise nor support FC.  If
-> that is true, you might not be able to repro the problem no matter what
-> you did (if your problem is what I think it is).  Can you check your
-> link messages and see if it really is negotiated to off?  (I see the
-> message above, but I don't think that is with the current switch.)
-
-yes the switch does advertuse FC :
-
-willy@wtap:~$ dmesg|grep eth0
-eth0: Tigon3 [partno(BMC5705mA3) rev 3003 PHY(5705)] (PCI:33MHz:32-bit) 10/100/1000Base-T Ethernet 00:0d:9d:91:ef:24
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
-eth0: dma_rwctrl[763f0000] dma_mask[64-bit]
-tg3: eth0: Link is up at 100 Mbps, full duplex.
-tg3: eth0: Flow control is on for TX and on for RX.
-
-> > I have disabled auto-neg and manually forced the
-> > speed to 100/Full on my laptop, and could not reproduce the problem
-> > either (though the speed was much lower due to the switch obviously
-> > negociating 100/Half when not seeing my NWay frames).
+>> Andrew,
+>>
+>> After hitting a bug where an nfs error -10021 wasn't handled
+>> correctly since IS_ERR returned false on its ERR_PTR value
 > 
-> Yes.  If you force the link, both sides must be forced.  The switch
-> rightly assumes HD when bringing the link up.
+> That sounds like an error in NFS.  Did it get fixed?
 
-I know ;-) but not seeing the problem, I started to suspect that the other
-switch was a little bit ill and tried to reproduce some problems I might
-incidently have been encountering on it.
+Right, it is an error I made when developing new code for nfs41
+and I caught and fixed it in my branch before releasing the code.
+I just thought that this WARN_ON could be beneficial for everybody...
 
-Regards,
-Willy
+Benny
 
+> 
+>> I realized that adding a BUG_ON to make sure the mapped error
+>> is in the valid range would have caught this.
+>>
+>> Since ERR_PTR is not called on the critical path
+>> (unlike IS_ERR) but rather on the error handling path I believe
+>> we can tolerate the extra cost.
+>>
+>> The reason this is just a WARN_ON and not BUG_ON is to make
+>> fixing it easier, although I do consider calling ERR_PTR on an
+>> out of range error a pretty dangerous bug as the error might go
+>> unnoticed.
+>>
+>> How about committing the following patch to -mm?
+>>
+>> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+>> ---
+>>  include/linux/err.h |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/include/linux/err.h b/include/linux/err.h
+>> index ec87f31..81df84f 100644
+>> --- a/include/linux/err.h
+>> +++ b/include/linux/err.h
+>> @@ -2,7 +2,7 @@
+>>  #define _LINUX_ERR_H
+>>  
+>>  #include <linux/compiler.h>
+>> -
+>> +#include <asm/bug.h>
+>>  #include <asm/errno.h>
+>>  
+>>  /*
+>> @@ -21,6 +21,7 @@
+>>  
+>>  static inline void *ERR_PTR(long error)
+>>  {
+>> +	WARN_ON(error && !IS_ERR_VALUE(error));
+>>  	return (void *) error;
+>>  }
+> 
+> We have over 2000 ERR_PTR callsites, and WARN_ON() is a big fat porky
+> thing, so this change would add quite a lot of kernel text&data.
+> 
+> If this problem does occur again, I expect that the kernel will
+> reliably dereference a small negative address and we'll get an oops,
+> which will give us the same information as that WARN_ON would have
+> done, no?
+> 
+> 
+> 
