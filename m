@@ -1,194 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYK0Rjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYK0Rrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbYK0Rjz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 12:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYK0Rjn
+	id S1753819AbYK0Rrc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 12:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYK0RrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 12:39:43 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:52428 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbYK0Rjl (ORCPT
+	Thu, 27 Nov 2008 12:47:22 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:49939 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYK0RrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 12:39:41 -0500
-X-BigFish: VPS8(zzzzzz92fbmz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-FB-SS: 5,
-X-WSS-ID: 0KB06DF-04-FYP-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH] x86: move GART specific stuff from iommu.h to gart.h
-Date: Thu, 27 Nov 2008 18:39:15 +0100
-Message-ID: <1227807555-10499-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-X-OriginalArrivalTime: 27 Nov 2008 17:39:15.0203 (UTC) FILETIME=[110C5D30:01C950B7]
+	Thu, 27 Nov 2008 12:47:21 -0500
+Message-ID: <492EDCFB.7080302@vlnb.net>
+Date: Thu, 27 Nov 2008 20:46:35 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Wu Fengguang <wfg@linux.intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+References: <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de> <492BDAA9.4090405@vlnb.net> <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost>
+In-Reply-To: <20081125121534.GA16778@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/FMZMEQezBbfNqvBl0eGhHYhx7PqMsVUu0udt
+ Xgv5gLLg1WD931JHKU25DHYJLYIzxfaDCn+N2IKqb885p4ZKiT
+ 0vcgXHmjIf2fThG8qNrDg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/include/asm/gart.h      |   33 +++++++++++++++++++++++++++++++++
- arch/x86/include/asm/iommu.h     |   33 ---------------------------------
- arch/x86/kernel/amd_iommu.c      |    1 +
- arch/x86/kernel/amd_iommu_init.c |    1 +
- arch/x86/kernel/early-quirks.c   |    1 +
- arch/x86/kernel/pci-dma.c        |    1 +
- arch/x86/kernel/setup.c          |    1 +
- 7 files changed, 38 insertions(+), 33 deletions(-)
+Wu Fengguang wrote:
+> On Tue, Nov 25, 2008 at 03:09:12PM +0300, Vladislav Bolkhovitin wrote:
+>> Vladislav Bolkhovitin wrote:
+>>> Wu Fengguang wrote:
+>>>> On Tue, Nov 25, 2008 at 02:41:47PM +0300, Vladislav Bolkhovitin wrote:
+>>>>> Wu Fengguang wrote:
+>>>>>> On Tue, Nov 25, 2008 at 01:59:53PM +0300, Vladislav Bolkhovitin wrote:
+>>>>>>> Wu Fengguang wrote:
+>>>>>>>> Hi all,
+>>>>>>>>
+>>>>>>>> //Sorry for being late. 
+>>>>>>>>
+>>>>>>>> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
+>>>>>>>> [...]
+>>>>>>>>> I already talked about this with Jeff on irc, but I guess should post it
+>>>>>>>>> here as well.
+>>>>>>>>>
+>>>>>>>>> nfsd aside (which does seem to have some different behaviour skewing the
+>>>>>>>>> results), the original patch came about because dump(8) has a really
+>>>>>>>>> stupid design that offloads IO to a number of processes. This basically
+>>>>>>>>> makes fairly sequential IO more random with CFQ, since each process gets
+>>>>>>>>> its own io context. My feeling is that we should fix dump instead of
+>>>>>>>>> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
+>>>>>>>>> aware of any other good programs out there that would do something
+>>>>>>>>> similar, so I don't think there's a lot of merrit to spending cycles on
+>>>>>>>>> detecting cooperating processes.
+>>>>>>>>>
+>>>>>>>>> Jeff will take a look at fixing dump instead, and I may have promised
+>>>>>>>>> him that santa will bring him something nice this year if he does (since
+>>>>>>>>> I'm sure it'll be painful on the eyes).
+>>>>>>>> This could also be fixed at the VFS readahead level.
+>>>>>>>>
+>>>>>>>> In fact I've seen many kinds of interleaved accesses:
+>>>>>>>> - concurrently reading 40 files that are in fact hard links of one single file
+>>>>>>>> - a backup tool that splits a big file into 8k chunks, and serve the
+>>>>>>>>   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
+>>>>>>>>   chunks in another one
+>>>>>>>> - a pool of NFSDs randomly serving some originally sequential 
+>>>>>>>> read  requests - now dump(8) seems to have some similar 
+>>>>>>>> problem.
+>>>>>>>>
+>>>>>>>> In summary there have been all kinds of efforts on trying to
+>>>>>>>> parallelize I/O tasks, but unfortunately they can easily screw up the
+>>>>>>>> sequential pattern. It may not be easily fixable for many of them.
+>>>>>>>>
+>>>>>>>> It is however possible to detect most of these patterns at the
+>>>>>>>> readahead layer and restore sequential I/Os, before they propagate
+>>>>>>>> into the block layer and hurt performance.
+>>>>>>> I believe this would be the most effective way to go, 
+>>>>>>> especially in case  if data delivery path to the original 
+>>>>>>> client has its own latency  depended from the amount of 
+>>>>>>> transferred data as it is in the case of  remote NFS mount, 
+>>>>>>> which does synchronous sequential reads. In this case  it is 
+>>>>>>> essential for performance to make both links (local to the 
+>>>>>>> storage  and network to the client) be always busy and  
+>>>>>>> transfer data  simultaneously. Since the reads are synchronous, 
+>>>>>>> the only way to achieve  that is perform read ahead on the 
+>>>>>>> server sufficient to cover the network  link latency. Otherwise 
+>>>>>>> you would end up with only half of possible  throughput.
+>>>>>>>
+>>>>>>> However, from one side, server has to have a pool of  
+>>>>>>> threads/processes  to perform well, but, from other side, 
+>>>>>>> current read ahead code doesn't  detect too well that those 
+>>>>>>> threads/processes are doing joint sequential  read, so the read 
+>>>>>>> ahead window gets smaller, hence the overall read  performance 
+>>>>>>> gets considerably smaller too.
+>>>>>>>
+>>>>>>>> Vitaly, if that's what you need, I can try to prepare a patch for testing out.
+>>>>>>> I can test it with SCST SCSI target sybsystem 
+>>>>>>> (http://scst.sf.net). SCST  needs such feature very much, 
+>>>>>>> otherwise it can't get full backstorage  read speed. The 
+>>>>>>> maximum I can see is about ~80MB/s from ~130MB/s 15K RPM  disk 
+>>>>>>> over 1Gbps iSCSI link (maximum possible is ~110MB/s).
+>>>>>> Thank you very much!
+>>>>>>
+>>>>>> BTW, do you implicate that the SCSI system (or its applications) has
+>>>>>> similar behaviors that the current readahead code cannot handle well?
+>>>>> No. SCSI target subsystem is not the same as SCSI initiator 
+>>>>> subsystem,  which usually called simply SCSI (sub)system. SCSI 
+>>>>> target is a SCSI  server. It has the same amount of common with 
+>>>>> SCSI initiator as there  is, e.g., between Apache (HTTP server) and 
+>>>>> Firefox (HTTP client).
+>>>> Got it. So the SCSI server will split&spread sequential IO of one
+>>>> single file to cooperative threads?
+>>> Yes. It has to do so, because Linux doesn't have async. cached IO and a 
+>>> client can queue several tens of commands at time. Then, on the  
+>>> sequential IO with 1 command at time, CPU scheduler comes to play and  
+>>> spreads those commands over those threads, so read ahead gets too small 
+>>> to cover the external link latency and fill both links with data, so  
+>>> that uncovered latency kills throughput.
+>> Additionally, if the uncovered external link latency is too large, one  
+>> more factor is getting noticeable: storage rotation latency. If the next  
+>> unread sector is missed to be read at time, server has to wait a full  
+>> rotation to start receiving data for the next block, which even more  
+>> decreases the resulting throughput.
+> 
+> Thank you for the details. I've been working slowly on the idea, and
+> should be able to send you a patch in the next one or two days.
 
-diff --git a/arch/x86/include/asm/gart.h b/arch/x86/include/asm/gart.h
-index 7425226..6cfdafa 100644
---- a/arch/x86/include/asm/gart.h
-+++ b/arch/x86/include/asm/gart.h
-@@ -29,6 +29,39 @@ extern int fix_aperture;
- #define AMD64_GARTCACHECTL	0x9c
- #define AMD64_GARTEN		(1<<0)
- 
-+#ifdef CONFIG_GART_IOMMU
-+extern int gart_iommu_aperture;
-+extern int gart_iommu_aperture_allowed;
-+extern int gart_iommu_aperture_disabled;
-+
-+extern void early_gart_iommu_check(void);
-+extern void gart_iommu_init(void);
-+extern void gart_iommu_shutdown(void);
-+extern void __init gart_parse_options(char *);
-+extern void gart_iommu_hole_init(void);
-+
-+#else
-+#define gart_iommu_aperture            0
-+#define gart_iommu_aperture_allowed    0
-+#define gart_iommu_aperture_disabled   1
-+
-+static inline void early_gart_iommu_check(void)
-+{
-+}
-+static inline void gart_iommu_init(void)
-+{
-+}
-+static inline void gart_iommu_shutdown(void)
-+{
-+}
-+static inline void gart_parse_options(char *options)
-+{
-+}
-+static inline void gart_iommu_hole_init(void)
-+{
-+}
-+#endif
-+
- extern int agp_amd64_init(void);
- 
- static inline void enable_gart_translation(struct pci_dev *dev, u64 addr)
-diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
-index 0b500c5..295b131 100644
---- a/arch/x86/include/asm/iommu.h
-+++ b/arch/x86/include/asm/iommu.h
-@@ -12,37 +12,4 @@ extern unsigned long iommu_nr_pages(unsigned long addr, unsigned long len);
- /* 10 seconds */
- #define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000)
- 
--#ifdef CONFIG_GART_IOMMU
--extern int gart_iommu_aperture;
--extern int gart_iommu_aperture_allowed;
--extern int gart_iommu_aperture_disabled;
--
--extern void early_gart_iommu_check(void);
--extern void gart_iommu_init(void);
--extern void gart_iommu_shutdown(void);
--extern void __init gart_parse_options(char *);
--extern void gart_iommu_hole_init(void);
--
--#else
--#define gart_iommu_aperture            0
--#define gart_iommu_aperture_allowed    0
--#define gart_iommu_aperture_disabled   1
--
--static inline void early_gart_iommu_check(void)
--{
--}
--static inline void gart_iommu_init(void)
--{
--}
--static inline void gart_iommu_shutdown(void)
--{
--}
--static inline void gart_parse_options(char *options)
--{
--}
--static inline void gart_iommu_hole_init(void)
--{
--}
--#endif
--
- #endif /* _ASM_X86_IOMMU_H */
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index e4899e0..d434a97 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -24,6 +24,7 @@
- #include <linux/iommu-helper.h>
- #include <asm/proto.h>
- #include <asm/iommu.h>
-+#include <asm/gart.h>
- #include <asm/amd_iommu_types.h>
- #include <asm/amd_iommu.h>
- 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 30ae270..1188b98 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -28,6 +28,7 @@
- #include <asm/amd_iommu_types.h>
- #include <asm/amd_iommu.h>
- #include <asm/iommu.h>
-+#include <asm/gart.h>
- 
- /*
-  * definitions for the ACPI scanning code
-diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
-index 1b894b7..744aa7f 100644
---- a/arch/x86/kernel/early-quirks.c
-+++ b/arch/x86/kernel/early-quirks.c
-@@ -17,6 +17,7 @@
- #include <asm/io_apic.h>
- #include <asm/apic.h>
- #include <asm/iommu.h>
-+#include <asm/gart.h>
- 
- static void __init fix_hypertransport_config(int num, int slot, int func)
- {
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 1926248..12eeb4b 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -6,6 +6,7 @@
- #include <asm/proto.h>
- #include <asm/dma.h>
- #include <asm/iommu.h>
-+#include <asm/gart.h>
- #include <asm/calgary.h>
- #include <asm/amd_iommu.h>
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 9d5674f..decb492 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -93,6 +93,7 @@
- #include <asm/desc.h>
- #include <asm/dma.h>
- #include <asm/iommu.h>
-+#include <asm/gart.h>
- #include <asm/mmu_context.h>
- #include <asm/proto.h>
- 
--- 
-1.5.6.4
+Actually, there's one more thing, which should have been mentioned. It 
+is possible that remote clients have several sequential read streams at 
+time together with some "noise" of random requests. A good read-ahead 
+subsystem should handle such case by keeping big read-ahead windows for 
+the sequential streams and don't do any read ahead for the random 
+requests. And all at the same time.
 
+Currently on such workloads read ahead will be completely disabled for 
+all the requests. Hence, there is a possibility here to improve 
+performance in 3-5 times or even more by making the workload more linear.
 
+I guess, such functionality can be done by keeping several read-ahead 
+contexts not in file handle as now, but in inode, or ever in task_struct 
+similarly to io_context. Or even as a part of struct io_context. Then 
+those contexts would be rotated in, e.g., round robin manner. I have 
+some basic thoughts in this area and would be glad to share them, if you 
+are interested.
+
+Going further, ultimately, it would be great to provide somehow a 
+capability to allow to assign for each read-ahead stream own IO context, 
+because on the remote side in most cases such streams would correspond 
+to different programs reading data in parallel. This should allow to 
+increase performance even more.
+
+> Thanks,
+> Fengguang
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
