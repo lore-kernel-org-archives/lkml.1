@@ -1,44 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbYK0MgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYK0Mjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbYK0MgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYK0MgK
+	id S1754631AbYK0Mjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYK0Mja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:36:10 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55038 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752238AbYK0MgJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:36:09 -0500
-Date: Thu, 27 Nov 2008 13:46:40 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: eranian@gmail.com
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       sfr@canb.auug.org.au
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-Message-ID: <20081127124640.GM6703@one.firstfloor.org>
-References: <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com> <20081127113115.GH6703@one.firstfloor.org> <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com> <20081127.034247.72331360.davem@davemloft.net> <alpine.LFD.2.00.0811271246200.3325@localhost.localdomain> <20081127123811.GJ6703@one.firstfloor.org> <7c86c4470811270431n5cf1b863tc4f8c7829283e332@mail.gmail.com>
+	Thu, 27 Nov 2008 07:39:30 -0500
+Received: from mx2.suse.de ([195.135.220.15]:52205 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbYK0Mj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 07:39:29 -0500
+Date: Thu, 27 Nov 2008 13:39:26 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
+Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+Message-ID: <20081127123926.GN28285@wotan.suse.de>
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de> <492E90BC.1090208@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <7c86c4470811270431n5cf1b863tc4f8c7829283e332@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <492E90BC.1090208@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's true for Intel.
-> On AMD64, I think you can get at most one sample out of a irq-off
-> region using IBS.
+On Thu, Nov 27, 2008 at 02:21:16PM +0200, Török Edwin wrote:
+> On 2008-11-27 14:03, Nick Piggin wrote:
+> >> Running my testcase shows no significant performance difference. What am
+> >> I doing wrong?
+> >>     
+> >  
+> > Software may just be doing a lot of mmap/munmap activity. threads +
+> > mmap is never going to be pretty because it is always going to involve
+> > broadcasting tlb flushes to other cores... Software writers shouldn't
+> > be scared of using processes (possibly with some shared memory).
+> >   
+> 
+> It would be interesting to compare the performance of a threaded clamd,
+> and of a clamd that uses multiple processes.
+> Distributing tasks will be a bit more tricky, since it would need to use
+> IPC, instead of mutexes and condition variables.
 
-Assuming that the irqs off regions are not too long (and that's
-usually the case) that should be enough, shouldn't it?
+Yes, although you could use PTHREAD_PROCESS_SHARED pthread mutexes on
+the shared memory I believe (having never tried it myself).
 
-Sure there are still CPUs with neither IBS or PEBS.
+ 
+> > Actually, a lot of things get faster (like malloc, or file descriptor
+> > operations) because locks aren't needed.
+> >
+> > Despite common perception, processes are actually much *faster* than
+> > threads when doing common operations like these. They are slightly slower
+> > sometimes with things like creation and exit, or context switching, but
+> > if you're doing huge numbers of those operations, then it is unlikely
+> > to be a performance critical app... :)
+> >   
+> 
+> How about distributing tasks to a set of worked threads, is the overhead
+> of using IPC instead of
+> mutexes/cond variables acceptable?
 
--Andi
+It is really going to depend on a lot of things. What is involved in
+distributing tasks, how many cores and cache/TLB architecture of the
+system running on, etc.
 
--- 
-ak@linux.intel.com
+You want to distribute as much work as possible while touching as
+little memory as possible, in general.
+
+But if you're distributing threads over cores, and shared caches are
+physically tagged (which I think all x86 CPUs are), then you should
+be able to have multiple processes operate on shared memory just as
+efficiently as multiple threads I think.
+
+And then you also get the advantages of reduced contention on other
+shared locks and resources.
+
+ 
+> > (end rant; sorry, that may not have been helpful to your immediate problem,
+> > but we need to be realistic in what complexity we are ging to add where in
+> > the kernel in order to speed things up. And we need to steer userspace
+> > away from problems that are fundamentally hard and not going to get easier
+> > with trends -- like virtual address activity with multiple threads)
+> >   
+> 
+> I understood that mmap() is not scalable, however look  at
+> http://lkml.org/lkml/2008/9/12/185, even fopen/fdopen does
+> an (anonymous) mmap internally.
+
+Well, I guess that would be all the more reason to avoid threads (and
+things like fopen/fdopen fundamentally have to be synchronized between
+threads regardless of whether they use mmap() or not, so you're going
+to see a win on any OS avoiding threaded code that uses fopen/fdopen).
+
+
+> That does not affect performance that much, since the overhead of a
+> file-backed mmap + pagefaults is higher.
+> Rewriting libclamav to not use mmap() would take a significant amount of
+> time, however  I will try to avoid using mmap()
+> in new code (and prefer pread/read).
+> 
+> Also clamd is a CPU bound application [given fast enough disks ;)] and
+> having to wait for mmap_sem prevents it from doing "real work".
+> Most of the time it reads files from /tmp, that should either be in the
+> page cache, or (in my case) they are always in RAM (I use tmpfs).
+> 
+> So mmaping, and reading from these files does not involve disk I/O, yet
+> threads working with /tmp files still need to wait
+> for disk I/O to complete because it has to wait on mmap_sem (held by
+> another thread).
+
+Yeah, it's costly. Even if it didn't take mmap_sem, then it still
+needs to broadcast TLB invalidates over the machine, so it would
+probably go even faster if it weren't threaded and/or didn't use
+mmap/munmap so heavily.
+
+
+> >> ...............................................................................................................................................................................................
+> >>
+> >>                          &sem->wait_lock:        122700        
+> >> 126641           0.42          77.94      125372.37       
+> >> 1779026        7368894           0.27        1099.42     3085559.16
+> >>                          ---------------
+> >>                          &sem->wait_lock           5943         
+> >> [<ffffffff8043a768>] __up_write+0x28/0x170
+> >>                          &sem->wait_lock           8615         
+> >> [<ffffffff805ce3ac>] __down_write_nested+0x1c/0xc0
+> >>                          &sem->wait_lock          13568         
+> >> [<ffffffff8043a5a0>] __down_write_trylock+0x20/0x60
+> >>                          &sem->wait_lock          49377         
+> >> [<ffffffff8043a600>] __down_read_trylock+0x20/0x60
+> >>                          ---------------
+> >>                          &sem->wait_lock           8097         
+> >> [<ffffffff8043a5a0>] __down_write_trylock+0x20/0x60
+> >>                          &sem->wait_lock          31540         
+> >> [<ffffffff8043a768>] __up_write+0x28/0x170
+> >>                          &sem->wait_lock           5501         
+> >> [<ffffffff805ce3ac>] __down_write_nested+0x1c/0xc0
+> >>                          &sem->wait_lock          33342         
+> >> [<ffffffff8043a600>] __down_read_trylock+0x20/0x60
+> >>
+> >>     
+> >
+> > Interesting. I have some (ancient) patches to make rwsems more scalable
+> > under heavy load by reducing contention on this lock. They should really
+> > have been merged... Not sure how much it would help, but if you're
+> > interested in testing, I could dust them off.
+> 
+> Sure, I can test patches (preferably against 2.6.28-rc6-tip ).
+
+OK, I'll see if I can find them (am overseas at the moment, and I suspect
+they are stranded on some stationary rust back home, but I might be able
+to find them on the web).
+
