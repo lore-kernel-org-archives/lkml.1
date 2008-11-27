@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYK0UTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYK0U1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYK0UTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 15:19:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYK0UT2
+	id S1751868AbYK0U1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 15:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYK0U1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 15:19:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38745 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752432AbYK0UT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 15:19:27 -0500
-Date: Thu, 27 Nov 2008 21:18:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
+	Thu, 27 Nov 2008 15:27:00 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46833 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYK0U07 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 15:26:59 -0500
+Date: Thu, 27 Nov 2008 12:28:00 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: Yinghai Lu <yinghai@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -20,47 +21,88 @@ Cc: Yinghai Lu <yinghai@kernel.org>,
        "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: oops/warning report for the week of November 26, 2008
-Message-ID: <20081127201836.GA16869@elte.hu>
-References: <492DD792.6080302@linux.intel.com> <20081127115236.GE29013@elte.hu> <492EE087.80708@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <492EE087.80708@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-ID: <20081127122800.45fc0b1a@linux.intel.com>
+In-Reply-To: <20081127201836.GA16869@elte.hu>
+References: <492DD792.6080302@linux.intel.com>
+	<20081127115236.GE29013@elte.hu>
+	<492EE087.80708@linux.intel.com>
+	<20081127201836.GA16869@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 27 Nov 2008 21:18:36 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
+> 
+> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+> 
+> > Ingo Molnar wrote:
+> >> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+> >>
+> >>> Rank 8: mtrr_trim_uncached_memory (warning)
+> >>> 	Reported 227 times (619 total reports)
+> >>> 	There is a high number of machines where our MTRR checks
+> >>> 	trigger. I suspect we are too picky in accepting the MTRR
+> >>> 	configuration.
+> >>
+> >> the warning here means: "the BIOS messed up but we fixed it up for
+> >> you just fine".
+> >
+> > I don't believe that right now. we see so many of these, including 
+> > many "there's no MTRRs at all", that I am seriously suspecting that 
+> > our code is just incorrect somehow and triggering too much.
+> 
+> well we looked at existing reports and Linux was right to fix them
+> up. Show us one that is incorrect, then we can fix it up.
+> 
+> the "no MTRR's" are vmware/(also qemu?) guests not implementing a
+> full CPU emulation.
 
-> Ingo Molnar wrote:
->> * Arjan van de Ven <arjan@linux.intel.com> wrote:
->>
->>> Rank 8: mtrr_trim_uncached_memory (warning)
->>> 	Reported 227 times (619 total reports)
->>> 	There is a high number of machines where our MTRR checks 	trigger. I 
->>> suspect we are too picky in accepting the MTRR 	configuration.
->>
->> the warning here means: "the BIOS messed up but we fixed it up for you 
->> just fine".
->
-> I don't believe that right now. we see so many of these, including 
-> many "there's no MTRRs at all", that I am seriously suspecting that 
-> our code is just incorrect somehow and triggering too much.
+... and it's still our fault in part, since we don't even check to see
+if a cpu claims to support MTRR before complaining about it...
 
-well we looked at existing reports and Linux was right to fix them up. 
-Show us one that is incorrect, then we can fix it up.
+easy to fix though:
 
-the "no MTRR's" are vmware/(also qemu?) guests not implementing a full 
-CPU emulation.
+>From 7e987ae541c41ce908b414fee9d8e2fd2099a083 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Thu, 27 Nov 2008 12:25:47 -0800
+Subject: [PATCH] x86: make sure the CPU advertizes MTRR support before complaining about the lack thereoff...
 
-	Ingo
+We complain loudly if a CPU does not have MTRR support... but we don't check if the CPU
+exposes MTRR support in the CPUID flags first. While this might not fix all of the
+broken virtualization systems out there, it will at least fix those that properly don't
+advertize things they don't support.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/x86/kernel/cpu/mtrr/main.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 1159e26..0044e61 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -1567,6 +1567,8 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+ 	 * Make sure we only trim uncachable memory on machines that
+ 	 * support the Intel MTRR architecture:
+ 	 */
++	if (!cpu_has_mtrr)
++		return 0;
+ 	if (!is_cpu(INTEL) || disable_mtrr_trim)
+ 		return 0;
+ 	rdmsr(MTRRdefType_MSR, def, dummy);
+-- 
+1.6.0.4
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
