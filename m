@@ -1,59 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYK0NLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYK0NLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbYK0NLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 08:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYK0NLI
+	id S1755983AbYK0NLd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 08:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYK0NLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 08:11:08 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:50380 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbYK0NLH (ORCPT
+	Thu, 27 Nov 2008 08:11:14 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34913 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238AbYK0NLM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 08:11:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=s2FQj8W1GQUKe1LYrOSXDpymKddzFk/tuAMnKPacBZOFngAc0geKFifT6u13hJqplC
-         f9Znymj9M5dUMTgPNJAyaa7eaYR82RuAqJiAuJjw0xCgWV0+nd6rGg6bX0hr++YqCUyW
-         UoEjAGzVpkNhriRNOi2HU+aBF6NIBdmDDplvw=
-Message-ID: <c62985530811270511q2a3d86bcye4f90486624312e2@mail.gmail.com>
-Date: Thu, 27 Nov 2008 14:11:05 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the trace output
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Tim Bird" <tim.bird@am.sony.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1227783300.4454.1410.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 27 Nov 2008 08:11:12 -0500
+Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       xemul@openvz.org
+In-Reply-To: <20081126034528.GB23238@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com>
+	 <20081126034528.GB23238@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 14:09:31 +0100
+Message-Id: <1227791371.2615.109.camel@frecb000730.frec.bull.fr>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492DEDE9.9010109@gmail.com> <20081127103424.GA9132@elte.hu>
-	 <1227783300.4454.1410.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/27 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> On Thu, 2008-11-27 at 11:34 +0100, Ingo Molnar wrote:
->> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
->>
->> > Here is an example of the new output:
->> >
->
->> > CPU[000]  ------------8<---------- thread bash-2794 ------------8<----------
->
-> This is the most horrid thing I've ever seen.
->
-> Please just put the comm/pid in another left column and leave a plain
-> "---" string for context switches.
->
-> comm/pid only in the separator is useless, you cannot grep stuff like
-> that, also, what's up with those '8's ?
+On Tue, 2008-11-25 at 19:45 -0800, Sukadev Bhattiprolu wrote:
+> >From 7f7caaa9d9014d7230dc0b1e0f75536f0b6ccdbf Mon Sep 17 00:00:00 2001
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> Date: Mon, 10 Nov 2008 19:12:02 -0800
+> Subject: [PATCH 2/5] pid: Generalize task_active_pid_ns
+> 
+> Currently task_active_pid_ns is not safe to call after a
+> task becomes a zombie and exit_task_namespaces is called,
+> as nsproxy becomes NULL.  By reading the pid namespace from
+> the pid of the task we can trivially solve this problem at
+> the cost of one extra memory read in what should be the
+> same cacheline as we read the namespace from.
+> 
+> When moving things around I have made task_active_pid_ns
+> out of line because keeping it in pid_namespace.h would
+> require adding includes of pid.h and sched.h that I
+> don't think we want.
+> 
+> This change does make task_active_pid_ns unsafe to call during
+> copy_process until we attach a pid on the task_struct which
+> seems to be a reasonable trade off.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  include/linux/pid_namespace.h |    6 +-----
+>  kernel/fork.c                 |    4 ++--
+>  kernel/pid.c                  |    6 ++++++
+>  3 files changed, 9 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
+> index d82fe82..38d1032 100644
+> --- a/include/linux/pid_namespace.h
+> +++ b/include/linux/pid_namespace.h
+> @@ -79,11 +79,7 @@ static inline void zap_pid_ns_processes(struct pid_namespace *ns)
+>  }
+>  #endif /* CONFIG_PID_NS */
+>  
+> -static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
+> -{
+> -	return tsk->nsproxy->pid_ns;
+> -}
+> -
+> +extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
+>  void pidhash_init(void);
+>  void pidmap_init(void);
+>  
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index f608356..28be39a 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -1111,12 +1111,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  
 
+Suka,
 
-You don't like my ungreppable but cute scissors? :-)
-Yes, I will fix it.
+I'm wondering if it is still safe to keep the call to
+task_active_pid_ns() in create_new_namespaces(): copy_namespaces() is
+called a couple of lines above this sequence and it calls
+create_new_namespaces(). So I don't see why you're now referencing
+p->nsproxy->pid_ns here and not in create_new_namespaces()?
+
+Regards,
+Nadia
+
+>  	if (pid != &init_struct_pid) {
+>  		retval = -ENOMEM;
+> -		pid = alloc_pid(task_active_pid_ns(p));
+> +		pid = alloc_pid(p->nsproxy->pid_ns);
+>  		if (!pid)
+>  			goto bad_fork_cleanup_io;
+>  
+>  		if (clone_flags & CLONE_NEWPID) {
+> -			retval = pid_ns_prepare_proc(task_active_pid_ns(p));
+> +			retval = pid_ns_prepare_proc(p->nsproxy->pid_ns);
+>  			if (retval < 0)
+>  				goto bad_fork_free_pid;
+>  		}
+> diff --git a/kernel/pid.c b/kernel/pid.c
+> index 064e76a..c5513fe 100644
+> --- a/kernel/pid.c
+> +++ b/kernel/pid.c
+> @@ -474,6 +474,12 @@ pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
+>  }
+>  EXPORT_SYMBOL(task_session_nr_ns);
+>  
+> +struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
+> +{
+> +	return ns_of_pid(task_pid(tsk));
+> +}
+> +EXPORT_SYMBOL_GPL(task_active_pid_ns);
+> +
+>  /*
+>   * Used by proc to find the first pid that is greater then or equal to nr.
+>   *
+-- 
+Nadia Derbey <Nadia.Derbey@bull.net>
+
