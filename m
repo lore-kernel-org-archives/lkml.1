@@ -1,154 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYK0Kqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbYK0KrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYK0Kqm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 05:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYK0KdX
+	id S1756302AbYK0KrE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 05:47:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYK0KdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 05:33:23 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:37389 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753560AbYK0Kc3 (ORCPT
+	Thu, 27 Nov 2008 05:33:25 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:52332 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748AbYK0Kca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 05:32:29 -0500
-Message-Id: <20081127103140.668360916@de.ibm.com>
+	Thu, 27 Nov 2008 05:32:30 -0500
+Message-Id: <20081127103141.255592521@de.ibm.com>
 References: <20081127103020.528516828@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 27 Nov 2008 11:31:06 +0100
+Date: Thu, 27 Nov 2008 11:31:08 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       Melissa Howland <melissah@us.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 46/60] convert monreader printks to pr_xxx macros.
-Content-Disposition: inline; filename=161-kmsg-monreader.diff
+Subject: [patch 48/60] convert monwriter printks to pr_xxx macros.
+Content-Disposition: inline; filename=163-kmsg-monwriter.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+From: Melissa Howland <melissah@us.ibm.com>
 
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Signed-off-by: Melissa Howland <melissah@us.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/char/monreader.c |   41 +++++++++++++++++------------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
+ drivers/s390/char/monwriter.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: quilt-2.6/drivers/s390/char/monreader.c
+Index: quilt-2.6/drivers/s390/char/monwriter.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/char/monreader.c
-+++ quilt-2.6/drivers/s390/char/monreader.c
-@@ -7,6 +7,9 @@
-  *   Author: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+--- quilt-2.6.orig/drivers/s390/char/monwriter.c
++++ quilt-2.6/drivers/s390/char/monwriter.c
+@@ -8,6 +8,9 @@
+  * Author(s): Melissa Howland <Melissa.Howland@us.ibm.com>
   */
  
-+#define KMSG_COMPONENT "monreader"
++#define KMSG_COMPONENT "monwriter"
 +#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
 +
  #include <linux/module.h>
  #include <linux/moduleparam.h>
  #include <linux/init.h>
-@@ -24,19 +27,6 @@
- #include <asm/ebcdic.h>
- #include <asm/extmem.h>
- 
--//#define MON_DEBUG			/* Debug messages on/off */
--
--#define MON_NAME "monreader"
--
--#define P_INFO(x...)	printk(KERN_INFO MON_NAME " info: " x)
--#define P_ERROR(x...)	printk(KERN_ERR MON_NAME " error: " x)
--#define P_WARNING(x...)	printk(KERN_WARNING MON_NAME " warning: " x)
--
--#ifdef MON_DEBUG
--#define P_DEBUG(x...)   printk(KERN_DEBUG MON_NAME " debug: " x)
--#else
--#define P_DEBUG(x...)   do {} while (0)
--#endif
- 
- #define MON_COLLECT_SAMPLE 0x80
- #define MON_COLLECT_EVENT  0x40
-@@ -172,7 +162,7 @@ static int mon_send_reply(struct mon_msg
- 	} else
- 		monmsg->replied_msglim = 1;
- 	if (rc) {
--		P_ERROR("read, IUCV reply failed with rc = %i\n\n", rc);
-+		pr_err("Reading monitor data failed with rc=%i\n", rc);
- 		return -EIO;
- 	}
- 	return 0;
-@@ -251,7 +241,8 @@ static void mon_iucv_path_severed(struct
- {
- 	struct mon_private *monpriv = path->private;
- 
--	P_ERROR("IUCV connection severed with rc = 0x%X\n", ipuser[0]);
-+	pr_err("z/VM *MONITOR system service disconnected with rc=%i\n",
-+	       ipuser[0]);
- 	iucv_path_sever(path, NULL);
- 	atomic_set(&monpriv->iucv_severed, 1);
- 	wake_up(&mon_conn_wait_queue);
-@@ -266,8 +257,7 @@ static void mon_iucv_message_pending(str
- 	memcpy(&monpriv->msg_array[monpriv->write_index]->msg,
- 	       msg, sizeof(*msg));
- 	if (atomic_inc_return(&monpriv->msglim_count) == MON_MSGLIM) {
--		P_WARNING("IUCV message pending, message limit (%i) reached\n",
--			  MON_MSGLIM);
-+		pr_warning("The read queue for monitor data is full\n");
- 		monpriv->msg_array[monpriv->write_index]->msglim_reached = 1;
- 	}
- 	monpriv->write_index = (monpriv->write_index + 1) % MON_MSGLIM;
-@@ -311,8 +301,8 @@ static int mon_open(struct inode *inode,
- 	rc = iucv_path_connect(monpriv->path, &monreader_iucv_handler,
- 			       MON_SERVICE, NULL, user_data_connect, monpriv);
- 	if (rc) {
--		P_ERROR("iucv connection to *MONITOR failed with "
--			"IPUSER SEVER code = %i\n", rc);
-+		pr_err("Connecting to the z/VM *MONITOR system service "
-+		       "failed with rc=%i\n", rc);
- 		rc = -EIO;
- 		goto out_path;
- 	}
-@@ -353,7 +343,8 @@ static int mon_close(struct inode *inode
- 	 */
- 	rc = iucv_path_sever(monpriv->path, user_data_sever);
- 	if (rc)
--		P_ERROR("close, iucv_sever failed with rc = %i\n", rc);
-+		pr_warning("Disconnecting the z/VM *MONITOR system service "
-+			   "failed with rc=%i\n", rc);
- 
- 	atomic_set(&monpriv->iucv_severed, 0);
- 	atomic_set(&monpriv->iucv_connected, 0);
-@@ -469,7 +460,8 @@ static int __init mon_init(void)
- 	int rc;
- 
- 	if (!MACHINE_IS_VM) {
--		P_ERROR("not running under z/VM, driver not loaded\n");
-+		pr_err("The z/VM *MONITOR record device driver cannot be "
-+		       "loaded without z/VM\n");
- 		return -ENODEV;
- 	}
- 
-@@ -478,7 +470,8 @@ static int __init mon_init(void)
- 	 */
- 	rc = iucv_register(&monreader_iucv_handler, 1);
- 	if (rc) {
--		P_ERROR("failed to register with iucv driver\n");
-+		pr_err("The z/VM *MONITOR record device driver failed to "
-+		       "register with IUCV\n");
+@@ -64,9 +67,9 @@ static int monwrite_diag(struct monwrite
+ 	rc = appldata_asm(&id, fcn, (void *) buffer, myhdr->datalen);
+ 	if (rc <= 0)
  		return rc;
- 	}
++	pr_err("Writing monitor data failed with rc=%i\n", rc);
+ 	if (rc == 5)
+ 		return -EPERM;
+-	printk("DIAG X'DC' error with return code: %i\n", rc);
+ 	return -EINVAL;
+ }
  
-@@ -488,8 +481,8 @@ static int __init mon_init(void)
- 		goto out_iucv;
- 	}
- 	if (rc != SEG_TYPE_SC) {
--		P_ERROR("segment %s has unsupported type, should be SC\n",
--			mon_dcss_name);
-+		pr_err("The specified *MONITOR DCSS %s does not have the "
-+		       "required type SC\n", mon_dcss_name);
- 		rc = -EINVAL;
- 		goto out_iucv;
- 	}
 
 -- 
 blue skies,
