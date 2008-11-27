@@ -1,128 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYK0MwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYK0MyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYK0MwY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYK0MwQ
+	id S1754690AbYK0MyP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYK0Mx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:52:16 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:29498 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750947AbYK0MwP (ORCPT
+	Thu, 27 Nov 2008 07:53:59 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:62506 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYK0Mx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:52:15 -0500
+	Thu, 27 Nov 2008 07:53:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Z6BsaZQ+DzQG+QfYr3xlAO4anmBiC41hMf3XNYKc8M0aPiuwsQr0RXbU+d34obrGqc
-         az6neFuPU7FsFood8HA4OFURq8bDNSEFu8KoBp0rhRLwcu5UH8GxRA95SfCCDYK7wF6Z
-         l/Ya1u5sPxNVgd3DG16vwnVBsiR3oHm+OfbVI=
-Message-ID: <492E97FA.5000804@gmail.com>
-Date: Thu, 27 Nov 2008 14:52:10 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=O6luk3XGcWz/Jm6gkcAxj9tLPAGkbU0OL0QI6eyP4aVABvml2a3crOqcR2Y3ep8o+7
+         r32HWYcWqZjoMarI5CqnkSKug3wlvFGzHLefBvc7ezLsWyv5rvN+PljGSLCtHtaH2c0b
+         SrWJxZOpiYaQ+88PyklUNsm9f5j8h/VzhvzUQ=
+Message-ID: <c62985530811270453y78506661i859f5f0f56e9ef5@mail.gmail.com>
+Date: Thu, 27 Nov 2008 13:53:57 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the trace output
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Tim Bird" <tim.bird@am.sony.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0811262001270.1501@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de> <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de>
-In-Reply-To: <20081127123926.GN28285@wotan.suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <492DEDE9.9010109@gmail.com>
+	 <c62985530811261657t6ba9c8cbwc21fa9d09627e110@mail.gmail.com>
+	 <alpine.DEB.1.10.0811262001270.1501@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-11-27 14:39, Nick Piggin wrote:
-> On Thu, Nov 27, 2008 at 02:21:16PM +0200, Török Edwin wrote:
->   
->> On 2008-11-27 14:03, Nick Piggin wrote:
->>     
->>>> Running my testcase shows no significant performance difference. What am
->>>> I doing wrong?
->>>>     
->>>>         
->>>  
->>> Software may just be doing a lot of mmap/munmap activity. threads +
->>> mmap is never going to be pretty because it is always going to involve
->>> broadcasting tlb flushes to other cores... Software writers shouldn't
->>> be scared of using processes (possibly with some shared memory).
->>>   
->>>       
->> It would be interesting to compare the performance of a threaded clamd,
->> and of a clamd that uses multiple processes.
->> Distributing tasks will be a bit more tricky, since it would need to use
->> IPC, instead of mutexes and condition variables.
->>     
+2008/11/27 Steven Rostedt <rostedt@goodmis.org>:
 >
-> Yes, although you could use PTHREAD_PROCESS_SHARED pthread mutexes on
-> the shared memory I believe (having never tried it myself).
+>>
+>>
+>> One detail. If you get a trace through the "trace" file, you will have
+>> no problem.
+>> But if you cat trace_pipe, leaf functions are considered as nested.
+>>
+>> This is because iter->buffer_iter[iter->cpu]; is very often (always?)
+>> false by using this file.
+>> I don't know why yet....
+>> But it makes the tracer unable to check the next entry to verify if it
+>> matches its own return.
 >
->  
->   
->>> Actually, a lot of things get faster (like malloc, or file descriptor
->>> operations) because locks aren't needed.
->>>
->>> Despite common perception, processes are actually much *faster* than
->>> threads when doing common operations like these. They are slightly slower
->>> sometimes with things like creation and exit, or context switching, but
->>> if you're doing huge numbers of those operations, then it is unlikely
->>> to be a performance critical app... :)
->>>   
->>>       
->> How about distributing tasks to a set of worked threads, is the overhead
->> of using IPC instead of
->> mutexes/cond variables acceptable?
->>     
+> That's because trace_pipe does not use an iterator ;-)  It is live stream.
 >
-> It is really going to depend on a lot of things. What is involved in
-> distributing tasks, how many cores and cache/TLB architecture of the
-> system running on, etc.
+> There's two cases: static read and consume.  On static read we can take
+> our time and we iterate over the data in the file. The data does not get
+> consumed so we use an iterator to traverse the data.
 >
-> You want to distribute as much work as possible while touching as
-> little memory as possible, in general.
+> The consume read will consume each entry as it reads it. We do not need an
+> iterator for this because we are always reading the head of the file.
+> After we read the data, that data is consumed and we read the next item.
 >
-> But if you're distributing threads over cores, and shared caches are
-> physically tagged (which I think all x86 CPUs are), then you should
-> be able to have multiple processes operate on shared memory just as
-> efficiently as multiple threads I think.
+> Hmm, I may need to make this apparent to the plugins like yours. This way
+> you can do different things whether it is a static read or a consuming
+> read.
 >
-> And then you also get the advantages of reduced contention on other
-> shared locks and resources.
->   
+> Perhaps the info now is what you already found out.
+> "iter->buffer_iter[iter->cpu] will always be NULL when it is a consuming
+> read. Intead you need to use:
+>
+> ring_buffer_peek instead of ring_buffer_iter_peek
+>
+> and
+>
+> ring_buffer_consume instead of ring_buffer_read
+>
+> This is the way you can use it:
+>
+> entry = ring_buffer_peek(iter->tr->buffer, iter->cpu, NULL);
+> entry = ring_buffer_consume(iter->tr->buffer, iter->cpu, NULL);
 
-Thanks for the tips, but lets get back to the original question:
-why don't I see any performance improvement with the fault-retry patches?
 
-My testcase only compares reads file with mmap, vs. reading files with
-read, with different number of threads.
-Leaving aside other reasons why mmap is slower, there should be some
-speedup by running 4 threads vs 1 thread, but:
-
-1 thread: read:27,18 28.76
-1 thread: mmap: 25.45, 25.24
-2 thread: read: 16.03, 15.66
-2 thread: mmap: 22.20, 20.99
-4 thread: read: 9.15, 9.12
-4 thread: mmap: 20.38, 20.47
-
-The speed of 4 threads is about the same as for 2 threads with mmap, yet
-with read it scales nicely.
-And the patch doesn't seem to improve scalability.
-How can I find out if the patch works as expected? [i.e. verify that
-faults are actually retried, and that they don't keep the semaphore locked]
-
-> OK, I'll see if I can find them (am overseas at the moment, and I suspect
-> they are stranded on some stationary rust back home, but I might be able
-> to find them on the web).
-
-Ok.
-
-Best regards,
---Edwin
+Ok. Thanks, I will correct it by covering the two cases, like in
+trace.c : peek_next_entry()
