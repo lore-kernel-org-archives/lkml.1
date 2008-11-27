@@ -1,65 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYK0Mka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYK0Mm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbYK0Mka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYK0MkW
+	id S1754129AbYK0Mm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYK0Mmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:40:22 -0500
-Received: from mail.bitdefender.com ([91.199.104.2]:53696 "EHLO
-	mail.bitdefender.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbYK0MkV (ORCPT
+	Thu, 27 Nov 2008 07:42:50 -0500
+Received: from ocean.emcraft.com ([213.221.7.182]:50397 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbYK0Mmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:40:21 -0500
-From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
-Organization: Home
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: ndiswrapper 1.54-2.6.27 released
-Date: Thu, 27 Nov 2008 14:40:15 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <46697.166.70.238.44.1227679338.squirrel@webmail.wolfmountaingroup.com> <492DE3BD.9010802@shaw.ca>
-In-Reply-To: <492DE3BD.9010802@shaw.ca>
+	Thu, 27 Nov 2008 07:42:49 -0500
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][v2] xsysace: use resource_size_t instead of unsigned long
+Date: Thu, 27 Nov 2008 15:34:05 +0300
+User-Agent: KMail/1.9.4
+References: <200811271521.27642.yur@emcraft.com>
+In-Reply-To: <200811271521.27642.yur@emcraft.com>
+Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+       Ilya Yanok <yanok@emcraft.com>,
+       Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811271440.15661.mihai.dontu@gmail.com>
-X-BitDefender-Scanner: Clean, Agent: BitDefender qmail 3.0.0 on
- mail.bitdefender.com, sigver: 7.22124
-X-BitDefender-Spam: No (7)
-X-BitDefender-SpamStamp: v1, build 2.7.20.56845, bayes score: 500(0),
- pbayes score: 241(7), neunet score: 0(0), flags: [VALID_REPLY],
- total: 7
+Message-Id: <200811271534.05408.yur@emcraft.com>
+X-Spam-Score: -3.3 (---)
+X-Spam-Report: Spam detection software, running on the system "pacific.emcraft.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  I'm sorry, but the patch I've just posted turn out to be corrupted.
+	The correct one is below. --- Use resource_size_t for physical address of
+	SystemACE chip. This fixes the driver brokeness for 32 bit systems with 64
+	bit resources (e.g. PPC440SPe). [...] 
+	Content analysis details:   (-3.3 points, 2.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	1.0 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 November 2008, Robert Hancock wrote:
-> jmerkey@wolfmountaingroup.com wrote:
-> > ndiswrapper with the 2.6.27 breakage corrected.  The current maintainers
-> > have not put out a release for 2.6.27 or later kernels, so I went ahead
-> > and fixed it for 2.6.27.
-> >
-> > ftp://ftp.wolfmountaingroup.org/pub/ndiswrapper/ndiswrapper-1.54-2.6.27.7
-> >.tar.gz
-> >
-> > Linux wireless drivers still do not work on most of my laptops and USB
-> > wireless devices due to lack of firmware drivers and other problems with
-> > native Linux wireless.  Anyone else with busted laptop wireless who need
-> > ndiswrapper might as well be able to get it since the maintainers have
-> > not posted recent releases for recent kernels.
->
-> What devices are there left these days that are still not working with
-> native drivers?
+I'm sorry, but the patch I've just posted turn out to be corrupted. The
+correct one is below.
 
-Broadcom Corporation BCM4312 802.11a/b/g (rev 01)
+---
+Use resource_size_t for physical address of SystemACE
+chip. This fixes the driver brokeness for 32 bit systems
+with 64 bit resources (e.g. PPC440SPe).
 
-The driver works only if I don't subject it to high traffic. If I begin a 
-large transfer (like a DVD ISO) the card looses the connection with the AP 
-and behaves erratically in a way that interferes with my wireless mouse (I 
-have to unplug the mouse receiver and plug it back in several times, which is 
-very annoying).
+Also this patch adds one more compatible string for more
+clean description of the hardware, and fixes a sector_t-
+related compilation warning.
 
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ drivers/block/xsysace.c |   24 +++++++++++++-----------
+ 1 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index ecab9e6..9efd3d7 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -194,7 +194,7 @@ struct ace_device {
+ 	int in_irq;
+ 
+ 	/* Details of hardware device */
+-	unsigned long physaddr;
++	resource_size_t physaddr;
+ 	void __iomem *baseaddr;
+ 	int irq;
+ 	int bus_width;		/* 0 := 8 bit; 1 := 16 bit */
+@@ -628,8 +628,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 
+ 		/* Okay, it's a data request, set it up for transfer */
+ 		dev_dbg(ace->dev,
+-			"request: sec=%lx hcnt=%lx, ccnt=%x, dir=%i\n",
+-			req->sector, req->hard_nr_sectors,
++			"request: sec=%llx hcnt=%lx, ccnt=%x, dir=%i\n",
++			(unsigned long long)req->sector, req->hard_nr_sectors,
+ 			req->current_nr_sectors, rq_data_dir(req));
+ 
+ 		ace->req = req;
+@@ -935,7 +935,8 @@ static int __devinit ace_setup(struct ace_device *ace)
+ 	int rc;
+ 
+ 	dev_dbg(ace->dev, "ace_setup(ace=0x%p)\n", ace);
+-	dev_dbg(ace->dev, "physaddr=0x%lx irq=%i\n", ace->physaddr, ace->irq);
++	dev_dbg(ace->dev, "physaddr=0x%llx irq=%i\n",
++		(unsigned long long)ace->physaddr, ace->irq);
+ 
+ 	spin_lock_init(&ace->lock);
+ 	init_completion(&ace->id_completion);
+@@ -1017,8 +1018,8 @@ static int __devinit ace_setup(struct ace_device *ace)
+ 	/* Print the identification */
+ 	dev_info(ace->dev, "Xilinx SystemACE revision %i.%i.%i\n",
+ 		 (version >> 12) & 0xf, (version >> 8) & 0x0f, version & 0xff);
+-	dev_dbg(ace->dev, "physaddr 0x%lx, mapped to 0x%p, irq=%i\n",
+-		ace->physaddr, ace->baseaddr, ace->irq);
++	dev_dbg(ace->dev, "physaddr 0x%llx, mapped to 0x%p, irq=%i\n",
++		(unsigned long long)ace->physaddr, ace->baseaddr, ace->irq);
+ 
+ 	ace->media_change = 1;
+ 	ace_revalidate_disk(ace->gd);
+@@ -1035,8 +1036,8 @@ err_alloc_disk:
+ err_blk_initq:
+ 	iounmap(ace->baseaddr);
+ err_ioremap:
+-	dev_info(ace->dev, "xsysace: error initializing device at 0x%lx\n",
+-	       ace->physaddr);
++	dev_info(ace->dev, "xsysace: error initializing device at 0x%llx\n",
++		 (unsigned long long)ace->physaddr);
+ 	return -ENOMEM;
+ }
+ 
+@@ -1059,7 +1060,7 @@ static void __devexit ace_teardown(struct ace_device *ace)
+ }
+ 
+ static int __devinit
+-ace_alloc(struct device *dev, int id, unsigned long physaddr,
++ace_alloc(struct device *dev, int id, resource_size_t physaddr,
+ 	  int irq, int bus_width)
+ {
+ 	struct ace_device *ace;
+@@ -1119,7 +1120,7 @@ static void __devexit ace_free(struct device *dev)
+ 
+ static int __devinit ace_probe(struct platform_device *dev)
+ {
+-	unsigned long physaddr = 0;
++	resource_size_t physaddr = 0;
+ 	int bus_width = ACE_BUS_WIDTH_16; /* FIXME: should not be hard coded */
+ 	int id = dev->id;
+ 	int irq = NO_IRQ;
+@@ -1165,7 +1166,7 @@ static int __devinit
+ ace_of_probe(struct of_device *op, const struct of_device_id *match)
+ {
+ 	struct resource res;
+-	unsigned long physaddr;
++	resource_size_t physaddr;
+ 	const u32 *id;
+ 	int irq, bus_width, rc;
+ 
+@@ -1205,6 +1206,7 @@ static struct of_device_id ace_of_match[] __devinitdata = {
+ 	{ .compatible = "xlnx,opb-sysace-1.00.b", },
+ 	{ .compatible = "xlnx,opb-sysace-1.00.c", },
+ 	{ .compatible = "xlnx,xps-sysace-1.00.a", },
++	{ .compatible = "xlnx,sysace", },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ace_of_match);
 -- 
-Mihai Donțu
+1.5.6.1
