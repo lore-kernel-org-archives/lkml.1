@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYK0Tgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbYK0Tma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbYK0Tgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 14:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYK0TgW
+	id S1754035AbYK0Tma (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 14:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYK0TmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 14:36:22 -0500
-Received: from www.tglx.de ([62.245.132.106]:37562 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752649AbYK0TgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 14:36:21 -0500
-Date: Thu, 27 Nov 2008 20:35:43 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: eranian@gmail.com
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-Subject: Re: [patch 02/24] perfmon: base code
-In-Reply-To: <7c86c4470811271051g66669197qb6b5fd39961668a9@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0811272031540.3325@localhost.localdomain>
-References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>  <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>  <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>  <alpine.LFD.2.00.0811271858300.3325@localhost.localdomain>
- <7c86c4470811271051g66669197qb6b5fd39961668a9@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 27 Nov 2008 14:42:17 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:14529 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbYK0TmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 14:42:16 -0500
+Date: Thu, 27 Nov 2008 12:42:10 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: oops/warning report for the week of November 26, 2008
+Message-ID: <20081127194210.GB28870@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	NetDev <netdev@vger.kernel.org>, x86@kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Theodore Ts'o <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <492DD792.6080302@linux.intel.com> <200811261605.43099.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811261605.43099.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane,
-
-On Thu, 27 Nov 2008, stephane eranian wrote:
-
-> >> session is independent of each other. You can therefore measure different
-> >> things on different CPUs. Reservation is thus done independently for each
-> >> CPU, therefore we need a cpu bitmask  to track allocation.
-> >
-> > Ok. Question: if you do a one CPU wide session with perfom, can you
-> > still do thread monitoring on the same CPU ?
-> >
-> No. They are currently mutually exclusive.
+* Jesse Barnes <jbarnes@virtuousgeek.org>:
+> On Wednesday, November 26, 2008 3:11 pm Arjan van de Ven wrote:
+> > Rank 2: pci_create_slot (warning)
+> > 	Reported 603 times (639 total reports)
+> > 	BIOS provided duplicated slot names, the PCI layer blindly passes to sysfs
+> > 	This warning was last seen in version 2.6.27.5, and first seen in
+> > 2.6.27-rc7-git1. More info:
+> > http://www.kerneloops.org/searchweek.php?search=pci_create_slot
 > 
-> > If no, what prevents that a monitored thread is migrated to such a CPU ?
-> >
-> Nothing. AND you don't want to change affinity because you are monitoring.
-> So the current restriction is that cpu-wide and per-thread are
-> mutually exclusive.
+> IIRC we fixed this one post-2.6.27.  I didn't send the patches back to -stable 
+> because they were a bit big, but if someone were sufficiently motiviated I'm 
+> sure the backport wouldn't be that hard...
 
-And how is this achieved ? Currently there seems nothing which
-prevents a per-thread vs. cpu-wide monitoring.
+I can do this backport. A few questions though...
 
-Thanks,
+We're seeing a proliferation of this one presumably because
+Fedora10 uses 2.6.27.5 as a starting point? If I just backport
+the fixes against Greg's latest tree, do I have to do anything
+special to make sure they get into the Fedora kernel?
 
-	tglx
+Also, does kerneloops capture any of the machine information,
+like DMI output, etc. or does it just get the oops? It would be
+nice to see which machines out there have the broken BIOS that
+causes this oops.
+
+Thanks.
+
+/ac
+
