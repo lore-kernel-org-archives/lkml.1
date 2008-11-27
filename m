@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbYK0A5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYK0BE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954AbYK0A5e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYK0A5K
+	id S1754122AbYK0BE1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 20:04:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYK0BER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:57:10 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53714 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752792AbYK0A5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:57:09 -0500
-Date: Thu, 27 Nov 2008 01:57:08 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "J.R. Mauro" <jrm8005@gmail.com>,
-       =?ISO-8859-15?Q?Tobias_M=FCller?= <Tobias_Mueller@twam.info>
-cc: Jan Scholz <scholz@fias.uni-frankfurt.de>, jirislaby@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: several messages
-In-Reply-To: <4b04f768614db905a9e9e8f7bfb88393.squirrel@twam.homeip.net>
-Message-ID: <alpine.LNX.1.10.0811270156210.19853@jikos.suse.cz>
-References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de>    <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>    <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz>    <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>   
- <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz> <4b04f768614db905a9e9e8f7bfb88393.squirrel@twam.homeip.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 26 Nov 2008 20:04:17 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:42087 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbYK0BER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 20:04:17 -0500
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Nov 2008 20:04:16 EST
+Date: Thu, 27 Nov 2008 02:07:53 +0100
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       xemul@openvz.org
+Subject: Re: [RFC][PATCH 4/5] Protect cinit from fatal signals
+Message-ID: <20081127010753.GB13545@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, oleg@redhat.com,
+	ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+	linux-kernel@vger.kernel.org, xemul@openvz.org
+References: <20081126034242.GA23120@us.ibm.com> <20081126034634.GD23238@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-1857482269-1227747428=:19853"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081126034634.GD23238@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, Nov 25, 2008 at 07:46:34PM -0800, Sukadev Bhattiprolu wrote:
+> To protect container-init from fatal signals, set SIGNAL_UNKILLABLE but
+> clear it if it receives SIGKILL from parent namespace - so it is still
+> killable from ancestor namespace.
 
---336216065-1857482269-1227747428=:19853
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+This sounds like a workaround.
 
-On Wed, 26 Nov 2008, J.R. Mauro wrote:
+> Note that container-init is still somewhat special compared to 'normal
+> processes' - unhandled fatal signals like SIGUSR1 to a container-init
+> are dropped even if they are from ancestor namespace. SIGKILL from an
+> ancestor namespace is the only reliable way to kill a container-init.
 
-> There is one bluetooth model and one USB model.
+It sounds not right to make this special case for a "normal" process.
 
-On Wed, 26 Nov 2008, Tobias Müller wrote:
+However, no idea how to do this better.
 
-> I own the USB variant and these are the right id for that. The wireless 
-> IDs were from another patch I merged together with mine. I don't have a 
-> wireless version.
-
-OK, so therefore you confirm that Jan's patch is OK, right?
-
-Thanks a lot,
+Bastian
 
 -- 
-Jiri Kosina
-SUSE Labs
---336216065-1857482269-1227747428=:19853--
+The heart is not a logical organ.
+		-- Dr. Janet Wallace, "The Deadly Years", stardate 3479.4
