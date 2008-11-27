@@ -1,223 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbYK0RZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbYK0Req@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753372AbYK0RZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 12:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYK0RZa
+	id S1753207AbYK0Req (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 12:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYK0Reg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 12:25:30 -0500
-Received: from www.tglx.de ([62.245.132.106]:35672 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751448AbYK0RZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 12:25:30 -0500
-Date: Thu, 27 Nov 2008 18:24:58 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: eranian@googlemail.com
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, eranian@gmail.com,
-       sfr@canb.auug.org.au
-Subject: Re: [patch 02/24] perfmon: base code
-In-Reply-To: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>
-Message-ID: <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>
-References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 27 Nov 2008 12:34:36 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55069 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYK0Ref (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 12:34:35 -0500
+Date: Thu, 27 Nov 2008 17:34:27 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Miles Lane <miles.lane@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request
+ at ffff8800be8b0019
+In-Reply-To: <84144f020811270613t3f0258ddxac52abb9a447bf40@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811271643250.9618@blonde.site>
+References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com> 
+ <200811270026.37941.rjw@sisk.pl>  <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>
+  <Pine.LNX.4.64.0811271349040.21910@blonde.site>
+ <84144f020811270613t3f0258ddxac52abb9a447bf40@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, eranian@googlemail.com wrote:
+On Thu, 27 Nov 2008, Pekka Enberg wrote:
+> On Thu, Nov 27, 2008 at 3:54 PM, Hugh Dickins <hugh@veritas.com> wrote:
+> > I think you're looking at a 2.6.28-rc5 sprint_symbol() there:
+> > the world has moved on since those days.  I changed it to use the
+> > supplied "buffer" instead of local "namebuf" in 2.6.28-rc6, so we
+> > have to wonder if my patch is to blame - though I don't see it.
+> 
+> Oh, right. I think I see where this is going. The buffer is coming
+> from sysfs and is PAGE_SIZE long. In SLUB, we do check for overflows
+> but list_locations() allows us to get as close as 100 bytes bytes from
+> the edge of the page. Unfortunately, kallsyms_lookup() does:
+> 
+>   const char *kallsyms_lookup(unsigned long addr,
+>                               unsigned long *symbolsize,
+>                               unsigned long *offset,
+>                               char **modname, char *namebuf)
+>   {
+>           namebuf[KSYM_NAME_LEN - 1] = 0;
+>           namebuf[0] = 0;
+> 
+> where KSYM_NAME_LEN is 128 which will tip us over the page edge
+> potentially triggering an oops.
 
-> Index: o3/perfmon/perfmon_res.c
+Thanks for working that out.
+Good find (yes, it was a find!) by Miles.
 
-> +/*
-> + * global information about all sessions
-> + */
-> +struct pfm_resources {
-> +	cpumask_t sys_cpumask;     /* bitmask of used cpus */
-> +	u32 thread_sessions; /* #num loaded per-thread sessions */
-> +};
+> The proper fix is probably to pass a
+> length of namebuf to kallsyms_lookup() but it's probably best to
+> revert the patch this late in the release cycle?
 
-What's the purpose of this being a structure if it's just a single
-instance ?
+Several possibilities, I don't know which is the right one for now,
+hope Andrew can judge.
 
-> +static struct pfm_resources pfm_res;
-> +
-> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_res_lock);
+I don't see passing the length of namebuf to kallsyms_lookup()
+as called for: it could have been designed that way from the start,
+but it wasn't, and I don't see this bug as any reason to change that.
 
-> +/**
-> + * pfm_session_acquire - reserve a per-thread session
-> + *
-> + * return:
-> + * 	 0    : success
-> + * 	-EBUSY: if conflicting session exist
+Reverting my patch for now: that's certainly a reasonable possibility,
+but leaves us with several other such bugs.  Suggested patch below,
+but the ftrace part of it worries me a little, since it's within a
+structure and maybe it's a bad idea to enlarge that at this point;
+I've also not _really_ done the arithmetic needed for the slub one.
 
-  Where ?
+An alternative quick just-for-now fix might be to remove that
+	namebuf[KSYM_NAME_LEN - 1] = 0;
+from kallsyms_lookup(): as I understand it (please check), that
+could only make sense in cases where the symbol is KSYM_NAME_LEN
+long or longer - in which case, all of the places fixed in the
+patch below would be causing corruption already, even without my
+patch.  I think.  Maybe that "= 0" even serves no purpose at all?
 
-> + */
-> +int pfm_session_acquire(void)
-> +{
-> +	unsigned long flags;
-> +	int ret = 0;
-> +
-> +	/*
-> +	 * validy checks on cpu_mask have been done upstream
-> +	 */
+Hugh
 
-  How please ? pfm_res.sys_cpumask is local to this file and you want
-  to check it under the lock and _before_ you increment
-  thread_sessions blindly.
+[PATCH] KSYM_SYMBOL_LEN fixes
 
-> +	spin_lock_irqsave(&pfm_res_lock, flags);
-> +
-> +	PFM_DBG("in  thread=%u",
-> +		pfm_res.thread_sessions);
-> +
-> +	pfm_res.thread_sessions++;
-> +
-> +	PFM_DBG("out thread=%u ret=%d",
-> +		pfm_res.thread_sessions,
-> +		ret);
-> +
-> +	spin_unlock_irqrestore(&pfm_res_lock, flags);
-> +
-> +	return ret;
-> +}
-> +
-> +/**
-> + * pfm_session_release - release a per-thread session
-> + *
-> + * called from __pfm_unload_context()
-> + */
-> +void pfm_session_release(void)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&pfm_res_lock, flags);
-> +
-> +	PFM_DBG("in thread=%u",
-> +		pfm_res.thread_sessions);
-> +
-> +	pfm_res.thread_sessions--;
-> +
-> +	PFM_DBG("out thread=%u",
-> +		pfm_res.thread_sessions);
+Miles Lane tailing /sys files hit a BUG which Pekka Enberg has tracked to
+my 966c8c12dc9e77f931e2281ba25d2f0244b06949 sprint_symbol(): use less stack
+exposing a bug in slub's list_locations() - kallsyms_lookup() writes a 0
+to namebuf[KSYM_NAME_LEN-1], but that was beyond the end of page provided.
 
+The 100 slop which list_locations() allows at end of page looks roughly
+enough for all the other stuff it might print after the symbol before
+it checks again: break out KSYM_SYMBOL_LEN earlier than before.
 
- What's the value of these debugs ? Prove that the compiler managed to
- compile "pfm_res.thread_sessions--;" correctly ?
+Latencytop and ftrace and are using KSYM_NAME_LEN buffers where they need
+KSYM_SYMBOL_LEN buffers, and vmallocinfo a 2*KSYM_NAME_LEN buffer where
+it wants a KSYM_SYMBOL_LEN buffer: fix those before anyone copies them.
 
- A WARN_ON(!pfm_res.thread_sessions) instead of blindly decrementing
- would be way more useful.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-> +	spin_unlock_irqrestore(&pfm_res_lock, flags);
-> +}
+ fs/proc/base.c         |    2 +-
+ include/linux/ftrace.h |    2 +-
+ kernel/latencytop.c    |    2 +-
+ mm/slub.c              |    2 +-
+ mm/vmalloc.c           |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
-<adding the bits from the oprofile patch, which belong here as they
-are not x86 specific>
-
-+
-+/**
-+ * pfm_session_allcpus_acquire - acquire per-cpu sessions on all available cpus
-+ *
-+ * currently used by Oprofile on X86
-+ */
-+int pfm_session_allcpus_acquire(void)
-
-+	for_each_online_cpu(cpu) {
-+		cpu_set(cpu, pfm_res.sys_cpumask);
-+		nsys_cpus++;
-+	}
-
- Sigh, why do we need a loop to copy a bitfield ?
-
-+/**
-+ * pfm_session_allcpus_release - relase per-cpu sessions on all cpus
-+ *
-+ * currently used by Oprofile code
-+ */
-+void pfm_session_allcpus_release(void)
-+{
-+	unsigned long flags;
-+	u32 nsys_cpus, cpu;
-+
-+	spin_lock_irqsave(&pfm_res_lock, flags);
-+
-+	nsys_cpus = cpus_weight(pfm_res.sys_cpumask);
-+
-+	PFM_DBG("in  sys=%u task=%u",
-+		nsys_cpus,
-+		pfm_res.thread_sessions);
-+
-+	/*
-+	 * XXX: could use __cpus_clear() with nbits
-+	 */
-
-	  __cpus_clear(pfm_res.sys_cpumask, nsys_cpus); ????
-
- That'd be real fun with a sparse mask.
-
-+	for_each_online_cpu(cpu) {
-+		cpu_clear(cpu, pfm_res.sys_cpumask);
-+		nsys_cpus--;
-+	}
-
- Yuck. cpus_clear() perhaps ?
-
-+EXPORT_SYMBOL(pfm_session_allcpus_release);
-
-All what that code should do (in fact it does not) is preventing the
-mix of thread and system wide sessions.
-
-It does neither need a cpumask nor tons of useless loops and debug
-outputs with zero value.
-
-static int global_session;
-static int thread_sessions;
-static DEFINE_SPINLOCK(session_lock);
-
-int pfm_session_request(int global)
-{
-	unsigned long flags;
-	int res = -EBUSY;
-
-	spin_lock_irqsave(&session_lock, flags);
-
-	if (!global && !global_session) {
-	   	thread_sessions++;
-		res = 0;
-	}
-
-	if (global && !thread_sessions && !global_session) {
-	   	global_session = 1;
-		res = 0;
-	}
-
- 	spin_unlock_irqrestore(&session_lock, flags);
-	return res;
-}
-
-void pfm_session_release(int global)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&session_lock, flags);
-
-	if (global) {
-		WARN_ON(!global_session);
-		global_session = 0;
-	} else {
-		if (!global_session && thread_sessions)
-			thread_session--;
-		else
-			WARN();
-	}
-
-	spin_unlock_irqrestore(&session_lock, flags);
-}
-
-Would do it nicely including useful sanity checks and 70% less code.
-
-Thanks,
-
-	tglx
+--- 2.6.28-rc6/fs/proc/base.c	2008-10-24 09:28:19.000000000 +0100
++++ linux/fs/proc/base.c	2008-11-27 16:39:26.000000000 +0000
+@@ -371,7 +371,7 @@ static int lstats_show_proc(struct seq_f
+ 				task->latency_record[i].time,
+ 				task->latency_record[i].max);
+ 			for (q = 0; q < LT_BACKTRACEDEPTH; q++) {
+-				char sym[KSYM_NAME_LEN];
++				char sym[KSYM_SYMBOL_LEN];
+ 				char *c;
+ 				if (!task->latency_record[i].backtrace[q])
+ 					break;
+--- 2.6.28-rc6/include/linux/ftrace.h	2008-11-02 23:17:56.000000000 +0000
++++ linux/include/linux/ftrace.h	2008-11-27 16:39:26.000000000 +0000
+@@ -231,7 +231,7 @@ ftrace_init_module(unsigned long *start,
+ 
+ struct boot_trace {
+ 	pid_t			caller;
+-	char			func[KSYM_NAME_LEN];
++	char			func[KSYM_SYMBOL_LEN];
+ 	int			result;
+ 	unsigned long long	duration;		/* usecs */
+ 	ktime_t			calltime;
+--- 2.6.28-rc6/kernel/latencytop.c	2008-07-13 22:51:29.000000000 +0100
++++ linux/kernel/latencytop.c	2008-11-27 16:39:26.000000000 +0000
+@@ -191,7 +191,7 @@ static int lstats_show(struct seq_file *
+ 				latency_record[i].time,
+ 				latency_record[i].max);
+ 			for (q = 0; q < LT_BACKTRACEDEPTH; q++) {
+-				char sym[KSYM_NAME_LEN];
++				char sym[KSYM_SYMBOL_LEN];
+ 				char *c;
+ 				if (!latency_record[i].backtrace[q])
+ 					break;
+--- 2.6.28-rc6/mm/slub.c	2008-10-24 09:28:26.000000000 +0100
++++ linux/mm/slub.c	2008-11-27 16:39:27.000000000 +0000
+@@ -3595,7 +3595,7 @@ static int list_locations(struct kmem_ca
+ 	for (i = 0; i < t.count; i++) {
+ 		struct location *l = &t.loc[i];
+ 
+-		if (len > PAGE_SIZE - 100)
++		if (len > PAGE_SIZE - KSYM_SYMBOL_LEN - 100)
+ 			break;
+ 		len += sprintf(buf + len, "%7ld ", l->count);
+ 
+--- 2.6.28-rc6/mm/vmalloc.c	2008-11-21 11:09:24.000000000 +0000
++++ linux/mm/vmalloc.c	2008-11-27 16:39:27.000000000 +0000
+@@ -1705,7 +1705,7 @@ static int s_show(struct seq_file *m, vo
+ 		v->addr, v->addr + v->size, v->size);
+ 
+ 	if (v->caller) {
+-		char buff[2 * KSYM_NAME_LEN];
++		char buff[KSYM_SYMBOL_LEN];
+ 
+ 		seq_putc(m, ' ');
+ 		sprint_symbol(buff, (unsigned long)v->caller);
