@@ -1,173 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYK0RsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbYK0R6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYK0RsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 12:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYK0RsA
+	id S1753288AbYK0R6d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 12:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYK0R6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 12:48:00 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:38132 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752555AbYK0Rr6 (ORCPT
+	Thu, 27 Nov 2008 12:58:23 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:47488 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbYK0R6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 12:47:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=qRJu4MnKr2p3aYFSsRPp6aF66Orpwo6DMqNAyqBFvqrp3wmnsotjELP5W9JDyFe/5u
-         NcaCQt0Qt7LCeBzStgFnoDnfxs3MiTJJqjeAhhnC7ebm++RWIyDQ14XB8ha2fTXpOp/f
-         NAedaoM0Nb8081/m3ZuIRGdgpm03RfKYR8C+o=
-Message-ID: <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>
-Date: Thu, 27 Nov 2008 18:47:54 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 02/24] perfmon: base code
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>
+	Thu, 27 Nov 2008 12:58:22 -0500
+Date: Thu, 27 Nov 2008 17:58:13 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com,
+       matthew@wil.cx
+Subject: [PATCH v4] relatime: Make relatime smarter
+Message-ID: <20081127175813.GA24354@srcf.ucam.org>
+References: <20081126195457.GA3541@srcf.ucam.org> <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127163535.775729bf@lxorguk.ukuu.org.uk> <20081127164754.GC22963@srcf.ucam.org> <20081127165929.GA23366@srcf.ucam.org> <20081127170615.GB14991@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>
-	 <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>
+In-Reply-To: <20081127170615.GB14991@infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+Make relatime smarter
+    
+Allow atime to be updated once per day even with relatime. This lets
+utilities like tmpreaper (which delete files based on last access time)
+continue working. The time between atime updates can be configured at boot
+with the relatime_interval kernel argument, or at runtime through a sysctl.
+    
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
+---
 
+Adds Christoph's suggestions.
 
-On Thu, Nov 27, 2008 at 6:24 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 26 Nov 2008, eranian@googlemail.com wrote:
->
->> Index: o3/perfmon/perfmon_res.c
->
->> +/*
->> + * global information about all sessions
->> + */
->> +struct pfm_resources {
->> +     cpumask_t sys_cpumask;     /* bitmask of used cpus */
->> +     u32 thread_sessions; /* #num loaded per-thread sessions */
->> +};
->
-> What's the purpose of this being a structure if it's just a single
-> instance ?
->
-There is a single instance.
-I was just trying to regroup related fields together instead of having them as
-separate variables. I can make the change.
+ Documentation/kernel-parameters.txt |    4 ++
+ fs/inode.c                          |   63 ++++++++++++++++++++++++++++++-----
+ include/linux/mount.h               |    2 +
+ kernel/sysctl.c                     |    9 +++++
+ 4 files changed, 69 insertions(+), 9 deletions(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index e0f346d..6d0dc0a 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1847,6 +1847,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			[KNL, SMP] Set scheduler's default relax_domain_level.
+ 			See Documentation/cpusets.txt.
+ 
++	relatime_interval=
++			[FS] relative atime update frequency, in seconds.
++			(default: 1 day: 86400 seconds)
++
+ 	reserve=	[KNL,BUGS] Force the kernel to ignore some iomem area
+ 
+ 	reservetop=	[X86-32]
+diff --git a/fs/inode.c b/fs/inode.c
+index 0487ddb..4899063 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1179,6 +1179,56 @@ sector_t bmap(struct inode * inode, sector_t block)
+ }
+ EXPORT_SYMBOL(bmap);
+ 
++/*
++ * Relative atime updates frequency (default: 1 day):
++ */
++int relatime_interval __read_mostly = 24*60*60;
++
++/*
++ * Allow overriding the default relatime value on the kernel command line
++ */
++static int __init set_relatime_interval(char *str)
++{
++	get_option(&str, &relatime_interval);
++
++	return 1;
++}
++__setup("relatime_interval=", set_relatime_interval);
++
++/*
++ * With relative atime, only update atime if the
++ * previous atime is earlier than either the ctime or
++ * mtime.
++ */
++static int atime_need_update(struct vfsmount *mnt, struct inode *inode,
++			     struct timespec now)
++{
++
++	if (!(mnt->mnt_flags & MNT_RELATIME))
++		return 1;
++	/*
++	 * Is mtime younger than atime? If yes, update atime:
++	 */
++	if (timespec_compare(&inode->i_mtime, &inode->i_atime) >= 0)
++		return 1;
++	/*
++	 * Is ctime younger than atime? If yes, update atime:
++	 */
++	if (timespec_compare(&inode->i_ctime, &inode->i_atime) >= 0)
++		return 1;
++
++	/*
++	 * Is the previous atime value older than the update interval?
++	 * If yes, update atime:
++	 */
++	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= relatime_interval)
++		return 1;
++	/*
++	 * Good, we can skip the atime update:
++	 */
++	return 0;
++}
++
+ /**
+  *	touch_atime	-	update the access time
+  *	@mnt: mount the inode is accessed on
+@@ -1206,17 +1256,12 @@ void touch_atime(struct vfsmount *mnt, struct dentry *dentry)
+ 		goto out;
+ 	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
+ 		goto out;
+-	if (mnt->mnt_flags & MNT_RELATIME) {
+-		/*
+-		 * With relative atime, only update atime if the previous
+-		 * atime is earlier than either the ctime or mtime.
+-		 */
+-		if (timespec_compare(&inode->i_mtime, &inode->i_atime) < 0 &&
+-		    timespec_compare(&inode->i_ctime, &inode->i_atime) < 0)
+-			goto out;
+-	}
+ 
+ 	now = current_fs_time(inode->i_sb);
++
++	if (!atime_need_update(mnt, inode, now))
++		goto out;
++
+ 	if (timespec_equal(&inode->i_atime, &now))
+ 		goto out;
+ 
+diff --git a/include/linux/mount.h b/include/linux/mount.h
+index cab2a85..978fb10 100644
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -112,4 +112,6 @@ extern void mark_mounts_for_expiry(struct list_head *mounts);
+ extern spinlock_t vfsmount_lock;
+ extern dev_t name_to_dev_t(char *name);
+ 
++extern int relatime_interval;
++
+ #endif /* _LINUX_MOUNT_H */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 9d048fa..f085ad6 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -29,6 +29,7 @@
+ #include <linux/utsname.h>
+ #include <linux/smp_lock.h>
+ #include <linux/fs.h>
++#include <linux/mount.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/kobject.h>
+@@ -1334,6 +1335,14 @@ static struct ctl_table fs_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "relatime_interval",
++		.data		= &relatime_interval,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
 
->> +static struct pfm_resources pfm_res;
->> +
->> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_res_lock);
->
->> +/**
->> + * pfm_session_acquire - reserve a per-thread session
->> + *
->> + * return:
->> + *    0    : success
->> + *   -EBUSY: if conflicting session exist
->
->  Where ?
-
-Not in the patchset, conflict can arise when you add system-wide sessions.
-
->
->> + */
->> +int pfm_session_acquire(void)
->> +{
->> +     unsigned long flags;
->> +     int ret = 0;
->> +
->> +     /*
->> +      * validy checks on cpu_mask have been done upstream
->> +      */
->
->  How please ? pfm_res.sys_cpumask is local to this file and you want
->  to check it under the lock and _before_ you increment
->  thread_sessions blindly.
->
-Stale comment.
-
->
-> +EXPORT_SYMBOL(pfm_session_allcpus_release);
->
-> All what that code should do (in fact it does not) is preventing the
-> mix of thread and system wide sessions.
->
-True. That is a current limitation.
-
-> It does neither need a cpumask nor tons of useless loops and debug
-> outputs with zero value.
->
-Well, the the cpumask is indeed needed but you don't see the reason
-why in the patchset!
-
-Perfmon in system-wide does not operate like Oprofile. In system-wide
-a perfmon session (context) monitors only ONE CPU at a time. Each
-session is independent of each other. You can therefore measure different
-things on different CPUs. Reservation is thus done independently for each
-CPU, therefore we need a cpu bitmask  to track allocation.
-
-The Oprofile reservation you see is built on top of the cpumask reservation.
-It tries to allocate in one call and atomically ALL the CPUs as this is the way
-Oprofile operates. Thus it fails if one perfmon system-wide session or one
-perfmon per-thread exists. I believe there is enough bitmask functions to
-avoid loops as you pointed out. I will fix that.
-
-
-> static int global_session;
-> static int thread_sessions;
-> static DEFINE_SPINLOCK(session_lock);
->
-> int pfm_session_request(int global)
-> {
->        unsigned long flags;
->        int res = -EBUSY;
->
->        spin_lock_irqsave(&session_lock, flags);
->
->        if (!global && !global_session) {
->                thread_sessions++;
->                res = 0;
->        }
->
->        if (global && !thread_sessions && !global_session) {
->                global_session = 1;
->                res = 0;
->        }
->
->        spin_unlock_irqrestore(&session_lock, flags);
->        return res;
-> }
->
-> void pfm_session_release(int global)
-> {
->        unsigned long flags;
->
->        spin_lock_irqsave(&session_lock, flags);
->
->        if (global) {
->                WARN_ON(!global_session);
->                global_session = 0;
->        } else {
->                if (!global_session && thread_sessions)
->                        thread_session--;
->                else
->                        WARN();
->        }
->
->        spin_unlock_irqrestore(&session_lock, flags);
-> }
->
-> Would do it nicely including useful sanity checks and 70% less code.
->
-> Thanks,
->
->        tglx
->
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
