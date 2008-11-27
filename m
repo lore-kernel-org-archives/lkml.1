@@ -1,300 +1,514 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbYK0HhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbYK0HwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbYK0HhI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 02:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYK0Hgy
+	id S1752952AbYK0HwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 02:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYK0HwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 02:36:54 -0500
-Received: from vms173007pub.verizon.net ([206.46.173.7]:54148 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYK0Hgx (ORCPT
+	Thu, 27 Nov 2008 02:52:04 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55547 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbYK0HwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 02:36:53 -0500
-Date: Thu, 27 Nov 2008 02:36:49 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PULL] ACPI patches for Linux-2.6.28-rc6
-X-X-Sender: lenb@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Linux Power Management List <linux-pm@lists.osdl.org>
-Message-id: <alpine.LFD.2.00.0811270232310.3895@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 27 Nov 2008 02:52:01 -0500
+Date: Thu, 27 Nov 2008 16:46:32 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       taka@valinux.co.jp, nishimura@mxp.nes.nec.co.jp
+Subject: Re: [RFC][PATCH 1/2] CGROUP ID and Hierarchy Code
+Message-Id: <20081127164632.cfb2ab58.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081127160548.3274c8e6.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081127160548.3274c8e6.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 27 Nov 2008 16:05:48 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> Patches for CGROUP ID and Hierarchy Code.
+> (based on mmotm Nov/24...I'll update later.)
+> 
+> CGROUP ID is a unique value for each cgroup (struct cgroup)
+> Hierarchy Code is array of CGROUP ID which contains all ID od ancestors.
+> and tries to remove cgroup_lock() to walk tree.
+> 
+> This is just an example-level patch but I'm now testing/refleshing this.
+> Works well with memcg's hierarchy relcaim.
+> Any comment is welcome.
+> 
+Great work!
 
-please pull from: 
+I've not reviewed these patches in detail yet, I agree to this direction
+to remove cgroup_lock() at hierarcal reclaim.
+Actualy, I was thinking it would be better to manage some array or list
+at mkdir/rmdir.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+hmm, but should this ID be implemented in cgroup level, not in memcg level?
 
-8 regression fixes, a bugfix, and some dmesg and DMI reduction.
 
-This will update the files shown below.
+Thanks,
+Daisuke Nishimura.
 
-thanks!
-
--Len
-
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.28/acpi-release-20080926-2.6.28-rc6.diff.gz
-
- drivers/acpi/battery.c       |    9 +
- drivers/acpi/blacklist.c     |  401 +-----------------------------------------
- drivers/acpi/ec.c            |    3 +-
- drivers/acpi/osl.c           |  104 +++--------
- drivers/acpi/scan.c          |   10 -
- drivers/acpi/sleep/main.c    |   40 ++++-
- drivers/acpi/utils.c         |   16 +--
- drivers/misc/sony-laptop.c   |    4 +-
- drivers/misc/thinkpad_acpi.c |   57 +++++--
- include/acpi/acpredef.h      |    4 +-
- 10 files changed, 133 insertions(+), 515 deletions(-)
-
-through these commits:
-
-Alessandro Guido (2):
-      sony-laptop: brightness regression fix
-      sony-laptop: printk tweak
-
-Alexey Starikovskiy (2):
-      ACPI: EC: count interrupts only if called from interrupt handler.
-      ACPI: battery: Convert discharge energy rate to current properly
-
-Bob Moore (1):
-      ACPICA: Allow _WAK method to return an Integer
-
-Henrique de Moraes Holschuh (1):
-      ACPI: thinkpad-acpi: fix fan sleep/resume path
-
-Len Brown (2):
-      Revert "ACPI: don't enable control method power button as wakeup device when Fixed Power button is used"
-      ACPI: delete OSI(Linux) DMI dmesg spam
-
-Lin Ming (1):
-      ACPICA: disable _BIF warning
-
-Pavel Machek (1):
-      ACPI: scheduling in atomic via acpi_evaluate_integer ()
-
-Rafael J. Wysocki (1):
-      ACPI suspend: Blacklist boxes that require us to set SCI_EN directly on resume
-
-with this log:
-
-commit e899b6485c332aa2d7510739507ab5e5d7b28e59
-Author: Lin Ming <ming.m.lin@intel.com>
-Date:   Thu Nov 27 14:42:30 2008 +0800
-
-    ACPICA: disable _BIF warning
-    
-    A generic work-around from ACPICA is in the queue,
-    but since Linux has a work-around in its battery
-    driver, we can disable this warning now.
-    
-    Allow _BIF method to return an Package with Buffer elements
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=11822
-    
-    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit a6e0887f21bbab337ee32d9c0a84d7c0b6e9141b
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat Nov 8 01:21:10 2008 -0500
-
-    ACPI: delete OSI(Linux) DMI dmesg spam
-    
-    Linux will continue to ignore OSI(Linux),
-    except for a white-list containing a few systems.
-    
-    So delete the black-list,
-    and stop soliciting user-feedback on the console.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 95a28ed08619cc70f31611886ac7b26ab0e462dc
-Author: Bob Moore <robert.moore@intel.com>
-Date:   Thu Nov 13 11:01:34 2008 +0800
-
-    ACPICA: Allow _WAK method to return an Integer
-    
-    This can happen if the _WAK method returns nothing (as per ACPI
-    1.0) but does return an integer if the implicit return mechanism
-    is enabled.  This is the only method that has this problem,
-    since it is also defined to return a package of two integers
-    (ACPI 1.0b+). In all other cases, if a method returns an object
-    when one was not expected, no warning is issued.
-    
-    Signed-off-by: Bob Moore <robert.moore@intel.com>
-    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 0081b162023690877e0096ef17a82ba1969befa8
-Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Date:   Sun Nov 9 10:54:02 2008 -0200
-
-    ACPI: thinkpad-acpi: fix fan sleep/resume path
-    
-    This fixes a regression from v2.6.27, caused by commit
-    5814f737e1cd2cfa2893badd62189acae3e1e1fd, "ACPI: thinkpad-acpi:
-    attempt to preserve fan state on resume".
-    
-    It is possible for fan_suspend() to fail to properly initialize
-    fan_control_desired_level as required by fan_resume(), resulting on
-    the fan always being set to level 7 on resume if the user didn't
-    touch the fan controller.
-    
-    In order to get fan sleep/resume handling to work right:
-    
-    1. Fix the fan_suspend handling of the T43 firmware quirk. If it is
-    still undefined, we didn't touch the fan yet and that means we have no
-    business doing it on resume.
-    
-    2. Store the fan level on its own variable to avoid any possible
-    issues with hijacking fan_control_desired_level (which isn't supposed
-    to have anything other than 0-7 in it, anyway).
-    
-    3. Change the fan_resume code to me more straightforward to understand
-    (although we DO optimize the boolean logic there, otherwise it looks
-    disgusting).
-    
-    4. Add comments to help understand what the code is supposed to be
-    doing.
-    
-    5. Change fan_set_level to be less strict about how auto and
-    full-speed modes are requested.
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=11982
-    
-    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-    Reported-by: Tino Keitel <tino.keitel@tikei.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 3fedd90fdf17643df1da473c5da983137d51bbdb
-Author: Alessandro Guido <ag@alessandroguido.name>
-Date:   Wed Nov 12 23:13:35 2008 +0100
-
-    sony-laptop: printk tweak
-    
-    There's no need to print "Sony: " just after "sony-laptop: " (DRV_PFX).
-    
-    Signed-off-by: Alessandro Guido <ag@alessandroguido.name>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 38cfc148e1bc470175b3ad131db7dd7bdcff37ee
-Author: Alessandro Guido <ag@alessandroguido.name>
-Date:   Wed Nov 12 23:03:28 2008 +0100
-
-    sony-laptop: brightness regression fix
-    
-    After commit 540b8bb9c33935183ceb5bed466a42ad72b2af56:
-    
-      sony-laptop: fingers off backlight if video.ko is serving this functionality
-    
-    I can't set brightness on my sony laptop (nothing in /sys/class/backlight).
-    dmesg says "sony-laptop: Sony: Brightness ignored, must be controlled by ACPI
-    video driver".
-    
-    The function acpi_video_backlight_support returns 0 if we should use the
-    vendor-specific backlight support, while non-0 if the ACPI generic should
-    be used. Because of this, the check introduced by the said commit appears
-    reversed.
-    
-    Signed-off-by: Alessandro Guido <ag@alessandroguido.name>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 3bdca1b863c1ebcb2244fc0cb683876d7330e62b
-Author: Len Brown <len.brown@intel.com>
-Date:   Wed Nov 26 17:55:15 2008 -0500
-
-    Revert "ACPI: don't enable control method power button as wakeup device when Fixed Power button is used"
-    
-    This reverts commit faee816b1502385dc9bc5abf2960d1cc645844d1.
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=12091
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 65df78473ffbf3bff5e2034df1638acc4f3ddd50
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Wed Nov 26 17:53:13 2008 -0500
-
-    ACPI suspend: Blacklist boxes that require us to set SCI_EN directly on resume
-    
-    Some Apple boxes evidently require us to set SCI_EN on resume
-    directly, because if we don't do that, they hung somewhere in the
-    resume code path.  Moreover, on these boxes it is not sufficient to
-    use acpi_enable() to turn ACPI on during resume.  All of this is
-    against the ACPI specification which states that (1) the BIOS is
-    supposed to return from the S3 sleep state with ACPI enabled
-    (SCI_EN set) and (2) the SCI_EN bit is owned by the hardware and we
-    are not supposed to change it.
-    
-    For this reason, blacklist the affected systems so that the SCI_EN
-    bit is set during resume on them.
-    
-    [NOTE: Unconditional setting SCI_EN for all system on resume doesn't
-     work, because it makes some other systems crash (that's to be
-     expected).  Also, it is not entirely clear right now if all of the
-     Apple boxes require this workaround.]
-    
-    This patch fixes the recent regression tracked as
-    http://bugzilla.kernel.org/show_bug.cgi?id=12038
-    
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Tested-by: Tino Keitel <tino.keitel@gmx.de>
-    Tested-by: Bob Copeland <me@bobcopeland.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 40599072dca3ec7d4c9ff8271978be169f974638
-Author: Pavel Machek <pavel@suse.cz>
-Date:   Tue Nov 25 12:05:08 2008 +0100
-
-    ACPI: scheduling in atomic via acpi_evaluate_integer ()
-    
-    Now I know why I had strange "scheduling in atomic" problems:
-    acpi_evaluate_integer() does malloc(..., irqs_disabled() ? GFP_ATOMIC
-    : GFP_KERNEL)... which is (of course) broken.
-    
-    There's no way to reliably tell if we need GFP_ATOMIC or not from
-    code, this one for example fails to detect spinlocks held.
-    
-    Fortunately, allocation seems small enough to be done on stack.
-    
-    Signed-off-by: Pavel Machek <pavel@suse.cz>
-    Acked-by: Bob Moore <robert.moore@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 558073dd56707864f09d563b64e7c37c021e89d2
-Author: Alexey Starikovskiy <aystarik@gmail.com>
-Date:   Fri Nov 21 22:41:01 2008 +0800
-
-    ACPI: battery: Convert discharge energy rate to current properly
-    
-    ACPI battery interface reports its state either in mW or in mA, and
-    discharge rate in your case is reported in mW. power_supply interface
-    does not have such a parameter, so current_now parameter is used
-    for all cases. But in case of mW, reported discharge should
-    be converted into mA.
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Tested-by: Ferenc Wagner <wferi@niif.hu>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 7b4d469228a92a00e412675817cedd60133de38a
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Thu Nov 13 12:00:03 2008 +0300
-
-    ACPI: EC: count interrupts only if called from interrupt handler.
-    
-    fix 2.6.28 EC interrupt storm regression
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+> -Kame
+> 
+> ==
+> A toy patch for Cgroup ID and hierarchy code.
+> 
+> This patch tries to assing a ID to each cgroup. Attach unique ID to each
+> cgroup and provides following functions.
+> 
+>  - cgroup_lookup(id)
+>    returns cgroup of id.
+>  - cgroup_get_next(id, root, foundid)
+>    returns the next cgroup under "root" by scanning bitmap (not by tree-walk)
+>  - cgroup_is_ancestor(cgroup, root)
+>    returns true if "root" is ancestor of cgroup.
+> 
+> There is several reasons to develop this.
+> 
+> 	- While trying to implement hierarchy in memory cgroup, we had to
+> 	  implement "walk under hierarchy" code.
+> 	  Now it's consists of cgroup_lock and tree up-down code.
+> 	  But taking "cgroup_lock" in walking tree can cause deadlocks.
+>           cgroup_lock() is too big. Easier way is helpful.
+> 
+>  	- SwapCgroup uses array of "pointer" to record the owner of swaps.
+> 	  By ID, we can reduce this to "short" or "int". This means ID is 
+> 	  useful for reducing space consumption by pointer if the access cost
+> 	  is not problem.
+> 	  (I hear bio-cgroup will use the same kind of...)
+> 
+> Example) OOM-Killer under hierarchy.
+> 	do {
+> 		rcu_read_lock();
+> 		next = cgroup_get_next(id, root, nextid);
+> 		/* check sanity of next here */
+> 		/* increment refcnt to "next" */
+> 		rcu_read_unlock();
+> 		if (!next)
+> 			break;
+> 		cgroup_scan_tasks(select_bad_process);
+> 	} while (1);
+> 
+> 
+> Characteristics: 
+> 	- Each cgroup get new ID when created.
+> 	- cgroup ID contains "ID" and "Depth in tree" and hierarchy code.
+> 	- hierarchy code is array of IDs of ancestors.
+> 
+> Consideration:
+> 	- gang lookup if necessary.
+> 	- I'd like to use  "(unsigned)short" to cgroup_id for saving space...
+> 	- MAX_DEPTH is bad ?
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  include/linux/cgroup.h |   42 +++++++++++
+>  include/linux/idr.h    |    1 
+>  kernel/cgroup.c        |  180 ++++++++++++++++++++++++++++++++++++++++++++++++-
+>  lib/idr.c              |   46 ++++++++++++
+>  4 files changed, 266 insertions(+), 3 deletions(-)
+> 
+> Index: mmotm-2.6.28-Nov24/include/linux/cgroup.h
+> ===================================================================
+> --- mmotm-2.6.28-Nov24.orig/include/linux/cgroup.h
+> +++ mmotm-2.6.28-Nov24/include/linux/cgroup.h
+> @@ -61,6 +61,20 @@ struct cgroup_subsys_state {
+>  	unsigned long flags;
+>  };
+>  
+> +/*
+> + * Cgroup ID for *internal* identification and lookup. For user-land,"path"
+> + * of cgroup works well.
+> + */
+> +#define MAX_CGROUP_DEPTH	(10)
+> +struct cgroup_id {
+> +	struct cgroup *myself;
+> +	unsigned int  id;
+> +	atomic_t      refcnt;
+> +	unsigned int  depth;
+> +	unsigned int  hierarchy_code[MAX_CGROUP_DEPTH];
+> +	struct list_head list;
+> +};
+> +
+>  /* bits in struct cgroup_subsys_state flags field */
+>  enum {
+>  	CSS_ROOT, /* This CSS is the root of the subsystem */
+> @@ -145,6 +159,9 @@ struct cgroup {
+>  	int pids_use_count;
+>  	/* Length of the current tasks_pids array */
+>  	int pids_length;
+> +
+> +	/* Cgroup ID */
+> +	struct cgroup_id	*id;
+>  };
+>  
+>  /* A css_set is a structure holding pointers to a set of
+> @@ -393,6 +410,31 @@ void cgroup_iter_end(struct cgroup *cgrp
+>  int cgroup_scan_tasks(struct cgroup_scanner *scan);
+>  int cgroup_attach_task(struct cgroup *, struct task_struct *);
+>  
+> +/*
+> + * For supporting cgroup lookup and hierarchy management.
+> + * Giving Flat view of cgroup hierarchy rather than tree.
+> + */
+> +/* An interface for usual lookup */
+> +struct cgroup *cgroup_lookup(int id);
+> +/* get next cgroup under tree (for scan) */
+> +struct cgroup *cgroup_get_next(int id, struct cgroup *root, int *foundid);
+> +
+> +static inline bool
+> +cgroup_is_ancestor(struct cgroup *cur, struct cgroup *root)
+> +{
+> +	struct cgroup_id *curid = cur->id;
+> +	struct cgroup_id *rootid = root->id;
+> +
+> +	return (curid->hierarchy_code[rootid->depth] = rootid->id);
+> +}
+> +
+> +static inline int cgroup_myid(struct cgroup *cgrp)
+> +{
+> +	return cgrp->id->id;
+> +}
+> +
+> +/* TODO: gang lookup should be */
+> +
+>  #else /* !CONFIG_CGROUPS */
+>  
+>  static inline int cgroup_init_early(void) { return 0; }
+> Index: mmotm-2.6.28-Nov24/kernel/cgroup.c
+> ===================================================================
+> --- mmotm-2.6.28-Nov24.orig/kernel/cgroup.c
+> +++ mmotm-2.6.28-Nov24/kernel/cgroup.c
+> @@ -46,7 +46,7 @@
+>  #include <linux/cgroupstats.h>
+>  #include <linux/hash.h>
+>  #include <linux/namei.h>
+> -
+> +#include <linux/idr.h>
+>  #include <asm/atomic.h>
+>  
+>  static DEFINE_MUTEX(cgroup_mutex);
+> @@ -547,6 +547,162 @@ void cgroup_unlock(void)
+>  	mutex_unlock(&cgroup_mutex);
+>  }
+>  
+> +
+> +/*
+> + * Cgroup ID and lookup functions.
+> + * cgid->myself pointer is safe under rcu_read_lock() because d_put() of
+> + * cgroup, which finally frees cgroup pointer, uses rcu_synchronize().
+> + */
+> +
+> +static DEFINE_IDR(cgroup_idr);
+> +static DEFINE_SPINLOCK(cgroup_idr_lock);
+> +
+> +static int cgroup_prepare_id(struct cgroup *parent, struct cgroup_id **id)
+> +{
+> +	struct cgroup_id *newid;
+> +	int myid, error;
+> +
+> +	/* check depth */
+> +	if (parent && parent->id->depth + 1 >= MAX_CGROUP_DEPTH)
+> +		return -ENOSPC;
+> +	newid = kzalloc(sizeof(*newid), GFP_KERNEL);
+> +	if (!newid)
+> +		return -ENOMEM;
+> +	/* get id */
+> +	if (unlikely(!idr_pre_get(&cgroup_idr, GFP_KERNEL))) {
+> +		error = -ENOMEM;
+> +		goto err_out;
+> +	}
+> +	spin_lock_irq(&cgroup_idr_lock);
+> +	error = idr_get_new(&cgroup_idr, newid, &myid);
+> +	spin_unlock_irq(&cgroup_idr_lock);
+> +	if (error)
+> +		goto err_out;
+> +
+> +	newid->id = myid;
+> +	atomic_set(&newid->refcnt, 1);
+> +	INIT_LIST_HEAD(&newid->list);
+> +	*id = newid;
+> +	return 0;
+> +err_out:
+> +	kfree(newid);
+> +	return error;
+> +}
+> +
+> +static void cgroup_id_put(struct cgroup_id *cgid)
+> +{
+> +	unsigned long flags;
+> +
+> +	if (atomic_dec_and_test(&cgid->refcnt)) {
+> +		spin_lock_irqsave(&cgroup_idr_lock, flags);
+> +		idr_remove(&cgroup_idr, cgid->id);
+> +		spin_unlock_irqrestore(&cgroup_idr_lock, flags);
+> +		kfree(cgid);
+> +	}
+> +}
+> +
+> +static void cgroup_id_attach(struct cgroup_id *cgid,
+> +			     struct cgroup *cg, struct cgroup *parent)
+> +{
+> +	if (parent) {
+> +		struct cgroup_id *parent_id = parent->id;
+> +		int i;
+> +
+> +		cgid->depth = parent_id->depth + 1;
+> +		/* Inherit hierarchy code from parent */
+> +		for (i = 0; i < cgid->depth; i++) {
+> +			cgid->hierarchy_code[i] =
+> +				parent_id->hierarchy_code[i];
+> +			cgid->hierarchy_code[cgid->depth] = cgid->id;
+> +		}
+> +	} else {
+> +		cgid->depth = 0;
+> +		cgid->hierarchy_code[0] = cgid->id;
+> +	}
+> +	rcu_assign_pointer(cgid->myself, cg);
+> +	cg->id = cgid;
+> +
+> +	return;
+> +}
+> +
+> +static void cgroup_id_detach(struct cgroup *cg)
+> +{
+> +	struct cgroup_id *id = cg->id;
+> +
+> +	rcu_assign_pointer(id->myself, NULL);
+> +	cgroup_id_put(id);
+> +}
+> +
+> +/**
+> + * cgroup_lookup - lookup cgroup by id
+> + * @id: the id of cgroup to be looked up
+> + *
+> + * Retruns pointer to cgroup if there is vald cgroup with id, NULL if not.
+> + * Should be called under rcu_read_lock() or cgroup_lock().
+> + */
+> +
+> +struct cgroup *cgroup_lookup(int id)
+> +{
+> +	struct cgroup *cgrp;
+> +	struct cgroup_id *cgid;
+> +
+> +	rcu_read_lock();
+> +	cgid = idr_find(&cgroup_idr, id);
+> +	rcu_read_unlock();
+> +
+> +	if (unlikely(!cgid))
+> +		return NULL;
+> +
+> +	cgrp = rcu_dereference(cgid->myself);
+> +	if (unlikely(!cgrp || test_bit(CGRP_REMOVED, &cgrp->flags)))
+> +		return NULL;
+> +
+> +	return cgrp;
+> +}
+> +
+> +/**
+> + * cgroup_get_next - lookup next cgroup under specified hierarchy.
+> + * @id: current position of iteration.
+> + * @root: search tree under this. .
+> + * @foundid: position of found object.
+> + *
+> + * Search next cgroup under the specified hierarchy. If "cur" is NULL,
+> + * start from root cgroup. Called under rcu_read_lock() or cgroup_lock()
+> + * is necessary (to access a found cgroup.).
+> + */
+> +struct cgroup *cgroup_get_next(int id, struct cgroup *root, int *foundid)
+> +{
+> +	struct cgroup *ret = NULL;
+> +	struct cgroup_id *tmp, *rootid;
+> +	int tmpid, depth, targetid;
+> +	unsigned long flags;
+> +
+> +	rootid = root->id;
+> +	depth = rootid->depth;
+> +	targetid = rootid->id;
+> +	tmpid = id;
+> +
+> +	do {
+> +		/* scan next entry from bitmap(tree) */
+> +		spin_lock_irqsave(&cgroup_idr_lock, flags);
+> +		tmp = idr_get_next(&cgroup_idr, &tmpid);
+> +		spin_unlock_irqrestore(&cgroup_idr_lock, flags);
+> +
+> +		if (tmp) {
+> +			ret = rcu_dereference(tmp->myself);
+> +			/* Sanity check and check hierarchy */
+> +			if (ret && !test_bit(CGRP_REMOVED, &ret->flags)
+> +			    && tmp->hierarchy_code[depth] == targetid)
+> +				break;
+> +			tmpid = tmpid + 1;
+> +		} else
+> +			tmpid = 0;
+> +	} while (1);
+> +
+> +	*foundid = tmpid;
+> +	return ret;
+> +}
+> +
+>  /*
+>   * A couple of forward declarations required, due to cyclic reference loop:
+>   * cgroup_mkdir -> cgroup_create -> cgroup_populate_dir ->
+> @@ -991,6 +1147,7 @@ static int cgroup_get_sb(struct file_sys
+>  		/* New superblock */
+>  		struct cgroup *cgrp = &root->top_cgroup;
+>  		struct inode *inode;
+> +		struct cgroup_id *newid;
+>  		int i;
+>  
+>  		BUG_ON(sb->s_root != NULL);
+> @@ -998,6 +1155,11 @@ static int cgroup_get_sb(struct file_sys
+>  		ret = cgroup_get_rootdir(sb);
+>  		if (ret)
+>  			goto drop_new_super;
+> +
+> +		ret = cgroup_prepare_id(NULL, &newid);
+> +		if (ret)
+> +			goto drop_new_super;
+> +
+>  		inode = sb->s_root->d_inode;
+>  
+>  		mutex_lock(&inode->i_mutex);
+> @@ -1062,7 +1224,7 @@ static int cgroup_get_sb(struct file_sys
+>  		BUG_ON(!list_empty(&cgrp->sibling));
+>  		BUG_ON(!list_empty(&cgrp->children));
+>  		BUG_ON(root->number_of_cgroups != 1);
+> -
+> +		cgroup_id_attach(newid, cgrp, NULL);
+>  		cgroup_populate_dir(cgrp);
+>  		mutex_unlock(&inode->i_mutex);
+>  		mutex_unlock(&cgroup_mutex);
+> @@ -1997,6 +2159,7 @@ int cgroup_scan_tasks(struct cgroup_scan
+>  	return 0;
+>  }
+>  
+> +
+>  /*
+>   * Stuff for reading the 'tasks' file.
+>   *
+> @@ -2349,11 +2512,18 @@ static long cgroup_create(struct cgroup 
+>  	int err = 0;
+>  	struct cgroup_subsys *ss;
+>  	struct super_block *sb = root->sb;
+> +	struct cgroup_id *cgid = NULL;
+>  
+>  	cgrp = kzalloc(sizeof(*cgrp), GFP_KERNEL);
+>  	if (!cgrp)
+>  		return -ENOMEM;
+>  
+> +	err = cgroup_prepare_id(parent, &cgid);
+> +	if (err) {
+> +		kfree(cgrp);
+> +		return err;
+> +	}
+> +
+>  	/* Grab a reference on the superblock so the hierarchy doesn't
+>  	 * get deleted on unmount if there are child cgroups.  This
+>  	 * can be done outside cgroup_mutex, since the sb can't
+> @@ -2394,6 +2564,8 @@ static long cgroup_create(struct cgroup 
+>  	err = cgroup_populate_dir(cgrp);
+>  	/* If err < 0, we have a half-filled directory - oh well ;) */
+>  
+> +	cgroup_id_attach(cgid, cgrp, parent);
+> +
+>  	mutex_unlock(&cgroup_mutex);
+>  	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+>  
+> @@ -2415,7 +2587,7 @@ static long cgroup_create(struct cgroup 
+>  
+>  	/* Release the reference count that we took on the superblock */
+>  	deactivate_super(sb);
+> -
+> +	cgroup_id_put(cgid);
+>  	kfree(cgrp);
+>  	return err;
+>  }
+> @@ -2494,6 +2666,8 @@ static int cgroup_rmdir(struct inode *un
+>  		return -EBUSY;
+>  	}
+>  
+> +	cgroup_id_detach(cgrp);
+> +
+>  	spin_lock(&release_list_lock);
+>  	set_bit(CGRP_REMOVED, &cgrp->flags);
+>  	if (!list_empty(&cgrp->release_list))
+> Index: mmotm-2.6.28-Nov24/include/linux/idr.h
+> ===================================================================
+> --- mmotm-2.6.28-Nov24.orig/include/linux/idr.h
+> +++ mmotm-2.6.28-Nov24/include/linux/idr.h
+> @@ -106,6 +106,7 @@ int idr_get_new(struct idr *idp, void *p
+>  int idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
+>  int idr_for_each(struct idr *idp,
+>  		 int (*fn)(int id, void *p, void *data), void *data);
+> +void *idr_get_next(struct idr *idp, int *nextid);
+>  void *idr_replace(struct idr *idp, void *ptr, int id);
+>  void idr_remove(struct idr *idp, int id);
+>  void idr_remove_all(struct idr *idp);
+> Index: mmotm-2.6.28-Nov24/lib/idr.c
+> ===================================================================
+> --- mmotm-2.6.28-Nov24.orig/lib/idr.c
+> +++ mmotm-2.6.28-Nov24/lib/idr.c
+> @@ -573,6 +573,52 @@ int idr_for_each(struct idr *idp,
+>  EXPORT_SYMBOL(idr_for_each);
+>  
+>  /**
+> + * idr_get_next - lookup next opbject of id to given id.
+> + * @idp: idr handle
+> + * @id:  pointer to lookup key
+> + *
+> + * Retruns pointer to registered object with id, which is next number to
+> + * given id.
+> + */
+> +
+> +void *idr_get_next(struct idr *idp, int *nextidp)
+> +{
+> +	struct idr_layer *p, *pa[MAX_LEVEL];
+> +	struct idr_layer **paa = &pa[0];
+> +	int id = *nextidp;
+> +	int n, max;
+> +
+> +	/* find first ent */
+> +	n = idp->layers * IDR_BITS;
+> +	max = 1 << n;
+> +	p = rcu_dereference(idp->top);
+> +	if (!p)
+> +		return NULL;
+> +
+> +	while (id < max) {
+> +		while (n > 0 && p) {
+> +			n -= IDR_BITS;
+> +			*paa++ = p;
+> +			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+> +		}
+> +
+> +		if (p) {
+> +			*nextidp = id;
+> +			return p;
+> +		}
+> +
+> +		id += 1 << n;
+> +		while (n < fls(id)) {
+> +			n += IDR_BITS;
+> +			p = *--paa;
+> +		}
+> +	}
+> +	return NULL;
+> +}
+> +
+> +
+> +
+> +/**
+>   * idr_replace - replace pointer for given id
+>   * @idp: idr handle
+>   * @ptr: pointer you want associated with the id
+> 
