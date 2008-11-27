@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYK0JHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbYK0JKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbYK0JHJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 04:07:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYK0JGw
+	id S1752957AbYK0JKN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYK0JJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 04:06:52 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:56986 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbYK0JGu (ORCPT
+	Thu, 27 Nov 2008 04:09:56 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:53127 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbYK0JJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 04:06:50 -0500
-Date: Thu, 27 Nov 2008 10:06:47 +0100
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Suspend on X200 with next-20081125: Success!
-Message-ID: <20081127090647.GA16088@denkbrett.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
-Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.28-rc6-next-20081125-denkbrett x86_64)
+	Thu, 27 Nov 2008 04:09:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=A6RCpA/caKcw70JTNmCzoqG+4iu5/Il4zrFeHmXM/MEeHw3z4DIaekI7P5ukk+xnsO
+         92AwP+So1Im56ciU7lJp3yJEXYB6xRySHwmr47oP411af07fQXZWxoJZaambHvHjitRs
+         D/j13IqZXqsZkJSZKRGOxnWz3Be6qjDnHF+Ns=
+From: Feng King <kinwin2008@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Feng King <kinwin2008@gmail.com>
+Subject: [PATCH] cleanup some default configure
+Date: Thu, 27 Nov 2008 17:09:45 +0800
+Message-Id: <1227776985-2867-1-git-send-email-kinwin2008@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since CONFIG_R8169_NAPI has been removed,no need to include
+it in defconfig now
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Feng King <kinwin2008@gmail.com>
+---
+ arch/arm/configs/iop32x_defconfig  |    1 -
+ arch/mips/configs/mtx1_defconfig   |    1 -
+ arch/mips/configs/tb0219_defconfig |    1 -
+ arch/mips/configs/tb0287_defconfig |    1 -
+ 4 files changed, 0 insertions(+), 4 deletions(-)
 
-Good morning everybody!
+diff --git a/arch/arm/configs/iop32x_defconfig b/arch/arm/configs/iop32x_defconfig
+index 8612f58..05be5e2 100644
+--- a/arch/arm/configs/iop32x_defconfig
++++ b/arch/arm/configs/iop32x_defconfig
+@@ -683,7 +683,6 @@ CONFIG_E1000_NAPI=y
+ # CONFIG_HAMACHI is not set
+ # CONFIG_YELLOWFIN is not set
+ CONFIG_R8169=y
+-# CONFIG_R8169_NAPI is not set
+ # CONFIG_SIS190 is not set
+ # CONFIG_SKGE is not set
+ # CONFIG_SKY2 is not set
+diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
+index db92726..ca00d65 100644
+--- a/arch/mips/configs/mtx1_defconfig
++++ b/arch/mips/configs/mtx1_defconfig
+@@ -1301,7 +1301,6 @@ CONFIG_NS83820=m
+ CONFIG_HAMACHI=m
+ CONFIG_YELLOWFIN=m
+ CONFIG_R8169=m
+-# CONFIG_R8169_NAPI is not set
+ CONFIG_R8169_VLAN=y
+ CONFIG_SIS190=m
+ CONFIG_SKGE=m
+diff --git a/arch/mips/configs/tb0219_defconfig b/arch/mips/configs/tb0219_defconfig
+index b505988..0287223 100644
+--- a/arch/mips/configs/tb0219_defconfig
++++ b/arch/mips/configs/tb0219_defconfig
+@@ -484,7 +484,6 @@ CONFIG_NETDEV_1000=y
+ # CONFIG_HAMACHI is not set
+ # CONFIG_YELLOWFIN is not set
+ CONFIG_R8169=y
+-# CONFIG_R8169_NAPI is not set
+ # CONFIG_SIS190 is not set
+ # CONFIG_SKGE is not set
+ # CONFIG_SKY2 is not set
+diff --git a/arch/mips/configs/tb0287_defconfig b/arch/mips/configs/tb0287_defconfig
+index 46512cf..228dea0 100644
+--- a/arch/mips/configs/tb0287_defconfig
++++ b/arch/mips/configs/tb0287_defconfig
+@@ -600,7 +600,6 @@ CONFIG_NETDEV_1000=y
+ # CONFIG_HAMACHI is not set
+ # CONFIG_YELLOWFIN is not set
+ CONFIG_R8169=y
+-# CONFIG_R8169_NAPI is not set
+ # CONFIG_SIS190 is not set
+ # CONFIG_SKGE is not set
+ # CONFIG_SKY2 is not set
+-- 
+1.5.6.5
 
-I just resumed the Lenovo X200 running
-2.6.28-rc6-next-20081125-denkbrett #15 SMP PREEMPT
-with xorg running!
-
-Currently just once and after the resume it beeped until
-I released it from the docking station (putting back in
-works), though it looks pretty good!
-
-Thanks for your work!
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkuYycACgkQuL75KpiFGIwJcACfUVu33UxJbZr1YzTzvA3kt/p/
-B/UAn2idtiRFuCvY8AKXAy9AVlMEG5aW
-=iwza
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
