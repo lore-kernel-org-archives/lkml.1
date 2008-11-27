@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbYK0JKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYK0JOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752957AbYK0JKN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 04:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYK0JJ4
+	id S1753176AbYK0JOi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYK0JOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 04:09:56 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:53127 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbYK0JJy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 04:09:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=A6RCpA/caKcw70JTNmCzoqG+4iu5/Il4zrFeHmXM/MEeHw3z4DIaekI7P5ukk+xnsO
-         92AwP+So1Im56ciU7lJp3yJEXYB6xRySHwmr47oP411af07fQXZWxoJZaambHvHjitRs
-         D/j13IqZXqsZkJSZKRGOxnWz3Be6qjDnHF+Ns=
-From: Feng King <kinwin2008@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Feng King <kinwin2008@gmail.com>
-Subject: [PATCH] cleanup some default configure
-Date: Thu, 27 Nov 2008 17:09:45 +0800
-Message-Id: <1227776985-2867-1-git-send-email-kinwin2008@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Thu, 27 Nov 2008 04:14:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43445 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751007AbYK0JOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 04:14:21 -0500
+Date: Thu, 27 Nov 2008 10:14:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH 0/1] ring-buffer fix for 2.6.28
+Message-ID: <20081127091408.GB26093@elte.hu>
+References: <20081127025227.026028481@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081127025227.026028481@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since CONFIG_R8169_NAPI has been removed,no need to include
-it in defconfig now
 
-Signed-off-by: Feng King <kinwin2008@gmail.com>
----
- arch/arm/configs/iop32x_defconfig  |    1 -
- arch/mips/configs/mtx1_defconfig   |    1 -
- arch/mips/configs/tb0219_defconfig |    1 -
- arch/mips/configs/tb0287_defconfig |    1 -
- 4 files changed, 0 insertions(+), 4 deletions(-)
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-diff --git a/arch/arm/configs/iop32x_defconfig b/arch/arm/configs/iop32x_defconfig
-index 8612f58..05be5e2 100644
---- a/arch/arm/configs/iop32x_defconfig
-+++ b/arch/arm/configs/iop32x_defconfig
-@@ -683,7 +683,6 @@ CONFIG_E1000_NAPI=y
- # CONFIG_HAMACHI is not set
- # CONFIG_YELLOWFIN is not set
- CONFIG_R8169=y
--# CONFIG_R8169_NAPI is not set
- # CONFIG_SIS190 is not set
- # CONFIG_SKGE is not set
- # CONFIG_SKY2 is not set
-diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
-index db92726..ca00d65 100644
---- a/arch/mips/configs/mtx1_defconfig
-+++ b/arch/mips/configs/mtx1_defconfig
-@@ -1301,7 +1301,6 @@ CONFIG_NS83820=m
- CONFIG_HAMACHI=m
- CONFIG_YELLOWFIN=m
- CONFIG_R8169=m
--# CONFIG_R8169_NAPI is not set
- CONFIG_R8169_VLAN=y
- CONFIG_SIS190=m
- CONFIG_SKGE=m
-diff --git a/arch/mips/configs/tb0219_defconfig b/arch/mips/configs/tb0219_defconfig
-index b505988..0287223 100644
---- a/arch/mips/configs/tb0219_defconfig
-+++ b/arch/mips/configs/tb0219_defconfig
-@@ -484,7 +484,6 @@ CONFIG_NETDEV_1000=y
- # CONFIG_HAMACHI is not set
- # CONFIG_YELLOWFIN is not set
- CONFIG_R8169=y
--# CONFIG_R8169_NAPI is not set
- # CONFIG_SIS190 is not set
- # CONFIG_SKGE is not set
- # CONFIG_SKY2 is not set
-diff --git a/arch/mips/configs/tb0287_defconfig b/arch/mips/configs/tb0287_defconfig
-index 46512cf..228dea0 100644
---- a/arch/mips/configs/tb0287_defconfig
-+++ b/arch/mips/configs/tb0287_defconfig
-@@ -600,7 +600,6 @@ CONFIG_NETDEV_1000=y
- # CONFIG_HAMACHI is not set
- # CONFIG_YELLOWFIN is not set
- CONFIG_R8169=y
--# CONFIG_R8169_NAPI is not set
- # CONFIG_SIS190 is not set
- # CONFIG_SKGE is not set
- # CONFIG_SKY2 is not set
--- 
-1.5.6.5
+> The following patch needs to go into 2.6.28. It protects against a 
+> recursion race that can happen when the scheduler is traced.
 
+thanks, i've applied Lai's patch from email to tip/tracing/urgent.
+
+	Ingo
