@@ -1,382 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYK0A5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbYK0A5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbYK0A5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYK0A5H
+	id S1752954AbYK0A5e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:57:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYK0A5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:57:07 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:49189 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbYK0A5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:57:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D7lhVeLVHbkOaA1AMg+VpW2lRBS3fbi64RlgSJjFE7PZWtpTW1gsoHgdWutpL/fvcu
-         d7dCLDBcXvmPwOL+gzplK0hVeUG2IXNTy/vrLf6fZ4slyLxUG+79sO4K1HzbKvA4H8lN
-         y4gn8isQj7gyTtGDRepabPJGfUh7+3UCLBKkw=
-Message-ID: <c62985530811261657t6ba9c8cbwc21fa9d09627e110@mail.gmail.com>
-Date: Thu, 27 Nov 2008 01:57:03 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the trace output
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Tim Bird" <tim.bird@am.sony.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <492DEDE9.9010109@gmail.com>
+	Wed, 26 Nov 2008 19:57:10 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53714 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752792AbYK0A5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:57:09 -0500
+Date: Thu, 27 Nov 2008 01:57:08 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "J.R. Mauro" <jrm8005@gmail.com>,
+       =?ISO-8859-15?Q?Tobias_M=FCller?= <Tobias_Mueller@twam.info>
+cc: Jan Scholz <scholz@fias.uni-frankfurt.de>, jirislaby@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: several messages
+In-Reply-To: <4b04f768614db905a9e9e8f7bfb88393.squirrel@twam.homeip.net>
+Message-ID: <alpine.LNX.1.10.0811270156210.19853@jikos.suse.cz>
+References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de>    <1227710025-23592-2-git-send-email-Scholz@fias.uni-frankfurt.de>    <alpine.LNX.1.10.0811261553010.19853@jikos.suse.cz>    <87ej0ywm79.fsf@scholz.fias.uni-frankfurt.de>   
+ <alpine.LNX.1.10.0811261632340.19853@jikos.suse.cz> <4b04f768614db905a9e9e8f7bfb88393.squirrel@twam.homeip.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492DEDE9.9010109@gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-1857482269-1227747428=:19853"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/27 Frederic Weisbecker <fweisbec@gmail.com>:
-> Impact: enhancement
->
-> This patch applies some ideas of Ingo Molnar and Steven Rostedt.
->
-> * Output leaf functions in one line with parenthesis, semicolon and duration
->  output.
->
-> * Add a second column (after cpu) for an overhead sign.
->  if duration > 100 us, "!"
->  if duration > 10 us, "+"
->  else " "
->
-> * Print output in us with remaining nanosec: u.n
->
-> * Print duration on the right end, following the indentation of the functions.
->  Use also visual clues: "-" on entry call (no duration to output) and "+" on
->  return (duration output).
->
-> The name of the tracer has been fixed as well: function-branch becomes
-> function_branch.
->
-> Here is an example of the new output:
->
-> CPU[000]           dequeue_entity() {                    -
-> CPU[000]             update_curr() {                    -
-> CPU[000]               update_min_vruntime();                    + 0.512 us
-> CPU[000]             }                                + 1.504 us
-> CPU[000]             clear_buddies();                    + 0.481 us
-> CPU[000]             update_min_vruntime();                    + 0.504 us
-> CPU[000]           }                                + 4.557 us
-> CPU[000]           hrtick_update() {                    -
-> CPU[000]             hrtick_start_fair();                    + 0.489 us
-> CPU[000]           }                                + 1.443 us
-> CPU[000] +       }                                + 14.655 us
-> CPU[000] +     }                                + 15.678 us
-> CPU[000] +   }                                + 16.686 us
-> CPU[000]     msecs_to_jiffies();                    + 0.481 us
-> CPU[000]     put_prev_task_fair();                    + 0.504 us
-> CPU[000]     pick_next_task_fair();                    + 0.482 us
-> CPU[000]     pick_next_task_rt();                    + 0.504 us
-> CPU[000]     pick_next_task_fair();                    + 0.481 us
-> CPU[000]     pick_next_task_idle();                    + 0.489 us
-> CPU[000]     _spin_trylock();                    + 0.655 us
-> CPU[000]     _spin_unlock();                    + 0.609 us
->
-> CPU[000]  ------------8<---------- thread bash-2794 ------------8<----------
->
-> CPU[000]               finish_task_switch() {                    -
-> CPU[000]                 _spin_unlock_irq();                    + 0.722 us
-> CPU[000]               }                                + 2.369 us
-> CPU[000] !           }                                + 501972.605 us
-> CPU[000] !         }                                + 501973.763 us
-> CPU[000]           copy_from_read_buf() {                    -
-> CPU[000]             _spin_lock_irqsave();                    + 0.670 us
-> CPU[000]             _spin_unlock_irqrestore();                    + 0.699 us
-> CPU[000]             copy_to_user() {                    -
-> CPU[000]               might_fault() {                    -
-> CPU[000]                 __might_sleep();                    + 0.503 us
-> CPU[000]               }                                + 1.632 us
-> CPU[000]               __copy_to_user_ll();                    + 0.542 us
-> CPU[000]             }                                + 3.858 us
-> CPU[000]             tty_audit_add_data() {                    -
-> CPU[000]               _spin_lock_irq();                    + 0.609 us
-> CPU[000]               _spin_unlock_irq();                    + 0.624 us
-> CPU[000]             }                                + 3.196 us
-> CPU[000]             _spin_lock_irqsave();                    + 0.624 us
-> CPU[000]             _spin_unlock_irqrestore();                    + 0.625 us
-> CPU[000] +         }                                + 13.611 us
-> CPU[000]           copy_from_read_buf() {                    -
-> CPU[000]             _spin_lock_irqsave();                    + 0.624 us
-> CPU[000]             _spin_unlock_irqrestore();                    + 0.616 us
-> CPU[000]           }                                + 2.820 us
-> CPU[000]
->
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  kernel/trace/trace_functions_graph.c |  168 ++++++++++++++++++++++++++++++++--
->  1 files changed, 159 insertions(+), 9 deletions(-)
->
-> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-> index d31d695..b958d60 100644
-> --- a/kernel/trace/trace_functions_graph.c
-> +++ b/kernel/trace/trace_functions_graph.c
-> @@ -14,6 +14,10 @@
->  #include "trace.h"
->
->  #define TRACE_GRAPH_INDENT     2
-> +/* Spaces between function call and time duration */
-> +#define TRACE_GRAPH_TIMESPACE_ENTRY    "                    "
-> +/* Spaces between function call and closing braces */
-> +#define TRACE_GRAPH_TIMESPACE_RET      "                               "
->
->  #define TRACE_GRAPH_PRINT_OVERRUN      0x1
->  static struct tracer_opt trace_opts[] = {
-> @@ -63,26 +67,130 @@ static int verif_pid(struct trace_seq *s, pid_t pid, int cpu)
->        last_pid[cpu] = pid;
->        comm = trace_find_cmdline(pid);
->
-> -       return trace_seq_printf(s, "\nCPU[%03d]"
-> +       return trace_seq_printf(s, "\nCPU[%03d] "
->                                    " ------------8<---------- thread %s-%d"
->                                    " ------------8<----------\n\n",
->                                    cpu, comm, pid);
->  }
->
-> +static bool
-> +trace_branch_is_leaf(struct trace_iterator *iter,
-> +               struct ftrace_graph_ent_entry *curr)
-> +{
-> +       struct ring_buffer_iter *ring_iter;
-> +       struct ring_buffer_event *event;
-> +       struct ftrace_graph_ret_entry *next;
-> +
-> +       ring_iter = iter->buffer_iter[iter->cpu];
-> +
-> +       if (!ring_iter)
-> +               return false;
-> +
-> +       event = ring_buffer_iter_peek(iter->buffer_iter[iter->cpu], NULL);
-> +
-> +       if (!event)
-> +               return false;
-> +
-> +       next = ring_buffer_event_data(event);
-> +
-> +       if (next->ent.type != TRACE_GRAPH_RET)
-> +               return false;
-> +
-> +       if (curr->ent.pid != next->ent.pid ||
-> +                       curr->graph_ent.func != next->ret.func)
-> +               return false;
-> +
-> +       return true;
-> +}
-> +
-> +
-> +static inline int
-> +print_graph_duration(unsigned long long duration, struct trace_seq *s)
-> +{
-> +       unsigned long nsecs_rem = do_div(duration, 1000);
-> +       return trace_seq_printf(s, "+ %llu.%lu us\n", duration, nsecs_rem);
-> +}
-> +
-> +/* Signal a overhead of time execution to the output */
-> +static int
-> +print_graph_overhead(unsigned long long duration, struct trace_seq *s)
-> +{
-> +       /* Duration exceeded 100 msecs */
-> +       if (duration > 100000ULL)
-> +               return trace_seq_printf(s, "! ");
-> +
-> +       /* Duration exceeded 10 msecs */
-> +       if (duration > 10000ULL)
-> +               return trace_seq_printf(s, "+ ");
-> +
-> +       return trace_seq_printf(s, "  ");
-> +}
-> +
-> +/* Case of a leaf function on its call entry */
->  static enum print_line_t
-> -print_graph_entry(struct ftrace_graph_ent *call, struct trace_seq *s,
-> -                 struct trace_entry *ent, int cpu)
-> +print_graph_entry_leaf(struct trace_iterator *iter,
-> +               struct ftrace_graph_ent_entry *entry, struct trace_seq *s)
->  {
-> +       struct ftrace_graph_ret_entry *ret_entry;
-> +       struct ftrace_graph_ret *graph_ret;
-> +       struct ring_buffer_event *event;
-> +       struct ftrace_graph_ent *call;
-> +       unsigned long long duration;
->        int i;
->        int ret;
->
-> -       if (!verif_pid(s, ent->pid, cpu))
-> +       event = ring_buffer_read(iter->buffer_iter[iter->cpu], NULL);
-> +       ret_entry = ring_buffer_event_data(event);
-> +       graph_ret = &ret_entry->ret;
-> +       call = &entry->graph_ent;
-> +       duration = graph_ret->rettime - graph_ret->calltime;
-> +
-> +       /* Overhead */
-> +       ret = print_graph_overhead(duration, s);
-> +       if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> -       ret = trace_seq_printf(s, "CPU[%03d] ", cpu);
-> +       /* Function */
-> +       for (i = 0; i < call->depth * TRACE_GRAPH_INDENT; i++) {
-> +               ret = trace_seq_printf(s, " ");
-> +               if (!ret)
-> +                       return TRACE_TYPE_PARTIAL_LINE;
-> +       }
-> +
-> +       ret = seq_print_ip_sym(s, call->func, 0);
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       ret = trace_seq_printf(s, "();");
->        if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> +       /* Duration */
-> +       ret = trace_seq_printf(s, TRACE_GRAPH_TIMESPACE_ENTRY);
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       ret = print_graph_duration(duration, s);
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       return TRACE_TYPE_HANDLED;
-> +}
-> +
-> +static enum print_line_t
-> +print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
-> +                       struct trace_seq *s)
-> +{
-> +       int i;
-> +       int ret;
-> +       struct ftrace_graph_ent *call = &entry->graph_ent;
-> +
-> +       /* No overhead */
-> +       ret = trace_seq_printf(s, "  ");
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       /* Function */
->        for (i = 0; i < call->depth * TRACE_GRAPH_INDENT; i++) {
->                ret = trace_seq_printf(s, " ");
->                if (!ret)
-> @@ -93,26 +201,62 @@ print_graph_entry(struct ftrace_graph_ent *call, struct trace_seq *s,
->        if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> -       ret = trace_seq_printf(s, "() {\n");
-> +       ret = trace_seq_printf(s, "() {");
->        if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       /* No duration to print at this state */
-> +       ret = trace_seq_printf(s, TRACE_GRAPH_TIMESPACE_ENTRY "-\n");
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
->        return TRACE_TYPE_HANDLED;
->  }
->
->  static enum print_line_t
-> +print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
-> +                       struct trace_iterator *iter, int cpu)
-> +{
-> +       int ret;
-> +       struct trace_entry *ent = iter->ent;
-> +
-> +       if (!verif_pid(s, ent->pid, cpu))
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       ret = trace_seq_printf(s, "CPU[%03d] ", cpu);
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       if (trace_branch_is_leaf(iter, field))
-> +               return print_graph_entry_leaf(iter, field, s);
-> +       else
-> +               return print_graph_entry_nested(field, s);
-> +
-> +}
-> +
-> +static enum print_line_t
->  print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
->                   struct trace_entry *ent, int cpu)
->  {
->        int i;
->        int ret;
-> +       unsigned long long duration = trace->rettime - trace->calltime;
->
-> +       /* Pid */
->        if (!verif_pid(s, ent->pid, cpu))
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> +       /* Cpu */
->        ret = trace_seq_printf(s, "CPU[%03d] ", cpu);
->        if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> +       /* Overhead */
-> +       ret = print_graph_overhead(duration, s);
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       /* Closing brace */
->        for (i = 0; i < trace->depth * TRACE_GRAPH_INDENT; i++) {
->                ret = trace_seq_printf(s, " ");
->                if (!ret)
-> @@ -123,10 +267,16 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
->        if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> -       ret = trace_seq_printf(s, "%llu\n", trace->rettime - trace->calltime);
-> +       /* Duration */
-> +       ret = trace_seq_printf(s, TRACE_GRAPH_TIMESPACE_RET);
-> +       if (!ret)
-> +               return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +       ret = print_graph_duration(duration, s);
->        if (!ret)
->                return TRACE_TYPE_PARTIAL_LINE;
->
-> +       /* Overrun */
->        if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERRUN) {
->                ret = trace_seq_printf(s, " (Overruns: %lu)\n",
->                                        trace->overrun);
-> @@ -146,7 +296,7 @@ print_graph_function(struct trace_iterator *iter)
->        case TRACE_GRAPH_ENT: {
->                struct ftrace_graph_ent_entry *field;
->                trace_assign_type(field, entry);
-> -               return print_graph_entry(&field->graph_ent, s, entry,
-> +               return print_graph_entry(field, s, iter,
->                                         iter->cpu);
->        }
->        case TRACE_GRAPH_RET: {
-> @@ -160,7 +310,7 @@ print_graph_function(struct trace_iterator *iter)
->  }
->
->  static struct tracer graph_trace __read_mostly = {
-> -       .name        = "function-graph",
-> +       .name        = "function_graph",
->        .init        = graph_trace_init,
->        .reset       = graph_trace_reset,
->        .print_line = print_graph_function,
-> --
-> 1.5.2.5
->
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+--336216065-1857482269-1227747428=:19853
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-One detail. If you get a trace through the "trace" file, you will have
-no problem.
-But if you cat trace_pipe, leaf functions are considered as nested.
+On Wed, 26 Nov 2008, J.R. Mauro wrote:
 
-This is because iter->buffer_iter[iter->cpu]; is very often (always?)
-false by using this file.
-I don't know why yet....
-But it makes the tracer unable to check the next entry to verify if it
-matches its own return.
+> There is one bluetooth model and one USB model.
+
+On Wed, 26 Nov 2008, Tobias Müller wrote:
+
+> I own the USB variant and these are the right id for that. The wireless 
+> IDs were from another patch I merged together with mine. I don't have a 
+> wireless version.
+
+OK, so therefore you confirm that Jan's patch is OK, right?
+
+Thanks a lot,
+
+-- 
+Jiri Kosina
+SUSE Labs
+--336216065-1857482269-1227747428=:19853--
