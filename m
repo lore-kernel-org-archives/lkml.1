@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYKZXwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbYK0AAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbYKZXwi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 18:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbYKZXw3
+	id S1753753AbYK0AAc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYK0AAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 18:52:29 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:47174 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbYKZXw2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 18:52:28 -0500
-Subject: [PATCH] Enforce valid shift values in clocksource_register()
-From: John Stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 26 Nov 2008 15:46:36 -0800
-Message-Id: <1227743196.18967.36.camel@jstultz-laptop>
+	Wed, 26 Nov 2008 19:00:22 -0500
+Received: from main.gmane.org ([80.91.229.2]:44557 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbYK0AAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:00:22 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Panic:  NMI Watchdog detected LOCKUP on CPU
+Date: Wed, 26 Nov 2008 18:00:11 -0600
+Message-ID: <492DE30B.4080300@shaw.ca>
+References: <20081126231213.271070@gmx.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <20081126231213.271070@gmx.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas noted that some of the timekeeping core assumes 
-clocksource shift values will be less then 32. However, 
-we do nothing to enforce such limits.
+Carsten Menke wrote:
+> Hi List,
+> 
+> I hope this is not the too wrong place to ask a question about the issue in the subject as the problem arises with a rather old 2.6.15 Kernel of an Ubuntu 6.06 Installation. But as nobody has even looked at the report I filed in the Ubuntu Bug database for 2  months. I try my luck here. I got a HP ML 350 G5 Server running and I occasionly receive kernel panics (vary from 1 time per week up to 2 months). I just want to get any pointer if this may be a hardware issue or a kernel issue, which in turn may have been fixed in a later version. As only Red Hat is supported by HP it will get rather difficult to get someone on service (we have an extended On site Warranty) an replace parts as we're running Ubuntu on the server and 2nd the diagnostic CD (Smart Start) shows that everything is ok (That
+>   of course doesn't mean, i trust these tools to much).
+> 
+> One thing I noted is that always the smbd process occurs in the panic log, the second thing is that it seems that it is unrelated to the system load as it happened 1 time during full working hours and another time during the night whe the server was absolutly idle (The server in turn does not do much more than a load of 20% either).
+> 
+> So here is the log I caputred via syslogd from netconsole and the dmesg, please apologize that due to syslog some lines are split across multiple lines, which show actually up as one on the console
+> 
+> Hope someone get me anywhere
+> 
+> Carsten
+> 
+> 
 
-This patch prints a warning if a clocksource with an invalid
-shift value is attempted to be registered, and will refuse to
-register the clocksource
-
-I could not find any clocksources that use 32 or higher for a 
-shift value, so this should be only a preventive warning for
-future clocksource writers.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 9ed2eec..4a3bb13 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -318,7 +318,7 @@ static int clocksource_enqueue(struct clocksource *c)
-  * clocksource_register - Used to install new clocksources
-  * @t:		clocksource to be registered
-  *
-- * Returns -EBUSY if registration fails, zero otherwise.
-+ * Returns -EBUSY or -EINVAL if registration fails, zero otherwise.
-  */
- int clocksource_register(struct clocksource *c)
- {
-@@ -327,7 +327,14 @@ int clocksource_register(struct clocksource *c)
- 
- 	/* save mult_orig on registration */
- 	c->mult_orig = c->mult;
--
-+	if (c->shift >= 32) {
-+		printk(KERN_WARNING "===============================\n");
-+		printk(KERN_WARNING "WARNING: Cannot register %s clocksource\n",
-+					c->name);
-+		printk(KERN_WARNING "The shift value must be less then 32\n");
-+		printk(KERN_WARNING "===============================\n");
-+		return -EINVAL;
-+	}
- 	spin_lock_irqsave(&clocksource_lock, flags);
- 	ret = clocksource_enqueue(c);
- 	if (!ret)
-
+Normally server-class hardware doesn't cause these kinds of symptoms 
+from hardware problems, they usually spew NMIs, etc. but it's not 
+impossible. 2.6.15 is pretty ancient though. Can you try a newer kernel?
 
