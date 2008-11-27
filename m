@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYK0QeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYK0Qe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbYK0QeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 11:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYK0QeE
+	id S1755029AbYK0Qe7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 11:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYK0Qev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 11:34:04 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:46861 "EHLO
+	Thu, 27 Nov 2008 11:34:51 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:46865 "EHLO
 	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbYK0QeD (ORCPT
+	with ESMTP id S1751868AbYK0Qeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 11:34:03 -0500
-Date: Thu, 27 Nov 2008 16:33:57 +0000
+	Thu, 27 Nov 2008 11:34:50 -0500
+Date: Thu, 27 Nov 2008 16:34:44 +0000
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: linux-kernel@vger.kernel.org
 Cc: Matt_Domsch@dell.com, greg@kroah.com
-Subject: [PATCH 1/2] dcdbas: Export functionality for use in other drivers
-Message-ID: <20081127163357.GA22846@srcf.ucam.org>
+Subject: [PATCH 2/2] misc: Add dell-laptop driver
+Message-ID: <20081127163444.GB22846@srcf.ucam.org>
+References: <20081127163357.GA22846@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081127163357.GA22846@srcf.ucam.org>
 User-Agent: Mutt/1.5.12-2006-07-14
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: mjg59@codon.org.uk
@@ -27,68 +29,482 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dcdbas: Export functionality for use in other drivers
-    
-The dcdbas code allows calls to be made into the firmware on Dell 
-systems. Exporting this to other drivers allows them to implement 
-Dell-specific functionality in a safe way.
+Add a driver for controling Dell-specific backlight and rfkill interfaces.
+This driver makes use of the dcdbas interface to the Dell firmware to allow
+the backlight and rfkill interfaces on Dell systems to be driven through the
+standardised sysfs interfaces.
     
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-diff --git a/drivers/firmware/dcdbas.c b/drivers/firmware/dcdbas.c
-index 50a071f..45f109d 100644
---- a/drivers/firmware/dcdbas.c
-+++ b/drivers/firmware/dcdbas.c
-@@ -238,11 +238,11 @@ static ssize_t host_control_on_shutdown_store(struct device *dev,
- }
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index fee7304..3949a1c 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -498,6 +498,18 @@ config SGI_GRU_DEBUG
+ 	This option enables addition debugging code for the SGI GRU driver. If
+ 	you are unsure, say N.
  
- /**
-- * smi_request: generate SMI request
-+ * dcdbas_smi_request: generate SMI request
-  *
-  * Called with smi_data_lock.
-  */
--static int smi_request(struct smi_cmd *smi_cmd)
-+int dcdbas_smi_request(struct smi_cmd *smi_cmd)
- {
- 	cpumask_t old_mask;
- 	int ret = 0;
-@@ -278,6 +278,7 @@ out:
- 	set_cpus_allowed_ptr(current, &old_mask);
- 	return ret;
- }
-+EXPORT_SYMBOL(dcdbas_smi_request);
- 
- /**
-  * smi_request_store:
-@@ -309,14 +310,14 @@ static ssize_t smi_request_store(struct device *dev,
- 	switch (val) {
- 	case 2:
- 		/* Raw SMI */
--		ret = smi_request(smi_cmd);
-+		ret = dcdbas_smi_request(smi_cmd);
- 		if (!ret)
- 			ret = count;
- 		break;
- 	case 1:
- 		/* Calling Interface SMI */
- 		smi_cmd->ebx = (u32) virt_to_phys(smi_cmd->command_buffer);
--		ret = smi_request(smi_cmd);
-+		ret = dcdbas_smi_request(smi_cmd);
- 		if (!ret)
- 			ret = count;
- 		break;
-diff --git a/drivers/firmware/dcdbas.h b/drivers/firmware/dcdbas.h
-index 87bc341..ca3cb0a 100644
---- a/drivers/firmware/dcdbas.h
-+++ b/drivers/firmware/dcdbas.h
-@@ -101,5 +101,7 @@ struct apm_cmd {
- 	} __attribute__ ((packed)) parameters;
- } __attribute__ ((packed));
- 
-+int dcdbas_smi_request(struct smi_cmd *smi_cmd);
++config DELL_LAPTOP
++	tristate "Dell Laptop Extras (EXPERIMENTAL)"
++	depends on X86
++	depends on DCDBAS
++	depends on EXPERIMENTAL
++	depends on BACKLIGHT_CLASS_DEVICE
++	depends on RFKILL
++	default n
++	---help---
++	This driver adds support for rfkill and backlight control to Dell
++	laptops.
 +
- #endif /* _DCDBAS_H_ */
+ source "drivers/misc/c2port/Kconfig"
  
+ endif # MISC_DEVICES
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 817f7f5..39043f8 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -32,4 +32,5 @@ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
+ obj-$(CONFIG_SGI_XP)		+= sgi-xp/
+ obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
+ obj-$(CONFIG_HP_ILO)		+= hpilo.o
++obj-$(CONFIG_DELL_LAPTOP)	+= dell-laptop.o
+ obj-$(CONFIG_C2PORT)		+= c2port/
+diff --git a/drivers/misc/dell-laptop.c b/drivers/misc/dell-laptop.c
+new file mode 100644
+index 0000000..49d202f
+--- /dev/null
++++ b/drivers/misc/dell-laptop.c
+@@ -0,0 +1,430 @@
++/*
++ *  Driver for Dell laptop extras
++ *
++ *  Copyright (c) Red Hat <mjg@redhat.com>
++ *
++ *  Based on documentation in the libsmbios package, Copyright (C) 2005 Dell
++ *  Inc.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/backlight.h>
++#include <linux/err.h>
++#include <linux/dmi.h>
++#include <linux/io.h>
++#include <linux/rfkill.h>
++#include <linux/power_supply.h>
++#include <linux/acpi.h>
++#include "../firmware/dcdbas.h"
++
++#define BRIGHTNESS_TOKEN 0x7d
++
++/* This structure will be modified by the firmware when we enter
++ * system management mode, hence the volatiles */
++
++struct calling_interface_buffer {
++	u16 class;
++	u16 select;
++	volatile u32 input[4];
++	volatile u32 output[4];
++} __attribute__ ((packed));
++
++struct calling_interface_token {
++	u16 tokenID;
++	u16 location;
++	union {
++		u16 value;
++		u16 stringlength;
++	};
++};
++
++struct calling_interface_structure {
++	struct dmi_header header;
++	u16 cmdIOAddress;
++	u8 cmdIOCode;
++	u32 supportedCmds;
++	struct calling_interface_token tokens[];
++} __attribute__ ((packed));
++
++static int da_command_address;
++static int da_command_code;
++static int da_num_tokens;
++static struct calling_interface_token *da_tokens;
++
++static struct backlight_device *dell_backlight_device;
++static struct rfkill *wifi_rfkill;
++static struct rfkill *bluetooth_rfkill;
++static struct rfkill *wwan_rfkill;
++
++static struct dmi_system_id __initdata dell_device_table[] = {
++	{
++		.ident = "Dell laptop",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_CHASSIS_TYPE, "8"),
++		},
++	},
++	{ }
++};
++
++static void parse_da_table(const struct dmi_header *dm)
++{
++	/* Final token is a terminator, so we don't want to copy it */
++	int tokens = (dm->length-11)/sizeof(struct calling_interface_token)-1;
++	struct calling_interface_structure *table =
++		container_of(dm, struct calling_interface_structure, header);
++
++	/* 4 bytes of table header, plus 7 bytes of Dell header, plus at least
++	   6 bytes of entry */
++
++	if (dm->length < 17)
++		return;
++
++	da_command_address = table->cmdIOAddress;
++	da_command_code = table->cmdIOCode;
++
++	da_tokens = krealloc(da_tokens, (da_num_tokens + tokens) *
++			     sizeof(struct calling_interface_token),
++			     GFP_KERNEL);
++
++	if (!da_tokens)
++		return;
++
++	memcpy(da_tokens+da_num_tokens, table->tokens,
++	       sizeof(struct calling_interface_token) * tokens);
++
++	da_num_tokens += tokens;
++}
++
++static void find_tokens(const struct dmi_header *dm)
++{
++	switch (dm->type) {
++	case 0xd4: /* Indexed IO */
++		break;
++	case 0xd5: /* Protected Area Type 1 */
++		break;
++	case 0xd6: /* Protected Area Type 2 */
++		break;
++	case 0xda: /* Calling interface */
++		parse_da_table(dm);
++		break;
++	}
++}
++
++static int find_token_location(int tokenid)
++{
++	int i;
++	for (i = 0; i < da_num_tokens; i++) {
++		if (da_tokens[i].tokenID == tokenid)
++			return da_tokens[i].location;
++	}
++
++	return -1;
++}
++
++static struct calling_interface_buffer *
++dell_send_request(struct calling_interface_buffer *buffer, int class,
++		  int select)
++{
++	struct smi_cmd command;
++
++	command.magic = SMI_CMD_MAGIC;
++	command.command_address = da_command_address;
++	command.command_code = da_command_code;
++	command.ebx = virt_to_phys(buffer);
++	command.ecx = 0x42534931;
++
++	buffer->class = class;
++	buffer->select = select;
++
++	dcdbas_smi_request(&command);
++
++	return buffer;
++}
++
++/* Derived from information in DellWirelessCtl.cpp:
++   Class 17, select 11 is radio control. It returns an array of 32-bit values.
++
++   result[0]: return code
++   result[1]:
++     Bit 0:      Hardware switch supported
++     Bit 1:      Wifi locator supported
++     Bit 2:      Wifi is supported
++     Bit 3:      Bluetooth is supported
++     Bit 4:      WWAN is supported
++     Bit 5:      Wireless keyboard supported
++     Bits 6-7:   Reserved
++     Bit 8:      Wifi is installed
++     Bit 9:      Bluetooth is installed
++     Bit 10:     WWAN is installed
++     Bits 11-15: Reserved
++     Bit 16:     Hardware switch is on
++     Bit 17:     Wifi is blocked
++     Bit 18:     Bluetooth is blocked
++     Bit 19:     WWAN is blocked
++     Bits 20-31: Reserved
++   result[2]: NVRAM size in bytes
++   result[3]: NVRAM format version number
++*/
++
++static int dell_rfkill_set(int radio, enum rfkill_state state)
++{
++	struct calling_interface_buffer buffer;
++	int disable = (state == RFKILL_STATE_UNBLOCKED) ? 0 : 1;
++
++	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
++	buffer.input[0] = (1 | (radio<<8) | (disable << 16));
++	dell_send_request(&buffer, 17, 11);
++
++	return 0;
++}
++
++static int dell_wifi_set(void *data, enum rfkill_state state)
++{
++	return dell_rfkill_set(1, state);
++}
++
++static int dell_bluetooth_set(void *data, enum rfkill_state state)
++{
++	return dell_rfkill_set(2, state);
++}
++
++static int dell_wwan_set(void *data, enum rfkill_state state)
++{
++	return dell_rfkill_set(3, state);
++}
++
++static int dell_rfkill_get(int bit, enum rfkill_state *state)
++{
++	struct calling_interface_buffer buffer;
++	int status;
++	int new_state = RFKILL_STATE_HARD_BLOCKED;
++
++	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
++	dell_send_request(&buffer, 17, 11);
++	status = buffer.output[1];
++
++	if (status & (1<<16))
++		new_state = RFKILL_STATE_SOFT_BLOCKED;
++
++	if (status & (1<<bit))
++		*state = new_state;
++	else
++		*state = RFKILL_STATE_UNBLOCKED;
++
++	return 0;
++}
++
++static int dell_wifi_get(void *data, enum rfkill_state *state)
++{
++	return dell_rfkill_get(17, state);
++}
++
++static int dell_bluetooth_get(void *data, enum rfkill_state *state)
++{
++	return dell_rfkill_get(18, state);
++}
++
++static int dell_wwan_get(void *data, enum rfkill_state *state)
++{
++	return dell_rfkill_get(19, state);
++}
++
++static int dell_setup_rfkill(void)
++{
++	struct calling_interface_buffer buffer;
++	int status;
++	int ret;
++
++	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
++	dell_send_request(&buffer, 17, 11);
++	status = buffer.output[1];
++
++	if ((status & (1<<2|1<<8)) == (1<<2|1<<8)) {
++		wifi_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_WLAN);
++		if (!wifi_rfkill)
++			goto err_wifi;
++		wifi_rfkill->name = "dell-wifi";
++		wifi_rfkill->toggle_radio = dell_wifi_set;
++		wifi_rfkill->get_state = dell_wifi_get;
++		ret = rfkill_register(wifi_rfkill);
++		if (ret)
++			goto err_wifi;
++	}
++
++	if ((status & (1<<3|1<<9)) == (1<<3|1<<9)) {
++		bluetooth_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_BLUETOOTH);
++		if (!bluetooth_rfkill)
++			goto err_bluetooth;
++		bluetooth_rfkill->name = "dell-bluetooth";
++		bluetooth_rfkill->toggle_radio = dell_bluetooth_set;
++		bluetooth_rfkill->get_state = dell_bluetooth_get;
++		ret = rfkill_register(bluetooth_rfkill);
++		if (ret)
++			goto err_bluetooth;
++	}
++
++	if ((status & (1<<4|1<<10)) == (1<<4|1<<10)) {
++		wwan_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_WWAN);
++		if (!wwan_rfkill)
++			goto err_wwan;
++		wwan_rfkill->name = "dell-wwan";
++		wwan_rfkill->toggle_radio = dell_wwan_set;
++		wwan_rfkill->get_state = dell_wwan_get;
++		ret = rfkill_register(wwan_rfkill);
++		if (ret)
++			goto err_wwan;
++	}
++
++	return 0;
++err_wwan:
++	if (wwan_rfkill)
++		rfkill_free(wwan_rfkill);
++	if (bluetooth_rfkill) {
++		rfkill_unregister(bluetooth_rfkill);
++		bluetooth_rfkill = NULL;
++	}
++err_bluetooth:
++	if (bluetooth_rfkill)
++		rfkill_free(bluetooth_rfkill);
++	if (wifi_rfkill) {
++		rfkill_unregister(wifi_rfkill);
++		wifi_rfkill = NULL;
++	}
++err_wifi:
++	if (wifi_rfkill)
++		rfkill_free(wifi_rfkill);
++
++	return ret;
++}
++
++static int dell_send_intensity(struct backlight_device *bd)
++{
++	struct calling_interface_buffer buffer;
++
++	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
++	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
++	buffer.input[1] = bd->props.brightness;
++
++	if (buffer.input[0] == -1)
++		return -ENODEV;
++
++	if (power_supply_is_system_supplied() > 0)
++		dell_send_request(&buffer, 1, 2);
++	else
++		dell_send_request(&buffer, 1, 1);
++
++	return 0;
++}
++
++static int dell_get_intensity(struct backlight_device *bd)
++{
++	struct calling_interface_buffer buffer;
++
++	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
++	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
++
++	if (buffer.input[0] == -1)
++		return -ENODEV;
++
++	if (power_supply_is_system_supplied() > 0)
++		dell_send_request(&buffer, 0, 2);
++	else
++		dell_send_request(&buffer, 0, 1);
++
++	return buffer.output[1];
++}
++
++static struct backlight_ops dell_ops = {
++	.get_brightness = dell_get_intensity,
++	.update_status  = dell_send_intensity,
++};
++
++static int __init dell_init(void)
++{
++	struct calling_interface_buffer buffer;
++	int max_intensity = 0;
++	int ret;
++
++	if (!dmi_check_system(dell_device_table))
++		return -ENODEV;
++
++	dmi_walk(find_tokens);
++
++	if (!da_tokens)
++		return -ENODEV;
++
++	ret = dell_setup_rfkill();
++
++	if (ret) {
++		printk(KERN_WARNING "dell-laptop: Unable to setup rfkill\n");
++		return ret;
++	}
++
++#ifdef CONFIG_ACPI
++	if (acpi_video_backlight_support())
++		return 0;
++#endif
++
++	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
++	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
++
++	if (buffer.input[0] != -1) {
++		dell_send_request(&buffer, 0, 2);
++		max_intensity = buffer.output[3];
++	}
++
++	if (max_intensity) {
++		dell_backlight_device = backlight_device_register(
++			"dell_backlight",
++			NULL, NULL,
++			&dell_ops);
++
++		if (IS_ERR(dell_backlight_device)) {
++			dell_backlight_device = NULL;
++			ret = PTR_ERR(dell_backlight_device);
++			goto out;
++		}
++
++		dell_backlight_device->props.max_brightness = max_intensity;
++		dell_backlight_device->props.brightness =
++			dell_get_intensity(dell_backlight_device);
++		backlight_update_status(dell_backlight_device);
++	}
++
++	return 0;
++out:
++	if (wifi_rfkill)
++		rfkill_unregister(wifi_rfkill);
++	if (bluetooth_rfkill)
++		rfkill_unregister(bluetooth_rfkill);
++	if (wwan_rfkill)
++		rfkill_unregister(wwan_rfkill);
++	return ret;
++}
++
++static void __exit dell_exit(void)
++{
++	backlight_device_unregister(dell_backlight_device);
++	if (wifi_rfkill)
++		rfkill_unregister(wifi_rfkill);
++	if (bluetooth_rfkill)
++		rfkill_unregister(bluetooth_rfkill);
++	if (wwan_rfkill)
++		rfkill_unregister(wwan_rfkill);
++}
++
++module_init(dell_init);
++module_exit(dell_exit);
++
++MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
++MODULE_DESCRIPTION("Dell laptop driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("dmi:*svnDellInc.:*:ct8:*");
+
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
