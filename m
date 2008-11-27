@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYK0MdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYK0Mek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbYK0MdA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYK0Mcw
+	id S1755597AbYK0Mek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYK0Meb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:32:52 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:51678 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbYK0Mcv (ORCPT
+	Thu, 27 Nov 2008 07:34:31 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55029 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752238AbYK0Mea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:32:51 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, Mike Waychison <mikew@google.com>,
-       Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <492E90BC.1090208@gmail.com>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
-	 <20081123091843.GK30453@elte.hu>
-	 <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com>
-	 <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com>
-	 <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com>
-	 <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de>
-	 <492E90BC.1090208@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 27 Nov 2008 13:32:36 +0100
-Message-Id: <1227789156.4454.1519.camel@twins>
+	Thu, 27 Nov 2008 07:34:30 -0500
+Date: Thu, 27 Nov 2008 13:45:01 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: eranian@gmail.com
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, sfr@canb.auug.org.au
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+Message-ID: <20081127124501.GL6703@one.firstfloor.org>
+References: <492d0be1.09cc660a.0b75.44b7@mx.google.com> <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain> <20081126140054.GX6703@one.firstfloor.org> <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain> <20081127100602.GF6703@one.firstfloor.org> <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com> <20081127113115.GH6703@one.firstfloor.org> <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com> <20081127123257.GI6703@one.firstfloor.org> <7c86c4470811270428r76702954se8f6e005481a6a35@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7c86c4470811270428r76702954se8f6e005481a6a35@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-27 at 14:21 +0200, Török Edwin wrote:
+> What if a threads reprograms the counters while another is reading them?
 
-> How about distributing tasks to a set of worked threads, is the
-> overhead of using IPC instead of mutexes/cond variables acceptable?
+In the worst case you get an invalid event, which is then discarded.
+I think. I've never tried to understand it in all details, but 
+at least it seems to work.
 
-Inter process pthread mutexes should be very fast in the latest kernels
-as they'll avoid the mmap_sem by use of get_user_pages_fast().
+> How is the buffer reset?
 
-Not sure if pthread condition variables also work inter-process.
+drivers/oprofile/cpu_buffer.c:
 
+/* Resets the cpu buffer to a sane state. */
+void cpu_buffer_reset(struct oprofile_cpu_buffer *cpu_buf)
+{
+        /* reset these to invalid values; the next sample
+         * collected will populate the buffer with proper
+         * values to initialize the buffer
+         */
+        cpu_buf->last_is_kernel = -1;
+        cpu_buf->last_task = NULL;
+}
+
+-Andi
+
+-- 
+ak@linux.intel.com
