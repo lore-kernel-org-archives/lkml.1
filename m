@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYK0MC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYK0MC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbYK0MC3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYK0MCU
+	id S1755294AbYK0MC4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYK0MCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:02:20 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56197 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYK0MCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:02:19 -0500
-Date: Thu, 27 Nov 2008 12:02:30 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Russell King <rmk@arm.linux.org.uk>
-cc: Paul Mundt <lethal@linux-sh.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-arch@vger.kernel.org,
-       Linux Kernel List <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [RESEND:PATCH] [ARM] clearpage: provide our own clear_user_highpage()
-In-Reply-To: <20081127112124.GA9233@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0811271158120.28319@blonde.site>
-References: <20081126171321.GA4719@dyn-67.arm.linux.org.uk>
- <1227719999.3387.0.camel@localhost.localdomain> <20081127102920.660303a5.sfr@canb.auug.org.au>
- <20081127010755.GA30854@linux-sh.org> <20081127112124.GA9233@flint.arm.linux.org.uk>
+	Thu, 27 Nov 2008 07:02:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46698 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752599AbYK0MCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 07:02:46 -0500
+Date: Thu, 27 Nov 2008 13:02:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] x86: entry_64.S - trivial: space, comments fixup
+Message-ID: <20081127120230.GB4259@elte.hu>
+References: <1227727024-2281-1-git-send-email-gorcunov@gmail.com> <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com> <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com> <6bc2fd402754cfa5b69a63a529bc065584c5f375.1227725632.git.gorcunov@gmail.com> <39e35cbc79237b162a0720dceaa52a72c7eb1690.1227725632.git.gorcunov@gmail.com> <fbfac26820d86fa887adfbfa8ac80b369de00075.1227725632.git.gorcunov@gmail.com> <1227782341.31610.1287042073@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227782341.31610.1287042073@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Nov 2008, Russell King wrote:
-> On Thu, Nov 27, 2008 at 10:07:55AM +0900, Paul Mundt wrote:
-> > On Thu, Nov 27, 2008 at 10:29:20AM +1100, Stephen Rothwell wrote:
-> > > On Wed, 26 Nov 2008 11:19:59 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > > >
-> > > > We'd like to pull this trick on parisc as well (another VIPT
-> > > > architecture), so you can add my ack.
-> > > 
-> > > If this is going to be used by more than one architecture during the next
-> > > merge window, then maybe the change to include/linux/highmem.h could be
-> > > extracted to its own patch and sent to Linus for inclusion in 2.6.28.
-> > > This way we avoid some conflicts and the architectures can do their
-> > > updates independently.
+
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+
+> On Wed, 26 Nov 2008 22:17:04 +0300, gorcunov@gmail.com said:
+> > From: Cyrill Gorcunov <gorcunov@gmail.com>
 > > 
-> > I plan to use it on VIPT SH also, so getting the higmem.h change in by
-> > itself sooner rather than later would certainly be welcome.
+> > Impact: cleanup
+> > 
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 > 
-> I'll queue the change to linux/highmem.h for when Linus gets back then.
-> Can I assume that Hugh and James are happy for their ack to apply to
-> both parts of the split patch?  And do I have your ack as well?
+> Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-I rather trusted you on the ARM end of it: I won't be kicking up a
-fuss if my Acked-by ends up appearing on that part too, but really,
-it was for the linux/highmem.h end of it.
+Cyrill, could you please rework the still relevant bits against latest 
+tip/master? Alexander's wider patch got in the way.
 
-Hugh
+Thanks,
+
+	Ingo
