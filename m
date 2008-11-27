@@ -1,121 +1,498 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbYK0HFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbYK0HGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710AbYK0HFl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 02:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYK0HFc
+	id S1752947AbYK0HGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 02:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYK0HGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 02:05:32 -0500
-Received: from mail.bencastricum.nl ([213.84.203.196]:55462 "EHLO
-	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750947AbYK0HFb (ORCPT
+	Thu, 27 Nov 2008 02:06:41 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52560 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYK0HGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 02:05:31 -0500
-X-Greylist: delayed 628 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Nov 2008 02:05:31 EST
-Message-ID: <2DB7D81DBD004B64A5EF08CF13DB04A6@Seven>
-From: "Ben Castricum" <lk0811@bencastricum.nl>
-To: <linux-kernel@vger.kernel.org>
-Subject: Crash with 2.6.28-rc6
-Date: Thu, 27 Nov 2008 07:55:01 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Thu, 27 Nov 2008 02:06:40 -0500
+Date: Thu, 27 Nov 2008 16:05:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       taka@valinux.co.jp
+Subject: [RFC][PATCH 1/2] CGROUP ID and Hierarchy Code
+Message-Id: <20081127160548.3274c8e6.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Patches for CGROUP ID and Hierarchy Code.
+(based on mmotm Nov/24...I'll update later.)
 
-My computer was unresponsive yesterday and had to ask my to wife reset the 
-server. The only thing I could find in the logs is below. Judging from the 
-timestamp it was caused by the daily logrotate. The logfiles are moved from 
-an ext3 to an ext4 filesystem. This is probably not enough for a decent bug 
-report but I thought I report it anyway, even if it is just for statistics.
+CGROUP ID is a unique value for each cgroup (struct cgroup)
+Hierarchy Code is array of CGROUP ID which contains all ID od ancestors.
+and tries to remove cgroup_lock() to walk tree.
 
-my .config can be found at http://www.bencastricum.nl/.config
+This is just an example-level patch but I'm now testing/refleshing this.
+Works well with memcg's hierarchy relcaim.
+Any comment is welcome.
 
-Kind regards,
-Ben
+-Kame
 
-Nov 26 00:00:03 gateway kernel: last sysfs file: 
-/sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-3/3-002e/in0_input
-Nov 26 00:00:03 gateway kernel: Modules linked in: ipt_MASQUERADE ipt_REJECT 
-ipt_LOG xt_recent xt_tcpudp xt_state iptable_filter nf_conntrack_ftp 
-iptable_na
-t ip_tables nf_nat x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 
-af_packet 8139too mii usb_storage tg3 libphy cdc_acm uhci_hcd ehci_hcd 
-usbcore lm8
-5 hwmon_vid hwmon i2c_i801 softdog rtc ext4 jbd2 crc16 [last unloaded: 
-firmware_class]
-Nov 26 00:00:03 gateway kernel:
-Nov 26 00:00:03 gateway kernel: Pid: 14430, comm: mv Not tainted 
-(2.6.28-rc6-00007-ged31348 #143) HP d530 SFF(PL110ES)
-Nov 26 00:00:03 gateway kernel: EIP: 0060:[<b01a82ee>] EFLAGS: 00010287 CPU: 
-1
-Nov 26 00:00:03 gateway kernel: EIP is at journal_start+0x39/0xb9
-Nov 26 00:00:04 gateway kernel: EAX: ef37dc00 EBX: c65fd518 ECX: ef356a00 
-EDX: ef356800
-Nov 26 00:00:04 gateway kernel: ESI: c65fd518 EDI: 0000000a EBP: e3ababc0 
-ESP: e3ababac
-Nov 26 00:00:04 gateway kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 
-0068
-Nov 26 00:00:04 gateway kernel: Process mv (pid: 14430, ti=e3aba000 
-task=ddf57390 task.ti=e3aba000)
-Nov 26 00:00:04 gateway kernel: Stack:
-Nov 26 00:00:04 gateway kernel:  00000012 ef356800 b29b19a4 b29b19ac 
-0000000a e3ababc8 b01a4b71 e3ababd8
-Nov 26 00:00:04 gateway kernel:  b01a4d63 b29b19a4 b29b19ac e3ababe0 
-b0189b68 e3ababf0 b016fd0e 00000002
-Nov 26 00:00:04 gateway kernel:  b29b19a4 e3abac08 b016fdc0 e3abac18 
-e6fea788 00000000 00000080 e3abac2c
-Nov 26 00:00:04 gateway kernel: Call Trace:
-Nov 26 00:00:04 gateway kernel:  [<b01a4b71>] ? 
-ext3_journal_start_sb+0x40/0x42
-Nov 26 00:00:04 gateway kernel:  [<b01a4d63>] ? ext3_dquot_drop+0x2b/0x5f
-Nov 26 00:00:04 gateway kernel:  [<b0189b68>] ? vfs_dq_drop+0x38/0x3a
-Nov 26 00:00:04 gateway kernel:  [<b016fd0e>] ? clear_inode+0x4c/0xb0
-Nov 26 00:00:04 gateway kernel:  [<b016fdc0>] ? dispose_list+0x4e/0xda
-Nov 26 00:00:04 gateway kernel:  [<b016ffdd>] ? 
-shrink_icache_memory+0x191/0x1be
-Nov 26 00:00:04 gateway kernel:  [<b014db67>] ? shrink_slab+0xda/0x134
-Nov 26 00:00:04 gateway kernel:  [<b014e5cf>] ? 
-try_to_free_pages+0x20b/0x2c6
-Nov 26 00:00:04 gateway kernel:  [<b014c1f7>] ? 
-isolate_pages_global+0x0/0x1af
-Nov 26 00:00:04 gateway kernel:  [<b01494b5>] ? 
-__alloc_pages_internal+0x1fa/0x371
-Nov 26 00:00:04 gateway kernel:  [<b014520a>] ? __grab_cache_page+0x35/0x6d
-Nov 26 00:00:04 gateway kernel:  [<f00d72c6>] ? 
-ext4_da_write_begin+0x11f/0x1ef [ext4]
-Nov 26 00:00:04 gateway kernel:  [<b0145a89>] ? 
-generic_file_buffered_write+0xc9/0x212
-Nov 26 00:00:04 gateway kernel:  [<b0146004>] ? 
-__generic_file_aio_write_nolock+0x24a/0x272
-Nov 26 00:00:04 gateway kernel:  [<b0144a22>] ? file_read_actor+0x74/0xbf
-Nov 26 00:00:04 gateway kernel:  [<b0172d57>] ? mnt_drop_write+0x1d/0xd5
-Nov 26 00:00:04 gateway kernel:  [<b0146744>] ? 
-generic_file_aio_write+0x57/0xb4
-Nov 26 00:00:04 gateway kernel:  [<f00d3a2f>] ? ext4_file_write+0x99/0x10e 
-[ext4]
-Nov 26 00:00:04 gateway kernel:  [<b0161a04>] ? do_sync_write+0xab/0xe9
-Nov 26 00:00:04 gateway kernel:  [<b0131c22>] ? 
-autoremove_wake_function+0x0/0x33
-Nov 26 00:00:05 gateway kernel:  [<b02a016e>] ? schedule+0x6d8/0x6e8
-Nov 26 00:00:05 gateway kernel:  [<b0161a42>] ? do_sync_read+0x0/0xe9
-Nov 26 00:00:05 gateway kernel:  [<b0161959>] ? do_sync_write+0x0/0xe9
-Nov 26 00:00:05 gateway kernel:  [<b0162116>] ? vfs_write+0x7c/0xad
-Nov 26 00:00:05 gateway kernel:  [<b01621e0>] ? sys_write+0x3b/0x60
-Nov 26 00:00:05 gateway kernel:  [<b0103905>] ? sysenter_do_call+0x12/0x25
-Nov 26 00:00:05 gateway kernel: Code: ec 64 a1 00 70 3b b0 8b b0 00 04 00 00 
-bb e2 ff ff ff 83 7d f0 00 0f 84 86 00 00 00 89 f3 85 f6 74 12 8b 06 8b 55 
-f0 3
-9 10 74 04 <0f> 0b eb fe ff 46 08 eb 6e ba 50 00 00 00 a1 40 ee 40 b0 e8 bf
-Nov 26 00:00:05 gateway kernel: EIP: [<b01a82ee>] journal_start+0x39/0xb9 
-SS:ESP 0068:e3ababac
-Nov 26 00:00:05 gateway kernel: ---[ end trace f93fb7e213015178 ]--- 
+==
+A toy patch for Cgroup ID and hierarchy code.
+
+This patch tries to assing a ID to each cgroup. Attach unique ID to each
+cgroup and provides following functions.
+
+ - cgroup_lookup(id)
+   returns cgroup of id.
+ - cgroup_get_next(id, root, foundid)
+   returns the next cgroup under "root" by scanning bitmap (not by tree-walk)
+ - cgroup_is_ancestor(cgroup, root)
+   returns true if "root" is ancestor of cgroup.
+
+There is several reasons to develop this.
+
+	- While trying to implement hierarchy in memory cgroup, we had to
+	  implement "walk under hierarchy" code.
+	  Now it's consists of cgroup_lock and tree up-down code.
+	  But taking "cgroup_lock" in walking tree can cause deadlocks.
+          cgroup_lock() is too big. Easier way is helpful.
+
+ 	- SwapCgroup uses array of "pointer" to record the owner of swaps.
+	  By ID, we can reduce this to "short" or "int". This means ID is 
+	  useful for reducing space consumption by pointer if the access cost
+	  is not problem.
+	  (I hear bio-cgroup will use the same kind of...)
+
+Example) OOM-Killer under hierarchy.
+	do {
+		rcu_read_lock();
+		next = cgroup_get_next(id, root, nextid);
+		/* check sanity of next here */
+		/* increment refcnt to "next" */
+		rcu_read_unlock();
+		if (!next)
+			break;
+		cgroup_scan_tasks(select_bad_process);
+	} while (1);
+
+
+Characteristics: 
+	- Each cgroup get new ID when created.
+	- cgroup ID contains "ID" and "Depth in tree" and hierarchy code.
+	- hierarchy code is array of IDs of ancestors.
+
+Consideration:
+	- gang lookup if necessary.
+	- I'd like to use  "(unsigned)short" to cgroup_id for saving space...
+	- MAX_DEPTH is bad ?
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ include/linux/cgroup.h |   42 +++++++++++
+ include/linux/idr.h    |    1 
+ kernel/cgroup.c        |  180 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ lib/idr.c              |   46 ++++++++++++
+ 4 files changed, 266 insertions(+), 3 deletions(-)
+
+Index: mmotm-2.6.28-Nov24/include/linux/cgroup.h
+===================================================================
+--- mmotm-2.6.28-Nov24.orig/include/linux/cgroup.h
++++ mmotm-2.6.28-Nov24/include/linux/cgroup.h
+@@ -61,6 +61,20 @@ struct cgroup_subsys_state {
+ 	unsigned long flags;
+ };
+ 
++/*
++ * Cgroup ID for *internal* identification and lookup. For user-land,"path"
++ * of cgroup works well.
++ */
++#define MAX_CGROUP_DEPTH	(10)
++struct cgroup_id {
++	struct cgroup *myself;
++	unsigned int  id;
++	atomic_t      refcnt;
++	unsigned int  depth;
++	unsigned int  hierarchy_code[MAX_CGROUP_DEPTH];
++	struct list_head list;
++};
++
+ /* bits in struct cgroup_subsys_state flags field */
+ enum {
+ 	CSS_ROOT, /* This CSS is the root of the subsystem */
+@@ -145,6 +159,9 @@ struct cgroup {
+ 	int pids_use_count;
+ 	/* Length of the current tasks_pids array */
+ 	int pids_length;
++
++	/* Cgroup ID */
++	struct cgroup_id	*id;
+ };
+ 
+ /* A css_set is a structure holding pointers to a set of
+@@ -393,6 +410,31 @@ void cgroup_iter_end(struct cgroup *cgrp
+ int cgroup_scan_tasks(struct cgroup_scanner *scan);
+ int cgroup_attach_task(struct cgroup *, struct task_struct *);
+ 
++/*
++ * For supporting cgroup lookup and hierarchy management.
++ * Giving Flat view of cgroup hierarchy rather than tree.
++ */
++/* An interface for usual lookup */
++struct cgroup *cgroup_lookup(int id);
++/* get next cgroup under tree (for scan) */
++struct cgroup *cgroup_get_next(int id, struct cgroup *root, int *foundid);
++
++static inline bool
++cgroup_is_ancestor(struct cgroup *cur, struct cgroup *root)
++{
++	struct cgroup_id *curid = cur->id;
++	struct cgroup_id *rootid = root->id;
++
++	return (curid->hierarchy_code[rootid->depth] = rootid->id);
++}
++
++static inline int cgroup_myid(struct cgroup *cgrp)
++{
++	return cgrp->id->id;
++}
++
++/* TODO: gang lookup should be */
++
+ #else /* !CONFIG_CGROUPS */
+ 
+ static inline int cgroup_init_early(void) { return 0; }
+Index: mmotm-2.6.28-Nov24/kernel/cgroup.c
+===================================================================
+--- mmotm-2.6.28-Nov24.orig/kernel/cgroup.c
++++ mmotm-2.6.28-Nov24/kernel/cgroup.c
+@@ -46,7 +46,7 @@
+ #include <linux/cgroupstats.h>
+ #include <linux/hash.h>
+ #include <linux/namei.h>
+-
++#include <linux/idr.h>
+ #include <asm/atomic.h>
+ 
+ static DEFINE_MUTEX(cgroup_mutex);
+@@ -547,6 +547,162 @@ void cgroup_unlock(void)
+ 	mutex_unlock(&cgroup_mutex);
+ }
+ 
++
++/*
++ * Cgroup ID and lookup functions.
++ * cgid->myself pointer is safe under rcu_read_lock() because d_put() of
++ * cgroup, which finally frees cgroup pointer, uses rcu_synchronize().
++ */
++
++static DEFINE_IDR(cgroup_idr);
++static DEFINE_SPINLOCK(cgroup_idr_lock);
++
++static int cgroup_prepare_id(struct cgroup *parent, struct cgroup_id **id)
++{
++	struct cgroup_id *newid;
++	int myid, error;
++
++	/* check depth */
++	if (parent && parent->id->depth + 1 >= MAX_CGROUP_DEPTH)
++		return -ENOSPC;
++	newid = kzalloc(sizeof(*newid), GFP_KERNEL);
++	if (!newid)
++		return -ENOMEM;
++	/* get id */
++	if (unlikely(!idr_pre_get(&cgroup_idr, GFP_KERNEL))) {
++		error = -ENOMEM;
++		goto err_out;
++	}
++	spin_lock_irq(&cgroup_idr_lock);
++	error = idr_get_new(&cgroup_idr, newid, &myid);
++	spin_unlock_irq(&cgroup_idr_lock);
++	if (error)
++		goto err_out;
++
++	newid->id = myid;
++	atomic_set(&newid->refcnt, 1);
++	INIT_LIST_HEAD(&newid->list);
++	*id = newid;
++	return 0;
++err_out:
++	kfree(newid);
++	return error;
++}
++
++static void cgroup_id_put(struct cgroup_id *cgid)
++{
++	unsigned long flags;
++
++	if (atomic_dec_and_test(&cgid->refcnt)) {
++		spin_lock_irqsave(&cgroup_idr_lock, flags);
++		idr_remove(&cgroup_idr, cgid->id);
++		spin_unlock_irqrestore(&cgroup_idr_lock, flags);
++		kfree(cgid);
++	}
++}
++
++static void cgroup_id_attach(struct cgroup_id *cgid,
++			     struct cgroup *cg, struct cgroup *parent)
++{
++	if (parent) {
++		struct cgroup_id *parent_id = parent->id;
++		int i;
++
++		cgid->depth = parent_id->depth + 1;
++		/* Inherit hierarchy code from parent */
++		for (i = 0; i < cgid->depth; i++) {
++			cgid->hierarchy_code[i] =
++				parent_id->hierarchy_code[i];
++			cgid->hierarchy_code[cgid->depth] = cgid->id;
++		}
++	} else {
++		cgid->depth = 0;
++		cgid->hierarchy_code[0] = cgid->id;
++	}
++	rcu_assign_pointer(cgid->myself, cg);
++	cg->id = cgid;
++
++	return;
++}
++
++static void cgroup_id_detach(struct cgroup *cg)
++{
++	struct cgroup_id *id = cg->id;
++
++	rcu_assign_pointer(id->myself, NULL);
++	cgroup_id_put(id);
++}
++
++/**
++ * cgroup_lookup - lookup cgroup by id
++ * @id: the id of cgroup to be looked up
++ *
++ * Retruns pointer to cgroup if there is vald cgroup with id, NULL if not.
++ * Should be called under rcu_read_lock() or cgroup_lock().
++ */
++
++struct cgroup *cgroup_lookup(int id)
++{
++	struct cgroup *cgrp;
++	struct cgroup_id *cgid;
++
++	rcu_read_lock();
++	cgid = idr_find(&cgroup_idr, id);
++	rcu_read_unlock();
++
++	if (unlikely(!cgid))
++		return NULL;
++
++	cgrp = rcu_dereference(cgid->myself);
++	if (unlikely(!cgrp || test_bit(CGRP_REMOVED, &cgrp->flags)))
++		return NULL;
++
++	return cgrp;
++}
++
++/**
++ * cgroup_get_next - lookup next cgroup under specified hierarchy.
++ * @id: current position of iteration.
++ * @root: search tree under this. .
++ * @foundid: position of found object.
++ *
++ * Search next cgroup under the specified hierarchy. If "cur" is NULL,
++ * start from root cgroup. Called under rcu_read_lock() or cgroup_lock()
++ * is necessary (to access a found cgroup.).
++ */
++struct cgroup *cgroup_get_next(int id, struct cgroup *root, int *foundid)
++{
++	struct cgroup *ret = NULL;
++	struct cgroup_id *tmp, *rootid;
++	int tmpid, depth, targetid;
++	unsigned long flags;
++
++	rootid = root->id;
++	depth = rootid->depth;
++	targetid = rootid->id;
++	tmpid = id;
++
++	do {
++		/* scan next entry from bitmap(tree) */
++		spin_lock_irqsave(&cgroup_idr_lock, flags);
++		tmp = idr_get_next(&cgroup_idr, &tmpid);
++		spin_unlock_irqrestore(&cgroup_idr_lock, flags);
++
++		if (tmp) {
++			ret = rcu_dereference(tmp->myself);
++			/* Sanity check and check hierarchy */
++			if (ret && !test_bit(CGRP_REMOVED, &ret->flags)
++			    && tmp->hierarchy_code[depth] == targetid)
++				break;
++			tmpid = tmpid + 1;
++		} else
++			tmpid = 0;
++	} while (1);
++
++	*foundid = tmpid;
++	return ret;
++}
++
+ /*
+  * A couple of forward declarations required, due to cyclic reference loop:
+  * cgroup_mkdir -> cgroup_create -> cgroup_populate_dir ->
+@@ -991,6 +1147,7 @@ static int cgroup_get_sb(struct file_sys
+ 		/* New superblock */
+ 		struct cgroup *cgrp = &root->top_cgroup;
+ 		struct inode *inode;
++		struct cgroup_id *newid;
+ 		int i;
+ 
+ 		BUG_ON(sb->s_root != NULL);
+@@ -998,6 +1155,11 @@ static int cgroup_get_sb(struct file_sys
+ 		ret = cgroup_get_rootdir(sb);
+ 		if (ret)
+ 			goto drop_new_super;
++
++		ret = cgroup_prepare_id(NULL, &newid);
++		if (ret)
++			goto drop_new_super;
++
+ 		inode = sb->s_root->d_inode;
+ 
+ 		mutex_lock(&inode->i_mutex);
+@@ -1062,7 +1224,7 @@ static int cgroup_get_sb(struct file_sys
+ 		BUG_ON(!list_empty(&cgrp->sibling));
+ 		BUG_ON(!list_empty(&cgrp->children));
+ 		BUG_ON(root->number_of_cgroups != 1);
+-
++		cgroup_id_attach(newid, cgrp, NULL);
+ 		cgroup_populate_dir(cgrp);
+ 		mutex_unlock(&inode->i_mutex);
+ 		mutex_unlock(&cgroup_mutex);
+@@ -1997,6 +2159,7 @@ int cgroup_scan_tasks(struct cgroup_scan
+ 	return 0;
+ }
+ 
++
+ /*
+  * Stuff for reading the 'tasks' file.
+  *
+@@ -2349,11 +2512,18 @@ static long cgroup_create(struct cgroup 
+ 	int err = 0;
+ 	struct cgroup_subsys *ss;
+ 	struct super_block *sb = root->sb;
++	struct cgroup_id *cgid = NULL;
+ 
+ 	cgrp = kzalloc(sizeof(*cgrp), GFP_KERNEL);
+ 	if (!cgrp)
+ 		return -ENOMEM;
+ 
++	err = cgroup_prepare_id(parent, &cgid);
++	if (err) {
++		kfree(cgrp);
++		return err;
++	}
++
+ 	/* Grab a reference on the superblock so the hierarchy doesn't
+ 	 * get deleted on unmount if there are child cgroups.  This
+ 	 * can be done outside cgroup_mutex, since the sb can't
+@@ -2394,6 +2564,8 @@ static long cgroup_create(struct cgroup 
+ 	err = cgroup_populate_dir(cgrp);
+ 	/* If err < 0, we have a half-filled directory - oh well ;) */
+ 
++	cgroup_id_attach(cgid, cgrp, parent);
++
+ 	mutex_unlock(&cgroup_mutex);
+ 	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+ 
+@@ -2415,7 +2587,7 @@ static long cgroup_create(struct cgroup 
+ 
+ 	/* Release the reference count that we took on the superblock */
+ 	deactivate_super(sb);
+-
++	cgroup_id_put(cgid);
+ 	kfree(cgrp);
+ 	return err;
+ }
+@@ -2494,6 +2666,8 @@ static int cgroup_rmdir(struct inode *un
+ 		return -EBUSY;
+ 	}
+ 
++	cgroup_id_detach(cgrp);
++
+ 	spin_lock(&release_list_lock);
+ 	set_bit(CGRP_REMOVED, &cgrp->flags);
+ 	if (!list_empty(&cgrp->release_list))
+Index: mmotm-2.6.28-Nov24/include/linux/idr.h
+===================================================================
+--- mmotm-2.6.28-Nov24.orig/include/linux/idr.h
++++ mmotm-2.6.28-Nov24/include/linux/idr.h
+@@ -106,6 +106,7 @@ int idr_get_new(struct idr *idp, void *p
+ int idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
+ int idr_for_each(struct idr *idp,
+ 		 int (*fn)(int id, void *p, void *data), void *data);
++void *idr_get_next(struct idr *idp, int *nextid);
+ void *idr_replace(struct idr *idp, void *ptr, int id);
+ void idr_remove(struct idr *idp, int id);
+ void idr_remove_all(struct idr *idp);
+Index: mmotm-2.6.28-Nov24/lib/idr.c
+===================================================================
+--- mmotm-2.6.28-Nov24.orig/lib/idr.c
++++ mmotm-2.6.28-Nov24/lib/idr.c
+@@ -573,6 +573,52 @@ int idr_for_each(struct idr *idp,
+ EXPORT_SYMBOL(idr_for_each);
+ 
+ /**
++ * idr_get_next - lookup next opbject of id to given id.
++ * @idp: idr handle
++ * @id:  pointer to lookup key
++ *
++ * Retruns pointer to registered object with id, which is next number to
++ * given id.
++ */
++
++void *idr_get_next(struct idr *idp, int *nextidp)
++{
++	struct idr_layer *p, *pa[MAX_LEVEL];
++	struct idr_layer **paa = &pa[0];
++	int id = *nextidp;
++	int n, max;
++
++	/* find first ent */
++	n = idp->layers * IDR_BITS;
++	max = 1 << n;
++	p = rcu_dereference(idp->top);
++	if (!p)
++		return NULL;
++
++	while (id < max) {
++		while (n > 0 && p) {
++			n -= IDR_BITS;
++			*paa++ = p;
++			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
++		}
++
++		if (p) {
++			*nextidp = id;
++			return p;
++		}
++
++		id += 1 << n;
++		while (n < fls(id)) {
++			n += IDR_BITS;
++			p = *--paa;
++		}
++	}
++	return NULL;
++}
++
++
++
++/**
+  * idr_replace - replace pointer for given id
+  * @idp: idr handle
+  * @ptr: pointer you want associated with the id
 
