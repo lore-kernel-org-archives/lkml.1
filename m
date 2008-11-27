@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYK0M0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYK0M1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYK0M0S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYK0M0E
+	id S1755158AbYK0M1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYK0M1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:26:04 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:57321 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbYK0M0B (ORCPT
+	Thu, 27 Nov 2008 07:27:41 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:46785 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbYK0M1k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:26:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=hR1O5aqf0ERcTOThG9tDopBsAphaspjvGb2THx0pfJiK4vtecAhhioKh9STZVu8SNj
-         jlsSy5MkofnnKjpIqGeaHrmMBLjzPsmb472Micor04x6f9MY/HfweQlz2ljO2o89EcMD
-         JqUFYrmyiPmQHkdy3TbT1XNnTCqY+Vjl+IbO0=
-Message-ID: <7c86c4470811270425i435a2adcq565d674070fd44db@mail.gmail.com>
-Date: Thu, 27 Nov 2008 13:25:59 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Oleg Nesterov" <oleg@redhat.com>
-Subject: Re: [patch 20/24] perfmon: system calls interface
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, x86@kernel.org, andi@firstfloor.org,
-       sfr@canb.auug.org.au, "Roland McGrath" <roland@redhat.com>
-In-Reply-To: <20081126165948.GA15755@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Nov 2008 07:27:40 -0500
+Date: Thu, 27 Nov 2008 13:38:11 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Miller <davem@davemloft.net>, eranian@gmail.com,
+       eranian@googlemail.com, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, sfr@canb.auug.org.au
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+Message-ID: <20081127123811.GJ6703@one.firstfloor.org>
+References: <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com> <20081127113115.GH6703@one.firstfloor.org> <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com> <20081127.034247.72331360.davem@davemloft.net> <alpine.LFD.2.00.0811271246200.3325@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
-	 <20081126140027.GC6562@elte.hu> <20081126165948.GA15755@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0811271246200.3325@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Nov 27, 2008 at 12:49:37PM +0100, Thomas Gleixner wrote:
+> On Thu, 27 Nov 2008, David Miller wrote:
+> 
+> > From: "stephane eranian" <eranian@googlemail.com>
+> > Date: Thu, 27 Nov 2008 12:35:54 +0100
+> > 
+> > > I am still wondering how Oprofile handles the case where multiple
+> > > processes or threads access the same file descriptor.
+> > 
+> > There's only one profiling buffer active on a given cpu,
+> > so it's pure per-cpu value insertion.
+> > 
+> > In any event I think that NMI profiling is a must, especially
+> > for the kernel.  You get total unusable crap otherwise.  I
+> > just learned this the hard way having gotten an NMI'ish scheme
+> > working on sparc64 just the other day.
+> 
+> Not arguing about that, I'm just not agreeing with the implementation.
+> 
+> So for the moment we can go w/o the NMI and implement it cleanly after
+> we got the initial lot in.
 
-Given that this thread discusses the syscall API, I would like to verify
-something with you at this point.
+Note once Stephane readds PEBS support (it is currently stripped out)
+you'll be also able to get somewhat reasonable results at least on modern
+Intel x86 without NMI profiling. But longer term it is still
+very useful because PEBS has some drawbacks too
 
-The sys_pfm_create() syscall is used to create a perfmon session (context).
-In the current patchset, where only counting is supported, the syscall is
-defined as:
-
-  int pfm_create(int flags, pfarg_sinfo_t *sif);
-
-The plan is to extend this syscall, instead of adding a new syscall,
-to add support
-for sampling. The syscall would be used to select which sampling
-buffer format and for passing
-potential arguments to that format. The syscall would then look like:
-
- int pfm_create(int flags, pfarg_sinfo_t *sif, char *fmt_name, void
-*fmt_arg, size_t arg_sz);
-
-The kernel would look at the last 3 arguments ONLY if it saw the
-PFM_FL_SMPL_FMT bit
- set in flags. We follow the model used by open(2).
-
-I want to double-check that you are fine with this approach.
+-Andi
+-- 
+ak@linux.intel.com
