@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbYK0LIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbYK0LU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbYK0LIp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 06:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYK0LIg
+	id S1753351AbYK0LU6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 06:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYK0LUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 06:08:36 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59265 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256AbYK0LIf (ORCPT
+	Thu, 27 Nov 2008 06:20:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:51460 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbYK0LUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 06:08:35 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Cc: kosaki.motohiro@jp.fujitsu.com, Mike Waychison <mikew@google.com>,
-       Nick Piggin <npiggin@suse.de>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       edwintorok@gmail.com
-In-Reply-To: <1227780007.4454.1344.camel@twins>
-References: <492E6849.6090205@google.com> <1227780007.4454.1344.camel@twins>
-Message-Id: <20081127200501.3CF9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 27 Nov 2008 20:08:29 +0900 (JST)
+	Thu, 27 Nov 2008 06:20:49 -0500
+Date: Thu, 27 Nov 2008 12:31:15 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: eranian@gmail.com
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, sfr@canb.auug.org.au
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+Message-ID: <20081127113115.GH6703@one.firstfloor.org>
+References: <492d0be1.09cc660a.0b75.44b7@mx.google.com> <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain> <20081126140054.GX6703@one.firstfloor.org> <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain> <20081127100602.GF6703@one.firstfloor.org> <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Furthermore, /proc code usually isn't written with performance in mind,
-> so its usually simple and robust code. Adding it to a 'hot'-path like
-> you're doing doesn't seem advisable.
-> 
-> Also, releasing and re-acquiring mmap_sem can significantly add to the
-> cacheline bouncing that thing already has.
+> The only reason why I have to deal with NMI is not so much to allow
+> for profiling irq-off regions but because I have to share the PMU with
+> the NMI watchdog. Otherwise I'd have to fail  or disable the NMI watchdog
+> on the fly.
 
-Interesting.
+The NMI watchdog is now off by default so failing with it enabled
+is fine.
 
-I tryed to demonstration /proc slowness.
+Longer term having NMI profiling is still a useful feature I think,
+but of course it needs to be implemented cleanly.
 
-1. make many process
-	$ nice ./hackbench 120 process 10000
+-Andi
 
-2. read /proc
-	$ time ps -ef
-
-	0.16s user 0.57s system 1% cpu 46.859 total
-
-
-HAHAHA!
-That is really slow over my expected.
-
-
-
+-- 
+ak@linux.intel.com
