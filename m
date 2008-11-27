@@ -1,90 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbYK0G2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbYK0HFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954AbYK0G2r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 01:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYK0G2f
+	id S1752710AbYK0HFl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 02:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYK0HFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 01:28:35 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:38923 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbYK0G2e convert rfc822-to-8bit (ORCPT
+	Thu, 27 Nov 2008 02:05:32 -0500
+Received: from mail.bencastricum.nl ([213.84.203.196]:55462 "EHLO
+	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYK0HFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 01:28:34 -0500
-Message-ID: <492E3DEF.8030602@cosmosbay.com>
-Date: Thu, 27 Nov 2008 07:27:59 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Thu, 27 Nov 2008 02:05:31 -0500
+X-Greylist: delayed 628 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Nov 2008 02:05:31 EST
+Message-ID: <2DB7D81DBD004B64A5EF08CF13DB04A6@Seven>
+From: "Ben Castricum" <lk0811@bencastricum.nl>
+To: <linux-kernel@vger.kernel.org>
+Subject: Crash with 2.6.28-rc6
+Date: Thu, 27 Nov 2008 07:55:01 +0100
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 0/6] fs: Scalability of sockets/pipes allocation/deallocation
- on SMP
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <Pine.LNX.4.64.0811261935330.31159@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0811261935330.31159@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 27 Nov 2008 07:28:01 +0100 (CET)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Thu, 27 Nov 2008, Eric Dumazet wrote:
-> 
->> The last point is about SLUB being hit hard, unless we
->> use slub_min_order=3 at boot, or we use Christoph Lameter
->> patch (struct file RCU optimizations)
->> http://thread.gmane.org/gmane.linux.kernel/418615
->>
->> If we boot machine with slub_min_order=3, SLUB overhead disappears.
-> 
-> 
-> I'd rather not be that drastic. Did you try increasing slub_min_objects
-> instead? Try 40-100. If we find the right number then we should update
-> the tuning to make sure that it pickes the right slab page sizes.
-> 
-> 
 
-4096/192 = 21
+My computer was unresponsive yesterday and had to ask my to wife reset the 
+server. The only thing I could find in the logs is below. Judging from the 
+timestamp it was caused by the daily logrotate. The logfiles are moved from 
+an ext3 to an ext4 filesystem. This is probably not enough for a decent bug 
+report but I thought I report it anyway, even if it is just for statistics.
 
-with slub_min_objects=22 :
+my .config can be found at http://www.bencastricum.nl/.config
 
-# cat /sys/kernel/slab/filp/order
+Kind regards,
+Ben
+
+Nov 26 00:00:03 gateway kernel: last sysfs file: 
+/sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-3/3-002e/in0_input
+Nov 26 00:00:03 gateway kernel: Modules linked in: ipt_MASQUERADE ipt_REJECT 
+ipt_LOG xt_recent xt_tcpudp xt_state iptable_filter nf_conntrack_ftp 
+iptable_na
+t ip_tables nf_nat x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 
+af_packet 8139too mii usb_storage tg3 libphy cdc_acm uhci_hcd ehci_hcd 
+usbcore lm8
+5 hwmon_vid hwmon i2c_i801 softdog rtc ext4 jbd2 crc16 [last unloaded: 
+firmware_class]
+Nov 26 00:00:03 gateway kernel:
+Nov 26 00:00:03 gateway kernel: Pid: 14430, comm: mv Not tainted 
+(2.6.28-rc6-00007-ged31348 #143) HP d530 SFF(PL110ES)
+Nov 26 00:00:03 gateway kernel: EIP: 0060:[<b01a82ee>] EFLAGS: 00010287 CPU: 
 1
-# time ./socket8
-real    0m1.725s
-user    0m0.685s
-sys     0m12.955s
-
-with slub_min_objects=45 :
-
-# cat /sys/kernel/slab/filp/order
-2
-# time ./socket8
-real    0m1.652s
-user    0m0.694s
-sys     0m12.367s
-
-with slub_min_objects=80 :
-
-# cat /sys/kernel/slab/filp/order
-3
-# time ./socket8
-real    0m1.642s
-user    0m0.719s
-sys     0m12.315s
-
-I would say slub_min_objects=45 is the optimal value on 32bit arches to
-get acceptable performance on this workload (order=2 for filp kmem_cache)
-
-Note : SLAB here is disastrous, but you already knew that :)
-
-real    0m8.128s
-user    0m0.748s
-sys     1m3.467s
+Nov 26 00:00:03 gateway kernel: EIP is at journal_start+0x39/0xb9
+Nov 26 00:00:04 gateway kernel: EAX: ef37dc00 EBX: c65fd518 ECX: ef356a00 
+EDX: ef356800
+Nov 26 00:00:04 gateway kernel: ESI: c65fd518 EDI: 0000000a EBP: e3ababc0 
+ESP: e3ababac
+Nov 26 00:00:04 gateway kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 
+0068
+Nov 26 00:00:04 gateway kernel: Process mv (pid: 14430, ti=e3aba000 
+task=ddf57390 task.ti=e3aba000)
+Nov 26 00:00:04 gateway kernel: Stack:
+Nov 26 00:00:04 gateway kernel:  00000012 ef356800 b29b19a4 b29b19ac 
+0000000a e3ababc8 b01a4b71 e3ababd8
+Nov 26 00:00:04 gateway kernel:  b01a4d63 b29b19a4 b29b19ac e3ababe0 
+b0189b68 e3ababf0 b016fd0e 00000002
+Nov 26 00:00:04 gateway kernel:  b29b19a4 e3abac08 b016fdc0 e3abac18 
+e6fea788 00000000 00000080 e3abac2c
+Nov 26 00:00:04 gateway kernel: Call Trace:
+Nov 26 00:00:04 gateway kernel:  [<b01a4b71>] ? 
+ext3_journal_start_sb+0x40/0x42
+Nov 26 00:00:04 gateway kernel:  [<b01a4d63>] ? ext3_dquot_drop+0x2b/0x5f
+Nov 26 00:00:04 gateway kernel:  [<b0189b68>] ? vfs_dq_drop+0x38/0x3a
+Nov 26 00:00:04 gateway kernel:  [<b016fd0e>] ? clear_inode+0x4c/0xb0
+Nov 26 00:00:04 gateway kernel:  [<b016fdc0>] ? dispose_list+0x4e/0xda
+Nov 26 00:00:04 gateway kernel:  [<b016ffdd>] ? 
+shrink_icache_memory+0x191/0x1be
+Nov 26 00:00:04 gateway kernel:  [<b014db67>] ? shrink_slab+0xda/0x134
+Nov 26 00:00:04 gateway kernel:  [<b014e5cf>] ? 
+try_to_free_pages+0x20b/0x2c6
+Nov 26 00:00:04 gateway kernel:  [<b014c1f7>] ? 
+isolate_pages_global+0x0/0x1af
+Nov 26 00:00:04 gateway kernel:  [<b01494b5>] ? 
+__alloc_pages_internal+0x1fa/0x371
+Nov 26 00:00:04 gateway kernel:  [<b014520a>] ? __grab_cache_page+0x35/0x6d
+Nov 26 00:00:04 gateway kernel:  [<f00d72c6>] ? 
+ext4_da_write_begin+0x11f/0x1ef [ext4]
+Nov 26 00:00:04 gateway kernel:  [<b0145a89>] ? 
+generic_file_buffered_write+0xc9/0x212
+Nov 26 00:00:04 gateway kernel:  [<b0146004>] ? 
+__generic_file_aio_write_nolock+0x24a/0x272
+Nov 26 00:00:04 gateway kernel:  [<b0144a22>] ? file_read_actor+0x74/0xbf
+Nov 26 00:00:04 gateway kernel:  [<b0172d57>] ? mnt_drop_write+0x1d/0xd5
+Nov 26 00:00:04 gateway kernel:  [<b0146744>] ? 
+generic_file_aio_write+0x57/0xb4
+Nov 26 00:00:04 gateway kernel:  [<f00d3a2f>] ? ext4_file_write+0x99/0x10e 
+[ext4]
+Nov 26 00:00:04 gateway kernel:  [<b0161a04>] ? do_sync_write+0xab/0xe9
+Nov 26 00:00:04 gateway kernel:  [<b0131c22>] ? 
+autoremove_wake_function+0x0/0x33
+Nov 26 00:00:05 gateway kernel:  [<b02a016e>] ? schedule+0x6d8/0x6e8
+Nov 26 00:00:05 gateway kernel:  [<b0161a42>] ? do_sync_read+0x0/0xe9
+Nov 26 00:00:05 gateway kernel:  [<b0161959>] ? do_sync_write+0x0/0xe9
+Nov 26 00:00:05 gateway kernel:  [<b0162116>] ? vfs_write+0x7c/0xad
+Nov 26 00:00:05 gateway kernel:  [<b01621e0>] ? sys_write+0x3b/0x60
+Nov 26 00:00:05 gateway kernel:  [<b0103905>] ? sysenter_do_call+0x12/0x25
+Nov 26 00:00:05 gateway kernel: Code: ec 64 a1 00 70 3b b0 8b b0 00 04 00 00 
+bb e2 ff ff ff 83 7d f0 00 0f 84 86 00 00 00 89 f3 85 f6 74 12 8b 06 8b 55 
+f0 3
+9 10 74 04 <0f> 0b eb fe ff 46 08 eb 6e ba 50 00 00 00 a1 40 ee 40 b0 e8 bf
+Nov 26 00:00:05 gateway kernel: EIP: [<b01a82ee>] journal_start+0x39/0xb9 
+SS:ESP 0068:e3ababac
+Nov 26 00:00:05 gateway kernel: ---[ end trace f93fb7e213015178 ]--- 
 
