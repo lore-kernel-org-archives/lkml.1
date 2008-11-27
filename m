@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYK0Jxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYK0Jzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYK0Jxk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 04:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYK0Jx2
+	id S1753888AbYK0Jzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYK0Jze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 04:53:28 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44546 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbYK0Jx1 (ORCPT
+	Thu, 27 Nov 2008 04:55:34 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34626 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbYK0Jze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 04:53:27 -0500
-Date: Thu, 27 Nov 2008 04:53:21 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 6/6] fs: Introduce kern_mount_special() to mount
-	special vfs
-Message-ID: <20081127095321.GE13860@infradead.org>
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDCAB.1070204@cosmosbay.com>
-MIME-Version: 1.0
+	Thu, 27 Nov 2008 04:55:34 -0500
+Date: Thu, 27 Nov 2008 11:06:02 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>, eranian@googlemail.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, eranian@gmail.com, sfr@canb.auug.org.au
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+Message-ID: <20081127100602.GF6703@one.firstfloor.org>
+References: <492d0be1.09cc660a.0b75.44b7@mx.google.com> <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain> <20081126140054.GX6703@one.firstfloor.org> <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <492DDCAB.1070204@cosmosbay.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 12:32:59AM +0100, Eric Dumazet wrote:
-> This function arms a flag (MNT_SPECIAL) on the vfs, to avoid
-> refcounting on permanent system vfs.
-> Use this function for sockets, pipes, anonymous fds.
+On Wed, Nov 26, 2008 at 11:54:30PM +0100, Thomas Gleixner wrote:
+> On Wed, 26 Nov 2008, Andi Kleen wrote:
+> > On Wed, Nov 26, 2008 at 02:35:18PM +0100, Thomas Gleixner wrote:
+> > > > +	 */
+> > > > +	pfm_arch_resend_irq(ctx);
+> > > 
+> > > Do we really need this whole NMI business ?
+> > 
+> > Without it you cannot profile interrupts off regions well.
+> 
+> Fair enough, but I doubt that this is a real solution.
+> 
+> There is not even an attempt to avoid the obvious wrmrsl races, while
+> there are several comments which explain how expensive wrmrsl is. In
+> the NMI handler we enable the NMI right away. This might cause
+> multiple NMIs for nothing when the NMIs hit between the manipulations
+> of the counters. Not likely but can happen depending on the counter
+> settings.
+> 
+> Sending an self-IPI from NMI simply sucks: For every NMI we get an
+> extra local interrupt and we have an extra of 2 * NR_ACTIVE_COUNTERS
+> accesses to MSRs.
 
-special is not a useful name for a flag, by definition everything that
-needs a flag is special compared to the version that doesn't need a
-flag.
+In newer Intel the counters can be reset/rearmed by accessing
+only a few global control msrs. But it's probably still a problem 
+on other PMUs.
 
-The general idea of skippign the writer counts makes sense, but please
-give it a descriptive name that explains the not unmountable thing.
-And please kill your kern_mount wrapper and just set the flag manually.
+On the other hand it also has PEBS which allows at least some 
+profiling of irq-off regions without using NMIs.
+> 
+> Designing that code to use lockless buffers instead is not really
+> rocket science.
 
-Also I think it should be a superblock flag, not a mount flag as you
-don't want thse to differ for multiple mounts of the same filesystem.
+Lockless buffers are nasty, but it works in oprofile at least.
 
+Taking out NMis in the first version at least seems like a reasonable
+solution. After all you can still use standard oprofile where they work
+just fine.
+
+-Andi
+
+-- 
+ak@linux.intel.com
