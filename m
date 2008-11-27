@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYK0ARK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbYK0AUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbYK0ARK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYK0AQ4
+	id S1754277AbYK0AUK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYK0AT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:16:56 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:38254 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbYK0AQz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:16:55 -0500
-Message-ID: <492DE6F4.3060300@ct.jp.nec.com>
-Date: Wed, 26 Nov 2008 16:16:52 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 26 Nov 2008 19:19:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47183 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752365AbYK0AT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:19:57 -0500
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 27 Nov 2008 01:19:55 +0100
+From: "Carsten Menke" <bootsy52@gmx.net>
+In-Reply-To: <492DE30B.4080300@shaw.ca>
+Message-ID: <20081127001955.5860@gmx.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: signal: unify signal_{32|64}.c
-References: <492B6131.7070902@ct.jp.nec.com> <492B61CB.7030808@ct.jp.nec.com> <20081126041438.GB9732@elte.hu>
-In-Reply-To: <20081126041438.GB9732@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+References: <20081126231213.271070@gmx.net> <492DE30B.4080300@shaw.ca>
+Subject: Re: Panic:  NMI Watchdog detected LOCKUP on CPU
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #1189245
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX18ZCTVmxocZueOFt2OoAw50H4DM10O0RGxRUgNBF0
+ oMOpb3S71EzGIJ339OB75xeGnJvGLUaTKdJg== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: nN8beHgxYmYBZ0sSd3c36q9CWkZTQdRB
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> Impact: cleanup
->>
->> Add #ifdef directive for 32-bit only code and unify signal_{32|64}.c
->>
->> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->> ---
->>  arch/x86/kernel/Makefile    |    2 +-
->>  arch/x86/kernel/signal.c    |  915 +++++++++++++++++++++++++++++++++++++++++++
->>  arch/x86/kernel/signal_32.c |  909 ------------------------------------------
->>  arch/x86/kernel/signal_64.c |  801 -------------------------------------
->>  4 files changed, 916 insertions(+), 1711 deletions(-)
->>  create mode 100644 arch/x86/kernel/signal.c
->>  delete mode 100644 arch/x86/kernel/signal_32.c
->>  delete mode 100644 arch/x86/kernel/signal_64.c
-> 
-> yay! :-)
-> 
-> applied to tip/x86/signal, thanks Hiroshi!
-> 
-> One small detail, i inserted yet another commit in the middle:
-> 
->  5ceb40d: x86: signal: unify signal_{32|64}.c
->  e5fa2d0: x86: signal: unify signal_{32|64}.c, prepare
->  bfeb91a: x86: signal: cosmetic unification of __setup_sigframe() and __setup_rt_sigframe()
->  2601657: x86: signal: move {setup|restore}_sigcontext()
-> 
-> the e5fa2d0 commit (see it below) contains all the non-mechanic 
-> modifications that you did in the final unification commit. It's best 
-> to keep this separate - because a big unification commit is hard to 
-> review and debug, should it cause any problems.
 
-Hi Ingo,
+-------- Original-Nachricht --------
+> Datum: Wed, 26 Nov 2008 18:00:11 -0600
+> Von: Robert Hancock <hancockr@shaw.ca>
+> An: linux-kernel@vger.kernel.org
+> Betreff: Re: Panic:  NMI Watchdog detected LOCKUP on CPU
 
-thanks for the above change, I think I was in a hurry because of
-Thanksgiving Day week.
+> Normally server-class hardware doesn't cause these kinds of symptoms 
+> from hardware problems, they usually spew NMIs, etc. but it's not 
+> impossible. 2.6.15 is pretty ancient though. Can you try a newer kernel?
+> 
 
-thanks,
-Hiroshi Shimamoto
+Yes I will try that definitley, but I hoped that someone maybe knows if that was a particular problem of that
+kernel (according to the panic log) version and chances are good they are fixed in later versions. The second problem is, that it can takes fairly long until I know if the problem is gone because sometimes it takes 2 months until a crash happens. So the second question is, how to prove if this is not hardware or how to prove it is definitley hardware. I have read the list and saw that NMI CPU Lockup messages can also be due to kernel bugs. 
+
+Regards
+
+Carsten
+P.S. before the these problems happened the server was running well for a year, but I've also done the usual system upgrades
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
