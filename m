@@ -1,68 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYK0Krt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbYK0KsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYK0Krt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 05:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYK0Kda
+	id S1755784AbYK0KsM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 05:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbYK0Kdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 05:33:30 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:62942 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753754AbYK0Kcb (ORCPT
+	Thu, 27 Nov 2008 05:33:32 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:46066 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbYK0Kcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 05:32:31 -0500
-Message-Id: <20081127103141.798495350@de.ibm.com>
+	Thu, 27 Nov 2008 05:32:32 -0500
+Message-Id: <20081127103143.772706128@de.ibm.com>
 References: <20081127103020.528516828@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 27 Nov 2008 11:31:10 +0100
+Date: Thu, 27 Nov 2008 11:31:17 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christof Schmitt <christof.schmitt@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 50/60] convert ap_bus printks to pr_xxx macros.
-Content-Disposition: inline; filename=165-kmsg-ap.diff
+Subject: [patch 57/60] convert zfcp printks to pr_xxx macros.
+Content-Disposition: inline; filename=172-kmsg-zfcp.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Christof Schmitt <christof.schmitt@de.ibm.com>
 
+Signed-off-by: Christof Schmitt <christof.schmitt@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/crypto/ap_bus.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/s390/scsi/zfcp_aux.c   |    9 ++++++---
+ drivers/s390/scsi/zfcp_ccw.c   |    3 +++
+ drivers/s390/scsi/zfcp_cfdc.c  |    3 +++
+ drivers/s390/scsi/zfcp_dbf.c   |    3 +++
+ drivers/s390/scsi/zfcp_erp.c   |    3 +++
+ drivers/s390/scsi/zfcp_fc.c    |    3 +++
+ drivers/s390/scsi/zfcp_fsf.c   |    3 +++
+ drivers/s390/scsi/zfcp_qdio.c  |    3 +++
+ drivers/s390/scsi/zfcp_scsi.c  |    3 +++
+ drivers/s390/scsi/zfcp_sysfs.c |    3 +++
+ 10 files changed, 33 insertions(+), 3 deletions(-)
 
-Index: quilt-2.6/drivers/s390/crypto/ap_bus.c
+Index: quilt-2.6/drivers/s390/scsi/zfcp_aux.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/crypto/ap_bus.c
-+++ quilt-2.6/drivers/s390/crypto/ap_bus.c
-@@ -24,6 +24,9 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_aux.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_aux.c
+@@ -25,6 +25,9 @@
+  *            Sven Schuetz
   */
  
-+#define KMSG_COMPONENT "ap"
++#define KMSG_COMPONENT "zfcp"
 +#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
 +
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/delay.h>
-@@ -1487,12 +1490,13 @@ int __init ap_module_init(void)
- 	int rc, i;
+ #include <linux/miscdevice.h>
+ #include <linux/seq_file.h>
+ #include "zfcp_ext.h"
+@@ -105,7 +108,7 @@ static int __init zfcp_device_setup(char
  
- 	if (ap_domain_index < -1 || ap_domain_index >= AP_DOMAINS) {
--		printk(KERN_WARNING "Invalid param: domain = %d. "
--		       " Not loading.\n", ap_domain_index);
-+		pr_warning("%d is not a valid cryptographic domain\n",
-+			   ap_domain_index);
- 		return -EINVAL;
+  err_out:
+ 	kfree(str);
+-	pr_err("zfcp: %s is not a valid SCSI device\n", devstr);
++	pr_err("%s is not a valid SCSI device\n", devstr);
+ 	return 0;
+ }
+ 
+@@ -189,13 +192,13 @@ static int __init zfcp_module_init(void)
+ 
+ 	retval = misc_register(&zfcp_cfdc_misc);
+ 	if (retval) {
+-		pr_err("zfcp: Registering the misc device zfcp_cfdc failed\n");
++		pr_err("Registering the misc device zfcp_cfdc failed\n");
+ 		goto out_misc;
  	}
- 	if (ap_instructions_available() != 0) {
--		printk(KERN_WARNING "AP instructions not installed.\n");
-+		pr_warning("The hardware system does not support "
-+			   "AP instructions\n");
- 		return -ENODEV;
+ 
+ 	retval = zfcp_ccw_register();
+ 	if (retval) {
+-		pr_err("zfcp: The zfcp device driver could not register with "
++		pr_err("The zfcp device driver could not register with "
+ 		       "the common I/O layer\n");
+ 		goto out_ccw_register;
  	}
- 	if (ap_interrupts_available()) {
+Index: quilt-2.6/drivers/s390/scsi/zfcp_ccw.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_ccw.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_ccw.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2002, 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include "zfcp_ext.h"
+ 
+ /**
+Index: quilt-2.6/drivers/s390/scsi/zfcp_cfdc.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_cfdc.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_cfdc.c
+@@ -7,6 +7,9 @@
+  * Copyright IBM Corporation 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <asm/ccwdev.h>
+Index: quilt-2.6/drivers/s390/scsi/zfcp_dbf.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_dbf.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_dbf.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2002, 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include <linux/ctype.h>
+ #include <asm/debug.h>
+ #include "zfcp_ext.h"
+Index: quilt-2.6/drivers/s390/scsi/zfcp_erp.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_erp.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_erp.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2002, 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include "zfcp_ext.h"
+ 
+ #define ZFCP_MAX_ERPS                   3
+Index: quilt-2.6/drivers/s390/scsi/zfcp_fc.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_fc.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_fc.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include "zfcp_ext.h"
+ 
+ struct ct_iu_gpn_ft_req {
+Index: quilt-2.6/drivers/s390/scsi/zfcp_fsf.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_fsf.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_fsf.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2002, 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include <linux/blktrace_api.h>
+ #include "zfcp_ext.h"
+ 
+Index: quilt-2.6/drivers/s390/scsi/zfcp_qdio.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_qdio.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_qdio.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2002, 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include "zfcp_ext.h"
+ 
+ /* FIXME(tune): free space should be one max. SBAL chain plus what? */
+Index: quilt-2.6/drivers/s390/scsi/zfcp_scsi.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_scsi.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_scsi.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2002, 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include "zfcp_ext.h"
+ #include <asm/atomic.h>
+ 
+Index: quilt-2.6/drivers/s390/scsi/zfcp_sysfs.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/scsi/zfcp_sysfs.c
++++ quilt-2.6/drivers/s390/scsi/zfcp_sysfs.c
+@@ -6,6 +6,9 @@
+  * Copyright IBM Corporation 2008
+  */
+ 
++#define KMSG_COMPONENT "zfcp"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include "zfcp_ext.h"
+ 
+ #define ZFCP_DEV_ATTR(_feat, _name, _mode, _show, _store) \
 
 -- 
 blue skies,
