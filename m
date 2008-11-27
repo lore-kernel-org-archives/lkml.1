@@ -1,140 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbYK0Rf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbYK0RjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbYK0Rf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 12:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYK0Rfs
+	id S1753391AbYK0RjW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 12:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYK0RjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 12:35:48 -0500
-Received: from cmpxchg.org ([85.214.51.133]:49979 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbYK0Rfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 12:35:47 -0500
-Date: Thu, 27 Nov 2008 18:36:10 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       akpm@linux-foundation.org
-Subject: [rfc] vmscan: serialize aggressive reclaimers
-Message-ID: <20081127173610.GA1781@cmpxchg.org>
-References: <20081124145057.4211bd46@bree.surriel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Nov 2008 12:39:11 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:54590 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbYK0RjK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 12:39:10 -0500
+Date: Thu, 27 Nov 2008 17:39:06 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: Karel Zak <kzak@redhat.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       mingo@redhat.com, val.henson@gmail.com, matthew@wil.cx,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] relatime: Allow making relatime the default	behaviour
+Message-ID: <20081127173906.GA24126@srcf.ucam.org>
+References: <20081126195457.GA3541@srcf.ucam.org> <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127160353.GQ2961@nb.net.home> <492ED945.5010600@draigBrady.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081124145057.4211bd46@bree.surriel.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <492ED945.5010600@draigBrady.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we have to pull through a reclaim cycle once we commited to it,
-what do you think about serializing the lower priority levels
-completely?
+On Thu, Nov 27, 2008 at 05:30:45PM +0000, Pádraig Brady wrote:
+> Karel Zak wrote:
+> > On Thu, Nov 27, 2008 at 03:03:41PM +0000, Matthew Garrett wrote:
+> >> Also add a MS_NORELATIME mount option
+> > [...]
+> >> +#define MS_NORELATIME	(1<<24)	/* Disable relatime even if the default */
+> > 
+> >  CC: util-linux-ng@vger.kernel.org
+> 
+> That's useful. Without this, to disable relatime you needed to:
+> 
+> echo 0 > /proc/sys/fs/default_relatime
+> mount -o remount,atime /mnt/point/
 
-The idea is that when one reclaimer has done a low priority level
-iteration with a huge reclaim target, chances are that succeeding
-reclaimers don't even need to drop to lower levels at all because
-enough memory has already been freed.
+I'm dropping that hunk - it's easier to default to relatime in 
+userspace, so there's no need to have a kernel fs parameter to forcibly 
+disable it.
 
-My testprogram maps and faults in a file that is about as large as my
-physical memory.  Then it spawns off n processes that try allocate
-1/2n of total memory in anon pages, i.e. half of it in sum.  After it
-ran, I check how much memory has been reclaimed.  But my zone sizes
-are too small to induce enormous reclaim targets so I don't see vast
-over-reclaims.
-
-I have measured the time of other tests on an SMP machine with 4 cores
-and the following patch applied.  I couldn't see any performance
-degradation.  But since the bug is not triggerable here, I can not
-prove it helps the original problem, either.
-
-The level where it starts serializing is chosen pretty arbitrarily.
-Suggestions welcome :)
-
-	Hannes
-
----
-
-Prevent over-reclaiming by serializing direct reclaimers below a
-certain priority level.
-
-Over-reclaiming happens when the sum of the reclaim targets of all
-reclaiming processes is larger than the sum of the needed free pages,
-thus leading to excessive eviction of more cache and anonymous pages
-than required.
-
-A scan iteration over all zones can not be aborted intermittently when
-enough pages are reclaimed because that would mess up the scan balance
-between the zones.  Instead, prevent that too many processes
-simultaneously commit themselves to lower priority level scans in the
-first place.
-
-Chances are that after the exclusive reclaimer has finished, enough
-memory has been freed that succeeding scanners don't need to drop to
-lower priority levels at all anymore.
-
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
- mm/vmscan.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -35,6 +35,7 @@
- #include <linux/notifier.h>
- #include <linux/rwsem.h>
- #include <linux/delay.h>
-+#include <linux/wait.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- #include <linux/memcontrol.h>
-@@ -42,6 +43,7 @@
- #include <linux/sysctl.h>
- 
- #include <asm/tlbflush.h>
-+#include <asm/atomic.h>
- #include <asm/div64.h>
- 
- #include <linux/swapops.h>
-@@ -1546,10 +1548,15 @@ static unsigned long shrink_zones(int pr
-  * returns:	0, if no pages reclaimed
-  * 		else, the number of pages reclaimed
-  */
-+
-+static DECLARE_WAIT_QUEUE_HEAD(reclaim_wait);
-+static atomic_t reclaim_exclusive = ATOMIC_INIT(0);
-+
- static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
- 					struct scan_control *sc)
- {
- 	int priority;
-+	int exclusive = 0;
- 	unsigned long ret = 0;
- 	unsigned long total_scanned = 0;
- 	unsigned long nr_reclaimed = 0;
-@@ -1580,6 +1587,14 @@ static unsigned long do_try_to_free_page
- 		sc->nr_scanned = 0;
- 		if (!priority)
- 			disable_swap_token();
-+		/*
-+		 * Serialize aggressive reclaimers
-+		 */
-+		if (priority <= DEF_PRIORITY / 2 && !exclusive) {
-+			wait_event(reclaim_wait,
-+				!atomic_cmpxchg(&reclaim_exclusive, 0, 1));
-+			exclusive = 1;
-+		}
- 		nr_reclaimed += shrink_zones(priority, zonelist, sc);
- 		/*
- 		 * Don't shrink slabs when reclaiming memory from
-@@ -1629,6 +1644,11 @@ out:
- 	if (priority < 0)
- 		priority = 0;
- 
-+	if (exclusive) {
-+		atomic_set(&reclaim_exclusive, 0);
-+		wake_up(&reclaim_wait);
-+	}
-+
- 	if (scan_global_lru(sc)) {
- 		for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
- 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
