@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYK0KJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYK0KKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYK0KJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 05:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYK0KJk
+	id S1753392AbYK0KKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 05:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYK0KKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 05:09:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:19557 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbYK0KJj (ORCPT
+	Thu, 27 Nov 2008 05:10:33 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55146 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYK0KKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 05:09:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=urkEKuTRh186NJH+Xw+T6Mmatec2PV7fEN3jgzxk7Q1WlCjq/t7h76hQOhpgfhUwDe
-         trc2Anqj17JRkE3tXXdhrd7tMShJZW9J5DE0YAYRNGmznUYo2bTEiDHtd8qp3M3tOP8m
-         nDMR6UlWNOYEmffVlqYLD7pSiMl/RFKaa38Yc=
-Message-ID: <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com>
-Date: Thu, 27 Nov 2008 11:09:37 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       sfr@canb.auug.org.au
-In-Reply-To: <20081127100602.GF6703@one.firstfloor.org>
+	Thu, 27 Nov 2008 05:10:32 -0500
+Date: Thu, 27 Nov 2008 05:10:23 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 6/6] fs: Introduce kern_mount_special() to mount
+	special vfs
+Message-ID: <20081127101023.GA1454@infradead.org>
+References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDCAB.1070204@cosmosbay.com> <20081127095321.GE13860@infradead.org> <492E70B6.70108@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <492d0be1.09cc660a.0b75.44b7@mx.google.com>
-	 <alpine.LFD.2.00.0811261143480.3325@localhost.localdomain>
-	 <20081126140054.GX6703@one.firstfloor.org>
-	 <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain>
-	 <20081127100602.GF6703@one.firstfloor.org>
+In-Reply-To: <492E70B6.70108@cosmosbay.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi, Thomas,
+On Thu, Nov 27, 2008 at 11:04:38AM +0100, Eric Dumazet wrote:
+> Hum.. we have a superblock flag already, but testing it in mntput()/mntget()
+> is going to be a litle bit expensive if we add a derefence ?
+>
+> if (mnt && mnt->mnt_sb->s_flags & MS_SPECIAL) {
+>   ...
+> }
 
-On Thu, Nov 27, 2008 at 11:06 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> On Wed, Nov 26, 2008 at 11:54:30PM +0100, Thomas Gleixner wrote:
->> On Wed, 26 Nov 2008, Andi Kleen wrote:
->> > On Wed, Nov 26, 2008 at 02:35:18PM +0100, Thomas Gleixner wrote:
->> > > > +        */
->> > > > +       pfm_arch_resend_irq(ctx);
->> > >
->> > > Do we really need this whole NMI business ?
->> >
->> > Without it you cannot profile interrupts off regions well.
->>
->> Fair enough, but I doubt that this is a real solution.
->>
->> There is not even an attempt to avoid the obvious wrmrsl races, while
->> there are several comments which explain how expensive wrmrsl is. In
->> the NMI handler we enable the NMI right away. This might cause
->> multiple NMIs for nothing when the NMIs hit between the manipulations
->> of the counters. Not likely but can happen depending on the counter
->> settings.
->>
->> Sending an self-IPI from NMI simply sucks: For every NMI we get an
->> extra local interrupt and we have an extra of 2 * NR_ACTIVE_COUNTERS
->> accesses to MSRs.
->
-> In newer Intel the counters can be reset/rearmed by accessing
-> only a few global control msrs. But it's probably still a problem
-> on other PMUs.
->
-> On the other hand it also has PEBS which allows at least some
-> profiling of irq-off regions without using NMIs.
->>
->> Designing that code to use lockless buffers instead is not really
->> rocket science.
->
-> Lockless buffers are nasty, but it works in oprofile at least.
->
-> Taking out NMis in the first version at least seems like a reasonable
-> solution. After all you can still use standard oprofile where they work
-> just fine.
->
-The only reason why I have to deal with NMI is not so much to allow
-for profiling irq-off regions but because I have to share the PMU with
-the NMI watchdog. Otherwise I'd have to fail  or disable the NMI watchdog
-on the fly.
+Well, run a benchmark to see if it makes any difference.  And when it
+does please always set the mount flag from the common mount code when
+it's set on the superblock, and document that this is the only valid way
+to set it.
+
