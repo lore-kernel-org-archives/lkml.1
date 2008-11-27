@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYK0PFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbYK0PGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbYK0PFc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 10:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYK0PFX
+	id S1752659AbYK0PGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 10:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYK0PF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 10:05:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46728 "EHLO mx3.mail.elte.hu"
+	Thu, 27 Nov 2008 10:05:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42035 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbYK0PFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 10:05:21 -0500
-Date: Thu, 27 Nov 2008 16:05:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the
-	trace output
-Message-ID: <20081127150507.GB10188@elte.hu>
-References: <492DEDE9.9010109@gmail.com> <1227781146.4454.1369.camel@twins> <c62985530811270653y644295d6x57de6be7a51be667@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811270653y644295d6x57de6be7a51be667@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752284AbYK0PF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 10:05:59 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0811271524340.15160@pc-004.diku.dk>
+References: <Pine.LNX.4.64.0811271524340.15160@pc-004.diku.dk>
+To: Julia Lawall <julia@diku.dk>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] arch/frv/kernel/sys_frv.c: add missing fput
+Date: Thu, 27 Nov 2008 15:05:52 +0000
+Message-ID: <9512.1227798352@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Julia Lawall <julia@diku.dk> wrote:
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+> -	if (pgoff & ((1<<(PAGE_SHIFT-12))-1))
+> -		return -EINVAL;
+> +	if (pgoff & ((1<<(PAGE_SHIFT-12))-1)) {
+> +		error = -EINVAL;
+> +		goto out_file;
+> +	}
 
-> I didn't think of ftrace_printk yet. That's a good idea, this way we 
-> will see where the ftrace_printk was called, in which function at 
-> which depth....
-> 
-> Don't you think that would be better to have it as C comments. We 
-> are in a C-style output and ftrace_printk are especially designed 
-> for comments in a trace. That would make sense to read:
-> 
->        do_sync_read() {
->           /* sock: 0x12345 flag: 1 */
->           sock_aio_read() {
+There's a better way to fix this.  The check on pgoff should be done before
+fget() is called.
 
-Nice idea :-)
-
-	Ingo
+David
