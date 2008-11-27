@@ -1,111 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbYK0O3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYK0ObS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318AbYK0O3F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 09:29:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYK0O2y
+	id S1753780AbYK0ObS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 09:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYK0ObD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 09:28:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:42351 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbYK0O2x (ORCPT
+	Thu, 27 Nov 2008 09:31:03 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48008 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751446AbYK0ObA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 09:28:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=F9ImJXYbnf1n5ezaiXN7u2GhlivTgyF+hmz6/hMLp5wmep3zosIn27pgZXotyKwykX
-         bXxDnOC0qzSxQc5cWID2BtuF5bge15DTamUtlsWvyZPLuQe+dpHonbukd6jXgFPi0Spn
-         HsY7dzjG5n/em1Tud8S0SNyGj0XE92CLCoksA=
-Message-ID: <7c86c4470811270628l4ab533j24dd3b62c4380307@mail.gmail.com>
-Date: Thu, 27 Nov 2008 15:28:51 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 20/24] perfmon: system calls interface
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, x86@kernel.org,
-       andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <20081126140835.GE6562@elte.hu>
+	Thu, 27 Nov 2008 09:31:00 -0500
+X-Sasl-enc: TN9UFS4hk/DE5nGIqKaNj04mzqbaouUJ8UyKRDEIMhKn 1227796259
+Date: Thu, 27 Nov 2008 12:30:55 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Guennadi Liakhovetski <lg@denx.de>
+Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] LEDs: allow led-drivers to use a wider than 0...255
+	range of brightness values
+Message-ID: <20081127143055.GA4678@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0811251751480.6290@axis700.grange> <20081125180241.GA4783@khazad-dum.debian.net> <Pine.LNX.4.64.0811261535590.4749@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
-	 <20081126140835.GE6562@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0811261535590.4749@axis700.grange>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+On Wed, 26 Nov 2008, Guennadi Liakhovetski wrote:
+> This patch allows drivers to override the default maximum brightness value 
+> of 255. We take care to preserve backwards-compatibility as much as 
+> possible, so that user-space ABI doesn't change for existing drivers. All 
+> existing drivers have been modified to explicitly set their maximum 
+> brightness to LED_FULL. LED trigger code has also been updated to use the 
+> per-LED maximum.
+> 
+> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+> ---
+> 
+> On Tue, 25 Nov 2008, 
+> Henrique de Moraes Holschuh wrote:
+> 
+> > On Tue, 25 Nov 2008, Guennadi Liakhovetski wrote:
+> > > This patch allows drivers to override the default maximum brightness value of
+> > > 255. We take care to preserve backwards-compatibility, so that user-space
+> > > ABI doesn't change for existing drivers. All existing drivers have been verified
+> > > to use a zero-initialised memory for their struct led_classdev objects, so that
+> > > they will get the default maximum value of 255. New user-space software 
+> > > can use a new read-only sysfs file /sys/class/leds/*/max_brightness to 
+> > > retrieve maximum supported brightness of a specific LED.
+> > 
+> > I am not speaking AGAINST this change, I actually like the idea, especially
+> > if we can set max_brightness to 1 and support binary (on/off) leds in a much
+> > easier way :p
+> > 
+> > However, you must be aware that it IS still an ABI and API change.  Generic
+> > LED drivers and triggers expect the [0, 255] scale, and expect 0 and 255 to
+> > have special meanings (LED_OFF and LED_FULL).
+> > 
+> > I'd suggest that you set the new max_brightness field PROPERLY for all LEDs
+> 
+> Done.
+> 
+> > (i.e. set it to 255), and fix all of the LED trigger code to use
+> > max_brightness when it wants LED_FULL.
+> 
+> Done.
+> 
+> > In fact, LED_FULL probably will need to become a function (inlineable), so
+> > that triggers can just call led_set_to_max_brightness(theled), or
+> > whatever...
+> 
+> Triggers do this in different ways, two of them first calculate the new 
+> brightness in a variable, then use it to update brightness, one of them 
+> (default-on) just sets it permanently to FULL / max, yet another one 
+> (ide-disk) calls led_trigger_event(). So, it looks like such a function 
+> wouldn't being much.
 
-On Wed, Nov 26, 2008 at 3:08 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * eranian@googlemail.com <eranian@googlemail.com> wrote:
->
->> +/*
->> + * unlike the other perfmon system calls, this one returns a file descriptor
->> + * or a value < 0 in case of error, very much like open() or socket()
->> + */
->> +asmlinkage long sys_pfm_create(int flags, struct pfarg_sinfo __user *ureq)
->> +{
->> +     struct pfm_context *new_ctx;
->> +     struct pfarg_sinfo sif;
->> +     int ret;
->> +
->> +     PFM_DBG("flags=0x%x sif=%p", flags, ureq);
->> +
->> +     if (perfmon_disabled)
->> +             return -ENOSYS;
->
-> uhm. So we have a dynamic 'we dont support perfmon' flag. Which is
-> global and defined as:
->
->  +int perfmon_disabled;  /* >0 if perfmon is disabled */
->
-This variable says, there is perfmon support in the kernel but
-initialization of the
-subsystem failed. Thus the subsystem is disabled.
+Yeah, but one thing I learned from messing with rfkill is that little helper
+functions can go a LONG way into making an API easier to use right.
 
-> (sidenote: that should be __read_mostly)
->
+> > That would still leave us with non-updated userspace not doing the right
+> > thing when faced with a led with a range different from [0, 255], but there is
+> > probably not a big set of userland doing generic LED control (and specific
+> > LEDs have no reason to change their range from the default [0, 255]).
+> 
+> I also don't think there are too many applications out there that will be 
+> endangered by this patch.
+> 
+> > Either that, or maybe you could use an alternative way, like adding a
+> > fractional component to the scale (which has its own problems, but it
+> > probably can be done cleanly).  In that case, it is best to also add an
+> > attribute to disclose the granularity supported by the LED driver.
+> 
+> Would you then have to do "echo 100.5 > brightness"?...
 
->> +     ret = __pfm_create_context(flags, &sif, &new_ctx);
->
-> where we get:
->
-> +int __pfm_create_context(__u32 ctx_flags,
-> +                        struct pfarg_sinfo *sif,
-> +                        struct pfm_context **new_ctx)
-> +{
-> +       struct pfm_context *ctx;
-> +       struct file *filp = NULL;
-> +       int fd = 0, ret = -EINVAL;
-> +
-> +       if (!pfm_pmu_conf)
-> +               return -ENOSYS;
-> +
->
-> _ANOTHER_ global dynamic flag to tell us that ... in essence 'we dont
-> support perfmon'. Which flag is again:
->
-That one says that we do not have support for that particular PMU model.
-In the fully-featured version, there PMU description table is loaded
-via a kernel
-module. So you can be in a situation where the subsystem initialized properly
-but no PMU description module is loaded or none exists for this processor.
-That's what this second test is about. Note that if all PMU description tables
-are compiled in, we can still get into a situation where none support the
-host processor.
+Or add an integer attribute for the fractional part (which takes some
+thought to do correctly), since fp is frowned upon in sysfs...
 
-> +struct pfm_pmu_config  *pfm_pmu_conf;
->
-> ... which should be __read_mostly at minimum.
->
-> +EXPORT_SYMBOL(pfm_pmu_conf);
->
-> and _MUST_ be exported as EXPORT_SYMBOL_GPL. If exported at all. Why
-> are any symbols exported here? perfmom does core kernel system calls
-> and is non-modular:
->
-In the patchset, yes. I can drop that for now.
+> A second version of the patch below.
+
+Frankly, I don't like the fact that LED_FULL survived.  That's a trap
+waiting to be sprung on any unsuspecting maintainers adding or messing with
+LED support everywhere in the kernel...
+
+IMO, it'd be best to have an DEFAULT_LED_FULL_VALUE define you can use to
+set max_brightness where needed, and use the gcc facilities to deprecate any
+use of LED_FULL.
+
+Richard?  What is your take on this?  I am not the right person to be
+reviewing LED code...
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
