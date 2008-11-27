@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbYK0PGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYK0PGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbYK0PGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 10:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYK0PF7
+	id S1756207AbYK0PGe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 10:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbYK0PGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 10:05:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42035 "EHLO mx2.redhat.com"
+	Thu, 27 Nov 2008 10:06:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46868 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbYK0PF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 10:05:59 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0811271524340.15160@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0811271524340.15160@pc-004.diku.dk>
-To: Julia Lawall <julia@diku.dk>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] arch/frv/kernel/sys_frv.c: add missing fput
-Date: Thu, 27 Nov 2008 15:05:52 +0000
-Message-ID: <9512.1227798352@redhat.com>
+	id S1755942AbYK0PGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 10:06:17 -0500
+Date: Thu, 27 Nov 2008 16:06:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com,
+       matthew@wil.cx
+Subject: Re: [PATCH v2 1/2] relatime: Make relatime behaviour smarter
+Message-ID: <20081127150601.GC10188@elte.hu>
+References: <20081126195457.GA3541@srcf.ucam.org> <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081127150126.GA20941@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall <julia@diku.dk> wrote:
 
-> -	if (pgoff & ((1<<(PAGE_SHIFT-12))-1))
-> -		return -EINVAL;
-> +	if (pgoff & ((1<<(PAGE_SHIFT-12))-1)) {
-> +		error = -EINVAL;
-> +		goto out_file;
-> +	}
+* Matthew Garrett <mjg@redhat.com> wrote:
 
-There's a better way to fix this.  The check on pgoff should be done before
-fget() is called.
+> Make relatime smarter
+>     
+> Allow atime to be updated once per day even with relatime. This lets
+> utilities like tmpreaper (which delete files based on last access time)
+> continue working.
+> 
+> ---
+> 
+> Subset of Ingo's original patch, rediffed against current git
 
-David
+thanks Matthew for picking this up!
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
