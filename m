@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYK0UMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbYK0UQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYK0UMv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 15:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYK0UMl
+	id S1753443AbYK0UQA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 15:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYK0UPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 15:12:41 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:20400 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbYK0UMk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 15:12:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=RJbo9icB27e94KKgPgXR1MygL2k5UHBYrDCIYRtqpSPTZdJKaKDPEIlTTrMVQctZVU
-         ueCuwGF083k/cDyRBnaXjv/CCTj8vDeEO+HtFSCHeCoVVs9o884sO8hiyIt1OTUvraV2
-         6uqAdiIslztamnxkDEguZjIpdAgZlDF7Ez73w=
-Date: Thu, 27 Nov 2008 23:12:37 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: paulus@samba.org
-Cc: linux-ppp@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] net: ppp_asynctty_ioctl - remove dead code
-Message-ID: <20081127201237.GB18691@localhost>
+	Thu, 27 Nov 2008 15:15:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54910 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752301AbYK0UPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 15:15:51 -0500
+Date: Thu, 27 Nov 2008 21:13:58 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Tejun Heo <htejun@gmail.com>, Eric Van Hensbergen <ericvh@gmail.com>,
+       Ron Minnich <rminnich@sandia.gov>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Miklos Szeredi <mszeredi@suse.cz>, Brad Boyer <flar@allandria.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Roland McGrath <roland@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] poll: allow f_op->poll to sleep, take#5
+Message-ID: <20081127201358.GA19874@redhat.com>
+References: <20081125173032.GA21539@redhat.com> <492CD1AB.3000802@kernel.org> <492CD358.2020603@gmail.com> <alpine.DEB.1.10.0811252148540.32523@alien.or.mcafeemobile.com> <492CEF04.6070100@gmail.com> <alpine.DEB.1.10.0811252313420.32523@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.DEB.1.10.0811252313420.32523@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ap already checked to be not null. remove useless checks.
+On 11/26, Davide Libenzi wrote:
+>
+> w1) WR dev->events
+> w2) WR triggered (1)
+> w3) WMB
+> w4) WR task->state (RUNNING)
+> ...
+> That is, an MB before w3 (triggered=1) and a set_mb(triggered,0) at
+> s5+s6. The spinlock on the queue taken before entering pollwake() is not
+> enough to guarantee the required ordering, since a LOCK is no guarantee
+> that operations before it are visible after the LOCK.
+> Without the MB at w2, it could happen [w3, s5, s7, w1] that will make us
+> miss the event *and* sleep.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+I think you are very right. Actually, this is just like
 
-Please review
+W:
+	fill_data(&DATA);
+	wmb();
+	DATA_is_ready = 1;	// triggered
+	wake_up(wq);
 
-diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-index 451bdb5..6567fab 100644
---- a/drivers/net/ppp_async.c
-+++ b/drivers/net/ppp_async.c
-@@ -293,9 +293,6 @@ ppp_asynctty_ioctl(struct tty_struct *tty, struct file *file,
- 	err = -EFAULT;
- 	switch (cmd) {
- 	case PPPIOCGCHAN:
--		err = -ENXIO;
--		if (!ap)
--			break;
- 		err = -EFAULT;
- 		if (put_user(ppp_channel_index(&ap->chan), p))
- 			break;
-@@ -303,9 +300,6 @@ ppp_asynctty_ioctl(struct tty_struct *tty, struct file *file,
- 		break;
- 
- 	case PPPIOCGUNIT:
--		err = -ENXIO;
--		if (!ap)
--			break;
- 		err = -EFAULT;
- 		if (put_user(ppp_unit_number(&ap->chan), p))
- 			break;
+S:
+	set_current_state(state);
+	if (DATA_is_ready)
+		ret = poll(&DATA);
+	else
+		schedule();
+
+without wmb() above poll(&DATA) can obviously return the wrong value.
+
+Oleg.
+
