@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYK0VoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYK0Vy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYK0VoB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 16:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYK0Vns
+	id S1754839AbYK0Vy0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 16:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYK0VyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 16:43:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46624 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753008AbYK0Vnr (ORCPT
+	Thu, 27 Nov 2008 16:54:17 -0500
+Received: from mail-gx0-f11.google.com ([209.85.217.11]:45752 "EHLO
+	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbYK0VyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 16:43:47 -0500
-Message-ID: <492F1462.4020803@zytor.com>
-Date: Thu, 27 Nov 2008 13:42:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Thu, 27 Nov 2008 16:54:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XCSxeVkdOSYn9RfelwV4AjM+L7KuAZe9cU9Iq3FASa5Yj6FRcZIai5GIKQvCrFuMUq
+         T/0iQRvmrTFTrGzmUKgnhmC3hOeOLNyXYErhLTYpfT+Hy3ERcpLWQrPsGyAq1NS1J9Zn
+         E4QqAT7uvyi/vJe5X01h/xEvtnChpyZxv4O2A=
+Message-ID: <b637ec0b0811271354l58fc6039m941ca37fb9173d5b@mail.gmail.com>
+Date: Thu, 27 Nov 2008 22:54:14 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jay Fenlason" <fenlason@redhat.com>
+In-Reply-To: <b637ec0b0811270717t360ce5f9j3d48e8a007010b0e@mail.gmail.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: oops/warning report for the week of November 26, 2008
-References: <492DD792.6080302@linux.intel.com>	<20081127115236.GE29013@elte.hu>	<492EE087.80708@linux.intel.com>	<20081127201836.GA16869@elte.hu> <20081127122800.45fc0b1a@linux.intel.com>
-In-Reply-To: <20081127122800.45fc0b1a@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
+	 <b637ec0b0811261145q3c7af010l1db0480d13b41715@mail.gmail.com>
+	 <492DAC81.4020803@s5r6.in-berlin.de> <200811270002.29537.rjw@sisk.pl>
+	 <b637ec0b0811270717t360ce5f9j3d48e8a007010b0e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> 
-> diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-> index 1159e26..0044e61 100644
-> --- a/arch/x86/kernel/cpu/mtrr/main.c
-> +++ b/arch/x86/kernel/cpu/mtrr/main.c
-> @@ -1567,6 +1567,8 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
->  	 * Make sure we only trim uncachable memory on machines that
->  	 * support the Intel MTRR architecture:
->  	 */
-> +	if (!cpu_has_mtrr)
-> +		return 0;
->  	if (!is_cpu(INTEL) || disable_mtrr_trim)
->  		return 0;
->  	rdmsr(MTRRdefType_MSR, def, dummy);
+Hi
 
-Okay... is_cpu() here is defined as:
+On Thu, Nov 27, 2008 at 4:17 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> Hi
+>
+> On Thu, Nov 27, 2008 at 12:02 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> Actually, yes, Fabio, you can try to revert all of the "ACPI: EC:" commits
+>> applied after 2.6.27.4 and retest.
+>
+> Will do tonight. I see that there are some other "ACPI: EC:" commits
+> in 2.6.27.6 and 2.6.27.7.
+>
+> I'l just compile the ec.c file from 2.6.27.4 in 2.6.27.7 and test if
+> the three commits introduced in 2.6.27.5 wouldn't revert cleanly,
+>
+> By the way, my HD passed a "smartctl -t long" test without any problems.
+>
 
-#define is_cpu(vnd)      (mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
+Reproduced with 2.6.27.7 with ec.c taken from 2.6.27.4 - after three
+minutes of freeze the laptop came back to normal as nothing had
+happened.
 
-... so an MTRR interface has been identified.  Therefore testing 
-cpu_has_mtrr is redundant.
+>>
+>> Thanks,
+>> Rafael
+>>
 
-As far as use_intel() versus is_cpu(INTEL), it looks to me as though the 
-two are identical in the current code -- mtrr_if->vendor is never set in 
-the generic code, and so defaults to 0 - meaning X86_VENDOR_INTEL.
-
-All in all, it looks like the vendor ID stuff is a bad case of "works by 
-accident" in the MTRR code, however, *given the current code* I conclude 
-that is_cpu(INTEL) == use_intel() and that neither can be true without 
-MTRRs enabled.
-
-	-hpa
+Regards,
+Fabio
