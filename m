@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbYK0K6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYK0K6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755619AbYK0K6Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 05:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbYK0KuF
+	id S1758691AbYK0K6m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 05:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbYK0KzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 05:50:05 -0500
-Received: from styx.suse.cz ([82.119.242.94]:35202 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756884AbYK0KuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 05:50:01 -0500
-Date: Thu, 27 Nov 2008 11:49:59 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       Jesper Juhl <jesper.juhl@gmail.com>
-Subject: linux-next: trivial tree
-Message-ID: <alpine.LNX.1.10.0811271145180.19853@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Nov 2008 05:55:10 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:3182 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757154AbYK0KzI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 05:55:08 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the
+ trace output
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081127103424.GA9132@elte.hu>
+References: <492DEDE9.9010109@gmail.com>  <20081127103424.GA9132@elte.hu>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 11:55:00 +0100
+Message-Id: <1227783300.4454.1410.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Thu, 2008-11-27 at 11:34 +0100, Ingo Molnar wrote:
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > Here is an example of the new output:
+> > 
 
-I have taken over trivial patches maintainership from Jesper. I will 
-process all the patches in Jesper's queue when he sends them over to me. 
-Could you please re-introduce trivial tree into linux-next lineup? It is 
-'for-next' branch of
+> > CPU[000]  ------------8<---------- thread bash-2794 ------------8<----------
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jikos/trivial.git for-next
+This is the most horrid thing I've ever seen.
 
-Thanks.
+Please just put the comm/pid in another left column and leave a plain
+"---" string for context switches.
 
--- 
-Jiri Kosina
+comm/pid only in the separator is useless, you cannot grep stuff like
+that, also, what's up with those '8's ?
+
