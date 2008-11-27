@@ -1,47 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYK0TS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYK0TXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYK0TS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 14:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYK0TSs
+	id S1754028AbYK0TXp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 14:23:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYK0TXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 14:18:48 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39290 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752376AbYK0TSs (ORCPT
+	Thu, 27 Nov 2008 14:23:36 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:40537 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbYK0TXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 14:18:48 -0500
-Date: Thu, 27 Nov 2008 19:15:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com,
-       matthew@wil.cx
-Subject: Re: [PATCH v3] relatime: Make relatime smarter
-Message-ID: <20081127191547.7c9cf6d2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081127165929.GA23366@srcf.ucam.org>
-References: <20081126195457.GA3541@srcf.ucam.org>
-	<20081126195824.GB3541@srcf.ucam.org>
-	<492DD035.5020705@oracle.com>
-	<20081127150126.GA20941@srcf.ucam.org>
-	<20081127150341.GB20941@srcf.ucam.org>
-	<20081127163535.775729bf@lxorguk.ukuu.org.uk>
-	<20081127164754.GC22963@srcf.ucam.org>
-	<20081127165929.GA23366@srcf.ucam.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Nov 2008 14:23:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=DGYjjbKG1qWZyGTSHmKA/4jTIgy7OF27b6btE3hqAu4AT135X0vHP039AQgpTFwyz
+	8TR297OgXlMeWpTaYqV4g==
+Message-ID: <492EF391.1040408@google.com>
+Date: Thu, 27 Nov 2008 11:22:57 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       edwintorok@gmail.com
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <1227780007.4454.1344.camel@twins> <20081127101436.GI28285@wotan.suse.de>
+In-Reply-To: <20081127101436.GI28285@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.36
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	relatime_interval=
-> +			[FS] relative atime update frequency, in seconds.
-> +			(default: 1 day: 86400 seconds)
+Nick Piggin wrote:
+> On Thu, Nov 27, 2008 at 11:00:07AM +0100, Peter Zijlstra wrote:
+>> On Thu, 2008-11-27 at 01:28 -0800, Mike Waychison wrote:
+>>
+>>> Correct.  I don't recall the numbers from the pathelogical cases we were 
+>>> seeing, but iirc, it was on the order of 10s of seconds, likely 
+>>> exascerbated by slower than usual disks.  I've been digging through my 
+>>> inbox to find numbers without much success -- we've been using a variant 
+>>> of this patch since 2.6.11.
+>>> We generally try to avoid such things, but sometimes it a) can't be 
+>>> easily avoided (third party libraries for instance) and b) when it hits 
+>>> us, it affects the overall health of the machine/cluster (the monitoring 
+>>> daemons get blocked, which isn't very healthy).
+>> If its only monitoring, there might be another solution. If you can keep
+>> the required data in a separate (approximate) copy so that you don't
+>> need mmap_sem at all to show them.
+>>
+>> If your mmap_sem is so contended your latencies are unacceptable, adding
+>> more users to it - even statistics gathering, just isn't going to cure
+>> the situation.
+>>
+>> Furthermore, /proc code usually isn't written with performance in mind,
+>> so its usually simple and robust code. Adding it to a 'hot'-path like
+>> you're doing doesn't seem advisable.
+>>
+>> Also, releasing and re-acquiring mmap_sem can significantly add to the
+>> cacheline bouncing that thing already has.
+> 
+> Yes, it would be nice to reduce mmap_sem load regardless of any other
+> fixes or problems. I guess they're not very worried about cacheline
+> bouncing but more about hold time (how many sockets in these systems?
+> 4 at most?)
+> 
+> I guess it is the pagemap stuff that they use most heavily?
+> 
 
-What about leap seconds  ;)
+We aren't using pagemap yet.  Reading /proc/pid/maps alone hurts.
 
-Acked-by: Alan Cox <alan@redhat.com>
+> pagemap_read looks like it can use get_user_pages_fast. The smaps and
+> clear_refs stuff might have been nicer if they could work on ranges
+> like pagemap. Then they could avoid mmap_sem as well (although maps
+> would need to be sampled and take mmap_sem I guess).
+> 
+> One problem with dropping mmap_sem is that it hurts priority/fairness.
+> And it opens a bit of a (maybe theoretical but not something to completely
+> ignore) forward progress hole AFAIKS. If mmap_sem is very heavily
+> contended, then the refault is going to take a while to get through,
+> and then the page might get reclaimed etc).
+
+Right, this can be an issue.  The way around it should be to minimize 
+the length of time any single lock holder can sit on it.  Compared to 
+what we have today with:
+
+   - sleep in major fault with read lock held,
+   - enqueue writer behind it,
+   - and make all other faults wait on the rwsem
+
+The retry logic seems to be a lot better for forward progress.
