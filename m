@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYK0MbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYK0MdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbYK0MbZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 07:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYK0MbM
+	id S1755347AbYK0MdA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 07:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYK0Mcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 07:31:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:51831 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbYK0MbL (ORCPT
+	Thu, 27 Nov 2008 07:32:52 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:51678 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbYK0Mcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 07:31:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=iTtuoRvIIxaP+3dzNDWBNLPT3iBwDw0ezsY0aihuMBDqAuZ/qy4zpIu2mFv/rMLhDF
-         lkERfBq5Ky0Dq03i3mTNamA0+VxcPyhU1dNsOkxWUHAFN/wkl8UlrU55AilR5giH7YAw
-         FikLOam+p9SJ7X5d4D0S6EJyG5aA4JYO3AldA=
-Message-ID: <7c86c4470811270431n5cf1b863tc4f8c7829283e332@mail.gmail.com>
-Date: Thu, 27 Nov 2008 13:31:08 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, x86@kernel.org,
-       sfr@canb.auug.org.au
-In-Reply-To: <20081127123811.GJ6703@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com>
-	 <20081127113115.GH6703@one.firstfloor.org>
-	 <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com>
-	 <20081127.034247.72331360.davem@davemloft.net>
-	 <alpine.LFD.2.00.0811271246200.3325@localhost.localdomain>
-	 <20081127123811.GJ6703@one.firstfloor.org>
+	Thu, 27 Nov 2008 07:32:51 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>, Mike Waychison <mikew@google.com>,
+       Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <492E90BC.1090208@gmail.com>
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
+	 <20081123091843.GK30453@elte.hu>
+	 <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com>
+	 <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com>
+	 <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com>
+	 <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de>
+	 <492E90BC.1090208@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 27 Nov 2008 13:32:36 +0100
+Message-Id: <1227789156.4454.1519.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 1:38 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> On Thu, Nov 27, 2008 at 12:49:37PM +0100, Thomas Gleixner wrote:
->> On Thu, 27 Nov 2008, David Miller wrote:
->>
->> > From: "stephane eranian" <eranian@googlemail.com>
->> > Date: Thu, 27 Nov 2008 12:35:54 +0100
->> >
->> > > I am still wondering how Oprofile handles the case where multiple
->> > > processes or threads access the same file descriptor.
->> >
->> > There's only one profiling buffer active on a given cpu,
->> > so it's pure per-cpu value insertion.
->> >
->> > In any event I think that NMI profiling is a must, especially
->> > for the kernel.  You get total unusable crap otherwise.  I
->> > just learned this the hard way having gotten an NMI'ish scheme
->> > working on sparc64 just the other day.
->>
->> Not arguing about that, I'm just not agreeing with the implementation.
->>
->> So for the moment we can go w/o the NMI and implement it cleanly after
->> we got the initial lot in.
->
-> Note once Stephane readds PEBS support (it is currently stripped out)
-> you'll be also able to get somewhat reasonable results at least on modern
-> Intel x86 without NMI profiling. But longer term it is still
-> very useful because PEBS has some drawbacks too
+On Thu, 2008-11-27 at 14:21 +0200, Török Edwin wrote:
 
-That's true for Intel.
-On AMD64, I think you can get at most one sample out of a irq-off
-region using IBS.
+> How about distributing tasks to a set of worked threads, is the
+> overhead of using IPC instead of mutexes/cond variables acceptable?
+
+Inter process pthread mutexes should be very fast in the latest kernels
+as they'll avoid the mmap_sem by use of get_user_pages_fast().
+
+Not sure if pthread condition variables also work inter-process.
+
