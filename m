@@ -1,72 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYK0P6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYK0QEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYK0P6y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 10:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYK0P6o
+	id S1754601AbYK0QEJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 11:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYK0QD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 10:58:44 -0500
-Received: from ocean.emcraft.com ([213.221.7.182]:51678 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbYK0P6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 10:58:43 -0500
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] xsysace: add compatible string
-Date: Thu, 27 Nov 2008 18:49:58 +0300
-User-Agent: KMail/1.9.4
-Cc: linux-kernel@vger.kernel.org, Wolfgang Denk <wd@denx.de>,
-       Detlev Zundel <dzu@denx.de>, Ilya Yanok <yanok@emcraft.com>,
-       Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org
+	Thu, 27 Nov 2008 11:03:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55910 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752084AbYK0QD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 11:03:56 -0500
+Date: Thu, 27 Nov 2008 17:03:53 +0100
+From: Karel Zak <kzak@redhat.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com,
+       matthew@wil.cx, util-linux-ng@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] relatime: Allow making relatime the default
+	behaviour
+Message-ID: <20081127160353.GQ2961@nb.net.home>
+References: <20081126195457.GA3541@srcf.ucam.org> <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811271849.58535.yur@emcraft.com>
-X-Spam-Score: -3.8 (---)
-X-Spam-Report: Spam detection software, running on the system "pacific.emcraft.com", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  Add one more compatible string to the table for of_platform
-	binding, so that the platforms, which have the SysACE chip on board (e.g.
-	Katmai), could describe it in their device trees correctly. Signed-off-by:
-	Yuri Tikhonov <yur@emcraft.com> --- drivers/block/xsysace.c | 1 + 1 files
-	changed, 1 insertions(+), 0 deletions(-) [...] 
-	Content analysis details:   (-3.8 points, 2.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.6 AWL                    AWL: From: address is in the auto white-list
+In-Reply-To: <20081127150341.GB20941@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add one more compatible string to the table for
-of_platform binding, so that the platforms, which
-have the SysACE chip on board (e.g. Katmai), could
-describe it in their device trees correctly.
+On Thu, Nov 27, 2008 at 03:03:41PM +0000, Matthew Garrett wrote:
+> Also add a MS_NORELATIME mount option
+[...]
+> +#define MS_NORELATIME	(1<<24)	/* Disable relatime even if the default */
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
----
- drivers/block/xsysace.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ CC: util-linux-ng@vger.kernel.org
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 29e1dfa..381d686 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -1206,6 +1206,7 @@ static struct of_device_id ace_of_match[] __devinitdata = {
- 	{ .compatible = "xlnx,opb-sysace-1.00.b", },
- 	{ .compatible = "xlnx,opb-sysace-1.00.c", },
- 	{ .compatible = "xlnx,xps-sysace-1.00.a", },
-+	{ .compatible = "xlnx,sysace", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, ace_of_match);
+    Karel
+
 -- 
-1.5.6.1
+ Karel Zak  <kzak@redhat.com>
