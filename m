@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYK0PRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbYK0PVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbYK0PRX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 10:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYK0PRP
+	id S1753559AbYK0PVl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 10:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYK0PVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 10:17:15 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:28397 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbYK0PRO (ORCPT
+	Thu, 27 Nov 2008 10:21:32 -0500
+Received: from ti-out-0910.google.com ([209.85.142.184]:19128 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbYK0PVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 10:17:14 -0500
+	Thu, 27 Nov 2008 10:21:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jhviSCsIUmcm/lTHsMurqbJqS/kUQhBkf8ATuRTc8RaZmPLKp82iR9rAv4TQvDQqZN
-         BHZOGxA7xk0N1vGefeqXEZC+R2wkboPWIhcc/9AAhTcPky6vYV+VaGe3dVhetKVLSXvk
-         xBcu//67YPZTba22YWvSTO2moB/H4z2LB+DGc=
-Message-ID: <b637ec0b0811270717t360ce5f9j3d48e8a007010b0e@mail.gmail.com>
-Date: Thu, 27 Nov 2008 16:17:13 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jay Fenlason" <fenlason@redhat.com>
-In-Reply-To: <200811270002.29537.rjw@sisk.pl>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Xq7YO9XRMCyIJwPDpFlaaT3AGUDsk6dLK60TQIzdL4GpQkYm2CPQ3H86ATrqjjLmF9
+         XQECjG87LiG7CMSqKIJhFD1D7Z+psBP9c5A2RL29gnZUfKCZEVSzMNh3ey4WKfUR2i7W
+         mW3lvYo9mdwDGbXRyzxOFmDXOJK6EwLVLEqI0=
+Date: Thu, 27 Nov 2008 23:21:24 +0800
+From: walimis <walimisdev@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: about use wild cards for set_ftrace_filter and so on
+Message-ID: <20081127152124.GA24616@ubuntu.mshome.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="d6Gm4EdcadzBjdND"
 Content-Disposition: inline
-References: <b637ec0b0811230817x5b445a0m665305d2b6bf6c1f@mail.gmail.com>
-	 <b637ec0b0811261145q3c7af010l1db0480d13b41715@mail.gmail.com>
-	 <492DAC81.4020803@s5r6.in-berlin.de> <200811270002.29537.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-On Thu, Nov 27, 2008 at 12:02 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, 26 of November 2008, Stefan Richter wrote:
->>
->> The 2.6.27.5 changelog shows a bunch of ACPI changes.  They may not be
->> responsible, but in my uninformed opinion these are the changes to look
->> at more closely.  Since plain bisection did not work well for you, maybe
->> you should ask the maintainers involved in the ACPI patches for a
->> priority list of patches to unapply for long-term tests.
->
-> Actually, yes, Fabio, you can try to revert all of the "ACPI: EC:" commits
-> applied after 2.6.27.4 and retest.
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Will do tonight. I see that there are some other "ACPI: EC:" commits
-in 2.6.27.6 and 2.6.27.7.
+Hi Steven and Ingo,
 
-I'l just compile the ec.c file from 2.6.27.4 in 2.6.27.7 and test if
-the three commits introduced in 2.6.27.5 wouldn't revert cleanly,
+I encountered an issue when using ftrace.
+We know that we can use wild cards to set set_ftrace_filter, but there's 
+problem when using such as "echo h* > /debug/tracing/set_ftrace_filter".
+If there are files named with "h" prefix in current directory, echo "h*" 
+will echo these files' name to set_ftrace_filter, not "h*".
+For example:
 
-By the way, my HD passed a "smartctl -t long" test without any problems.
+#cat /debug/tracing/available_filter_functions |grep ^hr |wc -l
+23
+#ls
+#touch hraa hrdd
+#ls 
+hraa  hrdd
+#echo hr* > /debug/tracing/set_ftrace_filter
+#cat /debug/tracing/set_ftrace_filter
 
->
-> Thanks,
-> Rafael
->
+No output in /debug/tracing/set_ftrace_filter!
+If we use "" to enclose wild cards, it works:
 
-Regards,
-Fabio
+#ls 
+hraa  hrdd
+#echo "hr*" > /debug/tracing/set_ftrace_filter
+#cat /debug/tracing/set_ftrace_filter |wc -l 
+23
+
+This problem can lead to unexpected result if current directory has a 
+lot of files.
+I suppose that we can add some notes to document, so a patch attached.
+ 
+
+--d6Gm4EdcadzBjdND
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0001-Impact-imporve-document.patch"
+
+
+Impact: imporve document
+
+Signed-off-by: walimis <walimisdev@gmail.com>
+---
+ Documentation/ftrace.txt |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+index de05042..9735434 100644
+--- a/Documentation/ftrace.txt
++++ b/Documentation/ftrace.txt
+@@ -1251,6 +1251,9 @@ These are the only wild cards which are supported.
+ 
+   <match>*<match> will not work.
+ 
++Note: you'd better to use "" to enclose wild cards, otherwise in some
++case you can't get the correct result.
++
+  # echo hrtimer_* > /debug/tracing/set_ftrace_filter
+ 
+ Produces:
+-- 
+1.6.0.3
+
+
+--d6Gm4EdcadzBjdND--
