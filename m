@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbYK0AFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbYK0AGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbYK0AFf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbYK0AFH
+	id S1753019AbYK0AGE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYK0AFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:05:07 -0500
-Received: from main.gmane.org ([80.91.229.2]:36158 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754115AbYK0AFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:05:06 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: ndiswrapper 1.54-2.6.27 released
-Date: Wed, 26 Nov 2008 18:03:09 -0600
-Message-ID: <492DE3BD.9010802@shaw.ca>
-References: <46697.166.70.238.44.1227679338.squirrel@webmail.wolfmountaingroup.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 26 Nov 2008 19:05:48 -0500
+Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:51896 "HELO
+	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752906AbYK0AFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:05:46 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=pU9LiUvcOWyAKIrEVZIO7DiOpSzh2qu+5eeuLmylZdhcQXq0mkz6RhJYBbzdEZdedPJuu+M4i2z8BVRbmt8uP41DmiQ++ZJhZLglCoJZeW/LEj0ge+ao+SM3uoDcjRVy;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: oops/warning report for the week of November 26, 2008
+Date: Wed, 26 Nov 2008 16:05:37 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <492DD792.6080302@linux.intel.com>
+In-Reply-To: <492DD792.6080302@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <46697.166.70.238.44.1227679338.squirrel@webmail.wolfmountaingroup.com>
+Content-Disposition: inline
+Message-Id: <200811261605.43099.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jmerkey@wolfmountaingroup.com wrote:
-> 
-> ndiswrapper with the 2.6.27 breakage corrected.  The current maintainers
-> have not put out a release for 2.6.27 or later kernels, so I went ahead
-> and fixed it for 2.6.27.
-> 
-> ftp://ftp.wolfmountaingroup.org/pub/ndiswrapper/ndiswrapper-1.54-2.6.27.7.tar.gz
-> 
-> Linux wireless drivers still do not work on most of my laptops and USB
-> wireless devices due to lack of firmware drivers and other problems with
-> native Linux wireless.  Anyone else with busted laptop wireless who need
-> ndiswrapper might as well be able to get it since the maintainers have not
-> posted recent releases for recent kernels.
+On Wednesday, November 26, 2008 3:11 pm Arjan van de Ven wrote:
+> Rank 2: pci_create_slot (warning)
+> 	Reported 603 times (639 total reports)
+> 	BIOS provided duplicated slot names, the PCI layer blindly passes to sysfs
+> 	This warning was last seen in version 2.6.27.5, and first seen in
+> 2.6.27-rc7-git1. More info:
+> http://www.kerneloops.org/searchweek.php?search=pci_create_slot
 
-What devices are there left these days that are still not working with 
-native drivers?
+IIRC we fixed this one post-2.6.27.  I didn't send the patches back to -stable 
+because they were a bit big, but if someone were sufficiently motiviated I'm 
+sure the backport wouldn't be that hard...
 
+Jesse
