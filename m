@@ -1,54 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbYK0AUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYK0AmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbYK0AUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYK0AT6
+	id S1753826AbYK0AmZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYK0AmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:19:58 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47183 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752365AbYK0AT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:19:57 -0500
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Thu, 27 Nov 2008 01:19:55 +0100
-From: "Carsten Menke" <bootsy52@gmx.net>
-In-Reply-To: <492DE30B.4080300@shaw.ca>
-Message-ID: <20081127001955.5860@gmx.net>
+	Wed, 26 Nov 2008 19:42:15 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53421 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752302AbYK0AmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Nov 2008 19:42:14 -0500
+Date: Thu, 27 Nov 2008 01:42:13 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Pavel Machek <pavel@suse.cz>
+cc: kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
+       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>,
+       Trivial patch monkey <trivial@kernel.org>, linux-doc@vger.kernel.org
+Subject: Re: Document hadling of bad memory
+In-Reply-To: <20081126161521.GC1983@elf.ucw.cz>
+Message-ID: <alpine.LNX.1.10.0811270141370.19853@jikos.suse.cz>
+References: <20081126161521.GC1983@elf.ucw.cz>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-References: <20081126231213.271070@gmx.net> <492DE30B.4080300@shaw.ca>
-Subject: Re: Panic:  NMI Watchdog detected LOCKUP on CPU
-To: linux-kernel@vger.kernel.org
-X-Authenticated: #1189245
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX18ZCTVmxocZueOFt2OoAw50H4DM10O0RGxRUgNBF0
- oMOpb3S71EzGIJ339OB75xeGnJvGLUaTKdJg== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: nN8beHgxYmYBZ0sSd3c36q9CWkZTQdRB
-X-FuHaFi: 0.6
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
--------- Original-Nachricht --------
-> Datum: Wed, 26 Nov 2008 18:00:11 -0600
-> Von: Robert Hancock <hancockr@shaw.ca>
-> An: linux-kernel@vger.kernel.org
-> Betreff: Re: Panic:  NMI Watchdog detected LOCKUP on CPU
+[ linux-doc@vger.kernel.org added, these should be the proper guys to 
+  merge this ]
 
-> Normally server-class hardware doesn't cause these kinds of symptoms 
-> from hardware problems, they usually spew NMIs, etc. but it's not 
-> impossible. 2.6.15 is pretty ancient though. Can you try a newer kernel?
+On Wed, 26 Nov 2008, Pavel Machek wrote:
+
+> 
+> Document how to deal with bad memory reported with memtest.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> diff --git a/Documentation/bad_memory.txt b/Documentation/bad_memory.txt
+> new file mode 100644
+> index 0000000..df84162
+> --- /dev/null
+> +++ b/Documentation/bad_memory.txt
+> @@ -0,0 +1,45 @@
+> +March 2008
+> +Jan-Simon Moeller, dl9pf@gmx.de
+> +
+> +
+> +How to deal with bad memory e.g. reported by memtest86+ ?
+> +#########################################################
+> +
+> +There are three possibilities I know of:
+> +
+> +1) Reinsert/swap the memory modules
+> +
+> +2) Buy new modules (best!) or try to exchange the memory
+> +   if you have spare-parts
+> +
+> +3) Use BadRAM or memmap
+> +
+> +This Howto is about number 3) .
+> +
+> +
+> +BadRAM
+> +######
+> +BadRAM is the actively developed and available as kernel-patch
+> +here:  http://rick.vanrein.org/linux/badram/
+> +
+> +For more details see the BadRAM documentation.
+> +
+> +memmap
+> +######
+> +
+> +memmap is already in the kernel and usable as kernel-parameter at
+> +boot-time.  Its syntax is slightly strange and you may need to
+> +calculate the values by yourself!
+> +
+> +Syntax to exclude a memory area (see kernel-parameters.txt for details):
+> +memmap=<size>$<address>
+> +
+> +Example: memtest86+ reported here errors at address 0x18691458, 0x18698424 and
+> +         some others. All had 0x1869xxxx in common, so I chose a pattern of
+> +         0x18690000,0xffff0000.
+> +
+> +With the numbers of the example above:
+> +memmap=64K$0x18690000
+> + or
+> +memmap=0x10000$0x18690000
+> +
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 > 
 
-Yes I will try that definitley, but I hoped that someone maybe knows if that was a particular problem of that
-kernel (according to the panic log) version and chances are good they are fixed in later versions. The second problem is, that it can takes fairly long until I know if the problem is gone because sometimes it takes 2 months until a crash happens. So the second question is, how to prove if this is not hardware or how to prove it is definitley hardware. I have read the list and saw that NMI CPU Lockup messages can also be due to kernel bugs. 
-
-Regards
-
-Carsten
-P.S. before the these problems happened the server was running well for a year, but I've also done the usual system upgrades
 -- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+Jiri Kosina
+SUSE Labs
