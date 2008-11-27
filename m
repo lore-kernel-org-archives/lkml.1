@@ -1,165 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYK0Rrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYK0RsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbYK0Rrc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 12:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYK0RrW
+	id S1754121AbYK0RsR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 12:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYK0RsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 12:47:22 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:49939 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbYK0RrV (ORCPT
+	Thu, 27 Nov 2008 12:48:00 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:38132 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbYK0Rr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 12:47:21 -0500
-Message-ID: <492EDCFB.7080302@vlnb.net>
-Date: Thu, 27 Nov 2008 20:46:35 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 27 Nov 2008 12:47:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=qRJu4MnKr2p3aYFSsRPp6aF66Orpwo6DMqNAyqBFvqrp3wmnsotjELP5W9JDyFe/5u
+         NcaCQt0Qt7LCeBzStgFnoDnfxs3MiTJJqjeAhhnC7ebm++RWIyDQ14XB8ha2fTXpOp/f
+         NAedaoM0Nb8081/m3ZuIRGdgpm03RfKYR8C+o=
+Message-ID: <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>
+Date: Thu, 27 Nov 2008 18:47:54 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [patch 02/24] perfmon: base code
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
+In-Reply-To: <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>
 MIME-Version: 1.0
-To: Wu Fengguang <wfg@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de> <492BDAA9.4090405@vlnb.net> <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost>
-In-Reply-To: <20081125121534.GA16778@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/FMZMEQezBbfNqvBl0eGhHYhx7PqMsVUu0udt
- Xgv5gLLg1WD931JHKU25DHYJLYIzxfaDCn+N2IKqb885p4ZKiT
- 0vcgXHmjIf2fThG8qNrDg==
+Content-Disposition: inline
+References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>
+	 <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas,
 
-Wu Fengguang wrote:
-> On Tue, Nov 25, 2008 at 03:09:12PM +0300, Vladislav Bolkhovitin wrote:
->> Vladislav Bolkhovitin wrote:
->>> Wu Fengguang wrote:
->>>> On Tue, Nov 25, 2008 at 02:41:47PM +0300, Vladislav Bolkhovitin wrote:
->>>>> Wu Fengguang wrote:
->>>>>> On Tue, Nov 25, 2008 at 01:59:53PM +0300, Vladislav Bolkhovitin wrote:
->>>>>>> Wu Fengguang wrote:
->>>>>>>> Hi all,
->>>>>>>>
->>>>>>>> //Sorry for being late. 
->>>>>>>>
->>>>>>>> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
->>>>>>>> [...]
->>>>>>>>> I already talked about this with Jeff on irc, but I guess should post it
->>>>>>>>> here as well.
->>>>>>>>>
->>>>>>>>> nfsd aside (which does seem to have some different behaviour skewing the
->>>>>>>>> results), the original patch came about because dump(8) has a really
->>>>>>>>> stupid design that offloads IO to a number of processes. This basically
->>>>>>>>> makes fairly sequential IO more random with CFQ, since each process gets
->>>>>>>>> its own io context. My feeling is that we should fix dump instead of
->>>>>>>>> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
->>>>>>>>> aware of any other good programs out there that would do something
->>>>>>>>> similar, so I don't think there's a lot of merrit to spending cycles on
->>>>>>>>> detecting cooperating processes.
->>>>>>>>>
->>>>>>>>> Jeff will take a look at fixing dump instead, and I may have promised
->>>>>>>>> him that santa will bring him something nice this year if he does (since
->>>>>>>>> I'm sure it'll be painful on the eyes).
->>>>>>>> This could also be fixed at the VFS readahead level.
->>>>>>>>
->>>>>>>> In fact I've seen many kinds of interleaved accesses:
->>>>>>>> - concurrently reading 40 files that are in fact hard links of one single file
->>>>>>>> - a backup tool that splits a big file into 8k chunks, and serve the
->>>>>>>>   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
->>>>>>>>   chunks in another one
->>>>>>>> - a pool of NFSDs randomly serving some originally sequential 
->>>>>>>> read  requests - now dump(8) seems to have some similar 
->>>>>>>> problem.
->>>>>>>>
->>>>>>>> In summary there have been all kinds of efforts on trying to
->>>>>>>> parallelize I/O tasks, but unfortunately they can easily screw up the
->>>>>>>> sequential pattern. It may not be easily fixable for many of them.
->>>>>>>>
->>>>>>>> It is however possible to detect most of these patterns at the
->>>>>>>> readahead layer and restore sequential I/Os, before they propagate
->>>>>>>> into the block layer and hurt performance.
->>>>>>> I believe this would be the most effective way to go, 
->>>>>>> especially in case  if data delivery path to the original 
->>>>>>> client has its own latency  depended from the amount of 
->>>>>>> transferred data as it is in the case of  remote NFS mount, 
->>>>>>> which does synchronous sequential reads. In this case  it is 
->>>>>>> essential for performance to make both links (local to the 
->>>>>>> storage  and network to the client) be always busy and  
->>>>>>> transfer data  simultaneously. Since the reads are synchronous, 
->>>>>>> the only way to achieve  that is perform read ahead on the 
->>>>>>> server sufficient to cover the network  link latency. Otherwise 
->>>>>>> you would end up with only half of possible  throughput.
->>>>>>>
->>>>>>> However, from one side, server has to have a pool of  
->>>>>>> threads/processes  to perform well, but, from other side, 
->>>>>>> current read ahead code doesn't  detect too well that those 
->>>>>>> threads/processes are doing joint sequential  read, so the read 
->>>>>>> ahead window gets smaller, hence the overall read  performance 
->>>>>>> gets considerably smaller too.
->>>>>>>
->>>>>>>> Vitaly, if that's what you need, I can try to prepare a patch for testing out.
->>>>>>> I can test it with SCST SCSI target sybsystem 
->>>>>>> (http://scst.sf.net). SCST  needs such feature very much, 
->>>>>>> otherwise it can't get full backstorage  read speed. The 
->>>>>>> maximum I can see is about ~80MB/s from ~130MB/s 15K RPM  disk 
->>>>>>> over 1Gbps iSCSI link (maximum possible is ~110MB/s).
->>>>>> Thank you very much!
->>>>>>
->>>>>> BTW, do you implicate that the SCSI system (or its applications) has
->>>>>> similar behaviors that the current readahead code cannot handle well?
->>>>> No. SCSI target subsystem is not the same as SCSI initiator 
->>>>> subsystem,  which usually called simply SCSI (sub)system. SCSI 
->>>>> target is a SCSI  server. It has the same amount of common with 
->>>>> SCSI initiator as there  is, e.g., between Apache (HTTP server) and 
->>>>> Firefox (HTTP client).
->>>> Got it. So the SCSI server will split&spread sequential IO of one
->>>> single file to cooperative threads?
->>> Yes. It has to do so, because Linux doesn't have async. cached IO and a 
->>> client can queue several tens of commands at time. Then, on the  
->>> sequential IO with 1 command at time, CPU scheduler comes to play and  
->>> spreads those commands over those threads, so read ahead gets too small 
->>> to cover the external link latency and fill both links with data, so  
->>> that uncovered latency kills throughput.
->> Additionally, if the uncovered external link latency is too large, one  
->> more factor is getting noticeable: storage rotation latency. If the next  
->> unread sector is missed to be read at time, server has to wait a full  
->> rotation to start receiving data for the next block, which even more  
->> decreases the resulting throughput.
-> 
-> Thank you for the details. I've been working slowly on the idea, and
-> should be able to send you a patch in the next one or two days.
 
-Actually, there's one more thing, which should have been mentioned. It 
-is possible that remote clients have several sequential read streams at 
-time together with some "noise" of random requests. A good read-ahead 
-subsystem should handle such case by keeping big read-ahead windows for 
-the sequential streams and don't do any read ahead for the random 
-requests. And all at the same time.
 
-Currently on such workloads read ahead will be completely disabled for 
-all the requests. Hence, there is a possibility here to improve 
-performance in 3-5 times or even more by making the workload more linear.
+On Thu, Nov 27, 2008 at 6:24 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 26 Nov 2008, eranian@googlemail.com wrote:
+>
+>> Index: o3/perfmon/perfmon_res.c
+>
+>> +/*
+>> + * global information about all sessions
+>> + */
+>> +struct pfm_resources {
+>> +     cpumask_t sys_cpumask;     /* bitmask of used cpus */
+>> +     u32 thread_sessions; /* #num loaded per-thread sessions */
+>> +};
+>
+> What's the purpose of this being a structure if it's just a single
+> instance ?
+>
+There is a single instance.
+I was just trying to regroup related fields together instead of having them as
+separate variables. I can make the change.
 
-I guess, such functionality can be done by keeping several read-ahead 
-contexts not in file handle as now, but in inode, or ever in task_struct 
-similarly to io_context. Or even as a part of struct io_context. Then 
-those contexts would be rotated in, e.g., round robin manner. I have 
-some basic thoughts in this area and would be glad to share them, if you 
-are interested.
 
-Going further, ultimately, it would be great to provide somehow a 
-capability to allow to assign for each read-ahead stream own IO context, 
-because on the remote side in most cases such streams would correspond 
-to different programs reading data in parallel. This should allow to 
-increase performance even more.
+>> +static struct pfm_resources pfm_res;
+>> +
+>> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_res_lock);
+>
+>> +/**
+>> + * pfm_session_acquire - reserve a per-thread session
+>> + *
+>> + * return:
+>> + *    0    : success
+>> + *   -EBUSY: if conflicting session exist
+>
+>  Where ?
 
+Not in the patchset, conflict can arise when you add system-wide sessions.
+
+>
+>> + */
+>> +int pfm_session_acquire(void)
+>> +{
+>> +     unsigned long flags;
+>> +     int ret = 0;
+>> +
+>> +     /*
+>> +      * validy checks on cpu_mask have been done upstream
+>> +      */
+>
+>  How please ? pfm_res.sys_cpumask is local to this file and you want
+>  to check it under the lock and _before_ you increment
+>  thread_sessions blindly.
+>
+Stale comment.
+
+>
+> +EXPORT_SYMBOL(pfm_session_allcpus_release);
+>
+> All what that code should do (in fact it does not) is preventing the
+> mix of thread and system wide sessions.
+>
+True. That is a current limitation.
+
+> It does neither need a cpumask nor tons of useless loops and debug
+> outputs with zero value.
+>
+Well, the the cpumask is indeed needed but you don't see the reason
+why in the patchset!
+
+Perfmon in system-wide does not operate like Oprofile. In system-wide
+a perfmon session (context) monitors only ONE CPU at a time. Each
+session is independent of each other. You can therefore measure different
+things on different CPUs. Reservation is thus done independently for each
+CPU, therefore we need a cpu bitmask  to track allocation.
+
+The Oprofile reservation you see is built on top of the cpumask reservation.
+It tries to allocate in one call and atomically ALL the CPUs as this is the way
+Oprofile operates. Thus it fails if one perfmon system-wide session or one
+perfmon per-thread exists. I believe there is enough bitmask functions to
+avoid loops as you pointed out. I will fix that.
+
+
+> static int global_session;
+> static int thread_sessions;
+> static DEFINE_SPINLOCK(session_lock);
+>
+> int pfm_session_request(int global)
+> {
+>        unsigned long flags;
+>        int res = -EBUSY;
+>
+>        spin_lock_irqsave(&session_lock, flags);
+>
+>        if (!global && !global_session) {
+>                thread_sessions++;
+>                res = 0;
+>        }
+>
+>        if (global && !thread_sessions && !global_session) {
+>                global_session = 1;
+>                res = 0;
+>        }
+>
+>        spin_unlock_irqrestore(&session_lock, flags);
+>        return res;
+> }
+>
+> void pfm_session_release(int global)
+> {
+>        unsigned long flags;
+>
+>        spin_lock_irqsave(&session_lock, flags);
+>
+>        if (global) {
+>                WARN_ON(!global_session);
+>                global_session = 0;
+>        } else {
+>                if (!global_session && thread_sessions)
+>                        thread_session--;
+>                else
+>                        WARN();
+>        }
+>
+>        spin_unlock_irqrestore(&session_lock, flags);
+> }
+>
+> Would do it nicely including useful sanity checks and 70% less code.
+>
 > Thanks,
-> Fengguang
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+>
+>        tglx
+>
