@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbYK0LqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYK0Ltp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbYK0LqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 06:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYK0Lpw
+	id S1754718AbYK0Ltp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 06:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYK0Ltd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 06:45:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43276 "EHLO mx2.mail.elte.hu"
+	Thu, 27 Nov 2008 06:49:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60110 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752810AbYK0Lpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 06:45:51 -0500
-Date: Thu, 27 Nov 2008 12:45:25 +0100
+	id S1751460AbYK0Ltc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 06:49:32 -0500
+Date: Thu, 27 Nov 2008 12:48:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       stable@kernel.org
-Subject: Re: [PATCH] x86: always define DECLARE_PCI_UNMAP* macros
-Message-ID: <20081127114525.GC29013@elte.hu>
-References: <1227210596-1196-1-git-send-email-joerg.roedel@amd.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: oops/warning report for the week of November 26, 2008
+Message-ID: <20081127114859.GD29013@elte.hu>
+References: <492DD792.6080302@linux.intel.com> <200811261605.43099.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1227210596-1196-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <200811261605.43099.jbarnes@virtuousgeek.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,26 +39,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-> Currently these macros evaluate to a no-op except the kernel is 
-> compiled with GART or Calgary support. But we also need these macros 
-> when we have SWIOTLB, VT-d or AMD IOMMU in the kernel. Since we 
-> always compile at least with SWIOTLB we can define these macros 
-> always. This patch is also for stable backport for the same reason 
-> the SWIOTLB default selection patch is.
+> On Wednesday, November 26, 2008 3:11 pm Arjan van de Ven wrote:
+> > Rank 2: pci_create_slot (warning)
+> > 	Reported 603 times (639 total reports)
+> > 	BIOS provided duplicated slot names, the PCI layer blindly passes to sysfs
+> > 	This warning was last seen in version 2.6.27.5, and first seen in
+> > 2.6.27-rc7-git1. More info:
+> > http://www.kerneloops.org/searchweek.php?search=pci_create_slot
 > 
-> Cc: stable@kernel.org
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/include/asm/pci_64.h |   14 --------------
->  1 files changed, 0 insertions(+), 14 deletions(-)
+> IIRC we fixed this one post-2.6.27.  I didn't send the patches back 
+> to -stable because they were a bit big, but if someone were 
+> sufficiently motiviated I'm sure the backport wouldn't be that 
+> hard...
 
-applied to tip/x86/urgent (for v2.6.28), as this is a DMA mapping 
-bugfix for IOMMUs. If the AMD IOMMU is turned on in the .config but 
-CONFIG_GART_IOMMU is off (a rare but possible combo), we'd leak on 
-unmap and crash the box quickly.
-
-Jesse, is that path of upstream merge fine with you?
+having the commit IDs mentioned here would be nice, should anyone feel 
+motivated.
 
 	Ingo
