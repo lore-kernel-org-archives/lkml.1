@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYK0TXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYK0TgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYK0TXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 14:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYK0TXg
+	id S1753978AbYK0TgC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 14:36:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYK0Tfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 14:23:36 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:40537 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606AbYK0TXf (ORCPT
+	Thu, 27 Nov 2008 14:35:51 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:15451 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752222AbYK0Tfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 14:23:35 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=DGYjjbKG1qWZyGTSHmKA/4jTIgy7OF27b6btE3hqAu4AT135X0vHP039AQgpTFwyz
-	8TR297OgXlMeWpTaYqV4g==
-Message-ID: <492EF391.1040408@google.com>
-Date: Thu, 27 Nov 2008 11:22:57 -0800
-From: Mike Waychison <mikew@google.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       edwintorok@gmail.com
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <1227780007.4454.1344.camel@twins> <20081127101436.GI28285@wotan.suse.de>
-In-Reply-To: <20081127101436.GI28285@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 27 Nov 2008 14:35:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=UKbr5uqXzbsGmO9rtoIvA5K9rzDOt0Io7wnv9tLVOT8qThgwrVTEykToTObuAcs/se
+         8ZfKUeZKWPpnxxDtNXIvy43uGyOZUXH6op5ZtDXWMcSC6fKj3cC9S58WAtss0JMKkFDc
+         YC+FNNAcWD67L+mS2fmkzGGZWLdBgmmvU5jiw=
+Subject: Re: [PATCH-mm 1/8] ntfs: remove private wrapper around endian
+ helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <B9FA83C0-9993-44BB-86AA-FA8B97A2D6A2@cam.ac.uk>
+References: <1227733970.5511.123.camel@brick>
+	 <B9FA83C0-9993-44BB-86AA-FA8B97A2D6A2@cam.ac.uk>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 11:35:44 -0800
+Message-Id: <1227814545.5511.143.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.36
-X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Thu, Nov 27, 2008 at 11:00:07AM +0100, Peter Zijlstra wrote:
->> On Thu, 2008-11-27 at 01:28 -0800, Mike Waychison wrote:
->>
->>> Correct.  I don't recall the numbers from the pathelogical cases we were 
->>> seeing, but iirc, it was on the order of 10s of seconds, likely 
->>> exascerbated by slower than usual disks.  I've been digging through my 
->>> inbox to find numbers without much success -- we've been using a variant 
->>> of this patch since 2.6.11.
->>> We generally try to avoid such things, but sometimes it a) can't be 
->>> easily avoided (third party libraries for instance) and b) when it hits 
->>> us, it affects the overall health of the machine/cluster (the monitoring 
->>> daemons get blocked, which isn't very healthy).
->> If its only monitoring, there might be another solution. If you can keep
->> the required data in a separate (approximate) copy so that you don't
->> need mmap_sem at all to show them.
->>
->> If your mmap_sem is so contended your latencies are unacceptable, adding
->> more users to it - even statistics gathering, just isn't going to cure
->> the situation.
->>
->> Furthermore, /proc code usually isn't written with performance in mind,
->> so its usually simple and robust code. Adding it to a 'hot'-path like
->> you're doing doesn't seem advisable.
->>
->> Also, releasing and re-acquiring mmap_sem can significantly add to the
->> cacheline bouncing that thing already has.
+On Thu, 2008-11-27 at 08:22 +0000, Anton Altaparmakov wrote:
+> Hi,
 > 
-> Yes, it would be nice to reduce mmap_sem load regardless of any other
-> fixes or problems. I guess they're not very worried about cacheline
-> bouncing but more about hold time (how many sockets in these systems?
-> 4 at most?)
+> On 26 Nov 2008, at 21:12, Harvey Harrison wrote:
+> > The base versions handle constant folding just fine.
+> > Done with sed other than the mft.c and inode.c one-liners.
 > 
-> I guess it is the pagemap stuff that they use most heavily?
+> Have you checked the compiler output?  And on all architectures?  And  
+> on all gcc versions?
+
+Yes I've checked the compiler output for the new byteorder helpers
+for gcc 3.4, 4, 4.2 on x86.
+
+Notice this depends on the byteorder bits in -mm.  The failure of
+the old bits to properly compile-time swap I've only seen at -O0,
+which the new bits do properly.  If you can cite a particular
+version/arch that you know of where the bug arose, please let me
+know.
+
+> 
+> The reason I introduced the constant version are precisely that at  
+> least some versions of gcc at least on some architectures do NOT  
+> handle the constant folding and actually put in endianness conversion  
+> code for the constants instead of converting them at compile time.
+
+Which ones....-O0 builds perhaps?
+
+> 
+> Also you are breaking sparse checking with this patch as you remove  
+> some of the necessary endianness conversions (e.g. your one liner in  
+> mft.c which causes us to apply a binary 'not' operator on a little  
+> endian which sparse complains about - in fact that is the reason the  
+> endianness conversions are in there in the first place - I added them  
+> because sparse was complaining about them).
+
+No, sparse does not complain about it.  Bitwise operations are just
+fine on types such as le16 etc.  Try running sparse again with
+my changes, there are no new warnings.
+
+> 
+> Andrew, please do not apply this patch.
 > 
 
-We aren't using pagemap yet.  Reading /proc/pid/maps alone hurts.
+I hope you change you mind.
 
-> pagemap_read looks like it can use get_user_pages_fast. The smaps and
-> clear_refs stuff might have been nicer if they could work on ranges
-> like pagemap. Then they could avoid mmap_sem as well (although maps
-> would need to be sampled and take mmap_sem I guess).
-> 
-> One problem with dropping mmap_sem is that it hurts priority/fairness.
-> And it opens a bit of a (maybe theoretical but not something to completely
-> ignore) forward progress hole AFAIKS. If mmap_sem is very heavily
-> contended, then the refault is going to take a while to get through,
-> and then the page might get reclaimed etc).
+Harvey
 
-Right, this can be an issue.  The way around it should be to minimize 
-the length of time any single lock holder can sit on it.  Compared to 
-what we have today with:
-
-   - sleep in major fault with read lock held,
-   - enqueue writer behind it,
-   - and make all other faults wait on the rwsem
-
-The retry logic seems to be a lot better for forward progress.
