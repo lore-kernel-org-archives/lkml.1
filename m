@@ -1,86 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYK0NM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYK0NSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYK0NM0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 08:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYK0NMS
+	id S1754718AbYK0NSx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 08:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYK0NSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 08:12:18 -0500
-Received: from ns.suse.de ([195.135.220.2]:34687 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751545AbYK0NMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 08:12:17 -0500
-Date: Thu, 27 Nov 2008 14:12:15 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-ID: <20081127131215.GQ28285@wotan.suse.de>
-References: <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de> <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de> <492E97FA.5000804@gmail.com> <20081127130525.GO28285@wotan.suse.de> <492E9C3C.9050507@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 27 Nov 2008 08:18:43 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:64306 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYK0NSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 08:18:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nz/aTvruh33WyoHEs7k/DJTW2og9PuiygST5fD4S7m40b90rS3BsYRYMTbSKME0fzw
+         Pk++04/SvCnEXd2SWl0pQ51jXgn6t9aAFl8Z0Xxw6CAKTrBTTsjDaGLu5kOiGpijwRXJ
+         YoqFpHXkThDcCmi6n+wtFjnGSRlZ/GlClB8G4=
+Message-ID: <c62985530811270518n161ed600k930eefce7291ccdd@mail.gmail.com>
+Date: Thu, 27 Nov 2008 14:18:41 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] tracing/function-branch-tracer: enhancements for the trace output
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Tim Bird" <tim.bird@am.sony.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081127112953.GA23702@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <492E9C3C.9050507@gmail.com>
-User-Agent: Mutt/1.5.9i
+References: <492DEDE9.9010109@gmail.com> <20081127103424.GA9132@elte.hu>
+	 <1227783300.4454.1410.camel@twins> <20081127112953.GA23702@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 27, 2008 at 03:10:20PM +0200, Török Edwin wrote:
-> On 2008-11-27 15:05, Nick Piggin wrote:
-> > On Thu, Nov 27, 2008 at 02:52:10PM +0200, Török Edwin wrote:
-> >   
-> >> On 2008-11-27 14:39, Nick Piggin wrote:
-> >>     
-> >>> And then you also get the advantages of reduced contention on other
-> >>> shared locks and resources.
-> >>>   
-> >>>       
-> >> Thanks for the tips, but lets get back to the original question:
-> >> why don't I see any performance improvement with the fault-retry patches?
-> >>     
-> >
-> > Because as you said, your app is CPU bound and page faults aren't needing
-> > to sleep very much. There is too much contention on the write side, rather
-> > than too much contention/hold time on the read side.
-> >
-> >  
-> >   
-> >> My testcase only compares reads file with mmap, vs. reading files with
-> >> read, with different number of threads.
-> >> Leaving aside other reasons why mmap is slower, there should be some
-> >> speedup by running 4 threads vs 1 thread, but:
-> >>
-> >> 1 thread: read:27,18 28.76
-> >> 1 thread: mmap: 25.45, 25.24
-> >> 2 thread: read: 16.03, 15.66
-> >> 2 thread: mmap: 22.20, 20.99
-> >> 4 thread: read: 9.15, 9.12
-> >> 4 thread: mmap: 20.38, 20.47
-> >>
-> >> The speed of 4 threads is about the same as for 2 threads with mmap, yet
-> >> with read it scales nicely.
-> >> And the patch doesn't seem to improve scalability.
-> >> How can I find out if the patch works as expected? [i.e. verify that
-> >> faults are actually retried, and that they don't keep the semaphore locked]
-> >>     
-> >
-> > Yeah, that workload will be completely contended on the mmap_sem write-side
-> > if the files are in cache. The google patch won't help at all in that
-> > case.
-> >   
-> 
-> Ok. Sorry for hijacking the thread, my testcase is not a good testcase
-> for what this patch tries to solve.
-
-No not at all. It's always really useful to hear any problems like this.
-I'd like you to keep participating... for one thing I'd like you to test
-my mmap_sem patch ;) (when I finish it)
+2008/11/27 Ingo Molnar <mingo@elte.hu>:
+> That extra column should be a trace_option though - default-off. (it
+> uses up quite some screen real estate) It would have to have a width
+> of 14 characters to be practical:
+>
+>    ssssssss-12345
+>
+> mockup:
+>
+> ----------------------------------------------------------------
+> CPU)     task-PID   |     cost    |  function
+> ----------------------------------------------------------------
+>
+>  0)     bash-54320 |             |  sys_read() {
+>  0)     bash-54320 |    0.331 us |    fget_light();
+>  0)     bash-54320 |             |    vfs_read() {
+>  0) mycomman-1234  |             |      rw_verify_area() {
+>  0) mycomman-1234  |  121.444 us |        func();
+>
+> Note some details:
+>
+> 1) longer comm names can be stripped off at 7 chars - 7 chars is
+>   enough to recognize most of the things and the PID is good enough
+>   for extra separation)
+>
+> 2) the ssssssss-12345 task identifier is _center_ aligned. It's a rare
+>   alignment case but useful here: most people look at the command
+>   portion and the whole string must be greppable and useful in traces
+>   as an identifier - so right-aligning the PID is not a good
+>   solution.
+>
+> 3) there's vertical separation after the task portion as well. This
+>   helps us ignore the task portion when we want to look at only the
+>   code and the cost of it. (the common case)
 
 
+Yeah! I agree with all of that.
+And as you said, that should be an option deactivated by default.
+
+
+>> comm/pid only in the separator is useless, you cannot grep stuff
+>> like that, also, what's up with those '8's ?
+>
+> yeah, that context-switch separator is horrible.
+>
+> We can keep the separator, but as something saner, like:
+>
+> ---------------------------------------------------------
+> CPU)     cost    |  function
+> ---------------------------------------------------------
+>
+>  0)             |  sys_read() {
+>  0)    0.331 us |    fget_light();
+>  0)             |    vfs_read() {
+>  0)             |      rw_verify_area() {
+>  0)             |        security_file_permission() {
+>  0)    0.306 us |          cap_file_permission();
+>  0)    0.300 us |          cap_file_permission();
+>  0)    8.909 us |        }
+>  0)    0.993 us |      }
+>  0)   11.649 us |    }
+>  0)             |    do_sync_read() {
+>                 .   -------------------------
+>  0)             ==> [ bash-2794 => cat-1234 ]
+>                     -------------------------
+>
+>  0)             |        __sock_recvmsg() {
+>  0)             |          security_socket_recvmsg() {
+>  0)  100.319 us |            cap_socket_recvmsg();
+> ---------------------------------------------------------
+>
+> Note the six small details:
+>
+> 1) '==>' sign put to the vertical separator. This shows that something
+>   flow-intrusive (context-switch) happened.
+>
+> 2) The context-switch printout is in a little box that separates it
+>   from the flow of the outgoing task.
+>
+> 3) there's an extra newline for the incoming flow. Context-switches
+>   are usually attached to the outgoing flow - the incoming flow is
+>   picked semi-randomly, so the newline is a visual separator for that
+>   fact.
+>
+> 4) it uses the ssssssss-12345 taskname convention for both the
+>   outgoing and the incoming task. That makes it greppable
+>   generally.
+>
+> 5) the '----------' lines of the 'box' have no CPU nor task or cost
+>   field. That makes it easy to grep them out - but they are still
+>   helpful visual cues. They are variable length but that's solvable
+>   by using an 'open box' simplification:
+>
+>     0)    0.300 us |          cap_file_permission();
+>     0)    8.909 us |        }
+>     0)    0.993 us |      }
+>     0)   11.649 us |    }
+>     0)             |    do_sync_read() {
+>                    .   -----------------------------------
+>     0)             ==> [ bash-2794 => cat-1234
+>                        -----------------------------------
+>
+>   Note how the box top and bottom is 35 characters, fixed. That looks
+>   good with most task identifiers. Even in the worst-case length
+>   length situation it looks good:
+>
+>                    .   -----------------------------------
+>     0)             ==> [ mycomman-12345 => mycomman-12345
+>                        -----------------------------------
+>
+>   Or it could be printed out variable length as well - it's a
+>   solvable task :-)
+>
+> 6) note the small dot in the leadin to a context-switch: it's
+>   intentional.
+>
+>        Ingo
+>
+
+That's fair.
+I will apply these advices, probably divided in multiple patches....
