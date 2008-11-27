@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYK0APw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYK0ARK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754454AbYK0APw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYK0APm
+	id S1755288AbYK0ARK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYK0AQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:15:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49057 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752129AbYK0APl (ORCPT
+	Wed, 26 Nov 2008 19:16:56 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:38254 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbYK0AQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:15:41 -0500
-Date: Wed, 26 Nov 2008 16:15:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: WARN_ON out of range error in ERR_PTR?
-Message-Id: <20081126161503.6211f140.akpm@linux-foundation.org>
-In-Reply-To: <492D6FB8.80401@panasas.com>
-References: <492D6FB8.80401@panasas.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Nov 2008 19:16:55 -0500
+Message-ID: <492DE6F4.3060300@ct.jp.nec.com>
+Date: Wed, 26 Nov 2008 16:16:52 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] x86: signal: unify signal_{32|64}.c
+References: <492B6131.7070902@ct.jp.nec.com> <492B61CB.7030808@ct.jp.nec.com> <20081126041438.GB9732@elte.hu>
+In-Reply-To: <20081126041438.GB9732@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008 17:48:08 +0200
-Benny Halevy <bhalevy@panasas.com> wrote:
-
-> Andrew,
+Ingo Molnar wrote:
+> * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 > 
-> After hitting a bug where an nfs error -10021 wasn't handled
-> correctly since IS_ERR returned false on its ERR_PTR value
-
-That sounds like an error in NFS.  Did it get fixed?
-
-> I realized that adding a BUG_ON to make sure the mapped error
-> is in the valid range would have caught this.
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> Impact: cleanup
+>>
+>> Add #ifdef directive for 32-bit only code and unify signal_{32|64}.c
+>>
+>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> ---
+>>  arch/x86/kernel/Makefile    |    2 +-
+>>  arch/x86/kernel/signal.c    |  915 +++++++++++++++++++++++++++++++++++++++++++
+>>  arch/x86/kernel/signal_32.c |  909 ------------------------------------------
+>>  arch/x86/kernel/signal_64.c |  801 -------------------------------------
+>>  4 files changed, 916 insertions(+), 1711 deletions(-)
+>>  create mode 100644 arch/x86/kernel/signal.c
+>>  delete mode 100644 arch/x86/kernel/signal_32.c
+>>  delete mode 100644 arch/x86/kernel/signal_64.c
 > 
-> Since ERR_PTR is not called on the critical path
-> (unlike IS_ERR) but rather on the error handling path I believe
-> we can tolerate the extra cost.
+> yay! :-)
 > 
-> The reason this is just a WARN_ON and not BUG_ON is to make
-> fixing it easier, although I do consider calling ERR_PTR on an
-> out of range error a pretty dangerous bug as the error might go
-> unnoticed.
+> applied to tip/x86/signal, thanks Hiroshi!
 > 
-> How about committing the following patch to -mm?
+> One small detail, i inserted yet another commit in the middle:
 > 
-> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
-> ---
->  include/linux/err.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+>  5ceb40d: x86: signal: unify signal_{32|64}.c
+>  e5fa2d0: x86: signal: unify signal_{32|64}.c, prepare
+>  bfeb91a: x86: signal: cosmetic unification of __setup_sigframe() and __setup_rt_sigframe()
+>  2601657: x86: signal: move {setup|restore}_sigcontext()
 > 
-> diff --git a/include/linux/err.h b/include/linux/err.h
-> index ec87f31..81df84f 100644
-> --- a/include/linux/err.h
-> +++ b/include/linux/err.h
-> @@ -2,7 +2,7 @@
->  #define _LINUX_ERR_H
->  
->  #include <linux/compiler.h>
-> -
-> +#include <asm/bug.h>
->  #include <asm/errno.h>
->  
->  /*
-> @@ -21,6 +21,7 @@
->  
->  static inline void *ERR_PTR(long error)
->  {
-> +	WARN_ON(error && !IS_ERR_VALUE(error));
->  	return (void *) error;
->  }
+> the e5fa2d0 commit (see it below) contains all the non-mechanic 
+> modifications that you did in the final unification commit. It's best 
+> to keep this separate - because a big unification commit is hard to 
+> review and debug, should it cause any problems.
 
-We have over 2000 ERR_PTR callsites, and WARN_ON() is a big fat porky
-thing, so this change would add quite a lot of kernel text&data.
+Hi Ingo,
 
-If this problem does occur again, I expect that the kernel will
-reliably dereference a small negative address and we'll get an oops,
-which will give us the same information as that WARN_ON would have
-done, no?
+thanks for the above change, I think I was in a hurry because of
+Thanksgiving Day week.
 
-
-
+thanks,
+Hiroshi Shimamoto
