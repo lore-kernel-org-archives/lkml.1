@@ -1,114 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYK0I4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYK0JHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbYK0I4R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 03:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYK0I4A
+	id S1753392AbYK0JHJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYK0JGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 03:56:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43293 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbYK0Iz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 03:55:59 -0500
-Date: Thu, 27 Nov 2008 09:55:54 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Mike Waychison <mikew@google.com>
-Cc: Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-ID: <20081127085554.GD28285@wotan.suse.de>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Nov 2008 04:06:52 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:56986 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642AbYK0JGu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 04:06:50 -0500
+Date: Thu, 27 Nov 2008 10:06:47 +0100
+From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Suspend on X200 with next-20081125: Success!
+Message-ID: <20081127090647.GA16088@denkbrett.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
 Content-Disposition: inline
-In-Reply-To: <492DAA24.8040100@google.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.28-rc6-next-20081125-denkbrett x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 11:57:24AM -0800, Mike Waychison wrote:
-> Nick Piggin wrote:
-> >On Tue, Nov 25, 2008 at 10:42:47AM -0800, Ying Han wrote:
-> >>>>The patch flags current->flags to PF_FAULT_MAYRETRY as identify that
-> >>>>the caller can tolerate the retry in the filemap_fault call patch.
-> >>>>
-> >>>>Benchmark is done by mmap in huge file and spaw 64 thread each
-> >>>>faulting in pages in reverse order, the the result shows 8%
-> >>>>porformance hit with the patch.
-> >>>I suspect we also want to see the cases where this change helps?
-> >>i am working on more benchmark to show performance improvement.
-> >
-> >Can't you share the actual improvement you see inside Google?
-> >
-> >Google must be doing something funky with threads, because both
-> >this patch and their new malloc allocator apparently were due to
-> >mmap_sem contention problems, right?
-> 
-> One of the big improvements we see with this patch is the ability to 
-> read out files in /proc/pid much faster.  Consider the following events:
-> 
-> - an application has a high count of threads sleeping with 
-> read_lock(mmap_sem) held in the fault path (on the order of hundreds).
-> - one of the threads in the application then blocks in 
-> write_lock(mmap_sem) in the mmap()/munmap() paths
-> - now our monitoring software tries to read some of the /proc/pid files 
-> and blocks behind the waiting writer due to the fairness of the rwsems. 
->  This basically has to wait for all faults ahead of the reader to 
-> terminate (and let go of the reader lock) and then the writer to have a 
-> go at mmap_sem.   This can take an extremely long time.
-> 
-> This patch helps a lot in this case as it keeps the writer from waiting 
-> behind all the waiting readers, so it executes much faster.
 
-Hmm. How quantifiable is the benefit? Does it actually matter that you
-can read the proc file much faster? (this is for some automated workload
-management daemon or something, right?)
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Would it be possible to reduce mmap()/munmap() activity? eg. if it is
-due to a heap memory allocator, then perhaps do more batching or set
-some hysteresis.
+Good morning everybody!
 
+I just resumed the Lenovo X200 running
+2.6.28-rc6-next-20081125-denkbrett #15 SMP PREEMPT
+with xorg running!
 
-> >That was before the kernel and glibc got together to fix the stupid
-> >mmap_sem problem in malloc (shown up in that FreeBSD MySQL thread);
-> >and before private futexes. I would be interested to know if Google
-> >still has problems that require this patch...
-> >
-> 
-> I'm not very familiar with the 'malloc' problem in glibc.  Was this just 
-> overhead in heap growth/shrinkage causing problems?
+Currently just once and after the resume it beeped until
+I released it from the docking station (putting back in
+works), though it looks pretty good!
 
-As far as I understand, glibc does actually seperate notions of allocated
-virtual memory and allocated pages. By that I mean that it is very careful to
-return pages back to the system when they are unused, but it does try to
-batch up changes to the virtual address space. Unfortunately, it used to
-return pages by doing a mmap call with PROT_NONE, then to start using
-that virtual memory again, it would mmap with PROT_READ|PROT_WRITE.
+Thanks for your work!
 
-This meant that a malloc/touch/free would look like this:
-mmap <- down_write(mmap_sem)
-page fault  <- down_read(mmap_sem)
-mmap <- down_write(mmap_sem)
+Sincerly,
 
-What we did was to make it use madvise(MADV_DONTNEED) to throw the pages
-away. Then the kernel was changed to implement MADV_DONTNEED using only
-down_read. Then the same sequence is just this:
+Nico
 
-page fault <- down_read(mmap_sem)
-madvise <- down_read(mmap_sem)
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
 
-(because changes to virtual memory allocation are batched).
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
 
-I thought google's malloc was primarily written to fix this bad behaviour,
-because with the new behaviour, glibc's malloc seems to beat google's
-malloc on the performance and scalability tests I was running at the time,
-as well as being more memory footprint friendly.
+--vkogqOf2sHV7VnPd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-OTOH, it would be possible that hysteresis watermarks in glibc are not big
-enough for a given application, which could introduce virtual address
-activity back into the workload. These can be tuned, however.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkkuYycACgkQuL75KpiFGIwJcACfUVu33UxJbZr1YzTzvA3kt/p/
+B/UAn2idtiRFuCvY8AKXAy9AVlMEG5aW
+=iwza
+-----END PGP SIGNATURE-----
+
+--vkogqOf2sHV7VnPd--
