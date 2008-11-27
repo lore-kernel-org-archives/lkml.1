@@ -1,121 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYK0ObS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYK0Obk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753780AbYK0ObS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 09:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYK0ObD
+	id S1755084AbYK0Obk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 09:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYK0Ob3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 09:31:03 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48008 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751446AbYK0ObA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 09:31:00 -0500
-X-Sasl-enc: TN9UFS4hk/DE5nGIqKaNj04mzqbaouUJ8UyKRDEIMhKn 1227796259
-Date: Thu, 27 Nov 2008 12:30:55 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Guennadi Liakhovetski <lg@denx.de>
-Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] LEDs: allow led-drivers to use a wider than 0...255
-	range of brightness values
-Message-ID: <20081127143055.GA4678@khazad-dum.debian.net>
-References: <Pine.LNX.4.64.0811251751480.6290@axis700.grange> <20081125180241.GA4783@khazad-dum.debian.net> <Pine.LNX.4.64.0811261535590.4749@axis700.grange>
+	Thu, 27 Nov 2008 09:31:29 -0500
+Received: from mout-bounce.kundenserver.de ([212.227.17.2]:51604 "EHLO
+	mout-bounce.kundenserver.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753520AbYK0Ob0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 09:31:26 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Keith Packard <keithp@keithp.com>
+Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
+Date: Thu, 27 Nov 2008 15:31:18 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+References: <1227774576-5503-1-git-send-email-keithp@keithp.com>
+In-Reply-To: <1227774576-5503-1-git-send-email-keithp@keithp.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-15?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-15?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-15?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-15?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811261535590.4749@axis700.grange>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811271531.18498.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX1+jgfVG4YRyG41iMjeWPROMLQuyVG9t6tgWJug
+ rrzpjlN0EP9wrQI3HdIpEYy5YX7PCtnNh/iYfDLUaYxeqadkHO
+ W0+qfSt8ayMrOPi3ZBrUA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, Guennadi Liakhovetski wrote:
-> This patch allows drivers to override the default maximum brightness value 
-> of 255. We take care to preserve backwards-compatibility as much as 
-> possible, so that user-space ABI doesn't change for existing drivers. All 
-> existing drivers have been modified to explicitly set their maximum 
-> brightness to LED_FULL. LED trigger code has also been updated to use the 
-> per-LED maximum.
-> 
-> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> ---
-> 
-> On Tue, 25 Nov 2008, 
-> Henrique de Moraes Holschuh wrote:
-> 
-> > On Tue, 25 Nov 2008, Guennadi Liakhovetski wrote:
-> > > This patch allows drivers to override the default maximum brightness value of
-> > > 255. We take care to preserve backwards-compatibility, so that user-space
-> > > ABI doesn't change for existing drivers. All existing drivers have been verified
-> > > to use a zero-initialised memory for their struct led_classdev objects, so that
-> > > they will get the default maximum value of 255. New user-space software 
-> > > can use a new read-only sysfs file /sys/class/leds/*/max_brightness to 
-> > > retrieve maximum supported brightness of a specific LED.
-> > 
-> > I am not speaking AGAINST this change, I actually like the idea, especially
-> > if we can set max_brightness to 1 and support binary (on/off) leds in a much
-> > easier way :p
-> > 
-> > However, you must be aware that it IS still an ABI and API change.  Generic
-> > LED drivers and triggers expect the [0, 255] scale, and expect 0 and 255 to
-> > have special meanings (LED_OFF and LED_FULL).
-> > 
-> > I'd suggest that you set the new max_brightness field PROPERLY for all LEDs
-> 
-> Done.
-> 
-> > (i.e. set it to 255), and fix all of the LED trigger code to use
-> > max_brightness when it wants LED_FULL.
-> 
-> Done.
-> 
-> > In fact, LED_FULL probably will need to become a function (inlineable), so
-> > that triggers can just call led_set_to_max_brightness(theled), or
-> > whatever...
-> 
-> Triggers do this in different ways, two of them first calculate the new 
-> brightness in a variable, then use it to update brightness, one of them 
-> (default-on) just sets it permanently to FULL / max, yet another one 
-> (ide-disk) calls led_trigger_event(). So, it looks like such a function 
-> wouldn't being much.
+On Thursday 27 November 2008, Keith Packard wrote:
+> +static long serial_compat_ioctl(struct tty_struct *tty, struct file *file,
+> +                              unsigned int cmd, unsigned long arg)
+> +{
+> +       struct usb_serial_port *port = tty->driver_data;
+> +       long retval = -ENODEV;
+> +
+> +       dbg("%s - port %d, cmd 0x%.4x", __func__, port->number, cmd);
+> +
+> +       WARN_ON(!port->port.count);
+> +
+> +       /* pass on to the driver specific version of this function
+> +          if it is available */
+> +       if (port->serial->type->compat_ioctl) {
+> +               lock_kernel();
+> +               retval = port->serial->type->compat_ioctl(tty, file, cmd, arg);
+> +               unlock_kernel(); 
 
-Yeah, but one thing I learned from messing with rfkill is that little helper
-functions can go a LONG way into making an API easier to use right.
+By convention, compat_ioctl functions should be called without the big kernel
+lock held.
 
-> > That would still leave us with non-updated userspace not doing the right
-> > thing when faced with a led with a range different from [0, 255], but there is
-> > probably not a big set of userland doing generic LED control (and specific
-> > LEDs have no reason to change their range from the default [0, 255]).
-> 
-> I also don't think there are too many applications out there that will be 
-> endangered by this patch.
-> 
-> > Either that, or maybe you could use an alternative way, like adding a
-> > fractional component to the scale (which has its own problems, but it
-> > probably can be done cleanly).  In that case, it is best to also add an
-> > attribute to disclose the granularity supported by the LED driver.
-> 
-> Would you then have to do "echo 100.5 > brightness"?...
+The usb-serial driver all still need to be converted to have their
+ioctl function called without bkl.
 
-Or add an integer attribute for the fractional part (which takes some
-thought to do correctly), since fp is frowned upon in sysfs...
+> --- a/include/linux/usb/serial.h
+> +++ b/include/linux/usb/serial.h
+> @@ -228,6 +228,8 @@ struct usb_serial_driver {
+>         int  (*write_room)(struct tty_struct *tty);
+>         int  (*ioctl)(struct tty_struct *tty, struct file *file,
+>                       unsigned int cmd, unsigned long arg);
+> +       long  (*compat_ioctl)(struct tty_struct *tty, struct file *file,
+> +                             unsigned int cmd, unsigned long arg);
+>         void (*set_termios)(struct tty_struct *tty,
+>                         struct usb_serial_port *port, struct ktermios *old);
+>         void (*break_ctl)(struct tty_struct *tty, int break_state);
 
-> A second version of the patch below.
+You should probably define compat_ioctl to return an int as well
+so that it becomes possible to use the same function for both eventually.
+Then again, we can also drop the file argument, which is entirely unused
+in all the usb-serial ioctls.
+Maybe the best way for now is to make the new compat_ioctl be
+int compat_ioctl(struct tty_struct, unsigned int cmd, unsigned long arg);
+and leave the old ioctl as it is. When we get around to pushing the
+BKL down into ->ioctl, we can change the prototype at the same time
+to warn potential out-of-tree drivers.
 
-Frankly, I don't like the fact that LED_FULL survived.  That's a trap
-waiting to be sprung on any unsuspecting maintainers adding or messing with
-LED support everywhere in the kernel...
-
-IMO, it'd be best to have an DEFAULT_LED_FULL_VALUE define you can use to
-set max_brightness where needed, and use the gcc facilities to deprecate any
-use of LED_FULL.
-
-Richard?  What is your take on this?  I am not the right person to be
-reviewing LED code...
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	Arnd <><
