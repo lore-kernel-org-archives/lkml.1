@@ -1,141 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYK0NiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYK0NjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbYK0NiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 08:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYK0NiD
+	id S1755504AbYK0NjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 08:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYK0NjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 08:38:03 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:21216 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755271AbYK0NiA (ORCPT
+	Thu, 27 Nov 2008 08:39:04 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:59710 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753378AbYK0NjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 08:38:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wkGqHF9v+bXzUetr9WHOJ5cQLcOfGlMAl0Sa81D7iuybTKg0dtxklm+Lyr7ZpPAWhU
-         uMWwP+uMCO1pnmeiurEeD0GQPtkcfkkLSF5yorcmHr//nO4OrPybG4WdhFKcN4/VQkJd
-         TALkYc4/DD0Wxp4W3VLdcjoFtLOlLfXFJEnrY=
-Message-ID: <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>
-Date: Thu, 27 Nov 2008 15:37:59 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request at ffff8800be8b0019
-Cc: "Miles Lane" <miles.lane@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Tejun Heo" <htejun@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200811270026.37941.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Nov 2008 08:39:03 -0500
+Date: Thu, 27 Nov 2008 14:49:32 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: eranian@gmail.com
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, sfr@canb.auug.org.au
+Subject: Re: [patch 05/24] perfmon: X86 generic code (x86)
+Message-ID: <20081127134932.GN6703@one.firstfloor.org>
+References: <20081126140054.GX6703@one.firstfloor.org> <alpine.LFD.2.00.0811262237140.3325@localhost.localdomain> <20081127100602.GF6703@one.firstfloor.org> <7c86c4470811270209q18d4e83aq8901837159838cc4@mail.gmail.com> <20081127113115.GH6703@one.firstfloor.org> <7c86c4470811270335p2dbd61ebpe2c584e32d8b2292@mail.gmail.com> <20081127123257.GI6703@one.firstfloor.org> <7c86c4470811270428r76702954se8f6e005481a6a35@mail.gmail.com> <20081127124501.GL6703@one.firstfloor.org> <7c86c4470811270530j4f3c5413j9e6e68cee08631a9@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com>
-	 <200811270026.37941.rjw@sisk.pl>
-X-Google-Sender-Auth: 9dfe54b18a21f36e
+In-Reply-To: <7c86c4470811270530j4f3c5413j9e6e68cee08631a9@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> What about a thread doing this and another one in the middle of read the buffer?
 
-(I'm jumping in as Andrew forwarded the bug to us thinking it's SLUB related.)
+I assume that uses locks. Locking between threads is easy.
 
-On Thu, Nov 27, 2008 at 1:26 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> [ 3866.841128] RIP  [<ffffffff80262f07>] kallsyms_lookup+0x20/0x120
->> [ 3866.841134]  RSP <ffff880073d63da8>
->> [ 3866.841136] CR2: ffff8800be8b0019
->> [ 3866.841140] ---[ end trace ebccc2f1a2509fb0 ]---
->
-> Did that happen after a resume from suspend to RAM, by chance?
+> 
+> Or what about a thread trying to reset the buffer while you're processing an PMU
+> interrupt on another CPU. I know each buffer is per-CPU, but that does not
+> prevent two threads for trying to operate on it at the same time from
+> different CPUs.
 
-Could be. I looked at the oops and I'm pretty sure SLUB is not at
-fault here. Decoding the oopsing code:
+That happens per CPU.
 
-  [ 3866.841062] Code: df e8 39 d2 ff ff 5b 41 5c c9 c3 55 48 89 e5 41 57 49 89
-  cf 41 56 49 89 f6 41 55 49 89 d5 41 54 4d 89 c4 53 48 89 fb 48 83 ec
-08 <41> c6
-  40 7f 00 41 c6 00 00 48 81 ff 00 90 20 80 72 09 48 81 ff
+-Andi
 
-results in:
-
-  0000000000000000 <.text>:
-     0:   41 c6 40 7f 00          movb   $0x0,0x7f(%r8)   <<<<----
-     5:   41 c6 00 00             movb   $0x0,(%r8)
-     9:   48 81 ff 00 90 20 80    cmp    $0xffffffff80209000,%rdi
-    10:   72 09                   jb     0x1b
-    12:   48                      rex.W
-    13:   81                      .byte 0x81
-    14:   ff                      .byte 0xff
-
-which looks like this:
-
-  000000000000023e <kallsyms_lookup>:
-   */
-  const char *kallsyms_lookup(unsigned long addr,
-                              unsigned long *symbolsize,
-                              unsigned long *offset,
-                              char **modname, char *namebuf)
-  {
-   23e:   41 56                   push   %r14
-   240:   49 89 f6                mov    %rsi,%r14
-   243:   41 55                   push   %r13
-   245:   49 89 d5                mov    %rdx,%r13
-   248:   41 54                   push   %r12
-   24a:   49 89 cc                mov    %rcx,%r12
-   24d:   55                      push   %rbp
-   24e:   48 89 fd                mov    %rdi,%rbp
-   251:   53                      push   %rbx
-          namebuf[KSYM_NAME_LEN - 1] = 0;
-   252:   41 c6 40 7f 00          movb   $0x0,0x7f(%r8) <<<<----
-   */
-
-That is, we're oopsing because someone is passing a bogus 'namebuf' to
-kallsyms_lookup(). This is further confirmed by looking at the value of R8:
-
-  [ 3866.840962] RBP: ffff880073d63dd8 R08: ffff8800be8aff9a R09:
-0000000000000000
-
-and adding 0x7f to it:
-
-  0xffff8800be8aff9a + 0x7f = 0xffff8800be8b0019
-
-which equals to the faulting address:
-
-  [ 3866.840809] BUG: unable to handle kernel paging request at ffff8800be8b0019
-
-Furthermore, the value of KSYM_NAME_LEN is 128 so the offset matches as well
-after subtracting one from it (0x7f).
-
-Looking at the call trace:
-
-  [ 3866.841017] Call Trace:
-  [ 3866.841020]  [<ffffffff8026302f>] sprint_symbol+0x28/0xaa
-  [ 3866.841025]  [<ffffffff8029e972>] list_locations+0x170/0x2ef
-  [ 3866.841031]  [<ffffffff8029eb34>] alloc_calls_show+0x1c/0x24
-  [ 3866.841036]  [<ffffffff8029cbbc>] slab_attr_show+0x23/0x27
-  [ 3866.841041]  [<ffffffff802efdff>] sysfs_read_file+0xba/0x13c
-  [ 3866.841046]  [<ffffffff802a4795>] vfs_read+0xa4/0xde
-  [ 3866.841052]  [<ffffffff802a4893>] sys_read+0x47/0x6e
-  [ 3866.841056]  [<ffffffff8020b6fb>] system_call_fastpath+0x16/0x1b
-
-we can see that kallsyms_lookup() is being called by sprint_symbol() which is,
-in turn, called by the SLUB code. However, SLUB never touches 'namebuf',
-instead it's being allocated on the stack by sprint_symbol():
-
-  /* Look up a kernel symbol and return it in a text buffer. */
-  int sprint_symbol(char *buffer, unsigned long address)
-  {
-          char *modname;
-          const char *name;
-          unsigned long offset, size;
-          char namebuf[KSYM_NAME_LEN];
-
-          name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
-
-Hmm?
-
-                        Pekka
+-- 
+ak@linux.intel.com
