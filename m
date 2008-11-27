@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYK0U7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYK0VAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbYK0U7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 15:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYK0U7F
+	id S1754611AbYK0VAM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 16:00:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYK0U76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 15:59:05 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58950 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752458AbYK0U7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 15:59:04 -0500
-Date: Thu, 27 Nov 2008 21:59:00 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Tejun Heo <tj@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-In-Reply-To: <20080828200120.GA16462@cs181140183.pp.htv.fi>
-Message-ID: <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr>
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 27 Nov 2008 15:59:58 -0500
+Received: from www.tglx.de ([62.245.132.106]:44390 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752608AbYK0U75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 15:59:57 -0500
+Date: Thu, 27 Nov 2008 21:59:19 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: eranian@gmail.com
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
+Subject: Re: [patch 02/24] perfmon: base code
+In-Reply-To: <7c86c4470811271149m5f5556c0y468be509bb6a200@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0811272157370.3325@localhost.localdomain>
+References: <492d0bd8.11435e0a.1686.ffff8801@mx.google.com>  <alpine.LFD.2.00.0811271638350.3325@localhost.localdomain>  <7c86c4470811270947q585cba5vf8bdb875962a1856@mail.gmail.com>  <alpine.LFD.2.00.0811271858300.3325@localhost.localdomain> 
+ <7c86c4470811271051g66669197qb6b5fd39961668a9@mail.gmail.com>  <alpine.LFD.2.00.0811272031540.3325@localhost.localdomain> <7c86c4470811271149m5f5556c0y468be509bb6a200@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 27 Nov 2008, stephane eranian wrote:
 
-On Thursday 2008-08-28 22:01, Adrian Bunk wrote:
->On Thu, Aug 28, 2008 at 09:05:53PM +0200, Tejun Heo wrote:
->> Hello again,
->> 
->> So, after all the fuss, here's the state-of-the-art standard-compliant
->> cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
->> 
->>   http://userweb.kernel.org/~tj/ossp/
->> 
->> It works pretty well here.  :-)
->
->Sorry for being destructive, but 6 years after ALSA went into the
->kernel we are slightly approaching the point where all applications 
->support ALSA.
+> On Thu, Nov 27, 2008 at 8:35 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > Stephane,
+> >
+> > On Thu, 27 Nov 2008, stephane eranian wrote:
+> >
+> >> >> session is independent of each other. You can therefore measure different
+> >> >> things on different CPUs. Reservation is thus done independently for each
+> >> >> CPU, therefore we need a cpu bitmask  to track allocation.
+> >> >
+> >> > Ok. Question: if you do a one CPU wide session with perfom, can you
+> >> > still do thread monitoring on the same CPU ?
+> >> >
+> >> No. They are currently mutually exclusive.
+> >>
+> >> > If no, what prevents that a monitored thread is migrated to such a CPU ?
+> >> >
+> >> Nothing. AND you don't want to change affinity because you are monitoring.
+> >> So the current restriction is that cpu-wide and per-thread are
+> >> mutually exclusive.
+> >
+> > And how is this achieved ? Currently there seems nothing which
+> > prevents a per-thread vs. cpu-wide monitoring.
+> >
+> That's true, but that's because cpu-wide support is not included in the
+> patchset.
 
-Unreal Tournament GOTY/99 does not (seem to). And I doubt someone
-is going to fix commercial games. Though being a static binary,
-its use of shared libraries that do the sound device open makes
-aoss a possibility, if that helps. But it does not support ALSA
-natively - and would make a point for CUSE.
+That's the whole point I'm making. For the current patch set the
+simple global vs. thread exclusivity is sufficient and correct.
+
+When we gradually add stuff then we simply can add the extra checks
+and think about the impact and consequences in that context.
+
+Thanks,
+
+	tglx
+
