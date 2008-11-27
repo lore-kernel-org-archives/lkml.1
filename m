@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYK0VUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbYK0VUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbYK0VUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 16:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYK0VTh
+	id S1755067AbYK0VUg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 16:20:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYK0VUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 16:19:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43333 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbYK0VTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 16:19:35 -0500
-Message-ID: <492F0EB7.70308@zytor.com>
-Date: Thu, 27 Nov 2008 13:18:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Thu, 27 Nov 2008 16:20:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34497 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752925AbYK0VUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 16:20:17 -0500
+Message-ID: <492F0EC0.5030802@kernel.org>
+Date: Thu, 27 Nov 2008 13:18:56 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
 To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+CC: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        NetDev <netdev@vger.kernel.org>, x86@kernel.org,
@@ -26,23 +25,80 @@ CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
 Subject: Re: oops/warning report for the week of November 26, 2008
 References: <492DD792.6080302@linux.intel.com>	<20081127115236.GE29013@elte.hu>	<492EE087.80708@linux.intel.com>	<20081127201836.GA16869@elte.hu> <20081127122800.45fc0b1a@linux.intel.com>
 In-Reply-To: <20081127122800.45fc0b1a@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Arjan van de Ven wrote:
+> On Thu, 27 Nov 2008 21:18:36 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>
+>>> Ingo Molnar wrote:
+>>>> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>>>
+>>>>> Rank 8: mtrr_trim_uncached_memory (warning)
+>>>>> 	Reported 227 times (619 total reports)
+>>>>> 	There is a high number of machines where our MTRR checks
+>>>>> 	trigger. I suspect we are too picky in accepting the MTRR
+>>>>> 	configuration.
+>>>> the warning here means: "the BIOS messed up but we fixed it up for
+>>>> you just fine".
+>>> I don't believe that right now. we see so many of these, including 
+>>> many "there's no MTRRs at all", that I am seriously suspecting that 
+>>> our code is just incorrect somehow and triggering too much.
+>> well we looked at existing reports and Linux was right to fix them
+>> up. Show us one that is incorrect, then we can fix it up.
+>>
+>> the "no MTRR's" are vmware/(also qemu?) guests not implementing a
+>> full CPU emulation.
+> 
+> ... and it's still our fault in part, since we don't even check to see
+> if a cpu claims to support MTRR before complaining about it...
+> 
+> easy to fix though:
+> 
+> From 7e987ae541c41ce908b414fee9d8e2fd2099a083 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Thu, 27 Nov 2008 12:25:47 -0800
+> Subject: [PATCH] x86: make sure the CPU advertizes MTRR support before complaining about the lack thereoff...
+> 
+> We complain loudly if a CPU does not have MTRR support... but we don't check if the CPU
+> exposes MTRR support in the CPUID flags first. While this might not fix all of the
+> broken virtualization systems out there, it will at least fix those that properly don't
+> advertize things they don't support.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  arch/x86/kernel/cpu/mtrr/main.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+> index 1159e26..0044e61 100644
+> --- a/arch/x86/kernel/cpu/mtrr/main.c
+> +++ b/arch/x86/kernel/cpu/mtrr/main.c
+> @@ -1567,6 +1567,8 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+>  	 * Make sure we only trim uncachable memory on machines that
+>  	 * support the Intel MTRR architecture:
+>  	 */
 > +	if (!cpu_has_mtrr)
 > +		return 0;
+
+that is not needed, we already check that in mtrr_bp_init before this function is called, and it will assign mtrr_if
+
+and
+#define is_cpu(vnd)     (mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
+
+will make it sure mtrr is there.
+
+ps: here INTEL mean any cpu has same interface like intel cpu's
+
+YH
+
 >  	if (!is_cpu(INTEL) || disable_mtrr_trim)
 >  		return 0;
 >  	rdmsr(MTRRdefType_MSR, def, dummy);
 
-cpu_has_mtrr there should presumably replace is_cpu(INTEL).  I'm not 
-sure if this can be replaced by use_intel(); in particular use_intel() 
-relies on mtrr_if having been initialized.
-
-Looking...
-
-	-hpa (out of town for Thanksgiving)
