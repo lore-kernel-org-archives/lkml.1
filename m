@@ -1,83 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYK0JTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYK0JaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753176AbYK0JTE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 04:19:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYK0JSq
+	id S1753168AbYK0JaX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 04:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYK0JaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 04:18:46 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:53761 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYK0JSo (ORCPT
+	Thu, 27 Nov 2008 04:30:08 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:10282 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbYK0JaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 04:18:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=mz6HAmB/FgbEGlcJ7+zWp8XrqhvKNZfNNj+CbBTeNeGVLpKxfDmk40+I8gXi0Krjaq
-         oHT6DH6n6Zud46o5yUfV47YQxzmpokU8b+gwsR7pnUrKS6Q3uSYWlQnCbe/wAf1dLwWL
-         DPEhyNgxruDV6JM97Xy4PYlGkib8bRIZWg6gk=
-Message-ID: <492E65F9.30208@gmail.com>
-Date: Thu, 27 Nov 2008 18:18:49 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Thu, 27 Nov 2008 04:30:04 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=beX0kslt2c0N21HHB1aTIHWCbtZNYY05EcKFkbpo0YHAN+fJ0QwB4GHo2a1okDa+R
+	oqgDPcdWbGcpMlivEPOCw==
+Message-ID: <492E6849.6090205@google.com>
+Date: Thu, 27 Nov 2008 01:28:41 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Oleg Nesterov <oleg@redhat.com>, Eric Van Hensbergen <ericvh@gmail.com>,
-       Ron Minnich <rminnich@sandia.gov>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Miklos Szeredi <mszeredi@suse.cz>, Brad Boyer <flar@allandria.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Roland McGrath <roland@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] poll: allow f_op->poll to sleep, take#5
-References: <20081125173032.GA21539@redhat.com> <492CD1AB.3000802@kernel.org> <492CD358.2020603@gmail.com> <alpine.DEB.1.10.0811252148540.32523@alien.or.mcafeemobile.com> <492CEF04.6070100@gmail.com> <alpine.DEB.1.10.0811252313420.32523@alien.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0811252313420.32523@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Nick Piggin <npiggin@suse.de>
+CC: Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>, edwintorok@gmail.com
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de>
+In-Reply-To: <20081127085554.GD28285@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-GMailtapped-By: 172.24.198.73
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Davide Libenzi wrote:
-> Hmmm, I just noticed that the set_current_state(TASK_INTERRUPTIBLE) at the 
-> beginning of the ->poll() loop has been dropped (and it makes sense since 
-> now ->poll() can sleep).
-
-Yeah, that's exactly what the ->triggered condition replaces.
-
-> w1) WR dev->events
-> w2) MB
-> w3) WR triggered (1)
-> w4) WMB
-> w5) WR task->state (RUNNING)
+Nick Piggin wrote:
+> On Wed, Nov 26, 2008 at 11:57:24AM -0800, Mike Waychison wrote:
+>> Nick Piggin wrote:
+>>> On Tue, Nov 25, 2008 at 10:42:47AM -0800, Ying Han wrote:
+>>>>>> The patch flags current->flags to PF_FAULT_MAYRETRY as identify that
+>>>>>> the caller can tolerate the retry in the filemap_fault call patch.
+>>>>>>
+>>>>>> Benchmark is done by mmap in huge file and spaw 64 thread each
+>>>>>> faulting in pages in reverse order, the the result shows 8%
+>>>>>> porformance hit with the patch.
+>>>>> I suspect we also want to see the cases where this change helps?
+>>>> i am working on more benchmark to show performance improvement.
+>>> Can't you share the actual improvement you see inside Google?
+>>>
+>>> Google must be doing something funky with threads, because both
+>>> this patch and their new malloc allocator apparently were due to
+>>> mmap_sem contention problems, right?
+>> One of the big improvements we see with this patch is the ability to 
+>> read out files in /proc/pid much faster.  Consider the following events:
+>>
+>> - an application has a high count of threads sleeping with 
+>> read_lock(mmap_sem) held in the fault path (on the order of hundreds).
+>> - one of the threads in the application then blocks in 
+>> write_lock(mmap_sem) in the mmap()/munmap() paths
+>> - now our monitoring software tries to read some of the /proc/pid files 
+>> and blocks behind the waiting writer due to the fairness of the rwsems. 
+>>  This basically has to wait for all faults ahead of the reader to 
+>> terminate (and let go of the reader lock) and then the writer to have a 
+>> go at mmap_sem.   This can take an extremely long time.
+>>
+>> This patch helps a lot in this case as it keeps the writer from waiting 
+>> behind all the waiting readers, so it executes much faster.
 > 
-> Poller side:
->  
-> s1) WR task->state (TASK_INTERRUPTIBLE)
-> s2) MB
-> s3) RD triggered
-> s4) IF0 => RD task->state (if !RUNNING -> sleep)
-> s5) WR triggered (0)
-> s6) MB
-> s7) RD dev->events
+> Hmm. How quantifiable is the benefit? Does it actually matter that you
+> can read the proc file much faster? (this is for some automated workload
+> management daemon or something, right?)
+
+Correct.  I don't recall the numbers from the pathelogical cases we were 
+seeing, but iirc, it was on the order of 10s of seconds, likely 
+exascerbated by slower than usual disks.  I've been digging through my 
+inbox to find numbers without much success -- we've been using a variant 
+of this patch since 2.6.11.
+
+Török however identified mmap taking on the order of several 
+milliseconds due to this exact problem:
+
+http://lkml.org/lkml/2008/9/12/185
+
 > 
-> That is, an MB before w3 (triggered=1) and a set_mb(triggered,0) at 
-> s5+s6. The spinlock on the queue taken before entering pollwake() is not 
-> enough to guarantee the required ordering, since a LOCK is no guarantee 
-> that operations before it are visible after the LOCK.
-> Without the MB at w2, it could happen [w3, s5, s7, w1] that will make us 
-> miss the event *and* sleep.
+> Would it be possible to reduce mmap()/munmap() activity? eg. if it is
+> due to a heap memory allocator, then perhaps do more batching or set
+> some hysteresis.
 
-Yeah, it seems we'll need something which is equivalent to smp_wmb()
-in try_to_wake_up().  So, the original set_mb() should have stayed
-there while just adding the latter one.  Will prep yet another take of
-the patch.  Thanks for the detailed analysis.
+I know our tcmalloc team had made great strides to reduce mmap_sem 
+contention for the heap, but there are various other bits of the stack 
+that really want to mmap files..
 
--- 
-tejun
+We generally try to avoid such things, but sometimes it a) can't be 
+easily avoided (third party libraries for instance) and b) when it hits 
+us, it affects the overall health of the machine/cluster (the monitoring 
+daemons get blocked, which isn't very healthy).
+
+> 
+> 
+>>> That was before the kernel and glibc got together to fix the stupid
+>>> mmap_sem problem in malloc (shown up in that FreeBSD MySQL thread);
+>>> and before private futexes. I would be interested to know if Google
+>>> still has problems that require this patch...
+>>>
+>> I'm not very familiar with the 'malloc' problem in glibc.  Was this just 
+>> overhead in heap growth/shrinkage causing problems?
+> 
+> As far as I understand, glibc does actually seperate notions of allocated
+> virtual memory and allocated pages. By that I mean that it is very careful to
+> return pages back to the system when they are unused, but it does try to
+> batch up changes to the virtual address space. Unfortunately, it used to
+> return pages by doing a mmap call with PROT_NONE, then to start using
+> that virtual memory again, it would mmap with PROT_READ|PROT_WRITE.
+> 
+> This meant that a malloc/touch/free would look like this:
+> mmap <- down_write(mmap_sem)
+> page fault  <- down_read(mmap_sem)
+> mmap <- down_write(mmap_sem)
+> 
+> What we did was to make it use madvise(MADV_DONTNEED) to throw the pages
+> away. Then the kernel was changed to implement MADV_DONTNEED using only
+> down_read. Then the same sequence is just this:
+> 
+> page fault <- down_read(mmap_sem)
+> madvise <- down_read(mmap_sem)
+> 
+> (because changes to virtual memory allocation are batched).
+> 
+> I thought google's malloc was primarily written to fix this bad behaviour,
+> because with the new behaviour, glibc's malloc seems to beat google's
+> malloc on the performance and scalability tests I was running at the time,
+> as well as being more memory footprint friendly.
+> 
+> OTOH, it would be possible that hysteresis watermarks in glibc are not big
+> enough for a given application, which could introduce virtual address
+> activity back into the workload. These can be tuned, however.
+> 
+
