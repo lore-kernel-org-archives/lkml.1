@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbYK0KAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYK0KB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbYK0KAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 05:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYK0KAM
+	id S1754110AbYK0KB6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 05:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYK0KBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 05:00:12 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:5629 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752434AbYK0KAL (ORCPT
+	Thu, 27 Nov 2008 05:01:46 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:35991 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbYK0KBp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 05:00:11 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Waychison <mikew@google.com>
-Cc: Nick Piggin <npiggin@suse.de>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       edwintorok@gmail.com
-In-Reply-To: <492E6849.6090205@google.com>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
-	 <20081123091843.GK30453@elte.hu>
-	 <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com>
-	 <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com>
-	 <20081127085554.GD28285@wotan.suse.de>  <492E6849.6090205@google.com>
-Content-Type: text/plain
-Date: Thu, 27 Nov 2008 11:00:07 +0100
-Message-Id: <1227780007.4454.1344.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Nov 2008 05:01:45 -0500
+Message-ID: <492E6FEA.70307@cosmosbay.com>
+Date: Thu, 27 Nov 2008 11:01:14 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, travis <travis@sgi.com>
+Subject: Re: [PATCH 4/6] fs: Introduce a per_cpu nr_inodes
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com>	 <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com>	 <20081121.010508.40225532.davem@davemloft.net>	 <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com>	 <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com>	 <20081121153453.GA23713@elte.hu>  <492DDC91.3020503@cosmosbay.com> <1227778377.4454.1299.camel@twins>
+In-Reply-To: <1227778377.4454.1299.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 27 Nov 2008 11:01:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-27 at 01:28 -0800, Mike Waychison wrote:
+Peter Zijlstra a écrit :
+> On Thu, 2008-11-27 at 00:32 +0100, Eric Dumazet wrote:
+>> Avoids cache line ping pongs between cpus and prepare next patch,
+>> because updates of nr_inodes metric dont need inode_lock anymore.
+>>
+>> (socket8 bench result : 25s to 20.5s)
+>>
+>> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+>> ---
+> 
+>> @@ -96,9 +96,40 @@ static DEFINE_MUTEX(iprune_mutex);
+>>   * Statistics gathering..
+>>   */
+>>  struct inodes_stat_t inodes_stat;
+>> +static DEFINE_PER_CPU(int, nr_inodes);
+>>  
+>>  static struct kmem_cache * inode_cachep __read_mostly;
+>>  
+>> +int get_nr_inodes(void)
+>> +{
+>> +	int cpu;
+>> +	int counter = 0;
+>> +
+>> +	for_each_possible_cpu(cpu)
+>> +	    counter += per_cpu(nr_inodes, cpu);
+>> +	if (counter < 0)
+>> +		counter = 0;
+>> +	return counter;
+>> +}
+> 
+> It would be good to get a cpu hotplug handler here and move to
+> for_each_online_cpu(). People are wanting distro's to be build with
+> NR_CPUS=4096.
 
-> Correct.  I don't recall the numbers from the pathelogical cases we were 
-> seeing, but iirc, it was on the order of 10s of seconds, likely 
-> exascerbated by slower than usual disks.  I've been digging through my 
-> inbox to find numbers without much success -- we've been using a variant 
-> of this patch since 2.6.11.
+Hum, I guess we can use regular percpu_counter for this...
 
-> We generally try to avoid such things, but sometimes it a) can't be 
-> easily avoided (third party libraries for instance) and b) when it hits 
-> us, it affects the overall health of the machine/cluster (the monitoring 
-> daemons get blocked, which isn't very healthy).
-
-If its only monitoring, there might be another solution. If you can keep
-the required data in a separate (approximate) copy so that you don't
-need mmap_sem at all to show them.
-
-If your mmap_sem is so contended your latencies are unacceptable, adding
-more users to it - even statistics gathering, just isn't going to cure
-the situation.
-
-Furthermore, /proc code usually isn't written with performance in mind,
-so its usually simple and robust code. Adding it to a 'hot'-path like
-you're doing doesn't seem advisable.
-
-Also, releasing and re-acquiring mmap_sem can significantly add to the
-cacheline bouncing that thing already has.
 
