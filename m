@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYK0Qto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbYK0Qu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbYK0Qto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 11:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYK0Qte
+	id S1754665AbYK0Qu0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 11:50:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYK0QuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 11:49:34 -0500
-Received: from servatis.alsatis.com ([62.193.233.66]:46459 "EHLO
-	smtp.alsatis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbYK0Qtd convert rfc822-to-8bit (ORCPT
+	Thu, 27 Nov 2008 11:50:13 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59737 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752132AbYK0QuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 11:49:33 -0500
-X-Greylist: delayed 1833 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Nov 2008 11:49:33 EST
-Date: Thu, 27 Nov 2008 17:18:51 +0100
-From: =?UTF-8?B?RnLDqWTDqXJpYw==?= Moulins 
-	<frederic.moulins@alsatis.com>
-To: jchapman@katalix.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] [PPPOL2TP] Add missing sock_put() in pppol2tp_release()
-Message-ID: <20081127171851.3fe7db5a@iter>
-Organization: als@tis
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 27 Nov 2008 11:50:12 -0500
+Date: Thu, 27 Nov 2008 11:50:11 -0500
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Rodolfo Giometti <giometti@enneenne.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/9] LinuxPPS core support.
+Message-ID: <20081127165011.GJ5682@csclub.uwaterloo.ca>
+References: <1227542451-31969-1-git-send-email-giometti@linux.it> <1227542451-31969-2-git-send-email-giometti@linux.it> <517f3f820811250824ubb4ca0bn5a8be62a180581e4@mail.gmail.com> <20081125164512.GE26417@tekkaman> <1227633619.7025.351.camel@macbook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227633619.7025.351.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pppol2tp_sock_to_session() do sock_hold() if the session to release is
-not NULL.
+On Tue, Nov 25, 2008 at 05:20:19PM +0000, David Woodhouse wrote:
+> On Tue, 2008-11-25 at 17:45 +0100, Rodolfo Giometti wrote:
+> > In the past I got a suggestion in using ??antennae?? instead of
+> > ??antennas??... do you think I can leave it anyway? :)
+> 
+> Antennae is correct.
 
-Signed-off-by: Frédéric Moulins <frederic.moulins@alsatis.com>
----
-Patch is applicable to kernels 2.6.26 and following.
+wikipedia (not that that really means much) claims antennae is correct
+for biology and antennas is correct for electronics.
 
-Tested with a 2.6.26 stable kernel:
-without this patch, a session in a persistent tunnel cannot be
-established again (connect failed: -17), and the pppol2tp kernel module
-cannot be removed because still considered in use after stopping all
-userspace daemons.
+That seems to match what I do, not that I really ever talk about biology
+myself. :)
 
-diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
-index ff175e8..de80ba4 100644
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -1353,6 +1353,7 @@ static int pppol2tp_release(struct socket *sock)
- 			kfree_skb(skb);
- 			sock_put(sk);
- 		}
-+		sock_put(sk);
- 	}
- 
- 	release_sock(sk);
+Of course I am one of those people that thing disc means optical and
+disk means magnetic.  Or disc for spiral track and disk for circular
+tracks.  Both seem to work consistently, although I might be wrong and
+some optical media may in fact use circular tracks.
+
+-- 
+Len Sorensen
