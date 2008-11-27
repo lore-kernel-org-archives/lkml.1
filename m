@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbYK0AGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYK0AIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbYK0AGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Nov 2008 19:06:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYK0AFs
+	id S1754813AbYK0AIW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Nov 2008 19:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYK0AIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Nov 2008 19:05:48 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:51896 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752906AbYK0AFq (ORCPT
+	Wed, 26 Nov 2008 19:08:14 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:49475 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbYK0AIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Nov 2008 19:05:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=pU9LiUvcOWyAKIrEVZIO7DiOpSzh2qu+5eeuLmylZdhcQXq0mkz6RhJYBbzdEZdedPJuu+M4i2z8BVRbmt8uP41DmiQ++ZJhZLglCoJZeW/LEj0ge+ao+SM3uoDcjRVy;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: oops/warning report for the week of November 26, 2008
-Date: Wed, 26 Nov 2008 16:05:37 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <492DD792.6080302@linux.intel.com>
-In-Reply-To: <492DD792.6080302@linux.intel.com>
+	Wed, 26 Nov 2008 19:08:13 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 26 Nov 2008 16:08:11 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, ltt-dev@lists.casi.polymtl.ca,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [ltt-dev] [PATCH] Poll : introduce poll_wait_exclusive() new
+ function
+In-Reply-To: <20081126111511.GE14826@Krystal>
+Message-ID: <alpine.DEB.1.10.0811261559180.11771@alien.or.mcafeemobile.com>
+References: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081124121659.GA18987@Krystal> <20081125194700.26EB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.1.10.0811251316590.32523@alien.or.mcafeemobile.com> <20081126111511.GE14826@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811261605.43099.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, November 26, 2008 3:11 pm Arjan van de Ven wrote:
-> Rank 2: pci_create_slot (warning)
-> 	Reported 603 times (639 total reports)
-> 	BIOS provided duplicated slot names, the PCI layer blindly passes to sysfs
-> 	This warning was last seen in version 2.6.27.5, and first seen in
-> 2.6.27-rc7-git1. More info:
-> http://www.kerneloops.org/searchweek.php?search=pci_create_slot
+On Wed, 26 Nov 2008, Mathieu Desnoyers wrote:
 
-IIRC we fixed this one post-2.6.27.  I didn't send the patches back to -stable 
-because they were a bit big, but if someone were sufficiently motiviated I'm 
-sure the backport wouldn't be that hard...
+> One of the key design rule of LTTng is to do not depend on such
+> system-wide data structures, or entity (e.g. single manager thread).
+> Everything is per-cpu, and it does scale very well.
+> 
+> I wonder how badly the approach you propose can scale on large NUMA
+> systems, where having to synchronize everything through a single thread
+> might become an important point of contention, just due to the cacheline
+> bouncing and extra scheduler activity involved.
 
-Jesse
+I dunno the LTT architecture, so I'm staying out of that discussion.
+But, if the patch you're trying to push is to avoid thundering herd of so 
+many threads waiting on the single file*, you've got the same problem 
+right there. You've got at least the spinlock protecting the queue 
+where these threads are focusing, whose cacheline is bounced gets bounced 
+all over the CPUs.
+Do you have any measure of the improvements that such poll_wait_exclusive()
+will eventually lead to?
+
+
+
+- Davide
+
+
