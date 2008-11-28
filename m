@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYK1QST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbYK1QTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753031AbYK1QST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 11:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYK1QSH
+	id S1754024AbYK1QTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 11:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYK1QTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 11:18:07 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36930 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbYK1QSF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 11:18:05 -0500
-Date: Fri, 28 Nov 2008 08:19:09 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: philipl@overt.org, lenb@kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] acpi: close race in toshiba_acpi driver
-Message-ID: <20081128081909.65b7607a@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 28 Nov 2008 11:19:20 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:35712 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158AbYK1QTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 11:19:19 -0500
+Date: Fri, 28 Nov 2008 21:49:21 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-fsdevel@vger.kernel.org, jblunck@suse.de, dlezcano@fr.ibm.com,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [rfc git patch] union directory
+Message-ID: <20081128161921.GA3843@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Nov 28, 2008 at 12:01:32PM +0100, Miklos Szeredi wrote:
+> I've been doing some small fixing/cleanup work on the union directory
+> patches by Jan, and just noticed there's a thread about the union
+> mounts on LKML, so I thought publicizing won't hurt.
 
->From 5d8af90c16de14f5d27c9d0b63118277941ebb4e Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Fri, 28 Nov 2008 08:14:14 -0800
-Subject: [PATCH] acpi: close race in toshiba_acpi driver
+Interesting that you call it "union directory", do you have plans to go
+the Plan 9's way of union directories ?
 
-the toshiba ACPI driver will, in a failure case, free the rfkill state
-before stopping the polling timer that would use this state. More interesting,
-in the same failure case handling, it calls the exit function, which also
-frees the rfkill state, but after stopping the polling.
+> 
+> It's still a work in progress, notably the readdir code currently only
+> works on a few specific filesystem types.
 
-If the race happens, a NULL pointer is passed to rfkill_force_state()
-which then causes a nice dereference.
+readdir was one of the things on which we couldn't reach a consensus
+on how to do it the right way. We were suggested that we move the
+duplicate elimination into user space and an effort towards this was
+also done (Ref: http://lkml.org/lkml/2008/4/29/248) by moving this
+to glibc readdir. But we weren't sure how this could work for NFS and
+were told that it is required to get the NFS side of things
+sorted out first. So that's where readdir effort stands now afaik.
+Do you have any ideas/plans on this front ?
 
-Fix the race by just not doing the too-early freeing of the rfkill state.
+Also the last development activity that I am aware of was done towards
+getting a generic whiteout support. David Woodhouse started a git tree
+at one point of time for whiteout support
+(git://git.infradead.org/union/whiteout-2.6.git). Erez Zodak was
+infact looking forward for these changes to make use of them in Unionfs,
+but even this effort died down.
 
-This appears to be the cause of a hot issue on kerneloops.org; while I
-have no solid evidence of that this patch will fix the issue, the race
-appears rather real.
+Nice to know that you have started looking into Union Mount patches.
+Would be interesting to know/understand your plans/thoughts on taking
+this effort forward.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/acpi/toshiba_acpi.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-index 66aac06..25f531d 100644
---- a/drivers/acpi/toshiba_acpi.c
-+++ b/drivers/acpi/toshiba_acpi.c
-@@ -848,8 +848,6 @@ static int __init toshiba_acpi_init(void)
- 	ret = input_register_polled_device(toshiba_acpi.poll_dev);
- 	if (ret) {
- 		printk(MY_ERR "unable to register kill-switch input device\n");
--		rfkill_free(toshiba_acpi.rfk_dev);
--		toshiba_acpi.rfk_dev = NULL;
- 		toshiba_acpi_exit();
- 		return ret;
- 	}
--- 
-1.6.0.4
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Regards,
+Bharata.
