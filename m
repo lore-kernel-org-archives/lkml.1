@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYK1Ss0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbYK1S5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbYK1Ss0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 13:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYK1SsO
+	id S1754377AbYK1S5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 13:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYK1S5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 13:48:14 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:4650 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752503AbYK1SsN (ORCPT
+	Fri, 28 Nov 2008 13:57:40 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:38516 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbYK1S5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 13:48:13 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 0/6] fs: Scalability of sockets/pipes
- allocation/deallocation on SMP
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081128180318.GL10487@elte.hu>
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com>
-	 <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com>
-	 <20081121.010508.40225532.davem@davemloft.net>
-	 <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com>
-	 <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com>
-	 <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com>
-	 <20081128180318.GL10487@elte.hu>
-Content-Type: text/plain
-Date: Fri, 28 Nov 2008 19:47:56 +0100
-Message-Id: <1227898076.7392.16.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Nov 2008 13:57:39 -0500
+Date: Fri, 28 Nov 2008 11:57:23 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Alex Chiang <achiang@hp.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-pci <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH] fakephp: Allocate PCI resources before adding the	device
+Message-ID: <20081128185722.GU25548@parisc-linux.org>
+References: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com> <Pine.LNX.4.64.0811251919590.5161@t2.domain.actdsltmp> <20081126074808.GE6539@plum> <Pine.LNX.4.58.0811260131200.24816@shell4.speakeasy.net> <20081126181841.GF6539@plum> <Pine.LNX.4.58.0811261349120.24816@shell4.speakeasy.net> <20081126225535.GA27936@ldl.fc.hp.com> <Pine.LNX.4.58.0811261647410.24816@shell4.speakeasy.net> <20081127024204.GJ25548@parisc-linux.org> <Pine.LNX.4.58.0811280151230.24816@shell4.speakeasy.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0811280151230.24816@shell4.speakeasy.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-28 at 19:03 +0100, Ingo Molnar wrote:
-> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Fri, Nov 28, 2008 at 02:11:49AM -0800, Trent Piepho wrote:
+> On Wed, 26 Nov 2008, Matthew Wilcox wrote:
+> > Because fakephp was the odd one out.  Every other hotplug driver
+> > registers a slot number and puts the address in the directory.  We're
+> > making hotplug drivers simpler (by sharing more of the logic in the
+> > core) and so fakephp had to change to match the other drivers.  I'm
+> > sorry for your inconvenience, but it's necessary.
 > 
-> > Hi all
-> >
-> > Short summary : Nice speedups for allocation/deallocation of sockets/pipes
-> > (From 27.5 seconds to 1.6 second)
+> Seems like changing a long established interface like this should be put on
+> the feature removable schedule.
+
+sysfs is more fluid than other interfaces.  Large parts of it
+change without warning.  I suppose it could have gone through
+feature-removal-schedule, and perhaps we should try to do that in future.
+
+> > We can discuss other ways to make your life better, but it can't be
+> > changed back to one 'slot' per PCI function.
 > 
-> Wow, that's incredibly impressive! :-)
+> Why not have a slot per pci function with each hotplug driver adding
+> attributes to the slot?  The slot would be registered by the hotplug core.
 
-Yeah, we got a similar speedup on -rt by pushing those super-block files
-list into per-cpu lists and doing crazy locking on them.
+What we have now is the 'address' file managed by the core.  This
+doesn't include the function number.
 
-Of course avoiding them all together, like done here is a nicer option
-but is sadly not a possibility for regular files (until hch gets around
-to removing the need for the list).
+> Is there any reason the fakephp driver should not be allowed to enable and
+> disable individual functions?  There a lot of mutli-function devices that
+> allow individual functions to be enabled and disabled with registers on the
+> primary function.  For instance, it would be possible to work around a BIOS
+> that doesn't have an option to disabled a southbridge's USB controller by
+> doing so in Linux and then using fakephp to remove the device, and thus
+> free address space that other devices might need.
 
+There are lots of circumstances where enabling and disabling individual
+functions is a good idea, but I don't think that fakephp is the right
+way to do it.  We need a better interface.
 
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
