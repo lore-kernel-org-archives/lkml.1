@@ -1,163 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYK1OSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYK1OWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYK1OSS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 09:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYK1OSA
+	id S1753997AbYK1OWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 09:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYK1OWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 09:18:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45979 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbYK1OR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 09:17:59 -0500
-Date: Fri, 28 Nov 2008 15:17:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
+	Fri, 28 Nov 2008 09:22:10 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:61676 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752381AbYK1OWJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 09:22:09 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAOWJL0lMROB9/2dsb2JhbACBbc8/gn0
+Date: Fri, 28 Nov 2008 09:17:04 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-graph-tracer: adjustments of the
-	trace informations
-Message-ID: <20081128141738.GE28138@elte.hu>
-References: <492F3076.7050104@gmail.com> <20081128091800.GA1725@elte.hu> <c62985530811280555m3b6eaa7fwb50bbe0f5c13bdd3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [patch 17/17] x86 trace clock
+Message-ID: <20081128141704.GE10401@Krystal>
+References: <20081126124246.800751190@polymtl.ca> <20081126124637.043515637@polymtl.ca> <878wr64cmj.fsf@basil.nowhere.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811280555m3b6eaa7fwb50bbe0f5c13bdd3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <878wr64cmj.fsf@basil.nowhere.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:31:59 up 11 days, 14:12,  2 users,  load average: 0.10, 0.53,
+	0.55
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> 2008/11/28 Ingo Molnar <mingo@elte.hu>:
-> > Firstly, what do you think about the additional tweaks i did - see the
-> > patch below?
-> >
-> > Before:
-> >
-> > 0)           |     sys_read() {
-> > 0)      0.796 us |   fget_light();
-> > 0)           |       vfs_read() {
-> > 0)           |         rw_verify_area() {
-> > 0)           |           security_file_permission() {
-> > ------------8<---------- thread sshd-1755 ------------8<----------
-> >
-> > After:
-> >
-> >  0)               |  sys_read() {
-> >  0)      0.796 us |    fget_light();
-> >  0)               |    vfs_read() {
-> >  0)               |      rw_verify_area() {
-> >  0)               |        security_file_permission() {
-> >  ------------------------------------------
-> >  | 1)  migration/0--1  =>  sshd-1755
-> >  ------------------------------------------
+* Andi Kleen (andi@firstfloor.org) wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 > 
-> Thanks! That good, but I remember you wanted a limited number of 
-> characters for thread name/pid couple?
-
-Yeah, that needs updating. I supposed you'd be working on the task+pid 
-column anyway, and do a helper function that prints the task-pid couple. 
-Then that helper can be used in the context-switch case too to print out 
-a uniform ID.
-
-Another thing that would be nice is to separate out the "cpu)" printing 
-bits into a helper function. Right now what exists cannot be used in a 
-seq-manner, so i couldnt reuse it.
-
-Anyway, i wont change it (just wanted to get a final-ish output to look 
-at) so feel free to clean it all up thoroughly :)
-
-Today i played with the graph-tracer on a testbox _way_ too much. 
-Combined with the wildcard filter it's _really_ addictive. Kernel 
-developers, beware!
-
-One thing that came up: it would be nice to have an 'inverted' wildcard 
-to punch out certain functions from the filter list. For example i did in 
-the shell:
-
- $ echo 'sys_*'    >> set_ftrace_filter
- $ echo '*socket*' >> set_ftrace_filter
- $ echo '*timer*'  >> set_ftrace_filter
- $ echo '*skb*'    >> set_ftrace_filter
-
-and looked at the trace and found that certain functions are too verbose 
-and not really interesting - so i wanted to exclude them.
-
-We've got set_ftrace_notrace but it's not really an inverse wildcard but 
-a complementary set of filter functions - which is not the same and not 
-as easy to think about as a single set of filter functions.
-
-what i think would be more natural to do is via the filter file itself, 
-via an extension like:
-
- $ echo '!timer_*' >> set_ftrace_filter
-
-which would eliminate the functions matching that negative pattern. Such 
-negative wildcards would act on the current set of functions, while 
-set_ftrace_notrace is permanent and cannot be used to shape an arbitrary 
-set of functions iteratively.
-
-> > Secondly:
-> >
-> >> +     /* Must not exceed 8 characters: xxxx.yyy us */
-> >> +     if (duration > 10000000ULL)
-> >> +             duration = 9999999ULL;
-> >
-> > 10 milliseconds isnt much or full system calls, etc.- so i believe the
-> > rule should be what i outlined in an earlier mail. The relevant
-> > transition points go like this:
-> >
-> >     0.000
-> >  xxxx.yyy
-> >  9999.999
-> >  10000.00
-> >  xxxxx.yy
-> >  99999.99
-> >  100000.0
-> >  xxxxxx.y
-> >  999999.9
-> >   1000000
-> >   9999999
-> >  10000000
-> >  xxxxxxxx
-> >  99999999 [ 100 seconds ]
-> >  100000000 ... up to infinity
-> >
-> > this way we can get up to 99999999 usecs with the same fixed width -
-> > or 100 seconds. _That_ is enough in practice.
-> >
-> > But even beyond that we should print it all out: we should still not
-> > clip actual information but instead shift the line to the right. The
-> > slightly inconsistent line is not a big problem - we want a 100
-> > seconds delay to stand out anyway ;-)
-> >
-> > The moving decimal point above 10 milliseconds is not a big problem
-> > with the '+' and '!' marker. Maybe add a '!!' marker to these lines?
+> > X86 trace clock. Depends on tsc_sync to detect if timestamp counters are
+> > synchronized on the machine.
 > 
-> Yeah, I was sure I misunderstood your idea about it in your last email 
-> :-) Ok. I will do so, I felt a bit uncomfortable with the fixed width 
-> above a limit, so I like it this way. Long sleeping functions will be 
-> rare enough in the trace to let us move a bit the columns to the right 
-> in such cases...
+> For that tsc_sync needs to be fixed first? e.g. see thread about
+> it firing incorrectly on vmware some time ago.
+> 
 
-yeah.
+I assume you are talking about this thread:
+http://lkml.org/lkml/2008/10/20/467
 
-The other small detail in the scheme i suggested is that the loss of 
-nanosec precision and its gradual weakening to usec precision is 
-immaterial in practice as well: we still have at least 9 significant 
-digits, so the relative precision is around 1:1000000000 - more than 
-enough.
+Thanks for pointing it out to me.
 
-	Ingo
+Yes, the x86 trace clock depends on the tsc_sync detection code. Note
+that the patchset I propose here includes a new tsc_sync detection code
+which behaves differently from the current x86 tsc_sync code. We can
+specify an acceptable cycle delta between the CPUs and also, given I
+retry 10 times for each CPU and take the _best_ result of the test, it
+should make sure it does not suffer from NMI, MCE, SMI nor hypervisor
+delays.
+
+
+> > A "Big Fat" (TM) warning is shown on the console when the trace clock is used on
+> > systems without synchronized TSCs to tell the user to
+> >
+> 
+> How about Intel systems where the TSC only stops in C3 and deeper?
+> You don't seem to handle that case well.
+> 
+
+The thing is : if the users specify the idle=poll kernel command line
+option, the cycle counters will stay synchronized even if it would stop
+in C3 and deeper halt states. This code assumes that the idle thread has
+already executed on at least one of the CPUs before the synchronization
+code is called. Maybe it would be safer to explicitly call the idle loop
+on one CPU to insure we would detect delta caused by it ?
+
+But hrm, if we have a virtualized environment, with one guest using
+idle=poll and then a second guest using the halt states starting later,
+I wonder what the result would be ?
+
+Also, all this stuff about vmware giving TSCs "synchronized enough" for
+timekeeping does not work work tracing. NTP precision, if I recall well,
+was too loose for tracing needs.
+
+> On modern Intel systems that's a common case.
+> > +			new_tsc = last_tsc + TRACE_CLOCK_MIN_PROBE_DURATION;
+> > +		/*
+> > +		 * If cmpxchg fails with a value higher than the new_tsc, don't
+> > +		 * retry : the value has been incremented and the events
+> > +		 * happened almost at the same time.
+> > +		 * We must retry if cmpxchg fails with a lower value :
+> > +		 * it means that we are the CPU with highest frequency and
+> > +		 * therefore MUST update the value.
+> 
+> Sorry but any global TSC measurements without scaling when the TSCs
+> run on different frequencies just don't make sense. The results will
+> be always poor. You really have to scale appropimately then and also
+> handle the "instable period"
+
+This scheme only offers the following guarantees :
+
+- the max time imprecision is 1 jiffy.
+- the cycles counter values read will increase monotonically across the
+  system.
+
+And also, yes, if all CPUs happen to go slower than their original
+speed, the cpu_khz value used will be wrong and time will appear to go
+slower than it does.
+
+Given that, we could do "better" by also keep per cpu offset/frequency
+and scale each frequency read using these reference values, so the TSCs
+are almost in sync, but this would not deal correctly with the C3 and
+lower halt states anyway.. so ther might be limited interest in this.
+
+And yes, we would eventually have to record the frequency change events
+in a specific tracing buffer, which would let us reconstruct the CPU
+speed along the execution, but I think starting with such less precise
+but still accurate (in term of event order) tracing data would be a
+simpler start. We can always add this frequency change monitoring layer
+in a second phase.
+
+So, given that, what would you think would be "good enough" for a first
+shot as a tracing clock, given we keep room for later improvement ?
+
+Considering your comments here, we may want to add some knowledge about
+the current CPU frequency in the trace clock tsc read primitive so we go
+at a rate which follows the real speed more closely, even though this
+would not take care of the C3 and - halt states. And also given that, we
+might want to resynchronize the TSC values based on HPET reads
+periodically (e.g. every time we go out of idle, but at most once per
+jiffy) to deal with halt states. We could wrap that into the current
+cmpxchg-based method I proposed here to deal with the "instable period".
+
+Hm ?
+
+Mathieu
+
+> 
+> -Andi
+> 
+> -- 
+> ak@linux.intel.com
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
