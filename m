@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbYK1WoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYK1WsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbYK1WoY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 17:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYK1WoI
+	id S1755508AbYK1WsN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 17:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYK1Wr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 17:44:08 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:49599 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYK1WoG convert rfc822-to-8bit (ORCPT
+	Fri, 28 Nov 2008 17:47:57 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:60664 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbYK1Wr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 17:44:06 -0500
-Message-ID: <49307406.4030609@cosmosbay.com>
-Date: Fri, 28 Nov 2008 23:43:18 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
+	Fri, 28 Nov 2008 17:47:56 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=YPHIIWqJqijuQVfHHb3o1Ezh9HNxTP4OT7pcykJ1mj5K0R8OkyWCMnOdJAlc5eJin
+	be3sMjvC0Y7utS8Bw7Wog==
+Message-ID: <493074D8.3080002@google.com>
+Date: Fri, 28 Nov 2008 14:46:48 -0800
+From: Mike Waychison <mikew@google.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, rth@twiddle.net,
-       ink@jurassic.park.msu.ru
-Subject: Re: [PATCH 6/6] fs: Introduce kern_mount_special() to mount	special
- vfs
-References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDCAB.1070204@cosmosbay.com> <20081128092604.GL28946@ZenIV.linux.org.uk> <493072B7.5050308@cosmosbay.com>
-In-Reply-To: <493072B7.5050308@cosmosbay.com>
+To: Nick Piggin <npiggin@suse.de>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       edwintorok@gmail.com
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <1227780007.4454.1344.camel@twins> <20081127101436.GI28285@wotan.suse.de> <492EF391.1040408@google.com> <20081128094127.GC1818@wotan.suse.de>
+In-Reply-To: <20081128094127.GC1818@wotan.suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 28 Nov 2008 23:43:20 +0100 (CET)
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.19
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Al Viro a écrit :
->> On Thu, Nov 27, 2008 at 12:32:59AM +0100, Eric Dumazet wrote:
->>> This function arms a flag (MNT_SPECIAL) on the vfs, to avoid
->>> refcounting on permanent system vfs.
->>> Use this function for sockets, pipes, anonymous fds.
+Nick Piggin wrote:
+> On Thu, Nov 27, 2008 at 11:22:57AM -0800, Mike Waychison wrote:
+>> Nick Piggin wrote:
+>>> On Thu, Nov 27, 2008 at 11:00:07AM +0100, Peter Zijlstra wrote:
+>>> pagemap_read looks like it can use get_user_pages_fast. The smaps and
+>>> clear_refs stuff might have been nicer if they could work on ranges
+>>> like pagemap. Then they could avoid mmap_sem as well (although maps
+>>> would need to be sampled and take mmap_sem I guess).
+>>>
+>>> One problem with dropping mmap_sem is that it hurts priority/fairness.
+>>> And it opens a bit of a (maybe theoretical but not something to completely
+>>> ignore) forward progress hole AFAIKS. If mmap_sem is very heavily
+>>> contended, then the refault is going to take a while to get through,
+>>> and then the page might get reclaimed etc).
+>> Right, this can be an issue.  The way around it should be to minimize 
+>> the length of time any single lock holder can sit on it.  Compared to 
+>> what we have today with:
 >>
->> IMO that's pushing it past the point of usefulness; unless you can show
->> that this really gives considerable win on pipes et.al. *AND* that it
->> doesn't hurt other loads...
-> 
-> Well, if this is the last cache line that might be shared, then yes, 
-> numbers can talk.
-> But coming from 10 to 1 instead of 0 is OK I guess
-> 
+>>   - sleep in major fault with read lock held,
+>>   - enqueue writer behind it,
+>>   - and make all other faults wait on the rwsem
 >>
->> dput() part: again, I want to see what happens on other loads; it's 
->> probably
->> fine (and win is certainly more than from mntput() change), but...  The
->> thing is, atomic_dec_and_lock() in there is often done on dentries with
->> d_count > 1 and that's fairly cheap (and doesn't involve contention on
->> dcache_lock on sane targets).
->>
->> FWIW, unless there's a really good reason to do alpha 
->> atomic_dec_and_lock()
->> in a special way, I'd try to compare with
+>> The retry logic seems to be a lot better for forward progress.
 > 
->>         if (atomic_add_unless(&dentry->d_count, -1, 1))
->>                 return;
+> The whole reason why you have the latency is because it is
+> guaranteeing forward progress for everyone. The retry logic
+> may work out better in that situation, but it does actually
+> open a starvation hole.
 > 
-> I dont know, but *reading* d_count before trying to write it is expensive
-> on modern cpus. Oprofile clearly show that on Intel Core2.
-> 
-> Then, *testing* the flag before doing the atomic_something() has the same
-> problem. Or we should put flag in a different cache line.
-> 
-> I am lazy (time for a sleep here), maybe we are smart here and use a 
-> trick like that already ?
-> 
-> atomic_t atomic_read_with_write_intent(atomic_t *v)
-> {
->        int val = 0;
->     /*
->      * No LOCK prefix here, we only give a write intent hint to cpu
->      */
->        asm volatile("xaddl %0, %1"
->                     : "+r" (val), "+m" (v->counter)
->                     : : "memory");
->        return val;
-> }
 
-Forget it, its wrong... I really need to sleep :)
+Right.  In practice though, we haven't seen this cause a problem (and is 
+why we'll only allow the path to retry once).
 
-
+Do you have any suggestions on how we could plug this hole?   Perhaps we 
+could pin a reference to the page in the vm_fault structure across the 
+retry?
