@@ -1,117 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYK1L34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYK1Laf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbYK1L34 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYK1L3s
+	id S1755093AbYK1Laf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYK1LaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:29:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36823 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbYK1L3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:29:47 -0500
-Date: Fri, 28 Nov 2008 12:29:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Eugene Teo <eugeneteo@kernel.sg>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] kmemcheck: TODO for stack tracking
-Message-ID: <20081128112934.GA18333@elte.hu>
-References: <19f34abd0811280316y13dd8dfcm3cf77b6b2171612b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0811280316y13dd8dfcm3cf77b6b2171612b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 28 Nov 2008 06:30:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51141 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbYK1LaY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 06:30:24 -0500
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       akpm@linux-foundation.org
+In-Reply-To: <20081128060803.73cd59bd@bree.surriel.com>
+References: <20081128060803.73cd59bd@bree.surriel.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 28 Nov 2008 12:30:14 +0100
+Message-Id: <1227871814.4454.3855.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> Hi,
+On Fri, 2008-11-28 at 06:08 -0500, Rik van Riel wrote:
+> Skip freeing memory from zones that already have lots of free memory.
+> If one memory zone has harder to free memory, we want to avoid freeing
+> excessive amounts of memory from other zones, if only because pageout
+> IO from the other zones can slow down page freeing from the problem zone.
 > 
-> Here's a plan for how to do stack tracking with kmemcheck. It is not
-> entirely trivial, but as far as I can see, it SHOULD be possible.
-> Please let me know if you can spot any fallacies or other problems.
-> I've probably missed something...
+> This is similar to the check already done by kswapd in balance_pgdat().
 > 
-> /*
->  * TODO for stack tracking in kmemcheck:
->  *
->  * 1. Make kernel run at CPL = 1
->  *
->  * This includes (I guess) changing the various privilege levels in most
->  * system descriptors and descriptor tables, and probably the IOPL. Are there
->  * any CPU features which always require CPL = 0 to work? Paging requires no
->  * change, as the U/S flag distinguishes between CPL = 0, 1, 2 and CPL = 3
->  * only.
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 
-hm, a ton of instructions need ring-0/supervisor privilege. OTOH, the 
-32-bit Xen hypervisor runs the guest kernel on ring 1 so all these places 
-are abstracted out to a fair degree already via paravirt_ops.
+Make sense,
 
->  *
->  * 2. Modify TSS to use separate stacks for CPL = 0 and CPL = 1
->  * 3. Install a Call Gate for Page Faults in the GDT with DPL = 0
->  * 4. Change IDT entry for #PF to point to Call Gate in GDT
->  *
->  * Now when a #PF occurs in kernel mode, CPU will look up the IDT entry for
->  * #PF. It points to our Call Gate in the GDT, which has a different privilege
->  * level, so the CPU will look up the new stack to use in the TSS. In the new
->  * stack, SS, ESP, CS, and EIP are saved. Note: page_fault() will have to take
->  * care of handling the extra SS/ESP parameters. End of note. Observe that the
->  * old stack has not been touched by the CPU at all (this would lead to a #DF,
->  * Double Fault, which is irrecoverable). Observe also that none of the
->  * interrupted task's registers have been modified. Now the CPU transfers
->  * control to page_fault(), which must save all registers, etc. as usual.
->  *
->  * do_page_fault() must NOT be allowed to enable interrupts, otherwise we
->  * could take interrupts that would use the new stack. If the interrupt
->  * handler takes another page fault, the CPU will already be in CPL = 0 and no
->  * stack switch will occur!
->  *
->  * I think we need to make the kernel switch stacks on ALL interrupts. When
->  * the CPU is interrupted, it will attempt to push CS/EIP on the current
->  * stack. If the PTE of the current stack is non-present, a Page Fault will be
->  * generated (not a Double Fault!). However, we have no way to tell if the #PF
->  * was generated by an interrupt.
->  *
->  * 5. Implement support for PUSHA/POPA instruction handling in kmemcheck. No
->  *    extra support will be needed for IRET, as interrupts must not be allowed
->  *    to occur when the stack is located in a non-present page.
->  *
->  * Note that it is possible to track POPF/IRET instructions (even though they
->  * modify EFLAGS and the Trap Flag), because the CPU does the right thing and
->  * raises the Debug Exception based on the previous setting of TF.
->  *
->  * 6. The kernel stack tracer would need to be modified to understand stack
->  *    changes/boundaries.
->  */
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Sounds like a lot of work.
-
-I'm wondering, how about a non-fault-driven approach: for example the 
-function tracer could be modified to poison stack frames as we return 
-from a function, and it could also check the poison value when we enter a 
-function call.
-
-This is a high-overhead approach too - but ftrace could be modified to 
-provide a stack frame size parameter so it would only involve the stack 
-frame that is entered/exited.
-
-This would not have the same quality as kmemcheck, but would cover the 
-common cases to a fair degree. (and would also be fairly 
-false-positive-safe)
-
-Hm?
-
-	Ingo
+> ---
+> Kosaki-san, this should address point (3) from your list.
+> 
+>  mm/vmscan.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.28-rc5/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-28 05:53:56.000000000 -0500
+> +++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-28 06:05:29.000000000 -0500
+> @@ -1510,6 +1510,9 @@ static unsigned long shrink_zones(int pr
+>  			if (zone_is_all_unreclaimable(zone) &&
+>  						priority != DEF_PRIORITY)
+>  				continue;	/* Let kswapd poll it */
+> +			if (zone_watermark_ok(zone, sc->order,
+> +					4*zone->pages_high, high_zoneidx, 0))
+> +				continue;	/* Lots free already */
+>  			sc->all_unreclaimable = 0;
+>  		} else {
+>  			/*
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
