@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYK1WmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbYK1Wnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbYK1WmR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 17:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYK1WmB
+	id S1755536AbYK1Wnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 17:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYK1Wnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 17:42:01 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:47018 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbYK1WmA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 17:42:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VRsrxo5zbG+SXdBPdj0NzwgIYQc+JV5plMhOdlLrLxc8yJnuRmzPawFtAFQuMPGxkp
-         u/5KRTs401C6NZULB1VgcRjtmLfjutGkd7KGWEWlHu+q6LT+XcitBxdxlp3fCLJ18xh9
-         yDEl+Gd/uiURflzHurU3H1TKIltN9R3ftBZ7k=
-Message-ID: <19f34abd0811281441m6245d1bag2053619939270a5a@mail.gmail.com>
-Date: Fri, 28 Nov 2008 23:41:59 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH] kbuild: fix CONFIG_EMBEDDED submenu
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081128173849.GA19101@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Nov 2008 17:43:39 -0500
+Received: from cmpxchg.org ([85.214.51.133]:57056 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752750AbYK1Wni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 17:43:38 -0500
+Date: Fri, 28 Nov 2008 23:43:04 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+Message-ID: <20081128224304.GB7828@cmpxchg.org>
+References: <20081128060803.73cd59bd@bree.surriel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081128173849.GA19101@localhost.localdomain>
+In-Reply-To: <20081128060803.73cd59bd@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 6:38 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> From 06f65799401f08eff0020ba0300133c89bd02349 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Fri, 28 Nov 2008 18:29:47 +0100
-> Subject: [PATCH] kbuild: fix CONFIG_EMBEDDED submenu
->
-> Many of the elements of the EMBEDDED submenu were being expanded
-> in the current menu instead of inside the submenu. This was caused
-> by the lack of (explicit) dependencies on EMBEDDED. The simplest
-> fix is to wrap everything (except COMPAT_BRK, which just toggles a
-> setting) in "if/endif EMBEDDED".
+On Fri, Nov 28, 2008 at 06:08:03AM -0500, Rik van Riel wrote:
+> Skip freeing memory from zones that already have lots of free memory.
+> If one memory zone has harder to free memory, we want to avoid freeing
+> excessive amounts of memory from other zones, if only because pageout
+> IO from the other zones can slow down page freeing from the problem zone.
+> 
+> This is similar to the check already done by kswapd in balance_pgdat().
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 
-Urgh -- the menu displays correctly, but defconfig now becomes totally
-wrong, because the items inside are taken to depend on EMBEDDED
-instead of toggling visibility. Better to add "if EMBEDDED" to the end
-of all the prompts, then.
+Acked-by: Johannes Weiner <hannes@saeurebad.de>
 
-That was counter-intuitive :-(
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+> ---
+> Kosaki-san, this should address point (3) from your list.
+> 
+>  mm/vmscan.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.28-rc5/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-28 05:53:56.000000000 -0500
+> +++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-28 06:05:29.000000000 -0500
+> @@ -1510,6 +1510,9 @@ static unsigned long shrink_zones(int pr
+>  			if (zone_is_all_unreclaimable(zone) &&
+>  						priority != DEF_PRIORITY)
+>  				continue;	/* Let kswapd poll it */
+> +			if (zone_watermark_ok(zone, sc->order,
+> +					4*zone->pages_high, high_zoneidx, 0))
+> +				continue;	/* Lots free already */
+>  			sc->all_unreclaimable = 0;
+>  		} else {
+>  			/*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
