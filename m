@@ -1,42 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYK1KRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYK1KT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbYK1KRP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 05:17:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYK1KQ7
+	id S1753369AbYK1KT4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 05:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYK1KTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 05:16:59 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40554 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYK1KQ7 (ORCPT
+	Fri, 28 Nov 2008 05:19:47 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47812 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbYK1KTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 05:16:59 -0500
-Date: Fri, 28 Nov 2008 05:16:56 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, hch@infradead.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH -v3 3/8] fsnotify: sys_execve and sys_uselib do not
-	call into fsnotify
-Message-ID: <20081128101656.GA20596@infradead.org>
-References: <20081125171714.17115.82625.stgit@paris.rdu.redhat.com> <20081125172107.17115.98087.stgit@paris.rdu.redhat.com>
+	Fri, 28 Nov 2008 05:19:46 -0500
+Date: Fri, 28 Nov 2008 10:19:19 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v10][PATCH 08/13] Dump open file descriptors
+Message-ID: <20081128101919.GO28946@ZenIV.linux.org.uk>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu> <1227747884-14150-9-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081125172107.17115.98087.stgit@paris.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1227747884-14150-9-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 12:21:07PM -0500, Eric Paris wrote:
-> sys_execve and sys_uselib do not call into fsnotify so inotify, dnotify,
-> and importantly to me fanotify do not see opens on things which are going
-> to be exectued.  Create a generic fsnotify hook for these paths.
+On Wed, Nov 26, 2008 at 08:04:39PM -0500, Oren Laadan wrote:
+> +int cr_scan_fds(struct files_struct *files, int **fdtable)
+> +{
+> +	struct fdtable *fdt;
+> +	int *fds;
+> +	int i, n = 0;
+> +	int tot = CR_DEFAULT_FDTABLE;
+> +
+> +	fds = kmalloc(tot * sizeof(*fds), GFP_KERNEL);
+> +	if (!fds)
+> +		return -ENOMEM;
+> +
+> +	/*
+> +	 * We assume that the target task is frozen (or that we checkpoint
+> +	 * ourselves), so we can safely proceed after krealloc() from where
+> +	 * we left off; in the worst cases restart will fail.
+> +	 */
 
-Can you please send these exec fixes in a separate series not depending
-on any of the other stuff?
+Task may be frozen, but it may share the table with any number of other
+tasks...
 
+> +	spin_lock(&files->file_lock);
+> +	rcu_read_lock();
+> +	fdt = files_fdtable(files);
+> +	for (i = 0; i < fdt->max_fds; i++) {
+> +		if (!fcheck_files(files, i))
+> +			continue;
+> +		if (n == tot) {
+> +			/*
+> +			 * fcheck_files() is safe with drop/re-acquire
+> +			 * of the lock, because it tests:  fd < max_fds
+> +			 */
+> +			spin_unlock(&files->file_lock);
+> +			rcu_read_unlock();
+> +			tot *= 2;	/* won't overflow: kmalloc will fail */
+> +			fds = krealloc(fds, tot * sizeof(*fds), GFP_KERNEL);
+> +			if (!fds)
+> +				return -ENOMEM;
+> +			rcu_read_lock();
+> +			spin_lock(&files->file_lock);
+> +		}
+> +		fds[n++] = i;
+> +	}
+> +	rcu_read_unlock();
+> +	spin_unlock(&files->file_lock);
+> +
+> +	*fdtable = fds;
+> +	return n;
+> +}
+
+> +	switch (inode->i_mode & S_IFMT) {
+> +	case S_IFREG:
+> +		fd_type = CR_FD_FILE;
+> +		break;
+> +	case S_IFDIR:
+> +		fd_type = CR_FD_DIR;
+> +		break;
+> +	case S_IFLNK:
+> +		fd_type = CR_FD_LINK;
+
+Opened symlinks?  May I have whatever you'd been smoking, please?
