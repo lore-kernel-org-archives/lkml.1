@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYK1MCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYK1MH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYK1MCb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 07:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYK1MCV
+	id S1754196AbYK1MH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 07:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYK1MHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 07:02:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57748 "EHLO hera.kernel.org"
+	Fri, 28 Nov 2008 07:07:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46946 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbYK1MCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 07:02:21 -0500
-Message-ID: <492FDDD1.3040209@kernel.org>
-Date: Fri, 28 Nov 2008 21:02:25 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1751848AbYK1MHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 07:07:10 -0500
+Date: Fri, 28 Nov 2008 13:06:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: move GART specific stuff from iommu.h to gart.h
+Message-ID: <20081128120643.GE18333@elte.hu>
+References: <1227807555-10499-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Adrian Bunk <bunk@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr> <492F5613.4090908@kernel.org> <alpine.LNX.1.10.0811281220510.3843@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0811281220510.3843@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Nov 2008 12:02:03 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227807555-10499-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
->> The devel version of ossp (not out yet, waiting for CUSE and mmap
->> support merge) can do all the quakes (even the dreaded quake1 which
->> even ALSA OSS emulation or native OSS can't do because of strict
->> sample/freq requirement which modern devices don't support anymore)
-> 
-> Quake won't be a problem because its source was released.
 
-Well, it's still nice to just download the stock demo and being able
-to run it.  Has q2 been open sourced too?
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
->> and skype-static-oss are working fine.
+> Impact: cleanup
 > 
-> Skype should burn in hell...
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/include/asm/gart.h      |   33 +++++++++++++++++++++++++++++++++
+>  arch/x86/include/asm/iommu.h     |   33 ---------------------------------
+>  arch/x86/kernel/amd_iommu.c      |    1 +
+>  arch/x86/kernel/amd_iommu_init.c |    1 +
+>  arch/x86/kernel/early-quirks.c   |    1 +
+>  arch/x86/kernel/pci-dma.c        |    1 +
+>  arch/x86/kernel/setup.c          |    1 +
+>  7 files changed, 38 insertions(+), 33 deletions(-)
 
-Heh... it's the only working IP phone solution over here.
+applied to tip/x86/iommu, thanks Joerg!
 
->> The latency is still a tad bit
->> high due to PA interaction but everything is mostly in place.  I'm
->> fairly sure UT would work too.  Do you know where I can get a demo of
->> it?
-> 
-> It has become really difficult to obtain these nowadays, but there it is:
-> 
-> http://download.beyondunreal.com/get.php/2/official/ut/utdemo-linux-x86-348.tar.gz
-> 
-> 
-> (BTW, Firefox3 screws up on loading
-> http://download.beyondunreal.com/fileworks.php/official/ut/utdemo-linux-x86-348.tar.gz
-> w3m works fine and was used to obtain the nested link above.)
-
-Thanks.  Will try that.
-
--- 
-tejun
+	Ingo
