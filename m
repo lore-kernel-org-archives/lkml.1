@@ -1,97 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbYK1LRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYK1LS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbYK1LRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:17:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYK1LQw
+	id S1752669AbYK1LS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYK1LSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:16:52 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:61272 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbYK1LQv (ORCPT
+	Fri, 28 Nov 2008 06:18:17 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:40430 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbYK1LSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:16:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=dmYE+JdX1LH4H31zG51zOrMfdfcBjbcz4ujC3dTqbhzwnryFr0GACh4RKM/fs/dA3f
-         NIDGVMtQyXDLvN8N0T9DniPHOip5gHymqcRRE2fmTmC2JqziHXMODszn/ATIAcoK+8Lj
-         7oreYcAPZSwhgV0qWcJn3RA7Bku2/faW5/VpM=
-Message-ID: <19f34abd0811280316y13dd8dfcm3cf77b6b2171612b@mail.gmail.com>
-Date: Fri, 28 Nov 2008 12:16:48 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: [RFC] kmemcheck: TODO for stack tracking
-Cc: "Eugene Teo" <eugeneteo@kernel.sg>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Fri, 28 Nov 2008 06:18:16 -0500
+Date: Fri, 28 Nov 2008 11:18:09 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com,
+       matthew@wil.cx
+Subject: Re: [PATCH v4] relatime: Make relatime smarter
+Message-ID: <20081128111809.GH6138@shareable.org>
+References: <20081126195457.GA3541@srcf.ucam.org> <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127163535.775729bf@lxorguk.ukuu.org.uk> <20081127164754.GC22963@srcf.ucam.org> <20081127165929.GA23366@srcf.ucam.org> <20081127170615.GB14991@infradead.org> <20081127175813.GA24354@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081127175813.GA24354@srcf.ucam.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Matthew Garrett wrote:
+> The time between atime updates can be configured at boot
+> with the relatime_interval kernel argument, or at runtime through a sysctl.
 
-Here's a plan for how to do stack tracking with kmemcheck. It is not
-entirely trivial, but as far as I can see, it SHOULD be possible.
-Please let me know if you can spot any fallacies or other problems.
-I've probably missed something...
+Shouldn't it be a per-mount value, with defaults coming from the sysctl?
 
-/*
- * TODO for stack tracking in kmemcheck:
- *
- * 1. Make kernel run at CPL = 1
- *
- * This includes (I guess) changing the various privilege levels in most
- * system descriptors and descriptor tables, and probably the IOPL. Are there
- * any CPU features which always require CPL = 0 to work? Paging requires no
- * change, as the U/S flag distinguishes between CPL = 0, 1, 2 and CPL = 3
- * only.
- *
- * 2. Modify TSS to use separate stacks for CPL = 0 and CPL = 1
- * 3. Install a Call Gate for Page Faults in the GDT with DPL = 0
- * 4. Change IDT entry for #PF to point to Call Gate in GDT
- *
- * Now when a #PF occurs in kernel mode, CPU will look up the IDT entry for
- * #PF. It points to our Call Gate in the GDT, which has a different privilege
- * level, so the CPU will look up the new stack to use in the TSS. In the new
- * stack, SS, ESP, CS, and EIP are saved. Note: page_fault() will have to take
- * care of handling the extra SS/ESP parameters. End of note. Observe that the
- * old stack has not been touched by the CPU at all (this would lead to a #DF,
- * Double Fault, which is irrecoverable). Observe also that none of the
- * interrupted task's registers have been modified. Now the CPU transfers
- * control to page_fault(), which must save all registers, etc. as usual.
- *
- * do_page_fault() must NOT be allowed to enable interrupts, otherwise we
- * could take interrupts that would use the new stack. If the interrupt
- * handler takes another page fault, the CPU will already be in CPL = 0 and no
- * stack switch will occur!
- *
- * I think we need to make the kernel switch stacks on ALL interrupts. When
- * the CPU is interrupted, it will attempt to push CS/EIP on the current
- * stack. If the PTE of the current stack is non-present, a Page Fault will be
- * generated (not a Double Fault!). However, we have no way to tell if the #PF
- * was generated by an interrupt.
- *
- * 5. Implement support for PUSHA/POPA instruction handling in kmemcheck. No
- *    extra support will be needed for IRET, as interrupts must not be allowed
- *    to occur when the stack is located in a non-present page.
- *
- * Note that it is possible to track POPF/IRET instructions (even though they
- * modify EFLAGS and the Trap Flag), because the CPU does the right thing and
- * raises the Debug Exception based on the previous setting of TF.
- *
- * 6. The kernel stack tracer would need to be modified to understand stack
- *    changes/boundaries.
- */
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+-- Jamie
