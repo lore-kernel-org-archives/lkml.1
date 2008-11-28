@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYK1VVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYK1Vax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbYK1VVe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 16:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYK1VVZ
+	id S1755002AbYK1Vax (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 16:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYK1Van
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 16:21:25 -0500
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:58154 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbYK1VVX (ORCPT
+	Fri, 28 Nov 2008 16:30:43 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:52318 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752364AbYK1Van (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 16:21:23 -0500
-Date: Fri, 28 Nov 2008 13:21:22 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Alex Chiang <achiang@hp.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
+	Fri, 28 Nov 2008 16:30:43 -0500
+Date: Fri, 28 Nov 2008 14:30:41 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Alex Chiang <achiang@hp.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        linux-pci <linux-pci@vger.kernel.org>
 Subject: Re: [PATCH] fakephp: Allocate PCI resources before adding the	device
-In-Reply-To: <20081128185722.GU25548@parisc-linux.org>
-Message-ID: <Pine.LNX.4.58.0811281310050.30153@shell4.speakeasy.net>
-References: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com>
- <Pine.LNX.4.64.0811251919590.5161@t2.domain.actdsltmp> <20081126074808.GE6539@plum>
- <Pine.LNX.4.58.0811260131200.24816@shell4.speakeasy.net> <20081126181841.GF6539@plum>
- <Pine.LNX.4.58.0811261349120.24816@shell4.speakeasy.net>
- <20081126225535.GA27936@ldl.fc.hp.com> <Pine.LNX.4.58.0811261647410.24816@shell4.speakeasy.net>
- <20081127024204.GJ25548@parisc-linux.org> <Pine.LNX.4.58.0811280151230.24816@shell4.speakeasy.net>
- <20081128185722.GU25548@parisc-linux.org>
+Message-ID: <20081128213041.GW25548@parisc-linux.org>
+References: <20081126074808.GE6539@plum> <Pine.LNX.4.58.0811260131200.24816@shell4.speakeasy.net> <20081126181841.GF6539@plum> <Pine.LNX.4.58.0811261349120.24816@shell4.speakeasy.net> <20081126225535.GA27936@ldl.fc.hp.com> <Pine.LNX.4.58.0811261647410.24816@shell4.speakeasy.net> <20081127024204.GJ25548@parisc-linux.org> <Pine.LNX.4.58.0811280151230.24816@shell4.speakeasy.net> <20081128185722.GU25548@parisc-linux.org> <Pine.LNX.4.58.0811281310050.30153@shell4.speakeasy.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0811281310050.30153@shell4.speakeasy.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008, Matthew Wilcox wrote:
-> On Fri, Nov 28, 2008 at 02:11:49AM -0800, Trent Piepho wrote:
-> > On Wed, 26 Nov 2008, Matthew Wilcox wrote:
-> > > Because fakephp was the odd one out.  Every other hotplug driver
-> > > registers a slot number and puts the address in the directory.  We're
-> > > making hotplug drivers simpler (by sharing more of the logic in the
-> > > core) and so fakephp had to change to match the other drivers.  I'm
-> > > sorry for your inconvenience, but it's necessary.
-> >
-> > Seems like changing a long established interface like this should be put on
-> > the feature removable schedule.
->
-> sysfs is more fluid than other interfaces.  Large parts of it
-> change without warning.  I suppose it could have gone through
-> feature-removal-schedule, and perhaps we should try to do that in future.
+On Fri, Nov 28, 2008 at 01:21:22PM -0800, Trent Piepho wrote:
+> Sometimes I just want to give up on Linux.  Is there a different interface
+> that isn't wantonly changed without warning?  No?  Do you not see the
+> problem this creates for developers?  Do you not care?
 
-Sometimes I just want to give up on Linux.  Is there a different interface
-that isn't wantonly changed without warning?  No?  Do you not see the
-problem this creates for developers?  Do you not care?
+You see, we didn't know that anyone was using fakephp for real work.
+It's marketed as being a way for developers to test their device drivers
+with hotplug slots even if they don't have a real hotplug machine.
+If we'd known, we'd've done a better job.
 
-> > > We can discuss other ways to make your life better, but it can't be
-> > > changed back to one 'slot' per PCI function.
-> >
-> > Why not have a slot per pci function with each hotplug driver adding
-> > attributes to the slot?  The slot would be registered by the hotplug core.
->
-> What we have now is the 'address' file managed by the core.  This
-> doesn't include the function number.
+BTW, cut the crap about "Sometimes I just want to give up on Linux".
+We're putting in a lot of work that you get to use for free.  That doesn't
+give you the right to be abusive.  And if you stopped using Linux, we'd
+have one fewer person complaining, so I don't personally find it a huge
+motivator to drop everything and attend to your whims.
 
-So the race condition doesn't matter?  Alex Chiang wasn't even aware
-fakephp could be used to add new devices, so this change obviously wasn't
-though out very well.
+> > What we have now is the 'address' file managed by the core.  This
+> > doesn't include the function number.
+> 
+> So the race condition doesn't matter?  Alex Chiang wasn't even aware
+> fakephp could be used to add new devices, so this change obviously wasn't
+> though out very well.
 
-> > Is there any reason the fakephp driver should not be allowed to enable and
-> > disable individual functions?  There a lot of mutli-function devices that
-> > allow individual functions to be enabled and disabled with registers on the
-> > primary function.  For instance, it would be possible to work around a BIOS
-> > that doesn't have an option to disabled a southbridge's USB controller by
-> > doing so in Linux and then using fakephp to remove the device, and thus
-> > free address space that other devices might need.
->
-> There are lots of circumstances where enabling and disabling individual
-> functions is a good idea, but I don't think that fakephp is the right
-> way to do it.  We need a better interface.
+There is no race condition.  You can't remove a fakephp slot.
 
-So maybe this better interface should be created before breaking the
-existing one?
+> > There are lots of circumstances where enabling and disabling individual
+> > functions is a good idea, but I don't think that fakephp is the right
+> > way to do it.  We need a better interface.
+> 
+> So maybe this better interface should be created before breaking the
+> existing one?
+
+Hey, I have a great idea.  Why don't you help instead of just bitching?
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
