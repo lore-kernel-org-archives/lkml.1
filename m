@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYK1RAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbYK1RI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbYK1RAv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 12:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYK1RAn
+	id S1753452AbYK1RI3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 12:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYK1RIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 12:00:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35927 "EHLO mx2.mail.elte.hu"
+	Fri, 28 Nov 2008 12:08:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54471 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751334AbYK1RAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 12:00:42 -0500
-Date: Fri, 28 Nov 2008 18:00:29 +0100
+	id S1751334AbYK1RIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 12:08:18 -0500
+Date: Fri, 28 Nov 2008 18:08:05 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] warn: print the DMI board info name in a
-	WARN/WARN_ON
-Message-ID: <20081128170029.GD10487@elte.hu>
-References: <20081128083525.092e9859@linux.intel.com> <20081128083609.2a254c06@linux.intel.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: T?r?k Edwin <edwintorok@gmail.com>, Christoph Hellwig <hch@infradead.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, srostedt@redhat.com,
+       a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs, seqfile: make mangle_path() global
+Message-ID: <20081128170805.GE10487@elte.hu>
+References: <1227353328-16104-1-git-send-email-edwintorok@gmail.com> <1227353328-16104-3-git-send-email-edwintorok@gmail.com> <20081123084737.GE30453@elte.hu> <20081128100539.GN28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081128083609.2a254c06@linux.intel.com>
+In-Reply-To: <20081128100539.GN28946@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,59 +37,69 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-> From acdc8771dfaf6e8236b9122364301f65f46d4b59 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Fri, 28 Nov 2008 08:32:44 -0800
-> Subject: [PATCH] warn: print the DMI board info name in a WARN/WARN_ON
+> On Sun, Nov 23, 2008 at 09:47:37AM +0100, Ingo Molnar wrote:
+> > 
+> > * T?r?k Edwin <edwintorok@gmail.com> wrote:
+> > 
+> > >  fs/seq_file.c            |   14 +++++++-
+> > >  include/linux/seq_file.h |    1 +
+> > 
+> > Note, i've split these bits out into a separate patch - see it 
+> > attached below.
 > 
-> it's very useful for many low level WARN_ON's to find out which
-> motherboard has the broken BIOS etc... this patch adds a printk
-> to the WARN_ON code for this.
-> On architectures without DMI, gcc should optimize the code out.
+> ACK, [...]
+
+thanks!
+
+> [...] except that I wouldn't use _GPL in the export - it's trivial to 
+> reproduce, so we are not protecting anything here.  And all that code 
+> has been moved verbatim from seq_path(), which is mine *and* exported 
+> without _GPL nonsense.
 > 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  kernel/panic.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+> As far as I'm concerned, all these helpers are as general-purpose as 
+> atoi() et.al. - library functions damn close to being non-copyrightable 
+> due both to triviality and to being absolutely straightforward 
+> implementations - tell anybody to implement it and that's what you'll 
+> get.
 > 
-> diff --git a/kernel/panic.c b/kernel/panic.c
-> index 2b913aa..9c1b7e0 100644
-> --- a/kernel/panic.c
-> +++ b/kernel/panic.c
-> @@ -21,6 +21,7 @@
->  #include <linux/debug_locks.h>
->  #include <linux/random.h>
->  #include <linux/kallsyms.h>
-> +#include <linux/dmi.h>
->  
->  int panic_on_oops;
->  static unsigned long tainted_mask;
-> @@ -328,12 +329,16 @@ void warn_slowpath(const char *file, int line, const char *fmt, ...)
->  {
->  	va_list args;
->  	char function[KSYM_SYMBOL_LEN];
-> +	const char *board;
->  	unsigned long caller = (unsigned long)__builtin_return_address(0);
->  	sprint_symbol(function, caller);
->  
->  	printk(KERN_WARNING "------------[ cut here ]------------\n");
->  	printk(KERN_WARNING "WARNING: at %s:%d %s()\n", file,
->  		line, function);
-> +	board = dmi_get_system_info(DMI_PRODUCT_NAME);
-> +	if (board)
-> +		printk(KERN_WARNING "Hardware name: %s\n", board);
->  
->  	if (fmt) {
->  		va_start(args, fmt);
+> I'm not fond of proprietary modules, to put it mildly, but let's not 
+> get completely ridiculous.  In this case it's as dumb as schools trying 
+> to ban aspirin in the name of War On Some Drugs.
 
-nice idea - applied to tip/core/debug.
+okay, fair enough. Would the commit below be fine with you?
 
-On architectures (or systems) where there's no DMI_PRODUCT_NAME string 
-available, we'll print nothing. It's also a simple lockless call so can 
-be called from any context.
-
-Andrew, any objections?
+Also, since we depend on this commit, would it be fine with you if we 
+carried the trivial patch in tip/tracing/*?
 
 	Ingo
+
+---------------->
+>From 604094f4615180f71da799e7e5b191f5c2a42a28 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 28 Nov 2008 18:03:22 +0100
+Subject: [PATCH] vfs, seqfile: export mangle_path() generally
+
+mangle_path() is trivial enough to make  export restrictions on it
+pointless - so change the export from EXPORT_SYMBOL_GPL to EXPORT_SYMBOL.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
+---
+ fs/seq_file.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index f03220d..16c2115 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -387,7 +387,7 @@ char *mangle_path(char *s, char *p, char *esc)
+ 	}
+ 	return NULL;
+ }
+-EXPORT_SYMBOL_GPL(mangle_path);
++EXPORT_SYMBOL(mangle_path);
+ 
+ /*
+  * return the absolute path of 'dentry' residing in mount 'mnt'.
