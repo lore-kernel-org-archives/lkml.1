@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYK1Tnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYK1ToS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbYK1Tnp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 14:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbYK1Tnd
+	id S1755490AbYK1ToS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 14:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYK1Tn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 14:43:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:2969 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752916AbYK1Tnc (ORCPT
+	Fri, 28 Nov 2008 14:43:58 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:55851 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbYK1Tn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 14:43:32 -0500
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+	Fri, 28 Nov 2008 14:43:57 -0500
+To: Alessandro Zummo <a.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com
 Cc: linux-kernel@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org
 Cc: trivial@kernel.org
-Date: Thu, 27 Nov 2008 23:23:38 +0100
-Subject: [PATCH] alim15x3: fix sparse warning
+Date: Fri, 28 Nov 2008 17:01:35 +0100
+Subject: [PATCH] rtc-ds1511: fix sparse warning
 From: Hannes Eder <hannes@hanneseder.net>
-Message-ID: <493049e1.0ab6660a.0bc3.ffffaf3b@mx.google.com>
+Message-ID: <493049fa.06a1660a.3655.ffffab3c@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix this sparse warning:
 
-  drivers/ide/alim15x3.c:594:2: warning: returning void-valued expression
+  drivers/rtc/rtc-ds1511.c:634:2: warning: returning void-valued expression
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/ide/alim15x3.c |    2 +-
+ drivers/rtc/rtc-ds1511.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ide/alim15x3.c b/drivers/ide/alim15x3.c
-index e56c7b7..45d2356 100644
---- a/drivers/ide/alim15x3.c
-+++ b/drivers/ide/alim15x3.c
-@@ -591,7 +591,7 @@ static int __init ali15x3_ide_init(void)
- 
- static void __exit ali15x3_ide_exit(void)
+diff --git a/drivers/rtc/rtc-ds1511.c b/drivers/rtc/rtc-ds1511.c
+index 25caada..062a1d1 100644
+--- a/drivers/rtc/rtc-ds1511.c
++++ b/drivers/rtc/rtc-ds1511.c
+@@ -631,7 +631,7 @@ ds1511_rtc_init(void)
+  static void __exit
+ ds1511_rtc_exit(void)
  {
--	return pci_unregister_driver(&alim15x3_pci_driver);
-+	pci_unregister_driver(&alim15x3_pci_driver);
+-	return platform_driver_unregister(&ds1511_rtc_driver);
++	platform_driver_unregister(&ds1511_rtc_driver);
  }
  
- module_init(ali15x3_ide_init);
+ module_init(ds1511_rtc_init);
 -- 
 1.5.6.3
 
