@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYK1Osy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYK1POM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYK1Osy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 09:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYK1Oso
+	id S1753483AbYK1POM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 10:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYK1PN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 09:48:44 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:58104 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbYK1Osn (ORCPT
+	Fri, 28 Nov 2008 10:13:56 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:12409 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbYK1PNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 09:48:43 -0500
+	Fri, 28 Nov 2008 10:13:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=GPuJyEb8g4S0kEzq2Y6QV7CJyKUM0Fh7FJAkhq4/p/7P9KaMPM4wUonSj2P/B+Ne67
-         K317VGwb1BhxPK1SYvJumU1TaXfrxNd6DANnGVYDEqw1SmEQCN6EyRzFyRlyWqRmy8ez
-         Qx33WW+UXcJ4KU3nnBsOuG9f+BryxW4NYsW14=
-References: <1227710025-23592-1-git-send-email-Scholz@fias.uni-frankfurt.de> <alpine.LNX.1.10.0811281509450.19853@jikos.suse.cz>
-Message-Id: <D0C5E070-309C-47A9-B0D3-530E48B475FD@gmail.com>
-From: Jorden Mauro <jrm8005@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0811281509450.19853@jikos.suse.cz>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5F136)
-Mime-Version: 1.0 (iPhone Mail 5F136)
-Subject: Re: [PATCH 0/1] HID: hid_apple is not used for apple alu wireless keyboards
-Date: Fri, 28 Nov 2008 09:48:20 -0500
-Cc: Jan Scholz <Scholz@fias.uni-frankfurt.de>,
-       "jirislaby@gmail.com" <jirislaby@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tobias Mueller <Tobias_Mueller@twam.info>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nqO14foLjOw4iTJ6AFW9jxfWmNXVOJL8bL++UqbA3RgYC3In7UErRPd1y0VuGJUXnJ
+         3pMTOmhg3LHR0lMv3oE/Wwh0fcjrTt5ywgKdrLSIY31XorZfTWAFQPfeyzGW1VG71d39
+         6akasl4FWHJ5eryjZcKhSmqmyo0kKXHzLjj6k=
+Date: Fri, 28 Nov 2008 18:17:55 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: next-2008-11-28: bfin vs cpumask fixlet
+Message-ID: <20081128151755.GA27660@x200.localdomain>
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Nov 28, 2008, at 9:11, Jiri Kosina <jkosina@suse.cz> wrote:
-
-> On Wed, 26 Nov 2008, Jan Scholz wrote:
->
->> While parsing 'hid_blacklist' in hid-core.c my apple alu wireless
->> keyboard is not found.  This happens because in the blacklist it
->> is declared with HID_USB_DEVICE although the keyboards are really
->> bluetooth devices.  The same holds for 'apple_devices' list in
->> hid-apple.c
->> This patch fixes it by changing HID_USB_DEVICE to
->> HID_BLUETOOTH_DEVICE in those two lists.
->
-> OK, I have done some googling in addition to what Tobias and J.R. have
-> written, and your patch seems to be indeed the correct thing to do for
-> these three product IDs. So I have queued it in my tree for 2.6.28,
-> thanks.
-
-Jiri,
-
-I can test this patch hopefully next week on the wireless keyboard.  
-I'll let you know of any issues.
-
-Thanks,
-J.R.
-
-
->
->
-> -- 
-> Jiri Kosina
-> SUSE Labs
+--- a/arch/blackfin/kernel/time-ts.c
++++ b/arch/blackfin/kernel/time-ts.c
+@@ -162,7 +162,6 @@ static struct clock_event_device clockevent_bfin = {
+ 	.name		= "bfin_core_timer",
+ 	.features	= CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
+ 	.shift		= 32,
+-	.cpumask	= CPU_MASK_CPU0,
+ 	.set_next_event = bfin_timer_set_next_event,
+ 	.set_mode	= bfin_timer_set_mode,
+ };
+@@ -193,6 +192,7 @@ static int __init bfin_clockevent_init(void)
+ 	clockevent_bfin.mult = div_sc(timer_clk, NSEC_PER_SEC, clockevent_bfin.shift);
+ 	clockevent_bfin.max_delta_ns = clockevent_delta2ns(-1, &clockevent_bfin);
+ 	clockevent_bfin.min_delta_ns = clockevent_delta2ns(100, &clockevent_bfin);
++	clockevent_bfin.cpumask = cpumask_of(0);
+ 	clockevents_register_device(&clockevent_bfin);
+ 
+ 	return 0;
