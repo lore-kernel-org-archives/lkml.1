@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYK1KpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYK1Kqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbYK1KpQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 05:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYK1KpB
+	id S1754215AbYK1Kqj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 05:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYK1Kqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 05:45:01 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47795 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbYK1KpB (ORCPT
+	Fri, 28 Nov 2008 05:46:30 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47807 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbYK1Kq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 05:45:01 -0500
-Date: Fri, 28 Nov 2008 11:44:59 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: ?ric Piel <eric.piel@tremplin-utc.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>, trenn@suse.de, hmh@hmh.eng.br
-Subject: Re: HP accelerometer: free fall detection working, testers wanted
-Message-ID: <20081128104459.GA32417@atrey.karlin.mff.cuni.cz>
-References: <20081121212121.GA7222@elf.ucw.cz> <20081128082215.GA2013@elf.ucw.cz> <492FC1D0.2040408@tremplin-utc.net>
+	Fri, 28 Nov 2008 05:46:29 -0500
+Date: Fri, 28 Nov 2008 10:45:54 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v10][PATCH 02/13] Checkpoint/restart: initial
+	documentation
+Message-ID: <20081128104554.GP28946@ZenIV.linux.org.uk>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu> <1227747884-14150-3-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <492FC1D0.2040408@tremplin-utc.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1227747884-14150-3-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Nov 26, 2008 at 08:04:33PM -0500, Oren Laadan wrote:
 
-> > I got free fall detection to work -- apparently BIOS does all the
-> > important stuff itself. 
-> > 
-> > Now... I'd like some testers. (Don't comment on code... yet. Yes, it
-> > has some issues).
-> >
-> Hi Pavel,
-> I'll try to test this weekend.
-> 
-> Out of curiosity, what did you change compared to the original version
-> of the driver? Did you just disable the set up code?
+> +Currently, namespaces are not saved or restored. They will be treated
+> +as a class of a shared object. In particular, it is assumed that the
+> +task's file system namespace is the "root" for the entire container.
+> +It is also assumed that the same file system view is available for the
+> +restart task(s). Otherwise, a file system snapshot is required.
 
-Disable all the writes, yes.
+That is to say, bindings are not handled at all.
 
-> Also, how do you try free fall? Did you try also with the lid
-> opened?
+> +* What additional work needs to be done to it?
 
-With the lid opened, too, yes. I just took the machine, then tried to
-let go and catch it meter below that. (Of course I did not really let
-go, but released the grip and followed...)
+> +We know this design can work.  We have two commercial products and a
+> +horde of academic projects doing it today using this basic design.
 
-> > hp3dg script should do all the important things.
-> :
-> > --- /dev/null
-> > +++ b/Documentation/hwmon/hp3dg
-> :
-> > +while true; do
-> > +	./readaccel foo
-> > +	unload 2
-> > +	if cat /proc/acpi/button/lid/LID/state | grep open && cat /proc/acpi/ac_adapter/AC0/state | grep off-line; then
-> > +		unload 20
-> > +	fi
-> > +done
-> Why a special case if the lid is opened and the laptop unplugged? Is it
-> a special behaviour of the hardware, or simply some kind of basic user
-> behaviour guess?
-
-Behaviour guess, HP asked for those values. Idea is that if the user
-is walking with machine, park as much as possible because machine is
-in danger :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+May I use that for a t-shirt, please?  With that quote in foreground, and
+pus-yellow-greenish "MACH" serving as background.  With the names of products
+and projects dripping from it...
