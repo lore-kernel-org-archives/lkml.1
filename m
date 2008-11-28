@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYK1WdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYK1Wiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755012AbYK1WdS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 17:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYK1Wc7
+	id S1755362AbYK1Wiu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 17:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYK1Wii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 17:32:59 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36961 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752520AbYK1Wc6 (ORCPT
+	Fri, 28 Nov 2008 17:38:38 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:42959 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752520AbYK1Wih convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 17:32:58 -0500
-Date: Fri, 28 Nov 2008 22:33:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Keith Packard <keithp@keithp.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Keith Packard <keithp@keithp.com>
-Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
-Message-ID: <20081128223305.2d11f8d9@lxorguk.ukuu.org.uk>
-In-Reply-To: <1227911282-8857-1-git-send-email-keithp@keithp.com>
-References: <200811281642.52637.arnd@arndb.de>
-	<1227911282-8857-1-git-send-email-keithp@keithp.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Nov 2008 17:38:37 -0500
+Message-ID: <493072B7.5050308@cosmosbay.com>
+Date: Fri, 28 Nov 2008 23:37:43 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, rth@twiddle.net,
+       ink@jurassic.park.msu.ru
+Subject: Re: [PATCH 6/6] fs: Introduce kern_mount_special() to mount	special
+ vfs
+References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDCAB.1070204@cosmosbay.com> <20081128092604.GL28946@ZenIV.linux.org.uk>
+In-Reply-To: <20081128092604.GL28946@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 28 Nov 2008 23:37:44 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008 14:28:02 -0800
-Keith Packard <keithp@keithp.com> wrote:
-
-> USB serial devices with extended IOCTLs cannot be used in a 64-bit kernel
-> from 32-bit user space as the compat_ioctl path is missing. This adds a
-> pass-through so that drivers may offer this functionality. This requires
-> that all drivers actually implement a compat_ioctl function if they want to
-> support this operation.
+Al Viro a écrit :
+> On Thu, Nov 27, 2008 at 12:32:59AM +0100, Eric Dumazet wrote:
+>> This function arms a flag (MNT_SPECIAL) on the vfs, to avoid
+>> refcounting on permanent system vfs.
+>> Use this function for sockets, pipes, anonymous fds.
 > 
-> Signed-off-by: Keith Packard <keithp@keithp.com>
+> IMO that's pushing it past the point of usefulness; unless you can show
+> that this really gives considerable win on pipes et.al. *AND* that it
+> doesn't hurt other loads...
 
-Would be far better to keep compatible ioctls anyway however that aside
-clearly it should be passed on.
+Well, if this is the last cache line that might be shared, then yes, numbers can talk.
+But coming from 10 to 1 instead of 0 is OK I guess
 
-> +static int serial_compat_ioctl(struct tty_struct *tty, struct file *file,
-> +			       unsigned int cmd, unsigned long arg)
-> +{
-> +	struct usb_serial_port *port = tty->driver_data;
-> +	int retval = -ENODEV;
+> 
+> dput() part: again, I want to see what happens on other loads; it's probably
+> fine (and win is certainly more than from mntput() change), but...  The
+> thing is, atomic_dec_and_lock() in there is often done on dentries with
+> d_count > 1 and that's fairly cheap (and doesn't involve contention on
+> dcache_lock on sane targets).
+> 
+> FWIW, unless there's a really good reason to do alpha atomic_dec_and_lock()
+> in a special way, I'd try to compare with
 
-Can never be used only overwritten so why not replace with -ENOIOCTLCMD
-and remove the else of the if
+>         if (atomic_add_unless(&dentry->d_count, -1, 1))
+>                 return;
 
-Also I get a CodingStyle whine about the port->serial-> side of the if
-not needing { }
+I dont know, but *reading* d_count before trying to write it is expensive
+on modern cpus. Oprofile clearly show that on Intel Core2.
 
-> +	/* Called with bkl held */
->  	int  (*ioctl)(struct tty_struct *tty, struct file *file,
->  		      unsigned int cmd, unsigned long arg);
+Then, *testing* the flag before doing the atomic_something() has the same
+problem. Or we should put flag in a different cache line.
 
-No... the ioctl path for tty comes from unlocked_ioctl so the BKL is not
-held and should not be held.
+I am lazy (time for a sleep here), maybe we are smart here and use a trick like that already ?
 
-Alan
+atomic_t atomic_read_with_write_intent(atomic_t *v)
+{
+        int val = 0;
+	/*
+	 * No LOCK prefix here, we only give a write intent hint to cpu
+	 */
+        asm volatile("xaddl %0, %1"
+                     : "+r" (val), "+m" (v->counter)
+                     : : "memory");
+        return val;
+}
+
+
+
+> 	if (your flag)
+> 		sod off to special
+> 	spin_lock(&dcache_lock);
+> 	if (atomic_dec_and_test(&dentry->d_count)) {
+> 		spin_unlock(&dcache_lock);
+> 		return;
+> 	}
+> 	the rest as usual
+> 
+
