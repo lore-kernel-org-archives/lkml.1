@@ -1,106 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYK1DxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYK1EFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbYK1DxQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 22:53:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYK1Dw7
+	id S1754453AbYK1EFp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 23:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYK1EFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 22:52:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64108 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbYK1Dw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 22:52:59 -0500
-Date: Thu, 27 Nov 2008 22:52:56 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: walimis <walimisdev@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ftrace: improve document
-In-Reply-To: <1227839561-8694-1-git-send-email-walimisdev@gmail.com>
-Message-ID: <alpine.DEB.1.10.0811272251180.7113@gandalf.stny.rr.com>
-References: <20081127162117.GA3467@elte.hu> <1227839561-8694-1-git-send-email-walimisdev@gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 27 Nov 2008 23:05:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59563 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752564AbYK1EFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 23:05:32 -0500
+Message-ID: <492F6DFC.3010103@kernel.org>
+Date: Fri, 28 Nov 2008 13:05:16 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+CC: Hannes Reinecke <hare@suse.de>
+Subject: [PATCH 2.6.28-rc6] block: internal dequeue shouldn't start timer
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Nov 2008 04:05:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+blkdev_dequeue_request() and elv_dequeue_request() are equivalent and
+both start the timeout timer.  Barrier code dequeues the original
+barrier request but doesn't passes the request itself to lower level
+driver, only broken down proxy requests; however, as the original
+barrier code goes through the same dequeue path and timeout timer is
+started on it.  If barrier sequence takes long enough, this timer
+expires but the low level driver has no idea about this request and
+oops follows.
 
-On Fri, 28 Nov 2008, walimis wrote:
+Timeout timer shouldn't have been started on the original barrier
+request as it never goes through actual IO.  This patch unexports
+elv_dequeue_request(), which has no external user anyway, and makes it
+operate on elevator proper w/o adding the timer and make
+blkdev_dequeue_request() call elv_dequeue_request() and add timer.
+Internal users which don't pass the request to driver - barrier code
+and end_that_request_last() - are converted to use
+elv_dequeue_request().
 
-> Impact: add notice of using wild cards correctly
-> 
-> We know that we can use wild cards to set set_ftrace_filter, but there's
-> problem when using such as "echo h* > /debug/tracing/set_ftrace_filter".
-> If there are files named with "h" prefix in current directory, echo "h*"
-> will echo these files' name to set_ftrace_filter, not "h*".
-> For example:
-> $cat /debug/tracing/available_filter_functions |grep ^hr |wc -l
-> 23
-> $ls
-> $touch hraa hrdd
-> $ls
-> hraa  hrdd
-> $echo hr* > /debug/tracing/set_ftrace_filter
-> $cat /debug/tracing/set_ftrace_filter
-> 
-> No output in /debug/tracing/set_ftrace_filter!
-> If we use '' to enclose wild cards, it works:
-> 
-> $ls
-> hraa  hrdd
-> $echo "hr*" > /debug/tracing/set_ftrace_filter
-> $cat /debug/tracing/set_ftrace_filter |wc -l
-> 23
-> 
-> This problem can lead to unexpected result if current directory has a
-> lot of files.
-> 
-> Signed-off-by: walimis <walimisdev@gmail.com>
-> Reviewed-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  Documentation/ftrace.txt |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-> index de05042..0012a4a 100644
-> --- a/Documentation/ftrace.txt
-> +++ b/Documentation/ftrace.txt
-> @@ -1251,7 +1251,10 @@ These are the only wild cards which are supported.
->  
->    <match>*<match> will not work.
->  
-> - # echo hrtimer_* > /debug/tracing/set_ftrace_filter
-> +Note: you'd better to use '' to enclose wild cards, otherwise in some
-> +cases you can't get the correct result.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Mike Anderson <andmike@linux.vnet.ibm.com>
+---
+Mike, this should fix the problem you were seeing (blk_add_timer on
+requests w/o REQ_STARTED set).
 
-The above sounds awkward, perhaps something like:
+ block/blk-barrier.c    |    4 ++--
+ block/blk-core.c       |   24 +++++++++++++++++++++++-
+ block/elevator.c       |    7 -------
+ include/linux/blkdev.h |    7 ++-----
+ 4 files changed, 27 insertions(+), 15 deletions(-)
 
- Note: It is better to use quotes to enclose the wild cards, otherwise
-  the shell may expand the parameters into names of files in the local
-  directory.
-
--- Steve
-
-
-
-> +
-> + # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
->  
->  Produces:
->  
-> @@ -1306,7 +1309,7 @@ Again, now we want to append.
->   # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
->   # cat /debug/tracing/set_ftrace_filter
->  sys_nanosleep
-> - # echo hrtimer_* >> /debug/tracing/set_ftrace_filter
-> + # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
->   # cat /debug/tracing/set_ftrace_filter
->  hrtimer_run_queues
->  hrtimer_run_pending
-> -- 
-> 1.6.0.3
-> 
-> 
-> 
+Index: work/block/blk-core.c
+===================================================================
+--- work.orig/block/blk-core.c
++++ work/block/blk-core.c
+@@ -1637,6 +1637,28 @@ int blk_insert_cloned_request(struct req
+ EXPORT_SYMBOL_GPL(blk_insert_cloned_request);
+ 
+ /**
++ * blkdev_dequeue_request - dequeue request and start timeout timer
++ * @req: request to dequeue
++ *
++ * Dequeue @req and start timeout timer on it.  This hands off the
++ * request to the driver.
++ *
++ * Block internal functions which don't want to start timer should
++ * call elv_dequeue_request().
++ */
++void blkdev_dequeue_request(struct request *req)
++{
++	elv_dequeue_request(req->q, req);
++
++	/*
++	 * We are now handing the request to the hardware, add the
++	 * timeout handler.
++	 */
++	blk_add_timer(req);
++}
++EXPORT_SYMBOL(blkdev_dequeue_request);
++
++/**
+  * __end_that_request_first - end I/O on a request
+  * @req:      the request being processed
+  * @error:    %0 for success, < %0 for error
+@@ -1774,7 +1796,7 @@ static void end_that_request_last(struct
+ 		blk_queue_end_tag(req->q, req);
+ 
+ 	if (blk_queued_rq(req))
+-		blkdev_dequeue_request(req);
++		elv_dequeue_request(req->q, req);
+ 
+ 	if (unlikely(laptop_mode) && blk_fs_request(req))
+ 		laptop_io_completion();
+Index: work/block/elevator.c
+===================================================================
+--- work.orig/block/elevator.c
++++ work/block/elevator.c
+@@ -844,14 +844,7 @@ void elv_dequeue_request(struct request_
+ 	 */
+ 	if (blk_account_rq(rq))
+ 		q->in_flight++;
+-
+-	/*
+-	 * We are now handing the request to the hardware, add the
+-	 * timeout handler.
+-	 */
+-	blk_add_timer(rq);
+ }
+-EXPORT_SYMBOL(elv_dequeue_request);
+ 
+ int elv_queue_empty(struct request_queue *q)
+ {
+Index: work/include/linux/blkdev.h
+===================================================================
+--- work.orig/include/linux/blkdev.h
++++ work/include/linux/blkdev.h
+@@ -786,6 +786,8 @@ static inline void blk_run_address_space
+ 		blk_run_backing_dev(mapping->backing_dev_info, NULL);
+ }
+ 
++extern void blkdev_dequeue_request(struct request *req);
++
+ /*
+  * blk_end_request() and friends.
+  * __blk_end_request() and end_request() must be called with
+@@ -820,11 +822,6 @@ extern void blk_update_request(struct re
+ extern unsigned int blk_rq_bytes(struct request *rq);
+ extern unsigned int blk_rq_cur_bytes(struct request *rq);
+ 
+-static inline void blkdev_dequeue_request(struct request *req)
+-{
+-	elv_dequeue_request(req->q, req);
+-}
+-
+ /*
+  * Access functions for manipulating queue properties
+  */
+Index: work/block/blk-barrier.c
+===================================================================
+--- work.orig/block/blk-barrier.c
++++ work/block/blk-barrier.c
+@@ -161,7 +161,7 @@ static inline struct request *start_orde
+ 	/*
+ 	 * Prep proxy barrier request.
+ 	 */
+-	blkdev_dequeue_request(rq);
++	elv_dequeue_request(q, rq);
+ 	q->orig_bar_rq = rq;
+ 	rq = &q->bar_rq;
+ 	blk_rq_init(q, rq);
+@@ -219,7 +219,7 @@ int blk_do_ordered(struct request_queue
+ 			 * This can happen when the queue switches to
+ 			 * ORDERED_NONE while this request is on it.
+ 			 */
+-			blkdev_dequeue_request(rq);
++			elv_dequeue_request(q, rq);
+ 			if (__blk_end_request(rq, -EOPNOTSUPP,
+ 					      blk_rq_bytes(rq)))
+ 				BUG();
