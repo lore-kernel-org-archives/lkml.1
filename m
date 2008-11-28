@@ -1,71 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYK1VgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbYK1VhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYK1VgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 16:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYK1VgK
+	id S1755434AbYK1VhV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 16:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYK1VhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 16:36:10 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53933 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752720AbYK1VgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 16:36:08 -0500
-Date: Sat, 29 Nov 2008 08:35:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <len.brown@intel.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org
-Subject: drivers/x86 (Was: Re: linux-next: Tree for November 28
- (misc/tc1100))
-Message-Id: <20081129083550.3c23af37.sfr@canb.auug.org.au>
-In-Reply-To: <4930307C.30106@oracle.com>
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
-	<4930307C.30106@oracle.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R"
+	Fri, 28 Nov 2008 16:37:07 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:26453 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752720AbYK1VhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 16:37:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=GDdKUSp9c4heLdT2UwSs7WFO1hN9/71L0WDBarZcFgyCyCgadqQtVugft1aKQcxXqN
+         aEtqBVvY6n8/VqQP9Scu4DKBgyeX0QGyktpBvRYOumyBVv5wjFg2imLmOKXtX0IFpMTJ
+         1+SzH4Pb/5TtCHz7gQmxfQBPaEtE5NsGTPoLI=
+Message-ID: <cfd18e0f0811281337j57166b4cv54e05296a779252e@mail.gmail.com>
+Date: Fri, 28 Nov 2008 16:37:02 -0500
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Joe Korty" <joe.korty@ccur.com>
+Subject: Re: [PATCH] ABI Documentation for /proc/timer_list
+Cc: "Greg KH" <greg@kroah.com>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>, "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Linux API" <linux-api@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081126210613.GA20529@tsunami.ccur.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081121221113.GA13566@tsunami.ccur.com>
+	 <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com>
+	 <20081125185740.GA21806@tsunami.ccur.com>
+	 <20081126164845.GA17394@tsunami.ccur.com>
+	 <20081126170715.GA28422@kroah.com>
+	 <20081126173410.GA17879@tsunami.ccur.com>
+	 <20081126173931.GA1636@kroah.com>
+	 <20081126210613.GA20529@tsunami.ccur.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Joe,
 
-Hi Len,
+Some comments and suggestions below.
 
-On Fri, 28 Nov 2008 09:55:08 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
+On Wed, Nov 26, 2008 at 4:06 PM, Joe Korty <joe.korty@ccur.com> wrote:
+> Document /proc/timer_list ABI.
 >
-> make[2]: *** No rule to make target `drivers/misc/tc1100-wmi.o', needed b=
-y `drivers/misc/built-in.o'.
->=20
-> on allmodconfig & allyesconfig for i386.
->=20
-> On, moved to drivers/x86/.  Someone needs to clean up drivers/misc/Makefi=
-le.
+> This documents all of /timer_list, including the extension
+> adding jiffie timers, as proposed in the patch:
+>
+>   [PATCH] Display active jiffie timers in /proc/timer_list, v2
+>
+> Signed-off-by: Joe Korty <joe.korty@ccur.com>
+>
+> Index: 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list
+> ===================================================================
+> --- /dev/null   1970-01-01 00:00:00.000000000 +0000
+> +++ 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list       2008-11-26 15:55:04.000000000 -0500
+> @@ -0,0 +1,96 @@
+> +What:          /proc/timer_list
+> +Date:          November 2008
+> +Contact:       Ingo Molnar <mingo@elte.hu>
+> +               Thomas Gleixner <tglx@linutronix.de>
+> +               Joe Korty <joe.korty@ccur.com>
+> +Revision-Rate: Moderate
+> +At-Revision:   0.5
+> +Description:
+> +               /proc/timer_list displays most everything about every kind
+> +               of timer, and some things about time too.
+> +
+> +               The contents of this file should be expected to change,
+> +               as the data displayed corresponds directly to various
+> +               kernel-internal data structures.  For this reason, the first
+> +               line contains the file revision.  It is the responsibility
+> +               of this file's maintainers to bump the revision each time a
+> +               kernel is released having incompatible changes in this file.
 
-Just wondering where the move to drivers/x86 was discussed, (reviewed and
-tested) and why the change is in the acpi tree and not the x86 tree?
+So, on my 2.6.25 system, I see v0.3.  And I see that by 2.6.28-rc, we
+have v0.4.  It would be nice to have some explanation here of what the
+x.y version number means in this context.
 
-I am not saying it should not be done (I haven't looked enough to have an
-opinion).
---=20
+And where are the differences between versions (e.g., 0.3 and 0.4) documented?
+
+> +               Section Overview
+> +               ----------------
+> +               The file contains several somewhat independent sections.
+> +
+> +               The first section contains a few lines of global info.
+> +               Examples: file version id, #clock types in the kernel,
+
+IMO, it really helps readers when documentation is written in
+something like natural language.  "#clock types" may save you a few
+moments of time, but "number of clock types" will probably be clearer
+to yout (hopefully many) readers.
+
+But: what does "clock types" refer to?  The HRTIMER_MAX_CLOCK_BASES
+line?  If so, that's not obvious from this description.
+
+> +               #nsecs since boot.
+
+See previous comment.
+
+> +
+> +               The second section is organized per-cpu.  Each cpu subsection
+
+1,$s/cpu/CPU/g
+
+> +               in turn contains several sub-subsections which are, in order
+> +               of appearance:
+> +
+> +                  The contents of the data structures associated with each
+> +                  clock (CLOCK_REALTIME, CLOCK_MONOTONIC, etc) on this cpu.
+
+(How) can I work out whether clock 0 is CLOCK_REALTIME, etc?
+
+> +                  Examples: base, index, resolution, get_timer, offset.
+
+Ahh -- base looks like one of the changes between v0.3 and v0.4...
+Would be nice to let the reader know this, perhaps?
+
+Also, how about adding a line on what each of these fields represents.
+
+> +                  Under each of these clocks is, in turn, a display of all
+> +                  the active high resolution timers queued to that clock.
+> +                  Example: all lines beginning with '#'.
+> +
+> +                  The contents of per-cpu timer data fields not associated
+> +                  with a particular clock type (ie, shared by both clocks or
+> +                  not associated with any clock). Examples: expires_next,
+> +                  hres_active, nr_event, nohz_mode, all things idle_*,
+> +                  tick_stopped, last_jiffies, next_jiffies.
+
+How about adding a line on what each of these fields represents.
+
+> +
+> +                  A display of low resolution (ie, jiffie) timer wheel
+> +                  data.  Examples: base, running_timer, timer_jiffies.
+
+At the risk of sounding repetitive... How about adding a line on what
+each of these fields represents.
+
+> +                  Also under this section is a display, one per line, of
+> +                  each active jiffie timer queued to this cpu.  Examples:
+> +                  All lines under an 'active jiffie timers' section that
+> +                  begin with a number.
+> +
+> +               The third and final section describes each 'tick device'
+> +               known to the kernel.  A tick device is a piece of hardware
+> +               capable of generating periodic and/or one shot interrupts
+
+s/one shot/one-shot/
+
+> +               under software control, and thus is capable of generating
+> +               the interrupts needed to expire the various active timers at
+> +               their given expiration times.  Examples: hpet, pit, lapic.
+> +
+> +               Hires Timer Layout
+> +               ------------------
+> +               High resolution timers are displayed on lines that begin
+
+s/High resolution/High-resolution/
+
+> +               with a '#' and always appear under one of the many sections
+> +               labeled 'active timers'.  There is an 'active timers'
+> +               section for every cpu and every clock.
+> +
+> +               The fields of a hrtimer, spread out over two lines, are:
+> +
+> +               line 1 fields:
+> +                 1 - unique hrtimer index (#0, #1, #2, etc)
+> +                 2 - kernel address of the hrtimer data structure
+> +                     in question
+> +                 3 - function to be called when timer expires
+> +                 4 - timer state (eg, S:01), avail states, OR-able:
+> +                     0 - inactive
+> +                     1 - enqueued
+> +                     2 - callback
+> +                     4 - pending
+> +                     8 - migrate
+> +                 5 - function which created the timer
+> +                 6 - process name & pid which created the timer
+> +
+> +               line 2 fields:
+> +                 1 - absolute expiration time, range format (start - end)
+> +                 2 - relative expiration time, range format (start - end)
+> +
+> +               Lowres Timer Layout
+> +               -------------------
+> +               Low resolution timers are displayed one-per-line under
+
+s/Low resolution/Low-resolution/
+
+> +               sections labeled 'active jiffie timers'.  There is one such
+> +               section per cpu.  A lowres timer has the following fields:
+> +
+> +                 1 - #jiffies remaining until timer expires
+> +                 2 - function to be called on expiration
+> +                 3 - data value to be given to the above function on
+> +                     expiration
+> +                 4 - function which created this timer
+> +                 5 - name & pid of the process that created this timer
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R
-Content-Type: application/pgp-signature
+Michael
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkwZDYACgkQjjKRsyhoI8zPNwCfWKpai2l5ACY6syZ66QEf87Jf
-MVMAn1dM4hL079n9FFk/21Dt97nKPAI0
-=sBRS
------END PGP SIGNATURE-----
-
---Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R--
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
