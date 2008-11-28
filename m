@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYK1JBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYK1JDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYK1JBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 04:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYK1JBE
+	id S1753941AbYK1JDv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 04:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYK1JDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 04:01:04 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:46367
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbYK1JBB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 04:01:01 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: Document hadling of bad memory
-Date: Fri, 28 Nov 2008 03:00:26 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
-       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>,
-       Trivial patch monkey <trivial@kernel.org>
-References: <20081126161521.GC1983@elf.ucw.cz>
-In-Reply-To: <20081126161521.GC1983@elf.ucw.cz>
+	Fri, 28 Nov 2008 04:03:35 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57327 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752500AbYK1JDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 04:03:34 -0500
+Message-ID: <492FB3FB.6060806@cn.fujitsu.com>
+Date: Fri, 28 Nov 2008 17:03:55 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH 1/2] cgroups: cleanup for dummy root
+References: <492F9D4C.2020204@cn.fujitsu.com>
+In-Reply-To: <492F9D4C.2020204@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811280300.26969.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 November 2008 10:15:21 Pavel Machek wrote:
-> Document how to deal with bad memory reported with memtest.
-...
-> +BadRAM
-> +######
-> +BadRAM is the actively developed and available as kernel-patch
-> +here:  http://rick.vanrein.org/linux/badram/
+Li Zefan wrote:
+> - Don't link rootnode to the root list, so root_list contains active
+>   hierarchies only as the comment indicates.
+> 
+> - Don't link css_sets to the dummy cgroup, because we never want to
+>   run through the tasks in that dummpy cgroup (which means run
+>   through all the tasks in the system).
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-So the patch isn't worth merging, but documentation about the out-of-tree 
-patch is worth merging?
+Hmmm...Sorry, this patch is wrong, when a subsystem is inactive thus in
+rootnode, it may still iterate tasks in dummy top cgroup, though currently
+no subsystem does so.
 
-I'm not objecting, I'm just confused about to what the merge criteria are...
-
-Rob
