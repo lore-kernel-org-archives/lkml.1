@@ -1,216 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbYK1VhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYK1VsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbYK1VhV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 16:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYK1VhH
+	id S1754221AbYK1VsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 16:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYK1Vru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 16:37:07 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:26453 "EHLO
+	Fri, 28 Nov 2008 16:47:50 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:23828 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752720AbYK1VhF (ORCPT
+	with ESMTP id S1752177AbYK1Vrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 16:37:05 -0500
+	Fri, 28 Nov 2008 16:47:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:references;
-        b=GDdKUSp9c4heLdT2UwSs7WFO1hN9/71L0WDBarZcFgyCyCgadqQtVugft1aKQcxXqN
-         aEtqBVvY6n8/VqQP9Scu4DKBgyeX0QGyktpBvRYOumyBVv5wjFg2imLmOKXtX0IFpMTJ
-         1+SzH4Pb/5TtCHz7gQmxfQBPaEtE5NsGTPoLI=
-Message-ID: <cfd18e0f0811281337j57166b4cv54e05296a779252e@mail.gmail.com>
-Date: Fri, 28 Nov 2008 16:37:02 -0500
+        b=MAVJvTboiuEmzwo17XBRK+3z4EtiQ5Meq8LnJRiOW47RWkY67hs2itn1thLtbGZf4s
+         jIeHpRmWtTJwO+qKoZ3TTJrXJr/p8J8vDMiouoP8MMMhY4qBjG9v29Ng5B9smU8kQlZq
+         F1bIqQIVlIcSKIlk4nqrdYe3TBv++tyj8kyRI=
+Message-ID: <cfd18e0f0811281340r2317a1e4y938e11da27a35558@mail.gmail.com>
+Date: Fri, 28 Nov 2008 16:40:35 -0500
 From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
 Reply-To: mtk.manpages@gmail.com
-To: "Joe Korty" <joe.korty@ccur.com>
-Subject: Re: [PATCH] ABI Documentation for /proc/timer_list
-Cc: "Greg KH" <greg@kroah.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>, "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Linux API" <linux-api@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081126210613.GA20529@tsunami.ccur.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: Document sysfs interface to RTC system wakeup
+Cc: "Jonathan Corbet" <corbet@lwn.net>,
+       "kernel list" <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       "Andrew Morton" <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20081126170032.GE10157@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081121221113.GA13566@tsunami.ccur.com>
-	 <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com>
-	 <20081125185740.GA21806@tsunami.ccur.com>
-	 <20081126164845.GA17394@tsunami.ccur.com>
-	 <20081126170715.GA28422@kroah.com>
-	 <20081126173410.GA17879@tsunami.ccur.com>
-	 <20081126173931.GA1636@kroah.com>
-	 <20081126210613.GA20529@tsunami.ccur.com>
+References: <20081126161524.GD1983@elf.ucw.cz>
+	 <20081126095610.13195e15@bike.lwn.net>
+	 <20081126170032.GE10157@atrey.karlin.mff.cuni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe,
-
-Some comments and suggestions below.
-
-On Wed, Nov 26, 2008 at 4:06 PM, Joe Korty <joe.korty@ccur.com> wrote:
-> Document /proc/timer_list ABI.
+On Wed, Nov 26, 2008 at 12:00 PM, Pavel Machek <pavel@suse.cz> wrote:
+>> On Wed, 26 Nov 2008 17:15:24 +0100
+>> Pavel Machek <pavel@suse.cz> wrote:
+>>
+>> > +How to use /sys/class/rtc/rtcX/wakealarm
+>> > +^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> > +This file takes the seconds since epoch to enable a wake event at the
+>> > +specified time.
+>>
+>> More documentation is cool.  In this case, though, I'm left with an
+>> immediate question: *why* am I interested in wakealarm?  Reading
+>> through, I eventually figure out that it can maybe be used to get a
+>> system to start up at some point in the future, maybe.  It seems like
+>> that should be said at the outset.
 >
-> This documents all of /timer_list, including the extension
-> adding jiffie timers, as proposed in the patch:
+> You can suspend/power down your machine, and it will power itself up
+> at appropriate time.
 >
->   [PATCH] Display active jiffie timers in /proc/timer_list, v2
+>> Also; why do I want to migrate from /proc/acpi/alarm?
 >
-> Signed-off-by: Joe Korty <joe.korty@ccur.com>
->
-> Index: 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list
-> ===================================================================
-> --- /dev/null   1970-01-01 00:00:00.000000000 +0000
-> +++ 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list       2008-11-26 15:55:04.000000000 -0500
-> @@ -0,0 +1,96 @@
-> +What:          /proc/timer_list
-> +Date:          November 2008
-> +Contact:       Ingo Molnar <mingo@elte.hu>
-> +               Thomas Gleixner <tglx@linutronix.de>
-> +               Joe Korty <joe.korty@ccur.com>
-> +Revision-Rate: Moderate
-> +At-Revision:   0.5
-> +Description:
-> +               /proc/timer_list displays most everything about every kind
-> +               of timer, and some things about time too.
-> +
-> +               The contents of this file should be expected to change,
-> +               as the data displayed corresponds directly to various
-> +               kernel-internal data structures.  For this reason, the first
-> +               line contains the file revision.  It is the responsibility
-> +               of this file's maintainers to bump the revision each time a
-> +               kernel is released having incompatible changes in this file.
+> Because /proc/acpi/alarm is ugly hack that is going to go away :-).
 
-So, on my 2.6.25 system, I see v0.3.  And I see that by 2.6.28-rc, we
-have v0.4.  It would be nice to have some explanation here of what the
-x.y version number means in this context.
-
-And where are the differences between versions (e.g., 0.3 and 0.4) documented?
-
-> +               Section Overview
-> +               ----------------
-> +               The file contains several somewhat independent sections.
-> +
-> +               The first section contains a few lines of global info.
-> +               Examples: file version id, #clock types in the kernel,
-
-IMO, it really helps readers when documentation is written in
-something like natural language.  "#clock types" may save you a few
-moments of time, but "number of clock types" will probably be clearer
-to yout (hopefully many) readers.
-
-But: what does "clock types" refer to?  The HRTIMER_MAX_CLOCK_BASES
-line?  If so, that's not obvious from this description.
-
-> +               #nsecs since boot.
-
-See previous comment.
-
-> +
-> +               The second section is organized per-cpu.  Each cpu subsection
-
-1,$s/cpu/CPU/g
-
-> +               in turn contains several sub-subsections which are, in order
-> +               of appearance:
-> +
-> +                  The contents of the data structures associated with each
-> +                  clock (CLOCK_REALTIME, CLOCK_MONOTONIC, etc) on this cpu.
-
-(How) can I work out whether clock 0 is CLOCK_REALTIME, etc?
-
-> +                  Examples: base, index, resolution, get_timer, offset.
-
-Ahh -- base looks like one of the changes between v0.3 and v0.4...
-Would be nice to let the reader know this, perhaps?
-
-Also, how about adding a line on what each of these fields represents.
-
-> +                  Under each of these clocks is, in turn, a display of all
-> +                  the active high resolution timers queued to that clock.
-> +                  Example: all lines beginning with '#'.
-> +
-> +                  The contents of per-cpu timer data fields not associated
-> +                  with a particular clock type (ie, shared by both clocks or
-> +                  not associated with any clock). Examples: expires_next,
-> +                  hres_active, nr_event, nohz_mode, all things idle_*,
-> +                  tick_stopped, last_jiffies, next_jiffies.
-
-How about adding a line on what each of these fields represents.
-
-> +
-> +                  A display of low resolution (ie, jiffie) timer wheel
-> +                  data.  Examples: base, running_timer, timer_jiffies.
-
-At the risk of sounding repetitive... How about adding a line on what
-each of these fields represents.
-
-> +                  Also under this section is a display, one per line, of
-> +                  each active jiffie timer queued to this cpu.  Examples:
-> +                  All lines under an 'active jiffie timers' section that
-> +                  begin with a number.
-> +
-> +               The third and final section describes each 'tick device'
-> +               known to the kernel.  A tick device is a piece of hardware
-> +               capable of generating periodic and/or one shot interrupts
-
-s/one shot/one-shot/
-
-> +               under software control, and thus is capable of generating
-> +               the interrupts needed to expire the various active timers at
-> +               their given expiration times.  Examples: hpet, pit, lapic.
-> +
-> +               Hires Timer Layout
-> +               ------------------
-> +               High resolution timers are displayed on lines that begin
-
-s/High resolution/High-resolution/
-
-> +               with a '#' and always appear under one of the many sections
-> +               labeled 'active timers'.  There is an 'active timers'
-> +               section for every cpu and every clock.
-> +
-> +               The fields of a hrtimer, spread out over two lines, are:
-> +
-> +               line 1 fields:
-> +                 1 - unique hrtimer index (#0, #1, #2, etc)
-> +                 2 - kernel address of the hrtimer data structure
-> +                     in question
-> +                 3 - function to be called when timer expires
-> +                 4 - timer state (eg, S:01), avail states, OR-able:
-> +                     0 - inactive
-> +                     1 - enqueued
-> +                     2 - callback
-> +                     4 - pending
-> +                     8 - migrate
-> +                 5 - function which created the timer
-> +                 6 - process name & pid which created the timer
-> +
-> +               line 2 fields:
-> +                 1 - absolute expiration time, range format (start - end)
-> +                 2 - relative expiration time, range format (start - end)
-> +
-> +               Lowres Timer Layout
-> +               -------------------
-> +               Low resolution timers are displayed one-per-line under
-
-s/Low resolution/Low-resolution/
-
-> +               sections labeled 'active jiffie timers'.  There is one such
-> +               section per cpu.  A lowres timer has the following fields:
-> +
-> +                 1 - #jiffies remaining until timer expires
-> +                 2 - function to be called on expiration
-> +                 3 - data value to be given to the above function on
-> +                     expiration
-> +                 4 - function which created this timer
-> +                 5 - name & pid of the process that created this timer
-
-Cheers,
-
-Michael
-
+And these are the statements that (in slightly more polished terms)
+should be in your doc ;-), in order to address Jonathan's quite
+reasonable questions.
 -- 
 Michael Kerrisk
 Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
