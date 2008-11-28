@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYK1VvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYK1Vx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbYK1VvX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 16:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYK1VvN
+	id S1755323AbYK1Vx4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 16:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYK1Vxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 16:51:13 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:45932 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752529AbYK1VvN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 16:51:13 -0500
-Date: Fri, 28 Nov 2008 16:50:55 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: drivers/x86 (Was: Re: linux-next: Tree for November 28
- (misc/tc1100))
-In-reply-to: <20081129083550.3c23af37.sfr@canb.auug.org.au>
-X-X-Sender: lenb@localhost.localdomain
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org
-Message-id: <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
- <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 28 Nov 2008 16:53:45 -0500
+Received: from cantor.suse.de ([195.135.220.2]:37101 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752714AbYK1Vxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 16:53:44 -0500
+Date: Fri, 28 Nov 2008 13:50:21 -0800
+From: Greg KH <gregkh@suse.de>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: option: oops on unload (2.6.27.4)
+Message-ID: <20081128215021.GA25391@suse.de>
+References: <20081128213254.GB6750@joi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081128213254.GB6750@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 29 Nov 2008, Stephen Rothwell wrote:
-
-> > On, moved to drivers/x86/.  Someone needs to clean up drivers/misc/Makefile.
+On Fri, Nov 28, 2008 at 10:32:59PM +0100, Marcin Slusarz wrote:
+> It's not new bug - I've seen this oops many times but on much older
+> kernels (2.6.18, probably on 2.6.24 too).
 > 
-> Just wondering where the move to drivers/x86 was discussed, (reviewed and
-> tested) and why the change is in the acpi tree and not the x86 tree?
+> I tried to rmmod it (and all usb modules) because sometimes it helps when
+> modem disconnects and can't connect again.
 > 
-> I am not saying it should not be done (I haven't looked enough to have an
-> opinion).
+> [25350.138850] BUG: unable to handle kernel paging request at e0857fb4
+> [25350.138866] IP: [<e0a22e80>] :usbcore:unlink1+0xab/0xb9
+> [25350.138921] *pde = 1f80f067 *pte = 00000000 
+> [25350.138934] Oops: 0000 [#1] PREEMPT SMP 
+> [25350.138945] Modules linked in: r128 drm ipt_REDIRECT ipt_MASQUERADE xt_tcpudp xt_multiport iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc ipt_REJECT x_tables loop option usbserial snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd 8139cp i2c_i801 floppy 8139too 3c59x psmouse intel_agp soundcore snd_page_alloc sg mii usbcore agpgart i2c_core sr_mod evdev dcdbas cdrom [last unloaded: uhci_hcd]
+> [25350.139052] 
+> [25350.139059] Pid: 2807, comm: pppd Not tainted (2.6.27.4 #5)
+> [25350.139065] EIP: 0060:[<e0a22e80>] EFLAGS: 00010286 CPU: 0
+> [25350.139088] EIP is at unlink1+0xab/0xb9 [usbcore]
 
-Although I discussed it with Linus last week in Portland,
-it is true that this patch erroneously appeared
-in my tree before being sent to the list.
+Yes, I've seen this before, what module are you unloading, uhci-hcd or
+the option module?
 
-I guess I got interrupted...
-I'll send it now, thanks for the note.
+Can you try 2.6.28-rc6?  I think we have fixed a few things in this area
+that should resolve this, if it is the uhci-hcd driver you are
+unloading.
 
--Len
+thanks,
 
+greg k-h
