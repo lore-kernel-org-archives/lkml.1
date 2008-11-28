@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbYK1LOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYK1LOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbYK1LOQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:14:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYK1LN6
+	id S1755008AbYK1LOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbYK1LOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:13:58 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:41742 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYK1LN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:13:57 -0500
-Date: Fri, 28 Nov 2008 11:13:38 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Matthew Garrett <mjg@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com,
-       matthew@wil.cx
-Subject: Re: [PATCH v4] relatime: Make relatime smarter
-Message-ID: <20081128111338.GF6138@shareable.org>
+	Fri, 28 Nov 2008 06:14:38 -0500
+Received: from pro-237-183.rediffmailpro.com ([202.137.237.183]:29485 "HELO
+	pro-237-183.rediffmailpro.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751247AbYK1LOh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 06:14:37 -0500
+X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Nov 2008 06:14:36 EST
+Date: 28 Nov 2008 11:12:44 -0000
+Message-ID: <20081128111244.30571.qmail@pro-237-183.rediffmailpro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Wilson Damingo" <wilson@ltdoffice.net>
+Reply-To: "Wilson Damingo" <wilson@ltdoffice.net>
+To: wilson@ltdoffice.net
+Subject: Call me for explanation.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-In-Reply-To: <20081127220839.GK3186@webber.adilger.int>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Dilger wrote:
-> The one problem with a 1-day default is that cron jobs like updatedb will
-> revert to updating the atime on every single file every day.  It would be
-> better to make it slightly more than 1 day (e.g. 25h) to avoid this and
-> at least defer atime updates to every other day for files that are not
-> otherwise accessed except by cron.
 
-On my computers (laptops) updatedb doesn't run at exact 24h intervals
-- that would only happen for computers powered up all the time.
+Good Day My good friend,
 
--- Jamie
+Let me start by introducing myself, I am mr Wilson Damingo,an ACCOUNTS OFFICER with an African Bank in Burkina-Faso of West Africa.
+
+I am writing you this letter based on the latest development at my bank
+which I will like to bring to your personal edification.($9million transferclaims ).
+
+This is a legitimate transaction and you will be paid 30% for your "Assistance".If you are
+interested, please write back for more explanation.
+
+Repond to this E mail id (wilsondamingo@yahoo.com)  
+ 
+ Kind Regards
+
+Wilson Damingo
+  226 76 938 132
+wilsondamingo@yahoo.com
+
+
+
