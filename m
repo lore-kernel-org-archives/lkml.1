@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbYK1KD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYK1KGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbYK1KD1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 05:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYK1KDI
+	id S1754248AbYK1KGA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 05:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbYK1KFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 05:03:08 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:14493 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882AbYK1KDG (ORCPT
+	Fri, 28 Nov 2008 05:05:51 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55276 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbYK1KFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 05:03:06 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -9.389
-Message-ID: <492FC1D0.2040408@tremplin-utc.net>
-Date: Fri, 28 Nov 2008 11:02:56 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+	Fri, 28 Nov 2008 05:05:51 -0500
+Date: Fri, 28 Nov 2008 10:05:39 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: T?r?k Edwin <edwintorok@gmail.com>, Christoph Hellwig <hch@infradead.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, srostedt@redhat.com,
+       a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs, seqfile: make mangle_path() global
+Message-ID: <20081128100539.GN28946@ZenIV.linux.org.uk>
+References: <1227353328-16104-1-git-send-email-edwintorok@gmail.com> <1227353328-16104-3-git-send-email-edwintorok@gmail.com> <20081123084737.GE30453@elte.hu>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, trenn@suse.de, hmh@hmh.eng.br
-Subject: Re: HP accelerometer: free fall detection working, testers wanted
-References: <20081121212121.GA7222@elf.ucw.cz> <20081128082215.GA2013@elf.ucw.cz>
-In-Reply-To: <20081128082215.GA2013@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123084737.GE30453@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek schreef:
-> Hi!
+On Sun, Nov 23, 2008 at 09:47:37AM +0100, Ingo Molnar wrote:
 > 
-> I got free fall detection to work -- apparently BIOS does all the
-> important stuff itself. 
+> * T?r?k Edwin <edwintorok@gmail.com> wrote:
 > 
-> Now... I'd like some testers. (Don't comment on code... yet. Yes, it
-> has some issues).
->
-Hi Pavel,
-I'll try to test this weekend.
+> >  fs/seq_file.c            |   14 +++++++-
+> >  include/linux/seq_file.h |    1 +
+> 
+> Note, i've split these bits out into a separate patch - see it 
+> attached below.
 
-Out of curiosity, what did you change compared to the original version
-of the driver? Did you just disable the set up code?
+ACK, except that  I wouldn't use _GPL in the export - it's trivial to
+reproduce, so we are not protecting anything here.  And all that code
+has been moved verbatim from seq_path(), which is mine *and* exported
+without _GPL nonsense.
 
-Also, how do you try free fall? Did you try also with the lid opened?
-> hp3dg script should do all the important things.
-:
-> --- /dev/null
-> +++ b/Documentation/hwmon/hp3dg
-:
-> +while true; do
-> +	./readaccel foo
-> +	unload 2
-> +	if cat /proc/acpi/button/lid/LID/state | grep open && cat /proc/acpi/ac_adapter/AC0/state | grep off-line; then
-> +		unload 20
-> +	fi
-> +done
-Why a special case if the lid is opened and the laptop unplugged? Is it
-a special behaviour of the hardware, or simply some kind of basic user
-behaviour guess?
+As far as I'm concerned, all these helpers are as general-purpose as atoi()
+et.al. - library functions damn close to being non-copyrightable due both
+to triviality and to being absolutely straightforward implementations -
+tell anybody to implement it and that's what you'll get.
 
-See you,
-Eric
+I'm not fond of proprietary modules, to put it mildly, but let's not get
+completely ridiculous.  In this case it's as dumb as schools trying to ban
+aspirin in the name of War On Some Drugs.
