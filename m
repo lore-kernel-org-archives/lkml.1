@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbYK1M3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYK1Mtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbYK1M3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 07:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYK1M3A
+	id S1752799AbYK1Mtt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 07:49:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYK1Mtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 07:29:00 -0500
-Received: from ns2.suse.de ([195.135.220.15]:43590 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752449AbYK1M27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 07:28:59 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: PCIe ASPM causes machine (HP Compaq 6735s) to sometimes freeze hard at boot at PCI initialization time
-Date: Fri, 28 Nov 2008 13:28:54 +0100
-User-Agent: KMail/1.9.10
-Cc: jbarnes@virtuousgeek.org, shaohua.li@intel.com,
-       Rafael Wysocki <rwysocki@suse.de>, shemminger@linux-foundation.org,
-       netdev@vger.kernel.org
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2658
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 28 Nov 2008 07:49:39 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.65]:44807 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbYK1Mti (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 07:49:38 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Fri, 28 Nov 2008 21:49:21 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>, d-nishimura@mtf.biglobe.ne.jp,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH -mmotm 0/2] misc patches for memory cgroup
+ hierarchy
+Message-Id: <20081128214921.86c30347.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20081128194938.508a3b22.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081128180252.b7a73c86.nishimura@mxp.nes.nec.co.jp>
+	<20081128194938.508a3b22.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811281328.55259.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 28 Nov 2008 19:49:38 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-The hang does not always happen.
-On latest vanilla 2.6.28-rc6 it nearly always hangs, on a .27 SUSE kernel 
-maybe 1 out for 3 times.
+> On Fri, 28 Nov 2008 18:02:52 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > Hi.
+> > 
+> > I'm writing some patches for memory cgroup hierarchy.
+> > 
+> > I think KAMEZAWA-san's cgroup-id patches are the most important pathes now,
+> > but I post these patches as RFC before going further.
+> > 
+> Don't wait me ;) I'll rebase mine.
+> 
+I see :)
 
-I very much expect (I am pretty sure now) it is PCIE ASPM.
+> 
+> > Patch descriptions:
+> > - [1/2] take account of memsw
+> >     mem_cgroup_hierarchical_reclaim checks only mem->res now.
+> >     It should also check mem->memsw when do_swap_account.
+> > - [2/2] avoid oom
+> >     In previous implementation, mem_cgroup_try_charge checked the return
+> >     value of mem_cgroup_try_to_free_pages, and just retried if some pages
+> >     had been reclaimed.
+> >     But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
+> >     only checks whether the usage is less than the limit.
+> >     I see oom easily in some tests which didn't cause oom before.
+> > 
+> > Both patches are for memory-cgroup-hierarchical-reclaim-v4 patch series.
+> > 
+> > My current plan for memory cgroup hierarchy:
+> > - If hierarchy is enabled, limit of child should not exceed that of parent.
+>  limit of a child or
+>  limit of sum of children ?
+> 
+I'm sorry for my poor explanation.
+I meant *max* of limits of children.
 
-I tried to compile out:
-CONFIG_PCIEAER=y
-CONFIG_PCIEASPM=y
+I think setting limit like
 
-Both disabled survived a reasonable amount of reboots, but when enabling 
-CONFIG_PCIEASPM it did not boot anymore on the second try.
+	group A (limit=1G)
+		group A0 (limit=500M)
+		group A1 (limit=800M)
 
-The machine is hanging at the network card's PCI initialization rather early, 
-here is a photo of the hang:
-ftp.suse.com/pub/people/trenn/HP_pci_aspm_hang.jpg
+is not wrong itself.
 
-This is the network card:
-Marvell 11ab:4357 (PCI ID) using the sky2 driver.
-Once the machine booted (even with aspm enabled, the network device works
-properly).
-
-Possibly unrelated, because the machine hangs far before the sky2 driver kicks
-in or does PCI subsystem already need to set something similar?:
-
-The sky2 driver has some extra ASPM poking in its power_on routine:
-/* set all bits to 0 except bits 15..12 and 8 */
-                reg &= P_ASPM_CONTROL_MSK;
-                sky2_pci_write32(hw, PCI_DEV_REG4, reg);
-
-
-It seem to be this Marval/Yukon card:
-CHIP_ID_YUKON_UL_2 = 0xba, /* YUKON-2 Ultra 2 */
-
-Oh wait,
-The SubDevice PCI ID (via hwinfo --netcard) is 0xba, but the driver thinks it
-is a (via dmesg):
-CHIP_ID_YUKON_FE_P = 0xb8, /* YUKON-2 FE+ */
-
-Any ideas from people with more knowledge in the PCI(e) area is very much 
-appreciated.
 
 Thanks,
+Daisuke Nishimura.
 
-      Thomas
+> > - Change other calls for mem_cgroup_try_to_free_page() to
+> >   mem_cgroup_hierarchical_reclaim() if possible.
+> > 
+>  maybe makes sense.
+> 
+> Thanks,
+> -Kame
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
