@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYK1Jek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbYK1Jh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbYK1Jek (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 04:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYK1Je2
+	id S1753839AbYK1Jh2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 04:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYK1JhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 04:34:28 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44707 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbYK1Je1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 04:34:27 -0500
-Date: Fri, 28 Nov 2008 09:34:19 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+	Fri, 28 Nov 2008 04:37:18 -0500
+Received: from ns2.suse.de ([195.135.220.15]:36442 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbYK1JhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 04:37:16 -0500
+Date: Fri, 28 Nov 2008 10:37:13 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Mike Waychison <mikew@google.com>
+Cc: Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, rth@twiddle.net,
-       ink@jurassic.park.msu.ru
-Subject: Re: [PATCH 6/6] fs: Introduce kern_mount_special() to mount
-	special vfs
-Message-ID: <20081128093419.GM28946@ZenIV.linux.org.uk>
-References: <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDCAB.1070204@cosmosbay.com> <20081128092604.GL28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       "H. Peter Anvin" <hpa@zytor.com>, edwintorok@gmail.com
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+Message-ID: <20081128093713.GB1818@wotan.suse.de>
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <20081127130817.GP28285@wotan.suse.de> <492EEF0C.9040607@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081128092604.GL28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <492EEF0C.9040607@google.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 09:26:04AM +0000, Al Viro wrote:
-
-gyah...  That would be
-
-> static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
-> {
-> 	unsigned long temp, res;
-> 	__asm__ __volatile__(
-> 	"1:     ldl_l %0,%1\n"
-> 	"       cmpne %0,%4,%2\n"
- 	"       beq %2,3f\n"
- 	"       addl %0,%3,%2\n"
-> 	"       stl_c %2,%1\n"
-> 	"       beq %2,2f\n"
-> 	"3:\n"
->         ".subsection 2\n"
->         "2:     br 1b\n"
->         ".previous"
->         :"=&r" (temp), "=m" (v->counter), "=&r" (res)
->         :"Ir" (a), "Ir" (u), "m" (v->counter) : "memory");
-> 	smp_mb();
-> 	return res;
-> }
+On Thu, Nov 27, 2008 at 11:03:40AM -0800, Mike Waychison wrote:
+> Nick Piggin wrote:
+> >On Thu, Nov 27, 2008 at 01:28:41AM -0800, Mike Waychison wrote:
+> >>
+> >>Török however identified mmap taking on the order of several 
+> >>milliseconds due to this exact problem:
+> >>
+> >>http://lkml.org/lkml/2008/9/12/185
+> >
+> >Turns out to be a different problem.
+> >
 > 
-> static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
-> {
-> 	unsigned long temp, res;
-> 	__asm__ __volatile__(
-> 	"1:     ldq_l %0,%1\n"
-> 	"       cmpne %0,%4,%2\n"
- 	"       beq %2,3f\n"
- 	"       addq %0,%3,%2\n"
-> 	"       stq_c %2,%1\n"
-> 	"       beq %2,2f\n"
-> 	"3:\n"
->         ".subsection 2\n"
->         "2:     br 1b\n"
->         ".previous"
->         :"=&r" (temp), "=m" (v->counter), "=&r" (res)
->         :"Ir" (a), "Ir" (u), "m" (v->counter) : "memory");
-> 	smp_mb();
-> 	return res;
-> }
+> What do you mean?
+
+His is just contending on the write side. The retry patch doesn't help.
+
+
+> >>We generally try to avoid such things, but sometimes it a) can't be 
+> >>easily avoided (third party libraries for instance) and b) when it hits 
+> >>us, it affects the overall health of the machine/cluster (the monitoring 
+> >>daemons get blocked, which isn't very healthy).
+> >
+> >Are you doing appropriate posix_fadvise to prefetch in the files before
+> >faulting, and madvise hints if appropriate?
+> >
 > 
-> Comments?
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Yes, we've been slowly rolling out fadvise hints out, though not to 
+> prefetch, and definitely not for faulting.  I don't see how issuing a 
+> prefetch right before we try to fault in a page is going to help 
+> matters.  The pages may appear in pagecache, but they won't be uptodate 
+> by the time we look at them anyway, so we're back to square one.
+
+The whole point of a prefetch is to issue it sufficiently early so
+it makes a difference. Actually if you can tell quite well where the
+major faults will be, but don't know it sufficiently in advance to
+do very good prefetching, then perhaps we could add a new madvise hint
+to synchronously bring the page in (dropping the mmap_sem over the IO).
+
