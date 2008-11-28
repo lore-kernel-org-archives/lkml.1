@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbYK1Nvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYK1NyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbYK1Nvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 08:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYK1Nvq
+	id S1753878AbYK1NyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 08:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYK1NyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 08:51:46 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47851 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750894AbYK1Nvp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 08:51:45 -0500
-Date: Fri, 28 Nov 2008 13:51:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dmitri Monakhov <dmonakhov@openvz.org>
-Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com,
-       dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
-       cl@linux-foundation.org, corbet@lwn.net
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
-Message-ID: <20081128135125.1ee31684@lxorguk.ukuu.org.uk>
-In-Reply-To: <m33ahcc8kh.fsf@dmon-lap.sw.ru>
-References: <1226888432-3662-1-git-send-email-ieidus@redhat.com>
-	<m33ahcc8kh.fsf@dmon-lap.sw.ru>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Nov 2008 08:54:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54824 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbYK1NyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 08:54:12 -0500
+Date: Fri, 28 Nov 2008 14:54:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] x86: entry_64.S - trivial: space, comments fixup
+Message-ID: <20081128135403.GD28138@elte.hu>
+References: <1227727024-2281-1-git-send-email-gorcunov@gmail.com> <82259867e200855889261370c29bbd15a111d7fb.1227725632.git.gorcunov@gmail.com> <cc7949234e3ac0ddb402764be5ed620035f964a6.1227725632.git.gorcunov@gmail.com> <6bc2fd402754cfa5b69a63a529bc065584c5f375.1227725632.git.gorcunov@gmail.com> <39e35cbc79237b162a0720dceaa52a72c7eb1690.1227725632.git.gorcunov@gmail.com> <fbfac26820d86fa887adfbfa8ac80b369de00075.1227725632.git.gorcunov@gmail.com> <1227782341.31610.1287042073@webmail.messagingengine.com> <20081127120230.GB4259@elte.hu> <20081127181008.GB23593@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081127181008.GB23593@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You have implemented second one, but seems it already was patented
-> http://www.google.com/patents?vid=USPAT6789156
-> I'm not a lawyer but IMHO we have direct conflict here.
-> >From other point of view they have patented the WEEL, but at least we
-> have to know about this.
 
-Its an old idea and appeared for Linux in March 1998: Little project from
-Philipp Reisner called "mergemem".
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-http://groups.google.com/group/muc.lists.linux-kernel/browse_thread/thread/387af278089c7066?ie=utf-8&oe=utf-8&q=share+identical+pages#b3d4f68fb5dd4f88
+> [Ingo Molnar - Thu, Nov 27, 2008 at 01:02:34PM +0100]
+> | > > From: Cyrill Gorcunov <gorcunov@gmail.com>
+> | > > 
+> | > > Impact: cleanup
+> | > > 
+> | > > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> | > 
+> | > Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> | 
+> | Cyrill, could you please rework the still relevant bits against latest 
+> | tip/master? Alexander's wider patch got in the way.
+> | 
+> | Thanks,
+> | 
+> | 	Ingo
+> | 
+> 
+> Here is an updated version
+> ---
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> Subject: x86: entry_64.S - trivial: space, comments fixup
+> 
+> Impact: cleanup
 
-so if there is a patent which is relevant (and thats a question for
-lawyers and legal patent search people) perhaps the Linux Foundation and
-some of the patent busters could take a look at mergemem and
-re-examination.
+applied, thanks Cyrill!
 
-Alan
+	Ingo
