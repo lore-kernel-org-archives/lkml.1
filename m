@@ -1,242 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYK1HCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYK1H0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbYK1HCf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 02:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYK1HCZ
+	id S1754003AbYK1H0z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 02:26:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYK1H0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 02:02:25 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39941 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752019AbYK1HCY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 02:02:24 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] vmscan: bail out of page reclaim after swap_cluster_max pages
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
-In-Reply-To: <20081125203333.26F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081124145057.4211bd46@bree.surriel.com> <20081125203333.26F0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081128140405.3D0B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 28 Nov 2008 02:26:45 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63138 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752239AbYK1H0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 02:26:45 -0500
+Message-ID: <492F9D4C.2020204@cn.fujitsu.com>
+Date: Fri, 28 Nov 2008 15:27:08 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH 1/2] cgroups: cleanup for dummy root
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri, 28 Nov 2008 16:02:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+- Don't link rootnode to the root list, so root_list contains active
+  hierarchies only as the comment indicates.
 
-I mesured some data in this week and I got some interesting data.
+- Don't link css_sets to the dummy cgroup, because we never want to
+  run through the tasks in that dummpy cgroup (which means run
+  through all the tasks in the system).
 
-
-> > Kosaki, this should address the zone scanning pressure issue.
-> 
-> hmmmm. I still don't like the behavior when priority==DEF_PRIORITY.
-> but I also should explain by code and benchmark.
-> 
-> therefore, I'll try to mesure this patch in this week.
-
-1. many # of process reclaiming at that time
-
-I mesure ten times  following bench.
-
-$ hackbench 140 process 300
-
-
-rc6+stream: 2.6.28-rc6 + 
-            vmscan-evict-streaming-io-first.patch (in -mm)
-rvr:        above + Rik's bailing out patch
-kosaki:     above + kosaki modify (attached the last in this mail)
-
-
-result (unit: second)
-
-	rc6+stream	rvr		+kosaki patch
------------------------------------------------------------
-	175.457		62.514		104.87
-	168.409		225.698		133.128
-	154.658		114.694		194.867
-	46.148		179.108		11.82
-	289.575		111.08		60.779
-	146.871		189.796		86.515
-	305.036		114.124		54.009
-	225.21		112.999		273.841
-	224.674		227.842		166.547
-	118.071		81.869		84.431
-	------------------------------------------
-avg	185.4109	141.9724	117.0807
-std	74.18484	55.93676126	73.28439987
-min	46.148		62.514		11.82
-max	305.036		227.842		273.841
-
-
-OK.
-Rik patch improve about 30% and my patch improve 20% more.
-totally, We got about 50% improvement.
-
-
-
-2. "communicate each other application" conflict the other
-
-console A
-  $ dbench 100
-
-console B
-  $ hackbench 130 process 300
-
-
-hackbench result (unit :second)
-
-	rc6+stream	rvr		+kosaki
-====================================================
-	588.74		57.084		139.448
-	569.876		325.063		52.233
-	427.078		295.259		53.492
-	65.264		132.873		59.009
-	136.636		136.367		319.115
-	221.538		76.352		187.937
-	244.881		125.774		158.846
-	37.523		115.77		122.17
-	182.485		382.376		105.195
-	273.983		299.577		130.478
-	----------------------------------------
-avg	274.8004	194.6495	132.7923
-std	184.4902365	111.5699478	75.88299814
-min	37.523		57.084		52.233
-max	588.74		382.376		319.115
-
-
-
-That's more interesting.
-
--rc6 reclaim victory on min score. but also it has worst max score. why?
-
-traditional reclaim assume following two case is equivalent.
-
-  case (1)
-    - task (a) spent 1 sec for reclaim.
-    - task (b) spent 1 sec for reclaim.
-    - task (c) spent 1 sec for reclaim.
-
-  case (2)
-    - task (a) spent 3 sec for reclaim.
-    - task (b) spent 0 sec for reclaim.
-    - task (c) spent 0 sec for reclaim.
-
-However, when these task comminicate each other, it isn't correct.
-
-if task (2)-(a) is dbench process, ok, you are lucky.
-dbench process don't comminicate each other. that's performance is
-decided from avarage performance.
-one process slowdown don't become system slowdown.
-
-then, hackbench and dbench get both good result.
-
-
-In the other hand, if task (2)-(a) is hackbench process, you are unlucky.
-hackbench process communicate each other.
-then the performance is decided slowest process.
-
-then, hackbench performance dramatically decreased although dbench
-performance almost don't increased.
-
-Therefore, I think case (1) is better.
-
-
-
-So, rik patch and my patch improve perfectly different reclaim aspect.
-In general, kernel reclaim processing has several key goals.
-
- (1) if system has droppable cache, system shouldn't happen oom kill.
- (2) if system has avaiable swap space, system shouldn't happen 
-     oom kill as poosible as.
- (3) if system has enough free memory, system shouldn't reclaim any page
-     at all.
- (4) if memory pressure is lite, system shouldn't cause heavy reclaim 
-     latency to application.
-
-rik patch improve (3), my (this mail) modification improve (4).
-
-
-BTW, reclaim throttle patch has one another improvement likes 
-Hanns's "vmscan: serialize aggressive reclaimers" patch.
-actually, rik patch improvement (3). but it isn't perfect.
-if 10000 thread call reclaim at that time, system reclaim 32*10000 pages.
-it is definitly too much.
-but it is obviously offtopic :)
-
-
-Rik, could you please merge my modify into your patch?
-
-======
-In past, HPC guys want to improve lite reclaim latency multiple times.
-(e.g. http://marc.info/?l=linux-mm&m=121418258514542&w=2)
-
-because their workload has following characteristics.
-  - their workload make many process or many thread.
-  - typically, write() is called at job ending phase.
-    then, many file cache isn't reused.
-  - In their parallel job, any process comminicate each other.
-    then, system performance is decide from slowest thread.
-    then, large reclaim latency decrease system performance directly.
-
-Actually, kswapd background reclaim and direct reclaim have perfectly
-different purpose and goal.
-
-background reclaim
-  - kswapd don't need latency overhead reducing.
-    it isn't observe from end user.
-  - kswapd shoudn't only increase free pages, but also should 
-    zone balancing.
-
-foreground reclaim
-  - it used application task context.
-  - as possible as, it shouldn't increase latency overhead.
-  - this reclaiming purpose is to make the memory for _own_ taks.
-    for other tasks memory don't need to concern.
-    kswap does it.
-
-
-Almost developer don't payed attention for HPC in past.
-However, in these days, # of cpus increase rapidly. and
-parallel processing technique become commonly.
-(e.g. now, gcc has OpenMP feature support directly)
-
-Therefore, we shouldn't ignore parallel application modern days.
-
-
-
-o remove priority==DEF_PRIORITY condision
-o shrink_zones() also should have bailing out feature.
-
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- mm/vmscan.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ kernel/cgroup.c |   24 ++----------------------
+ 1 files changed, 2 insertions(+), 22 deletions(-)
 
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1469,7 +1469,7 @@ static void shrink_zone(int priority, st
- 		 * freeing target can get unreasonably large.
- 		 */
- 		if (sc->nr_reclaimed > sc->swap_cluster_max &&
--		    priority < DEF_PRIORITY && !current_is_kswapd())
-+		    !current_is_kswapd())
- 			break;
- 	}
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index fe00b3b..46d9981 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -84,7 +84,7 @@ struct cgroupfs_root {
+ 	/* Tracks how many cgroups are currently defined in hierarchy.*/
+ 	int number_of_cgroups;
  
-@@ -1534,6 +1534,8 @@ static void shrink_zones(int priority, s
+-	/* A list running through the mounted hierarchies */
++	/* A list running through the active hierarchies */
+ 	struct list_head root_list;
+ 
+ 	/* Hierarchy-specific flags */
+@@ -184,7 +184,6 @@ struct cg_cgroup_link {
+  */
+ 
+ static struct css_set init_css_set;
+-static struct cg_cgroup_link init_css_set_link;
+ 
+ /* css_set_lock protects the list of css_set objects, and the
+  * chain of tasks off each css_set.  Nests outside task->alloc_lock
+@@ -456,15 +455,6 @@ static struct css_set *find_css_set(
+ 			list_add(&link->cg_link_list, &res->cg_links);
  		}
- 
- 		shrink_zone(priority, zone, sc);
-+		if (sc->nr_reclaimed > sc->swap_cluster_max)
-+			break;
  	}
- }
+-	if (list_empty(&rootnode.subsys_list)) {
+-		link = list_entry(tmp_cg_links.next,
+-				  struct cg_cgroup_link,
+-				  cgrp_link_list);
+-		list_del(&link->cgrp_link_list);
+-		list_add(&link->cgrp_link_list, &dummytop->css_sets);
+-		link->cg = res;
+-		list_add(&link->cg_link_list, &res->cg_links);
+-	}
  
-
-
+ 	BUG_ON(!list_empty(&tmp_cg_links));
+ 
+@@ -2561,16 +2551,9 @@ int __init cgroup_init_early(void)
+ 	INIT_HLIST_NODE(&init_css_set.hlist);
+ 	css_set_count = 1;
+ 	init_cgroup_root(&rootnode);
+-	list_add(&rootnode.root_list, &roots);
+-	root_count = 1;
++	root_count = 0;
+ 	init_task.cgroups = &init_css_set;
+ 
+-	init_css_set_link.cg = &init_css_set;
+-	list_add(&init_css_set_link.cgrp_link_list,
+-		 &rootnode.top_cgroup.css_sets);
+-	list_add(&init_css_set_link.cg_link_list,
+-		 &init_css_set.cg_links);
+-
+ 	for (i = 0; i < CSS_SET_TABLE_SIZE; i++)
+ 		INIT_HLIST_HEAD(&css_set_table[i]);
+ 
+@@ -2674,9 +2657,6 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
+ 		int subsys_id;
+ 		int count = 0;
+ 
+-		/* Skip this hierarchy if it has no active subsystems */
+-		if (!root->actual_subsys_bits)
+-			continue;
+ 		seq_printf(m, "%lu:", root->subsys_bits);
+ 		for_each_subsys(root, ss)
+ 			seq_printf(m, "%s%s", count++ ? "," : "", ss->name);
+-- 
+1.5.4.rc3
