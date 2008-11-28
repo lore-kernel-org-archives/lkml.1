@@ -1,93 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbYK1Cc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYK1CiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbYK1Cc6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 21:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYK1Ccs
+	id S1753492AbYK1CiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 21:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYK1CiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 21:32:48 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:12932 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbYK1Ccs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 21:32:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=XPJzwejNG7kwvlq791c0vIgNRJPBtiZEN3gZf3/SRC8ukjECS2IF6OMkpc3ZNAD5nN
-         WRwDyqwIaHO25VPHbCKy4NFM1lXb2XDo+vx1vlxNQEmprv3RzxLBIfvLcbK0YBCImv0V
-         Iev7nBRDpoFvTXF11uNRXLKy9a1fw77o8M5cc=
-From: walimis <walimisdev@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] ftrace: improve document
-Date: Fri, 28 Nov 2008 10:32:41 +0800
-Message-Id: <1227839561-8694-1-git-send-email-walimisdev@gmail.com>
-X-Mailer: git-send-email 1.6.0.3
-In-Reply-To: <20081127162117.GA3467@elte.hu>
-References: <20081127162117.GA3467@elte.hu>
+	Thu, 27 Nov 2008 21:38:14 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60732 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751694AbYK1CiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 21:38:14 -0500
+Message-ID: <492F59A2.3000104@cn.fujitsu.com>
+Date: Fri, 28 Nov 2008 10:38:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       taka@valinux.co.jp
+Subject: Re: [RFC][PATCH 1/2] CGROUP ID and Hierarchy Code
+References: <20081127160548.3274c8e6.kamezawa.hiroyu@jp.fujitsu.com>	<492F4941.2030707@cn.fujitsu.com>	<20081128103533.049f0b7b.kamezawa.hiroyu@jp.fujitsu.com> <20081128111832.b52a6909.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081128111832.b52a6909.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add notice of using wild cards correctly
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 28 Nov 2008 10:35:33 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+>> On Fri, 28 Nov 2008 09:28:33 +0800
+>> Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>>> I think the safe way is:
+>>>
+>>> rcu_read_lock();
+>>> cgrp = cgroup_get_next()
+>>> if (!inc_not_zero(cgrp) {
+>>> 	rcu_read_unlock();
+>>> 	return NULL;
+>>> }
+>>> rcu_read_unlock();
+>>> return cgrp;
+>>>
+>>> But it's also safe to use cgrp = list_entry(&parent->children.next) for the above
+>>> scenario, seems you don't have to invent this cgroup_get_next().
+>>>
+>> But list-walk can't provide us view of hierarchy. Up-Down list walk is better ?
+>> please see memcg's code. it met some troubles.
+>> I'll make kfree(cgrp) to be called by RCU.
+>>
+> 
+> Ah please, I have a question.
+> Following is right ?
+> 	- until mount, cgroup's subsystem root is tied to dummy? root cgroup.
 
-We know that we can use wild cards to set set_ftrace_filter, but there's
-problem when using such as "echo h* > /debug/tracing/set_ftrace_filter".
-If there are files named with "h" prefix in current directory, echo "h*"
-will echo these files' name to set_ftrace_filter, not "h*".
-For example:
-$cat /debug/tracing/available_filter_functions |grep ^hr |wc -l
-23
-$ls
-$touch hraa hrdd
-$ls
-hraa  hrdd
-$echo hr* > /debug/tracing/set_ftrace_filter
-$cat /debug/tracing/set_ftrace_filter
+Yes.
 
-No output in /debug/tracing/set_ftrace_filter!
-If we use '' to enclose wild cards, it works:
+> 	- cgroup cannot be unmounted while there are any children.
 
-$ls
-hraa  hrdd
-$echo "hr*" > /debug/tracing/set_ftrace_filter
-$cat /debug/tracing/set_ftrace_filter |wc -l
-23
+No, you can unmount. You can have it a try. :)
 
-This problem can lead to unexpected result if current directory has a
-lot of files.
+> 	- cgroup_root is freed/allocated at umount/mount, then I have to handle
 
-Signed-off-by: walimis <walimisdev@gmail.com>
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
----
- Documentation/ftrace.txt |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+No, kill_sb() is called when deactivate_super() decreases sb->s_active to 0, and
+whenever we create a cgroup, sb->s_active is increased, so if there are sub-dirs
+the cgroup_root won't be freed at umount.
 
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index de05042..0012a4a 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -1251,7 +1251,10 @@ These are the only wild cards which are supported.
- 
-   <match>*<match> will not work.
- 
-- # echo hrtimer_* > /debug/tracing/set_ftrace_filter
-+Note: you'd better to use '' to enclose wild cards, otherwise in some
-+cases you can't get the correct result.
-+
-+ # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
- 
- Produces:
- 
-@@ -1306,7 +1309,7 @@ Again, now we want to append.
-  # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
-  # cat /debug/tracing/set_ftrace_filter
- sys_nanosleep
-- # echo hrtimer_* >> /debug/tracing/set_ftrace_filter
-+ # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
-  # cat /debug/tracing/set_ftrace_filter
- hrtimer_run_queues
- hrtimer_run_pending
--- 
-1.6.0.3
+> 	  this event in cgroup-id.
+> 	 (maybe current code has leak? in umount.)
+>  
 
+So I think there is no leak. ;)
+
+> Thanks,
+> -Kame
+> 
+> 
+> 
