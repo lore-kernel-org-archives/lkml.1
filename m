@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbYK1He0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYK1HzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbYK1He0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 02:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYK1HeQ
+	id S1753482AbYK1HzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 02:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYK1HzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 02:34:16 -0500
-Received: from ext-cn0ut-6.online-age.net ([63.210.253.235]:54135 "EHLO
-	ext-cn0ut-6.online-age.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750805AbYK1HeP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 02:34:15 -0500
-X-Greylist: delayed 3522 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Nov 2008 02:34:15 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: DMA from memory to local bus
-Date: Fri, 28 Nov 2008 07:35:28 +0100
-Message-ID: <62DDBB9E5E23CC4A929EE46F9427CEAF0162468D@BUDMLVEM04.e2k.ad.ge.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: DMA from memory to local bus
-Thread-Index: AclRI4D7wuXV0/8HRZm2eu6olpR6RA==
-From: "Hommel, Thomas (GE EntSol, Intelligent Platforms)" 
-	<Thomas.Hommel@gefanuc.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <maciej.sosnowski@intel.com>, <dan.j.williams@intel.com>
-X-OriginalArrivalTime: 28 Nov 2008 06:35:32.0309 (UTC) FILETIME=[832AB850:01C95123]
+	Fri, 28 Nov 2008 02:55:08 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60316 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbYK1HzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 02:55:07 -0500
+Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request
+	at ffff8800be8b0019
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Miles Lane <miles.lane@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0811271643250.9618@blonde.site>
+References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com>
+	 <200811270026.37941.rjw@sisk.pl>
+	 <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>
+	 <Pine.LNX.4.64.0811271349040.21910@blonde.site>
+	 <84144f020811270613t3f0258ddxac52abb9a447bf40@mail.gmail.com>
+	 <Pine.LNX.4.64.0811271643250.9618@blonde.site>
+Date: Fri, 28 Nov 2008 09:56:50 +0200
+Message-Id: <1227859011.6039.2.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-I'm currently developing a driver and want to make use of the DMA
-offload engine. Data has to be transferred from memory to a device on
-the local bus and vice versa.
-At a first look, the function dma_async_memcpy_buf_to_buf() seemed to be
-suitable, but it does not translate addresses correctly. Both addresses
-are treated as if they were in memory.
-In my configuration, the buffer is located in memory, but the device's
-I/O space is mapped into vmalloc space via ioremap(). How can I access
-the I/O space corectly from the DMA controller?
+On Thu, 2008-11-27 at 17:34 +0000, Hugh Dickins wrote:
+> An alternative quick just-for-now fix might be to remove that
+> 	namebuf[KSYM_NAME_LEN - 1] = 0;
+> from kallsyms_lookup(): as I understand it (please check), that
+> could only make sense in cases where the symbol is KSYM_NAME_LEN
+> long or longer - in which case, all of the places fixed in the
+> patch below would be causing corruption already, even without my
+> patch.  I think.  Maybe that "= 0" even serves no purpose at all?
 
-Thanks for your help
-Thomas
+I looked into this and unfortunately that won't help us. For example,
+module_address_lookup() will copy KSYM_NAME_LEN - 1 bytes to namebuf
+anyway so we'll overflow the buffer.
+
+It would probably be a good idea to add a comment to kallsyms_lookup()
+stating that namebuf needs to have at least KSYM_NAME_LEN bytes
+available.
+
+		Pekka
+
