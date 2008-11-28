@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYK1QNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYK1QST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbYK1QNH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 11:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYK1QMz
+	id S1753031AbYK1QST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 11:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYK1QSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 11:12:55 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:43388 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYK1QMy (ORCPT
+	Fri, 28 Nov 2008 11:18:07 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36930 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbYK1QSF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 11:12:54 -0500
-Date: Fri, 28 Nov 2008 16:12:49 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Daniel Perzynski <daniel.perzynski@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: HP WMI laptop extras driver
-Message-ID: <20081128161249.GA6865@srcf.ucam.org>
-References: <28f715610811221340s5911bf20mf763f0e6990c7078@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <28f715610811221340s5911bf20mf763f0e6990c7078@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Fri, 28 Nov 2008 11:18:05 -0500
+Date: Fri, 28 Nov 2008 08:19:09 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: philipl@overt.org, lenb@kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] acpi: close race in toshiba_acpi driver
+Message-ID: <20081128081909.65b7607a@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 22, 2008 at 10:40:17PM +0100, Daniel Perzynski wrote:
 
-> Nov 22 13:11:49 h3xu5 input: HP WMI hotkeys as /class/input/input9
-> quickplay button -> Nov 22 13:13:10 h3xu5 HP WMI: Unknown key pressed - 22142
-> quickplay dvd button  -> Nov 22 13:14:22 h3xu5 HP WMI: Unknown key pressed -
-> 220e6
-> quickplay TV button -> Nov 22 13:14:52 h3xu5 HP WMI: Unknown key pressed -
-> 22181
+>From 5d8af90c16de14f5d27c9d0b63118277941ebb4e Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Fri, 28 Nov 2008 08:14:14 -0800
+Subject: [PATCH] acpi: close race in toshiba_acpi driver
 
-Hm. I /suspect/ that these would be better handled by a quickplay button 
-driver. There's a patch for that lying around - I'll try to get it 
-updated.
+the toshiba ACPI driver will, in a failure case, free the rfkill state
+before stopping the polling timer that would use this state. More interesting,
+in the same failure case handling, it calls the exit function, which also
+frees the rfkill state, but after stopping the polling.
 
-> previous track button -> Nov 22 13:15:50 h3xu5 HP WMI: Unknown key pressed -
-> 32192
-> stop button -> Nov 22 13:16:15 h3xu5 HP WMI: Unknown key pressed - 32191
-> play/pause button -> Nov 22 13:16:30 h3xu5 HP WMI: Unknown key pressed - 32190
-> next track  button -> Nov 22 13:16:46 h3xu5 HP WMI: Unknown key pressed - 32193
-> 
-> 4 above buttons are working fine in x-windows
+If the race happens, a NULL pointer is passed to rfkill_force_state()
+which then causes a nice dereference.
 
-Ok, so again handling them in hp-wmi is probably not a good idea.
+Fix the race by just not doing the too-early freeing of the rfkill state.
 
-> As I understand wifi on/off is supported already by hp-wmi driver
+This appears to be the cause of a hot issue on kerneloops.org; while I
+have no solid evidence of that this patch will fix the issue, the race
+appears rather real.
 
-Yup.
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/acpi/toshiba_acpi.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-> sound mute button -> Nov 22 13:23:28 h3xu5 HP WMI: Unknown key pressed - 32190
-> volume up -> Nov 22 13:24:02 h3xu5 HP WMI: Unknown key pressed - 32190
-> volume down -> Nov 22 13:24:04 h3xu5 HP WMI: Unknown key pressed - 32190
-> 
-> above 3 are working fine in x-windows
+diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
+index 66aac06..25f531d 100644
+--- a/drivers/acpi/toshiba_acpi.c
++++ b/drivers/acpi/toshiba_acpi.c
+@@ -848,8 +848,6 @@ static int __init toshiba_acpi_init(void)
+ 	ret = input_register_polled_device(toshiba_acpi.poll_dev);
+ 	if (ret) {
+ 		printk(MY_ERR "unable to register kill-switch input device\n");
+-		rfkill_free(toshiba_acpi.rfk_dev);
+-		toshiba_acpi.rfk_dev = NULL;
+ 		toshiba_acpi_exit();
+ 		return ret;
+ 	}
+-- 
+1.6.0.4
 
-Since they're going through the keyboard controller, we should probably 
-ignore them.
-
-> bass/treble switch button -> Nov 22 13:25:06 h3xu5 HP WMI: Unknown key pressed
-> - 22199
-> bass/treble up button:
-> Nov 22 13:26:18 h3xu5 HP WMI: Unknown key pressed - 22197
-> Nov 22 13:26:18 h3xu5 atkbd.c: Unknown key pressed (translated set 2, code 0xbe
-> on isa0060/serio0).
-> Nov 22 13:26:18 h3xu5 atkbd.c: Use 'setkeycodes e03e <keycode>' to make it
-> known.
-> bass/treble down button:
-> Nov 22 13:26:21 h3xu5 HP WMI: Unknown key pressed - 22198
-> Nov 22 13:26:21 h3xu5 atkbd.c: Unknown key pressed (translated set 2, code 0xbf
-> on isa0060/serio0).
-> Nov 22 13:26:21 h3xu5 atkbd.c: Use 'setkeycodes e03f <keycode>' to make it
-> known.
-> cd eject button -> Nov 22 13:26:45 h3xu5 HP WMI: Unknown key pressed - 0
-
-Again, looks like these are going through the keyboard controller. 
-Thanks for the feedback, I'll try to work out a way of avoiding printing 
-the messages.
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
