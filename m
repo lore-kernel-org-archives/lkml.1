@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYK1CXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbYK1Cc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbYK1CXw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 21:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYK1CXn
+	id S1753498AbYK1Cc6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 21:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYK1Ccs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 21:23:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35004 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753280AbYK1CXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 21:23:43 -0500
-Message-ID: <492F5613.4090908@kernel.org>
-Date: Fri, 28 Nov 2008 11:23:15 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Adrian Bunk <bunk@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Nov 2008 02:23:20 +0000 (UTC)
+	Thu, 27 Nov 2008 21:32:48 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:12932 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102AbYK1Ccs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 21:32:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=XPJzwejNG7kwvlq791c0vIgNRJPBtiZEN3gZf3/SRC8ukjECS2IF6OMkpc3ZNAD5nN
+         WRwDyqwIaHO25VPHbCKy4NFM1lXb2XDo+vx1vlxNQEmprv3RzxLBIfvLcbK0YBCImv0V
+         Iev7nBRDpoFvTXF11uNRXLKy9a1fw77o8M5cc=
+From: walimis <walimisdev@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] ftrace: improve document
+Date: Fri, 28 Nov 2008 10:32:41 +0800
+Message-Id: <1227839561-8694-1-git-send-email-walimisdev@gmail.com>
+X-Mailer: git-send-email 1.6.0.3
+In-Reply-To: <20081127162117.GA3467@elte.hu>
+References: <20081127162117.GA3467@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Thursday 2008-08-28 22:01, Adrian Bunk wrote:
->> On Thu, Aug 28, 2008 at 09:05:53PM +0200, Tejun Heo wrote:
->>> Hello again,
->>>
->>> So, after all the fuss, here's the state-of-the-art standard-compliant
->>> cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
->>>
->>>   http://userweb.kernel.org/~tj/ossp/
->>>
->>> It works pretty well here.  :-)
->> Sorry for being destructive, but 6 years after ALSA went into the
->> kernel we are slightly approaching the point where all applications 
->> support ALSA.
-> 
-> Unreal Tournament GOTY/99 does not (seem to). And I doubt someone
-> is going to fix commercial games. Though being a static binary,
-> its use of shared libraries that do the sound device open makes
-> aoss a possibility, if that helps. But it does not support ALSA
-> natively - and would make a point for CUSE.
+Impact: add notice of using wild cards correctly
 
-The devel version of ossp (not out yet, waiting for CUSE and mmap
-support merge) can do all the quakes (even the dreaded quake1 which
-even ALSA OSS emulation or native OSS can't do because of strict
-sample/freq requirement which modern devices don't support anymore)
-and skype-static-oss are working fine.  The latency is still a tad bit
-high due to PA interaction but everything is mostly in place.  I'm
-fairly sure UT would work too.  Do you know where I can get a demo of
-it?
+We know that we can use wild cards to set set_ftrace_filter, but there's
+problem when using such as "echo h* > /debug/tracing/set_ftrace_filter".
+If there are files named with "h" prefix in current directory, echo "h*"
+will echo these files' name to set_ftrace_filter, not "h*".
+For example:
+$cat /debug/tracing/available_filter_functions |grep ^hr |wc -l
+23
+$ls
+$touch hraa hrdd
+$ls
+hraa  hrdd
+$echo hr* > /debug/tracing/set_ftrace_filter
+$cat /debug/tracing/set_ftrace_filter
 
-Thanks.
+No output in /debug/tracing/set_ftrace_filter!
+If we use '' to enclose wild cards, it works:
 
+$ls
+hraa  hrdd
+$echo "hr*" > /debug/tracing/set_ftrace_filter
+$cat /debug/tracing/set_ftrace_filter |wc -l
+23
+
+This problem can lead to unexpected result if current directory has a
+lot of files.
+
+Signed-off-by: walimis <walimisdev@gmail.com>
+Reviewed-by: Ingo Molnar <mingo@elte.hu>
+---
+ Documentation/ftrace.txt |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+index de05042..0012a4a 100644
+--- a/Documentation/ftrace.txt
++++ b/Documentation/ftrace.txt
+@@ -1251,7 +1251,10 @@ These are the only wild cards which are supported.
+ 
+   <match>*<match> will not work.
+ 
+- # echo hrtimer_* > /debug/tracing/set_ftrace_filter
++Note: you'd better to use '' to enclose wild cards, otherwise in some
++cases you can't get the correct result.
++
++ # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
+ 
+ Produces:
+ 
+@@ -1306,7 +1309,7 @@ Again, now we want to append.
+  # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
+  # cat /debug/tracing/set_ftrace_filter
+ sys_nanosleep
+- # echo hrtimer_* >> /debug/tracing/set_ftrace_filter
++ # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
+  # cat /debug/tracing/set_ftrace_filter
+ hrtimer_run_queues
+ hrtimer_run_pending
 -- 
-tejun
+1.6.0.3
+
