@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbYK1IfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYK1Iho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbYK1IfM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 03:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbYK1Iez
+	id S1753914AbYK1Iho (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 03:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYK1Ihf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 03:34:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49851 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752328AbYK1Iey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 03:34:54 -0500
-Date: Fri, 28 Nov 2008 09:34:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
+	Fri, 28 Nov 2008 03:37:35 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44799 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752404AbYK1Ihf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 03:37:35 -0500
+X-Sasl-enc: xkyq7ip1TsNNkJy4i3Hpc+TpNxFi/zFOGY2q6bLEtsxP 1227861453
+Date: Fri, 28 Nov 2008 17:37:27 +0900 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Jan Blunck <jblunck@suse.de>
+cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>, x86@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: oops/warning report for the week of November 26, 2008
-Message-ID: <20081128083415.GA1131@elte.hu>
-References: <492DD792.6080302@linux.intel.com> <20081127115236.GE29013@elte.hu> <492EE087.80708@linux.intel.com> <20081127201836.GA16869@elte.hu> <20081127122800.45fc0b1a@linux.intel.com> <20081127204714.GA25875@elte.hu> <20081127125301.3cb1e282@linux.intel.com>
+       bharata@linux.vnet.ibm.com
+Subject: Re: union mount status
+In-Reply-To: <alpine.LFD.2.00.0811211627400.5827@zeus.themaw.net>
+Message-ID: <alpine.LFD.2.00.0811281728210.13916@zeus.themaw.net>
+References: <48F51B6C.2080000@fr.ibm.com> <20081015191144.GJ29067@bolzano.suse.de> <alpine.LFD.2.00.0811211627400.5827@zeus.themaw.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081127125301.3cb1e282@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 21 Nov 2008, Ian Kent wrote:
 
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
-
-> On Thu, 27 Nov 2008 21:47:14 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+> On Wed, 15 Oct 2008, Jan Blunck wrote:
 > 
-> > IIRC the problem is that vmware _does_ claim that it supports MTRRs. 
+> > On Wed, Oct 15, Daniel Lezcano wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > What is the status of this patchset ?
+> > > Bharata Rao told me, no consensus was reached yet.
+> > > After looking at Jan Blunk's ftp server, it looks like the latest 
+> > > patchset was for 2.6.25-mm1. Is anyone working on this patchset right now ?
+> > 
+> > Not that I know of.
+> > 
+> > The state is as follows: we (David Woodhouse, Bharata Rao, Erez Zadok and me)
+> > agreed on a more or less final version of the whiteout patches. I haven't
+> > posted them yet since I know that Al Viro isn't convinced of the idea that
+> > they are actaully necessary. My plan was to solve the readdir() issues first,
+> > because they are the biggest roadblock IMHO. Bharata worked on some glibc
+> > readdir stuff but I don't know how that went.
 > 
-> it might.
-> but even if they would fix that, we would still WARN (
-> at least we should do our side correctly...
+> I'm trying to work through applying your patches to a current kernel so I 
+> can have a decent look through them.
 
-As pointed out in other parts of the thread, that is not the case.
+OK, I've applied your patch series from 2.6.23-mm1-2007-11-16 to the
+linux-2.6 tree. I expect there are some mistakes due to the struct path 
+changes that have gone on since these were done.
 
-Anyway, as i said it in the onset, if you think we should remove the 
-warning altogether, or tweak it, we can do that - it is important to 
-have relevant warnings show up in kerneloops.org.
+Are you willing to have a look through them to check they are as 
+you expect.
 
-To sum it up: the only remaining MTRR warnings we know of are either:
+I had a problem with union-mount-access.diff as you can see below, any 
+suggestions about how to get around this?:
 
- 1) apparently genuine BIOS bugs that do cause problems if the (new) 
-    kernel does not fix them up.
+Subject: union-mount: don't report EROFS for union mounts
 
-    The MTRR warning is relevant and correct in those cases.
+From: Ian Kent <raven@themaw.net>
+** Mmmm .. I'll need to change these, but what to !! **
 
-or:
+SuS v2 requires we report a read only fs too. For union-mounts this is a very
+expensive check. So I'm lazy and just disable the check if we are on a lower
+layer of an union.
 
- 2) sucky virtualization solutions that cheat the guest OS by faking 
-    "MTRR support" in the CPUID info, but not actually showing any 
-    MTRRs. These virtualization solutions do not even properly 
-    identify themselves to the kernel.
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+---
 
-    The MTRR warning is unnecessary in this case.
+ fs/open.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-So what we did in the x86 tree was remove the warning in the second 
-case - is to properly identify vmware (and in general, virtualization) 
-guests.
 
-It was not a simple oneliner:
+diff --git a/fs/open.c b/fs/open.c
+index 715266d..6f357e3 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -488,6 +488,9 @@ asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
+ 	 * inherently racy and know that the fs may change
+ 	 * state before we even see this result.
+ 	 */
++	/* OOPS: no struct nameidata anymore
++	 if (!(nd.um_flags & LAST_LOWLEVEL) && __mnt_is_readonly(nd.path.mnt))
++	 */
+ 	if (__mnt_is_readonly(path.mnt))
+ 		res = -EROFS;
+ 
 
- earth4:~/tip> gll linus..x86/detect-hyper
-
- 4e42ebd: x86: hypervisor - fix sparse warnings
- c450d78: x86: vmware - fix sparse warnings
- fd8cd7e: x86: vmware: look for DMI string in the product serial key
- 6bdbfe9: x86: VMware: Fix vmware_get_tsc code
- 395628e: x86: Skip verification by the watchdog for TSC clocksource.
- eca0cd0: x86: Add a synthetic TSC_RELIABLE feature bit.
- 88b094f: x86: Hypervisor detection and get tsc_freq from hypervisor
- 49ab56a: x86: add X86_FEATURE_HYPERVISOR feature bit
- b2bcc7b: x86: add a synthetic TSC_RELIABLE feature bit
-
-and it will benefit vmware guests in many more areas than just a 
-sharper MTRR warning message. That code is queued up for v2.6.29.
-
-	Ingo
