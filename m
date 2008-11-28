@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYK1CTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYK1CXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbYK1CTg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 21:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYK1CT0
+	id S1754744AbYK1CXw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 21:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYK1CXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 21:19:26 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52014 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbYK1CTZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 21:19:25 -0500
-Date: Fri, 28 Nov 2008 11:18:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       taka@valinux.co.jp
-Subject: Re: [RFC][PATCH 1/2] CGROUP ID and Hierarchy Code
-Message-Id: <20081128111832.b52a6909.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081128103533.049f0b7b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081127160548.3274c8e6.kamezawa.hiroyu@jp.fujitsu.com>
-	<492F4941.2030707@cn.fujitsu.com>
-	<20081128103533.049f0b7b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Nov 2008 21:23:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35004 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753280AbYK1CXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 21:23:43 -0500
+Message-ID: <492F5613.4090908@kernel.org>
+Date: Fri, 28 Nov 2008 11:23:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: Adrian Bunk <bunk@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
+References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Nov 2008 02:23:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008 10:35:33 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Fri, 28 Nov 2008 09:28:33 +0800
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> > I think the safe way is:
-> > 
-> > rcu_read_lock();
-> > cgrp = cgroup_get_next()
-> > if (!inc_not_zero(cgrp) {
-> > 	rcu_read_unlock();
-> > 	return NULL;
-> > }
-> > rcu_read_unlock();
-> > return cgrp;
-> > 
-> > But it's also safe to use cgrp = list_entry(&parent->children.next) for the above
-> > scenario, seems you don't have to invent this cgroup_get_next().
-> > 
-> But list-walk can't provide us view of hierarchy. Up-Down list walk is better ?
-> please see memcg's code. it met some troubles.
-> I'll make kfree(cgrp) to be called by RCU.
+Jan Engelhardt wrote:
+> On Thursday 2008-08-28 22:01, Adrian Bunk wrote:
+>> On Thu, Aug 28, 2008 at 09:05:53PM +0200, Tejun Heo wrote:
+>>> Hello again,
+>>>
+>>> So, after all the fuss, here's the state-of-the-art standard-compliant
+>>> cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
+>>>
+>>>   http://userweb.kernel.org/~tj/ossp/
+>>>
+>>> It works pretty well here.  :-)
+>> Sorry for being destructive, but 6 years after ALSA went into the
+>> kernel we are slightly approaching the point where all applications 
+>> support ALSA.
 > 
+> Unreal Tournament GOTY/99 does not (seem to). And I doubt someone
+> is going to fix commercial games. Though being a static binary,
+> its use of shared libraries that do the sound device open makes
+> aoss a possibility, if that helps. But it does not support ALSA
+> natively - and would make a point for CUSE.
 
-Ah please, I have a question.
-Following is right ?
-	- until mount, cgroup's subsystem root is tied to dummy? root cgroup.
-	- cgroup cannot be unmounted while there are any children.
-	- cgroup_root is freed/allocated at umount/mount, then I have to handle
-	  this event in cgroup-id.
-	 (maybe current code has leak? in umount.)
- 
-Thanks,
--Kame
+The devel version of ossp (not out yet, waiting for CUSE and mmap
+support merge) can do all the quakes (even the dreaded quake1 which
+even ALSA OSS emulation or native OSS can't do because of strict
+sample/freq requirement which modern devices don't support anymore)
+and skype-static-oss are working fine.  The latency is still a tad bit
+high due to PA interaction but everything is mostly in place.  I'm
+fairly sure UT would work too.  Do you know where I can get a demo of
+it?
 
+Thanks.
+
+-- 
+tejun
