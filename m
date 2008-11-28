@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYK1EVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYK1EZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486AbYK1EVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 23:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYK1EV2
+	id S1754837AbYK1EZi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 23:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYK1EZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 23:21:28 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:25872 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbYK1EV1 (ORCPT
+	Thu, 27 Nov 2008 23:25:30 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:36419 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752559AbYK1EZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 23:21:27 -0500
+	Thu, 27 Nov 2008 23:25:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=GKg96Q+lzGhTpJszFCoi60CXnwMdfOU57zHriAA/Wo6bqaGZVppoJJsqzSeRCSpPq0
-         S1kjmBhTP8kME8M9TfB1pLA1KcCtsN0UipB2q5Y47ivsUzrzE7gLxFGZSXTzElS22hnE
-         2VmmhwZ0mqfdGij9Wo32ZbV90UHOIH3K+att0=
-From: walimis <walimisdev@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] ftrace: improve document
-Date: Fri, 28 Nov 2008 12:21:19 +0800
-Message-Id: <1227846079-9197-1-git-send-email-walimisdev@gmail.com>
-X-Mailer: git-send-email 1.6.0.3
-In-Reply-To: <alpine.DEB.1.10.0811272251180.7113@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0811272251180.7113@gandalf.stny.rr.com>
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=xwsYLBn9/HUTVnKj+EVwo090ZImbLRmbHvUWcxTo/Iz+vhqFUqyv1gdY4VfH174dbK
+         I8s2m5/UVXuyS6D22DnQS9M4QvjgUMBZzTnxyfi0yH1gzx9oHX42/N3UINuO+R0BumYC
+         +pCj6tojgFlR0GP4VwZd+x/F/qVCWUi90EH04=
+Subject: Re: [git pull] drm fixes for 2.6.28 final
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0811280325110.25353@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0811280325110.25353@skynet.skynet.ie>
+Content-Type: text/plain
+Date: Thu, 27 Nov 2008 20:25:27 -0800
+Message-Id: <1227846327.5880.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add notice of using wild cards correctly
+On Fri, 2008-11-28 at 03:26 +0000, Dave Airlie wrote:
+> Hi Linus,
+> 
+> Please pull the 'drm-fixes' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+> 
+> This larger than we wished patch, fixes a number of regressions reported.
+> 
+> 1. vblank rework causes hangs on VT switch - fixes touches all drivers.
+> 2. i915 irq/msi code had various issues on various hw - including a screaming
+> IRQ.
+> 3. a suspend/resume regression on intel hw with DRI2 userspace.
+> 4. A BUG_ON being hit.
 
-We know that we can use wild cards to set set_ftrace_filter, but there's
-problem when using such as "echo h* > /debug/tracing/set_ftrace_filter".
-If there are files named with "h" prefix in current directory, echo "h*"
-will echo these files' name to set_ftrace_filter, not "h*".
-For example:
-$cat /debug/tracing/available_filter_functions |grep ^hr |wc -l
-23
-$ls
-$touch hraa hrdd
-$ls
-hraa  hrdd
-$echo hr* > /debug/tracing/set_ftrace_filter
-$cat /debug/tracing/set_ftrace_filter
+I can confirm this fixes suspend/resume for me:
 
-No output in /debug/tracing/set_ftrace_filter!
-If we use '' to enclose wild cards, it works:
+00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML and 945GT Express Memory Controller Hub (rev 03)
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS, 943/940GML Express Integrated Graphics Controller (rev 03)
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME, 943/940GML Express Integrated Graphics Controller (rev 03)
 
-$ls
-hraa  hrdd
-$echo "hr*" > /debug/tracing/set_ftrace_filter
-$cat /debug/tracing/set_ftrace_filter |wc -l
-23
+Thanks a lot guys.
 
-This problem can lead to unexpected result if current directory has a
-lot of files.
-
-Signed-off-by: walimis <walimisdev@gmail.com>
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
-Reviewed-by: Steven Rostedt <srostedt@redhat.com>
----
- Documentation/ftrace.txt |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index de05042..803b131 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -1251,7 +1251,11 @@ These are the only wild cards which are supported.
- 
-   <match>*<match> will not work.
- 
-- # echo hrtimer_* > /debug/tracing/set_ftrace_filter
-+Note: It is better to use quotes to enclose the wild cards, otherwise
-+  the shell may expand the parameters into names of files in the local
-+  directory.
-+
-+ # echo 'hrtimer_*' > /debug/tracing/set_ftrace_filter
- 
- Produces:
- 
-@@ -1306,7 +1310,7 @@ Again, now we want to append.
-  # echo sys_nanosleep > /debug/tracing/set_ftrace_filter
-  # cat /debug/tracing/set_ftrace_filter
- sys_nanosleep
-- # echo hrtimer_* >> /debug/tracing/set_ftrace_filter
-+ # echo 'hrtimer_*' >> /debug/tracing/set_ftrace_filter
-  # cat /debug/tracing/set_ftrace_filter
- hrtimer_run_queues
- hrtimer_run_pending
--- 
-1.6.0.3
+Harvey
 
