@@ -1,73 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbYK1M6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752365AbYK1M6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbYK1M6X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 07:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYK1M5v
+	id S1752365AbYK1M6m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 07:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYK1M6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 07:57:51 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:54991 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYK1M5u (ORCPT
+	Fri, 28 Nov 2008 07:58:14 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:42955 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752409AbYK1M6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 07:57:50 -0500
-Date: Fri, 28 Nov 2008 13:57:22 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Message-ID: <20081128125722.GL13891@tekkaman>
-References: <1227647470-4816-1-git-send-email-giometti@linux.it> <1227647470-4816-2-git-send-email-giometti@linux.it> <492FD864.50901@imap.cc>
-MIME-Version: 1.0
+	Fri, 28 Nov 2008 07:58:11 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAOx1L0lMROB9/2dsb2JhbACBbc82gn0
+Date: Fri, 28 Nov 2008 07:58:09 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Sam@smtp.polymtl.ca,
+       Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@lists.casi.polymtl.ca,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [ltt-dev] LTTng kernel integration roadmap, update
+Message-ID: <20081128125809.GB10401@Krystal>
+References: <20081124112842.GA15615@Krystal> <20081124114124.GA32459@infradead.org> <20081124122055.GA18626@Krystal> <alpine.DEB.1.10.0811241156030.20122@gandalf.stny.rr.com> <20081125055744.c3377164.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <492FD864.50901@imap.cc>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] ldisc: new dcd_change() method for line disciplines.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <20081125055744.c3377164.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:56:35 up 11 days, 13:37,  2 users,  load average: 0.13, 0.44,
+	0.66
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 12:39:16PM +0100, Tilman Schmidt wrote:
-> Rodolfo Giometti schrieb:
-> > --- a/include/linux/tty_ldisc.h
-> > +++ b/include/linux/tty_ldisc.h
-> > @@ -99,11 +99,19 @@
-> >   *	cease I/O to the tty driver. Can sleep. The driver should
-> >   *	seek to perform this action quickly but should wait until
-> >   *	any pending driver I/O is completed.
-> > + *
-> > + * void (*dcd_change)(struct uart_port *port, unsigned int status,
-> > + * 			struct timespec *ts)
-> > + *
-> > + *	Tells the discipline that the DCD pin has changed its status and
-> > + *	the relative timestamp. Pointer ts can be NULL.
-> >   */
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Mon, 24 Nov 2008 11:58:40 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> I don't see an actual call to that new method getting added anywhere.
-> Is that planned for a later patch? Which serial drivers will support
-> that mechanism? Should the documentation perhaps mention that not
-> all drivers support this?
+> > > The question that prevails is therefore : should we ship userspace
+> > > binary with the kernel tree at all ? And if yes, how should the resuting
+> > > executables be packaged and deployed ? Should it be installed in the
+> > > system along with kernel modules or should it be populated into a
+> > > filesystem populated by kernelspace ?
+> > > 
+> > > Or is it better to do as we have always done and keep the userspace
+> > > tools separated from the kernel tree ?
+> > 
+> > I say keep the user space tools separate as much as possible.
+> 
+> So...  we're now planning to build even more userspace tools into the
+> kernel merely because we don't know how to deliver userspace tools in
+> userspace?
+> 
+> Worse, those kernel-based userspace tools will simply be presenting a
+> textual form of something which the kernel already makes available in a
+> binary form?
+> 
+> This is so lame.
+> 
+> Any proposal to fix all this will result in vast amounts of
+> inconclusive chin-scratching again.  Last time this came up, we ended
+> up with the old impractical put-it-in-util-linux chestnut.  I think the
+> time has come for us to admit that this isn't working out.
+> 
+> Mathieu, if you're feeling keen I'd suggest that you just type `mkdir
+> -p userspace/lttng' and build your userspace tools in there.  One they
+> are there and real, the issues around versioning, installation and
+> delivery will still need tobe sorted out, but we need to start
+> somewhere.
+> 
 
-See patch pps-serial-clients-support.patch into this patchset.
+Yes, I like the idea of having a kernel-developer oriented version of
+the userspace tools, which may not have packaging requirements as strong
+as standard userspace packages. Just keeping them around with the kernel
+build tree would be a good start, and we could probably go as far as
+installing them along with the kernel modules in /lib/modules/`uname
+-r`.
 
-Ciao,
+Mathieu
 
-Rodolfo
+
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
 
 -- 
-
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
