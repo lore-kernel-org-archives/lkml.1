@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYK1TW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbYK1TXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbYK1TW2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 14:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYK1TWU
+	id S1754992AbYK1TXQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 14:23:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYK1TXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 14:22:20 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:61442 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbYK1TWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 14:22:19 -0500
-Date: Fri, 28 Nov 2008 14:22:15 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] acpi: close race in toshiba_acpi driver
-In-reply-to: <20081128081909.65b7607a@infradead.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, philipl@overt.org, akpm@linux-foundation.org
-Message-id: <alpine.LFD.2.00.0811281422070.3204@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081128081909.65b7607a@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 28 Nov 2008 14:23:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41795 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752527AbYK1TW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 14:22:59 -0500
+Date: Fri, 28 Nov 2008 20:22:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/function-graph-tracer: adjustments of the
+	trace informations
+Message-ID: <20081128192249.GA22263@elte.hu>
+References: <492F3076.7050104@gmail.com> <20081128091800.GA1725@elte.hu> <20081128092553.GA7040@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081128092553.GA7040@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied.
 
-thanks,
--Len
+another detail: it would be nice to annotate IRQ entries some more.
 
-On Fri, 28 Nov 2008, Arjan van de Ven wrote:
+right now if a syscall is interrupted by a hardware interrupt, it looks 
+like this:
 
-> 
-> From 5d8af90c16de14f5d27c9d0b63118277941ebb4e Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Fri, 28 Nov 2008 08:14:14 -0800
-> Subject: [PATCH] acpi: close race in toshiba_acpi driver
-> 
-> the toshiba ACPI driver will, in a failure case, free the rfkill state
-> before stopping the polling timer that would use this state. More interesting,
-> in the same failure case handling, it calls the exit function, which also
-> frees the rfkill state, but after stopping the polling.
-> 
-> If the race happens, a NULL pointer is passed to rfkill_force_state()
-> which then causes a nice dereference.
-> 
-> Fix the race by just not doing the too-early freeing of the rfkill state.
-> 
-> This appears to be the cause of a hot issue on kerneloops.org; while I
-> have no solid evidence of that this patch will fix the issue, the race
-> appears rather real.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  drivers/acpi/toshiba_acpi.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-> index 66aac06..25f531d 100644
-> --- a/drivers/acpi/toshiba_acpi.c
-> +++ b/drivers/acpi/toshiba_acpi.c
-> @@ -848,8 +848,6 @@ static int __init toshiba_acpi_init(void)
->  	ret = input_register_polled_device(toshiba_acpi.poll_dev);
->  	if (ret) {
->  		printk(MY_ERR "unable to register kill-switch input device\n");
-> -		rfkill_free(toshiba_acpi.rfk_dev);
-> -		toshiba_acpi.rfk_dev = NULL;
->  		toshiba_acpi_exit();
->  		return ret;
->  	}
-> -- 
-> 1.6.0.4
-> 
-> 
-> -- 
-> Arjan van de Ven 	Intel Open Source Technology Centre
-> For development, discussion and tips for power savings, 
-> visit http://www.lesswatts.org
-> 
+ 0)               |              skb_dequeue() {
+ 0)      0.365 us |                _spin_lock_irqsave();
+ 0)      0.422 us |                _spin_unlock_irqrestore();
+ 0)      1.912 us |              }
+ 0)               |              memcpy_toiovec() {
+ 0)               |                copy_to_user() {
+ 0)               |                  smp_apic_timer_interrupt() {
+ 0)      0.450 us |                    native_apic_mem_write();
+ 0)               |                    irq_enter() {
+ 0)      0.410 us |                      idle_cpu();
+ 0)      1.167 us |                    }
+ 0)               |                    hrtimer_interrupt() {
+
+the natural nesting is nice, but easy to miss. It would be nice to have 
+something like:
+
+ 0)               |              skb_dequeue() {
+ 0)      0.365 us |                _spin_lock_irqsave();
+ 0)      0.422 us |                _spin_unlock_irqrestore();
+ 0)      1.912 us |              }
+ 0)               |              memcpy_toiovec() {
+ 0)               |                copy_to_user() {
+ 0)             =====>               smp_apic_timer_interrupt() {
+ 0)      0.450 us |                    native_apic_mem_write();
+ 0)               |                    irq_enter() {
+ 0)      0.410 us |                      idle_cpu();
+ 0)      1.167 us |                    }
+ 0)               |                    hrtimer_interrupt() {
+
+and perhaps something like this at the end of the irq frame:
+
+ 0)      0.408 us |                          _local_bh_enable();
+ 0) +   13.139 us |                        }
+ 0) +   13.887 us |                      }
+ 0)      0.406 us |                      idle_cpu();
+ 0) +   15.373 us |                    }
+ 0) +   74.564 us |                  }
+ 0)               |                  _cond_resched() {
+ 0)               |                    need_resched() {
+ 0)      0.423 us |                      constant_test_bit();
+ 0)      1.164 us |                    }
+ 0)      1.915 us <===               } /* IRQ 1 end */
+ 0) +   78.396 us |                }
+ 0) +   79.123 us |              }
+ 0)      0.387 us |              skb_pull();
+ 0)               |              kfree_skb() {
+
+?
+
+	Ingo
