@@ -1,127 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYK1E3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbYK1Ec2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYK1E3H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 23:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYK1E2z
+	id S1755040AbYK1Ec2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 23:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYK1EcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 23:28:55 -0500
-Received: from mail.windriver.com ([147.11.1.11]:57304 "EHLO mail.wrs.com"
+	Thu, 27 Nov 2008 23:32:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45250 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752570AbYK1E2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 23:28:54 -0500
-From: Liming Wang <liming.wang@windriver.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Liming Wang <liming.wang@windriver.com>
-Subject: [PATCH 1/1] ftrace: improve seq_operation of ftrace
-Date: Fri, 28 Nov 2008 12:13:21 +0800
-Message-Id: <1227845601-4691-1-git-send-email-liming.wang@windriver.com>
-X-Mailer: git-send-email 1.6.0.3
-X-OriginalArrivalTime: 28 Nov 2008 04:28:36.0169 (UTC) FILETIME=[C797FB90:01C95111]
+	id S1752572AbYK1EcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 23:32:17 -0500
+From: Tejun Heo <tj@kernel.org>
+To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 2/6] block: remove duplicate or unused barrier/discard error paths
+Date: Fri, 28 Nov 2008 13:32:03 +0900
+Message-Id: <1227846727-24980-3-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1227846727-24980-1-git-send-email-tj@kernel.org>
+References: <1227846727-24980-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Nov 2008 04:32:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: make position computing more sane
+* Because barrier mode can be changed dynamically, whether barrier is
+  supported or not can be determined only when actually issuing the
+  barrier and there is no point in checking it earlier.  Drop barrier
+  support check in generic_make_request() and __make_request(), and
+  update comment around the support check in blk_do_ordered().
 
-First remove useless ->pos field. Then we needn't check seq_printf
-in .show like other place.
+* There is no reason to check discard support in both
+  generic_make_request() and __make_request().  Drop the check in
+  __make_request().  While at it, move error action block to the end
+  of the function and add unlikely() to q existence test.
 
-Signed-off-by: Liming Wang <liming.wang@windriver.com>
-Reviewed-by: Bruce Ashfield <bruce.ashfield@windriver.com>
+* Barrier request, be it empty or not, is never passed to low level
+  driver and thus it's meaningless to try to copy back req->sector to
+  bio->bi_sector on error.  In addition, the notion of failed sector
+  doesn't make any sense for empty barrier to begin with.  Drop the
+  code block from __end_that_request_first().
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- kernel/trace/ftrace.c |   27 ++++++++++-----------------
- 1 files changed, 10 insertions(+), 17 deletions(-)
+ block/blk-barrier.c |    4 ++--
+ block/blk-core.c    |   44 +++++++++++---------------------------------
+ 2 files changed, 13 insertions(+), 35 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index cbf8b09..08b536a 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -786,7 +786,6 @@ enum {
- #define FTRACE_BUFF_MAX (KSYM_SYMBOL_LEN+4) /* room for wildcards */
- 
- struct ftrace_iterator {
--	loff_t			pos;
- 	struct ftrace_page	*pg;
- 	unsigned		idx;
- 	unsigned		flags;
-@@ -811,6 +810,8 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 			iter->pg = iter->pg->next;
- 			iter->idx = 0;
- 			goto retry;
-+		} else {
-+			iter->idx = -1;
- 		}
- 	} else {
- 		rec = &iter->pg->records[iter->idx++];
-@@ -833,8 +834,6 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 	}
- 	spin_unlock(&ftrace_lock);
- 
--	iter->pos = *pos;
--
- 	return rec;
- }
- 
-@@ -842,13 +841,15 @@ static void *t_start(struct seq_file *m, loff_t *pos)
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index 1d7adc7..43d479a 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -216,8 +216,8 @@ int blk_do_ordered(struct request_queue *q, struct request **rqp)
+ 			return 1;
+ 		} else {
+ 			/*
+-			 * This can happen when the queue switches to
+-			 * ORDERED_NONE while this request is on it.
++			 * Queue ordering not supported.  Terminate
++			 * with prejudice.
+ 			 */
+ 			elv_dequeue_request(q, rq);
+ 			if (__blk_end_request(rq, -EOPNOTSUPP,
+diff --git a/block/blk-core.c b/block/blk-core.c
+index d472c4b..43ed62b 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1131,7 +1131,7 @@ void init_request_from_bio(struct request *req, struct bio *bio)
+ static int __make_request(struct request_queue *q, struct bio *bio)
  {
- 	struct ftrace_iterator *iter = m->private;
- 	void *p = NULL;
--	loff_t l = -1;
+ 	struct request *req;
+-	int el_ret, nr_sectors, barrier, discard, err;
++	int el_ret, nr_sectors;
+ 	const unsigned short prio = bio_prio(bio);
+ 	const int sync = bio_sync(bio);
+ 	int rw_flags;
+@@ -1145,22 +1145,9 @@ static int __make_request(struct request_queue *q, struct bio *bio)
+ 	 */
+ 	blk_queue_bounce(q, &bio);
  
--	if (*pos > iter->pos)
--		*pos = iter->pos;
-+	if (*pos > 0) {
-+		if (iter->idx < 0)
-+			return p;
-+		(*pos)--;
-+		iter->idx--;
-+	}
- 
--	l = *pos;
--	p = t_next(m, p, &l);
-+	p = t_next(m, p, pos);
- 
- 	return p;
- }
-@@ -859,21 +860,15 @@ static void t_stop(struct seq_file *m, void *p)
- 
- static int t_show(struct seq_file *m, void *v)
- {
--	struct ftrace_iterator *iter = m->private;
- 	struct dyn_ftrace *rec = v;
- 	char str[KSYM_SYMBOL_LEN];
--	int ret = 0;
- 
- 	if (!rec)
- 		return 0;
- 
- 	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
- 
--	ret = seq_printf(m, "%s\n", str);
--	if (ret < 0) {
--		iter->pos--;
--		iter->idx--;
+-	barrier = bio_barrier(bio);
+-	if (unlikely(barrier) && bio_has_data(bio) &&
+-	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+-		err = -EOPNOTSUPP;
+-		goto end_io;
 -	}
-+	seq_printf(m, "%s\n", str);
+-
+-	discard = bio_discard(bio);
+-	if (unlikely(discard) && !q->prepare_discard_fn) {
+-		err = -EOPNOTSUPP;
+-		goto end_io;
+-	}
+-
+ 	spin_lock_irq(q->queue_lock);
  
+-	if (unlikely(barrier) || elv_queue_empty(q))
++	if (unlikely(bio_barrier(bio)) || elv_queue_empty(q))
+ 		goto get_rq;
+ 
+ 	el_ret = elv_merge(q, &req, bio);
+@@ -1254,10 +1241,6 @@ out:
+ 		__generic_unplug_device(q);
+ 	spin_unlock_irq(q->queue_lock);
  	return 0;
+-
+-end_io:
+-	bio_endio(bio, err);
+-	return 0;
  }
-@@ -899,7 +894,6 @@ ftrace_avail_open(struct inode *inode, struct file *file)
- 		return -ENOMEM;
  
- 	iter->pg = ftrace_pages_start;
--	iter->pos = 0;
+ /*
+@@ -1410,15 +1393,13 @@ static inline void __generic_make_request(struct bio *bio)
+ 		char b[BDEVNAME_SIZE];
  
- 	ret = seq_open(file, &show_ftrace_seq_ops);
- 	if (!ret) {
-@@ -986,7 +980,6 @@ ftrace_regex_open(struct inode *inode, struct file *file, int enable)
+ 		q = bdev_get_queue(bio->bi_bdev);
+-		if (!q) {
++		if (unlikely(!q)) {
+ 			printk(KERN_ERR
+ 			       "generic_make_request: Trying to access "
+ 				"nonexistent block-device %s (%Lu)\n",
+ 				bdevname(bio->bi_bdev, b),
+ 				(long long) bio->bi_sector);
+-end_io:
+-			bio_endio(bio, err);
+-			break;
++			goto end_io;
+ 		}
  
- 	if (file->f_mode & FMODE_READ) {
- 		iter->pg = ftrace_pages_start;
--		iter->pos = 0;
- 		iter->flags = enable ? FTRACE_ITER_FILTER :
- 			FTRACE_ITER_NOTRACE;
+ 		if (unlikely(nr_sectors > q->max_hw_sectors)) {
+@@ -1455,14 +1436,19 @@ end_io:
  
+ 		if (bio_check_eod(bio, nr_sectors))
+ 			goto end_io;
+-		if ((bio_empty_barrier(bio) && !q->prepare_flush_fn) ||
+-		    (bio_discard(bio) && !q->prepare_discard_fn)) {
++
++		if (bio_discard(bio) && !q->prepare_discard_fn) {
+ 			err = -EOPNOTSUPP;
+ 			goto end_io;
+ 		}
+ 
+ 		ret = q->make_request_fn(q, bio);
+ 	} while (ret);
++
++	return;
++
++end_io:
++	bio_endio(bio, err);
+ }
+ 
+ /*
+@@ -1712,14 +1698,6 @@ static int __end_that_request_first(struct request *req, int error,
+ 	while ((bio = req->bio) != NULL) {
+ 		int nbytes;
+ 
+-		/*
+-		 * For an empty barrier request, the low level driver must
+-		 * store a potential error location in ->sector. We pass
+-		 * that back up in ->bi_sector.
+-		 */
+-		if (blk_empty_barrier(req))
+-			bio->bi_sector = req->sector;
+-
+ 		if (nr_bytes >= bio->bi_size) {
+ 			req->bio = bio->bi_next;
+ 			nbytes = bio->bi_size;
 -- 
-1.6.0.3
+1.5.6
 
