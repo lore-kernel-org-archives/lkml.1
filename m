@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYK1Vd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYK1VgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbYK1Vd0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 16:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYK1VdO
+	id S1754982AbYK1VgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 16:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYK1VgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 16:33:14 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:24589 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbYK1VdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 16:33:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=N4Q6rh6q0jl4eIBLFtMq/DoAvx+/XlED02t0vjGY6BN5yD7C3Zlzhan0mux/kFSw1q
-         wChTV99BypxAiuNyr6N8KSpWBgdRkBkbdpnSkJdv2T3NsoPm3QmoWzWf/LaQgmJnM/ND
-         9/cv4VgBRn19tvx0vmwasZ/8Diu2iNq2Onwf0=
-Date: Fri, 28 Nov 2008 22:32:59 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-usb@vger.kernel.org, netdev@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: option: oops on unload (2.6.27.4)
-Message-ID: <20081128213254.GB6750@joi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 28 Nov 2008 16:36:10 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53933 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752720AbYK1VgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 16:36:08 -0500
+Date: Sat, 29 Nov 2008 08:35:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <len.brown@intel.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org
+Subject: drivers/x86 (Was: Re: linux-next: Tree for November 28
+ (misc/tc1100))
+Message-Id: <20081129083550.3c23af37.sfr@canb.auug.org.au>
+In-Reply-To: <4930307C.30106@oracle.com>
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+	<4930307C.30106@oracle.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's not new bug - I've seen this oops many times but on much older
-kernels (2.6.18, probably on 2.6.24 too).
+--Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I tried to rmmod it (and all usb modules) because sometimes it helps when
-modem disconnects and can't connect again.
+Hi Len,
 
-[25350.138850] BUG: unable to handle kernel paging request at e0857fb4
-[25350.138866] IP: [<e0a22e80>] :usbcore:unlink1+0xab/0xb9
-[25350.138921] *pde = 1f80f067 *pte = 00000000 
-[25350.138934] Oops: 0000 [#1] PREEMPT SMP 
-[25350.138945] Modules linked in: r128 drm ipt_REDIRECT ipt_MASQUERADE xt_tcpudp xt_multiport iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc ipt_REJECT x_tables loop option usbserial snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd 8139cp i2c_i801 floppy 8139too 3c59x psmouse intel_agp soundcore snd_page_alloc sg mii usbcore agpgart i2c_core sr_mod evdev dcdbas cdrom [last unloaded: uhci_hcd]
-[25350.139052] 
-[25350.139059] Pid: 2807, comm: pppd Not tainted (2.6.27.4 #5)
-[25350.139065] EIP: 0060:[<e0a22e80>] EFLAGS: 00010286 CPU: 0
-[25350.139088] EIP is at unlink1+0xab/0xb9 [usbcore]
-[25350.139095] EAX: df9fdc00 EBX: e0857f80 ECX: fffffffe EDX: dafe5e80
-[25350.139101] ESI: df9fdc00 EDI: dafe5e80 EBP: dad89e80 ESP: dad89e6c
-[25350.139107]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-[25350.139114] Process pppd (pid: 2807, ti=dad88000 task=d9614380 task.ti=dad88000)
-[25350.139119] Stack: fffffffe 00000246 dafe5e80 daff3480 dafe56b8 dad89e8c e0a23672 dafe5e80 
-[25350.139140]        dad89eb0 e0a240fc 00000246 dafe56bc dafe5680 daff3480 dafe56b8 00000000 
-[25350.139160]        dafe56b8 dad89ecc e088e8fc dece9000 decf3800 e0890ca0 dece9000 dece90c4 
-[25350.139181] Call Trace:
-[25350.139188]  [<e0a23672>] ? usb_hcd_unlink_urb+0x15/0x22 [usbcore]
-[25350.139218]  [<e0a240fc>] ? usb_kill_urb+0x4b/0xc2 [usbcore]
-[25350.139246]  [<e088e8fc>] ? option_close+0x7b/0x9b [option]
-[25350.139267]  [<e08ab741>] ? serial_close+0x82/0xf3 [usbserial]
-[25350.139285]  [<c0210fc3>] ? release_dev+0x180/0x3c3
-[25350.139302]  [<c013b450>] ? __lock_acquire+0x651/0x697
-[25350.139315]  [<c0211218>] ? tty_release+0x12/0x1c
-[25350.139324]  [<c0167617>] ? __fput+0x99/0x13b
-[25350.139336]  [<c016790e>] ? fput+0x17/0x19
-[25350.139345]  [<c01652ba>] ? filp_close+0x50/0x5a
-[25350.139355]  [<c01662c6>] ? sys_close+0x73/0xab
-[25350.139364]  [<c0102dad>] ? sysenter_do_call+0x12/0x35
-[25350.139376]  =======================
-[25350.139380] Code: 89 f0 e8 f7 fe ff ff b8 84 91 a3 e0 e8 30 3c 8a df 8b 55 f0 b8 84 91 a3 e0 e8 b2 40 8a df eb 10 8b 9e b4 00 00 00 8b 4d ec 89 f0 <ff> 53 34 89 c3 89 d8 5f 5a 5b 5e 5f 5d c3 55 89 e5 57 56 53 83 
-[25350.139497] EIP: [<e0a22e80>] unlink1+0xab/0xb9 [usbcore] SS:ESP 0068:dad89e6c
-[25350.139527] ---[ end trace 8506998287f38ab7 ]---
+On Fri, 28 Nov 2008 09:55:08 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
+rote:
+>
+> make[2]: *** No rule to make target `drivers/misc/tc1100-wmi.o', needed b=
+y `drivers/misc/built-in.o'.
+>=20
+> on allmodconfig & allyesconfig for i386.
+>=20
+> On, moved to drivers/x86/.  Someone needs to clean up drivers/misc/Makefi=
+le.
 
-Full dmesg and config can be found at:
-http://www.kadu.net/~joi/kernel/2008.11.28/option-usb.oops/
+Just wondering where the move to drivers/x86 was discussed, (reviewed and
+tested) and why the change is in the acpi tree and not the x86 tree?
 
-Marcin
+I am not saying it should not be done (I haven't looked enough to have an
+opinion).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkwZDYACgkQjjKRsyhoI8zPNwCfWKpai2l5ACY6syZ66QEf87Jf
+MVMAn1dM4hL079n9FFk/21Dt97nKPAI0
+=sBRS
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__29_Nov_2008_08_35_50_+1100_zu18iXK=7RyZcY/R--
