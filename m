@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYK1N7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbYK1OAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYK1N7L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 08:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYK1N65
+	id S1752704AbYK1OAH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 09:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYK1N7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 08:58:57 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:56676 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbYK1N64 (ORCPT
+	Fri, 28 Nov 2008 08:59:55 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51545 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751485AbYK1N7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 08:58:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i1TLXeRSDHBazQ1XDlmMzfgtYVbEpLujEX4S+7sDGt3iB9ldLQhrdb3t2C7U3nA662
-         QvJzu8elyLIOta9MQq+/kK2OhtLqA8smIa8e3X3eXVUKRouMt+FLuRVj93hPambxE6kW
-         x1Nhxg+WgNqeL7RO1EJ8w/zxEVynYpoB0l9PI=
-Message-ID: <c62985530811280558q562ec3afj8486fe494482b4e1@mail.gmail.com>
-Date: Fri, 28 Nov 2008 14:58:55 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] tracing/function-graph-tracer: adjustments of the trace informations
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Tim Bird" <tim.bird@am.sony.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081128092553.GA7040@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Nov 2008 08:59:54 -0500
+Date: Fri, 28 Nov 2008 13:58:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Rodolfo Giometti <giometti@linux.it>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: Re: [PATCH] ldisc: new dcd_change() method for line disciplines.
+Message-ID: <20081128135837.16a09068@lxorguk.ukuu.org.uk>
+In-Reply-To: <492FD864.50901@imap.cc>
+References: <1227647470-4816-1-git-send-email-giometti@linux.it>
+	<1227647470-4816-2-git-send-email-giometti@linux.it>
+	<492FD864.50901@imap.cc>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492F3076.7050104@gmail.com> <20081128091800.GA1725@elte.hu>
-	 <20081128092553.GA7040@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/28 Ingo Molnar <mingo@elte.hu>:
->
-> another thing which i'm sure you are aware of:
->
-> # tracer: function_graph
-> #
-> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> #              | |       |          |         |
->  ------------------------------------------
->  | 1)  S99local--1  =>  ssh-1724
->  ------------------------------------------
->
->  1)      0.867 us |        }
->  1)               |        mark_page_accessed() {
->  1)      0.293 us |          constant_test_bit();
->  1)      0.294 us |          constant_test_bit();
-> [...]
->
-> the header description is now out of of sync :-)
->
-> Also, we should probably not start the trace with a PID-switch event.
-> the last_pid[] markers are probably out of sync when we start printing
-> the trace.
->
-> So the output should probably be something like:
->
-> # tracer: function_graph
-> #
-> # CPU      COST     FUNCTION-GRAPH
-> # |          |       |
->
->  1)      0.867 us |        }
->  1)               |        mark_page_accessed() {
->  1)      0.293 us |          constant_test_bit();
->  1)      0.294 us |          constant_test_bit();
-> [...]
+On Fri, 28 Nov 2008 12:39:16 +0100
+Tilman Schmidt <tilman@imap.cc> wrote:
 
+> Rodolfo Giometti schrieb:
+> > --- a/include/linux/tty_ldisc.h
+> > +++ b/include/linux/tty_ldisc.h
+> > @@ -99,11 +99,19 @@
+> >   *	cease I/O to the tty driver. Can sleep. The driver should
+> >   *	seek to perform this action quickly but should wait until
+> >   *	any pending driver I/O is completed.
+> > + *
+> > + * void (*dcd_change)(struct uart_port *port, unsigned int status,
+> > + * 			struct timespec *ts)
+> > + *
+> > + *	Tells the discipline that the DCD pin has changed its status and
+> > + *	the relative timestamp. Pointer ts can be NULL.
+> >   */
+> 
+> I don't see an actual call to that new method getting added anywhere.
+> Is that planned for a later patch?
 
-Ok I will just have to update something in the open callback....
+Its used in one of the later patches of the set.
