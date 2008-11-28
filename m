@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYK1JOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbYK1JSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbYK1JOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 04:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYK1JOH
+	id S1752947AbYK1JSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 04:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYK1JSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 04:14:07 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:34796 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752789AbYK1JOG (ORCPT
+	Fri, 28 Nov 2008 04:18:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:17330 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbYK1JSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 04:14:06 -0500
+	Fri, 28 Nov 2008 04:18:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=g5Y/r80ifYn8UyG6WLGfJXDqqWxlRdWkDgc3V4htW8+vtfIUzHVPRRQnVM2eCwqnhN
-         hofxQ0B5qSK0udKx+si/vpLhKyrInC4PP0AL71kkCyrptv9bbhp3YWizWuTWLpbeU9Xr
-         sVuA9pscxG2HuENuQg8fInWDaO47svzozJWqg=
-Message-ID: <c62985530811280114s50abe288q255a185b6d64c81b@mail.gmail.com>
-Date: Fri, 28 Nov 2008 10:14:03 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: next-2008-11-27: tracing on alpha (again)
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :mime-version:content-type:content-transfer-encoding;
+        b=vExlFhdLVWuXpHzdcnPh1xIf/9LjFJS+pWD+RKZ7D7iPHn/IEgsgmSIMI7U0zlvcjs
+         RWxxvkZgUo03gz19wwhs+jHEA4haLJ5cU4m2b+x+RKYfXJwAx84yLmoK/4/Aex9IX7uc
+         5azDyLOys8/55zEZFkwe9/RensiIYAT9iSk2M=
+From: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
+To: adobriyan@gmail.com
 Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org, mingo@elte.hu,
-       edwintorok@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20081128090258.GA27346@x200.localdomain>
+       linux-kernel@vger.kernel.org,
+       =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
+Subject: [PATCH] fix build: add missing #ifdef CONFIG_STACKTRACE
+Date: Fri, 28 Nov 2008 11:17:56 +0200
+Message-Id: <1227863876-22747-1-git-send-email-edwintorok@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <c62985530811280114s50abe288q255a185b6d64c81b@mail.gmail.com>
+References: <c62985530811280114s50abe288q255a185b6d64c81b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081128090258.GA27346@x200.localdomain>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/28 Alexey Dobriyan <adobriyan@gmail.com>:
-> On alpha-smp-n-debug-y:
->
->  CC      kernel/trace/trace.o
-> kernel/trace/trace.c: In function 'ftrace_trace_userstack':
-> kernel/trace/trace.c:968: error: storage size of 'trace' isn't known
-> kernel/trace/trace.c:968: warning: unused variable 'trace'
-> make[3]: *** [kernel/trace/trace.o] Error 1
 
+Signed-off-by: Török Edwin <edwintorok@gmail.com>
+---
+ kernel/trace/trace.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-I think it needs a missing #ifdef CONFIG_STACKTRACE inside
-ftrace_trace_userstack.
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 5811e0a..91887a2 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -983,6 +983,7 @@ static void ftrace_trace_userstack(struct trace_array *tr,
+ 		   struct trace_array_cpu *data,
+ 		   unsigned long flags, int pc)
+ {
++#ifdef CONFIG_STACKTRACE
+ 	struct ring_buffer_event *event;
+ 	struct userstack_entry *entry;
+ 	struct stack_trace trace;
+@@ -1008,6 +1009,7 @@ static void ftrace_trace_userstack(struct trace_array *tr,
+ 
+ 	save_stack_trace_user(&trace);
+ 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
++#endif
+ }
+ 
+ void __trace_userstack(struct trace_array *tr,
+-- 
+1.5.6.5
 
->  CC      kernel/trace/trace_branch.o
-> kernel/trace/trace_branch.c: In function 'probe_likely_condition':
-> kernel/trace/trace_branch.c:44: error: implicit declaration of function 'raw_local_irq_save'
-> kernel/trace/trace_branch.c:76: error: implicit declaration of function 'raw_local_irq_restore'
->
-
-Needs a missing #include <linux/irqflags.h>
-
-I don't have time to submit patches now. Probably this night....
