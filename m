@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYK1POM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbYK1PnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbYK1POM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 10:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYK1PN4
+	id S1753539AbYK1PnZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 10:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYK1PnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 10:13:56 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:12409 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbYK1PNz (ORCPT
+	Fri, 28 Nov 2008 10:43:16 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:55390 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbYK1PnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 10:13:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nqO14foLjOw4iTJ6AFW9jxfWmNXVOJL8bL++UqbA3RgYC3In7UErRPd1y0VuGJUXnJ
-         3pMTOmhg3LHR0lMv3oE/Wwh0fcjrTt5ywgKdrLSIY31XorZfTWAFQPfeyzGW1VG71d39
-         6akasl4FWHJ5eryjZcKhSmqmyo0kKXHzLjj6k=
-Date: Fri, 28 Nov 2008 18:17:55 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au
-Subject: next-2008-11-28: bfin vs cpumask fixlet
-Message-ID: <20081128151755.GA27660@x200.localdomain>
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+	Fri, 28 Nov 2008 10:43:15 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@redhat.com>
+Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
+Date: Fri, 28 Nov 2008 16:42:52 +0100
+User-Agent: KMail/1.9.9
+Cc: Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <1227774576-5503-1-git-send-email-keithp@keithp.com> <200811281243.02841.arnd@arndb.de> <20081128140335.GA21358@shell.devel.redhat.com>
+In-Reply-To: <20081128140335.GA21358@shell.devel.redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811281642.52637.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/PQb223pl+wEMm7In6kxeLPh6d4LfyiMKx2EU
+ Q1UO24PvkJxBP1l36GH21Z22NKRkQaAFyWCSWP50GkiZGFgUne
+ HTnP8JRwxabx7LGuS6Ytw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- a/arch/blackfin/kernel/time-ts.c
-+++ b/arch/blackfin/kernel/time-ts.c
-@@ -162,7 +162,6 @@ static struct clock_event_device clockevent_bfin = {
- 	.name		= "bfin_core_timer",
- 	.features	= CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
- 	.shift		= 32,
--	.cpumask	= CPU_MASK_CPU0,
- 	.set_next_event = bfin_timer_set_next_event,
- 	.set_mode	= bfin_timer_set_mode,
- };
-@@ -193,6 +192,7 @@ static int __init bfin_clockevent_init(void)
- 	clockevent_bfin.mult = div_sc(timer_clk, NSEC_PER_SEC, clockevent_bfin.shift);
- 	clockevent_bfin.max_delta_ns = clockevent_delta2ns(-1, &clockevent_bfin);
- 	clockevent_bfin.min_delta_ns = clockevent_delta2ns(100, &clockevent_bfin);
-+	clockevent_bfin.cpumask = cpumask_of(0);
- 	clockevents_register_device(&clockevent_bfin);
- 
- 	return 0;
+On Friday 28 November 2008, Alan Cox wrote:
+
+> Removing it seems a bit pointless as someone will one day no doubt need
+> to put it back again
+
+Ok, so we should probably also have it in the new ->compat_ioctl call.
+
+	Arnd <><
+
+
