@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbYK1TXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYK1T0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbYK1TXQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 14:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYK1TXA
+	id S1754832AbYK1T0o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 14:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYK1T0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 14:23:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41795 "EHLO mx2.mail.elte.hu"
+	Fri, 28 Nov 2008 14:26:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34022 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbYK1TW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 14:22:59 -0500
-Date: Fri, 28 Nov 2008 20:22:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/function-graph-tracer: adjustments of the
-	trace informations
-Message-ID: <20081128192249.GA22263@elte.hu>
-References: <492F3076.7050104@gmail.com> <20081128091800.GA1725@elte.hu> <20081128092553.GA7040@elte.hu>
+	id S1752479AbYK1T0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 14:26:35 -0500
+Date: Fri, 28 Nov 2008 20:25:08 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andi Kleen <ak@linux.intel.com>, Jonathan Corbet <corbet@lwn.net>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Vitaly Mayatskikh <vmayatsk@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: BUG? "Call fasync() functions without the BKL" is racy
+Message-ID: <20081128192508.GA21369@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081128092553.GA7040@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-another detail: it would be nice to annotate IRQ entries some more.
+Let's suppose we have the tasks T1, T2, T3 which share the same file,
+all do sys_fcntl(file, F_SETFL) in parallel. file->f_flags == 0.
 
-right now if a syscall is interrupted by a hardware interrupt, it looks 
-like this:
+setfl(arg) does:
 
- 0)               |              skb_dequeue() {
- 0)      0.365 us |                _spin_lock_irqsave();
- 0)      0.422 us |                _spin_unlock_irqrestore();
- 0)      1.912 us |              }
- 0)               |              memcpy_toiovec() {
- 0)               |                copy_to_user() {
- 0)               |                  smp_apic_timer_interrupt() {
- 0)      0.450 us |                    native_apic_mem_write();
- 0)               |                    irq_enter() {
- 0)      0.410 us |                      idle_cpu();
- 0)      1.167 us |                    }
- 0)               |                    hrtimer_interrupt() {
+	if ((arg ^ filp->f_flags) & FASYNC)
+// --- WINDOW_1 ---
+		filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0)
+// --- WINDOW_2 ---
+	filp->f_flags = arg;
 
-the natural nesting is nice, but easy to miss. It would be nice to have 
-something like:
+T1 calls setfl(FASYNC), preempted in WINDOW_1.
 
- 0)               |              skb_dequeue() {
- 0)      0.365 us |                _spin_lock_irqsave();
- 0)      0.422 us |                _spin_unlock_irqrestore();
- 0)      1.912 us |              }
- 0)               |              memcpy_toiovec() {
- 0)               |                copy_to_user() {
- 0)             =====>               smp_apic_timer_interrupt() {
- 0)      0.450 us |                    native_apic_mem_write();
- 0)               |                    irq_enter() {
- 0)      0.410 us |                      idle_cpu();
- 0)      1.167 us |                    }
- 0)               |                    hrtimer_interrupt() {
+T2 calls setfl(FASYNC), does all job and returns.
 
-and perhaps something like this at the end of the irq frame:
+T3 calls setfl(0), sees ->f_flags & FASYNC, does ->fasync(on => 0),
+preempted in WINDOW_2.
 
- 0)      0.408 us |                          _local_bh_enable();
- 0) +   13.139 us |                        }
- 0) +   13.887 us |                      }
- 0)      0.406 us |                      idle_cpu();
- 0) +   15.373 us |                    }
- 0) +   74.564 us |                  }
- 0)               |                  _cond_resched() {
- 0)               |                    need_resched() {
- 0)      0.423 us |                      constant_test_bit();
- 0)      1.164 us |                    }
- 0)      1.915 us <===               } /* IRQ 1 end */
- 0) +   78.396 us |                }
- 0) +   79.123 us |              }
- 0)      0.387 us |              skb_pull();
- 0)               |              kfree_skb() {
+T1 resumes, does ->fasync(on => 1) again, update ->f_flags (it
+already has FASYNC) and returns.
 
-?
+T3 resumes, and clears FASYNC from ->f_flags.
 
-	Ingo
+
+
+Now, this file was added into some "struct fasync_struct", but
+->f_flags doesn't have FASYNC. This means __fput() will skip
+->fasync(on => 0) and the next kill_fasync() can crash because
+fa_file points to the freed/reused memory.
+
+I think a238b790d5f99c7832f9b73ac8847025815b85f7 should be reverted.
+Or do you see the better fix?
+
+Unless I missed something of course.
+
+Oleg.
+
