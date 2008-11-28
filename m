@@ -1,102 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYK1Mtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750730AbYK1MuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYK1Mtt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 07:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYK1Mtj
+	id S1750730AbYK1MuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 07:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYK1Mt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 07:49:39 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.65]:44807 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbYK1Mti (ORCPT
+	Fri, 28 Nov 2008 07:49:57 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:48972 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752991AbYK1Mt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 07:49:38 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Fri, 28 Nov 2008 21:49:21 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>, d-nishimura@mtf.biglobe.ne.jp,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH -mmotm 0/2] misc patches for memory cgroup
- hierarchy
-Message-Id: <20081128214921.86c30347.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20081128194938.508a3b22.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081128180252.b7a73c86.nishimura@mxp.nes.nec.co.jp>
-	<20081128194938.508a3b22.kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Nov 2008 07:49:57 -0500
+Date: Fri, 28 Nov 2008 20:49:46 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH-mm 4/8] crypto: remove uses of __constant_{endian}
+	helpers
+Message-ID: <20081128124946.GA31658@gondor.apana.org.au>
+References: <1227733971.5511.126.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227733971.5511.126.camel@brick>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008 19:49:38 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Fri, 28 Nov 2008 18:02:52 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Wed, Nov 26, 2008 at 01:12:51PM -0800, Harvey Harrison wrote:
+> Base versions handle constant folding just fine.
 > 
-> > Hi.
-> > 
-> > I'm writing some patches for memory cgroup hierarchy.
-> > 
-> > I think KAMEZAWA-san's cgroup-id patches are the most important pathes now,
-> > but I post these patches as RFC before going further.
-> > 
-> Don't wait me ;) I'll rebase mine.
-> 
-I see :)
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-> 
-> > Patch descriptions:
-> > - [1/2] take account of memsw
-> >     mem_cgroup_hierarchical_reclaim checks only mem->res now.
-> >     It should also check mem->memsw when do_swap_account.
-> > - [2/2] avoid oom
-> >     In previous implementation, mem_cgroup_try_charge checked the return
-> >     value of mem_cgroup_try_to_free_pages, and just retried if some pages
-> >     had been reclaimed.
-> >     But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
-> >     only checks whether the usage is less than the limit.
-> >     I see oom easily in some tests which didn't cause oom before.
-> > 
-> > Both patches are for memory-cgroup-hierarchical-reclaim-v4 patch series.
-> > 
-> > My current plan for memory cgroup hierarchy:
-> > - If hierarchy is enabled, limit of child should not exceed that of parent.
->  limit of a child or
->  limit of sum of children ?
-> 
-I'm sorry for my poor explanation.
-I meant *max* of limits of children.
-
-I think setting limit like
-
-	group A (limit=1G)
-		group A0 (limit=500M)
-		group A1 (limit=800M)
-
-is not wrong itself.
-
-
-Thanks,
-Daisuke Nishimura.
-
-> > - Change other calls for mem_cgroup_try_to_free_page() to
-> >   mem_cgroup_hierarchical_reclaim() if possible.
-> > 
->  maybe makes sense.
-> 
-> Thanks,
-> -Kame
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Patch applied.  Thanks.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
