@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYK1Lmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbYK1Lnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYK1Lmi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:42:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYK1Lm3
+	id S1755274AbYK1Lnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYK1Lna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:42:29 -0500
-Received: from mail.phnxsoft.com ([195.227.45.4]:3219 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbYK1Lm2 (ORCPT
+	Fri, 28 Nov 2008 06:43:30 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:52100 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbYK1Ln3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:42:28 -0500
-Message-ID: <492FD864.50901@imap.cc>
-Date: Fri, 28 Nov 2008 12:39:16 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.18) Gecko/20081031 SeaMonkey/1.1.13 Mnenhy/0.7.6.0
+	Fri, 28 Nov 2008 06:43:29 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Keith Packard <keithp@keithp.com>, Alan Cox <alan@redhat.com>
+Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
+Date: Fri, 28 Nov 2008 12:43:02 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+References: <1227774576-5503-1-git-send-email-keithp@keithp.com> <200811271531.18498.arnd@arndb.de> <1227810424.4277.55.camel@aiko.keithp.com>
+In-Reply-To: <1227810424.4277.55.camel@aiko.keithp.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Rodolfo Giometti <giometti@linux.it>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: Re: [PATCH] ldisc: new dcd_change() method for line disciplines.
-References: <> <1227647470-4816-1-git-send-email-giometti@linux.it> <1227647470-4816-2-git-send-email-giometti@linux.it>
-In-Reply-To: <1227647470-4816-2-git-send-email-giometti@linux.it>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB4ABB402498B73E57F90B470"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811281243.02841.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/aLD+Ge+Nw9nh59nVvbN8bRoGRLqdeRl0IB27
+ 8i5ycjEuRTRpoVXy/z7hEtQwYsMgum739Kj0q1rREbvRS4/hlp
+ hg3kZpHS2KhqriKNO8bKA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB4ABB402498B73E57F90B470
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Thursday 27 November 2008, Keith Packard wrote:
+> On Thu, 2008-11-27 at 15:31 +0100, Arnd Bergmann wrote:
+>
+> > You should probably define compat_ioctl to return an int as well
+> > so that it becomes possible to use the same function for both eventually.
+> 
+> The existing tty layer compat_ioctl is defined to return long; is that
+> also wrong?
 
-Rodolfo Giometti schrieb:
-> --- a/include/linux/tty_ldisc.h
-> +++ b/include/linux/tty_ldisc.h
-> @@ -99,11 +99,19 @@
->   *	cease I/O to the tty driver. Can sleep. The driver should
->   *	seek to perform this action quickly but should wait until
->   *	any pending driver I/O is completed.
-> + *
-> + * void (*dcd_change)(struct uart_port *port, unsigned int status,
-> + * 			struct timespec *ts)
-> + *
-> + *	Tells the discipline that the DCD pin has changed its status and
-> + *	the relative timestamp. Pointer ts can be NULL.
->   */
+Yes, this was a slight mistake that got introduced when file_operations->
+compat_ioctl first appeared with a long return value. It doesn't really
+hurt, but new compat_ioctl functions should just return the 'int' that
+gets sent back to user space.
 
-I don't see an actual call to that new method getting added anywhere.
-Is that planned for a later patch? Which serial drivers will support
-that mechanism? Should the documentation perhaps mention that not
-all drivers support this?
+> > Then again, we can also drop the file argument, which is entirely unused
+> > in all the usb-serial ioctls.
+> 
+> I'm not sure it's worth the effort; if some future usb serial ioctl
+> needs the argument, we'd end up changing every existing driver back. I
+> assume there are some serial devices for which the file is relevant
+> during ioctl.
 
-Thanks,
-Tilman
+I've just checked all tty device drivers. The only one using the file
+pointer in ->ioctl, ->tiocmget and ->tiocmset is serial_core, which
+passes it to tty_hung_up_p(). That could easily be changed to check
+(tty->flags & TTY_HUPPED) AFAICT.
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+Maybe Alan can comment on this. I think the code would become cleaner
+if we dropped the file argument to these three functions throughout
+the tty layer, but it's probably not worth the pain to change themm
+call.
 
+> > Maybe the best way for now is to make the new compat_ioctl be
+> > int compat_ioctl(struct tty_struct, unsigned int cmd, unsigned long arg);
+> > and leave the old ioctl as it is. When we get around to pushing the
+> > BKL down into ->ioctl, we can change the prototype at the same time
+> > to warn potential out-of-tree drivers.
+> 
+> Let's figure out what the right compat_ioctl interface is first and
+> worry about fixing the existing ioctl interface later.
 
---------------enigB4ABB402498B73E57F90B470
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ok.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJL9hsQ3+did9BuFsRAju9AJ9loGZQNYSkgUQlb8psri968Fm6owCdG2/A
-zJEMcABUjrBgdBpg1jcSWq0=
-=F7Dv
------END PGP SIGNATURE-----
-
---------------enigB4ABB402498B73E57F90B470--
+	Arnd <><
