@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYK1AQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbYK1AX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbYK1AQW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 19:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYK1AQN
+	id S1754143AbYK1AX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 19:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYK1AXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 19:16:13 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:28872 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbYK1AQM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 19:16:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iAQEriYArtawVlPDzTTeCqJzS0FF5t0ZYaVcxFJYgXNxmU7H8cDTlRulN+Ek7cE365
-         fdzMp/WcMcm1e+wsh2JSCN4Y06Hj6vZ4lb2IZI8ehh3qci0lQwBt09mgZq3l2XB219L5
-         n7db+GjuPPAjZ8oHDavEfbvqkfbqo3uGj6PJM=
-Message-ID: <492F3847.2020204@gmail.com>
-Date: Fri, 28 Nov 2008 01:16:07 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 27 Nov 2008 19:23:17 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50537 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752931AbYK1AXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 19:23:16 -0500
+From: Neil Brown <neilb@suse.de>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Fri, 28 Nov 2008 11:23:14 +1100
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Hugh Dickins <hugh@veritas.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Miles Lane <miles.lane@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request
- at ffff8800be8b0019
-References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com>  <200811270026.37941.rjw@sisk.pl>  <84144f020811270537l3798b2f5ka63caacbee43b075@mail.gmail.com>  <Pine.LNX.4.64.0811271349040.21910@blonde.site> <84144f020811270613t3f0258ddxac52abb9a447bf40@mail.gmail.com> <Pine.LNX.4.64.0811271643250.9618@blonde.site> <alpine.DEB.1.10.0811271827490.7113@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0811271827490.7113@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18735.14834.899120.164099@notabene.brown>
+Cc: Tejun Heo <teheo@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
+       Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/2] md: make devices disappear when they are no longer
+	needed.
+In-Reply-To: message from Al Viro on Monday November 24
+References: <20081124035516.3465.66413.stgit@notabene.brown>
+	<20081124035530.3465.26724.stgit@notabene.brown>
+	<492A2B2B.7030606@kernel.org>
+	<18730.14324.830648.449469@notabene.brown>
+	<492A3CE6.4010206@kernel.org>
+	<20081124062417.GZ28946@ZenIV.linux.org.uk>
+	<492A500C.9090200@kernel.org>
+	<20081124133124.GB28946@ZenIV.linux.org.uk>
+	<492AB480.5060207@kernel.org>
+	<492AB98C.7030105@suse.de>
+	<20081124144823.GC28946@ZenIV.linux.org.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt a écrit :
-> [ Added Frederic ]
+On Monday November 24, viro@ZenIV.linux.org.uk wrote:
 > 
-> On Thu, 27 Nov 2008, Hugh Dickins wrote:
->>  					break;
->> --- 2.6.28-rc6/include/linux/ftrace.h	2008-11-02 23:17:56.000000000 +0000
->> +++ linux/include/linux/ftrace.h	2008-11-27 16:39:26.000000000 +0000
->> @@ -231,7 +231,7 @@ ftrace_init_module(unsigned long *start,
->>  
->>  struct boot_trace {
->>  	pid_t			caller;
->> -	char			func[KSYM_NAME_LEN];
->> +	char			func[KSYM_SYMBOL_LEN];
->>  	int			result;
->>  	unsigned long long	duration;		/* usecs */
->>  	ktime_t			calltime;
-> 
-> Acked-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> The boot tracer was written by Frederic.
-> 
-> -- Steve
-> 
+> I really think that it's much saner than trying to change the lifetime
+> rules for gendisk, etc.
 
-No problem for me.
-The ring buffer seems large enough to contain this entry size for each initcall :-)
+I'm not sure there is anything wrong with the lifetime rules for
+gendisk....
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+In my mind a big issue is:
+   What should happen if "open" is racing with "destroy device" ?
 
+For 'sd', if you open before the decision has been made to tear down
+the data structures, the open succeeds but you start getting EIO on
+any IO.
+If you open after the decision, you get ENODEV (or ENXIO?).
+If you wait a little longer and some other device gets hot-plugged,
+then the open succeeds on a different physical device.
+
+For 'md' the situation is quite different, due to unfortunate legacy
+interface design.
+An open should never fail with ENODEV.
+It might return a device on which read/write always fails and only
+various 'ioctls' work, or it might return a device which is fully
+working.
+
+So we need to close the window in which ENODEV can be returned.
+
+I think the code I wrote is the best way to close that window.  If we
+detect that we are in the window during open, wait for the window to
+close and retry, by returning ERESTARTSYS.
+
+
+I've thought more about the possibility of the disk_release method
+which is used to tear down the md data structures but I don't think it
+would really answer the need.
+
+A key point in time is when blk_unregister_region is called to
+remove the mapping from minor number to the gendisk.
+At any time before this, new references can be taken by an open.
+At any time after this, any open will be directed through ->probe
+which can do any necessary interlocking with ->open.
+
+Currently we need to call blk_unregister_region before the final
+put_disk otherwise a new reference could be taken while that put_disk
+is running.
+blk_unregister_region is normally called by unlink_gendisk called by
+del_gendisk.
+So we need to call del_gendisk before the final call to put_disk.
+And once we have called del_gendisk we may as well clean up the md
+specific stuff there and not bother with a ->disk_release method.
+
+So I'm having trouble seeing what is wrong with my approach (other
+than the fact it implements an unfortunate choice of user-space
+interface, which we agree is a legacy requirement) or how anything
+else could provide a better solution.
+
+I can appreciate that there might be other issues with gendisk lifetime
+(such as the fact that get_disk takes a reference to the module but
+put_disk doesn't) but I suspect they are largely orthogonal to my
+current issue.
+
+Finally, I suspect that there is a problem with my patch as it stands
+with respect to module reference counting.  I'll have to explore to
+be sure exactly what is happening, but I strongly suspect it is
+wrong.  Thank you for highlighting that issue for me.
+
+NeilBrown
