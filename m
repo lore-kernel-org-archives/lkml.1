@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYK1LcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYK1Lfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbYK1LcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYK1LcD
+	id S1754790AbYK1Lfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:35:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYK1Lff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:32:03 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:2675 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbYK1LcA (ORCPT
+	Fri, 28 Nov 2008 06:35:35 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52831 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbYK1Lfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:32:00 -0500
-X-BigFish: VPS-32(ze80iz1432R98dR1805M179dR936fO873fnzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KB1K0Y-03-E69-01
-Date: Fri, 28 Nov 2008 12:31:29 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, weidong.han@intel.com,
-       mingo@redhat.com, avi@redhat.com, amit.shah@redhat.com
-Subject: Re: [PATCH 3/9] add frontend implementation for the IOMMU API
-Message-ID: <20081128113129.GO1386@amd.com>
-References: <1227800454-9555-1-git-send-email-joerg.roedel@amd.com> <1227800454-9555-4-git-send-email-joerg.roedel@amd.com> <20081128184041N.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 28 Nov 2008 06:35:34 -0500
+Date: Fri, 28 Nov 2008 12:35:32 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Tejun Heo <tj@kernel.org>
+cc: Adrian Bunk <bunk@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
+Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
+In-Reply-To: <492F5613.4090908@kernel.org>
+Message-ID: <alpine.LNX.1.10.0811281220510.3843@fbirervta.pbzchgretzou.qr>
+References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0811272148490.23969@fbirervta.pbzchgretzou.qr> <492F5613.4090908@kernel.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081128184041N.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 28 Nov 2008 11:31:29.0332 (UTC) FILETIME=[DB2D6740:01C9514C]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 06:40:41PM +0900, FUJITA Tomonori wrote:
-> On Thu, 27 Nov 2008 16:40:48 +0100
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  drivers/base/iommu.c |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 94 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/base/iommu.c
-> > 
-> > diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
-> > new file mode 100644
-> > index 0000000..7250b9c
-> > --- /dev/null
-> > +++ b/drivers/base/iommu.c
-> 
-> Hmm, why is this at drivers/base/? Anyone except for kvm could use
-> this? If so, under virt/ is more appropriate?
 
-I don't see a reason why this should be KVM specific. KVM is the only
-user for now. But it can be used for i.e. UIO too. Or in drivers to
-speed up devices which have bad performance when they do scather gather
-IO.
+On Friday 2008-11-28 03:23, Tejun Heo wrote:
+>Jan Engelhardt wrote:
+>> On Thursday 2008-08-28 22:01, Adrian Bunk wrote:
+>>> On Thu, Aug 28, 2008 at 09:05:53PM +0200, Tejun Heo wrote:
+>>>> Hello again,
+>>>>
+>>>> So, after all the fuss, here's the state-of-the-art standard-compliant
+>>>> cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
+>>>>
+>>>>   http://userweb.kernel.org/~tj/ossp/
+>>>>
+>>>> It works pretty well here.  :-)
+>>> Sorry for being destructive, but 6 years after ALSA went into the
+>>> kernel we are slightly approaching the point where all applications 
+>>> support ALSA.
+>> 
+>> Unreal Tournament GOTY/99 does not (seem to). And I doubt someone
+>> is going to fix commercial games. Though being a static binary,
+>> its use of shared libraries that do the sound device open makes
+>> aoss a possibility, if that helps. But it does not support ALSA
+>> natively - and would make a point for CUSE.
+>
+>The devel version of ossp (not out yet, waiting for CUSE and mmap
+>support merge) can do all the quakes (even the dreaded quake1 which
+>even ALSA OSS emulation or native OSS can't do because of strict
+>sample/freq requirement which modern devices don't support anymore)
 
-> The majority of the names (include/linux/iommu.h, iommu.c, iommu_ops,
-> etc) looks too generic? We already have lots of similar things
-> (e.g. arch/{x86,ia64}/asm/iommu.h, several archs' iommu.c, etc). Such
-> names are expected to be used by all the IOMMUs.
+Quake won't be a problem because its source was released.
 
-The API is already useful for more than KVM. I also plan to extend it to
-support more types of IOMMUs than VT-d and AMD IOMMU in the future. But
-these changes are more intrusive than this patchset and need more
-discussion. I prefer to do small steps into this direction.
+>and skype-static-oss are working fine.
 
-Joerg
+Skype should burn in hell...
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+>The latency is still a tad bit
+>high due to PA interaction but everything is mostly in place.  I'm
+>fairly sure UT would work too.  Do you know where I can get a demo of
+>it?
 
+It has become really difficult to obtain these nowadays, but there it is:
+
+http://download.beyondunreal.com/get.php/2/official/ut/utdemo-linux-x86-348.tar.gz
+
+
+(BTW, Firefox3 screws up on loading
+http://download.beyondunreal.com/fileworks.php/official/ut/utdemo-linux-x86-348.tar.gz
+w3m works fine and was used to obtain the nested link above.)
