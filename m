@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbYK1L2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYK1L34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbYK1L2J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYK1L14
+	id S1754761AbYK1L34 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYK1L3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:27:56 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:42557 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbYK1L1z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:27:55 -0500
-Date: Fri, 28 Nov 2008 11:27:45 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v10][PATCH 09/13] Restore open file descriprtors
-Message-ID: <20081128112745.GR28946@ZenIV.linux.org.uk>
-References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu> <1227747884-14150-10-git-send-email-orenl@cs.columbia.edu>
+	Fri, 28 Nov 2008 06:29:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36823 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752234AbYK1L3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 06:29:47 -0500
+Date: Fri, 28 Nov 2008 12:29:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Eugene Teo <eugeneteo@kernel.sg>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] kmemcheck: TODO for stack tracking
+Message-ID: <20081128112934.GA18333@elte.hu>
+References: <19f34abd0811280316y13dd8dfcm3cf77b6b2171612b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1227747884-14150-10-git-send-email-orenl@cs.columbia.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <19f34abd0811280316y13dd8dfcm3cf77b6b2171612b@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 08:04:40PM -0500, Oren Laadan wrote:
 
-> +/**
-> + * cr_attach_get_file - attach (and get) lonely file ptr to a file descriptor
-> + * @file: lonely file pointer
-> + */
-> +static int cr_attach_get_file(struct file *file)
-> +{
-> +	int fd = get_unused_fd_flags(0);
-> +
-> +	if (fd >= 0) {
-> +		fsnotify_open(file->f_path.dentry);
-> +		fd_install(fd, file);
-> +		get_file(file);
-> +	}
-> +	return fd;
-> +}
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-What happens if another thread closes the descriptor in question between
-fd_install() and get_file()?
+> Hi,
+> 
+> Here's a plan for how to do stack tracking with kmemcheck. It is not
+> entirely trivial, but as far as I can see, it SHOULD be possible.
+> Please let me know if you can spot any fallacies or other problems.
+> I've probably missed something...
+> 
+> /*
+>  * TODO for stack tracking in kmemcheck:
+>  *
+>  * 1. Make kernel run at CPL = 1
+>  *
+>  * This includes (I guess) changing the various privilege levels in most
+>  * system descriptors and descriptor tables, and probably the IOPL. Are there
+>  * any CPU features which always require CPL = 0 to work? Paging requires no
+>  * change, as the U/S flag distinguishes between CPL = 0, 1, 2 and CPL = 3
+>  * only.
 
-> +	fd = cr_attach_file(file);	/* no need to cleanup 'file' below */
-> +	if (fd < 0) {
-> +		filp_close(file, NULL);
-> +		ret = fd;
-> +		goto out;
-> +	}
-> +
-> +	/* register new <objref, file> tuple in hash table */
-> +	ret = cr_obj_add_ref(ctx, file, parent, CR_OBJ_FILE, 0);
-> +	if (ret < 0)
-> +		goto out;
+hm, a ton of instructions need ring-0/supervisor privilege. OTOH, the 
+32-bit Xen hypervisor runs the guest kernel on ring 1 so all these places 
+are abstracted out to a fair degree already via paravirt_ops.
 
-Who said that file still exists at that point?
+>  *
+>  * 2. Modify TSS to use separate stacks for CPL = 0 and CPL = 1
+>  * 3. Install a Call Gate for Page Faults in the GDT with DPL = 0
+>  * 4. Change IDT entry for #PF to point to Call Gate in GDT
+>  *
+>  * Now when a #PF occurs in kernel mode, CPU will look up the IDT entry for
+>  * #PF. It points to our Call Gate in the GDT, which has a different privilege
+>  * level, so the CPU will look up the new stack to use in the TSS. In the new
+>  * stack, SS, ESP, CS, and EIP are saved. Note: page_fault() will have to take
+>  * care of handling the extra SS/ESP parameters. End of note. Observe that the
+>  * old stack has not been touched by the CPU at all (this would lead to a #DF,
+>  * Double Fault, which is irrecoverable). Observe also that none of the
+>  * interrupted task's registers have been modified. Now the CPU transfers
+>  * control to page_fault(), which must save all registers, etc. as usual.
+>  *
+>  * do_page_fault() must NOT be allowed to enable interrupts, otherwise we
+>  * could take interrupts that would use the new stack. If the interrupt
+>  * handler takes another page fault, the CPU will already be in CPL = 0 and no
+>  * stack switch will occur!
+>  *
+>  * I think we need to make the kernel switch stacks on ALL interrupts. When
+>  * the CPU is interrupted, it will attempt to push CS/EIP on the current
+>  * stack. If the PTE of the current stack is non-present, a Page Fault will be
+>  * generated (not a Double Fault!). However, we have no way to tell if the #PF
+>  * was generated by an interrupt.
+>  *
+>  * 5. Implement support for PUSHA/POPA instruction handling in kmemcheck. No
+>  *    extra support will be needed for IRET, as interrupts must not be allowed
+>  *    to occur when the stack is located in a non-present page.
+>  *
+>  * Note that it is possible to track POPF/IRET instructions (even though they
+>  * modify EFLAGS and the Trap Flag), because the CPU does the right thing and
+>  * raises the Debug Exception based on the previous setting of TF.
+>  *
+>  * 6. The kernel stack tracer would need to be modified to understand stack
+>  *    changes/boundaries.
+>  */
 
-BTW, there are shitloads of races here - references to fd and struct file *
-are mixed in a way that breaks *badly* if descriptor table is played with
-by another thread.
+Sounds like a lot of work.
+
+I'm wondering, how about a non-fault-driven approach: for example the 
+function tracer could be modified to poison stack frames as we return 
+from a function, and it could also check the poison value when we enter a 
+function call.
+
+This is a high-overhead approach too - but ftrace could be modified to 
+provide a stack frame size parameter so it would only involve the stack 
+frame that is entered/exited.
+
+This would not have the same quality as kmemcheck, but would cover the 
+common cases to a fair degree. (and would also be fairly 
+false-positive-safe)
+
+Hm?
+
+	Ingo
