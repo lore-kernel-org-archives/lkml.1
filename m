@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYK1Laf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYK1LbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbYK1Laf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 06:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYK1LaZ
+	id S1755187AbYK1LbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 06:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYK1LbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 06:30:25 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51141 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbYK1LaY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 06:30:24 -0500
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       akpm@linux-foundation.org
-In-Reply-To: <20081128060803.73cd59bd@bree.surriel.com>
-References: <20081128060803.73cd59bd@bree.surriel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 28 Nov 2008 12:30:14 +0100
-Message-Id: <1227871814.4454.3855.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 28 Nov 2008 06:31:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37038 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752386AbYK1LbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 06:31:09 -0500
+Date: Fri, 28 Nov 2008 12:31:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Liming Wang <liming.wang@windriver.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/1] ftrace: improve seq_operation of ftrace
+Message-ID: <20081128113103.GB18333@elte.hu>
+References: <1227845601-4691-1-git-send-email-liming.wang@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227845601-4691-1-git-send-email-liming.wang@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-28 at 06:08 -0500, Rik van Riel wrote:
-> Skip freeing memory from zones that already have lots of free memory.
-> If one memory zone has harder to free memory, we want to avoid freeing
-> excessive amounts of memory from other zones, if only because pageout
-> IO from the other zones can slow down page freeing from the problem zone.
+
+* Liming Wang <liming.wang@windriver.com> wrote:
+
+> Impact: make position computing more sane
 > 
-> This is similar to the check already done by kswapd in balance_pgdat().
+> First remove useless ->pos field. Then we needn't check seq_printf
+> in .show like other place.
 > 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-
-Make sense,
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
+> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+> Reviewed-by: Bruce Ashfield <bruce.ashfield@windriver.com>
 > ---
-> Kosaki-san, this should address point (3) from your list.
-> 
->  mm/vmscan.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux-2.6.28-rc5/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-28 05:53:56.000000000 -0500
-> +++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-28 06:05:29.000000000 -0500
-> @@ -1510,6 +1510,9 @@ static unsigned long shrink_zones(int pr
->  			if (zone_is_all_unreclaimable(zone) &&
->  						priority != DEF_PRIORITY)
->  				continue;	/* Let kswapd poll it */
-> +			if (zone_watermark_ok(zone, sc->order,
-> +					4*zone->pages_high, high_zoneidx, 0))
-> +				continue;	/* Lots free already */
->  			sc->all_unreclaimable = 0;
->  		} else {
->  			/*
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>  kernel/trace/ftrace.c |   27 ++++++++++-----------------
+>  1 files changed, 10 insertions(+), 17 deletions(-)
+
+appiled to tip/tracing/ftrace, thanks!
+
+	Ingo
