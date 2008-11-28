@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbYK1CIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYK1CTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754377AbYK1CIW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 21:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYK1CIN
+	id S1754381AbYK1CTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 21:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYK1CT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 21:08:13 -0500
-Received: from mail.windriver.com ([147.11.1.11]:41612 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753225AbYK1CIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 21:08:12 -0500
-From: Liming Wang <liming.wang@windriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Liming Wang <liming.wang@windriver.com>
-Subject: [PATCH 1/1] softirq: remove useless function __local_bh_enable
-Date: Fri, 28 Nov 2008 09:52:40 +0800
-Message-Id: <1227837160-3280-1-git-send-email-liming.wang@windriver.com>
-X-Mailer: git-send-email 1.6.0.3
-X-OriginalArrivalTime: 28 Nov 2008 02:07:54.0459 (UTC) FILETIME=[1FF142B0:01C950FE]
+	Thu, 27 Nov 2008 21:19:26 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52014 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbYK1CTZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Nov 2008 21:19:25 -0500
+Date: Fri, 28 Nov 2008 11:18:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       taka@valinux.co.jp
+Subject: Re: [RFC][PATCH 1/2] CGROUP ID and Hierarchy Code
+Message-Id: <20081128111832.b52a6909.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081128103533.049f0b7b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081127160548.3274c8e6.kamezawa.hiroyu@jp.fujitsu.com>
+	<492F4941.2030707@cn.fujitsu.com>
+	<20081128103533.049f0b7b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__local_bh_enable has been replaced with _local_bh_enable.
-As comments says "it always nests inside local_bh_enable() sections"
-has not been valid now. Also there is no reason to use __local_bh_enable
-anywhere, so we can remove this useless function.
+On Fri, 28 Nov 2008 10:35:33 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Signed-off-by: Liming Wang <liming.wang@windriver.com>
----
- include/linux/bottom_half.h |    1 -
- kernel/softirq.c            |   14 --------------
- 2 files changed, 0 insertions(+), 15 deletions(-)
+> On Fri, 28 Nov 2008 09:28:33 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-diff --git a/include/linux/bottom_half.h b/include/linux/bottom_half.h
-index 777dbf6..27b1bcf 100644
---- a/include/linux/bottom_half.h
-+++ b/include/linux/bottom_half.h
-@@ -2,7 +2,6 @@
- #define _LINUX_BH_H
+> > I think the safe way is:
+> > 
+> > rcu_read_lock();
+> > cgrp = cgroup_get_next()
+> > if (!inc_not_zero(cgrp) {
+> > 	rcu_read_unlock();
+> > 	return NULL;
+> > }
+> > rcu_read_unlock();
+> > return cgrp;
+> > 
+> > But it's also safe to use cgrp = list_entry(&parent->children.next) for the above
+> > scenario, seems you don't have to invent this cgroup_get_next().
+> > 
+> But list-walk can't provide us view of hierarchy. Up-Down list walk is better ?
+> please see memcg's code. it met some troubles.
+> I'll make kfree(cgrp) to be called by RCU.
+> 
+
+Ah please, I have a question.
+Following is right ?
+	- until mount, cgroup's subsystem root is tied to dummy? root cgroup.
+	- cgroup cannot be unmounted while there are any children.
+	- cgroup_root is freed/allocated at umount/mount, then I have to handle
+	  this event in cgroup-id.
+	 (maybe current code has leak? in umount.)
  
- extern void local_bh_disable(void);
--extern void __local_bh_enable(void);
- extern void _local_bh_enable(void);
- extern void local_bh_enable(void);
- extern void local_bh_enable_ip(unsigned long ip);
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index e7c69a7..8d9934b 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -102,20 +102,6 @@ void local_bh_disable(void)
- 
- EXPORT_SYMBOL(local_bh_disable);
- 
--void __local_bh_enable(void)
--{
--	WARN_ON_ONCE(in_irq());
--
--	/*
--	 * softirqs should never be enabled by __local_bh_enable(),
--	 * it always nests inside local_bh_enable() sections:
--	 */
--	WARN_ON_ONCE(softirq_count() == SOFTIRQ_OFFSET);
--
--	sub_preempt_count(SOFTIRQ_OFFSET);
--}
--EXPORT_SYMBOL_GPL(__local_bh_enable);
--
- /*
-  * Special-case - softirqs can safely be enabled in
-  * cond_resched_softirq(), or by __do_softirq(),
--- 
-1.6.0.3
+Thanks,
+-Kame
 
