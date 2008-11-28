@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYK1Vax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYK1Vd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbYK1Vax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 16:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYK1Van
+	id S1755364AbYK1Vd0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 16:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYK1VdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 16:30:43 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:52318 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbYK1Van (ORCPT
+	Fri, 28 Nov 2008 16:33:14 -0500
+Received: from mu-out-0910.google.com ([209.85.134.191]:24589 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbYK1VdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 16:30:43 -0500
-Date: Fri, 28 Nov 2008 14:30:41 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Alex Chiang <achiang@hp.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH] fakephp: Allocate PCI resources before adding the	device
-Message-ID: <20081128213041.GW25548@parisc-linux.org>
-References: <20081126074808.GE6539@plum> <Pine.LNX.4.58.0811260131200.24816@shell4.speakeasy.net> <20081126181841.GF6539@plum> <Pine.LNX.4.58.0811261349120.24816@shell4.speakeasy.net> <20081126225535.GA27936@ldl.fc.hp.com> <Pine.LNX.4.58.0811261647410.24816@shell4.speakeasy.net> <20081127024204.GJ25548@parisc-linux.org> <Pine.LNX.4.58.0811280151230.24816@shell4.speakeasy.net> <20081128185722.GU25548@parisc-linux.org> <Pine.LNX.4.58.0811281310050.30153@shell4.speakeasy.net>
+	Fri, 28 Nov 2008 16:33:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=N4Q6rh6q0jl4eIBLFtMq/DoAvx+/XlED02t0vjGY6BN5yD7C3Zlzhan0mux/kFSw1q
+         wChTV99BypxAiuNyr6N8KSpWBgdRkBkbdpnSkJdv2T3NsoPm3QmoWzWf/LaQgmJnM/ND
+         9/cv4VgBRn19tvx0vmwasZ/8Diu2iNq2Onwf0=
+Date: Fri, 28 Nov 2008 22:32:59 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-usb@vger.kernel.org, netdev@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: option: oops on unload (2.6.27.4)
+Message-ID: <20081128213254.GB6750@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0811281310050.30153@shell4.speakeasy.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 01:21:22PM -0800, Trent Piepho wrote:
-> Sometimes I just want to give up on Linux.  Is there a different interface
-> that isn't wantonly changed without warning?  No?  Do you not see the
-> problem this creates for developers?  Do you not care?
+It's not new bug - I've seen this oops many times but on much older
+kernels (2.6.18, probably on 2.6.24 too).
 
-You see, we didn't know that anyone was using fakephp for real work.
-It's marketed as being a way for developers to test their device drivers
-with hotplug slots even if they don't have a real hotplug machine.
-If we'd known, we'd've done a better job.
+I tried to rmmod it (and all usb modules) because sometimes it helps when
+modem disconnects and can't connect again.
 
-BTW, cut the crap about "Sometimes I just want to give up on Linux".
-We're putting in a lot of work that you get to use for free.  That doesn't
-give you the right to be abusive.  And if you stopped using Linux, we'd
-have one fewer person complaining, so I don't personally find it a huge
-motivator to drop everything and attend to your whims.
+[25350.138850] BUG: unable to handle kernel paging request at e0857fb4
+[25350.138866] IP: [<e0a22e80>] :usbcore:unlink1+0xab/0xb9
+[25350.138921] *pde = 1f80f067 *pte = 00000000 
+[25350.138934] Oops: 0000 [#1] PREEMPT SMP 
+[25350.138945] Modules linked in: r128 drm ipt_REDIRECT ipt_MASQUERADE xt_tcpudp xt_multiport iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc ipt_REJECT x_tables loop option usbserial snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd 8139cp i2c_i801 floppy 8139too 3c59x psmouse intel_agp soundcore snd_page_alloc sg mii usbcore agpgart i2c_core sr_mod evdev dcdbas cdrom [last unloaded: uhci_hcd]
+[25350.139052] 
+[25350.139059] Pid: 2807, comm: pppd Not tainted (2.6.27.4 #5)
+[25350.139065] EIP: 0060:[<e0a22e80>] EFLAGS: 00010286 CPU: 0
+[25350.139088] EIP is at unlink1+0xab/0xb9 [usbcore]
+[25350.139095] EAX: df9fdc00 EBX: e0857f80 ECX: fffffffe EDX: dafe5e80
+[25350.139101] ESI: df9fdc00 EDI: dafe5e80 EBP: dad89e80 ESP: dad89e6c
+[25350.139107]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[25350.139114] Process pppd (pid: 2807, ti=dad88000 task=d9614380 task.ti=dad88000)
+[25350.139119] Stack: fffffffe 00000246 dafe5e80 daff3480 dafe56b8 dad89e8c e0a23672 dafe5e80 
+[25350.139140]        dad89eb0 e0a240fc 00000246 dafe56bc dafe5680 daff3480 dafe56b8 00000000 
+[25350.139160]        dafe56b8 dad89ecc e088e8fc dece9000 decf3800 e0890ca0 dece9000 dece90c4 
+[25350.139181] Call Trace:
+[25350.139188]  [<e0a23672>] ? usb_hcd_unlink_urb+0x15/0x22 [usbcore]
+[25350.139218]  [<e0a240fc>] ? usb_kill_urb+0x4b/0xc2 [usbcore]
+[25350.139246]  [<e088e8fc>] ? option_close+0x7b/0x9b [option]
+[25350.139267]  [<e08ab741>] ? serial_close+0x82/0xf3 [usbserial]
+[25350.139285]  [<c0210fc3>] ? release_dev+0x180/0x3c3
+[25350.139302]  [<c013b450>] ? __lock_acquire+0x651/0x697
+[25350.139315]  [<c0211218>] ? tty_release+0x12/0x1c
+[25350.139324]  [<c0167617>] ? __fput+0x99/0x13b
+[25350.139336]  [<c016790e>] ? fput+0x17/0x19
+[25350.139345]  [<c01652ba>] ? filp_close+0x50/0x5a
+[25350.139355]  [<c01662c6>] ? sys_close+0x73/0xab
+[25350.139364]  [<c0102dad>] ? sysenter_do_call+0x12/0x35
+[25350.139376]  =======================
+[25350.139380] Code: 89 f0 e8 f7 fe ff ff b8 84 91 a3 e0 e8 30 3c 8a df 8b 55 f0 b8 84 91 a3 e0 e8 b2 40 8a df eb 10 8b 9e b4 00 00 00 8b 4d ec 89 f0 <ff> 53 34 89 c3 89 d8 5f 5a 5b 5e 5f 5d c3 55 89 e5 57 56 53 83 
+[25350.139497] EIP: [<e0a22e80>] unlink1+0xab/0xb9 [usbcore] SS:ESP 0068:dad89e6c
+[25350.139527] ---[ end trace 8506998287f38ab7 ]---
 
-> > What we have now is the 'address' file managed by the core.  This
-> > doesn't include the function number.
-> 
-> So the race condition doesn't matter?  Alex Chiang wasn't even aware
-> fakephp could be used to add new devices, so this change obviously wasn't
-> though out very well.
+Full dmesg and config can be found at:
+http://www.kadu.net/~joi/kernel/2008.11.28/option-usb.oops/
 
-There is no race condition.  You can't remove a fakephp slot.
-
-> > There are lots of circumstances where enabling and disabling individual
-> > functions is a good idea, but I don't think that fakephp is the right
-> > way to do it.  We need a better interface.
-> 
-> So maybe this better interface should be created before breaking the
-> existing one?
-
-Hey, I have a great idea.  Why don't you help instead of just bitching?
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Marcin
