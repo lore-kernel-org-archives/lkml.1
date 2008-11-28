@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYK1Cum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYK1Cu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbYK1Cum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Nov 2008 21:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYK1Cua
+	id S1752647AbYK1Cu7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Nov 2008 21:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYK1Cuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Nov 2008 21:50:30 -0500
-Received: from mga11.intel.com ([192.55.52.93]:61036 "EHLO mga11.intel.com"
+	Thu, 27 Nov 2008 21:50:46 -0500
+Received: from mga09.intel.com ([134.134.136.24]:54638 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752419AbYK1Cu3 convert rfc822-to-8bit (ORCPT
+	id S1754073AbYK1Cup convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Nov 2008 21:50:29 -0500
+	Thu, 27 Nov 2008 21:50:45 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,679,1220252400"; 
-   d="scan'208";a="644395930"
+   d="scan'208";a="365073039"
 From: "Han, Weidong" <weidong.han@intel.com>
 To: "'Joerg Roedel'" <joerg.roedel@amd.com>,
        "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>,
@@ -23,14 +23,14 @@ CC: "'avi@redhat.com'" <avi@redhat.com>,
        "'mingo@redhat.com'" <mingo@redhat.com>,
        "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
        "'amit.shah@redhat.com'" <amit.shah@redhat.com>
-Date: Fri, 28 Nov 2008 10:50:20 +0800
-Subject: RE: [PATCH 2/9] introcude linux/iommu.h for an iommu api
-Thread-Topic: [PATCH 2/9] introcude linux/iommu.h for an iommu api
-Thread-Index: AclQppqXW0ANfZwATP2imoxgTdGNvgAUy+bw
-Message-ID: <715D42877B251141A38726ABF5CABF2C018BF04FC1@pdsmsx503.ccr.corp.intel.com>
+Date: Fri, 28 Nov 2008 10:50:36 +0800
+Subject: RE: [PATCH 3/9] add frontend implementation for the IOMMU API
+Thread-Topic: [PATCH 3/9] add frontend implementation for the IOMMU API
+Thread-Index: AclQpp+v2DfYMfDfSLecZzW9QHoPCwAVgeGA
+Message-ID: <715D42877B251141A38726ABF5CABF2C018BF04FC2@pdsmsx503.ccr.corp.intel.com>
 References: <1227800454-9555-1-git-send-email-joerg.roedel@amd.com>
- <1227800454-9555-3-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1227800454-9555-3-git-send-email-joerg.roedel@amd.com>
+ <1227800454-9555-4-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1227800454-9555-4-git-send-email-joerg.roedel@amd.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -44,23 +44,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Joerg Roedel wrote:
-> This patch introduces the API to abstract the exported VT-d functions
-> for KVM into a generic API. This way the AMD IOMMU implementation can
-> plug into this API later.
-> 
 > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 > ---
->  include/linux/iommu.h |  100
->  +++++++++++++++++++++++++++++++++++++++++++++++++ 1 files changed,
->  100 insertions(+), 0 deletions(-) create mode 100644
-> include/linux/iommu.h 
+>  drivers/base/iommu.c |   94
+>  ++++++++++++++++++++++++++++++++++++++++++++++++++ 1 files changed,
+>  94 insertions(+), 0 deletions(-) create mode 100644
+> drivers/base/iommu.c 
 > 
-> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
 > new file mode 100644
-> index 0000000..6dbc279
+> index 0000000..7250b9c
 > --- /dev/null
-> +++ b/include/linux/iommu.h
-> @@ -0,0 +1,100 @@
+> +++ b/drivers/base/iommu.c
+> @@ -0,0 +1,94 @@
 > +/*
 > + * Copyright (C) 2007-2008 Advanced Micro Devices, Inc.
 > + * Author: Joerg Roedel <joerg.roedel@amd.com>
@@ -79,54 +75,101 @@ Joerg Roedel wrote:
 > + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
 > 02111-1307 USA + */
 > +
-> +#ifndef __LINUX_IOMMU_H
-> +#define __LINUX_IOMMU_H
+> +#include <linux/bug.h>
+> +#include <linux/types.h>
+> +#include <linux/errno.h>
+> +#include <linux/iommu.h>
 > +
-> +struct device;
+> +static struct iommu_ops *iommu_ops;
 > +
-> +struct iommu_domain {
-> +	void *priv;
-> +};
+> +void register_iommu(struct iommu_ops *ops)
+> +{
+> +	if (iommu_ops)
+> +		BUG();
 > +
-> +struct iommu_ops {
-> +	int (*domain_init)(struct iommu_domain *domain, struct device *dev);
-
-needn't parameter dev, use attach_dev to assign dev to domain.
-
-> +	void (*domain_destroy)(struct iommu_domain *domain);
-> +	int (*attach_dev)(struct iommu_domain *domain, struct device *dev);
-> +	void (*detach_dev)(struct iommu_domain *domain, struct device *dev);
-> +	int (*map)(struct iommu_domain *domain, dma_addr_t iova,
-> +		   phys_addr_t paddr, size_t size, int prot);
-
-It maps/unmaps pages for iommu in kvm, so I think it's better change to 
-	int (*map_pages)(struct iommu_domain *domain, unsigned long gfn, unsigned long pfn,
-			  unsigned long npages, int prot);
-and also add unmap op:
-	int (*unmap_pages)(struct iommu_domain *domain, unsigned long gfn, unsigned long npages);
-
-> +	phys_addr_t (*iova_to_phys)(struct iommu_domain *domain,
-> +				    dma_addr_t iova);
-> +};
+> +	iommu_ops = ops;
+> +}
 > +
-> +#ifdef CONFIG_IOMMU_API
+> +bool iommu_found()
+> +{
+> +	return iommu_ops != NULL;
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_found);
 > +
-> +extern void register_iommu(struct iommu_ops *ops);
-> +extern bool iommu_found(void);
-> +extern struct iommu_domain *iommu_domain_alloc(struct device *dev);
-> +extern void iommu_domain_free(struct iommu_domain *domain);
-> +extern int iommu_attach_device(struct iommu_domain *domain,
-> +			       struct device *dev);
-> +extern void iommu_detach_device(struct iommu_domain *domain,
-> +				struct device *dev);
-> +extern int iommu_map_address(struct iommu_domain *domain, dma_addr_t
-> iova, +			     phys_addr_t paddr, size_t size, int prot);
+> +struct iommu_domain *iommu_domain_alloc(struct device *dev)
+> +{
+> +	struct iommu_domain *domain;
+> +	int ret;
+> +
+> +	domain = kmalloc(sizeof(*domain), GFP_KERNEL);
+> +	if (!domain)
+> +		return NULL;
+> +
+> +	ret = iommu_ops->domain_init(domain, dev);
+> +	if (ret)
+> +		goto out_free;
+> +
+> +	return domain;
+> +
+> +out_free:
+> +	kfree(domain);
+> +
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_domain_alloc);
 
-similarly:
-extern int iommu_map_pages(struct iommu_domain *domain, unsigned long gfn, unsigned long pfn,
-			        unsigned long npages, int prot);
-extern int iommu_unmap_pages(struct iommu_domain *domain, unsigned long gfn, unsigned long npages);
+remove the parameter dev.
+
+> +
+> +void iommu_domain_free(struct iommu_domain *domain)
+> +{
+> +	iommu_ops->domain_destroy(domain);
+> +	kfree(domain);
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_domain_free);
+> +
+> +int iommu_attach_device(struct iommu_domain *domain, struct device
+> *dev) +{
+> +	return iommu_ops->attach_dev(domain, dev);
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_attach_device);
+> +
+> +void iommu_detach_device(struct iommu_domain *domain, struct device
+> *dev) +{
+> +	iommu_ops->detach_dev(domain, dev);
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_detach_device);
+> +
+> +int iommu_map_address(struct iommu_domain *domain,
+> +		      dma_addr_t iova, phys_addr_t paddr,
+> +		      size_t size, int prot)
+> +{
+> +	return iommu_ops->map(domain, iova, paddr, size, prot);
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_map_address);
+
+change to:
+int iommu_map_pages(struct iommu_domain *domain, unsigned long gfn,
+		unsigned long pfn, unsigned long npages, int prot)
+{
+	return iommu_ops->map(domain, gfn, pfn, npages, prot);
+}
+EXPORT_SYMBOL_GPL(iommu_map_pages);
+
+int iommu_unmap_pages(struct iommu_domain *domain, unsigned long gfn, unsigned long npages)
+{
+	return iommu_ops->map(domain, gfn, npages);
+}
+EXPORT_SYMBOL_GPL(iommu_unmap_pages);
 
 Regards,
 Weidong
+
+> +
+> +phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain,
+> +			       dma_addr_t iova)
+> +{
+> +	return iommu_ops->iova_to_phys(domain, iova);
+> +}
+> +EXPORT_SYMBOL_GPL(iommu_iova_to_phys);
 
