@@ -1,43 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYK1OD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYK1OJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbYK1OD4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 09:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYK1ODq
+	id S1753487AbYK1OJu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 09:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYK1OJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 09:03:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57750 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbYK1ODq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 09:03:46 -0500
-Date: Fri, 28 Nov 2008 09:03:35 -0500
-From: Alan Cox <alan@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
-Message-ID: <20081128140335.GA21358@shell.devel.redhat.com>
-References: <1227774576-5503-1-git-send-email-keithp@keithp.com> <200811271531.18498.arnd@arndb.de> <1227810424.4277.55.camel@aiko.keithp.com> <200811281243.02841.arnd@arndb.de>
+	Fri, 28 Nov 2008 09:09:41 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.68]:42968 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751730AbYK1OJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 09:09:40 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Fri, 28 Nov 2008 23:09:23 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>, d-nishimura@mtf.biglobe.ne.jp,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH -mmotm 2/2] avoid oom
+Message-Id: <20081128230923.c492bad6.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20081128195953.0f69d9ea.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081128180252.b7a73c86.nishimura@mxp.nes.nec.co.jp>
+	<20081128180937.5d7b16c5.nishimura@mxp.nes.nec.co.jp>
+	<20081128195953.0f69d9ea.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811281243.02841.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.2i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 12:43:02PM +0100, Arnd Bergmann wrote:
-> I've just checked all tty device drivers. The only one using the file
-> pointer in ->ioctl, ->tiocmget and ->tiocmset is serial_core, which
-> passes it to tty_hung_up_p(). That could easily be changed to check
-> (tty->flags & TTY_HUPPED) AFAICT.
+On Fri, 28 Nov 2008 19:59:53 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Fri, 28 Nov 2008 18:09:37 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> Maybe Alan can comment on this. I think the code would become cleaner
-> if we dropped the file argument to these three functions throughout
-> the tty layer, but it's probably not worth the pain to change themm
-> call.
+> > In previous implementation, mem_cgroup_try_charge checked the return
+> > value of mem_cgroup_try_to_free_pages, and just retried if some pages
+> > had been reclaimed.
+> > But now, try_charge(and mem_cgroup_hierarchical_reclaim called from it)
+> > only checks whether the usage is less than the limit.
+> > I see oom easily in some tests which didn't cause oom before.
+> > 
+> > This patch tries to change the behavior as before.
+> > 
+> > I've tested this patch with only one (except root) mem cgroup directory,
+> > and a mem cgroup directory(use_hierarchy=1) which has 4 children with running
+> > test programs on itself and each children's directories.
+> > 
+> > Of course, even after this patch is applied, oom happens if trying to use
+> > too much memory.
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > ---
+> > 
+> >  mm/memcontrol.c |   19 ++++++++++++-------
+> >  1 files changed, 12 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index e7806fc..ab134b7 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -592,6 +592,7 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+> >  {
+> >  	struct mem_cgroup *next_mem;
+> >  	int ret = 0;
+> > +	int child = 0;
+> >  
+> >  	/*
+> >  	 * Reclaim unconditionally and don't check for return value.
+> > @@ -600,9 +601,9 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+> >  	 * but there might be left over accounting, even after children
+> >  	 * have left.
+> >  	 */
+> > -	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap);
+> > +	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap);
+> >  	if (mem_cgroup_check_under_limit(root_mem))
+> > -		return 0;
+> > +		return 1;	/* indicate success of reclaim */
+> >  
+> >  	next_mem = mem_cgroup_get_first_node(root_mem);
+> >  
+> > @@ -614,14 +615,17 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+> >  			cgroup_unlock();
+> >  			continue;
+> >  		}
+> > -		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap);
+> > +		child++;
+> > +		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap);
+> >  		if (mem_cgroup_check_under_limit(root_mem))
+> > -			return 0;
+> > +			return 1;	/* indicate success of reclaim */
+> >  		cgroup_lock();
+> >  		next_mem = mem_cgroup_get_next_node(next_mem, root_mem);
+> >  		cgroup_unlock();
+> >  	}
+> > -	return ret;
+> > +
+> > +	/* reclaimed at least one page on average from root and each child */
+> > +	return ret > child;
+> >  }
+> >  
+> I can't understand why this heuristic...
+> 
+> just (ret != 0) is ?
+> 
+I also thought the same thing first.
 
-Removing it seems a bit pointless as someone will one day no doubt need
-to put it back again
+I'm worrying about the case there are many and many children.
+IMHO, this function rarely fails in such cases(just because there
+are many candidates to reclaim from. Ah.. I should check at least
+each memcgroup has charges), so I thought it would be better
+to take account of the number of children, to prevent a long software
+stuck at infinite loop at __mem_cgroup_try_charge.
 
+Actually, I tested "return ret" version in my test (4 children) too,
+and I didn't see a big difference(it seemed that in "return ret" version
+it took a bit long time to cause oom, but I've not confirmed it in detail).
+
+I must consider more.
+
+
+Thanks,
+Daisuke Nishimura.
+
+> Thanks,
+> -Kame
+> 
+> 
+> 
+> >  /*
+> > @@ -684,8 +688,9 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+> >  		if (!(gfp_mask & __GFP_WAIT))
+> >  			goto nomem;
+> >  
+> > -		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
+> > -							noswap);
+> > +		if (mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
+> > +							noswap))
+> > +			continue;
+> >  
+> >  		/*
+> >  		 * try_to_free_mem_cgroup_pages() might not give us a full
+> > 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
