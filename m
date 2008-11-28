@@ -1,91 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYK1XkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbYK1XoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbYK1XkP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 18:40:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYK1XkB
+	id S1755395AbYK1XoQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 18:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYK1XoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 18:40:01 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43124 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbYK1XkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 18:40:00 -0500
-Subject: Re: [PATCH -v3 5/8] fsnotify: unified filesystem notification
-	backend
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Paris <eparis@redhat.com>
+	Fri, 28 Nov 2008 18:44:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46051 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694AbYK1Xn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 18:43:59 -0500
+Subject: Re: [PATCH -v3 7/8] fsnotify: add in inode fsnotify markings
+From: Eric Paris <eparis@redhat.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, hch@infradead.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1227914568.3393.5.camel@localhost.localdomain>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org, hch@infradead.org, a.p.zijlstra@chello.nl
+In-Reply-To: <20081128054241.GJ28946@ZenIV.linux.org.uk>
 References: <20081125171714.17115.82625.stgit@paris.rdu.redhat.com>
-	 <20081125172117.17115.4875.stgit@paris.rdu.redhat.com>
-	 <1227802849.4454.1765.camel@twins>
-	 <1227914568.3393.5.camel@localhost.localdomain>
+	 <20081125172128.17115.68117.stgit@paris.rdu.redhat.com>
+	 <20081128054241.GJ28946@ZenIV.linux.org.uk>
 Content-Type: text/plain
-Date: Sat, 29 Nov 2008 00:39:29 +0100
-Message-Id: <1227915570.24749.13.camel@lappy.programming.kicks-ass.net>
+Date: Fri, 28 Nov 2008 18:43:06 -0500
+Message-Id: <1227915786.3393.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-28 at 18:22 -0500, Eric Paris wrote:
-> On Thu, 2008-11-27 at 17:20 +0100, Peter Zijlstra wrote:
-> > On Tue, 2008-11-25 at 12:21 -0500, Eric Paris wrote:
-> > > +int fsnotify_check_notif_queue(struct fsnotify_group *group)
-> > > +{
-> > > +       mutex_lock(&group->notification_mutex);
-> > > +       if (!list_empty(&group->notification_list))
-> > > +               return 1;
-> > > +       mutex_unlock(&group->notification_mutex);
-> > > +       return 0;
-> > > +}
+On Fri, 2008-11-28 at 05:42 +0000, Al Viro wrote:
+> On Tue, Nov 25, 2008 at 12:21:28PM -0500, Eric Paris wrote:
+> 
+> > +void fsnotify_mark_get(struct fsnotify_mark_entry *entry)
+> > +{
+> > +	spin_lock(&entry->lock);
+> > +	entry->refcnt++;
+> > +	spin_unlock(&entry->lock);
+> > +}
+> 
+> > +void fsnotify_mark_put(struct fsnotify_mark_entry *entry)
+> > +{
+> > +	spin_lock(&entry->lock);
+> > +	entry->refcnt--;
+> > +	/* if (!refcnt && killme) we are off both lists and nothing else can find us. */
+> > +	if ((!entry->refcnt) && (entry->killme)) {
+> > +		spin_unlock(&entry->lock);
+> > +		fsnotify_mark_kill(entry);
+> > +		return;
+> > +	}
+> > +	spin_unlock(&entry->lock);
+> > +}
+> 
+> Uh-huh...  And what happens if fsnotify_mark_get() comes in the middle
+> of final fsnotify_mark_put()?  You spin on entry->lock, gain it just before
+> fsnotify_mark_kill() which proceeds to kfree entry under you just as you
+> increment its refcnt...
+
+fsnotify_mark_get() can only find this object through either the
+entry->i_list or entry->g_list.  When we drop our ref to 0 and hold the
+spinlock we know that no other task would have been able to find us on
+those lists (everything that searches the i_list holds the
+i_fsnotify_lock and that lock was dropped since we cleared ourselves
+from that list and the same is true for the lock on the g_list side)
+
+So if kill_me is set and the refcnt == 0 we are not on either list and
+no other task could find this to try to call mark_get().   I'll review
+it to make sure, but the design is that we are safe since nothing else
+can find us to increment the ref cnt.
+> 
+> > +void fsnotify_clear_mark_group(struct fsnotify_group *group)
+> > +{
+> > +	struct fsnotify_mark_entry *entry;
+> > +	struct inode *inode;
+> > +
+> > +	mutex_lock(&group->mark_mutex);
+> > +	while (!list_empty(&group->mark_entries)) {
+> > +		entry = list_first_entry(&group->mark_entries, struct fsnotify_mark_entry, g_list);
+> > +
+> > +		/* make sure the entry survives until it is off both lists */
+> > +		fsnotify_mark_get(entry);
+> > +
+> > +		/* remove from g_list */
+> > +		list_del_init(&entry->g_list);
+> > +		mutex_unlock(&group->mark_mutex);
+> > +
+> > +		inode = entry->inode;
+> > +
+> > +		spin_lock(&entry->lock);
+> > +		entry->killme = 1;
+> > +		spin_unlock(&entry->lock);
 > > 
-> > > +void fsnotify_clear_notif(struct fsnotify_group *group)
-> > > +{
-> > > +       struct fsnotify_event *event;
-> > > +
-> > > +       while (fsnotify_check_notif_queue(group)) {
-> > > +               event = get_event_from_notif(group);
-> > > +               fsnotify_put_event(event);
-> > > +               /* fsnotify_check_notif_queue() took this lock */
-> > > +               mutex_unlock(&group->notification_mutex);
-> > > +       }
-> > > +}
-> > 
-> > That is quite horrible, please just open code that to keep the locking
-> > symmetric.
+> > +		/* remove from i_list */
+> > +		spin_lock(&inode->i_fsnotify_lock);
 > 
-> While horrible, I use fsnotify_check_notif_queue in my fsnotify (not in
-> this series as this only includes dnotify) has
-> 
-> wait_event_interruptible(group->notification_waitq, fanotify_check_notif_queue(group));
-> 
-> So I wouldn't know how to open code that...  I can open code this
-> instance, but it's going to mean redoing all of that other code to
-> handle having thing not be present when we return.  Since I didn't
-> submit that as well I guess I'm not allowed to use it as a reason...
+> ... and just what would keep the inode from being freed under you here?
 
-Or you add a lock parameter to wait_event*() which gets unlocked before
-schedule and locks again afterwards.
-
-That would allow you to write it like so:
-
- mutex_lock(&group->notification_mutex);
- wait_event_interruptible_lock(group->notification_waitq,
-                               !list_empty(&group_notificatioin_list), 
-                               &group_notification_mutex);
-
- /* handle the !empty list */
- mutex_unlock(&group->notification_mutex);
-
-You could use the type matching magic we have to select between
-spinlock/mutex operations for the lock argument.
-
-I've come across such a pattern a few times, most of the times we end up
-open coding the wait_event stuff.
+I'll review.
 
