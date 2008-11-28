@@ -1,198 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYK1WVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYK1W2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755344AbYK1WVw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 17:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYK1WVk
+	id S1755184AbYK1W2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 17:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYK1W2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 17:21:40 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:47972 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbYK1WVj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 17:21:39 -0500
-Message-ID: <49306EA8.1050801@cosmosbay.com>
-Date: Fri, 28 Nov 2008 23:20:24 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, rth@twiddle.net,
-       ink@jurassic.park.msu.ru
-Subject: Re: [PATCH 6/6] fs: Introduce kern_mount_special() to mount	special
- vfs
-References: <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDCAB.1070204@cosmosbay.com> <20081128092604.GL28946@ZenIV.linux.org.uk> <20081128180220.GK10487@elte.hu>
-In-Reply-To: <20081128180220.GK10487@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 28 Nov 2008 23:20:26 +0100 (CET)
+	Fri, 28 Nov 2008 17:28:11 -0500
+Received: from home.keithp.com ([63.227.221.253]:54587 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752168AbYK1W2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Nov 2008 17:28:10 -0500
+From: Keith Packard <keithp@keithp.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Keith Packard <keithp@keithp.com>
+Subject: [PATCH] usb/serial: Add compat_ioctl pass-through
+Date: Fri, 28 Nov 2008 14:28:02 -0800
+Message-Id: <1227911282-8857-1-git-send-email-keithp@keithp.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <200811281642.52637.arnd@arndb.de>
+References: <200811281642.52637.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> 
->> On Thu, Nov 27, 2008 at 12:32:59AM +0100, Eric Dumazet wrote:
->>> This function arms a flag (MNT_SPECIAL) on the vfs, to avoid
->>> refcounting on permanent system vfs.
->>> Use this function for sockets, pipes, anonymous fds.
->> IMO that's pushing it past the point of usefulness; unless you can show
->> that this really gives considerable win on pipes et.al. *AND* that it
->> doesn't hurt other loads...
-> 
-> The numbers look pretty convincing:
-> 
->>>  (socket8 bench result : from 2.94s to 2.23s)
-> 
-> And i wouldnt expect it to hurt real-filesystem workloads.
-> 
-> Here's the contemporary trace of a typical ext3- sys_open():
-> 
->  0)               |  sys_open() {
->  0)               |    do_sys_open() {
->  0)               |      getname() {
->  0)      0.367 us |        kmem_cache_alloc();
->  0)               |        strncpy_from_user(); {
->  0)               |          _cond_resched() {
->  0)               |            need_resched() {
->  0)      0.363 us |              constant_test_bit();
->  0)      1. 47 us |            }
->  0)      1.815 us |          }
->  0)      2.587 us |        }
->  0)      4. 22 us |      }
->  0)               |      alloc_fd() {
->  0)      0.480 us |        _spin_lock();
->  0)      0.487 us |        expand_files();
->  0)      2.356 us |      }
->  0)               |      do_filp_open() {
->  0)               |        path_lookup_open() {
->  0)               |          get_empty_filp() {
->  0)      0.439 us |            kmem_cache_alloc();
->  0)               |            security_file_alloc() {
->  0)      0.316 us |              cap_file_alloc_security();
->  0)      1. 87 us |            }
->  0)      3.189 us |          }
->  0)               |          do_path_lookup() {
->  0)      0.366 us |            _read_lock();
->  0)               |            path_walk() {
->  0)               |              __link_path_walk() {
->  0)               |                inode_permission() {
->  0)               |                  ext3_permission() {
->  0)      0.441 us |                    generic_permission();
->  0)      1.247 us |                  }
->  0)               |                  security_inode_permission() {
->  0)      0.411 us |                    cap_inode_permission();
->  0)      1.186 us |                  }
->  0)      3.555 us |                }
->  0)               |                do_lookup() {
->  0)               |                  __d_lookup() {
->  0)      0.486 us |                    _spin_lock();
->  0)      1.369 us |                  }
->  0)      0.442 us |                  __follow_mount();
->  0)      3. 14 us |                }
->  0)               |                path_to_nameidata() {
->  0)      0.476 us |                  dput();
->  0)      1.235 us |                }
->  0)               |                inode_permission() {
->  0)               |                  ext3_permission() {
->  0)               |                    generic_permission() {
->  0)               |                      in_group_p() {
->  0)      0.410 us |                        groups_search();
->  0)      1.172 us |                      }
->  0)      1.994 us |                    }
->  0)      2.789 us |                  }
->  0)               |                  security_inode_permission() {
->  0)      0.454 us |                    cap_inode_permission();
->  0)      1.238 us |                  }
->  0)      5.262 us |                }
->  0)               |                do_lookup() {
->  0)               |                  __d_lookup() {
->  0)      0.480 us |                    _spin_lock();
->  0)      1.621 us |                  }
->  0)      0.456 us |                  __follow_mount();
->  0)      3.215 us |                }
->  0)               |                path_to_nameidata() {
->  0)      0.420 us |                  dput();
->  0)      1.193 us |                }
->  0) +   23.551 us |              }
->  0)               |              path_put() {
->  0)      0.420 us |                dput();
->  0)               |                mntput() {
->  0)      0.359 us |                  mntput_no_expire();
->  0)      1. 50 us |                }
->  0)      2.544 us |              }
->  0) +   27.253 us |            }
->  0) +   28.850 us |          }
->  0) +   33.217 us |        }
->  0)               |        may_open() {
->  0)               |          inode_permission() {
->  0)               |            ext3_permission() {
->  0)      0.480 us |              generic_permission();
->  0)      1.229 us |            }
->  0)               |            security_inode_permission() {
->  0)      0.405 us |              cap_inode_permission();
->  0)      1.196 us |            }
->  0)      3.589 us |          }
->  0)      4.600 us |        }
->  0)               |        nameidata_to_filp() {
->  0)               |          __dentry_open() {
->  0)               |            file_move() {
->  0)      0.470 us |              _spin_lock();
->  0)      1.243 us |            }
->  0)               |            security_dentry_open() {
->  0)      0.344 us |              cap_dentry_open();
->  0)      1.139 us |            }
->  0)      0.412 us |            generic_file_open();
->  0)      0.561 us |            file_ra_state_init();
->  0)      5.714 us |          }
->  0)      6.483 us |        }
->  0) +   46.494 us |      }
->  0)      0.453 us |      inotify_dentry_parent_queue_event();
->  0)      0.403 us |      inotify_inode_queue_event();
->  0)               |      fd_install() {
->  0)      0.440 us |        _spin_lock();
->  0)      1.247 us |      }
->  0)               |      putname() {
->  0)               |        kmem_cache_free() {
->  0)               |          virt_to_head_page() {
->  0)      0.369 us |            constant_test_bit();
->  0)      1. 23 us |          }
->  0)      1.738 us |        }
->  0)      2.422 us |      }
->  0) +   60.560 us |    }
->  0) +   61.368 us |  }
-> 
-> and here's a sys_close():
-> 
->  0)               |  sys_close() {
->  0)      0.540 us |    _spin_lock();
->  0)               |    filp_close() {
->  0)      0.437 us |      dnotify_flush();
->  0)      0.401 us |      locks_remove_posix();
->  0)      0.349 us |      fput();
->  0)      2.679 us |    }
->  0)      4.452 us |  }
-> 
-> i'd be surprised to see a flag to show up in that codepath. Eric, does 
-> your testing confirm that?
+USB serial devices with extended IOCTLs cannot be used in a 64-bit kernel
+from 32-bit user space as the compat_ioctl path is missing. This adds a
+pass-through so that drivers may offer this functionality. This requires
+that all drivers actually implement a compat_ioctl function if they want to
+support this operation.
 
-On a socket/pipe, definitly no, because inode->i_sb->s_flags is not contended.
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+ drivers/usb/serial/usb-serial.c |   20 ++++++++++++++++++++
+ include/linux/usb/serial.h      |    4 ++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
 
-But on a shared inode, it might hurt :
-
-offsetof(struct inode, i_count)=0x24
-offsetof(struct inode, i_lock)=0x70
-offsetof(struct inode, i_sb)=0x9c
-offsetof(struct inode, i_writecount)=0x144
-
-So i_sb sits in a probably contended cache line 
-
-I wonder why i_writecount sits so far from i_count, that doesnt make sense.
-
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 794b5ff..c83a9f0 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -381,6 +381,25 @@ static int serial_ioctl(struct tty_struct *tty, struct file *file,
+ 	return retval;
+ }
+ 
++static int serial_compat_ioctl(struct tty_struct *tty, struct file *file,
++			       unsigned int cmd, unsigned long arg)
++{
++	struct usb_serial_port *port = tty->driver_data;
++	int retval = -ENODEV;
++
++	dbg("%s - port %d, cmd 0x%.4x", __func__, port->number, cmd);
++
++	WARN_ON(!port->port.count);
++
++	/* pass on to the driver specific version of this function
++	   if it is available */
++	if (port->serial->type->compat_ioctl) {
++		retval = port->serial->type->compat_ioctl(tty, file, cmd, arg);
++	} else
++		retval = -ENOIOCTLCMD;
++	return retval;
++}
++
+ static void serial_set_termios(struct tty_struct *tty, struct ktermios *old)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+@@ -1095,6 +1114,7 @@ static const struct tty_operations serial_ops = {
+ 	.write =		serial_write,
+ 	.write_room =		serial_write_room,
+ 	.ioctl =		serial_ioctl,
++	.compat_ioctl =		serial_compat_ioctl,
+ 	.set_termios =		serial_set_termios,
+ 	.throttle =		serial_throttle,
+ 	.unthrottle =		serial_unthrottle,
+diff --git a/include/linux/usb/serial.h b/include/linux/usb/serial.h
+index 0b8617a..02c4080 100644
+--- a/include/linux/usb/serial.h
++++ b/include/linux/usb/serial.h
+@@ -226,8 +226,12 @@ struct usb_serial_driver {
+ 			const unsigned char *buf, int count);
+ 	/* Called only by the tty layer */
+ 	int  (*write_room)(struct tty_struct *tty);
++	/* Called with bkl held */
+ 	int  (*ioctl)(struct tty_struct *tty, struct file *file,
+ 		      unsigned int cmd, unsigned long arg);
++	/* Called without bkl held */
++	int  (*compat_ioctl)(struct tty_struct *tty, struct file *file,
++			     unsigned int cmd, unsigned long arg);
+ 	void (*set_termios)(struct tty_struct *tty,
+ 			struct usb_serial_port *port, struct ktermios *old);
+ 	void (*break_ctl)(struct tty_struct *tty, int break_state);
+-- 
+1.5.6.5
 
