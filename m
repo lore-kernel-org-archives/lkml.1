@@ -1,24 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYK2TyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYK2T7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755041AbYK2TyJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 14:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYK2Txn
+	id S1754220AbYK2T7c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 14:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYK2T7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 14:53:43 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41576 "EHLO mx3.mail.elte.hu"
+	Sat, 29 Nov 2008 14:59:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37203 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752103AbYK2Txm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 14:53:42 -0500
-Date: Sat, 29 Nov 2008 20:53:29 +0100
+	id S1752244AbYK2T7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 14:59:23 -0500
+Date: Sat, 29 Nov 2008 20:58:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [git pull] scheduler fixes
-Message-ID: <20081129195329.GA27563@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>, lguest@ozlabs.org,
+       jeremy@xensource.com, LKML <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Lguest] [PATCH RFC/RFB] x86_64, i386: interrupt dispatch
+	changes
+Message-ID: <20081129195836.GA27836@elte.hu>
+References: <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <49178E89.2000307@zytor.com> <492DC13F.8020009@redhat.com> <492DE3EF.8060507@zytor.com> <492E72D7.9060201@redhat.com> <20081128204809.GA17920@mailshack.com> <20081129154516.GA26579@mailshack.com> <49318871.8010501@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <49318871.8010501@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -32,56 +40,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the latest sched-fixes-for-linus git tree from:
+* Avi Kivity <avi@redhat.com> wrote:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+> Alexander van Heukelum wrote:
+>> I now did the benchmarks for the same -rc6 with hpa's 4-byte stubs
+>> too. Same machine. It's significantly better than the other two
+>> options in terms of speed. It takes about 7% less cpu to handle
+>> the interrupts. (0.64% cpu instead of 0.69%.) I have to run now,
+>> I'll let interpreting the histogram to someone else ;).
+>>   
+>
+> This is noise. 0.05% cpu on a 1GHz machine servicing 1000 interrupt/sec 
+> boils down to 500 cycles/interrupt.  These changes shouldn't amount to 
+> so much (and I doubt you have 1000 interrupts/sec with a single disk)..
+>
+> I'm sorry, but the whole effort is misguided, in my opinion.  If you 
+> want to optimize, try reducing the number of interrupts that occur 
+> rather than saving a few cycles in the interrupt path.
 
- Thanks,
+the goal was not to optimize those workloads - the goal was to (try to) 
+validate those irq trampoline changes / cleanups. We went with hpa's 
+changes in the end which compresses the trampolines - that reduces the 
+$icache footprint which is hard to measure but a very real concern on 
+real workloads.
 
 	Ingo
-
------------------->
-Ingo Molnar (2):
-      sched, cpusets: fix warning in kernel/cpuset.c
-      sched: prevent divide by zero error in cpu_avg_load_per_task, update
-
-Steven Rostedt (1):
-      sched: prevent divide by zero error in cpu_avg_load_per_task
-
-
- kernel/cpuset.c |    2 +-
- kernel/sched.c  |    5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index da7ff61..96c0ba1 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -585,7 +585,7 @@ static int generate_sched_domains(cpumask_t **domains,
- 	int i, j, k;		/* indices for partition finding loops */
- 	cpumask_t *doms;	/* resulting partition; i.e. sched domains */
- 	struct sched_domain_attr *dattr;  /* attributes for custom domains */
--	int ndoms;		/* number of sched domains in result */
-+	int ndoms = 0;		/* number of sched domains in result */
- 	int nslot;		/* next empty doms[] cpumask_t slot */
- 
- 	doms = NULL;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 9b1e793..b7480fb 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1453,9 +1453,10 @@ static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
- static unsigned long cpu_avg_load_per_task(int cpu)
- {
- 	struct rq *rq = cpu_rq(cpu);
-+	unsigned long nr_running = ACCESS_ONCE(rq->nr_running);
- 
--	if (rq->nr_running)
--		rq->avg_load_per_task = rq->load.weight / rq->nr_running;
-+	if (nr_running)
-+		rq->avg_load_per_task = rq->load.weight / nr_running;
- 	else
- 		rq->avg_load_per_task = 0;
- 
