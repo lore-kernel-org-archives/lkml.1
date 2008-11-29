@@ -1,67 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYK2WI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbYK2WIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbYK2WI0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 17:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYK2WIR
+	id S1755424AbYK2WIu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 17:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYK2WIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 17:08:17 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50016 "EHLO mx2.redhat.com"
+	Sat, 29 Nov 2008 17:08:41 -0500
+Received: from eta-ori.net ([91.121.142.51]:53152 "EHLO orion.eta-ori.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920AbYK2WIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 17:08:16 -0500
-Message-ID: <4931BD2C.3010706@redhat.com>
-Date: Sat, 29 Nov 2008 17:07:40 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1752766AbYK2WIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 17:08:40 -0500
+X-Greylist: delayed 545 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Nov 2008 17:08:40 EST
+Message-ID: <4931BB48.9010706@impulze.org>
+Date: Sat, 29 Nov 2008 22:59:36 +0100
+From: Daniel Mierswa <impulze@impulze.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081026)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-References: <20081128060803.73cd59bd@bree.surriel.com>	<20081128231933.8daef193.akpm@linux-foundation.org>	<4931721D.7010001@redhat.com>	<20081129094537.a224098a.akpm@linux-foundation.org>	<493182C8.1080303@redhat.com>	<20081129102608.f8228afd.akpm@linux-foundation.org>	<49318CDE.4020505@redhat.com>	<20081129105120.cfb8c035.akpm@linux-foundation.org>	<49319109.7030904@redhat.com>	<20081129122901.6243d2fa.akpm@linux-foundation.org>	<4931B5B1.8030601@redhat.com> <20081129135712.817e912c.akpm@linux-foundation.org>
-In-Reply-To: <20081129135712.817e912c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fujitsu Amilo PA 1510 key-release events quirk
+Content-Type: multipart/mixed;
+ boundary="------------020403020501020108060500"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+This is a multi-part message in MIME format.
+--------------020403020501020108060500
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> The bottom line here is that we don't fully understand the problem
-> which 265b2b8cac1774f5f30c88e0ab8d0bcf794ef7b3 fixed, hence we cannot
-> say whether this proposed change will reintroduce it.
-> 
-> Why did it matter that "much more reclaim happens against highmem than
-> against lowmem"?  What were the observeable effects of this?
+heya,
+the fujitsu amilo pa 1510 laptop needs a little lovin' regarding the 
+release event of the volume up and down keys. I attached a format-patch 
+(against torvalds/linux-2.6.git ed313489badef16d7) which separates the 
+generation of release events for certain scancodes into a macro since 3 
+dmi matches are already using it and generation of the missing release 
+events for that particular laptop. Please post back with any advice and 
+thoughts for that patch.
 
-On a 1GB system, with 892MB lowmem and 128MB highmem, it could
-lead to the page cache coming mostly from highmem.  This in turn
-would mean that lowmem could have hundreds of megabytes of unused
-memory, while large files would not get cached in memory.
-
-Baling out early and not putting any memory pressure on a zone
-can lead to problems.
-
-It is important that zones with easily freeable memory get some
-extra memory freed, so more allocations go to that zone.
-
-However, we also do not want to go overboard.  Kicking potentially
-useful data out of memory or causing unnecessary pageout IO is
-harmful too.
-
-By doing some amount of extra reclaim in zones with easily
-freeable memory means more memory will get allocated from that
-zone.  Over time this equalizes pressure between zones.
-
-The patch I sent in limits that extra reclaim (extra allocation
-space) in easily freeable zones to 4 * zone->pages_high.  That
-gives the zone extra free space for alloc_pages, while limiting
-unnecessary pageout IO and evicting of useful data.
-
-I am pretty sure that we do understand the differences between
-that 2004 patch and the code we have today.
+Thanks in advance.
 
 -- 
-All rights reversed.
+Mierswa, Daniel
+
+If you still don't like it, that's ok: that's why I'm boss. I simply know better than you do.
+               --- Linus Torvalds, comp.os.linux.advocacy, 1996/07/22
+
+
+--------------020403020501020108060500
+Content-Type: text/plain;
+ name="fujitsu-siemens-amilopa1510-quirks.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fujitsu-siemens-amilopa1510-quirks.patch"
+
+>From a197dfb0eed23b87418c0a7fe6a562910046576e Mon Sep 17 00:00:00 2001
+From: Daniel Mierswa <impulze@impulze.org>
+Date: Sat, 29 Nov 2008 22:39:34 +0100
+Subject: [PATCH] Separate macro for generation of keyrelease events
+
+---
+ drivers/input/keyboard/atkbd.c |   23 +++++++++++++----------
+ 1 files changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+index 22016ca..99ef522 100644
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -834,6 +834,17 @@ static void atkbd_disconnect(struct serio *serio)
+ }
+ 
+ /*
++ * generate release events for the keycodes given in forced_release_keys[]
++ */
++#define GEN_RELEASE_EVENT \
++	int i; \
++\
++	if (atkbd->set == 2) \
++		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++) \
++			__set_bit(forced_release_keys[i], \
++				atkbd->force_release_mask);
++
++/*
+  * Most special keys (Fn+F?) on Dell laptops do not generate release
+  * events so we have to do it ourselves.
+  */
+@@ -842,12 +853,8 @@ static void atkbd_dell_laptop_keymap_fixup(struct atkbd *atkbd)
+ 	const unsigned int forced_release_keys[] = {
+ 		0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8f, 0x93,
+ 	};
+-	int i;
+ 
+-	if (atkbd->set == 2)
+-		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
+-			__set_bit(forced_release_keys[i],
+-				  atkbd->force_release_mask);
++	GEN_RELEASE_EVENT
+ }
+ 
+ /*
+@@ -859,12 +866,8 @@ static void atkbd_hp_keymap_fixup(struct atkbd *atkbd)
+ 	const unsigned int forced_release_keys[] = {
+ 		0x94,
+ 	};
+-	int i;
+ 
+-	if (atkbd->set == 2)
+-		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
+-			__set_bit(forced_release_keys[i],
+-					atkbd->force_release_mask);
++	GEN_RELEASE_EVENT
+ }
+ 
+ /*
+-- 
+1.6.0.4
+
+
+>From add1de59a8337442154fb3d7427ae8fd500de47a Mon Sep 17 00:00:00 2001
+From: Daniel Mierswa <impulze@impulze.org>
+Date: Sat, 29 Nov 2008 22:40:20 +0100
+Subject: [PATCH] Fujitsu Siemens Amilo PA 1510 quirks
+
+The volume up and down keys on the Fujitsu Siemens Amilo PA 1510 laptop
+won't generate release events, so we have to do that. Use the same
+way that is already used with other models.
+---
+ drivers/input/keyboard/atkbd.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+index 99ef522..1250242 100644
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -845,6 +845,19 @@ static void atkbd_disconnect(struct serio *serio)
+ 				atkbd->force_release_mask);
+ 
+ /*
++ * The volume up and volume down special keys on a Fujitsu Amilo PA 1510 laptop
++ * do not generate release events so we have to do it ourselves.
++ */
++static void atkbd_amilopa1510_keymap_fixup(struct atkbd *atkbd)
++{
++	const unsigned int forced_release_keys[] = {
++		0xb0, 0xae,
++	};
++
++	GEN_RELEASE_EVENT
++}
++
++/*
+  * Most special keys (Fn+F?) on Dell laptops do not generate release
+  * events so we have to do it ourselves.
+  */
+@@ -1463,6 +1476,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+ 		.driver_data = atkbd_dell_laptop_keymap_fixup,
+ 	},
+ 	{
++		.ident = "Fujitsu Amilo PA 1510",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"), 
++			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pa 1510"),
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_amilopa1510_keymap_fixup,
++	},
++	{
+ 		.ident = "HP 2133",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+-- 
+1.6.0.4
+
+
+--------------020403020501020108060500--
