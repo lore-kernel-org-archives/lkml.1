@@ -1,81 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYK2BAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYK2BBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbYK2BAi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 20:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYK2BA1
+	id S1754301AbYK2BBm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 20:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYK2BBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 20:00:27 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:35121 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbYK2BA0 (ORCPT
+	Fri, 28 Nov 2008 20:01:33 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54247 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbYK2BBc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 20:00:26 -0500
-Message-ID: <49309410.1060609@oracle.com>
-Date: Fri, 28 Nov 2008 17:00:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Fri, 28 Nov 2008 20:01:32 -0500
+Message-Id: <200811290056.mAT0uTuk028924@terminus.zytor.com>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [RFC PATCH] x86: create drivers/x86/ from drivers/misc/
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au> <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au> <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain> <alpine.LFD.2.00.0811281702570.24773@localhost.localdomain> <alpine.LFD.2.00.0811281706540.24773@localhost.localdomain> <20081128223533.GA5175@uranus.ravnborg.org> <alpine.LFD.2.00.0811281801520.24773@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0811281801520.24773@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B0201.49309414.0005:SCFSTAT928724,ss=1,fgs=0
+content-class: 
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: RE: [PATCH 1/1] edac x38: new MC driver module
+Date: Fri, 28 Nov 2008 16:56:39 -0800
+Importance: normal
+X-Priority: 3
+To: Hitoshi Mitake <h.mitake@gmail.com>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>, <dougthompson@xmission.com>,
+       <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
-> 
->>> Move x86 platform specific drivers from drivers/misc/
->>> to a new home under drivers/x86/.
->>>
->>> The community has been maintaining x86 platform specific drivers
->>> under /drivers/misc/ for a few years.  The oldest ones started
->>> life under drivers/acpi, but got booted out because they are
->>> generally vendor-specific extensions to ACPI, or simply
->>> users of ACPI, rather than implementers of the ACPI spec.
->>>
->>> The thing that they have in common is that they are
->>> x86 vendor specific platform drivers.  So when asked,
->>> Linus suggested we move them to drivers/x86.
->> We already have 81 one directory entries under drivers/
->> and with patch you open up for an additional
->> directory for each arch - not elegant.
-> 
-> I followed the example of drivers/s390/,
-> per Linus' suggestion.
-> 
-> The other place that seemed to suggest itself was
-> arch/x86/drivers/, as we already have:
-> 
-> arch/um/drivers/
-> arch/sh/drivers/
-> arch/cris/*/drivers/
-> 
->> As it is today (before this patch) the directories unider
->> drivers/ said what the drivers was used for - which is logical.
->>
->> But with this new arch specific directory it is no longer obvious
->> is a driver should be located under say drivers/net/* or
->> drivers/arm/* in case it is a arm specific driver.
-> 
-> These are vendor-specific, aka "platform specific" drivers
-> for various x86 platforms.
-> 
->> What is wrong with the current location under misc/*?
-> 
-> mostly that it "misc" means nothing at all...
-> Indeed, misc should probably be deleted for this reason...
+The cast is unnecessary; one can argue for a cast to (u32) for clarity, but personally I think writel() is a clear enough especialy given the context.
 
-Yes, IIRC, we had eliminated drivers/misc/ at one point,
-and then it came back on us.
+-- 
+Sent from my mobile phone (pardon any lack of formatting)
 
-~Randy
+
+-----Original Message-----
+From: Hitoshi Mitake <h.mitake@gmail.com>
+Sent: Friday, November 28, 2008 16:11
+To: Hitoshi Mitake <h.mitake@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>; H. Peter Anvin <hpa@zytor.com>; Luck, Tony <tony.luck@intel.com>; Russell King <rmk+lkml@arm.linux.org.uk>; Ralf Baechle <ralf@linux-mips.org>; Andrew Morton <akpm@linux-foundation.org>; Doug Thompson <norsk5@yahoo.com>; dougthompson@xmission.com <dougthompson@xmission.com>; linux-kernel@vger.kernel.org <linux-kernel@vger.kernel.org>; linux-arch@vger.kernel.org <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+
+On Wed, 26 Nov 2008 01:10:59 +0900
+Hitoshi Mitake <h.mitake@gmail.com> wrote:
+
+> On Tue, 25 Nov 2008 16:46:18 +0100 (CET)
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> 
+> > On Wed, 26 Nov 2008, Hitoshi Mitake wrote:
+> > > On Mon, 24 Nov 2008 21:13:58 -0800
+> > > "H. Peter Anvin" <hpa@zytor.com> wrote:
+> > > > Are you planning to add writeq() as well?
+> > > 
+> > > Yes, I want to add writeq().
+> > > But there's a problem that
+> > > I don't have a plan to use writeq() now, so I can't test writeq() soon.
+> > > 
+> > > How is this? I think it isn't bad. I want to hear your opinion.
+> > > 
+> > > static inline void writeq(__u64 val, volatile void __iomem *addr)
+> > > {
+> > > 	writel((unsigned int)val, addr);
+> > > 	writel((unsigned int)(val >> 32), addr+1);
+> >                                                ^
+> > 					       4
+> > 
+> > > }
+> > 
+> 
+> Thanks, I missed about void pointer...
+> 
+
+I rewrote the patch. I think newest version is good enough.
+Could you please review this?
+
+description of this patch
+Adding implementation of readq/writeq to x86_32,
+and adding config value to x86 architecture to determine existence of readq/writeq
+
+Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+---
+ arch/x86/Kconfig          |    4 ++++
+ arch/x86/include/asm/io.h |   24 ++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ac22bb7..10bd84c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -11,9 +11,13 @@ config 64BIT
+ 
+ config X86_32
+ 	def_bool !64BIT
++	select ARCH_HAS_READQ
++	select ARCH_HAS_WRITEQ
+ 
+ config X86_64
+ 	def_bool 64BIT
++	select ARCH_HAS_READQ
++	select ARCH_HAS_WRITEQ
+ 
+ ### Arch settings
+ config X86
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index ac2abc8..ac15d0e 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -4,6 +4,7 @@
+ #define ARCH_HAS_IOREMAP_WC
+ 
+ #include <linux/compiler.h>
++#include <asm-generic/int-ll64.h>
+ 
+ #define build_mmio_read(name, size, type, reg, barrier) \
+ static inline type name(const volatile void __iomem *addr) \
+@@ -57,6 +58,29 @@ build_mmio_write(__writeq, "q", unsigned long, "r", )
+ /* Let people know we have them */
+ #define readq readq
+ #define writeq writeq
++
++#else  /* CONFIG_X86_32 from here */
++
++static inline __u64 readq(const volatile void __iomem *addr)
++{
++	const volatile u32 __iomem *p = addr;
++	u32 l, h;
++
++	l = readl(p);
++	h = readl(p+1);
++
++	return l + ((u64)h << 32);
++}
++
++static inline void writeq(__u64 val, volatile void __iomem *addr)
++{
++	writel((unsigned int)val, addr);
++	writel((unsigned int)(val >> 32), addr+4);
++}
++
++#define readq readq
++#define writeq writeq
++
+ #endif
+ 
+ extern int iommu_bio_merge;
+-- 
+1.5.6.5
+
+
