@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbYK2NCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbYK2NDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbYK2NCW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 08:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYK2NCG
+	id S1756014AbYK2NDf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 08:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYK2ND0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 08:02:06 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:37200 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYK2NCF (ORCPT
+	Sat, 29 Nov 2008 08:03:26 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:55760 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYK2NDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 08:02:05 -0500
-Date: Sat, 29 Nov 2008 14:03:29 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Mike Rapoport <mike@compulab.co.il>, Eric Miao <ymiao3@marvell.com>,
-       rpurdie@rpsys.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/video/backlight: rename da903x to da903x_bl
-Message-ID: <20081129130329.GA13867@uranus.ravnborg.org>
-References: <1227606164-12659-1-git-send-email-mike@compulab.co.il> <E913911567467945BBEB9277E27868B00153DC31@msiexch01.marvell.com> <492BCD01.7080508@compulab.co.il> <f17812d70811260012n57e89eb9q1101fa1e13813a49@mail.gmail.com>
-Mime-Version: 1.0
+	Sat, 29 Nov 2008 08:03:25 -0500
+Date: Sat, 29 Nov 2008 06:03:08 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Matthew Garrett <mjg@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com
+Subject: Re: [PATCH v2 2/2] relatime: Allow making relatime the default behaviour
+Message-ID: <20081129130308.GX25548@parisc-linux.org>
+References: <20081126195457.GA3541@srcf.ucam.org> <20081126195824.GB3541@srcf.ucam.org> <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127170345.GA14991@infradead.org> <20081129002419.abfd2504.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f17812d70811260012n57e89eb9q1101fa1e13813a49@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081129002419.abfd2504.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 04:12:07PM +0800, Eric Miao wrote:
-> Sam,
+On Sat, Nov 29, 2008 at 12:24:19AM -0800, Andrew Morton wrote:
+> Yes, that's what I was wondering.  No /proc thingy, no new Kconfig
+> entries, no __setup() thing.  Just
 > 
-> Do you have any suggestion to this?
-> 
-[snip two modules with same name does not work...]
+> 	mount -o relatime=$((24*60*60)) /dev/sda1 /mnt/point
+> 	mount -o remount,relatime=$((24*60*60)) /dev/sda1 /mnt/point
 
-kbuild today create one file for each module in the
-directory: .tmp_versions/
+That would imply that relatime could be different per-mountpoint.
 
-So in this case the module that is build lst is the winner.
+I favour not making it configurable at all.
 
-I do not see any easy way to avoid this.
-What we could do:
-1) find another way to record what modules we have
-2) embed path in filename
-
-I did not try to actually implement any of the above
-as the gain seems minimal compared to the additional complexity.
-
-	Sam
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
