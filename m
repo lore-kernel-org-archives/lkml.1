@@ -1,93 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYK2R5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYK2R6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYK2R5P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 12:57:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYK2R47
+	id S1755517AbYK2R6w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 12:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYK2R6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 12:56:59 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52631 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbYK2R47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 12:56:59 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 29 Nov 2008 18:56:47 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fix resetting of bus manager retry counter
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.c0ba1ba99cd6f8c3@s5r6.in-berlin.de>
+	Sat, 29 Nov 2008 12:58:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51093 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751194AbYK2R6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 12:58:43 -0500
+Message-ID: <493182C8.1080303@redhat.com>
+Date: Sat, 29 Nov 2008 12:58:32 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+References: <20081128060803.73cd59bd@bree.surriel.com>	<20081128231933.8daef193.akpm@linux-foundation.org>	<4931721D.7010001@redhat.com> <20081129094537.a224098a.akpm@linux-foundation.org>
+In-Reply-To: <20081129094537.a224098a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An earlier change, maybe long ago, removed the copying of self_id_count
-into card->self_id_count.  Since then each bus reset cleared
-card->bm_retries even when it shouldn't.
+Andrew Morton wrote:
+> On Sat, 29 Nov 2008 11:47:25 -0500 Rik van Riel <riel@redhat.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>
+>>>> Index: linux-2.6.28-rc5/mm/vmscan.c
+>>>> ===================================================================
+>>>> --- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-28 05:53:56.000000000 -0500
+>>>> +++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-28 06:05:29.000000000 -0500
+>>>> @@ -1510,6 +1510,9 @@ static unsigned long shrink_zones(int pr
+>>>>  			if (zone_is_all_unreclaimable(zone) &&
+>>>>  						priority != DEF_PRIORITY)
+>>>>  				continue;	/* Let kswapd poll it */
+>>>> +			if (zone_watermark_ok(zone, sc->order,
+>>>> +					4*zone->pages_high, high_zoneidx, 0))
+>>>> +				continue;	/* Lots free already */
+>>>>  			sc->all_unreclaimable = 0;
+>>>>  		} else {
+>>>>  			/*
+>>> We already tried this, or something very similar in effect, I think...
+>> Yes, we have a check just like this in balance_pgdat().
+>>
+>> It's been there forever with no ill effect.
+> 
+> This patch affects direct reclaim as well as kswapd.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-topology.c    |   14 ++++++--------
- drivers/firewire/fw-transaction.h |    1 -
- 2 files changed, 6 insertions(+), 9 deletions(-)
+No, kswapd calls shrink_zone directly from balance_pgdat,
+it does not go through shrink_zones.
 
-Index: linux/drivers/firewire/fw-topology.c
-===================================================================
---- linux.orig/drivers/firewire/fw-topology.c
-+++ linux/drivers/firewire/fw-topology.c
-@@ -355,6 +355,9 @@ report_lost_node(struct fw_card *card,
- {
- 	fw_node_event(card, node, FW_NODE_DESTROYED);
- 	fw_node_put(node);
-+
-+	/* Topology has changed - reset bus manager retry counter */
-+	card->bm_retries = 0;
- }
- 
- static void
-@@ -374,6 +377,9 @@ report_found_node(struct fw_card *card,
- 	}
- 
- 	fw_node_event(card, node, FW_NODE_CREATED);
-+
-+	/* Topology has changed - reset bus manager retry counter */
-+	card->bm_retries = 0;
- }
- 
- void fw_destroy_nodes(struct fw_card *card)
-@@ -526,14 +532,6 @@ fw_core_handle_bus_reset(struct fw_card 
- 
- 	spin_lock_irqsave(&card->lock, flags);
- 
--	/*
--	 * If the new topology has a different self_id_count the topology
--	 * changed, either nodes were added or removed. In that case we
--	 * reset the IRM reset counter.
--	 */
--	if (card->self_id_count != self_id_count)
--		card->bm_retries = 0;
--
- 	card->node_id = node_id;
- 	/*
- 	 * Update node_id before generation to prevent anybody from using
-Index: linux/drivers/firewire/fw-transaction.h
-===================================================================
---- linux.orig/drivers/firewire/fw-transaction.h
-+++ linux/drivers/firewire/fw-transaction.h
-@@ -239,7 +239,6 @@ struct fw_card {
- 	 * We need to store up to 4 self ID for a maximum of 63
- 	 * devices plus 3 words for the topology map header.
- 	 */
--	int self_id_count;
- 	u32 topology_map[252 + 3];
- 	u32 broadcast_channel;
- 
+>>> commit 26e4931632352e3c95a61edac22d12ebb72038fe
+>>> Author: akpm <akpm>
+>>> Date:   Sun Sep 8 19:21:55 2002 +0000
+>>>
+>>>     [PATCH] refill the inactive list more quickly
+>>>     
+>>>     Fix a problem noticed by Ed Tomlinson: under shifting workloads the
+>>>     shrink_zone() logic will refill the inactive load too slowly.
+>>>     
+>>>     Bale out of the zone scan when we've reclaimed enough pages.  Fixes a
+>>>     rarely-occurring problem wherein refill_inactive_zone() ends up
+>>>     shuffling 100,000 pages and generally goes silly.
+>> This is not a bale out, this is a "skip zones that have way
+>> too many free pages already".
+> 
+> It is similar in effect.
+> 
+> Will this new patch reintroduce the problem which
+> 26e4931632352e3c95a61edac22d12ebb72038fe fixed?
+
+Googling on 26e4931632352e3c95a61edac22d12ebb72038fe only finds
+your emails with that commit id in it - which git tree do I
+need to search to get that changeset?
 
 -- 
-Stefan Richter
--=====-==--- =-== ===-=
-http://arcgraph.de/sr/
-
+All rights reversed.
