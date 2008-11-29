@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYK2SBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYK2SJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbYK2SBS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 13:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYK2SBG
+	id S1755364AbYK2SJX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 13:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYK2SJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 13:01:06 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52641 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbYK2SBF (ORCPT
+	Sat, 29 Nov 2008 13:09:10 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:6927 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYK2SJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 13:01:05 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 29 Nov 2008 19:00:56 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: reorder struct fw_card for better cache efficiency
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.c0ba1ba99cd6f8c3@s5r6.in-berlin.de>
-Message-ID: <tkrat.1085fd9bce55f712@s5r6.in-berlin.de>
-References: <tkrat.c0ba1ba99cd6f8c3@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Sat, 29 Nov 2008 13:09:08 -0500
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Len Brown <len.brown@intel.com>
+Cc: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org
+Date: Sat, 29 Nov 2008 07:21:29 +0100
+Subject: [PATCH] ACPI: EC: fix compilation warning
+From: Hannes Eder <hannes@hanneseder.net>
+Message-ID: <49318541.0aec660a.0efb.3436@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-topology_map is by far the largest member in struct fw_card.  Move it to
-the very end of the struct so that card pointer dereferences have better
-chances to hit the CPU cache.
+Fix the warning introduced in commit c5279dee26c0e8d7c4200993bfc4b540d2469598,
+and give the dummy variable a more verbose name.
 
-This requires to increase the topology_map backing store to the size
-specified in IEEE 1394, i.e. 256 rather than 255 quadlets.  Otherwise
-the topology_map response handler may access invalid memory.
+  drivers/acpi/ec.c: In function 'acpi_ec_ecdt_probe':
+  drivers/acpi/ec.c:1015: warning: ISO C90 forbids mixed declarations and code
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/firewire/fw-transaction.h |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ drivers/acpi/ec.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux/drivers/firewire/fw-transaction.h
-===================================================================
---- linux.orig/drivers/firewire/fw-transaction.h
-+++ linux/drivers/firewire/fw-transaction.h
-@@ -235,13 +235,6 @@ struct fw_card {
- 	int link_speed;
- 	int config_rom_generation;
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index c16e09b..60db1b2 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -980,6 +980,7 @@ int __init acpi_ec_ecdt_probe(void)
+ {
+ 	acpi_status status;
+ 	struct acpi_table_ecdt *ecdt_ptr;
++	acpi_handle dummy;
  
--	/*
--	 * We need to store up to 4 self ID for a maximum of 63
--	 * devices plus 3 words for the topology map header.
--	 */
--	u32 topology_map[252 + 3];
--	u32 broadcast_channel;
--
- 	spinlock_t lock; /* Take this lock when handling the lists in
- 			  * this struct. */
- 	struct fw_node *local_node;
-@@ -259,6 +252,9 @@ struct fw_card {
- 	struct delayed_work work;
- 	int bm_retries;
- 	int bm_generation;
-+
-+	u32 broadcast_channel;
-+	u32 topology_map[(CSR_TOPOLOGY_MAP_END - CSR_TOPOLOGY_MAP) / 4];
- };
- 
- static inline struct fw_card *fw_card_get(struct fw_card *card)
-
+ 	boot_ec = make_acpi_ec();
+ 	if (!boot_ec)
+@@ -1012,7 +1013,6 @@ int __init acpi_ec_ecdt_probe(void)
+ 	}
+ 	/* This workaround is needed only on some broken machines,
+ 	 * which require early EC, but fail to provide ECDT */
+-	acpi_handle x;
+ 	printk(KERN_DEBUG PREFIX "Look up EC in DSDT\n");
+ 	status = acpi_get_devices(ec_device_ids[0].id, ec_parse_device,
+ 					boot_ec, NULL);
+@@ -1023,7 +1023,7 @@ int __init acpi_ec_ecdt_probe(void)
+ 	 * which needs it, has fake EC._INI method, so use it as flag.
+ 	 * Keep boot_ec struct as it will be needed soon.
+ 	 */
+-	if (ACPI_FAILURE(acpi_get_handle(boot_ec->handle, "_INI", &x)))
++	if (ACPI_FAILURE(acpi_get_handle(boot_ec->handle, "_INI", &dummy)))
+ 		return -ENODEV;
+ install:
+ 	if (!ec_install_handlers(boot_ec)) {
 -- 
-Stefan Richter
--=====-==--- =-== ===-=
-http://arcgraph.de/sr/
+1.5.6.3
 
