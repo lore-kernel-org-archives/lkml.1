@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbYK2GHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYK2GNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbYK2GHr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 01:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYK2GHh
+	id S1752858AbYK2GNd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 01:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYK2GNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 01:07:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43330 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750701AbYK2GHg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 01:07:36 -0500
-Date: Fri, 28 Nov 2008 22:06:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2008-11-26-17-00 uploaded (hwmon / dev_attr_name)
-Message-Id: <20081128220659.2d5049e6.akpm@linux-foundation.org>
-In-Reply-To: <4930CCA9.9070505@oracle.com>
-References: <200811270101.mAR114rp016378@imap1.linux-foundation.org>
-	<4930CCA9.9070505@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 29 Nov 2008 01:13:22 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34677
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750701AbYK2GNW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 01:13:22 -0500
+Date: Fri, 28 Nov 2008 22:13:22 -0800 (PST)
+Message-Id: <20081128.221322.67645422.davem@davemloft.net>
+To: frederic.moulins@alsatis.com
+Cc: jchapman@katalix.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] [PPPOL2TP] Add missing sock_put() in pppol2tp_release()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081127171851.3fe7db5a@iter>
+References: <20081127171851.3fe7db5a@iter>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008 21:01:29 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+From: Frédéric Moulins <frederic.moulins@alsatis.com>
+Date: Thu, 27 Nov 2008 17:18:51 +0100
 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2008-11-26-17-00 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
+> pppol2tp_sock_to_session() do sock_hold() if the session to release is
+> not NULL.
 > 
-> 
-> I'm getting lots of these build errors:
-> 
-> drivers/hwmon/built-in.o:(.data+0x7c70): multiple definition of `dev_attr_name'
+> Signed-off-by: Frédéric Moulins <frederic.moulins@alsatis.com>
 
--ENOREPRODUCE.  What config?
+Applied, but please post networking patches at least CC:'d to
+netdev@vger.kernel.org so that your work gets properly tracked
+at:
+
+	http://patchwork.ozlabs.org/project/netdev/list
+
+Thanks.
+
+> ---
+> Patch is applicable to kernels 2.6.26 and following.
+> 
+> Tested with a 2.6.26 stable kernel:
+> without this patch, a session in a persistent tunnel cannot be
+> established again (connect failed: -17), and the pppol2tp kernel module
+> cannot be removed because still considered in use after stopping all
+> userspace daemons.
+> 
+> diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
+> index ff175e8..de80ba4 100644
+> --- a/drivers/net/pppol2tp.c
+> +++ b/drivers/net/pppol2tp.c
+> @@ -1353,6 +1353,7 @@ static int pppol2tp_release(struct socket *sock)
+>  			kfree_skb(skb);
+>  			sock_put(sk);
+>  		}
+> +		sock_put(sk);
+>  	}
+>  
+>  	release_sock(sk);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
