@@ -1,145 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYK2XGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYK2XUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbYK2XGx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 18:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYK2XGp
+	id S1754907AbYK2XUj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 18:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYK2XUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 18:06:45 -0500
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:4323 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbYK2XGo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 18:06:44 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v2] v4l2_device/v4l2_subdev: final (?) version
-Date: Sun, 30 Nov 2008 00:06:21 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux and Kernel Video <video4linux-list@redhat.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       linux-kernel@vger.kernel.org,
-       Laurent Pinchart <laurent.pinchart@skynet.be>
-References: <200811291852.41794.hverkuil@xs4all.nl> <200811292246.20338.hverkuil@xs4all.nl> <200811291422.20155.david-b@pacbell.net>
-In-Reply-To: <200811291422.20155.david-b@pacbell.net>
+	Sat, 29 Nov 2008 18:20:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:33258 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbYK2XU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 18:20:29 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200811300006.22080.hverkuil@xs4all.nl>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18737.52782.650416.444270@cargo.ozlabs.ibm.com>
+Date: Sun, 30 Nov 2008 10:20:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: powerpc: hv{cs,
+	si}_close() both unsigned hp->count and hvcsd->open_count
+	cannot be negative
+In-Reply-To: <4931201D.7060701@gmail.com>
+References: <4931201D.7060701@gmail.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 November 2008 23:22:19 David Brownell wrote:
-> On Saturday 29 November 2008, Hans Verkuil wrote:
-> > > > +void v4l2_device_register(struct device *dev, struct
-> > > > v4l2_device *v4l2_dev) +{
-> > > > +       BUG_ON(!dev || !v4l2_dev || dev_get_drvdata(dev));
-> > >
-> > > Ouch.  Better to return -EINVAL, like most register() calls,
-> > > than *ever* use a BUG_ON() for bad parameters.  Same applies
-> > > every other place you use BUG_ON, from a quick scan ...
-> >
-> > Are there some documented guidelines on when to use BUG_ON?
->
-> Maybe there should be.  I know I've seen flames from Linus on
-> the topic.  Basically, treat it like a panic() where the system
-> must stop operation lest it catch fire or scribble all over the
-> (not-backed-up) disk ... if the system can keep running sanely,
-> then BUG() and friends are inappropriate.
+roel kluin writes:
 
-I think it would be good to have some document about this, since
-from what I've seen from a quick scan I'm not the only one who uses
-it incorrectly. There is no documentation in the asm-generic/bug.h
-header and there is also no documentation on this in the Documentation
-directory.
+> unsigned hp->count and hvcsd->open_count cannot be negative
+...
+> -	if (--hvcsd->open_count == 0) {
+> +	if (hvcsd->open_count == 1) {
+> +		hvcsd->open_count--;
 
-> > I see it used in other places in this way.
->
-> I tend to submit patches fixing bugs like that, when I have time.
->
-> > My reasoning was that returning an
-> > error makes sense if external causes can result in an error, but
-> > this test is more the equivalent of an assert(), i.e. catching a
-> > programming bug early.
->
-> In which case a WARN() is better.  But in most cases I wouldn't
-> even do that.  The kernel's design center is closer to "run
-> robustly" than "make developers' lives easier".  Programmers
-> who don't check return values for critical operations like
-> registering core resources deserve what they get.  And if you
-> want to nudge them, the __must_check annotation helps catch
-> such goofage even earlier:  compile time, not run time.
+Why are we no longer decrementing hvcsd->open_count in the cases where
+it is greater than 1?
 
-I've replaced it as follows (and with __must_check in the header):
+> -	if (--hp->count == 0) {
+> +	if (hp->count == 1) {
+> +		hp->count--;
 
-int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
-{
-        if (dev == NULL || v4l2_dev == NULL)
-                return -EINVAL;
-        /* Warn if we apparently re-register a device */
-        WARN_ON(dev_get_drvdata(dev));
-        INIT_LIST_HEAD(&v4l2_dev->subdevs);
-        spin_lock_init(&v4l2_dev->lock);
-        v4l2_dev->dev = dev;
-        snprintf(v4l2_dev->name, sizeof(v4l2_dev->name), "%s %s",
-                        dev->driver->name, dev->bus_id);
-        dev_set_drvdata(dev, v4l2_dev);
-        return 0;
-}
-EXPORT_SYMBOL_GPL(v4l2_device_register);
+Ditto with hp->count here?
 
-void v4l2_device_unregister(struct v4l2_device *v4l2_dev)
-{
-        struct v4l2_subdev *sd, *next;
+Also, I don't see why those changes have anything to do with "unsigned
+things cannot be negative".  As long as those counts are never zero on
+entry to those code sections, the existing code is fine, and I believe
+that assertion can be maintained.  If you believe the code needs to
+defend against the possibility of a zero count on entry, that should
+have been explicitly stated in the patch description.
 
-        if (v4l2_dev == NULL || v4l2_dev->dev == NULL)
-                return;
-        dev_set_drvdata(v4l2_dev->dev, NULL);
-        /* unregister subdevs */
-        list_for_each_entry_safe(sd, next, &v4l2_dev->subdevs, list)
-                v4l2_device_unregister_subdev(sd);
-
-        v4l2_dev->dev = NULL;
-}
-EXPORT_SYMBOL_GPL(v4l2_device_unregister);
-
-int v4l2_device_register_subdev(struct v4l2_device *dev, struct v4l2_subdev *sd)
-{
-        /* Check for valid input */
-        if (dev == NULL || sd == NULL || !sd->name[0])
-                return -EINVAL;
-        /* Warn if we apparently re-register a subdev */
-        WARN_ON(sd->dev);
-        if (!try_module_get(sd->owner))
-                return -ENODEV;
-        sd->dev = dev;
-        spin_lock(&dev->lock);
-        list_add_tail(&sd->list, &dev->subdevs);
-        spin_unlock(&dev->lock);
-        return 0;
-}
-EXPORT_SYMBOL_GPL(v4l2_device_register_subdev);
-
-void v4l2_device_unregister_subdev(struct v4l2_subdev *sd)
-{
-        /* return if it isn't registered */
-        if (sd == NULL || sd->dev == NULL)
-                return;
-        spin_lock(&sd->dev->lock);
-        list_del(&sd->list);
-        spin_unlock(&sd->dev->lock);
-        sd->dev = NULL;
-        module_put(sd->owner);
-}
-EXPORT_SYMBOL_GPL(v4l2_device_unregister_subdev);
-
-Thanks for the review!
-
-	Hans
-
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+Paul.
