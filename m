@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYK2LAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYK2LPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbYK2LAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 06:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYK2LAK
+	id S1755953AbYK2LPN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 06:15:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYK2LOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 06:00:10 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:59899 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751434AbYK2LAJ (ORCPT
+	Sat, 29 Nov 2008 06:14:54 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:43896 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbYK2LOs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 06:00:09 -0500
-Date: Sat, 29 Nov 2008 12:01:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kbuild: fix CONFIG_EMBEDDED submenu
-Message-ID: <20081129110135.GA9823@uranus.ravnborg.org>
-References: <20081128173849.GA19101@localhost.localdomain> <19f34abd0811281441m6245d1bag2053619939270a5a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0811281441m6245d1bag2053619939270a5a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 29 Nov 2008 06:14:48 -0500
+Message-ID: <4931240A.703@cosmosbay.com>
+Date: Sat, 29 Nov 2008 12:14:18 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
+CC: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
+	<kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v2 4/5] fs: Introduce SINGLE dentries for pipes, socket,
+ anon fd
+References: <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100E7.3030907@cosmosbay.com> <20081129103836.GA11959@logfs.org>
+In-Reply-To: <20081129103836.GA11959@logfs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 29 Nov 2008 12:14:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 11:41:59PM +0100, Vegard Nossum wrote:
-> On Fri, Nov 28, 2008 at 6:38 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > From 06f65799401f08eff0020ba0300133c89bd02349 Mon Sep 17 00:00:00 2001
-> > From: Vegard Nossum <vegard.nossum@gmail.com>
-> > Date: Fri, 28 Nov 2008 18:29:47 +0100
-> > Subject: [PATCH] kbuild: fix CONFIG_EMBEDDED submenu
-> >
-> > Many of the elements of the EMBEDDED submenu were being expanded
-> > in the current menu instead of inside the submenu. This was caused
-> > by the lack of (explicit) dependencies on EMBEDDED. The simplest
-> > fix is to wrap everything (except COMPAT_BRK, which just toggles a
-> > setting) in "if/endif EMBEDDED".
+Jörn Engel a écrit :
+> On Sat, 29 November 2008 09:44:23 +0100, Eric Dumazet wrote:
+>> +struct dentry *d_alloc_single(const struct qstr *name, struct inode *inode)
+>> +{
+>> +	struct dentry *entry;
+>> +
+>> +	entry = d_alloc(NULL, name);
+>> +	if (entry) {
+>> +		entry->d_sb = inode->i_sb;
+>> +		entry->d_parent = entry;
+>> +		entry->d_flags |= DCACHE_SINGLE | DCACHE_DISCONNECTED;
+>> +		entry->d_inode = inode;
+>> +		fsnotify_d_instantiate(entry, inode);
+>> +		security_d_instantiate(entry, inode);
+>> +	}
+>> +	return entry;
 > 
-> Urgh -- the menu displays correctly, but defconfig now becomes totally
-> wrong, because the items inside are taken to depend on EMBEDDED
-> instead of toggling visibility. Better to add "if EMBEDDED" to the end
-> of all the prompts, then.
+> Calling the struct dentry entry had me onfused a bit.  I believe
+> everyone else (including the code you removed) uses dentry.
+
+Ah yes, it seems I took it from d_instantiate(), I guess a cleanup
+patch would be nice.
+
 > 
-> That was counter-intuitive :-(
+>> @@ -918,7 +906,7 @@ struct file *create_write_pipe(int flags)
+>>  	struct inode *inode;
+>>  	struct file *f;
+>>  	struct dentry *dentry;
+>> -	struct qstr name = { .name = "" };
+>> +	static const struct qstr name = { .name = "" };
+>>  
+>>  	err = -ENFILE;
+>>  	inode = get_pipe_inode();
+> ...
+>> @@ -371,20 +358,13 @@ static int sock_alloc_fd(struct file **filep, int flags)
+>>  static int sock_attach_fd(struct socket *sock, struct file *file, int flags)
+>>  {
+>>  	struct dentry *dentry;
+>> -	struct qstr name = { .name = "" };
+>> +	static const struct qstr name = { .name = "" };
+> 
+> These two could even be combined.
+> 
+> And of course I realize that I comment on absolute trivialities.  On the
+> whole, I couldn't spot a real problem in your patches.
 
-Thanks for the feedback Vegard!
+Well, at least you reviewed it, it's the important point !
 
-I had it queued as I wanted to check if the conversion
-from
-	prompt "foo" if EMBEDDED
+Thanks Jörn
 
-to
-	depends on EMBEDDED
-
-caused any signigicant difference. And so it did.
-
-The fist uses EMBEDDED to say if the prompt is visible or not.
-The latter say if this symbol can be set or not (overriding default)
-as you experienced.
-
-One day we should take a deeper look at the usage of EMBEDDED.
-Replacing EMBEDDED with:
-
-OPTIMIZE_FOR_TEXT_SIZE
-OPTIMIZE_FOR_DATA_SIZE
-KERNEL_EXPERT
-
-would make it much more obvious what you could
-achive by the individual options.
-
-	Sam
