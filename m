@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbYK2VDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYK2VPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042AbYK2VDV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 16:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYK2VDM
+	id S1754593AbYK2VPq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 16:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYK2VPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 16:03:12 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:45370 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbYK2VDL (ORCPT
+	Sat, 29 Nov 2008 16:15:37 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:41398 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752501AbYK2VPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 16:03:11 -0500
-Date: Sat, 29 Nov 2008 21:03:02 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com
-Subject: Re: [PATCH v2 2/2] relatime: Allow making relatime the default behaviour
-Message-ID: <20081129210302.GB22998@srcf.ucam.org>
-References: <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127170345.GA14991@infradead.org> <20081129002419.abfd2504.akpm@linux-foundation.org> <20081129130308.GX25548@parisc-linux.org> <20081129135742.GC11959@logfs.org> <20081129185645.GA20194@shareable.org> <20081129190245.GA21502@srcf.ucam.org> <20081129123220.67fd1e6a.akpm@linux-foundation.org> <20081129125529.0198e973@infradead.org>
+	Sat, 29 Nov 2008 16:15:36 -0500
+Date: Sat, 29 Nov 2008 16:15:33 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andres Freund <andres@anarazel.de>
+Cc: adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20081129211533.GG3372@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andres Freund <andres@anarazel.de>, adilger@sun.com,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+References: <200811291418.24672.andres@anarazel.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081129125529.0198e973@infradead.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <200811291418.24672.andres@anarazel.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 29, 2008 at 12:55:29PM -0800, Arjan van de Ven wrote:
+On Sat, Nov 29, 2008 at 02:18:19PM +0100, Andres Freund wrote:
+> Hi Ted, Hi Andreas, hi all,
+> 
+> On a testsystem (spare laptop) with ext4 as root filesystem sometimes the 
+> system starts to return ENOSPC to all write/create syscalls.
+> Sometimes the system runs without problems, at other times it starts having 
+> problems soon after boot.
 
-> let me ask this:
-> Has anmyone ever had the desire to change the default of 1 day of
-> relatime? Ever?
+Hmm.... Is there anything interesting log messages relating to ext4 or
+jbd2 showing up in /var/log/messages or in dmesg?
 
-The current kernel code has no time-based heuristics. It'll only update 
-atime if it's older than ctime or mtime.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+     	     	   		     	   - Ted
