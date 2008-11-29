@@ -1,32 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYK2UaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbYK2UdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYK2UaU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 15:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYK2UaH
+	id S1754355AbYK2UdU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 15:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYK2UdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 15:30:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33936 "EHLO
+	Sat, 29 Nov 2008 15:33:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46661 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751691AbYK2UaG (ORCPT
+	by vger.kernel.org with ESMTP id S1751691AbYK2UdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 15:30:06 -0500
-Date: Sat, 29 Nov 2008 12:29:01 -0800
+	Sat, 29 Nov 2008 15:33:05 -0500
+Date: Sat, 29 Nov 2008 12:32:20 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-Message-Id: <20081129122901.6243d2fa.akpm@linux-foundation.org>
-In-Reply-To: <49319109.7030904@redhat.com>
-References: <20081128060803.73cd59bd@bree.surriel.com>
-	<20081128231933.8daef193.akpm@linux-foundation.org>
-	<4931721D.7010001@redhat.com>
-	<20081129094537.a224098a.akpm@linux-foundation.org>
-	<493182C8.1080303@redhat.com>
-	<20081129102608.f8228afd.akpm@linux-foundation.org>
-	<49318CDE.4020505@redhat.com>
-	<20081129105120.cfb8c035.akpm@linux-foundation.org>
-	<49319109.7030904@redhat.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com
+Subject: Re: [PATCH v2 2/2] relatime: Allow making relatime the default
+ behaviour
+Message-Id: <20081129123220.67fd1e6a.akpm@linux-foundation.org>
+In-Reply-To: <20081129190245.GA21502@srcf.ucam.org>
+References: <20081126195457.GA3541@srcf.ucam.org>
+	<20081126195824.GB3541@srcf.ucam.org>
+	<492DD035.5020705@oracle.com>
+	<20081127150126.GA20941@srcf.ucam.org>
+	<20081127150341.GB20941@srcf.ucam.org>
+	<20081127170345.GA14991@infradead.org>
+	<20081129002419.abfd2504.akpm@linux-foundation.org>
+	<20081129130308.GX25548@parisc-linux.org>
+	<20081129135742.GC11959@logfs.org>
+	<20081129185645.GA20194@shareable.org>
+	<20081129190245.GA21502@srcf.ucam.org>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,45 +41,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Nov 2008 13:59:21 -0500 Rik van Riel <riel@redhat.com> wrote:
+On Sat, 29 Nov 2008 19:02:45 +0000 Matthew Garrett <mjg@redhat.com> wrote:
 
-> Andrew Morton wrote:
-> > On Sat, 29 Nov 2008 13:41:34 -0500 Rik van Riel <riel@redhat.com> wrote:
-> > 
-> >> Andrew Morton wrote:
-> >>> On Sat, 29 Nov 2008 12:58:32 -0500 Rik van Riel <riel@redhat.com> wrote:
-> >>>
-> >>>>> Will this new patch reintroduce the problem which
-> >>>>> 26e4931632352e3c95a61edac22d12ebb72038fe fixed?
-> >> No, that problem is already taken care of by the fact that
-> >> active pages always get deactivated in the current VM,
-> >> regardless of whether or not they were referenced.
-> > 
-> > err, sorry, that was the wrong commit. 
-> > 26e4931632352e3c95a61edac22d12ebb72038fe _introduced_ the problem, as
-> > predicted in the changelog.
-> > 
-> > 265b2b8cac1774f5f30c88e0ab8d0bcf794ef7b3 later fixed it up.
+> On Sat, Nov 29, 2008 at 06:56:45PM +0000, Jamie Lokier wrote:
 > 
-> The patch I sent in this thread does not do any baling out,
-> it only skips zones where the number of free pages is more
-> than 4 times zone->pages_high.
-
-But that will have the same effect as baling out.  Moreso, in fact.
-
-> Equal pressure is still applied to the other zones.
+> > I don't see why there is an objection to per-mountpoint.
+> > Andrew Morton's syntax: mount /dev/foo /mnt/bar -o relatime=86400
+> > looks natural to me.
 > 
-> This should not be a problem since we do not enter direct
-> reclaim unless the free pages in every zone in our zonelist
-> are below zone->pages_low.
-> 
-> Zone skipping is only done by tasks that have been in the
-> direct reclaim code for a long time.
+> If somebody feels that this functionality would be useful, they're 
+> welcome to write it.
 
->From 265b2b8cac1774f5f30c88e0ab8d0bcf794ef7b3:
+If someone writes it, I'll merge it.
 
-    We currently have a problem with the balancing of reclaim
-    between zones: much more reclaim happens against highmem than
-    against lowmem.
+> A global default doesn't preclude per-mountpoint 
+> settings. This patch makes the existing kernel code more useful and so 
+> is worthwhile on its own, even if it doesn't scratch everyone's itch.
 
-This problem will be reintroduced, will it not?
+The standard, usual, expected way of modifying a filesystem's behaviour
+is via mount options.  This is also quite flexible.
+
+Is there some extraordinary reason why the standard interface is not to
+be used here?
