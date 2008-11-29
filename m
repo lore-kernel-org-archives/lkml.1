@@ -1,161 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYK2Pjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYK2Pvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbYK2Pjz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 10:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYK2Pjs
+	id S1755215AbYK2Pvm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 10:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYK2Pvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 10:39:48 -0500
-Received: from cmpxchg.org ([85.214.51.133]:50204 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500AbYK2Pjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 10:39:47 -0500
-Date: Sat, 29 Nov 2008 16:39:04 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
-Subject: Re: [rfc] vmscan: serialize aggressive reclaimers
-Message-ID: <20081129153902.GA1944@cmpxchg.org>
-References: <20081124145057.4211bd46@bree.surriel.com> <20081127173610.GA1781@cmpxchg.org> <20081129164322.8131.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 29 Nov 2008 10:51:32 -0500
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:28053 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbYK2Pvb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 10:51:31 -0500
+Date: Sat, 29 Nov 2008 16:45:16 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>, lguest@ozlabs.org,
+       jeremy@xensource.com, LKML <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Lguest] [PATCH RFC/RFB] x86_64,	i386: interrupt dispatch changes
+Message-ID: <20081129154516.GA26579@mailshack.com>
+References: <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <49178E89.2000307@zytor.com> <492DC13F.8020009@redhat.com> <492DE3EF.8060507@zytor.com> <492E72D7.9060201@redhat.com> <20081128204809.GA17920@mailshack.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="6c2NcOVqGQ03X4Wi"
 Content-Disposition: inline
-In-Reply-To: <20081129164322.8131.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081128204809.GA17920@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sat, 29 Nov 2008 16:47:43 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.36; VDF: 7.1.0.157; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 29, 2008 at 04:46:24PM +0900, KOSAKI Motohiro wrote:
-> > Since we have to pull through a reclaim cycle once we commited to it,
-> > what do you think about serializing the lower priority levels
-> > completely?
+
+--6c2NcOVqGQ03X4Wi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Fri, Nov 28, 2008 at 09:48:10PM +0100, Alexander van Heukelum wrote:
+> On Thu, Nov 27, 2008 at 12:13:43PM +0200, Avi Kivity wrote:
+> > H. Peter Anvin wrote:
+> > >
+> > >>I suspect we could get it down to three bytes, by sharing the last 
+> > >>byte of the four-byte call sequence with the first byte of the next:
+> > >>
+> > >> 66 e8 ff 66 e8 fc 66 e8 f9 66 e8 f6 ...
+> > >>
+> > >>Every three bytes a new stub begins; it's a four-byte call to offset 
+> > >>0x6703 relative to the beginning of the first stub.
+> > >>
+> > >>Can anyone better 24 bits/stub?
+> > >
+> > >On the entirely silly level...
+> > >
+> > >CC xx
 > > 
-> > The idea is that when one reclaimer has done a low priority level
-> > iteration with a huge reclaim target, chances are that succeeding
-> > reclaimers don't even need to drop to lower levels at all because
-> > enough memory has already been freed.
-> > 
-> > My testprogram maps and faults in a file that is about as large as my
-> > physical memory.  Then it spawns off n processes that try allocate
-> > 1/2n of total memory in anon pages, i.e. half of it in sum.  After it
-> > ran, I check how much memory has been reclaimed.  But my zone sizes
-> > are too small to induce enormous reclaim targets so I don't see vast
-> > over-reclaims.
-> > 
-> > I have measured the time of other tests on an SMP machine with 4 cores
-> > and the following patch applied.  I couldn't see any performance
-> > degradation.  But since the bug is not triggerable here, I can not
-> > prove it helps the original problem, either.
+> > Nice.  Can actually go to zero, by pointing the IDT at (unmapped_area + 
+> > vector), and deducing the vector in the page fault handler from cr2.
 > 
-> I wonder why nobody of vmscan folks write actual performance improvement value
-> in patch description.
-
-That's why I made it RFC.  I haven't seriously tested it, I just
-wanted to know what people that understand more than I do think of the
-idea.
-
-> I think this patch point to right direction.
-> but, unfortunately, this implementation isn't fast as I mesured as.
-
-Fair enough.
-
-> > The level where it starts serializing is chosen pretty arbitrarily.
-> > Suggestions welcome :)
-> > 
-> > 	Hannes
-> > 
-> > ---
-> > 
-> > Prevent over-reclaiming by serializing direct reclaimers below a
-> > certain priority level.
-> > 
-> > Over-reclaiming happens when the sum of the reclaim targets of all
-> > reclaiming processes is larger than the sum of the needed free pages,
-> > thus leading to excessive eviction of more cache and anonymous pages
-> > than required.
-> > 
-> > A scan iteration over all zones can not be aborted intermittently when
-> > enough pages are reclaimed because that would mess up the scan balance
-> > between the zones.  Instead, prevent that too many processes
-> > simultaneously commit themselves to lower priority level scans in the
-> > first place.
-> > 
-> > Chances are that after the exclusive reclaimer has finished, enough
-> > memory has been freed that succeeding scanners don't need to drop to
-> > lower priority levels at all anymore.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> > ---
-> >  mm/vmscan.c |   20 ++++++++++++++++++++
-> >  1 file changed, 20 insertions(+)
-> > 
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -35,6 +35,7 @@
-> >  #include <linux/notifier.h>
-> >  #include <linux/rwsem.h>
-> >  #include <linux/delay.h>
-> > +#include <linux/wait.h>
-> >  #include <linux/kthread.h>
-> >  #include <linux/freezer.h>
-> >  #include <linux/memcontrol.h>
-> > @@ -42,6 +43,7 @@
-> >  #include <linux/sysctl.h>
-> >  
-> >  #include <asm/tlbflush.h>
-> > +#include <asm/atomic.h>
-> >  #include <asm/div64.h>
-> >  
-> >  #include <linux/swapops.h>
-> > @@ -1546,10 +1548,15 @@ static unsigned long shrink_zones(int pr
-> >   * returns:	0, if no pages reclaimed
-> >   * 		else, the number of pages reclaimed
-> >   */
-> > +
-> > +static DECLARE_WAIT_QUEUE_HEAD(reclaim_wait);
-> > +static atomic_t reclaim_exclusive = ATOMIC_INIT(0);
-> > +
-> >  static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
-> >  					struct scan_control *sc)
-> >  {
-> >  	int priority;
-> > +	int exclusive = 0;
-> >  	unsigned long ret = 0;
-> >  	unsigned long total_scanned = 0;
-> >  	unsigned long nr_reclaimed = 0;
-> > @@ -1580,6 +1587,14 @@ static unsigned long do_try_to_free_page
-> >  		sc->nr_scanned = 0;
-> >  		if (!priority)
-> >  			disable_swap_token();
-> > +		/*
-> > +		 * Serialize aggressive reclaimers
-> > +		 */
-> > +		if (priority <= DEF_PRIORITY / 2 && !exclusive) {
+> Hi all,
 > 
-> On large machine, DEF_PRIORITY / 2 is really catastrophe situation.
-> 2^6 = 64. 
-> if zone has 64GB memory, it mean 1GB reclaim.
-> I think more early restriction is better.
-
-I am just afraid that it kills parallelity.
-
-> > +			wait_event(reclaim_wait,
-> > +				!atomic_cmpxchg(&reclaim_exclusive, 0, 1));
-> > +			exclusive = 1;
-> > +		}
+> We started the discussion with doing away with the whole jump
+> array entirely, by changing the value of the CS index in the
+> IDT. This needs the GDT to be extended with 256 entries, but an
+> entire page (space for 512 entries) was already reserved anyhow!
+> I think there is still some problem with the patch I sent due to
+> some code depending on certain values of the CS index, but the
+> system I've benchmarked on seemed to behave.
 > 
-> if you want to restrict to one task, you can use mutex.
-> and this wait_queue should put on global variable. it should be zone variable.
-
-Hm, global or per-zone?  Rik suggested to do it per-node and I like
-that idea.
-
-> In addision, you don't consider recursive relaim and several task can't sleep there.
+> I did a set of benchmarks on an 8-way Xeon in 64-bit mode. The
+> system was loaded with an instance of bonnie++ pinned to processor
+> 0, and all 8 processors were running a program doing (almost)
+> adjacent rdtsc's. Bonnie++ causes interrupts and the latencies
+> due to these show up as larger time intervals. Complete runs of
+> bonnie++ in fast mode were sampled this way for a current -rc6
+> kernel and an -rc6 kernel plus my patch. The total sampling time
+> was 30 minutes for each run. Per kernel I did one run as a warm-up
+> and another two runs to measure the latencies. The results for
+> measured latencies between 5 and 1000 microseconds are shown in
+> the attached graph. Above 1000 microseconds there is only one big
+> contribution: at 40000 microseconds ;). The surface below the graph
+> is a measure of time.
 > 
+> Observations (for this test load!):
 > 
-> please believe me. I have richest experience about reclaim throttling in the planet.
+> Near 200, 250 and 350 microseconds, the peaks shift to longer
+> latencies for the cs-changing code by about 10 microseconds,
+> but the total time spent is pretty much constant.
+> 
+> The highest latencies for the cs-changing code are near 600
+> and 650 microseconds. The highest latencies for the current
+> code are near 800 and 850 microseconds.
+> 
+> The total surface of the graphs between 5 and 1000 microseconds
+> is within an error estimate of 1% equal for both cases, and is
+> about 0.69% of the total time.
+> 
+> Most time is spent measuring 'latencies' of less than 5 micro-
+> seconds, since bonnie++ is taking only about 5% cpu time on a
+> single cpu most of the time, and only up to 50% on a single cpu
+> during a short time in the file creation benchmark.
 
-Hehe, okay.  Than I am glad you don't hate the idea completely.  Do
-you have any patches flying around that do something similar?
+I now did the benchmarks for the same -rc6 with hpa's 4-byte stubs
+too. Same machine. It's significantly better than the other two
+options in terms of speed. It takes about 7% less cpu to handle
+the interrupts. (0.64% cpu instead of 0.69%.) I have to run now,
+I'll let interpreting the histogram to someone else ;).
 
-	Hannes
+Greetings,
+	Alexander
+
+
+
+--6c2NcOVqGQ03X4Wi
+Content-Type: image/png
+Content-Disposition: attachment; filename="load.png"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAABAAAAAMACAMAAACNZOU/AAABLFBMVEX//////8D//4D//wD/
+wMD/oHD/oGD/oED/gEDAwACAgACAYP+AYMCAQICAQCCAICCAIACgIP+gICDAAMDAAACg/yCg
+4OCA4OD/oAD/gAAA/wD/YGDAwKD/gKD/AP//AADA/8DAwMDAoAD/gID/gGCAwP//QED/QADA
+gGDAgADAYMCAwODAYAAAgIDAICCg0OCgoKCAgIAggCCAgEBggIBggGBggCAgQIAgQEAgICBg
+YGBgIICAAICAAABgwKBgwABgoMBAwIDjsMAAYAAAAP8AAMCAYICAYGCAYBAAAIBAgABAQECA
+YAAwYIBA/4AAgADAYIAAYIAAwMAAwGD/gP+AQACggP8AgED/wCAgIMDu7gDAQAAA7u7AAP8A
+gP8AwAD/AACgoKAAAAD///+VuBHlAAAAAXRSTlMAQObYZgAAIABJREFUeJztnVliqzoQBd9G
+kUm0/z28azNJIDBgnNahqz6SeILDoDItBPkvAoBb/rMOAAB2IAAAxyAAAMcgAADHIAAAxyAA
+AMcgAADHIAAAxyAAAMcgAADHHBRAeNJ+JwoA/DVHBdA0DQIAuAuHBfALAJJcIwDtI4DiStCB
++JbcMT4CkIL4ltwxPgKQgviW3DE+ApCC+JbcMT4CkIL4ltwxPgKQgviW3DE+ApCC+JbcMb43
+AQB4BQEAOAYB/OPHOsBnEN8S8/hrw/l2frr0JAKQgviWWMd/tv7BAO0+so+XpulNAABCDEP4
+u1/p1z8CALgv/dU7fbMff00lAAIAuC+JAGJMf1ECfIZ1GfchxLfk7+OvC+DMxEpPIgApiG+J
+qQCmSuD0xEpPehMAgBBDc8/6Ak9PrPQkAgDwAQIAcAwCiFShthDfEgQQ5bch8S0Rj48AAByD
+AACk4SwAgF8YB/A54mUc8S2xGAi0djFQfOwhn1hpDghACuJb8ofx314MhAAA7svbi4HOTLP0
+JAIAqBYEsEnTNNYRAL4IFwNtckIAVKGWEP8gXAy0CQIQg/iWIAAAxyAAAMcgAADHIIAoX8YR
+3xK7TsBrJlZ6Ul0Aj/fvymAXtIT478l6+hHAJk8BVBMG4ALGc/3TjyJhH9mkS9PRF0A1aQDO
+sHLBz/jc7/wtLxBARAAgzdYFP8XXug91H0YA8ZQAqEItIX7K1gU/ZQEklwMigIgA5CB+gZUL
+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
+gGP+B8nrU1Mpnq5qAAAAAElFTkSuQmCC
+
+--6c2NcOVqGQ03X4Wi--
