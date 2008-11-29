@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYK2Q0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbYK2QbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbYK2Q0R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 11:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYK2Q0G
+	id S1755780AbYK2QbZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 11:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYK2QbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 11:26:06 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:22835 "EHLO
+	Sat, 29 Nov 2008 11:31:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:23497 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbYK2Q0F (ORCPT
+	with ESMTP id S1751564AbYK2QbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 11:26:05 -0500
+	Sat, 29 Nov 2008 11:31:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=wLo6FFl8FAg6dA+2COenLaOOAAQ5kYBS+58js+W79OSkKqH8zTriMd/NpIw+CyvZ8/
-         ieLpVvsKyFx01BT8jxhuVCxdvgJvtniFYf59xqudSbuFGDUvVr/40zBgZvCPvHc+y687
-         ouVDTSnIGZ+q4bhMzQfwni+u/iHHOk0MgRy7c=
-Message-ID: <49316D15.4070703@gmail.com>
-Date: Sat, 29 Nov 2008 11:25:57 -0500
+        b=vl8+ZNO2LYk0RQo4/50elE0kjVXOhRCUQgp5w0DFwNLuwvajBphC6RiW5klvPeb37z
+         f0oDsRShUSACMYw10+Nkbc8GNdVUQdxYMR959d2E5opAWlQrERJQugzSNsyJx14yNorm
+         08UdfokkjIIU5xH3aA33/jdGiodo5ccJ4lvQM=
+Message-ID: <49316E4C.7070808@gmail.com>
+Date: Sat, 29 Nov 2008 11:31:08 -0500
 From: roel kluin <roel.kluin@gmail.com>
 User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ROMFS: romfs_iget() - unsigned ino >= 0 is always true
+To: James.Bottomley@HansenPartnership.com
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [SCSI] libsas: fix test for negative unsigned and typos
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-romfs_strnlen() returns int
-unsigned X >= 0 is always true
+unsigned req->data_len cannot be negative, and fix typo
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-for romfs_strnlen(), see
-vi fs/romfs/inode.c +200
+I am not sure whether this is what was intended, please review.
 
-diff --git a/fs/romfs/inode.c b/fs/romfs/inode.c
-index 60d2f82..28b180b 100644
---- a/fs/romfs/inode.c
-+++ b/fs/romfs/inode.c
-@@ -490,7 +490,7 @@ static mode_t romfs_modemap[] =
- static struct inode *
- romfs_iget(struct super_block *sb, unsigned long ino)
- {
--	int nextfh;
-+	int nextfh, ret;
- 	struct romfs_inode ri;
- 	struct inode *i;
+diff --git a/drivers/scsi/libsas/sas_host_smp.c b/drivers/scsi/libsas/sas_host_smp.c
+index 16f9312..6eb0779 100644
+--- a/drivers/scsi/libsas/sas_host_smp.c
++++ b/drivers/scsi/libsas/sas_host_smp.c
+@@ -199,12 +199,12 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
+ 		break;
  
-@@ -527,9 +527,9 @@ romfs_iget(struct super_block *sb, unsigned long ino)
- 	i->i_uid = i->i_gid = 0;
+ 	case SMP_DISCOVER:
+-		req->data_len =- 16;
+-		if (req->data_len < 0) {
++		if (req->data_len < 15) {
+ 			req->data_len = 0;
+ 			error = -EINVAL;
+ 			goto out;
+ 		}
++		req->data_len -= 16;
+ 		resp_data_len -= 56;
+ 		sas_host_smp_discover(sas_ha, resp_data, req_data[9]);
+ 		break;
+@@ -215,12 +215,12 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
+ 		break;
  
-         /* Precalculate the data offset */
--        ino = romfs_strnlen(i, ino+ROMFH_SIZE, ROMFS_MAXFN);
--        if (ino >= 0)
--                ino = ((ROMFH_SIZE+ino+1+ROMFH_PAD)&ROMFH_MASK);
-+        ret = romfs_strnlen(i, ino+ROMFH_SIZE, ROMFS_MAXFN);
-+        if (ret >= 0)
-+                ino = ((ROMFH_SIZE+ret+1+ROMFH_PAD)&ROMFH_MASK);
-         else
-                 ino = 0;
+ 	case SMP_REPORT_PHY_SATA:
+-		req->data_len =- 16;
+-		if (req->data_len < 0) {
++		if (req->data_len < 15) {
+ 			req->data_len = 0;
+ 			error = -EINVAL;
+ 			goto out;
+ 		}
++		req->data_len -= 16;
+ 		resp_data_len -= 60;
+ 		sas_report_phy_sata(sas_ha, resp_data, req_data[9]);
+ 		break;
+@@ -238,12 +238,12 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
+ 		break;
  
+ 	case SMP_PHY_CONTROL:
+-		req->data_len =- 44;
+-		if (req->data_len < 0) {
++		if (req->data_len < 43) {
+ 			req->data_len = 0;
+ 			error = -EINVAL;
+ 			goto out;
+ 		}
++		req->data_len -= 44;
+ 		resp_data_len -= 8;
+ 		sas_phy_control(sas_ha, req_data[9], req_data[10],
+ 				req_data[32] >> 4, req_data[33] >> 4,
+
 
