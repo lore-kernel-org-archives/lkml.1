@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYK2Ne0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYK2N4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755466AbYK2Ne0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 08:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYK2NeR
+	id S1753900AbYK2N4V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 08:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYK2N4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 08:34:17 -0500
-Received: from elvis.franken.de ([193.175.24.41]:56751 "EHLO elvis.franken.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbYK2NeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 08:34:16 -0500
-X-Greylist: delayed 2860 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Nov 2008 08:34:16 EST
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Subject: [PATCH v3] Fix dma_mapping_error for 32bit x86
-To: linux-kernel@vger.kernel.org
-Message-Id: <20081129124627.F2ABDFA8C8@solo.franken.de>
-Date: Sat, 29 Nov 2008 13:46:27 +0100 (CET)
+	Sat, 29 Nov 2008 08:56:07 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51279 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbYK2N4G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 08:56:06 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 29 Nov 2008 14:55:47 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee1394: sbp2: fix race condition in state change
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.b365b7fbc771f9d0@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Devices like b44 ethernet can't dma from addresses above 1GB. The driver
-handles this cases by falling back to GFP_DMA allocation. But for detecting
-the problem it needs to get an indication from dma_mapping_error.
-The bug is triggered by using a VMSPLIT option of 2G/2G.
+An intermediate transition from _RUNNING to _IN_SHUTDOWN could have been
+missed by the former code.
 
-Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
+ drivers/ieee1394/sbp2.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-
-diff -ru orig/linux-2.6.27.4/include/asm-x86/dma-mapping.h linux-2.6.27.4/include/asm-x86/dma-mapping.h
---- orig/linux-2.6.27.4/include/asm-x86/dma-mapping.h	2008-10-26 00:05:07.000000000 +0200
-+++ linux-2.6.27.4/include/asm-x86/dma-mapping.h	2008-10-26 11:06:14.000000000 +0100
-@@ -74,15 +74,13 @@
- /* Make sure we keep the same behaviour */
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
--#ifdef CONFIG_X86_32
--	return 0;
--#else
-+#ifdef CONFIG_X86_64
- 	struct dma_mapping_ops *ops = get_dma_ops(dev);
- 	if (ops->mapping_error)
- 		return ops->mapping_error(dev, dma_addr);
+Index: linux/drivers/ieee1394/sbp2.c
+===================================================================
+--- linux.orig/drivers/ieee1394/sbp2.c
++++ linux/drivers/ieee1394/sbp2.c
+@@ -895,12 +895,13 @@ static void sbp2_host_reset(struct hpsb_
+ 		return;
  
--	return (dma_addr == bad_dma_address);
- #endif
-+	return (dma_addr == bad_dma_address);
+ 	read_lock_irqsave(&sbp2_hi_logical_units_lock, flags);
++
+ 	list_for_each_entry(lu, &hi->logical_units, lu_list)
+-		if (likely(atomic_read(&lu->state) !=
+-			   SBP2LU_STATE_IN_SHUTDOWN)) {
+-			atomic_set(&lu->state, SBP2LU_STATE_IN_RESET);
++		if (atomic_cmpxchg(&lu->state,
++				   SBP2LU_STATE_RUNNING, SBP2LU_STATE_IN_RESET)
++		    == SBP2LU_STATE_RUNNING)
+ 			scsi_block_requests(lu->shost);
+-		}
++
+ 	read_unlock_irqrestore(&sbp2_hi_logical_units_lock, flags);
  }
  
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+
+-- 
+Stefan Richter
+-=====-==--- =-== ===-=
+http://arcgraph.de/sr/
+
