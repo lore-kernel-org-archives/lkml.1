@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYK2Kj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYK2Knb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbYK2Kj3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 05:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYK2KjQ
+	id S1755941AbYK2Knb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 05:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYK2KnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 05:39:16 -0500
-Received: from lazybastard.de ([212.112.238.170]:60782 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbYK2KjP (ORCPT
+	Sat, 29 Nov 2008 05:43:21 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41331 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751146AbYK2KnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 05:39:15 -0500
-Date: Sat, 29 Nov 2008 11:38:36 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
-	<kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH v2 4/5] fs: Introduce SINGLE dentries for pipes, socket, anon fd
-Message-ID: <20081129103836.GA11959@logfs.org>
-References: <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100E7.3030907@cosmosbay.com>
+	Sat, 29 Nov 2008 05:43:21 -0500
+Subject: [PATCH 00/15] Kernel memory leak detector
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 29 Nov 2008 10:43:06 +0000
+Message-ID: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.14.3.288.gdd3f
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <493100E7.3030907@cosmosbay.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Nov 2008 10:43:06.0862 (UTC) FILETIME=[439560E0:01C9520F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 November 2008 09:44:23 +0100, Eric Dumazet wrote:
->
-> +struct dentry *d_alloc_single(const struct qstr *name, struct inode *inode)
-> +{
-> +	struct dentry *entry;
-> +
-> +	entry = d_alloc(NULL, name);
-> +	if (entry) {
-> +		entry->d_sb = inode->i_sb;
-> +		entry->d_parent = entry;
-> +		entry->d_flags |= DCACHE_SINGLE | DCACHE_DISCONNECTED;
-> +		entry->d_inode = inode;
-> +		fsnotify_d_instantiate(entry, inode);
-> +		security_d_instantiate(entry, inode);
-> +	}
-> +	return entry;
+Here's a new version of the kernel memory leak detector. Kmemleak can
+also be found in a branch on this git tree:
 
-Calling the struct dentry entry had me onfused a bit.  I believe
-everyone else (including the code you removed) uses dentry.
+git://linux-arm.org/linux-2.6.git kmemleak
 
-> @@ -918,7 +906,7 @@ struct file *create_write_pipe(int flags)
->  	struct inode *inode;
->  	struct file *f;
->  	struct dentry *dentry;
-> -	struct qstr name = { .name = "" };
-> +	static const struct qstr name = { .name = "" };
->  
->  	err = -ENFILE;
->  	inode = get_pipe_inode();
-...
-> @@ -371,20 +358,13 @@ static int sock_alloc_fd(struct file **filep, int flags)
->  static int sock_attach_fd(struct socket *sock, struct file *file, int flags)
->  {
->  	struct dentry *dentry;
-> -	struct qstr name = { .name = "" };
-> +	static const struct qstr name = { .name = "" };
+Changes since the previous release:
 
-These two could even be combined.
+- kmemleak uses the default allocator (slab, slob or slub) instead of
+  its own (which was removed), making the code simpler
+- automatic scanning via a kernel thread every 10 min. The first scan
+  starts 1 min after booting up. This thread prints possible memory
+  leaks the first time they are encountered. Reading the
+  /sys/kernel/debug/memleak file is still available to manually trigger
+  a scan and show all the possible memory leaks
+- scanning interruption via signals is now possible for manual scans
+- implemented the comments received so far
 
-And of course I realize that I comment on absolute trivialities.  On the
-whole, I couldn't spot a real problem in your patches.
+Still to do:
 
-Jörn
+- run-time and boot-time configuration like task stacks scanning,
+  disabling kmemleak, enabling/disabling the automatic scanning
+
+Thanks for your comments.
+
+
+Catalin Marinas (15):
+      kmemleak: Add the corresponding MAINTAINERS entry
+      kmemleak: Simple testing module for kmemleak
+      kmemleak: Keep the __init functions after initialization
+      kmemleak: Enable the building of the memory leak detector
+      kmemleak: Remove some of the kmemleak false positives
+      arm: Provide _sdata and __bss_stop in the vmlinux.lds.S file
+      x86: Provide _sdata in the vmlinux_*.lds.S files
+      kmemleak: Add modules support
+      kmemleak: Add memleak_alloc callback from alloc_large_system_hash
+      kmemleak: Add the vmalloc memory allocation/freeing hooks
+      kmemleak: Add the slub memory allocation/freeing hooks
+      kmemleak: Add the slob memory allocation/freeing hooks
+      kmemleak: Add the slab memory allocation/freeing hooks
+      kmemleak: Add documentation on the memory leak detector
+      kmemleak: Add the base support
+
+
+ Documentation/kmemleak.txt       |  124 +++++
+ MAINTAINERS                      |    6 
+ arch/arm/kernel/vmlinux.lds.S    |    2 
+ arch/x86/kernel/vmlinux_32.lds.S |    1 
+ arch/x86/kernel/vmlinux_64.lds.S |    1 
+ drivers/char/vt.c                |    7 
+ include/linux/init.h             |    6 
+ include/linux/memleak.h          |   87 +++
+ include/linux/percpu.h           |    5 
+ include/linux/slab.h             |    2 
+ init/main.c                      |    4 
+ kernel/module.c                  |   55 ++
+ lib/Kconfig.debug                |   46 ++
+ mm/Makefile                      |    2 
+ mm/memleak-test.c                |  109 ++++
+ mm/memleak.c                     | 1019 ++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c                  |    3 
+ mm/slab.c                        |   16 +
+ mm/slob.c                        |   15 -
+ mm/slub.c                        |    5 
+ mm/vmalloc.c                     |   29 +
+ 21 files changed, 1533 insertions(+), 11 deletions(-)
+ create mode 100644 Documentation/kmemleak.txt
+ create mode 100644 include/linux/memleak.h
+ create mode 100644 mm/memleak-test.c
+ create mode 100644 mm/memleak.c
 
 -- 
-Public Domain  - Free as in Beer
-General Public - Free as in Speech
-BSD License    - Free as in Enterprise
-Shared Source  - Free as in "Work will make you..."
+Catalin
