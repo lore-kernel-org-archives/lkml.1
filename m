@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYK2Bh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYK2DNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbYK2Bh1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Nov 2008 20:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYK2BhO
+	id S1754099AbYK2DNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Nov 2008 22:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYK2DMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Nov 2008 20:37:14 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34941 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753151AbYK2BhN (ORCPT
+	Fri, 28 Nov 2008 22:12:52 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:24541 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbYK2DMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Nov 2008 20:37:13 -0500
-Date: Sat, 29 Nov 2008 01:37:12 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] usb/serial: Add compat_ioctl pass-through
-Message-ID: <20081129013712.5902e35e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081128172300.0e30229e@infradead.org>
-References: <200811281642.52637.arnd@arndb.de>
-	<1227911282-8857-1-git-send-email-keithp@keithp.com>
-	<20081128223305.2d11f8d9@lxorguk.ukuu.org.uk>
-	<1227920556.4277.128.camel@aiko.keithp.com>
-	<20081129011057.14840d20@lxorguk.ukuu.org.uk>
-	<20081128172300.0e30229e@infradead.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Nov 2008 22:12:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=kF787jgTmeZw/ft0IBbizLXrPfimZlkQjR2pdtZas1kVoXTW5kRhJj6vIQkzjLlnrD
+         kgxp2DS880mBi2ZFQIAsWZkAGpOfghJXeW/ny8JEl2+TX34vTvJPimqpgytNzhmYFVHm
+         8eFfg43fPrqxKcFrF050pyrWGylQvggdSYuTg=
+Message-ID: <4930B32E.6060403@gmail.com>
+Date: Sat, 29 Nov 2008 04:12:46 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing/branch-tracer: include missing irqflags.h
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> it's a double BKL since it's also using .ioctl not .unlocked_ioctl
-> (but then again we should just over time merge the two into a .ioctl
-> which is unlocked ;-)
+Impact: fix build error on branch tracer
 
-tty_ioctl is an unlocked_ioctl method and that is what calls the ioctl
-method of tty drivers.
+This should fix a build error reported on alpha in linux-next:
+
+ CC      kernel/trace/trace_branch.o
+kernel/trace/trace_branch.c: In function 'probe_likely_condition':
+kernel/trace/trace_branch.c:44: error: implicit declaration of function 'raw_local_irq_save'
+kernel/trace/trace_branch.c:76: error: implicit declaration of function 'raw_local_irq_restore'
+
+Unfortunately, I can't test it since I don't have any Alpha build environment.
+
+Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index 877ee88..bc97275 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -6,6 +6,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/seq_file.h>
+ #include <linux/spinlock.h>
++#include <linux/irqflags.h>
+ #include <linux/debugfs.h>
+ #include <linux/uaccess.h>
+ #include <linux/module.h>
