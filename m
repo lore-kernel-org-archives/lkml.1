@@ -1,64 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYK2Pi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYK2Pjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755136AbYK2Pi0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 10:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYK2PiN
+	id S1755922AbYK2Pjz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 10:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYK2Pjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 10:38:13 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:14470 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbYK2PiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 10:38:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=s8a5vGNE6PKyUQqJeKrEXuKxzksunhVQf+iSshat7IVsyyY4iDFRM+kM6Rx+QVnNE2
-         T9kG/zxccIZ1qznUwX94PhAtgWA4izTv1zvfHeUAJ5esXtnBiyrU/xVCxo4WgOzJKywz
-         upl0iEtPklJnzzWtbboErwOCcnsEaVUBm4ARc=
-Message-ID: <493161DE.6000703@gmail.com>
-Date: Sat, 29 Nov 2008 10:38:06 -0500
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] relay: When unsigned ret cannot store a negative value
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Nov 2008 10:39:48 -0500
+Received: from cmpxchg.org ([85.214.51.133]:50204 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751500AbYK2Pjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 10:39:47 -0500
+Date: Sat, 29 Nov 2008 16:39:04 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mel@csn.ul.ie, akpm@linux-foundation.org
+Subject: Re: [rfc] vmscan: serialize aggressive reclaimers
+Message-ID: <20081129153902.GA1944@cmpxchg.org>
+References: <20081124145057.4211bd46@bree.surriel.com> <20081127173610.GA1781@cmpxchg.org> <20081129164322.8131.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081129164322.8131.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When unsigned ret cannot store a negative value
+On Sat, Nov 29, 2008 at 04:46:24PM +0900, KOSAKI Motohiro wrote:
+> > Since we have to pull through a reclaim cycle once we commited to it,
+> > what do you think about serializing the lower priority levels
+> > completely?
+> > 
+> > The idea is that when one reclaimer has done a low priority level
+> > iteration with a huge reclaim target, chances are that succeeding
+> > reclaimers don't even need to drop to lower levels at all because
+> > enough memory has already been freed.
+> > 
+> > My testprogram maps and faults in a file that is about as large as my
+> > physical memory.  Then it spawns off n processes that try allocate
+> > 1/2n of total memory in anon pages, i.e. half of it in sum.  After it
+> > ran, I check how much memory has been reclaimed.  But my zone sizes
+> > are too small to induce enormous reclaim targets so I don't see vast
+> > over-reclaims.
+> > 
+> > I have measured the time of other tests on an SMP machine with 4 cores
+> > and the following patch applied.  I couldn't see any performance
+> > degradation.  But since the bug is not triggerable here, I can not
+> > prove it helps the original problem, either.
+> 
+> I wonder why nobody of vmscan folks write actual performance improvement value
+> in patch description.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-UNTESTED! is this the way to go?
+That's why I made it RFC.  I haven't seriously tested it, I just
+wanted to know what people that understand more than I do think of the
+idea.
 
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 32b0bef..c9d62e5 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1220,7 +1220,8 @@ static int subbuf_splice_actor(struct file *in,
- 			       unsigned int flags,
- 			       int *nonpad_ret)
- {
--	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-+	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages;
-+	ssize_t ret;
- 	struct rchan_buf *rbuf = in->private_data;
- 	unsigned int subbuf_size = rbuf->chan->subbuf_size;
- 	uint64_t pos = (uint64_t) *ppos;
-@@ -1289,7 +1290,8 @@ static int subbuf_splice_actor(struct file *in,
- 	if (!spd.nr_pages)
- 		return 0;
- 
--	ret = *nonpad_ret = splice_to_pipe(pipe, &spd);
-+	ret = splice_to_pipe(pipe, &spd);
-+	*nonpad_ret = ret;
- 	if (ret < 0 || ret < total_len)
- 		return ret;
- 
+> I think this patch point to right direction.
+> but, unfortunately, this implementation isn't fast as I mesured as.
 
+Fair enough.
 
+> > The level where it starts serializing is chosen pretty arbitrarily.
+> > Suggestions welcome :)
+> > 
+> > 	Hannes
+> > 
+> > ---
+> > 
+> > Prevent over-reclaiming by serializing direct reclaimers below a
+> > certain priority level.
+> > 
+> > Over-reclaiming happens when the sum of the reclaim targets of all
+> > reclaiming processes is larger than the sum of the needed free pages,
+> > thus leading to excessive eviction of more cache and anonymous pages
+> > than required.
+> > 
+> > A scan iteration over all zones can not be aborted intermittently when
+> > enough pages are reclaimed because that would mess up the scan balance
+> > between the zones.  Instead, prevent that too many processes
+> > simultaneously commit themselves to lower priority level scans in the
+> > first place.
+> > 
+> > Chances are that after the exclusive reclaimer has finished, enough
+> > memory has been freed that succeeding scanners don't need to drop to
+> > lower priority levels at all anymore.
+> > 
+> > Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> > ---
+> >  mm/vmscan.c |   20 ++++++++++++++++++++
+> >  1 file changed, 20 insertions(+)
+> > 
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -35,6 +35,7 @@
+> >  #include <linux/notifier.h>
+> >  #include <linux/rwsem.h>
+> >  #include <linux/delay.h>
+> > +#include <linux/wait.h>
+> >  #include <linux/kthread.h>
+> >  #include <linux/freezer.h>
+> >  #include <linux/memcontrol.h>
+> > @@ -42,6 +43,7 @@
+> >  #include <linux/sysctl.h>
+> >  
+> >  #include <asm/tlbflush.h>
+> > +#include <asm/atomic.h>
+> >  #include <asm/div64.h>
+> >  
+> >  #include <linux/swapops.h>
+> > @@ -1546,10 +1548,15 @@ static unsigned long shrink_zones(int pr
+> >   * returns:	0, if no pages reclaimed
+> >   * 		else, the number of pages reclaimed
+> >   */
+> > +
+> > +static DECLARE_WAIT_QUEUE_HEAD(reclaim_wait);
+> > +static atomic_t reclaim_exclusive = ATOMIC_INIT(0);
+> > +
+> >  static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
+> >  					struct scan_control *sc)
+> >  {
+> >  	int priority;
+> > +	int exclusive = 0;
+> >  	unsigned long ret = 0;
+> >  	unsigned long total_scanned = 0;
+> >  	unsigned long nr_reclaimed = 0;
+> > @@ -1580,6 +1587,14 @@ static unsigned long do_try_to_free_page
+> >  		sc->nr_scanned = 0;
+> >  		if (!priority)
+> >  			disable_swap_token();
+> > +		/*
+> > +		 * Serialize aggressive reclaimers
+> > +		 */
+> > +		if (priority <= DEF_PRIORITY / 2 && !exclusive) {
+> 
+> On large machine, DEF_PRIORITY / 2 is really catastrophe situation.
+> 2^6 = 64. 
+> if zone has 64GB memory, it mean 1GB reclaim.
+> I think more early restriction is better.
+
+I am just afraid that it kills parallelity.
+
+> > +			wait_event(reclaim_wait,
+> > +				!atomic_cmpxchg(&reclaim_exclusive, 0, 1));
+> > +			exclusive = 1;
+> > +		}
+> 
+> if you want to restrict to one task, you can use mutex.
+> and this wait_queue should put on global variable. it should be zone variable.
+
+Hm, global or per-zone?  Rik suggested to do it per-node and I like
+that idea.
+
+> In addision, you don't consider recursive relaim and several task can't sleep there.
+> 
+> 
+> please believe me. I have richest experience about reclaim throttling in the planet.
+
+Hehe, okay.  Than I am glad you don't hate the idea completely.  Do
+you have any patches flying around that do something similar?
+
+	Hannes
