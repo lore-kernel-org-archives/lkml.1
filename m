@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbYK2LPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbYK2LRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbYK2LPk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 06:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbYK2LPS
+	id S1756063AbYK2LRm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 06:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYK2LRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 06:15:18 -0500
-Received: from lazybastard.de ([212.112.238.170]:45719 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755996AbYK2LPP (ORCPT
+	Sat, 29 Nov 2008 06:17:34 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:18984 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbYK2LRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 06:15:15 -0500
-Date: Sat, 29 Nov 2008 12:14:53 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
-	<kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH v2 5/5] fs: new_inode_single() and iput_single()
-Message-ID: <20081129111452.GB11959@logfs.org>
-References: <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <49310115.8010306@cosmosbay.com>
+	Sat, 29 Nov 2008 06:17:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=upgiz1dfyDvElKLBkiacAKwlsMnuhaRyXZB9wMu0BTWeftXNeX0f2WiJwaHwSg1IVa
+         fz5abSn/c4mWvoAspLr6KgIVLSFFl+2Rj6cyijMcRN2Qm1cHkp0mGBjwgjgxMao8N7XM
+         xnKhbgSgCzB9YYvKZwgJ9goUXm+Utt3rWWz8c=
+Message-ID: <493124C7.9030704@gmail.com>
+Date: Sat, 29 Nov 2008 06:17:27 -0500
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49310115.8010306@cosmosbay.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: paulus@samba.org
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [POWERPC] smu_sat_get_sdb_partition() - unsigned len cannot
+ be negative
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 November 2008 09:45:09 +0100, Eric Dumazet wrote:
->  
-> +void iput_single(struct inode *inode)
-> +{
-> +	if (atomic_dec_and_test(&inode->i_count)) {
-> +		destroy_inode(inode);
-> +		percpu_counter_dec(&nr_inodes);
-> +	}
-> +}
+i2c_smbus_read_word_data() returns a s32, which may be negative
+but unsigned len cannot be negative.
 
-I wonder if it is possible to avoid the atomic_dec_and_test() here, at
-least in the common case, and combine it with the atomic_dec_and_test()
-of the dentry.  A quick look at fs/inode.c indicates that inode->i_count
-may never get changed for a SINGLE inode, except during creation or
-deletion.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+for i2c_smbus_read_word_data(), see
+vi drivers/i2c/i2c-core.c +1663
 
-It might be worth to
-- remove the conditional from iput_single() and measure that it makes a
-  difference,
-- poison SINGLE inodes with some value and
-- put a BUG_ON() in __iget() that checks for the poison value.
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
+index 7f2be4b..7847e98 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -87,11 +87,12 @@ struct smu_sdbp_header *smu_sat_get_sdb_partition(unsigned int sat_id, int id,
+ 		return NULL;
+ 	}
+ 
+-	len = i2c_smbus_read_word_data(&sat->i2c, 9);
+-	if (len < 0) {
++	err = i2c_smbus_read_word_data(&sat->i2c, 9);
++	if (err < 0) {
+ 		printk(KERN_ERR "smu_sat_get_sdb_part rd len error\n");
+ 		return NULL;
+ 	}
++	len = err;
+ 	if (len == 0) {
+ 		printk(KERN_ERR "smu_sat_get_sdb_part no partition %x\n", id);
+ 		return NULL;
 
-I _think_ the BUG_ON() is unnecessary, but at least my brain is not
-sufficient to convince me.  Can inotify somehow get a hold of a socket?
-Or dquot (how insane would that be?)
 
-Jörn
-
--- 
-Mac is for working,
-Linux is for Networking,
-Windows is for Solitaire!
--- stolen from dc
