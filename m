@@ -1,84 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYK2R6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbYK2SA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbYK2R6w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 12:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYK2R6o
+	id S1755644AbYK2SA3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 13:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYK2SAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 12:58:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51093 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbYK2R6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 12:58:43 -0500
-Message-ID: <493182C8.1080303@redhat.com>
-Date: Sat, 29 Nov 2008 12:58:32 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-References: <20081128060803.73cd59bd@bree.surriel.com>	<20081128231933.8daef193.akpm@linux-foundation.org>	<4931721D.7010001@redhat.com> <20081129094537.a224098a.akpm@linux-foundation.org>
-In-Reply-To: <20081129094537.a224098a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Nov 2008 13:00:20 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:35143 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194AbYK2SAU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 13:00:20 -0500
+Date: Sat, 29 Nov 2008 19:01:44 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Hitoshi Mitake <h.mitake@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-ID: <20081129180144.GA15533@uranus.ravnborg.org>
+References: <200811290056.mAT0uTuk028924@terminus.zytor.com> <20081129164736.0b5a71db.h.mitake@gmail.com> <20081129093858.GC26691@elte.hu> <20081129192610.716a2d57.h.mitake@gmail.com> <20081129105229.GA9643@uranus.ravnborg.org> <20081129222449.e341f028.h.mitake@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081129222449.e341f028.h.mitake@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 29 Nov 2008 11:47:25 -0500 Rik van Riel <riel@redhat.com> wrote:
+On Sat, Nov 29, 2008 at 10:24:49PM +0900, Hitoshi Mitake wrote:
+> On Sat, 29 Nov 2008 11:52:29 +0100
+> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
->> Andrew Morton wrote:
->>
->>>> Index: linux-2.6.28-rc5/mm/vmscan.c
->>>> ===================================================================
->>>> --- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-28 05:53:56.000000000 -0500
->>>> +++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-28 06:05:29.000000000 -0500
->>>> @@ -1510,6 +1510,9 @@ static unsigned long shrink_zones(int pr
->>>>  			if (zone_is_all_unreclaimable(zone) &&
->>>>  						priority != DEF_PRIORITY)
->>>>  				continue;	/* Let kswapd poll it */
->>>> +			if (zone_watermark_ok(zone, sc->order,
->>>> +					4*zone->pages_high, high_zoneidx, 0))
->>>> +				continue;	/* Lots free already */
->>>>  			sc->all_unreclaimable = 0;
->>>>  		} else {
->>>>  			/*
->>> We already tried this, or something very similar in effect, I think...
->> Yes, we have a check just like this in balance_pgdat().
->>
->> It's been there forever with no ill effect.
+> > > 
+> > > But this is old way. ARCH_HAS_READQ and ARCH_HAS_WRITEQ are new ways
+> > > to determine existence of readq/writeq. Drivers which use readq/writeq should
+> > > depend on these values in their Kconfig file.
+> > 
+> > If we look at arch/x86/Kconfig we see:
+> > ### Arch settings
+> > config X86
+> >         def_bool y
+> >         select HAVE_AOUT if X86_32
+> >         select HAVE_UNSTABLE_SCHED_CLOCK
+> >         select HAVE_IDE
+> >         select HAVE_OPROFILE
+> >         select HAVE_IOREMAP_PROT
+> >         select HAVE_KPROBES
+> >         select ARCH_WANT_OPTIONAL_GPIOLIB
+> > 	...
+> > 
+> > So the normal syntax here is "HAVE_XXX_XXX" - not ARCH_HAS_XXX_XXX
+> > 
+> > If you update your patch please use this syntax,
+> > and locate the select under X86 - not under the 32/64 entries.
 > 
-> This patch affects direct reclaim as well as kswapd.
-
-No, kswapd calls shrink_zone directly from balance_pgdat,
-it does not go through shrink_zones.
-
->>> commit 26e4931632352e3c95a61edac22d12ebb72038fe
->>> Author: akpm <akpm>
->>> Date:   Sun Sep 8 19:21:55 2002 +0000
->>>
->>>     [PATCH] refill the inactive list more quickly
->>>     
->>>     Fix a problem noticed by Ed Tomlinson: under shifting workloads the
->>>     shrink_zone() logic will refill the inactive load too slowly.
->>>     
->>>     Bale out of the zone scan when we've reclaimed enough pages.  Fixes a
->>>     rarely-occurring problem wherein refill_inactive_zone() ends up
->>>     shuffling 100,000 pages and generally goes silly.
->> This is not a bale out, this is a "skip zones that have way
->> too many free pages already".
+> Thanks for your notification. I didn't notice that syntax rule.
 > 
-> It is similar in effect.
+> > 
+> > But I do not see why adding these in the first place.
+> > 
 > 
-> Will this new patch reintroduce the problem which
-> 26e4931632352e3c95a61edac22d12ebb72038fe fixed?
+> Andrew Morton told that drivers which need readq/writeq should use ones of kernel,
+> and if architecture part of kernel does not provide readq/writeq, drivers should be disabled.
+> 
+> This is Andrew's mail:
+> http://marc.info/?l=linux-kernel&m=122625885124798&w=2
+> ===> Quote:
+> 
+> #ifdef readq
+> 
+> Is a suitable way of determining whether the architecture implements
+> readq and writeq.  It isn't pretty, but it will suffice.
+> 
+> A problem with it is that drivers will then do
+> 
+> #ifndef readq
+> <provide a local implementation here>
+> #endif
+> 
+> which rather sucks - we don't want lots of little private readq/writeq
+> implementations all over the tree.
+> 
+> Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
+> disable these drivers on the architectures which don't provide
+> readq/writeq support.
+> 
+> <====
+I see both rationales and you combine them in your patch - OK.
 
-Googling on 26e4931632352e3c95a61edac22d12ebb72038fe only finds
-your emails with that commit id in it - which git tree do I
-need to search to get that changeset?
+And the reason why you cannot just add this to
+include/linux/io.h is that not all architectures
+provide a readl()/writel() I assume.
 
--- 
-All rights reversed.
+Feel free to add my Acked-by: to the patch.
+
+	Sam
