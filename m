@@ -1,213 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYK2HYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYK2HZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbYK2HYu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 02:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYK2HYm
+	id S1755099AbYK2HZR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 02:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYK2HY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 02:24:42 -0500
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:47024 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYK2HYl convert rfc822-to-8bit (ORCPT
+	Sat, 29 Nov 2008 02:24:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46959 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750989AbYK2HY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 02:24:41 -0500
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: xfs@oss.sgi.com
-Subject: hangs with MTRR_SANITIZER? (was: Re: truncated files)
-Date: Sat, 29 Nov 2008 08:24:37 +0100
-User-Agent: KMail/1.9.9
-References: <200811252244.14718.Martin@Lichtvoll.de> <200811282302.42809.Martin@lichtvoll.de> <200811282339.24197.Martin@lichtvoll.de> (sfid-20081129_074736_759214_8BA75EA5)
-In-Reply-To: <200811282339.24197.Martin@lichtvoll.de>
-Cc: tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200811290824.38750.Martin@lichtvoll.de>
+	Sat, 29 Nov 2008 02:24:56 -0500
+Date: Fri, 28 Nov 2008 23:24:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] vmscan: bail out of direct reclaim after
+ swap_cluster_max pages
+Message-Id: <20081128232436.f9b92685.akpm@linux-foundation.org>
+In-Reply-To: <20081128062358.7a2e091f@bree.surriel.com>
+References: <20081128062358.7a2e091f@bree.surriel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 28 Nov 2008 06:23:58 -0500 Rik van Riel <riel@redhat.com> wrote:
 
-Hi!
+> When the VM is under pressure, it can happen that several direct reclaim
+> processes are in the pageout code simultaneously.  It also happens that
+> the reclaiming processes run into mostly referenced, mapped and dirty
+> pages in the first round.
+> 
+> This results in multiple direct reclaim processes having a lower
+> pageout priority, which corresponds to a higher target of pages to
+> scan.
+> 
+> This in turn can result in each direct reclaim process freeing
+> many pages.  Together, they can end up freeing way too many pages.
+> 
+> This kicks useful data out of memory (in some cases more than half
+> of all memory is swapped out).  It also impacts performance by
+> keeping tasks stuck in the pageout code for too long.
+> 
+> A 30% improvement in hackbench has been observed with this patch.
+> 
+> The fix is relatively simple: in shrink_zone() we can check how many
+> pages we have already freed, direct reclaim tasks break out of the
+> scanning loop if they have already freed enough pages and have reached
+> a lower priority level.
+> 
+> We do not break out of shrink_zone() when priority == DEF_PRIORITY,
+> to ensure that equal pressure is applied to every zone in the common
+> case.
+> 
+> However, in order to do this we do need to know how many pages we already
+> freed, so move nr_reclaimed into scan_control.
+> 
 
-CC'd to linux-kernel mailinglist, as that might be something that goes 
-beyond any possible TuxOnIce or XFS issues. I know I am using TuxOnIce 
-which is not part of the mainline kernel. And I am even using an 
-inofficial patch - which I will use again unchanged for the non 
-MTRR_SANITIZER kernel, in order to know whether its the MTRR_SANITIZER 
-thing. And anyway before knowing whether it might be MTRR_SANITIZER 
-related I need to run the non MTRR_SANITIZER kernel for at least a week 
-and have quite some hibernate cycles. If someone else had issues with 
-MTRR_SANITIZER I would like to hear about it. Also if someone thinks I am 
-completely off track on trying to track this down I appreciate a hint.
+Again, it's just awful to make a change which has already be tried and
+rejected.  Especially as we don't really fully understand why it was
+rejected (do we?).  The information we seek may well be in the mailing
+list archives somewhere.
 
+> +		/*
+> +		 * On large memory systems, scan >> priority can become
+> +		 * really large. This is fine for the starting priority;
+> +		 * we want to put equal scanning pressure on each zone.
+> +		 * However, if the VM has a harder time of freeing pages,
+> +		 * with multiple processes reclaiming pages, the total
+> +		 * freeing target can get unreasonably large.
+> +		 */
+> +		if (sc->nr_reclaimed > sc->swap_cluster_max &&
+> +			priority < DEF_PRIORITY && !current_is_kswapd())
+> +			break;
 
-Links to my posts on xfs and tuxonice-devel mailing lists:
+Fingers crossed, it might be that the `priority < DEF_PRIORITY' here
+will save our bacon from <whatever it was>.  But it sure would be good
+to know.
 
-http://oss.sgi.com/pipermail/xfs/2008-November/037399.html
-
-http://lists.tuxonice.net/pipermail/tuxonice-devel/2008-November/000421.html
-
-
-Am Freitag 28 November 2008 schrieb Martin Steigerwald:
-> Am Freitag 28 November 2008 schrieb Martin Steigerwald:
-> > Am Mittwoch 26 November 2008 schrieb Dave Chinner:
-> > > On Wed, Nov 26, 2008 at 09:49:18AM +0100, Martin Steigerwald wrote:
-> > > > Am Dienstag 25 November 2008 schrieb Dave Chinner:
-> > > > > On Tue, Nov 25, 2008 at 10:44:14PM +0100, Martin Steigerwald
->
-> wrote:
-> > > > > > Hi!
-> > > > > >
-> > > > > > Today on one try to hibernate via tuxonice it machine
-> > > > > > appeared dead. I am
-> > > > >
-> > > > >                       ^^^^^^^^^
-> > > > > When (not if) suspend to disk/resume fails, you get to keep all
-> > > > > the broken pieces of your filesystem. It works most of the
-> > > > > time, but it has some fundamentally broken corner cases that
-> > > > > you probably just hit....
-> > > >
-> > > > Well I use TuxOnIce for a reason! I had uptimes of up to 70 days
-> > > > with it already. And they are usually only interrupted by kernel
-> > > > updates or manual shutdowns. I was never convinced by in-kernel
-> > > > solutions for hibernate.
-> > >
-> > > Sure, though I'm not convinced that TuxOnIce is any better because
-> > > it still uses the same fundamental design as the in-kernel ones.
-> >
-> > Might be.
-> >
-> > But something is fishy here. I had it a second time today. This time
-> > I know for sure that the machine freezed hard. Mouse pointer froze
-> > and the machine didn't even respond to a ping anymore. Nothing in
-> > logs - doesn't surprise me.
-> >
-> > I didn't have this issue with 2.6.26, and I also don't think I had it
-> > with 2.6.27.5. I will downgrade to 2.6.27.5 now.
->
-> I wonder about those truncated files nonetheless. As I don't think that
-> KDE is writing config files all the time. Well I might be wrong, but I
-> didn't even change KDE configuration during time of the crash... OTOH
-> XFS uses a in memory inode size and should be safe with the point in
-> time when it writes the size to disk as far as I read here. Well this
-> time at least again the file "kdeglobals" was affected and this file
-> might be written rather often.
-
-Okay, I thought about this a bit more in my dreams this night it seems. I 
-think it even hangs before starting much of hibernate.
-
-I had this pre-hibernate script:
-
-shambhala:/etc/acpi> bzr cat -r304 hibernate-tuxonice.sh
-#!/bin/sh
-
-# Änderung der Netzwerkumgebung erkennen und Zeitserver handeln
-/etc/init.d/ifplugd stop
-ifdown eth0
-/etc/init.d/chrony stop
-
-# Gutnacht
-hibernate
-
-# Änderung der Netzwerkumgebung erkennen und Zeitserver handeln
-/etc/init.d/chrony start
-/etc/init.d/ifplugd start
-
-
-Thus its logical that pinging the machine did not work anymore, since its 
-first thing it does is to disable the network in order to detect changes 
-in network environment between snapshot cycles reliably. 
-
-Then it froze hard even before the desktop was locked. AFAIR not even the 
-hibernater / suspend LED of my ThinkPad T42 started to blink. Thus I 
-guess it froze way before any serious hibernation work started. It also 
-didn't yet switch to console. And actually somewhere along the line of 
-this it might fail.
-
-I at least have the idea that it could have to do with:
-
-  │ CONFIG_MTRR_SANITIZER:
-  │ 
-  │ Convert MTRR layout from continuous to discrete, so X drivers can
-  │ add writeback entries.
-  │
-  │ Can be disabled with disable_mtrr_cleanup on the kernel command line.
-  │ The largest mtrr entry size for a continous block can be set with
-  │ mtrr_chunk_size.
-  │
-  │ If unsure, say N.
-
-Especially as some earlier description of this config option adds an 
-important detail:
-
->  > +config MTRR_SANITIZER
->  > +     def_bool y
->  > +     prompt "MTRR cleanup support"
->  > +     depends on MTRR
->  > +     help
->  > +       Convert MTRR layout from continuous to discrete, so some X 
-driver
->  > +       could add WB entries.
->  > +
->  > +       Say N here if you see bootup problems (boot crash, boot hang,
->  > +       spontaneous reboots).
-
-This one at least sounds interesting. Especially in combintion with the 
-sentence about X drivers. But then it only speaks about boot related 
-issues. And here it hanged shortly after I pressed Fn-F12 to start a 
-snapshot cycle.
-
-
-shambhala:/etc/acpi> lspci -nn | grep -i vga
-01:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 
-[Mobility Radeon 9600 M10] [1002:4e50]
-
-It didn't yet hang with my IBM ThinkPad T23 (SuperSavage) and my 
-workstation at work (newer ATI Radeon). So that might be another hint.
-
-On the first occurence the machine did not respond to user input very 
-early, even before serious hibernating work started, too.
-
->  > +
->  > +       could be disabled with disable_mtrr_cleanup. also 
-mtrr_chunk_size
-
-http://lkml.org/lkml/2008/4/28/685
-
-Thus I am compiling 2.6.27.7 without MTRR_SANITIZER support, but elsewise 
-unchanged. And will test whether those hangs will be gone. It didn't 
-happen with 2.6.27.5 tough. That might just be concurrence or it might 
-hint at those BIOS corruption prevention patch that came in between 
-2.6.27.5 and 2.6.27.7. But actually I doubt that the BIOS corruption 
-prevention patch is at play here.
-
-
-To avoid the truncated files problems, I will try this:
-
-shambhala:/etc/acpi> cat hibernate-tuxonice.sh
-#!/bin/sh
-
-# Zur Sicherheit gleich am Anfang alle ausstehenden Änderungen schreiben
-sync
-
-# Änderung der Netzwerkumgebung erkennen und Zeitserver handeln
-/etc/init.d/ifplugd stop
-ifdown eth0
-/etc/init.d/chrony stop
-
-# Zur Sicherheit hier nochmal alle ausstehenden Änderungen schreiben
-sync
-
-# Gutnacht
-hibernate
-
-# Änderung der Netzwerkumgebung erkennen und Zeitserver handeln
-/etc/init.d/chrony start
-/etc/init.d/ifplugd start
-
-Ciao,
--- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
