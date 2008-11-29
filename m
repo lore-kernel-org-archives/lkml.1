@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYK2SXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYK2S1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbYK2SXS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 13:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYK2SXD
+	id S1753241AbYK2S1J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 13:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYK2S04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 13:23:03 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51799 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751753AbYK2SXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 13:23:01 -0500
-Message-ID: <49318871.8010501@redhat.com>
-Date: Sat, 29 Nov 2008 20:22:41 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@mailshack.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>, lguest@ozlabs.org,
-       jeremy@xensource.com, LKML <linux-kernel@vger.kernel.org>,
-       Mike Travis <travis@sgi.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Lguest] [PATCH RFC/RFB] x86_64,	i386: interrupt dispatch changes
-References: <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <49178E89.2000307@zytor.com> <492DC13F.8020009@redhat.com> <492DE3EF.8060507@zytor.com> <492E72D7.9060201@redhat.com> <20081128204809.GA17920@mailshack.com> <20081129154516.GA26579@mailshack.com>
-In-Reply-To: <20081129154516.GA26579@mailshack.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 29 Nov 2008 13:26:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59679 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751042AbYK2S0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 13:26:55 -0500
+Date: Sat, 29 Nov 2008 10:26:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+Message-Id: <20081129102608.f8228afd.akpm@linux-foundation.org>
+In-Reply-To: <493182C8.1080303@redhat.com>
+References: <20081128060803.73cd59bd@bree.surriel.com>
+	<20081128231933.8daef193.akpm@linux-foundation.org>
+	<4931721D.7010001@redhat.com>
+	<20081129094537.a224098a.akpm@linux-foundation.org>
+	<493182C8.1080303@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
-> I now did the benchmarks for the same -rc6 with hpa's 4-byte stubs
-> too. Same machine. It's significantly better than the other two
-> options in terms of speed. It takes about 7% less cpu to handle
-> the interrupts. (0.64% cpu instead of 0.69%.) I have to run now,
-> I'll let interpreting the histogram to someone else ;).
->   
+On Sat, 29 Nov 2008 12:58:32 -0500 Rik van Riel <riel@redhat.com> wrote:
 
-This is noise. 0.05% cpu on a 1GHz machine servicing 1000 interrupt/sec 
-boils down to 500 cycles/interrupt.  These changes shouldn't amount to 
-so much (and I doubt you have 1000 interrupts/sec with a single disk)..
+> > Will this new patch reintroduce the problem which
+> > 26e4931632352e3c95a61edac22d12ebb72038fe fixed?
+> 
+> Googling on 26e4931632352e3c95a61edac22d12ebb72038fe only finds
+> your emails with that commit id in it - which git tree do I
+> need to search to get that changeset?
 
-I'm sorry, but the whole effort is misguided, in my opinion.  If you 
-want to optimize, try reducing the number of interrupts that occur 
-rather than saving a few cycles in the interrupt path.
+It's the historical git tree.  All the pre-2.6.12 history which was
+migrated from bitkeeper.  
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/old-2.6-bkcvs.git
 
+Spending a couple of fun hours reading `git-log mm/vmscan.c' is pretty
+instructive.  For some reason that command generates rather a lot of
+unrelated changelog info which needs to be manually skipped over.
