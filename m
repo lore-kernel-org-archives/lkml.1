@@ -1,130 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYK2NSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbYK2NZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755466AbYK2NSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 08:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYK2NSa
+	id S1755692AbYK2NZN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 08:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYK2NY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 08:18:30 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:58655 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbYK2NS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 08:18:28 -0500
-From: Andres Freund <andres@anarazel.de>
-To: Theodore Tso <tytso@mit.edu>, adilger@sun.com
-Subject: EXT4 ENOSPC Bug
-Date: Sat, 29 Nov 2008 14:18:19 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.28-rc6-andres-00007-ged31348; KDE/4.1.73; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1407002.fgaMV5Av2x";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sat, 29 Nov 2008 08:24:58 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:4127 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751322AbYK2NY4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 08:24:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=GpADQ2eauAlq0DlVR0AgyVFLCegccTtudAG8Vie1MTwd384Y8N3ngMatV0VpnR5m2i
+         cYVlWnx+/3z12BWz9LGRVKmaP71DNZjJzW8XyTSzWELDO/eMcZBjwO3btWbhl7MqQcuI
+         QawKimu6gb1qqsNSO8t0A0CaYw/SLV2olF9Qc=
+Date: Sat, 29 Nov 2008 22:24:49 +0900
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-Id: <20081129222449.e341f028.h.mitake@gmail.com>
+In-Reply-To: <20081129105229.GA9643@uranus.ravnborg.org>
+References: <200811290056.mAT0uTuk028924@terminus.zytor.com>
+	<20081129164736.0b5a71db.h.mitake@gmail.com>
+	<20081129093858.GC26691@elte.hu>
+	<20081129192610.716a2d57.h.mitake@gmail.com>
+	<20081129105229.GA9643@uranus.ravnborg.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811291418.24672.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1407002.fgaMV5Av2x
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, 29 Nov 2008 11:52:29 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Hi Ted, Hi Andreas, hi all,
+> > 
+> > But this is old way. ARCH_HAS_READQ and ARCH_HAS_WRITEQ are new ways
+> > to determine existence of readq/writeq. Drivers which use readq/writeq should
+> > depend on these values in their Kconfig file.
+> 
+> If we look at arch/x86/Kconfig we see:
+> ### Arch settings
+> config X86
+>         def_bool y
+>         select HAVE_AOUT if X86_32
+>         select HAVE_UNSTABLE_SCHED_CLOCK
+>         select HAVE_IDE
+>         select HAVE_OPROFILE
+>         select HAVE_IOREMAP_PROT
+>         select HAVE_KPROBES
+>         select ARCH_WANT_OPTIONAL_GPIOLIB
+> 	...
+> 
+> So the normal syntax here is "HAVE_XXX_XXX" - not ARCH_HAS_XXX_XXX
+> 
+> If you update your patch please use this syntax,
+> and locate the select under X86 - not under the 32/64 entries.
 
-On a testsystem (spare laptop) with ext4 as root filesystem sometimes the=20
-system starts to return ENOSPC to all write/create syscalls.
-Sometimes the system runs without problems, at other times it starts having=
-=20
-problems soon after boot.
-A reboot resolves the problem temporarily.
+Thanks for your notification. I didn't notice that syntax rule.
 
-I don't see  a specific usage triggering the problem.
+> 
+> But I do not see why adding these in the first place.
+> 
 
-Deleting some files sometimes allows the creation (just touch $unused_filen=
-ame)=20
-of some files, but not many.
+Andrew Morton told that drivers which need readq/writeq should use ones of kernel,
+and if architecture part of kernel does not provide readq/writeq, drivers should be disabled.
 
-Anything I can do to help you to debug the problem?
+This is Andrew's mail:
+http://marc.info/?l=linux-kernel&m=122625885124798&w=2
+===> Quote:
 
-Andres
+#ifdef readq
 
-Kernel is: 2.6.28-rc6-andres-00007-ged31348
+Is a suitable way of determining whether the architecture implements
+readq and writeq.  It isn't pretty, but it will suffice.
 
-# df /
-=46ilesystem           1K-blocks      Used Available Use% Mounted on
-/dev/mapper/root_crypt
-                     302855628 110032848 192822780  37% /
+A problem with it is that drivers will then do
 
-# df -i /
-=46ilesystem            Inodes   IUsed   IFree IUse% Mounted on
-/dev/mapper/root_crypt
-                     19234816  786691 18448125    5% /
+#ifndef readq
+<provide a local implementation here>
+#endif
 
+which rather sucks - we don't want lots of little private readq/writeq
+implementations all over the tree.
 
-# tune2fs -l /dev/mapper/root_crypt=20
-tune2fs 1.41.3 (12-Oct-2008)
-=46ilesystem volume name:   root
-Last mounted on:          <not available>
-=46ilesystem UUID:          b81f5bab-9544-45a9-8f15-aa7012ae2522
-=46ilesystem magic number:  0xEF53
-=46ilesystem revision #:    1 (dynamic)
-=46ilesystem features:      has_journal ext_attr resize_inode dir_index fil=
-etype=20
-needs_recovery extent flex_bg sparse_super large_file huge_file uninit_bg=20
-dir_nlink extra_isize
-=46ilesystem flags:         signed_directory_hash=20
-Default mount options:    (none)
-=46ilesystem state:         clean
-Errors behavior:          Continue
-=46ilesystem OS type:       Linux
-Inode count:              19234816
-Block count:              76921099
-Reserved block count:     0
-=46ree blocks:              48205695
-=46ree inodes:              18448125
-=46irst block:              0
-Block size:               4096
-=46ragment size:            4096
-Reserved GDT blocks:      1005
-Blocks per group:         32768
-=46ragments per group:      32768
-Inodes per group:         8192
-Inode blocks per group:   512
-=46lex block group size:    16
-=46ilesystem created:       Tue Sep 30 11:57:33 2008
-Last mount time:          Thu Nov 27 14:30:58 2008
-Last write time:          Thu Nov 27 14:30:58 2008
-Mount count:              116
-Maximum mount count:      200
-Last checked:             Mon Oct  6 13:54:09 2008
-Check interval:           31104000 (12 months)
-Next check after:         Thu Oct  1 13:54:09 2009
-Reserved blocks uid:      0 (user root)
-Reserved blocks gid:      0 (group root)
-=46irst inode:              11
-Inode size:	          256
-Required extra isize:     28
-Desired extra isize:      28
-Journal inode:            8
-=46irst orphan inode:       288694
-Default directory hash:   tea
-Directory Hash Seed:      d0501622-2c99-4b0d-9a0c-d6b6705ff4f2
-Journal backup:           inode blocks
+Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
+disable these drivers on the architectures which don't provide
+readq/writeq support.
 
+<====
 
---nextPart1407002.fgaMV5Av2x
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+This is new patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+description of this patch
+Adding implementation of readq/writeq to x86_32,
+and adding config value to x86 architecture to determine existence of readq/writeq
 
-iEYEABECAAYFAkkxQRwACgkQporPraT14igvWwCgmdJyI8Mj+2GKYwyVwYMD87XX
-HuIAn05uRydfxH5Q2HjGrujGS+FeX1Ci
-=NcrG
------END PGP SIGNATURE-----
+Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+---
+ arch/x86/Kconfig          |    2 ++
+ arch/x86/include/asm/io.h |   24 ++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
---nextPart1407002.fgaMV5Av2x--
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ac22bb7..75408fe 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -34,6 +34,8 @@ config X86
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_GENERIC_DMA_COHERENT if X86_32
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
++	select HAVE_READQ
++	select HAVE_WRITEQ
+ 
+ config ARCH_DEFCONFIG
+ 	string
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index ac2abc8..ddc67aa 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -4,6 +4,7 @@
+ #define ARCH_HAS_IOREMAP_WC
+ 
+ #include <linux/compiler.h>
++#include <asm-generic/int-ll64.h>
+ 
+ #define build_mmio_read(name, size, type, reg, barrier) \
+ static inline type name(const volatile void __iomem *addr) \
+@@ -57,6 +58,29 @@ build_mmio_write(__writeq, "q", unsigned long, "r", )
+ /* Let people know we have them */
+ #define readq readq
+ #define writeq writeq
++
++#else  /* CONFIG_X86_32 from here */
++
++static inline __u64 readq(const volatile void __iomem *addr)
++{
++	const volatile u32 __iomem *p = addr;
++	u32 l, h;
++
++	l = readl(p);
++	h = readl(p+1);
++
++	return l + ((u64)h << 32);
++}
++
++static inline void writeq(__u64 val, volatile void __iomem *addr)
++{
++	writel(val, addr);
++	writel(val >> 32, addr+4);
++}
++
++#define readq readq
++#define writeq writeq
++
+ #endif
+ 
+ extern int iommu_bio_merge;
+-- 
+1.5.6.5
+
