@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYK2Wl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYK2WzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbYK2Wl4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 17:41:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYK2WlY
+	id S1754807AbYK2WzW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 17:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbYK2WzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 17:41:24 -0500
-Received: from gimli.pxnet.com ([195.227.45.7]:37772 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbYK2WlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 17:41:23 -0500
-Message-Id: <9b6d85e917139005e83f6b93460d71c4220cc880.1227876791.git.tilman@imap.cc>
-In-Reply-To: <1227876791.git.tilman@imap.cc>
-References: <1227876791.git.tilman@imap.cc>
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 1/2] gigaset: remove unnecessary poll method
-To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Sat, 29 Nov 2008 23:41:07 +0100 (CET)
+	Sat, 29 Nov 2008 17:55:09 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:30437 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752730AbYK2WzI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 17:55:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=MtXx7Xt9J8OU6Am/0FuSmIPFDEns0SDbraIYDZzqiLFXR8xBQX2VJVOvUZ0FFIf0rUq1E6c50qU7KN4vWJCgYSxOYbU9bjRkkOrM+t10EI3qCFsyY0UjenDEyGXT9uFl9N7wiQf4oux6IuYaHKEdk7WTbg6iqfNMpmocFWFjjik=  ;
+X-YMail-OSG: l_locpwVM1lDtbbcBLLTpO3KIzIcll87_1sh7pX5QnDYvz7WOhJnqx4YCkcQm3aQO4pwJdM1xXMnz.XI8CBydqtyIJKNGce1YGLUM5M.fE1Z1PwFUOMIAnPtCnsNH3IXYE8-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [PATCH v2] v4l2_device/v4l2_subdev: final (?) version
+Date: Sat, 29 Nov 2008 14:22:19 -0800
+User-Agent: KMail/1.9.10
+Cc: Linux and Kernel Video <video4linux-list@redhat.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "davinci-linux-open-source@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       linux-kernel@vger.kernel.org,
+       Laurent Pinchart <laurent.pinchart@skynet.be>
+References: <200811291852.41794.hverkuil@xs4all.nl> <200811291220.47542.david-b@pacbell.net> <200811292246.20338.hverkuil@xs4all.nl>
+In-Reply-To: <200811292246.20338.hverkuil@xs4all.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200811291422.20155.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The N_GIGASET_M101 line discipline implemented by the ser_gigaset
-driver does not transfer any data from/to userspace through the
-tty interface. Therefore a poll method is not needed.
+On Saturday 29 November 2008, Hans Verkuil wrote:
+> > > +void v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
+> > > +{ 
+> > > +       BUG_ON(!dev || !v4l2_dev || dev_get_drvdata(dev));
+> >
+> > Ouch.  Better to return -EINVAL, like most register() calls,
+> > than *ever* use a BUG_ON() for bad parameters.  Same applies
+> > every other place you use BUG_ON, from a quick scan ...
+> 
+> Are there some documented guidelines on when to use BUG_ON?
 
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
- drivers/isdn/gigaset/ser-gigaset.c |   15 ---------------
- 1 files changed, 0 insertions(+), 15 deletions(-)
+Maybe there should be.  I know I've seen flames from Linus on
+the topic.  Basically, treat it like a panic() where the system
+must stop operation lest it catch fire or scribble all over the
+(not-backed-up) disk ... if the system can keep running sanely,
+then BUG() and friends are inappropriate.
 
-diff --git a/drivers/isdn/gigaset/ser-gigaset.c b/drivers/isdn/gigaset/ser-gigaset.c
-index 07052ed..0b8c8f2 100644
---- a/drivers/isdn/gigaset/ser-gigaset.c
-+++ b/drivers/isdn/gigaset/ser-gigaset.c
-@@ -16,7 +16,6 @@
- #include <linux/moduleparam.h>
- #include <linux/platform_device.h>
- #include <linux/tty.h>
--#include <linux/poll.h>
- #include <linux/completion.h>
- 
- /* Version Information */
-@@ -571,7 +570,6 @@ gigaset_tty_close(struct tty_struct *tty)
- 	}
- 
- 	/* prevent other callers from entering ldisc methods */
--	/* FIXME: should use the tty state flags */
- 	tty->disc_data = NULL;
- 
- 	if (!cs->hw.ser)
-@@ -673,18 +671,6 @@ gigaset_tty_ioctl(struct tty_struct *tty, struct file *file,
- }
- 
- /*
-- * Poll on the tty.
-- * Unused, always return zero.
-- *
-- * FIXME: should probably return an exception - especially on hangup
-- */
--static unsigned int
--gigaset_tty_poll(struct tty_struct *tty, struct file *file, poll_table *wait)
--{
--	return 0;
--}
--
--/*
-  * Called by the tty driver when a block of data has been received.
-  * Will not be re-entered while running but other ldisc functions
-  * may be called in parallel.
-@@ -773,7 +759,6 @@ static struct tty_ldisc_ops gigaset_ldisc = {
- 	.read		= gigaset_tty_read,
- 	.write		= gigaset_tty_write,
- 	.ioctl		= gigaset_tty_ioctl,
--	.poll		= gigaset_tty_poll,
- 	.receive_buf	= gigaset_tty_receive,
- 	.write_wakeup	= gigaset_tty_wakeup,
- };
--- 
-1.6.0.1.100.gcb138
+
+> I see it used in other places in this way.
+
+I tend to submit patches fixing bugs like that, when I have time.
+
+
+> My reasoning was that returning an  
+> error makes sense if external causes can result in an error, but this 
+> test is more the equivalent of an assert(), i.e. catching a programming 
+> bug early.
+
+In which case a WARN() is better.  But in most cases I wouldn't
+even do that.  The kernel's design center is closer to "run
+robustly" than "make developers' lives easier".  Programmers
+who don't check return values for critical operations like
+registering core resources deserve what they get.  And if you
+want to nudge them, the __must_check annotation helps catch
+such goofage even earlier:  compile time, not run time.
+
+- Dave
 
