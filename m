@@ -1,94 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYK2K5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYK2K7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbYK2K5s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 05:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYK2K5k
+	id S1756237AbYK2K7n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 05:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYK2K7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 05:57:40 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:26988 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbYK2K5j (ORCPT
+	Sat, 29 Nov 2008 05:59:35 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:14766 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbYK2K7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 05:57:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=suZa1m0welyqvnoGN9clRdB2j738Oqr6RCllGVgGem1kCdqgb5eb/5W4HAXEhcQ+ZN
-         KlgVUXRr2EMZUk+senqAAE0NkQnqaHb3sYqc8N8FzcG+qrtlj5bxyv/5Fp8sldJhdcwb
-         LbqJ+aMKLs/xBax6poNUgi9oMjXCEkpaQkoug=
-Message-ID: <4931201D.7060701@gmail.com>
-Date: Sat, 29 Nov 2008 05:57:33 -0500
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: powerpc: hv{cs,si}_close() both unsigned hp->count and hvcsd->open_count
- cannot be negative
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Nov 2008 05:59:35 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH] tracing/function-graph-tracer: adjustments of the
+ trace informations
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Tim Bird <tim.bird@am.sony.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <c62985530811281940w4542546t5a1235ad8e5a24bf@mail.gmail.com>
+References: <492F3076.7050104@gmail.com> <20081128091800.GA1725@elte.hu>
+	 <20081128092553.GA7040@elte.hu> <20081128192249.GA22263@elte.hu>
+	 <c62985530811281940w4542546t5a1235ad8e5a24bf@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 29 Nov 2008 11:59:29 +0100
+Message-Id: <1227956369.7505.1572.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsigned hp->count and hvcsd->open_count cannot be negative
+On Sat, 2008-11-29 at 04:40 +0100, Frédéric Weisbecker wrote:
+> 2008/11/28 Ingo Molnar <mingo@elte.hu>:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Both members of respectively struct hvcs_struct, see
-vi drivers/char/hvcs.c +262
+> I tried to figure out a way to signal a hardirq in a trace, I like
+> this arrow but It
+> breaks the indentation.
+> I would suggest:
+> 
+>   0)               |              skb_dequeue() {
+>   0)      0.365 us |                _spin_lock_irqsave();
+>   0)      0.422 us |                _spin_unlock_irqrestore();
+>   0)      1.912 us |              }
+>   0)               |              memcpy_toiovec() {
+>   0)               |                copy_to_user() {
+>              =====>
+>   0)               |               smp_apic_timer_interrupt() {
+>   0)      0.450 us |                    native_apic_mem_write();
+>   0)               |                    irq_enter() {
+>   0)      0.410 us |                      idle_cpu();
+>   0)      1.167 us |                    }
+>   0)               |                    hrtimer_interrupt() {
+> 
+> Your idea solves a part of one of the features I wanted to add: why
+> not using a single character column to print
+> the current context: workqueue, syscall, kernel thread, tasklet, hardirq .....
 
-and struct hvcs_struct, see
-vi drivers/char/hvsi.c +70
+That was my initial suggestion too, like the latency tracer has.
 
-diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
-index 473d9b1..b228b84 100644
---- a/drivers/char/hvcs.c
-+++ b/drivers/char/hvcs.c
-@@ -1222,7 +1222,8 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 	hvcsd = tty->driver_data;
- 
- 	spin_lock_irqsave(&hvcsd->lock, flags);
--	if (--hvcsd->open_count == 0) {
-+	if (hvcsd->open_count == 1) {
-+		hvcsd->open_count--;
- 
- 		vio_disable_interrupts(hvcsd->vdev);
- 
-@@ -1248,7 +1249,9 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 		free_irq(irq, hvcsd);
- 		kref_put(&hvcsd->kref, destroy_hvcs_struct);
- 		return;
--	} else if (hvcsd->open_count < 0) {
-+	} else if (hvcsd->open_count > 1) {
-+		hvcsd->open_count--;
-+	} else {
- 		printk(KERN_ERR "HVCS: vty-server@%X open_count: %d"
- 				" is missmanaged.\n",
- 		hvcsd->vdev->unit_address, hvcsd->open_count);
-diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
-index 59c6f9a..d46bccd 100644
---- a/drivers/char/hvsi.c
-+++ b/drivers/char/hvsi.c
-@@ -875,7 +875,8 @@ static void hvsi_close(struct tty_struct *tty, struct file *filp)
- 
- 	spin_lock_irqsave(&hp->lock, flags);
- 
--	if (--hp->count == 0) {
-+	if (hp->count == 1) {
-+		hp->count--;
- 		hp->tty = NULL;
- 		hp->inbuf_end = hp->inbuf; /* discard remaining partial packets */
- 
-@@ -908,7 +909,9 @@ static void hvsi_close(struct tty_struct *tty, struct file *filp)
- 
- 			spin_lock_irqsave(&hp->lock, flags);
- 		}
--	} else if (hp->count < 0)
-+	} else if (hp->count > 1)
-+		hp->count--;
-+	else
- 		printk(KERN_ERR "hvsi_close %lu: oops, count is %d\n",
- 		       hp - hvsi_ports, hp->count);
- 
+Then again, most of that would be obvious from the comm/pid column, that
+will show preemption and all those things.
+
+But showing Hard,Soft irq disabled and perhaps the preempt count would
+be handy.
+
