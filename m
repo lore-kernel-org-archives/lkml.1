@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbYK2LhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYK2Lhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755040AbYK2LhW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 06:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYK2LhI
+	id S1752669AbYK2Lhq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 06:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYK2LhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 06:37:08 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:51645 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbYK2LhF (ORCPT
+	Sat, 29 Nov 2008 06:37:20 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:41492 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751401AbYK2LhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 06:37:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=p6pQrG9bPq2pi/w/Iu4gQmYYp95VIB2HNH+yuylazAl4qgSFJbqbhQT1Aq7593fssx
-         XotMyW9jOAfhLkX2dJ01yJRq7JVY9OLSBnm5XXQ5I3Er6BdqLvpwhZJMKq+SXolpYYqK
-         /MRc9Inly0mbhcP+BiTwLF1zQEy7WuITuDzn4=
-Message-ID: <4931295B.7080105@gmail.com>
-Date: Sat, 29 Nov 2008 06:36:59 -0500
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sat, 29 Nov 2008 06:37:09 -0500
+Message-ID: <493127DC.4020202@linux.vnet.ibm.com>
+Date: Sat, 29 Nov 2008 17:00:36 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: wli@holomorphy.com
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] hugetlb: unsigned ret cannot be negative.
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Don't export sched_mc_power_savings in laptops
+References: <1227957612-7000-1-git-send-email-mahesh@linux.vnet.ibm.com>
+In-Reply-To: <1227957612-7000-1-git-send-email-mahesh@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsigned long ret cannot be negative, but ret can get -EFAULT.
+Mahesh Salgaonkar wrote:
+>         Fix to prevent sched_mc_power_saving from being exported through sysfs
+>         for multicore single socket (Laptop).
+>     
+>         CPU core map of the boot cpu should be equal to possible number
+>         of cpus for single socket system.
+>     
+>         This fix has been developed at FOSS.in kernel workout.
+>     
+>         Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>
+> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+> index 4850e4b..4adc830 100644
+> --- a/arch/x86/include/asm/topology.h
+> +++ b/arch/x86/include/asm/topology.h
+> @@ -239,7 +239,7 @@ struct pci_bus;
+>  void set_pci_bus_resources_arch_default(struct pci_bus *b);
+>
+>  #ifdef CONFIG_SMP
+> -#define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
+> +#define mc_capable()	(cpus_weight(per_cpu(cpu_core_map,0)) != nr_cpu_ids)
+>  #define smt_capable()			(smp_num_siblings > 1)
+>  #endif
+>
+>   
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-hugetlbfs_read_actor() returns int,
-see 
-vi fs/hugetlbfs/inode.c +187
+The sched_mc_power_savings in sysfs does not help on single socket 
+multicore laptops.
+The above patch has been tested on dual core laptop and dual socket quad 
+core intel processor based server.
 
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 61edc70..0af64e4 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -252,6 +252,7 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
- 	for (;;) {
- 		struct page *page;
- 		unsigned long nr, ret;
-+		int ra;
- 
- 		/* nr is the maximum number of bytes to copy from this page */
- 		nr = huge_page_size(h);
-@@ -279,15 +280,16 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
- 			/*
- 			 * We have the page, copy it to user space buffer.
- 			 */
--			ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
-+			ra = hugetlbfs_read_actor(page, offset, buf, len, nr);
- 		}
--		if (ret < 0) {
-+		if (ra < 0) {
- 			if (retval == 0)
--				retval = ret;
-+				retval = ra;
- 			if (page)
- 				page_cache_release(page);
- 			goto out;
- 		}
-+		ret = ra;
- 
- 		offset += ret;
- 		retval += ret;
-
+Thanks,
+-Mahesh.
