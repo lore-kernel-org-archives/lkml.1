@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbYK2Wzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbYK2W4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbYK2Wzt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 17:55:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYK2WzL
+	id S1753050AbYK2W4H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 17:56:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbYK2Wzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 17:55:11 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:30448 "HELO
+	Sat, 29 Nov 2008 17:55:37 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:30466 "HELO
 	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752935AbYK2WzJ (ORCPT
+	by vger.kernel.org with SMTP id S1752971AbYK2WzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 17:55:09 -0500
+	Sat, 29 Nov 2008 17:55:10 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=GjyVxeGGq4XSbRSnjxACpRxxKkNyL38WXg7/IQcF7Yc0R8EO4kUyq3fc9w8YIPUtr0Cg2AC461zQmcf0ItghOltxULIl1ojZjEil4eNVgFSqi11/k1yxnxgJpK2TR88al+n/sxw60xHYlORGefQrSU4Zc5klIkkjFriiEgUwLlM=  ;
-X-YMail-OSG: pDLLlbQVM1mxkIQyPjlrCXwq6OKsDDDRj4YfPjU9fCMVotLnoBw2edxAfNIawELSGUSRt9StRDBrtuPOp.WbuzCR.QHlOyEyWNu4cYxcDa_cfmC_gndBlbiJvwX2B4EwYRQ-
+  b=HahncOU9HQXT4R1ZZj/Gb8cjKajx8jANnXifgqN6wXBUUnYxsNg715/e5U1SgGQpv0opt2/QQbrJyEsnmieVr6g54bRAI61tXT5bvhPSCfaT5lQJpiZgngHKEtkIx/u3Nt2ukPFSxolci/KAkM11OGv2snL09qFXe5OhCt2pVm4=  ;
+X-YMail-OSG: XdKLqEYVM1kD91b_h.zeyDUG0bNhECoYhssmPEhbkRtI2WGehR_vjow89d6S24YniSlFJjXRi0Q5t3XZv0NEZLTgqtOy8lc62vj8WN8Aqkjh8DeFJMDI.Q4Ky9LcFFlBuMYUPitth1mPxDGLgrMNXC06PUSAgxFb0FzbjHrJe_ozjnsYPB.JJ8vH8XxK
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>,
-       "Paulius Zaleckas" <paulius.zaleckas@teltonika.lt>
+To: Sam Ravnborg <sam@ravnborg.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
 Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Sat, 29 Nov 2008 14:47:28 -0800
+Date: Sat, 29 Nov 2008 14:48:51 -0800
 User-Agent: KMail/1.9.10
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Eric Miao" <eric.miao@marvell.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Philipp Zabel" <philipp.zabel@gmail.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Ben Gardner" <bgardner@wabtec.com>, "Greg KH" <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <492D125D.5010607@teltonika.lt> <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
-In-Reply-To: <45a44e480811260118v440716bbqa8d37c8b696c148a@mail.gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Jean Delvare <khali@linux-fr.org>,
+       Eric Miao <eric.miao@marvell.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>,
+       Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480811252151q54580e07xfa73d69596fbfaac@mail.gmail.com> <20081127200102.GB20443@uranus.ravnborg.org>
+In-Reply-To: <20081127200102.GB20443@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200811291447.29932.david-b@pacbell.net>
+Message-Id: <200811291448.52483.david-b@pacbell.net>
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 November 2008, Jaya Kumar wrote:
-> On Wed, Nov 26, 2008 at 4:09 AM, Paulius Zaleckas wrote:
-> > Jaya Kumar wrote:
-> >>       void                    (*set)(struct gpio_chip *chip,
-> >>                                               unsigned offset, int value);
-> >> +     void                    (*set_bus)(struct gpio_chip *chip,
-> >> +                                             unsigned offset, int values,
-> >
-> > I think values should be unsigned
-> 
-> Okay, can do but it is unusual no?
+On Thursday 27 November 2008, Sam Ravnborg wrote:
+> > > So my "is it generic enough" question is more at the level of "Are
+> > > there enough Linux systems that need this sort of thing to justify
+> > > generic support?".  I happen not to have come across the need for
+> > > such ganged access from Linux (yet).  Whereas I've yet to use non-x86
+> > > Linux systems that don't need to manipulate individual GPIO pins...
+> > 
+> > I have come across the following scenarios where a bus set of gpio is useful:
+> > - Broadsheet E-Ink controller (uses 16-bit data bus over GPIO)
+> >   framebuffer device (this patch is for this)
+> > - Apollo/Hecuba E-Ink controller (uses 8-bit data bus over GPIO)
+> >   framebuffer device
+> > - 8-bit parallel IO matrix LCD controllers, such as the Samsung KS108,
+> >   also Hitachi, etc
 
-For bitmasks, anything except "unsigned long" is unusual.
-In fact, <linux/bitmask.h> uses them in arrays...
+All of those can also be handled with traditional parallel data
+busses too, of course.  Are you saying you've seen these used
+with Linux systems?  Enough to justify generic support?
 
-If this goes through, I suspect it would be fair to expect
-a gpio_chip to work with only one word at at time.  SOC based
-GPIO controllers stick to their natural word sizes (32 or 16
-bits in most cases), in arrays, and I've yet to come across
-external controllers that are any different.  So passing in
-arrays of "unsigned long" would seem to be overkill.
+I've certainly seen how some of those LCD controllers, graphical
+or character based, work with microcontrollers.  They're very
+widely available too ... so I can imagine various uClinux systems
+have one hooked up.  Most of the Linux system hookups I've happened
+across use USB or serial links (e.g. the crystalfontz.com stuff)
+since modern PCs are severely GPIO-deprived.
 
-However, "set_bus" is seems misleading to me:  "set" because
-it makes me think it's writing to the set_bits register,
-which won't clear things; "bus" because this is doing ganged
-operations, which aren't only for busses ... and in fact a
-bus operation probably needs multiple ganged operations,
-e.g. first write the address, handshake, then write data and
-handshake again.
-
-Maybe words like "assign" and "bitmask" would get past those
-particular issues... though I don't hugely like "assign".
-
-In terms of low level primitives, I've already commented
-that the "read" side is missing.  An additional issue came
-to mind:  the policy of using contiguous bits should not
-be mandated here.  It doesn't need to be, either ... just
-pass a mask of valid bits, along with a mask of values.
+Another example where ganged access might help is keypad matrices.
 
 
-> since set uses int value, i figured set_bus should be similar right?
+> We have such a system at work. And we need fast acces to the gpio pins
+> when updating the LCD.
+> I have not written/looked to deep at the code I just recall it was
+> a bit messy and not something I would be proud of submitting to any ML.
 
-It doesn't take a bitmask; that's a single zero/nonzero value,
-for which the sign (bit) is irrelevant.  It's signed mostly to
-distinguish the two parameters by type, so it's less easy to
-confuse them; sometimes the compiler will point out goofage.
-(Plus, the offsets can ever be negative.)
+Often times such messiness is more because the code never got
+cleaned up, because it's kind of a one-off to support particular
+boards.
+
+You could say that the gpiolib implementation framework got its
+start, in part, as a way to unclutter some kernel trees that
+had way too much one-off stuff like that.  ;)
 
 - Dave
