@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYK2UjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYK2Ukp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbYK2UjS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 15:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYK2UjD
+	id S1754590AbYK2Ukp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 15:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYK2Ukg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 15:39:03 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:35303 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270AbYK2UjB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 15:39:01 -0500
-Date: Sat, 29 Nov 2008 13:38:57 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matthew Garrett <mjg@redhat.com>, Jamie Lokier <jamie@shareable.org>,
-       J?rn Engel <joern@logfs.org>, Christoph Hellwig <hch@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com
-Subject: Re: [PATCH v2 2/2] relatime: Allow making relatime the default behaviour
-Message-ID: <20081129203856.GY25548@parisc-linux.org>
-References: <492DD035.5020705@oracle.com> <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127170345.GA14991@infradead.org> <20081129002419.abfd2504.akpm@linux-foundation.org> <20081129130308.GX25548@parisc-linux.org> <20081129135742.GC11959@logfs.org> <20081129185645.GA20194@shareable.org> <20081129190245.GA21502@srcf.ucam.org> <20081129123220.67fd1e6a.akpm@linux-foundation.org>
+	Sat, 29 Nov 2008 15:40:36 -0500
+Received: from metal.x2a.org ([206.248.189.157]:55836 "EHLO metal.x2a.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752401AbYK2Ukf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 15:40:35 -0500
+X-Greylist: delayed 482 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Nov 2008 15:40:35 EST
+Message-ID: <4931A6DA.2070007@x2a.org>
+Date: Sat, 29 Nov 2008 15:32:26 -0500
+From: Jonathan Bastien-Filiatrault <joe@x2a.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081129123220.67fd1e6a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andres Freund <andres@anarazel.de>
+CC: Theodore Tso <tytso@mit.edu>, adilger@sun.com,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: EXT4 ENOSPC Bug
+References: <200811291418.24672.andres@anarazel.de>
+In-Reply-To: <200811291418.24672.andres@anarazel.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 29, 2008 at 12:32:20PM -0800, Andrew Morton wrote:
-> The standard, usual, expected way of modifying a filesystem's behaviour
-> is via mount options.  This is also quite flexible.
-> 
-> Is there some extraordinary reason why the standard interface is not to
-> be used here?
+Andres Freund wrote:
+> Hi Ted, Hi Andreas, hi all,
+>
+> On a testsystem (spare laptop) with ext4 as root filesystem sometimes the
+> system starts to return ENOSPC to all write/create syscalls.
+> Sometimes the system runs without problems, at other times it starts
+having
+> problems soon after boot.
+> A reboot resolves the problem temporarily.
+I have had the same problem.
+>
+> I don't see  a specific usage triggering the problem.
+Using Vuze(formerly azureus) seemed to trigger the problem. My system
+can run fine for days before it happens.
+>
+> Deleting some files sometimes allows the creation (just touch
+$unused_filename)
+> of some files, but not many.
+>
+> Anything I can do to help you to debug the problem?
+>
+> Andres
+I do not have much more info to give you, this is mostly a "me too".
 
-Because it would have to be managed (and consulted) per ... what?
-vfsmount?  superblock?  This is featuritis gone MAD.
-
-I'll take my bikeshed in teal, stippled with cornsilk.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks,
+Jonathan
