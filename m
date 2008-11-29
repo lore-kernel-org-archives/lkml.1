@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbYK2QbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYK2Qdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbYK2QbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 11:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYK2QbQ
+	id S1756054AbYK2Qdp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 11:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYK2Qdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 11:31:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:23497 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbYK2QbP (ORCPT
+	Sat, 29 Nov 2008 11:33:36 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60243 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbYK2Qdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 11:31:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=vl8+ZNO2LYk0RQo4/50elE0kjVXOhRCUQgp5w0DFwNLuwvajBphC6RiW5klvPeb37z
-         f0oDsRShUSACMYw10+Nkbc8GNdVUQdxYMR959d2E5opAWlQrERJQugzSNsyJx14yNorm
-         08UdfokkjIIU5xH3aA33/jdGiodo5ccJ4lvQM=
-Message-ID: <49316E4C.7070808@gmail.com>
-Date: Sat, 29 Nov 2008 11:31:08 -0500
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: James.Bottomley@HansenPartnership.com
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [SCSI] libsas: fix test for negative unsigned and typos
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Nov 2008 11:33:35 -0500
+To: bharata@linux.vnet.ibm.com
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org, jblunck@suse.de,
+       dlezcano@fr.ibm.com, linux-kernel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk
+In-reply-to: <20081128161921.GA3843@in.ibm.com> (message from Bharata B Rao on
+	Fri, 28 Nov 2008 21:49:21 +0530)
+Subject: Re: [rfc git patch] union directory
+References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu> <20081128161921.GA3843@in.ibm.com>
+Message-Id: <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 29 Nov 2008 17:33:19 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsigned req->data_len cannot be negative, and fix typo
+On Fri, 28 Nov 2008, Bharata B Rao wrote:
+> On Fri, Nov 28, 2008 at 12:01:32PM +0100, Miklos Szeredi wrote:
+> > I've been doing some small fixing/cleanup work on the union directory
+> > patches by Jan, and just noticed there's a thread about the union
+> > mounts on LKML, so I thought publicizing won't hurt.
+> 
+> Interesting that you call it "union directory", do you have plans to go
+> the Plan 9's way of union directories ?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-I am not sure whether this is what was intended, please review.
+I think yes, although I never tried Plan9 and don't know the details
+of the union directory semantics.
 
-diff --git a/drivers/scsi/libsas/sas_host_smp.c b/drivers/scsi/libsas/sas_host_smp.c
-index 16f9312..6eb0779 100644
---- a/drivers/scsi/libsas/sas_host_smp.c
-+++ b/drivers/scsi/libsas/sas_host_smp.c
-@@ -199,12 +199,12 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 		break;
- 
- 	case SMP_DISCOVER:
--		req->data_len =- 16;
--		if (req->data_len < 0) {
-+		if (req->data_len < 15) {
- 			req->data_len = 0;
- 			error = -EINVAL;
- 			goto out;
- 		}
-+		req->data_len -= 16;
- 		resp_data_len -= 56;
- 		sas_host_smp_discover(sas_ha, resp_data, req_data[9]);
- 		break;
-@@ -215,12 +215,12 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 		break;
- 
- 	case SMP_REPORT_PHY_SATA:
--		req->data_len =- 16;
--		if (req->data_len < 0) {
-+		if (req->data_len < 15) {
- 			req->data_len = 0;
- 			error = -EINVAL;
- 			goto out;
- 		}
-+		req->data_len -= 16;
- 		resp_data_len -= 60;
- 		sas_report_phy_sata(sas_ha, resp_data, req_data[9]);
- 		break;
-@@ -238,12 +238,12 @@ int sas_smp_host_handler(struct Scsi_Host *shost, struct request *req,
- 		break;
- 
- 	case SMP_PHY_CONTROL:
--		req->data_len =- 44;
--		if (req->data_len < 0) {
-+		if (req->data_len < 43) {
- 			req->data_len = 0;
- 			error = -EINVAL;
- 			goto out;
- 		}
-+		req->data_len -= 44;
- 		resp_data_len -= 8;
- 		sas_phy_control(sas_ha, req_data[9], req_data[10],
- 				req_data[32] >> 4, req_data[33] >> 4,
+At first we thought of providing completely read-only unioning (no
+whiteouts, no object creation/removal).  This gets rid of a _lot_ of
+complexity.
 
+> > It's still a work in progress, notably the readdir code currently only
+> > works on a few specific filesystem types.
+> 
+> readdir was one of the things on which we couldn't reach a consensus
+> on how to do it the right way. We were suggested that we move the
+> duplicate elimination into user space and an effort towards this was
+> also done (Ref: http://lkml.org/lkml/2008/4/29/248) by moving this
+> to glibc readdir. But we weren't sure how this could work for NFS and
+> were told that it is required to get the NFS side of things
+> sorted out first. So that's where readdir effort stands now afaik.
+> Do you have any ideas/plans on this front ?
 
+The plan is to get a simple kernel implementation first which caches
+the directory in 'struct file'.
+
+Long term we'll see.  Maybe the userspace implementation is worth
+persuing as well for a more "kernel memory friendly" implementation.
+
+Thanks,
+Miklos
