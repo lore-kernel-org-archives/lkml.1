@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbYK2TcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYK2TfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753703AbYK2TcU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 14:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYK2TcL
+	id S1754038AbYK2TfO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 14:35:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbYK2TfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 14:32:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49581 "EHLO mx2.mail.elte.hu"
+	Sat, 29 Nov 2008 14:35:01 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34786 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbYK2TcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 14:32:09 -0500
-Date: Sat, 29 Nov 2008 20:31:50 +0100
+	id S1752006AbYK2Te7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 14:34:59 -0500
+Date: Sat, 29 Nov 2008 20:34:47 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fixes
-Message-ID: <20081129193150.GA25907@elte.hu>
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [git pull] tracing fixes
+Message-ID: <20081129193447.GA26074@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,539 +34,188 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Please pull the latest tracing-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Andreas Herrmann (1):
-      x86: fixup config space size of CPU functions for AMD family 11h
+Lai Jiangshan (1):
+      ftrace: prevent recursion
 
-Eric Dumazet (1):
-      oprofile: fix an overflow in ppro code
+Liming Wang (1):
+      function tracing: fix wrong position computing of stack_trace
 
-Ian Campbell (1):
-      xen: pin correct PGD on suspend
-
-Joerg Roedel (1):
-      x86: always define DECLARE_PCI_UNMAP* macros
-
-Julia Lawall (1):
-      arch/x86/kernel/pci-calgary_64.c: change simple_strtol to simple_strtoul
-
-Markus Metzger (4):
-      x86, bts: exclude ds.c from build when disabled
-      x86, bts: turn macro into static inline function
-      x86, pebs: fix PEBS record size configuration
-      x86, bts: fix wrmsr and spinlock over kmalloc
-
-Rakib Mullick (2):
-      x86: fix __cpuinit/__init tangle in init_thread_xstate()
-      x86: fixing __cpuinit/__init tangle, xsave_cntxt_init()
-
-Steven Rostedt (1):
-      x86: use limited register constraint for setnz
-
-Thomas Gleixner (1):
-      x86: revert irq number limitation
+Pekka Paalanen (2):
+      x86, mmiotrace: fix buffer overrun detection
+      tracing, doc: update mmiotrace documentation
 
 
- arch/x86/boot/tty.c               |    2 +-
- arch/x86/include/asm/ds.h         |    6 ++-
- arch/x86/include/asm/pci_64.h     |   14 ------
- arch/x86/kernel/Makefile          |    2 +-
- arch/x86/kernel/ds.c              |   88 ++++++++++++++++++++-----------------
- arch/x86/kernel/i387.c            |    2 +-
- arch/x86/kernel/io_apic.c         |   22 +---------
- arch/x86/kernel/pci-calgary_64.c  |    2 +-
- arch/x86/kernel/xsave.c           |    2 +-
- arch/x86/oprofile/op_model_ppro.c |    2 +-
- arch/x86/pci/fixup.c              |   25 ++++++-----
- arch/x86/xen/mmu.c                |   21 ++++++---
- 12 files changed, 87 insertions(+), 101 deletions(-)
+ Documentation/tracers/mmiotrace.txt |    6 ++++--
+ kernel/trace/ring_buffer.c          |    2 +-
+ kernel/trace/trace_mmiotrace.c      |   16 +++++++---------
+ kernel/trace/trace_stack.c          |   24 +++++++++++++++---------
+ 4 files changed, 27 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/boot/tty.c b/arch/x86/boot/tty.c
-index 0be77b3..7e8e8b2 100644
---- a/arch/x86/boot/tty.c
-+++ b/arch/x86/boot/tty.c
-@@ -74,7 +74,7 @@ static int kbd_pending(void)
+diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
+index 5bbbe20..cde23b4 100644
+--- a/Documentation/tracers/mmiotrace.txt
++++ b/Documentation/tracers/mmiotrace.txt
+@@ -37,7 +37,7 @@ $ echo mmiotrace > /debug/tracing/current_tracer
+ $ cat /debug/tracing/trace_pipe > mydump.txt &
+ Start X or whatever.
+ $ echo "X is up" > /debug/tracing/trace_marker
+-$ echo none > /debug/tracing/current_tracer
++$ echo nop > /debug/tracing/current_tracer
+ Check for lost events.
+ 
+ 
+@@ -66,7 +66,7 @@ which action. It is recommended to place descriptive markers about what you
+ do.
+ 
+ Shut down mmiotrace (requires root privileges):
+-$ echo none > /debug/tracing/current_tracer
++$ echo nop > /debug/tracing/current_tracer
+ The 'cat' process exits. If it does not, kill it by issuing 'fg' command and
+ pressing ctrl+c.
+ 
+@@ -81,7 +81,9 @@ are:
+ $ cat /debug/tracing/trace_entries
+ gives you a number. Approximately double this number and write it back, for
+ instance:
++$ echo 0 > /debug/tracing/tracing_enabled
+ $ echo 128000 > /debug/tracing/trace_entries
++$ echo 1 > /debug/tracing/tracing_enabled
+ Then start again from the top.
+ 
+ If you are doing a trace for a driver project, e.g. Nouveau, you should also
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index f780e95..668bbb5 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1215,7 +1215,7 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer,
+ 
+  out:
+ 	if (resched)
+-		preempt_enable_notrace();
++		preempt_enable_no_resched_notrace();
+ 	else
+ 		preempt_enable_notrace();
+ 	return NULL;
+diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+index f284846..e62cbf7 100644
+--- a/kernel/trace/trace_mmiotrace.c
++++ b/kernel/trace/trace_mmiotrace.c
+@@ -18,12 +18,14 @@ struct header_iter {
+ 
+ static struct trace_array *mmio_trace_array;
+ static bool overrun_detected;
++static unsigned long prev_overruns;
+ 
+ static void mmio_reset_data(struct trace_array *tr)
  {
- 	u8 pending;
- 	asm volatile("int $0x16; setnz %0"
--		     : "=rm" (pending)
-+		     : "=qm" (pending)
- 		     : "a" (0x0100));
- 	return pending;
- }
-diff --git a/arch/x86/include/asm/ds.h b/arch/x86/include/asm/ds.h
-index 72c5a19..a950084 100644
---- a/arch/x86/include/asm/ds.h
-+++ b/arch/x86/include/asm/ds.h
-@@ -23,12 +23,13 @@
- #ifndef _ASM_X86_DS_H
- #define _ASM_X86_DS_H
+ 	int cpu;
  
--#ifdef CONFIG_X86_DS
+ 	overrun_detected = false;
++	prev_overruns = 0;
+ 	tr->time_start = ftrace_now(tr->cpu);
  
- #include <linux/types.h>
- #include <linux/init.h>
+ 	for_each_online_cpu(cpu)
+@@ -128,16 +130,12 @@ static void mmio_close(struct trace_iterator *iter)
  
- 
-+#ifdef CONFIG_X86_DS
-+
- struct task_struct;
- 
- /*
-@@ -232,7 +233,8 @@ extern void ds_free(struct ds_context *context);
- 
- #else /* CONFIG_X86_DS */
- 
--#define ds_init_intel(config) do {} while (0)
-+struct cpuinfo_x86;
-+static inline void __cpuinit ds_init_intel(struct cpuinfo_x86 *ignored) {}
- 
- #endif /* CONFIG_X86_DS */
- #endif /* _ASM_X86_DS_H */
-diff --git a/arch/x86/include/asm/pci_64.h b/arch/x86/include/asm/pci_64.h
-index 5b28995..d02d936 100644
---- a/arch/x86/include/asm/pci_64.h
-+++ b/arch/x86/include/asm/pci_64.h
-@@ -34,8 +34,6 @@ extern void pci_iommu_alloc(void);
-  */
- #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
- 
--#if defined(CONFIG_GART_IOMMU) || defined(CONFIG_CALGARY_IOMMU)
--
- #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	\
- 	dma_addr_t ADDR_NAME;
- #define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		\
-@@ -49,18 +47,6 @@ extern void pci_iommu_alloc(void);
- #define pci_unmap_len_set(PTR, LEN_NAME, VAL)		\
- 	(((PTR)->LEN_NAME) = (VAL))
- 
--#else
--/* No IOMMU */
--
--#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
--#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)
--#define pci_unmap_addr(PTR, ADDR_NAME)		(0)
--#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	do { } while (0)
--#define pci_unmap_len(PTR, LEN_NAME)		(0)
--#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	do { } while (0)
--
+ static unsigned long count_overruns(struct trace_iterator *iter)
+ {
+-	int cpu;
+ 	unsigned long cnt = 0;
+-/* FIXME: */
+-#if 0
+-	for_each_online_cpu(cpu) {
+-		cnt += iter->overrun[cpu];
+-		iter->overrun[cpu] = 0;
+-	}
 -#endif
--
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_X86_PCI_64_H */
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index e489ff9..b62a766 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -41,7 +41,7 @@ obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
- obj-y				+= process.o
- obj-y				+= i387.o xsave.o
- obj-y				+= ptrace.o
--obj-y				+= ds.o
-+obj-$(CONFIG_X86_DS)		+= ds.o
- obj-$(CONFIG_X86_32)		+= tls.o
- obj-$(CONFIG_IA32_EMULATION)	+= tls.o
- obj-y				+= step.o
-diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
-index d1a1214..a2d1176 100644
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -21,8 +21,6 @@
-  */
- 
- 
--#ifdef CONFIG_X86_DS
--
- #include <asm/ds.h>
- 
- #include <linux/errno.h>
-@@ -211,14 +209,15 @@ static DEFINE_PER_CPU(struct ds_context *, system_context);
- static inline struct ds_context *ds_get_context(struct task_struct *task)
- {
- 	struct ds_context *context;
-+	unsigned long irq;
- 
--	spin_lock(&ds_lock);
-+	spin_lock_irqsave(&ds_lock, irq);
- 
- 	context = (task ? task->thread.ds_ctx : this_system_context);
- 	if (context)
- 		context->count++;
- 
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- 
- 	return context;
- }
-@@ -226,55 +225,46 @@ static inline struct ds_context *ds_get_context(struct task_struct *task)
- /*
-  * Same as ds_get_context, but allocates the context and it's DS
-  * structure, if necessary; returns NULL; if out of memory.
-- *
-- * pre: requires ds_lock to be held
-  */
- static inline struct ds_context *ds_alloc_context(struct task_struct *task)
- {
- 	struct ds_context **p_context =
- 		(task ? &task->thread.ds_ctx : &this_system_context);
- 	struct ds_context *context = *p_context;
-+	unsigned long irq;
- 
- 	if (!context) {
--		spin_unlock(&ds_lock);
--
- 		context = kzalloc(sizeof(*context), GFP_KERNEL);
--
--		if (!context) {
--			spin_lock(&ds_lock);
-+		if (!context)
- 			return NULL;
--		}
- 
- 		context->ds = kzalloc(ds_cfg.sizeof_ds, GFP_KERNEL);
- 		if (!context->ds) {
- 			kfree(context);
--			spin_lock(&ds_lock);
- 			return NULL;
- 		}
- 
--		spin_lock(&ds_lock);
--		/*
--		 * Check for race - another CPU could have allocated
--		 * it meanwhile:
--		 */
-+		spin_lock_irqsave(&ds_lock, irq);
+-	(void)cpu;
++	unsigned long over = ring_buffer_overruns(iter->tr->buffer);
 +
- 		if (*p_context) {
- 			kfree(context->ds);
- 			kfree(context);
--			return *p_context;
--		}
++	if (over > prev_overruns)
++		cnt = over - prev_overruns;
++	prev_overruns = over;
+ 	return cnt;
+ }
  
--		*p_context = context;
-+			context = *p_context;
-+		} else {
-+			*p_context = context;
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index be682b6..3bdb44b 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -184,11 +184,16 @@ static struct file_operations stack_max_size_fops = {
+ static void *
+ t_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	long i = (long)m->private;
++	long i;
  
--		context->this = p_context;
--		context->task = task;
-+			context->this = p_context;
-+			context->task = task;
+ 	(*pos)++;
  
--		if (task)
--			set_tsk_thread_flag(task, TIF_DS_AREA_MSR);
-+			if (task)
-+				set_tsk_thread_flag(task, TIF_DS_AREA_MSR);
+-	i++;
++	if (v == SEQ_START_TOKEN)
++		i = 0;
++	else {
++		i = *(long *)v;
++		i++;
++	}
  
--		if (!task || (task == current))
--			wrmsr(MSR_IA32_DS_AREA, (unsigned long)context->ds, 0);
--
--		get_tracer(task);
-+			if (!task || (task == current))
-+				wrmsrl(MSR_IA32_DS_AREA,
-+				       (unsigned long)context->ds);
-+		}
-+		spin_unlock_irqrestore(&ds_lock, irq);
+ 	if (i >= max_stack_trace.nr_entries ||
+ 	    stack_dump_trace[i] == ULONG_MAX)
+@@ -201,12 +206,15 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
+ 
+ static void *t_start(struct seq_file *m, loff_t *pos)
+ {
+-	void *t = &m->private;
++	void *t = SEQ_START_TOKEN;
+ 	loff_t l = 0;
+ 
+ 	local_irq_disable();
+ 	__raw_spin_lock(&max_stack_lock);
+ 
++	if (*pos == 0)
++		return SEQ_START_TOKEN;
++
+ 	for (; t && l < *pos; t = t_next(m, t, &l))
+ 		;
+ 
+@@ -235,10 +243,10 @@ static int trace_lookup_stack(struct seq_file *m, long i)
+ 
+ static int t_show(struct seq_file *m, void *v)
+ {
+-	long i = *(long *)v;
++	long i;
+ 	int size;
+ 
+-	if (i < 0) {
++	if (v == SEQ_START_TOKEN) {
+ 		seq_printf(m, "        Depth   Size      Location"
+ 			   "    (%d entries)\n"
+ 			   "        -----   ----      --------\n",
+@@ -246,6 +254,8 @@ static int t_show(struct seq_file *m, void *v)
+ 		return 0;
  	}
  
- 	context->count++;
-@@ -288,10 +278,12 @@ static inline struct ds_context *ds_alloc_context(struct task_struct *task)
-  */
- static inline void ds_put_context(struct ds_context *context)
- {
-+	unsigned long irq;
++	i = *(long *)v;
 +
- 	if (!context)
- 		return;
+ 	if (i >= max_stack_trace.nr_entries ||
+ 	    stack_dump_trace[i] == ULONG_MAX)
+ 		return 0;
+@@ -275,10 +285,6 @@ static int stack_trace_open(struct inode *inode, struct file *file)
+ 	int ret;
  
--	spin_lock(&ds_lock);
-+	spin_lock_irqsave(&ds_lock, irq);
+ 	ret = seq_open(file, &stack_trace_seq_ops);
+-	if (!ret) {
+-		struct seq_file *m = file->private_data;
+-		m->private = (void *)-1;
+-	}
  
- 	if (--context->count)
- 		goto out;
-@@ -313,7 +305,7 @@ static inline void ds_put_context(struct ds_context *context)
- 	kfree(context->ds);
- 	kfree(context);
-  out:
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- }
- 
- 
-@@ -384,6 +376,7 @@ static int ds_request(struct task_struct *task, void *base, size_t size,
- 	struct ds_context *context;
- 	unsigned long buffer, adj;
- 	const unsigned long alignment = (1 << 3);
-+	unsigned long irq;
- 	int error = 0;
- 
- 	if (!ds_cfg.sizeof_ds)
-@@ -398,26 +391,27 @@ static int ds_request(struct task_struct *task, void *base, size_t size,
- 		return -EOPNOTSUPP;
- 
- 
--	spin_lock(&ds_lock);
--
--	error = -ENOMEM;
- 	context = ds_alloc_context(task);
- 	if (!context)
--		goto out_unlock;
-+		return -ENOMEM;
-+
-+	spin_lock_irqsave(&ds_lock, irq);
- 
- 	error = -EPERM;
- 	if (!check_tracer(task))
- 		goto out_unlock;
- 
-+	get_tracer(task);
-+
- 	error = -EALREADY;
- 	if (context->owner[qual] == current)
--		goto out_unlock;
-+		goto out_put_tracer;
- 	error = -EPERM;
- 	if (context->owner[qual] != NULL)
--		goto out_unlock;
-+		goto out_put_tracer;
- 	context->owner[qual] = current;
- 
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- 
- 
- 	error = -ENOMEM;
-@@ -465,10 +459,17 @@ static int ds_request(struct task_struct *task, void *base, size_t size,
-  out_release:
- 	context->owner[qual] = NULL;
- 	ds_put_context(context);
-+	put_tracer(task);
-+	return error;
-+
-+ out_put_tracer:
-+	spin_unlock_irqrestore(&ds_lock, irq);
-+	ds_put_context(context);
-+	put_tracer(task);
- 	return error;
- 
-  out_unlock:
--	spin_unlock(&ds_lock);
-+	spin_unlock_irqrestore(&ds_lock, irq);
- 	ds_put_context(context);
- 	return error;
- }
-@@ -818,13 +819,21 @@ static const struct ds_configuration ds_cfg_var = {
- 	.sizeof_ds    = sizeof(long) * 12,
- 	.sizeof_field = sizeof(long),
- 	.sizeof_rec[ds_bts]   = sizeof(long) * 3,
-+#ifdef __i386__
- 	.sizeof_rec[ds_pebs]  = sizeof(long) * 10
-+#else
-+	.sizeof_rec[ds_pebs]  = sizeof(long) * 18
-+#endif
- };
- static const struct ds_configuration ds_cfg_64 = {
- 	.sizeof_ds    = 8 * 12,
- 	.sizeof_field = 8,
- 	.sizeof_rec[ds_bts]   = 8 * 3,
-+#ifdef __i386__
- 	.sizeof_rec[ds_pebs]  = 8 * 10
-+#else
-+	.sizeof_rec[ds_pebs]  = 8 * 18
-+#endif
- };
- 
- static inline void
-@@ -878,4 +887,3 @@ void ds_free(struct ds_context *context)
- 	while (leftovers--)
- 		ds_put_context(context);
- }
--#endif /* CONFIG_X86_DS */
-diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-index 1f20608..b0f61f0 100644
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -58,7 +58,7 @@ void __cpuinit mxcsr_feature_mask_init(void)
- 	stts();
- }
- 
--void __init init_thread_xstate(void)
-+void __cpuinit init_thread_xstate(void)
- {
- 	if (!HAVE_HWFP) {
- 		xstate_size = sizeof(struct i387_soft_struct);
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index c9513e1..1fec0f9 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -3608,27 +3608,7 @@ int __init io_apic_get_redir_entries (int ioapic)
- 
- int __init probe_nr_irqs(void)
- {
--	int idx;
--	int nr = 0;
--#ifndef CONFIG_XEN
--	int nr_min = 32;
--#else
--	int nr_min = NR_IRQS;
--#endif
--
--	for (idx = 0; idx < nr_ioapics; idx++)
--		nr += io_apic_get_redir_entries(idx) + 1;
--
--	/* double it for hotplug and msi and nmi */
--	nr <<= 1;
--
--	/* something wrong ? */
--	if (nr < nr_min)
--		nr = nr_min;
--	if (WARN_ON(nr > NR_IRQS))
--		nr = NR_IRQS;
--
--	return nr;
-+	return NR_IRQS;
- }
- 
- /* --------------------------------------------------------------------------
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index e1e731d..d28bbdc 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -1567,7 +1567,7 @@ static int __init calgary_parse_options(char *p)
- 				++p;
- 			if (*p == '\0')
- 				break;
--			bridge = simple_strtol(p, &endp, 0);
-+			bridge = simple_strtoul(p, &endp, 0);
- 			if (p == endp)
- 				break;
- 
-diff --git a/arch/x86/kernel/xsave.c b/arch/x86/kernel/xsave.c
-index b13acb7..15c3e69 100644
---- a/arch/x86/kernel/xsave.c
-+++ b/arch/x86/kernel/xsave.c
-@@ -310,7 +310,7 @@ static void __init setup_xstate_init(void)
- /*
-  * Enable and initialize the xsave feature.
-  */
--void __init xsave_cntxt_init(void)
-+void __ref xsave_cntxt_init(void)
- {
- 	unsigned int eax, ebx, ecx, edx;
- 
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index 3f1b81a..716d26f 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -69,7 +69,7 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
- 	int i;
- 
- 	if (!reset_value) {
--		reset_value = kmalloc(sizeof(unsigned) * num_counters,
-+		reset_value = kmalloc(sizeof(reset_value[0]) * num_counters,
- 					GFP_ATOMIC);
- 		if (!reset_value)
- 			return;
-diff --git a/arch/x86/pci/fixup.c b/arch/x86/pci/fixup.c
-index 3c27a80..2051dc9 100644
---- a/arch/x86/pci/fixup.c
-+++ b/arch/x86/pci/fixup.c
-@@ -496,21 +496,24 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
- 			  pci_siemens_interrupt_controller);
- 
- /*
-- * Regular PCI devices have 256 bytes, but AMD Family 10h Opteron ext config
-- * have 4096 bytes.  Even if the device is capable, that doesn't mean we can
-- * access it.  Maybe we don't have a way to generate extended config space
-- * accesses.   So check it
-+ * Regular PCI devices have 256 bytes, but AMD Family 10h/11h CPUs have
-+ * 4096 bytes configuration space for each function of their processor
-+ * configuration space.
-  */
--static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
-+static void amd_cpu_pci_cfg_space_size(struct pci_dev *dev)
- {
- 	dev->cfg_size = pci_cfg_space_size_ext(dev);
- }
--
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, fam10h_pci_cfg_space_size);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, fam10h_pci_cfg_space_size);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, fam10h_pci_cfg_space_size);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, fam10h_pci_cfg_space_size);
--DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, fam10h_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1300, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1301, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1302, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1303, amd_cpu_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1304, amd_cpu_pci_cfg_space_size);
- 
- /*
-  * SB600: Disable BAR1 on device 14.0 to avoid HPET resources from
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 6889360..636ef4c 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -661,12 +661,11 @@ void xen_set_pgd(pgd_t *ptr, pgd_t val)
-  * For 64-bit, we must skip the Xen hole in the middle of the address
-  * space, just after the big x86-64 virtual hole.
-  */
--static int xen_pgd_walk(struct mm_struct *mm,
--			int (*func)(struct mm_struct *mm, struct page *,
--				    enum pt_level),
--			unsigned long limit)
-+static int __xen_pgd_walk(struct mm_struct *mm, pgd_t *pgd,
-+			  int (*func)(struct mm_struct *mm, struct page *,
-+				      enum pt_level),
-+			  unsigned long limit)
- {
--	pgd_t *pgd = mm->pgd;
- 	int flush = 0;
- 	unsigned hole_low, hole_high;
- 	unsigned pgdidx_limit, pudidx_limit, pmdidx_limit;
-@@ -753,6 +752,14 @@ out:
- 	return flush;
- }
- 
-+static int xen_pgd_walk(struct mm_struct *mm,
-+			int (*func)(struct mm_struct *mm, struct page *,
-+				    enum pt_level),
-+			unsigned long limit)
-+{
-+	return __xen_pgd_walk(mm, mm->pgd, func, limit);
-+}
-+
- /* If we're using split pte locks, then take the page's lock and
-    return a pointer to it.  Otherwise return NULL. */
- static spinlock_t *xen_pte_lock(struct page *page, struct mm_struct *mm)
-@@ -854,7 +861,7 @@ static void __xen_pgd_pin(struct mm_struct *mm, pgd_t *pgd)
- 
- 	xen_mc_batch();
- 
--	 if (xen_pgd_walk(mm, xen_pin_page, USER_LIMIT)) {
-+	if (__xen_pgd_walk(mm, pgd, xen_pin_page, USER_LIMIT)) {
- 		/* re-enable interrupts for flushing */
- 		xen_mc_issue(0);
- 
-@@ -998,7 +1005,7 @@ static void __xen_pgd_unpin(struct mm_struct *mm, pgd_t *pgd)
- 		       PT_PMD);
- #endif
- 
--	xen_pgd_walk(mm, xen_unpin_page, USER_LIMIT);
-+	__xen_pgd_walk(mm, pgd, xen_unpin_page, USER_LIMIT);
- 
- 	xen_mc_issue(0);
+ 	return ret;
  }
