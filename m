@@ -1,129 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYK2Ko0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbYK2Kon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbYK2Ko0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 05:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbYK2Kng
+	id S1756469AbYK2Kon (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 05:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYK2Knr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 05:43:36 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41352 "EHLO
+	Sat, 29 Nov 2008 05:43:47 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41362 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756036AbYK2Knf (ORCPT
+	by vger.kernel.org with ESMTP id S1751348AbYK2Knq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 05:43:35 -0500
-Subject: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing hooks
+	Sat, 29 Nov 2008 05:43:46 -0500
+Subject: [PATCH 04/15] kmemleak: Add the slob memory allocation/freeing hooks
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Pekka Enberg <penberg@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Date: Sat, 29 Nov 2008 10:43:23 +0000
-Message-ID: <20081129104323.16726.60656.stgit@pc1117.cambridge.arm.com>
+Cc: Pekka Enberg <penberg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Matt Mackall <mpm@selenic.com>
+Date: Sat, 29 Nov 2008 10:43:29 +0000
+Message-ID: <20081129104328.16726.74354.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
 References: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.14.3.288.gdd3f
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Nov 2008 10:43:23.0580 (UTC) FILETIME=[4D8C57C0:01C9520F]
+X-OriginalArrivalTime: 29 Nov 2008 10:43:29.0205 (UTC) FILETIME=[50E6A650:01C9520F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This patch adds the callbacks to memleak_(alloc|free) functions from the
-slab allocator. The patch also adds the SLAB_NOLEAKTRACE flag to avoid
-recursive calls to kmemleak when it allocates its own data structures.
+slob allocator.
 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Pekka Enberg <penberg@gmail.com>
+Cc: Matt Mackall <mpm@selenic.com>
 ---
- include/linux/slab.h |    2 ++
- mm/slab.c            |   16 ++++++++++++++--
- 2 files changed, 16 insertions(+), 2 deletions(-)
+ mm/slob.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 000da12..23adc83 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -62,6 +62,8 @@
- # define SLAB_DEBUG_OBJECTS	0x00000000UL
- #endif
+diff --git a/mm/slob.c b/mm/slob.c
+index cb675d1..98f71af 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -60,6 +60,7 @@
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
++#include <linux/memleak.h>
+ #include <linux/cache.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+@@ -463,6 +464,7 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+ {
+ 	unsigned int *m;
+ 	int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
++	void *ret;
  
-+#define SLAB_NOLEAKTRACE	0x00800000UL	/* used internally by kmemleak */
-+
- /* The following flags affect the page allocator grouping pages by mobility */
- #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
- #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
-diff --git a/mm/slab.c b/mm/slab.c
-index 0918751..762299e 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -106,6 +106,7 @@
- #include	<linux/string.h>
- #include	<linux/uaccess.h>
- #include	<linux/nodemask.h>
-+#include	<linux/memleak.h>
- #include	<linux/mempolicy.h>
- #include	<linux/mutex.h>
- #include	<linux/fault-inject.h>
-@@ -177,13 +178,13 @@
- 			 SLAB_STORE_USER | \
- 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
- 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD | \
--			 SLAB_DEBUG_OBJECTS)
-+			 SLAB_DEBUG_OBJECTS | SLAB_NOLEAKTRACE)
- #else
- # define CREATE_MASK	(SLAB_HWCACHE_ALIGN | \
- 			 SLAB_CACHE_DMA | \
- 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
- 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD | \
--			 SLAB_DEBUG_OBJECTS)
-+			 SLAB_DEBUG_OBJECTS | SLAB_NOLEAKTRACE)
- #endif
- 
- /*
-@@ -2610,6 +2611,12 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
- 		/* Slab management obj is off-slab. */
- 		slabp = kmem_cache_alloc_node(cachep->slabp_cache,
- 					      local_flags & ~GFP_THISNODE, nodeid);
-+		/* 
-+		 * Only scan the list member to avoid false negatives
-+		 * (especially caused by the s_mem pointer)
-+		 */
-+		memleak_scan_area(slabp, offsetof(struct slab, list),
-+				  sizeof(struct list_head));
- 		if (!slabp)
+ 	if (size < PAGE_SIZE - align) {
+ 		if (!size)
+@@ -472,18 +474,18 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+ 		if (!m)
  			return NULL;
+ 		*m = size;
+-		return (void *)m + align;
++		ret = (void *)m + align;
  	} else {
-@@ -3195,6 +3202,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
- 		STATS_INC_ALLOCMISS(cachep);
- 		objp = cache_alloc_refill(cachep, flags);
+-		void *ret;
+-
+ 		ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
+ 		if (ret) {
+ 			struct page *page;
+ 			page = virt_to_page(ret);
+ 			page->private = size;
+ 		}
+-		return ret;
  	}
-+	/* avoid false negatives */
-+	memleak_erase(&ac->entry[ac->avail]);
- 	return objp;
++
++	memleak_alloc(ret, size, 1);
++	return ret;
  }
+ EXPORT_SYMBOL(__kmalloc_node);
  
-@@ -3412,6 +3421,7 @@ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
-   out:
- 	local_irq_restore(save_flags);
- 	ptr = cache_alloc_debugcheck_after(cachep, flags, ptr, caller);
-+	memleak_alloc_recursive(ptr, obj_size(cachep), 1, cachep->flags);
+@@ -493,6 +495,7 @@ void kfree(const void *block)
  
- 	if (unlikely((flags & __GFP_ZERO) && ptr))
- 		memset(ptr, 0, obj_size(cachep));
-@@ -3465,6 +3475,7 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
- 	objp = __do_cache_alloc(cachep, flags);
- 	local_irq_restore(save_flags);
- 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
-+	memleak_alloc_recursive(objp, obj_size(cachep), 1, cachep->flags);
- 	prefetchw(objp);
+ 	if (unlikely(ZERO_OR_NULL_PTR(block)))
+ 		return;
++	memleak_free(block);
  
- 	if (unlikely((flags & __GFP_ZERO) && objp))
-@@ -3580,6 +3591,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
- 	struct array_cache *ac = cpu_cache_get(cachep);
+ 	sp = (struct slob_page *)virt_to_page(block);
+ 	if (slob_page(sp)) {
+@@ -555,12 +558,14 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+ 	} else if (flags & SLAB_PANIC)
+ 		panic("Cannot create slab cache %s\n", name);
  
- 	check_irq_off();
-+	memleak_free_recursive(objp, cachep->flags);
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
++	memleak_alloc(c, sizeof(struct kmem_cache), 1);
+ 	return c;
+ }
+ EXPORT_SYMBOL(kmem_cache_create);
  
- 	/*
+ void kmem_cache_destroy(struct kmem_cache *c)
+ {
++	memleak_free(c);
+ 	slob_free(c, sizeof(struct kmem_cache));
+ }
+ EXPORT_SYMBOL(kmem_cache_destroy);
+@@ -577,6 +582,7 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+ 	if (c->ctor)
+ 		c->ctor(b);
+ 
++	memleak_alloc_recursive(b, c->size, 1, c->flags);
+ 	return b;
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node);
+@@ -599,6 +605,7 @@ static void kmem_rcu_free(struct rcu_head *head)
+ 
+ void kmem_cache_free(struct kmem_cache *c, void *b)
+ {
++	memleak_free_recursive(b, c->flags);
+ 	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU)) {
+ 		struct slob_rcu *slob_rcu;
+ 		slob_rcu = b + (c->size - sizeof(struct slob_rcu));
 
