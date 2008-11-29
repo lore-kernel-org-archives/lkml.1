@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYK2Qrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYK2RBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYK2Qrm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 11:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYK2Qre
+	id S1756036AbYK2RBp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 12:01:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYK2RBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 11:47:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48003 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751577AbYK2Qre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 11:47:34 -0500
-Message-ID: <4931721D.7010001@redhat.com>
-Date: Sat, 29 Nov 2008 11:47:25 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Sat, 29 Nov 2008 12:01:34 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:31927 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbYK2RBc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 12:01:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BHdtfYsOjk0unDazt2MmTuIig/d7xx2q7Znih4nik+nBQP+ULKVLhoat1Rrinro6MM
+         EzhJb+5buHi6pjbYTDWDFawKz8idCauhEPIGQDB31QH0h8CX+q950YlLKHDc4KbLUmAh
+         tLpdNb9GJSIT9iRx0VsEYfOh1BQuDzYlCgkTI=
+Date: Sat, 29 Nov 2008 18:00:37 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: option: oops on unload (2.6.27.4)
+Message-ID: <20081129170027.GA5862@joi>
+References: <20081128213254.GB6750@joi> <20081128215021.GA25391@suse.de> <20081128220142.GC6750@joi> <20081128235010.GB27130@suse.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-References: <20081128060803.73cd59bd@bree.surriel.com> <20081128231933.8daef193.akpm@linux-foundation.org>
-In-Reply-To: <20081128231933.8daef193.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081128235010.GB27130@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
->> Index: linux-2.6.28-rc5/mm/vmscan.c
->> ===================================================================
->> --- linux-2.6.28-rc5.orig/mm/vmscan.c	2008-11-28 05:53:56.000000000 -0500
->> +++ linux-2.6.28-rc5/mm/vmscan.c	2008-11-28 06:05:29.000000000 -0500
->> @@ -1510,6 +1510,9 @@ static unsigned long shrink_zones(int pr
->>  			if (zone_is_all_unreclaimable(zone) &&
->>  						priority != DEF_PRIORITY)
->>  				continue;	/* Let kswapd poll it */
->> +			if (zone_watermark_ok(zone, sc->order,
->> +					4*zone->pages_high, high_zoneidx, 0))
->> +				continue;	/* Lots free already */
->>  			sc->all_unreclaimable = 0;
->>  		} else {
->>  			/*
+On Fri, Nov 28, 2008 at 03:50:10PM -0800, Greg KH wrote:
+> On Fri, Nov 28, 2008 at 11:01:43PM +0100, Marcin Slusarz wrote:
+> > On Fri, Nov 28, 2008 at 01:50:21PM -0800, Greg KH wrote:
+> > > On Fri, Nov 28, 2008 at 10:32:59PM +0100, Marcin Slusarz wrote:
+> > > > It's not new bug - I've seen this oops many times but on much older
+> > > > kernels (2.6.18, probably on 2.6.24 too).
+> > > > 
+> > > > I tried to rmmod it (and all usb modules) because sometimes it helps when
+> > > > modem disconnects and can't connect again.
+> > > > 
+> > > > [25350.138850] BUG: unable to handle kernel paging request at e0857fb4
+> > > > [25350.138866] IP: [<e0a22e80>] :usbcore:unlink1+0xab/0xb9
+> > > > [25350.138921] *pde = 1f80f067 *pte = 00000000 
+> > > > [25350.138934] Oops: 0000 [#1] PREEMPT SMP 
+> > > > [25350.138945] Modules linked in: r128 drm ipt_REDIRECT ipt_MASQUERADE xt_tcpudp xt_multiport iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc ipt_REJECT x_tables loop option usbserial snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd 8139cp i2c_i801 floppy 8139too 3c59x psmouse intel_agp soundcore snd_page_alloc sg mii usbcore agpgart i2c_core sr_mod evdev dcdbas cdrom [last unloaded: uhci_hcd]
+> > > > [25350.139052] 
+> > > > [25350.139059] Pid: 2807, comm: pppd Not tainted (2.6.27.4 #5)
+> > > > [25350.139065] EIP: 0060:[<e0a22e80>] EFLAGS: 00010286 CPU: 0
+> > > > [25350.139088] EIP is at unlink1+0xab/0xb9 [usbcore]
+> > > 
+> > > Yes, I've seen this before, what module are you unloading, uhci-hcd or
+> > > the option module?
+> > 
+> > I don't know :| I invoked "rmmod option usbserial uhci_hcd usbcore"
 > 
-> We already tried this, or something very similar in effect, I think...
-
-Yes, we have a check just like this in balance_pgdat().
-
-It's been there forever with no ill effect.
-
-> commit 26e4931632352e3c95a61edac22d12ebb72038fe
-> Author: akpm <akpm>
-> Date:   Sun Sep 8 19:21:55 2002 +0000
+> Try them one at a time:
+> 	rmmod option
+> 	rmmod uhci-hcd
 > 
->     [PATCH] refill the inactive list more quickly
->     
->     Fix a problem noticed by Ed Tomlinson: under shifting workloads the
->     shrink_zone() logic will refill the inactive load too slowly.
->     
->     Bale out of the zone scan when we've reclaimed enough pages.  Fixes a
->     rarely-occurring problem wherein refill_inactive_zone() ends up
->     shuffling 100,000 pages and generally goes silly.
+> that should be all you need if you really need to remove all usb
+> devices.
+> 
+> But why do you need to do this?
 
-This is not a bale out, this is a "skip zones that have way
-too many free pages already".
-
-Kswapd has been doing this for years already.
-
--- 
-All rights reversed.
+> > > > I tried to rmmod it (and all usb modules) because sometimes it helps when
+> > > > modem disconnects and can't connect again.
