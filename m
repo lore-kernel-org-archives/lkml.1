@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYK2Kz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbYK2Kz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295AbYK2Kz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 05:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYK2KzS
+	id S1756527AbYK2Kz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 05:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYK2Kzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 05:55:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35523 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbYK2KzR (ORCPT
+	Sat, 29 Nov 2008 05:55:50 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:53737 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751434AbYK2Kzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 05:55:17 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081128231933.8daef193.akpm@linux-foundation.org>
-References: <20081128060803.73cd59bd@bree.surriel.com> <20081128231933.8daef193.akpm@linux-foundation.org>
-Message-Id: <20081129195357.813D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Sat, 29 Nov 2008 19:55:13 +0900 (JST)
+	Sat, 29 Nov 2008 05:55:49 -0500
+Date: Sat, 29 Nov 2008 11:57:14 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] irq: sparseirq enabling v4
+Message-ID: <20081129105714.GB9643@uranus.ravnborg.org>
+References: <492A1877.4090304@kernel.org> <20081124144007.GA30725@elte.hu> <492B77C5.2050502@kernel.org> <20081126074826.GI26036@elte.hu> <492D02A4.4030206@kernel.org> <20081126081724.GK26036@elte.hu> <492E0540.9010009@kernel.org> <20081128163456.GB10487@elte.hu> <4930EB7F.1080307@kernel.org> <20081129100253.GD26691@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081129100253.GD26691@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We already tried this, or something very similar in effect, I think...
 > 
+> very nice!
 > 
-> commit 26e4931632352e3c95a61edac22d12ebb72038fe
-> Author: akpm <akpm>
-> Date:   Sun Sep 8 19:21:55 2002 +0000
-> 
->     [PATCH] refill the inactive list more quickly
->     
->     Fix a problem noticed by Ed Tomlinson: under shifting workloads the
->     shrink_zone() logic will refill the inactive load too slowly.
->     
->     Bale out of the zone scan when we've reclaimed enough pages.  Fixes a
->     rarely-occurring problem wherein refill_inactive_zone() ends up
->     shuffling 100,000 pages and generally goes silly.
->     
->     This needs to be revisited - we should go on and rebalance the lower
->     zones even if we reclaimed enough pages from highmem.
->     
-> 
-> 
-> Then it was reverted a year or two later:
-> 
-> 
-> commit 265b2b8cac1774f5f30c88e0ab8d0bcf794ef7b3
-> Author: akpm <akpm>
-> Date:   Fri Mar 12 16:23:50 2004 +0000
-> 
->     [PATCH] vmscan: zone balancing fix
->     
->     We currently have a problem with the balancing of reclaim between zones: much
->     more reclaim happens against highmem than against lowmem.
->     
->     This patch partially fixes this by changing the direct reclaim path so it
->     does not bale out of the zone walk after having reclaimed sufficient pages
->     from highmem: go on to reclaim from lowmem regardless of how many pages we
->     reclaimed from lowmem.
->     
-> 
-> My changelog does not adequately explain the reasons.
-> 
-> But we don't want to rediscover these reasons in early 2010 :(  Some trolling
-> of the linux-mm and lkml archives around those dates might help us avoid
-> a mistake here.
+> All the structural feedback i gave seems to be addressed properly, and 
+> the patch has shrunk and consolidated nicely. I think we can start 
+> splitting it up and applying it to tip/irq/sparseirq. We might notice a 
+> few more details when that happens, on a per patch basis.
 
-I hope to digg past discussion archive.
-Andrew, plese wait merge this patch awhile.
+Hi Ingo / Yinghai.
 
+Was the concerns raised by Benjamin, davem, others addressed?
+Just curious - I have never looked into this part of the kernel.
 
-
+	Sam
