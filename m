@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYK2LYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbYK2LhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbYK2LYr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 06:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYK2LYi
+	id S1755040AbYK2LhW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 06:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYK2LhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 06:24:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48821 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172AbYK2LYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 06:24:37 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Fix mmap2 error handling
-To: torvalds@osdl.org, akpm@linux-foundation.org, julia@diku.dk
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Date: Sat, 29 Nov 2008 11:24:30 +0000
-Message-ID: <20081129112430.22841.48427.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Sat, 29 Nov 2008 06:37:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:51645 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbYK2LhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 06:37:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=p6pQrG9bPq2pi/w/Iu4gQmYYp95VIB2HNH+yuylazAl4qgSFJbqbhQT1Aq7593fssx
+         XotMyW9jOAfhLkX2dJ01yJRq7JVY9OLSBnm5XXQ5I3Er6BdqLvpwhZJMKq+SXolpYYqK
+         /MRc9Inly0mbhcP+BiTwLF1zQEy7WuITuDzn4=
+Message-ID: <4931295B.7080105@gmail.com>
+Date: Sat, 29 Nov 2008 06:36:59 -0500
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: wli@holomorphy.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] hugetlb: unsigned ret cannot be negative.
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the error handling in sys_mmap2().  Currently, if the pgoff check fails,
-fput() might have to be called (which it isn't), so do the pgoff check first,
-before fget() is called.
+unsigned long ret cannot be negative, but ret can get -EFAULT.
 
-Reported-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
+hugetlbfs_read_actor() returns int,
+see 
+vi fs/hugetlbfs/inode.c +187
 
- arch/frv/kernel/sys_frv.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
-
-
-diff --git a/arch/frv/kernel/sys_frv.c b/arch/frv/kernel/sys_frv.c
-index 49b2cf2..baadc97 100644
---- a/arch/frv/kernel/sys_frv.c
-+++ b/arch/frv/kernel/sys_frv.c
-@@ -35,22 +35,21 @@ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
- 	int error = -EBADF;
- 	struct file * file = NULL;
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index 61edc70..0af64e4 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -252,6 +252,7 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
+ 	for (;;) {
+ 		struct page *page;
+ 		unsigned long nr, ret;
++		int ra;
  
--	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
--	if (!(flags & MAP_ANONYMOUS)) {
--		file = fget(fd);
--		if (!file)
--			goto out;
--	}
--
- 	/* As with sparc32, make sure the shift for mmap2 is constant
- 	   (12), no matter what PAGE_SIZE we have.... */
+ 		/* nr is the maximum number of bytes to copy from this page */
+ 		nr = huge_page_size(h);
+@@ -279,15 +280,16 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
+ 			/*
+ 			 * We have the page, copy it to user space buffer.
+ 			 */
+-			ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
++			ra = hugetlbfs_read_actor(page, offset, buf, len, nr);
+ 		}
+-		if (ret < 0) {
++		if (ra < 0) {
+ 			if (retval == 0)
+-				retval = ret;
++				retval = ra;
+ 			if (page)
+ 				page_cache_release(page);
+ 			goto out;
+ 		}
++		ret = ra;
  
- 	/* But unlike sparc32, don't just silently break if we're
- 	   trying to map something we can't */
--	if (pgoff & ((1<<(PAGE_SHIFT-12))-1))
-+	if (pgoff & ((1 << (PAGE_SHIFT - 12)) - 1))
- 		return -EINVAL;
-+	pgoff >>= PAGE_SHIFT - 12;
- 
--	pgoff >>= (PAGE_SHIFT - 12);
-+	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
-+	if (!(flags & MAP_ANONYMOUS)) {
-+		file = fget(fd);
-+		if (!file)
-+			goto out;
-+	}
- 
- 	down_write(&current->mm->mmap_sem);
- 	error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+ 		offset += ret;
+ 		retval += ret;
 
