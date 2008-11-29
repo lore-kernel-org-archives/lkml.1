@@ -1,154 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbYK2Hqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYK2Hr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228AbYK2Hqg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 02:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYK2Hq2
+	id S1754067AbYK2Hr5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 02:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYK2Hrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 02:46:28 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34090 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbYK2Hq1 (ORCPT
+	Sat, 29 Nov 2008 02:47:49 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:42033 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbYK2Hrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 02:46:27 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [rfc] vmscan: serialize aggressive reclaimers
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
-       akpm@linux-foundation.org
-In-Reply-To: <20081127173610.GA1781@cmpxchg.org>
-References: <20081124145057.4211bd46@bree.surriel.com> <20081127173610.GA1781@cmpxchg.org>
-Message-Id: <20081129164322.8131.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Sat, 29 Nov 2008 02:47:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=hLLBywDG4dC3OH3kJ1ISQRxZ8QK/rLMCs287skk0bvX6tQOf3p4X0KjVgHY/rFhee8
+         0lgcFmfr7iTmr+tJYdX46X3YQpuXRF/cKxD5ebyNpxBml45HZnsvjXoF9f/DGDywQ/Hx
+         UiRqLgxYRpCFAmF0y3wSzpPv8tRU+CPcVbAFw=
+Date: Sat, 29 Nov 2008 16:47:36 +0900
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Doug Thompson <norsk5@yahoo.com>, <dougthompson@xmission.com>,
+       <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-Id: <20081129164736.0b5a71db.h.mitake@gmail.com>
+In-Reply-To: <200811290056.mAT0uTuk028924@terminus.zytor.com>
+References: <200811290056.mAT0uTuk028924@terminus.zytor.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Sat, 29 Nov 2008 16:46:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Since we have to pull through a reclaim cycle once we commited to it,
-> what do you think about serializing the lower priority levels
-> completely?
+On Fri, 28 Nov 2008 16:56:39 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
+
+> The cast is unnecessary; one can argue for a cast to (u32) for clarity, but personally I think writel() is a clear enough especialy given the context.
 > 
-> The idea is that when one reclaimer has done a low priority level
-> iteration with a huge reclaim target, chances are that succeeding
-> reclaimers don't even need to drop to lower levels at all because
-> enough memory has already been freed.
-> 
-> My testprogram maps and faults in a file that is about as large as my
-> physical memory.  Then it spawns off n processes that try allocate
-> 1/2n of total memory in anon pages, i.e. half of it in sum.  After it
-> ran, I check how much memory has been reclaimed.  But my zone sizes
-> are too small to induce enormous reclaim targets so I don't see vast
-> over-reclaims.
-> 
-> I have measured the time of other tests on an SMP machine with 4 cores
-> and the following patch applied.  I couldn't see any performance
-> degradation.  But since the bug is not triggerable here, I can not
-> prove it helps the original problem, either.
 
-I wonder why nobody of vmscan folks write actual performance improvement value
-in patch description.
+Thanks for your advice. I removed redundant cat. How is this?
 
-I think this patch point to right direction.
-but, unfortunately, this implementation isn't fast as I mesured as.
+description of this patch
+Adding implementation of readq/writeq to x86_32,
+and adding config value to x86 architecture to determine existence of readq/writeq
 
+Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+---
+ arch/x86/Kconfig          |    4 ++++
+ arch/x86/include/asm/io.h |   24 ++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 0 deletions(-)
 
-> 
-> The level where it starts serializing is chosen pretty arbitrarily.
-> Suggestions welcome :)
-> 
-> 	Hannes
-> 
-> ---
-> 
-> Prevent over-reclaiming by serializing direct reclaimers below a
-> certain priority level.
-> 
-> Over-reclaiming happens when the sum of the reclaim targets of all
-> reclaiming processes is larger than the sum of the needed free pages,
-> thus leading to excessive eviction of more cache and anonymous pages
-> than required.
-> 
-> A scan iteration over all zones can not be aborted intermittently when
-> enough pages are reclaimed because that would mess up the scan balance
-> between the zones.  Instead, prevent that too many processes
-> simultaneously commit themselves to lower priority level scans in the
-> first place.
-> 
-> Chances are that after the exclusive reclaimer has finished, enough
-> memory has been freed that succeeding scanners don't need to drop to
-> lower priority levels at all anymore.
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> ---
->  mm/vmscan.c |   20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -35,6 +35,7 @@
->  #include <linux/notifier.h>
->  #include <linux/rwsem.h>
->  #include <linux/delay.h>
-> +#include <linux/wait.h>
->  #include <linux/kthread.h>
->  #include <linux/freezer.h>
->  #include <linux/memcontrol.h>
-> @@ -42,6 +43,7 @@
->  #include <linux/sysctl.h>
->  
->  #include <asm/tlbflush.h>
-> +#include <asm/atomic.h>
->  #include <asm/div64.h>
->  
->  #include <linux/swapops.h>
-> @@ -1546,10 +1548,15 @@ static unsigned long shrink_zones(int pr
->   * returns:	0, if no pages reclaimed
->   * 		else, the number of pages reclaimed
->   */
-> +
-> +static DECLARE_WAIT_QUEUE_HEAD(reclaim_wait);
-> +static atomic_t reclaim_exclusive = ATOMIC_INIT(0);
-> +
->  static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
->  					struct scan_control *sc)
->  {
->  	int priority;
-> +	int exclusive = 0;
->  	unsigned long ret = 0;
->  	unsigned long total_scanned = 0;
->  	unsigned long nr_reclaimed = 0;
-> @@ -1580,6 +1587,14 @@ static unsigned long do_try_to_free_page
->  		sc->nr_scanned = 0;
->  		if (!priority)
->  			disable_swap_token();
-> +		/*
-> +		 * Serialize aggressive reclaimers
-> +		 */
-> +		if (priority <= DEF_PRIORITY / 2 && !exclusive) {
-
-On large machine, DEF_PRIORITY / 2 is really catastrophe situation.
-2^6 = 64. 
-if zone has 64GB memory, it mean 1GB reclaim.
-I think more early restriction is better.
-
-
-> +			wait_event(reclaim_wait,
-> +				!atomic_cmpxchg(&reclaim_exclusive, 0, 1));
-> +			exclusive = 1;
-> +		}
-
-if you want to restrict to one task, you can use mutex.
-and this wait_queue should put on global variable. it should be zone variable.
-
-In addision, you don't consider recursive relaim and several task can't sleep there.
-
-
-please believe me. I have richest experience about reclaim throttling in the planet.
-
-
-
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ac22bb7..10bd84c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -11,9 +11,13 @@ config 64BIT
+ 
+ config X86_32
+ 	def_bool !64BIT
++	select ARCH_HAS_READQ
++	select ARCH_HAS_WRITEQ
+ 
+ config X86_64
+ 	def_bool 64BIT
++	select ARCH_HAS_READQ
++	select ARCH_HAS_WRITEQ
+ 
+ ### Arch settings
+ config X86
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index ac2abc8..ddc67aa 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -4,6 +4,7 @@
+ #define ARCH_HAS_IOREMAP_WC
+ 
+ #include <linux/compiler.h>
++#include <asm-generic/int-ll64.h>
+ 
+ #define build_mmio_read(name, size, type, reg, barrier) \
+ static inline type name(const volatile void __iomem *addr) \
+@@ -57,6 +58,29 @@ build_mmio_write(__writeq, "q", unsigned long, "r", )
+ /* Let people know we have them */
+ #define readq readq
+ #define writeq writeq
++
++#else  /* CONFIG_X86_32 from here */
++
++static inline __u64 readq(const volatile void __iomem *addr)
++{
++	const volatile u32 __iomem *p = addr;
++	u32 l, h;
++
++	l = readl(p);
++	h = readl(p+1);
++
++	return l + ((u64)h << 32);
++}
++
++static inline void writeq(__u64 val, volatile void __iomem *addr)
++{
++	writel(val, addr);
++	writel(val >> 32, addr+4);
++}
++
++#define readq readq
++#define writeq writeq
++
+ #endif
+ 
+ extern int iommu_bio_merge;
+-- 
+1.5.6.5
 
