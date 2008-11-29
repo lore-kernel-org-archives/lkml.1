@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYK2KTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbYK2KVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbYK2KTR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 05:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYK2KS6
+	id S1755959AbYK2KVz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 05:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYK2KVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 05:18:58 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54364 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751103AbYK2KS5 (ORCPT
+	Sat, 29 Nov 2008 05:21:48 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:65197 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbYK2KVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 05:18:57 -0500
-X-Sasl-enc: e+OFJzL8YfyXWSVMT2+OMXjUAgZL1Rs0UNKpy1PyUwBl 1227953935
-Date: Sat, 29 Nov 2008 10:18:49 +0000
-From: James Le Cuirot <chewi@aura-online.co.uk>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, suspend-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org
-Subject: Re: [Suspend-devel] TAP (and TUN?) devices not working after resume
-Message-ID: <20081129101849.277ba756@symphony>
-In-Reply-To: <48894D88.9010104@qualcomm.com>
-References: <20080714154720.791f6640@symphony>
-	<200807141812.45264.rjw@sisk.pl>
-	<48894D88.9010104@qualcomm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 29 Nov 2008 05:21:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=GuIsrtDiaUcdN13H7S1kp6Ug1bLaTGIKhty85wTRK6MwKLpEnJreOYLz6RevUrYTsd
+         wVje9HmSr0U0tnTPkdr0bItd6swGx2MDupEsUzxrS8FCFl1pbceW/nuM+glXHddodTzG
+         QbSYMZJwGTyAFmzFQ3xGabf8t/6+hfOiVasGs=
+Message-ID: <84144f020811290221g947f836n4fe3435676425ee@mail.gmail.com>
+Date: Sat, 29 Nov 2008 12:21:46 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: balbir@linux.vnet.ibm.com, jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH][UML] Boot broken due to buffer overrun
+In-Reply-To: <20081129100830.GA24128@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081129100830.GA24128@balbir.in.ibm.com>
+X-Google-Sender-Auth: 74c203c5a337657f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jul 2008 20:50:32 -0700
-Max Krasnyansky <maxk@qualcomm.com> wrote:
+Hi Balbir,
 
-> > On Monday, 14 of July 2008, James Le Cuirot wrote:  
-> >>
-> >> Hi,
-> >>
-> >> uswsusp works great on my machine except for one thing. I use a TAP
-> >> device for QEMU and after resuming from suspend, it doesn't work
-> >> anymore until I delete it and recreate it. This is rather annoying
-> >> because if I have QEMU open, it means I have to close it before
-> >> recreating the interface and then boot Windows up again. I use
-> >> OpenVPN to create/delete the interface but I think that's all it
-> >> does. The rest is done by the kernel. So I'm guessing something's
-> >> up with the TUN/TAP driver or uswsusp itself. I'm using version
-> >> 0.8. Sorry if this has already been fixed.  
-> 
-> I bet it's flow control related. I've fixed a bug in flow control
-> handling for persistent devices recently.
-> btw Does it still happen with >= 2.6.26 ?
-> 
-> I'll play with some test code on my laptop and see if I can reproduce
-> this issue.
-> 
-> Max
+On Sat, Nov 29, 2008 at 12:08 PM, Balbir Singh
+<balbir@linux.vnet.ibm.com> wrote:
+> mconsole_init() passed 256 bytes as length in os_create_unix_socket, while
+> the sizeof UNIX_PATH_MAX is 108. This patch fixes that problem and avoids
+> a big overrun bug reported on UML bootup.
 
-Sorry about the crazy delay here, I didn't need to use QEMU for ages
-and I don't like firing up Windows unless I have too. :D I'm not sure
-about 2.6.26 but this appears to be fixed in 2.6.27.
+Maybe mention that ->sun_path in struct sockaddr_un is UNIX_PATH_MAX
+long which causes the problem?
 
-Thanks,
-James
+> Reported-by: Vikas K Managutte <vikki.km@gmail.com>
+> Reported-by: Sarvesh Kumar Lal Das <skldas@gmail.com>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> ---
+>
+>  arch/um/drivers/mconsole_kern.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff -puN arch/um/drivers/mconsole_kern.c~fix-uml-buggy-socket-creation arch/um/drivers/mconsole_kern.c
+> --- linux-2.6.28-rc6/arch/um/drivers/mconsole_kern.c~fix-uml-buggy-socket-creation      2008-11-29 15:29:04.000000000 +0530
+> +++ linux-2.6.28-rc6-balbir/arch/um/drivers/mconsole_kern.c     2008-11-29 15:32:23.000000000 +0530
+> @@ -16,6 +16,8 @@
+>  #include <linux/slab.h>
+>  #include <linux/syscalls.h>
+>  #include <linux/utsname.h>
+> +#include <linux/socket.h>
+> +#include <linux/un.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/mutex.h>
+>  #include <asm/uaccess.h>
+> @@ -785,7 +787,7 @@ static int __init mconsole_init(void)
+>        /* long to avoid size mismatch warnings from gcc */
+>        long sock;
+>        int err;
+> -       char file[256];
+> +       char file[UNIX_PATH_MAX];
+>
+>        if (umid_file_name("mconsole", file, sizeof(file)))
+>                return -1;
+> _
+>
+> --
+>        Balbir
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
