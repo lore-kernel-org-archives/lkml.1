@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYK3Cku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYK3ClR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbYK3Cku (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 21:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYK3Ckf
+	id S1756075AbYK3ClR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 21:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbYK3Ckm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 21:40:35 -0500
+	Sat, 29 Nov 2008 21:40:42 -0500
 Received: from wf-out-1314.google.com ([209.85.200.172]:23550 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753877AbYK3Cke (ORCPT
+	with ESMTP id S1754140AbYK3Ckh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 21:40:34 -0500
+	Sat, 29 Nov 2008 21:40:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=Hfzx65otJEpAXPNRt2cXNxaP7z8uluI65kvF5Wq/ApQw87bG+53BPYwkaBd0EUbvvQ
-         X/WewJBvihle+0JL1KFfIWn0hUc5qNCrGq+tGOJ8yMdggtxuYWsGT2wTxC/pipXkVvL5
-         ildpKKdll9DNEtdKap4bMP8YQww9THJ4JL9vs=
-Subject: [PATCH-mm 1/7] byteorder: add load_/store_{endian} API
+        b=Ef6dHN9F+UhczCuct/5px5IutqCCx/SpTDQhHa3qunJYq+2Opao4bUE9Ku50dhFKyB
+         RVuLGbCRAVuOLPhnRBB8gXRgC4ZcVFjUvHjZUriunld5rvhuly7c4Cwkk8rNwWDebUNc
+         5S+H88VdMV+SO/nWLy/dN9nEp76GBeaM9oyTk=
+Subject: [PATCH-mm 2/7] unaligned: consolidate unaligned headers add
+ load_/store_{endian}_noalign
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>
 Content-Type: text/plain
 Date: Sat, 29 Nov 2008 18:40:29 -0800
-Message-Id: <1228012829.26141.1026.camel@brick>
+Message-Id: <1228012829.26141.1027.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -31,93 +33,367 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-load_le16 is a synonym for the existing le16_to_cpup and is added to
-be symmetric with the load_le16_noalign API.  On arches where unaligned
-access is OK, the unaligned calls are replaced with aligned calls.
+Consolidate include/linux/unaligned/*.h into a single linux/unaligned.h
 
-store_le16 is a new API and is added to be symmetric with the unaligned
-functions.  It is implemented as a macro to allow compile-time byteswapping
-when the value is a constant.  This will also allow use in many places
-currently that are of the form:
+There are two common cases in the kernel, one where unaligned access is OK
+for an arch and one where the arch uses a packed-struct for the native
+endianness and opencoded C byteshifting for the other endianness.
+Consolidate these two implementations in linux/unaligned.h
 
-*(__le16 *)ptr = cpu_to_le16(foo);
-
-In addition, some drivers/filesystems/arches already provide this API
-privately, which will allow them to be consolidated into this common
-code.
+Arches that require no special handling of unaligned access can define
+_UNALIGNED_ACCESS_OK in their asm/unaligned.h before including the generic
+version.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-Andrew, the series become shorter if I just wire the aligned versions first
-and then use them in the unaligned headers.
+ include/linux/unaligned.h |  339 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 339 insertions(+), 0 deletions(-)
 
- include/linux/byteorder.h |   26 ++++++++++++++++++++------
- 1 files changed, 20 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
-index 29f002d..91cf7a5 100644
---- a/include/linux/byteorder.h
-+++ b/include/linux/byteorder.h
-@@ -292,6 +292,20 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
- # define cpu_to_be32 __cpu_to_be32
- # define cpu_to_be64 __cpu_to_be64
- 
-+# define load_le16 __le16_to_cpup
-+# define load_le32 __le32_to_cpup
-+# define load_le64 __le64_to_cpup
-+# define load_be16 __be16_to_cpup
-+# define load_be32 __be32_to_cpup
-+# define load_be64 __be64_to_cpup
+diff --git a/include/linux/unaligned.h b/include/linux/unaligned.h
+new file mode 100644
+index 0000000..e700f1e
+--- /dev/null
++++ b/include/linux/unaligned.h
+@@ -0,0 +1,339 @@
++#ifndef _LINUX_UNALIGNED_H
++#define _LINUX_UNALIGNED_H
 +
-+# define store_le16(p, val) (*(__le16 *)(p) = cpu_to_le16(val))
-+# define store_le32(p, val) (*(__le32 *)(p) = cpu_to_le32(val))
-+# define store_le64(p, val) (*(__le64 *)(p) = cpu_to_le64(val))
-+# define store_be16(p, val) (*(__be16 *)(p) = cpu_to_be16(val))
-+# define store_be32(p, val) (*(__be32 *)(p) = cpu_to_be32(val))
-+# define store_be64(p, val) (*(__be64 *)(p) = cpu_to_be64(val))
++#include <linux/types.h>
++#include <asm/byteorder.h>
++#include <asm/unaligned.h>
 +
- # define le16_to_cpup __le16_to_cpup
- # define le32_to_cpup __le32_to_cpup
- # define le64_to_cpup __le64_to_cpup
-@@ -340,32 +354,32 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
- 
- static inline void le16_add_cpu(__le16 *var, u16 val)
- {
--	*var = cpu_to_le16(le16_to_cpup(var) + val);
-+	store_le16(var, load_le16(var) + val);
- }
- 
- static inline void le32_add_cpu(__le32 *var, u32 val)
- {
--	*var = cpu_to_le32(le32_to_cpup(var) + val);
-+	store_le32(var, load_le32(var) + val);
- }
- 
- static inline void le64_add_cpu(__le64 *var, u64 val)
- {
--	*var = cpu_to_le64(le64_to_cpup(var) + val);
-+	store_le64(var, load_le64(var) + val);
- }
- 
- static inline void be16_add_cpu(__be16 *var, u16 val)
- {
--	*var = cpu_to_be16(be16_to_cpup(var) + val);
-+	store_be16(var, load_be16(var) + val);
- }
- 
- static inline void be32_add_cpu(__be32 *var, u32 val)
- {
--	*var = cpu_to_be32(be32_to_cpup(var) + val);
-+	store_be32(var, load_be32(var) + val);
- }
- 
- static inline void be64_add_cpu(__be64 *var, u64 val)
- {
--	*var = cpu_to_be64(be64_to_cpup(var) + val);
-+	store_be64(var, load_be64(var) + val);
- }
- 
- #endif /* __KERNEL__ */
++#ifdef _UNALIGNED_ACCESS_OK
++
++static inline u16 __load_cpu16_noalign(const void *p)
++{
++	return *(u16 *)p;
++}
++
++static inline u32 __load_cpu32_noalign(const void *p)
++{
++	return *(u32 *)p;
++}
++
++static inline u64 __load_cpu64_noalign(const void *p)
++{
++	return *(u64 *)p;
++}
++
++static inline void __store_cpu16_noalign(void *p, u16 val)
++{
++	*(u16 *)p = val;
++}
++
++static inline void __store_cpu32_noalign(void *p, u32 val)
++{
++	*(u32 *)p = val;
++}
++
++static inline void __store_cpu64_noalign(void *p, u64 val)
++{
++	*(u64 *)p = val;
++}
++
++# define load_le16_noalign load_le16
++# define load_le32_noalign load_le32
++# define load_le64_noalign load_le64
++# define load_be16_noalign load_be16
++# define load_be32_noalign load_be32
++# define load_be64_noalign load_be64
++
++# define store_le16_noalign store_le16
++# define store_le32_noalign store_le32
++# define store_le64_noalign store_le64
++# define store_be16_noalign store_be16
++# define store_be32_noalign store_be32
++# define store_be64_noalign store_be64
++
++#else /* _UNALIGNED_ACCESS_OK */
++
++struct __una_u16 { u16 x; } __attribute__((packed));
++struct __una_u32 { u32 x; } __attribute__((packed));
++struct __una_u64 { u64 x; } __attribute__((packed));
++
++static inline u16 __load_cpu16_noalign(const void *p)
++{
++#ifdef __arch_load_cpu16_noalign
++	return __arch_load_cpu16_noalign(p);
++#else
++	return ((const struct __una_u16 *)p)->x;
++#endif
++}
++
++static inline u32 __load_cpu32_noalign(const void *p)
++{
++#ifdef __arch_load_cpu32_noalign
++	return __arch_load_cpu32_noalign(p);
++#else
++	return ((const struct __una_u32 *)p)->x;
++#endif
++}
++
++static inline u64 __load_cpu64_noalign(const void *p)
++{
++#ifdef __arch_load_cpu64_noalign
++	return __arch_load_cpu64_noalign(p);
++#else
++	return ((const struct __una_u64 *)p)->x;
++#endif
++}
++
++static inline u16 __load_le16_noalign(const u8 *p)
++{
++	return p[0] | p[1] << 8;
++}
++
++static inline u32 __load_le32_noalign(const u8 *p)
++{
++	return p[0] | p[1] << 8 | p[2] << 16 | p[3] << 24;
++}
++
++static inline u64 __load_le64_noalign(const u8 *p)
++{
++	return ((u64)__load_le32_noalign(p + 4) << 32) | __load_le32_noalign(p);
++}
++
++static inline u16 __load_be16_noalign(const u8 *p)
++{
++	return p[0] << 8 | p[1];
++}
++
++static inline u32 __load_be32_noalign(const u8 *p)
++{
++	return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
++}
++
++static inline u64 __load_be64_noalign(const u8 *p)
++{
++	return ((u64)__load_be32_noalign(p) << 32) | __load_be32_noalign(p + 4);
++}
++
++static inline u16 load_le16_noalign(const __le16 *p)
++{
++#ifdef __LITTLE_ENDIAN
++	return __load_cpu16_noalign(p);
++#else
++	return __load_le16_noalign((__force u8 *)p);
++#endif
++}
++
++static inline u32 load_le32_noalign(const __le32 *p)
++{
++#ifdef __LITTLE_ENDIAN
++	return __load_cpu32_noalign(p);
++#else
++	return __load_le32_noalign((__force u8 *)p);
++#endif
++}
++
++static inline u64 load_le64_noalign(const __le64 *p)
++{
++#ifdef __LITTLE_ENDIAN
++	return __load_cpu64_noalign(p);
++#else
++	return __load_le64_noalign((__force u8 *)p);
++#endif
++}
++
++static inline u16 load_be16_noalign(const __be16 *p)
++{
++#ifdef __BIG_ENDIAN
++	return __load_cpu16_noalign(p);
++#else
++	return __load_be16_noalign((__force u8 *)p);
++#endif
++}
++
++static inline u32 load_be32_noalign(const __be32 *p)
++{
++#ifdef __BIG_ENDIAN
++	return __load_cpu32_noalign(p);
++#else
++	return __load_be32_noalign((__force u8 *)p);
++#endif
++}
++
++static inline u64 load_be64_noalign(const __be64 *p)
++{
++#ifdef __BIG_ENDIAN
++	return __load_cpu64_noalign(p);
++#else
++	return __load_be64_noalign((__force u8 *)p);
++#endif
++}
++
++static inline void __store_cpu16_noalign(void *p, u16 val)
++{
++#ifdef __arch_store_cpu16_noalign
++	__arch_store_cpu16_noalign(p, val);
++#else
++	((struct __una_u16 *)p)->x = val;
++#endif
++}
++
++static inline void __store_cpu32_noalign(void *p, u32 val)
++{
++#ifdef __arch_store_cpu32_noalign
++	__arch_store_cpu32_noalign(p, val);
++#else
++	((struct __una_u32 *)p)->x = val;
++#endif
++}
++
++static inline void __store_cpu64_noalign(void *p, u64 val)
++{
++#ifdef __arch_store_cpu64_noalign
++	__arch_store_cpu64_noalign(p, val);
++#else
++	((struct __una_u64 *)p)->x = val;
++#endif
++}
++
++static inline void __store_le16_noalign(u8 *p, u16 val)
++{
++	*p++ = val;
++	*p++ = val >> 8;
++}
++
++static inline void __store_le32_noalign(u8 *p, u32 val)
++{
++	__store_le16_noalign(p, val);
++	__store_le16_noalign(p + 2, val >> 16);
++}
++
++static inline void __store_le64_noalign(u8 *p, u64 val)
++{
++	__store_le32_noalign(p, val);
++	__store_le32_noalign(p + 4, val >> 32);
++}
++
++static inline void __store_be16_noalign(u8 *p, u16 val)
++{
++	*p++ = val >> 8;
++	*p++ = val;
++}
++
++static inline void __store_be32_noalign(u8 *p, u32 val)
++{
++	__store_be16_noalign(p, val >> 16);
++	__store_be16_noalign(p + 2, val);
++}
++
++static inline void __store_be64_noalign(u8 *p, u64 val)
++{
++	__store_be32_noalign(p, val >> 32);
++	__store_be32_noalign(p + 4, val);
++}
++
++static inline void store_le16_noalign(__le16 *p, u16 val)
++{
++#ifdef __LITTLE_ENDIAN
++	__store_cpu16_noalign(p, val);
++#else
++	__store_le16_noalign((__force u8 *)p, val);
++#endif
++}
++
++static inline void store_le32_noalign(__le32 *p, u32 val)
++{
++#ifdef __LITTLE_ENDIAN
++	__store_cpu32_noalign(p, val);
++#else
++	__store_le32_noalign((__force u8 *)p, val);
++#endif
++}
++
++static inline void store_le64_noalign(__le64 *p, u64 val)
++{
++#ifdef __LITTLE_ENDIAN
++	__store_cpu64_noalign(p, val);
++#else
++	__store_le64_noalign((__force u8 *)p, val);
++#endif
++}
++
++static inline void store_be16_noalign(__be16 *p, u16 val)
++{
++#ifdef __BIG_ENDIAN
++	__store_cpu16_noalign(p, val);
++#else
++	__store_be16_noalign((__force u8 *)p, val);
++#endif
++}
++
++static inline void store_be32_noalign(__be32 *p, u32 val)
++{
++#ifdef __BIG_ENDIAN
++	__store_cpu32_noalign(p, val);
++#else
++	__store_be32_noalign((__force u8 *)p, val);
++#endif
++}
++
++static inline void store_be64_noalign(__be64 *p, u64 val)
++{
++#ifdef __BIG_ENDIAN
++	__store_cpu64_noalign(p, val);
++#else
++	__store_be64_noalign((__force u8 *)p, val);
++#endif
++}
++
++#endif /* _UNALIGNED_ACCESS_OK */
++
++#define get_unaligned_le16(p) load_le16_noalign((void *)(p))
++#define get_unaligned_le32(p) load_le32_noalign((void *)(p))
++#define get_unaligned_le64(p) load_le64_noalign((void *)(p))
++#define get_unaligned_be16(p) load_be16_noalign((void *)(p))
++#define get_unaligned_be32(p) load_be32_noalign((void *)(p))
++#define get_unaligned_be64(p) load_be64_noalign((void *)(p))
++
++#define put_unaligned_le16(val, p) store_le16_noalign((void *)(p), (val))
++#define put_unaligned_le32(val, p) store_le32_noalign((void *)(p), (val))
++#define put_unaligned_le64(val, p) store_le64_noalign((void *)(p), (val))
++#define put_unaligned_be16(val, p) store_be16_noalign((void *)(p), (val))
++#define put_unaligned_be32(val, p) store_be32_noalign((void *)(p), (val))
++#define put_unaligned_be64(val, p) store_be64_noalign((void *)(p), (val))
++
++/*
++ * Cause a link-time error if we try an unaligned access other than
++ * 1,2,4 or 8 bytes long
++ */
++extern void __bad_unaligned_access_size(void);
++
++#define get_unaligned(ptr) ((__force typeof(*(ptr)))({				\
++	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
++	__builtin_choose_expr(sizeof(*(ptr)) == 2, __load_cpu16_noalign(ptr),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 4, __load_cpu32_noalign(ptr),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 8, __load_cpu64_noalign(ptr),	\
++	__bad_unaligned_access_size()))));					\
++	}))
++
++#define put_unaligned(val, ptr) ({					\
++	void *__gu_p = (ptr);						\
++	switch (sizeof(*(ptr))) {					\
++	case 1:								\
++		*(u8 *)__gu_p = (__force u8)(val);			\
++		break;							\
++	case 2:								\
++		__store_cpu16_noalign(__gu_p, (__force u16)(val));	\
++		break;							\
++	case 4:								\
++		__store_cpu32_noalign(__gu_p, (__force u32)(val));	\
++		break;							\
++	case 8:								\
++		__store_cpu64_noalign(__gu_p, (__force u64)(val));	\
++		break;							\
++	default:							\
++		__bad_unaligned_access_size();				\
++		break;							\
++	}								\
++	(void)0; })
++
++#endif /* _LINUX_UNALIGNED_H */
 -- 
 1.6.0.4.1044.g77718
 
