@@ -1,112 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYK3XCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbYK3Xmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbYK3XCm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 18:02:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYK3XCc
+	id S1756484AbYK3Xmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 18:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYK3XmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 18:02:32 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:46577 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753432AbYK3XCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 18:02:31 -0500
-Date: Mon, 1 Dec 2008 00:02:20 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC fixes for 2.6.28-rc7
-Message-ID: <20081201000220.6163a080@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-25156-1228086148-0001-2"
+	Sun, 30 Nov 2008 18:42:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40477 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754836AbYK3XmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 18:42:22 -0500
+Message-ID: <493324D1.7010202@redhat.com>
+Date: Mon, 01 Dec 2008 00:42:09 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Alasdair G Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] block: fix setting of max_segment_size and seg_boundary mask
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Fix setting of max_segment_size and seg_boundary mask for stacked md/dm devices.
 
---=_freyr.drzeus.cx-25156-1228086148-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+When stacking devices (LVM over MD over SCSI) some of the request queue
+parameters are not set up correctly in some cases by default, namely
+max_segment_size and and seg_boundary mask.
 
-Linus, please pull from
+If you create MD device over SCSI, these attributes are zeroed.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
+Problem become when there is over this mapping next device-mapper
+mapping - queue attributes are set in DM this way:
 
-to receive the following updates:
+request_queue   max_segment_size  seg_boundary_mask
+SCSI                65536             0xffffffff
+MD RAID1                0                      0
+LVM                 65536                 -1 (64bit)
 
- drivers/mmc/host/at91_mci.c   |    4 ++--
- drivers/mmc/host/sdricoh_cs.c |    2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+Unfortunately bio_add_page (resp. bio_phys_segments) calculates number
+of physical segments according to these parameters.
 
-Nicolas Ferre (1):
-      mmc: at91_mci: reorder timer setup and mmc_add_host() call
+During the generic_make_request() is segment cout recalculated and
+can increase bio->bi_phys_segments count over the allowed limit.
+(After bio_clone() in stack operation.)
 
-Sascha Sommer (1):
-      sdricoh_cs: Add support for Bay Controller devices
+Thi is specially problem in CCISS driver, where it produce OOPS here
+    BUG_ON(creq->nr_phys_segments > MAXSGENTRIES);
+(MAXSEGENTRIES is 31 by default.)
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 1f8b5b3..e556d42 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -1088,6 +1088,8 @@ static int __init at91_mci_probe(struct platform_devi=
-ce *pdev)
- 		goto fail0;
- 	}
-=20
-+	setup_timer(&host->timer, at91_timeout_timer, (unsigned long)host);
+Sometimes even this command is enough to cause oops:
+  dd iflag=direct if=/dev/<vg>/<lv> of=/dev/null bs=128000 count=10
+
+This command generates bios with 250 sectors, allocated in 32 4k-pages
+(last page uses only 1024 bytes).
+
+For LVM layer, it allocates bio with 31 segments (still OK for CCISS),
+unfortunatelly on lower layer it is recalculated to 32 segments and
+this violates CCISS restriction and triggers BUG_ON().
+
+Attached patch tries to fix it by:
+ * initializing attributes above in queue request constructor
+   blk_queue_make_request()
+
+ * make sure that blk_queue_stack_limits() inherits setting
+
+ (DM uses its own function to set the limits because
+ it blk_queue_stack_limits() was introduced later.
+ It should probably switch to use generic stack limit function too.)
+
+ * sets the default seg_boundary value in one place (blkdev.h)
+
+ * use this mask as default in DM (instead of -1, which differs in 64bit)
+
+Bugs related to this:
+https://bugzilla.redhat.com/show_bug.cgi?id=471639
+http://bugzilla.kernel.org/show_bug.cgi?id=8672
+
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+---
+ block/blk-core.c       |    2 +-
+ block/blk-settings.c   |    4 ++++
+ drivers/md/dm-table.c  |    2 +-
+ include/linux/blkdev.h |    2 ++
+ 4 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 10e8a64..b7d646c 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -592,7 +592,7 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
+ 				   1 << QUEUE_FLAG_STACKABLE);
+ 	q->queue_lock		= lock;
+ 
+-	blk_queue_segment_boundary(q, 0xffffffff);
++	blk_queue_segment_boundary(q, BLK_SEG_BOUNDARY_MASK);
+ 
+ 	blk_queue_make_request(q, __make_request);
+ 	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index 41392fb..afa55e1 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -125,6 +125,9 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
+ 	q->nr_requests = BLKDEV_MAX_RQ;
+ 	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
+ 	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
++	blk_queue_segment_boundary(q, BLK_SEG_BOUNDARY_MASK);
++	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
 +
- 	platform_set_drvdata(pdev, mmc);
-=20
- 	/*
-@@ -1101,8 +1103,6 @@ static int __init at91_mci_probe(struct platform_devi=
-ce *pdev)
-=20
- 	mmc_add_host(mmc);
-=20
--	setup_timer(&host->timer, at91_timeout_timer, (unsigned long)host);
--
- 	/*
- 	 * monitor card insertion/removal if we can
- 	 */
-diff --git a/drivers/mmc/host/sdricoh_cs.c b/drivers/mmc/host/sdricoh_cs.c
-index 1df44d9..4358633 100644
---- a/drivers/mmc/host/sdricoh_cs.c
-+++ b/drivers/mmc/host/sdricoh_cs.c
-@@ -82,6 +82,8 @@ static struct pcmcia_device_id pcmcia_ids[] =3D {
- 	/* vendor and device strings followed by their crc32 hashes */
- 	PCMCIA_DEVICE_PROD_ID12("RICOH", "Bay1Controller", 0xd9f522ed,
- 				0xc3901202),
-+	PCMCIA_DEVICE_PROD_ID12("RICOH", "Bay Controller", 0xd9f522ed,
-+				0xace80909),
- 	PCMCIA_DEVICE_NULL,
- };
-=20
+ 	q->make_request_fn = mfn;
+ 	q->backing_dev_info.ra_pages =
+ 			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
+@@ -314,6 +317,7 @@ void blk_queue_stack_limits(struct request_queue *t, struct request_queue *b)
+ 	/* zero is "infinity" */
+ 	t->max_sectors = min_not_zero(t->max_sectors, b->max_sectors);
+ 	t->max_hw_sectors = min_not_zero(t->max_hw_sectors, b->max_hw_sectors);
++	t->seg_boundary_mask = min_not_zero(t->seg_boundary_mask, b->seg_boundary_mask);
+ 
+ 	t->max_phys_segments = min(t->max_phys_segments, b->max_phys_segments);
+ 	t->max_hw_segments = min(t->max_hw_segments, b->max_hw_segments);
+diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+index a63161a..04e5fd7 100644
+--- a/drivers/md/dm-table.c
++++ b/drivers/md/dm-table.c
+@@ -668,7 +668,7 @@ static void check_for_valid_limits(struct io_restrictions *rs)
+ 	if (!rs->max_segment_size)
+ 		rs->max_segment_size = MAX_SEGMENT_SIZE;
+ 	if (!rs->seg_boundary_mask)
+-		rs->seg_boundary_mask = -1;
++		rs->seg_boundary_mask = BLK_SEG_BOUNDARY_MASK;
+ 	if (!rs->bounce_pfn)
+ 		rs->bounce_pfn = -1;
+ }
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index a135256..9573945 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -921,6 +921,8 @@ extern void blk_set_cmd_filter_defaults(struct blk_cmd_filter *filter);
+ 
+ #define MAX_SEGMENT_SIZE	65536
+ 
++#define BLK_SEG_BOUNDARY_MASK	0xFFFFFFFFUL
++
+ #define blkdev_entry_to_request(entry) list_entry((entry), struct request, queuelist)
+ 
+ static inline int queue_hardsect_size(struct request_queue *q)
 
 
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-25156-1228086148-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkkzG4UACgkQ7b8eESbyJLjBCwCgio63tW/OISQFFDUa4OM/b0a1
-OfYAoKqEU2KkPPf70Fpm+Pl/gWlFGIeJ
-=mL5P
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-25156-1228086148-0001-2--
