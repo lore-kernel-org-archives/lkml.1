@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYK3ONn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYK3O21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYK3ONn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 09:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYK3ONd
+	id S1755229AbYK3O21 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 09:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYK3O2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 09:13:33 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55403 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYK3ONc (ORCPT
+	Sun, 30 Nov 2008 09:28:17 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:33248 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbYK3O2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 09:13:32 -0500
-Date: Sun, 30 Nov 2008 14:13:29 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
+	Sun, 30 Nov 2008 09:28:17 -0500
+Message-ID: <ac3eb2510811300628t2bb40427p22e22e2ed671d9a9@mail.gmail.com>
+Date: Sun, 30 Nov 2008 15:28:15 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Al Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] fix pktcdvd breakage from commit e105b8bfc769b0545b6f0f395179d1e43cbee822
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, gregkh@suse.de,
        petero2@telia.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix pktcdvd breakage from commit
-	e105b8bfc769b0545b6f0f395179d1e43cbee822
-Message-ID: <20081130141329.GC28946@ZenIV.linux.org.uk>
-References: <20081130121909.GV28946@ZenIV.linux.org.uk> <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com> <20081130132118.GY28946@ZenIV.linux.org.uk> <ac3eb2510811300525n2e47ccap65e897ac1c4adab5@mail.gmail.com> <20081130133229.GZ28946@ZenIV.linux.org.uk> <20081130134048.GA28946@ZenIV.linux.org.uk> <ac3eb2510811300544r2b228a85n86553d6657ac5578@mail.gmail.com> <20081130135031.GB28946@ZenIV.linux.org.uk> <ac3eb2510811300557u4922699du87a62cfd29020db1@mail.gmail.com>
+In-Reply-To: <20081130141329.GC28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <ac3eb2510811300557u4922699du87a62cfd29020db1@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20081130121909.GV28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com>
+	 <20081130132118.GY28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300525n2e47ccap65e897ac1c4adab5@mail.gmail.com>
+	 <20081130133229.GZ28946@ZenIV.linux.org.uk>
+	 <20081130134048.GA28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300544r2b228a85n86553d6657ac5578@mail.gmail.com>
+	 <20081130135031.GB28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300557u4922699du87a62cfd29020db1@mail.gmail.com>
+	 <20081130141329.GC28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 30, 2008 at 02:57:14PM +0100, Kay Sievers wrote:
-> > "It" being udev, presumably?
-> 
-> Yes, udev, mdev, and a few other tools people use to populate /dev
-> from the kernel supplied device information.
-> 
-> > What a mess...  How does drivers/usb/core/devio.c avoid essentially the same
-> > problem?
-> 
-> It's a special case, where two "struct device" have the same dev_t,
-> but they both point to and handle the same device, so it's fine. The
-> usb_device class is deprecated, no recent distro uses it, and will be
-> removed some day.
+On Sun, Nov 30, 2008 at 15:13, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> On Sun, Nov 30, 2008 at 02:57:14PM +0100, Kay Sievers wrote:
+>> > "It" being udev, presumably?
+>>
+>> Yes, udev, mdev, and a few other tools people use to populate /dev
+>> from the kernel supplied device information.
+>>
+>> > What a mess...  How does drivers/usb/core/devio.c avoid essentially the same
+>> > problem?
+>>
+>> It's a special case, where two "struct device" have the same dev_t,
+>> but they both point to and handle the same device, so it's fine. The
+>> usb_device class is deprecated, no recent distro uses it, and will be
+>> removed some day.
+>
+> Would that happened to udev as well...  Yeah, I know, but one can dream ;-/
 
-Would that happened to udev as well...  Yeah, I know, but one can dream ;-/
+If there are two devices with the same dev_t, and udev is configured
+to create the same names in /dev, it will create the node for the
+first event, and reuse is for the second identical event. There is no
+problem here.
 
-Bloody wonderful.  So we have
-	* userland-exposed layout of directory trees created by pktcdvd
-	* uevent mess generated by device_create() and *also* userland-exposed
+> Bloody wonderful.  So we have
+>        * userland-exposed layout of directory trees created by pktcdvd
+>        * uevent mess generated by device_create() and *also* userland-exposed
+>
+> So we need to preserve the layout, with the easiest way probably being "add
+> one more ktype and use kobject_init_and_add() instead of that device_create()".
+> Sigh...
 
-So we need to preserve the layout, with the easiest way probably being "add
-one more ktype and use kobject_init_and_add() instead of that device_create()".
-Sigh...
+What do you mean? We just need to replace the bogus "pd->pkt_dev" with
+MKDEV(0, 0) and we are fine.
+
+Kay
