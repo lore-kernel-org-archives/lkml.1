@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbYK3FLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYK3Fh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbYK3FLz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 00:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbYK3FLo
+	id S1751893AbYK3Fh0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 00:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbYK3FhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 00:11:44 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:42313 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbYK3FLn (ORCPT
+	Sun, 30 Nov 2008 00:37:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45313
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750763AbYK3FhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 00:11:43 -0500
-Date: Sun, 30 Nov 2008 00:11:36 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI: EC: fix compilation warning
-In-reply-to: <493199A4.5020203@suse.de>
-X-X-Sender: lenb@localhost.localdomain
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: Hannes Eder <hannes@hanneseder.net>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Message-id: <alpine.LFD.2.00.0811300010570.3239@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <49318541.0aec660a.0efb.3436@mx.google.com>
- <493199A4.5020203@suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 30 Nov 2008 00:37:12 -0500
+Date: Sat, 29 Nov 2008 21:37:12 -0800 (PST)
+Message-Id: <20081129.213712.151259833.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
+Cc: tilman@imap.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 0/2] gigaset: patches for 2.6.29
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081129234402.7e34bcb9@lxorguk.ukuu.org.uk>
+References: <1227876791.git.tilman@imap.cc>
+	<20081129234402.7e34bcb9@lxorguk.ukuu.org.uk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Sat, 29 Nov 2008 23:44:02 +0000
 
-
-On Sat, 29 Nov 2008, Alexey Starikovskiy wrote:
-
-> Hannes Eder wrote:
-> > Fix the warning introduced in commit
-> > c5279dee26c0e8d7c4200993bfc4b540d2469598,
-> > and give the dummy variable a more verbose name.
-> Thanks!
+> On Sat, 29 Nov 2008 23:41:07 +0100 (CET)
+> Tilman Schmidt <tilman@imap.cc> wrote:
+> 
+> > Dave,
 > > 
-> >   drivers/acpi/ec.c: In function 'acpi_ec_ecdt_probe':
-> >   drivers/acpi/ec.c:1015: warning: ISO C90 forbids mixed declarations and
-> > code
-> > 
-> > Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> > I gather you are willing to take ISDN subsystem patches through your
+> > networking tree. Would you please merge the following two patches for
+> > the Gigaset driver.
+> 
+> Or via the ttydev tree - either.
 
-applied on top of 11880 fix in acpi-test.
+Yep either way is fine.
 
-thanks,
--len
-
+I'll take these.
