@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYK3Eny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756344AbYK3Esr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYK3Eny (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 23:43:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbYK3Enm
+	id S1756344AbYK3Esr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 23:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYK3Esh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 23:43:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48970
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754366AbYK3Enl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 23:43:41 -0500
-Date: Sat, 29 Nov 2008 20:43:41 -0800 (PST)
-Message-Id: <20081129.204341.88799313.davem@davemloft.net>
-To: jirislaby@gmail.com
-Cc: chas@cmf.nrl.navy.mil, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] ATM: horizon, fix hrz_probe fail path
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1227994465-20220-1-git-send-email-jirislaby@gmail.com>
-References: <1227994465-20220-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 29 Nov 2008 23:48:37 -0500
+Received: from phunq.net ([64.81.85.152]:59339 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752848AbYK3Esh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Nov 2008 23:48:37 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: tux3@tux3.org
+Subject: Developing Tux3 with UML
+Date: Sat, 29 Nov 2008 20:48:32 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811292048.33651.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Sat, 29 Nov 2008 22:34:25 +0100
+Hi,
 
-> One fail path in hrz_probe omitted device disable. Fix it.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Running the Tux3 kernel code under UML is easy, fast and safe.  Here is
+a recipe where you can be up and running in about ten minutes from a
+standing start:
 
-Applied, but please post all networking patches to
-netdev@vger.kernel.org, in particular so that they
-get properly tracked at:
+   # get a kernel tree
+   wget http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.5.tar.bz2
+   tar -xjf linux-2.6.26.5.tar.bz2
+   cd linux-2.6.26.5
 
-	http://patchwork.ozlabs.org/project/netdev/list/
+   # get the latest tux3 patch and patch the kernel
+   wget http://tux3.org/patches/tux3-2.6.26.5
+   patch <tux3-2.6.26.5 -p1
 
-I feel like I type this in at least 10 times a day, so
-people please start making sure netdev is on the CC: for
-all networking patches.
+   # build uml linux with tux3
+   make defconfig ARCH=um
+   make linux ARCH=um CONFIG_TUX3=y
 
-Thanks!
+   # get a root filesystem
+   wget http://tux3.org/downloads/tuxroot.tar.bz2
 
-> ---
->  drivers/atm/horizon.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/atm/horizon.c b/drivers/atm/horizon.c
-> index 6154123..6b969f8 100644
-> --- a/drivers/atm/horizon.c
-> +++ b/drivers/atm/horizon.c
-> @@ -2705,7 +2705,7 @@ static int __devinit hrz_probe(struct pci_dev *pci_dev, const struct pci_device_
->  
->  	/* XXX DEV_LABEL is a guess */
->  	if (!request_region(iobase, HRZ_IO_EXTENT, DEV_LABEL)) {
-> -		return -EINVAL;
-> +		err = -EINVAL;
->  		goto out_disable;
->  	}
->  
-> -- 
-> 1.6.0.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+   # make a tux3 filesystem in a file
+   dd if=/dev/zero of=testdev bs=1M count=1
+   tux3 mkfs testdev
+
+   # boot uml using loop back on the root fs and tux3 test fs
+   tar -xjf tuxroot.tar.bz2
+   ./linux ubda=tuxroot ubdb=testdev
+
+Log in to uml as root and:
+
+   mount /dev/ubdb /mnt
+   ls -l /mnt
+
+To debug tux3/uml under gdb:
+   gdb -args ./linux ubda=tuxroot ubdb=testdev
+   run
+   cont <a bunch of times, don't ask>
+   <log in>
+
+You can also run uml using real partitions for root and test:
+
+   ./linux ubda=/dev/sdaX ubdb=/dev/sdaX
+
+The only thing that needs to be special about the root filesystem is,
+/etc/inittab has to refer to the uml ttys.  See umlroot/etc/inittab.
+
+Regards,
+
+Daniel
