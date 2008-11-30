@@ -1,131 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYK3StI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYK3S6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbYK3StI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 13:49:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbYK3Ssz
+	id S1755946AbYK3S6Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 13:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYK3S6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 13:48:55 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:60616 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752488AbYK3Ssz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 13:48:55 -0500
-Date: Sun, 30 Nov 2008 19:48:45 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
+	Sun, 30 Nov 2008 13:58:13 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:54518 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752556AbYK3S6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 13:58:12 -0500
+Date: Sun, 30 Nov 2008 19:58:05 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] mmc_block: print better data error message after
- timeout
-Message-ID: <20081130194845.4abd0cb8@mjolnir.drzeus.cx>
-In-Reply-To: <49083B1C.6060803@nokia.com>
-References: <48F7411F.3020109@nokia.com>
-	<20081026121155.69692474@mjolnir.drzeus.cx>
-	<49083B1C.6060803@nokia.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-22771-1228070931-0001-2"
+Cc: Artem Bityutskiy <dedekind@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, akpm@linux-foundation.org
+Subject: Re: [PATCH] UBIFS: fix compilation warnings
+Message-ID: <20081130185805.GB2839@Chamillionaire.breakpoint.cc>
+References: <1227287970-14684-1-git-send-email-dedekind@infradead.org> <1227287970-14684-5-git-send-email-dedekind@infradead.org> <20081122185429.GA21433@Chamillionaire.breakpoint.cc> <492A7BFD.7000206@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <492A7BFD.7000206@nokia.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+* Adrian Hunter | 2008-11-24 12:03:41 [+0200]:
 
---=_freyr.drzeus.cx-22771-1228070931-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> Doesn't help:
+>
+> fs/ubifs/journal.c:699: warning: format ???%zu??? expects type 
+> ???size_t???, but argument 4 has type ???ino_t???
+Indeed. BUT:
 
-On Wed, 29 Oct 2008 12:29:48 +0200
-Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+Is there actually a reason why Alpha is the only arch having
+__kernel_ino_t defined as unsigned int instead of unsigned long ?
+(except s390 in 32bit mode).
 
-> Add command response and card status to error
-> messages.
->=20
-> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
-> ---
->  drivers/mmc/card/block.c |   56 ++++++++++++++++++++++++++++++++++++++++=
------
->  1 files changed, 49 insertions(+), 7 deletions(-)
->=20
->=20
-> Pierre
->=20
-> This patch amends error messages for all error codes and is independent o=
-f SPI.
+I just checked and I haven't seen anything that would point out that
+__kernel_ino_t / ino_t is part of user space API.
+What I've found instead is for instance that ext2 relies that ino_t is a
+long:
 
-Looks good. It's ready to queue up except for two very small details
-(see below).
+|struct inode *ext2_iget (struct super_block *sb, unsigned long ino)
+|{
+....
+|        raw_inode = ext2_get_inode(inode->i_sb, ino, &bh);
 
-> Status values are not OR'd together from different commands as that would
-> muddy the waters for anyone trying to understand the nature of the error.
+and the prototype is:
+|static struct ext2_inode *ext2_get_inode(struct super_block *sb, ino_t ino,
+|                                         struct buffer_head **p)
 
-I suppose. I'm just generally uneasy about error handling in SD/MMC as
-the specs aren't that clear. :)
+So we lose the upper 32bit on Alpha. Unless the whole system is
+self-contained and the ext2_iget() user never passes something > ino_t.
 
-> Waiting for the card to become ready after an error is also not included,
-> as it is not in the standards and is a separate issue anyway.
+Any comments?
 
-What do you mean?
-
-This will handle your case of seeing read errors, but for write errors
-we probably need to wait for the write to complete fully. But that's
-something that can be added later...
-> =20
-> +static u32 get_card_status(struct mmc_card *card, struct request *req)
-> +{
-> +	struct mmc_command cmd;
-> +	int err;
-> +
-> +	/* SEND STATUS command is not supported by SDIO */
-> +	if (mmc_card_sdio(card))
-> +		return 0;
-> +
-
-This is redundant. We never bind to a SDIO card.
-
->  		if (brq.data.error) {
-> -			printk(KERN_ERR "%s: error %d transferring data\n",
-> -			       req->rq_disk->disk_name, brq.data.error);
-> +			if (brq.data.error =3D=3D -ETIMEDOUT) {
-> +				/* 'Stop' response contains card status */
-> +				if (brq.mrq.stop)
-> +					status =3D brq.mrq.stop->resp[0];
-> +				printk(KERN_ERR "%s: error transferring data,"
-> +				       " sector %u, nr %u, card status %#x\n",
-> +				       req->rq_disk->disk_name,
-> +				       (unsigned)req->sector,
-> +				       (unsigned)req->nr_sectors, status);
-> +			} else {
-> +				printk(KERN_ERR "%s: error %d transferring data,"
-> +				       " sector %u, nr %u, card status %#x\n",
-> +				       req->rq_disk->disk_name, brq.data.error,
-> +				       (unsigned)req->sector,
-> +				       (unsigned)req->nr_sectors, status);
-> +			}
->  		}
-
-Do we need the two different printk:s? It would reduce the code a bit
-if you just let the if clause modify the status value.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-22771-1228070931-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkky4BIACgkQ7b8eESbyJLigWwCgiKn/TlWI44WY1+S+NrLyklOe
-YmYAoIsS9oJUbE89oFbd1WGZ0XXoEUVe
-=51Xi
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-22771-1228070931-0001-2--
+Sebastian
