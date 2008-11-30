@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYK3MTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYK3M0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYK3MTW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 07:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbYK3MTN
+	id S1753347AbYK3M0O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 07:26:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYK3MZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 07:19:13 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55201 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbYK3MTM (ORCPT
+	Sun, 30 Nov 2008 07:25:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:30765 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbYK3MZ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 07:19:12 -0500
-Date: Sun, 30 Nov 2008 12:19:09 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: gregkh@suse.de, petero2@telia.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix pktcdvd breakage from commit
-	e105b8bfc769b0545b6f0f395179d1e43cbee822
-Message-ID: <20081130121909.GV28946@ZenIV.linux.org.uk>
+	Sun, 30 Nov 2008 07:25:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AiBbKfXVu3q49UcCnREqQTN2qcjma/RRUAqRrsPwzm9FgMMQgRvzoS2teadXn8TFo/
+         ux+U5cvmTXkswWBKZg+0ehF7x/AnrGADAX44mwwgN29SfCAL4GVZI6JI6vTI4R9pcaZ6
+         vx3q552mBKA4OHaus5VWbrQ4bj1+Gy6imgzhs=
+Date: Sun, 30 Nov 2008 15:25:54 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 02/09] memcg: make inactive_anon_is_low()
+Message-ID: <20081130122554.GA12552@localhost>
+References: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081130195508.814B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20081130195508.814B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	device_create() will create a symlink in /sys/dev/char unless
-the class has ->dev_kobj cleared; pktcdvd uses it to populate the
-/sys/class/pktcdvd/ with per-device subdirectories.  While we do
-want /sys/class/pktcdvd/pktcdvd[0-7]/dev to contain a device number,
-we definitely do not want it to try and crap into /sys/dev/char; if
-nothing else, device number is *block* one (and we don't want it
-to crap into /sys/dev/block either - there such symlinks will be created
-by add_disk() and they will point to /sys/block/pktcdvd[0-7]).
+[KOSAKI Motohiro - Sun, Nov 30, 2008 at 07:56:37PM +0900]
+| make inactive_anon_is_low for memcgroup.
+| it improve active_anon vs inactive_anon ratio balancing.
+| 
+| 
+| Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+| ---
+...
+| +static void mem_cgroup_set_inactive_ratio(struct mem_cgroup *memcg)
+| +{
+| +	unsigned int gb, ratio;
+| +
+| +	gb = res_counter_read_u64(&memcg->res, RES_LIMIT) >> 30;
+| +	ratio = int_sqrt(10 * gb);
+| +	if (!ratio)
+| +		ratio = 1;
 
-	As it is, attempt to set the damn thing up will end up with
-sysfs_add_one() barfing at duplicate entries and /sys/class/pktcdvd/pktcdvd*/*/
-not created at all.  The fix is trivial: clear ->dev_kobj in the class to
-tell device_add() that no, we do *not* want these symlinks, TYVM...
+Hi Kosaki,
 
-	FWIW, all traces containing pkt_setup_dev() on kerneloops.org appear
-to be from that one.  It had been around since 2.6.26; probably -stable
-fodder...
+maybe better would be
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index f20bf35..79981f2 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -417,6 +417,7 @@ static int pkt_sysfs_init(void)
- 		printk(DRIVER_NAME": failed to create class pktcdvd\n");
- 		return ret;
- 	}
-+	class_pktcdvd->dev_kobj = NULL;
- 	return 0;
- }
- 
+	gb = ...;
+	if (gb) {
+		ratio = int_sqrt(10 * gb);
+	} else
+		ratio = 1;
+
+| +
+| +	memcg->inactive_ratio = ratio;
+| +
+| +}
+| +
+...
+
+		- Cyrill -
