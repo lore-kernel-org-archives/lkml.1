@@ -1,196 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbYK3KxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYK3KyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbYK3KxW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 05:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYK3KxM
+	id S1753937AbYK3KyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 05:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYK3KyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 05:53:12 -0500
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:1881 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYK3KxK (ORCPT
+	Sun, 30 Nov 2008 05:54:12 -0500
+Received: from fgwmail.fujitsu.co.jp ([164.71.1.133]:57067 "EHLO
+	fgwmail.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbYK3KyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 05:53:10 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Andy Walls <awalls@radix.net>
-Subject: Re: [PATCH v2] v4l2_device/v4l2_subdev: final (?) version
-Date: Sun, 30 Nov 2008 11:52:50 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux and Kernel Video <video4linux-list@redhat.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       linux-kernel@vger.kernel.org
-References: <200811291852.41794.hverkuil@xs4all.nl> <200811300140.44322.hverkuil@xs4all.nl> <1228013385.4615.143.camel@palomino.walls.org>
-In-Reply-To: <1228013385.4615.143.camel@palomino.walls.org>
+	Sun, 30 Nov 2008 05:54:11 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: [PATCH 00/09] memcg: split-lru feature for memcg
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811301152.50971.hverkuil@xs4all.nl>
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Sun, 30 Nov 2008 19:54:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 November 2008 03:49:45 Andy Walls wrote:
-> On Sun, 2008-11-30 at 01:40 +0100, Hans Verkuil wrote:
-> > On Sunday 30 November 2008 00:31:38 Andy Walls wrote:
-> > > On Sat, 2008-11-29 at 18:52 +0100, Hans Verkuil wrote:
-> > > > Hi all,
-> > > >
-> > > > This is hopefully the final version. All earlier comments have
-> > > > been incorporated into this patch. I also made a new change:
-> > > > the mutex has been replaced by a spinlock and I no longer lock
-> > > > when walking the list of subdevs.
-> > > >
-> > > > So the assumption is that subdevs only added during
-> > > > initialization of the device and removed during the destruction
-> > > > of the device, and not in between. I cannot think of any reason
-> > > > why this you would want to do this, but should this ever happen
-> > > > then the list should be replaced by a klist. I consider this
-> > > > overkill, esp. since walking the subdev list should be as fast
-> > > > as possible.
-> > >
-> > > I don't have a problem with not locking during a list walk as
-> > > long as you can ensure the register and unregister calls can't
-> > > happen in the middle of a walk.  I haven't taken a hard look to
-> > > see if this is the case.  I'd imagine a walk while registration
-> > > is going on is the only case that has a remote chance of
-> > > happening.
-> >
-> > A driver that would do register or unregister calls in the middle
-> > of a walk is very badly written. I can't even imagine how that can
-> > happen.
-> >
-> > That said, I'll add a comment in the header making it explicit that
-> > no locking is taking place.
->
-> Ah.
->
-> > > Although I think I've just answered my own next question I'll ask
-> > > anyway: why are register & unregister such time critical
-> > > operations that we have to spin instead of risk sleeping in a
-> > > mutex?  To greatly reduce the probability a walk happens while
-> > > registering?  If that's the case it sounds like we're knowingly
-> > > building in a race.
-> >
-> > In the register function it only needs to lock the list momentarily
-> > in case two registrations happen at the same time. A mutex is
-> > overkill for that. Perhaps having locking at all is overkill as
-> > well for this, but for now I feel safer with the lock. In addition,
-> > I might well change the way subdevices are registered. Right now
-> > the bridge driver loads and registers a subdevice, but an
-> > alternative approach would be that the i2c driver can register
-> > itself with the bridge driver when loaded. There are actually some
-> > advantages to that approach, but if I do that, then the lock is
-> > definitely needed.
-> >
-> > > This comment kind of bugged me too:
-> > > >/* Iterate over all subdevs. The next item is prefetched, so you
-> > > > can +   delete the current item if necessary. */
-> > > > +#define v4l2_device_for_each_subdev(sd, dev)
-> > >
-> > > It implies it's safe to remove things from the list that we're
-> > > not locking.
-> >
-> > Oops, that was a bogus comment. Actually, the whole macro is a bit
-> > bogus and can simply be replaced by this:
-> >
-> > /* Iterate over all subdevs. */
-> > #define v4l2_device_for_each_subdev(sd, dev) \
-> >         list_for_each_entry(sd, &(dev)->subdevs, list)
-> >
-> > > I can appreciate the desire for being able to walk the list and
-> > > issue commands to various subdevs with high concurrency.  I know
-> > > spinlocks are optimized for the common case of the lock being
-> > > available (well at least the underlying __raw_spin_lock() is
-> > > optimized, if preemption is enabled there's a little overhead
-> > > added).  So they give the safety with a minor penalty at the
-> > > micro level, but kill concurrency of common operations at the
-> > > macro level.
-> > >
-> > > So how about a rwlock_t and using read_lock() and write_lock(),
-> > > locks that provide safety and allow high concurrency at the macro
-> > > level?  I don't know if there's an analog of a read/write mutex.
-> >
-> > Note that I can't use spinlocks while walking the subdevs list
-> > since the subdev ops that you call can sleep which is not allowed
-> > with spinlocks (as I very quickly found out when I tried it :-) ).
->
-> Ah.
->
-> > The only way to safely walk over it is to switch to a klist, but I
-> > really like to keep __v4l2_device_call_subdevs as fast as possible.
-> > Since the registration/unregistration of subdevs is fully
-> > controlled by the driver it is trivial for the driver to ensure
-> > that there are no (un)registrations while the subdev list is being
-> > walked. There are no external events that can cause this to happen.
-> >
-> > In addition, there is also no point for a driver to begin issuing
-> > commands to subdevs while some of them are not yet registered. So I
-> > feel confident about my approach.
->
-> Just playing a little more devil's advocate:
->
-> I have a recollection that the lirc_pvr150 module calls an ivtv
-> function directly to reset the IR blaster chip on PVR-150's.  I'd
-> imagine in the future, the GPIO subdev in ivtv might implement some
-> sort of reset_ops or ir_ops for a cleaner interface for an updated
-> lirc_pvr150 module to call in on. There's my one contrived example,
-> contingent on assumed changes, of a bridge chip driver not being
-> strictly in control of when a subdev could be called.
->
-> (It's moot in this case though as lirc_pvr150 would need ivtv to init
-> i2c before gpio, which ivtv doesn't do, before lirc_pvr150 would
-> attempt a reset of the IR blaster.)
->
-> I think you're safe for now. :)
+Recently, SplitLRU patch series dramatically improvement VM reclaim
+logic.
 
-I think so too :-)  Anyway, it's highly debatable whether that reset 
-thing for ivtv is still needed. I suspect it isn't.
+it have following improvement.
+ (1) splite lru per page type
+ (2) introduce inactive/active anon balancing logic
+ (3) introduce anon/file balancing logic
 
-> On a more philosophical note is GPIO really a single subdev or a
-> collection of independent serial & discrete buses to a collection of
-> subdevs?  In cx18 depending on the board, GPIO can reset chips,
-> change audio mux paths, change the state of LED's, and in the future
-> be used as a serial line (if I ever get that soft-UART to the IR
-> blaster implemented).
+Unfortunately, the improvement of memcgroup reclaim is incomplete.
+Currently, it only has (1), but doesn't have (2) and (3).
 
-Definitely a collection of subdevs. Usually each chip driven by GPIO 
-would have its own subdev. So ivtv implements an audio muxer subdev, 
-but it might also have additional subdevs for other chips connected to 
-the GPIO lines. I haven't explored all the possibilities yet, but I 
-suspect that this can be a quite powerful solution.
 
-Regards,
+This patch introduce (2) and (3) improvements to memcgroup.
+this implementation is straightforward porting from global reclaim.
 
-	Hans
+Therefere
+  - code is simple.
+  - memcg reclaim become efficiency as global reclaim.
+  - the logic is the same as global lru.
+    then, memcg reclaim debugging become easily.
 
-> > But if it turns out to be a problem after all in the future, then
-> > it will be easy to replace the list with a klist.
->
-> Well my one contrived example is between two modules who usage is
-> tightly coupled at least in one direction, even if source code
-> changes are not tightly coordinated.  In that case I'd predict
-> problems will simply be avoided due to the tight coupling.
->
-> Regards,
-> Andy
->
-> > > Did I totally miss the concept?
-> >
-> > Not at all, and once again thanks for the comments.
-> >
-> > I've updated my tree with the changes mentioned above.
-> >
-> > Regards,
-> >
-> >           Hans
-> >
-> > --
-> > Hans Verkuil - video4linux developer - sponsored by TANDBERG
+
+this patch series has three part
+
+[part 1: inactive-anon vs active-anon balancing improvement]
+  [01/09] inactive_anon_is_low() move to vmscan.c
+  [02/09] memcg: make inactive_anon_is_low()
+
+[part 2: anon vs file balancing improvement]
+  [03/09] introduce zone_reclaim struct
+  [04/09] memcg: make zone_reclaim_stat
+  [05/09] make zone_nr_pages() helper function
+  [06/09] make get_scan_ratio() to memcg awareness
+  [07/09] memcg: remove mem_cgroup_calc_reclaim()
+
+[part 3: add split-lru related statics field to /cgroup/memory.stat]
+  [08/09] memcg: show inactive_ratio
+  [09/09] memcg: show reclaim stat
+
+patch against: mmotm 29 Nov 2008
+
+
+Thanks!
 
 
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
