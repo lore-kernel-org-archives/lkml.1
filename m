@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbYK3Hiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbYK3Hmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751816AbYK3Hiq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 02:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYK3Hih
+	id S1752075AbYK3Hmk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 02:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbYK3Hmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 02:38:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55320 "EHLO
+	Sun, 30 Nov 2008 02:42:31 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54394 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750898AbYK3Hig (ORCPT
+	by vger.kernel.org with ESMTP id S1750830AbYK3Hma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 02:38:36 -0500
-Date: Sat, 29 Nov 2008 23:38:26 -0800
+	Sun, 30 Nov 2008 02:42:30 -0500
+Date: Sat, 29 Nov 2008 23:41:48 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Daniel Mierswa <impulze@impulze.org>
 Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
 Subject: Re: [PATCH] Fujitsu Amilo PA 1510 key-release events quirk
-Message-Id: <20081129233826.be959cae.akpm@linux-foundation.org>
+Message-Id: <20081129234148.d2b9904e.akpm@linux-foundation.org>
 In-Reply-To: <4931BB48.9010706@impulze.org>
 References: <4931BB48.9010706@impulze.org>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
@@ -28,84 +28,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, 29 Nov 2008 22:59:36 +0100 Daniel Mierswa <impulze@impulze.org> wrote:
 
-> heya,
-> the fujitsu amilo pa 1510 laptop needs a little lovin' regarding the 
-> release event of the volume up and down keys. I attached a format-patch 
-> (against torvalds/linux-2.6.git ed313489badef16d7) which separates the 
-> generation of release events for certain scancodes into a macro since 3 
-> dmi matches are already using it and generation of the missing release 
-> events for that particular laptop. Please post back with any advice and 
-> thoughts for that patch.
-> 
-
-Please don't send more than one patch per email.  I shall comment on
-the two patches in two separate replies.
-
-> From a197dfb0eed23b87418c0a7fe6a562910046576e Mon Sep 17 00:00:00 2001
 > From: Daniel Mierswa <impulze@impulze.org>
-> Date: Sat, 29 Nov 2008 22:39:34 +0100
-> Subject: [PATCH] Separate macro for generation of keyrelease events
+> Date: Sat, 29 Nov 2008 22:40:20 +0100
+> Subject: [PATCH] Fujitsu Siemens Amilo PA 1510 quirks
 > 
+> The volume up and down keys on the Fujitsu Siemens Amilo PA 1510 laptop
+> won't generate release events, so we have to do that. Use the same
+> way that is already used with other models.
 > ---
->  drivers/input/keyboard/atkbd.c |   23 +++++++++++++----------
->  1 files changed, 13 insertions(+), 10 deletions(-)
-
-Please also cc linux-input@vger.kernel.org on input-related patches.
-
+>  drivers/input/keyboard/atkbd.c |   22 ++++++++++++++++++++++
+>  1 files changed, 22 insertions(+), 0 deletions(-)
+> 
 > diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-> index 22016ca..99ef522 100644
+> index 99ef522..1250242 100644
 > --- a/drivers/input/keyboard/atkbd.c
 > +++ b/drivers/input/keyboard/atkbd.c
-> @@ -834,6 +834,17 @@ static void atkbd_disconnect(struct serio *serio)
->  }
+> @@ -845,6 +845,19 @@ static void atkbd_disconnect(struct serio *serio)
+>  				atkbd->force_release_mask);
 >  
 >  /*
-> + * generate release events for the keycodes given in forced_release_keys[]
+> + * The volume up and volume down special keys on a Fujitsu Amilo PA 1510 laptop
+> + * do not generate release events so we have to do it ourselves.
 > + */
-> +#define GEN_RELEASE_EVENT \
-> +	int i; \
-> +\
-> +	if (atkbd->set == 2) \
-> +		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++) \
-> +			__set_bit(forced_release_keys[i], \
-> +				atkbd->force_release_mask);
+> +static void atkbd_amilopa1510_keymap_fixup(struct atkbd *atkbd)
+> +{
+> +	const unsigned int forced_release_keys[] = {
+> +		0xb0, 0xae,
+> +	};
 > +
+> +	GEN_RELEASE_EVENT
+> +}
+
+It's best to make forced_release_keys static as well - there is no need
+to build this array on the stack at runtime.  The compiler _could_
+perform this optimisation itself andallegedly it will sometimes do so. 
+Last time I checked it did not.
+
 > +/*
 >   * Most special keys (Fn+F?) on Dell laptops do not generate release
 >   * events so we have to do it ourselves.
 >   */
-> @@ -842,12 +853,8 @@ static void atkbd_dell_laptop_keymap_fixup(struct atkbd *atkbd)
->  	const unsigned int forced_release_keys[] = {
->  		0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8f, 0x93,
->  	};
-> -	int i;
->  
-> -	if (atkbd->set == 2)
-> -		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
-> -			__set_bit(forced_release_keys[i],
-> -				  atkbd->force_release_mask);
-> +	GEN_RELEASE_EVENT
->  }
->  
->  /*
-> @@ -859,12 +866,8 @@ static void atkbd_hp_keymap_fixup(struct atkbd *atkbd)
->  	const unsigned int forced_release_keys[] = {
->  		0x94,
->  	};
-> -	int i;
->  
-> -	if (atkbd->set == 2)
-> -		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
-> -			__set_bit(forced_release_keys[i],
-> -					atkbd->force_release_mask);
-> +	GEN_RELEASE_EVENT
->  }
-
-oh my.  Please, no.  Just write a C function:
-
-void atkbd_gen_release_event(unsigned int *keys, unsigned nr_keys)
-{
-	...
-}
-
-
+> @@ -1463,6 +1476,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+>  		.driver_data = atkbd_dell_laptop_keymap_fixup,
+>  	},
+>  	{
+> +		.ident = "Fujitsu Amilo PA 1510",
+> +		.matches = {
+> +			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"), 
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pa 1510"),
+> +		},
+> +		.callback = atkbd_setup_fixup,
+> +		.driver_data = atkbd_amilopa1510_keymap_fixup,
+> +	},
+> +	{
+>  		.ident = "HP 2133",
+>  		.matches = {
+>  			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
