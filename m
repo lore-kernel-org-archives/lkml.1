@@ -1,76 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYK3KyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYK3Kzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYK3KyV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 05:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYK3KyM
+	id S1754205AbYK3Kzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 05:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYK3KzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 05:54:12 -0500
-Received: from fgwmail.fujitsu.co.jp ([164.71.1.133]:57067 "EHLO
-	fgwmail.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbYK3KyL (ORCPT
+	Sun, 30 Nov 2008 05:55:14 -0500
+Received: from fgwnews.fujitsu.co.jp ([164.71.1.134]:36478 "EHLO
+	fgwnews.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbYK3KzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 05:54:11 -0500
+	Sun, 30 Nov 2008 05:55:12 -0500
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>
-Subject: [PATCH 00/09] memcg: split-lru feature for memcg
+Subject: [PATCH 01/09] inactive_anon_is_low() move to vmscan.c
 Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081130195412.8148.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.42 [ja]
-Date: Sun, 30 Nov 2008 19:54:08 +0900 (JST)
+Date: Sun, 30 Nov 2008 19:55:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently, SplitLRU patch series dramatically improvement VM reclaim
-logic.
+The inactive_anon_is_low() is called only vmscan.
+Then it can move to vmscan.c
 
-it have following improvement.
- (1) splite lru per page type
- (2) introduce inactive/active anon balancing logic
- (3) introduce anon/file balancing logic
+This patch doesn't have any functional change.
 
-Unfortunately, the improvement of memcgroup reclaim is incomplete.
-Currently, it only has (1), but doesn't have (2) and (3).
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/mm_inline.h |   19 -------------------
+ mm/vmscan.c               |   20 ++++++++++++++++++++
+ 2 files changed, 20 insertions(+), 19 deletions(-)
 
-
-This patch introduce (2) and (3) improvements to memcgroup.
-this implementation is straightforward porting from global reclaim.
-
-Therefere
-  - code is simple.
-  - memcg reclaim become efficiency as global reclaim.
-  - the logic is the same as global lru.
-    then, memcg reclaim debugging become easily.
-
-
-this patch series has three part
-
-[part 1: inactive-anon vs active-anon balancing improvement]
-  [01/09] inactive_anon_is_low() move to vmscan.c
-  [02/09] memcg: make inactive_anon_is_low()
-
-[part 2: anon vs file balancing improvement]
-  [03/09] introduce zone_reclaim struct
-  [04/09] memcg: make zone_reclaim_stat
-  [05/09] make zone_nr_pages() helper function
-  [06/09] make get_scan_ratio() to memcg awareness
-  [07/09] memcg: remove mem_cgroup_calc_reclaim()
-
-[part 3: add split-lru related statics field to /cgroup/memory.stat]
-  [08/09] memcg: show inactive_ratio
-  [09/09] memcg: show reclaim stat
-
-patch against: mmotm 29 Nov 2008
-
-
-Thanks!
-
+Index: b/include/linux/mm_inline.h
+===================================================================
+--- a/include/linux/mm_inline.h
++++ b/include/linux/mm_inline.h
+@@ -81,23 +81,4 @@ static inline enum lru_list page_lru(str
+ 	return lru;
+ }
+ 
+-/**
+- * inactive_anon_is_low - check if anonymous pages need to be deactivated
+- * @zone: zone to check
+- *
+- * Returns true if the zone does not have enough inactive anon pages,
+- * meaning some active anon pages need to be deactivated.
+- */
+-static inline int inactive_anon_is_low(struct zone *zone)
+-{
+-	unsigned long active, inactive;
+-
+-	active = zone_page_state(zone, NR_ACTIVE_ANON);
+-	inactive = zone_page_state(zone, NR_INACTIVE_ANON);
+-
+-	if (inactive * zone->inactive_ratio < active)
+-		return 1;
+-
+-	return 0;
+-}
+ #endif
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1350,6 +1350,26 @@ static void shrink_active_list(unsigned 
+ 	pagevec_release(&pvec);
+ }
+ 
++/**
++ * inactive_anon_is_low - check if anonymous pages need to be deactivated
++ * @zone: zone to check
++ *
++ * Returns true if the zone does not have enough inactive anon pages,
++ * meaning some active anon pages need to be deactivated.
++ */
++static int inactive_anon_is_low(struct zone *zone)
++{
++	unsigned long active, inactive;
++
++	active = zone_page_state(zone, NR_ACTIVE_ANON);
++	inactive = zone_page_state(zone, NR_INACTIVE_ANON);
++
++	if (inactive * zone->inactive_ratio < active)
++		return 1;
++
++	return 0;
++}
++
+ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+ 	struct zone *zone, struct scan_control *sc, int priority)
+ {
 
 
