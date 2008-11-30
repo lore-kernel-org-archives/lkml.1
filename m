@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYK3DF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYK3DVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYK3DF3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 22:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYK3DFU
+	id S1756116AbYK3DVo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 22:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYK3DVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 22:05:20 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:55403 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbYK3DFT (ORCPT
+	Sat, 29 Nov 2008 22:21:34 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:41753 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752848AbYK3DVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 22:05:19 -0500
-Date: Sun, 30 Nov 2008 08:31:28 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Am?rico Wang <xiyou.wangcong@gmail.com>
-Cc: jdike@addtoit.com, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH][UML] Boot broken due to buffer overrun
-Message-ID: <20081130030128.GA8948@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Am?rico Wang <xiyou.wangcong@gmail.com>,
-	jdike@addtoit.com, linux-kernel@vger.kernel.org,
-	user-mode-linux-devel@lists.sourceforge.net
-References: <20081129100830.GA24128@balbir.in.ibm.com> <2375c9f90811290503s1b4cb9aelaecccc680c6e37d0@mail.gmail.com>
+	Sat, 29 Nov 2008 22:21:33 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RogV6Shoc9du9IL9OwYrd6PqO937KJzDtH3Axc4+Sd/FxyY26QVx3ShR4ohmiGhteTX4HQi28s6Ar2RY/pHzpQMBcpwhw6ahz5LeIqQ9KHlKx/tVv9gtmNc8Hzg9uVlyIly1khLu09rcvEA+8BKI3I3FNwpgbce1wsUITHefMLI=  ;
+X-YMail-OSG: lvgu2PUVM1kG.tCrzNjwr9OHL.llXJFbcN5C47i3FKJPbW7oG4m0XqDZgckupOLLgFtZbbZnQkRIMInNJNDx9Es61duSs1Xke3ho7l46wPACF1nmZz89DaAPGB05P1LKZ0bAxeQVmNsGBeEKVHfL9xb.
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.28-rc6] when to BUG(), and when to not BUG()
+Date: Sat, 29 Nov 2008 19:21:30 -0800
+User-Agent: KMail/1.9.10
+Cc: Hans Verkuil <hverkuil@xs4all.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2375c9f90811290503s1b4cb9aelaecccc680c6e37d0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811291921.30759.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* WANG Cong <xiyou.wangcong@gmail.com> [2008-11-29 13:03:42]:
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-> On Sat, Nov 29, 2008 at 10:08 AM, Balbir Singh
-> <balbir@linux.vnet.ibm.com> wrote:
-> >
-> > mconsole_init() passed 256 bytes as length in os_create_unix_socket, while
-> > the sizeof UNIX_PATH_MAX is 108. This patch fixes that problem and avoids
-> > a big overrun bug reported on UML bootup.
-> >
-> > Reported-by: Vikas K Managutte <vikki.km@gmail.com>
-> > Reported-by: Sarvesh Kumar Lal Das <skldas@gmail.com>
-> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > ---
-> >
-> >  arch/um/drivers/mconsole_kern.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff -puN arch/um/drivers/mconsole_kern.c~fix-uml-buggy-socket-creation arch/um/drivers/mconsole_kern.c
-> > --- linux-2.6.28-rc6/arch/um/drivers/mconsole_kern.c~fix-uml-buggy-socket-creation      2008-11-29 15:29:04.000000000 +0530
-> > +++ linux-2.6.28-rc6-balbir/arch/um/drivers/mconsole_kern.c     2008-11-29 15:32:23.000000000 +0530
-> > @@ -16,6 +16,8 @@
-> >  #include <linux/slab.h>
-> >  #include <linux/syscalls.h>
-> >  #include <linux/utsname.h>
-> > +#include <linux/socket.h>
-> > +#include <linux/un.h>
-> >  #include <linux/workqueue.h>
-> >  #include <linux/mutex.h>
-> >  #include <asm/uaccess.h>
-> > @@ -785,7 +787,7 @@ static int __init mconsole_init(void)
-> >        /* long to avoid size mismatch warnings from gcc */
-> >        long sock;
-> >        int err;
-> > -       char file[256];
-> > +       char file[UNIX_PATH_MAX];
-> >
-> 
-> 
-> Aha, good spot!
-> 
-> Please also correct the length of mconsole_socket_name.
->
+Provide some basic advice about when to use BUG()/BUG_ON():
+never, unless there's really no better option.
 
-I did not fix that with UNIX_PATH_MAX since, mconsole_user.c already includes
-sys/un.h and sys/socket.h and I did not want to include kernel headers
-linux/socket.h and linux/un.h there. I could have hard-coded those
-values to 108, but I just let it be for now. If you feel strongly
-about it, it can be done.
+This matches my understanding of the standard policy ... which
+seems not to be written down so far, outside of LKML messages
+that I haven't bookmarked.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
+---
+This arguably belongs in patch checklists too... but I figure we
+should start by flushing out any contrary opinions.
+
+ include/asm-generic/bug.h |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+--- a/include/asm-generic/bug.h
++++ b/include/asm-generic/bug.h
+@@ -20,6 +20,17 @@ struct bug_entry {
+ #define BUGFLAG_WARNING	(1<<0)
+ #endif	/* CONFIG_GENERIC_BUG */
  
-> Anyway,
-> 
-> Reviewed-by: WANG Cong <wangcong@zeuux.org>
-
-Thanks!
-
--- 
-	Balbir
++/*
++ * Don't use BUG() or BUG_ON() unless there's really no way out; one
++ * example might be detecting data structure corruption in the middle
++ * of an operation that can't be backed out of.  If the (sub)system
++ * can somehow continue operating, perhaps with reduced functionality,
++ * it's probably not BUG-worthy.
++ *
++ * If you're tempted to BUG(), think again:  is completely giving up
++ * really the *only* solution?  There are usually better options, where
++ * users don't need to reboot ASAP and can mostly shut down cleanly.
++ */
+ #ifndef HAVE_ARCH_BUG
+ #define BUG() do { \
+ 	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
+@@ -31,6 +42,12 @@ struct bug_entry {
+ #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
+ #endif
+ 
++/*
++ * WARN(), WARN_ON(), WARN_ON_ONCE, and so on can be used to report
++ * significant issues that need prompt attention if they should ever
++ * appear at runtime.  Use the versions with printk format strings
++ * to provide better diagnostics.
++ */
+ #ifndef __WARN
+ #ifndef __ASSEMBLY__
+ extern void warn_on_slowpath(const char *file, const int line);
