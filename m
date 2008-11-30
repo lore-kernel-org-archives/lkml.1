@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYK3Mjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbYK3Mlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbYK3Mjf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 07:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYK3Mj0
+	id S1753076AbYK3Mlk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 07:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYK3Mlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 07:39:26 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44011 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751375AbYK3MjZ (ORCPT
+	Sun, 30 Nov 2008 07:41:32 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:6929 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbYK3Mlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 07:39:25 -0500
-Date: Sun, 30 Nov 2008 12:39:24 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: linux-next: WARNING: at fs/sysfs/dir.c:425
-	sysfs_add_one+0x31/0x7a()
-Message-ID: <20081130123924.GW28946@ZenIV.linux.org.uk>
-References: <1210366580.4148.4.camel@dhcppc1>
+	Sun, 30 Nov 2008 07:41:32 -0500
+Message-ID: <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com>
+Date: Sun, 30 Nov 2008 13:41:29 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Al Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] fix pktcdvd breakage from commit e105b8bfc769b0545b6f0f395179d1e43cbee822
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, gregkh@suse.de,
+       petero2@telia.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20081130121909.GV28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210366580.4148.4.camel@dhcppc1>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20081130121909.GV28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 10:56:20PM +0200, Thomas Meyer wrote:
-> I get this warning while setting up a packet dvd mapping with:
-> 
-> # pktsetup pktcdvd0 /dev/sr0
+On Sun, Nov 30, 2008 at 13:19, Al Viro <viro@zeniv.linux.org.uk> wrote:
+>        device_create() will create a symlink in /sys/dev/char unless
+> the class has ->dev_kobj cleared; pktcdvd uses it to populate the
+> /sys/class/pktcdvd/ with per-device subdirectories.  While we do
+> want /sys/class/pktcdvd/pktcdvd[0-7]/dev to contain a device number,
+> we definitely do not want it to try and crap into /sys/dev/char; if
+> nothing else, device number is *block* one (and we don't want it
+> to crap into /sys/dev/block either - there such symlinks will be created
+> by add_disk() and they will point to /sys/block/pktcdvd[0-7]).
+>
+>        As it is, attempt to set the damn thing up will end up with
+> sysfs_add_one() barfing at duplicate entries and /sys/class/pktcdvd/pktcdvd*/*/
+> not created at all.  The fix is trivial: clear ->dev_kobj in the class to
+> tell device_add() that no, we do *not* want these symlinks, TYVM...
+>
+>        FWIW, all traces containing pkt_setup_dev() on kerneloops.org appear
+> to be from that one.  It had been around since 2.6.26; probably -stable
+> fodder...
+>
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+> index f20bf35..79981f2 100644
+> --- a/drivers/block/pktcdvd.c
+> +++ b/drivers/block/pktcdvd.c
+> @@ -417,6 +417,7 @@ static int pkt_sysfs_init(void)
+>                printk(DRIVER_NAME": failed to create class pktcdvd\n");
+>                return ret;
+>        }
+> +       class_pktcdvd->dev_kobj = NULL;
+>        return 0;
+>  }
 
-[snip]
+I posted a fix for that weeks ago. But the pktcdvd maintainer stated,
+that the char device nodes are not used for anything. So the whole use
+of dev_t should be removed entirely. They just blindly claim the same
+char dev_t the block devices use, and conflict with char devices from
+other subsystems. Patching out the /sys/dev/class links fixes the
+oops, but the underlying fundamental breakage will still exist.
 
-That ought to fix it:
+Original mail here states:
+"Maybe, but that character device would not be used for anything,
+besides creating sub-directories in /sys/class/pktcdvd. The driver
+implements a block device, not a character device."
 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index f20bf35..79981f2 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -417,6 +417,7 @@ static int pkt_sysfs_init(void)
- 		printk(DRIVER_NAME": failed to create class pktcdvd\n");
- 		return ret;
- 	}
-+	class_pktcdvd->dev_kobj = NULL;
- 	return 0;
- }
- 
+http://lkml.org/lkml/2008/10/14/318
+
+No idea why this never got fixed.
+
+Thanks,
+Kay
