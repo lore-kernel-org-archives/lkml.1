@@ -1,47 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYK3Ncm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYK3Ndp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbYK3Ncm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 08:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYK3Ncd
+	id S1755553AbYK3Ndp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 08:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYK3Ndd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 08:32:33 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53075 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbYK3Ncc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 08:32:32 -0500
-Date: Sun, 30 Nov 2008 13:32:29 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
-       petero2@telia.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix pktcdvd breakage from commit
-	e105b8bfc769b0545b6f0f395179d1e43cbee822
-Message-ID: <20081130133229.GZ28946@ZenIV.linux.org.uk>
-References: <20081130121909.GV28946@ZenIV.linux.org.uk> <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com> <20081130132118.GY28946@ZenIV.linux.org.uk> <ac3eb2510811300525n2e47ccap65e897ac1c4adab5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510811300525n2e47ccap65e897ac1c4adab5@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 30 Nov 2008 08:33:33 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:36619 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbYK3Ndc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 08:33:32 -0500
+From: Dmitri Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       Dmitri Monakhov <dmonakhov@openvz.org>
+Subject: [PATCH] fs: truncate blocks outside i_size after O_DIRECT write error.
+Date: Sun, 30 Nov 2008 16:32:46 +0300
+Message-Id: <1228051966-23866-1-git-send-email-dmonakhov@openvz.org>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 30, 2008 at 02:25:43PM +0100, Kay Sievers wrote:
+In case of error extending write may have instantiated a few  blocks
+outside i_size. We need to trim these blocks. We have to do it *regardless*
+to blocksize. At least ext2, ext3 and reiserfs interpret
+(i_size < biggest block) condition as error. Fsck will complain about wrong
+i_size. Then fsck will fix the error by changing i_size according to the
+biggest block. This is bad because this blocks contain garbage from previous
+write attempt. And result in data corruption.
 
-> Pktcdvd creates char _and_ block device nodes at the same time, while
-> the char nodes are not allocated, but created and conflict in
-> /sys/dev/ with properly allocated ones from other subsystems. Your
-> patch just papers over this bug.
+Changes from previous version:
+ - Move error handling from generic mm code to __blockdev_direct_IO(). As soon
+   as i remember this is 11'th version of the patch, and now finally it looks
+   simple and clean.
 
-Where the hell is it creating any char device nodes?  Show me.
-And note that device_create() is not creating *any* device nodes,
-char or block.  It creates a directory in some place in sysfs,
-associated with struct device (which has arseloads of uses unrelated
-to block *or* char devices) and, if dev_t argument is non-zero,
-dumps its value into one of the attributes.
+####TESTCASE_BEGIN
+$touch /mnt/test/BIG_FILE
+## at this moment /mnt/test/BIG_FILE size and blocks equal to zero
+open("/mnt/test/BIG_FILE", O_WRONLY|O_CREAT|O_DIRECT, 0666) = 3
+write(3, "aaaaaaaaaaaa"..., 104857600) = -1 ENOSPC (No space left on device)
+## size and block sould't be changed because write op failed.
+$stat /mnt/test/BIG_FILE
+File: `/mnt/test/BIG_FILE'
+Size: 0 Blocks: 110896 IO Block: 1024 regular empty file
+<<<<<<<<^^^^^^^^^^^^^^^^^^^^^^^^^^^^^file size is less than biggest block idx
+Device: fe07h/65031d Inode: 14 Links: 1
+Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
+Access: 2007-01-24 20:03:38.000000000 +0300
+Modify: 2007-01-24 20:03:38.000000000 +0300
+Change: 2007-01-24 20:03:39.000000000 +0300
 
-These days it might also dump a symlink into /sys/dev/*.
+#fsck.ext3 -f /dev/VG/test
+e2fsck 1.39 (29-May-2006)
+Pass 1: Checking inodes, blocks, and sizes
+Inode 14, i_size is 0, should be 56556544. Fix<y>? yes
+Pass 2: Checking directory structure
+....
+#####TESTCASE_ENDdiff --git a/fs/direct-io.c b/fs/direct-io.c
+index af0558d..4e88bea 100644
 
-Which part of the above constitutes a creation of char device node?
+Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+---
+ fs/direct-io.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index af0558d..4e88bea 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -1209,6 +1209,16 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 	retval = direct_io_worker(rw, iocb, inode, iov, offset,
+ 				nr_segs, blkbits, get_block, end_io, dio);
+ 
++	/*
++	 * In case of error extending write may have instantiated a few
++	 * blocks outside i_size. Trim these off again for DIO_LOCKING.
++	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this by
++	 * it's own meaner.
++	 */
++	if (unlikely(retval < 0 && (rw & WRITE) && (end > i_size_read(inode))
++			&& dio_lock_type == DIO_LOCKING))
++		vmtruncate(inode, inode->i_size);
++
+ 	if (rw == READ && dio_lock_type == DIO_LOCKING)
+ 		release_i_mutex = 0;
+ 
+-- 
+1.5.4.3
+
