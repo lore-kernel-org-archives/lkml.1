@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYK3DcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYK3DhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbYK3DcW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 22:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYK3DcO
+	id S1756251AbYK3DhU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 22:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbYK3DhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 22:32:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53592 "EHLO
+	Sat, 29 Nov 2008 22:37:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36774 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754113AbYK3DcM (ORCPT
+	by vger.kernel.org with ESMTP id S1754557AbYK3DhB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 22:32:12 -0500
-Date: Sat, 29 Nov 2008 19:29:39 -0800
+	Sat, 29 Nov 2008 22:37:01 -0500
+Date: Sat, 29 Nov 2008 19:36:56 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Christophe Saout <christophe@saout.de>, dm-devel@redhat.com,
-       linux-crypto@vger.kernel.org
-Subject: Re: next-20081125: crypto hard disk gets unaccessable
-Message-Id: <20081129192939.925275f0.akpm@linux-foundation.org>
-In-Reply-To: <20081128063355.GA4700@denkbrett.schottelius.org>
-References: <20081128063355.GA4700@denkbrett.schottelius.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: networking oops after resume from s2ram (2.6.28-rc6)
+Message-Id: <20081129193656.d8ed435d.akpm@linux-foundation.org>
+In-Reply-To: <20081128211538.GA6750@joi>
+References: <20081128211538.GA6750@joi>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,78 +26,257 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
+On Fri, 28 Nov 2008 22:15:40 +0100 Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-On Fri, 28 Nov 2008 07:33:55 +0100 Nico -telmich- Schottelius <nico-linux-next@schottelius.org> wrote:
+> Hi
+> 
+> Sometimes after resume from s2ram networking doesn't work, so I restart it by
+> /etc/init.d/net.eth1 restart. Recently it started to lock up my box completely,
+> but today it oopsed only (and killed my keyboard, so I had to save dmesg with
+> mouse :D).
+> 
+> It looks like it tries to use netconsole without working network interface...
+> 
+> [ 1621.013789] BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> [ 1621.013793] IP: [<ffffffff803f5db9>] skge_xmit_frame+0xb8/0x3ba
+> [ 1621.013802] PGD 16880067 PUD 16894067 PMD 0 
+> [ 1621.013806] Oops: 0000 [#1] PREEMPT 
+> [ 1621.013808] last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> [ 1621.013812] Dumping ftrace buffer:
+> [ 1621.013814]    (ftrace buffer empty)
+> [ 1621.013816] CPU 0 
+> [ 1621.013819] Pid: 6725, comm: ip Not tainted 2.6.28-rc6-stack+mode #51
+> [ 1621.013821] RIP: 0010:[<ffffffff803f5db9>]  [<ffffffff803f5db9>] skge_xmit_frame+0xb8/0x3ba
 
-> Hello!
-> 
-> After about four suspend & resume operations in the midst of editing
-> a file, the system beeped twice and issued this error:
-> 
-> [69186.618730] note: kcryptd[2848] exited with preempt_count 2
-> 
-> [full call trace attached]
-> 
-> /dev/sda3 was mapped via cryptsetup luksOpen to /dev/mapper/home
-> and also mounted an home.
-> 
-> After that error, all accesses to /home hung. Access to /
-> (provided by sda1) were still working.
-> 
-> System is again the Lenovo X200, including sierra loaded and used.
-> 
-> ...
->
+skge driver went splat, I guess.
 
-[lots of snippage]
+It would be fun to try using this:
 
-> [69134.199241] device ppp0 left promiscuous mode
-> [69186.618203] general protection fault: 0000 [#1] PREEMPT SMP 
-> [69186.618216] last sysfs file: /sys/class/power_supply/BAT0/energy_full
-> [69186.618220] CPU 0 
-> [69186.618224] Modules linked in: ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc sierra usbserial usb_storage libusual nfs lockd nfs_acl sunrpc iwlagn tun sg usblp sr_mod cdrom vfat fat i915 drm rfcomm l2cap uinput autofs4 ipv6 cpufreq_powersave sha256_generic ansi_cprng krng chainiv rng aes_x86_64 aes_generic cbc dm_crypt dm_mod md_mod loop btusb bluetooth arc4 ecb cryptomgr aead crypto_blkcipher crypto_hash snd_hda_intel snd_pcm snd_page_alloc snd_hwdep snd_seq snd_timer snd_seq_device i2c_i801 rtc_cmos rtc_core snd rtc_lib iwlcore i2c_core pcspkr soundcore mac80211 cfg80211 ehci_hcd video output uhci_hcd wmi usbcore e1000e intel_agp thinkpad_acpi rfkill hwmon backlight led_class nvram [last unloaded: iwlagn]
-> [69186.618352] Pid: 2848, comm: kcryptd Not tainted 2.6.28-rc6-next-20081125-denkbrett #15
-> [69186.618357] RIP: 0010:[<ffffffff8031f246>]  [<ffffffff8031f246>] crypto_xor+0x7/0x48
-> [69186.618372] RSP: 0018:ffff880079879cc8  EFLAGS: 00010212
-> [69186.618377] RAX: 00000000fffffff0 RBX: b6e3880000000010 RCX: 0000000000000000
-> [69186.618382] RDX: 0000000000000010 RSI: b6e3880000000000 RDI: ffff88007a3da4e0
-> [69186.618387] RBP: 0000000000000010 R08: 0000000000000010 R09: 0000000000000000
-> [69186.618392] R10: 0000000000000000 R11: ffff88007a3da4e0 R12: 0000000000000010
-> [69186.618397] R13: ffff88000c8c9000 R14: ffff88007a3da4e0 R15: 00000000000001f0
-> [69186.618403] FS:  0000000000000000(0000) GS:ffffffff805f51c0(0000) knlGS:0000000000000000
-> [69186.618408] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> [69186.618413] CR2: 00007f56a00ef000 CR3: 0000000053dc9000 CR4: 00000000000006e0
-> [69186.618418] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [69186.618423] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [69186.618429] Process kcryptd (pid: 2848, threadinfo ffff880079878000, task ffff88007c2f23a0)
-> [69186.618433] Stack:
-> [69186.618436]  ffffffffa027226a ffffffff805e1e00 ffff880079879db0 ffff88007ad33800
-> [69186.618444]  ffff88007b400360 ffffffffa0285705 fffffff000011212 0000000000000000
-> [69186.618453]  b6e3880000000000 ffffe200002bebf8 ffff88000c8c9000 ffff88007a3da4a0
-> [69186.618462] Call Trace:
-> [69186.618468]  [<ffffffffa027226a>] ? crypto_cbc_encrypt+0xfa/0x15a [cbc]
-> [69186.618481]  [<ffffffffa0285705>] ? aes_encrypt+0x0/0x7 [aes_x86_64]
-> [69186.618494]  [<ffffffffa020667d>] ? async_encrypt+0x35/0x3a [crypto_blkcipher]
-> [69186.618509]  [<ffffffffa0269a6f>] ? crypt_convert+0x1d2/0x253 [dm_crypt]
-> [69186.618522]  [<ffffffffa0269ed6>] ? kcryptd_crypt+0x3e6/0x407 [dm_crypt]
-> [69186.618533]  [<ffffffffa0269af0>] ? kcryptd_crypt+0x0/0x407 [dm_crypt]
-> [69186.618543]  [<ffffffff80241704>] ? run_workqueue+0x87/0x122
-> [69186.618552]  [<ffffffff80241877>] ? worker_thread+0xd8/0xe7
-> [69186.618560]  [<ffffffff80244e00>] ? autoremove_wake_function+0x0/0x2e
-> [69186.618569]  [<ffffffff8024179f>] ? worker_thread+0x0/0xe7
-> [69186.618575]  [<ffffffff8024179f>] ? worker_thread+0x0/0xe7
-> [69186.618582]  [<ffffffff80244ae7>] ? kthread+0x47/0x73
-> [69186.618589]  [<ffffffff8020c4e9>] ? child_rip+0xa/0x21
-> [69186.618597]  [<ffffffff80244aa0>] ? kthread+0x0/0x73
-> [69186.618604]  [<ffffffff8020c4df>] ? child_rip+0x0/0x21
-> [69186.618611] Code: 08 48 89 51 08 48 89 0a 48 b9 00 01 10 00 00 00 ad de 48 ba 00 02 20 00 00 00 ad de 48 89 08 48 89 50 08 c3 41 89 d0 31 c9 eb 0e <8b> 04 0e 41 83 e8 04 31 04 0f 48 83 c1 04 41 83 f8 03 77 ec 41 
-> [69186.618678] RIP  [<ffffffff8031f246>] crypto_xor+0x7/0x48
-> [69186.618686]  RSP <ffff880079879cc8>
-> [69186.618723] ---[ end trace 728c95da3be59caf ]---
-> [69186.618730] note: kcryptd[2848] exited with preempt_count 2
-> 
 
-Either a bug in dm-crypt or in crypto core, I'd guess.
+From: Arjan van de Ven <arjan@infradead.org>
 
-I assume that 2.6.28-rc6 is OK?
+We're struggling all the time to figure out where the code came from that
+oopsed..  The script below (a adaption from a script used by
+kerneloops.org) can help developers quite a bit, at least for non-module
+cases.
+
+It works and looks like this:
+
+[/home/arjan/linux]$ dmesg | perl scripts/markup_oops.pl vmlinux
+ {
+ 	struct agp_memory *memory;
+
+ 	memory = agp_allocate_memory(agp_bridge, pg_count, type);
+ c055c10f:	89 c2                	mov    %eax,%edx
+ 	if (memory == NULL)
+ c055c111:	74 19                	je     c055c12c <agp_allocate_memory_wrap+0x30>
+ /* This function must only be called when current_controller != NULL */
+ static void agp_insert_into_pool(struct agp_memory * temp)
+ {
+ 	struct agp_memory *prev;
+
+ 	prev = agp_fe.current_controller->pool;
+ c055c113:	a1 ec dc 8f c0       	mov    0xc08fdcec,%eax
+*c055c118:	8b 40 10             	mov    0x10(%eax),%eax     <----- faulting instruction
+
+ 	if (prev != NULL) {
+ c055c11b:	85 c0                	test   %eax,%eax
+ c055c11d:	74 05                	je     c055c124 <agp_allocate_memory_wrap+0x28>
+ 		prev->prev = temp;
+ c055c11f:	89 50 04             	mov    %edx,0x4(%eax)
+ 		temp->next = prev;
+ c055c122:	89 02                	mov    %eax,(%edx)
+ 	}
+ 	agp_fe.current_controller->pool = temp;
+ c055c124:	a1 ec dc 8f c0       	mov    0xc08fdcec,%eax
+ c055c129:	89 50 10             	mov    %edx,0x10(%eax)
+ 	if (memory == NULL)
+ 		return NULL;
+
+ 	agp_insert_into_pool(memory);
+
+so in this case, we faulted while dereferencing agp_fe.current_controller pointer, and we get to see
+exactly which function and line it affects... Personally I find this very useful, and I can
+see value for having this script in the kernel for more-than-just-me to use.
+
+Caveats:
+* It only works for oopses not-in-modules
+* It only works nicely for kernels compiled with CONFIG_DEBUG_INFO
+* It's not very fast.
+* It only works on x86
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ scripts/markup_oops.pl |  162 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 162 insertions(+)
+
+diff -puN /dev/null scripts/markup_oops.pl
+--- /dev/null
++++ a/scripts/markup_oops.pl
+@@ -0,0 +1,162 @@
++#!/usr/bin/perl -w
++
++# Copyright 2008, Intel Corporation
++#
++# This file is part of the Linux kernel
++#
++# This program file is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License as published by the
++# Free Software Foundation; version 2 of the License.
++#
++# Authors:
++# 	Arjan van de Ven <arjan@linux.intel.com>
++
++
++my $vmlinux_name = $ARGV[0];
++
++#
++# Step 1: Parse the oops to find the EIP value
++#
++
++my $target = "0";
++while (<STDIN>) {
++	if ($_ =~ /EIP: 0060:\[\<([a-z0-9]+)\>\]/) {
++		$target = $1;
++	}
++}
++
++if ($target =~ /^f8/) {
++	print "This script does not work on modules ... \n";
++	exit;
++}
++
++if ($target eq "0") {
++	print "No oops found!\n";
++	print "Usage: \n";
++	print "    dmesg | perl scripts/markup_oops.pl vmlinux\n";
++	exit;
++}
++
++my $counter = 0;
++my $state   = 0;
++my $center  = 0;
++my @lines;
++
++sub InRange {
++	my ($address, $target) = @_;
++	my $ad = "0x".$address;
++	my $ta = "0x".$target;
++	my $delta = hex($ad) - hex($ta);
++
++	if (($delta > -4096) && ($delta < 4096)) {
++		return 1;
++	}
++	return 0;
++}
++
++
++
++# first, parse the input into the lines array, but to keep size down,
++# we only do this for 4Kb around the sweet spot
++
++my $filename;
++
++open(FILE, "objdump -dS $vmlinux_name |") || die "Cannot start objdump";
++
++while (<FILE>) {
++	my $line = $_;
++	chomp($line);
++	if ($state == 0) {
++		if ($line =~ /^([a-f0-9]+)\:/) {
++			if (InRange($1, $target)) {
++				$state = 1;
++			}
++		}
++	} else {
++		if ($line =~ /^([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)\:/) {
++			my $val = $1;
++			if (!InRange($val, $target)) {
++				last;
++			}
++			if ($val eq $target) {
++				$center = $counter;
++			}
++		}
++		$lines[$counter] = $line;
++
++		$counter = $counter + 1;
++	}
++}
++
++close(FILE);
++
++if ($counter == 0) {
++	print "No matching code found \n";
++	exit;
++}
++
++if ($center == 0) {
++	print "No matching code found \n";
++	exit;
++}
++
++my $start;
++my $finish;
++my $codelines = 0;
++my $binarylines = 0;
++# now we go up and down in the array to find how much we want to print
++
++$start = $center;
++
++while ($start > 1) {
++	$start = $start - 1;
++	my $line = $lines[$start];
++	if ($line =~ /^([a-f0-9]+)\:/) {
++		$binarylines = $binarylines + 1;
++	} else {
++		$codelines = $codelines + 1;
++	}
++	if ($codelines > 10) {
++		last;
++	}
++	if ($binarylines > 20) {
++		last;
++	}
++}
++
++
++$finish = $center;
++$codelines = 0;
++$binarylines = 0;
++while ($finish < $counter) {
++	$finish = $finish + 1;
++	my $line = $lines[$finish];
++	if ($line =~ /^([a-f0-9]+)\:/) {
++		$binarylines = $binarylines + 1;
++	} else {
++		$codelines = $codelines + 1;
++	}
++	if ($codelines > 10) {
++		last;
++	}
++	if ($binarylines > 20) {
++		last;
++	}
++}
++
++
++my $i;
++
++my $fulltext = "";
++$i = $start;
++while ($i < $finish) {
++	if ($i == $center) {
++		$fulltext = $fulltext . "*$lines[$i]     <----- faulting instruction\n";
++	} else {
++		$fulltext = $fulltext .  " $lines[$i]\n";
++	}
++	$i = $i +1;
++}
++
++print $fulltext;
++
+_
+
