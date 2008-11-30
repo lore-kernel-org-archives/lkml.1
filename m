@@ -1,73 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYK3SrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYK3StI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbYK3SrQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 13:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYK3Sq7
+	id S1755990AbYK3StI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 13:49:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbYK3Ssz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 13:46:59 -0500
-Received: from mout.perfora.net ([74.208.4.194]:52198 "EHLO mout.perfora.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbYK3Sq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 13:46:59 -0500
-Date: Sun, 30 Nov 2008 12:41:35 -0600
-From: Robby Workman <rw@rlworkman.net>
-To: Toralf =?UTF-8?B?RsO2cnN0ZXI=?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-gentoo-r4 suspend/hibernate issues with ThinkPad T41
-Message-ID: <20081130124135.0d845462@liberty.rlwhome.lan>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.12; i486-slackware-linux-gnu)
+	Sun, 30 Nov 2008 13:48:55 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:60616 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752488AbYK3Ssz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 13:48:55 -0500
+Date: Sun, 30 Nov 2008 19:48:45 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] mmc_block: print better data error message after
+ timeout
+Message-ID: <20081130194845.4abd0cb8@mjolnir.drzeus.cx>
+In-Reply-To: <49083B1C.6060803@nokia.com>
+References: <48F7411F.3020109@nokia.com>
+	<20081026121155.69692474@mjolnir.drzeus.cx>
+	<49083B1C.6060803@nokia.com>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/nsLbzRCrDATSf9HqfPQTVjt";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Provags-ID: V01U2FsdGVkX18cQsloMzgS8k2nqaWgSV+V+bB3OBd0RxEIX9k
- VohrC073Q0hT8ympxTPGoO7PYt9pZYzKliRg2Ix3Od1y9swGlX
- RWaBz9ovHuz1F+7Li0Ngg==
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-22771-1228070931-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/nsLbzRCrDATSf9HqfPQTVjt
-Content-Type: text/plain; charset=UTF-8
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_freyr.drzeus.cx-22771-1228070931-0001-2
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-Toralf F=C3=B6rster wrote:
+On Wed, 29 Oct 2008 12:29:48 +0200
+Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
 
-> testing that kernel (based on 2.6.27.7) w/ a  .config from a
-> working 2.6.26-gentoo-r3 kernel I run into issues after the system
-> should be wake up from hibernation.
-> If I startx (from init level 2), suspend the system (FN + F4), wake
-> it up and then try to hibernate (FN + F12) I get in my syslog the=20
-> following entries:
->
-> Nov 30 14:27:02 n22 acpid: received event "ibm/hotkey HKEY 00000080
-> 0000100" Nov 30 14:27:02 n22 acpid: notifying client 2796[0:0]
-> Nov 30 14:27:02 n22 acpid: executing action "/etc/acpi/default.sh
-> ibm/hotkey
+> Add command response and card status to error
+> messages.
+>=20
+> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> ---
+>  drivers/mmc/card/block.c |   56 ++++++++++++++++++++++++++++++++++++++++=
+-----
+>  1 files changed, 49 insertions(+), 7 deletions(-)
+>=20
+>=20
+> Pierre
+>=20
+> This patch amends error messages for all error codes and is independent o=
+f SPI.
 
+Looks good. It's ready to queue up except for two very small details
+(see below).
 
-I don't have any insight on the problem, but I can offer anecdotal
-evidence on my T41.  Using the default kernel methods for suspend and
-hibernate ( echo -n (mem|disk) > /sys/power/state ), it sleeps and
-wakes up as expected.  More recently, I'm using the pm-utils suite for
-this, and it too works as expected.
+> Status values are not OR'd together from different commands as that would
+> muddy the waters for anyone trying to understand the nature of the error.
 
-This is on Slackware -current (development version) with 2.6.27.7
-kernel. I now employ xfce4-power-manager for suspend functionality, but
-prior to that, I was using this: http://rlworkman.net/conf/acpi/ if
-you'd like to peruse it.
+I suppose. I'm just generally uneasy about error handling in SD/MMC as
+the specs aren't that clear. :)
 
--RW
+> Waiting for the card to become ready after an error is also not included,
+> as it is not in the standards and is a separate issue anyway.
 
---Sig_/nsLbzRCrDATSf9HqfPQTVjt
-Content-Type: application/pgp-signature; name=signature.asc
+What do you mean?
+
+This will handle your case of seeing read errors, but for write errors
+we probably need to wait for the write to complete fully. But that's
+something that can be added later...
+> =20
+> +static u32 get_card_status(struct mmc_card *card, struct request *req)
+> +{
+> +	struct mmc_command cmd;
+> +	int err;
+> +
+> +	/* SEND STATUS command is not supported by SDIO */
+> +	if (mmc_card_sdio(card))
+> +		return 0;
+> +
+
+This is redundant. We never bind to a SDIO card.
+
+>  		if (brq.data.error) {
+> -			printk(KERN_ERR "%s: error %d transferring data\n",
+> -			       req->rq_disk->disk_name, brq.data.error);
+> +			if (brq.data.error =3D=3D -ETIMEDOUT) {
+> +				/* 'Stop' response contains card status */
+> +				if (brq.mrq.stop)
+> +					status =3D brq.mrq.stop->resp[0];
+> +				printk(KERN_ERR "%s: error transferring data,"
+> +				       " sector %u, nr %u, card status %#x\n",
+> +				       req->rq_disk->disk_name,
+> +				       (unsigned)req->sector,
+> +				       (unsigned)req->nr_sectors, status);
+> +			} else {
+> +				printk(KERN_ERR "%s: error %d transferring data,"
+> +				       " sector %u, nr %u, card status %#x\n",
+> +				       req->rq_disk->disk_name, brq.data.error,
+> +				       (unsigned)req->sector,
+> +				       (unsigned)req->nr_sectors, status);
+> +			}
+>  		}
+
+Do we need the two different printk:s? It would reduce the code a bit
+if you just let the if clause modify the status value.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-22771-1228070931-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAkky3l8ACgkQvGy9tf6lsvslEACeNTdoTWgsH0y+wbbzPMNC8sHu
-lykAnigD5qGGUkh2Tc+OcSbDXv/cUr5s
-=BnCm
+iEYEARECAAYFAkky4BIACgkQ7b8eESbyJLigWwCgiKn/TlWI44WY1+S+NrLyklOe
+YmYAoIsS9oJUbE89oFbd1WGZ0XXoEUVe
+=51Xi
 -----END PGP SIGNATURE-----
 
---Sig_/nsLbzRCrDATSf9HqfPQTVjt--
+--=_freyr.drzeus.cx-22771-1228070931-0001-2--
