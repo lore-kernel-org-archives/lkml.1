@@ -1,95 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYK3XoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbYK3Xth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbYK3XoU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 18:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYK3XoK
+	id S1756420AbYK3Xth (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 18:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYK3Xt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 18:44:10 -0500
-Received: from smtp6-g19.free.fr ([212.27.42.36]:37648 "EHLO smtp6-g19.free.fr"
+	Sun, 30 Nov 2008 18:49:29 -0500
+Received: from ozlabs.org ([203.10.76.45]:57319 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbYK3XoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 18:44:09 -0500
-Message-ID: <49332545.5020604@free.fr>
-Date: Mon, 01 Dec 2008 00:44:05 +0100
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.18) Gecko/20081030 SeaMonkey/1.1.13
+	id S1753457AbYK3Xt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 18:49:28 -0500
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Jan Kara <jack@suse.cz>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: next-2008-11-28 : can't mount UDF DVD
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
-In-Reply-To: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18739.9807.62269.140353@cargo.ozlabs.ibm.com>
+Date: Mon, 1 Dec 2008 10:48:31 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] Please pull powerpc.git merge branch
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus,
 
-With next-2008-11-28, I was unable to mount an UDF-formatted DVD-RW:
+Please pull from the 'merge' branch of
 
-~$ mount -oro -t udf /dev/sr0 /media/cdrom/
-mount: Not a directory
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-There was no problem with 2.6.28-rc6.
+to get a set of fixes for various powerpc regressions, build failures
+and serious bugs that have accumulated since my last pull request,
+plus some defconfig updates.
 
-I made a bisection:
+This includes commits pulled from the submaintainers for embedded
+powerpc platforms.  In one case there was a fix that I thought was
+marginal (making a printk print correct numbers rather than garbage)
+but I let it through since it is in platform-specific code and
+therefore can't hurt other platforms.  If you disagree, let me know
+and I'll redo the branch.
 
-33284bdf40f88160a154202510b27d983138c805 is first bad commit
-commit 33284bdf40f88160a154202510b27d983138c805
-Author: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date:   Sun Nov 16 20:52:19 2008 +0100
+Thanks,
+Paul.
 
-    udf: implement mode and dmode mounting options
+ arch/powerpc/boot/dts/mpc832x_rdb.dts          |    4 
+ arch/powerpc/boot/dts/mpc8572ds.dts            |    2 
+ arch/powerpc/configs/40x/virtex_defconfig      | 1176 ++++++++++++++++++++++++
+ arch/powerpc/configs/44x/virtex5_defconfig     |  234 +++--
+ arch/powerpc/configs/52xx/cm5200_defconfig     |  169 +++
+ arch/powerpc/configs/52xx/lite5200b_defconfig  |  206 +++-
+ arch/powerpc/configs/52xx/motionpro_defconfig  |  168 +++
+ arch/powerpc/configs/52xx/pcm030_defconfig     |  182 +++-
+ arch/powerpc/configs/52xx/tqm5200_defconfig    |  180 +++-
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |    2 
+ arch/powerpc/configs/mpc5200_defconfig         |  573 +++++++++---
+ arch/powerpc/configs/ppc40x_defconfig          |   92 ++
+ arch/powerpc/configs/ppc44x_defconfig          |   92 ++
+ arch/powerpc/kernel/cpu_setup_44x.S            |    7 
+ arch/powerpc/kernel/entry_64.S                 |    8 
+ arch/powerpc/kernel/prom_parse.c               |    7 
+ arch/powerpc/mm/40x_mmu.c                      |   16 
+ arch/powerpc/mm/numa.c                         |  122 ++
+ arch/powerpc/platforms/cell/axon_msi.c         |   36 +
+ arch/powerpc/platforms/cell/smp.c              |    9 
+ arch/powerpc/platforms/cell/spufs/file.c       |    3 
+ arch/powerpc/sysdev/bestcomm/Kconfig           |    9 
+ arch/powerpc/sysdev/mpic.c                     |    9 
+ arch/powerpc/sysdev/xilinx_intc.c              |    4 
+ drivers/block/xsysace.c                        |   23 
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c     |    9 
+ drivers/net/Kconfig                            |    3 
+ drivers/serial/uartlite.c                      |    4 
+ drivers/video/xilinxfb.c                       |    5 
+ sound/soc/fsl/Kconfig                          |    3 
+ 30 files changed, 2776 insertions(+), 581 deletions(-)
+ create mode 100644 arch/powerpc/configs/40x/virtex_defconfig
 
-    "dmode" allows overriding permissions of directories and
-    "mode" allows overriding permissions of files.
+Adhemerval Zanella (1):
+      powerpc: Fix IRQ assignment for some PCIe devices
 
-    Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-    Cc: Jan Kara <jack@suse.cz>
-    Signed-off-by: Jan Kara <jack@suse.cz>
+Arnd Bergmann (3):
+      powerpc/cell/axon-msi: Retry on missing interrupt
+      powerpc/mpic: Don't reset affinity for secondary MPIC on boot
+      powerpc/cell: Fix GDB watchpoints, again
 
+Benjamin Herrenschmidt (1):
+      powerpc/44x: Fix 460EX/460GT machine check handling
 
-Indeed, with this commit, I *must* use the dmode option to mount my DVD:
+Dave Hansen (1):
+      powerpc: Fix boot freeze on machine with empty memory node
 
-~$ sudo mount -oro,dmode=0755 -t udf /dev/sr0 /media/cdrom/
-~$ grep /media/cdrom /proc/mounts 
-/dev/scd0 /media/cdrom udf ro,mode=177777,dmode=755,utf8 0 0
-~$ ls -la /media/cdrom/
-total 46
-drwxr-xr-x  5 root    root     344 Dec 24  2007 .
-drwxr-xr-x 12 root    root    4096 Dec  1 00:17 ..
-drwxr-xr-x  2 laurent laurent 7112 Nov 30 20:14 flexbackup
-drwxr-xr-x  2 root    root      40 Nov 20  2005 lost+found
-drwxr-xr-x 10 laurent laurent 4548 Nov 25  2005 patches
-~$ ls -la /media/cdrom/flexbackup/
-total 4307946
-drwxr-xr-x 2 laurent laurent       7112 Nov 30 20:14 .
-drwxr-xr-x 5 root    root           344 Dec 24  2007 ..
-?rwsrwsrwt 1 laurent laurent         44 Oct  1  2006 00-index-key
-...
+Grant Erickson (1):
+      powerpc/40x: Limit allocable DRAM during early mapping
 
-Althought I was able to mount it with no special option on 2.6.28-rc6:
+Grant Likely (4):
+      powerpc/mpc5200: fix bestcomm Kconfig dependencies
+      powerpc/virtex: fix various format/casting printk mismatches
+      powerpc/52xx: update defconfigs
+      powerpc/virtex: Update defconfigs
 
-~$ sudo mount -oro -t udf /dev/sr0 /media/cdrom/
-~$ grep /media/cdrom /proc/mounts 
-/dev/scd0 /media/cdrom udf ro,utf8 0 0
-~$ ls -la /media/cdrom/
-total 46
-drwxrwxrwx  5 root    root     344 2007-12-24 18:09 .
-drwxr-xr-x 12 root    root    4096 2008-12-01 00:22 ..
-drwxr-x---  2 laurent laurent 7112 2008-11-30 20:14 flexbackup
-drwxr-xr-x  2 root    root      40 2005-11-20 23:37 lost+found
-drwxr-x--- 10 laurent laurent 4548 2005-11-25 18:18 patches
-~$ ls -la /media/cdrom/flexbackup/
-total 4307946
-drwxr-x--- 2 laurent laurent       7112 2008-11-30 20:14 .
-drwxrwxrwx 5 root    root           344 2007-12-24 18:09 ..
--rw-r----- 1 laurent laurent         44 2006-10-01 15:36 00-index-key
-...
+Jeremy Kerr (1):
+      powerpc/spufs: Fix spinning in spufs_ps_fault on signal
 
-~~
-laurent
+Martyn Welch (1):
+      powerpc: Use generic PHY driver for Marvell 88E1111 PHY on GE Fanuc SBC610
+
+Michael Barkowski (1):
+      powerpc/mpc832x_rdb: fix swapped ethernet ids
+
+Paul Mackerras (1):
+      powerpc: Fix system calls on Cell entered with XER.SO=1
+
+Trent Piepho (1):
+      powerpc/85xx: L2 cache size wrong in 8572DS dts
+
+Yuri Tikhonov (1):
+      xsysace: Fix driver to use resource_size_t instead of unsigned long
+
