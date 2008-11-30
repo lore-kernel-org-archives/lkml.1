@@ -1,72 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYK3MqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYK3Muf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbYK3MqP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 07:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYK3Mp7
+	id S1754017AbYK3Muf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 07:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYK3Mu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 07:45:59 -0500
-Received: from ik-out-1112.google.com ([66.249.90.183]:16988 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbYK3Mp7 (ORCPT
+	Sun, 30 Nov 2008 07:50:26 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:51546 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbYK3MuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 07:45:59 -0500
+	Sun, 30 Nov 2008 07:50:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LuOUF9Y1arAPMYfQl9Jjs2JWw6rD2sqzr0vSBKCdQLsPOVeHROP2+8CJJadwJ9Ra+d
-         Wr8RugIm+bhYPQGR/6i/6TzcPIH24GJoa7nd0OlxkJUkjA+bXc5tt34EpNjv9Ou9lWMZ
-         2WCqg8p3Yq+SKHIBcGdFjMn/9TBM2N0NceGsg=
-Date: Sun, 30 Nov 2008 15:50:01 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/branch-tracer: include missing irqflags.h
-Message-ID: <20081130125001.GA4239@x200.localdomain>
-References: <4930B32E.6060403@gmail.com> <20081129091647.GA25109@elte.hu>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Lq3wooP5R6sOai9an9d8HydlNJp0+CboTAhXU96gsGruFsKSZMwCUTohSZsPzrwS6Z
+         tivtuqRuvCCKw53p07tW7cI62MhG15IGfNd54phpWTiuLSFc5CV2PsIDlkjIy4W/SwTs
+         0j1lHl6P6ZqyMyvjpkPo2LWOXCXEmlU3QP3MU=
+Message-ID: <84144f020811300450m7f450a1eue9ee820db2022ca5@mail.gmail.com>
+Date: Sun, 30 Nov 2008 14:50:24 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 02/09] memcg: make inactive_anon_is_low()
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <20081130195508.814B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081129091647.GA25109@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081130195508.814B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Google-Sender-Auth: 318d46b6b24e7db3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 29, 2008 at 10:16:47AM +0100, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > Impact: fix build error on branch tracer
-> > 
-> > This should fix a build error reported on alpha in linux-next:
-> > 
-> >  CC      kernel/trace/trace_branch.o
-> > kernel/trace/trace_branch.c: In function 'probe_likely_condition':
-> > kernel/trace/trace_branch.c:44: error: implicit declaration of function 'raw_local_irq_save'
-> > kernel/trace/trace_branch.c:76: error: implicit declaration of function 'raw_local_irq_restore'
-> 
-> applied to tip/tracing
-> 
-> > Unfortunately, I can't test it since I don't have any Alpha build 
-> > environment.
-> 
-> it does not trigger with an Alpha defconfig - we do test that.
-> 
-> And the thing is, lockdep (which introduced irqflags tracing) has been 
-> introduced upstream two years ago - and Alpha still does not have it 
-> implemented. The architecture should be marked CONFIG_BROKEN if it 
-> continues to cause problems like this.
+On Sun, Nov 30, 2008 at 12:56 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+> make inactive_anon_is_low for memcgroup.
+> it improve active_anon vs inactive_anon ratio balancing.
 
-Or people can, horror, cross-compile stuff in relevant configurations.
+The subject line of this patch seems to be truncated and the changelog
+seems bit terse. While the change may be obvious to memcg developers,
+it's not for the casual reader.
 
-> Alexey, you seem to be using and relying on the Alpha architecture,
+>
+>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  include/linux/memcontrol.h |   10 ++++++++++
+>  mm/memcontrol.c            |   38 +++++++++++++++++++++++++++++++++++++-
+>  mm/vmscan.c                |   36 +++++++++++++++++++++++-------------
+>  3 files changed, 70 insertions(+), 14 deletions(-)
+>
+> Index: b/include/linux/memcontrol.h
+> ===================================================================
+> --- a/include/linux/memcontrol.h
+> +++ b/include/linux/memcontrol.h
+> @@ -90,6 +90,8 @@ extern void mem_cgroup_record_reclaim_pr
+>
+>  extern long mem_cgroup_calc_reclaim(struct mem_cgroup *mem, struct zone *zone,
+>                                        int priority, enum lru_list lru);
+> +int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg,
+> +                                   struct zone *zone);
+>
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  extern int do_swap_account;
+> @@ -241,6 +243,14 @@ static inline bool mem_cgroup_oom_called
+>  {
+>        return false;
+>  }
+> +
+> +static inline int
+> +mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg, struct zone *zone)
+> +{
+> +       return 1;
+> +}
+> +
+> +
 
-No, just alpha is first on the list ('a'), so nastygrams get sent first.
+An extra newline here.
 
-> could you please have a shot at this and implement the missing irqflags
-> infrastructure?
+>  #endif /* CONFIG_CGROUP_MEM_CONT */
+>
+>  #endif /* _LINUX_MEMCONTROL_H */
+> Index: b/mm/memcontrol.c
+> ===================================================================
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -156,6 +156,9 @@ struct mem_cgroup {
+>        unsigned long   last_oom_jiffies;
+>        int             obsolete;
+>        atomic_t        refcnt;
+> +
+> +       int inactive_ratio;
+> +
 
-Maybe. Should be interesting.
+Is there a reason why this is not unsigned long? A comment here
+explaining what ->inactive_ratio is used for would be nice.
+
+> +static void mem_cgroup_set_inactive_ratio(struct mem_cgroup *memcg)
+> +{
+> +       unsigned int gb, ratio;
+> +
+> +       gb = res_counter_read_u64(&memcg->res, RES_LIMIT) >> 30;
+> +       ratio = int_sqrt(10 * gb);
+
+You might want to consider adding a comment explaining what the above
+calculation is supposed to be doing.
+
+> +       if (!ratio)
+> +               ratio = 1;
+> +
+> +       memcg->inactive_ratio = ratio;
+> +
+> +}
+> +
+>  static DEFINE_MUTEX(set_limit_mutex);
+>
+>  static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
+> @@ -1381,6 +1411,11 @@ static int mem_cgroup_resize_limit(struc
+>                                GFP_HIGHUSER_MOVABLE, false);
+>                if (!progress)                  retry_count--;
+>        }
+> +
+> +       if (!ret)
+> +               mem_cgroup_set_inactive_ratio(memcg);
+> +
+> +
+
+An extra newline here.
+
+>        return ret;
+>  }
+>
+> @@ -1423,6 +1458,7 @@ int mem_cgroup_resize_memsw_limit(struct
+>                if (curusage >= oldusage)
+>                        retry_count--;
+>        }
+> +
+>        return ret;
+>  }
+
+There's some diff noise here.
