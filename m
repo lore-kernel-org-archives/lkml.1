@@ -1,56 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYK3D1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYK3DcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYK3D1g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Nov 2008 22:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYK3D12
+	id S1756194AbYK3DcW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Nov 2008 22:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYK3DcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Nov 2008 22:27:28 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:22969 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752848AbYK3D11 (ORCPT
+	Sat, 29 Nov 2008 22:32:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53592 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754113AbYK3DcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Nov 2008 22:27:27 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qFFdI0OaCuEIFkXpPX4+kDqIjwxLJJ1ngiThtNvg9dcIt5zFx0Loa+J5Hksy1X5nooXEBUSqEjUf7q1uhHlIT5/a3Gc8XVeEqwakx2pBwzXbpouW2Y9v9uWv3bq2oEerc2uL2bdaStpkWS/DAkjDGYdtZW9v/eVM8h3GnrK5Dg0=  ;
-X-YMail-OSG: ofMGtogVM1lRMhV4awtcRAhw6gOb8bcx9HxZuK5FPI9589e0wJ4WB17l0zndRiW_jy2mhfQCz8GGZGfHupAdlDLgemaY7_iqaZGiZIa2uMbA0b2KGeNrs7wE.vsHcG9oqB0-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Sat, 29 Nov 2008 19:27:24 -0800
-User-Agent: KMail/1.9.10
-Cc: "Paulius Zaleckas" <paulius.zaleckas@teltonika.lt>,
-       "Sam Ravnborg" <sam@ravnborg.org>, "Eric Miao" <eric.miao@marvell.com>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Philipp Zabel" <philipp.zabel@gmail.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Ben Gardner" <bgardner@wabtec.com>, "Greg KH" <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200811291447.29932.david-b@pacbell.net> <45a44e480811291504l30ed8101h9ab9b5333fb33f76@mail.gmail.com>
-In-Reply-To: <45a44e480811291504l30ed8101h9ab9b5333fb33f76@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 29 Nov 2008 22:32:12 -0500
+Date: Sat, 29 Nov 2008 19:29:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Christophe Saout <christophe@saout.de>, dm-devel@redhat.com,
+       linux-crypto@vger.kernel.org
+Subject: Re: next-20081125: crypto hard disk gets unaccessable
+Message-Id: <20081129192939.925275f0.akpm@linux-foundation.org>
+In-Reply-To: <20081128063355.GA4700@denkbrett.schottelius.org>
+References: <20081128063355.GA4700@denkbrett.schottelius.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811291927.25364.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 November 2008, Jaya Kumar wrote:
-> 	 Given that _bus() isn't appropriate anymore, how does
-> "gpio_set_values" and .sets sound and correspondingly gpio_get_values
-> and .gets?
+(cc's added)
 
-Confusingly similar to the single value version:  a single letter.
-Far better to use "bitmask" or something similar ...
+On Fri, 28 Nov 2008 07:33:55 +0100 Nico -telmich- Schottelius <nico-linux-next@schottelius.org> wrote:
 
-... also, better to split out discussions of gpio_chip methods
-(NOT used by all implementors of the GPIO interfaces) from the
-discussion of those interfaces (implemented uniformly on all
-platforms that support any of the calls).
+> Hello!
+> 
+> After about four suspend & resume operations in the midst of editing
+> a file, the system beeped twice and issued this error:
+> 
+> [69186.618730] note: kcryptd[2848] exited with preempt_count 2
+> 
+> [full call trace attached]
+> 
+> /dev/sda3 was mapped via cryptsetup luksOpen to /dev/mapper/home
+> and also mounted an home.
+> 
+> After that error, all accesses to /home hung. Access to /
+> (provided by sda1) were still working.
+> 
+> System is again the Lenovo X200, including sierra loaded and used.
+> 
+> ...
+>
 
+[lots of snippage]
+
+> [69134.199241] device ppp0 left promiscuous mode
+> [69186.618203] general protection fault: 0000 [#1] PREEMPT SMP 
+> [69186.618216] last sysfs file: /sys/class/power_supply/BAT0/energy_full
+> [69186.618220] CPU 0 
+> [69186.618224] Modules linked in: ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc sierra usbserial usb_storage libusual nfs lockd nfs_acl sunrpc iwlagn tun sg usblp sr_mod cdrom vfat fat i915 drm rfcomm l2cap uinput autofs4 ipv6 cpufreq_powersave sha256_generic ansi_cprng krng chainiv rng aes_x86_64 aes_generic cbc dm_crypt dm_mod md_mod loop btusb bluetooth arc4 ecb cryptomgr aead crypto_blkcipher crypto_hash snd_hda_intel snd_pcm snd_page_alloc snd_hwdep snd_seq snd_timer snd_seq_device i2c_i801 rtc_cmos rtc_core snd rtc_lib iwlcore i2c_core pcspkr soundcore mac80211 cfg80211 ehci_hcd video output uhci_hcd wmi usbcore e1000e intel_agp thinkpad_acpi rfkill hwmon backlight led_class nvram [last unloaded: iwlagn]
+> [69186.618352] Pid: 2848, comm: kcryptd Not tainted 2.6.28-rc6-next-20081125-denkbrett #15
+> [69186.618357] RIP: 0010:[<ffffffff8031f246>]  [<ffffffff8031f246>] crypto_xor+0x7/0x48
+> [69186.618372] RSP: 0018:ffff880079879cc8  EFLAGS: 00010212
+> [69186.618377] RAX: 00000000fffffff0 RBX: b6e3880000000010 RCX: 0000000000000000
+> [69186.618382] RDX: 0000000000000010 RSI: b6e3880000000000 RDI: ffff88007a3da4e0
+> [69186.618387] RBP: 0000000000000010 R08: 0000000000000010 R09: 0000000000000000
+> [69186.618392] R10: 0000000000000000 R11: ffff88007a3da4e0 R12: 0000000000000010
+> [69186.618397] R13: ffff88000c8c9000 R14: ffff88007a3da4e0 R15: 00000000000001f0
+> [69186.618403] FS:  0000000000000000(0000) GS:ffffffff805f51c0(0000) knlGS:0000000000000000
+> [69186.618408] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> [69186.618413] CR2: 00007f56a00ef000 CR3: 0000000053dc9000 CR4: 00000000000006e0
+> [69186.618418] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [69186.618423] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [69186.618429] Process kcryptd (pid: 2848, threadinfo ffff880079878000, task ffff88007c2f23a0)
+> [69186.618433] Stack:
+> [69186.618436]  ffffffffa027226a ffffffff805e1e00 ffff880079879db0 ffff88007ad33800
+> [69186.618444]  ffff88007b400360 ffffffffa0285705 fffffff000011212 0000000000000000
+> [69186.618453]  b6e3880000000000 ffffe200002bebf8 ffff88000c8c9000 ffff88007a3da4a0
+> [69186.618462] Call Trace:
+> [69186.618468]  [<ffffffffa027226a>] ? crypto_cbc_encrypt+0xfa/0x15a [cbc]
+> [69186.618481]  [<ffffffffa0285705>] ? aes_encrypt+0x0/0x7 [aes_x86_64]
+> [69186.618494]  [<ffffffffa020667d>] ? async_encrypt+0x35/0x3a [crypto_blkcipher]
+> [69186.618509]  [<ffffffffa0269a6f>] ? crypt_convert+0x1d2/0x253 [dm_crypt]
+> [69186.618522]  [<ffffffffa0269ed6>] ? kcryptd_crypt+0x3e6/0x407 [dm_crypt]
+> [69186.618533]  [<ffffffffa0269af0>] ? kcryptd_crypt+0x0/0x407 [dm_crypt]
+> [69186.618543]  [<ffffffff80241704>] ? run_workqueue+0x87/0x122
+> [69186.618552]  [<ffffffff80241877>] ? worker_thread+0xd8/0xe7
+> [69186.618560]  [<ffffffff80244e00>] ? autoremove_wake_function+0x0/0x2e
+> [69186.618569]  [<ffffffff8024179f>] ? worker_thread+0x0/0xe7
+> [69186.618575]  [<ffffffff8024179f>] ? worker_thread+0x0/0xe7
+> [69186.618582]  [<ffffffff80244ae7>] ? kthread+0x47/0x73
+> [69186.618589]  [<ffffffff8020c4e9>] ? child_rip+0xa/0x21
+> [69186.618597]  [<ffffffff80244aa0>] ? kthread+0x0/0x73
+> [69186.618604]  [<ffffffff8020c4df>] ? child_rip+0x0/0x21
+> [69186.618611] Code: 08 48 89 51 08 48 89 0a 48 b9 00 01 10 00 00 00 ad de 48 ba 00 02 20 00 00 00 ad de 48 89 08 48 89 50 08 c3 41 89 d0 31 c9 eb 0e <8b> 04 0e 41 83 e8 04 31 04 0f 48 83 c1 04 41 83 f8 03 77 ec 41 
+> [69186.618678] RIP  [<ffffffff8031f246>] crypto_xor+0x7/0x48
+> [69186.618686]  RSP <ffff880079879cc8>
+> [69186.618723] ---[ end trace 728c95da3be59caf ]---
+> [69186.618730] note: kcryptd[2848] exited with preempt_count 2
+> 
+
+Either a bug in dm-crypt or in crypto core, I'd guess.
+
+I assume that 2.6.28-rc6 is OK?
