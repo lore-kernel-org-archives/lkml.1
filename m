@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbYK3V1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYK3ViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756394AbYK3V1R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 16:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYK3V1D
+	id S1756268AbYK3ViT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 16:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYK3ViD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 16:27:03 -0500
-Received: from ozlabs.org ([203.10.76.45]:43545 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753064AbYK3V1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 16:27:01 -0500
+	Sun, 30 Nov 2008 16:38:03 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:45672 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbYK3ViB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 16:38:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=m5H/w+ri431N0BZ2vO2vsZu5HOOCfM8hp/75aEIz/tgsnwdjgxXdIKYXQY8sgE3eLf
+         CEl6xebGh1RQzTsQrMN5v+gfJLwXr5LoLHksYqcLnh6R3eptT5suElwbXnRGfExoGMCy
+         1cHnzjEJqQsCgmkEyQnLmw6tIgAojqQAMzZWc=
+Message-ID: <524f69650811301337uc02c4d4m96a28dcdb4112fd9@mail.gmail.com>
+Date: Sun, 30 Nov 2008 15:37:52 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: [GIT] CIFS fix for problem with conversion from prepare_write to write_begin
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18739.1091.452314.941676@cargo.ozlabs.ibm.com>
-Date: Mon, 1 Dec 2008 08:23:15 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: roel kluin <roel.kluin@gmail.com>, benh@kernel.crashing.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc: hv{cs, si}_close() both unsigned hp->count and
- hvcsd->open_count cannot be negative
-In-Reply-To: <20081130111614.21b194c5@lxorguk.ukuu.org.uk>
-References: <4931201D.7060701@gmail.com>
-	<18737.52782.650416.444270@cargo.ozlabs.ibm.com>
-	<20081130111614.21b194c5@lxorguk.ukuu.org.uk>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox writes:
+The following changes since commit ed313489badef16d700f5a3be50e8fd8f8294bc8:
+  Linus Torvalds (1):
+        Merge master.kernel.org:/home/rmk/linux-2.6-arm
 
-> See the tty_port patches in -next - this is an argument about code which
-> ought eventually to go away replaced by standard helper functions.
+are available in the git repository at:
 
-OK.  In that case I think the best fix for the existing code is just
-to change the count to be int rather than unsigned int.
+  git://git.kernel.org/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git master
 
-Paul.
+Jeff Layton (1):
+      [CIFS] fix regression in cifs_write_begin/cifs_write_end
+
+ fs/cifs/file.c |   77 ++++++++++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 56 insertions(+), 21 deletions(-)
+
+
+-- 
+Thanks,
+
+Steve
