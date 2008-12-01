@@ -1,85 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYLAMDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbYLAMKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbYLAMDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 07:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYLAMDJ
+	id S1754191AbYLAMKF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 07:10:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYLAMJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 07:03:09 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:7433 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbYLAMDI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 07:03:08 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -9.389
-Message-ID: <4933D278.7050403@tremplin-utc.net>
-Date: Mon, 01 Dec 2008 13:03:04 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+	Mon, 1 Dec 2008 07:09:53 -0500
+Received: from styx.suse.cz ([82.119.242.94]:36608 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752848AbYLAMJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 07:09:52 -0500
+Date: Mon, 1 Dec 2008 13:09:51 +0100
+From: Jan Kara <jack@suse.cz>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] udf: fix sparse warnings
+Message-ID: <20081201120951.GD17303@duck.suse.cz>
+References: <493049b5.170e660a.26c3.ffff8fd8@mx.google.com>
 MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       hmh@hmh.eng.br
-Subject: Re: HP accelerometer: free fall detection working, testers wanted
-References: <20081121212121.GA7222@elf.ucw.cz> <20081128104459.GA32417@atrey.karlin.mff.cuni.cz> <493310BD.8050506@tremplin-utc.net> <200812011255.22383.trenn@suse.de>
-In-Reply-To: <200812011255.22383.trenn@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <493049b5.170e660a.26c3.ffff8fd8@mx.google.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger schreef:
-> On Sunday 30 November 2008 23:16:29 Éric Piel wrote:
->> Pavel Machek schreef:
->>> Hi!
->>>
->>>>> I got free fall detection to work -- apparently BIOS does all the
->>>>> important stuff itself.
->>>>>
->>>>> Now... I'd like some testers. (Don't comment on code... yet. Yes, it
->>>>> has some issues).
->>>> Also, how do you try free fall? Did you try also with the lid
->>>> opened?
->>> With the lid opened, too, yes. I just took the machine, then tried to
->>> let go and catch it meter below that. (Of course I did not really let
->>> go, but released the grip and followed...)
->> Hi,
->> I've tested it. Mostly, it works. If I let it fall, it detects it. If I
->> repeat, it detects it again. If shake it, it doesn't detect any freefall
->> (good). However, for this to work on my laptop (2510p), after the device
->> is turned on, the AC must be unplugged and lid closed before it starts
->> working. It seems that that's only this specific state that triggers the
->> configuration of the sensor by the bios. Once setup, I can plug back and
->> open again the lid, the sensor keeps detecting the freefalls (until it's
->> turned off again).
->>
->> So I think it's still necessary to explicitly set up the sensor. It's
->> just a matter of setting up the registers as the bios does. We should be
->> able to manage (just by dumping them once).
->>
->> BTW, there were a couple of problems with the scripts. You have change
->> "/dev/misc" to "/dev/freefall" (which I also like more) but forgot to
->> update the driver itself.
->>
->> For hp3dg, it couldn't find the led (not the same truncation of the name
->> of the led). Probably you could replace the name of the led by:
->> /sys/class/leds/*hddprotect*/
->>
->> The led never turns off, because the sleep is slightly shorter than the
->> unload command.
->>
->> Moreover, on my system I have neither /proc/acpi/button/lid/LID/state
->> nor /proc/acpi/ac_adapter/AC0/state ! I guess they could be replaced by
->> a clever use of /dev/input/eventX (contening Lid) and
->> /sys/class/power_supply/*/online
-> These should still exist (bug?), as long as you do compile with ACPI_PROCFS
-> (and load the ac, button modules).
-> But there should also exist a sysfs replacement:
-> http://userweb.kernel.org/~lenb/doc/LPC2008-API-web/
-> gives an overview of what is converted and where it should pop up now.
-Yes, I explicitly compiled my kernel without ACPI_PROCFS. This was just
-to remind Pavel that his brand new script relies on deprecated
-interfaces ;-)
+On Thu 27-11-08 23:12:55, Hannes Eder wrote:
+> Fix this sparse warnings:
+> 
+>   fs/udf/balloc.c:843:3: warning: returning void-valued expression
+>   fs/udf/balloc.c:847:3: warning: returning void-valued expression
+>   fs/udf/balloc.c:851:3: warning: returning void-valued expression
+>   fs/udf/balloc.c:855:3: warning: returning void-valued expression
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+  Thanks for the patch. But when we are at it, I'd rather go for the
+following change:
 
-Eric
+>From f3facf9a4a60bba9f1fa0c779fc441c6aff90eb4 Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Mon, 1 Dec 2008 13:06:10 +0100
+Subject: [PATCH] udf: fix sparse warnings:
+
+Fix sparse warnings:
+
+  fs/udf/balloc.c:843:3: warning: returning void-valued expression
+  fs/udf/balloc.c:847:3: warning: returning void-valued expression
+  fs/udf/balloc.c:851:3: warning: returning void-valued expression
+  fs/udf/balloc.c:855:3: warning: returning void-valued expression
+
+Reported-by: Hannes Eder <hannes@hanneseder.net>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/udf/balloc.c |   23 +++++++++--------------
+ 1 files changed, 9 insertions(+), 14 deletions(-)
+
+diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
+index c0e87db..cde1a0d 100644
+--- a/fs/udf/balloc.c
++++ b/fs/udf/balloc.c
+@@ -840,24 +840,19 @@ void udf_free_blocks(struct super_block *sb, struct inode *inode,
+ 	struct udf_part_map *map = &UDF_SB(sb)->s_partmaps[partition];
+ 
+ 	if (map->s_partition_flags & UDF_PART_FLAG_UNALLOC_BITMAP) {
+-		return udf_bitmap_free_blocks(sb, inode,
+-					      map->s_uspace.s_bitmap,
+-					      bloc, offset, count);
++		udf_bitmap_free_blocks(sb, inode, map->s_uspace.s_bitmap,
++				       bloc, offset, count);
+ 	} else if (map->s_partition_flags & UDF_PART_FLAG_UNALLOC_TABLE) {
+-		return udf_table_free_blocks(sb, inode,
+-					     map->s_uspace.s_table,
+-					     bloc, offset, count);
++		udf_table_free_blocks(sb, inode, map->s_uspace.s_table,
++				      bloc, offset, count);
+ 	} else if (map->s_partition_flags & UDF_PART_FLAG_FREED_BITMAP) {
+-		return udf_bitmap_free_blocks(sb, inode,
+-					      map->s_fspace.s_bitmap,
+-					      bloc, offset, count);
++		udf_bitmap_free_blocks(sb, inode, map->s_fspace.s_bitmap,
++				       bloc, offset, count);
+ 	} else if (map->s_partition_flags & UDF_PART_FLAG_FREED_TABLE) {
+-		return udf_table_free_blocks(sb, inode,
+-					     map->s_fspace.s_table,
+-					     bloc, offset, count);
+-	} else {
+-		return;
++		udf_table_free_blocks(sb, inode, map->s_fspace.s_table,
++				      bloc, offset, count);
+ 	}
++	return;
+ }
+ 
+ inline int udf_prealloc_blocks(struct super_block *sb,
+-- 
+1.6.0.4
+
+
