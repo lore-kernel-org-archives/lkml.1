@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYLAOZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbYLAO1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYLAOZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 09:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYLAOZT
+	id S1753294AbYLAO1d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 09:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYLAO1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 09:25:19 -0500
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:51289 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752075AbYLAOZQ (ORCPT
+	Mon, 1 Dec 2008 09:27:22 -0500
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:50376 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752119AbYLAO1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 09:25:16 -0500
+	Mon, 1 Dec 2008 09:27:21 -0500
 X-Cam-AntiVirus: no malware found
 X-Cam-SpamDetails: not scanned
 X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4933F3C9.1090704@cam.ac.uk>
-Date: Mon, 01 Dec 2008 14:25:13 +0000
+Message-ID: <4933F445.2070403@cam.ac.uk>
+Date: Mon, 01 Dec 2008 14:27:17 +0000
 From: Jonathan Cameron <jic23@cam.ac.uk>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
 MIME-Version: 1.0
@@ -24,7 +24,7 @@ CC: LKML <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>,
        Ben Nizette <bn@niasdigital.com>,
        LM Sensors <lm-sensors@lm-sensors.org>,
        spi-devel-general@lists.sourceforge.net
-Subject: [Industrial I/O] [2/13] RFC: IIO ring buffer support (core)
+Subject: [Industrial I/O] [3/13] RFC: IIO Software ring buffer implementation
 References: <4933F291.4020001@cam.ac.uk>
 In-Reply-To: <4933F291.4020001@cam.ac.uk>
 X-Enigmail-Version: 0.95.6
@@ -36,61 +36,445 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jonathan Cameron <jic23@cam.ac.uk>
 
-The Industrial I/O core - ring buffer support
+IIO: Software ring buffer implementation.
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
 --
-This patch adds ring buffer support to the industrial I/O subsystem
-core. This functionality may be disabled when not desired.
 
-The support is designed to be generic enough to allow multiple
-software implementations. At the moment only one is available so
-the functionality for run time or board conf based selection has
-not yet been implemented.
+Intended to act as an example of how a software ring buffer might
+function rather than as a definitive solution. The particular
+focus of this was an application that required relatively hight
+sampling rates (couple of Ksamples) with low computational load
+and few dropped samples.
 
-The framework also allows for hardware ring buffers existing on the
-actual chip. An example of this usage is the VTI sca3000 driver found
-later in this patch set.
+To my mind this is the most flakey element of this patch set.
+All suggestions on alternative approaches / simplifications
+would be most welcome. My intention is to also provide a far
+simple locked ring buffer (hence all accesses in bh of interrupt
+handlers) to act as a very simple example for people coding up
+there own but this is not yet in place.
 
- drivers/industrialio/Kconfig              |    7
- drivers/industrialio/Makefile             |    1
- drivers/industrialio/industrialio-ring.c  |  491 ++++++++++++++++++++++++++++++
- include/linux/industrialio/ring_generic.h |  123 +++++++
- 4 files changed, 622 insertions(+)
-
+ drivers/industrialio/Kconfig         |    9
+ drivers/industrialio/Makefile        |    4
+ drivers/industrialio/ring_sw.c       |  370 +++++++++++++++++++++++++++++++++++
+ include/linux/industrialio/ring_sw.h |  183 +++++++++++++++++
+ 4 files changed, 565 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/industrialio/Kconfig b/drivers/industrialio/Kconfig
-index 433f777..d132ab6 100644
+index d132ab6..73c5616 100644
 --- a/drivers/industrialio/Kconfig
 +++ b/drivers/industrialio/Kconfig
-@@ -10,3 +10,10 @@ menuconfig INDUSTRIALIO
- 	  number of different physical interfaces (i2c, spi etc). See
- 	  Documentation/industrialio for more information.
+@@ -17,3 +17,12 @@ config IIO_RING_BUFFER
+ 	    Provide support for various ring buffer based data
+ 	    acquisition methods.
  
-+config IIO_RING_BUFFER
-+       bool "Enable ring buffer support within iio"
-+	  depends on INDUSTRIALIO
-+	  help
-+	    Provide support for various ring buffer based data
-+	    acquisition methods.
++config IIO_SW_RING
++       tristate "Industrial I/O lock free software ring"
++       depends on IIO_RING_BUFFER && INDUSTRIALIO
 +
++       ---help---
++	example software ring buffer implementation.  The design aim
++	of this particular realization was to minize write locking
++	with the intention that some devices would be able to write
++	in interrupt context.
+\ No newline at end of file
 diff --git a/drivers/industrialio/Makefile b/drivers/industrialio/Makefile
-index 1acd8fa..1f47af3 100644
+index 1f47af3..0fda138 100644
 --- a/drivers/industrialio/Makefile
 +++ b/drivers/industrialio/Makefile
-@@ -4,3 +4,4 @@
+@@ -3,5 +3,7 @@
+ #
  
  obj-$(CONFIG_INDUSTRIALIO)	+= industrialio.o
- industrialio-y := industrialio-core.o
-+industrialio-$(CONFIG_IIO_RING_BUFFER) += industrialio-ring.o
-diff --git a/drivers/industrialio/industrialio-ring.c b/drivers/industrialio/industrialio-ring.c
+-industrialio-y := industrialio-core.o
++industrialio-y := industrialio-core.o 
+ industrialio-$(CONFIG_IIO_RING_BUFFER) += industrialio-ring.o
++
++obj-$(CONFIG_IIO_SW_RING) += ring_sw.o
+diff --git a/drivers/industrialio/ring_sw.c b/drivers/industrialio/ring_sw.c
 new file mode 100644
-index 0000000..04a8cb1
+index 0000000..347ace1
 --- /dev/null
-+++ b/drivers/industrialio/industrialio-ring.c
-@@ -0,0 +1,491 @@
-+/* The industrial I/O core
++++ b/drivers/industrialio/ring_sw.c
+@@ -0,0 +1,370 @@
++/* The industrial I/O simple minimally locked ring buffer.
++ *
++ * Copyright (c) 2008 Jonathan Cameron
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/workqueue.h>
++#include <linux/industrialio/ring_sw.h>
++
++static inline int __iio_init_sw_ring_buffer(struct iio_sw_ring_buffer *ring,
++					    int bytes_per_datum, int length)
++{
++	__iio_init_ring_buffer(&ring->buf, bytes_per_datum, length);
++	ring->use_lock = __SPIN_LOCK_UNLOCKED((ring)->use_lock);
++	ring->data = kmalloc(length*ring->buf.bpd, GFP_KERNEL);
++
++	return ring->data ? 0 : -ENOMEM;
++}
++
++static inline void __iio_free_sw_ring_buffer(struct iio_sw_ring_buffer *ring)
++{
++	kfree(ring->data);
++}
++
++void iio_mark_sw_rb_in_use(void *r)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	spin_lock(&ring->use_lock);
++	ring->use_count++;
++	spin_unlock(&ring->use_lock);
++}
++EXPORT_SYMBOL(iio_mark_sw_rb_in_use);
++
++void iio_unmark_sw_rb_in_use(void *r)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	spin_lock(&ring->use_lock);
++	ring->use_count--;
++	spin_unlock(&ring->use_lock);
++}
++EXPORT_SYMBOL(iio_unmark_sw_rb_in_use);
++
++
++/* Ring buffer related functionality */
++/* Store to ring is typically called in the bh of a data ready interrupt handler
++ * in the device driver */
++/* Lock always held if their is a chance this may be called */
++int iio_store_to_sw_ring(struct iio_sw_ring_buffer *ring,
++			 unsigned char *data,
++			 s64 timestamp)
++{
++	bool init_read = true;
++	int ret;
++	int code;
++
++	/* initial store */
++	if (unlikely(ring->write_p == 0)) {
++		ring->write_p = ring->data;
++		/* doesn't actually matter if this is out of the set */
++		ring->half_p = ring->data - ring->buf.length*ring->buf.bpd/2;
++		init_read = false;
++	}
++	memcpy(ring->write_p, data, ring->buf.bpd);
++	barrier();
++	ring->last_written_p = ring->write_p;
++	barrier();
++	ring->write_p += ring->buf.bpd;
++	/* End of ring, back to the beginning */
++	if (ring->write_p == ring->data + ring->buf.length*ring->buf.bpd) {
++		ring->write_p = ring->data;
++		ring->buf.loopcount++;
++	}
++	if (ring->read_p == 0)
++		ring->read_p = ring->data;
++	/* Buffer full - move the read pointer and create / escalate
++	 * ring event */
++	else if (ring->write_p == ring->read_p) {
++		ring->read_p += ring->buf.bpd;
++		if (ring->read_p
++		    == ring->data + ring->buf.length*ring->buf.bpd)
++			ring->read_p = ring->data;
++
++		spin_lock(&ring->buf.shared_ev_pointer.lock);
++		if (ring->buf.shared_ev_pointer.ev_p) {
++			/* Event escalation - probably quicker to let this
++			   keep running than check if it is necessary */
++			code = IIO_EVENT_CODE_RING_100_FULL;
++			__iio_change_event(ring
++					   ->buf.shared_ev_pointer.ev_p,
++					   code,
++					   timestamp);
++		} else {
++			code = IIO_EVENT_CODE_RING_100_FULL;
++			ret = __iio_push_event(&ring->buf.ev_int,
++					       code,
++					       timestamp,
++					       &ring
++					       ->buf.shared_ev_pointer);
++			if (ret) {
++				spin_unlock(&ring->buf.shared_ev_pointer.lock);
++				goto error_ret;
++			}
++		}
++		spin_unlock(&ring->buf.shared_ev_pointer.lock);
++	}
++	/* investigate if our event barrier has been passed */
++	/* There are definite 'issues' with this and chances of
++	 * simultaneous read */
++	/* Also need to use loop count to ensure this only happens once */
++	ring->half_p += ring->buf.bpd;
++	if (ring->half_p == ring->data + ring->buf.length*ring->buf.bpd)
++		ring->half_p = ring->data;
++	if (ring->half_p == ring->read_p) {
++		spin_lock(&ring->buf.shared_ev_pointer.lock);
++		code = IIO_EVENT_CODE_RING_50_FULL;
++		ret = __iio_push_event(&ring->buf.ev_int,
++				       code,
++				       timestamp,
++				       &ring->buf.shared_ev_pointer);
++		spin_unlock(&ring->buf.shared_ev_pointer.lock);
++
++		if (ret)
++			goto error_ret;
++	}
++	return 0;
++error_ret:
++	return ret;
++}
++
++int iio_rip_sw_rb(void *r,  size_t count, u8 **data, int *dead_offset)
++{
++	struct iio_sw_ring_buffer *ring = r;
++
++	u8 *initial_read_p, *initial_write_p, *current_read_p, *end_read_p;
++
++	int ret, max_copied;
++	/* Round down to nearest datum boundary */
++	int bytes_to_rip = count - count % ring->buf.bpd;
++
++	/* Limit size to whole of ring buffer */
++	bytes_to_rip = min(ring->buf.bpd*ring->buf.length, bytes_to_rip);
++
++	*data = kmalloc(bytes_to_rip, GFP_KERNEL);
++	if (*data == NULL) {
++		ret = -ENOMEM;
++		goto error_ret;
++	}
++
++	/* build local copy */
++	initial_read_p = ring->read_p;
++	if (unlikely(initial_read_p == 0)) { /* No data here as yet */
++		ret = 0;
++		goto error_free_data_cpy;
++	}
++
++	initial_write_p = ring->write_p;
++
++	/* Need a consistent pair */
++	while ((initial_read_p != ring->read_p)
++	       || (initial_write_p != ring->write_p)) {
++		initial_read_p = ring->read_p;
++		initial_write_p = ring->write_p;
++	}
++	if (initial_write_p == initial_read_p) {
++		/* No new data available.*/
++		ret = 0;
++		goto error_free_data_cpy;
++	}
++
++	if (initial_write_p > initial_read_p + bytes_to_rip) {
++		/* write_p is greater than necessary, all is easy */
++		max_copied = bytes_to_rip;
++		memcpy(*data, initial_read_p, max_copied);
++		end_read_p = initial_read_p + max_copied;
++	} else if (initial_write_p > initial_read_p) {
++		/*not enough data to cpy */
++		max_copied = initial_write_p - initial_read_p;
++		memcpy(*data, initial_read_p, max_copied);
++		end_read_p = initial_write_p;
++	} else {
++		/* going through 'end' of ring buffer */
++		max_copied = ring->data
++			+ ring->buf.length*ring->buf.bpd - initial_read_p;
++		memcpy(*data, initial_read_p, max_copied);
++		if (initial_write_p > ring->data + bytes_to_rip - max_copied) {
++			/* enough data to finish */
++			memcpy(*data + max_copied, ring->data,
++			       bytes_to_rip - max_copied);
++			max_copied = bytes_to_rip;
++			end_read_p = ring->data + (bytes_to_rip - max_copied);
++		} else {  /* not enough data */
++			memcpy(*data + max_copied, ring->data,
++			       initial_write_p - ring->data);
++			max_copied += initial_write_p - ring->data;
++			end_read_p = initial_write_p;
++		}
++	}
++	/* Now to verify which section was cleanly copied - i.e. how far
++	 * read pointer has been pushed */
++	current_read_p = ring->read_p;
++
++	if (initial_read_p <= current_read_p)
++		*dead_offset = current_read_p - initial_read_p;
++	else
++		*dead_offset = ring->buf.length*ring->buf.bpd
++			- (initial_read_p - current_read_p);
++
++	/* possible issue if the initial write has been lapped or indeed
++	 * the point we were reading to has been passed */
++	/* No valid data read.
++	 * In this case the read pointer is already correct having been
++	 * pushed further than we would look. */
++	if (max_copied - *dead_offset < 0) {
++		ret = 0;
++		goto error_free_data_cpy;
++	}
++
++	/* setup the next read position */
++	ring->read_p = end_read_p;
++	return max_copied - *dead_offset;
++
++error_free_data_cpy:
++	kfree(data);
++error_ret:
++	return 0;
++}
++EXPORT_SYMBOL(iio_rip_sw_rb);
++//EXPORT_SYMBOL_GPL(iio_store_to_sw_ring);
++int iio_store_to_sw_rb(void *r, u8 *data, s64 timestamp)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	return iio_store_to_sw_ring(ring, data, timestamp);
++}
++EXPORT_SYMBOL(iio_store_to_sw_rb);
++
++int iio_read_last_from_sw_ring(struct iio_sw_ring_buffer *ring,
++			       unsigned char *data)
++{
++	int loopcount_copy;
++	unsigned char *last_written_p_copy;
++
++	iio_mark_sw_rb_in_use(ring);
++again:
++	loopcount_copy = ring->buf.loopcount;
++	barrier();
++	last_written_p_copy = ring->last_written_p;
++	barrier(); /*unnessecary? */
++	/* Check there is anything here */
++	if (last_written_p_copy == 0)
++		return -EAGAIN;
++	memcpy(data, last_written_p_copy, ring->buf.bpd);
++
++	if (unlikely(loopcount_copy != ring->buf.loopcount)) {
++		if (unlikely(ring->last_written_p >= last_written_p_copy))
++			goto again;
++	}
++	iio_unmark_sw_rb_in_use(ring);
++	return 0;
++}
++
++int iio_read_last_from_sw_rb(void *r,
++			     unsigned char *data)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	return iio_read_last_from_sw_ring(ring, data);
++}
++EXPORT_SYMBOL(iio_read_last_from_sw_rb);
++
++int iio_create_sw_rb(void **r)
++{
++	*r = kzalloc(sizeof(struct iio_sw_ring_buffer), GFP_KERNEL);
++	return *r ? 0 : -ENOMEM;
++}
++EXPORT_SYMBOL(iio_create_sw_rb);
++
++int iio_init_sw_rb(void *r, void *indio_dev)
++{
++	return 0;
++}
++EXPORT_SYMBOL(iio_init_sw_rb);
++
++void iio_exit_sw_rb(void *r)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	__iio_free_sw_ring_buffer(ring);
++
++}
++EXPORT_SYMBOL(iio_exit_sw_rb);
++
++
++void iio_free_sw_rb(void *r)
++{
++	kfree(r);
++}
++EXPORT_SYMBOL(iio_free_sw_rb);
++
++int iio_request_update_sw_rb(void *r)
++{
++	int ret;
++	struct iio_sw_ring_buffer *ring = r;
++
++	spin_lock(&ring->use_lock);
++	if (ring->use_count || !ring->update_needed) {
++		ret = -EAGAIN;
++		goto error_ret;
++	}
++	__iio_free_sw_ring_buffer(ring);
++	ret = __iio_init_sw_ring_buffer(ring, ring->buf.bpd, ring->buf.length);
++error_ret:
++	spin_unlock(&ring->use_lock);
++	return ret;
++}
++EXPORT_SYMBOL(iio_request_update_sw_rb);
++
++int iio_get_bpd_sw_rb(void *r)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	return ring->buf.bpd;
++}
++EXPORT_SYMBOL(iio_get_bpd_sw_rb);
++
++int iio_set_bpd_sw_rb(void *r, size_t bpd)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	if (ring->buf.bpd != bpd) {
++		ring->buf.bpd = bpd;
++		if(ring->buf.ring_access->mark_param_change)
++			ring->buf.ring_access->mark_param_change(r);
++	}
++	return 0;
++}
++EXPORT_SYMBOL(iio_set_bpd_sw_rb);
++
++int iio_get_length_sw_rb(void *r)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	return ring->buf.length;
++}
++EXPORT_SYMBOL(iio_get_length_sw_rb);
++
++int iio_set_length_sw_rb(void *r, int length)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	if(ring->buf.length != length) {
++		ring->buf.length = length;
++		if(ring->buf.ring_access->mark_param_change)
++			ring->buf.ring_access->mark_param_change(r);
++	}
++	return 0;
++}
++EXPORT_SYMBOL(iio_set_length_sw_rb);
++
++int iio_mark_update_needed_sw_rb(void *r)
++{
++	struct iio_sw_ring_buffer *ring = r;
++	ring->update_needed = true;
++	return 0;
++}
++EXPORT_SYMBOL(iio_mark_update_needed_sw_rb);
++
++/* no init or exit as this is basically a library module */
++
++MODULE_DESCRIPTION("Industrialio I/O software ring buffer");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/industrialio/ring_sw.h b/include/linux/industrialio/ring_sw.h
+new file mode 100644
+index 0000000..0b85b56
+--- /dev/null
++++ b/include/linux/industrialio/ring_sw.h
+@@ -0,0 +1,183 @@
++/* The industrial I/O simple minimally locked ring buffer.
 + *
 + * Copyright (c) 2008 Jonathan Cameron
 + *
@@ -98,620 +482,178 @@ index 0000000..04a8cb1
 + * under the terms of the GNU General Public License version 2 as published by
 + * the Free Software Foundation.
 + *
-+ * Handling of ring allocation / resizing.
++ * This code is deliberately kept separate from the main industrialio I/O core
++ * as it is intended that in the future a number of different software ring
++ * buffer implementations will exist with different characteristics to suit
++ * different applications.
 + *
++ * This particular one was designed for a data capture application where it was
++ * particularly important that no userspace reads would interrupt the capture
++ * process. To this end the ring is not locked during a read.
 + *
-+ * Things to look at here.
-+ * - Better memory allocation techniques?
-+ * - Alternative access techniques?
++ * Comments on this buffer design welcomed. It's far from efficient and some of
++ * my understanding of the effects of scheduling on this are somewhat limited.
++ * Frankly, to my mind, this is the current weak point in the industrial I/O
++ * patch set.
 + */
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/fs.h>
-+#include <linux/poll.h>
-+#include <linux/module.h>
++
++#ifndef _IIO_RING_SW_H_
++#define _IIO_RING_SW_H_
++/* NEEDS COMMENTS */
++/* The intention is that this should be a separate module from the iio core.
++ * This is a bit like supporting algorithms dependent on what the device
++ * driver requests - some may support multiple options */
++
++
++#include <linux/autoconf.h>
 +#include <linux/industrialio/iio.h>
 +#include <linux/industrialio/ring_generic.h>
 +
-+/* Allow for 3 digit id */
-+#define IIO_RING_AC_MINOR_N_LEN 22
-+#define IIO_RING_AC_MINOR_N "ring_buf%d_acc_minor"
-+#define IIO_RING_EV_MINOR_N_LEN 21
-+#define IIO_RING_EV_MINOR_N "ring_buf%d_ev_minor"
-+
-+int iio_push_ring_event(struct iio_ring_buffer *ring_buf,
-+		       int event_code,
-+		       s64 timestamp)
-+{
-+	return __iio_push_event(&ring_buf->ev_int,
-+			       event_code,
-+			       timestamp,
-+			       &ring_buf->shared_ev_pointer);
-+}
-+EXPORT_SYMBOL(iio_push_ring_event);
-+
-+int iio_push_or_escallate_ring_event(struct iio_ring_buffer *ring_buf,
-+				    int event_code,
-+				    s64 timestamp)
-+{
-+	if (ring_buf->shared_ev_pointer.ev_p)
-+		__iio_change_event(ring_buf->shared_ev_pointer.ev_p,
-+				   event_code,
-+				   timestamp);
-+	else
-+		return iio_push_ring_event(ring_buf,
-+					  event_code,
-+					  timestamp);
-+	return 0;
-+}
-+EXPORT_SYMBOL(iio_push_or_escallate_ring_event);
++#if defined CONFIG_IIO_SW_RING || defined CONFIG_IIO_SW_RING_MODULE
 +
 +/**
-+ * iio_ring_open() chrdev file open for ring buffer access
-+ *
-+ * This function relies on all ring buffer implementations having an
-+ * iio_ring_buffer as their first element.
++ * iio_create_sw_rb() software ring buffer allocation
++ * @r:		pointer to ring buffer pointer
 + **/
-+int iio_ring_open(struct inode *inode, struct file *filp)
-+{
-+	void *r = filp->private_data;
-+	struct iio_ring_buffer *rb = r;
-+
-+	if (rb->ring_access->mark_in_use)
-+		rb->ring_access->mark_in_use(r);
-+	try_module_get(rb->access_minor_attr.dev_attr.attr.owner);
-+
-+	return 0;
-+}
++int iio_create_sw_rb(void **r);
 +
 +/**
-+ * iio_ring_release() chrdev file close ring buffer access
-+ *
-+ * This function relies on all ring buffer implementations having an
-+ * iio_ring_buffer as their first element.
++ * iio_init_sw_rb() initialize the software ring buffer
++ * @r:		pointer to a software ring buffer created by an
++ *		iio_create_sw_rb call.
 + **/
-+int iio_ring_release(struct inode *inode, struct file *filp)
-+{
-+	void *r = filp->private_data;
-+	struct iio_ring_buffer *rb = r;
-+
-+	module_put(rb->access_minor_attr.dev_attr.attr.owner);
-+	clear_bit(IIO_BUSY_BIT_POS, &rb->access_handler.flags);
-+	if (rb->ring_access->unmark_in_use)
-+		rb->ring_access->unmark_in_use(r);
-+
-+	return 0;
-+}
++int iio_init_sw_rb(void *r, void *indio_dev);
++/**
++ * iio_exit_sw_rb() reverse what was done in iio_init_sw_rb
++ **/
++void iio_exit_sw_rb(void *r);
 +
 +/**
-+ * iio_ring_rip_outer() chrdev read for ring buffer access
-+ *
-+ * This function relies on all ring buffer implementations having an
-+ * iio_ring _bufer as their first element.
++ * iio_free_sw_rb() free memory occupied by the core ring buffer struct
 + **/
-+ssize_t iio_ring_rip_outer(struct file *filp,
-+			   char *buf,
-+			   size_t count,
-+			   loff_t *f_ps)
++void iio_free_sw_rb(void *r);
++
++/**
++ * iio_mark_sw_rb_in_use() reference counting to prevent incorrect chances
++ **/
++void iio_mark_sw_rb_in_use(void *r);
++
++/**
++ *  iio_unmark_sw_rb_in_use() notify the ring buffer that we don't care anymore
++ **/
++void iio_unmark_sw_rb_in_use(void *r);
++
++/**
++ * iio_read_last_from_sw_rb() attempt to read the last stored datum from the rb
++ **/
++int iio_read_last_from_sw_rb(void *r, u8 *data);
++
++/**
++ * iio_store_to_sw_rb() store a new datum to the ring buffer
++ * @rb:	pointer to ring buffer instance
++ * @data:	the datum to be stored including timestamp if relevant.
++ * @timestamp:	timestamp which will be attached to buffer events if relevant.
++ **/
++int iio_store_to_sw_rb(void *rb, u8 *data, s64 timestamp);
++
++/**
++ * iio_rip_sw_rb() attempt to read data from the ring buffer
++ * @r:			ring buffer instance
++ * @count:		number of datum's to try and read
++ * @data:		where the data will be stored.
++ * @dead_offset:	how much of the stored data was possibly invalidated by
++ *			the end of the copy.
++ **/
++int iio_rip_sw_rb(void *r, size_t count, u8 **data, int *dead_offset);
++
++/**
++ * iio_request_update_sw_rb() update params if update needed
++ **/
++int iio_request_update_sw_rb(void *r);
++
++/**
++ * iio_mark_update_needed_sw_rb() tell the ring buffer it needs a param update
++ **/
++int iio_mark_update_needed_sw_rb(void *r);
++
++
++/**
++ * iio_get_bpd_sw_rb() get the datum size in bytes
++ **/
++int iio_get_bpd_sw_rb(void *r);
++
++/**
++ * iio_set_bpd_sw_rb() set the datum size in bytes
++ **/
++int iio_set_bpd_sw_rb(void *r, size_t bpd);
++
++/**
++ * iio_get_length_sw_rb() get how many datums the rb may contain
++ **/
++int iio_get_length_sw_rb(void *r);
++
++/**
++ * iio_set_length_sw_rb() set how many datums the rb may contain
++ **/
++int iio_set_length_sw_rb(void *r, int length);
++
++/**
++ * iio_ring_sw_register_funcs() helper function to set up rb access
++ **/
++static inline void iio_ring_sw_register_funcs(struct iio_ring_access_funcs *ra)
 +{
-+	void *r = filp->private_data;
-+	struct iio_ring_buffer *rb = r;
-+	int ret, dead_offset, copied;
-+	u8 *data;
-+	/* rip lots must exist. */
-+	if (!rb->ring_access->rip_lots)
-+		return -EINVAL;
-+	copied = rb->ring_access->rip_lots(r, count, &data, &dead_offset);
-+	if (copied < 0) {
-+		ret = copied;
-+		goto error_ret;
-+	}
-+	if (copy_to_user(buf, data + dead_offset, copied))  {
-+		ret =  -EFAULT;
-+		goto error_free_data_cpy;
-+	}
-+	/* In clever ring buffer designs this may not need to be freed.
-+	 * When such a design exists I'll add this to ring access funcs. */
-+	kfree(data);
++	ra->_create = &iio_create_sw_rb;
++	ra->_free = &iio_free_sw_rb;
++	ra->_init = &iio_init_sw_rb;
++	ra->_exit = &iio_exit_sw_rb;
 +
-+	return copied;
++	ra->mark_in_use = &iio_mark_sw_rb_in_use;
++	ra->unmark_in_use = &iio_unmark_sw_rb_in_use;
 +
-+error_free_data_cpy:
-+	kfree(data);
-+error_ret:
-+	return ret;
-+}
++	ra->store_to = &iio_store_to_sw_rb;
++	ra->read_last = &iio_read_last_from_sw_rb;
++	ra->rip_lots = &iio_rip_sw_rb;
 +
-+static const struct file_operations iio_ring_fileops = {
-+	.read = iio_ring_rip_outer,
-+	.release = iio_ring_release,
-+	.open = iio_ring_open,
-+	.owner = THIS_MODULE,
++	ra->mark_param_change = &iio_mark_update_needed_sw_rb;
++	ra->request_update = &iio_request_update_sw_rb;
++
++	ra->get_bpd = &iio_get_bpd_sw_rb;
++	ra->set_bpd = &iio_set_bpd_sw_rb;
++
++	ra->get_length = &iio_get_length_sw_rb;
++	ra->set_length = &iio_set_length_sw_rb;
 +};
 +
 +/**
-+ * __iio_request_ring_buffer_event_chrdev() allocate ring event chrdev
-+ * @buf:	ring buffer whose event chrdev we are allocating
-+ * @owner:	the module who owns the ring buffer (for ref counting)
-+ * @dev:	device with which the chrdev is associated
-+ **/
-+static inline int
-+__iio_request_ring_buffer_event_chrdev(struct iio_ring_buffer *buf,
-+				       int id,
-+				       struct module *owner,
-+				       struct device *dev)
-+{
-+	int ret;
-+
-+	buf->event_minor_name = kmalloc(IIO_RING_EV_MINOR_N_LEN, GFP_KERNEL);
-+	if (buf->event_minor_name == NULL) {
-+		ret = -ENOMEM;
-+		goto error_ret;
-+	}
-+	sprintf(buf->event_minor_name, IIO_RING_EV_MINOR_N, id);
-+	ret = iio_setup_ev_int(&(buf->ev_int),
-+			       (const char *)(buf->event_minor_name),
-+			       owner,
-+			       dev);
-+	if (ret)
-+		goto error_free_event_minor_name;
-+
-+	return 0;
-+
-+error_free_event_minor_name:
-+	kfree(buf->event_minor_name);
-+error_ret:
-+	return ret;
-+}
-+
-+static inline void
-+__iio_free_ring_buffer_event_chrdev(struct iio_ring_buffer *buf,
-+				    struct device *dev)
-+{
-+	iio_free_ev_int(&(buf->ev_int), dev);
-+	kfree(buf->event_minor_name);
-+}
-+
-+static inline int
-+__iio_request_ring_buffer_access_chrdev(struct iio_ring_buffer *buf,
-+					int id,
-+					struct module *owner,
-+					struct device *dev,
-+					const struct file_operations *fops)
-+{
-+	int ret;
-+/* Create and register the access character device */
-+	buf->access_minor_name = kmalloc(IIO_RING_AC_MINOR_N_LEN,
-+					 GFP_KERNEL);
-+	if (buf->access_minor_name == NULL) {
-+		ret = -ENOMEM;
-+		goto error_ret;
-+	}
-+	sprintf(buf->access_minor_name, IIO_RING_AC_MINOR_N, id);
-+
-+	ret = iio_allocate_chrdev(&buf->access_handler);
-+	if (ret)
-+		goto error_free_access_minor_name;
-+	buf->access_handler.fops = fops;
-+	buf->access_handler.flags = 0;
-+
-+	__init_iio_chrdev_minor_attr(&buf->access_minor_attr,
-+				   (const char *)(buf->access_minor_name),
-+				   owner,
-+				   buf->access_handler.id);
-+
-+	ret = sysfs_create_file(&dev->kobj,
-+				&(buf->access_minor_attr.dev_attr.attr));
-+	if (ret)
-+		goto error_deallocate_chrdev;
-+	return 0;
-+
-+error_deallocate_chrdev:
-+	iio_deallocate_chrdev(&buf->access_handler);
-+error_free_access_minor_name:
-+	kfree(buf->access_minor_name);
-+error_ret:
-+	return ret;
-+}
-+
-+static inline void
-+__iio_free_ring_buffer_access_chrdev(struct iio_ring_buffer *buf,
-+				     struct device *dev)
-+{
-+	sysfs_remove_file(&dev->kobj,
-+			  &buf->access_minor_attr.dev_attr.attr);
-+	iio_deallocate_chrdev(&buf->access_handler);
-+	kfree(buf->access_minor_name);
-+}
-+
-+static int iio_request_ring_buffer(struct iio_dev *dev_info,
-+				   int id,
-+				   struct module *owner,
-+				   struct device *dev)
-+{
-+	int ret;
-+	struct iio_ring_buffer *rb;
-+	ret = dev_info->ring_access._create(&dev_info->ring);
-+	if (ret)
-+		goto error_ret;
-+	rb = dev_info->ring;
-+	/* Not ideal */
-+	rb->ring_access = &dev_info->ring_access;
-+	/* Initially mark for update of ring parameters */
-+	if (dev_info->ring_access.mark_param_change)
-+		dev_info->ring_access.mark_param_change(dev_info->ring);
-+
-+	ret = __iio_request_ring_buffer_event_chrdev(rb,
-+						     id,
-+						     owner,
-+						     dev_info->sysfs_dev);
-+	if (ret)
-+		goto error_free_ring;
-+
-+	ret = __iio_request_ring_buffer_access_chrdev(rb,
-+						      id,
-+						      owner,
-+						      dev_info->sysfs_dev,
-+						      &iio_ring_fileops);
-+	if (ret)
-+		goto error_free_ring_buffer_event_chrdev;
-+
-+	rb->ev_int.private = rb;
-+	rb->access_handler.private = rb;
-+
-+	return 0;
-+error_free_ring_buffer_event_chrdev:
-+	__iio_free_ring_buffer_event_chrdev(rb, dev_info->sysfs_dev);
-+error_free_ring:
-+	if (dev_info->ring_access._free)
-+		dev_info->ring_access._free(dev_info->ring);
-+error_ret:
-+	return ret;
-+}
-+
-+static void iio_unrequest_ring_buffer(struct iio_dev *dev_info)
-+{
-+
-+	__iio_free_ring_buffer_event_chrdev(dev_info->ring, dev_info->dev);
-+	if (dev_info->ring_access._free)
-+		dev_info->ring_access._free(dev_info->ring);
-+}
-+
-+static ssize_t iio_read_ring_length(struct device *dev,
-+				    struct device_attribute *attr,
-+				    char *buf)
-+{
-+	int len = 0;
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+
-+	if (dev_info->ring_access.get_length)
-+		len = sprintf(buf, "%d\n",
-+			      dev_info->ring_access.get_length(dev_info->ring));
-+
-+	return len;
-+}
-+
-+static ssize_t iio_write_ring_length(struct device *dev,
-+					      struct device_attribute *attr,
-+					      const char *buf,
-+					      size_t len)
-+{
-+	int ret;
-+	ulong val;
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct iio_ring_access_funcs *ra = &dev_info->ring_access;
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret)
-+		return ret;
-+
-+	if (dev_info->ring_access.get_length)
-+		if (val == ra->get_length(dev_info->ring))
-+			return len;
-+
-+	if (ra->set_length) {
-+		ra->set_length(dev_info->ring, val);
-+		if (ra->mark_param_change)
-+			ra->mark_param_change(dev_info->ring);
-+	}
-+
-+	return len;
-+}
-+
-+static ssize_t iio_read_ring_bps(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	int len = 0;
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct iio_ring_access_funcs *ra = &dev_info->ring_access;
-+
-+	if (ra->get_bpd)
-+		len = sprintf(buf, "%d\n",
-+			      ra->get_bpd(dev_info->ring));
-+
-+	return len;
-+}
-+
-+
-+static DEVICE_ATTR(length, S_IRUGO | S_IWUSR,
-+	    iio_read_ring_length,
-+	    iio_write_ring_length);
-+/* The software ring buffers aren't currently capable of changing the
-+ * storage accuracy so this is read only. Note bps can change due to
-+ * scan mode changes.
-+ */
-+static DEVICE_ATTR(bps, S_IRUGO, iio_read_ring_bps, NULL);
-+
-+static ssize_t iio_store_ring_enable(struct device *dev,
-+				     struct device_attribute *attr,
-+				     const char *buf,
-+				     size_t len)
-+{
-+	int ret;
-+	bool requested_state, current_state;
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct iio_ring_access_funcs *ra = &dev_info->ring_access;
-+
-+	mutex_lock(&dev_info->mlock);
-+	requested_state = (buf[0] == '0') ? 0 : 1;
-+	current_state = !!(dev_info->currentmode & INDIO_ALL_RING_MODES);
-+	if (current_state == requested_state)
-+		goto done;
-+	if (requested_state) {
-+		if (dev_info->ring_preenable) {
-+			ret = dev_info->ring_preenable(dev_info);
-+			if (ret)
-+				goto error_ret;
-+		}
-+		if (ra->request_update) {
-+			ret = ra->request_update(dev_info->ring);
-+			if (ret)
-+				goto error_ret;
-+		}
-+		if (ra->mark_in_use)
-+			ra->mark_in_use(dev_info->ring);
-+		/* Definitely possible for devices to support both of these.*/
-+		if (dev_info->modes & INDIO_RING_TRIGGERED)
-+			dev_info->currentmode = INDIO_RING_TRIGGERED;
-+		else if (dev_info->modes & INDIO_RING_HARDWARE_BUFFER)
-+			dev_info->currentmode = INDIO_RING_HARDWARE_BUFFER;
-+		else { /* should never be reached */
-+			ret = -EINVAL;
-+			goto error_ret;
-+		}
-+
-+		if (dev_info->ring_postenable) {
-+			ret = dev_info->ring_postenable(dev_info);
-+			if (ret)
-+				goto error_ret;
-+		}
-+	} else {
-+		if (dev_info->ring_predisable) {
-+			ret = dev_info->ring_predisable(dev_info);
-+			if (ret)
-+				goto error_ret;
-+		}
-+		if (ra->unmark_in_use)
-+			ra->unmark_in_use(dev_info->ring);
-+		dev_info->currentmode = INDIO_DIRECT_MODE;
-+		if (dev_info->ring_postdisable) {
-+			ret = dev_info->ring_postdisable(dev_info);
-+			if (ret)
-+				goto error_ret;
-+		}
-+	}
-+done:
-+	mutex_unlock(&dev_info->mlock);
-+	return len;
-+
-+error_ret:
-+	mutex_unlock(&dev_info->mlock);
-+	return ret;
-+}
-+
-+static ssize_t iio_show_ring_enable(struct device *dev,
-+				    struct device_attribute *attr,
-+				    char *buf)
-+{
-+	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%d\n", !!(indio_dev->currentmode
-+				       & INDIO_ALL_RING_MODES));
-+}
-+
-+DEVICE_ATTR(ring_enable, S_IRUGO | S_IWUSR,
-+	    iio_show_ring_enable,
-+	    iio_store_ring_enable);
-+
-+/* Standard set of ring buffer attributes */
-+static struct attribute *iio_ring_attributes[] = {
-+	&dev_attr_length.attr,
-+	&dev_attr_bps.attr,
-+	&dev_attr_ring_enable.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group iio_ring_attribute_group = {
-+	.name = "ring_buffer",
-+	.attrs = iio_ring_attributes,
-+};
-+
-+int iio_device_register_ring(struct iio_dev *dev_info, int id)
-+{
-+	int ret = 0;
-+	struct iio_ring_access_funcs *ra = &dev_info->ring_access;
-+
-+	ret = iio_request_ring_buffer(dev_info, id, dev_info->driver_module,
-+				      dev_info->dev);
-+	if (ret)
-+		goto error_ret;
-+	if (ra->_init) {
-+		ret = ra->_init(dev_info->ring, dev_info);
-+		if (ret)
-+			goto error_unrequest_ring;
-+	}
-+	ret = sysfs_create_group(&dev_info->sysfs_dev->kobj,
-+				 &iio_ring_attribute_group);
-+	if (ret)
-+		goto error_exit_ring;
-+
-+	return 0;
-+
-+error_exit_ring:
-+	if (ra->_exit)
-+		ra->_exit(dev_info->ring);
-+error_unrequest_ring:
-+	iio_unrequest_ring_buffer(dev_info);
-+error_ret:
-+	return ret;
-+}
-+
-+void iio_device_unregister_ring(struct iio_dev *dev_info)
-+{
-+	struct iio_ring_access_funcs *ra = &dev_info->ring_access;
-+	struct iio_ring_buffer *rb = dev_info->ring;;
-+	if (dev_info->ring) {
-+		sysfs_remove_group(&dev_info->sysfs_dev->kobj,
-+				   &iio_ring_attribute_group);
-+		__iio_free_ring_buffer_access_chrdev(rb, dev_info->sysfs_dev);
-+		__iio_free_ring_buffer_event_chrdev(rb, dev_info->sysfs_dev);
-+		if (ra->_exit)
-+			ra->_exit(dev_info->ring);
-+		iio_unrequest_ring_buffer(dev_info);
-+	}
-+}
-diff --git a/include/linux/industrialio/ring_generic.h b/include/linux/industrialio/ring_generic.h
-index 6daff14..cbbce58 100644
---- a/include/linux/industrialio/ring_generic.h
-+++ b/include/linux/industrialio/ring_generic.h
-@@ -15,6 +15,129 @@
- struct iio_ring_buffer;
- 
- #ifdef CONFIG_IIO_RING_BUFFER
-+
-+/**
-+ * iio_push_ring_event() - ring buffer specific push to event chrdev
-+ * @ring_buf:		ring buffer that is the event source
-+ * @event_code:		event indentification code
-+ * @timestamp:		time of event
-+ **/
-+int iio_push_ring_event(struct iio_ring_buffer *ring_buf,
-+			int event_code,
-+			s64 timestamp);
-+/**
-+ * iio_push_or_escallate_ring_event() -	escallate or add as appropriate
++ * struct iio_sw_ring_buffer - software ring buffer
++ * @buf:		generic ring buffer elements
++ * @data:		the ring buffer memory
++ * @read_p:		read pointer (oldest available)
++ * @write_p:		write pointer
++ * @last_written_p:	read pointer (newest available)
++ * @half_p:		half buffer length behind write_p (event generation)
++ * @use_count:		reference count to prevent resizing when in use
++ * @update_needed:	flag to indicated change in size requested
++ * @use_lock:		lock to prevent change in size when in use
 + *
-+ * Typical usecase is to escallate a 50% ring full to 75% full if noone has yet
-+ * read the first event. Clearly the 50% full is no longer of interest in
-+ * typical use case.
-+ **/
-+int iio_push_or_escallate_ring_event(struct iio_ring_buffer *ring_buf,
-+				     int event_code,
-+				     s64 timestamp);
++ * Note that the first element of all ring buffers must be a
++ * struct iio_ring_buffer.
++**/
 +
-+/**
-+ * struct iio_ring_access_funcs - access functions for ring buffers.
-+ * @create:		perform allocation
-+ * @init:		get ring buffer ready for use
-+ * @_exit:		reverse steps in init
-+ * @_free:		deallocate ring buffer
-+ * @mark_in_use:	reference counting, typically to prevent module removal
-+ * @unmark_in_use:	reduce reference count when no longer using ring buffer
-+ * @store_to:		actually store stuff to the ring buffer
-+ * @read_last:		get the last element stored
-+ * @rip_lots:		try to get a specified number of elements (must exist)
-+ * @mark_param_change:	notify ring that some relevant parameter has changed
-+ *			Often this means the underlying storage may need to
-+ *			change.
-+ * @request_update:	if a parameter change has been marked, update underlying
-+ *			storage.
-+ * @get_bpd:		get current bytes per datum
-+ * @set_bpd:		set number of bytes per datum
-+ * @get_length:		get number of datums in ring
-+ * @set_length:		set number of datums in ring
-+ * @is_enabled:		query if ring is currently being used
-+ * @enable:		enable the ring
-+ *
-+ * The purpose of this structure is to make the ring buffer element
-+ * modular as event for a given driver, different usecases may require
-+ * different ring designs (space efficiency vs speed for example.
-+ *
-+ * It is worth noting that a given ring implementation may only support a small
-+ * proportion of these functions.  The core code 'should' cope fine with any of
-+ * them not existing.
-+ **/
-+struct iio_ring_access_funcs {
-+	int (*_create)(void **ring);
-+	int (*_init)(void *ring, void *indio_dev);
-+	void (*_exit)(void *ring);
-+	void (*_free)(void *ring);
-+
-+	void (*mark_in_use)(void *ring);
-+	void (*unmark_in_use)(void *ring);
-+
-+	int (*store_to)(void *ring, u8 *data, s64 timestamp);
-+	int (*read_last)(void *ring, u8 *data);
-+	int (*rip_lots)(void *ring, size_t count, u8 **data, int *dead_offset);
-+
-+	int (*mark_param_change)(void *ring);
-+	int (*request_update)(void *ring);
-+
-+	int (*get_bpd)(void *ring);
-+	int (*set_bpd)(void *ring, size_t bpd);
-+	int (*get_length)(void *ring);
-+	int (*set_length)(void *ring, int length);
-+
-+	int (*is_enabled)(void *ring);
-+	int (*enable)(void *ring);
++struct iio_sw_ring_buffer {
++	struct iio_ring_buffer buf;
++	unsigned char		*data;
++	unsigned char		*read_p;
++	unsigned char		*write_p;
++	unsigned char		*last_written_p;
++	/* used to act as a point at which to signal an event */
++	unsigned char		*half_p;
++	int			use_count;
++	int			update_needed;
++	spinlock_t		use_lock;
 +};
-+
-+/**
-+ * struct iio_ring_buffer - general ring buffer structure
-+ * @length:		[DEVICE]number of datums in ring
-+ * @bpd:		[DEVICE]size of individual datum including timestamp
-+ * @loopcount:		[INTERN]number of times the ring has looped
-+ * @access_minor_name:	[INTERN]store of name of the access chrdev minor number
-+ *			sysfs attribute
-+ * @access_handler:	[INTERN]chrdev access handling
-+ * @event_minor_name:	[INTERN]store of name of the event chrdev minor number
-+ *			sysfs attribute
-+ * @ev_int:		[INTERN]chrdev interface for the event chrdev
-+ * @shared_ev_pointer:	[INTERN]the shared event pointer to allow escalation of
-+ *			events
-+ * @ring_access:	[DRIVER]ring access functions associated with the
-+ *			implementation.
-+ *
-+ * This structure must be the first element in any ring buffer implementation
-+ * structure as they must be castable to this.
-+ **/
-+struct iio_ring_buffer {
-+	int				length;
-+	int				bpd;
-+	int				loopcount;
-+	char				*access_minor_name;
-+	struct iio_chrdev_minor_attr	access_minor_attr;
-+	struct iio_handler		access_handler;
-+	char				*event_minor_name;
-+	struct iio_event_interface	ev_int;
-+	struct iio_shared_ev_pointer	shared_ev_pointer;
-+	struct iio_ring_access_funcs    *ring_access;
-+};
-+
-+/**
-+ * __iio_init_ring_buffer() - initialize common elements of ring buffers.
-+ **/
-+static inline void __iio_init_ring_buffer(struct iio_ring_buffer *ring,
-+				 int bytes_per_datum, int length)
-+{
-+	ring->bpd = bytes_per_datum;
-+	ring->length = length;
-+	ring->loopcount = 0;
-+	ring->shared_ev_pointer.ev_p = 0;
-+	ring->shared_ev_pointer.lock =
-+		__SPIN_LOCK_UNLOCKED(ring->shared_ev_pointer->loc);
-+}
-+
- #else
- 
- struct iio_ring_buffer {};
++#else /* CONFIG_IIO_RING_BUFFER*/
++static inline void iio_ring_sw_register_funcs(struct iio_ring_access_funcs *ra)
++{};
++#endif /* !CONFIG_IIO_RING_BUFFER */
++#endif /* _IIO_RING_SW_H_ */
