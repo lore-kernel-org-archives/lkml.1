@@ -1,142 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYLAWJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYLAWKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbYLAWJf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 17:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYLAWJZ
+	id S1753922AbYLAWKJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 17:10:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYLAWJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 17:09:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43549 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbYLAWJY (ORCPT
+	Mon, 1 Dec 2008 17:09:52 -0500
+Received: from smarthost02.mail.zen.net.uk ([212.23.3.141]:39284 "EHLO
+	smarthost02.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751774AbYLAWJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 17:09:24 -0500
-Date: Mon, 1 Dec 2008 20:08:53 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES for 2.6.28] V4L/DVB fixes
-Message-ID: <20081201200853.7b6f4b0e@pedra.chehab.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 1 Dec 2008 17:09:51 -0500
+Subject: Re: [PATCH] lro: IP fragment checking
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Andrew Gallatin <gallatin@myri.com>
+Cc: David Miller <davem@davemloft.net>, ossthema@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tklein@de.ibm.com,
+       raisch@de.ibm.com, jb.billaud@gmail.com, hering2@de.ibm.com
+In-Reply-To: <49345CCA.1030209@myri.com>
+References: <4933A74F.3050809@de.ibm.com>	<493423D7.5030203@myri.com>
+	 <20081201.131810.158631503.davem@davemloft.net> <49345CCA.1030209@myri.com>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Mon, 01 Dec 2008 22:09:39 +0000
+Message-Id: <1228169379.3073.13.camel@achroite>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Originating-Smarthost02-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, 2008-12-01 at 16:53 -0500, Andrew Gallatin wrote:
+> David Miller wrote:
+> > From: Andrew Gallatin <gallatin@myri.com>
+> > Date: Mon, 01 Dec 2008 12:50:15 -0500
+> > 
+> >> As to whether or not to do it in the drivers/hardware or in the
+> >> LRO code, I favor doing it in the LRO code just so that it is not
+> >> missed in some driver.
+> > 
+> > Then there is no point in the hardware doing the check, if
+> > we're going to check it anyways.
+> > 
+> > That's part of my point about why this check doesn't belong
+> > here.
+> 
+> What hardware does an explicit check for fragmentation?
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+Any that implements TCP/UDP checksumming properly.
 
-For the following driver fixes:
+> In most cases, aren't we just relying on the hardware checksum
+> to be wrong on fragmented packets? That works 99.999% of the time,
+> but the TCP checksum is pretty weak, and it is possible to
+> have a fragmented packet where the first fragment has the same
+> checksum as the entire packet.
+[...]
 
-   - af9015: don't reconnect device in USB-bus
-   - dib0700: make remote control support work with firmware v1.20
-   - dm1105: Fix section mismatch
-   - dvb-ttusb-budget: Add NULL pointer validation
-   - dvb-ttusb-budget: Add validation for ttusb_alloc_iso_urbs
-   - em28xx: Avoid i2c register error for boards without eeprom
-   - em28xx: Avoid memory leaks if registration fails
-   - em28xx: avoid allocating/dealocating memory on every control urb
-   - em28xx: avoid having two concurrent control URB's
-   - em28xx: fix oops audio
-   - em28xx: fix compile warning
-   - em28xx: fix a race condition with hald
-   - em28xx: make em28xx aux audio input work
-   - em28xx: Make sure the i2c gate is open before powering down tuner
-   - em28xx-alsa: implement another locking schema
-   - gspca: Memory leak when disconnect while streaming.
-   - gspca: Lock the subdrivers via module_get/put.
-   - gspca: Move the video device to a separate area.
-   - s2255drv: fix firmware test on big-endian
-   - sms1xxx: use new firmware for Hauppauge WinTV MiniStick
-   - ttusb_dec: Add NULL pointer validation
-   - ttusb_dec: fix memory leak
-   - usb-urb: fix memory leak
+If your hardware/firmware wrongly claims to be able to verify the
+TCP/UDP checksum for an IP fragment, it seems to me you should deal with
+that in your driver or fix the firmware.
 
-Also, one DVB api fix:
-   - Make s2api work for ATSC
+Ben.
 
-Cheers,
-Mauro.
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
----
-
- drivers/media/dvb/dm1105/dm1105.c                 |    2 +-
- drivers/media/dvb/dvb-core/dvb_frontend.c         |    5 +-
- drivers/media/dvb/dvb-usb/af9015.c                |    8 +-
- drivers/media/dvb/dvb-usb/dib0700.h               |    5 +-
- drivers/media/dvb/dvb-usb/dib0700_core.c          |   16 +++
- drivers/media/dvb/dvb-usb/dib0700_devices.c       |  139 ++++++++++++++++++++-
- drivers/media/dvb/dvb-usb/usb-urb.c               |   19 ++-
- drivers/media/dvb/siano/sms-cards.c               |    2 +-
- drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c |   15 ++-
- drivers/media/dvb/ttusb-dec/ttusb_dec.c           |    7 +
- drivers/media/video/em28xx/em28xx-audio.c         |   33 +++---
- drivers/media/video/em28xx/em28xx-core.c          |   58 ++++++----
- drivers/media/video/em28xx/em28xx-i2c.c           |   10 +-
- drivers/media/video/em28xx/em28xx-video.c         |  140 ++++++++++++---------
- drivers/media/video/em28xx/em28xx.h               |    6 +
- drivers/media/video/gspca/conex.c                 |    3 +
- drivers/media/video/gspca/finepix.c               |    8 ++
- drivers/media/video/gspca/gspca.c                 |   56 +++++----
- drivers/media/video/gspca/gspca.h                 |    6 +-
- drivers/media/video/gspca/pac7311.c               |    3 +
- drivers/media/video/gspca/spca501.c               |    3 +
- drivers/media/video/gspca/spca505.c               |    4 +
- drivers/media/video/gspca/spca561.c               |    3 +
- drivers/media/video/gspca/vc032x.c                |    3 +
- drivers/media/video/gspca/zc3xx.c                 |    3 +
- drivers/media/video/s2255drv.c                    |    2 +-
- 26 files changed, 410 insertions(+), 149 deletions(-)
-
-Devin Heitmueller (4):
-      V4L/DVB (9631): Make s2api work for ATSC support
-      V4L/DVB (9632): make em28xx aux audio input work
-      V4L/DVB (9634): Make sure the i2c gate is open before powering down tuner
-      V4L/DVB (9639): Make dib0700 remote control support work with firmware v1.20
-
-Douglas Schilling Landgraf (6):
-      V4L/DVB (9601): ttusb_dec: Add NULL pointer validation
-      V4L/DVB (9602): dvb-ttusb-budget: Add NULL pointer validation
-      V4L/DVB (9603): dvb-ttusb-budget: Add validation for ttusb_alloc_iso_urbs
-      V4L/DVB (9604): ttusb_dec: fix memory leak
-      V4L/DVB (9605): usb-urb: fix memory leak
-      V4L/DVB (9743): em28xx: fix oops audio
-
-Hans Verkuil (1):
-      V4L/DVB (9748): em28xx: fix compile warning
-
-Harvey Harrison (1):
-      V4L/DVB (9635): v4l: s2255drv fix firmware test on big-endian
-
-Igor M. Liplianin (1):
-      V4L/DVB (9608): Fix section mismatch warning for dm1105 during make
-
-Jean-Francois Moine (3):
-      V4L/DVB (9689): gspca: Memory leak when disconnect while streaming.
-      V4L/DVB (9690): gspca: Lock the subdrivers via module_get/put.
-      V4L/DVB (9691): gspca: Move the video device to a separate area.
-
-Jose Alberto Reguero (1):
-      V4L/DVB (9664): af9015: don't reconnect device in USB-bus
-
-Mauro Carvalho Chehab (7):
-      V4L/DVB (9627): em28xx: Avoid i2c register error for boards without eeprom
-      V4L/DVB (9645): em28xx: Avoid memory leaks if registration fails
-      V4L/DVB (9646): em28xx: avoid allocating/dealocating memory on every control urb
-      V4L/DVB (9647): em28xx: void having two concurrent control URB's
-      V4L/DVB (9668): em28xx: fix a race condition with hald
-      V4L/DVB (9742): em28xx-alsa: implement another locking schema
-      em28xx: remove backward compat macro added on a previous fix
-
-Michael Krufky (1):
-      V4L/DVB (9732): sms1xxx: use new firmware for Hauppauge WinTV MiniStick
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
