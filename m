@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYLAU5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYLAU6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbYLAU5y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 15:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYLAU5p
+	id S1753946AbYLAU6z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 15:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYLAU6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 15:57:45 -0500
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:41880 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbYLAU5o (ORCPT
+	Mon, 1 Dec 2008 15:58:45 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:58113 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751352AbYLAU6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 15:57:44 -0500
-Message-ID: <49344FA5.90004@cs.columbia.edu>
-Date: Mon, 01 Dec 2008 15:57:09 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 1 Dec 2008 15:58:44 -0500
+Date: Mon, 1 Dec 2008 15:58:28 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Harald Arnesen <skogtun.harald@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [ext4] Documentation patch
+Message-ID: <20081201205828.GA20069@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Harald Arnesen <skogtun.harald@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <8763m3u9kv.fsf@basilikum.skogtun.org> <20081201165700.GA26680@infradead.org> <493425DC.1010008@redhat.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v10][PATCH 05/13] Dump memory address space
-References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>	 <1227747884-14150-6-git-send-email-orenl@cs.columbia.edu>	 <20081128105351.GQ28946@ZenIV.linux.org.uk> <1228154412.2971.44.camel@nimitz>
-In-Reply-To: <1228154412.2971.44.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <493425DC.1010008@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Dave Hansen wrote:
-> On Fri, 2008-11-28 at 10:53 +0000, Al Viro wrote:
->>> +static int cr_ctx_checkpoint(struct cr_ctx *ctx, pid_t pid)
->>> +{
->>> +     ctx->root_pid = pid;
->>> +
->>> +     /*
->>> +      * assume checkpointer is in container's root vfs
->>> +      * FIXME: this works for now, but will change with real containers
->>> +      */
->>> +     ctx->vfsroot = &current->fs->root;
->>> +     path_get(ctx->vfsroot);
->> This is going to break as soon as you get another thread doing e.g. chroot(2)
->> while you are in there.
+On Mon, Dec 01, 2008 at 11:58:52AM -0600, Eric Sandeen wrote:
+> Christoph Hellwig wrote:
+> > On Mon, Dec 01, 2008 at 05:46:56PM +0100, Harald Arnesen wrote:
+> >>      So when comparing with a metadata-only journalling filesystem, such
+> >> -    as ext3, use `mount -o data=writeback'.  And you might as well use
+> >> +    as jfs or xfs, use `mount -o data=writeback'.  And you might as well use
+> > 
+> > data=ordered comes closest to what xfs does for quite a long time..
 > 
-> Yeah, we do need at least a read_lock(&current->fs->lock) to keep people
-> from chroot()'ing underneath us.
-
-True.
-(while adapting older and safer code I omitted these tests with no reason).
-
+> Agreed; that whole bit which mentions other filesystem comparisons
+> should probably be stricken, unless it can be
+> proven/demonstrated/substantiated that ext3 really does "offer higher
+> data integrity guarantees than most" at this point.
 > 
->> And it's a really, _really_ bad idea to take a
->> pointer to shared object, increment refcount on the current *contents* of
->> said object and assume that dropping refcount on the later contents of the
->> same will balance out.
-> 
-> Absolutely.  I assume you mean get_fs_struct(current) instead of
-> path_get().
+> data=ordered ensures that stale data won't be exposed on a crash; xfs
+> won't do this (it'd be a security bug) and I'd be surprised if jfs or
+> reiserfs do either.    And it probably *should* be mentioned that
+> data=writeback bears this risk.
 
-True.
+Well, the original text was written by David Kleikamp, so it might be
+the case that jfs doesn't handle the stale data block case well.  I
+haven't checked.  However, the sense of that paragraph got mangled
+badly in commit 93e3270c, and what's there clearly doesn't make any
+sense.
 
-Should change the type of ctx->vfsroot to not be a pointer, and do:
+I agree the best thing to do is to nuke that whole paragraph.  The one
+thing that's worth mentioning (as a replacement paragraph) is that
+ext4 (and many other filesystems) has barreiers on by default, and
+ext3 has barriers off by default, so that's something that should be
+taken into account when doing head-to-head comparisons.
 
->>> +     ctx->vfsroot = *current->fs->root;
->>> +     path_get(&ctx->vfsroot);
+							- Ted
 
-and adjust accordingly in where the refcount is dropped.
-
-What we need here is a reference point (this will change later when we handle
-multiple fs-namespaces), which is the path of the "container root". Assuming
-locking is correct so that current->fs does not change under us, it's enough
-to get that path and later release that path.
-
-BW, the current->fs is assumed to not change during the checkpoint; if it does,
-then it's a mis-use of the checkpoint interface, and the resulting behavior
-is undefined - restart is guaranteed to restore the exact old state even if
-checkpoint succeeds.
-
-Thanks,
-
-Oren.
-
+P.S.  Speaking of barriers, there was a rumor floating around that
+someone was working on patches so at least in the case of RAID 0 and
+RAID 1, that the LVM and MD stack would actually pass barier requests
+down to the block device layer.  Whatever happened to that?  Is that
+bug in the LVM layer going to get fixed any time soon?
