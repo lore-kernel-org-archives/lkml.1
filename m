@@ -1,96 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYLAMBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYLAMDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbYLAMBq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 07:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbYLAMBh
+	id S1754599AbYLAMDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 07:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYLAMDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 07:01:37 -0500
-Received: from sh.osrg.net ([192.16.179.4]:37082 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753083AbYLAMBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 07:01:36 -0500
-Date: Mon, 1 Dec 2008 21:01:06 +0900
-To: joro@8bytes.org
-Cc: tsbogend@alpha.franken.de, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH v3] Fix dma_mapping_error for 32bit x86
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081201113451.GA24323@8bytes.org>
-References: <20081129124627.F2ABDFA8C8@solo.franken.de>
-	<20081201113451.GA24323@8bytes.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081201210110L.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 1 Dec 2008 07:03:09 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:7433 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbYLAMDI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 07:03:08 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -9.389
+Message-ID: <4933D278.7050403@tremplin-utc.net>
+Date: Mon, 01 Dec 2008 13:03:04 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.18) Gecko/20081120 Mandriva/2.0.0.18-1mdv2009.1 (2009.1) Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Thomas Renninger <trenn@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       hmh@hmh.eng.br
+Subject: Re: HP accelerometer: free fall detection working, testers wanted
+References: <20081121212121.GA7222@elf.ucw.cz> <20081128104459.GA32417@atrey.karlin.mff.cuni.cz> <493310BD.8050506@tremplin-utc.net> <200812011255.22383.trenn@suse.de>
+In-Reply-To: <200812011255.22383.trenn@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008 12:34:51 +0100
-Joerg Roedel <joro@8bytes.org> wrote:
+Thomas Renninger schreef:
+> On Sunday 30 November 2008 23:16:29 Éric Piel wrote:
+>> Pavel Machek schreef:
+>>> Hi!
+>>>
+>>>>> I got free fall detection to work -- apparently BIOS does all the
+>>>>> important stuff itself.
+>>>>>
+>>>>> Now... I'd like some testers. (Don't comment on code... yet. Yes, it
+>>>>> has some issues).
+>>>> Also, how do you try free fall? Did you try also with the lid
+>>>> opened?
+>>> With the lid opened, too, yes. I just took the machine, then tried to
+>>> let go and catch it meter below that. (Of course I did not really let
+>>> go, but released the grip and followed...)
+>> Hi,
+>> I've tested it. Mostly, it works. If I let it fall, it detects it. If I
+>> repeat, it detects it again. If shake it, it doesn't detect any freefall
+>> (good). However, for this to work on my laptop (2510p), after the device
+>> is turned on, the AC must be unplugged and lid closed before it starts
+>> working. It seems that that's only this specific state that triggers the
+>> configuration of the sensor by the bios. Once setup, I can plug back and
+>> open again the lid, the sensor keeps detecting the freefalls (until it's
+>> turned off again).
+>>
+>> So I think it's still necessary to explicitly set up the sensor. It's
+>> just a matter of setting up the registers as the bios does. We should be
+>> able to manage (just by dumping them once).
+>>
+>> BTW, there were a couple of problems with the scripts. You have change
+>> "/dev/misc" to "/dev/freefall" (which I also like more) but forgot to
+>> update the driver itself.
+>>
+>> For hp3dg, it couldn't find the led (not the same truncation of the name
+>> of the led). Probably you could replace the name of the led by:
+>> /sys/class/leds/*hddprotect*/
+>>
+>> The led never turns off, because the sleep is slightly shorter than the
+>> unload command.
+>>
+>> Moreover, on my system I have neither /proc/acpi/button/lid/LID/state
+>> nor /proc/acpi/ac_adapter/AC0/state ! I guess they could be replaced by
+>> a clever use of /dev/input/eventX (contening Lid) and
+>> /sys/class/power_supply/*/online
+> These should still exist (bug?), as long as you do compile with ACPI_PROCFS
+> (and load the ac, button modules).
+> But there should also exist a sysfs replacement:
+> http://userweb.kernel.org/~lenb/doc/LPC2008-API-web/
+> gives an overview of what is converted and where it should pop up now.
+Yes, I explicitly compiled my kernel without ACPI_PROCFS. This was just
+to remind Pavel that his brand new script relies on deprecated
+interfaces ;-)
 
-> On Sat, Nov 29, 2008 at 01:46:27PM +0100, Thomas Bogendoerfer wrote:
-> > Devices like b44 ethernet can't dma from addresses above 1GB. The driver
-> > handles this cases by falling back to GFP_DMA allocation. But for detecting
-> > the problem it needs to get an indication from dma_mapping_error.
-> > The bug is triggered by using a VMSPLIT option of 2G/2G.
-> 
-> Looks like your system uses swiotlb as the dma_ops backend. Its the only
-> implementation providing the ops->mapping_error callback and does not
-> use bad_dma_address as the error value.
-
-I think that you misunderstand the problem.
-
-He uses X86_32 so swiotlb should not be used (which is available on only
-X86_64 and IA64 for now).
-
-b44 needs an address under 1GB so it sets device->dma_mask to
-DMA_30BIT_MASK. With VMSPLIT option of 2G/2G, I guess that b44 could
-get addresses above 1GB from the networking subsystem. In such case,
-nommu_map_single returns bad_dma_address properly, but on X86_32,
-dma_mapping_error always returns 0 (success). So b44 wrongly thinks
-that the address is under 1GB.
-
-This patch fixes dma_mapping_error() to check a passed address
-properly (compares it with bad_dma_address).
-
-As I already wrote, the current git needs a patch modified slightly:
-
-http://marc.info/?l=linux-kernel&m=122797163405377&w=2
-
-
-> > Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> 
-> Acked-by: Joerg Roedel <joro@8bytes.org>
-> 
-> > 
-> > diff -ru orig/linux-2.6.27.4/include/asm-x86/dma-mapping.h linux-2.6.27.4/include/asm-x86/dma-mapping.h
-> > --- orig/linux-2.6.27.4/include/asm-x86/dma-mapping.h	2008-10-26 00:05:07.000000000 +0200
-> > +++ linux-2.6.27.4/include/asm-x86/dma-mapping.h	2008-10-26 11:06:14.000000000 +0100
-> > @@ -74,15 +74,13 @@
-> >  /* Make sure we keep the same behaviour */
-> >  static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-> >  {
-> > -#ifdef CONFIG_X86_32
-> > -	return 0;
-> > -#else
-> > +#ifdef CONFIG_X86_64
-> >  	struct dma_mapping_ops *ops = get_dma_ops(dev);
-> >  	if (ops->mapping_error)
-> >  		return ops->mapping_error(dev, dma_addr);
-> >  
-> > -	return (dma_addr == bad_dma_address);
-> >  #endif
-> > +	return (dma_addr == bad_dma_address);
-> >  }
-> >  
-> >  #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Eric
