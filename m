@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYLAB7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYLACBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbYLAB7P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 20:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYLAB67
+	id S1756722AbYLACBA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 21:01:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYLACAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 20:58:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33084 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbYLAB66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 20:58:58 -0500
-Subject: Re: dynamic function tracing
-From: Steven Rostedt <srostedt@redhat.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <20081128101922.451e254a@infradead.org>
-References: <20081128101922.451e254a@infradead.org>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Sun, 30 Nov 2008 20:58:50 -0500
-Message-Id: <1228096730.4886.3.camel@localhost.localdomain>
+	Sun, 30 Nov 2008 21:00:52 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49090 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbYLACAw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 21:00:52 -0500
+Date: Mon, 1 Dec 2008 11:00:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 00/09] memcg: split-lru feature for memcg
+Message-Id: <20081201110000.bcdfccff.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 30 Nov 2008 19:54:08 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-On Fri, 2008-11-28 at 10:19 -0800, Arjan van de Ven wrote:
-> Hi,
+> Recently, SplitLRU patch series dramatically improvement VM reclaim
+> logic.
 > 
-> I like the new function trace format with the {}'s a lot.. but I would
-> like to use it in a way I don't think would work with dynamic tracing.
+> it have following improvement.
+>  (1) splite lru per page type
+>  (2) introduce inactive/active anon balancing logic
+>  (3) introduce anon/file balancing logic
 > 
-> What I would like to do (read: usecase) is mark a function as
-> interesting (because it has some performance issue or whatever),
-> and then I want to get all functions it calls (recursive) traced
-> automatically for the duration of that function.
+> Unfortunately, the improvement of memcgroup reclaim is incomplete.
+> Currently, it only has (1), but doesn't have (2) and (3).
 > 
-> This might be implementable by, on hitting the function to trace,
-> patching all trace points with a function that checks if it's this
-> thread (eg this "current"), and if so, traces the call. 
-> I realize it's not going to be super cheap, so it needs to be one-shot,
-> but it'll form a really strong usecase in practice...
+> 
+> This patch introduce (2) and (3) improvements to memcgroup.
+> this implementation is straightforward porting from global reclaim.
+> 
+> Therefere
+>   - code is simple.
+>   - memcg reclaim become efficiency as global reclaim.
+>   - the logic is the same as global lru.
+>     then, memcg reclaim debugging become easily.
+> 
+> 
+> this patch series has three part
+> 
+> [part 1: inactive-anon vs active-anon balancing improvement]
+>   [01/09] inactive_anon_is_low() move to vmscan.c
+>   [02/09] memcg: make inactive_anon_is_low()
+> 
+> [part 2: anon vs file balancing improvement]
+>   [03/09] introduce zone_reclaim struct
+>   [04/09] memcg: make zone_reclaim_stat
+>   [05/09] make zone_nr_pages() helper function
+>   [06/09] make get_scan_ratio() to memcg awareness
+>   [07/09] memcg: remove mem_cgroup_calc_reclaim()
+> 
+> [part 3: add split-lru related statics field to /cgroup/memory.stat]
+>   [08/09] memcg: show inactive_ratio
+>   [09/09] memcg: show reclaim stat
+> 
+> patch against: mmotm 29 Nov 2008
+> 
 
-It would not be wise to enable the function pointer at that moment. But
-what we could do is have a function trace enabled that will flag when a
-function is hit. Then it could start tracing all functions until it
-returns. This would be possible.
+Hi, kosaki. thank you for your work.
 
-What we need is a better way to attach the function tracer with the
-function graph.
+My request is
+ . split global-lru part and memcg part explicitly.
+ 
+There are Nishimura's patch and my patch under development.
+I may have to prepare weekly-update queue again.
 
--- Steve
-
+Thanks,
+-Kame
 
