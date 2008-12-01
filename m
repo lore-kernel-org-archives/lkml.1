@@ -1,48 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYLAEte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbYLAEwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbYLAEte (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 23:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYLAEtZ
+	id S1754274AbYLAEwS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 23:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYLAEwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 23:49:25 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:37184 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbYLAEtY (ORCPT
+	Sun, 30 Nov 2008 23:52:08 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:50322 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525AbYLAEwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 23:49:24 -0500
-Message-ID: <49336CBC.5090706@oracle.com>
-Date: Sun, 30 Nov 2008 20:49:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Sun, 30 Nov 2008 23:52:07 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=UpPsna0kLLR/MmJLkNkl/GnvFjOXqtfTLTqc+9HbnmV5pvPi+RVU1WlrBbszNQ5VD
+	rY3rADQWn3+rmDg3H6psw==
+Message-ID: <49336D26.2060607@google.com>
+Date: Sun, 30 Nov 2008 20:50:46 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [RFC PATCH] x86: create drivers/x86/ from drivers/misc/
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au> <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au> <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain> <alpine.LFD.2.00.0811281702570.24773@localhost.localdomain> <alpine.LFD.2.00.0811281706540.24773@localhost.localdomain> <20081128223533.GA5175@uranus.ravnborg.org> <alpine.LFD.2.00.0811281819070.24773@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0811281819070.24773@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49336CC0.0025:SCFSTAT928724,ss=1,fgs=0
+To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+CC: Nick Piggin <npiggin@suse.de>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com> <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <20081127130817.GP28285@wotan.suse.de> <492EEF0C.9040607@google.com> <20081128093713.GB1818@wotan.suse.de> <49307893.4030708@google.com> <4932EF90.9070601@gmail.com>
+In-Reply-To: <4932EF90.9070601@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-GMailtapped-By: 172.25.146.78
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
+Török Edwin wrote:
+> On 2008-11-29 01:02, Mike Waychison wrote:
+>> Nick Piggin wrote:
+>>> On Thu, Nov 27, 2008 at 11:03:40AM -0800, Mike Waychison wrote:
+>>>> Nick Piggin wrote:
+>>>>> On Thu, Nov 27, 2008 at 01:28:41AM -0800, Mike Waychison wrote:
+>>>>>> Török however identified mmap taking on the order of several
+>>>>>> milliseconds due to this exact problem:
+>>>>>>
+>>>>>> http://lkml.org/lkml/2008/9/12/185
+>>>>> Turns out to be a different problem.
+>>>>>
+>>>> What do you mean?
+>>> His is just contending on the write side. The retry patch doesn't help.
+>>>
+>> I disagree.  How do you get 'write contention' from the following
+>> paragraph:
+>>
+>> "Just to confirm that the problem is with pagefaults and mmap, I dropped
+>> the mmap_sem in filemap_fault, and then
+>> I got same performance in my testprogram for mmap and read. Of course
+>> this is totally unsafe, because the mapping could change at any time."
+>>
+>> It reads to me that the writers were held off by the readers sleeping
+>> in IO.
 > 
->> You move 12 files but delete 11 lines.
+> It is true that I have a write/write contention too, but do_page_fault
+> shows up too on lock_stat.
 > 
-> obj-$(CONFIG_TC1100_WMI)        += tc1100-wmi.o
+> This is my guess at what happens:
+> * filemap_fault used to sleep with mmap_sem held while waiting for the
+> page lock.
+> * the google patch avoids that, which is fine: if page lock can't be
+> taken, it drops mmap_sem, waits, then retries the fault once
+> * however after we acquired the page lock, mapping->a_ops->readpage is
+> invoked, mmap_sem is NOT dropped here:
 > 
-> was left behind by mistake.
+>     error = mapping->a_ops->readpage(file, page);
+>     if (!error) {
+>         wait_on_page_locked(page);
+> 
+> If my understanding is correct ->readpage does the actual disk I/O, and
+> it keeps the page locked, when the lock is released we know it has finished.
+> So wait_on_page_locked(page)  holds mmap_sem locked for read during the
+> disk I/O, preventing sys_mmap/sys_munmap from making progress.
+> 
+> I don't know how to prove/disprove my guess above, suggestions welcome.
+> 
+> Could the patch be changed to also release the mmap_sem after readpage,
+> and before wait_on_page_locked?
 
-Yes, that caused the build error that was the original posting
-for this thread.
-
-~Randy
-
+Ya, my suspicion is that there is still some other code path where we 
+are waiting on the locked page with mmap_sem still held.  Ying and I 
+will take a closer look this week.
