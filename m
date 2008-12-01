@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751489AbYLAH1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751746AbYLAHbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751489AbYLAH1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 02:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYLAH1T
+	id S1751746AbYLAHbZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 02:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYLAHbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 02:27:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50657
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750740AbYLAH1T (ORCPT
+	Mon, 1 Dec 2008 02:31:17 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35320 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbYLAHbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 02:27:19 -0500
-Date: Sun, 30 Nov 2008 23:27:19 -0800 (PST)
-Message-Id: <20081130.232719.56970907.davem@davemloft.net>
-To: jirislaby@gmail.com
-Cc: chas@cmf.nrl.navy.mil, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: add netdev to ATM
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1228033389-24415-1-git-send-email-jirislaby@gmail.com>
-References: <20081129.204341.88799313.davem@davemloft.net>
-	<1228033389-24415-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 1 Dec 2008 02:31:16 -0500
+Message-ID: <493392BA.50906@jp.fujitsu.com>
+Date: Mon, 01 Dec 2008 16:31:06 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: linux-pci@vger.kernel.org, tom.l.nguyen@intel.com, yanmin.zhang@intel.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] aerdrv: fix sanity check in report_resume
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Sun, 30 Nov 2008 09:23:09 +0100
+What we have to check here before calling it is err_handler->resume.
+It seems that this block have been copy&pasted from report_slot_reset.
 
-> David Miller wrote:
-> > > One fail path in hrz_probe omitted device disable. Fix it.
-> > > 
-> > > Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> > 
-> > Applied, but please post all networking patches to
-> > netdev@vger.kernel.org, in particular so that they
-> > get properly tracked at:
-> > 
-> > 	http://patchwork.ozlabs.org/project/netdev/list/
-> > 
-> > I feel like I type this in at least 10 times a day, so
-> > people please start making sure netdev is on the CC: for
-> > all networking patches.
-> 
-> Hmm, I didn't even think this is net related. I would expect such things to
-> be in drivers/net/ then. Consider the patch below for applying.
-> 
-> --
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ drivers/pci/pcie/aer/aerdrv_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Applied, thanks Jiri!
+diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
+index dfc63d0..aac7006 100644
+--- a/drivers/pci/pcie/aer/aerdrv_core.c
++++ b/drivers/pci/pcie/aer/aerdrv_core.c
+@@ -252,7 +252,7 @@ static void report_resume(struct pci_dev *dev, void *data)
+ 
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+-		!dev->driver->err_handler->slot_reset)
++		!dev->driver->err_handler->resume)
+ 		return;
+ 
+ 	err_handler = dev->driver->err_handler;
+-- 
+1.6.0
+
+
