@@ -1,108 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYLAIa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751852AbYLAIjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbYLAIa5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 03:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLAIat
+	id S1751852AbYLAIjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 03:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYLAIjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 03:30:49 -0500
-Received: from ozlabs.org ([203.10.76.45]:51562 "EHLO ozlabs.org"
+	Mon, 1 Dec 2008 03:39:11 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60720 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbYLAIas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 03:30:48 -0500
-To: Douglas_Warzecha@dell.com
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon, 1 Dec 2008 19:00:42 +1030
-Subject: [PATCH] work_on_cpu: use on drivers/firmware/dcdbas.c
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1750770AbYLAIjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 03:39:09 -0500
+Date: Mon, 1 Dec 2008 17:38:11 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       weidong.han@intel.com, mingo@redhat.com, avi@redhat.com,
+       amit.shah@redhat.com
+Subject: Re: [PATCH 3/9] add frontend implementation for the IOMMU API
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081128113129.GO1386@amd.com>
+References: <1227800454-9555-4-git-send-email-joerg.roedel@amd.com>
+	<20081128184041N.fujita.tomonori@lab.ntt.co.jp>
+	<20081128113129.GO1386@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812011900.43852.rusty@rustcorp.com.au>
+Message-Id: <20081201173830B.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use work_on_cpu instead of cpumask games.
+On Fri, 28 Nov 2008 12:31:29 +0100
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Doug: note one subtle change.  If we can't get to CPU 0 for some
-reason, the return will be -EINVAL not -EBUSY.
+> On Fri, Nov 28, 2008 at 06:40:41PM +0900, FUJITA Tomonori wrote:
+> > On Thu, 27 Nov 2008 16:40:48 +0100
+> > Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > 
+> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > > ---
+> > >  drivers/base/iommu.c |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  1 files changed, 94 insertions(+), 0 deletions(-)
+> > >  create mode 100644 drivers/base/iommu.c
+> > > 
+> > > diff --git a/drivers/base/iommu.c b/drivers/base/iommu.c
+> > > new file mode 100644
+> > > index 0000000..7250b9c
+> > > --- /dev/null
+> > > +++ b/drivers/base/iommu.c
+> > 
+> > Hmm, why is this at drivers/base/? Anyone except for kvm could use
+> > this? If so, under virt/ is more appropriate?
+> 
+> I don't see a reason why this should be KVM specific. KVM is the only
+> user for now. But it can be used for i.e. UIO too. Or in drivers to
+> speed up devices which have bad performance when they do scather gather
+> IO.
 
-Doug: want me to fix this in the caller?  ie:
+If there are some except for kvm that could use this, it should be
+fine, I guess.
 
-	return work_on_cpu(0, generate_smi, smi_cmd) == 0 ? 0 : -EBUSY;
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Douglas_Warzecha@dell.com
----
- drivers/firmware/dcdbas.c |   46 +++++++++++++++++++---------------------------
- 1 file changed, 19 insertions(+), 27 deletions(-)
-
-diff -r 155c7f2e2e30 drivers/firmware/dcdbas.c
---- a/drivers/firmware/dcdbas.c	Thu Oct 23 11:22:04 2008 +1100
-+++ b/drivers/firmware/dcdbas.c	Thu Oct 23 11:23:38 2008 +1100
-@@ -237,31 +237,9 @@ static ssize_t host_control_on_shutdown_
- 	return count;
- }
- 
--/**
-- * smi_request: generate SMI request
-- *
-- * Called with smi_data_lock.
-- */
--static int smi_request(struct smi_cmd *smi_cmd)
-+static long generate_smi(void *_smi_cmd)
- {
--	cpumask_t old_mask;
--	int ret = 0;
--
--	if (smi_cmd->magic != SMI_CMD_MAGIC) {
--		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
--			 __func__);
--		return -EBADR;
--	}
--
--	/* SMI requires CPU 0 */
--	old_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(0));
--	if (smp_processor_id() != 0) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
--			__func__);
--		ret = -EBUSY;
--		goto out;
--	}
-+	struct smi_cmd *smi_cmd = _smi_cmd;
- 
- 	/* generate SMI */
- 	asm volatile (
-@@ -273,10 +251,24 @@ static int smi_request(struct smi_cmd *s
- 		  "c" (smi_cmd->ecx)
- 		: "memory"
- 	);
-+	return 0;
-+}
- 
--out:
--	set_cpus_allowed_ptr(current, &old_mask);
--	return ret;
-+/**
-+ * smi_request: generate SMI request
-+ *
-+ * Called with smi_data_lock.
-+ */
-+static int smi_request(struct smi_cmd *smi_cmd)
-+{
-+	if (smi_cmd->magic != SMI_CMD_MAGIC) {
-+		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
-+			 __func__);
-+		return -EBADR;
-+	}
-+
-+	/* SMI requires CPU 0 */
-+	return work_on_cpu(0, generate_smi, smi_cmd);
- }
- 
- /**
+Can you add such information (e.g. who could use this) to the patch
+description? It should be in the git log if the patch is merged.
 
 
+> > The majority of the names (include/linux/iommu.h, iommu.c, iommu_ops,
+> > etc) looks too generic? We already have lots of similar things
+> > (e.g. arch/{x86,ia64}/asm/iommu.h, several archs' iommu.c, etc). Such
+> > names are expected to be used by all the IOMMUs.
+> 
+> The API is already useful for more than KVM. I also plan to extend it to
+> support more types of IOMMUs than VT-d and AMD IOMMU in the future. But
+> these changes are more intrusive than this patchset and need more
+> discussion. I prefer to do small steps into this direction.
+
+Can you be more specific? What IOMMU could use this? For example, how
+GART can use this? I think that people expect the name 'struct
+iommu_ops' to be an abstract for all the IOMMUs (or the majority at
+least). If this works like that, the name is a good choice, I think.
