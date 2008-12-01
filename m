@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYLAM33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYLAM3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbYLAM33 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 07:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYLAM3V
+	id S1755816AbYLAM3z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 07:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbYLAM3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 07:29:21 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:41394 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbYLAM3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 07:29:20 -0500
-Subject: [PATCH, resend] mtd: OOPS accessing flash operations over STM
-	flash on PXA
-From: "Denis V. Lunev" <den@parallels.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mtd@lists.infradead.org, ymiao3@marvell.com,
-       "Denis V. Lunev" <den@openvz.org>, dwmw2@infradead.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-X-Greylist: Sender e-mail whitelisted, not delayed by milter-greylist-2.0.2
-	(vzorg.swsoft.net [64.131.90.7]); Mon, 17 Nov 2008 04:23:15 -0500 (EST)
+	Mon, 1 Dec 2008 07:29:45 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:35284 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752282AbYLAM3o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 07:29:44 -0500
+Subject: Re: [PATCH 01/15] kmemleak: Add the base support
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <84144f020811302249i7587662ewa621d0a81f5426a2@mail.gmail.com>
+References: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
+	 <20081129104312.16726.36218.stgit@pc1117.cambridge.arm.com>
+	 <20081201142824.D552.E1E9C6FF@jp.fujitsu.com>
+	 <84144f020811302249i7587662ewa621d0a81f5426a2@mail.gmail.com>
 Content-Type: text/plain
-Organization: Parallels
-Date: Mon, 01 Dec 2008 15:28:18 +0300
-Message-Id: <1228134498.10480.16.camel@iris.sw.ru>
+Organization: ARM Ltd
+Date: Mon, 01 Dec 2008 12:29:22 +0000
+Message-Id: <1228134562.25929.59.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Dec 2008 12:29:22.0991 (UTC) FILETIME=[70E0F3F0:01C953B0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-STM 2Gb flash is a large-page NAND flash. Set operations accordingly.
-This field is dereferrenced without a check in several places resulting
-in OOPS.
+On Mon, 2008-12-01 at 08:49 +0200, Pekka Enberg wrote:
+> On Mon, Dec 1, 2008 at 7:39 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> >> +/*
+> >> + * Insert a pointer into the pointer hash table.
+> >> + */
+> >> +static inline void create_object(unsigned long ptr, size_t size, int ref_count)
+> >> +{
+> >> +     unsigned long flags;
+> >> +     struct memleak_object *object;
+> >> +     struct prio_tree_node *node;
+> >> +     struct stack_trace trace;
+> >> +
+> >> +     object = kmem_cache_alloc(object_cache, GFP_ATOMIC);
+> >> +     if (!object)
+> >> +             panic("kmemleak: cannot allocate a memleak_object structure\n");
+> >
+> > IIRC, GFP_ATOMIC allocation sometimes fails. (ex. when page cache occupies all
+> > area). It seems to be easy to panic. Is it intended?
+> 
+> Yup, GFP_ATOMIC can fail as can any memory allocation on out-of-memory
+> conditions unless you specify GFP_NOFAIL which will either succeed or
+> lock up the box. I think you can just WARN_ON() here? However, it's
+> probably safer to pass gfp flags from the callers here; otherwise we
+> end up doing tons of GFP_ATOMIC allocations which is not healthy in
+> general.
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
-Acked-by: Eric Miao <ymiao3@marvell.com>
----
- drivers/mtd/nand/pxa3xx_nand.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Yes, good idea, GFP_ATOMIC isn't always needed.
 
-diff --git a/drivers/mtd/nand/pxa3xx_nand.c b/drivers/mtd/nand/pxa3xx_nand.c
-index c0fa9c9..15f0a26 100644
---- a/drivers/mtd/nand/pxa3xx_nand.c
-+++ b/drivers/mtd/nand/pxa3xx_nand.c
-@@ -269,6 +269,7 @@ static struct pxa3xx_nand_timing stm2GbX16_timing = {
- 
- static struct pxa3xx_nand_flash stm2GbX16 = {
- 	.timing = &stm2GbX16_timing,
-+	.cmdset	= &largepage_cmdset,
- 	.page_per_block = 64,
- 	.page_size = 2048,
- 	.flash_width = 16,
+> Also, I see some other BUG_ON() calls in the code which probably
+> should be converted to WARN_ON() as well.
+
+This was also raised in the past by Ingo and it's on my to-do list to
+fix. Basically, if an allocation for internal kmemleak structures fails,
+kmemleak should print a warning and disable the tracing since further
+leak reports are irrelevant. Once I add the run-time kmemleak
+configuration/disabling, I'll change the BUG_ON and panic calls to
+something less severe.
+
 -- 
-1.5.6.4
-
+Catalin
 
