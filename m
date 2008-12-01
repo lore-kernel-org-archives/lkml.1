@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYLASNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbYLASPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbYLASNt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 13:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYLASNl
+	id S1753556AbYLASPx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 13:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYLASPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 13:13:41 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:26875 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbYLASNk (ORCPT
+	Mon, 1 Dec 2008 13:15:44 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40016 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbYLASPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 13:13:40 -0500
-Date: Mon, 1 Dec 2008 10:12:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <greg@kroah.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Remi Colinet <remi.colinet@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org, linux-api@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RESEND][PATCH] Add /proc/mempool to display mempool usage
-Message-Id: <20081201101245.0a2f3123.randy.dunlap@oracle.com>
-In-Reply-To: <20081129234907.GA2340@kroah.com>
-References: <1227980689.6354.24.camel@localhost.localdomain>
-	<20081129214207.GA6747@x200.localdomain>
-	<20081129234907.GA2340@kroah.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 1 Dec 2008 13:15:43 -0500
+Subject: Re: [RFC v10][PATCH 02/13] Checkpoint/restart: initial
+	documentation
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Linus Torvalds <torvalds@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20081128104554.GP28946@ZenIV.linux.org.uk>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
+	 <1227747884-14150-3-git-send-email-orenl@cs.columbia.edu>
+	 <20081128104554.GP28946@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 10:15:32 -0800
+Message-Id: <1228155332.2971.60.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49342921.000B:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Nov 2008 15:49:07 -0800 Greg KH wrote:
-
-> On Sun, Nov 30, 2008 at 12:42:07AM +0300, Alexey Dobriyan wrote:
-> > On Sat, Nov 29, 2008 at 06:44:49PM +0100, Remi Colinet wrote:
-> > > This patch add a new /proc/mempool file in order to display mempool usage.
-> > > 
-> > > The feature can be disabled with CONFIG_PROC_MEMPOOL=N during kernel
-> > > configuration.
-> > 
-> > We're NOT adding config option per proc file.
-> > 
-> > And can we, please, freeze /proc for not per-process stuff and open debugfs
-> > for random stuff, please?
+On Fri, 2008-11-28 at 10:45 +0000, Al Viro wrote:
+> On Wed, Nov 26, 2008 at 08:04:33PM -0500, Oren Laadan wrote:
+> > +Currently, namespaces are not saved or restored. They will be treated
+> > +as a class of a shared object. In particular, it is assumed that the
+> > +task's file system namespace is the "root" for the entire container.
+> > +It is also assumed that the same file system view is available for the
+> > +restart task(s). Otherwise, a file system snapshot is required.
 > 
-> debugfs has been open for random stuff since the day it was added to the
-> tree :)
+> That is to say, bindings are not handled at all.
+
+Sadly, no.  I'm trying to convince Oren that this is important, but I've
+been unable to do so thus far.  I'd appreciate any particularly
+pathological cases you can think of.
+
+There are two cases here that worry me.  One is the case where we're
+checkpointing a container that has been off in its own mount namespace
+doing bind mounts to its little heart's content.  We want to checkpoint
+and restore the sucker on the same machine.  In this case, we almost
+certainly want the kernel to be doing the restoration of the binds.
+
+The other case is when we're checkpointing, and moving to a completely
+different machine.  The new machine may have a completely different disk
+layout and *need* the admin doing the sys_restore() to set up those
+binds differently because of space constraints or whatever.
+
+For now, we're completely assuming the second case, where the admin
+(userspace) is responsible for it, and punting.  Do you think this is
+something we should take care of now, early in the process?
+
+> > +* What additional work needs to be done to it?
 > 
-> Feel free to put this kind of thing there instead of proc.
+> > +We know this design can work.  We have two commercial products and a
+> > +horde of academic projects doing it today using this basic design.
+> 
+> May I use that for a t-shirt, please?  With that quote in foreground, and
+> pus-yellow-greenish "MACH" serving as background.  With the names of products
+> and projects dripping from it...
 
-Do distros ship with debugfs enabled?
-The problem with using debugfs is that it is very optional IMO.
+*Functionally* we know this design can work.  Practically, in Linux, I
+have no freaking idea.  The hard part isn't getting it working, of
+course.  The hard part is getting something that doesn't step on top of
+everyone else's toes in the kernel and, at the same time, is actually
+*maintainable*.
 
----
-~Randy
+-- Dave
+
