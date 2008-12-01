@@ -1,142 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbYLASHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbYLASLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbYLASHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 13:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYLASH1
+	id S1753393AbYLASLh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 13:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYLASL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 13:07:27 -0500
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:3597 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYLASH0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 13:07:26 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
-Date: Mon, 1 Dec 2008 19:07:06 +0100
-User-Agent: KMail/1.9.9
-Cc: Laurent Pinchart <laurent.pinchart@skynet.be>, video4linux-list@redhat.com,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source-bounces@linux.davincidsp.com
-References: <200812011246.08885.hverkuil@xs4all.nl> <200812011524.43499.laurent.pinchart@skynet.be> <20081201130643.661f5743@pedra.chehab.org>
-In-Reply-To: <20081201130643.661f5743@pedra.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 13:11:28 -0500
+Received: from flusers.ccur.com ([12.192.68.2]:55319 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752288AbYLASL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 13:11:27 -0500
+Date: Mon, 1 Dec 2008 13:11:06 -0500
+From: Joe Korty <joe.korty@ccur.com>
+To: "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linux API <linux-api@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ABI Documentation for /proc/timer_list, v2
+Message-ID: <20081201181106.GA18320@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20081121221113.GA13566@tsunami.ccur.com> <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com> <20081125185740.GA21806@tsunami.ccur.com> <20081126164845.GA17394@tsunami.ccur.com> <20081126170715.GA28422@kroah.com> <20081126173410.GA17879@tsunami.ccur.com> <20081126173931.GA1636@kroah.com> <20081126210613.GA20529@tsunami.ccur.com> <cfd18e0f0811281337j57166b4cv54e05296a779252e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812011907.06370.hverkuil@xs4all.nl>
+In-Reply-To: <cfd18e0f0811281337j57166b4cv54e05296a779252e@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 December 2008 16:06:43 Mauro Carvalho Chehab wrote:
-> Hi Hans,
->
-> On Mon, 1 Dec 2008 15:24:43 +0100
->
-> Laurent Pinchart <laurent.pinchart@skynet.be> wrote:
-> > > > I am all for pushing the changes to the v4l-dvb repository so
-> > > > they can get broader testing. I am, however, a bit more
-> > > > concerned about pushing the changes to Linus yet.
-> > >
-> > > They will of course go to linux-next and end up in 2.6.29 when
-> > > the merge window opens. It's obviously not for 2.6.28.
-> >
-> > I would say 2.6.29 is a bit early, but I can live with that.
->
-> It also seems a bit early to me, but it may work. I'll try to
-> schedule some time this week for a deep review.
+Document /proc/timer_list ABI, version 2.
 
-Much appreciated.
+This partially documents /timer_list, including the
+proposed 'Version 0.5' extensions that add a jiffie timer
+display.
 
-> > > In addition, these changes make it easier as well to use the new
-> > > i2c API in bridge drivers (in 2.6.29 the old-style I2C probing
-> > > will be deprecated, so we need to convert). So we get many
-> > > benefits with just these changes.
->
-> IMO, this is one of the top priorities: the old-style i2c used on
-> some bridge drivers like saa7134 and cx88 are causing malfunctions
-> that can't be easily solved. I would like to see a fix for this for
-> 2.6.29.
+v2 exists to address some of the concerns Michael Kerrisk
+brought up.  What was left out: I did not document old
+versions of /timer_list, I did not document the meaning
+of the x.y version numbering system (which only Ingo
+can answer anyway), and I did not document fields of
+secondary importance that already had adequate 'DocBook'
+documentation in the kernel sources.
 
-Using v4l2_i2c_new_subdev or v4l2_i2c_new_probed_subdev should make it 
-much easier to switch over. It certainly simplified it for ivtv.
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
 
-> > > Of course, I want to add more v4l2 framework support to these new
-> > > structures, but I don't have any code yet for that anyway, just
-> > > lots of ideas. Start simple, then expand.
-> > >
-> > > > I don't know if that's possible at all, or if all changes in
-> > > > v4l-dvb are automatically selected for a push to the git
-> > > > repository whenever Mauro triggers the hg->git process.
-> > >
-> > > Well, they go to linux-next, but is that a problem?
->
-> I only send Linus the patches that are already ok, but I generally
-> prefer to postpone a merge for the end of a merge window, when the
-> patch is not meant to be at the next version.
->
-> > In a few months time (probably even earlier) the v4l2_device
-> > structure will be reworked (and possible renamed).
->
-> Hmm... why? it would be better to try to have the KABI changes for it
-> at the same kernel release if possible.
-
-I would like to state again that I have no plans to rename it. There is 
-a chance that it will be used by the dvb subsystem as well in the 
-future, but that's not going to happen any time soon. But should that 
-happen, then we might consider renaming it to 
-media_device/media_subdev. However, right now it is very much v4l2 
-specific code. I think it more likely that if this is used in dvb then 
-it would be for v4l2 functionality, not dvb functionality.
-
-There will definitely be future additions since this is only the first 
-step. Things on my list: better framework support for controls, 
-v4l2_prio handling, adding a similar v4l2_fh struct for 
-filehandle-specific data and the media controller which has been 
-discussed in earlier RFCs and that requires these fundamental data 
-structs to be in place first.
-
-Replacing the v4l2-int-device.h API with v4l2_subdev and adding support 
-for sensor drivers to the v4l2_subdev ops will also no doubt require 
-additions.
-
-But I want to do this step by step. It's just humanly impossible to go 
-for a Big Bang here. Each time something gets added there must be at 
-least one driver actually using it so you have some confidence in the 
-change. Just integrating these simple v4l2_device and v4l2_subdev 
-structs will take a fair amount of time.
-
-Regards,
-
-	Hans
-
-> > I'm fine with it going to linux-next now if
-> > we agree on the following.
-> >
-> > - We should only advocate v4l2_device usage for subdevices-aware
-> > video devices. Porting all drivers to v4l2_device is currently
-> > pointless and will only make future transitions more difficult.
->
-> This makes sense to me.
->
-> > - v4l2_device should be marked as experimental. I don't want to
-> > hear any API/ABI breakage argument in a few months time when the
-> > framework will evolve.
->
-> Are you meaning marking this as experimental at Kconfig? This seems
-> too complex, since we'll need to test for some var on every driver
-> that were converted, providing two KABI options for each converted
-> driver (the legacy and the v4l2_device way). This doesn't seem to be
-> a good idea, since will add a lot of extra complexity to debug bugs.
->
-> Cheers,
-> Mauro
-
-
-
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+Index: 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list	2008-12-01 13:07:15.000000000 -0500
+@@ -0,0 +1,129 @@
++What:		/proc/timer_list
++Date:		November 2008
++Contact:	Ingo Molnar <mingo@elte.hu>
++		Thomas Gleixner <tglx@linutronix.de>
++		Joe Korty <joe.korty@ccur.com>
++Revision-Rate:	Moderate
++At-Revision:	0.5
++Description:
++		/proc/timer_list displays most everything about every kind
++		of timer, and some things about time too.
++
++		The contents of this file should be expected to change,
++		as the data displayed corresponds directly to various
++		kernel-internal data structures.  For this reason, the first
++		line contains the file revision.  It is the responsibility
++		of this file's maintainers to bump the revision each time a
++		kernel is released having incompatible changes in this file.
++
++		This document covers only the version of /proc/timer_list
++		located in the kernel sources to which it is attached.
++		Documentation for previous (and later) versions of
++		/proc/timer_list is to be found (if they exist) in the
++		kernel sources of those earlier (or later) kernels.
++
++		Section Overview
++		----------------
++		The file contains several somewhat independent sections.
++
++		The first section contains a few lines of global info:
++		   1 - Timer List Version: File revision.
++		   2 - HRTIMER_MAX_CLOCK_BASES: number of clock types that
++		       support high resolution timers.
++		   3 - now at x nsecs: number of nsecs since boot.
++
++		The second section is organized per-CPU.  Each CPU subsection
++		in turn contains several sub-subsections which are, in order
++		of appearance:
++
++		   The contents of the data structures associated with each
++		   clock on this CPU:
++		    1 - clock ID: 0 == CLOCK_REALTIME, 1 == CLOCK_MONOTONIC
++		    2 - base: kernel address of this clock's
++		        hrtimer_clock_base structure.
++		    3 - resolution: resolution of this clock.
++		    4 - get_time: name of kernel function used to fetch
++		        time from this clock.
++		    5 - offset: difference, in nsecs, between this clock
++		        and the reference clock for this clock.
++		   Under each of these clocks is, in turn, a display of all
++		   the active high resolution timers queued to that clock.
++		   These are the lines beginning with '#' and are described
++		   in detail later in this document.
++
++		   The contents of per-CPU hrtimer data fields not
++		   associated with a particular cpu clock (ie, shared by
++		   both clocks or not associated with any clock).  These
++		   are: expires_next, hres_active, nr_event, nohz_mode, all
++		   things idle_*, tick_stopped, last_jiffies, next_jiffies.
++		   The above are field names from 'struct tick_sched' and
++		   'struct hrtimer_cpu_base', documentation for these may
++		   be found in the kernel DocBook.
++
++		   A display of low resolution (ie, jiffie) timer wheel
++		   data.  These are prefixed by the lines:
++		    1 - base: kernel virtual address of the timer wheel
++		        data structure (struct tvec_base) for this cpu.
++		    2 - running timer: kernel virtual address of the
++		        expired timer being processed, NULL if none.
++		    3 - timer_jiffies: what this wheel considers to
++		        be the current time, will be == jiffies or
++			will lag it by a tick or two if it has not
++			caught up with the current time.
++		   Also under this section is a display, one per line, of
++		   each active jiffie timer queued to this CPU.  These are
++		   the lines under an 'active jiffie timers' section that
++		   begin with a number.
++
++		The third and final section describes each 'tick device'
++		known to the kernel.  A tick device is a piece of hardware
++		capable of generating periodic and/or one-shot interrupts
++		under software control, and thus is capable of generating
++		the interrupts needed to expire the various active timers
++		at their given expiration times.  Examples of tick devices:
++		hpet, pit, lapic.  All but the first two lines display
++		fields corresponding to structure elements from 'struct
++		clock_event_device', documentation for which can be found
++		in the kernel Docbook. The first two lines are:
++		  1 - mode: 0 == periodic timer, 1 == one-shot timer
++		  2 - is 'Per CPU device' or is 'Broadcast device'
++
++		Hires Timer Layout
++		------------------
++		High-resolution timers are displayed on lines that begin
++		with a '#' and always appear under one of the many sections
++		labeled 'active timers'.  There is an 'active timers'
++		section for every CPU and every clock.
++
++		The fields of a hrtimer, spread out over two lines, are:
++
++		line 1 fields:
++		  1 - unique hrtimer index (#0, #1, #2, etc)
++		  2 - kernel address of the hrtimer data structure
++		      in question
++		  3 - function to be called when timer expires
++		  4 - timer state (eg, S:01), avail states, OR-able:
++		      0 - inactive
++		      1 - enqueued
++		      2 - callback
++		      4 - pending
++		      8 - migrate
++		  5 - function which created the timer
++		  6 - process name & pid which created the timer
++
++		line 2 fields:
++		  1 - absolute expiration time, range format (start - end)
++		  2 - relative expiration time, range format (start - end)
++
++		Lowres Timer Layout
++		-------------------
++		Low-resolution timers are displayed one-per-line under
++		sections labeled 'active jiffie timers'.  There is one such
++		section per CPU.  A lowres timer has the following fields:
++
++		  1 - number of jiffies remaining until timer expires
++		  2 - function to be called on expiration
++		  3 - data value to be given to the above function on
++		      expiration
++		  4 - function which created this timer
++		  5 - name & pid of the process that created this timer
