@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbYLAUN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbYLAUPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbYLAUN1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 15:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYLAUNQ
+	id S1753572AbYLAUPl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 15:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYLAUPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 15:13:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57177 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751763AbYLAUNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 15:13:15 -0500
-Date: Mon, 1 Dec 2008 12:12:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
-       randy.dunlap@oracle.com, greg@kroah.com, adobriyan@gmail.com,
-       remi.colinet@gmail.com, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RESEND][PATCH] Add /proc/mempool to display mempool usage
-In-Reply-To: <84144f020812011207q29fe4b3fq11a9e55f171cf743@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0812011210030.3256@nehalem.linux-foundation.org>
-References: <1227980689.6354.24.camel@localhost.localdomain>  <20081129214207.GA6747@x200.localdomain>  <20081129234907.GA2340@kroah.com>  <20081201101245.0a2f3123.randy.dunlap@oracle.com>  <1228158811.3196.88.camel@calx>  <20081201120210.1ed16bd5.akpm@linux-foundation.org>
- <84144f020812011207q29fe4b3fq11a9e55f171cf743@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Dec 2008 15:15:31 -0500
+Received: from zombie2.ncsc.mil ([144.51.88.133]:42994 "EHLO zombie2.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbYLAUPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 15:15:30 -0500
+Subject: Re: [TOMOYO #13 (mmotm 2008-11-19-02-19) 09/11] LSM adapter
+	functions.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>,
+       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>
+In-Reply-To: <20081120112735.226630772@I-love.SAKURA.ne.jp>
+References: <20081120112543.799450455@I-love.SAKURA.ne.jp>
+	 <20081120112735.226630772@I-love.SAKURA.ne.jp>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 01 Dec 2008 15:10:57 -0500
+Message-Id: <1228162257.18720.220.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 1 Dec 2008, Pekka Enberg wrote:
+On Thu, 2008-11-20 at 20:25 +0900, Tetsuo Handa wrote:
+> plain text document attachment (tomoyo-hooks.patch)
+> This is LSM adapter for TOMOYO.
+> This version of TOMOYO assigns only one variable "struct tomoyo_domain_info *"
+> to "current->cred->security".
 > 
-> Hmm, I thought Documentation/ABI/ was supposed to tell us what's an
-> ABI you can depend on and what's not. I mean, you shouldn't be
-> depending on anything but the interfaces documented in
-> Documentation/ABI/stable/, no?
+> Future version will require two variables "struct tomoyo_domain_info *" and
+> "u32".
+> http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/include/linux/sched.h#L1311
+> Well, how to implement this while "current->cred->security" cannot be modified
+> freely?
+> 
+> To be honest, the only object which TOMOYO needs to assign variables is
+> "struct task_struct". TOMOYO's "T" means "task".
+> TOMOYO utilizes characteristics of "struct task_struct".
+> For TOMOYO, use of per task variables is vital.
+> 
+> Removal of security_task_alloc() and security_task_free() by introduction of
+> COW credentials will become a nightmare when TOMOYO tries to add "u32".
+> Of cource, if TOMOYO is allowed to add "u32" to "struct task_struct",
+> COW credentials won't become a nightmare.
 
-Who is the f*cking MORON that thinks that "documentation" has any meaning 
-what-so-ever?
+Can you explain exactly how you are using this per-task state and why it
+is a problem to create a new cred in the situations where you need to
+modify it?  I think that this issue needs to be addressed up front.
 
-The fact that something is documented (whether correctly or not) has 
-absolutely _zero_ impact on anything at all. What makes something an ABI 
-is that it's useful and available. The only way something isn't an ABI is 
-by _explicitly_ making sure that it's not available even by mistake in a 
-stable form for binary use.
+-- 
+Stephen Smalley
+National Security Agency
 
-Example: kernel internal data structures and function calls. We make sure 
-that you simply _cannot_ make a binary that works across kernel versions. 
-That is the only way for an ABI to not form.
-
-		Linus
