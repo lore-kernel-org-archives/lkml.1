@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYLAUJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbYLAULW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYLAUJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 15:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYLAUJM
+	id S1752798AbYLAULW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 15:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYLAULN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 15:09:12 -0500
-Received: from mga09.intel.com ([134.134.136.24]:51739 "EHLO mga09.intel.com"
+	Mon, 1 Dec 2008 15:11:13 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:36444 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752647AbYLAUJL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 15:09:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,697,1220252400"; 
-   d="scan'208";a="469955477"
-From: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
-To: Steve Moring <smoring@yahoo.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>
-Date: Mon, 1 Dec 2008 13:08:35 -0700
-Subject: RE: [E1000-devel] Intel dg45fc motherboard still bricks with e1000e
-	driver
-Thread-Topic: [E1000-devel] Intel dg45fc motherboard still bricks with
- e1000e	driver
-Thread-Index: AclS+BkHJwSuQTbJQgOtsSVXivrN5wA6IYPg
-Message-ID: <EA929A9653AAE14F841771FB1DE5A1365F5656C2EF@rrsmsx501.amr.corp.intel.com>
-References: <452705.18074.qm@web52710.mail.re2.yahoo.com>
-In-Reply-To: <452705.18074.qm@web52710.mail.re2.yahoo.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751324AbYLAULM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 15:11:12 -0500
+Date: Mon, 1 Dec 2008 21:11:09 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Olof Johansson <olof@lixom.net>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] drivers/mtd/nand/pasemi_nand.c: Add missing pci_dev_put
+In-Reply-To: <20081201180812.GA21646@lixom.net>
+Message-ID: <Pine.LNX.4.64.0812012109480.1541@ask.diku.dk>
+References: <Pine.LNX.4.64.0811271319070.15160@pc-004.diku.dk>
+ <20081201174327.GA21274@lixom.net> <Pine.LNX.4.64.0812011838440.11341@pc-004.diku.dk>
+ <20081201180812.GA21646@lixom.net>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Moring wrote:
-> I don't know if I should enter a bug on this or not as I thought this
-> one was fixed already, but I have an Intel dg45fc that comes with a
-> gig enet card built in. If I force the connection to 100mb by
-> connecting a switch that is only capable of 100mb, all is good, as soon > as I connect it to a gig capable switch, it bricks the machine on the > > next reboot forcing me to reload the bios.
+On Mon, 1 Dec 2008, Olof Johansson wrote:
 
-Please file a bug so we can track this issue.
+> On Mon, Dec 01, 2008 at 06:39:01PM +0100, Julia Lawall wrote:
+> > On Mon, 1 Dec 2008, Olof Johansson wrote:
+> > 
+> > > On Thu, Nov 27, 2008 at 01:19:49PM +0100, Julia Lawall wrote:
+> > > > From: Julia Lawall <julia@diku.dk>
+> > > > 
+> > > > pci_get_device increments a reference count that should be decremented
+> > > > using pci_dev_put.  I have thus added an extra label in the error handling
+> > > > code to do this.  I don't know, however, whether there should be a
+> > > > pci_dev_put before the return 0 as well.
+> > > > 
+> > > [...]
+> > > 
+> > > > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > > 
+> > > Acked-by: Olof Johansson <olof@lixom.net>
+> > 
+> > Do you know the answer about the return 0?
+> 
+> Teaches me to read the patch description twice.
+> 
+> Either there or in pasemi_nand_remove(), doesn't matter much to me. Doing
+> it before the return 0 is the smaller change.
 
-By "reload" do you mean reflash the BIOS? Can you be more specific about the symptoms?
+Actually, could pci_dev_put(pdev) be placed right after:
 
-> I have tried the following combinations: x86_64 with and without XEN,
-> i586 with and without XEN, all behave identically with the above
-> observations.
+lpcctl = pci_resource_start(pdev, 0);
 
-The NVM corruption issue that was resolved (I presume this is what you meant) was root caused to CONFIG_FTRACE being enabled in the kernel and only on ia32 arch. If you're seeing this problem on x86_64 then it is most likely unrelated.
+Then there would only be one, and the rest of the code could go back to 
+its original form.
 
-I also presume that you are using e1000e that ships with OpenSUSE 11.1. Have you tried using the latest e1000e from sourceforge?
-
-Thanks,
-Emil
+julia
