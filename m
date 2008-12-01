@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbYLADLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbYLADTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755619AbYLADLu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 22:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYLADLk
+	id S1754950AbYLADTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 22:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYLADTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 22:11:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36325 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752668AbYLADLk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 22:11:40 -0500
-Date: Sun, 30 Nov 2008 19:11:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, gregkh@suse.de
-Subject: Re: mmotm 2008-11-29-01-53 uploaded
-Message-Id: <20081130191124.e16de170.akpm@linux-foundation.org>
-In-Reply-To: <20081201111040.42b2a908.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200811290959.mAT9xuhC004277@imap1.linux-foundation.org>
-	<20081201111040.42b2a908.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 30 Nov 2008 22:19:35 -0500
+Received: from mga14.intel.com ([143.182.124.37]:26352 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922AbYLADTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 22:19:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,692,1220252400"; 
+   d="scan'208";a="84691709"
+Date: Mon, 1 Dec 2008 11:19:22 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>
+Subject: [PATCH] nfs: remove redundant tests on reading new pages
+Message-ID: <20081201031922.GA31077@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008 11:10:40 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+aops->readpages() and its NFS helper readpage_async_filler() will only
+be called to do readahead I/O for newly allocated pages. So it's not
+necessary to test for the always 0 dirty/uptodate page flags.
 
-> On Sat, 29 Nov 2008 01:59:56 -0800
-> akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2008-11-29-01-53 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > It contains the following patches against 2.6.28-rc6:
-> > 
-> Hi, in recent changes of linux-next.patch
-> 
-> ==
-> static void __init param_sysfs_builtin(void)
-> {
->         struct kernel_param *kp;
->         unsigned int name_len;
->         char modname[MODULE_NAME_LEN];
-> 
->         for (kp = __start___param; kp < __stop___param; kp++) {
->                 char *dot;
-> 
->                 if (kp->perm == 0)
->                         continue;
-> 
->                 dot = strchr(kp->name, '.');
->                 BUG_ON(!dot); <======================================(*)
->                 name_len = dot - kp->name + 1;
->                 strlcpy(modname, kp->name, name_len);
->                 kernel_add_sysfs_param(modname, kp, name_len);
->         }
-> 
-> ==
-> Above (*) is added.
-> 
-> I hit BUG_ON() at (*). That was because usbcore was not a module and module param
-> kp->name was "nousb".... not including any dot.
-> (If compled as module, the kernel works well.)
-> 
+The removal of nfs_wb_page() call also fixes a readahead bug: the NFS
+readahead has been synchronous since 2.6.23, because that call will
+clear PG_readahead, which is the reminder for asynchronous readahead.
 
-Thanks, that'll be
+More background: the PG_readahead page flag is shared with PG_reclaim,
+one for read path and the other for write path. clear_page_dirty_for_io()
+unconditionally clears PG_readahead to prevent possible readahead residuals,
+assuming itself to be always called in the write path. However, NFS is one
+and the only exception in that it _always_ calls clear_page_dirty_for_io()
+in the read path, i.e. for readpages()/readpage().
 
-commit 9b473de87209fa86eb421b23386693b461612f30
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Wed Oct 22 10:00:22 2008 -0500
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
+---
+ fs/nfs/read.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
-    param: Fix duplicate module prefixes
+This bug was found when playing with my readahead tracing module posted at
+http://lkml.org/lkml/2008/11/27/373 and confirmed to work.
 
-I assume.  Rusty's been on the schnapps again ;)
+The NFS readahead traces are now
+
+[   59.972526] readahead-initial0(pid=3646(dd), dev=00:0f(0:f), ino=293189(1G), req=0+25, ra=0+60-30, async=0) = 60
+[   59.992734] readahead-subsequent(pid=3646(dd), dev=00:0f(0:f), ino=293189(1G), req=30+20, ra=60+30-30, async=1) = 30
+[   60.030900] readahead-subsequent(pid=3646(dd), dev=00:0f(0:f), ino=293189(1G), req=60+15, ra=90+30-30, async=1) = 30
+[   60.031687] readahead-subsequent(pid=3646(dd), dev=00:0f(0:f), ino=293189(1G), req=90+10, ra=120+30-30, async=1) = 30
+
+The async field was always 0 before this patch.
+
+--- linux-2.6.orig/fs/nfs/read.c
++++ linux-2.6/fs/nfs/read.c
+@@ -533,12 +533,6 @@ readpage_async_filler(void *data, struct
+ 	unsigned int len;
+ 	int error;
+ 
+-	error = nfs_wb_page(inode, page);
+-	if (error)
+-		goto out_unlock;
+-	if (PageUptodate(page))
+-		goto out_unlock;
+-
+ 	len = nfs_page_length(page);
+ 	if (len == 0)
+ 		return nfs_return_empty_page(page);
