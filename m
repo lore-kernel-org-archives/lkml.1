@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbYLAUPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYLAUPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753572AbYLAUPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 15:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYLAUPb
+	id S1754058AbYLAUPz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 15:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYLAUPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 15:15:31 -0500
-Received: from zombie2.ncsc.mil ([144.51.88.133]:42994 "EHLO zombie2.ncsc.mil"
+	Mon, 1 Dec 2008 15:15:36 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:47075 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751254AbYLAUPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 15:15:30 -0500
-Subject: Re: [TOMOYO #13 (mmotm 2008-11-19-02-19) 09/11] LSM adapter
-	functions.
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>,
-       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>
-In-Reply-To: <20081120112735.226630772@I-love.SAKURA.ne.jp>
-References: <20081120112543.799450455@I-love.SAKURA.ne.jp>
-	 <20081120112735.226630772@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 01 Dec 2008 15:10:57 -0500
-Message-Id: <1228162257.18720.220.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	id S1752550AbYLAUPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 15:15:35 -0500
+Date: Mon, 1 Dec 2008 12:15:06 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Bastian Blank <bastian@waldi.eu.org>, oleg@redhat.com,
+       ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, xemul@openvz.org
+Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns
+Message-ID: <20081201201506.GB12493@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com> <20081126034611.GC23238@us.ibm.com> <20081127010101.GA13545@wavehammer.waldi.eu.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081127010101.GA13545@wavehammer.waldi.eu.org>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-20 at 20:25 +0900, Tetsuo Handa wrote:
-> plain text document attachment (tomoyo-hooks.patch)
-> This is LSM adapter for TOMOYO.
-> This version of TOMOYO assigns only one variable "struct tomoyo_domain_info *"
-> to "current->cred->security".
-> 
-> Future version will require two variables "struct tomoyo_domain_info *" and
-> "u32".
-> http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/include/linux/sched.h#L1311
-> Well, how to implement this while "current->cred->security" cannot be modified
-> freely?
-> 
-> To be honest, the only object which TOMOYO needs to assign variables is
-> "struct task_struct". TOMOYO's "T" means "task".
-> TOMOYO utilizes characteristics of "struct task_struct".
-> For TOMOYO, use of per task variables is vital.
-> 
-> Removal of security_task_alloc() and security_task_free() by introduction of
-> COW credentials will become a nightmare when TOMOYO tries to add "u32".
-> Of cource, if TOMOYO is allowed to add "u32" to "struct task_struct",
-> COW credentials won't become a nightmare.
+Bastian Blank [bastian@waldi.eu.org] wrote:
+| On Tue, Nov 25, 2008 at 07:46:11PM -0800, Sukadev Bhattiprolu wrote:
+| > +#ifdef CONFIG_PID_NS
+| > +#define SIG_FROM_USER  INT_MIN         /* MSB */
+| 
+| Is it really a wise idea to mix this into the signal number?
 
-Can you explain exactly how you are using this per-task state and why it
-is a problem to create a new cred in the situations where you need to
-modify it?  I think that this issue needs to be addressed up front.
+We have been trying to make this least intrusive and iiuc, extending
+siginfo_t is not easy.
 
--- 
-Stephen Smalley
-National Security Agency
+| Also this definition looks odd. If you want the highest bit, you should
+| mention this explicitely with 1U<<31.
 
+I think that should be fine.
+
+| 
+| If I see this correctly this information is already covered in si_code
+| with SI_USER and SI_TKILL. SI_KERNEL is used for explicit kernel
+| generated signals.
+
+Yes, but si_code from sys_rt_sigqueueinfo() cannot be trusted.  To be sure
+we would have to check for "si_code < 0", but that would include cases like
+SI_ASYNCIO which can come from interrupt/work-queues. which would require
+more complex checks to safely compute namespace of sender.
+
+IOW, we need to find the namespace of the sender only if the sender is
+a user process. If signal is originating from kernel, safely checking
+namespace becomes more complex.
+
+Yes, current approach is somewhat hacky. We tried other approaches
+before and they were either intrusive or required non-trivial changes
+to semantics of signals to global init or both.
+
+| 
+| > +static inline int siginfo_from_ancestor_ns(struct task_struct *t,
+| > +			siginfo_t *info)
+| > +{
+| > +	if (!is_si_special(info) && (info->si_signo & SIG_FROM_USER)) {
+| > +		/* if t can't see us we are from parent ns */
+| 
+| What?
+
+I assume your question is about the comment :-)
+
+Yes, a process can see all its descendants and processes in descendant
+namespaces. But it can only see its ancestors upto the most recent
+CLONE_NEWPID. (kind of like chroot in filesystems). So if receiver
+can't see sender, sender must be an ancestor.
+
+| 
+| >  static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+| >  			int group)
+| >  {
+| >  	struct sigpending *pending;
+| >  	struct sigqueue *q;
+| > +	int from_ancestor_ns;
+| >  
+| >  	trace_sched_signal_send(sig, t);
+| >  
+| > +	from_ancestor_ns = siginfo_from_ancestor_ns(t, info);
+| > +
+| 
+| This is not used at all here?
+
+Yes, its used in next patch.
