@@ -1,173 +1,573 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYLAGD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYLAGEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYLAGD5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 01:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLAGDr
+	id S1752969AbYLAGEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 01:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLAGEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 01:03:47 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:55902 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbYLAGDq (ORCPT
+	Mon, 1 Dec 2008 01:04:02 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55087 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752659AbYLAGD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 01:03:46 -0500
-Date: Mon, 01 Dec 2008 01:03:40 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/2] drivers/misc/Makefile, Kconfig: cleanup
-In-reply-to: <alpine.LFD.2.00.0812010053100.3314@localhost.localdomain>
-X-X-Sender: lenb@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org,
-       linux-acpi@vger.kernel.org
-Message-id: <alpine.LFD.2.00.0812010102340.3314@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
- <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au>
- <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain>
- <alpine.LFD.2.00.0811281702570.24773@localhost.localdomain>
- <alpine.LFD.2.00.0811281706540.24773@localhost.localdomain>
- <20081128223533.GA5175@uranus.ravnborg.org>
- <alpine.LFD.2.00.0811281801520.24773@localhost.localdomain>
- <20081129073816.GB8351@uranus.ravnborg.org>
- <alpine.LFD.2.00.0812010053100.3314@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 1 Dec 2008 01:03:59 -0500
+Date: Mon, 1 Dec 2008 15:03:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 2/3] cgroup: cgroup ID and scanning under RCU.
+Message-Id: <20081201150308.b1825278.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+patch for Cgroup ID and hierarchy code.
 
-tabs->space and delete unnecessary dummy build-in.o rule.
+This patch tries to assign a ID to each cgroup. Attach unique ID to each
+cgroup and provides following functions.
 
-Suggested-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/misc/Kconfig  |   42 +++++++++++++++++++++---------------------
- drivers/misc/Makefile |    3 ---
- 2 files changed, 21 insertions(+), 24 deletions(-)
+ - cgroup_lookup(id)
+   returns struct cgroup of id.
+ - cgroup_get_next(id, rootid, depth, foundid)
+   returns the next cgroup under "root" by scanning bitmap (not by tree-walk)
+ - cgroup_id_put/getref()
+   used when subsystem want to prevent reuse of ID.
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index fee7304..dcf6169 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -120,7 +120,7 @@ config TIFM_CORE
- 	  cards are supported via 'MMC/SD Card support: TI Flash Media MMC/SD
- 	  Interface support (MMC_TIFM_SD)'.
+There is several reasons to develop this.
+
+	- While trying to implement hierarchy in memory cgroup, we have to
+	  implement "walk under hierarchy" code.
+	  Now it's consists of cgroup_lock and tree up-down code. Because
+	  Because memory cgroup have to do hierarchy walk in other places,
+	  intelligent processing, we'll reuse the "walk" code.
+	  But taking "cgroup_lock" in walking tree can cause deadlocks.
+	  Easier way is helpful.
+
+ 	- SwapCgroup uses array of "pointer" to record the owner of swaps.
+	  By ID, we can reduce this to "short" or "int". This means ID is 
+	  useful for reducing space consumption by pointer if the access cost
+	  is not problem.
+	  (I hear bio-cgroup will use the same kind of...)
+
+Example) OOM-Killer under hierarchy.
+	do {
+		rcu_read_lock();
+		next = cgroup_get_next(id, root, nextid);
+		/* check sanity of next here */
+		css_tryget();
+		rcu_read_unlock();
+		if (!next)
+			break;
+		cgroup_scan_tasks(select_bad_process?);
+		/* record score here...*/
+	} while (1);
+
+
+Characteristics: 
+	- Each cgroup get new ID when created.
+	- cgroup ID contains "ID" and "Depth in tree" and hierarchy code.
+	- hierarchy code is array of IDs of ancestors.
+	- ID 0 is UNUSED ID.
+
+Consideration:
+	- I'd like to use  "short" to cgroup_id for saving space...
+	- MAX_DEPTH is small ? (making this depend on boot option is easy.)
+TODO:
+	- Documentation.
+
+Changelog (v1) -> (v2):
+	- Design change: show only ID(integer) to outside of cgroup.c
+	- moved cgroup ID definition from include/ to kernel/cgroup.c
+	- struct cgroup_id is freed by RCU.
+	- changed interface from pointer to "int"
+	- kill_sb() is handled. 
+	- ID 0 as unused ID.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ include/linux/cgroup.h |   28 ++++-
+ include/linux/idr.h    |    1 
+ kernel/cgroup.c        |  272 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ lib/idr.c              |   46 ++++++++
+ 4 files changed, 342 insertions(+), 5 deletions(-)
+
+Index: mmotm-2.6.28-Nov29/include/linux/cgroup.h
+===================================================================
+--- mmotm-2.6.28-Nov29.orig/include/linux/cgroup.h
++++ mmotm-2.6.28-Nov29/include/linux/cgroup.h
+@@ -22,6 +22,7 @@ struct cgroupfs_root;
+ struct cgroup_subsys;
+ struct inode;
+ struct cgroup;
++struct cgroup_id;
  
--          To compile this driver as a module, choose M here: the module will
-+	  To compile this driver as a module, choose M here: the module will
- 	  be called tifm_core.
+ extern int cgroup_init_early(void);
+ extern int cgroup_init(void);
+@@ -63,6 +64,12 @@ struct cgroup_subsys_state {
+ 	unsigned long flags;
+ };
  
- config TIFM_7XX1
-@@ -133,11 +133,11 @@ config TIFM_7XX1
- 	  To make actual use of the device, you will have to select some
- 	  flash card format drivers, as outlined in the TIFM_CORE Help.
++/*
++ * Cgroup ID for *internal* identification and lookup. For user-land,"path"
++ * of cgroup works well.
++ */
++#define MAX_CGROUP_DEPTH	(10)
++
+ /* bits in struct cgroup_subsys_state flags field */
+ enum {
+ 	CSS_ROOT, /* This CSS is the root of the subsystem */
+@@ -162,6 +169,9 @@ struct cgroup {
+ 	int pids_use_count;
+ 	/* Length of the current tasks_pids array */
+ 	int pids_length;
++
++	/* Cgroup ID */
++	struct cgroup_id	*id;
+ };
  
--          To compile this driver as a module, choose M here: the module will
-+	  To compile this driver as a module, choose M here: the module will
- 	  be called tifm_7xx1.
- 
- config ACER_WMI
--        tristate "Acer WMI Laptop Extras (EXPERIMENTAL)"
-+	tristate "Acer WMI Laptop Extras (EXPERIMENTAL)"
- 	depends on X86
- 	depends on EXPERIMENTAL
- 	depends on ACPI
-@@ -159,14 +159,14 @@ config ACER_WMI
- 	  here.
- 
- config ASUS_LAPTOP
--        tristate "Asus Laptop Extras (EXPERIMENTAL)"
--        depends on X86
--        depends on ACPI
-+	tristate "Asus Laptop Extras (EXPERIMENTAL)"
-+	depends on X86
-+	depends on ACPI
- 	depends on EXPERIMENTAL && !ACPI_ASUS
- 	depends on LEDS_CLASS
- 	depends on NEW_LEDS
- 	depends on BACKLIGHT_CLASS_DEVICE
--        ---help---
-+	---help---
- 	  This is the new Linux driver for Asus laptops. It may also support some
- 	  MEDION, JVC or VICTOR laptops. It makes all the extra buttons generate
- 	  standard ACPI events that go through /proc/acpi/events. It also adds
-@@ -179,12 +179,12 @@ config ASUS_LAPTOP
- 	  If you have an ACPI-compatible ASUS laptop, say Y or M here.
- 
- config FUJITSU_LAPTOP
--        tristate "Fujitsu Laptop Extras"
--        depends on X86
--        depends on ACPI
-+	tristate "Fujitsu Laptop Extras"
-+	depends on X86
-+	depends on ACPI
- 	depends on INPUT
--        depends on BACKLIGHT_CLASS_DEVICE
--        ---help---
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	---help---
- 	  This is a driver for laptops built by Fujitsu:
- 
- 	    * P2xxx/P5xxx/S6xxx/S7xxx series Lifebooks
-@@ -221,11 +221,11 @@ config HP_WMI
-        depends on INPUT
-        depends on RFKILL
-        help
--         Say Y here if you want to support WMI-based hotkeys on HP laptops and
-+	 Say Y here if you want to support WMI-based hotkeys on HP laptops and
- 	 to read data from WMI such as docking or ambient light sensor state.
- 
--         To compile this driver as a module, choose M here: the module will
--         be called hp-wmi.
-+	 To compile this driver as a module, choose M here: the module will
-+	 be called hp-wmi.
- 
- config ICS932S401
- 	tristate "Integrated Circuits ICS932S401"
-@@ -238,11 +238,11 @@ config ICS932S401
- 	  will be called ics932s401.
- 
- config MSI_LAPTOP
--        tristate "MSI Laptop Extras"
--        depends on X86
--        depends on ACPI
--        depends on BACKLIGHT_CLASS_DEVICE
--        ---help---
-+	tristate "MSI Laptop Extras"
-+	depends on X86
-+	depends on ACPI
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	---help---
- 	  This is a driver for laptops built by MSI (MICRO-STAR
- 	  INTERNATIONAL):
- 
-@@ -259,7 +259,7 @@ config MSI_LAPTOP
- config PANASONIC_LAPTOP
- 	tristate "Panasonic Laptop Extras"
- 	depends on X86 && INPUT && ACPI
--        depends on BACKLIGHT_CLASS_DEVICE
-+	depends on BACKLIGHT_CLASS_DEVICE
- 	---help---
- 	  This driver adds support for access to backlight control and hotkeys
- 	  on Panasonic Let's Note laptops.
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 817f7f5..bcde73b 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -1,9 +1,6 @@
- #
- # Makefile for misc devices that really don't fit anywhere else.
- #
--obj- := misc.o	# Dummy rule to force built-in.o to be made
+ /* A css_set is a structure holding pointers to a set of
+@@ -346,7 +356,6 @@ struct cgroup_subsys {
+ 			struct cgroup *cgrp);
+ 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
 -
--obj-$(CONFIG_IBM_ASM)		+= ibmasm/
- obj-$(CONFIG_HDPU_FEATURES)	+= hdpuftrs/
- obj-$(CONFIG_ASUS_LAPTOP)	+= asus-laptop.o
- obj-$(CONFIG_EEEPC_LAPTOP)	+= eeepc-laptop.o
--- 
-1.5.6.5
-
+ 	int subsys_id;
+ 	int active;
+ 	int disabled;
+@@ -410,6 +419,23 @@ void cgroup_iter_end(struct cgroup *cgrp
+ int cgroup_scan_tasks(struct cgroup_scanner *scan);
+ int cgroup_attach_task(struct cgroup *, struct task_struct *);
+ 
++/*
++ * For supporting cgroup lookup and hierarchy management.
++ * Giving Flat view of cgroup hierarchy rather than tree.
++ */
++/* An interface for usual lookup */
++struct cgroup *cgroup_lookup(int id);
++/* get next cgroup under tree (for scan) */
++struct cgroup *
++cgroup_get_next(int id, int rootid, int depth, int *foundid);
++/* get id and depth of cgroup */
++int cgroup_id(struct cgroup *cgroup);
++int cgroup_depth(struct cgroup *cgroup);
++/* For delayed freeing of IDs */
++void cgroup_id_getref(int id);
++void cgroup_id_putref(int id);
++bool cgroup_id_is_obsolete(int id);
++
+ #else /* !CONFIG_CGROUPS */
+ 
+ static inline int cgroup_init_early(void) { return 0; }
+Index: mmotm-2.6.28-Nov29/kernel/cgroup.c
+===================================================================
+--- mmotm-2.6.28-Nov29.orig/kernel/cgroup.c
++++ mmotm-2.6.28-Nov29/kernel/cgroup.c
+@@ -46,7 +46,7 @@
+ #include <linux/cgroupstats.h>
+ #include <linux/hash.h>
+ #include <linux/namei.h>
+-
++#include <linux/idr.h>
+ #include <asm/atomic.h>
+ 
+ static DEFINE_MUTEX(cgroup_mutex);
+@@ -545,6 +545,253 @@ void cgroup_unlock(void)
+ }
+ 
+ /*
++ * CGROUP ID
++ */
++struct cgroup_id {
++	struct cgroup *myself;
++	unsigned int  id;
++	unsigned int  depth;
++	atomic_t      refcnt;
++	struct rcu_head rcu_head;
++	unsigned int  hierarchy_code[MAX_CGROUP_DEPTH];
++};
++
++void free_cgroupid_cb(struct rcu_head *head)
++{
++	struct cgroup_id *id;
++
++	id = container_of(head, struct cgroup_id, rcu_head);
++	kfree(id);
++}
++
++void free_cgroupid(struct cgroup_id *id)
++{
++	call_rcu(&id->rcu_head, free_cgroupid_cb);
++}
++
++/*
++ * Cgroup ID and lookup functions.
++ * cgid->myself pointer is safe under rcu_read_lock() because d_put() of
++ * cgroup, which finally frees cgroup pointer, uses rcu_synchronize().
++ */
++static DEFINE_IDR(cgroup_idr);
++DEFINE_SPINLOCK(cgroup_idr_lock);
++
++static int cgrouproot_setup_idr(struct cgroupfs_root *root)
++{
++	struct cgroup_id *newid;
++	int err = -ENOMEM;
++	int myid;
++
++	newid = kzalloc(sizeof(*newid), GFP_KERNEL);
++	if (!newid)
++		goto out;
++	if (!idr_pre_get(&cgroup_idr, GFP_KERNEL))
++		goto free_out;
++
++	spin_lock_irq(&cgroup_idr_lock);
++	err = idr_get_new_above(&cgroup_idr, newid, 1, &myid);
++	spin_unlock_irq(&cgroup_idr_lock);
++
++	/* This one is new idr....*/
++	BUG_ON(err);
++	newid->id = myid;
++	newid->depth = 0;
++	newid->hierarchy_code[0] = myid;
++	atomic_set(&newid->refcnt, 1);
++	rcu_assign_pointer(newid->myself, &root->top_cgroup);
++	root->top_cgroup.id = newid;
++	return 0;
++
++free_out:
++	kfree(newid);
++out:
++	return err;
++}
++
++/*
++ * should be called while "cgrp" is valid.
++ */
++int cgroup_id(struct cgroup *cgrp)
++{
++	if (cgrp->id)
++		return cgrp->id->id;
++	return 0;
++}
++
++int cgroup_depth(struct cgroup *cgrp)
++{
++	if (cgrp->id)
++		return cgrp->id->depth;
++	return 0;
++}
++
++static int cgroup_prepare_id(struct cgroup *parent, struct cgroup_id **id)
++{
++	struct cgroup_id *newid;
++	int myid, error;
++
++	/* check depth */
++	if (parent->id->depth + 1 >= MAX_CGROUP_DEPTH)
++		return -ENOSPC;
++	newid = kzalloc(sizeof(*newid), GFP_KERNEL);
++	if (!newid)
++		return -ENOMEM;
++	/* get id */
++	if (unlikely(!idr_pre_get(&cgroup_idr, GFP_KERNEL))) {
++		error = -ENOMEM;
++		goto err_out;
++	}
++	spin_lock_irq(&cgroup_idr_lock);
++	/* Don't use 0 */
++	error = idr_get_new_above(&cgroup_idr, newid, 1, &myid);
++	spin_unlock_irq(&cgroup_idr_lock);
++	if (error)
++		goto err_out;
++
++	newid->id = myid;
++	atomic_set(&newid->refcnt, 1);
++	*id = newid;
++	return 0;
++err_out:
++	kfree(newid);
++	return error;
++}
++
++
++static void cgroup_id_attach(struct cgroup_id *cgid,
++			     struct cgroup *cg, struct cgroup *parent)
++{
++	struct cgroup_id *parent_id = parent->id;
++	int i;
++
++	cgid->depth = parent_id->depth + 1;
++	/* Inherit hierarchy code from parent */
++	for (i = 0; i < cgid->depth; i++) {
++		cgid->hierarchy_code[i] =
++			parent_id->hierarchy_code[i];
++		cgid->hierarchy_code[cgid->depth] = cgid->id;
++	}
++	rcu_assign_pointer(cgid->myself, cg);
++	cg->id = cgid;
++
++	return;
++}
++static void cgroup_id_put(int id)
++{
++	struct cgroup_id *cgid;
++	unsigned long flags;
++
++	rcu_read_lock();
++	cgid = idr_find(&cgroup_idr, id);
++	BUG_ON(!cgid);
++	if (atomic_dec_and_test(&cgid->refcnt)) {
++		spin_lock_irqsave(&cgroup_idr_lock, flags);
++		idr_remove(&cgroup_idr, cgid->id);
++		spin_unlock_irq(&cgroup_idr_lock);
++		free_cgroupid(cgid);
++	}
++	rcu_read_unlock();
++}
++
++static void cgroup_id_detach(struct cgroup *cg)
++{
++	rcu_assign_pointer(cg->id->myself, NULL);
++	cgroup_id_put(cg->id->id);
++}
++
++void cgroup_id_getref(int id)
++{
++	struct cgroup_id *cgid;
++
++	rcu_read_lock();
++	cgid = idr_find(&cgroup_idr, id);
++	if (cgid)
++		atomic_inc(&cgid->refcnt);
++	rcu_read_unlock();
++}
++
++void cgroup_id_putref(int id)
++{
++	cgroup_id_put(id);
++}
++/**
++ * cgroup_lookup - lookup cgroup by id
++ * @id: the id of cgroup to be looked up
++ *
++ * Returns pointer to cgroup if there is valid cgroup with id, NULL if not.
++ * Should be called under rcu_read_lock() or cgroup_lock.
++ * If subsys is not used, returns NULL.
++ */
++
++struct cgroup *cgroup_lookup(int id)
++{
++	struct cgroup *cgrp = NULL;
++	struct cgroup_id *cgid = NULL;
++
++	rcu_read_lock();
++	cgid = idr_find(&cgroup_idr, id);
++
++	if (unlikely(!cgid))
++		goto out;
++
++	cgrp = rcu_dereference(cgid->myself);
++	if (unlikely(!cgrp || cgroup_is_removed(cgrp)))
++		cgrp = NULL;
++out:
++	rcu_read_unlock();
++	return cgrp;
++}
++
++/**
++ * cgroup_get_next - lookup next cgroup under specified hierarchy.
++ * @id: current position of iteration.
++ * @rootid: search tree under this.
++ * @depth: depth of root id.
++ * @foundid: position of found object.
++ *
++ * Search next cgroup under the specified hierarchy. If "cur" is NULL,
++ * start from root cgroup. Called under rcu_read_lock() or cgroup_lock()
++ * is necessary (to access a found cgroup.).
++ * If subsys is not used, returns NULL. If used, it's guaranteed that there is
++ * a used cgroup ID (root).
++ */
++struct cgroup *
++cgroup_get_next(int id, int rootid, int depth, int *foundid)
++{
++	struct cgroup *ret = NULL;
++	struct cgroup_id *tmp;
++	int tmpid;
++	unsigned long flags;
++
++	rcu_read_lock();
++	tmpid = id;
++	while (1) {
++		/* scan next entry from bitmap(tree) */
++		spin_lock_irqsave(&cgroup_idr_lock, flags);
++		tmp = idr_get_next(&cgroup_idr, &tmpid);
++		spin_unlock_irqrestore(&cgroup_idr_lock, flags);
++
++		if (!tmp) {
++			ret = NULL;
++			break;
++		}
++
++		if (tmp->hierarchy_code[depth] == rootid) {
++			ret = rcu_dereference(tmp->myself);
++			/* Sanity check and check hierarchy */
++			if (ret && !cgroup_is_removed(ret))
++				break;
++		}
++		tmpid = tmpid + 1;
++	}
++
++	rcu_read_unlock();
++	*foundid = tmpid;
++	return ret;
++}
++
++/*
+  * A couple of forward declarations required, due to cyclic reference loop:
+  * cgroup_mkdir -> cgroup_create -> cgroup_populate_dir ->
+  * cgroup_add_file -> cgroup_create_file -> cgroup_dir_inode_operations
+@@ -1039,6 +1286,13 @@ static int cgroup_get_sb(struct file_sys
+ 			mutex_unlock(&inode->i_mutex);
+ 			goto drop_new_super;
+ 		}
++		/* Setup Cgroup ID for this fs */
++		ret = cgrouproot_setup_idr(root);
++		if (ret) {
++			mutex_unlock(&cgroup_mutex);
++			mutex_unlock(&inode->i_mutex);
++			goto drop_new_super;
++		}
+ 
+ 		ret = rebind_subsystems(root, root->subsys_bits);
+ 		if (ret == -EBUSY) {
+@@ -1125,9 +1379,10 @@ static void cgroup_kill_sb(struct super_
+ 
+ 	list_del(&root->root_list);
+ 	root_count--;
+-
++	if (root->top_cgroup.id)
++		cgroup_id_detach(&root->top_cgroup);
+ 	mutex_unlock(&cgroup_mutex);
+-
++	synchronize_rcu();
+ 	kfree(root);
+ 	kill_litter_super(sb);
+ }
+@@ -2360,11 +2615,18 @@ static long cgroup_create(struct cgroup 
+ 	int err = 0;
+ 	struct cgroup_subsys *ss;
+ 	struct super_block *sb = root->sb;
++	struct cgroup_id *cgid = NULL;
+ 
+ 	cgrp = kzalloc(sizeof(*cgrp), GFP_KERNEL);
+ 	if (!cgrp)
+ 		return -ENOMEM;
+ 
++	err = cgroup_prepare_id(parent, &cgid);
++	if (err) {
++		kfree(cgrp);
++		return err;
++	}
++
+ 	/* Grab a reference on the superblock so the hierarchy doesn't
+ 	 * get deleted on unmount if there are child cgroups.  This
+ 	 * can be done outside cgroup_mutex, since the sb can't
+@@ -2404,7 +2666,7 @@ static long cgroup_create(struct cgroup 
+ 
+ 	err = cgroup_populate_dir(cgrp);
+ 	/* If err < 0, we have a half-filled directory - oh well ;) */
+-
++	cgroup_id_attach(cgid, cgrp, parent);
+ 	mutex_unlock(&cgroup_mutex);
+ 	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+ 
+@@ -2512,6 +2774,8 @@ static int cgroup_rmdir(struct inode *un
+ 		return -EBUSY;
+ 	}
+ 
++	cgroup_id_detach(cgrp);
++
+ 	spin_lock(&release_list_lock);
+ 	set_bit(CGRP_REMOVED, &cgrp->flags);
+ 
+Index: mmotm-2.6.28-Nov29/include/linux/idr.h
+===================================================================
+--- mmotm-2.6.28-Nov29.orig/include/linux/idr.h
++++ mmotm-2.6.28-Nov29/include/linux/idr.h
+@@ -106,6 +106,7 @@ int idr_get_new(struct idr *idp, void *p
+ int idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
+ int idr_for_each(struct idr *idp,
+ 		 int (*fn)(int id, void *p, void *data), void *data);
++void *idr_get_next(struct idr *idp, int *nextid);
+ void *idr_replace(struct idr *idp, void *ptr, int id);
+ void idr_remove(struct idr *idp, int id);
+ void idr_remove_all(struct idr *idp);
+Index: mmotm-2.6.28-Nov29/lib/idr.c
+===================================================================
+--- mmotm-2.6.28-Nov29.orig/lib/idr.c
++++ mmotm-2.6.28-Nov29/lib/idr.c
+@@ -573,6 +573,52 @@ int idr_for_each(struct idr *idp,
+ EXPORT_SYMBOL(idr_for_each);
+ 
+ /**
++ * idr_get_next - lookup next object of id to given id.
++ * @idp: idr handle
++ * @id:  pointer to lookup key
++ *
++ * Returns pointer to registered object with id, which is next number to
++ * given id.
++ */
++
++void *idr_get_next(struct idr *idp, int *nextidp)
++{
++	struct idr_layer *p, *pa[MAX_LEVEL];
++	struct idr_layer **paa = &pa[0];
++	int id = *nextidp;
++	int n, max;
++
++	/* find first ent */
++	n = idp->layers * IDR_BITS;
++	max = 1 << n;
++	p = rcu_dereference(idp->top);
++	if (!p)
++		return NULL;
++
++	while (id < max) {
++		while (n > 0 && p) {
++			n -= IDR_BITS;
++			*paa++ = p;
++			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
++		}
++
++		if (p) {
++			*nextidp = id;
++			return p;
++		}
++
++		id += 1 << n;
++		while (n < fls(id)) {
++			n += IDR_BITS;
++			p = *--paa;
++		}
++	}
++	return NULL;
++}
++
++
++
++/**
+  * idr_replace - replace pointer for given id
+  * @idp: idr handle
+  * @ptr: pointer you want associated with the id
 
