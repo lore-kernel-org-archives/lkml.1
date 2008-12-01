@@ -1,104 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYLAVmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYLAVot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYLAVmQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 16:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYLAVl7
+	id S1753125AbYLAVot (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 16:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYLAVok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 16:41:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39818 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751324AbYLAVl6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 16:41:58 -0500
-Date: Mon, 1 Dec 2008 13:41:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: torvalds@linux-foundation.org, riel@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch v2] vmscan: protect zone rotation stats by lru lock
-Message-Id: <20081201134112.24c647ff.akpm@linux-foundation.org>
-In-Reply-To: <E1L6y5T-0003q3-M3@cmpxchg.org>
-References: <E1L6y5T-0003q3-M3@cmpxchg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 16:44:40 -0500
+Received: from lixom.net ([66.141.50.11]:48446 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750980AbYLAVok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 16:44:40 -0500
+Date: Mon, 1 Dec 2008 15:57:31 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Julia Lawall <julia@diku.dk>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] drivers/mtd/nand/pasemi_nand.c: Add missing pci_dev_put
+Message-ID: <20081201215731.GA23768@lixom.net>
+References: <Pine.LNX.4.64.0811271319070.15160@pc-004.diku.dk> <20081201174327.GA21274@lixom.net> <Pine.LNX.4.64.0812011838440.11341@pc-004.diku.dk> <20081201180812.GA21646@lixom.net> <Pine.LNX.4.64.0812012109480.1541@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812012109480.1541@ask.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 01 Dec 2008 03:00:35 +0100
-Johannes Weiner <hannes@saeurebad.de> wrote:
-
-> The zone's rotation statistics must not be accessed without the
-> corresponding LRU lock held.  Fix an unprotected write in
-> shrink_active_list().
+On Mon, Dec 01, 2008 at 09:11:09PM +0100, Julia Lawall wrote:
+> On Mon, 1 Dec 2008, Olof Johansson wrote:
 > 
-
-I don't think it really matters.  It's quite common in that code to do
-unlocked, racy update to statistics such as this.  Because on those
-rare occasions where a race does happen, there's a small glitch in the
-reclaim logic which nobody will notice anyway.
-
-Of course, this does need to be done with some care, to ensure the
-glitch _will_ be small.  If such a race would cause the scanner to go
-off and reclaim 2^32 pages, well, that's not so good.
-
+> > On Mon, Dec 01, 2008 at 06:39:01PM +0100, Julia Lawall wrote:
+> > > On Mon, 1 Dec 2008, Olof Johansson wrote:
+> > > 
+> > > > On Thu, Nov 27, 2008 at 01:19:49PM +0100, Julia Lawall wrote:
+> > > > > From: Julia Lawall <julia@diku.dk>
+> > > > > 
+> > > > > pci_get_device increments a reference count that should be decremented
+> > > > > using pci_dev_put.  I have thus added an extra label in the error handling
+> > > > > code to do this.  I don't know, however, whether there should be a
+> > > > > pci_dev_put before the return 0 as well.
+> > > > > 
+> > > > [...]
+> > > > 
+> > > > > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > > > 
+> > > > Acked-by: Olof Johansson <olof@lixom.net>
+> > > 
+> > > Do you know the answer about the return 0?
+> > 
+> > Teaches me to read the patch description twice.
+> > 
+> > Either there or in pasemi_nand_remove(), doesn't matter much to me. Doing
+> > it before the return 0 is the smaller change.
 > 
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1243,32 +1243,32 @@ static void shrink_active_list(unsigned 
->  		/* page_referenced clears PageReferenced */
->  		if (page_mapping_inuse(page) &&
->  		    page_referenced(page, 0, sc->mem_cgroup))
->  			pgmoved++;
->  
->  		list_add(&page->lru, &l_inactive);
->  	}
->  
-> +	spin_lock_irq(&zone->lru_lock);
->  	/*
->  	 * Count referenced pages from currently used mappings as
->  	 * rotated, even though they are moved to the inactive list.
->  	 * This helps balance scan pressure between file and anonymous
->  	 * pages in get_scan_ratio.
->  	 */
->  	zone->recent_rotated[!!file] += pgmoved;
->  
->  	/*
->  	 * Move the pages to the [file or anon] inactive list.
->  	 */
->  	pagevec_init(&pvec, 1);
->  
->  	pgmoved = 0;
->  	lru = LRU_BASE + file * LRU_FILE;
-> -	spin_lock_irq(&zone->lru_lock);
+> Actually, could pci_dev_put(pdev) be placed right after:
+> 
+> lpcctl = pci_resource_start(pdev, 0);
+> 
+> Then there would only be one, and the rest of the code could go back to 
+> its original form.
 
-We've unnecessarily moved a pile of other things inside the locked
-region as well, needlessly extending the lock hold times.
+Yep, even easier.
 
->  	while (!list_empty(&l_inactive)) {
->  		page = lru_to_page(&l_inactive);
->  		prefetchw_prev_lru_page(page, &l_inactive, flags);
->  		VM_BUG_ON(PageLRU(page));
->  		SetPageLRU(page);
->  		VM_BUG_ON(!PageActive(page));
->  		ClearPageActive(page);
->  
+Thanks for catching this.
 
-You'll note that the code which _uses_ these values does so without
-holding the lock.  So get_scan_ratio() sees incoherent values of
-recent_scanned[0] and recent_scanned[1].  As is common in this code,
-that is OK and deliberate.
 
-It's also racy here:
-
-	if (unlikely(zone->recent_scanned[0] > anon / 4)) {
-		spin_lock_irq(&zone->lru_lock);
-		zone->recent_scanned[0] /= 2;
-		zone->recent_rotated[0] /= 2;
-		spin_unlock_irq(&zone->lru_lock);
-	}
-
-failing to recheck the comparison after taking the lock..
+-Olof
