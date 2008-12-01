@@ -1,125 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbYLAIwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYLAIzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752862AbYLAIwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 03:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYLAIwJ
+	id S1752919AbYLAIzh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 03:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYLAIz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 03:52:09 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48916 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbYLAIwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 03:52:08 -0500
-Date: Mon, 1 Dec 2008 09:52:03 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-ID: <20081201085203.GB4926@wotan.suse.de>
-References: <20081127120330.GM28285@wotan.suse.de> <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de> <492E97FA.5000804@gmail.com> <20081127130525.GO28285@wotan.suse.de> <492E9C3C.9050507@gmail.com> <20081127131215.GQ28285@wotan.suse.de> <492E9F42.6010808@gmail.com> <20081128121015.GC13786@wotan.suse.de> <4932EBAA.60808@gmail.com>
+	Mon, 1 Dec 2008 03:55:29 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:55244 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbYLAIz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 03:55:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=cYCVIxrTsYzNcFZs6MyjG6C2/ZagxXsh0VKhAcQvxu38/xlHP2MemLCp6Dq/GOXwat
+         yscbmRsy3rVI3JjPgrPDoph3pSigmE9wbY+bA0nvZlRFhtma3CfyeFvXK5Y+n+ceHyAL
+         bKekrWoU5ZFDa2o5ovhsa+EYO+4HDZmOkQPvM=
+Subject: Re: [PATCH-mm 1/8] ntfs: remove private wrapper around endian
+ helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <72F61C56-4613-4369-9319-09A0A8C90F7C@cam.ac.uk>
+References: <1227733970.5511.123.camel@brick>
+	 <B9FA83C0-9993-44BB-86AA-FA8B97A2D6A2@cam.ac.uk>
+	 <1227814545.5511.143.camel@brick>
+	 <72F61C56-4613-4369-9319-09A0A8C90F7C@cam.ac.uk>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 00:55:26 -0800
+Message-Id: <1228121726.5482.5.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4932EBAA.60808@gmail.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 30, 2008 at 09:38:18PM +0200, Török Edwin wrote:
-> On 2008-11-28 14:10, Nick Piggin wrote:
-> > This is what I have.
-> >
-> > It does two things. Firstly, it switches x86-64 over to use the xadd
-> > algorithm rather than the spinlock algorithm. This is actually significant
-> > in high contention situations, because the spinlock algorithm doesn't allow
-> > concurrent operations on the lock while the queue of waiters is being
-> > manipulated.
-> >
-> > Secondly, it moves wakeups out from underneath the waiter queue lock. This
-> > is more significant on bigger machines where wakeup latency is worse and/or
-> > runqueue locks are very heavily contended.
-> >
-> > Now both these changes are going to help *mainly* for the case when there are
-> > a significant number of readers and writers, I think. So your write-heavy
-> > workload may not win anything. I noticed some speedup a long time ago on
-> > some weird java (volanomark) workload.
-> 
+On Mon, 2008-12-01 at 08:50 +0000, Anton Altaparmakov wrote:
 > Hi,
 > 
-> I just tested your patch on top of tip/master, and my testprogram has
-> segfaulted :(
-> It is either something wrong in tip/master or the patch, or my program.
-> This is the first time this testprogram segfaults, and it doesn't have a
-> reason to segfault there.
+> On 27 Nov 2008, at 19:35, Harvey Harrison wrote:
+> > On Thu, 2008-11-27 at 08:22 +0000, Anton Altaparmakov wrote:
+> >> On 26 Nov 2008, at 21:12, Harvey Harrison wrote:
+> >>> The base versions handle constant folding just fine.
+> >>> Done with sed other than the mft.c and inode.c one-liners.
+> >>
+> >> Have you checked the compiler output?  And on all architectures?  And
+> >> on all gcc versions?
+> >
+> > Yes I've checked the compiler output for the new byteorder helpers
+> > for gcc 3.4, 4, 4.2 on x86.
+> >
+> > Notice this depends on the byteorder bits in -mm.  The failure of
+> > the old bits to properly compile-time swap I've only seen at -O0,
+> > which the new bits do properly.  If you can cite a particular
+> > version/arch that you know of where the bug arose, please let me
+> > know.
 > 
-> 
-> [  140.624155] scalability[4995]: segfault at 7f9ce137f000 ip
-> 0000000000401a62 sp 00000000454950a0 error 4 in scalability[400000+3000]
-> [  401.640738] scalability[5398]: segfault at 7fdbffba3000 ip
-> 0000000000401a62 sp 00000000423d70a0 error 4 in scalability[400000+3000]
-> 
-> Here is the relevant portion, at 401a62 I read from the mapping:
-> 
-> static void mmap_worker_fn(int fd, off_t len)
-> {
->     char *data = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
->   401a4f:    48 89 c7                 mov    %rax,%rdi
->     if(data == MAP_FAILED) {
->   401a52:    74 36                    je     401a8a <mmap_worker_fn+0x5a>
->         perror("mmap");
->         abort();
->   401a54:    31 d2                    xor    %edx,%edx
->   401a56:    31 c9                    xor    %ecx,%ecx
-> static pthread_mutex_t thrtime_mtx = PTHREAD_MUTEX_INITIALIZER;
-> 
-> static size_t execute(const char *data, size_t len)
-> {
->     size_t sum = 0, i;
->     for(i=0;i<len;++i)
->   401a58:    48 85 db                 test   %rbx,%rbx
->   401a5b:    74 28                    je     401a85 <mmap_worker_fn+0x55>
->   401a5d:    0f 1f 00                 nopl   (%rax)
->         if(data[i] == 'd')
->             ++sum;
->   401a60:    31 c0                    xor    %eax,%eax
->   401a62:    80 3c 17 64              cmpb   $0x64,(%rdi,%rdx,1)
-> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> This simply reads from the mapping
-> 
->   401a66:    0f 94 c0                 sete   %al
-> static pthread_mutex_t thrtime_mtx = PTHREAD_MUTEX_INITIALIZER;
-> 
-> Steps to reproduce:
-> # sync; echo 3 >/proc/sys/vm/drop_caches; sync
-> # echo 0 >/proc/lock_stat
-> $ sudo ./scalability 16 /usr/bin/
-> ... prints out results for read, and while running mmap_worker ...
-> ... a message about segmentation fault ....
-> 
-> The testprogram is available here:
-> http://edwintorok.googlepages.com/tst.tar.gz
-> 
-> My .config:
-> http://edwintorok.googlepages.com/config
-> 
-> Can you reproduce the crash on your box?
-> Can I help debugging the problem?
+> Ah, I failed to notice this required some new byteorder code!  Sorry.
 
-Hi Edwin,
+No worries, if you do happen to recall what compilers or arches you've
+seen the constant folding fail to happen, I'd still like to know just
+what landmines are out there ;-)  If it was an -O0 build I'm comfortable
+the new version won't suffer from the same problem, otherwise I'm all
+ears.
 
-Drat, sorry. I haven't been able to do very good testing because I'm
-overseas away from my normal test systems :P
+> >> Also you are breaking sparse checking with this patch as you remove
+> >> some of the necessary endianness conversions (e.g. your one liner in
+> >> mft.c which causes us to apply a binary 'not' operator on a little
+> >> endian which sparse complains about - in fact that is the reason the
+> >> endianness conversions are in there in the first place - I added them
+> >> because sparse was complaining about them).
+> >
+> > No, sparse does not complain about it.  Bitwise operations are just
+> > fine on types such as le16 etc.  Try running sparse again with
+> > my changes, there are no new warnings.
+> 
+> Interesting.  Sparse must have grown up then.  It used to complain  
+> (although I always thought it was complaining incorrectly given that  
+> binary bit operations are endianness agnostic).
+> 
 
-The bug is quite likely to be in my patch I sent you by the sound. I
-will definitely try to have you a working patch by next week, if I'm
-unable to reproduce the problem here.
+I imagine that must be the case, but I run sparse fairly regularly, so
+I'd have noticed ;-)
 
-Thanks,
-Nick
+
+Cheers,
+
+Harvey
+
