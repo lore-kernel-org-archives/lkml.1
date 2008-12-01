@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYLACBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYLACCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbYLACBA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 21:01:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYLACAw
+	id S1756740AbYLACCM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 21:02:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbYLACBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 21:00:52 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49090 "EHLO
+	Sun, 30 Nov 2008 21:01:55 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49147 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752883AbYLACAw (ORCPT
+	with ESMTP id S1752883AbYLACBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 21:00:52 -0500
-Date: Mon, 1 Dec 2008 11:00:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+	Sun, 30 Nov 2008 21:01:54 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Zhang Xiantao <xiantao.zhang@intel.com>, Avi Kivity <avi@qumranet.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 00/09] memcg: split-lru feature for memcg
-Message-Id: <20081201110000.bcdfccff.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081130193502.8145.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [mmotm] fix arch/ia64/kernel/iosapic.c warning
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081201105410.8179.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Mon,  1 Dec 2008 11:01:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Nov 2008 19:54:08 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> Recently, SplitLRU patch series dramatically improvement VM reclaim
-> logic.
-> 
-> it have following improvement.
->  (1) splite lru per page type
->  (2) introduce inactive/active anon balancing logic
->  (3) introduce anon/file balancing logic
-> 
-> Unfortunately, the improvement of memcgroup reclaim is incomplete.
-> Currently, it only has (1), but doesn't have (2) and (3).
-> 
-> 
-> This patch introduce (2) and (3) improvements to memcgroup.
-> this implementation is straightforward porting from global reclaim.
-> 
-> Therefere
->   - code is simple.
->   - memcg reclaim become efficiency as global reclaim.
->   - the logic is the same as global lru.
->     then, memcg reclaim debugging become easily.
-> 
-> 
-> this patch series has three part
-> 
-> [part 1: inactive-anon vs active-anon balancing improvement]
->   [01/09] inactive_anon_is_low() move to vmscan.c
->   [02/09] memcg: make inactive_anon_is_low()
-> 
-> [part 2: anon vs file balancing improvement]
->   [03/09] introduce zone_reclaim struct
->   [04/09] memcg: make zone_reclaim_stat
->   [05/09] make zone_nr_pages() helper function
->   [06/09] make get_scan_ratio() to memcg awareness
->   [07/09] memcg: remove mem_cgroup_calc_reclaim()
-> 
-> [part 3: add split-lru related statics field to /cgroup/memory.stat]
->   [08/09] memcg: show inactive_ratio
->   [09/09] memcg: show reclaim stat
-> 
-> patch against: mmotm 29 Nov 2008
-> 
+patch against: mmotm 29 Nov 2008
+applied after: linux-next.patch
+==
+fix following warnings.
 
-Hi, kosaki. thank you for your work.
+arch/ia64/kernel/iosapic.c:708: warning: passing argument 2 of '__cpu_clear' from incompatible pointer type
+arch/ia64/kernel/iosapic.c:711: warning: passing argument 1 of '__cpus_weight' from incompatible pointer type
+arch/ia64/kernel/iosapic.c:719: warning: passing argument 1 of '__first_cpu' from incompatible pointer type
+arch/ia64/kernel/iosapic.c:720: warning: passing argument 2 of '__next_cpu' from incompatible pointer type
 
-My request is
- . split global-lru part and memcg part explicitly.
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Zhang Xiantao <xiantao.zhang@intel.com>
+CC: Avi Kivity <avi@qumranet.com>
+CC: "Luck, Tony" <tony.luck@intel.com>
+---
+ arch/ia64/kernel/iosapic.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+Index: b/arch/ia64/kernel/iosapic.c
+===================================================================
+--- a/arch/ia64/kernel/iosapic.c
++++ b/arch/ia64/kernel/iosapic.c
+@@ -695,7 +695,7 @@ get_target_cpu (unsigned int gsi, int ir
+ #ifdef CONFIG_NUMA
+ 	{
+ 		int num_cpus, cpu_index, iosapic_index, numa_cpu, i = 0;
+-		const struct cpumask *cpu_mask;
++		struct cpumask *cpu_mask;
  
-There are Nishimura's patch and my patch under development.
-I may have to prepare weekly-update queue again.
+ 		iosapic_index = find_iosapic(gsi);
+ 		if (iosapic_index < 0 ||
+@@ -705,10 +705,10 @@ get_target_cpu (unsigned int gsi, int ir
+ 		cpu_mask = cpumask_of_node(iosapic_lists[iosapic_index].node);
+ 		for_each_cpu_and(numa_cpu, cpu_mask, &domain) {
+ 			if (!cpu_online(numa_cpu))
+-				cpu_clear(numa_cpu, cpu_mask);
++				cpu_clear(numa_cpu, *cpu_mask);
+ 		}
+ 
+-		num_cpus = cpus_weight(cpu_mask);
++		num_cpus = cpus_weight(*cpu_mask);
+ 
+ 		if (!num_cpus)
+ 			goto skip_numa_setup;
+@@ -716,8 +716,8 @@ get_target_cpu (unsigned int gsi, int ir
+ 		/* Use irq assignment to distribute across cpus in node */
+ 		cpu_index = irq % num_cpus;
+ 
+-		for (numa_cpu = first_cpu(cpu_mask) ; i < cpu_index ; i++)
+-			numa_cpu = next_cpu(numa_cpu, cpu_mask);
++		for (numa_cpu = first_cpu(*cpu_mask) ; i < cpu_index ; i++)
++			numa_cpu = next_cpu(numa_cpu, *cpu_mask);
+ 
+ 		if (numa_cpu != NR_CPUS)
+ 			return cpu_physical_id(numa_cpu);
 
-Thanks,
--Kame
 
