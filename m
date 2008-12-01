@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbYLAGtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbYLAGum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751677AbYLAGtt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 01:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYLAGtk
+	id S1752536AbYLAGum (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 01:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYLAGue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 01:49:40 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:27036 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbYLAGtj (ORCPT
+	Mon, 1 Dec 2008 01:50:34 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50317 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbYLAGue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 01:49:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=mETSxFEKc96uNLRrtar2N+J9RaRs/prG4d0lq2MTADleQylKAHmOAQo1NJQpWCw3FK
-         llPkLbtRYupCKi1oocw19ze7XdLzm+NdS3MBu0rctarE1N38K33qGJOiNWoxBU6qGSyp
-         ZVTOkVB1ucpAIcU0ygBr/2iRzANRq/Yh6RliM=
-Message-ID: <84144f020811302249i7587662ewa621d0a81f5426a2@mail.gmail.com>
-Date: Mon, 1 Dec 2008 08:49:38 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH 01/15] kmemleak: Add the base support
-Cc: "Catalin Marinas" <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20081201142824.D552.E1E9C6FF@jp.fujitsu.com>
+	Mon, 1 Dec 2008 01:50:34 -0500
+Message-ID: <49338933.1030401@linux.vnet.ibm.com>
+Date: Mon, 01 Dec 2008 12:20:27 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, svaidy@linux.vnet.ibm.com
+Subject: Re: [PATCH] Don't export sched_mc_power_savings in laptops
+References: <1227957612-7000-1-git-send-email-mahesh@linux.vnet.ibm.com> <20081130174034.GA28614@elte.hu>
+In-Reply-To: <20081130174034.GA28614@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
-	 <20081129104312.16726.36218.stgit@pc1117.cambridge.arm.com>
-	 <20081201142824.D552.E1E9C6FF@jp.fujitsu.com>
-X-Google-Sender-Auth: d14bd90721ad615d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-On Mon, Dec 1, 2008 at 7:39 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
->> +/*
->> + * Insert a pointer into the pointer hash table.
->> + */
->> +static inline void create_object(unsigned long ptr, size_t size, int ref_count)
->> +{
->> +     unsigned long flags;
->> +     struct memleak_object *object;
->> +     struct prio_tree_node *node;
->> +     struct stack_trace trace;
->> +
->> +     object = kmem_cache_alloc(object_cache, GFP_ATOMIC);
->> +     if (!object)
->> +             panic("kmemleak: cannot allocate a memleak_object structure\n");
+Ingo Molnar wrote:
+> * Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 >
-> IIRC, GFP_ATOMIC allocation sometimes fails. (ex. when page cache occupies all
-> area). It seems to be easy to panic. Is it intended?
+>   
+>>         Fix to prevent sched_mc_power_saving from being exported through sysfs
+>>         for multicore single socket (Laptop).
+>>     
+>>         CPU core map of the boot cpu should be equal to possible number
+>>         of cpus for single socket system.
+>>     
+>>         This fix has been developed at FOSS.in kernel workout.
+>>     
+>>         Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+>> index 4850e4b..4adc830 100644
+>> --- a/arch/x86/include/asm/topology.h
+>> +++ b/arch/x86/include/asm/topology.h
+>> @@ -239,7 +239,7 @@ struct pci_bus;
+>>  void set_pci_bus_resources_arch_default(struct pci_bus *b);
+>>  
+>>  #ifdef CONFIG_SMP
+>> -#define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
+>> +#define mc_capable()	(cpus_weight(per_cpu(cpu_core_map,0)) != nr_cpu_ids)
+>>     
+>
+> hm, dunno. sched_mc_power_savings should have no effect on single-socket 
+> systems, right? So the knob should have no effect.
+>
+> 	Ingo
+>   
+Hi Ingo,
 
-Yup, GFP_ATOMIC can fail as can any memory allocation on out-of-memory
-conditions unless you specify GFP_NOFAIL which will either succeed or
-lock up the box. I think you can just WARN_ON() here? However, it's
-probably safer to pass gfp flags from the callers here; otherwise we
-end up doing tons of GFP_ATOMIC allocations which is not healthy in
-general.
+Yes, it will not have any effect but it enables additional code path 
+leading to an
+overhead in case of single-socket system. This overhead is only if
+"sched_mc_power_savings = 1", however we are still leaving it to zero 
+(default) and
+preventing user space from turning it on by mistake.
 
-Also, I see some other BUG_ON() calls in the code which probably
-should be converted to WARN_ON() as well.
+Thanks,
+-Mahesh.
+
+
