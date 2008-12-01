@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYLAD6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYLAE3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbYLAD6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 22:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYLAD6E
+	id S1753388AbYLAE3h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 23:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYLAE30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 22:58:04 -0500
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:52760 "EHLO
-	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbYLAD6D (ORCPT
+	Sun, 30 Nov 2008 23:29:26 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:57313 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbYLAE3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 22:58:03 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [rfc git patch] union directory 
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: bharata@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org, jblunck@suse.de,
-       dlezcano@fr.ibm.com, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk
-In-Reply-To: <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
-References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu> <20081128161921.GA3843@in.ibm.com> <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
-Date: Mon, 01 Dec 2008 12:57:40 +0900
-Message-ID: <9507.1228103860@jrobl>
+	Sun, 30 Nov 2008 23:29:25 -0500
+Date: Sun, 30 Nov 2008 23:29:14 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: drivers/x86 (Was: Re: linux-next: Tree for November 28
+ (misc/tc1100))
+In-reply-to: <20081129093414.GB26691@elte.hu>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org
+Message-id: <alpine.LFD.2.00.0811302325050.3314@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+ <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au>
+ <20081129093414.GB26691@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hello Miklos,
 
-Miklos Szeredi:
-> The plan is to get a simple kernel implementation first which caches
-> the directory in 'struct file'.
+On Sat, 29 Nov 2008, Ingo Molnar wrote:
 
-If you have not looked at the source code of AUFS, try it out.
-It caches the directory entries in 'struct file.'
+> 
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > Hi Len,
+> > 
+> > On Fri, 28 Nov 2008 09:55:08 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > >
+> > > make[2]: *** No rule to make target `drivers/misc/tc1100-wmi.o', needed by `drivers/misc/built-in.o'.
+> > > 
+> > > on allmodconfig & allyesconfig for i386.
+> > > 
+> > > On, moved to drivers/x86/.  Someone needs to clean up drivers/misc/Makefile.
+> > 
+> > Just wondering where the move to drivers/x86 was discussed, (reviewed 
+> > and tested) and why the change is in the acpi tree and not the x86 
+> > tree?
+> 
+> it will all conflict with pending bits in the x86 tree, so i'd prefer if 
+> Len did this atomically after 2.6.29-rc1, without it having this 
+> long-term breakage effect.
 
-approach: http://marc.info/?l=linux-kernel&m=118915086030712&w=2
-dir.[ch]: http://marc.info/?l=linux-kernel&m=121134143206375&w=2
-vdir.c: http://marc.info/?l=linux-kernel&m=121134246707486&w=2
+Is linux-next running into a conflict between x86 and the acpi 
+tree today?
 
-
-J. R. Okajima
+thanks,
+-Len
