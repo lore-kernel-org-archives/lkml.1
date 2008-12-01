@@ -1,134 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751446AbYLAHil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751446AbYLAHpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751446AbYLAHil (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 02:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYLAHib
+	id S1751446AbYLAHpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 02:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYLAHpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 02:38:31 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39272 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbYLAHia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 02:38:30 -0500
-Subject: Re: signal handling description for Michaels CLONE_NEWPID man page
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-To: mtk.manpages@gmail.com
-Cc: serue@us.ibm.com, sukadev@us.ibm.com, xemul@openvz.org, kir@openvz.org,
-       linux-man@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-In-Reply-To: <cfd18e0f0811281358s2e831b04qc56277db403c2039@mail.gmail.com>
-References: <20081127070720.954560982@bull.net>
-	 <20081127070806.626288939@bull.net>
-	 <cfd18e0f0811281358s2e831b04qc56277db403c2039@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 08:36:44 +0100
-Message-Id: <1228117005.2615.186.camel@frecb000730.frec.bull.fr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 02:45:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43544 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763AbYLAHpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 02:45:08 -0500
+Date: Mon, 1 Dec 2008 08:44:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, svaidy@linux.vnet.ibm.com
+Subject: Re: [PATCH] Don't export sched_mc_power_savings in laptops
+Message-ID: <20081201074447.GB27768@elte.hu>
+References: <1227957612-7000-1-git-send-email-mahesh@linux.vnet.ibm.com> <20081130174034.GA28614@elte.hu> <49338933.1030401@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49338933.1030401@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-28 at 16:58 -0500, Michael Kerrisk wrote:
-> Hi Nadia,
-> 
-> Thanks for putting this together.  A few questions below.
-> 
-> On Thu, Nov 27, 2008 at 2:07 AM,  <Nadia.Derbey@bull.net> wrote:
-> > Michael,
-> >
-> > Here is the proposal for a description of signals handling in pid
-> > namespaces.
-> >
-> > This applies on top of your CLONE_NEWPID patch.
-> >
-> > Regards,
-> > Nadia
-> >
-> > ---
-> >  man2/clone.2 |   23 +++++++++++++++++++++++
-> >  1 file changed, 23 insertions(+)
-> >
-> > Index: man-pages-3.13/man2/clone.2
-> > ===================================================================
-> > --- man-pages-3.13.orig/man2/clone.2    2008-11-24 09:34:30.000000000 +0100
-> > +++ man-pages-3.13/man2/clone.2 2008-11-27 09:17:53.000000000 +0100
-> > @@ -226,6 +226,29 @@ configuration option and requires that t
-> >  .RB (CAP_SYS_ADMIN ).
-> >  This flag can't be specified in conjunction with
-> >  .BR CLONE_THREAD .
-> > +
-> > +.BR "Signals handling:"
-> > +just like all the system calls that address a PID, signals can only be sent
-> > +to a process whose PID belongs to the same namespace as the caller.
-> > +
-> > +There are ways signals can be sent across namespaces boundaries such that
-> 
-> Just so I'm clear.  We're talking about the case here where, for
-> example, a process in a parent namespace sends a signal to a process
-> in the child namespace.  In such a case, the PID of the sender is not
-> meaningful.  Right?
 
-Yes, a process doesn't have a valid pid number in a descendant pid
-namespace. So a process receiving a signal from an upper level PID
-namespace will see the signal originator as "not meaningful".
+* Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
-> 
-> > +the sender does not have a valid pid in the receiver's pid namespace.
-> > +In such cases, the sender pid will be seen by the receiver as a 0 value
-> > +(this has an impact, for example, on the
-> > +.BR siginfo_t
-> > +structure contents - NOTE, this is still under development).
-> 
-> Can you fill me in on the possibilities of "this is still under development"?
+> Ingo Molnar wrote:
+>> * Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+>>
+>>   
+>>>         Fix to prevent sched_mc_power_saving from being exported through sysfs
+>>>         for multicore single socket (Laptop).
+>>>             CPU core map of the boot cpu should be equal to possible 
+>>> number
+>>>         of cpus for single socket system.
+>>>             This fix has been developed at FOSS.in kernel workout.
+>>>             Signed-off-by: Mahesh Salgaonkar 
+>>> <mahesh@linux.vnet.ibm.com>
+>>>
+>>> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+>>> index 4850e4b..4adc830 100644
+>>> --- a/arch/x86/include/asm/topology.h
+>>> +++ b/arch/x86/include/asm/topology.h
+>>> @@ -239,7 +239,7 @@ struct pci_bus;
+>>>  void set_pci_bus_resources_arch_default(struct pci_bus *b);
+>>>   #ifdef CONFIG_SMP
+>>> -#define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
+>>> +#define mc_capable()	(cpus_weight(per_cpu(cpu_core_map,0)) != nr_cpu_ids)
+>>>     
+>>
+>> hm, dunno. sched_mc_power_savings should have no effect on 
+>> single-socket systems, right? So the knob should have no effect.
+>>
+>> 	Ingo
+>>   
+> Hi Ingo,
+>
+> Yes, it will not have any effect but it enables additional code path 
+> leading to an overhead in case of single-socket system. This overhead 
+> is only if "sched_mc_power_savings = 1", however we are still leaving 
+> it to zero (default) and preventing user space from turning it on by 
+> mistake.
 
-This is because the semantics are still under discussion (see thread
-http://lkml.org/lkml/2008/11/25/458).
-There are also places that are not addressed by this patchset, but where
-the signal originator pid might have to be cleared, like the following:
-1. POSIX message queues: if the process that registers for notification
-through mq_notify() is in a descendant namespace of the one that sends a
-message to the mqueue.
-2. a process is set as the SIGIO receiver through fcntl(F_SETOWN) and
-the write() to the file is done by a process that belongs to an ancestor
-namespace.
+okay, makes sense - i've applied it to tip/sched/urgent (for v2.6.28 
+merge), thanks Mahesh!
 
-Also, if the implementation proposed by this patchset is adopted, we
-should add a note on what could appear as a change in the ABI for the
-rt_sigqueueinfo() call: this call explicitely sends a siginfo_t
-structure. So the si_pid might have been filled by the caller. But if
-the signal receiver of this rt_sigqueueinfo() is in a descendant
-namespace, the si_pid field will be cleared by the kernel.
-
-Regards,
-Nadia
-
-> 
-> Cheers,
-> 
-> Michael
-> 
-> > +The "init" process of a PID namespace has a particular status, since it
-> > +is known both by its children as PID 1 and by its father's PID namespace
-> > +as any other PID. Thus, the "init" process of a PID namespace can be sent
-> > +any signal by a process that belongs to its ancestor's PID namespace (given
-> > +that the sender has the appropriate permission). But the only signals that
-> > +can be sent to the "init" process of a PID namespace from its own namespace
-> > +are those for which it has explicitly installed signal handlers.
-> > +More precisely, signals are sent successfully (i.e
-> > +.BR kill (2)
-> > +will not fail), but the "init" process will silently ignore unhandled signals.
-> > +
-> >  .TP
-> >  .BR CLONE_PARENT " (since Linux 2.3.12)"
-> >  If
-> >
-> > --
-> >
-> 
-> 
-> 
--- 
-Nadia Derbey <Nadia.Derbey@bull.net>
-
+	Ingo
