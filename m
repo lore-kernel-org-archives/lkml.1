@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYLAOaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbYLAOcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbYLAOaw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 09:30:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYLAOao
+	id S1752225AbYLAOcb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 09:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbYLAOcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 09:30:44 -0500
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:51991 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbYLAOan (ORCPT
+	Mon, 1 Dec 2008 09:32:23 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:35053 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbYLAOcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 09:30:43 -0500
+	Mon, 1 Dec 2008 09:32:22 -0500
 X-Cam-AntiVirus: no malware found
 X-Cam-SpamDetails: not scanned
 X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4933F511.4060305@cam.ac.uk>
-Date: Mon, 01 Dec 2008 14:30:41 +0000
+Message-ID: <4933F574.70604@cam.ac.uk>
+Date: Mon, 01 Dec 2008 14:32:20 +0000
 From: Jonathan Cameron <jic23@cam.ac.uk>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
 MIME-Version: 1.0
@@ -24,7 +24,7 @@ CC: LKML <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>,
        Ben Nizette <bn@niasdigital.com>,
        LM Sensors <lm-sensors@lm-sensors.org>,
        spi-devel-general@lists.sourceforge.net
-Subject: [Industrial I/O] [5/13] RFC: IIO Periodic real time clock based trigger.
+Subject: [Industrial I/O] [6/13] RFC: Proof of concept GPIO based IIO trigger
 References: <4933F291.4020001@cam.ac.uk>
 In-Reply-To: <4933F291.4020001@cam.ac.uk>
 X-Enigmail-Version: 0.95.6
@@ -36,87 +36,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jonathan Cameron <jic23@cam.ac.uk>
 
-IIO: Periodic real time clock based trigger.
+IIO: Proof of concept GPIO based IIO trigger
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 --
 
-Quite a few real time clock implementations provide configurable
-periodic interrupts.  This module allows these to be used as triggers
-for filling IIO ring buffers at regular intervals.
+A very limited trigger driver using a GPIO to provide synchronization
+with external devices. Things like setting polarity and interrupt
+types will need to be added to make this more useful.
 
-As has been discussed a number of times on LKML and elsewhere, it
-would be nice to have a generic timer system to handle the many
-timers that are available and make use of their periodic capabilities.
-Until this is available the RTC subsystem provides the easiest way
-of doing this.
+ drivers/industrialio/triggers/Kconfig         |   12 ++
+ drivers/industrialio/triggers/Makefile        |    5 +-
+ drivers/industrialio/triggers/iio-trig-gpio.c |  193 +++++++++++++++++++++++++
+ include/linux/industrialio/gpio_trigger.h     |    6 +
+ 4 files changed, 215 insertions(+), 1 deletions(-)
 
-Whilst this is in of itself a useful implementation, the principal
-reason for including it here is to illustrate how IIO trigger drivers
-work.
-
- drivers/industrialio/Kconfig                       |    2 +
- drivers/industrialio/Makefile                      |    2 +
- drivers/industrialio/triggers/Kconfig              |    6 +
- drivers/industrialio/triggers/Makefile             |    5 +
- .../industrialio/triggers/iio-trig-periodic-rtc.c  |  197 ++++++++++++++++++++
- include/linux/industrialio/prtc_trigger.h          |    7 +
- 6 files changed, 219 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/industrialio/Kconfig b/drivers/industrialio/Kconfig
-index 9bf6a36..c20ca2f 100644
---- a/drivers/industrialio/Kconfig
-+++ b/drivers/industrialio/Kconfig
-@@ -19,6 +19,8 @@ config IIO_TRIGGERS
- 	   ring buffers.  The triggers are effectively a 'capture
- 	   data now' interrupt.
- 
-+source drivers/industrialio/triggers/Kconfig
-+
- config IIO_RING_BUFFER
-        bool "Enable ring buffer support within iio"
- 	  depends on INDUSTRIALIO
-diff --git a/drivers/industrialio/Makefile b/drivers/industrialio/Makefile
-index 15ef75f..518849a 100644
---- a/drivers/industrialio/Makefile
-+++ b/drivers/industrialio/Makefile
-@@ -8,3 +8,5 @@ industrialio-$(CONFIG_IIO_RING_BUFFER) += industrialio-ring.o
- industrialio-$(CONFIG_IIO_TRIGGERS) += industrialio-trigger.o
- 
- obj-$(CONFIG_IIO_SW_RING) += ring_sw.o
-+
-+obj-y += triggers/
-\ No newline at end of file
 diff --git a/drivers/industrialio/triggers/Kconfig b/drivers/industrialio/triggers/Kconfig
-new file mode 100644
-index 0000000..20e6498
---- /dev/null
+index 20e6498..e100098 100644
+--- a/drivers/industrialio/triggers/Kconfig
 +++ b/drivers/industrialio/triggers/Kconfig
-@@ -0,0 +1,6 @@
-+config IIO_PERIODIC_RTC_TRIGGER
-+       tristate "Periodic RTC triggers"
-+          depends on INDUSTRIALIO && IIO_TRIGGERS && RTC_CLASS
+@@ -1,6 +1,18 @@
++config IIO_GPIO_TRIGGER
++       tristate "GPIO triggers"
++          depends on INDUSTRIALIO && IIO_TRIGGERS && GENERIC_GPIO
 +	  help
-+	    Provides support for using periodic capable real time
-+	    clocks as IIO triggers.
-diff --git a/drivers/industrialio/triggers/Makefile b/drivers/industrialio/triggers/Makefile
-new file mode 100644
-index 0000000..4ae55b9
---- /dev/null
-+++ b/drivers/industrialio/triggers/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for triggers not associated with iio-devices
-+#
-+obj-$(CONFIG_IIO_PERIODIC_RTC_TRIGGER) += iio-trig-periodic-rtc.o
++	    Driver provides support for using GPIOs as the IIO
++	    triggers.
 +
-diff --git a/drivers/industrialio/triggers/iio-trig-periodic-rtc.c b/drivers/industrialio/triggers/iio-trig-periodic-rtc.c
+ config IIO_PERIODIC_RTC_TRIGGER
+        tristate "Periodic RTC triggers"
+           depends on INDUSTRIALIO && IIO_TRIGGERS && RTC_CLASS
+ 	  help
+ 	    Provides support for using periodic capable real time
+ 	    clocks as IIO triggers.
+
+diff --git a/drivers/industrialio/triggers/Makefile b/drivers/industrialio/triggers/Makefile
+index 4ae55b9..767d2cd 100644
+--- a/drivers/industrialio/triggers/Makefile
++++ b/drivers/industrialio/triggers/Makefile
+@@ -1,5 +1,8 @@
+ #
+ # Makefile for triggers not associated with iio-devices
+ #
+-obj-$(CONFIG_IIO_PERIODIC_RTC_TRIGGER) += iio-trig-periodic-rtc.o
+ 
++obj-$(CONFIG_IIO_GPIO_TRIGGER) += iio-trig-gpio.o
++
++obj-$(CONFIG_IIO_PERIODIC_RTC_TRIGGER) += iio-trig-periodic-rtc.o
++#obj-$(CONFIG_IIO_PTIMER_BOARDINFO) += iio-ptimer-boardinfo.o
+diff --git a/drivers/industrialio/triggers/iio-trig-gpio.c b/drivers/industrialio/triggers/iio-trig-gpio.c
 new file mode 100644
-index 0000000..c395722
+index 0000000..9718779
 --- /dev/null
-+++ b/drivers/industrialio/triggers/iio-trig-periodic-rtc.c
-@@ -0,0 +1,197 @@
-+/* The industrial I/O periodic RTC trigger driver
++++ b/drivers/industrialio/triggers/iio-trig-gpio.c
+@@ -0,0 +1,193 @@
++/*
++ * Industrial I/O - gpio based trigger support
 + *
 + * Copyright (c) 2008 Jonathan Cameron
 + *
@@ -124,205 +99,199 @@ index 0000000..c395722
 + * under the terms of the GNU General Public License version 2 as published by
 + * the Free Software Foundation.
 + *
-+ * This is a heavily rewritten version of the periodic timer system in
-+ * earlier version of industrialio.  It supplies the same functionality
-+ * but via a trigger rather than a specific periodic timer system.
++ * Currently this is more of a functioning proof of concept that a fully
++ * fledged trigger driver.
++ *
++ * TODO:
++ *
++ * Add board config elements to allow specification of startup settings.
++ * Add configuration settings (irq type etc)
 + */
 +
-+#include <linux/platform_device.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/rtc.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++#include <linux/gpio.h>
++
 +#include <linux/industrialio/iio.h>
 +#include <linux/industrialio/trigger.h>
-+#include <linux/industrialio/prtc_trigger.h>
++#include <linux/industrialio/gpio_trigger.h>
 +
-+LIST_HEAD(iio_prtc_trigger_list);
-+DEFINE_MUTEX(iio_prtc_trigger_list_lock);
++LIST_HEAD(iio_gpio_trigger_list);
++DEFINE_MUTEX(iio_gpio_trigger_list_lock);
 +
-+struct iio_prtc_trigger_info {
-+	struct rtc_device *rtc;
-+	int frequency;
-+	struct rtc_task task;
++struct iio_gpio_trigger_info {
++	struct mutex in_use;
++	int gpio;
 +};
++/* Need to reference count these triggers and only enable gpio interrupts as appropriate.*/
 +
-+static int iio_trig_periodic_rtc_set_state(struct iio_trigger *trig, bool state)
++/* So what functionality do we want in here?... */
++/* set high / low as interrupt type? */
++
++static irqreturn_t iio_gpio_trigger_poll(int irq, void *private)
 +{
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	return rtc_irq_set_state(trig_info->rtc, &trig_info->task, state);
++	//private at this stage is the iio_trig.
++	iio_trigger_poll(private);
++	return IRQ_HANDLED;
 +}
 +
-+static ssize_t iio_trig_periodic_read_freq(struct device *dev,
-+					   struct device_attribute *attr,
-+					   char *buf)
-+{
-+	struct iio_trigger *trig = dev_get_drvdata(dev);
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	return sprintf(buf, "%u\n", trig_info->frequency);
-+}
++DEVICE_ATTR(name, S_IRUGO, iio_trigger_read_name, NULL);
 +
-+static ssize_t iio_trig_periodic_write_freq(struct device *dev,
-+					    struct device_attribute *attr,
-+					    const char *buf,
-+					    size_t len)
-+{
-+	struct iio_trigger *trig = dev_get_drvdata(dev);
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	unsigned long val;
-+	int ret;
-+
-+	ret = strict_strtoul(buf,10, &val);
-+	if (ret)
-+		goto error_ret;
-+
-+	ret = rtc_irq_set_freq(trig_info->rtc, &trig_info->task, val);
-+	if (ret)
-+		goto error_ret;
-+
-+	trig_info->frequency = val;
-+
-+	return len;
-+
-+error_ret:
-+	return ret;
-+}
-+
-+DEVICE_ATTR(frequency, S_IRUGO | S_IWUSR,
-+	    iio_trig_periodic_read_freq,
-+	    iio_trig_periodic_write_freq);
-+
-+static struct attribute *iio_trig_prtc_attrs[] = {
-+	&dev_attr_frequency.attr,
++static struct attribute *iio_gpio_trigger_attrs[] = {
++	&dev_attr_name.attr,
 +	NULL,
 +};
-+static const struct attribute_group iio_trig_prtc_attr_group = {
-+	.attrs = iio_trig_prtc_attrs,
++
++static const struct attribute_group iio_gpio_trigger_attr_group = {
++	.attrs = iio_gpio_trigger_attrs,
 +};
 +
-+static void iio_prtc_trigger_poll(void *private_data)
++static int iio_gpio_trigger_probe(struct platform_device *dev)
 +{
-+	iio_trigger_poll(private_data);
-+}
-+
-+
-+
-+static int iio_trig_periodic_rtc_probe(struct platform_device *dev)
-+{
-+	struct iio_prtc_trigger_group *pdata = dev->dev.platform_data;
-+	struct iio_prtc_trigger_info *trig_info;
++	struct iio_gpio_trigger_pdata *pdata = dev->dev.platform_data;
++	struct iio_gpio_trigger_info *trig_info;
 +	struct iio_trigger *trig, *trig2;
++	int i, irq, ret = 0;
++	if (!pdata) {
++		printk(KERN_ERR "No IIO gpio trigger platform data found\n");
++		return -EINVAL;
++	}
++	for (i = 0; i < pdata->num_gpios; i++) {
 +
-+	int i, ret;
-+	for (i = 0; i < pdata->num_triggers; i++) {
 +		trig = kzalloc(sizeof(*trig), GFP_KERNEL);
 +		if (!trig) {
 +			ret = -ENOMEM;
 +			goto error_free_trigs_1;
 +		}
 +		iio_trigger_init(trig);
++
 +		trig_info = kzalloc(sizeof(*trig_info), GFP_KERNEL);
 +		if (!trig_info) {
 +			ret = -ENOMEM;
 +			goto error_free_trigs_2;
 +		}
++		trig->control_attrs = &iio_gpio_trigger_attr_group;
 +		trig->private_data = trig_info;
++		trig_info->gpio = pdata->gpios[i];
 +		trig->owner = THIS_MODULE;
-+		trig->set_trigger_state = &iio_trig_periodic_rtc_set_state;
 +		trig->name = kmalloc(IIO_TRIGGER_NAME_LENGTH, GFP_KERNEL);
-+		if (trig->name == NULL) {
-+			ret = -ENOMEM;
-+			goto error_free_trigs_3;
-+		}
-+		snprintf((char *)trig->name, IIO_TRIGGER_NAME_LENGTH, "periodic%s", pdata->triggers[i].name);
++		snprintf((char *)trig->name, IIO_TRIGGER_NAME_LENGTH, "gpiotrig%d", pdata->gpios[i]);
 +
-+		/* RTC access */
-+		trig_info->rtc = rtc_class_open((char *)(pdata->triggers[i].name));
-+		if (trig_info->rtc == NULL) {
-+			ret = -EINVAL;
-+			goto error_free_trigs_4;
-+		}
-+		trig_info->task.func = iio_prtc_trigger_poll;
-+		trig_info->task.private_data = trig;
-+		ret = rtc_irq_register(trig_info->rtc, &trig_info->task);
++
++		ret = gpio_request(trig_info->gpio, trig->name);
 +		if (ret)
-+			printk("failed on reg\n");
-+		trig->control_attrs = &iio_trig_prtc_attr_group;
++			goto error_free_trigs_3;
++
++		ret = gpio_direction_input(trig_info->gpio);
++		if (ret)
++			goto error_free_trigs_4;
++
++		irq = gpio_to_irq(trig_info->gpio);
++		if (irq < 0)
++			goto error_free_trigs_4;
++
++		ret = request_irq(irq, iio_gpio_trigger_poll,
++				  IRQF_TRIGGER_RISING,
++				  trig->name,
++				  trig);
++		if (ret)
++			goto error_free_trigs_4;
 +		ret = iio_trigger_register(trig, &dev->dev, i);
++
 +		if (ret)
 +			goto error_free_trigs_5;
++
++		mutex_lock(&iio_gpio_trigger_list_lock);
++		list_add_tail(&trig->alloc_list, &iio_gpio_trigger_list);
++		mutex_unlock(&iio_gpio_trigger_list_lock);
 +	}
 +	return 0;
++
++/* First clean up the partly allocated trigger */
 +error_free_trigs_5:
-+	rtc_class_close(trig_info->rtc);
++	free_irq(irq, trig);
++
 +error_free_trigs_4:
-+	kfree(trig->name);
++	gpio_free(trig_info->gpio);
 +error_free_trigs_3:
-+	kfree(trig_info);
++	kfree(trig->name);
 +error_free_trigs_2:
-+	kfree(trig);
++	kfree(trig_info);
 +error_free_trigs_1:
-+	list_for_each_entry_safe(trig, trig2, &iio_prtc_trigger_list, alloc_list) {
++/* The rest should have been added to the iio_gpio_trigger_list */
++	mutex_lock(&iio_gpio_trigger_list_lock);
++	list_for_each_entry_safe(trig,
++				 trig2,
++				 &iio_gpio_trigger_list,
++				 alloc_list) {
 +		trig_info = trig->private_data;
 +		iio_trigger_unregister(trig);
-+		//FREE RTC STUFF
++		free_irq(gpio_to_irq(trig_info->gpio), trig);
++		gpio_free(trig_info->gpio);
 +		kfree(trig->name);
 +		kfree(trig_info);
 +		kfree(trig);
 +	}
++	mutex_unlock(&iio_gpio_trigger_list_lock);
++
 +	return ret;
 +}
 +
-+static int iio_trig_periodic_rtc_remove(struct platform_device *dev)
++static int iio_gpio_trigger_remove(struct platform_device *dev)
 +{
 +	struct iio_trigger *trig, *trig2;
-+	struct iio_prtc_trigger_info *trig_info;
-+	mutex_lock(&iio_prtc_trigger_list_lock);
-+	list_for_each_entry_safe(trig, trig2, &iio_prtc_trigger_list, alloc_list) {
++	struct iio_gpio_trigger_info *trig_info;
++
++	mutex_lock(&iio_gpio_trigger_list_lock);
++	list_for_each_entry_safe(trig, trig2, &iio_gpio_trigger_list, alloc_list) {
 +		trig_info = trig->private_data;
 +		iio_trigger_unregister(trig);
-+		//FREE RTC STUFF
++		free_irq(gpio_to_irq(trig_info->gpio), trig);
++		gpio_free(trig_info->gpio);
 +		kfree(trig->name);
 +		kfree(trig_info);
 +		kfree(trig);
 +	}
-+	mutex_unlock(&iio_prtc_trigger_list_lock);
++	mutex_unlock(&iio_gpio_trigger_list_lock);
++
 +	return 0;
 +}
 +
-+static struct platform_driver iio_trig_periodic_rtc_driver = {
-+	.probe = iio_trig_periodic_rtc_probe,
-+	.remove = iio_trig_periodic_rtc_remove,
++static struct platform_driver iio_gpio_trigger_driver = {
++	.probe = iio_gpio_trigger_probe,
++	.remove = iio_gpio_trigger_remove,
 +	.driver = {
-+		.name = "iio_prtc_trigger",
++		.name = "iio_gpio_trigger",
 +		.owner = THIS_MODULE,
 +	},
 +};
 +
-+static int __init iio_trig_periodic_rtc_init(void)
++static int __init iio_gpio_trig_init(void)
 +{
-+	return platform_driver_register(&iio_trig_periodic_rtc_driver);
++	return platform_driver_register(&iio_gpio_trigger_driver);
 +}
++module_init(iio_gpio_trig_init);
 +
-+static void __exit iio_trig_periodic_rtc_exit(void)
++static void __exit iio_gpio_trig_exit(void)
 +{
-+	return platform_driver_unregister(&iio_trig_periodic_rtc_driver);
++	platform_driver_unregister(&iio_gpio_trigger_driver);
 +}
++module_exit(iio_gpio_trig_exit);
 +
-+module_init(iio_trig_periodic_rtc_init);
-+module_exit(iio_trig_periodic_rtc_exit);
 +MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
-+MODULE_DESCRIPTION("Periodic realtime clock  trigger for the iio subsystem");
++MODULE_DESCRIPTION("Example gpio trigger for the iio subsystem");
 +MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/industrialio/prtc_trigger.h b/include/linux/industrialio/prtc_trigger.h
+diff --git a/include/linux/industrialio/gpio_trigger.h b/include/linux/industrialio/gpio_trigger.h
 new file mode 100644
-index 0000000..9dabc19
+index 0000000..25be3da
 --- /dev/null
-+++ b/include/linux/industrialio/prtc_trigger.h
-@@ -0,0 +1,7 @@
-+struct iio_prtc_trigger {
-+	const char *name;
-+};
-+struct iio_prtc_trigger_group {
-+	int num_triggers;
-+	struct iio_prtc_trigger *triggers;
++++ b/include/linux/industrialio/gpio_trigger.h
+@@ -0,0 +1,6 @@
++
++
++struct iio_gpio_trigger_pdata {
++	int num_gpios;
++	int *gpios;
 +};
