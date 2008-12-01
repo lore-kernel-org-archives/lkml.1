@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYLAVRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYLAVSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbYLAVRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 16:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYLAVRZ
+	id S1754064AbYLAVSW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 16:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYLAVSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 16:17:25 -0500
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:47279 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751516AbYLAVRZ (ORCPT
+	Mon, 1 Dec 2008 16:18:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45807
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751516AbYLAVSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 16:17:25 -0500
-Date: Mon, 1 Dec 2008 22:14:34 +0100
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: New IOCTLs
-Message-ID: <20081201211434.GD31710@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <3baf3d760809170955l5dec0495n93fc373a52a120ae@mail.gmail.com> <48D164B9.7020507@redhat.com> <3baf3d760809172123q5445780dldaaa51d59c0b688a@mail.gmail.com>
+	Mon, 1 Dec 2008 16:18:10 -0500
+Date: Mon, 01 Dec 2008 13:18:10 -0800 (PST)
+Message-Id: <20081201.131810.158631503.davem@davemloft.net>
+To: gallatin@myri.com
+Cc: ossthema@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tklein@de.ibm.com, raisch@de.ibm.com, jb.billaud@gmail.com,
+       hering2@de.ibm.com
+Subject: Re: [PATCH] lro: IP fragment checking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <493423D7.5030203@myri.com>
+References: <4933A74F.3050809@de.ibm.com>
+	<493423D7.5030203@myri.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3baf3d760809172123q5445780dldaaa51d59c0b688a@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Singaravelan Nallasellan <singaravelann@gmail.com> wrote:
+From: Andrew Gallatin <gallatin@myri.com>
+Date: Mon, 01 Dec 2008 12:50:15 -0500
 
-Hi,
+> As to whether or not to do it in the drivers/hardware or in the
+> LRO code, I favor doing it in the LRO code just so that it is not
+> missed in some driver.
 
-> The driver needs to assign an id for each open and create a sysfs
-> entry based on that id and expose some properties.
-> 
-> For example, if the driver assigns an id 2, the sysfs entry will be as below:
-> /sys/class/xxx/<drivername>/2/version
-> 
-> When the driver close is invoked, it will have to remove the entry.
-> 
-> The issue here is that the application needs:
-> 1. To know the id it should use to access properties after the open.
-> 2. To have exclusive access to the sysfs entries. No other application
-> should and open the entry and use it. There is a chance the the other
-> application could open the entries before this application opens it.
+Then there is no point in the hardware doing the check, if
+we're going to check it anyways.
 
-Simply add an clone file, reading from it creates new context and 
-sends back its ID.
-
-box:/ # cat /sys/class/xxx/foodriver/clone
-3
-
-box:/ # cat /sys/class/xxx/foodriver/3/version
-1.0
-
-...
-
-To destroy the context:
-box:/ # echo "release" > /sys/class/xxx/foodriver/3/ctl
-
-
-cu
--- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+That's part of my point about why this check doesn't belong
+here.
