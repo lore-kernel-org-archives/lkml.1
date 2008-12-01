@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYLAVP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYLAVRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbYLAVP5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 16:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYLAVPs
+	id S1753804AbYLAVRe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 16:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYLAVRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 16:15:48 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33323 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbYLAVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 16:15:47 -0500
-Date: Mon, 1 Dec 2008 13:15:18 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Greg Kurz <gkurz@fr.ibm.com>
-Cc: Bastian Blank <bastian@waldi.eu.org>, linux-kernel@vger.kernel.org,
-       oleg@redhat.com, ebiederm@xmission.com, containers@lists.osdl.org,
-       roland@redhat.com, xemul@openvz.org
-Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
-Message-ID: <20081201211518.GB15004@us.ibm.com>
-References: <20081126034242.GA23120@us.ibm.com> <20081126034528.GB23238@us.ibm.com> <20081127011738.GC13545@wavehammer.waldi.eu.org> <1227820765.5108.20.camel@bahia.kalilou.org>
-MIME-Version: 1.0
+	Mon, 1 Dec 2008 16:17:25 -0500
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:47279 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751516AbYLAVRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 16:17:25 -0500
+Date: Mon, 1 Dec 2008 22:14:34 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: New IOCTLs
+Message-ID: <20081201211434.GD31710@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <3baf3d760809170955l5dec0495n93fc373a52a120ae@mail.gmail.com> <48D164B9.7020507@redhat.com> <3baf3d760809172123q5445780dldaaa51d59c0b688a@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1227820765.5108.20.camel@bahia.kalilou.org>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <3baf3d760809172123q5445780dldaaa51d59c0b688a@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Kurz [gkurz@fr.ibm.com] wrote:
-| On Thu, 2008-11-27 at 02:17 +0100, Bastian Blank wrote:
-| > On Tue, Nov 25, 2008 at 07:45:28PM -0800, Sukadev Bhattiprolu wrote:
-| > > Currently task_active_pid_ns is not safe to call after a
-| > > task becomes a zombie and exit_task_namespaces is called,
-| > > as nsproxy becomes NULL.
-| > 
-| > Why do you need to be able to get the pid namespace from zombie
-| > processes?
+* Singaravelan Nallasellan <singaravelann@gmail.com> wrote:
 
-After exiting namespaces, the process notifies parent. With new changes
-to signals (in this patchset), the signal code may need to determine
-the namespace of sender (the exiting child in this case).
+Hi,
 
-| Also according to nsproxy.h this access variant is only
-| > allowed for the current task, anything else needs to take a rcu lock.
+> The driver needs to assign an id for each open and create a sysfs
+> entry based on that id and expose some properties.
+> 
+> For example, if the driver assigns an id 2, the sysfs entry will be as below:
+> /sys/class/xxx/<drivername>/2/version
+> 
+> When the driver close is invoked, it will have to remove the entry.
+> 
+> The issue here is that the application needs:
+> 1. To know the id it should use to access properties after the open.
+> 2. To have exclusive access to the sysfs entries. No other application
+> should and open the entry and use it. There is a chance the the other
+> application could open the entries before this application opens it.
 
-and sender still is 'current' (the exiting child).
+Simply add an clone file, reading from it creates new context and 
+sends back its ID.
 
-| > 
-| 
-| That doesn't save ->nsproxy to be NULL... as shown in the very same
-| example you're talking about.
-| 
-| I agree with Eric and Sukadev that task_active_pid_ns() is unsafe. There
-| isn't even a /* don't use with zombies */ in pid_namespace.h...
+box:/ # cat /sys/class/xxx/foodriver/clone
+3
 
-Hmm. Its not unsafe at present. It would become unsafe if the signals code
-tries to determine the namespace of sender.
+box:/ # cat /sys/class/xxx/foodriver/3/version
+1.0
+
+...
+
+To destroy the context:
+box:/ # echo "release" > /sys/class/xxx/foodriver/3/ctl
+
+
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
