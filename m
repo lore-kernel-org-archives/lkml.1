@@ -1,254 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbYLAOJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYLAOLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbYLAOJe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 09:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYLAOJH
+	id S1753277AbYLAOLA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 09:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYLAOKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 09:09:07 -0500
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:43196 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbYLAOJF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 09:09:05 -0500
-From: Trent Piepho <xyzzy@speakeasy.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pci <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Alex Chiang <achiang@hp.com>, Trent Piepho <xyzzy@speakeasy.org>
-Subject: [PATCH] PCI: Legacy fakephp driver
-Date: Mon,  1 Dec 2008 06:08:10 -0800
-Message-Id: <1228140490-32199-2-git-send-email-xyzzy@speakeasy.org>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <Pine.LNX.4.58.0812010500330.2943@shell2.speakeasy.net>
-References: <Pine.LNX.4.58.0812010500330.2943@shell2.speakeasy.net>
+	Mon, 1 Dec 2008 09:10:51 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60062 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751578AbYLAOKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 09:10:51 -0500
+Date: Mon, 1 Dec 2008 23:10:33 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org, tsbogend@alpha.franken.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] Fix dma_mapping_error for 32bit x86
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081201125501.GC21534@elte.hu>
+References: <20081201113451.GA24323@8bytes.org>
+	<20081201210110L.fujita.tomonori@lab.ntt.co.jp>
+	<20081201125501.GC21534@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081201230926Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This module has an interface that's compatible with how fakephp's has been.
+On Mon, 1 Dec 2008 13:55:01 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-It puts entries in /sys/bus/pci/slots with the names of all PCI
-devices/functions.  Each one has a "power" attribute, which works the same
-way as the fakephp driver's power attribute has worked.
+> 
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > On Mon, 1 Dec 2008 12:34:51 +0100
+> > Joerg Roedel <joro@8bytes.org> wrote:
+> > 
+> > > On Sat, Nov 29, 2008 at 01:46:27PM +0100, Thomas Bogendoerfer wrote:
+> > > > Devices like b44 ethernet can't dma from addresses above 1GB. The driver
+> > > > handles this cases by falling back to GFP_DMA allocation. But for detecting
+> > > > the problem it needs to get an indication from dma_mapping_error.
+> > > > The bug is triggered by using a VMSPLIT option of 2G/2G.
+> > > 
+> > > Looks like your system uses swiotlb as the dma_ops backend. Its the only
+> > > implementation providing the ops->mapping_error callback and does not
+> > > use bad_dma_address as the error value.
+> > 
+> > I think that you misunderstand the problem.
+> > 
+> > He uses X86_32 so swiotlb should not be used (which is available on 
+> > only X86_64 and IA64 for now).
+> > 
+> > b44 needs an address under 1GB so it sets device->dma_mask to 
+> > DMA_30BIT_MASK. With VMSPLIT option of 2G/2G, I guess that b44 could 
+> > get addresses above 1GB from the networking subsystem. In such case, 
+> > nommu_map_single returns bad_dma_address properly, but on X86_32, 
+> > dma_mapping_error always returns 0 (success). So b44 wrongly thinks 
+> > that the address is under 1GB.
+> > 
+> > This patch fixes dma_mapping_error() to check a passed address
+> > properly (compares it with bad_dma_address).
+> > 
+> > As I already wrote, the current git needs a patch modified slightly:
+> > 
+> > http://marc.info/?l=linux-kernel&m=122797163405377&w=2
+> 
+> i have i queued up in x86/urgent, see below.
 
-There are a few improvements over fakephp, which couldn't handle PCI
-devices being added or removed via a means other than fakephp's actions.
-If is device was added another way, fakephp doesn't notice and create the
-fake slot for it.  If a device was removed another way, fakephp doesn't
-delete the fake slot for it (and accessing the stale slot will cause an
-oops).  This is fixed.  As a consequence of this, removing a bridge with
-other devices behind it works as well, which is something else fakephp
-couldn't do.
+As I wrote, just removing #ifdef is better since:
 
-This duplicates a tiny bit of the code in the PCI core that does this same
-function.  Re-using that code ends up being more complex than duplicating
-it, and it makes code in the PCI core more ugly just to support this legacy
-fakephp interface compatibility layer.
+1) Xen people want swiotlb on X86_32. swiotlb uses ops->mapping_error
+so X86_32 also needs to check ops->mapping_error.
 
-Doing a rescan isn't supported yet.
----
- drivers/pci/hotplug/Kconfig          |    5 +
- drivers/pci/hotplug/Makefile         |    1 +
- drivers/pci/hotplug/legacy_fakephp.c |  163 ++++++++++++++++++++++++++++++++++
- 3 files changed, 169 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pci/hotplug/legacy_fakephp.c
+2) Removing #ifdef hack is always good.
 
-diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
-index eacfb13..d26bc68 100644
---- a/drivers/pci/hotplug/Kconfig
-+++ b/drivers/pci/hotplug/Kconfig
-@@ -39,6 +39,11 @@ config HOTPLUG_PCI_FAKE
- 
- 	  When in doubt, say N.
- 
-+config HOTPLUG_PCI_LEGACY_FAKE
-+	tristate "Legacy Fake PCI Hotplug driver"
-+	help
-+	  Provides an interface like the fakephp driver used to.
-+
- config HOTPLUG_PCI_COMPAQ
- 	tristate "Compaq PCI Hotplug driver"
- 	depends on X86 && PCI_BIOS && PCI_LEGACY
-diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
-index 9bdbe1a..9ad009d 100644
---- a/drivers/pci/hotplug/Makefile
-+++ b/drivers/pci/hotplug/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_HOTPLUG_PCI_SHPC)		+= shpchp.o
- obj-$(CONFIG_HOTPLUG_PCI_RPA)		+= rpaphp.o
- obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
- obj-$(CONFIG_HOTPLUG_PCI_SGI)		+= sgi_hotplug.o
-+obj-$(CONFIG_HOTPLUG_PCI_LEGACY_FAKE)	+= legacy_fakephp.o
- 
- # Link this last so it doesn't claim devices that have a real hotplug driver
- obj-$(CONFIG_HOTPLUG_PCI_FAKE)		+= fakephp.o
-diff --git a/drivers/pci/hotplug/legacy_fakephp.c b/drivers/pci/hotplug/legacy_fakephp.c
-new file mode 100644
-index 0000000..a13cf98
---- /dev/null
-+++ b/drivers/pci/hotplug/legacy_fakephp.c
-@@ -0,0 +1,163 @@
-+/* Works like the fakephp driver used to, except a little better.
-+ *
-+ * - It's possible to remove devices with subordinate busses.
-+ * - New PCI devices that appear via any method, not just a fakephp triggered
-+ *   rescan, will be noticed.
-+ * - Devices that are removed via any method, not just a fakephp triggered
-+ *   removal, will also be noticed.
-+ *
-+ * Uses nothing from the pci-hotplug subsystem.
-+ *
-+ * Currently you can't do a bus rescan, but that should be fixed.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/list.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include "../pci.h"
-+
-+struct legacy_slot {
-+	struct kobject		kobj;
-+	struct pci_dev		*dev;
-+	struct list_head	list;
-+};
-+
-+static LIST_HEAD(legacy_list);
-+
-+static ssize_t legacy_show(struct kobject *kobj, struct attribute *attr,
-+			   char *buf)
-+{
-+	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
-+	strcpy(buf, "1\n");
-+	return 2;
-+}
-+
-+static void remove_callback(void *data)
-+{
-+	pci_remove_bus_device((struct pci_dev *)data);
-+}
-+
-+static ssize_t legacy_store(struct kobject *kobj, struct attribute *attr,
-+			    const char *buf, size_t len)
-+{
-+	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
-+	unsigned long val;
-+
-+	if (strict_strtoul(buf, 0, &val) < 0)
-+		return -EINVAL;
-+
-+	if (val)
-+		return len; /* rescan should go here */
-+	else
-+		sysfs_schedule_callback(&slot->dev->dev.kobj, remove_callback,
-+		                        slot->dev, THIS_MODULE);
-+	return len;
-+}
-+
-+static struct attribute *legacy_attrs[] = {
-+	&(struct attribute){ .name = "power", .mode = 0644 },
-+	NULL,
-+};
-+
-+static void legacy_release(struct kobject *kobj)
-+{
-+	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
-+
-+	pci_dev_put(slot->dev);
-+	kfree(slot);
-+}
-+
-+static struct kobj_type legacy_ktype = {
-+	.sysfs_ops = &(struct sysfs_ops){
-+		.store = legacy_store, .show = legacy_show
-+	},
-+	.release = &legacy_release,
-+	.default_attrs = legacy_attrs,
-+};
-+
-+static int legacy_add_slot(struct pci_dev *pdev)
-+{
-+	struct legacy_slot *slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-+
-+	if (!slot)
-+		return -ENOMEM;
-+
-+	if (kobject_init_and_add(&slot->kobj, &legacy_ktype,
-+				 &pci_slots_kset->kobj, "%s",
-+				 pdev->dev.bus_id)) {
-+		dev_warn(&pdev->dev, "Failed to created legacy fake slot\n");
-+		return -EINVAL;
-+	}
-+	slot->dev = pci_dev_get(pdev);
-+
-+	list_add(&slot->list, &legacy_list);
-+
-+	return 0;
-+}
-+
-+static int legacy_notify(struct notifier_block *nb,
-+			 unsigned long action, void *data)
-+{
-+        struct pci_dev *pdev = to_pci_dev(data);
-+
-+	if (action == BUS_NOTIFY_ADD_DEVICE) {
-+		legacy_add_slot(pdev);
-+	} else if (action == BUS_NOTIFY_DEL_DEVICE) {
-+		struct legacy_slot *slot;
-+
-+		list_for_each_entry(slot, &legacy_list, list)
-+			if (slot->dev == pdev)
-+				goto found;
-+
-+		dev_warn(&pdev->dev, "Missing legacy fake slot?");
-+		return -ENODEV;
-+found:
-+		kobject_del(&slot->kobj);
-+		list_del(&slot->list);
-+		kobject_put(&slot->kobj);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct notifier_block legacy_notifier = {
-+	.notifier_call = legacy_notify
-+};
-+
-+static int __init init_legacy(void)
-+{
-+	struct pci_dev *pdev = NULL;
-+
-+	/* Add existing devices */
-+	while ((pdev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pdev)))
-+		legacy_add_slot(pdev);
-+
-+	/* Be alerted of any new ones */
-+	bus_register_notifier(&pci_bus_type, &legacy_notifier);
-+	return 0;
-+}
-+module_init(init_legacy);
-+
-+static void __exit remove_legacy(void)
-+{
-+	struct legacy_slot *slot, *tmp;
-+
-+	bus_unregister_notifier(&pci_bus_type, &legacy_notifier);
-+
-+	list_for_each_entry_safe(slot, tmp, &legacy_list, list) {
-+		list_del(&slot->list);
-+		kobject_del(&slot->kobj);
-+		kobject_put(&slot->kobj);
-+	}
-+}
-+module_exit(remove_legacy);
-+
-+
-+MODULE_AUTHOR("Trent Piepho <xyzzy@speakeasy.org>");
-+MODULE_DESCRIPTION("Legacy version of the fakephp interface");
-+MODULE_LICENSE("GPL");
--- 
-1.5.4.1
 
+But this patch fixes the bug and it works for now. And I think that
+Thomas tested it. So it's fine to commit this patch by me.
+
+I'll send a patch to remove the ifdef on the top of this patch after
+this patch goes into mainline.
+
+
+> 
+> -------------->
+> From 7b1dedca42ac0d0d0be01e39d8461bb53a2389b3 Mon Sep 17 00:00:00 2001
+> From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Date: Sat, 29 Nov 2008 13:46:27 +0100
+> Subject: [PATCH] x86: fix dma_mapping_error for 32bit x86
+> 
+> Devices like b44 ethernet can't dma from addresses above 1GB. The driver
+> handles this cases by falling back to GFP_DMA allocation. But for detecting
+> the problem it needs to get an indication from dma_mapping_error.
+> The bug is triggered by using a VMSPLIT option of 2G/2G.
+> 
+> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/include/asm/dma-mapping.h |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
+> index 7f225a4..097794f 100644
+> --- a/arch/x86/include/asm/dma-mapping.h
+> +++ b/arch/x86/include/asm/dma-mapping.h
+> @@ -71,15 +71,13 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
+>  /* Make sure we keep the same behaviour */
+>  static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+>  {
+> -#ifdef CONFIG_X86_32
+> -	return 0;
+> -#else
+> +#ifdef CONFIG_X86_64
+>  	struct dma_mapping_ops *ops = get_dma_ops(dev);
+>  	if (ops->mapping_error)
+>  		return ops->mapping_error(dev, dma_addr);
+>  
+> -	return (dma_addr == bad_dma_address);
+>  #endif
+> +	return (dma_addr == bad_dma_address);
+>  }
+>  
+>  #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
