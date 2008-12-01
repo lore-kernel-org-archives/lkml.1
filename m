@@ -1,41 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYLAV7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbYLAWBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbYLAV7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 16:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLAV72
+	id S1753473AbYLAWBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 17:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYLAWA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 16:59:28 -0500
-Received: from rtr.ca ([76.10.145.34]:55272 "EHLO mail.rtr.ca"
+	Mon, 1 Dec 2008 17:00:59 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34260 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbYLAV71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 16:59:27 -0500
-Message-ID: <49345E82.3020704@rtr.ca>
-Date: Mon, 01 Dec 2008 17:00:34 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1751024AbYLAWA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 17:00:58 -0500
+Date: Mon, 1 Dec 2008 23:00:55 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       olof@lixom.net
+Subject: [PATCH retry] drivers/mtd/nand/pasemi_nand.c: Add missing pci_dev_put
+Message-ID: <Pine.LNX.4.64.0812012259590.1541@ask.diku.dk>
 MIME-Version: 1.0
-To: Tobias Lorenz <tobias.lorenz@gmx.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: PATCH: radio-si470x: add USB ID for dealextreme usb radio
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add USB ID for the Sil4701 radio from DealExtreme.
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
+pci_get_device increments a reference count that should be decremented
+using pci_dev_put.
 
---- linux/drivers/media/radio/radio-si470x.c.orig	2008-12-01 16:20:39.000000000 -0500
-+++ linux/drivers/media/radio/radio-si470x.c	2008-12-01 16:20:18.000000000 -0500
-@@ -142,6 +142,8 @@
- static struct usb_device_id si470x_usb_driver_id_table[] = {
- 	/* Silicon Labs USB FM Radio Reference Design */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(0x10c4, 0x818a,	USB_CLASS_HID, 0, 0) },
-+	/* DealExtreme USB Radio */
-+	{ USB_DEVICE_AND_INTERFACE_INFO(0x10c5, 0x819a,	USB_CLASS_HID, 0, 0) },
- 	/* ADS/Tech FM Radio Receiver (formerly Instant FM Music) */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(0x06e1, 0xa155,	USB_CLASS_HID, 0, 0) },
- 	/* Terminating entry */
+The semantic patch that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r exists@
+local idexpression x;
+statement S,S1;
+position p1,p2,p3;
+expression E,E1;
+type T,T1;
+expression *ptr != NULL;
+@@
+
+(
+ if ((x@p1 = pci_get_device(...)) == NULL) S
+|
+ x@p1 = pci_get_device(...);
+)
+ ... when != pci_dev_put(...,(T)x,...)
+     when != if (...) { <+... pci_dev_put(...,(T)x,...) ...+> }
+     when != true x == NULL || ...
+     when != x = E
+     when != E = (T)x
+     when any
+(
+ if (x == NULL || ...) S1
+|
+ if@p2 (...) {
+  ... when != pci_dev_put(...,(T1)x,...)
+      when != if (...) { <+... pci_dev_put(...,(T1)x,...) ...+> }
+      when != x = E1
+      when != E1 = (T1)x
+(
+  return \(0\|<+...x...+>\|ptr\);
+|
+  return@p3 ...;
+)
+}
+)
+
+@ script:python @
+p1 << r.p1;
+p3 << r.p3;
+@@
+
+print "* file: %s pci_get_device: %s return: %s" % (p1[0].file,p1[0].line,p3[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/mtd/nand/pasemi_nand.c      |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
+index 75c8990..9bd6c9a 100644
+--- a/drivers/mtd/nand/pasemi_nand.c
++++ b/drivers/mtd/nand/pasemi_nand.c
+@@ -141,6 +141,7 @@ static int __devinit pasemi_nand_probe(struct of_device *ofdev,
+ 	}
+ 
+ 	lpcctl = pci_resource_start(pdev, 0);
++	pci_dev_put(pdev);
+ 
+ 	if (!request_region(lpcctl, 4, driver_name)) {
+ 		err = -EBUSY;
