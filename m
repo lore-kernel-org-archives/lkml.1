@@ -1,50 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYLALA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYLALNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYLALA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 06:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYLALAP
+	id S1753528AbYLALNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 06:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYLALNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 06:00:15 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46399 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbYLALAO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 06:00:14 -0500
-Date: Mon, 1 Dec 2008 10:59:56 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] keypad/touchscreen driver events latencies using LTTng on ARM?
-Message-ID: <20081201105956.GC28971@flint.arm.linux.org.uk>
-References: <5d5443650811301000t58665a7j7aa93be52325a23b@mail.gmail.com> <20081201103502.GC25340@Krystal> <20081201104529.GB28971@flint.arm.linux.org.uk> <20081201105737.GE25340@Krystal>
+	Mon, 1 Dec 2008 06:13:06 -0500
+Received: from ns1.suse.de ([195.135.220.2]:60259 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751334AbYLALNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 06:13:05 -0500
+Date: Mon, 1 Dec 2008 12:13:01 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
+Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+Message-ID: <20081201111301.GB13903@wotan.suse.de>
+References: <20081127120330.GM28285@wotan.suse.de> <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de> <492E97FA.5000804@gmail.com> <20081127130525.GO28285@wotan.suse.de> <492E9C3C.9050507@gmail.com> <20081127131215.GQ28285@wotan.suse.de> <492E9F42.6010808@gmail.com> <20081128121015.GC13786@wotan.suse.de> <4932EBAA.60808@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081201105737.GE25340@Krystal>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4932EBAA.60808@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 05:57:37AM -0500, Mathieu Desnoyers wrote:
-> Ok, so for LTTng on ARM it would make sense to use the same clock source
-> as sched_clock for :
-> mach-pxa, mach-realview, mach-sa1100, mach-versatile, plat-omap.
+On Sun, Nov 30, 2008 at 09:38:18PM +0200, Török Edwin wrote:
+> On 2008-11-28 14:10, Nick Piggin wrote:
+> > This is what I have.
+> >
+> > It does two things. Firstly, it switches x86-64 over to use the xadd
+> > algorithm rather than the spinlock algorithm. This is actually significant
+> > in high contention situations, because the spinlock algorithm doesn't allow
+> > concurrent operations on the lock while the queue of waiters is being
+> > manipulated.
+> >
+> > Secondly, it moves wakeups out from underneath the waiter queue lock. This
+> > is more significant on bigger machines where wakeup latency is worse and/or
+> > runqueue locks are very heavily contended.
+> >
+> > Now both these changes are going to help *mainly* for the case when there are
+> > a significant number of readers and writers, I think. So your write-heavy
+> > workload may not win anything. I noticed some speedup a long time ago on
+> > some weird java (volanomark) workload.
 > 
-> We basically have, for each of these build scenarios, to take the mmio
-> clock used by sched_clock and use it through
-> kernel/trace/trace-clock-32-to-64 to extend it to 64-bits. Therefore we
-> won't suffer from any of the constrains linked to cnt32_to_63 and we
-> would be sure that the trace clock is correct wrt SMP wrt memory
-> barriers and cache line bouncing because it uses per-cpu data to keep
-> the counters.
+> Hi,
+> 
+> I just tested your patch on top of tip/master, and my testprogram has
+> segfaulted :(
+> It is either something wrong in tip/master or the patch, or my program.
+> This is the first time this testprogram segfaults, and it doesn't have a
+> reason to segfault there.
+> 
+> 
+> [  140.624155] scalability[4995]: segfault at 7f9ce137f000 ip
+> 0000000000401a62 sp 00000000454950a0 error 4 in scalability[400000+3000]
+> [  401.640738] scalability[5398]: segfault at 7fdbffba3000 ip
+> 0000000000401a62 sp 00000000423d70a0 error 4 in scalability[400000+3000]
+> 
+> Here is the relevant portion, at 401a62 I read from the mapping:
+> 
+> static void mmap_worker_fn(int fd, off_t len)
+> {
+>     char *data = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
+>   401a4f:    48 89 c7                 mov    %rax,%rdi
+>     if(data == MAP_FAILED) {
+>   401a52:    74 36                    je     401a8a <mmap_worker_fn+0x5a>
+>         perror("mmap");
+>         abort();
+>   401a54:    31 d2                    xor    %edx,%edx
+>   401a56:    31 c9                    xor    %ecx,%ecx
+> static pthread_mutex_t thrtime_mtx = PTHREAD_MUTEX_INITIALIZER;
+> 
+> static size_t execute(const char *data, size_t len)
+> {
+>     size_t sum = 0, i;
+>     for(i=0;i<len;++i)
+>   401a58:    48 85 db                 test   %rbx,%rbx
+>   401a5b:    74 28                    je     401a85 <mmap_worker_fn+0x55>
+>   401a5d:    0f 1f 00                 nopl   (%rax)
+>         if(data[i] == 'd')
+>             ++sum;
+>   401a60:    31 c0                    xor    %eax,%eax
+>   401a62:    80 3c 17 64              cmpb   $0x64,(%rdi,%rdx,1)
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> This simply reads from the mapping
+> 
+>   401a66:    0f 94 c0                 sete   %al
+> static pthread_mutex_t thrtime_mtx = PTHREAD_MUTEX_INITIALIZER;
+> 
+> Steps to reproduce:
+> # sync; echo 3 >/proc/sys/vm/drop_caches; sync
+> # echo 0 >/proc/lock_stat
+> $ sudo ./scalability 16 /usr/bin/
+> ... prints out results for read, and while running mmap_worker ...
+> ... a message about segmentation fault ....
+> 
+> The testprogram is available here:
+> http://edwintorok.googlepages.com/tst.tar.gz
+> 
+> My .config:
+> http://edwintorok.googlepages.com/config
+> 
+> Can you reproduce the crash on your box?
+> Can I help debugging the problem?
 
-Just remember that MMIO clock sources are not available until after
-setup_arch() has finished - in other words, they don't work when the
-kernel initially boots.  Accessing them too early will cause a page
-fault and hang the kernel.
+BTW. I think your source code (I see you updated it since last posting)
+should be very easy to give good hints to the kernel about the IO. I
+will try a few simple tricks and we can see if they help. (this pattern
+of touching memory corresponds well to how your app works?)
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thanks,
+Nick
