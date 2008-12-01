@@ -1,111 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYLAASw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYLAATW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbYLAASw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 19:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYLAASn
+	id S1756675AbYLAATW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 19:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYLAATL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 19:18:43 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:56643 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752627AbYLAASm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 19:18:42 -0500
-X-IronPort-AV: E=Sophos;i="4.33,691,1220252400"; 
-   d="scan'208";a="93037842"
-Subject: Re: [PATCH 1/3] SUNRPC: Ensure the server closes sockets in a
- timely fashion
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: linux-nfs@vger.kernel.org, Max Kellermann <mk@cm4all.com>,
-       linux-kernel@vger.kernel.org, gcosta@redhat.com,
-       Grant Coady <grant_lkml@dodo.com.au>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Tom Tucker <tom@opengridcomputing.com>
-In-Reply-To: <1228090631.7112.11.camel@heimdal.trondhjem.org>
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>
-	 <1224484046.23068.14.camel@localhost.localdomain>
-	 <1225539927.2221.3.camel@localhost.localdomain>
-	 <1225546878.4390.3.camel@heimdal.trondhjem.org>
-	 <1227596962.16868.22.camel@localhost.localdomain>
-	 <1227619696.7057.19.camel@heimdal.trondhjem.org>
-	 <1227620339.9425.99.camel@zakaz.uk.xensource.com>
-	 <1227621434.7057.33.camel@heimdal.trondhjem.org>
-	 <1227621877.9425.102.camel@zakaz.uk.xensource.com>
-	 <1227737539.31008.2.camel@localhost.localdomain>
-	 <1228090631.7112.11.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Sun, 30 Nov 2008 19:18:39 -0500
-Message-Id: <1228090719.7112.13.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-X-OriginalArrivalTime: 01 Dec 2008 00:18:41.0706 (UTC) FILETIME=[5D6FC0A0:01C9534A]
+	Sun, 30 Nov 2008 19:19:11 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:44771 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754647AbYLAATK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 19:19:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=d7LxNQoanvio7qx5JWT3tHxElblYCfazkgWtkmIfrF+eIUWZu8/qSPmtsqLmFFdpgM
+         i0gJTfNUK7pALvvR6+DAbSTK8rlBrQVfyNnuPPmEcQFUNlSkxYFeCwCvMlFcbjjdnwih
+         FNLTEP59/gwwDGHDYKugblALylTZbNAecwwpI=
+Date: Mon, 1 Dec 2008 01:18:56 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Jan Kara <jack@suse.cz>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: next-2008-11-28 : can't mount UDF DVD
+Message-ID: <20081201001854.GA9881@joi>
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au> <49332545.5020604@free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49332545.5020604@free.fr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We want to ensure that connected sockets close down the connection when we
-set XPT_CLOSE, so that we don't keep it hanging while cleaning up all the
-stuff that is keeping a reference to the socket.
+On Mon, Dec 01, 2008 at 12:44:05AM +0100, Laurent Riffard wrote:
+> Hi,
+> 
+> With next-2008-11-28, I was unable to mount an UDF-formatted DVD-RW:
+> 
+> ~$ mount -oro -t udf /dev/sr0 /media/cdrom/
+> mount: Not a directory
+> 
+> There was no problem with 2.6.28-rc6.
+> 
+> I made a bisection:
+> 
+> 33284bdf40f88160a154202510b27d983138c805 is first bad commit
+> commit 33284bdf40f88160a154202510b27d983138c805
+> Author: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Date:   Sun Nov 16 20:52:19 2008 +0100
+> 
+>     udf: implement mode and dmode mounting options
+> 
+>     "dmode" allows overriding permissions of directories and
+>     "mode" allows overriding permissions of files.
+> 
+>     Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+>     Cc: Jan Kara <jack@suse.cz>
+>     Signed-off-by: Jan Kara <jack@suse.cz>
+> 
+> 
+> Indeed, with this commit, I *must* use the dmode option to mount my DVD:
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- net/sunrpc/svcsock.c |   21 ++++++++++++++++++++-
- 1 files changed, 20 insertions(+), 1 deletions(-)
-
-
-diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
-index 95293f5..a1b048d 100644
---- a/net/sunrpc/svcsock.c
-+++ b/net/sunrpc/svcsock.c
-@@ -59,6 +59,7 @@ static void		svc_udp_data_ready(struct sock *, int);
- static int		svc_udp_recvfrom(struct svc_rqst *);
- static int		svc_udp_sendto(struct svc_rqst *);
- static void		svc_sock_detach(struct svc_xprt *);
-+static void		svc_tcp_sock_detach(struct svc_xprt *);
- static void		svc_sock_free(struct svc_xprt *);
+That's not intended behaviour... ;)
  
- static struct svc_xprt *svc_create_socket(struct svc_serv *, int,
-@@ -1017,7 +1018,7 @@ static struct svc_xprt_ops svc_tcp_ops = {
- 	.xpo_recvfrom = svc_tcp_recvfrom,
- 	.xpo_sendto = svc_tcp_sendto,
- 	.xpo_release_rqst = svc_release_skb,
--	.xpo_detach = svc_sock_detach,
-+	.xpo_detach = svc_tcp_sock_detach,
- 	.xpo_free = svc_sock_free,
- 	.xpo_prep_reply_hdr = svc_tcp_prep_reply_hdr,
- 	.xpo_has_wspace = svc_tcp_has_wspace,
-@@ -1282,6 +1283,24 @@ static void svc_sock_detach(struct svc_xprt *xprt)
- 	sk->sk_state_change = svsk->sk_ostate;
- 	sk->sk_data_ready = svsk->sk_odata;
- 	sk->sk_write_space = svsk->sk_owspace;
-+
-+	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+		wake_up_interruptible(sk->sk_sleep);
-+}
-+
-+/*
-+ * Disconnect the socket, and reset the callbacks
-+ */
-+static void svc_tcp_sock_detach(struct svc_xprt *xprt)
-+{
-+	struct svc_sock *svsk = container_of(xprt, struct svc_sock, sk_xprt);
-+
-+	dprintk("svc: svc_tcp_sock_detach(%p)\n", svsk);
-+
-+	svc_sock_detach(xprt);
-+
-+	if (!test_bit(XPT_LISTENER, &xprt->xpt_flags))
-+		kernel_sock_shutdown(svsk->sk_sock, SHUT_RDWR);
- }
+> ~$ sudo mount -oro,dmode=0755 -t udf /dev/sr0 /media/cdrom/
+> ~$ grep /media/cdrom /proc/mounts 
+> /dev/scd0 /media/cdrom udf ro,mode=177777,dmode=755,utf8 0 0
+                                     ^^^^^^
+funny (it's 65535 / (u16)-1)
+
+> ~$ ls -la /media/cdrom/
+> total 46
+> drwxr-xr-x  5 root    root     344 Dec 24  2007 .
+> drwxr-xr-x 12 root    root    4096 Dec  1 00:17 ..
+> drwxr-xr-x  2 laurent laurent 7112 Nov 30 20:14 flexbackup
+> drwxr-xr-x  2 root    root      40 Nov 20  2005 lost+found
+> drwxr-xr-x 10 laurent laurent 4548 Nov 25  2005 patches
+> ~$ ls -la /media/cdrom/flexbackup/
+> total 4307946
+> drwxr-xr-x 2 laurent laurent       7112 Nov 30 20:14 .
+> drwxr-xr-x 5 root    root           344 Dec 24  2007 ..
+> ?rwsrwsrwt 1 laurent laurent         44 Oct  1  2006 00-index-key
+> ...
+> 
+> Althought I was able to mount it with no special option on 2.6.28-rc6:
+> 
+> ~$ sudo mount -oro -t udf /dev/sr0 /media/cdrom/
+> ~$ grep /media/cdrom /proc/mounts 
+> /dev/scd0 /media/cdrom udf ro,utf8 0 0
+> ~$ ls -la /media/cdrom/
+> total 46
+> drwxrwxrwx  5 root    root     344 2007-12-24 18:09 .
+> drwxr-xr-x 12 root    root    4096 2008-12-01 00:22 ..
+> drwxr-x---  2 laurent laurent 7112 2008-11-30 20:14 flexbackup
+> drwxr-xr-x  2 root    root      40 2005-11-20 23:37 lost+found
+> drwxr-x--- 10 laurent laurent 4548 2005-11-25 18:18 patches
+> ~$ ls -la /media/cdrom/flexbackup/
+> total 4307946
+> drwxr-x--- 2 laurent laurent       7112 2008-11-30 20:14 .
+> drwxrwxrwx 5 root    root           344 2007-12-24 18:09 ..
+> -rw-r----- 1 laurent laurent         44 2006-10-01 15:36 00-index-key
+> ...
+> 
+> ~~
+> laurent
+
+Can you check whether attached patch fixes it?
+What architecture are you testing on?
+
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 6612a27..9eeb726 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -1222,10 +1222,10 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	iinfo->i_lenExtents = inode->i_size;
  
- /*
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+ 	if (fe->icbTag.fileType != ICBTAG_FILE_TYPE_DIRECTORY &&
+-			sbi->s_fmode != -1)
++			sbi->s_fmode != (mode_t)-1)
+ 		inode->i_mode = sbi->s_fmode;
+ 	else if (fe->icbTag.fileType == ICBTAG_FILE_TYPE_DIRECTORY &&
+-			sbi->s_dmode != -1)
++			sbi->s_dmode != (mode_t)-1)
+ 		inode->i_mode = sbi->s_dmode;
+ 	else
+ 		inode->i_mode = udf_convert_permissions(fe);
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index e5d121d..af8a771 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -284,9 +284,9 @@ static int udf_show_options(struct seq_file *seq, struct vfsmount *mnt)
+ 		seq_printf(seq, ",gid=%u", sbi->s_gid);
+ 	if (sbi->s_umask != 0)
+ 		seq_printf(seq, ",umask=%o", sbi->s_umask);
+-	if (sbi->s_fmode != -1)
++	if (sbi->s_fmode != (mode_t)-1)
+ 		seq_printf(seq, ",mode=%o", sbi->s_fmode);
+-	if (sbi->s_dmode != -1)
++	if (sbi->s_dmode != (mode_t)-1)
+ 		seq_printf(seq, ",dmode=%o", sbi->s_dmode);
+ 	if (UDF_QUERY_FLAG(sb, UDF_FLAG_SESSION_SET))
+ 		seq_printf(seq, ",session=%u", sbi->s_session);
