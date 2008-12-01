@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYLAB6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYLAB7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbYLAB6L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 20:58:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYLAB55
+	id S1756660AbYLAB7P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 20:59:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYLAB67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 20:57:57 -0500
-Received: from cmpxchg.org ([85.214.51.133]:49688 "EHLO cmpxchg.org"
+	Sun, 30 Nov 2008 20:58:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33084 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbYLAB54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 20:57:56 -0500
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch v2] vmscan: protect zone rotation stats by lru lock
-Message-Id: <E1L6y5T-0003q3-M3@cmpxchg.org>
-Date: Mon, 01 Dec 2008 03:00:35 +0100
+	id S1752883AbYLAB66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 20:58:58 -0500
+Subject: Re: dynamic function tracing
+From: Steven Rostedt <srostedt@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <20081128101922.451e254a@infradead.org>
+References: <20081128101922.451e254a@infradead.org>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Sun, 30 Nov 2008 20:58:50 -0500
+Message-Id: <1228096730.4886.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The zone's rotation statistics must not be accessed without the
-corresponding LRU lock held.  Fix an unprotected write in
-shrink_active_list().
 
-Acked-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
- mm/vmscan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, 2008-11-28 at 10:19 -0800, Arjan van de Ven wrote:
+> Hi,
+> 
+> I like the new function trace format with the {}'s a lot.. but I would
+> like to use it in a way I don't think would work with dynamic tracing.
+> 
+> What I would like to do (read: usecase) is mark a function as
+> interesting (because it has some performance issue or whatever),
+> and then I want to get all functions it calls (recursive) traced
+> automatically for the duration of that function.
+> 
+> This might be implementable by, on hitting the function to trace,
+> patching all trace points with a function that checks if it's this
+> thread (eg this "current"), and if so, traces the call. 
+> I realize it's not going to be super cheap, so it needs to be one-shot,
+> but it'll form a really strong usecase in practice...
 
-Applies to your tree, Linus, and should probably go into .28.
+It would not be wise to enable the function pointer at that moment. But
+what we could do is have a function trace enabled that will flag when a
+function is hit. Then it could start tracing all functions until it
+returns. This would be possible.
 
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1243,32 +1243,32 @@ static void shrink_active_list(unsigned 
- 		/* page_referenced clears PageReferenced */
- 		if (page_mapping_inuse(page) &&
- 		    page_referenced(page, 0, sc->mem_cgroup))
- 			pgmoved++;
- 
- 		list_add(&page->lru, &l_inactive);
- 	}
- 
-+	spin_lock_irq(&zone->lru_lock);
- 	/*
- 	 * Count referenced pages from currently used mappings as
- 	 * rotated, even though they are moved to the inactive list.
- 	 * This helps balance scan pressure between file and anonymous
- 	 * pages in get_scan_ratio.
- 	 */
- 	zone->recent_rotated[!!file] += pgmoved;
- 
- 	/*
- 	 * Move the pages to the [file or anon] inactive list.
- 	 */
- 	pagevec_init(&pvec, 1);
- 
- 	pgmoved = 0;
- 	lru = LRU_BASE + file * LRU_FILE;
--	spin_lock_irq(&zone->lru_lock);
- 	while (!list_empty(&l_inactive)) {
- 		page = lru_to_page(&l_inactive);
- 		prefetchw_prev_lru_page(page, &l_inactive, flags);
- 		VM_BUG_ON(PageLRU(page));
- 		SetPageLRU(page);
- 		VM_BUG_ON(!PageActive(page));
- 		ClearPageActive(page);
- 
+What we need is a better way to attach the function tracer with the
+function graph.
+
+-- Steve
+
+
