@@ -1,162 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbYLAXwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYLAX6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbYLAXwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 18:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYLAXwb
+	id S1753358AbYLAX6U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 18:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYLAX6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 18:52:31 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:5982 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbYLAXwa (ORCPT
+	Mon, 1 Dec 2008 18:58:12 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:43639 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751068AbYLAX6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 18:52:30 -0500
-Date: Tue, 2 Dec 2008 00:52:24 +0100
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, arvidjaar@mail.ru,
-       linux-kernel@vger.kernel.org, philipl@overt.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch] ACPI toshiba: only register rfkill if bt is enabled
-Message-ID: <20081201235224.GA4864@gambetta>
-References: <20081029081934.GB26314@gambetta> <20081201113052.9e9aae36.akpm@linux-foundation.org> <20081201114004.731cec86@infradead.org>
+	Mon, 1 Dec 2008 18:58:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=JgBaO8zqyERXsQew6BseOBkVM1y8hVJNu6rGtxHG/zKumVIz/jM2a4NfNgjn5ZvvgvcatINSeAYSaefpDoJ5SJ3i/dVtAhYnfS+Y/j0V2RYWvZk6Ps4NH4PlTVKo1jlhNoqMbJH9LRpxgmRqphPSQocxyiffEzWt0ZWOmDGfvsU=  ;
+X-YMail-OSG: h7xioTkVM1nahFWsJoS.OvVm_hYD23HTrwtnXTsls_Dwvy7v0ZN2gf54Wa8XpHJGZrfgR7RCwky6vhgyfzHn7UdWKEubp2ymeQYWeIiWz.YdmuNP7aRp1g1EE774bSIdqhvgHvzN2H9K.O8SwK7zQLR.YDvTLklAUT4gzOg-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.28-rc6+] regulator: bugfixes and messaging cleanup
+Date: Mon, 1 Dec 2008 15:58:08 -0800
+User-Agent: KMail/1.9.10
+Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
+References: <200812011335.43551.david-b@pacbell.net> <20081201225312.GA6699@sirena.org.uk>
+In-Reply-To: <20081201225312.GA6699@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081201114004.731cec86@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200812011558.09154.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 11:40:04AM -0800, Arjan van de Ven wrote:
-> they fix the same symptom, but are both needed.
-> My patch fixes "if it goes wrong and init fails, don't oops", the mmotm
-> patch fixes "lets not make init fail for <this case>". If there's some
-> other reason the init fails, my patch is still needed.
+On Monday 01 December 2008, Mark Brown wrote:
+> On Mon, Dec 01, 2008 at 01:35:43PM -0800, David Brownell wrote:
+> 
+> > Regulator core bugfixes:
+> 
+> ...
+> 
+> > And messaging updates;
+> 
+> This could usefuly be split into a patch series, there's rather a lot
+> of different changes in here...
 
-Confirmed, both are needed. You'll find a refreshed patch attached.
+Could be ... I was mostly just collecting core updates involved in
+making sure I could regulator_enable() on one board.  The messaging
+in the current code was decidedly un-helpful for that task.
 
-Regards,
-Frederik
+At most I'd see two patches:  one with bugfixes, one with messaging
+fixes that aren't strictly "bug" fixes (i.e. messages worked but
+violated normal conventions like driver model).
 
 
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+> On the whole it looks good, a few 
+> things, though:
+> 
+> > @@ -894,7 +915,7 @@ struct regulator *regulator_get(struct d
+> >  	struct regulator *regulator = ERR_PTR(-ENODEV);
+> >  
+> >  	if (id == NULL) {
+> > -		printk(KERN_ERR "regulator: get() with no identifier\n");
+> > +		dev_dbg(dev, "regulator_get with no identifier\n");
+> >  		return regulator;
+> >  	}
+> 
+> dev may legally be NULL here
 
-Part of the rfkill initialization was done whenever BT was on or not.  The
-following patch checks for BT presence before registering the rfkill to
-the input layer.  Some minor cleanups (> 80 char lines) were also added in
-the process.
+The kerneldoc doesn't mention that at all ... seems like a pretty
+major interface artifact.  Hmm, for that matter I notice that if
+you were to run kerneldoc, regulator_register() -- and presumably
+other functions -- would get lots of errors.
 
-On Tue, Oct 28, 2008 at 10:10:37PM +0300, Andrey Borzenkov wrote:
-[...]
-> [   66.633036] toshiba_acpi: Toshiba Laptop ACPI Extras version 0.19
-> [   66.633054] toshiba_acpi:     HCI method: \_SB_.VALD.GHCI
-> [   66.637764] input: Toshiba RFKill Switch as /devices/virtual/input/input3
-[...]
-> [  113.920753] ------------[ cut here ]------------
-> [  113.920828] kernel BUG at /home/bor/src/linux-git/net/rfkill/rfkill.c:347!
-> [  113.920845] invalid opcode: 0000 [#1]
-> [  113.920877] last sysfs file: /sys/devices/pci0000:00/0000:00:04.0/host0/target0:0:0/0:0:0:0/block/sda/size
-> [  113.920900] Dumping ftrace buffer:
-> [  113.920919]    (ftrace buffer empty)
-> [  113.920933] Modules linked in: af_packet irnet ppp_generic slhc ircomm_tty ircomm binfmt_misc loop dm_mirror dm_region_hash dm_log dm_round_robin dm_multipath dm_mod alim15x3 ide_core nvram toshiba cryptomgr aead crypto_blkcipher michael_mic crypto_algapi orinoco_cs orinoco hermes_dld hermes pcmcia firmware_class snd_ali5451 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device smsc_ircc2 snd_pcm_oss snd_pcm rtc_cmos irda snd_timer snd_mixer_oss rtc_core snd crc_ccitt yenta_socket rtc_lib rsrc_nonstatic i2c_ali1535 pcmcia_core pcspkr psmouse soundcore i2c_core evdev sr_mod snd_page_alloc alim1535_wdt cdrom fan sg video output toshiba_acpi rfkill thermal backlight ali_agp processor ac button input_polldev battery agpgart ohci_hcd usbcore reiserfs pata_ali libata sd_mod scsi_mod [last unloaded: scsi_wait_scan]
-> [  113.921765]
-> [  113.921785] Pid: 3272, comm: ipolldevd Not tainted (2.6.28-rc2-1avb #3) PORTEGE 4000
-> [  113.921801] EIP: 0060:[<dfaa4683>] EFLAGS: 00010246 CPU: 0
-> [  113.921854] EIP is at rfkill_force_state+0x53/0x90 [rfkill]
-> [  113.921870] EAX: 00000000 EBX: 00000000 ECX: 00000003 EDX: 00000000
-> [  113.921885] ESI: 00000000 EDI: ddd50300 EBP: d8d7af40 ESP: d8d7af24
-> [  113.921900]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> [  113.921918] Process ipolldevd (pid: 3272, ti=d8d7a000 task=d8d93c90 task.ti=d8d7a000)
-> [  113.921933] Stack:
-> [  113.921945]  d8d7af38 00000246 dfb029d8 dfb029c0 dfb029d8 dfb029c0 ddd50300 d8d7af5c
-> [  113.922014]  dfb018e2 01000246 01000000 ddd50300 ddd50314 ddabb8a0 d8d7af68 dfb381c1
-> [  113.922098]  00000000 d8d7afa4 c012ec0a 00000000 00000002 00000000 c012eba8 ddabb8c0
-> [  113.922240] Call Trace:
-> [  113.922240]  [<dfb018e2>] ? bt_poll_rfkill+0x5c/0x82 [toshiba_acpi]
-> [  113.922240]  [<dfb381c1>] ? input_polled_device_work+0x11/0x40 [input_polldev]
-> [  113.922240]  [<c012ec0a>] ? run_workqueue+0xea/0x1f0
-> [  113.922240]  [<c012eba8>] ? run_workqueue+0x88/0x1f0
-> [  113.922240]  [<dfb381b0>] ? input_polled_device_work+0x0/0x40 [input_polldev]
-> [  113.922240]  [<c012f047>] ? worker_thread+0x87/0xf0
-> [  113.922240]  [<c0132b00>] ? autoremove_wake_function+0x0/0x50
-> [  113.922240]  [<c012efc0>] ? worker_thread+0x0/0xf0
-> [  113.922240]  [<c013280f>] ? kthread+0x3f/0x80
-> [  113.922240]  [<c01327d0>] ? kthread+0x0/0x80
-> [  113.922240]  [<c01040d7>] ? kernel_thread_helper+0x7/0x10
-> [  113.922240] Code: 43 54 89 73 54 39 c6 74 11 89 d9 ba 01 00 00 00 b8 40 68 aa df e8 3e 35 69 e0 89 f8 e8 77 fd 85 e0 31 c0 83 c4 10 5b 5e 5f 5d c3 <0f> 0b eb fe 89 f6 8d bc 27 00 00 00 00 be f4 4d aa df bb 5f 01
-> [  113.922240] EIP: [<dfaa4683>] rfkill_force_state+0x53/0x90 [rfkill] SS:ESP 0068:d8d7af24
-> [  113.924700] ---[ end trace 0e404eb40cadd5f0 ]---
+Allowing it to be NULL seems pretty much contrary to the model that
+a supply name is associated with a device.  I'd call that a bug and
+fix it ... vs calling it a feature and diverging from standard
+framework models.
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Acked-by: Philip Langdale <philipl@overt.org>
 
-diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-index 25f531d..40e60fc 100644
---- a/drivers/acpi/toshiba_acpi.c
-+++ b/drivers/acpi/toshiba_acpi.c
-@@ -824,32 +824,36 @@ static int __init toshiba_acpi_init(void)
- 			toshiba_acpi_exit();
- 			return -ENOMEM;
- 		}
--	}
- 
--	/* Register input device for kill switch */
--	toshiba_acpi.poll_dev = input_allocate_polled_device();
--	if (!toshiba_acpi.poll_dev) {
--		printk(MY_ERR "unable to allocate kill-switch input device\n");
--		toshiba_acpi_exit();
--		return -ENOMEM;
--	}
--	toshiba_acpi.poll_dev->private = &toshiba_acpi;
--	toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
--	toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
--
--	toshiba_acpi.poll_dev->input->name = toshiba_acpi.rfk_name;
--	toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
--	toshiba_acpi.poll_dev->input->id.vendor = 0x0930; /* Toshiba USB ID */
--	set_bit(EV_SW, toshiba_acpi.poll_dev->input->evbit);
--	set_bit(SW_RFKILL_ALL, toshiba_acpi.poll_dev->input->swbit);
--	input_report_switch(toshiba_acpi.poll_dev->input, SW_RFKILL_ALL, TRUE);
--	input_sync(toshiba_acpi.poll_dev->input);
--
--	ret = input_register_polled_device(toshiba_acpi.poll_dev);
--	if (ret) {
--		printk(MY_ERR "unable to register kill-switch input device\n");
--		toshiba_acpi_exit();
--		return ret;
-+		/* Register input device for kill switch */
-+		toshiba_acpi.poll_dev = input_allocate_polled_device();
-+		if (!toshiba_acpi.poll_dev) {
-+			printk(MY_ERR
-+			       "unable to allocate kill-switch input device\n");
-+			toshiba_acpi_exit();
-+			return -ENOMEM;
-+		}
-+		toshiba_acpi.poll_dev->private = &toshiba_acpi;
-+		toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
-+		toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
-+
-+		toshiba_acpi.poll_dev->input->name = toshiba_acpi.rfk_name;
-+		toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
-+		/* Toshiba USB ID */
-+		toshiba_acpi.poll_dev->input->id.vendor = 0x0930;
-+		set_bit(EV_SW, toshiba_acpi.poll_dev->input->evbit);
-+		set_bit(SW_RFKILL_ALL, toshiba_acpi.poll_dev->input->swbit);
-+		input_report_switch(toshiba_acpi.poll_dev->input,
-+				    SW_RFKILL_ALL, TRUE);
-+		input_sync(toshiba_acpi.poll_dev->input);
-+
-+		ret = input_register_polled_device(toshiba_acpi.poll_dev);
-+		if (ret) {
-+			printk(MY_ERR
-+			       "unable to register kill-switch input device\n");
-+			toshiba_acpi_exit();
-+			return ret;
-+		}
- 	}
- 
- 	return 0;
+> which is going to cause upset if the 
+> dev_dbg() is hit.  Things like cpufreq which can use regulators don't
+> use a struct device (currently!) so it's supported.
+
+Which cpufreq driver(s) in mainline use regulator code?
+
+I had commented not long ago that the regulator framework needs
+updates to support cpufreq.  For example, trying to enable hardware
+support for DVFS (Dynamic Voltage and Frequency Scaling) on several
+platforms requires configuring more than one voltage ... floor and
+ceiling, switched automatically by a CPU signal, for starters.
+
+It would be good to overhaul cpufreq before trying to make it use
+things like the clock and regulator frameworks.  Fitting into the
+driver model seems overdue, for one.
+
+
+> > @@ -971,19 +991,16 @@ static int _regulator_enable(struct regu
+> >  	int ret = -EINVAL;
+> >  
+> >  	if (!rdev->constraints) {
+> > -		printk(KERN_ERR "%s: %s has no constraints\n",
+> > -		       __func__, rdev->desc->name);
+> > +		dev_err(&rdev->dev, "%s has no constraints\n",
+> > +		       rdev->desc->name);
+> 
+> Hrm.  You've downgraded most of the diagnostics to dev_dbg()
+
+No; just ones in the enable/disable paths, and even there just
+ones where the caller has control over the illegal parameters.
+
+Recall that rdev->constraints can be nulled for various reasons
+that aren't under control of the regulator client.
+
+
+> but left 
+> this as KERN_ERR.  It'd be nice to be a bit more consistent.  My
+> personal preference is to make things in the constraints and machine
+> definitions display at dev_err() since they should never happen and a
+> plain text error is often helpful for new users but it's not a very
+> strong one either way.
+
+I think this was as consistent as possible with the basic rule
+that when the caller could have prevented it, it's their job to
+handle the fault code they get.
+
+
+> 
+> >  		ret = rdev->desc->ops->enable(rdev);
+> > -		if (ret < 0) {
+> > -			printk(KERN_ERR "%s: failed to enable %s: %d\n",
+> > -			       __func__, rdev->desc->name, ret);
+> > -			return ret;
+> > +		if (ret >= 0) {
+> > +			dev_dbg(&rdev->dev, "enabled %s\n", rdev->desc->name);
+> > +			rdev->use_count++;
+> 
+> I have to say I'd be happier keeping the logic as it was here.  The
+> behaviour does stay the same due to fall through but it's not quite so
+> clear since it's not consistent with the error handling style for the
+> rest of the function.
+
+You mean in this case you'd want to see a (needless) GOTO?  I suppose
+it could be done.  If you want consistency, I'd get rid of the unique
+message for missing constraints, and rely on unique fault codes ...
+
+- Dave
+
+
+
+
+
