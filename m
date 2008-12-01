@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbYLAH6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYLAIAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751748AbYLAH6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 02:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYLAH6j
+	id S1752612AbYLAIAL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 03:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLAH7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 02:58:39 -0500
-Received: from mga09.intel.com ([134.134.136.24]:14892 "EHLO mga09.intel.com"
+	Mon, 1 Dec 2008 02:59:55 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41166 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbYLAH6i convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 02:58:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,694,1220252400"; 
-   d="scan'208";a="366549791"
-From: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "Nguyen, Tom L" <tom.l.nguyen@intel.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 1 Dec 2008 15:58:25 +0800
-Subject: RE: [PATCH] aerdrv: fix sanity check in report_resume
-Thread-Topic: [PATCH] aerdrv: fix sanity check in report_resume
-Thread-Index: AclThtkAcVk0ALGKQkqVGUNRjSUwTQAAyIvA
-Message-ID: <4D05DB80B95B23498C72C700BD6C2E0B023EC665@pdsmsx502.ccr.corp.intel.com>
-References: <493392BA.50906@jp.fujitsu.com>
-In-Reply-To: <493392BA.50906@jp.fujitsu.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1750773AbYLAH7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 02:59:55 -0500
+Date: Mon, 1 Dec 2008 13:29:53 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-fsdevel@vger.kernel.org, jblunck@suse.de, dlezcano@fr.ibm.com,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [rfc git patch] union directory
+Message-ID: <20081201075953.GE3388@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu> <20081128161921.GA3843@in.ibm.com> <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu> <20081201043509.GA3388@in.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081201043509.GA3388@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked.
+On Mon, Dec 01, 2008 at 10:05:09AM +0530, Bharata B Rao wrote:
+> On Sat, Nov 29, 2008 at 05:33:19PM +0100, Miklos Szeredi wrote:
+> > On Fri, 28 Nov 2008, Bharata B Rao wrote:
+> > 
+> > The plan is to get a simple kernel implementation first which caches
+> > the directory in 'struct file'.
+> 
+> FYI, I did this for a version of Union Mount.
+> (http://lkml.org/lkml/2007/6/20/21) I was maintaining the readdir cache in
+> struct file and the cache was persistant across readdir calls.
+> 
+> Do you have anything different in mind ?
 
-Nice capture.
+The version pointed to by me above had the entire cache stored
+in the struct file of the topmost directory. I guess your plan
+is to cache them per branch and combine them during
+readdir()/getdents() ?
 
-Yanmin
-
->>-----Original Message-----
->>From: Hidetoshi Seto [mailto:seto.hidetoshi@jp.fujitsu.com]
->>Sent: Monday, December 01, 2008 3:31 PM
->>To: linux-pci@vger.kernel.org; Nguyen, Tom L; Zhang, Yanmin
->>Cc: linux-kernel@vger.kernel.org
->>Subject: [PATCH] aerdrv: fix sanity check in report_resume
->>
->>What we have to check here before calling it is err_handler->resume.
->>It seems that this block have been copy&pasted from report_slot_reset.
->>
->>Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
->>---
->> drivers/pci/pcie/aer/aerdrv_core.c |    2 +-
->> 1 files changed, 1 insertions(+), 1 deletions(-)
->>
->>diff --git a/drivers/pci/pcie/aer/aerdrv_core.c
->>b/drivers/pci/pcie/aer/aerdrv_core.c
->>index dfc63d0..aac7006 100644
->>--- a/drivers/pci/pcie/aer/aerdrv_core.c
->>+++ b/drivers/pci/pcie/aer/aerdrv_core.c
->>@@ -252,7 +252,7 @@ static void report_resume(struct pci_dev *dev, void *data)
->>
->> 	if (!dev->driver ||
->> 		!dev->driver->err_handler ||
->>-		!dev->driver->err_handler->slot_reset)
->>+		!dev->driver->err_handler->resume)
->> 		return;
->>
->> 	err_handler = dev->driver->err_handler;
->>--
->>1.6.0
->>
-
+Regards,
+Bharata.
