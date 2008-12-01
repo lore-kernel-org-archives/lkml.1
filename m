@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYLAMc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYLAMfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbYLAMc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 07:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYLAMct
+	id S1754920AbYLAMfV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 07:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYLAMfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 07:32:49 -0500
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4857 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYLAMct (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 07:32:49 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
-Date: Mon, 1 Dec 2008 13:31:57 +0100
-User-Agent: KMail/1.9.9
-Cc: "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       v4l <video4linux-list@redhat.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source-bounces@linux.davincidsp.com
-References: <200812011246.08885.hverkuil@xs4all.nl> <20081201102707.6c3ab527@pedra.chehab.org>
-In-Reply-To: <20081201102707.6c3ab527@pedra.chehab.org>
+	Mon, 1 Dec 2008 07:35:04 -0500
+Received: from mga09.intel.com ([134.134.136.24]:5306 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbYLAMfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 07:35:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,695,1220252400"; 
+   d="scan'208";a="469760904"
+Date: Tue, 2 Dec 2008 00:39:15 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [SR-IOV driver example 0/3] introduction
+Message-ID: <20081201163914.GA1464@yzhao12-linux.sh.intel.com>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081126140303.GA13641@yzhao12-linux.sh.intel.com> <492DAE38.3050809@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812011331.58141.hverkuil@xs4all.nl>
+In-Reply-To: <492DAE38.3050809@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 December 2008 13:27:07 Mauro Carvalho Chehab wrote:
-> On Mon, 1 Dec 2008 12:46:08 +0100
->
-> Hans Verkuil <hverkuil@xs4all.nl> wrote:
-> > Hi Mauro,
-> >
-> > Please pull from http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng for
-> > the following:
-> >
-> > - v4l2: add v4l2_device and v4l2_subdev structs to the v4l2
-> > framework. - v4l2-common: add i2c helper functions
-> > - cs53l32a: convert to v4l2_subdev.
-> > - cx25840: convert to v4l2_subdev.
-> > - m52790: convert to v4l2_subdev.
-> > - msp3400: convert to v4l2_subdev.
-> > - saa7115: convert to v4l2_subdev.
-> > - saa7127: convert to v4l2_subdev.
-> > - saa717x: convert to v4l2_subdev.
-> > - tuner: convert to v4l2_subdev.
-> > - upd64031a: convert to v4l2_subdev.
-> > - upd64083: convert to v4l2_subdev.
-> > - vp27smpx: convert to v4l2_subdev.
-> > - wm8739: convert to v4l2_subdev.
-> > - wm8775: convert to v4l2_subdev.
-> > - ivtv/ivtvfb: convert to v4l2_device/v4l2_subdev.
-> >
-> > All points raised in reviews are addressed so I think it is time to
-> > get this merged so people can start to use it.
-> >
-> > Reviewed-by: Laurent Pinchart <laurent.pinchart@skynet.be>
-> > Reviewed-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > Reviewed-by: Andy Walls <awalls@radix.net>
-> > Reviewed-by: David Brownell <david-b@pacbell.net>
-> >
-> > Once this is in I'll start on converting the other i2c drivers.
->
-> Hmm.. wouldn't this break the other drivers that use the converted
-> i2c drivers (for example saa7115 and msp3400 are used for other
-> drivers, like em28xx and bttv).
+On Thu, Nov 27, 2008 at 04:14:48AM +0800, Jeff Garzik wrote:
+> Yu Zhao wrote:
+> > SR-IOV drivers of Intel 82576 NIC are available. There are two parts
+> > of the drivers: Physical Function driver and Virtual Function driver.
+> > The PF driver is based on the IGB driver and is used to control PF to
+> > allocate hardware specific resources and interface with the SR-IOV core.
+> > The VF driver is a new NIC driver that is same as the traditional PCI
+> > device driver. It works in both the host and the guest (Xen and KVM)
+> > environment.
+> > 
+> > These two drivers are testing versions and they are *only* intended to
+> > show how to use SR-IOV API.
+> > 
+> > Intel 82576 NIC specification can be found at:
+> > http://download.intel.com/design/network/datashts/82576_Datasheet_v2p1.pdf
+> > 
+> > [SR-IOV driver example 1/3] PF driver: allocate hardware specific resource
+> > [SR-IOV driver example 2/3] PF driver: integrate with SR-IOV core
+> > [SR-IOV driver example 3/3] VF driver tar ball
+> 
+> Please copy netdev@vger.kernel.org on all network-related patches.  This 
+> is where the network developers live, and all patches on this list are 
+> automatically archived for review and handling at 
+> http://patchwork.ozlabs.org/project/netdev/list/
 
-No, see v4l2_subdev_command() in v4l2-subdev.c: this adds the required 
-backwards compatibility. It can be removed once everyone uses the new 
-calling convention, but until that time it will take care of this. 
-That's the nice thing about it: you can do the conversion step by step 
-without worrying about breaking existing drivers.
+Will do.
 
-Regards,
-
-	Hans
-
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+Thanks,
+Yu
