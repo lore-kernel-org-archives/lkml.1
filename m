@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYLAGSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbYLAGVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYLAGSA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 01:18:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYLAGRp
+	id S1752788AbYLAGVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 01:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYLAGVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 01:17:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:42921 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbYLAGRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 01:17:44 -0500
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon, 1 Dec 2008 16:47:41 +1030
-Subject: [PATCH 4/4] cpumask: Replace cpu_coregroup_map with cpu_coregroup_map()
-Cc: Mike Travis <travis@sgi.com>, Jens Axboe <axboe@kernel.dk>,
-       Ingo Molnar <mingo@redhat.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       David Miller <davem@davemloft.net>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Ingo Molnar <mingo@redhat.com>
+	Mon, 1 Dec 2008 01:21:00 -0500
+Received: from kroah.org ([198.145.64.141]:38000 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750929AbYLAGU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 01:20:58 -0500
+Date: Sun, 30 Nov 2008 22:16:00 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB fixes for 2.6.28-git
+Message-ID: <20081201061600.GA9513@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200812011647.42020.rusty@rustcorp.com.au>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpu_coregroup_map returned a cpumask_t: it's going away.
+Here are a few USB fixes against your current git tree.
 
-(Note, the sched part of this patch won't apply meaningfully to the
-sched tree, but I'm posting it to show the goal).
+These patches are:
+	- revert ehci patch that was incorrect
+	- fix for a different broken AMD USB controller
+	- 2 gadget bugfixes
+	- usb storage quirks
+	- new device ids
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Ingo Molnar <mingo@redhat.com>
----
- block/blk.h    |    4 ++--
- kernel/sched.c |    6 +++---
- 2 files changed, 5 insertions(+), 5 deletions(-)
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-diff --git a/block/blk.h b/block/blk.h
---- a/block/blk.h
-+++ b/block/blk.h
-@@ -99,8 +99,8 @@ static inline int blk_cpu_to_group(int c
- static inline int blk_cpu_to_group(int cpu)
- {
- #ifdef CONFIG_SCHED_MC
--	cpumask_t mask = cpu_coregroup_map(cpu);
--	return first_cpu(mask);
-+	const struct cpumask *mask = cpu_coregroup_mask(cpu);
-+	return cpumask_first(mask);
- #elif defined(CONFIG_SCHED_SMT)
- 	return first_cpu(per_cpu(cpu_sibling_map, cpu));
- #else
-diff --git a/kernel/sched.c b/kernel/sched.c
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7116,7 +7116,7 @@ cpu_to_phys_group(int cpu, const cpumask
- {
- 	int group;
- #ifdef CONFIG_SCHED_MC
--	*mask = cpu_coregroup_map(cpu);
-+	*mask = *cpu_coregroup_mask(cpu);
- 	cpus_and(*mask, *mask, *cpu_map);
- 	group = first_cpu(*mask);
- #elif defined(CONFIG_SCHED_SMT)
-@@ -7482,7 +7482,7 @@ static int __build_sched_domains(const c
- 		sd = &per_cpu(core_domains, i);
- 		SD_INIT(sd, MC);
- 		set_domain_attribute(sd, attr);
--		sd->span = cpu_coregroup_map(i);
-+		sd->span = *cpu_coregroup_mask(i);
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
- 		p->child = sd;
-@@ -7525,7 +7525,7 @@ static int __build_sched_domains(const c
- 		SCHED_CPUMASK_VAR(this_core_map, allmasks);
- 		SCHED_CPUMASK_VAR(send_covered, allmasks);
- 
--		*this_core_map = cpu_coregroup_map(i);
-+		*this_core_map = *cpu_coregroup_mask(i);
- 		cpus_and(*this_core_map, *this_core_map, *cpu_map);
- 		if (i != first_cpu(*this_core_map))
- 			continue;
+All of these patches have been in the -next and -mm tree for a few
+releases.
 
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------------
+
+ drivers/usb/gadget/fsl_qe_udc.c    |    3 +++
+ drivers/usb/gadget/fsl_usb2_udc.c  |    3 +++
+ drivers/usb/host/ehci-pci.c        |    9 ++++++---
+ drivers/usb/host/ehci.h            |   12 +++++-------
+ drivers/usb/serial/option.c        |   35 +++++++++++++++++++++++++++++++++++
+ drivers/usb/storage/unusual_devs.h |   19 +++++++++++++++++++
+ 6 files changed, 71 insertions(+), 10 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      USB: storage: unusual_devs entry for Mio C520-GPS
+
+Anton Vorontsov (2):
+      USB: fsl_qe_udc: Report disconnect before unbinding
+      USB: fsl_usb2_udc: Report disconnect before unbinding
+
+Greg Kroah-Hartman (2):
+      Revert "USB: improve ehci_watchdog's side effect in CPU power management"
+      USB: serial: add more Onda device ids to option driver
+
+Shane Huang (1):
+      USB: fix SB600 USB subsystem hang bug
+
+Tobias Kunze Briseño (1):
+      USB: usb-storage: unusual_devs entry for Nikon D2H
 
