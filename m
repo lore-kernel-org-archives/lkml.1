@@ -1,77 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbYLAWC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYLAWJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbYLAWC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 17:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYLAWCO
+	id S1753235AbYLAWJf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 17:09:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYLAWJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 17:02:14 -0500
-Received: from mail-gx0-f18.google.com ([209.85.217.18]:48030 "EHLO
-	mail-gx0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbYLAWCL (ORCPT
+	Mon, 1 Dec 2008 17:09:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43549 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbYLAWJY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 17:02:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wYMZHdO49XvMvy0EJr2UnlJ1rq74mys79Tj2OOG0BG6yELeM5+pZDxD0XlaZgVVHJA
-         DUEfKwRd7Nst4cLjMqhno+9X/RW8PDBYIMFeU3Id71Ob0IRsz0eXgrY2f6RFgUnBC3PN
-         ch9DPaa1YtkQqxi0xxRZvQvgZdPYbqNfy9TwI=
-Message-ID: <84144f020812011402v3cb3ab24pf5cb6310f2d00c5b@mail.gmail.com>
-Date: Tue, 2 Dec 2008 00:02:09 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [RESEND][PATCH] Add /proc/mempool to display mempool usage
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Mackall" <mpm@selenic.com>, randy.dunlap@oracle.com,
-       greg@kroah.com, adobriyan@gmail.com, remi.colinet@gmail.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0812011210030.3256@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Dec 2008 17:09:24 -0500
+Date: Mon, 1 Dec 2008 20:08:53 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES for 2.6.28] V4L/DVB fixes
+Message-ID: <20081201200853.7b6f4b0e@pedra.chehab.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1227980689.6354.24.camel@localhost.localdomain>
-	 <20081129214207.GA6747@x200.localdomain>
-	 <20081129234907.GA2340@kroah.com>
-	 <20081201101245.0a2f3123.randy.dunlap@oracle.com>
-	 <1228158811.3196.88.camel@calx>
-	 <20081201120210.1ed16bd5.akpm@linux-foundation.org>
-	 <84144f020812011207q29fe4b3fq11a9e55f171cf743@mail.gmail.com>
-	 <alpine.LFD.2.00.0812011210030.3256@nehalem.linux-foundation.org>
-X-Google-Sender-Auth: 0bd30a48077fd988
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Linus,
 
-On Mon, 1 Dec 2008, Pekka Enberg wrote:
->> Hmm, I thought Documentation/ABI/ was supposed to tell us what's an
->> ABI you can depend on and what's not. I mean, you shouldn't be
->> depending on anything but the interfaces documented in
->> Documentation/ABI/stable/, no?
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 
-On Mon, Dec 1, 2008 at 10:12 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> Who is the f*cking MORON that thinks that "documentation" has any meaning
-> what-so-ever?
+For the following driver fixes:
 
-Me, I suppose. At least that's the impression I got when being asked
-to document any new kmemtrace debugfs files, for example.
+   - af9015: don't reconnect device in USB-bus
+   - dib0700: make remote control support work with firmware v1.20
+   - dm1105: Fix section mismatch
+   - dvb-ttusb-budget: Add NULL pointer validation
+   - dvb-ttusb-budget: Add validation for ttusb_alloc_iso_urbs
+   - em28xx: Avoid i2c register error for boards without eeprom
+   - em28xx: Avoid memory leaks if registration fails
+   - em28xx: avoid allocating/dealocating memory on every control urb
+   - em28xx: avoid having two concurrent control URB's
+   - em28xx: fix oops audio
+   - em28xx: fix compile warning
+   - em28xx: fix a race condition with hald
+   - em28xx: make em28xx aux audio input work
+   - em28xx: Make sure the i2c gate is open before powering down tuner
+   - em28xx-alsa: implement another locking schema
+   - gspca: Memory leak when disconnect while streaming.
+   - gspca: Lock the subdrivers via module_get/put.
+   - gspca: Move the video device to a separate area.
+   - s2255drv: fix firmware test on big-endian
+   - sms1xxx: use new firmware for Hauppauge WinTV MiniStick
+   - ttusb_dec: Add NULL pointer validation
+   - ttusb_dec: fix memory leak
+   - usb-urb: fix memory leak
 
-On Mon, Dec 1, 2008 at 10:12 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> The fact that something is documented (whether correctly or not) has
-> absolutely _zero_ impact on anything at all. What makes something an ABI
-> is that it's useful and available. The only way something isn't an ABI is
-> by _explicitly_ making sure that it's not available even by mistake in a
-> stable form for binary use.
+Also, one DVB api fix:
+   - Make s2api work for ATSC
 
-OK, but why do we have those different ABI "stages" in
-Documentation/ABI then? The README file there seems to contradict what
-you say. Or maybe I'm reading it wrong...
+Cheers,
+Mauro.
 
-                         Pekka
+---
+
+ drivers/media/dvb/dm1105/dm1105.c                 |    2 +-
+ drivers/media/dvb/dvb-core/dvb_frontend.c         |    5 +-
+ drivers/media/dvb/dvb-usb/af9015.c                |    8 +-
+ drivers/media/dvb/dvb-usb/dib0700.h               |    5 +-
+ drivers/media/dvb/dvb-usb/dib0700_core.c          |   16 +++
+ drivers/media/dvb/dvb-usb/dib0700_devices.c       |  139 ++++++++++++++++++++-
+ drivers/media/dvb/dvb-usb/usb-urb.c               |   19 ++-
+ drivers/media/dvb/siano/sms-cards.c               |    2 +-
+ drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c |   15 ++-
+ drivers/media/dvb/ttusb-dec/ttusb_dec.c           |    7 +
+ drivers/media/video/em28xx/em28xx-audio.c         |   33 +++---
+ drivers/media/video/em28xx/em28xx-core.c          |   58 ++++++----
+ drivers/media/video/em28xx/em28xx-i2c.c           |   10 +-
+ drivers/media/video/em28xx/em28xx-video.c         |  140 ++++++++++++---------
+ drivers/media/video/em28xx/em28xx.h               |    6 +
+ drivers/media/video/gspca/conex.c                 |    3 +
+ drivers/media/video/gspca/finepix.c               |    8 ++
+ drivers/media/video/gspca/gspca.c                 |   56 +++++----
+ drivers/media/video/gspca/gspca.h                 |    6 +-
+ drivers/media/video/gspca/pac7311.c               |    3 +
+ drivers/media/video/gspca/spca501.c               |    3 +
+ drivers/media/video/gspca/spca505.c               |    4 +
+ drivers/media/video/gspca/spca561.c               |    3 +
+ drivers/media/video/gspca/vc032x.c                |    3 +
+ drivers/media/video/gspca/zc3xx.c                 |    3 +
+ drivers/media/video/s2255drv.c                    |    2 +-
+ 26 files changed, 410 insertions(+), 149 deletions(-)
+
+Devin Heitmueller (4):
+      V4L/DVB (9631): Make s2api work for ATSC support
+      V4L/DVB (9632): make em28xx aux audio input work
+      V4L/DVB (9634): Make sure the i2c gate is open before powering down tuner
+      V4L/DVB (9639): Make dib0700 remote control support work with firmware v1.20
+
+Douglas Schilling Landgraf (6):
+      V4L/DVB (9601): ttusb_dec: Add NULL pointer validation
+      V4L/DVB (9602): dvb-ttusb-budget: Add NULL pointer validation
+      V4L/DVB (9603): dvb-ttusb-budget: Add validation for ttusb_alloc_iso_urbs
+      V4L/DVB (9604): ttusb_dec: fix memory leak
+      V4L/DVB (9605): usb-urb: fix memory leak
+      V4L/DVB (9743): em28xx: fix oops audio
+
+Hans Verkuil (1):
+      V4L/DVB (9748): em28xx: fix compile warning
+
+Harvey Harrison (1):
+      V4L/DVB (9635): v4l: s2255drv fix firmware test on big-endian
+
+Igor M. Liplianin (1):
+      V4L/DVB (9608): Fix section mismatch warning for dm1105 during make
+
+Jean-Francois Moine (3):
+      V4L/DVB (9689): gspca: Memory leak when disconnect while streaming.
+      V4L/DVB (9690): gspca: Lock the subdrivers via module_get/put.
+      V4L/DVB (9691): gspca: Move the video device to a separate area.
+
+Jose Alberto Reguero (1):
+      V4L/DVB (9664): af9015: don't reconnect device in USB-bus
+
+Mauro Carvalho Chehab (7):
+      V4L/DVB (9627): em28xx: Avoid i2c register error for boards without eeprom
+      V4L/DVB (9645): em28xx: Avoid memory leaks if registration fails
+      V4L/DVB (9646): em28xx: avoid allocating/dealocating memory on every control urb
+      V4L/DVB (9647): em28xx: void having two concurrent control URB's
+      V4L/DVB (9668): em28xx: fix a race condition with hald
+      V4L/DVB (9742): em28xx-alsa: implement another locking schema
+      em28xx: remove backward compat macro added on a previous fix
+
+Michael Krufky (1):
+      V4L/DVB (9732): sms1xxx: use new firmware for Hauppauge WinTV MiniStick
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
