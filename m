@@ -1,182 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbYLAWzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYLAXAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbYLAWzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 17:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYLAWyw
+	id S1753229AbYLAXAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 18:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLAXAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 17:54:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:57042 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbYLAWyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 17:54:51 -0500
-Date: Mon, 1 Dec 2008 14:54:49 -0800
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 fixes
-Message-ID: <20081201225449.GD8791@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+	Mon, 1 Dec 2008 18:00:20 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:14172 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbYLAXAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 18:00:19 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=px6lcWorJkch600p0JPw4c3Mf/c5UDbktTsndCf7EOIGZwbSu7nF4Bf/cAELSPAa7
+	VW0bTg8+ug/DZhn3829Jg==
+MIME-Version: 1.0
+In-Reply-To: <20081127200459.GA25799@redhat.com>
+References: <20081127200459.GA25799@redhat.com>
+Date: Mon, 1 Dec 2008 15:00:14 -0800
+Message-ID: <604427e00812011500j48ae17d8w4f6f47eba7493af8@mail.gmail.com>
+Subject: Re: + make-get_user_pages-interruptible.patch added to -mm tree
+From: Ying Han <yinghan@google.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Paul Menage <menage@google.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       Matthew Wilcox <matthew@wil.cx>, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+Thanks Oleg, i looked at the code again and this is a reasonable
+change. I will make the change on the patch.
+Andrew,
+    should i make a patch based on current change or make the same
+patch as [V6]?
 
-to receive the following updates:
+thanks
+--Ying
 
- Documentation/filesystems/ocfs2.txt |    3 ---
- fs/ocfs2/buffer_head_io.c           |   15 ++++-----------
- fs/ocfs2/dlm/dlmfs.c                |    4 +++-
- fs/ocfs2/dlm/userdlm.h              |    2 +-
- fs/ocfs2/dlmglue.c                  |    3 +--
- fs/ocfs2/ocfs2.h                    |    2 +-
- fs/ocfs2/stack_user.c               |    3 +++
- 7 files changed, 13 insertions(+), 19 deletions(-)
-
-Coly Li (2):
-      ocfs2: comments typo fix
-      ocfs2: fix return value set in init_dlmfs_fs()
-
-David Teigland (2):
-      ocfs2: initialize stack_user lvbptr
-      ocfs2: fix wake_up in unlock_ast
-
-Mark Fasheh (2):
-      ocfs2: Small documentation update
-      ocfs2: fix regression in ocfs2_read_blocks_sync()
-
-diff --git a/Documentation/filesystems/ocfs2.txt b/Documentation/filesystems/ocfs2.txt
-index 4340cc8..67310fb 100644
---- a/Documentation/filesystems/ocfs2.txt
-+++ b/Documentation/filesystems/ocfs2.txt
-@@ -28,10 +28,7 @@ Manish Singh  <manish.singh@oracle.com>
- Caveats
- =======
- Features which OCFS2 does not support yet:
--	- extended attributes
- 	- quotas
--	- cluster aware flock
--	- cluster aware lockf
- 	- Directory change notification (F_NOTIFY)
- 	- Distributed Caching (F_SETLEASE/F_GETLEASE/break_lease)
- 	- POSIX ACLs
-diff --git a/fs/ocfs2/buffer_head_io.c b/fs/ocfs2/buffer_head_io.c
-index 7e947c6..3a178ec 100644
---- a/fs/ocfs2/buffer_head_io.c
-+++ b/fs/ocfs2/buffer_head_io.c
-@@ -112,7 +112,7 @@ int ocfs2_read_blocks_sync(struct ocfs2_super *osb, u64 block,
- 		bh = bhs[i];
- 
- 		if (buffer_jbd(bh)) {
--			mlog(ML_ERROR,
-+			mlog(ML_BH_IO,
- 			     "trying to sync read a jbd "
- 			     "managed bh (blocknr = %llu), skipping\n",
- 			     (unsigned long long)bh->b_blocknr);
-@@ -147,15 +147,10 @@ int ocfs2_read_blocks_sync(struct ocfs2_super *osb, u64 block,
- 	for (i = nr; i > 0; i--) {
- 		bh = bhs[i - 1];
- 
--		if (buffer_jbd(bh)) {
--			mlog(ML_ERROR,
--			     "the journal got the buffer while it was "
--			     "locked for io! (blocknr = %llu)\n",
--			     (unsigned long long)bh->b_blocknr);
--			BUG();
--		}
-+		/* No need to wait on the buffer if it's managed by JBD. */
-+		if (!buffer_jbd(bh))
-+			wait_on_buffer(bh);
- 
--		wait_on_buffer(bh);
- 		if (!buffer_uptodate(bh)) {
- 			/* Status won't be cleared from here on out,
- 			 * so we can safely record this and loop back
-@@ -251,8 +246,6 @@ int ocfs2_read_blocks(struct inode *inode, u64 block, int nr,
- 			ignore_cache = 1;
- 		}
- 
--		/* XXX: Can we ever get this and *not* have the cached
--		 * flag set? */
- 		if (buffer_jbd(bh)) {
- 			if (ignore_cache)
- 				mlog(ML_BH_IO, "trying to sync read a jbd "
-diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 533a789..ba962d7 100644
---- a/fs/ocfs2/dlm/dlmfs.c
-+++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -608,8 +608,10 @@ static int __init init_dlmfs_fs(void)
- 				0, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|
- 					SLAB_MEM_SPREAD),
- 				dlmfs_init_once);
--	if (!dlmfs_inode_cache)
-+	if (!dlmfs_inode_cache) {
-+		status = -ENOMEM;
- 		goto bail;
-+	}
- 	cleanup_inode = 1;
- 
- 	user_dlm_worker = create_singlethread_workqueue("user_dlm");
-diff --git a/fs/ocfs2/dlm/userdlm.h b/fs/ocfs2/dlm/userdlm.h
-index 39ec277..0c3cc03 100644
---- a/fs/ocfs2/dlm/userdlm.h
-+++ b/fs/ocfs2/dlm/userdlm.h
-@@ -33,7 +33,7 @@
- #include <linux/workqueue.h>
- 
- /* user_lock_res->l_flags flags. */
--#define USER_LOCK_ATTACHED      (0x00000001) /* have we initialized
-+#define USER_LOCK_ATTACHED      (0x00000001) /* we have initialized
- 					       * the lvb */
- #define USER_LOCK_BUSY          (0x00000002) /* we are currently in
- 					       * dlm_lock */
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index ec68442..6e6cc0a 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -2841,9 +2841,8 @@ static void ocfs2_unlock_ast(void *opaque, int error)
- 
- 	lockres_clear_flags(lockres, OCFS2_LOCK_BUSY);
- 	lockres->l_unlock_action = OCFS2_UNLOCK_INVALID;
--	spin_unlock_irqrestore(&lockres->l_lock, flags);
--
- 	wake_up(&lockres->l_event);
-+	spin_unlock_irqrestore(&lockres->l_lock, flags);
- 
- 	mlog_exit_void();
- }
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index fef7ece..3fed9e3 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -85,7 +85,7 @@ enum ocfs2_unlock_action {
- };
- 
- /* ocfs2_lock_res->l_flags flags. */
--#define OCFS2_LOCK_ATTACHED      (0x00000001) /* have we initialized
-+#define OCFS2_LOCK_ATTACHED      (0x00000001) /* we have initialized
- 					       * the lvb */
- #define OCFS2_LOCK_BUSY          (0x00000002) /* we are currently in
- 					       * dlm_lock */
-diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-index faec2d8..9b76d41 100644
---- a/fs/ocfs2/stack_user.c
-+++ b/fs/ocfs2/stack_user.c
-@@ -740,6 +740,9 @@ static int user_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
- 
- static void *user_dlm_lvb(union ocfs2_dlm_lksb *lksb)
- {
-+	if (!lksb->lksb_fsdlm.sb_lvbptr)
-+		lksb->lksb_fsdlm.sb_lvbptr = (char *)lksb +
-+					     sizeof(struct dlm_lksb);
- 	return (void *)(lksb->lksb_fsdlm.sb_lvbptr);
- }
- 
+On Thu, Nov 27, 2008 at 12:04 PM, Oleg Nesterov <oleg@redhat.com> wrote:
+> Ying Han wrote:
+>>
+>> -static int sigkill_pending(struct task_struct *tsk)
+>> +int sigkill_pending(struct task_struct *tsk)
+>>  {
+>>       return  sigismember(&tsk->pending.signal, SIGKILL) ||
+>>               sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
+>> diff -puN mm/memory.c~make-get_user_pages-interruptible mm/memory.c
+>> --- a/mm/memory.c~make-get_user_pages-interruptible
+>> +++ a/mm/memory.c
+>> @@ -1219,12 +1219,12 @@ int __get_user_pages(struct task_struct
+>>                       struct page *page;
+>>
+>>                       /*
+>> -                      * If tsk is ooming, cut off its access to large memory
+>> -                      * allocations. It has a pending SIGKILL, but it can't
+>> -                      * be processed until returning to user space.
+>> +                      * If we have a pending SIGKILL, don't keep
+>> +                      * allocating memory.
+>>                        */
+>> -                     if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
+>> -                             return i ? i : -ENOMEM;
+>> +                     if (unlikely(sigkill_pending(current) ||
+>> +                                     sigkill_pending(tsk)))
+>
+> Please do not export/use sigkill_pending(). It is "private" for ptrace_stop()
+> (and actually should die imho).
+>
+> We have fatal_signal_pending() for that.
+>
+> Oleg.
+>
+>
