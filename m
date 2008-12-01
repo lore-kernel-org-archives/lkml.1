@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYLAR7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYLASAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753454AbYLAR7p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 12:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYLAR7g
+	id S1753676AbYLASAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 13:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYLASAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 12:59:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56188 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbYLAR7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 12:59:35 -0500
-Message-ID: <493425DC.1010008@redhat.com>
-Date: Mon, 01 Dec 2008 11:58:52 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Harald Arnesen <skogtun.harald@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [ext4] Documentation patch
-References: <8763m3u9kv.fsf@basilikum.skogtun.org> <20081201165700.GA26680@infradead.org>
-In-Reply-To: <20081201165700.GA26680@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Dec 2008 13:00:42 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:41312 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbYLASAl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 13:00:41 -0500
+Subject: Re: [RFC v10][PATCH 05/13] Dump memory address space
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Oren Laadan <orenl@cs.columbia.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20081128105351.GQ28946@ZenIV.linux.org.uk>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
+	 <1227747884-14150-6-git-send-email-orenl@cs.columbia.edu>
+	 <20081128105351.GQ28946@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 10:00:12 -0800
+Message-Id: <1228154412.2971.44.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Dec 01, 2008 at 05:46:56PM +0100, Harald Arnesen wrote:
->>      So when comparing with a metadata-only journalling filesystem, such
->> -    as ext3, use `mount -o data=writeback'.  And you might as well use
->> +    as jfs or xfs, use `mount -o data=writeback'.  And you might as well use
+On Fri, 2008-11-28 at 10:53 +0000, Al Viro wrote:
 > 
-> data=ordered comes closest to what xfs does for quite a long time..
+> > +static int cr_ctx_checkpoint(struct cr_ctx *ctx, pid_t pid)
+> > +{
+> > +     ctx->root_pid = pid;
+> > +
+> > +     /*
+> > +      * assume checkpointer is in container's root vfs
+> > +      * FIXME: this works for now, but will change with real containers
+> > +      */
+> > +     ctx->vfsroot = &current->fs->root;
+> > +     path_get(ctx->vfsroot);
+> 
+> This is going to break as soon as you get another thread doing e.g. chroot(2)
+> while you are in there.
 
-Agreed; that whole bit which mentions other filesystem comparisons
-should probably be stricken, unless it can be
-proven/demonstrated/substantiated that ext3 really does "offer higher
-data integrity guarantees than most" at this point.
+Yeah, we do need at least a read_lock(&current->fs->lock) to keep people
+from chroot()'ing underneath us.
 
-data=ordered ensures that stale data won't be exposed on a crash; xfs
-won't do this (it'd be a security bug) and I'd be surprised if jfs or
-reiserfs do either.    And it probably *should* be mentioned that
-data=writeback bears this risk.
+> And it's a really, _really_ bad idea to take a
+> pointer to shared object, increment refcount on the current *contents* of
+> said object and assume that dropping refcount on the later contents of the
+> same will balance out.
 
-And until ext3 turns on barriers by default, I don't think it's fair to
-talk too much about integrity guarantees.  :)
+Absolutely.  I assume you mean get_fs_struct(current) instead of
+path_get().
 
--Eric
+-- Dave
+
