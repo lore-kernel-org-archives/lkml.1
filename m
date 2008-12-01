@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbYLAAuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYLAAyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757022AbYLAAuj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 19:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYLAAuP
+	id S1756706AbYLAAyy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 19:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYLAAyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 19:50:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45210 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756076AbYLAAuO (ORCPT
+	Sun, 30 Nov 2008 19:54:45 -0500
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:41843 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751033AbYLAAyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 19:50:14 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 04/09] memcg: make zone_reclaim_stat
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4932BA80.3060708@redhat.com>
-References: <20081130195731.8151.KOSAKI.MOTOHIRO@jp.fujitsu.com> <4932BA80.3060708@redhat.com>
-Message-Id: <20081201094856.8177.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon,  1 Dec 2008 09:50:05 +0900 (JST)
+	Sun, 30 Nov 2008 19:54:44 -0500
+Date: Mon, 1 Dec 2008 01:51:42 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: scanner interface proposal was: [TALPA] Intro to a linux interface for on access scanning (fwd)
+Message-ID: <20081201005142.GA27387@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <alpine.DEB.1.10.0808171824060.12859@asgard.lang.hm> <20081123223753.GA16424@nibiru.local> <20081123230306.48bc0274@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081123230306.48bc0274@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ,
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42,
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida,
+X-Killer: 23, endloesung, Weltuntergang,
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> KOSAKI Motohiro wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Fine. Why not just putting this into a userland filesystem ?
 > 
-> > @@ -172,6 +173,10 @@ void activate_page(struct page *page)
-> >  
-> >  		reclaim_stat->recent_rotated[!!file]++;
-> >  		reclaim_stat->recent_scanned[!!file]++;
-> > +
-> > +		memcg_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
-> > +		memcg_reclaim_stat->recent_rotated[!!file]++;
-> > +		memcg_reclaim_stat->recent_scanned[!!file]++;
-> 
-> Also, manipulation of the zone based reclaim_stats happens
-> under the lru lock.
-> 
-> What protects the memcg reclaim stat?
+> 1. Performance
 
-memcg zone and memcg zone_reclaim_stat also use zone->lru_lock.
+Does it really hurt so bad, compared with all actual AV stuff ?
+It has to go to userland anyway, in case you don't intend to 
+put the scanner into the kernel ;-o
+
+> 2. Networked file systems
+
+What's the problem ?
+(btw: 9P already *IS* an network filesystem ;-P)
+
+> 3. Ioctls
+
+Ah, just forgot a while that this crap still exists ;-o
+
+BUT: do the affected dirs have to contain devices ? 
+Is there any point for pulling /dev through the AV scanner ?
 
 
-
-
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
