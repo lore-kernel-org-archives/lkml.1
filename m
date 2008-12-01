@@ -1,111 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbYLALqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYLALqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754460AbYLALqK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 06:46:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYLALp4
+	id S1754803AbYLALqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 06:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYLALqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 06:45:56 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33509 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752340AbYLALpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 06:45:55 -0500
-Date: Mon, 1 Dec 2008 12:45:50 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Mike Waychison <mikew@google.com>
-Cc: Ying Han <yinghan@google.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>, edwintorok@gmail.com
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-Message-ID: <20081201114550.GA10790@wotan.suse.de>
-References: <20081123091843.GK30453@elte.hu> <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <20081127130817.GP28285@wotan.suse.de> <492EEF0C.9040607@google.com> <20081128093713.GB1818@wotan.suse.de> <49307893.4030708@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 1 Dec 2008 06:46:45 -0500
+Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:1872 "EHLO
+	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752340AbYLALqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 06:46:44 -0500
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>
+Subject: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
+Date: Mon, 1 Dec 2008 12:46:08 +0100
+User-Agent: KMail/1.9.9
+Cc: v4l <video4linux-list@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       davinci-linux-open-source-bounces@linux.davincidsp.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49307893.4030708@google.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200812011246.08885.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 03:02:43PM -0800, Mike Waychison wrote:
-> Nick Piggin wrote:
-> >On Thu, Nov 27, 2008 at 11:03:40AM -0800, Mike Waychison wrote:
-> >>Nick Piggin wrote:
-> >>>On Thu, Nov 27, 2008 at 01:28:41AM -0800, Mike Waychison wrote:
-> >>>>Török however identified mmap taking on the order of several 
-> >>>>milliseconds due to this exact problem:
-> >>>>
-> >>>>http://lkml.org/lkml/2008/9/12/185
-> >>>Turns out to be a different problem.
-> >>>
-> >>What do you mean?
-> >
-> >His is just contending on the write side. The retry patch doesn't help.
-> >
-> 
-> I disagree.  How do you get 'write contention' from the following paragraph:
-> 
-> "Just to confirm that the problem is with pagefaults and mmap, I dropped
-> the mmap_sem in filemap_fault, and then
-> I got same performance in my testprogram for mmap and read. Of course
-> this is totally unsafe, because the mapping could change at any time."
-> 
-> It reads to me that the writers were held off by the readers sleeping in IO.
+Hi Mauro,
 
-Yeah, I didn't look closely at your patch. I assumed it was dropping the
-mmap_sem for the duration of the IO, so I didn't think there could be
-significant read hold time there. Of course reads would still show up
-somewhat if there is a lot of write contention, but they would not
-necessarily be the cause of the problem.
+Please pull from http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng for the 
+following:
 
-Anyway...
+- v4l2: add v4l2_device and v4l2_subdev structs to the v4l2 framework.
+- v4l2-common: add i2c helper functions
+- cs53l32a: convert to v4l2_subdev.
+- cx25840: convert to v4l2_subdev.
+- m52790: convert to v4l2_subdev.
+- msp3400: convert to v4l2_subdev.
+- saa7115: convert to v4l2_subdev.
+- saa7127: convert to v4l2_subdev.
+- saa717x: convert to v4l2_subdev.
+- tuner: convert to v4l2_subdev.
+- upd64031a: convert to v4l2_subdev.
+- upd64083: convert to v4l2_subdev.
+- vp27smpx: convert to v4l2_subdev.
+- wm8739: convert to v4l2_subdev.
+- wm8775: convert to v4l2_subdev.
+- ivtv/ivtvfb: convert to v4l2_device/v4l2_subdev.
 
+All points raised in reviews are addressed so I think it is time to get 
+this merged so people can start to use it.
 
-> >>>>We generally try to avoid such things, but sometimes it a) can't be 
-> >>>>easily avoided (third party libraries for instance) and b) when it hits 
-> >>>>us, it affects the overall health of the machine/cluster (the 
-> >>>>monitoring daemons get blocked, which isn't very healthy).
-> >>>Are you doing appropriate posix_fadvise to prefetch in the files before
-> >>>faulting, and madvise hints if appropriate?
-> >>>
-> >>Yes, we've been slowly rolling out fadvise hints out, though not to 
-> >>prefetch, and definitely not for faulting.  I don't see how issuing a 
-> >>prefetch right before we try to fault in a page is going to help 
-> >>matters.  The pages may appear in pagecache, but they won't be uptodate 
-> >>by the time we look at them anyway, so we're back to square one.
-> >
-> >The whole point of a prefetch is to issue it sufficiently early so
-> >it makes a difference. Actually if you can tell quite well where the
-> >major faults will be, but don't know it sufficiently in advance to
-> >do very good prefetching, then perhaps we could add a new madvise hint
-> >to synchronously bring the page in (dropping the mmap_sem over the IO).
-> >
-> 
-> Or we could just fix the faulting code to drop the mmap_sem for us?  I'm 
+Reviewed-by: Laurent Pinchart <laurent.pinchart@skynet.be>
+Reviewed-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Reviewed-by: Andy Walls <awalls@radix.net>
+Reviewed-by: David Brownell <david-b@pacbell.net>
 
-Yeah... I don't exactly call it a "fix"... It's tricky code... In other
-cases you slow down.
+Once this is in I'll start on converting the other i2c drivers.
 
-Of course we should try to improve the kernel for user workloads, but we
-also need to steer users toward workloads that are going to work well and
-be nice for us to work with and optimise in future.
+Thanks,
 
-Threads are more often than not, not a good solution. There is lots of
-other locks in the kernel (and userspace) that are going to slow things
-down. I bet this workload would actually be much faster if the app was
-designed with processes (and shared memory in the cases where it needs
-to be shared).
+        Hans
 
+diffstat:
+ b/linux/Documentation/video4linux/v4l2-framework.txt |  362 ++++++++
+ b/linux/drivers/media/video/v4l2-device.c            |   86 +
+ b/linux/drivers/media/video/v4l2-subdev.c            |  108 ++
+ b/linux/include/media/v4l2-device.h                  |  109 ++
+ b/linux/include/media/v4l2-subdev.h                  |  188 ++++
+ linux/drivers/media/video/Makefile                   |    2
+ linux/drivers/media/video/cs53l32a.c                 |  186 ++--
+ linux/drivers/media/video/cx25840/cx25840-audio.c    |   14
+ linux/drivers/media/video/cx25840/cx25840-core.c     |  459 ++++++----
+ linux/drivers/media/video/cx25840/cx25840-core.h     |    7
+ linux/drivers/media/video/cx25840/cx25840-firmware.c |    2
+ linux/drivers/media/video/cx25840/cx25840-vbi.c      |    2
+ linux/drivers/media/video/ivtv/ivtv-controls.c       |   16
+ linux/drivers/media/video/ivtv/ivtv-driver.c         |  220 +----
+ linux/drivers/media/video/ivtv/ivtv-driver.h         |   52 -
+ linux/drivers/media/video/ivtv/ivtv-fileops.c        |   44 -
+ linux/drivers/media/video/ivtv/ivtv-gpio.c           |  354 +++++---
+ linux/drivers/media/video/ivtv/ivtv-gpio.h           |    3
+ linux/drivers/media/video/ivtv/ivtv-i2c.c            |  340 +------
+ linux/drivers/media/video/ivtv/ivtv-i2c.h            |   13
+ linux/drivers/media/video/ivtv/ivtv-ioctl.c          |   73 -
+ linux/drivers/media/video/ivtv/ivtv-routing.c        |   12
+ linux/drivers/media/video/ivtv/ivtv-streams.c        |   13
+ linux/drivers/media/video/ivtv/ivtv-vbi.c            |   17
+ linux/drivers/media/video/ivtv/ivtvfb.c              |   91 +-
+ linux/drivers/media/video/m52790.c                   |  172 ++-
+ linux/drivers/media/video/msp3400-driver.c           |  408 +++++----
+ linux/drivers/media/video/msp3400-driver.h           |    7
+ linux/drivers/media/video/msp3400-kthreads.c         |   34
+ linux/drivers/media/video/saa7115.c                  |  829 
++++++++++----------
+ linux/drivers/media/video/saa7127.c                  |  425 +++++----
+ linux/drivers/media/video/saa717x.c                  |  600 
++++++++------
+ linux/drivers/media/video/tuner-core.c               |  403 +++++----
+ linux/drivers/media/video/upd64031a.c                |  193 ++--
+ linux/drivers/media/video/upd64083.c                 |  176 ++--
+ linux/drivers/media/video/v4l2-common.c              |  170 +++
+ linux/drivers/media/video/vp27smpx.c                 |  134 ++-
+ linux/drivers/media/video/wm8739.c                   |  198 ++--
+ linux/drivers/media/video/wm8775.c                   |  217 +++-
+ linux/include/media/v4l2-common.h                    |   41
+ 40 files changed, 4098 insertions(+), 2682 deletions(-)
 
-> not sure a new madvise flag could help with the 'starvation hole' issue 
-> you brought up.
-
-Because the madvise is just a hint, but you still go through with the
-fault, so in rare cases yes perhaps the fault will need to re-read the
-page if it has been reclaimed in the meantime, but those are the cases
-where the fault retry code has a chance to have a starvation issue.
-
+-- 
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
