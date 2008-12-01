@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYLACbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYLADEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbYLACbb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 21:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYLACbV
+	id S1756598AbYLADEc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 22:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYLADEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 21:31:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:55184 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbYLACbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 21:31:21 -0500
+	Sun, 30 Nov 2008 22:04:22 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47935 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbYLADEV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 22:04:21 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: [mmotm][PATCH] fix arch/ia64/kernel/msi_ia64.c warning
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081201115811.817E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18739.19567.116894.316340@cargo.ozlabs.ibm.com>
-Date: Mon, 1 Dec 2008 13:31:11 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git merge branch again
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Mon,  1 Dec 2008 12:04:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+fix following warning.
 
-Please do another pull from the 'merge' branch of
+  arch/ia64/kernel/msi_ia64.c:145: warning: initialization from incompatible pointer type
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Mike Travis <travis@sgi.com>
+CC: "Luck, Tony" <tony.luck@intel.com>
+---
+ arch/ia64/kernel/msi_ia64.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Sorry for a second request so soon after the previous one, but I
-realized that I had missed one commit that I intended to include, and
-without it our 32-bit SMP configs won't compile.
+Index: b/arch/ia64/kernel/msi_ia64.c
+===================================================================
+--- a/arch/ia64/kernel/msi_ia64.c
++++ b/arch/ia64/kernel/msi_ia64.c
+@@ -49,11 +49,12 @@
+ static struct irq_chip	ia64_msi_chip;
+ 
+ #ifdef CONFIG_SMP
+-static void ia64_set_msi_irq_affinity(unsigned int irq, cpumask_t cpu_mask)
++static void ia64_set_msi_irq_affinity(unsigned int irq,
++				      const cpumask_t *cpu_mask)
+ {
+ 	struct msi_msg msg;
+ 	u32 addr, data;
+-	int cpu = first_cpu(cpu_mask);
++	int cpu = first_cpu(*cpu_mask);
+ 
+ 	if (!cpu_online(cpu))
+ 		return;
 
-Thanks,
-Paul.
 
- arch/powerpc/kernel/sysfs.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-Milton Miller (1):
-      powerpc: Fix build for 32-bit SMP configs
 
