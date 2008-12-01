@@ -1,107 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbYLANA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYLANC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbYLANA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 08:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYLANAP
+	id S1755609AbYLANC0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 08:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYLANCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 08:00:15 -0500
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:36959 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbYLANAO (ORCPT
+	Mon, 1 Dec 2008 08:02:16 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:38938 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbYLANCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 08:00:14 -0500
-Date: Mon, 1 Dec 2008 05:00:05 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Alex Chiang <achiang@hp.com>
-cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
-Subject: Problems with fakephp
-In-Reply-To: <20081128231820.GA23578@ldl.fc.hp.com>
-Message-ID: <Pine.LNX.4.58.0812010356410.2943@shell2.speakeasy.net>
-References: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com>
- <Pine.LNX.4.64.0811251919590.5161@t2.domain.actdsltmp> <20081126074808.GE6539@plum>
- <Pine.LNX.4.58.0811260131200.24816@shell4.speakeasy.net> <20081126181841.GF6539@plum>
- <Pine.LNX.4.58.0811261349120.24816@shell4.speakeasy.net>
- <20081126225535.GA27936@ldl.fc.hp.com> <Pine.LNX.4.58.0811261647410.24816@shell4.speakeasy.net>
- <20081128231820.GA23578@ldl.fc.hp.com>
+	Mon, 1 Dec 2008 08:02:15 -0500
+Date: Mon, 1 Dec 2008 15:02:09 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       weidong.han@intel.com, mingo@redhat.com, avi@redhat.com,
+       amit.shah@redhat.com
+Subject: Re: [PATCH 3/9] add frontend implementation for the IOMMU API
+Message-ID: <20081201130209.GA21615@il.ibm.com>
+References: <1227800454-9555-4-git-send-email-joerg.roedel@amd.com> <20081128184041N.fujita.tomonori@lab.ntt.co.jp> <20081128113129.GO1386@amd.com> <20081201173830B.fujita.tomonori@lab.ntt.co.jp> <20081201120026.GF17719@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081201120026.GF17719@amd.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008, Alex Chiang wrote:
-> * Trent Piepho <xyzzy@speakeasy.org>:
-> Let's try and find a solution that will work for everyone. I
-> don't think that going back to one entry in /sys/bus/pci/slots
-> per function is a solution.
->
-> Last time, Willy proposed a few ideas in this thread:
->
-> 	http://lkml.org/lkml/2008/9/9/28
+On Mon, Dec 01, 2008 at 01:00:26PM +0100, Joerg Roedel wrote:
 
-It looks like you weren't opposed to reverting the original patch.  I
-think that should be done for 2.6.27 and 2.6.28, to restore the existing
-interface.  I can made the patch.  I realize that fakephp's (ab)use of the
-hotplug system doesn't fit in with your plans, and there's no reason not
-to do anything about that.  But it should be done the right way.  fakephp
-was perhaps not the best interface for getting linux to re-scan for PCI
-devices and for removing existing ones, but none the less it was the long
-established and only interface for this.
+> > > > The majority of the names (include/linux/iommu.h, iommu.c,
+> > > > iommu_ops, etc) looks too generic? We already have lots of
+> > > > similar things (e.g. arch/{x86,ia64}/asm/iommu.h, several
+> > > > archs' iommu.c, etc). Such names are expected to be used by
+> > > > all the IOMMUs.
+> > > 
+> > > The API is already useful for more than KVM. I also plan to
+> > > extend it to support more types of IOMMUs than VT-d and AMD
+> > > IOMMU in the future. But these changes are more intrusive than
+> > > this patchset and need more discussion. I prefer to do small
+> > > steps into this direction.
+> > 
+> > Can you be more specific? What IOMMU could use this? For example,
+> > how GART can use this? I think that people expect the name 'struct
+> > iommu_ops' to be an abstract for all the IOMMUs (or the majority
+> > at least). If this works like that, the name is a good choice, I
+> > think.
+> 
+> GART can't use exactly this. But with some extensions we can make it
+> useful for GART and GART-like IOMMUs too. For example we can emulate
+> domains in GART by partitioning the GART aperture space.
 
-What should be done is to create a better interface for disabling PCI
-devices/functions/bridges and re-scanning.  Then create a compatibility
-system that will allow software the used fakephp to continue to work.  Now
-fakephp can change to be more like a real hotplug driver.  At some time in
-future, the compatibility layer, which will have been listed in the
-feature removal schedule, can be removed.
+That would only work with a pvdma API, since GART doesn't support
+multiple address spaces, and you don't get the isolation properties of
+a real IOMMU, so... why would you want to do that?
 
-You might also be interested to know that fakephp as it is now has a bug
-in it.  Another reason to revert the change.  Removing a bridge doesn't
-work so well.
-
-# lspci -tv
-           +-10.0  LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ul
-           \-11.0-[0000:02]--+-00.0  Advanced Micro Devices [AMD] 79c970 [PCn
-                             +-01.0  Ensoniq ES1371 [AudioPCI-97]
-                             \-02.0  VMware Inc Unknown device 0770
-# cat fake[6-9]/address
-0000:00:11
-0000:02:00
-0000:02:01
-0000:02:02
-# echo 0 > fake6/power
-# lspci -tv
-           \-10.0  LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ul
-[ 00:11 and everything behind it are gone, as expected ]
-# ls
-fake1/  fake2/  fake3/  fake4/  fake5/  fake7/  fake8/  fake9/
-[ notice that fake[7-9] are still there! ]
-# cat fake6/address
-Segmentation fault
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<c02089c3>] address_read_file+0x23/0x70
-
-The problem is that fakephp's slots aren't really slots, they are devices.
-If a PCI device goes away and it's not done with fakephp, then fakephp
-doesn't know about it and the fakephp "slot" sticks around pointing to a
-removed device.  I think I can come up with a better system that fixes
-these problems.
-
-I also noticed this in drivers/pci/probe.c:pci_scan_device()
-
-list_for_each_entry(slot, &bus->slots, list)
-	if(PCI_SLOT(devfn) == slot->number)
-		dev->slot = slot;
-
-This appears to assume that there will only one slot with a given number
-on the same bus.  But if fakephp and real hotplug driver are both loaded,
-this won't be the case anymore, will it?
-
-I also have to wonder, if the bus + slot number is unique, then why not
-use that to name the slot's kobject?  Instead of something like "fake123",
-where the number is basically meaningless.  If you have a meaningful
-unique ID, why not use that?
+Cheers,
+Muli
+-- 
+The First Workshop on I/O Virtualization (WIOV '08)
+Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
+                       <->
+SYSTOR 2009---The Israeli Experimental Systems Conference
+http://www.haifa.il.ibm.com/conferences/systor2009/
