@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbYLAVH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYLAVP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbYLAVH4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 16:07:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbYLAVHr
+	id S1753390AbYLAVP5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 16:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYLAVPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 16:07:47 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36810 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbYLAVHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 16:07:46 -0500
-Subject: Re: [RFC v10][PATCH 09/13] Restore open file descriprtors
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Linus Torvalds <torvalds@osdl.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <49345086.4@cs.columbia.edu>
-References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
-	 <1227747884-14150-10-git-send-email-orenl@cs.columbia.edu>
-	 <20081128112745.GR28946@ZenIV.linux.org.uk>
-	 <1228159324.2971.74.camel@nimitz>  <49344C11.6090204@cs.columbia.edu>
-	 <1228164873.2971.95.camel@nimitz>  <49345086.4@cs.columbia.edu>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 13:07:31 -0800
-Message-Id: <1228165651.2971.99.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 16:15:48 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33323 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751059AbYLAVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 16:15:47 -0500
+Date: Mon, 1 Dec 2008 13:15:18 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Greg Kurz <gkurz@fr.ibm.com>
+Cc: Bastian Blank <bastian@waldi.eu.org>, linux-kernel@vger.kernel.org,
+       oleg@redhat.com, ebiederm@xmission.com, containers@lists.osdl.org,
+       roland@redhat.com, xemul@openvz.org
+Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
+Message-ID: <20081201211518.GB15004@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com> <20081126034528.GB23238@us.ibm.com> <20081127011738.GC13545@wavehammer.waldi.eu.org> <1227820765.5108.20.camel@bahia.kalilou.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227820765.5108.20.camel@bahia.kalilou.org>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-01 at 16:00 -0500, Oren Laadan wrote:
-> > Is that sufficient?  It seems like we're depending on the fd's reference
-> > to the 'struct file' to keep it valid in the hash.  If something happens
-> > to the fd (like the other thread messing with it) the 'struct file' can
-> > still go away.
-> > 
-> > Shouldn't we do another get_file() for the hash's reference?
-> 
-> When a shared object is inserted to the hash we automatically take another
-> reference to it (according to its type) for as long as it remains in the
-> hash. See:  'cr_obj_ref_grab()' and 'cr_obj_ref_drop()'.  So by moving that
-> call higher up, we protect the struct file.
+Greg Kurz [gkurz@fr.ibm.com] wrote:
+| On Thu, 2008-11-27 at 02:17 +0100, Bastian Blank wrote:
+| > On Tue, Nov 25, 2008 at 07:45:28PM -0800, Sukadev Bhattiprolu wrote:
+| > > Currently task_active_pid_ns is not safe to call after a
+| > > task becomes a zombie and exit_task_namespaces is called,
+| > > as nsproxy becomes NULL.
+| > 
+| > Why do you need to be able to get the pid namespace from zombie
+| > processes?
 
-That's kinda (and by kinda I mean really) disgusting.  Hiding that two
-levels deep in what is effectively the hash table code where no one will
-ever see it is really bad.  It also makes you lazy thinking that the
-hash code will just know how to take references on whatever you give to
-it.
+After exiting namespaces, the process notifies parent. With new changes
+to signals (in this patchset), the signal code may need to determine
+the namespace of sender (the exiting child in this case).
 
-I think cr_obj_ref_grab() is hideous obfuscation and needs to die.
-Let's just do the get_file() directly, please.
+| Also according to nsproxy.h this access variant is only
+| > allowed for the current task, anything else needs to take a rcu lock.
 
--- Dave
+and sender still is 'current' (the exiting child).
 
+| > 
+| 
+| That doesn't save ->nsproxy to be NULL... as shown in the very same
+| example you're talking about.
+| 
+| I agree with Eric and Sukadev that task_active_pid_ns() is unsafe. There
+| isn't even a /* don't use with zombies */ in pid_namespace.h...
+
+Hmm. Its not unsafe at present. It would become unsafe if the signals code
+tries to determine the namespace of sender.
