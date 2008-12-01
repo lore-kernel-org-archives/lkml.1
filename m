@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbYLAF6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751759AbYLAGAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751438AbYLAF6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 00:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLAF6e
+	id S1751759AbYLAGAN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 01:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYLAF77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 00:58:34 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45725 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbYLAF6d (ORCPT
+	Mon, 1 Dec 2008 00:59:59 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54873 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbYLAF76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 00:58:33 -0500
-Date: Mon, 1 Dec 2008 06:54:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [RFC PATCH] x86: create drivers/x86/ from drivers/misc/
-Message-ID: <20081201055406.GB21782@uranus.ravnborg.org>
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au> <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au> <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain> <alpine.LFD.2.00.0811281702570.24773@localhost.localdomain> <alpine.LFD.2.00.0811281706540.24773@localhost.localdomain> <20081128223533.GA5175@uranus.ravnborg.org> <alpine.LFD.2.00.0811281801520.24773@localhost.localdomain> <20081129073816.GB8351@uranus.ravnborg.org> <alpine.LFD.2.00.0811302338450.3314@localhost.localdomain>
+	Mon, 1 Dec 2008 00:59:58 -0500
+Date: Mon, 1 Dec 2008 14:59:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 0/3] cgroup id and scanning without cgroup_lock
+Message-Id: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811302338450.3314@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 12:00:04AM -0500, Len Brown wrote:
-> > 
-> > Any chance we can have this in drivers/Kconfig?
-> > 
-> > Just wrap all of the file in an
-> > 
-> > if X86
-> > .....
-> > endif
-> > 
-> > So we keep all the drivers/ stuff in one Kconfig file and
-> > not spread all over.
-> 
-> grep 'source "drivers"' arch/x86/Kconfig 
-> 
-> source "drivers/acpi/Kconfig"
-> source "drivers/cpuidle/Kconfig"
-> source "drivers/idle/Kconfig"
-> source "drivers/pci/pcie/Kconfig"
-> source "drivers/pci/Kconfig"
-> source "drivers/eisa/Kconfig"
-> source "drivers/mca/Kconfig"
-> source "drivers/pcmcia/Kconfig"
-> source "drivers/pci/hotplug/Kconfig"
-> source "drivers/Kconfig"
-> source "drivers/firmware/Kconfig"
-> source "drivers/x86/Kconfig"
-> 
-> Are the lines above a good example, a bad example,
-> or did I miss a nuance of the grand Kconfig design?
+This is a series of patches againse mmotm-Nov29
+(passed easy test)
 
-Unfortunately a typical example but if you look
-closer most of the above is bus stuff, not driver stuff.
+Now, memcg supports hierarhcy. But walking cgroup tree in intellegent way
+with lock/unlock cgroup_mutex seems to have troubles rather than expected.
+And, I want to reduce the memory usage of swap_cgroup, which uses array of
+pointers.
 
-This is not the easist part to deal with
-as there are > 10 arch to synchronize.
+This patch series provides
+	- cgroup_id per cgroup object.
+	- lookup struct cgroup by cgroup_id
+	- scan all cgroup under tree by cgroup_id. without mutex.
+	- css_tryget() function.
+	- fixes semantics of notify_on_release. (I think this is valid fix.)
 
-	Sam
+Many changes since v1. (But I wonder some more work may be neeeded.)
+
+BTW, I know there are some amount of patches against memcg are posted recently.
+If necessary, I'll prepare Weekly-update queue again (Wednesday) and
+picks all patches to linux-mm in my queue.
+
+Thanks,
+-Kame
+
