@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYLALeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYLALfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbYLALeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 06:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYLALdw
+	id S1753214AbYLALfF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 06:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLALey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 06:33:52 -0500
-Received: from mga12.intel.com ([143.182.124.36]:10257 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751337AbYLALdv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 06:33:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,694,1220252400"; 
-   d="scan'208";a="84881223"
-Message-ID: <4933CBB0.2060003@linux.intel.com>
-Date: Mon, 01 Dec 2008 12:34:08 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Mon, 1 Dec 2008 06:34:54 -0500
+Received: from 8bytes.org ([88.198.83.132]:45239 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751446AbYLALey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 06:34:54 -0500
+Date: Mon, 1 Dec 2008 12:34:51 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH v3] Fix dma_mapping_error for 32bit x86
+Message-ID: <20081201113451.GA24323@8bytes.org>
+References: <20081129124627.F2ABDFA8C8@solo.franken.de>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Jonathan Corbet <corbet@lwn.net>, Al Viro <viro@zeniv.linux.org.uk>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
-References: <20081128192508.GA21369@redhat.com>
-In-Reply-To: <20081128192508.GA21369@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081129124627.F2ABDFA8C8@solo.franken.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> Hi.
-> 
-> Let's suppose we have the tasks T1, T2, T3 which share the same file,
-> all do sys_fcntl(file, F_SETFL) in parallel. file->f_flags == 0.
-> 
-> setfl(arg) does:
-> 
-> 	if ((arg ^ filp->f_flags) & FASYNC)
-> // --- WINDOW_1 ---
-> 		filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0)
-> // --- WINDOW_2 ---
-> 	filp->f_flags = arg;
-> 
-> T1 calls setfl(FASYNC), preempted in WINDOW_1.
-> 
-> T2 calls setfl(FASYNC), does all job and returns.
-> 
-> T3 calls setfl(0), sees ->f_flags & FASYNC, does ->fasync(on => 0),
-> preempted in WINDOW_2.
-> 
-> T1 resumes, does ->fasync(on => 1) again, update ->f_flags (it
-> already has FASYNC) and returns.
-> 
-> T3 resumes, and clears FASYNC from ->f_flags.
-> 
-> 
-> 
-> Now, this file was added into some "struct fasync_struct", but
-> ->f_flags doesn't have FASYNC. This means __fput() will skip
-> ->fasync(on => 0) and the next kill_fasync() can crash because
-> fa_file points to the freed/reused memory.
+On Sat, Nov 29, 2008 at 01:46:27PM +0100, Thomas Bogendoerfer wrote:
+> Devices like b44 ethernet can't dma from addresses above 1GB. The driver
+> handles this cases by falling back to GFP_DMA allocation. But for detecting
+> the problem it needs to get an indication from dma_mapping_error.
+> The bug is triggered by using a VMSPLIT option of 2G/2G.
 
-Nasty. Thanks for catching.
+Looks like your system uses swiotlb as the dma_ops backend. Its the only
+implementation providing the ops->mapping_error callback and does not
+use bad_dma_address as the error value.
+
+> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+
+Acked-by: Joerg Roedel <joro@8bytes.org>
+
 > 
-> I think a238b790d5f99c7832f9b73ac8847025815b85f7 should be reverted.
-> Or do you see the better fix?
-
-Hmm, about checking for this case and retrying?
-
-Or put a fasync mutex into files_struct.
-
--Andi
-
+> diff -ru orig/linux-2.6.27.4/include/asm-x86/dma-mapping.h linux-2.6.27.4/include/asm-x86/dma-mapping.h
+> --- orig/linux-2.6.27.4/include/asm-x86/dma-mapping.h	2008-10-26 00:05:07.000000000 +0200
+> +++ linux-2.6.27.4/include/asm-x86/dma-mapping.h	2008-10-26 11:06:14.000000000 +0100
+> @@ -74,15 +74,13 @@
+>  /* Make sure we keep the same behaviour */
+>  static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+>  {
+> -#ifdef CONFIG_X86_32
+> -	return 0;
+> -#else
+> +#ifdef CONFIG_X86_64
+>  	struct dma_mapping_ops *ops = get_dma_ops(dev);
+>  	if (ops->mapping_error)
+>  		return ops->mapping_error(dev, dma_addr);
+>  
+> -	return (dma_addr == bad_dma_address);
+>  #endif
+> +	return (dma_addr == bad_dma_address);
+>  }
+>  
+>  #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
