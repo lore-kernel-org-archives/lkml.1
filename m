@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYLABOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYLABYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693AbYLABOf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 20:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYLABO1
+	id S1756681AbYLABYT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 20:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYLABYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 20:14:27 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:5378 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbYLABO0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 20:14:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=iavWMi+/QpNVBPEywykMpve/krs4aKElRb47zAeBDejiXOzhFHgtydZhOGZrGAHzoP
-         zr8HsodqXQZCCEqC1qL+OjRwD47bNLJ6qhPAmHcpcLSGQ0dyZkH+TBWP1aA6qTLo+zMR
-         QfE+H2bEP8VqF0AYVKpdWGpLhSGu/tdFkFglM=
-Message-ID: <f17812d70811301714k78f09beby9ffc9ef60d5ef1a5@mail.gmail.com>
-Date: Mon, 1 Dec 2008 09:14:25 +0800
-From: "Eric Miao" <eric.y.miao@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH] drivers/video/backlight: rename da903x to da903x_bl
-Cc: "Mike Rapoport" <mike@compulab.co.il>, "Eric Miao" <ymiao3@marvell.com>,
-       rpurdie@rpsys.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20081129130329.GA13867@uranus.ravnborg.org>
+	Sun, 30 Nov 2008 20:24:05 -0500
+Received: from usul.saidi.cx ([204.11.33.34]:45243 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751569AbYLABYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 20:24:03 -0500
+Message-ID: <60069.67.164.5.76.1228094870.squirrel@overt.org>
+Date: Sun, 30 Nov 2008 20:27:50 -0500 (EST)
+Subject: [PATCH] ricoh_mmc: Handle newer models of Ricoh controllers 
+     (resend)
+From: philipl@overt.org
+To: "linux kernel" <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
+       "Pierre Ossman" <drzeus@drzeus.cx>
+Cc: "Frank Seidel" <fseidel@suse.de>,
+       "Mathias Weyland" <weyland@library.ethz.ch>
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1227606164-12659-1-git-send-email-mike@compulab.co.il>
-	 <E913911567467945BBEB9277E27868B00153DC31@msiexch01.marvell.com>
-	 <492BCD01.7080508@compulab.co.il>
-	 <f17812d70811260012n57e89eb9q1101fa1e13813a49@mail.gmail.com>
-	 <20081129130329.GA13867@uranus.ravnborg.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 29, 2008 at 9:03 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Wed, Nov 26, 2008 at 04:12:07PM +0800, Eric Miao wrote:
->> Sam,
->>
->> Do you have any suggestion to this?
->>
-> [snip two modules with same name does not work...]
->
-> kbuild today create one file for each module in the
-> directory: .tmp_versions/
->
-> So in this case the module that is build lst is the winner.
->
-> I do not see any easy way to avoid this.
-> What we could do:
-> 1) find another way to record what modules we have
-> 2) embed path in filename
->
-> I did not try to actually implement any of the above
-> as the gain seems minimal compared to the additional complexity.
->
->        Sam
->
+The latest generation of laptops are shipping with a newer
+model of Ricoh chip where the firewire controller is the
+primary PCI function but a cardbus controller is also present.
 
-OK, fair enough to add my Ack here to Mike's original patch:
+The existing code assumes that if a cardbus controller is,
+present, then it must be the one to manipulate - but the real
+rule is that you manipulate PCI function 0. This patch adds an
+additional constraint that the target must be function 0.
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+Signed-off-by: Philip Langdale <philipl@overt.org>
+---
+
+  ricoh_mmc.c |   17 +++++++++++------
+  1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
+index a16d760..be9e7b3 100644
+--- a/drivers/mmc/host/ricoh_mmc.c
++++ b/drivers/mmc/host/ricoh_mmc.c
+@@ -11,9 +11,10 @@
+
+ /*
+  * This is a conceptually ridiculous driver, but it is required by the way
+- * the Ricoh multi-function R5C832 works. This chip implements firewire
+- * and four different memory card controllers. Two of those controllers are
+- * an SDHCI controller and a proprietary MMC controller. The linux SDHCI
++ * the Ricoh multi-function chips (R5CXXX) work. These chips implement
++ * the four main memory card controllers (SD, MMC, MS, xD) and one or both
++ * of cardbus or firewire. It happens that they implement SD and MMC
++ * support as separate controllers (and PCI functions). The linux SDHCI
+  * driver supports MMC cards but the chip detects MMC cards in hardware
+  * and directs them to the MMC controller - so the SDHCI driver never sees
+  * them. To get around this, we must disable the useless MMC controller.
+@@ -21,8 +22,10 @@
+  * a detection event occurs immediately, even if the MMC card is already
+  * in the reader.
+  *
+- * The relevant registers live on the firewire function, so this is unavoidably
+- * ugly. Such is life.
++ * It seems to be the case that the relevant PCI registers to deactivate the
++ * MMC controller live on PCI function 0, which might be the cardbus controller
++ * or the firewire controller, depending on the particular chip in question. As
++ * such, it makes what this driver has to do unavoidably ugly. Such is life.
+  */
+
+ #include <linux/pci.h>
+@@ -143,6 +146,7 @@ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+ 		pci_get_device(PCI_VENDOR_ID_RICOH,
+ 			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
+ 		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
++		    PCI_FUNC(fw_dev->devfn) == 0 &&
+ 		    pdev->bus == fw_dev->bus) {
+ 			if (ricoh_mmc_disable(fw_dev) != 0)
+ 				return -ENODEV;
+@@ -160,6 +164,7 @@ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+ 	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
+ 					PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
+ 		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
++		    PCI_FUNC(fw_dev->devfn) == 0 &&
+ 		    pdev->bus == fw_dev->bus) {
+ 			if (ricoh_mmc_disable(fw_dev) != 0)
+ 				return -ENODEV;
+@@ -172,7 +177,7 @@ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+
+ 	if (!ctrlfound) {
+ 		printk(KERN_WARNING DRIVER_NAME
+-		       ": Main firewire function not found. Cannot disable controller.\n");
++		       ": Main Ricoh function not found. Cannot disable controller.\n");
+ 		return -ENODEV;
+ 	}
+
+
