@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYLAM3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYLAMbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbYLAM3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 07:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbYLAM3p
+	id S1754854AbYLAMbc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 07:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYLAMbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 07:29:45 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:35284 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752282AbYLAM3o (ORCPT
+	Mon, 1 Dec 2008 07:31:21 -0500
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:18281 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750956AbYLAMbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 07:29:44 -0500
-Subject: Re: [PATCH 01/15] kmemleak: Add the base support
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <84144f020811302249i7587662ewa621d0a81f5426a2@mail.gmail.com>
-References: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
-	 <20081129104312.16726.36218.stgit@pc1117.cambridge.arm.com>
-	 <20081201142824.D552.E1E9C6FF@jp.fujitsu.com>
-	 <84144f020811302249i7587662ewa621d0a81f5426a2@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 01 Dec 2008 12:29:22 +0000
-Message-Id: <1228134562.25929.59.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 1 Dec 2008 07:31:21 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiEFAJdnM0nCTsYx/2dsb2JhbACBbc0ign0
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: video4linux-list@redhat.com
+Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
+Date: Mon, 1 Dec 2008 13:31:25 +0100
+User-Agent: KMail/1.9.9
+Cc: Hans Verkuil <hverkuil@xs4all.nl>,
+       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       davinci-linux-open-source-bounces@linux.davincidsp.com,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+References: <200812011246.08885.hverkuil@xs4all.nl>
+In-Reply-To: <200812011246.08885.hverkuil@xs4all.nl>
+X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Dec 2008 12:29:22.0991 (UTC) FILETIME=[70E0F3F0:01C953B0]
+Content-Disposition: inline
+Message-Id: <200812011331.25676.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-01 at 08:49 +0200, Pekka Enberg wrote:
-> On Mon, Dec 1, 2008 at 7:39 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> >> +/*
-> >> + * Insert a pointer into the pointer hash table.
-> >> + */
-> >> +static inline void create_object(unsigned long ptr, size_t size, int ref_count)
-> >> +{
-> >> +     unsigned long flags;
-> >> +     struct memleak_object *object;
-> >> +     struct prio_tree_node *node;
-> >> +     struct stack_trace trace;
-> >> +
-> >> +     object = kmem_cache_alloc(object_cache, GFP_ATOMIC);
-> >> +     if (!object)
-> >> +             panic("kmemleak: cannot allocate a memleak_object structure\n");
-> >
-> > IIRC, GFP_ATOMIC allocation sometimes fails. (ex. when page cache occupies all
-> > area). It seems to be easy to panic. Is it intended?
-> 
-> Yup, GFP_ATOMIC can fail as can any memory allocation on out-of-memory
-> conditions unless you specify GFP_NOFAIL which will either succeed or
-> lock up the box. I think you can just WARN_ON() here? However, it's
-> probably safer to pass gfp flags from the callers here; otherwise we
-> end up doing tons of GFP_ATOMIC allocations which is not healthy in
-> general.
+On Monday 01 December 2008, Hans Verkuil wrote:
+> Hi Mauro,
+>
+> Please pull from http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng for the
+> following:
+>
+> - v4l2: add v4l2_device and v4l2_subdev structs to the v4l2 framework.
+> - v4l2-common: add i2c helper functions
+> - cs53l32a: convert to v4l2_subdev.
+> - cx25840: convert to v4l2_subdev.
+> - m52790: convert to v4l2_subdev.
+> - msp3400: convert to v4l2_subdev.
+> - saa7115: convert to v4l2_subdev.
+> - saa7127: convert to v4l2_subdev.
+> - saa717x: convert to v4l2_subdev.
+> - tuner: convert to v4l2_subdev.
+> - upd64031a: convert to v4l2_subdev.
+> - upd64083: convert to v4l2_subdev.
+> - vp27smpx: convert to v4l2_subdev.
+> - wm8739: convert to v4l2_subdev.
+> - wm8775: convert to v4l2_subdev.
+> - ivtv/ivtvfb: convert to v4l2_device/v4l2_subdev.
+>
+> All points raised in reviews are addressed so I think it is time to get
+> this merged so people can start to use it.
 
-Yes, good idea, GFP_ATOMIC isn't always needed.
+Does linuxtv.org and Mercurial provide the necessary infrastructure to 
+integrate those changes into the v4l-dvb repository while not pushing them 
+upstream yet ? I'd like to see more people testing (and breaking and 
+fixing :-)) your changes before they reach the mainline kernel.
 
-> Also, I see some other BUG_ON() calls in the code which probably
-> should be converted to WARN_ON() as well.
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@skynet.be>
+> Reviewed-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Reviewed-by: Andy Walls <awalls@radix.net>
+> Reviewed-by: David Brownell <david-b@pacbell.net>
+>
+> Once this is in I'll start on converting the other i2c drivers.
 
-This was also raised in the past by Ingo and it's on my to-do list to
-fix. Basically, if an allocation for internal kmemleak structures fails,
-kmemleak should print a warning and disable the tracing since further
-leak reports are irrelevant. Once I add the run-time kmemleak
-configuration/disabling, I'll change the BUG_ON and panic calls to
-something less severe.
+Best regards,
 
--- 
-Catalin
-
+Laurent Pinchart
