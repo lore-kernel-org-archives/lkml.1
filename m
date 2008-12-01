@@ -1,87 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYLAWxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbYLAWzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbYLAWxd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 17:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYLAWxZ
+	id S1753296AbYLAWzA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 17:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYLAWyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 17:53:25 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2647 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYLAWxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 17:53:24 -0500
-Date: Mon, 1 Dec 2008 22:53:13 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
-Message-ID: <20081201225312.GA6699@sirena.org.uk>
-References: <200812011335.43551.david-b@pacbell.net>
-MIME-Version: 1.0
+	Mon, 1 Dec 2008 17:54:52 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57042 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbYLAWyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 17:54:51 -0500
+Date: Mon, 1 Dec 2008 14:54:49 -0800
+From: Mark Fasheh <mfasheh@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git patches] Ocfs2 fixes
+Message-ID: <20081201225449.GD8791@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812011335.43551.david-b@pacbell.net>
-X-Cookie: It's all in the mind, ya know.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [patch 2.6.28-rc6+] regulator: bugfixes and messaging cleanup
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 01:35:43PM -0800, David Brownell wrote:
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-> Regulator core bugfixes:
+to receive the following updates:
 
-...
+ Documentation/filesystems/ocfs2.txt |    3 ---
+ fs/ocfs2/buffer_head_io.c           |   15 ++++-----------
+ fs/ocfs2/dlm/dlmfs.c                |    4 +++-
+ fs/ocfs2/dlm/userdlm.h              |    2 +-
+ fs/ocfs2/dlmglue.c                  |    3 +--
+ fs/ocfs2/ocfs2.h                    |    2 +-
+ fs/ocfs2/stack_user.c               |    3 +++
+ 7 files changed, 13 insertions(+), 19 deletions(-)
 
-> And messaging updates;
+Coly Li (2):
+      ocfs2: comments typo fix
+      ocfs2: fix return value set in init_dlmfs_fs()
 
-This could usefuly be split into a patch series, there's rather a lot
-of different changes in here...  On the whole it looks good, a few
-things, though:
+David Teigland (2):
+      ocfs2: initialize stack_user lvbptr
+      ocfs2: fix wake_up in unlock_ast
 
-> @@ -894,7 +915,7 @@ struct regulator *regulator_get(struct d
->  	struct regulator *regulator = ERR_PTR(-ENODEV);
->  
->  	if (id == NULL) {
-> -		printk(KERN_ERR "regulator: get() with no identifier\n");
-> +		dev_dbg(dev, "regulator_get with no identifier\n");
->  		return regulator;
->  	}
+Mark Fasheh (2):
+      ocfs2: Small documentation update
+      ocfs2: fix regression in ocfs2_read_blocks_sync()
 
-dev may legally be NULL here which is going to cause upset if the
-dev_dbg() is hit.  Things like cpufreq which can use regulators don't
-use a struct device (currently!) so it's supported.
-
-> @@ -971,19 +991,16 @@ static int _regulator_enable(struct regu
->  	int ret = -EINVAL;
->  
->  	if (!rdev->constraints) {
-> -		printk(KERN_ERR "%s: %s has no constraints\n",
-> -		       __func__, rdev->desc->name);
-> +		dev_err(&rdev->dev, "%s has no constraints\n",
-> +		       rdev->desc->name);
-
-Hrm.  You've downgraded most of the diagnostics to dev_dbg() but left
-this as KERN_ERR.  It'd be nice to be a bit more consistent.  My
-personal preference is to make things in the constraints and machine
-definitions display at dev_err() since they should never happen and a
-plain text error is often helpful for new users but it's not a very
-strong one either way.
-
->  		ret = rdev->desc->ops->enable(rdev);
-> -		if (ret < 0) {
-> -			printk(KERN_ERR "%s: failed to enable %s: %d\n",
-> -			       __func__, rdev->desc->name, ret);
-> -			return ret;
-> +		if (ret >= 0) {
-> +			dev_dbg(&rdev->dev, "enabled %s\n", rdev->desc->name);
-> +			rdev->use_count++;
-
-I have to say I'd be happier keeping the logic as it was here.  The
-behaviour does stay the same due to fall through but it's not quite so
-clear since it's not consistent with the error handling style for the
-rest of the function.
+diff --git a/Documentation/filesystems/ocfs2.txt b/Documentation/filesystems/ocfs2.txt
+index 4340cc8..67310fb 100644
+--- a/Documentation/filesystems/ocfs2.txt
++++ b/Documentation/filesystems/ocfs2.txt
+@@ -28,10 +28,7 @@ Manish Singh  <manish.singh@oracle.com>
+ Caveats
+ =======
+ Features which OCFS2 does not support yet:
+-	- extended attributes
+ 	- quotas
+-	- cluster aware flock
+-	- cluster aware lockf
+ 	- Directory change notification (F_NOTIFY)
+ 	- Distributed Caching (F_SETLEASE/F_GETLEASE/break_lease)
+ 	- POSIX ACLs
+diff --git a/fs/ocfs2/buffer_head_io.c b/fs/ocfs2/buffer_head_io.c
+index 7e947c6..3a178ec 100644
+--- a/fs/ocfs2/buffer_head_io.c
++++ b/fs/ocfs2/buffer_head_io.c
+@@ -112,7 +112,7 @@ int ocfs2_read_blocks_sync(struct ocfs2_super *osb, u64 block,
+ 		bh = bhs[i];
+ 
+ 		if (buffer_jbd(bh)) {
+-			mlog(ML_ERROR,
++			mlog(ML_BH_IO,
+ 			     "trying to sync read a jbd "
+ 			     "managed bh (blocknr = %llu), skipping\n",
+ 			     (unsigned long long)bh->b_blocknr);
+@@ -147,15 +147,10 @@ int ocfs2_read_blocks_sync(struct ocfs2_super *osb, u64 block,
+ 	for (i = nr; i > 0; i--) {
+ 		bh = bhs[i - 1];
+ 
+-		if (buffer_jbd(bh)) {
+-			mlog(ML_ERROR,
+-			     "the journal got the buffer while it was "
+-			     "locked for io! (blocknr = %llu)\n",
+-			     (unsigned long long)bh->b_blocknr);
+-			BUG();
+-		}
++		/* No need to wait on the buffer if it's managed by JBD. */
++		if (!buffer_jbd(bh))
++			wait_on_buffer(bh);
+ 
+-		wait_on_buffer(bh);
+ 		if (!buffer_uptodate(bh)) {
+ 			/* Status won't be cleared from here on out,
+ 			 * so we can safely record this and loop back
+@@ -251,8 +246,6 @@ int ocfs2_read_blocks(struct inode *inode, u64 block, int nr,
+ 			ignore_cache = 1;
+ 		}
+ 
+-		/* XXX: Can we ever get this and *not* have the cached
+-		 * flag set? */
+ 		if (buffer_jbd(bh)) {
+ 			if (ignore_cache)
+ 				mlog(ML_BH_IO, "trying to sync read a jbd "
+diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
+index 533a789..ba962d7 100644
+--- a/fs/ocfs2/dlm/dlmfs.c
++++ b/fs/ocfs2/dlm/dlmfs.c
+@@ -608,8 +608,10 @@ static int __init init_dlmfs_fs(void)
+ 				0, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|
+ 					SLAB_MEM_SPREAD),
+ 				dlmfs_init_once);
+-	if (!dlmfs_inode_cache)
++	if (!dlmfs_inode_cache) {
++		status = -ENOMEM;
+ 		goto bail;
++	}
+ 	cleanup_inode = 1;
+ 
+ 	user_dlm_worker = create_singlethread_workqueue("user_dlm");
+diff --git a/fs/ocfs2/dlm/userdlm.h b/fs/ocfs2/dlm/userdlm.h
+index 39ec277..0c3cc03 100644
+--- a/fs/ocfs2/dlm/userdlm.h
++++ b/fs/ocfs2/dlm/userdlm.h
+@@ -33,7 +33,7 @@
+ #include <linux/workqueue.h>
+ 
+ /* user_lock_res->l_flags flags. */
+-#define USER_LOCK_ATTACHED      (0x00000001) /* have we initialized
++#define USER_LOCK_ATTACHED      (0x00000001) /* we have initialized
+ 					       * the lvb */
+ #define USER_LOCK_BUSY          (0x00000002) /* we are currently in
+ 					       * dlm_lock */
+diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index ec68442..6e6cc0a 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -2841,9 +2841,8 @@ static void ocfs2_unlock_ast(void *opaque, int error)
+ 
+ 	lockres_clear_flags(lockres, OCFS2_LOCK_BUSY);
+ 	lockres->l_unlock_action = OCFS2_UNLOCK_INVALID;
+-	spin_unlock_irqrestore(&lockres->l_lock, flags);
+-
+ 	wake_up(&lockres->l_event);
++	spin_unlock_irqrestore(&lockres->l_lock, flags);
+ 
+ 	mlog_exit_void();
+ }
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index fef7ece..3fed9e3 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -85,7 +85,7 @@ enum ocfs2_unlock_action {
+ };
+ 
+ /* ocfs2_lock_res->l_flags flags. */
+-#define OCFS2_LOCK_ATTACHED      (0x00000001) /* have we initialized
++#define OCFS2_LOCK_ATTACHED      (0x00000001) /* we have initialized
+ 					       * the lvb */
+ #define OCFS2_LOCK_BUSY          (0x00000002) /* we are currently in
+ 					       * dlm_lock */
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+index faec2d8..9b76d41 100644
+--- a/fs/ocfs2/stack_user.c
++++ b/fs/ocfs2/stack_user.c
+@@ -740,6 +740,9 @@ static int user_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
+ 
+ static void *user_dlm_lvb(union ocfs2_dlm_lksb *lksb)
+ {
++	if (!lksb->lksb_fsdlm.sb_lvbptr)
++		lksb->lksb_fsdlm.sb_lvbptr = (char *)lksb +
++					     sizeof(struct dlm_lksb);
+ 	return (void *)(lksb->lksb_fsdlm.sb_lvbptr);
+ }
+ 
