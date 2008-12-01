@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751082AbYLAI7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbYLAJZC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751082AbYLAI7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 03:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYLAI66
+	id S1752079AbYLAJZC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 04:25:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYLAJYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 03:58:58 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:46685 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753070AbYLAI65 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 03:58:57 -0500
-Message-ID: <4933A74F.3050809@de.ibm.com>
-Date: Mon, 01 Dec 2008 09:58:55 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
+	Mon, 1 Dec 2008 04:24:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33495 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750748AbYLAJYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 04:24:51 -0500
+Message-ID: <4933AD51.5000202@redhat.com>
+Date: Mon, 01 Dec 2008 11:24:33 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       tklein@de.ibm.com, Christoph Raisch <raisch@de.ibm.com>,
-       jb.billaud@gmail.com, hering2@de.ibm.com
-Subject: [PATCH] lro: IP fragment checking
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lguest@ozlabs.org, Alexander van Heukelum <heukelum@mailshack.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>, jeremy@xensource.com,
+       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Lguest] [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+References: <20081104150729.GC21470@localhost> <20081129154516.GA26579@mailshack.com> <49318871.8010501@redhat.com> <200812011502.37170.rusty@rustcorp.com.au>
+In-Reply-To: <200812011502.37170.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch prevents that ip fragmented TCP packets are considered vaild
-for aggregation
+Rusty Russell wrote:
+> On Sunday 30 November 2008 04:52:41 Avi Kivity wrote:
+>   
+>> Alexander van Heukelum wrote:
+>>     
+>>> I now did the benchmarks for the same -rc6 with hpa's 4-byte stubs
+>>> too. Same machine. It's significantly better than the other two
+>>> options in terms of speed. It takes about 7% less cpu to handle
+>>> the interrupts. (0.64% cpu instead of 0.69%.) I have to run now,
+>>> I'll let interpreting the histogram to someone else ;).
+>>>       
+>> This is noise. 0.05% cpu on a 1GHz machine servicing 1000 interrupt/sec
+>> boils down to 500 cycles/interrupt.  These changes shouldn't amount to
+>> so much (and I doubt you have 1000 interrupts/sec with a single disk)..
+>>     
+>
+> Sure, but smallest cache wins.  Which is why I thought hpa chose the 3 byte 
+> option.
+>
+>   
 
-Regards,
+Four bytes was the smallest sane option.  Three bytes involved 
+instruction opcodes overlap.
 
-Jan-Bernd
+>> I'm sorry, but the whole effort is misguided, in my opinion.
+>>     
+>
+> Respectfully disagree.  I wouldn't do it, but it warms my heart that others 
+> are.  It's are not subtractive from other optimization efforts.
+>   
 
----
+Once it's done there's no reason not to commit it.  But the effort 
+expended to do it is gone, without any measurable return.
 
 
-
- net/ipv4/inet_lro.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/net/ipv4/inet_lro.c b/net/ipv4/inet_lro.c
-index cfd034a..1f9159d 100644
---- a/net/ipv4/inet_lro.c
-+++ b/net/ipv4/inet_lro.c
-@@ -64,6 +64,9 @@ static int lro_tcp_ip_check(struct iphdr *iph, struct tcphdr *tcph,
- 	if (iph->ihl != IPH_LEN_WO_OPTIONS)
- 		return -1;
- 
-+	if (iph->frag_off & IP_MF)
-+		return -1;
-+
- 	if (tcph->cwr || tcph->ece || tcph->urg || !tcph->ack
- 	    || tcph->rst || tcph->syn || tcph->fin)
- 		return -1;
 -- 
-1.5.5
-
-
-
-
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
