@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbYLABY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYLAB6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756808AbYLABY7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 20:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYLABYv
+	id S1756546AbYLAB6L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 20:58:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYLAB55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 20:24:51 -0500
-Received: from usul.saidi.cx ([204.11.33.34]:38654 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751569AbYLABYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 20:24:50 -0500
-Message-ID: <60072.67.164.5.76.1228094920.squirrel@overt.org>
-Date: Sun, 30 Nov 2008 20:28:40 -0500 (EST)
-Subject: [PATCH] ricoh_mmc: Use suspend/resume_noirq (resend)
-From: philipl@overt.org
-To: "linux kernel" <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       "Pierre Ossman" <drzeus@drzeus.cx>
-Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>, "Frans Pop" <elendil@planet.nl>
-User-Agent: SquirrelMail/1.4.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Sun, 30 Nov 2008 20:57:57 -0500
+Received: from cmpxchg.org ([85.214.51.133]:49688 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752834AbYLAB54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 20:57:56 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [patch v2] vmscan: protect zone rotation stats by lru lock
+Message-Id: <E1L6y5T-0003q3-M3@cmpxchg.org>
+Date: Mon, 01 Dec 2008 03:00:35 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If ricoh_mmc suspends before sdhci_pci, it will pull the card
-out from under the controller, which could leave the system in
-a very confused state.
+The zone's rotation statistics must not be accessed without the
+corresponding LRU lock held.  Fix an unprotected write in
+shrink_active_list().
 
-Using suspend/resume_noirq ensures that sdhci_pci suspends first
-and resumes second.
-
-Signed-off-by: Philip Langdale <philipl@overt.org>
+Acked-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
 ---
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-  ricoh_mmc.c |   20 ++++++++++++++++----
-  1 file changed, 16 insertions(+), 4 deletions(-)
+Applies to your tree, Linus, and should probably go into .28.
 
-diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
-index be9e7b3..34064d2 100644
---- a/drivers/mmc/host/ricoh_mmc.c
-+++ b/drivers/mmc/host/ricoh_mmc.c
-@@ -196,10 +196,14 @@ static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
- 	pci_set_drvdata(pdev, NULL);
- }
-
--static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int ricoh_mmc_suspend_noirq(struct device *dev)
- {
-+	struct pci_dev *pdev = NULL;
- 	struct pci_dev *fw_dev = NULL;
-
-+	pdev = to_pci_dev(dev);
-+	BUG_ON(pdev == NULL);
-+
- 	fw_dev = pci_get_drvdata(pdev);
- 	BUG_ON(fw_dev == NULL);
-
-@@ -210,10 +214,14 @@ static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
- 	return 0;
- }
-
--static int ricoh_mmc_resume(struct pci_dev *pdev)
-+static int ricoh_mmc_resume_noirq(struct device *dev)
- {
-+	struct pci_dev *pdev = NULL;
- 	struct pci_dev *fw_dev = NULL;
-
-+	pdev = to_pci_dev(dev);
-+	BUG_ON(pdev == NULL);
-+
- 	fw_dev = pci_get_drvdata(pdev);
- 	BUG_ON(fw_dev == NULL);
-
-@@ -224,13 +232,17 @@ static int ricoh_mmc_resume(struct pci_dev *pdev)
- 	return 0;
- }
-
-+static struct pm_ext_ops ricoh_mmc_pm_ext_opts = {
-+	.suspend_noirq =	ricoh_mmc_suspend_noirq,
-+	.resume_noirq =		ricoh_mmc_resume_noirq,
-+};
-+
- static struct pci_driver ricoh_mmc_driver = {
- 	.name = 	DRIVER_NAME,
- 	.id_table =	pci_ids,
- 	.probe = 	ricoh_mmc_probe,
- 	.remove =	__devexit_p(ricoh_mmc_remove),
--	.suspend =	ricoh_mmc_suspend,
--	.resume =	ricoh_mmc_resume,
-+	.pm =		&ricoh_mmc_pm_ext_opts,
- };
-
- /*****************************************************************************\
-
-
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1243,32 +1243,32 @@ static void shrink_active_list(unsigned 
+ 		/* page_referenced clears PageReferenced */
+ 		if (page_mapping_inuse(page) &&
+ 		    page_referenced(page, 0, sc->mem_cgroup))
+ 			pgmoved++;
+ 
+ 		list_add(&page->lru, &l_inactive);
+ 	}
+ 
++	spin_lock_irq(&zone->lru_lock);
+ 	/*
+ 	 * Count referenced pages from currently used mappings as
+ 	 * rotated, even though they are moved to the inactive list.
+ 	 * This helps balance scan pressure between file and anonymous
+ 	 * pages in get_scan_ratio.
+ 	 */
+ 	zone->recent_rotated[!!file] += pgmoved;
+ 
+ 	/*
+ 	 * Move the pages to the [file or anon] inactive list.
+ 	 */
+ 	pagevec_init(&pvec, 1);
+ 
+ 	pgmoved = 0;
+ 	lru = LRU_BASE + file * LRU_FILE;
+-	spin_lock_irq(&zone->lru_lock);
+ 	while (!list_empty(&l_inactive)) {
+ 		page = lru_to_page(&l_inactive);
+ 		prefetchw_prev_lru_page(page, &l_inactive, flags);
+ 		VM_BUG_ON(PageLRU(page));
+ 		SetPageLRU(page);
+ 		VM_BUG_ON(!PageActive(page));
+ 		ClearPageActive(page);
+ 
