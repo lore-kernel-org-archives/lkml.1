@@ -1,252 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYLAXVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYLAXXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbYLAXVH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 18:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYLAXUz
+	id S1753488AbYLAXXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 18:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYLAXXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 18:20:55 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:52528 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559AbYLAXUx (ORCPT
+	Mon, 1 Dec 2008 18:23:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:4473 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751247AbYLAXXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 18:20:53 -0500
+	Mon, 1 Dec 2008 18:23:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=HZUrWanV3actedHHQO/IYG0iw+9ub2KnmtkbkebRhoJCT012kcDZjdRVBSJV61fLYW
-         BQf262V/5XeGw1u5wGtXXjbin8DBztmaZIE4Q4IDYMcWcw+/mLD7g1amHogUvx2PvETF
-         8TJJ8bNBYPHDwZGb+aMcpDwGuF583fWD3ghTQ=
-Message-ID: <49347147.8070405@gmail.com>
-Date: Tue, 02 Dec 2008 00:20:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XGwalsmNp9CR3z4MNJzbPbwyyU/SIMuTBO9vsm7E6WZTS+CRxNSZqd34e+ot+aAgbY
+         WsK2PmEyi+flDMg4eVoSs3Fvj/W4Epv93yf9Kn3a8OpHqyATxe5j4Mh0lGbCKbLu1UQw
+         oAtSVZH/HRCiNF3v84T/ZVxRB5Rs3Kq2ez8Uk=
+Date: Tue, 2 Dec 2008 00:22:31 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Laurent Riffard <laurent.riffard@free.fr>, Jan Kara <jack@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] udf: fix default mode and dmode options handling
+Message-ID: <20081201232227.GA7925@joi>
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au> <49332545.5020604@free.fr> <20081201001854.GA9881@joi> <49343AC2.3010808@free.fr>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, Tim Bird <tim.bird@am.sony.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/function-branch-tracer: support for x86-64
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49343AC2.3010808@free.fr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Small note: Ingo, I have only one test box and I had to install a 64 bits distro to
-make this patch. So I can't verify if it breaks something in x86-32. I don't know
-what could be broken here but we never know.
-For further patches, I will use a virtual machine to test under 32.
+On Mon, Dec 01, 2008 at 08:28:02PM +0100, Laurent Riffard wrote:
+> >> With next-2008-11-28, I was unable to mount an UDF-formatted DVD-RW:
+> > Can you check whether attached patch fixes it?
+> Current kernel is next-20081128 + reiser4 patches + your patch: it seems to works well now.
+> (...)
+> Tested-by: Laurent Riffard <laurent.riffard@free.fr>
 
---
-This patch implements the support for function branch tracer under x86-64.
-Both static and dynamic tracing are supported.
+Thanks!
 
-This causes some small CPP conditional asm on arch/x86/kernel/ftrace.c
-I wanted to use probe_kernel_read/write to make the return address saving/patching
-code more generic but it causes tracing recursion.
+Jan, please apply this patch:
 
-That would be perhaps useful to implement a notrace version of these function for other
-archs ports.
-
-Note that arch/x86/process_64.c is not traced, as in X86-32. I first thought __switch_to()
-was responsible of crashes during tracing because I believed current task were changed
-inside but that's actually not the case (actually yes, but not the "current" pointer).
-
-So I will have to investigate to find the functions that harm here, to enable tracing
-of the other functions inside (but there is no issue at this time, while process_64.c
-stays out of -pg flags).
-
-A little possible race condition is fixed inside this patch too. When the tracer allocate
-a return stack dynamically, the current depth is not initialized before but after.
-An interrupt could occur at this time and, after seeing that the return stack is
-allocated, the tracer could try to trace it with a random uninitialized depth. 
-It's a prevention, even if I hadn't problems with it.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/Kconfig           |    2 +-
- arch/x86/kernel/Makefile   |    1 +
- arch/x86/kernel/entry_64.S |   74 ++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/ftrace.c   |   11 ++++++-
- kernel/trace/ftrace.c      |    2 +-
- 5 files changed, 87 insertions(+), 3 deletions(-)
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH] udf: fix default mode and dmode options handling
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index e7c0a1b..c216882 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -29,7 +29,7 @@ config X86
- 	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
--	select HAVE_FUNCTION_GRAPH_TRACER if X86_32
-+	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
- 	select HAVE_ARCH_KGDB if !X86_VOYAGER
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 6bc8aef..5ee1ba6 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -18,6 +18,7 @@ endif
- ifdef CONFIG_FUNCTION_GRAPH_TRACER
- # Don't trace __switch_to() but let it for function tracer
- CFLAGS_REMOVE_process_32.o = -pg
-+CFLAGS_REMOVE_process_64.o = -pg
- endif
+On x86 (and several other archs) mode_t is defined as "unsigned short"
+and comparing unsigned shorts to negative ints is broken (because short
+is promoted to int and then compared). Fix it.
+
+Reported-and-tested-by: Laurent Riffard <laurent.riffard@free.fr>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ fs/udf/inode.c  |    4 ++--
+ fs/udf/super.c  |    8 ++++----
+ fs/udf/udf_sb.h |    2 ++
+ 3 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 6612a27..2d7e56a 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -1222,10 +1222,10 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	iinfo->i_lenExtents = inode->i_size;
  
- #
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index 5e63b53..c433d86 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -97,6 +97,12 @@ ftrace_call:
- 	movq (%rsp), %rax
- 	addq $0x38, %rsp
+ 	if (fe->icbTag.fileType != ICBTAG_FILE_TYPE_DIRECTORY &&
+-			sbi->s_fmode != -1)
++			sbi->s_fmode != UDF_INVALID_MODE)
+ 		inode->i_mode = sbi->s_fmode;
+ 	else if (fe->icbTag.fileType == ICBTAG_FILE_TYPE_DIRECTORY &&
+-			sbi->s_dmode != -1)
++			sbi->s_dmode != UDF_INVALID_MODE)
+ 		inode->i_mode = sbi->s_dmode;
+ 	else
+ 		inode->i_mode = udf_convert_permissions(fe);
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index e5d121d..8deaa61 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -284,9 +284,9 @@ static int udf_show_options(struct seq_file *seq, struct vfsmount *mnt)
+ 		seq_printf(seq, ",gid=%u", sbi->s_gid);
+ 	if (sbi->s_umask != 0)
+ 		seq_printf(seq, ",umask=%o", sbi->s_umask);
+-	if (sbi->s_fmode != -1)
++	if (sbi->s_fmode != UDF_INVALID_MODE)
+ 		seq_printf(seq, ",mode=%o", sbi->s_fmode);
+-	if (sbi->s_dmode != -1)
++	if (sbi->s_dmode != UDF_INVALID_MODE)
+ 		seq_printf(seq, ",dmode=%o", sbi->s_dmode);
+ 	if (UDF_QUERY_FLAG(sb, UDF_FLAG_SESSION_SET))
+ 		seq_printf(seq, ",session=%u", sbi->s_session);
+@@ -1894,8 +1894,8 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
+ 	uopt.uid = -1;
+ 	uopt.gid = -1;
+ 	uopt.umask = 0;
+-	uopt.fmode = -1;
+-	uopt.dmode = -1;
++	uopt.fmode = UDF_INVALID_MODE;
++	uopt.dmode = UDF_INVALID_MODE;
  
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+.globl ftrace_graph_call
-+ftrace_graph_call:
-+	jmp ftrace_stub
-+#endif
-+
- .globl ftrace_stub
- ftrace_stub:
- 	retq
-@@ -109,6 +115,12 @@ ENTRY(mcount)
+ 	sbi = kzalloc(sizeof(struct udf_sb_info), GFP_KERNEL);
+ 	if (!sbi)
+diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
+index 5d32c60..158221e 100644
+--- a/fs/udf/udf_sb.h
++++ b/fs/udf/udf_sb.h
+@@ -48,6 +48,8 @@
+ #define UDF_SPARABLE_MAP15		0x1522U
+ #define UDF_METADATA_MAP25		0x2511U
  
- 	cmpq $ftrace_stub, ftrace_trace_function
- 	jnz trace
++#define UDF_INVALID_MODE		((mode_t)-1)
 +
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+	cmpq $ftrace_stub, ftrace_graph_return
-+	jnz ftrace_graph_caller
-+#endif
-+
- .globl ftrace_stub
- ftrace_stub:
- 	retq
-@@ -144,6 +156,68 @@ END(mcount)
- #endif /* CONFIG_DYNAMIC_FTRACE */
- #endif /* CONFIG_FUNCTION_TRACER */
+ #pragma pack(1) /* XXX(hch): Why?  This file just defines in-core structures */
  
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+ENTRY(ftrace_graph_caller)
-+	cmpl $0, function_trace_stop
-+	jne ftrace_stub
-+
-+	subq $0x38, %rsp
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+
-+	leaq 8(%rbp), %rdi
-+	movq 0x38(%rsp), %rsi
-+
-+	call	prepare_ftrace_return
-+
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $0x38, %rsp
-+	retq
-+END(ftrace_graph_caller)
-+
-+
-+.globl return_to_handler
-+return_to_handler:
-+	subq  $80, %rsp
-+
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+	movq %r10, 56(%rsp)
-+	movq %r11, 64(%rsp)
-+
-+	call ftrace_return_to_handler
-+
-+	movq %rax, 72(%rsp)
-+	movq 64(%rsp), %r11
-+	movq 56(%rsp), %r10
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $72, %rsp
-+	retq
-+#endif
-+
-+
- #ifndef CONFIG_PREEMPT
- #define retint_kernel retint_restore_args
- #endif
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 7ef914e..5883247 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -467,8 +467,13 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 	 * ignore such a protection.
- 	 */
- 	asm volatile(
-+#ifdef CONFIG_X86_64
-+		"1: movq (%[parent_old]), %[old]\n"
-+		"2: movq %[return_hooker], (%[parent_replaced])\n"
-+#else
- 		"1: movl (%[parent_old]), %[old]\n"
- 		"2: movl %[return_hooker], (%[parent_replaced])\n"
-+#endif
- 		"   movl $0, %[faulted]\n"
- 
- 		".section .fixup, \"ax\"\n"
-@@ -476,8 +481,13 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 		".previous\n"
- 
- 		".section __ex_table, \"a\"\n"
-+#ifdef CONFIG_X86_64
-+		"   .quad 1b, 3b\n"
-+		"   .quad 2b, 3b\n"
-+#else
- 		"   .long 1b, 3b\n"
- 		"   .long 2b, 3b\n"
-+#endif
- 		".previous\n"
- 
- 		: [parent_replaced] "=r" (parent), [old] "=r" (old),
-@@ -509,5 +519,4 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 	ftrace_graph_entry(&trace);
- 
- }
--
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 08b536a..1e9379d 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1673,8 +1673,8 @@ static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
- 		}
- 
- 		if (t->ret_stack == NULL) {
--			t->ret_stack = ret_stack_list[start++];
- 			t->curr_ret_stack = -1;
-+			t->ret_stack = ret_stack_list[start++];
- 			atomic_set(&t->trace_overrun, 0);
- 		}
- 	} while_each_thread(g, t);
+ struct udf_meta_data {
 -- 
-1.5.6.3
+1.5.6.4
 
