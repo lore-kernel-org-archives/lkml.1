@@ -1,104 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYLAPHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbYLAPWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYLAPHR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 10:07:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYLAPHE
+	id S1752571AbYLAPWd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 10:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYLAPWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 10:07:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33505 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYLAPHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 10:07:03 -0500
-Date: Mon, 1 Dec 2008 13:06:43 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, video4linux-list@redhat.com,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source-bounces@linux.davincidsp.com
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
-Message-ID: <20081201130643.661f5743@pedra.chehab.org>
-In-Reply-To: <200812011524.43499.laurent.pinchart@skynet.be>
-References: <200812011246.08885.hverkuil@xs4all.nl>
-	<200812011429.54019.laurent.pinchart@skynet.be>
-	<200812011445.50115.hverkuil@xs4all.nl>
-	<200812011524.43499.laurent.pinchart@skynet.be>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 1 Dec 2008 10:22:24 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59708 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751387AbYLAPWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 10:22:23 -0500
+Subject: Re: [PATCH -v3 6/8] fsnotify: add group priorities
+From: Eric Paris <eparis@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, hch@infradead.org
+In-Reply-To: <1227803109.4454.1773.camel@twins>
+References: <20081125171714.17115.82625.stgit@paris.rdu.redhat.com>
+	 <20081125172123.17115.31274.stgit@paris.rdu.redhat.com>
+	 <1227803109.4454.1773.camel@twins>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 10:20:57 -0500
+Message-Id: <1228144857.11752.32.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
-
-On Mon, 1 Dec 2008 15:24:43 +0100
-Laurent Pinchart <laurent.pinchart@skynet.be> wrote:
-
-> > > I am all for pushing the changes to the v4l-dvb repository so they
-> > > can get broader testing. I am, however, a bit more concerned about
-> > > pushing the changes to Linus yet.
-> >
-> > They will of course go to linux-next and end up in 2.6.29 when the merge
-> > window opens. It's obviously not for 2.6.28.
+On Thu, 2008-11-27 at 17:25 +0100, Peter Zijlstra wrote:
+> On Tue, 2008-11-25 at 12:21 -0500, Eric Paris wrote:
+> > In preperation for blocking fsnotify calls group priorities must be added.
+> > When multiple groups request the same event type the lowest priority group
+> > will receive the notification first.
 > 
-> I would say 2.6.29 is a bit early, but I can live with that.
+> > @@ -114,9 +117,26 @@ struct fsnotify_group *fsnotify_find_group(unsigned int group_num, unsigned long
+> >  
+> >  	group->ops = ops;
+> >  
+> > -	/* add it */
+> > -	list_add_rcu(&group->group_list, &fsnotify_groups);
+> > +	/* Do we need to be the first entry? */
+> > +	if (list_empty(&fsnotify_groups)) {
+> > +		list_add_rcu(&group->group_list, &fsnotify_groups);
+> > +		goto out;
+> > +	}
+> > +
+> > +	list_for_each_entry(group_iter, &fsnotify_groups, group_list) {
+> > +		/* insert in front of this one? */
+> > +		if (priority < group_iter->priority) {
+> > +			/* I used list_add_tail() to insert in front of group_iter...  */
+> > +			list_add_tail_rcu(&group->group_list, &group_iter->group_list);
+> > +			break;
+> > +		}
+> >  
+> > +		/* are we at the end?  if so insert at end */
+> > +		if (list_is_last(&group_iter->group_list, &fsnotify_groups)) {
+> > +			list_add_tail_rcu(&group->group_list, &fsnotify_groups);
+> > +			break;
+> > +		}
+> > +	}
+> >  out:
+> >  	mutex_unlock(&fsnotify_grp_mutex);
+> >  	fsnotify_recalc_global_mask();
+> 
+> What priority range do you need to cater for, and how many groups? 
 
-It also seems a bit early to me, but it may work. I'll try to schedule some
-time this week for a deep review.
+On a typical system I'd expect to see one group for dnotify (rpmidmapd
+uses dnotify so most systems will end up having 1 group I would expect)
 
-> > In addition, these changes make it easier as well to use the new i2c API
-> > in bridge drivers (in 2.6.29 the old-style I2C probing will be
-> > deprecated, so we need to convert). So we get many benefits with just
-> > these changes.
+inotify I wouldn't expect more than 3-4 inotify_init() calls
 
-IMO, this is one of the top priorities: the old-style i2c used on some bridge
-drivers like saa7134 and cx88 are causing malfunctions that can't be easily
-solved. I would like to see a fix for this for 2.6.29.
+fsnotify I wouldn't imagine more than 3 groups.
 
-> > Of course, I want to add more v4l2 framework support to these new
-> > structures, but I don't have any code yet for that anyway, just lots of
-> > ideas. Start simple, then expand.
-> >
-> > > I don't know if that's possible at all, or if all changes in v4l-dvb
-> > > are automatically selected for a push to the git repository whenever
-> > > Mauro triggers the hg->git process.
-> >
-> > Well, they go to linux-next, but is that a problem?
+So total we are talking about maybe 10 groups on a system really making
+use of fs notification?
 
-I only send Linus the patches that are already ok, but I generally prefer to
-postpone a merge for the end of a merge window, when the patch is not meant to
-be at the next version.
+> I can
+> imagine for many groups and limit range a priority list might be better
+> suited.
 
-> In a few months time (probably even earlier) the v4l2_device structure will be 
-> reworked (and possible renamed). 
+talking about plist.h?  Since I don't allow 2 groups with the same
+priority I'd say a lot of the plist code would just be overhead (the
+prio list and the node list would be the same)
 
-Hmm... why? it would be better to try to have the KABI changes for it at the
-same kernel release if possible.
+That's not a big deal since I don't really care about the add/remove
+code paths since they are all notification overhead/setup/teardown.  I
+would think that cleaner simpler code would probably be a better idea
+rather than performance for these areas especially since it looks like
+the speed critical parts of plists (list_for_each_entry) would be the
+exact same.
 
-> I'm fine with it going to linux-next now if 
-> we agree on the following.
+what I don't see is plists being protected by RCU and looking at
+plist_del it doesn't seem like it would be rcu safe.  RCU safe plists
+might be a good idea, but for now I think I should just do my own
+priority listing so I don't have to hold a lock while I walk the group
+list (that path is VERY hot)
 
-> - We should only advocate v4l2_device usage for subdevices-aware video 
-> devices. Porting all drivers to v4l2_device is currently pointless and will 
-> only make future transitions more difficult.
+-Eric
 
-This makes sense to me.
-
-> - v4l2_device should be marked as experimental. I don't want to hear any 
-> API/ABI breakage argument in a few months time when the framework will 
-> evolve.
-
-Are you meaning marking this as experimental at Kconfig? This seems too
-complex, since we'll need to test for some var on every driver that were
-converted, providing two KABI options for each converted driver (the legacy and
-the v4l2_device way). This doesn't seem to be a good idea, since will add a lot
-of extra complexity to debug bugs.
-
-Cheers,
-Mauro
