@@ -1,38 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYLAOnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbYLAOoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbYLAOnQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 09:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYLAOnA
+	id S1753273AbYLAOoJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 09:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYLAOn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 09:43:00 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:58289 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYLAOnA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 09:43:00 -0500
-Date: Mon, 1 Dec 2008 08:40:58 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Jones <davej@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 8/8] badpage: KERN_ALERT BUG instead of KERN_EMERG
-In-Reply-To: <Pine.LNX.4.64.0812010047010.11401@blonde.site>
-Message-ID: <Pine.LNX.4.64.0812010840110.15331@quilx.com>
-References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
- <Pine.LNX.4.64.0812010047010.11401@blonde.site>
+	Mon, 1 Dec 2008 09:43:56 -0500
+Received: from kroah.org ([198.145.64.141]:45574 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751535AbYLAOnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 09:43:55 -0500
+Date: Mon, 1 Dec 2008 06:40:08 -0800
+From: Greg KH <greg@kroah.com>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci <linux-pci@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH] PCI: Method for removing PCI devices
+Message-ID: <20081201144008.GB12096@kroah.com>
+References: <Pine.LNX.4.58.0812010500330.2943@shell2.speakeasy.net> <1228140490-32199-1-git-send-email-xyzzy@speakeasy.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1228140490-32199-1-git-send-email-xyzzy@speakeasy.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008, Hugh Dickins wrote:
-> And remove the "Trying to fix it up, but a reboot is needed" line:
-> it's not untrue, but I hope the KERN_ALERT "BUG: " conveys as much.
+On Mon, Dec 01, 2008 at 06:08:09AM -0800, Trent Piepho wrote:
+> This patch adds an attribute named "remove" to a PCI device's sysfs
+> directory.  Writing a non-zero value to this attribute will remove the PCI
+> device and any children of it.
 
-Thanks. That was a pretty strange message....
+Please always add documentation for new sysfs files in Documentation/ABI
+so that we know what they do, and how to use them.
 
+thanks,
+
+greg k-h
