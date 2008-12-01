@@ -1,77 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbYLAWq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbYLAWrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbYLAWq0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 17:46:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYLAWqQ
+	id S1753376AbYLAWrx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 17:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYLAWrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 17:46:16 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:57606 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbYLAWqP convert rfc822-to-8bit (ORCPT
+	Mon, 1 Dec 2008 17:47:43 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:37850 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbYLAWrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 17:46:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-disposition
-         :message-id:cc:content-type:content-transfer-encoding;
-        b=ap1nA+K+WcTMBm/fA8vfm3VcycuAQC2Tz2TjUf1ZyZIbN40EHfo+oqV5TREakFf/TA
-         W1rG/JfzVG5ZKMjUk2kCuERJ0reDOm+Oe8ayQ0YZmxBhLl4HIow+Zr5Zj2iIzjMrAoHs
-         mrbVaOl70tv+LnjKzLpqjit7Xel0AhSZOgpkw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Dave Airlie <airlied@redhat.com>
-Subject: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
-Date: Mon, 1 Dec 2008 23:42:32 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128-dirty; KDE/4.1.3; i686; ; )
+	Mon, 1 Dec 2008 17:47:42 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Subject: Re: [PATCH] PNPACPI: Enable Power Management
+Date: Mon, 1 Dec 2008 15:47:33 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <abelay@mit.edu>, rjw@sisk.pl
+References: <4929C66F.1040206@gmx.net>
+In-Reply-To: <4929C66F.1040206@gmx.net>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200812012342.32575.bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812011547.34660.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 23 November 2008 02:09:03 pm Witold Szczeponik wrote:
+> Subject: Enable PNPACI Power Management
 
-Hi,
+Hi Witold,
 
-After Fedora 9 -> Fedora 10 upgrade vanilla kernels which previously
-worked fine (next-20081128 and next-20081121) started to hang randomly
-on my Pentium M / 855PM / RV350 laptop.  Since (surprisingly) stock
-Fedora kernel (2.6.27.5-117.fc10.i686) was not affected I got the idea
-that either userspace changes uncovered some kernel regression or some
-Fedora specific patch must be fixing the issue.  Unfortunately vanilla
-2.6.27 also freezed so after the usual pain caused by hitting bunch of
-unrelated problems [1] it turned out that drm-modesetting-radeon.patch
-is the magic patch and CONFIG_DRM_RADEON_KMS is the magic change.  With
-the patch and enabling the option next-20081128 works stable again...
+Thanks for your patch.  I'm glad somebody is paying attention to
+PNP and power.  I CC'd Adam and Rafael because they care about this
+area, too, but might not read everything on linux-acpi.
 
-Since the following error gets logged by kernel:
+> This patch sets the power of PnP ACPI devices to D0 when they
+> are activated and to D3 when they are disabled.  The latter is
+> in correspondence with the ACPI 3.0 specification, whereas the
+> former is added in order to be able to power up a device after
+> it has been previously disabled (or when booting up a system).
+> (As a consequence, the patch makes the PnP ACPI code more ACPI
+> compliant.)
 
-[drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
-[drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
+Do you know of anything that specifies the order of the _CRS/_PS0
+and the _PS3/_DIS evaluation?  I don't know much about power
+management, and I couldn't find anything obvious in the spec.
+It seems plausible that we should run _CRS before turning on
+the power, but I really don't know.
 
-and it also seems that system is more responsive now (it was kind of
-sluggish previously) my draft theory is that F9 -> F10 triggered some
-AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
-but I'll leave figuring this up to the more knowledgeable people... ;)
+> The patch fixes the problem with some IBM ThinkPads (at least
+> the 600E and the 600X) where the serial ports have a dedicated
+> power source that needs to be brought up before the serial port
+> can be used.  Without this patch, the serial port is enabled
+> but has no power.
 
-Thanks,
-Bart
+Is pnpacpi_set_resources() the only place that needs this change?
+For active devices, we normally don't call pnpacpi_set_resources()
+at all.  So I suppose on these ThinkPads, we exercise this path
+because the serial ports are initially disabled?
 
-PS1 full dmesg, config and lspci outputs are here:
-http://www.kernel.org/pub/linux/kernel/people/bart/f9_to_f10_grind/
+> No regressions were observed on hardware that does not require
+> this patch.
+> 
+> The patch is applied against 2.6.27.7 (vanilla).
+> 
+> 
+> Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+> 
+> 
+> Index: linux/drivers/pnp/pnpacpi/core.c
+> ===================================================================
+> --- linux.orig/drivers/pnp/pnpacpi/core.c
+> +++ linux/drivers/pnp/pnpacpi/core.c
+> @@ -98,18 +98,24 @@ static int pnpacpi_set_resources(struct
+>   	status = acpi_set_current_resources(handle, &buffer);
+>   	if (ACPI_FAILURE(status))
+>   		ret = -EINVAL;
+> +	else if (acpi_bus_power_manageable(handle))
+> +		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
 
-PS2 drm set mode reporting looks quite weird sometimes, i.e.:
+I don't really like testing acpi_bus_power_manageable() first.
+I think we should just call acpi_bus_set_power() and let *it*
+bail out if the device doesn't support it.
 
-...
-[drm] LVDS-8: set mode �Տ�� d                                                   
-[drm] bios LVDS_GEN_CNTL: 0x30ff24                                              
-...
+>   	kfree(buffer.pointer);
+>   	return ret;
+>   }
+> 
+>   static int pnpacpi_disable_resources(struct pnp_dev *dev)
+>   {
+> +	acpi_handle handle = dev->data;
+> +	int ret = 0;
+>   	acpi_status status;
+> 
+> -	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
 
-[1] some Fedora patches make quilt trip (quilt push applies whole patch
-but quilt pop only removes a part of it) since they aggregate multiple
-changes to a single file, execshield patch causes oops with my kernel
-config and depmod run for a Fedora kernel config's build triggered OOM
-kill (512M on this machine and yes, I was happily running without swap)
+Can you leave the "unregister_gsi" comment there, since it's not
+related to your patch?  It's a reminder that we need to think about
+how to handle interrupts when enabling/disabling devices.
+
+> -	status = acpi_evaluate_object((acpi_handle) dev->data,
+> -				      "_DIS", NULL, NULL);
+> -	return ACPI_FAILURE(status) ? -ENODEV : 0;
+> +	if (acpi_bus_power_manageable(handle))
+> +		ret = acpi_bus_set_power(handle, ACPI_STATE_D3);
+> +	status = acpi_evaluate_object(handle, "_DIS", NULL, NULL);
+> +	if (ACPI_FAILURE(status))
+> +		ret = -ENODEV;
+> +	return ret;
+>   }
+> 
+>   #ifdef CONFIG_ACPI_SLEEP
