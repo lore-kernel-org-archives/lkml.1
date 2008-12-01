@@ -1,43 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYLAVSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbYLAVWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754064AbYLAVSW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 16:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYLAVSL
+	id S1753463AbYLAVWO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 16:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYLAVV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 16:18:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45807
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751516AbYLAVSK (ORCPT
+	Mon, 1 Dec 2008 16:21:58 -0500
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:49875 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbYLAVV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 16:18:10 -0500
-Date: Mon, 01 Dec 2008 13:18:10 -0800 (PST)
-Message-Id: <20081201.131810.158631503.davem@davemloft.net>
-To: gallatin@myri.com
-Cc: ossthema@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tklein@de.ibm.com, raisch@de.ibm.com, jb.billaud@gmail.com,
-       hering2@de.ibm.com
-Subject: Re: [PATCH] lro: IP fragment checking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <493423D7.5030203@myri.com>
-References: <4933A74F.3050809@de.ibm.com>
-	<493423D7.5030203@myri.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 1 Dec 2008 16:21:58 -0500
+Message-ID: <49345505.5050104@cs.columbia.edu>
+Date: Mon, 01 Dec 2008 16:20:05 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v10][PATCH 08/13] Dump open file descriptors
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>	 <1227747884-14150-9-git-send-email-orenl@cs.columbia.edu>	 <20081128101919.GO28946@ZenIV.linux.org.uk>	 <1228153645.2971.36.camel@nimitz>  <493447DD.7010102@cs.columbia.edu> <1228164679.2971.91.camel@nimitz>
+In-Reply-To: <1228164679.2971.91.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Gallatin <gallatin@myri.com>
-Date: Mon, 01 Dec 2008 12:50:15 -0500
 
-> As to whether or not to do it in the drivers/hardware or in the
-> LRO code, I favor doing it in the LRO code just so that it is not
-> missed in some driver.
 
-Then there is no point in the hardware doing the check, if
-we're going to check it anyways.
+Dave Hansen wrote:
+> On Mon, 2008-12-01 at 15:23 -0500, Oren Laadan wrote:
+>> Verifying that the size doesn't change does not ensure that the table's
+>> contents remained the same, so we can still end up with obsolete data.
+> 
+> With the realloc() scheme, we have virtually no guarantees about how the
+> fdtable that we read relates to the source.  All that we know is that
+> the n'th fd was at this value at *some* time.
+> 
+> Using the scheme that I just suggested (and you evidently originally
+> used) at least guarantees that we have an atomic copy of the fdtable.
 
-That's part of my point about why this check doesn't belong
-here.
+It doesn't matter if the fdtable changes while we scan the fd's or
+after we're done scanning the fd's, does it ?  the end result is the
+same - inconsistency.
+
+> Why is this done in two steps?  It first grabs a list of fd numbers
+> which needs to be validated, then goes back and turns those into 'struct
+> file's which it saves off.  Is there a problem with doing that
+> fd->'struct file' conversion under the files->file_lock?
+
+Again, say we get all the struct file for all those fd's. Now we have to
+drop the lock, and start processing the struct files. So what if at this
+point the fdtable changes ?  we still end up with potentially inconsistent
+state.
+
+We can do it atomically or non-atomically, I couldn't care less.
+
+My argument is the following:
+1) Ideally, the state should not change while we are checkpointing
+2) If the state changes, then the behavior is undefined (but the kernel
+   should not crash, of course).
+3) It should be the userspace responsibility to ensure that (1) holds
+   (for instance, that all tasks sharing these resources are frozen
+   during the checkpoint)
+
+#2 will be an uncommon event - a programmer/user/administrator mistake.
+Kernel may help enforce this rule, but catching all such cases will be
+expensive as it means looping through all tasks for each new resource.
+
+As a first step, we can ensure that all threads of a process are frozen
+at checkpoint time (and prevent unfreeze until checkpoint is over). But
+that will not cover a clone() with CLONE_FS. And this will be the same
+for other namespaces later.
+
+Oren.
+
