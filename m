@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYLAJfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbYLAJlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbYLAJfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 04:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbYLAJfn
+	id S1752655AbYLAJlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 04:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYLAJlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 04:35:43 -0500
-Received: from vms173005pub.verizon.net ([206.46.173.5]:63662 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbYLAJfm (ORCPT
+	Mon, 1 Dec 2008 04:41:03 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46912
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750961AbYLAJlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 04:35:42 -0500
-Date: Mon, 01 Dec 2008 04:35:41 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Swappiness fix?
-To: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200812010435.41540.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.10
+	Mon, 1 Dec 2008 04:41:01 -0500
+Date: Mon, 01 Dec 2008 01:41:01 -0800 (PST)
+Message-Id: <20081201.014101.33453764.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tklein@de.ibm.com,
+       raisch@de.ibm.com, jb.billaud@gmail.com, hering2@de.ibm.com
+Subject: Re: [PATCH] lro: IP fragment checking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4933A74F.3050809@de.ibm.com>
+References: <4933A74F.3050809@de.ibm.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Mon, 01 Dec 2008 09:58:55 +0100
 
-Has that patch someone pointed me to made it into -rc6?  I have a bit under 9 
-hours uptime on a 4Gb machine, with a gimp session, email and web browsing, 
-and I see I'm 27 megs into swap.  I do not have the patch now, a drive died.
-However, I may still have the email that contained it, I'll check that.
+> This patch prevents that ip fragmented TCP packets are considered vaild
+> for aggregation
 
-That patch, IMO should be fast lane'd to make it to .28.
+We discussed this last week.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Neutrinos have bad breadth.
+The things feeding packets into the LRO machinery should make this
+check, and that could be a hardware LRO assist.
