@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYLART1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbYLAR22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbYLART1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 12:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYLARTQ
+	id S1753194AbYLAR22 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 12:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYLAR2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 12:19:16 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41148 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbYLARTP (ORCPT
+	Mon, 1 Dec 2008 12:28:19 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:5719 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbYLAR2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 12:19:15 -0500
-X-Greylist: delayed 1453 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Dec 2008 12:19:15 EST
-Date: Mon, 1 Dec 2008 11:54:43 -0500
-Message-Id: <200812011654.mB1GshRh023996@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: bharata@linux.vnet.ibm.com
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
-       jblunck@suse.de, dlezcano@fr.ibm.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [rfc git patch] union directory 
-In-reply-to: Your message of "Fri, 28 Nov 2008 21:49:21 +0530."
-             <20081128161921.GA3843@in.ibm.com> 
-X-MailKey: Erez_Zadok
+	Mon, 1 Dec 2008 12:28:18 -0500
+X-BigFish: VPS-32(ze80iz1432R98dR1805M179dR936fO873fnzzzzz32i6bh43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KB7KIA-03-VS6-01
+Date: Mon, 1 Dec 2008 18:27:50 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: avi@redhat.com, kvm@vger.kernel.org, weidong.han@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, amit.shah@redhat.com
+Subject: Re: [PATCH 3/9] add frontend implementation for the IOMMU API
+Message-ID: <20081201172750.GD12816@amd.com>
+References: <20081201231852P.fujita.tomonori@lab.ntt.co.jp> <20081201142727.GL29705@8bytes.org> <4933F5A7.8020408@redhat.com> <20081202005830P.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081202005830P.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 01 Dec 2008 17:27:50.0894 (UTC) FILETIME=[22D218E0:01C953DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20081128161921.GA3843@in.ibm.com>, Bharata B Rao writes:
-> On Fri, Nov 28, 2008 at 12:01:32PM +0100, Miklos Szeredi wrote:
-> > I've been doing some small fixing/cleanup work on the union directory
-> > patches by Jan, and just noticed there's a thread about the union
-> > mounts on LKML, so I thought publicizing won't hurt.
+On Tue, Dec 02, 2008 at 12:58:29AM +0900, FUJITA Tomonori wrote:
+> On Mon, 01 Dec 2008 16:33:11 +0200
+> Avi Kivity <avi@redhat.com> wrote:
 > 
-> Interesting that you call it "union directory", do you have plans to go
-> the Plan 9's way of union directories ?
-> 
+> > Joerg Roedel wrote:
+> > > Hmm, is there any hardware IOMMU with which we can't emulate domains by
+> > > partitioning the IO address space? This concept works for GART and
+> > > Calgary.
+> > >
+> > >   
 > > 
-> > It's still a work in progress, notably the readdir code currently only
-> > works on a few specific filesystem types.
+> > Is partitioning secure?  Domain X's user could program its hardware to 
+> > dma to domain Y's addresses, zapping away Domain Y's user's memory.
 > 
-> readdir was one of the things on which we couldn't reach a consensus
-> on how to do it the right way. We were suggested that we move the
-> duplicate elimination into user space and an effort towards this was
-> also done (Ref: http://lkml.org/lkml/2008/4/29/248) by moving this
-> to glibc readdir. But we weren't sure how this could work for NFS and
-> were told that it is required to get the NFS side of things
-> sorted out first. So that's where readdir effort stands now afaik.
-> Do you have any ideas/plans on this front ?
-> 
-> Also the last development activity that I am aware of was done towards
-> getting a generic whiteout support. David Woodhouse started a git tree
-> at one point of time for whiteout support
-> (git://git.infradead.org/union/whiteout-2.6.git). Erez Zodak was
-> infact looking forward for these changes to make use of them in Unionfs,
-> but even this effort died down.
+> It can't be secure. So what's the point to emulate the domain
+> partitioning in many traditional hardware IOMMUs that doesn't support
+> it.
 
-We've actually been (quietly) looking into these whiteout patches for a
-couple of months already.  We found that those patches were not yet suitable
-for intergration into a f/s such as unionfs.  We found (and fixed) some
-bugs, and had to change the API somewhat and its implementation.  I think
-the only way to be sure that these patches work well is to have a user for
-them.  We plan on re-posting our modified patches once we've done a lot more
-testing with them in the context of unionfs.
+Btw, if you use the k8-agp driver the GART space is already partitioned
+today. So this concept is not entirely new.
 
-> Nice to know that you have started looking into Union Mount patches.
-> Would be interesting to know/understand your plans/thoughts on taking
-> this effort forward.
-> 
-> Regards,
-> Bharata.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Joerg
 
-Erez.
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
