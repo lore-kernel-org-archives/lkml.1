@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYLADcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYLAD6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYLADcm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 22:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYLADce
+	id S1753530AbYLAD6R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 22:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYLAD6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 22:32:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60713 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636AbYLADce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 22:32:34 -0500
-Date: Mon, 1 Dec 2008 14:32:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, gregkh@suse.de
-Subject: Re: mmotm 2008-11-29-01-53 uploaded
-Message-Id: <20081201143212.ff4e7079.sfr@canb.auug.org.au>
-In-Reply-To: <20081130191124.e16de170.akpm@linux-foundation.org>
-References: <200811290959.mAT9xuhC004277@imap1.linux-foundation.org>
-	<20081201111040.42b2a908.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081130191124.e16de170.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Dec_2008_14_32_12_+1100_I.nCelyPu=eeVyJ5"
+	Sun, 30 Nov 2008 22:58:04 -0500
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:52760 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbYLAD6D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 22:58:03 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [rfc git patch] union directory 
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: bharata@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org, jblunck@suse.de,
+       dlezcano@fr.ibm.com, linux-kernel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk
+In-Reply-To: <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
+References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu> <20081128161921.GA3843@in.ibm.com> <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
+Date: Mon, 01 Dec 2008 12:57:40 +0900
+Message-ID: <9507.1228103860@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Dec_2008_14_32_12_+1100_I.nCelyPu=eeVyJ5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
+Hello Miklos,
 
-On Sun, 30 Nov 2008 19:11:24 -0800 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> Thanks, that'll be
->=20
-> commit 9b473de87209fa86eb421b23386693b461612f30
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Wed Oct 22 10:00:22 2008 -0500
->=20
->     param: Fix duplicate module prefixes
->=20
-> I assume.  Rusty's been on the schnapps again ;)
+Miklos Szeredi:
+> The plan is to get a simple kernel implementation first which caches
+> the directory in 'struct file'.
 
-Indeed! :-) However it was fixed for next-20081128.
+If you have not looked at the source code of AUFS, try it out.
+It caches the directory entries in 'struct file.'
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+approach: http://marc.info/?l=linux-kernel&m=118915086030712&w=2
+dir.[ch]: http://marc.info/?l=linux-kernel&m=121134143206375&w=2
+vdir.c: http://marc.info/?l=linux-kernel&m=121134246707486&w=2
 
---Signature=_Mon__1_Dec_2008_14_32_12_+1100_I.nCelyPu=eeVyJ5
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkzWrwACgkQjjKRsyhoI8zyLwCfW7vH87Nuu5qkmII0vugyTRwE
-u2QAnRf98NFD8OohkmiU65v6PDTPk4vx
-=/94D
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Dec_2008_14_32_12_+1100_I.nCelyPu=eeVyJ5--
+J. R. Okajima
