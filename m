@@ -1,93 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYLAIzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYLAI64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbYLAIzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 03:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYLAIz3
+	id S1752822AbYLAI64 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 03:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbYLAI6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 03:55:29 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:55244 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbYLAIz3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 03:55:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cYCVIxrTsYzNcFZs6MyjG6C2/ZagxXsh0VKhAcQvxu38/xlHP2MemLCp6Dq/GOXwat
-         yscbmRsy3rVI3JjPgrPDoph3pSigmE9wbY+bA0nvZlRFhtma3CfyeFvXK5Y+n+ceHyAL
-         bKekrWoU5ZFDa2o5ovhsa+EYO+4HDZmOkQPvM=
-Subject: Re: [PATCH-mm 1/8] ntfs: remove private wrapper around endian
- helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <72F61C56-4613-4369-9319-09A0A8C90F7C@cam.ac.uk>
-References: <1227733970.5511.123.camel@brick>
-	 <B9FA83C0-9993-44BB-86AA-FA8B97A2D6A2@cam.ac.uk>
-	 <1227814545.5511.143.camel@brick>
-	 <72F61C56-4613-4369-9319-09A0A8C90F7C@cam.ac.uk>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 00:55:26 -0800
-Message-Id: <1228121726.5482.5.camel@brick>
+	Mon, 1 Dec 2008 03:58:47 -0500
+Received: from mx1.suse.de ([195.135.220.2]:52897 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbYLAI6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 03:58:47 -0500
+Date: Mon, 1 Dec 2008 09:58:44 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
+Cc: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+Message-ID: <20081201085844.GC4926@wotan.suse.de>
+References: <604427e00811251042t1eebded6k9916212b7c0c2ea0@mail.gmail.com> <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com> <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com> <20081127130817.GP28285@wotan.suse.de> <492EEF0C.9040607@google.com> <20081128093713.GB1818@wotan.suse.de> <49307893.4030708@google.com> <4932EF90.9070601@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4932EF90.9070601@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-01 at 08:50 +0000, Anton Altaparmakov wrote:
-> Hi,
-> 
-> On 27 Nov 2008, at 19:35, Harvey Harrison wrote:
-> > On Thu, 2008-11-27 at 08:22 +0000, Anton Altaparmakov wrote:
-> >> On 26 Nov 2008, at 21:12, Harvey Harrison wrote:
-> >>> The base versions handle constant folding just fine.
-> >>> Done with sed other than the mft.c and inode.c one-liners.
+On Sun, Nov 30, 2008 at 09:54:56PM +0200, Török Edwin wrote:
+> On 2008-11-29 01:02, Mike Waychison wrote:
+> > Nick Piggin wrote:
+> >> On Thu, Nov 27, 2008 at 11:03:40AM -0800, Mike Waychison wrote:
+> >>> Nick Piggin wrote:
+> >>>> On Thu, Nov 27, 2008 at 01:28:41AM -0800, Mike Waychison wrote:
+> >>>>> Török however identified mmap taking on the order of several
+> >>>>> milliseconds due to this exact problem:
+> >>>>>
+> >>>>> http://lkml.org/lkml/2008/9/12/185
+> >>>> Turns out to be a different problem.
+> >>>>
+> >>> What do you mean?
 > >>
-> >> Have you checked the compiler output?  And on all architectures?  And
-> >> on all gcc versions?
+> >> His is just contending on the write side. The retry patch doesn't help.
+> >>
 > >
-> > Yes I've checked the compiler output for the new byteorder helpers
-> > for gcc 3.4, 4, 4.2 on x86.
+> > I disagree.  How do you get 'write contention' from the following
+> > paragraph:
 > >
-> > Notice this depends on the byteorder bits in -mm.  The failure of
-> > the old bits to properly compile-time swap I've only seen at -O0,
-> > which the new bits do properly.  If you can cite a particular
-> > version/arch that you know of where the bug arose, please let me
-> > know.
-> 
-> Ah, I failed to notice this required some new byteorder code!  Sorry.
-
-No worries, if you do happen to recall what compilers or arches you've
-seen the constant folding fail to happen, I'd still like to know just
-what landmines are out there ;-)  If it was an -O0 build I'm comfortable
-the new version won't suffer from the same problem, otherwise I'm all
-ears.
-
-> >> Also you are breaking sparse checking with this patch as you remove
-> >> some of the necessary endianness conversions (e.g. your one liner in
-> >> mft.c which causes us to apply a binary 'not' operator on a little
-> >> endian which sparse complains about - in fact that is the reason the
-> >> endianness conversions are in there in the first place - I added them
-> >> because sparse was complaining about them).
+> > "Just to confirm that the problem is with pagefaults and mmap, I dropped
+> > the mmap_sem in filemap_fault, and then
+> > I got same performance in my testprogram for mmap and read. Of course
+> > this is totally unsafe, because the mapping could change at any time."
 > >
-> > No, sparse does not complain about it.  Bitwise operations are just
-> > fine on types such as le16 etc.  Try running sparse again with
-> > my changes, there are no new warnings.
+> > It reads to me that the writers were held off by the readers sleeping
+> > in IO.
 > 
-> Interesting.  Sparse must have grown up then.  It used to complain  
-> (although I always thought it was complaining incorrectly given that  
-> binary bit operations are endianness agnostic).
+> It is true that I have a write/write contention too, but do_page_fault
+> shows up too on lock_stat.
 > 
+> This is my guess at what happens:
+> * filemap_fault used to sleep with mmap_sem held while waiting for the
+> page lock.
+> * the google patch avoids that, which is fine: if page lock can't be
+> taken, it drops mmap_sem, waits, then retries the fault once
+> * however after we acquired the page lock, mapping->a_ops->readpage is
+> invoked, mmap_sem is NOT dropped here:
+> 
+>     error = mapping->a_ops->readpage(file, page);
+>     if (!error) {
+>         wait_on_page_locked(page);
+> 
+> If my understanding is correct ->readpage does the actual disk I/O, and
+> it keeps the page locked, when the lock is released we know it has finished.
+> So wait_on_page_locked(page)  holds mmap_sem locked for read during the
+> disk I/O, preventing sys_mmap/sys_munmap from making progress.
 
-I imagine that must be the case, but I run sparse fairly regularly, so
-I'd have noticed ;-)
+Yes that's exactly right. Ahh, the google patch doesn't solve this
+case? Interesting...
 
 
-Cheers,
+> I don't know how to prove/disprove my guess above, suggestions welcome.
+> 
+> Could the patch be changed to also release the mmap_sem after readpage,
+> and before wait_on_page_locked?
 
-Harvey
+It should be possible somehow, but it is difficult because after
+dropping mmap_sem, then we have to basically retry the whole fault
+because the vma might have gone away.
 
