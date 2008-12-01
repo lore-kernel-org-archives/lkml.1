@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbYLAR22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYLARbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194AbYLAR22 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 12:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYLAR2T
+	id S1753369AbYLARbA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 12:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYLARau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 12:28:19 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:5719 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbYLAR2S (ORCPT
+	Mon, 1 Dec 2008 12:30:50 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:52976 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYLARat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 12:28:18 -0500
-X-BigFish: VPS-32(ze80iz1432R98dR1805M179dR936fO873fnzzzzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KB7KIA-03-VS6-01
-Date: Mon, 1 Dec 2008 18:27:50 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: avi@redhat.com, kvm@vger.kernel.org, weidong.han@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com, amit.shah@redhat.com
-Subject: Re: [PATCH 3/9] add frontend implementation for the IOMMU API
-Message-ID: <20081201172750.GD12816@amd.com>
-References: <20081201231852P.fujita.tomonori@lab.ntt.co.jp> <20081201142727.GL29705@8bytes.org> <4933F5A7.8020408@redhat.com> <20081202005830P.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 1 Dec 2008 12:30:49 -0500
+Date: Mon, 1 Dec 2008 18:30:46 +0100
+From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Suspend on X200 with next-20081127 plus crashes
+Message-ID: <20081201173046.GB8005@denkbrett.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
 Content-Disposition: inline
-In-Reply-To: <20081202005830P.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 01 Dec 2008 17:27:50.0894 (UTC) FILETIME=[22D218E0:01C953DA]
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 12:58:29AM +0900, FUJITA Tomonori wrote:
-> On Mon, 01 Dec 2008 16:33:11 +0200
-> Avi Kivity <avi@redhat.com> wrote:
-> 
-> > Joerg Roedel wrote:
-> > > Hmm, is there any hardware IOMMU with which we can't emulate domains by
-> > > partitioning the IO address space? This concept works for GART and
-> > > Calgary.
-> > >
-> > >   
-> > 
-> > Is partitioning secure?  Domain X's user could program its hardware to 
-> > dma to domain Y's addresses, zapping away Domain Y's user's memory.
-> 
-> It can't be secure. So what's the point to emulate the domain
-> partitioning in many traditional hardware IOMMUs that doesn't support
-> it.
 
-Btw, if you use the k8-agp driver the GART space is already partitioned
-today. So this concept is not entirely new.
+--TRYliJ5NKNqkz5bu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Joerg
+Hello again!
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Resuming Lenovo X200 running 2.6.28-rc6-next-20081127-denkbrett fails:
 
+The screen keeps on being with xorg running!
+
+I also have with 1127 and 1125 several crashes (kernel panics).
+
+I'm back to -rc6 now.
+
+Sincerly,
+
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--TRYliJ5NKNqkz5bu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk0H0YACgkQuL75KpiFGIxEFwCg0wPfndZMpR7xsDbUbn8QVFvH
+d0YAoLylVFFkEd1JC4k+sJz1556X2GPJ
+=/a9f
+-----END PGP SIGNATURE-----
+
+--TRYliJ5NKNqkz5bu--
