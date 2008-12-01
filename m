@@ -1,39 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYLAUD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYLAUIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbYLAUD7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 15:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYLAUDh
+	id S1753706AbYLAUIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 15:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYLAUIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 15:03:37 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:52266 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752550AbYLAUDg (ORCPT
+	Mon, 1 Dec 2008 15:08:00 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:41256 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYLAUH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 15:03:36 -0500
-X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Dec 2008 15:03:35 EST
-Date: Mon, 1 Dec 2008 20:56:28 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-Cc: Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: NETDEV WATCHDOG: eth0 (skge): transmit timed out
-Message-ID: <20081201195628.GA2983@electric-eye.fr.zoreil.com>
-References: <alpine.LNX.2.00.0811291718460.27552@filesrv1.baby-dragons.com>
+	Mon, 1 Dec 2008 15:07:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=R9WU9DKR3+B7CGgG8BJANU8Zd2lm0KLTDfhpDo+Z0e5NMZp8r9tnfdJ60ukH6C/7ta
+         l5kTlzMn4GNMtLxfQ0/BmH26AEvZle6PRL/L5Q4vsUycOcUXW0FezBAV8JCkR9NV4nRS
+         +Y11RgpWy3yl6Uk97U4mGTQ8n9IgBVi3f89z8=
+Message-ID: <84144f020812011207q29fe4b3fq11a9e55f171cf743@mail.gmail.com>
+Date: Mon, 1 Dec 2008 22:07:57 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [RESEND][PATCH] Add /proc/mempool to display mempool usage
+Cc: "Matt Mackall" <mpm@selenic.com>, randy.dunlap@oracle.com, greg@kroah.com,
+       adobriyan@gmail.com, remi.colinet@gmail.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-api@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20081201120210.1ed16bd5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0811291718460.27552@filesrv1.baby-dragons.com>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1227980689.6354.24.camel@localhost.localdomain>
+	 <20081129214207.GA6747@x200.localdomain>
+	 <20081129234907.GA2340@kroah.com>
+	 <20081201101245.0a2f3123.randy.dunlap@oracle.com>
+	 <1228158811.3196.88.camel@calx>
+	 <20081201120210.1ed16bd5.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 8e5d20f268e7c773
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mr. James W. Laferriere <babydr@baby-dragons.com> :
-> 	Hello All ,  I have been having rather regular difficulties with my  
-> rtl8111B it is built into the mother board .
+On Mon, Dec 1, 2008 at 10:02 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Mon, 01 Dec 2008 13:13:31 -0600
+> Matt Mackall <mpm@selenic.com> wrote:
+>
+>> On Mon, 2008-12-01 at 10:12 -0800, Randy Dunlap wrote:
+>> > On Sat, 29 Nov 2008 15:49:07 -0800 Greg KH wrote:
+>> >
+>> > > On Sun, Nov 30, 2008 at 12:42:07AM +0300, Alexey Dobriyan wrote:
+>> > > > On Sat, Nov 29, 2008 at 06:44:49PM +0100, Remi Colinet wrote:
+>> > > > > This patch add a new /proc/mempool file in order to display mempool usage.
+>> > > > >
+>> > > > > The feature can be disabled with CONFIG_PROC_MEMPOOL=N during kernel
+>> > > > > configuration.
+>> > > >
+>> > > > We're NOT adding config option per proc file.
+>> > > >
+>> > > > And can we, please, freeze /proc for not per-process stuff and open debugfs
+>> > > > for random stuff, please?
+>> > >
+>> > > debugfs has been open for random stuff since the day it was added to the
+>> > > tree :)
+>> > >
+>> > > Feel free to put this kind of thing there instead of proc.
+>> >
+>> > Do distros ship with debugfs enabled?
+>> > The problem with using debugfs is that it is very optional IMO.
+>>
+>> The problem with debugfs is that it claims to not be an ABI but it is
+>> lying. Distributions ship tools that depend on portions of debugfs. And
+>> they also ship debugfs in their kernel. So it is effectively the same
+>> as /proc, except with the 1.0-era everything-goes attitude rather than
+>> the 2.6-era we-should-really-think-about-this one.
+>>
+>> Pushing stuff from procfs to debugfs is thus just setting us up for pain
+>> down the road. Don't do it. In five years, we'll discover we can't turn
+>> debugfs off or even clean it up because too much relies on it.
+>>
+>> If you think that debugfs is NOT an ABI, then I'm sure you'll be happy
+>> to ack my patch entitled 'gratuitously break usbmon to remind folks that
+>> debugfs is not an ABI'.
+>
+> ^^ yup.
 
-Can you send a complete dmesg and give 2.6.28-rc a try ?
-
--- 
-Ueimor
+Hmm, I thought Documentation/ABI/ was supposed to tell us what's an
+ABI you can depend on and what's not. I mean, you shouldn't be
+depending on anything but the interfaces documented in
+Documentation/ABI/stable/, no?
