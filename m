@@ -1,38 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYLAOLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYLAOLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753277AbYLAOLA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 09:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYLAOKv
+	id S1753427AbYLAOLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 09:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYLAOKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 09:10:51 -0500
-Received: from sh.osrg.net ([192.16.179.4]:60062 "EHLO sh.osrg.net"
+	Mon, 1 Dec 2008 09:10:52 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60064 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbYLAOKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751832AbYLAOKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 1 Dec 2008 09:10:51 -0500
 Date: Mon, 1 Dec 2008 23:10:33 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org, tsbogend@alpha.franken.de,
-       linux-kernel@vger.kernel.org
+To: joro@8bytes.org
+Cc: fujita.tomonori@lab.ntt.co.jp, tsbogend@alpha.franken.de,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
 Subject: Re: [PATCH v3] Fix dma_mapping_error for 32bit x86
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081201125501.GC21534@elte.hu>
+In-Reply-To: <20081201125852.GG26275@8bytes.org>
 References: <20081201113451.GA24323@8bytes.org>
 	<20081201210110L.fujita.tomonori@lab.ntt.co.jp>
-	<20081201125501.GC21534@elte.hu>
+	<20081201125852.GG26275@8bytes.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081201230926Q.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20081201231008O.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008 13:55:01 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, 1 Dec 2008 13:58:52 +0100
+Joerg Roedel <joro@8bytes.org> wrote:
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
+> On Mon, Dec 01, 2008 at 09:01:06PM +0900, FUJITA Tomonori wrote:
 > > On Mon, 1 Dec 2008 12:34:51 +0100
 > > Joerg Roedel <joro@8bytes.org> wrote:
 > > 
@@ -48,83 +46,23 @@ Ingo Molnar <mingo@elte.hu> wrote:
 > > 
 > > I think that you misunderstand the problem.
 > > 
-> > He uses X86_32 so swiotlb should not be used (which is available on 
-> > only X86_64 and IA64 for now).
+> > He uses X86_32 so swiotlb should not be used (which is available on only
+> > X86_64 and IA64 for now).
 > > 
-> > b44 needs an address under 1GB so it sets device->dma_mask to 
-> > DMA_30BIT_MASK. With VMSPLIT option of 2G/2G, I guess that b44 could 
-> > get addresses above 1GB from the networking subsystem. In such case, 
-> > nommu_map_single returns bad_dma_address properly, but on X86_32, 
-> > dma_mapping_error always returns 0 (success). So b44 wrongly thinks 
+> > b44 needs an address under 1GB so it sets device->dma_mask to
+> > DMA_30BIT_MASK. With VMSPLIT option of 2G/2G, I guess that b44 could
+> > get addresses above 1GB from the networking subsystem. In such case,
+> > nommu_map_single returns bad_dma_address properly, but on X86_32,
+> > dma_mapping_error always returns 0 (success). So b44 wrongly thinks
 > > that the address is under 1GB.
 > > 
 > > This patch fixes dma_mapping_error() to check a passed address
 > > properly (compares it with bad_dma_address).
-> > 
-> > As I already wrote, the current git needs a patch modified slightly:
-> > 
-> > http://marc.info/?l=linux-kernel&m=122797163405377&w=2
 > 
-> i have i queued up in x86/urgent, see below.
+> Ah true, thanks. Anyway, the patch also solved the problem with swiotlb
+> on 64bit.
 
-As I wrote, just removing #ifdef is better since:
+Can you be specific?
 
-1) Xen people want swiotlb on X86_32. swiotlb uses ops->mapping_error
-so X86_32 also needs to check ops->mapping_error.
-
-2) Removing #ifdef hack is always good.
-
-
-But this patch fixes the bug and it works for now. And I think that
-Thomas tested it. So it's fine to commit this patch by me.
-
-I'll send a patch to remove the ifdef on the top of this patch after
-this patch goes into mainline.
-
-
-> 
-> -------------->
-> From 7b1dedca42ac0d0d0be01e39d8461bb53a2389b3 Mon Sep 17 00:00:00 2001
-> From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Date: Sat, 29 Nov 2008 13:46:27 +0100
-> Subject: [PATCH] x86: fix dma_mapping_error for 32bit x86
-> 
-> Devices like b44 ethernet can't dma from addresses above 1GB. The driver
-> handles this cases by falling back to GFP_DMA allocation. But for detecting
-> the problem it needs to get an indication from dma_mapping_error.
-> The bug is triggered by using a VMSPLIT option of 2G/2G.
-> 
-> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/include/asm/dma-mapping.h |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-> index 7f225a4..097794f 100644
-> --- a/arch/x86/include/asm/dma-mapping.h
-> +++ b/arch/x86/include/asm/dma-mapping.h
-> @@ -71,15 +71,13 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
->  /* Make sure we keep the same behaviour */
->  static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
->  {
-> -#ifdef CONFIG_X86_32
-> -	return 0;
-> -#else
-> +#ifdef CONFIG_X86_64
->  	struct dma_mapping_ops *ops = get_dma_ops(dev);
->  	if (ops->mapping_error)
->  		return ops->mapping_error(dev, dma_addr);
->  
-> -	return (dma_addr == bad_dma_address);
->  #endif
-> +	return (dma_addr == bad_dma_address);
->  }
->  
->  #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+swiotlb's dma_mapping_error on X86_64 doesn't have any problem as far
+as I know.
