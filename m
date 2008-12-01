@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYLAIRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbYLAIRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbYLAIRV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 03:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYLAIRJ
+	id S1753879AbYLAIRg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 03:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYLAIRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 03:17:09 -0500
-Received: from ozlabs.org ([203.10.76.45]:58544 "EHLO ozlabs.org"
+	Mon, 1 Dec 2008 03:17:23 -0500
+Received: from ozlabs.org ([203.10.76.45]:58548 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbYLAIRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 03:17:06 -0500
+	id S1753344AbYLAIRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 03:17:22 -0500
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon, 1 Dec 2008 18:47:03 +1030
-Subject: [PATCH 2/6] cpumask: Use accessors code: core
-Cc: Mike Travis <travis@sgi.com>
+Date: Mon, 1 Dec 2008 18:47:19 +1030
+Subject: [PATCH 3/6] cpumask: Use for_each_cpu() in cpumask.h
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812011847.03666.rusty@rustcorp.com.au>
+Message-Id: <200812011847.19665.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use new API
+Impact: Cleanup, use new API
 
-Use the accessors rather than frobbing bits directly.  Most of this is
-in arch code I haven't even compiled, but it is mostly straightforward.
+Convert for_each_possible/online/present_cpu to use for_each_cpu()
+not the deprecated for_each_cpu_mask_nr().
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 ---
- init/main.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/linux/cpumask.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff -r 07ebea6b5b50 init/main.c
---- a/init/main.c	Fri Oct 31 11:22:33 2008 +1100
-+++ b/init/main.c	Fri Oct 31 11:23:04 2008 +1100
-@@ -523,9 +523,9 @@ static void __init boot_cpu_init(void)
- {
- 	int cpu = smp_processor_id();
- 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
--	cpu_set(cpu, cpu_online_map);
--	cpu_set(cpu, cpu_present_map);
--	cpu_set(cpu, cpu_possible_map);
-+	set_cpu_online(cpu, true);
-+	set_cpu_present(cpu, true);
-+	set_cpu_possible(cpu, true);
- }
+--- linux-2.6.orig/include/linux/cpumask.h
++++ linux-2.6/include/linux/cpumask.h
+@@ -496,10 +496,6 @@ extern cpumask_t cpu_active_map;
  
- void __init __weak smp_setup_processor_id(void)
+ #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
+ 
+-#define for_each_possible_cpu(cpu) for_each_cpu_mask_nr((cpu), 
+cpu_possible_map)
+-#define for_each_online_cpu(cpu)   for_each_cpu_mask_nr((cpu), 
+cpu_online_map)
+-#define for_each_present_cpu(cpu)  for_each_cpu_mask_nr((cpu), 
+cpu_present_map)
+-
+ /* These are the new versions of the cpumask operators: passed by pointer.
+  * The older versions will be implemented in terms of these, then deleted. */
+ #define cpumask_bits(maskp) ((maskp)->bits)
+@@ -1053,6 +1049,10 @@ extern const DECLARE_BITMAP(cpu_all_bits
+ /* First bits of cpu_bit_bitmap are in fact unset. */
+ #define cpu_none_mask to_cpumask(cpu_bit_bitmap[0])
+ 
++#define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
++#define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
++#define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
++
+ /* Wrappers for arch boot code to manipulate normally-constant masks */
+ static inline void set_cpu_possible(unsigned int cpu, bool possible)
+ {
 
 
