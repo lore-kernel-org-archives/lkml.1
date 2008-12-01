@@ -1,173 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYLAOsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYLAOuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbYLAOsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 09:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYLAOsF
+	id S1752665AbYLAOuk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 09:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYLAOuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 09:48:05 -0500
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:3301 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYLAOsE (ORCPT
+	Mon, 1 Dec 2008 09:50:32 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:58117 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYLAOuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 09:48:04 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
-Date: Mon, 1 Dec 2008 15:47:27 +0100
-User-Agent: KMail/1.9.9
-Cc: video4linux-list@redhat.com,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source-bounces@linux.davincidsp.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <200812011246.08885.hverkuil@xs4all.nl> <200812011445.50115.hverkuil@xs4all.nl> <200812011524.43499.laurent.pinchart@skynet.be>
-In-Reply-To: <200812011524.43499.laurent.pinchart@skynet.be>
+	Mon, 1 Dec 2008 09:50:32 -0500
+Date: Mon, 1 Dec 2008 08:49:11 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Jones <davej@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/8] badpage: keep any bad page out of circulation
+In-Reply-To: <Pine.LNX.4.64.0812010040330.11401@blonde.site>
+Message-ID: <Pine.LNX.4.64.0812010848160.15331@quilx.com>
+References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
+ <Pine.LNX.4.64.0812010040330.11401@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812011547.27644.hverkuil@xs4all.nl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 December 2008 15:24:43 Laurent Pinchart wrote:
-> Hi Hans,
->
-> On Monday 01 December 2008, Hans Verkuil wrote:
-> > On Monday 01 December 2008 14:29:53 Laurent Pinchart wrote:
-> > > On Monday 01 December 2008, Hans Verkuil wrote:
-> > > > On Monday 01 December 2008 13:31:25 Laurent Pinchart wrote:
-> > > > > On Monday 01 December 2008, Hans Verkuil wrote:
-> > > > > > Hi Mauro,
-> > > > > >
-> > > > > > Please pull from
-> > > > > > http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng for the
-> > > > > > following:
-> > > > > >
-> > > > > > - v4l2: add v4l2_device and v4l2_subdev structs to the v4l2
-> > > > > > framework. - v4l2-common: add i2c helper functions
-> > > > > > - cs53l32a: convert to v4l2_subdev.
-> > > > > > - cx25840: convert to v4l2_subdev.
-> > > > > > - m52790: convert to v4l2_subdev.
-> > > > > > - msp3400: convert to v4l2_subdev.
-> > > > > > - saa7115: convert to v4l2_subdev.
-> > > > > > - saa7127: convert to v4l2_subdev.
-> > > > > > - saa717x: convert to v4l2_subdev.
-> > > > > > - tuner: convert to v4l2_subdev.
-> > > > > > - upd64031a: convert to v4l2_subdev.
-> > > > > > - upd64083: convert to v4l2_subdev.
-> > > > > > - vp27smpx: convert to v4l2_subdev.
-> > > > > > - wm8739: convert to v4l2_subdev.
-> > > > > > - wm8775: convert to v4l2_subdev.
-> > > > > > - ivtv/ivtvfb: convert to v4l2_device/v4l2_subdev.
-> > > > > >
-> > > > > > All points raised in reviews are addressed so I think it is
-> > > > > > time to get this merged so people can start to use it.
-> > > > >
-> > > > > Does linuxtv.org and Mercurial provide the necessary
-> > > > > infrastructure to integrate those changes into the v4l-dvb
-> > > > > repository while not pushing them upstream yet ? I'd like to
-> > > > > see more people testing (and breaking and fixing :-)) your
-> > > > > changes before they reach the mainline kernel.
-> > > >
-> > > > That's basically why I want this to go into the v4l-dvb
-> > > > repository: this makes it easier for people to start working
-> > > > with it. It doesn't affect existing drivers, except for the i2c
-> > > > driver changes and those changes are just transforming a big
-> > > > switch to a set of functions. So I really consider this a
-> > > > pretty low-risk merge.
-> > > >
-> > > > If someone is willing to do some testing with my tree in the
-> > > > next two weeks then I don't mind waiting, but it's been in
-> > > > development now from early September (if not earlier) and been
-> > > > reviewed several times. In addition, ivtv has been modified to
-> > > > work with it and that driver uses more sub-devices by far than
-> > > > any other driver.
-> > > >
-> > > > I don't know what more I can do, to be honest.
-> > >
-> > > I am all for pushing the changes to the v4l-dvb repository so
-> > > they can get broader testing. I am, however, a bit more concerned
-> > > about pushing the changes to Linus yet.
-> >
-> > They will of course go to linux-next and end up in 2.6.29 when the
-> > merge window opens. It's obviously not for 2.6.28.
->
-> I would say 2.6.29 is a bit early, but I can live with that.
->
-> > > Shouldn't it wait until you convert
-> > > other drivers and make the v4l2_device (infra)structure more
-> > > powerful, as you announced you would ? There will probably be
-> > > API/ABI breakage then, it patches will probably benefit from a
-> > > few iterations in v4l-dvb before we push them to mainline.
-> >
-> > Yes, I want to add more features to them, but those additions need
-> > a lot more thought. Currently the new subdev support is the most
-> > important feature of this and the reason is the introduction of
-> > v4l2-int-device and soc-camera: both are recent arrivals and
-> > neither was reviewed properly. As a result we now see i2c drivers
-> > arriving that can only work with v4l2-int-device or with soc-camera
-> > infrastructure. This is very undesirable and must be fixed asap.
->
-> Agreed.
->
-> > And v4l2_subdev is the way to do this. Existing i2c drivers are not
-> > affected and when these changes are in we can start to replace
-> > v4l2-int-device.h and to modify soc-camera to use v4l2_subdev as
-> > well.
->
-> Ok.
->
-> > In addition, these changes make it easier as well to use the new
-> > i2c API in bridge drivers (in 2.6.29 the old-style I2C probing will
-> > be deprecated, so we need to convert). So we get many benefits with
-> > just these changes.
-> > Of course, I want to add more v4l2 framework support to these new
-> > structures, but I don't have any code yet for that anyway, just
-> > lots of ideas. Start simple, then expand.
-> >
-> > > I don't know if that's possible at all, or if all changes in
-> > > v4l-dvb are automatically selected for a push to the git
-> > > repository whenever Mauro triggers the hg->git process.
-> >
-> > Well, they go to linux-next, but is that a problem?
->
-> In a few months time (probably even earlier) the v4l2_device
-> structure will be reworked (and possible renamed). I'm fine with it
-> going to linux-next now if we agree on the following.
->
-> - We should only advocate v4l2_device usage for subdevices-aware
-> video devices. Porting all drivers to v4l2_device is currently
-> pointless and will only make future transitions more difficult.
+On Mon, 1 Dec 2008, Hugh Dickins wrote:
 
-Agreed. For now it is only relevant for drivers that use subdevices.
+> Until now the bad_page() checkers have special-cased PageReserved, keeping
+> those pages out of circulation thereafter.  Now extend the special case to
+> all: we want to keep ANY page with bad state out of circulation - the
+> "free" page may well be in use by something.
 
-> - v4l2_device should be marked as experimental. I don't want to hear
-> any API/ABI breakage argument in a few months time when the framework
-> will evolve.
-
-Am I overlooking something? This API is a kernel API, not a public API. 
-Hence if I (or anyone else for that matter) make future changes then it 
-is my responsibility to adapt all other drivers that are affected at 
-the same time. I don't see how any of this could break compatibility. 
-Except for out-of-kernel drivers, of course. But that's the risk that 
-they always run.
-
-Marking this API as experimental seems pointless to me. It either works 
-and so is available for use or it doesn't and then it is a plain old 
-bug that needs to be fixed. I also know already that there will be 
-changes as e.g. sensors require a new ops category and v4l2_device 
-might need a notifier callback as well. However, I'm not going to 
-implement that until there is also a driver that uses it (adding 
-functionality to an internal API just because it might be needed in the 
-future is a really bad idea).
-
-Regards,
-
-	Hans
-
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+If I screw up with a VM patch then my machine will now die because of OOM
+instead of letting me shutdown and reboot?
