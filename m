@@ -1,111 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbYLAMzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYLAM4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbYLAMzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 07:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYLAMzV
+	id S1756079AbYLAM4W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 07:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbYLAMzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 07:55:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:44011 "EHLO ozlabs.org"
+	Mon, 1 Dec 2008 07:55:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54773 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752848AbYLAMzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754948AbYLAMzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 1 Dec 2008 07:55:20 -0500
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon, 1 Dec 2008 23:25:16 +1030
-Subject: [RFC 3/8] param: make sure charp isn't used as a core_param
+Date: Mon, 1 Dec 2008 13:55:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joro@8bytes.org, tsbogend@alpha.franken.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] Fix dma_mapping_error for 32bit x86
+Message-ID: <20081201125501.GC21534@elte.hu>
+References: <20081129124627.F2ABDFA8C8@solo.franken.de> <20081201113451.GA24323@8bytes.org> <20081201210110L.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812012325.16654.rusty@rustcorp.com.au>
+In-Reply-To: <20081201210110L.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-"charp" sets a variable to point to a char string in a command line.
-This doesn't work if the command line isn't going to stick around.
-Add a compile-breaking check for this case, and make a note of it.
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> On Mon, 1 Dec 2008 12:34:51 +0100
+> Joerg Roedel <joro@8bytes.org> wrote:
+> 
+> > On Sat, Nov 29, 2008 at 01:46:27PM +0100, Thomas Bogendoerfer wrote:
+> > > Devices like b44 ethernet can't dma from addresses above 1GB. The driver
+> > > handles this cases by falling back to GFP_DMA allocation. But for detecting
+> > > the problem it needs to get an indication from dma_mapping_error.
+> > > The bug is triggered by using a VMSPLIT option of 2G/2G.
+> > 
+> > Looks like your system uses swiotlb as the dma_ops backend. Its the only
+> > implementation providing the ops->mapping_error callback and does not
+> > use bad_dma_address as the error value.
+> 
+> I think that you misunderstand the problem.
+> 
+> He uses X86_32 so swiotlb should not be used (which is available on 
+> only X86_64 and IA64 for now).
+> 
+> b44 needs an address under 1GB so it sets device->dma_mask to 
+> DMA_30BIT_MASK. With VMSPLIT option of 2G/2G, I guess that b44 could 
+> get addresses above 1GB from the networking subsystem. In such case, 
+> nommu_map_single returns bad_dma_address properly, but on X86_32, 
+> dma_mapping_error always returns 0 (success). So b44 wrongly thinks 
+> that the address is under 1GB.
+> 
+> This patch fixes dma_mapping_error() to check a passed address
+> properly (compares it with bad_dma_address).
+> 
+> As I already wrote, the current git needs a patch modified slightly:
+> 
+> http://marc.info/?l=linux-kernel&m=122797163405377&w=2
+
+i have i queued up in x86/urgent, see below.
+
+	Ingo
+
+-------------->
+>From 7b1dedca42ac0d0d0be01e39d8461bb53a2389b3 Mon Sep 17 00:00:00 2001
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Date: Sat, 29 Nov 2008 13:46:27 +0100
+Subject: [PATCH] x86: fix dma_mapping_error for 32bit x86
+
+Devices like b44 ethernet can't dma from addresses above 1GB. The driver
+handles this cases by falling back to GFP_DMA allocation. But for detecting
+the problem it needs to get an indication from dma_mapping_error.
+The bug is triggered by using a VMSPLIT option of 2G/2G.
+
+Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/moduleparam.h |    3 +++
- kernel/params.c             |    7 +++++++
- 2 files changed, 10 insertions(+)
+ arch/x86/include/asm/dma-mapping.h |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
---- a/include/linux/moduleparam.h
-+++ b/include/linux/moduleparam.h
-@@ -118,11 +118,15 @@ struct kparam_array
-  * early in boot.  This is for compatibility with __setup(), and it
-  * makes sense as truly core parameters aren't tied to the particular
-  * file they're in.
-+ *
-+ * Note: You can't use 'charp' here (which keeps a pointer into our
-+ * tmp cmdline).
-  */
- #define core_param(name, var, type, perm)				\
- 	param_check_##type(name, &(var));				\
- 	__module_param_call("", "__core_param", name, param_set_##type, \
--			    param_get_##type, &var, perm)
-+			    param_get_##type, &var, perm		\
-+			    + BUILD_BUG_ON_ZERO(param_##type##_keeps_reference))
- #endif /* !MODULE */
+diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
+index 7f225a4..097794f 100644
+--- a/arch/x86/include/asm/dma-mapping.h
++++ b/arch/x86/include/asm/dma-mapping.h
+@@ -71,15 +71,13 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
+ /* Make sure we keep the same behaviour */
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ {
+-#ifdef CONFIG_X86_32
+-	return 0;
+-#else
++#ifdef CONFIG_X86_64
+ 	struct dma_mapping_ops *ops = get_dma_ops(dev);
+ 	if (ops->mapping_error)
+ 		return ops->mapping_error(dev, dma_addr);
  
- /* Actually copy string: maxlen param is usually sizeof(string). */
-@@ -150,42 +154,52 @@ extern int param_set_byte(const char *va
- extern int param_set_byte(const char *val, struct kernel_param *kp);
- extern int param_get_byte(char *buffer, struct kernel_param *kp);
- #define param_check_byte(name, p) __param_check(name, p, unsigned char)
-+#define param_byte_keeps_reference 0
+-	return (dma_addr == bad_dma_address);
+ #endif
++	return (dma_addr == bad_dma_address);
+ }
  
- extern int param_set_short(const char *val, struct kernel_param *kp);
- extern int param_get_short(char *buffer, struct kernel_param *kp);
- #define param_check_short(name, p) __param_check(name, p, short)
-+#define param_short_keeps_reference 0
- 
- extern int param_set_ushort(const char *val, struct kernel_param *kp);
- extern int param_get_ushort(char *buffer, struct kernel_param *kp);
- #define param_check_ushort(name, p) __param_check(name, p, unsigned short)
-+#define param_ushort_keeps_reference 0
- 
- extern int param_set_int(const char *val, struct kernel_param *kp);
- extern int param_get_int(char *buffer, struct kernel_param *kp);
- #define param_check_int(name, p) __param_check(name, p, int)
-+#define param_int_keeps_reference 0
- 
- extern int param_set_uint(const char *val, struct kernel_param *kp);
- extern int param_get_uint(char *buffer, struct kernel_param *kp);
- #define param_check_uint(name, p) __param_check(name, p, unsigned int)
-+#define param_uint_keeps_reference 0
- 
- extern int param_set_long(const char *val, struct kernel_param *kp);
- extern int param_get_long(char *buffer, struct kernel_param *kp);
- #define param_check_long(name, p) __param_check(name, p, long)
-+#define param_long_keeps_reference 0
- 
- extern int param_set_ulong(const char *val, struct kernel_param *kp);
- extern int param_get_ulong(char *buffer, struct kernel_param *kp);
- #define param_check_ulong(name, p) __param_check(name, p, unsigned long)
-+#define param_ulong_keeps_reference 0
- 
- extern int param_set_charp(const char *val, struct kernel_param *kp);
- extern int param_get_charp(char *buffer, struct kernel_param *kp);
- #define param_check_charp(name, p) __param_check(name, p, char *)
-+#define param_charp_keeps_reference 1
- 
- extern int param_set_bool(const char *val, struct kernel_param *kp);
- extern int param_get_bool(char *buffer, struct kernel_param *kp);
- #define param_check_bool(name, p) __param_check(name, p, int)
-+#define param_bool_keeps_reference 0
- 
- extern int param_set_invbool(const char *val, struct kernel_param *kp);
- extern int param_get_invbool(char *buffer, struct kernel_param *kp);
- #define param_check_invbool(name, p) __param_check(name, p, int)
-+#define param_invbool_keeps_reference 0
- 
- /* Comma-separated array: *nump is set to number they actually specified. */
- #define module_param_array_named(name, array, type, nump, perm)		\
-
-
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
