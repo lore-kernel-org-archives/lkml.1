@@ -1,101 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbYLAPWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbYLAP1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752571AbYLAPWd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 10:22:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYLAPWY
+	id S1752764AbYLAP1E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 10:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYLAP0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 10:22:24 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59708 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387AbYLAPWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 10:22:23 -0500
-Subject: Re: [PATCH -v3 6/8] fsnotify: add group priorities
-From: Eric Paris <eparis@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, hch@infradead.org
-In-Reply-To: <1227803109.4454.1773.camel@twins>
-References: <20081125171714.17115.82625.stgit@paris.rdu.redhat.com>
-	 <20081125172123.17115.31274.stgit@paris.rdu.redhat.com>
-	 <1227803109.4454.1773.camel@twins>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 10:20:57 -0500
-Message-Id: <1228144857.11752.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 10:26:53 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:51484 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbYLAP0v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 10:26:51 -0500
+Date: Mon, 1 Dec 2008 20:49:05 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, bharata@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] sched: add uid information to sched_debug for
+	CONFIG_USER_SCHED
+Message-ID: <20081201151905.GA8448@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+	bharata@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+References: <20081201112954.GH20329@linux.vnet.ibm.com> <1228131416.7251.306.camel@twins> <20081201124452.GA21534@elte.hu> <20081201125628.GA25438@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081201125628.GA25438@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-27 at 17:25 +0100, Peter Zijlstra wrote:
-> On Tue, 2008-11-25 at 12:21 -0500, Eric Paris wrote:
-> > In preperation for blocking fsnotify calls group priorities must be added.
-> > When multiple groups request the same event type the lowest priority group
-> > will receive the notification first.
+* Ingo Molnar <mingo@elte.hu> [2008-12-01 13:56:28]:
+
 > 
-> > @@ -114,9 +117,26 @@ struct fsnotify_group *fsnotify_find_group(unsigned int group_num, unsigned long
-> >  
-> >  	group->ops = ops;
-> >  
-> > -	/* add it */
-> > -	list_add_rcu(&group->group_list, &fsnotify_groups);
-> > +	/* Do we need to be the first entry? */
-> > +	if (list_empty(&fsnotify_groups)) {
-> > +		list_add_rcu(&group->group_list, &fsnotify_groups);
-> > +		goto out;
-> > +	}
-> > +
-> > +	list_for_each_entry(group_iter, &fsnotify_groups, group_list) {
-> > +		/* insert in front of this one? */
-> > +		if (priority < group_iter->priority) {
-> > +			/* I used list_add_tail() to insert in front of group_iter...  */
-> > +			list_add_tail_rcu(&group->group_list, &group_iter->group_list);
-> > +			break;
-> > +		}
-> >  
-> > +		/* are we at the end?  if so insert at end */
-> > +		if (list_is_last(&group_iter->group_list, &fsnotify_groups)) {
-> > +			list_add_tail_rcu(&group->group_list, &fsnotify_groups);
-> > +			break;
-> > +		}
-> > +	}
-> >  out:
-> >  	mutex_unlock(&fsnotify_grp_mutex);
-> >  	fsnotify_recalc_global_mask();
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> What priority range do you need to cater for, and how many groups? 
+> > 
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > On Mon, 2008-12-01 at 16:59 +0530, Arun R Bharadwaj wrote:
+> > > > Hi,
+> > > > 
+> > > > This patch adds uid information in sched_debug for CONFIG_USER_SCHED
+> > > 
+> > > I'd much rather have people working at removing USER_SCHED,. but sure,
+> > > the patch looks sane..
+> > 
+> > ok, i have applied it to tip/sched/core.
+> 
+> it doesnt build:
+> 
+>  kernel/sched_debug.c: In function 'print_cfs_rq':
+>  kernel/sched_debug.c:165: error: 'struct cfs_rq' has no member named 'tg'
+> 
+> please send v2 patch.
+> 
+> Ingo
 
-On a typical system I'd expect to see one group for dnotify (rpmidmapd
-uses dnotify so most systems will end up having 1 group I would expect)
+Hi Ingo,
 
-inotify I wouldn't expect more than 3-4 inotify_init() calls
+I've posted v2 of the patch.
+Had missed an '&& #if defined(CONFIG_FAIR_GROUP_SCHED)' last time
+around.
 
-fsnotify I wouldn't imagine more than 3 groups.
+--arun
 
-So total we are talking about maybe 10 groups on a system really making
-use of fs notification?
 
-> I can
-> imagine for many groups and limit range a priority list might be better
-> suited.
+This patch adds uid information in sched_debug for CONFIG_USER_SCHED
 
-talking about plist.h?  Since I don't allow 2 groups with the same
-priority I'd say a lot of the plist code would just be overhead (the
-prio list and the node list would be the same)
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ include/linux/sched.h |    1 +
+ kernel/sched.c        |   10 ++++++++++
+ kernel/sched_debug.c  |    6 +++++-
+ kernel/user.c         |    2 ++
+ 4 files changed, 18 insertions(+), 1 deletion(-)
 
-That's not a big deal since I don't really care about the add/remove
-code paths since they are all notification overhead/setup/teardown.  I
-would think that cleaner simpler code would probably be a better idea
-rather than performance for these areas especially since it looks like
-the speed critical parts of plists (list_for_each_entry) would be the
-exact same.
-
-what I don't see is plists being protected by RCU and looking at
-plist_del it doesn't seem like it would be rcu safe.  RCU safe plists
-might be a good idea, but for now I think I should just do my own
-priority listing so I don't have to hold a lock while I walk the group
-list (that path is VERY hot)
-
--Eric
-
+Index: git-2.6/kernel/sched_debug.c
+===================================================================
+--- git-2.6.orig/kernel/sched_debug.c
++++ git-2.6/kernel/sched_debug.c
+@@ -131,10 +131,14 @@ void print_cfs_rq(struct seq_file *m, in
+ 		cgroup_path(cgroup, path, sizeof(path));
+ 
+ 	SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
++#elif defined(CONFIG_USER_SCHED) && defined(CONFIG_FAIR_GROUP_SCHED)
++	{
++		uid_t uid = cfs_rq->tg->uid;
++		SEQ_printf(m, "\ncfs_rq[%d] for UID: %u\n", cpu, uid);
++	}
+ #else
+ 	SEQ_printf(m, "\ncfs_rq[%d]:\n", cpu);
+ #endif
+-
+ 	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "exec_clock",
+ 			SPLIT_NS(cfs_rq->exec_clock));
+ 
+Index: git-2.6/kernel/sched.c
+===================================================================
+--- git-2.6.orig/kernel/sched.c
++++ git-2.6/kernel/sched.c
+@@ -261,6 +261,10 @@ struct task_group {
+ 	struct cgroup_subsys_state css;
+ #endif
+ 
++#ifdef CONFIG_USER_SCHED
++	uid_t uid;
++#endif
++
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	/* schedulable entities of this group on each cpu */
+ 	struct sched_entity **se;
+@@ -286,6 +290,12 @@ struct task_group {
+ 
+ #ifdef CONFIG_USER_SCHED
+ 
++/* Helper function to pass uid information to create_sched_user() */
++void set_tg_uid(struct user_struct *user)
++{
++	user->tg->uid = user->uid;
++}
++
+ /*
+  * Root task group.
+  * 	Every UID task group (including init_task_group aka UID-0) will
+Index: git-2.6/kernel/user.c
+===================================================================
+--- git-2.6.orig/kernel/user.c
++++ git-2.6/kernel/user.c
+@@ -101,6 +101,8 @@ static int sched_create_user(struct user
+ 	if (IS_ERR(up->tg))
+ 		rc = -ENOMEM;
+ 
++	set_tg_uid(up);
++
+ 	return rc;
+ }
+ 
+Index: git-2.6/include/linux/sched.h
+===================================================================
+--- git-2.6.orig/include/linux/sched.h
++++ git-2.6/include/linux/sched.h
+@@ -2220,6 +2220,7 @@ extern void normalize_rt_tasks(void);
+ extern struct task_group init_task_group;
+ #ifdef CONFIG_USER_SCHED
+ extern struct task_group root_task_group;
++extern void set_tg_uid(struct user_struct *user);
+ #endif
+ 
+ extern struct task_group *sched_create_group(struct task_group *parent);
