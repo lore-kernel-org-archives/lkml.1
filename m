@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbYLAXRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYLAXUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbYLAXRV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 18:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYLAXRM
+	id S1753643AbYLAXUH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 18:20:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYLAXT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 18:17:12 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:17500 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYLAXRL (ORCPT
+	Mon, 1 Dec 2008 18:19:56 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:48571 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbYLAXT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 18:17:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=JP5CanxC67uGDNjXpFRpmzJLIeb1GRrMhMDPMv7F21eZ9AYZO+s9qJOZoTne342r8
-	lVZZR7vd+ALgqg/vsFyNw==
+	Mon, 1 Dec 2008 18:19:56 -0500
+Date: Mon, 1 Dec 2008 23:19:50 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Jones <davej@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/8] badpage: keep any bad page out of circulation
+In-Reply-To: <Pine.LNX.4.64.0812010848160.15331@quilx.com>
+Message-ID: <Pine.LNX.4.64.0812012308470.18893@blonde.anvils>
+References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
+ <Pine.LNX.4.64.0812010040330.11401@blonde.site> <Pine.LNX.4.64.0812010848160.15331@quilx.com>
 MIME-Version: 1.0
-In-Reply-To: <20081201150947.85e25789.akpm@linux-foundation.org>
-References: <20081127200459.GA25799@redhat.com>
-	 <604427e00812011500j48ae17d8w4f6f47eba7493af8@mail.gmail.com>
-	 <20081201150947.85e25789.akpm@linux-foundation.org>
-Date: Mon, 1 Dec 2008 15:17:07 -0800
-Message-ID: <604427e00812011517tbf5685fr7263225aaa3adb3f@mail.gmail.com>
-Subject: Re: + make-get_user_pages-interruptible.patch added to -mm tree
-From: Ying Han <yinghan@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: oleg@redhat.com, menage@google.com, penberg@cs.helsinki.fi,
-       nickpiggin@yahoo.com.au, hugh@veritas.com, matthew@wil.cx,
-       rientjes@google.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks Andrew.
+On Mon, 1 Dec 2008, Christoph Lameter wrote:
+> On Mon, 1 Dec 2008, Hugh Dickins wrote:
+> 
+> > Until now the bad_page() checkers have special-cased PageReserved, keeping
+> > those pages out of circulation thereafter.  Now extend the special case to
+> > all: we want to keep ANY page with bad state out of circulation - the
+> > "free" page may well be in use by something.
+> 
+> If I screw up with a VM patch
 
+Oh, perish the thought!
 
-On Mon, Dec 1, 2008 at 3:09 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 1 Dec 2008 15:00:14 -0800
-> Ying Han <yinghan@google.com> wrote:
->
->> On Thu, Nov 27, 2008 at 12:04 PM, Oleg Nesterov <oleg@redhat.com> wrote:
->> > Ying Han wrote:
->> >>
->> >> -static int sigkill_pending(struct task_struct *tsk)
->> >> +int sigkill_pending(struct task_struct *tsk)
->> >>  {
->> >>       return  sigismember(&tsk->pending.signal, SIGKILL) ||
->> >>               sigismember(&tsk->signal->shared_pending.signal, SIGKILL);
->> >> diff -puN mm/memory.c~make-get_user_pages-interruptible mm/memory.c
->> >> --- a/mm/memory.c~make-get_user_pages-interruptible
->> >> +++ a/mm/memory.c
->> >> @@ -1219,12 +1219,12 @@ int __get_user_pages(struct task_struct
->> >>                       struct page *page;
->> >>
->> >>                       /*
->> >> -                      * If tsk is ooming, cut off its access to large memory
->> >> -                      * allocations. It has a pending SIGKILL, but it can't
->> >> -                      * be processed until returning to user space.
->> >> +                      * If we have a pending SIGKILL, don't keep
->> >> +                      * allocating memory.
->> >>                        */
->> >> -                     if (unlikely(test_tsk_thread_flag(tsk, TIF_MEMDIE)))
->> >> -                             return i ? i : -ENOMEM;
->> >> +                     if (unlikely(sigkill_pending(current) ||
->> >> +                                     sigkill_pending(tsk)))
->> >
->> > Please do not export/use sigkill_pending(). It is "private" for ptrace_stop()
->> > (and actually should die imho).
->> >
->> > We have fatal_signal_pending() for that.
->> >
->> > Oleg.
->> >
->
-> (top-posting repaired..)
->
->> Thanks Oleg, i looked at the code again and this is a reasonable
->> change. I will make the change on the patch.
->> Andrew,
->>     should i make a patch based on current change or make the same
->> patch as [V6]?
->
-> I don't mind either way.  I guess a fresh new patch would simplify
-> review for everyone.
->
-> Note that fatal_signal_pending() is not an exact replacement for
-> sigkill_pending() - fatal_signal_pending() doesn't test the shared
-> pending signals.
->
-yeah, i noticed that and that is why i used the sigkill_pending
-initially. But after a deeper look
-at the signal code, i found for SIGKILL ( signal we care about in this
-patch ), tsk->pending is a
-superset of tsk->signal->shared_pending.
+> then my machine will now die because of OOM
+> instead of letting me shutdown and reboot?
 
+If you screw up so royally as to allocate every page in the machine
+and free it with bad state, yes, that's indeed the way it will tend.
+Or, to the extent that you're relying on high orders and low zones,
+it will happen even sooner.  Same as if you screw up and forget to
+free your pages.
 
---Ying
->
->
+That's okay.  In more normal cases you'll see the warnings before
+it's dead, and shutdown and reboot (hopefully a different kernel!)
+before it reaches that state.  By the time your patches reach -mm,
+I'd hope you'll have weeded out the immediate OOM cases.
+
+Hugh
