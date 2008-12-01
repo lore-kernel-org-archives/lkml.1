@@ -1,103 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbYLAN3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYLANh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbYLAN3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 08:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYLAN3r
+	id S1752844AbYLANh3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 08:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYLANhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 08:29:47 -0500
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:42909 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751057AbYLAN3r (ORCPT
+	Mon, 1 Dec 2008 08:37:18 -0500
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:41133 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbYLANhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 08:29:47 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiEFAKd1M0nCTsYx/2dsb2JhbACBbc1Jgn0
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
-Date: Mon, 1 Dec 2008 14:29:53 +0100
-User-Agent: KMail/1.9.9
-Cc: video4linux-list@redhat.com,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source-bounces@linux.davincidsp.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <200812011246.08885.hverkuil@xs4all.nl> <200812011331.25676.laurent.pinchart@skynet.be> <200812011351.55323.hverkuil@xs4all.nl>
-In-Reply-To: <200812011351.55323.hverkuil@xs4all.nl>
-X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+	Mon, 1 Dec 2008 08:37:17 -0500
+Date: Mon, 1 Dec 2008 05:36:50 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Alex Chiang <achiang@hp.com>
+cc: "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-pci <linux-pci@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: Problems with fakephp
+In-Reply-To: <20081128231820.GA23578@ldl.fc.hp.com>
+Message-ID: <Pine.LNX.4.58.0812010500330.2943@shell2.speakeasy.net>
+References: <20081125212422.22631.69619.stgit@elm3a70.beaverton.ibm.com>
+ <Pine.LNX.4.64.0811251919590.5161@t2.domain.actdsltmp> <20081126074808.GE6539@plum>
+ <Pine.LNX.4.58.0811260131200.24816@shell4.speakeasy.net> <20081126181841.GF6539@plum>
+ <Pine.LNX.4.58.0811261349120.24816@shell4.speakeasy.net>
+ <20081126225535.GA27936@ldl.fc.hp.com> <Pine.LNX.4.58.0811261647410.24816@shell4.speakeasy.net>
+ <20081128231820.GA23578@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812011429.54019.laurent.pinchart@skynet.be>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
-
-On Monday 01 December 2008, Hans Verkuil wrote:
-> On Monday 01 December 2008 13:31:25 Laurent Pinchart wrote:
-> > On Monday 01 December 2008, Hans Verkuil wrote:
-> > > Hi Mauro,
-> > >
-> > > Please pull from http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng for
-> > > the following:
-> > >
-> > > - v4l2: add v4l2_device and v4l2_subdev structs to the v4l2
-> > > framework. - v4l2-common: add i2c helper functions
-> > > - cs53l32a: convert to v4l2_subdev.
-> > > - cx25840: convert to v4l2_subdev.
-> > > - m52790: convert to v4l2_subdev.
-> > > - msp3400: convert to v4l2_subdev.
-> > > - saa7115: convert to v4l2_subdev.
-> > > - saa7127: convert to v4l2_subdev.
-> > > - saa717x: convert to v4l2_subdev.
-> > > - tuner: convert to v4l2_subdev.
-> > > - upd64031a: convert to v4l2_subdev.
-> > > - upd64083: convert to v4l2_subdev.
-> > > - vp27smpx: convert to v4l2_subdev.
-> > > - wm8739: convert to v4l2_subdev.
-> > > - wm8775: convert to v4l2_subdev.
-> > > - ivtv/ivtvfb: convert to v4l2_device/v4l2_subdev.
-> > >
-> > > All points raised in reviews are addressed so I think it is time to
-> > > get this merged so people can start to use it.
-> >
-> > Does linuxtv.org and Mercurial provide the necessary infrastructure
-> > to integrate those changes into the v4l-dvb repository while not
-> > pushing them upstream yet ? I'd like to see more people testing (and
-> > breaking and fixing :-)) your changes before they reach the mainline
-> > kernel.
+On Fri, 28 Nov 2008, Alex Chiang wrote:
+> I like this idea:
 >
-> That's basically why I want this to go into the v4l-dvb repository: this
-> makes it easier for people to start working with it. It doesn't affect
-> existing drivers, except for the i2c driver changes and those changes
-> are just transforming a big switch to a set of functions. So I really
-> consider this a pretty low-risk merge.
+> 	Maybe we want a /sys/bus/pci/scan or
+> 	/sys/bus/pci/devices/scan file that we can echo
+> 	"0000:01:02.3" to scan just that function, or
+> 	"0000:01:02" to scan the device.
 >
-> If someone is willing to do some testing with my tree in the next two
-> weeks then I don't mind waiting, but it's been in development now from
-> early September (if not earlier) and been reviewed several times. In
-> addition, ivtv has been modified to work with it and that driver uses
-> more sub-devices by far than any other driver.
->
-> I don't know what more I can do, to be honest.
+> Will that work for you, Trent?
 
-I am all for pushing the changes to the v4l-dvb repository so they can get 
-broader testing. I am, however, a bit more concerned about pushing the 
-changes to Linus yet. Shouldn't it wait until you convert other drivers and 
-make the v4l2_device (infra)structure more powerful, as you announced you 
-would ? There will probably be API/ABI breakage then, it patches will 
-probably benefit from a few iterations in v4l-dvb before we push them to 
-mainline.
+I don't think that's the best interface for it.  If you want to know what
+bus number a SCSI bus was assigned, you can find that out from /proc/scsi.
+The SCSI ID is usually explicitly set by the user on the device.  So if you
+want to add a scsi device, you should be able to know all the parts of the
+address.
 
-I don't know if that's possible at all, or if all changes in v4l-dvb are 
-automatically selected for a push to the git repository whenever Mauro 
-triggers the hg->git process.
+But PCI is different.  If the PCI devices on your computer right now
+disappeared from Linux, would you know their IDs off the top of your head?
+I sure wouldn't.  And how would you find them out?  Suppose someone plugged
+an FPGA card into a sever PCI system with multiple busses and bridges.  How
+would they ever guess what ID to scan?  What function numbers might be
+present once the FPGA is programmed?
 
-Best regards,
+I think a much more useful interface would be a "scan" file that will just
+trigger a rescan of everything.  Even the users who know what ID to scan
+would probably rather not be bothered to be forced to specify.
 
-Laurent Pinchart
+Maybe each PCI device could get a 'rescan' attribute that triggers a rescan
+of that device for new functions and recursively rescans any subordinate
+busses if it's a bridge?  That might be useful too.
+
+But anyway, how about removing PCI devices.  I see adding a "remove"
+attribute was mentioned.  When I first had the problem with getting the
+FPGA re-scanned I was going to add something like that, but searching for
+what people with a similar problem has done turned up fakephp as the
+established interface.
+
+I've made a patch to add the remove attribute.  It ends up not being that
+much code.  fakephp is a lot more complex that it needs to be.
+
+However, fakephp does not like this!  As I mentioned earlier, it can't
+handle something other than itself causing a PCI device to be removed.
+
+So I came up with a compatibility layer that creates directories in
+bus/pci/slots the same way fakephp used too.  This layer _can_ handle
+devices being removed (and added!) by other means.  It ends up being a lot
+simpler than fakephp too.  It doesn't use hotplug at all and should be able
+to coexist with real hotplug drivers and fakephp.
+
+I'll followup with the patches.  So far this only handles removal.  I
+haven't done bus rescanning yet.
