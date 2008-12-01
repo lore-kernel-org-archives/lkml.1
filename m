@@ -1,134 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYLARRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYLART1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753197AbYLARRv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 12:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYLARRm
+	id S1753424AbYLART1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 12:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYLARTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 12:17:42 -0500
-Received: from sh.osrg.net ([192.16.179.4]:56642 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079AbYLARRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 12:17:42 -0500
-Date: Tue, 2 Dec 2008 02:17:15 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org, tsbogend@alpha.franken.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] Fix dma_mapping_error for 32bit x86
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081201143534.GB32565@elte.hu>
-References: <20081201125501.GC21534@elte.hu>
-	<20081201230926Q.fujita.tomonori@lab.ntt.co.jp>
-	<20081201143534.GB32565@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081202021638K.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 1 Dec 2008 12:19:16 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41148 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbYLARTP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 12:19:15 -0500
+X-Greylist: delayed 1453 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Dec 2008 12:19:15 EST
+Date: Mon, 1 Dec 2008 11:54:43 -0500
+Message-Id: <200812011654.mB1GshRh023996@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: bharata@linux.vnet.ibm.com
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
+       jblunck@suse.de, dlezcano@fr.ibm.com, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: [rfc git patch] union directory 
+In-reply-to: Your message of "Fri, 28 Nov 2008 21:49:21 +0530."
+             <20081128161921.GA3843@in.ibm.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008 15:35:34 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-
+In message <20081128161921.GA3843@in.ibm.com>, Bharata B Rao writes:
+> On Fri, Nov 28, 2008 at 12:01:32PM +0100, Miklos Szeredi wrote:
+> > I've been doing some small fixing/cleanup work on the union directory
+> > patches by Jan, and just noticed there's a thread about the union
+> > mounts on LKML, so I thought publicizing won't hurt.
 > 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> Interesting that you call it "union directory", do you have plans to go
+> the Plan 9's way of union directories ?
 > 
-> > On Mon, 1 Dec 2008 13:55:01 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
 > > 
-> > > 
-> > > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > > 
-> > > > On Mon, 1 Dec 2008 12:34:51 +0100
-> > > > Joerg Roedel <joro@8bytes.org> wrote:
-> > > > 
-> > > > > On Sat, Nov 29, 2008 at 01:46:27PM +0100, Thomas Bogendoerfer wrote:
-> > > > > > Devices like b44 ethernet can't dma from addresses above 1GB. The driver
-> > > > > > handles this cases by falling back to GFP_DMA allocation. But for detecting
-> > > > > > the problem it needs to get an indication from dma_mapping_error.
-> > > > > > The bug is triggered by using a VMSPLIT option of 2G/2G.
-> > > > > 
-> > > > > Looks like your system uses swiotlb as the dma_ops backend. Its the only
-> > > > > implementation providing the ops->mapping_error callback and does not
-> > > > > use bad_dma_address as the error value.
-> > > > 
-> > > > I think that you misunderstand the problem.
-> > > > 
-> > > > He uses X86_32 so swiotlb should not be used (which is available on 
-> > > > only X86_64 and IA64 for now).
-> > > > 
-> > > > b44 needs an address under 1GB so it sets device->dma_mask to 
-> > > > DMA_30BIT_MASK. With VMSPLIT option of 2G/2G, I guess that b44 could 
-> > > > get addresses above 1GB from the networking subsystem. In such case, 
-> > > > nommu_map_single returns bad_dma_address properly, but on X86_32, 
-> > > > dma_mapping_error always returns 0 (success). So b44 wrongly thinks 
-> > > > that the address is under 1GB.
-> > > > 
-> > > > This patch fixes dma_mapping_error() to check a passed address
-> > > > properly (compares it with bad_dma_address).
-> > > > 
-> > > > As I already wrote, the current git needs a patch modified slightly:
-> > > > 
-> > > > http://marc.info/?l=linux-kernel&m=122797163405377&w=2
-> > > 
-> > > i have i queued up in x86/urgent, see below.
-> > 
-> > As I wrote, just removing #ifdef is better since:
-> > 
-> > 1) Xen people want swiotlb on X86_32. swiotlb uses ops->mapping_error
-> > so X86_32 also needs to check ops->mapping_error.
-> > 
-> > 2) Removing #ifdef hack is always good.
-> > 
-> > 
-> > But this patch fixes the bug and it works for now. And I think that 
-> > Thomas tested it. So it's fine to commit this patch by me.
+> > It's still a work in progress, notably the readdir code currently only
+> > works on a few specific filesystem types.
 > 
-> yeah, i included the tested patch.
+> readdir was one of the things on which we couldn't reach a consensus
+> on how to do it the right way. We were suggested that we move the
+> duplicate elimination into user space and an effort towards this was
+> also done (Ref: http://lkml.org/lkml/2008/4/29/248) by moving this
+> to glibc readdir. But we weren't sure how this could work for NFS and
+> were told that it is required to get the NFS side of things
+> sorted out first. So that's where readdir effort stands now afaik.
+> Do you have any ideas/plans on this front ?
 > 
-> > I'll send a patch to remove the ifdef on the top of this patch after 
-> > this patch goes into mainline.
+> Also the last development activity that I am aware of was done towards
+> getting a generic whiteout support. David Woodhouse started a git tree
+> at one point of time for whiteout support
+> (git://git.infradead.org/union/whiteout-2.6.git). Erez Zodak was
+> infact looking forward for these changes to make use of them in Unionfs,
+> but even this effort died down.
+
+We've actually been (quietly) looking into these whiteout patches for a
+couple of months already.  We found that those patches were not yet suitable
+for intergration into a f/s such as unionfs.  We found (and fixed) some
+bugs, and had to change the API somewhat and its implementation.  I think
+the only way to be sure that these patches work well is to have a user for
+them.  We plan on re-posting our modified patches once we've done a lot more
+testing with them in the context of unionfs.
+
+> Nice to know that you have started looking into Union Mount patches.
+> Would be interesting to know/understand your plans/thoughts on taking
+> this effort forward.
 > 
-> sure - or you can send it against tip/master straight away.
+> Regards,
+> Bharata.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Ok, here you are.
-
-Note that this is for 2.6.29 (not 2.6.28).
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86: remove ifdef CONFIG_X86_64 in dma_mapping_error
-
-This removes ifdef CONFIG_X86_64 in dma_mapping_error():
-
-1) Xen people plan to use swiotlb on X86_32 for Dom0 support. swiotlb
-uses ops->mapping_error so X86_32 also needs to check
-ops->mapping_error.
-
-2) Removing #ifdef hack is almost always a good thing.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/include/asm/dma-mapping.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index ecf8eaf..40d155d 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -72,12 +72,10 @@ static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
- /* Make sure we keep the same behaviour */
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
--#ifdef CONFIG_X86_64
- 	struct dma_mapping_ops *ops = get_dma_ops(dev);
- 	if (ops->mapping_error)
- 		return ops->mapping_error(dev, dma_addr);
- 
--#endif
- 	return (dma_addr == bad_dma_address);
- }
- 
--- 
-1.5.5.GIT
-
+Erez.
