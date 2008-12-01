@@ -1,67 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYLANC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbYLANJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYLANC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 08:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYLANCQ
+	id S1755053AbYLANJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 08:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYLANJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 08:02:16 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:38938 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbYLANCP (ORCPT
+	Mon, 1 Dec 2008 08:09:14 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39950 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbYLANJN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 08:02:15 -0500
-Date: Mon, 1 Dec 2008 15:02:09 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       weidong.han@intel.com, mingo@redhat.com, avi@redhat.com,
-       amit.shah@redhat.com
-Subject: Re: [PATCH 3/9] add frontend implementation for the IOMMU API
-Message-ID: <20081201130209.GA21615@il.ibm.com>
-References: <1227800454-9555-4-git-send-email-joerg.roedel@amd.com> <20081128184041N.fujita.tomonori@lab.ntt.co.jp> <20081128113129.GO1386@amd.com> <20081201173830B.fujita.tomonori@lab.ntt.co.jp> <20081201120026.GF17719@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081201120026.GF17719@amd.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 1 Dec 2008 08:09:13 -0500
+Date: Mon, 1 Dec 2008 14:09:07 +0100
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>
+Subject: [RFC][PATCH] Fix cpu hotplug hang
+Message-ID: <20081201140907.56743abd@bull.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 01:00:26PM +0100, Joerg Roedel wrote:
 
-> > > > The majority of the names (include/linux/iommu.h, iommu.c,
-> > > > iommu_ops, etc) looks too generic? We already have lots of
-> > > > similar things (e.g. arch/{x86,ia64}/asm/iommu.h, several
-> > > > archs' iommu.c, etc). Such names are expected to be used by
-> > > > all the IOMMUs.
-> > > 
-> > > The API is already useful for more than KVM. I also plan to
-> > > extend it to support more types of IOMMUs than VT-d and AMD
-> > > IOMMU in the future. But these changes are more intrusive than
-> > > this patchset and need more discussion. I prefer to do small
-> > > steps into this direction.
-> > 
-> > Can you be more specific? What IOMMU could use this? For example,
-> > how GART can use this? I think that people expect the name 'struct
-> > iommu_ops' to be an abstract for all the IOMMUs (or the majority
-> > at least). If this works like that, the name is a good choice, I
-> > think.
-> 
-> GART can't use exactly this. But with some extensions we can make it
-> useful for GART and GART-like IOMMUs too. For example we can emulate
-> domains in GART by partitioning the GART aperture space.
+  Hi Thomas, Ingo,
 
-That would only work with a pvdma API, since GART doesn't support
-multiple address spaces, and you don't get the isolation properties of
-a real IOMMU, so... why would you want to do that?
+  here is a patch that fixes a CPU hotplug hang I get on a Power6 box. It may
+not be the only possible fix but it appears to be the cleanest I can think of
+at the moment.
 
-Cheers,
-Muli
+  Comments welcomed.
+
+  Thanks,
+
+  Sebastien.
+
+
+>From b3bf273f7a91a686db25112278fc554b47aa30c6 Mon Sep 17 00:00:00 2001
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+Date: Mon, 1 Dec 2008 12:22:06 +0100
+Subject: [PATCH] Fix cpu hotplug hang
+
+  On architectures that support offlining all cpus (at least powerpc/pseries),
+hot-unpluging the tick_do_timer_cpu can result in a system hang.
+
+  This comes from the fact that if the cpu going down happens to be the
+cpu doing the tick, then as the tick_do_timer_cpu handover happens after the
+cpu is dead (via the CPU_DEAD notification), we're left without ticks,
+jiffies are frozen and any task relying on timers (msleep, ...) is stuck.
+That's particularly the case for the cpu looping in __cpu_die() waiting
+for the dying cpu to be dead.
+
+  This patch addresses this by having the tick_do_timer_cpu handover happen
+earlier during the CPU_DYING notification. For this, a new clockevent
+notification type is introduced (CLOCK_EVT_NOTIFY_CPU_DYING) which is triggered
+in hrtimer_cpu_notify().
+
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/clockchips.h |    1 +
+ kernel/hrtimer.c           |    4 ++++
+ kernel/time/tick-common.c  |   26 +++++++++++++++++++-------
+ 3 files changed, 24 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+index ed3a5d4..c6de413 100644
+--- a/include/linux/clockchips.h
++++ b/include/linux/clockchips.h
+@@ -36,6 +36,7 @@ enum clock_event_nofitiers {
+ 	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+ 	CLOCK_EVT_NOTIFY_SUSPEND,
+ 	CLOCK_EVT_NOTIFY_RESUME,
++	CLOCK_EVT_NOTIFY_CPU_DYING,
+ 	CLOCK_EVT_NOTIFY_CPU_DEAD,
+ };
+ 
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 47e6334..b870bd0 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1794,6 +1794,10 @@ static int __cpuinit hrtimer_cpu_notify(struct notifier_block *self,
+ 		break;
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
++	case CPU_DYING:
++	case CPU_DYING_FROZEN:
++		clockevents_notify(CLOCK_EVT_NOTIFY_CPU_DYING, &cpu);
++		break;
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_CPU_DEAD, &cpu);
+diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+index df12434..152871c 100644
+--- a/kernel/time/tick-common.c
++++ b/kernel/time/tick-common.c
+@@ -274,6 +274,21 @@ out_bc:
+ }
+ 
+ /*
++ * Transfer the do_timer job away from a dying cpu.
++ *
++ * Called with interrupts disabled.
++ */
++static void tick_handover_do_timer(unsigned int *cpup)
++{
++	if (*cpup == tick_do_timer_cpu) {
++		int cpu = first_cpu(cpu_online_map);
++
++		tick_do_timer_cpu = (cpu != NR_CPUS) ? cpu :
++			TICK_DO_TIMER_NONE;
++	}
++}
++
++/*
+  * Shutdown an event device on a given cpu:
+  *
+  * This is called on a life CPU, when a CPU is dead. So we cannot
+@@ -297,13 +312,6 @@ static void tick_shutdown(unsigned int *cpup)
+ 		clockevents_exchange_device(dev, NULL);
+ 		td->evtdev = NULL;
+ 	}
+-	/* Transfer the do_timer job away from this cpu */
+-	if (*cpup == tick_do_timer_cpu) {
+-		int cpu = first_cpu(cpu_online_map);
+-
+-		tick_do_timer_cpu = (cpu != NR_CPUS) ? cpu :
+-			TICK_DO_TIMER_NONE;
+-	}
+ 	spin_unlock_irqrestore(&tick_device_lock, flags);
+ }
+ 
+@@ -357,6 +365,10 @@ static int tick_notify(struct notifier_block *nb, unsigned long reason,
+ 		tick_broadcast_oneshot_control(reason);
+ 		break;
+ 
++	case CLOCK_EVT_NOTIFY_CPU_DYING:
++		tick_handover_do_timer(dev);
++		break;
++
+ 	case CLOCK_EVT_NOTIFY_CPU_DEAD:
+ 		tick_shutdown_broadcast_oneshot(dev);
+ 		tick_shutdown_broadcast(dev);
 -- 
-The First Workshop on I/O Virtualization (WIOV '08)
-Dec 2008, San Diego, CA, http://www.usenix.org/wiov08/
-                       <->
-SYSTOR 2009---The Israeli Experimental Systems Conference
-http://www.haifa.il.ibm.com/conferences/systor2009/
+1.6.0.1.308.gede4c
+
