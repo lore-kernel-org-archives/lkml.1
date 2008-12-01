@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYLAEf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYLAEfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbYLAEf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 23:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYLAEfL
+	id S1754585AbYLAEfz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Nov 2008 23:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYLAEfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 23:35:11 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43235 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751570AbYLAEfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 23:35:09 -0500
-Date: Mon, 1 Dec 2008 10:05:09 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, jblunck@suse.de, dlezcano@fr.ibm.com,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [rfc git patch] union directory
-Message-ID: <20081201043509.GA3388@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu> <20081128161921.GA3843@in.ibm.com> <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1L6Skx-0007uK-3H@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 30 Nov 2008 23:35:42 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:60647 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbYLAEfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Nov 2008 23:35:40 -0500
+Date: Sun, 30 Nov 2008 23:35:19 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [RFC PATCH] x86: create drivers/x86/ from drivers/misc/
+In-reply-to: <20081129001647.GA8699@khazad-dum.debian.net>
+X-X-Sender: lenb@localhost.localdomain
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org,
+       linux-acpi@vger.kernel.org
+Message-id: <alpine.LFD.2.00.0811302329440.3314@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+ <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au>
+ <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain>
+ <alpine.LFD.2.00.0811281702570.24773@localhost.localdomain>
+ <alpine.LFD.2.00.0811281706540.24773@localhost.localdomain>
+ <20081128223533.GA5175@uranus.ravnborg.org>
+ <alpine.LFD.2.00.0811281801520.24773@localhost.localdomain>
+ <20081129001647.GA8699@khazad-dum.debian.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 29, 2008 at 05:33:19PM +0100, Miklos Szeredi wrote:
-> On Fri, 28 Nov 2008, Bharata B Rao wrote:
-> > On Fri, Nov 28, 2008 at 12:01:32PM +0100, Miklos Szeredi wrote:
-> > > I've been doing some small fixing/cleanup work on the union directory
-> > > patches by Jan, and just noticed there's a thread about the union
-> > > mounts on LKML, so I thought publicizing won't hurt.
+
+
+On Fri, 28 Nov 2008, Henrique de Moraes Holschuh wrote:
+
+> On Fri, 28 Nov 2008, Len Brown wrote:
+> > > > Move x86 platform specific drivers from drivers/misc/
+> > > > to a new home under drivers/x86/.
+> [...]
+> > > We already have 81 one directory entries under drivers/
+> > > and with patch you open up for an additional
+> > > directory for each arch - not elegant.
 > > 
-> > Interesting that you call it "union directory", do you have plans to go
-> > the Plan 9's way of union directories ?
-> 
-> I think yes, although I never tried Plan9 and don't know the details
-> of the union directory semantics.
-> 
-> At first we thought of providing completely read-only unioning (no
-> whiteouts, no object creation/removal).  This gets rid of a _lot_ of
-> complexity.
-> 
-> > > It's still a work in progress, notably the readdir code currently only
-> > > works on a few specific filesystem types.
+> > I followed the example of drivers/s390/,
+> > per Linus' suggestion.
 > > 
-> > readdir was one of the things on which we couldn't reach a consensus
-> > on how to do it the right way. We were suggested that we move the
-> > duplicate elimination into user space and an effort towards this was
-> > also done (Ref: http://lkml.org/lkml/2008/4/29/248) by moving this
-> > to glibc readdir. But we weren't sure how this could work for NFS and
-> > were told that it is required to get the NFS side of things
-> > sorted out first. So that's where readdir effort stands now afaik.
-> > Do you have any ideas/plans on this front ?
+> > The other place that seemed to suggest itself was
+> > arch/x86/drivers/, as we already have:
+> > 
+> > arch/um/drivers/
+> > arch/sh/drivers/
+> > arch/cris/*/drivers/
 > 
-> The plan is to get a simple kernel implementation first which caches
-> the directory in 'struct file'.
+> IMHO, from a purely "tree organization" point of view, it would be best if
+> arch-specific platform drivers were under drivers/platform/<arch>/.  And
+> arch/ be left for the core arch-specific stuff.
+> 
+> Whether that would work well, when arch maintenance factors are taken into
+> account, I don't know.
 
-FYI, I did this for a version of Union Mount.
-(http://lkml.org/lkml/2007/6/20/21) I was maintaining the readdir cache in
-struct file and the cache was persistant across readdir calls.
+Each of the drivers has a primary maintainer --
+though some of them jare  more active than others...
+And I'll continue to be available to help them where I can.
 
-Do you have anything different in mind ?
+> > > As it is today (before this patch) the directories unider
+> > > drivers/ said what the drivers was used for - which is logical.
+> > > 
+> > > But with this new arch specific directory it is no longer obvious
+> > > is a driver should be located under say drivers/net/* or
+> > > drivers/arm/* in case it is a arm specific driver.
+> 
+> drivers/platform/<arch> would help in that regard, I think.
 
-Also all our readdir discussions have kind of terminated with how
-it could provide a correct directory seek behaviour. I was thinking
-that we could dis-allow seek on union mounted directories
-but was told that it is important to provide proper seek for
-union mounted directories. So do you plan to address this seek problem
-in your simple/first readdir implementation ?
+I agree.
+drivers/platform/x86/ seems to be a better home than drivers/x86/
+for this bunch.  I'll update the patch to do this.
+The other arch's can follow later if they choose.
 
-Regards,
-Bharata.
+thanks,
+-Len
+
