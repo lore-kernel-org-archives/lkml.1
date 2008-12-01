@@ -1,148 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYLARBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYLARFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbYLARBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 12:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYLARBB
+	id S1753347AbYLARFG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 12:05:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYLAREz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 12:01:01 -0500
-Received: from rtr.ca ([76.10.145.34]:42955 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbYLARBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 12:01:00 -0500
-Message-ID: <4934188E.6080701@rtr.ca>
-Date: Mon, 01 Dec 2008 12:02:06 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 1 Dec 2008 12:04:55 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58164 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751655AbYLAREy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 12:04:54 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 1 Dec 2008 18:03:59 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] ieee1394 updates
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.26f0075691049689@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       rtc-linux@googlegroups.com, linux-acpi@vger.kernel.org
-Subject: Re: PATCH: /proc/acpi/alarm: handle day-of-month wraparound on readback
-References: <200806222042.13929.david-b@pacbell.net> <4934176F.6080900@rtr.ca>
-In-Reply-To: <4934176F.6080900@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Fix month wrap issue with readback from /proc/acpi/alarm
-> This bug has been around *forever*.
-> 
-> $ echo '2008-12-01 10:36:20' > /proc/acpi/alarm
-> $ cat /proc/acpi/alarm
-> 2008-11-01 10:36:20
-> 
-> Note how the readback above shows the month incorrectly.
-> But with this patch applied, it shows the correct month (12).
-..
+Linus, please pull from the for-linus branch at
 
-I should add, that the above test requires that the alarm
-be set for any day of the *next* month from the current month.
-My MythTV box does a readback test any time it programs a wakeup,
-and noticed the bug over this past weekend (2008-11-30).
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-> 
-> Patch applies/works on kernels 2.6.25.* through 2.6.27.*,
-> and probably on earlier kernels as well.
-> 
-> Probably best to queue it up for the next major cycle.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> 
-> --- linux-2.6.25/drivers/acpi/sleep/proc.c    2008-06-09 
-> 14:27:19.000000000 -0400
-> +++ linux/drivers/acpi/sleep/proc.c    2008-11-30 18:08:31.000000000 -0500
-> @@ -84,12 +84,15 @@
-> #define    HAVE_ACPI_LEGACY_ALARM
-> #endif
-> 
-> +static u32 cmos_bcd_read(int offset, int rtc_control);
-> +
-> #ifdef    HAVE_ACPI_LEGACY_ALARM
-> 
-> static int acpi_system_alarm_seq_show(struct seq_file *seq, void *offset)
-> {
->     u32 sec, min, hr;
->     u32 day, mo, yr, cent = 0;
-> +    u32 today = 0;
->     unsigned char rtc_control = 0;
->     unsigned long flags;
-> 
-> @@ -97,38 +100,32 @@
-> 
->     spin_lock_irqsave(&rtc_lock, flags);
-> 
-> -    sec = CMOS_READ(RTC_SECONDS_ALARM);
-> -    min = CMOS_READ(RTC_MINUTES_ALARM);
-> -    hr = CMOS_READ(RTC_HOURS_ALARM);
->     rtc_control = CMOS_READ(RTC_CONTROL);
-> +    sec = cmos_bcd_read(RTC_SECONDS_ALARM, rtc_control);
-> +    min = cmos_bcd_read(RTC_MINUTES_ALARM, rtc_control);
-> +    hr = cmos_bcd_read(RTC_HOURS_ALARM, rtc_control);
-> 
->     /* If we ever get an FACP with proper values... */
-> -    if (acpi_gbl_FADT.day_alarm)
-> +    if (acpi_gbl_FADT.day_alarm) {
->         /* ACPI spec: only low 6 its should be cared */
->         day = CMOS_READ(acpi_gbl_FADT.day_alarm) & 0x3F;
-> -    else
-> -        day = CMOS_READ(RTC_DAY_OF_MONTH);
-> +        if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
-> +            BCD_TO_BIN(day);
-> +    } else
-> +        day = cmos_bcd_read(RTC_DAY_OF_MONTH, rtc_control);
->     if (acpi_gbl_FADT.month_alarm)
-> -        mo = CMOS_READ(acpi_gbl_FADT.month_alarm);
-> -    else
-> -        mo = CMOS_READ(RTC_MONTH);
-> +        mo = cmos_bcd_read(acpi_gbl_FADT.month_alarm, rtc_control);
-> +    else {
-> +        mo = cmos_bcd_read(RTC_MONTH, rtc_control);
-> +        today = cmos_bcd_read(RTC_DAY_OF_MONTH, rtc_control);
-> +    }
->     if (acpi_gbl_FADT.century)
-> -        cent = CMOS_READ(acpi_gbl_FADT.century);
-> +        cent = cmos_bcd_read(acpi_gbl_FADT.century, rtc_control);
-> 
-> -    yr = CMOS_READ(RTC_YEAR);
-> +    yr = cmos_bcd_read(RTC_YEAR, rtc_control);
-> 
->     spin_unlock_irqrestore(&rtc_lock, flags);
-> 
-> -    if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
-> -        BCD_TO_BIN(sec);
-> -        BCD_TO_BIN(min);
-> -        BCD_TO_BIN(hr);
-> -        BCD_TO_BIN(day);
-> -        BCD_TO_BIN(mo);
-> -        BCD_TO_BIN(yr);
-> -        BCD_TO_BIN(cent);
-> -    }
-> -
->     /* we're trusting the FADT (see above) */
->     if (!acpi_gbl_FADT.century)
->         /* If we're not trusting the FADT, we should at least make it
-> @@ -153,6 +150,20 @@
->     else
->         yr += cent * 100;
-> 
-> +    /*
-> +     * Show correct dates for alarms up to a month into the future.
-> +     * This solves issues for nearly all situations with the common
-> +     * 30-day alarm clocks in PC hardware.
-> +     */
-> +    if (day < today) {
-> +        if (mo < 12) {
-> +            mo += 1;
-> +        } else {
-> +            mo = 1;
-> +            yr += 1;
-> +        }
-> +    }
-> +
->     seq_printf(seq, "%4.4u-", yr);
->     (mo > 12) ? seq_puts(seq, "**-") : seq_printf(seq, "%2.2u-", mo);
->     (day > 31) ? seq_puts(seq, "** ") : seq_printf(seq, "%2.2u ", day);
+the following updates:
+
+Stefan Richter (4):
+      ieee1394: sbp2: another iPod mini quirk entry
+      firewire: fw-sbp2: another iPod mini quirk entry
+      ieee1394: fix list corruption (reported at module removal)
+      ieee1394: sbp2: fix race condition in state change
+
+ drivers/firewire/fw-sbp2.c   |    5 +++++
+ drivers/ieee1394/highlevel.c |   25 ++++++++++++-------------
+ drivers/ieee1394/hosts.h     |    4 ++++
+ drivers/ieee1394/sbp2.c      |   14 ++++++++++----
+ 4 files changed, 31 insertions(+), 17 deletions(-)
+
+
+commit 2642b11295ebcc94843045933061bfbb263fce7f
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sat Nov 29 14:55:47 2008 +0100
+
+    ieee1394: sbp2: fix race condition in state change
+    
+    An intermediate transition from _RUNNING to _IN_SHUTDOWN could have been
+    missed by the former code.
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/ieee1394/sbp2.c b/drivers/ieee1394/sbp2.c
+index 3f5dbcb..a373c18 100644
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -895,12 +895,13 @@ static void sbp2_host_reset(struct hpsb_host *host)
+ 		return;
+ 
+ 	read_lock_irqsave(&sbp2_hi_logical_units_lock, flags);
++
+ 	list_for_each_entry(lu, &hi->logical_units, lu_list)
+-		if (likely(atomic_read(&lu->state) !=
+-			   SBP2LU_STATE_IN_SHUTDOWN)) {
+-			atomic_set(&lu->state, SBP2LU_STATE_IN_RESET);
++		if (atomic_cmpxchg(&lu->state,
++				   SBP2LU_STATE_RUNNING, SBP2LU_STATE_IN_RESET)
++		    == SBP2LU_STATE_RUNNING)
+ 			scsi_block_requests(lu->shost);
+-		}
++
+ 	read_unlock_irqrestore(&sbp2_hi_logical_units_lock, flags);
+ }
+ 
+
+commit e47c1feb17e61ef4e2f245c0af0c5a8e2a7798b2
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Wed Nov 26 01:34:25 2008 +0100
+
+    ieee1394: fix list corruption (reported at module removal)
+    
+    If there is more than one FireWire controller present, dummy_zero_addr
+    and dummy_max_addr were added multiple times to different lists, thus
+    corrupting the lists.  Fix this by allocating them dynamically per host
+    instead of just once globally.
+    
+    (Perhaps a better address space allocation algorithm could rid us of the
+    two dummy address spaces.)
+    
+    Fixes http://bugzilla.kernel.org/show_bug.cgi?id=10129 .
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/ieee1394/highlevel.c b/drivers/ieee1394/highlevel.c
+index 918ffc4..272543a 100644
+--- a/drivers/ieee1394/highlevel.c
++++ b/drivers/ieee1394/highlevel.c
+@@ -46,10 +46,6 @@ static DEFINE_RWLOCK(hl_irqs_lock);
+ 
+ static DEFINE_RWLOCK(addr_space_lock);
+ 
+-/* addr_space list will have zero and max already included as bounds */
+-static struct hpsb_address_ops dummy_ops = { NULL, NULL, NULL, NULL };
+-static struct hpsb_address_serve dummy_zero_addr, dummy_max_addr;
+-
+ 
+ static struct hl_host_info *hl_get_hostinfo(struct hpsb_highlevel *hl,
+ 					    struct hpsb_host *host)
+@@ -481,20 +477,23 @@ int hpsb_unregister_addrspace(struct hpsb_highlevel *hl, struct hpsb_host *host,
+ 	return retval;
+ }
+ 
++static struct hpsb_address_ops dummy_ops;
++
++/* dummy address spaces as lower and upper bounds of the host's a.s. list */
+ static void init_hpsb_highlevel(struct hpsb_host *host)
+ {
+-	INIT_LIST_HEAD(&dummy_zero_addr.host_list);
+-	INIT_LIST_HEAD(&dummy_zero_addr.hl_list);
+-	INIT_LIST_HEAD(&dummy_max_addr.host_list);
+-	INIT_LIST_HEAD(&dummy_max_addr.hl_list);
++	INIT_LIST_HEAD(&host->dummy_zero_addr.host_list);
++	INIT_LIST_HEAD(&host->dummy_zero_addr.hl_list);
++	INIT_LIST_HEAD(&host->dummy_max_addr.host_list);
++	INIT_LIST_HEAD(&host->dummy_max_addr.hl_list);
+ 
+-	dummy_zero_addr.op = dummy_max_addr.op = &dummy_ops;
++	host->dummy_zero_addr.op = host->dummy_max_addr.op = &dummy_ops;
+ 
+-	dummy_zero_addr.start = dummy_zero_addr.end = 0;
+-	dummy_max_addr.start = dummy_max_addr.end = ((u64) 1) << 48;
++	host->dummy_zero_addr.start = host->dummy_zero_addr.end = 0;
++	host->dummy_max_addr.start = host->dummy_max_addr.end = ((u64) 1) << 48;
+ 
+-	list_add_tail(&dummy_zero_addr.host_list, &host->addr_space);
+-	list_add_tail(&dummy_max_addr.host_list, &host->addr_space);
++	list_add_tail(&host->dummy_zero_addr.host_list, &host->addr_space);
++	list_add_tail(&host->dummy_max_addr.host_list, &host->addr_space);
+ }
+ 
+ void highlevel_add_host(struct hpsb_host *host)
+diff --git a/drivers/ieee1394/hosts.h b/drivers/ieee1394/hosts.h
+index e4e8aeb..dd22995 100644
+--- a/drivers/ieee1394/hosts.h
++++ b/drivers/ieee1394/hosts.h
+@@ -13,6 +13,7 @@ struct module;
+ 
+ #include "ieee1394_types.h"
+ #include "csr.h"
++#include "highlevel.h"
+ 
+ struct hpsb_packet;
+ struct hpsb_iso;
+@@ -72,6 +73,9 @@ struct hpsb_host {
+ 	struct { DECLARE_BITMAP(map, 64); } tl_pool[ALL_NODES];
+ 
+ 	struct csr_control csr;
++
++	struct hpsb_address_serve dummy_zero_addr;
++	struct hpsb_address_serve dummy_max_addr;
+ };
+ 
+ enum devctl_cmd {
+
+commit 031bb27c4bf77c2f60b3f3dea8cce63ef0d1fba9
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sat Nov 22 12:38:58 2008 +0100
+
+    firewire: fw-sbp2: another iPod mini quirk entry
+    
+    Add another model ID of a broken firmware to prevent early I/O errors
+    by acesses at the end of the disk.  Reported at linux1394-user,
+    http://marc.info/?t=122670842900002
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+index 97df6da..e54403e 100644
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -372,6 +372,11 @@ static const struct {
+ 	},
+ 	/* iPod mini */ {
+ 		.firmware_revision	= 0x0a2700,
++		.model			= 0x000022,
++		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
++	},
++	/* iPod mini */ {
++		.firmware_revision	= 0x0a2700,
+ 		.model			= 0x000023,
+ 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
+ 	},
+
+commit 9e0de91011ef6fe6eb3bb63f7ea15f586955660a
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sat Nov 22 12:38:24 2008 +0100
+
+    ieee1394: sbp2: another iPod mini quirk entry
+    
+    Add another model ID of a broken firmware to prevent early I/O errors
+    by acesses at the end of the disk.  Reported at linux1394-user,
+    http://marc.info/?t=122670842900002
+    
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/ieee1394/sbp2.c b/drivers/ieee1394/sbp2.c
+index c52f6e6..3f5dbcb 100644
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -402,6 +402,11 @@ static const struct {
+ 	},
+ 	/* iPod mini */ {
+ 		.firmware_revision	= 0x0a2700,
++		.model_id		= 0x000022,
++		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
++	},
++	/* iPod mini */ {
++		.firmware_revision	= 0x0a2700,
+ 		.model_id		= 0x000023,
+ 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
+ 	},
+
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- ==-- ----=
+http://arcgraph.de/sr/
+
+
