@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751268AbYLAFeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751322AbYLAFjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751268AbYLAFeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 00:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYLAFeL
+	id S1751322AbYLAFjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 00:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbYLAFjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 00:34:11 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:40182 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750709AbYLAFeK (ORCPT
+	Mon, 1 Dec 2008 00:39:08 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53918 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbYLAFjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 00:34:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=c+7jEIi1dIOmxxK5dbPYmGbNAHZF7h2yMP6ylA0Qdms8WVayX7Bk6R238mPYJcEuaolztSeeU1rprUAHexBdHReD32hOtvkPoSRp1Ind1YeQw4doFL9DCWYJFivYTyp9Wy6IXjEQ7kGl/bW+vTIYKNibAfrsQNAfqaqrxezXJ1M=  ;
-X-YMail-OSG: fJi.XPwVM1mptuifPi4tET00bDLkEl1u398NkhUVKh4Id3d7hin5MXZCRDcTRz.erDTwoFXXGEVgPRvLsVsd95lP6.fCIq6RzIKZQ5a2xHDIw.7uca0wPNTd0Gd80TgfnMwvDFewQikgVl8IdLwU8VfJVMeWWGF7pIab8VpXAzQ0SvwLZFNulJaorexM
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Hans Verkuil <hverkuil@xs4all.nl>, Andy Walls <awalls@radix.net>
-Subject: Re: [PATCH v2] v4l2_device/v4l2_subdev: final (?) version
-Date: Sun, 30 Nov 2008 21:34:06 -0800
-User-Agent: KMail/1.9.10
-Cc: Linux and Kernel Video <video4linux-list@redhat.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       linux-kernel@vger.kernel.org
-References: <200811291852.41794.hverkuil@xs4all.nl> <1228013385.4615.143.camel@palomino.walls.org> <200811301152.50971.hverkuil@xs4all.nl>
-In-Reply-To: <200811301152.50971.hverkuil@xs4all.nl>
+	Mon, 1 Dec 2008 00:39:07 -0500
+Date: Mon, 01 Dec 2008 14:39:03 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 01/15] kmemleak: Add the base support
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20081129104312.16726.36218.stgit@pc1117.cambridge.arm.com>
+References: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com> <20081129104312.16726.36218.stgit@pc1117.cambridge.arm.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20081201142824.D552.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200811302134.07166.david-b@pacbell.net>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 November 2008, Hans Verkuil wrote:
-> > On a more philosophical note is GPIO really a single subdev or a
-> > collection of independent serial & discrete buses to a collection of
-> > subdevs?  In cx18 depending on the board, GPIO can reset chips,
-> > change audio mux paths, change the state of LED's, and in the future
-> > be used as a serial line (if I ever get that soft-UART to the IR
-> > blaster implemented).
-> 
-> Definitely a collection of subdevs. Usually each chip driven by GPIO 
-> would have its own subdev. So ivtv implements an audio muxer subdev, 
-> but it might also have additional subdevs for other chips connected to 
-> the GPIO lines. I haven't explored all the possibilities yet, but I 
-> suspect that this can be a quite powerful solution.
+Hello.
 
-Right.  GPIO is basically a glue tech ... the focus should be what's
-being glued (the various subdevs, and their parents), not on the glue.
-I think a standardized set of GPIO calls, and gpiolib, makes that a
-lot easier nowadays; though maybe not always painless.
+I have a question. (may be silly)
 
-Keeping to the V4L2 topic:  I figure there will be some issues there
-to sort out.  For example, it might be important to collect key
-resources like GPIOs and regulators before setting up the various I2C
-clients that rely on those for proper operation, or other parts of a
-complex V4L2 "assembly" (to coin a term).  I understand that in some
-cases those GPIOs are provided through I2C-based expanders... such
-sequencing issues will become clearer as the $SUBJECT work matures.
-(I'd expect the v4l2_device would manage such stuff.)
+> +/*
+> + * Insert a pointer into the pointer hash table.
+> + */
+> +static inline void create_object(unsigned long ptr, size_t size, int ref_count)
+> +{
+> +	unsigned long flags;
+> +	struct memleak_object *object;
+> +	struct prio_tree_node *node;
+> +	struct stack_trace trace;
+> +
+> +	object = kmem_cache_alloc(object_cache, GFP_ATOMIC);
+> +	if (!object)
+> +		panic("kmemleak: cannot allocate a memleak_object structure\n");
 
-One widely accessible OMAP example:  the beagleboard.org hardware uses
-a GPIO to enable its DVI output, and a regulator that must be enabled
-for S-Video output.  Both should be disabled when their output channel
-is not in use -- software doesn't handle that yet though! -- and I'd
-expect an OMAP3 v4l2_device would understand such board-specific setup
-issues.  (Support for that isn't yet in mainline though.)
+IIRC, GFP_ATOMIC allocation sometimes fails. (ex. when page cache occupies all
+area). It seems to be easy to panic. Is it intended? 
 
-- Dave
+
+Thanks.
+-- 
+Yasunori Goto 
+
+
