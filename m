@@ -1,334 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751236AbYLAGDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYLAGD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751236AbYLAGDQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 01:03:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLAGDA
+	id S1752612AbYLAGD5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 01:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLAGDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 01:03:00 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56264 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYLAGC7 (ORCPT
+	Mon, 1 Dec 2008 01:03:47 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:55902 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbYLAGDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 01:02:59 -0500
-Date: Mon, 1 Dec 2008 15:02:08 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH 1/3] cgroup: fix pre_destroy and semantics of css->refcnt
-Message-Id: <20081201150208.6b24506b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 01:03:46 -0500
+Date: Mon, 01 Dec 2008 01:03:40 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 1/2] drivers/misc/Makefile, Kconfig: cleanup
+In-reply-to: <alpine.LFD.2.00.0812010053100.3314@localhost.localdomain>
+X-X-Sender: lenb@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, x86@kernel.org,
+       linux-acpi@vger.kernel.org
+Message-id: <alpine.LFD.2.00.0812010102340.3314@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20081128213620.2ec593d4.sfr@canb.auug.org.au>
+ <4930307C.30106@oracle.com> <20081129083550.3c23af37.sfr@canb.auug.org.au>
+ <alpine.LFD.2.00.0811281649001.24773@localhost.localdomain>
+ <alpine.LFD.2.00.0811281702570.24773@localhost.localdomain>
+ <alpine.LFD.2.00.0811281706540.24773@localhost.localdomain>
+ <20081128223533.GA5175@uranus.ravnborg.org>
+ <alpine.LFD.2.00.0811281801520.24773@localhost.localdomain>
+ <20081129073816.GB8351@uranus.ravnborg.org>
+ <alpine.LFD.2.00.0812010053100.3314@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, final check of refcnt is done after pre_destroy(), so rmdir() can fail
-after pre_destroy().
-memcg set mem->obsolete to be 1 at pre_destroy and this is buggy..
+From: Len Brown <len.brown@intel.com>
 
-Several ways to fix this can be considered. This is an idea.
+tabs->space and delete unnecessary dummy build-in.o rule.
 
-Fortunately, the user of css_get()/css_put() is only memcg, now.
-And it seems assumption on css_ref in cgroup.c is a bit complicated.
-I'd like to reuse it.
-This patch changes this css->refcnt usage and action as following
-	- css->refcnt is initialized to 1.
+Suggested-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/misc/Kconfig  |   42 +++++++++++++++++++++---------------------
+ drivers/misc/Makefile |    3 ---
+ 2 files changed, 21 insertions(+), 24 deletions(-)
 
-	- after pre_destroy, before destroy(), try to drop css->refcnt to 0.
-
-	- css_tryget() is added. This only success when css->refcnt > 0.
-
-	- css_is_removed() is added. This checks css->refcnt == 0 and means
-	  this cgroup is under destroy() or not.
-
-	- css_put() is changed not to call notify_on_release().
-	  From documentation, notify_on_release() is called when there is no
-	  tasks/children in cgroup. On implementation, notify_on_release is
-	  not called if css->refcnt > 0.
-	  This is problematic. memcg has css->refcnt by each page even when
-	  there are no tasks. release handler will be never called.
-	  But, now, rmdir()/pre_destroy() of memcg works well and checking
-	  checking css->ref is not (and shouldn't be) necessary for notifying.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
-
-
- include/linux/cgroup.h |   21 +++++++++++++++++--
- kernel/cgroup.c        |   53 +++++++++++++++++++++++++++++++++++--------------
- mm/memcontrol.c        |   40 +++++++++++++++++++++++++-----------
- 3 files changed, 85 insertions(+), 29 deletions(-)
-
-Index: mmotm-2.6.28-Nov29/include/linux/cgroup.h
-===================================================================
---- mmotm-2.6.28-Nov29.orig/include/linux/cgroup.h
-+++ mmotm-2.6.28-Nov29/include/linux/cgroup.h
-@@ -54,7 +54,9 @@ struct cgroup_subsys_state {
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index fee7304..dcf6169 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -120,7 +120,7 @@ config TIFM_CORE
+ 	  cards are supported via 'MMC/SD Card support: TI Flash Media MMC/SD
+ 	  Interface support (MMC_TIFM_SD)'.
  
- 	/* State maintained by the cgroup system to allow
- 	 * subsystems to be "busy". Should be accessed via css_get()
--	 * and css_put() */
-+	 * and css_put(). If this value is 0, css is now under removal and
-+	 * destroy() will be called soon. (and there is no roll-back.)
-+	 */
+-          To compile this driver as a module, choose M here: the module will
++	  To compile this driver as a module, choose M here: the module will
+ 	  be called tifm_core.
  
- 	atomic_t refcnt;
+ config TIFM_7XX1
+@@ -133,11 +133,11 @@ config TIFM_7XX1
+ 	  To make actual use of the device, you will have to select some
+ 	  flash card format drivers, as outlined in the TIFM_CORE Help.
  
-@@ -86,7 +88,22 @@ extern void __css_put(struct cgroup_subs
- static inline void css_put(struct cgroup_subsys_state *css)
- {
- 	if (!test_bit(CSS_ROOT, &css->flags))
--		__css_put(css);
-+		atomic_dec(&css->refcnt);
-+}
-+
-+/* returns not-zero if success */
-+static inline int css_tryget(struct cgroup_subsys_state *css)
-+{
-+	if (!test_bit(CSS_ROOT, &css->flags))
-+		return atomic_inc_not_zero(&css->refcnt);
-+	return 1;
-+}
-+
-+static inline bool css_under_removal(struct cgroup_subsys_state *css)
-+{
-+	if (test_bit(CSS_ROOT, &css->flags))
-+		return false;
-+	return atomic_read(&css->refcnt) == 0;
- }
+-          To compile this driver as a module, choose M here: the module will
++	  To compile this driver as a module, choose M here: the module will
+ 	  be called tifm_7xx1.
  
- /* bits in struct cgroup flags field */
-Index: mmotm-2.6.28-Nov29/kernel/cgroup.c
-===================================================================
---- mmotm-2.6.28-Nov29.orig/kernel/cgroup.c
-+++ mmotm-2.6.28-Nov29/kernel/cgroup.c
-@@ -589,6 +589,32 @@ static void cgroup_call_pre_destroy(stru
- 	return;
- }
+ config ACER_WMI
+-        tristate "Acer WMI Laptop Extras (EXPERIMENTAL)"
++	tristate "Acer WMI Laptop Extras (EXPERIMENTAL)"
+ 	depends on X86
+ 	depends on EXPERIMENTAL
+ 	depends on ACPI
+@@ -159,14 +159,14 @@ config ACER_WMI
+ 	  here.
  
-+/*
-+ * Try to set all subsys's refcnt to be 0.
-+ * css->refcnt==0 means this subsys will be destroy()'d.
-+ */
-+static bool cgroup_set_subsys_removed(struct cgroup *cgrp)
-+{
-+	struct cgroup_subsys *ss;
-+	struct cgroup_subsys_state *css, *tmp;
-+
-+	for_each_subsys(cgrp->root, ss) {
-+		css = cgrp->subsys[ss->subsys_id];
-+		if (!atomic_dec_and_test(&css->refcnt))
-+			goto rollback;
-+	}
-+	return true;
-+rollback:
-+	for_each_subsys(cgrp->root, ss) {
-+		tmp = cgrp->subsys[ss->subsys_id];
-+		atomic_inc(&tmp->refcnt);
-+		if (tmp == css)
-+			break;
-+	}
-+	return false;
-+}
-+
-+
- static void cgroup_diput(struct dentry *dentry, struct inode *inode)
- {
- 	/* is dentry a directory ? if so, kfree() associated cgroup */
-@@ -2310,7 +2336,7 @@ static void init_cgroup_css(struct cgrou
- 			       struct cgroup *cgrp)
- {
- 	css->cgroup = cgrp;
--	atomic_set(&css->refcnt, 0);
-+	atomic_set(&css->refcnt, 1);
- 	css->flags = 0;
- 	if (cgrp == dummytop)
- 		set_bit(CSS_ROOT, &css->flags);
-@@ -2438,7 +2464,7 @@ static int cgroup_has_css_refs(struct cg
- 		 * matter, since it can only happen if the cgroup
- 		 * has been deleted and hence no longer needs the
- 		 * release agent to be called anyway. */
--		if (css && atomic_read(&css->refcnt))
-+		if (css && (atomic_read(&css->refcnt) > 1))
- 			return 1;
- 	}
- 	return 0;
-@@ -2465,7 +2491,8 @@ static int cgroup_rmdir(struct inode *un
+ config ASUS_LAPTOP
+-        tristate "Asus Laptop Extras (EXPERIMENTAL)"
+-        depends on X86
+-        depends on ACPI
++	tristate "Asus Laptop Extras (EXPERIMENTAL)"
++	depends on X86
++	depends on ACPI
+ 	depends on EXPERIMENTAL && !ACPI_ASUS
+ 	depends on LEDS_CLASS
+ 	depends on NEW_LEDS
+ 	depends on BACKLIGHT_CLASS_DEVICE
+-        ---help---
++	---help---
+ 	  This is the new Linux driver for Asus laptops. It may also support some
+ 	  MEDION, JVC or VICTOR laptops. It makes all the extra buttons generate
+ 	  standard ACPI events that go through /proc/acpi/events. It also adds
+@@ -179,12 +179,12 @@ config ASUS_LAPTOP
+ 	  If you have an ACPI-compatible ASUS laptop, say Y or M here.
  
- 	/*
- 	 * Call pre_destroy handlers of subsys. Notify subsystems
--	 * that rmdir() request comes.
-+	 * that rmdir() request comes. pre_destroy() is expected to drop all
-+	 * extra refcnt to css. (css->refcnt == 1)
- 	 */
- 	cgroup_call_pre_destroy(cgrp);
+ config FUJITSU_LAPTOP
+-        tristate "Fujitsu Laptop Extras"
+-        depends on X86
+-        depends on ACPI
++	tristate "Fujitsu Laptop Extras"
++	depends on X86
++	depends on ACPI
+ 	depends on INPUT
+-        depends on BACKLIGHT_CLASS_DEVICE
+-        ---help---
++	depends on BACKLIGHT_CLASS_DEVICE
++	---help---
+ 	  This is a driver for laptops built by Fujitsu:
  
-@@ -2479,8 +2506,15 @@ static int cgroup_rmdir(struct inode *un
- 		return -EBUSY;
- 	}
+ 	    * P2xxx/P5xxx/S6xxx/S7xxx series Lifebooks
+@@ -221,11 +221,11 @@ config HP_WMI
+        depends on INPUT
+        depends on RFKILL
+        help
+-         Say Y here if you want to support WMI-based hotkeys on HP laptops and
++	 Say Y here if you want to support WMI-based hotkeys on HP laptops and
+ 	 to read data from WMI such as docking or ambient light sensor state.
  
-+	/* last check ! */
-+	if (!cgroup_set_subsys_removed(cgrp)) {
-+		mutex_unlock(&cgroup_mutex);
-+		return -EBUSY;
-+	}
-+
- 	spin_lock(&release_list_lock);
- 	set_bit(CGRP_REMOVED, &cgrp->flags);
-+
- 	if (!list_empty(&cgrp->release_list))
- 		list_del(&cgrp->release_list);
- 	spin_unlock(&release_list_lock);
-@@ -3003,7 +3037,7 @@ static void check_for_release(struct cgr
- 	/* All of these checks rely on RCU to keep the cgroup
- 	 * structure alive */
- 	if (cgroup_is_releasable(cgrp) && !atomic_read(&cgrp->count)
--	    && list_empty(&cgrp->children) && !cgroup_has_css_refs(cgrp)) {
-+	    && list_empty(&cgrp->children)) {
- 		/* Control Group is currently removeable. If it's not
- 		 * already queued for a userspace notification, queue
- 		 * it now */
-@@ -3020,17 +3054,6 @@ static void check_for_release(struct cgr
- 	}
- }
+-         To compile this driver as a module, choose M here: the module will
+-         be called hp-wmi.
++	 To compile this driver as a module, choose M here: the module will
++	 be called hp-wmi.
  
--void __css_put(struct cgroup_subsys_state *css)
--{
--	struct cgroup *cgrp = css->cgroup;
--	rcu_read_lock();
--	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
--		set_bit(CGRP_RELEASABLE, &cgrp->flags);
--		check_for_release(cgrp);
--	}
--	rcu_read_unlock();
--}
+ config ICS932S401
+ 	tristate "Integrated Circuits ICS932S401"
+@@ -238,11 +238,11 @@ config ICS932S401
+ 	  will be called ics932s401.
+ 
+ config MSI_LAPTOP
+-        tristate "MSI Laptop Extras"
+-        depends on X86
+-        depends on ACPI
+-        depends on BACKLIGHT_CLASS_DEVICE
+-        ---help---
++	tristate "MSI Laptop Extras"
++	depends on X86
++	depends on ACPI
++	depends on BACKLIGHT_CLASS_DEVICE
++	---help---
+ 	  This is a driver for laptops built by MSI (MICRO-STAR
+ 	  INTERNATIONAL):
+ 
+@@ -259,7 +259,7 @@ config MSI_LAPTOP
+ config PANASONIC_LAPTOP
+ 	tristate "Panasonic Laptop Extras"
+ 	depends on X86 && INPUT && ACPI
+-        depends on BACKLIGHT_CLASS_DEVICE
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	---help---
+ 	  This driver adds support for access to backlight control and hotkeys
+ 	  on Panasonic Let's Note laptops.
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 817f7f5..bcde73b 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -1,9 +1,6 @@
+ #
+ # Makefile for misc devices that really don't fit anywhere else.
+ #
+-obj- := misc.o	# Dummy rule to force built-in.o to be made
 -
- /*
-  * Notify userspace when a cgroup is released, by running the
-  * configured release agent with the name of the cgroup (path
-Index: mmotm-2.6.28-Nov29/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.28-Nov29.orig/mm/memcontrol.c
-+++ mmotm-2.6.28-Nov29/mm/memcontrol.c
-@@ -154,7 +154,6 @@ struct mem_cgroup {
- 	 */
- 	bool use_hierarchy;
- 	unsigned long	last_oom_jiffies;
--	int		obsolete;
- 	atomic_t	refcnt;
- 	/*
- 	 * statistics. This must be placed at the end of memcg.
-@@ -540,8 +539,14 @@ mem_cgroup_get_first_node(struct mem_cgr
- {
- 	struct cgroup *cgroup;
- 	struct mem_cgroup *ret;
--	bool obsolete = (root_mem->last_scanned_child &&
--				root_mem->last_scanned_child->obsolete);
-+	struct mem_cgroup *last_scan = root_mem->last_scanned_child;
-+	bool obsolete = false;
-+
-+	if (last_scan) {
-+		if (css_under_removal(&last_scan->css))
-+			obsolete = true;
-+	} else
-+		obsolete = true;
- 
- 	/*
- 	 * Scan all children under the mem_cgroup mem
-@@ -598,7 +603,7 @@ static int mem_cgroup_hierarchical_recla
- 	next_mem = mem_cgroup_get_first_node(root_mem);
- 
- 	while (next_mem != root_mem) {
--		if (next_mem->obsolete) {
-+		if (css_under_removal(&next_mem->css)) {
- 			mem_cgroup_put(next_mem);
- 			cgroup_lock();
- 			next_mem = mem_cgroup_get_first_node(root_mem);
-@@ -985,6 +990,7 @@ int mem_cgroup_try_charge_swapin(struct 
- {
- 	struct mem_cgroup *mem;
- 	swp_entry_t     ent;
-+	int ret;
- 
- 	if (mem_cgroup_disabled())
- 		return 0;
-@@ -1003,10 +1009,18 @@ int mem_cgroup_try_charge_swapin(struct 
- 	ent.val = page_private(page);
- 
- 	mem = lookup_swap_cgroup(ent);
--	if (!mem || mem->obsolete)
-+	/*
-+	 * Because we can't assume "mem" is alive now, use tryget() and
-+	 * drop extra count later
-+	 */
-+	if (!mem || !css_tryget(&mem->css))
- 		goto charge_cur_mm;
- 	*ptr = mem;
--	return __mem_cgroup_try_charge(NULL, mask, ptr, true);
-+	ret = __mem_cgroup_try_charge(NULL, mask, ptr, true);
-+	/* drop extra count */
-+	css_put(&mem->css);
-+
-+	return ret;
- charge_cur_mm:
- 	if (unlikely(!mm))
- 		mm = &init_mm;
-@@ -1037,14 +1051,16 @@ int mem_cgroup_cache_charge_swapin(struc
- 		ent.val = page_private(page);
- 		if (do_swap_account) {
- 			mem = lookup_swap_cgroup(ent);
--			if (mem && mem->obsolete)
-+			if (mem && !css_tryget(&mem->css))
- 				mem = NULL;
- 			if (mem)
- 				mm = NULL;
- 		}
- 		ret = mem_cgroup_charge_common(page, mm, mask,
- 				MEM_CGROUP_CHARGE_TYPE_SHMEM, mem);
--
-+		/* drop extra ref */
-+		if (mem)
-+			css_put(&mem->css);
- 		if (!ret && do_swap_account) {
- 			/* avoid double counting */
- 			mem = swap_cgroup_record(ent, NULL);
-@@ -1886,8 +1902,8 @@ static struct mem_cgroup *mem_cgroup_all
-  * the number of reference from swap_cgroup and free mem_cgroup when
-  * it goes down to 0.
-  *
-- * When mem_cgroup is destroyed, mem->obsolete will be set to 0 and
-- * entry which points to this memcg will be ignore at swapin.
-+ * When mem_cgroup is destroyed, css_under_removal() is true and entry which
-+ * points to this memcg will be ignore at swapin.
-  *
-  * Removal of cgroup itself succeeds regardless of refs from swap.
-  */
-@@ -1917,7 +1933,7 @@ static void mem_cgroup_get(struct mem_cg
- static void mem_cgroup_put(struct mem_cgroup *mem)
- {
- 	if (atomic_dec_and_test(&mem->refcnt)) {
--		if (!mem->obsolete)
-+		if (!css_under_removal(&mem->css))
- 			return;
- 		mem_cgroup_free(mem);
- 	}
-@@ -1980,7 +1996,7 @@ static void mem_cgroup_pre_destroy(struc
- 					struct cgroup *cont)
- {
- 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	mem->obsolete = 1;
-+	/* dentry's mutex makes this safe. */
- 	mem_cgroup_force_empty(mem, false);
- }
- 
+-obj-$(CONFIG_IBM_ASM)		+= ibmasm/
+ obj-$(CONFIG_HDPU_FEATURES)	+= hdpuftrs/
+ obj-$(CONFIG_ASUS_LAPTOP)	+= asus-laptop.o
+ obj-$(CONFIG_EEEPC_LAPTOP)	+= eeepc-laptop.o
+-- 
+1.5.6.5
+
 
