@@ -1,113 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYLALaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYLALeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbYLALaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 06:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYLALaM
+	id S1753941AbYLALeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 06:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYLALdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 06:30:12 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:56231 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbYLALaK (ORCPT
+	Mon, 1 Dec 2008 06:33:52 -0500
+Received: from mga12.intel.com ([143.182.124.36]:10257 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751337AbYLALdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 06:30:10 -0500
-Date: Mon, 1 Dec 2008 16:59:54 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, vatsa@in.ibm.com, bharata@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, arun@linux.vnet.ibm.com
-Subject: [PATCH] sched: add uid information to sched_debug for
-	CONFIG_USER_SCHED
-Message-ID: <20081201112954.GH20329@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-Mail-Followup-To: mingo@elte.hu, a.p.zijlstra@chello.nl,
-	linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-	bharata@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+	Mon, 1 Dec 2008 06:33:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,694,1220252400"; 
+   d="scan'208";a="84881223"
+Message-ID: <4933CBB0.2060003@linux.intel.com>
+Date: Mon, 01 Dec 2008 12:34:08 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Jonathan Corbet <corbet@lwn.net>, Al Viro <viro@zeniv.linux.org.uk>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
+References: <20081128192508.GA21369@redhat.com>
+In-Reply-To: <20081128192508.GA21369@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Oleg Nesterov wrote:
+> Hi.
+> 
+> Let's suppose we have the tasks T1, T2, T3 which share the same file,
+> all do sys_fcntl(file, F_SETFL) in parallel. file->f_flags == 0.
+> 
+> setfl(arg) does:
+> 
+> 	if ((arg ^ filp->f_flags) & FASYNC)
+> // --- WINDOW_1 ---
+> 		filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0)
+> // --- WINDOW_2 ---
+> 	filp->f_flags = arg;
+> 
+> T1 calls setfl(FASYNC), preempted in WINDOW_1.
+> 
+> T2 calls setfl(FASYNC), does all job and returns.
+> 
+> T3 calls setfl(0), sees ->f_flags & FASYNC, does ->fasync(on => 0),
+> preempted in WINDOW_2.
+> 
+> T1 resumes, does ->fasync(on => 1) again, update ->f_flags (it
+> already has FASYNC) and returns.
+> 
+> T3 resumes, and clears FASYNC from ->f_flags.
+> 
+> 
+> 
+> Now, this file was added into some "struct fasync_struct", but
+> ->f_flags doesn't have FASYNC. This means __fput() will skip
+> ->fasync(on => 0) and the next kill_fasync() can crash because
+> fa_file points to the freed/reused memory.
 
-This patch adds uid information in sched_debug for CONFIG_USER_SCHED
+Nasty. Thanks for catching.
+> 
+> I think a238b790d5f99c7832f9b73ac8847025815b85f7 should be reverted.
+> Or do you see the better fix?
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- include/linux/sched.h |    1 +
- kernel/sched.c        |   10 ++++++++++
- kernel/sched_debug.c  |    5 +++++
- kernel/user.c         |    2 ++
- 4 files changed, 18 insertions(+)
+Hmm, about checking for this case and retrying?
 
-Index: git-2.6/kernel/sched_debug.c
-===================================================================
---- git-2.6.orig/kernel/sched_debug.c
-+++ git-2.6/kernel/sched_debug.c
-@@ -131,6 +131,11 @@ void print_cfs_rq(struct seq_file *m, in
- 		cgroup_path(cgroup, path, sizeof(path));
- 
- 	SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
-+#elif defined(CONFIG_USER_SCHED)
-+	{
-+		uid_t uid = cfs_rq->tg->uid;
-+		SEQ_printf(m, "\ncfs_rq[%d] for UID: %u\n", cpu, uid);
-+	}
- #else
- 	SEQ_printf(m, "\ncfs_rq[%d]:\n", cpu);
- #endif
-Index: git-2.6/kernel/sched.c
-===================================================================
---- git-2.6.orig/kernel/sched.c
-+++ git-2.6/kernel/sched.c
-@@ -261,6 +261,10 @@ struct task_group {
- 	struct cgroup_subsys_state css;
- #endif
- 
-+#ifdef CONFIG_USER_SCHED
-+	uid_t uid;
-+#endif
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	/* schedulable entities of this group on each cpu */
- 	struct sched_entity **se;
-@@ -286,6 +290,12 @@ struct task_group {
- 
- #ifdef CONFIG_USER_SCHED
- 
-+/* Helper function to pass uid information to create_sched_user() */
-+void set_tg_uid(struct user_struct *user)
-+{
-+	user->tg->uid = user->uid;
-+}
-+
- /*
-  * Root task group.
-  * 	Every UID task group (including init_task_group aka UID-0) will
-Index: git-2.6/kernel/user.c
-===================================================================
---- git-2.6.orig/kernel/user.c
-+++ git-2.6/kernel/user.c
-@@ -101,6 +101,8 @@ static int sched_create_user(struct user
- 	if (IS_ERR(up->tg))
- 		rc = -ENOMEM;
- 
-+	set_tg_uid(up);
-+
- 	return rc;
- }
- 
-Index: git-2.6/include/linux/sched.h
-===================================================================
---- git-2.6.orig/include/linux/sched.h
-+++ git-2.6/include/linux/sched.h
-@@ -2220,6 +2220,7 @@ extern void normalize_rt_tasks(void);
- extern struct task_group init_task_group;
- #ifdef CONFIG_USER_SCHED
- extern struct task_group root_task_group;
-+extern void set_tg_uid(struct user_struct *user);
- #endif
- 
- extern struct task_group *sched_create_group(struct task_group *parent);
+Or put a fasync mutex into files_struct.
+
+-Andi
+
