@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbYLALhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYLALl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbYLALhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 06:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYLALhg
+	id S1754541AbYLALl7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 06:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYLALls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 06:37:36 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:33632 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754236AbYLALhf (ORCPT
+	Mon, 1 Dec 2008 06:41:48 -0500
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:54567 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751930AbYLALlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 06:37:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=V3dm12cDyYEttpu4TtQicdMDW6/bt7OYGfxV+leusXFZwHmyZ0+O7Lyo7qV6HQ627G
-         Mqfg2ZOnFKdFn8/+i3wM+o0JxSDddbznXOdvmZGPM7h+dwyjTVoS2xqmuslWlYQ5qKQm
-         6k27NXKTjA5KZ09RsvG0M+rT0PCXi8akIh5E4=
-Message-ID: <4933CC78.2030707@gmail.com>
-Date: Mon, 01 Dec 2008 13:37:28 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Mike Waychison <mikew@google.com>, Ying Han <yinghan@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-References: <20081127120330.GM28285@wotan.suse.de> <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de> <492E97FA.5000804@gmail.com> <20081127130525.GO28285@wotan.suse.de> <492E9C3C.9050507@gmail.com> <20081127131215.GQ28285@wotan.suse.de> <492E9F42.6010808@gmail.com> <20081128121015.GC13786@wotan.suse.de> <4932EBAA.60808@gmail.com> <20081201111301.GB13903@wotan.suse.de>
-In-Reply-To: <20081201111301.GB13903@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Dec 2008 06:41:47 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiEFAHhaM0lMROB9/2dsb2JhbACBbcxlgn0
+Date: Mon, 1 Dec 2008 06:41:46 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] keypad/touchscreen driver events latencies using
+	LTTng on ARM?
+Message-ID: <20081201114146.GG25340@Krystal>
+References: <5d5443650811301000t58665a7j7aa93be52325a23b@mail.gmail.com> <20081201103502.GC25340@Krystal> <20081201104529.GB28971@flint.arm.linux.org.uk> <20081201105737.GE25340@Krystal> <20081201105956.GC28971@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081201105956.GC28971@flint.arm.linux.org.uk>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 06:38:51 up 14 days, 12:19,  1 user,  load average: 0.55, 0.59,
+	0.52
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-12-01 13:13, Nick Piggin wrote:
-> BTW. I think your source code (I see you updated it since last posting)
-> should be very easy to give good hints to the kernel about the IO. I
-> will try a few simple tricks and we can see if they help. (this pattern
-> of touching memory corresponds well to how your app works?)
+* Russell King (rmk+lkml@arm.linux.org.uk) wrote:
+> On Mon, Dec 01, 2008 at 05:57:37AM -0500, Mathieu Desnoyers wrote:
+> > Ok, so for LTTng on ARM it would make sense to use the same clock source
+> > as sched_clock for :
+> > mach-pxa, mach-realview, mach-sa1100, mach-versatile, plat-omap.
+> > 
+> > We basically have, for each of these build scenarios, to take the mmio
+> > clock used by sched_clock and use it through
+> > kernel/trace/trace-clock-32-to-64 to extend it to 64-bits. Therefore we
+> > won't suffer from any of the constrains linked to cnt32_to_63 and we
+> > would be sure that the trace clock is correct wrt SMP wrt memory
+> > barriers and cache line bouncing because it uses per-cpu data to keep
+> > the counters.
+> 
+> Just remember that MMIO clock sources are not available until after
+> setup_arch() has finished - in other words, they don't work when the
+> kernel initially boots.  Accessing them too early will cause a page
+> fault and hang the kernel.
+> 
 
-It corresponds well to the latencies involved, but only part of the
-behaviour:
+This can be dealt with by refusing the get_trace_clock(), which should
+probably be allowed to fail if the underlying infrastructure is not
+ready when the trace buffers are created. The tracer would therefore not
+accept to start any sort of tracing too soon for the architecture being
+used.
 
-- in some cases mmap is used to sequentially read a file (PROT_READ,
-MAP_PRIVATE), and does operations like
-memchr, memcpy on it, my testcase models this
-- in some cases it is used to mmap archives, and containers, that have
-the index at the end (like zip), so it jumps back and forth between the
-end of the file, and the offset indicated there (using pread here may be
-better, but using mmap simplified the code a lot)
-- there are multiple threads, each processing a different file, the only
-data shared between threads is the signature database, so once a thread
-started working on a file,
-no other thread touches it
-- the goal is to process as many files as possible, which works on some
-files very well (PE files mostly), but not on others (where I can't load
-all cores to 400%)
+Mathieu
 
-In either case it pagefaults a lot, and calls mmap() often, which is
-what my testcase attempted to model.
 
-You can completely disable mmap usage in clamav, but last I tried that
-slowed things down (it falls back to using fread, and reading the entire
-file in memory in case of zip).
-Perhaps I should try turning off mmap for just portions.
-
-If you find something that improves my testcase, I can try on the real
-application and let you know if it improved or not (and perhaps create a
-new testcase).
-
-If you want, you can test on the original application (its open source
-after all!) too.
-I found that scanning my local copy of my Gmail inbox is  a good
-testcase. I can walk you through how to configure/setup clamav to test.
-
-Best regards,
---Edwin
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
