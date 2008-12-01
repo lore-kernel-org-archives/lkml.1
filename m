@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYLATRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbYLATVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbYLATRf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 14:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYLATRZ
+	id S1753284AbYLATVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 14:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYLATVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 14:17:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57538 "EHLO mx2.redhat.com"
+	Mon, 1 Dec 2008 14:21:36 -0500
+Received: from waste.org ([66.93.16.53]:52873 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYLATRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 14:17:24 -0500
-Date: Mon, 1 Dec 2008 20:15:55 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Jonathan Corbet <corbet@lwn.net>, Al Viro <viro@zeniv.linux.org.uk>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
-Message-ID: <20081201191555.GA21385@redhat.com>
-References: <20081128192508.GA21369@redhat.com> <4933CBB0.2060003@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4933CBB0.2060003@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751243AbYLATVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 14:21:35 -0500
+Subject: Re: [RESEND][PATCH] Add /proc/mempool to display mempool usage
+From: Matt Mackall <mpm@selenic.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg KH <greg@kroah.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Remi Colinet <remi.colinet@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org, linux-api@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20081201101245.0a2f3123.randy.dunlap@oracle.com>
+References: <1227980689.6354.24.camel@localhost.localdomain>
+	 <20081129214207.GA6747@x200.localdomain> <20081129234907.GA2340@kroah.com>
+	 <20081201101245.0a2f3123.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 13:13:31 -0600
+Message-Id: <1228158811.3196.88.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01, Andi Kleen wrote:
->
-> Oleg Nesterov wrote:
->>
->> Let's suppose we have the tasks T1, T2, T3 which share the same file,
->> all do sys_fcntl(file, F_SETFL) in parallel. file->f_flags == 0.
->>
->> setfl(arg) does:
->>
->> 	if ((arg ^ filp->f_flags) & FASYNC)
->> // --- WINDOW_1 ---
->> 		filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0)
->> // --- WINDOW_2 ---
->> 	filp->f_flags = arg;
->>
->> T1 calls setfl(FASYNC), preempted in WINDOW_1.
->>
->> T2 calls setfl(FASYNC), does all job and returns.
->>
->> T3 calls setfl(0), sees ->f_flags & FASYNC, does ->fasync(on => 0),
->> preempted in WINDOW_2.
->>
->> T1 resumes, does ->fasync(on => 1) again, update ->f_flags (it
->> already has FASYNC) and returns.
->>
->> T3 resumes, and clears FASYNC from ->f_flags.
->>
->>
->>
->> Now, this file was added into some "struct fasync_struct", but
->> ->f_flags doesn't have FASYNC. This means __fput() will skip
->> ->fasync(on => 0) and the next kill_fasync() can crash because
->> fa_file points to the freed/reused memory.
->
-> Nasty. Thanks for catching.
+On Mon, 2008-12-01 at 10:12 -0800, Randy Dunlap wrote:
+> On Sat, 29 Nov 2008 15:49:07 -0800 Greg KH wrote:
+> 
+> > On Sun, Nov 30, 2008 at 12:42:07AM +0300, Alexey Dobriyan wrote:
+> > > On Sat, Nov 29, 2008 at 06:44:49PM +0100, Remi Colinet wrote:
+> > > > This patch add a new /proc/mempool file in order to display mempool usage.
+> > > > 
+> > > > The feature can be disabled with CONFIG_PROC_MEMPOOL=N during kernel
+> > > > configuration.
+> > > 
+> > > We're NOT adding config option per proc file.
+> > > 
+> > > And can we, please, freeze /proc for not per-process stuff and open debugfs
+> > > for random stuff, please?
+> > 
+> > debugfs has been open for random stuff since the day it was added to the
+> > tree :)
+> > 
+> > Feel free to put this kind of thing there instead of proc.
+> 
+> Do distros ship with debugfs enabled?
+> The problem with using debugfs is that it is very optional IMO.
 
-Actually, this is more simple. Somehow I missed that setf() _always_
-updates ->f_flags, so we have a trivial race with 2 threads.
+The problem with debugfs is that it claims to not be an ABI but it is
+lying. Distributions ship tools that depend on portions of debugfs. And
+they also ship debugfs in their kernel. So it is effectively the same
+as /proc, except with the 1.0-era everything-goes attitude rather than
+the 2.6-era we-should-really-think-about-this one.
 
->>
->> I think a238b790d5f99c7832f9b73ac8847025815b85f7 should be reverted.
->> Or do you see the better fix?
->
-> Hmm, about checking for this case and retrying?
->
-> Or put a fasync mutex into files_struct.
+Pushing stuff from procfs to debugfs is thus just setting us up for pain
+down the road. Don't do it. In five years, we'll discover we can't turn
+debugfs off or even clean it up because too much relies on it.
 
-Perhaps, we can add O_LOCK_FLAGS, then something like
+If you think that debugfs is NOT an ABI, then I'm sure you'll be happy
+to ack my patch entitled 'gratuitously break usbmon to remind folks that
+debugfs is not an ABI'.
 
-	--- a/fs/fcntl.c
-	+++ b/fs/fcntl.c
-	@@ -175,6 +175,15 @@ static int setfl(int fd, struct file * f
-		if (error)
-			return error;
-	 
-	+	spin_lock(&current->files->file_lock);
-	+	if (!(filp->f_flags & O_LOCK_FLAGS))
-	+		filp->f_flags |= O_LOCK_FLAGS;
-	+	else
-	+		error = -EAGAIN;
-	+	spin_unlock(&current->files->file_lock);
-	+	if (error) /* pretend ->f_flags was changed after us */
-	+		return 0;
-	+
-		if ((arg ^ filp->f_flags) & FASYNC) {
-			if (filp->f_op && filp->f_op->fasync) {
-				error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
-	@@ -183,7 +192,8 @@ static int setfl(int fd, struct file * f
-			}
-		}
-	 
-	-	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
-	+	filp->f_flags = (arg & SETFL_MASK) |
-	+			(filp->f_flags & ~(SETFL_MASK | O_LOCK_FLAGS));
-	  out:
-		return error;
-	 }
-
-What do you think?
-
-(btw, ioctl_fioasync() calls lock_kernel() but it doesn't protect ->f_flags)
-
-Oleg.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
