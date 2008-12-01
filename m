@@ -1,123 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYLAXXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYLAX04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753488AbYLAXXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 18:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYLAXXI
+	id S1753492AbYLAX04 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 18:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYLAX0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 18:23:08 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:4473 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbYLAXXE (ORCPT
+	Mon, 1 Dec 2008 18:26:45 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:1229 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751111AbYLAX0o convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 18:23:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XGwalsmNp9CR3z4MNJzbPbwyyU/SIMuTBO9vsm7E6WZTS+CRxNSZqd34e+ot+aAgbY
-         WsK2PmEyi+flDMg4eVoSs3Fvj/W4Epv93yf9Kn3a8OpHqyATxe5j4Mh0lGbCKbLu1UQw
-         oAtSVZH/HRCiNF3v84T/ZVxRB5Rs3Kq2ez8Uk=
-Date: Tue, 2 Dec 2008 00:22:31 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Laurent Riffard <laurent.riffard@free.fr>, Jan Kara <jack@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] udf: fix default mode and dmode options handling
-Message-ID: <20081201232227.GA7925@joi>
-References: <20081128213620.2ec593d4.sfr@canb.auug.org.au> <49332545.5020604@free.fr> <20081201001854.GA9881@joi> <49343AC2.3010808@free.fr>
+	Mon, 1 Dec 2008 18:26:44 -0500
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Subject: Re: [BUG] linux-2.6.28-rc3 regression: IRQ smp_affinities not
+ respected
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>, davem@davemloft.net
+cc: "linux kernel" <linux-kernel@vger.kernel.org>,
+       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <1227719692.13189.7.camel@HP1>
+References: <C27F8246C663564A84BB7AB343977242151F4B18B5@IRVEXCHCCR01.corp.ad.broadcom.com>
+ <491154C8.3040401@cosmosbay.com> <492D107B.1060303@cosmosbay.com>
+ <1227719692.13189.7.camel@HP1>
+Date: Mon, 01 Dec 2008 15:23:39 -0800
+Message-ID: <1228173819.15505.15.camel@HP1>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49343AC2.3010808@free.fr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 652AAD2637G22351957-01-01
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 08:28:02PM +0100, Laurent Riffard wrote:
-> >> With next-2008-11-28, I was unable to mount an UDF-formatted DVD-RW:
-> > Can you check whether attached patch fixes it?
-> Current kernel is next-20081128 + reiser4 patches + your patch: it seems to works well now.
-> (...)
-> Tested-by: Laurent Riffard <laurent.riffard@free.fr>
 
-Thanks!
+On Wed, 2008-11-26 at 09:14 -0800, Michael Chan wrote:
+> On Wed, 2008-11-26 at 01:01 -0800, Eric Dumazet wrote:
+> > Eric Dumazet a écrit :
+> > > Michael Chan a écrit :
+> > >> I believe this may be the patch that broke it:
+> > >>
+> > >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd 
+> > >>
+> > >>
+> > >> I don't remember all the details, but the Broadcom 5708 chip is
+> > >> affected because it does not support MSI per-vector masking.
+> > >>
+> > >> One way to get around is to disable MSI with bnx2 parameter
+> > >> disable_msi=1.
+> > >>
+> > 
+> > > 
+> > > I tried this MSI disabling and yes, it now works.
+> > > 
+> > > 16:      42726        128        105        106         89         
+> > > 89        145        152   IO-APIC-fasteoi   uhci_hcd:usb1, eth0, eth1
+> > > 
+> > 
+> > I believe the bnx2 driver doesnt work at all if !disable_msi (default setting)
+> > 
+> > Doing a "echo 0 >/sys/devices/system/cpu/cpu1/online" just freeze network
+> > 
+> > No messages logged
+> > 
+> > If loaded with disable_msi=1, the cpu unplug works as expected.
+> > 
+> > Thats a pretty serious issue.
+> >
+> Yes, that's the same issue and it is serious.  If MSI is being delivered
+> to CPU 1 and you then take CPU 1 offline, the MSI will not be delivered
+> to another CPU.
+> 
+> I think I can detect this problem in bnx2_timer() and try to recover.
+> I'll post a patch when I have something ready.  Thanks.
 
-Jan, please apply this patch:
+[PATCH] bnx2: Add workaround to handle missed MSI.
 
+The bnx2 chips do not support per MSI vector masking.  On 5706/5708, new MSI
+address/data are stored only when the MSI enable bit is toggled.  As a result,
+SMP affinity no longer works in the latest kernel.  A more serious problem is
+that the driver will no longer receive interrupts when the MSI receiving CPU
+goes offline.
+
+The workaround in this patch only addresses the problem of CPU going offline.
+When that happens, the driver's timer function will detect that it is making
+no forward progress on pending interrupt events and will recover from it.
+
+Eric Dumazet reported the problem.
+
+We also found that if an interrupt is internally asserted while MSI and INTA
+are disabled, the chip will end up in the same state after MSI is re-enabled.
+The same workaround is needed for this problem. 
+
+Signed-off-by: Michael Chan <mchan@broadcom.com>
 ---
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] udf: fix default mode and dmode options handling
+ drivers/net/bnx2.c |   35 ++++++++++++++++++++++++++++++++---
+ drivers/net/bnx2.h |    6 ++++++
+ 2 files changed, 38 insertions(+), 3 deletions(-)
 
-On x86 (and several other archs) mode_t is defined as "unsigned short"
-and comparing unsigned shorts to negative ints is broken (because short
-is promoted to int and then compared). Fix it.
-
-Reported-and-tested-by: Laurent Riffard <laurent.riffard@free.fr>
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
----
- fs/udf/inode.c  |    4 ++--
- fs/udf/super.c  |    8 ++++----
- fs/udf/udf_sb.h |    2 ++
- 3 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-index 6612a27..2d7e56a 100644
---- a/fs/udf/inode.c
-+++ b/fs/udf/inode.c
-@@ -1222,10 +1222,10 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
- 	iinfo->i_lenExtents = inode->i_size;
+diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+index 182f241..0e2218d 100644
+--- a/drivers/net/bnx2.c
++++ b/drivers/net/bnx2.c
+@@ -3147,6 +3147,28 @@ bnx2_has_work(struct bnx2_napi *bnapi)
+ 	return 0;
+ }
  
- 	if (fe->icbTag.fileType != ICBTAG_FILE_TYPE_DIRECTORY &&
--			sbi->s_fmode != -1)
-+			sbi->s_fmode != UDF_INVALID_MODE)
- 		inode->i_mode = sbi->s_fmode;
- 	else if (fe->icbTag.fileType == ICBTAG_FILE_TYPE_DIRECTORY &&
--			sbi->s_dmode != -1)
-+			sbi->s_dmode != UDF_INVALID_MODE)
- 		inode->i_mode = sbi->s_dmode;
- 	else
- 		inode->i_mode = udf_convert_permissions(fe);
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index e5d121d..8deaa61 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -284,9 +284,9 @@ static int udf_show_options(struct seq_file *seq, struct vfsmount *mnt)
- 		seq_printf(seq, ",gid=%u", sbi->s_gid);
- 	if (sbi->s_umask != 0)
- 		seq_printf(seq, ",umask=%o", sbi->s_umask);
--	if (sbi->s_fmode != -1)
-+	if (sbi->s_fmode != UDF_INVALID_MODE)
- 		seq_printf(seq, ",mode=%o", sbi->s_fmode);
--	if (sbi->s_dmode != -1)
-+	if (sbi->s_dmode != UDF_INVALID_MODE)
- 		seq_printf(seq, ",dmode=%o", sbi->s_dmode);
- 	if (UDF_QUERY_FLAG(sb, UDF_FLAG_SESSION_SET))
- 		seq_printf(seq, ",session=%u", sbi->s_session);
-@@ -1894,8 +1894,8 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 	uopt.uid = -1;
- 	uopt.gid = -1;
- 	uopt.umask = 0;
--	uopt.fmode = -1;
--	uopt.dmode = -1;
-+	uopt.fmode = UDF_INVALID_MODE;
-+	uopt.dmode = UDF_INVALID_MODE;
- 
- 	sbi = kzalloc(sizeof(struct udf_sb_info), GFP_KERNEL);
- 	if (!sbi)
-diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
-index 5d32c60..158221e 100644
---- a/fs/udf/udf_sb.h
-+++ b/fs/udf/udf_sb.h
-@@ -48,6 +48,8 @@
- #define UDF_SPARABLE_MAP15		0x1522U
- #define UDF_METADATA_MAP25		0x2511U
- 
-+#define UDF_INVALID_MODE		((mode_t)-1)
++static void
++bnx2_chk_missed_msi(struct bnx2 *bp)
++{
++	struct bnx2_napi *bnapi = &bp->bnx2_napi[0];
++	u32 msi_ctrl;
 +
- #pragma pack(1) /* XXX(hch): Why?  This file just defines in-core structures */
++	if (bnx2_has_work(bnapi)) {
++		msi_ctrl = REG_RD(bp, BNX2_PCICFG_MSI_CONTROL);
++		if (!(msi_ctrl & BNX2_PCICFG_MSI_CONTROL_ENABLE))
++			return;
++
++		if (bnapi->last_status_idx == bp->idle_chk_status_idx) {
++			REG_WR(bp, BNX2_PCICFG_MSI_CONTROL, msi_ctrl &
++			       ~BNX2_PCICFG_MSI_CONTROL_ENABLE);
++			REG_WR(bp, BNX2_PCICFG_MSI_CONTROL, msi_ctrl);
++			bnx2_msi(bp->irq_tbl[0].vector, bnapi);
++		}
++	}
++
++	bp->idle_chk_status_idx = bnapi->last_status_idx;
++}
++
+ static void bnx2_poll_link(struct bnx2 *bp, struct bnx2_napi *bnapi)
+ {
+ 	struct status_block *sblk = bnapi->status_blk.msi;
+@@ -3221,14 +3243,15 @@ static int bnx2_poll(struct napi_struct *napi, int budget)
  
- struct udf_meta_data {
+ 		work_done = bnx2_poll_work(bp, bnapi, work_done, budget);
+ 
+-		if (unlikely(work_done >= budget))
+-			break;
+-
+ 		/* bnapi->last_status_idx is used below to tell the hw how
+ 		 * much work has been processed, so we must read it before
+ 		 * checking for more work.
+ 		 */
+ 		bnapi->last_status_idx = sblk->status_idx;
++
++		if (unlikely(work_done >= budget))
++			break;
++
+ 		rmb();
+ 		if (likely(!bnx2_has_work(bnapi))) {
+ 			netif_rx_complete(bp->dev, napi);
+@@ -4581,6 +4604,8 @@ bnx2_init_chip(struct bnx2 *bp)
+ 	for (i = 0; i < BNX2_MAX_MSIX_VEC; i++)
+ 		bp->bnx2_napi[i].last_status_idx = 0;
+ 
++	bp->idle_chk_status_idx = 0xffff;
++
+ 	bp->rx_mode = BNX2_EMAC_RX_MODE_SORT_MODE;
+ 
+ 	/* Set up how to generate a link change interrupt. */
+@@ -5729,6 +5754,10 @@ bnx2_timer(unsigned long data)
+ 	if (atomic_read(&bp->intr_sem) != 0)
+ 		goto bnx2_restart_timer;
+ 
++	if ((bp->flags & (BNX2_FLAG_USING_MSI | BNX2_FLAG_ONE_SHOT_MSI)) ==
++	     BNX2_FLAG_USING_MSI)
++		bnx2_chk_missed_msi(bp);
++
+ 	bnx2_send_heart_beat(bp);
+ 
+ 	bp->stats_blk->stat_FwRxDrop =
+diff --git a/drivers/net/bnx2.h b/drivers/net/bnx2.h
+index 0763108..2f43c45 100644
+--- a/drivers/net/bnx2.h
++++ b/drivers/net/bnx2.h
+@@ -378,6 +378,9 @@ struct l2_fhdr {
+  *  pci_config_l definition
+  *  offset: 0000
+  */
++#define BNX2_PCICFG_MSI_CONTROL				0x00000058
++#define BNX2_PCICFG_MSI_CONTROL_ENABLE			 (1L<<16)
++
+ #define BNX2_PCICFG_MISC_CONFIG				0x00000068
+ #define BNX2_PCICFG_MISC_CONFIG_TARGET_BYTE_SWAP	 (1L<<2)
+ #define BNX2_PCICFG_MISC_CONFIG_TARGET_MB_WORD_SWAP	 (1L<<3)
+@@ -6882,6 +6885,9 @@ struct bnx2 {
+ 
+ 	u8			num_tx_rings;
+ 	u8			num_rx_rings;
++
++	u32			idle_chk_status_idx;
++
+ };
+ 
+ #define REG_RD(bp, offset)					\
 -- 
-1.5.6.4
+1.5.6.GIT
+
+
+
 
