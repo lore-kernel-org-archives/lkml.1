@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbYLATjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYLATk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752364AbYLATjM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 14:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYLATi5
+	id S1753769AbYLATk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 14:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYLATkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 14:38:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59295 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbYLATi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 14:38:56 -0500
-Date: Mon, 1 Dec 2008 11:40:04 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, arvidjaar@mail.ru,
-       linux-kernel@vger.kernel.org, philipl@overt.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch] ACPI toshiba: only register rfkill if bt is enabled
-Message-ID: <20081201114004.731cec86@infradead.org>
-In-Reply-To: <20081201113052.9e9aae36.akpm@linux-foundation.org>
-References: <20081029081934.GB26314@gambetta>
-	<20081201113052.9e9aae36.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 1 Dec 2008 14:40:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51026 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbYLATkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 14:40:16 -0500
+Date: Mon, 1 Dec 2008 20:40:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, bharata@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] sched: add uid information to sched_debug for
+	CONFIG_USER_SCHED
+Message-ID: <20081201194007.GC17250@elte.hu>
+References: <20081201112954.GH20329@linux.vnet.ibm.com> <1228131416.7251.306.camel@twins> <20081201124452.GA21534@elte.hu> <20081201125628.GA25438@elte.hu> <20081201151905.GA8448@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081201151905.GA8448@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008 11:30:52 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> This patch:
-> 
-> On Wed, 29 Oct 2008 08:19:34 +0000
-> Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
-> 
-> > Register toshiba RFKill Switch only if bluetooth is enabled
-> 
-> which is here:
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/acpi-toshiba-only-register-rfkill-if-bt-is-enabled.patch
-> 
-> fixes a post-2.6.27 regression.  It doesn't apply any more, due to the
-> recent merge of this:
-> 
-> commit e251fa12fb5713e722029341c03b2f48bcd7b7be
-> Author: Arjan van de Ven <arjan@linux.intel.com>
-> Date:   Fri Nov 28 08:19:09 2008 -0800
-> 
->     toshiba_acpi: close race in toshiba_acpi driver
->     
-> in linux-next.
-> 
-> It is unclear to me whether these two patches fix the same bug, or
-> different ones.
-> 
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
 
-they fix the same symptom, but are both needed.
-My patch fixes "if it goes wrong and init fails, don't oops", the mmotm
-patch fixes "lets not make init fail for <this case>". If there's some
-other reason the init fails, my patch is still needed.
+> * Ingo Molnar <mingo@elte.hu> [2008-12-01 13:56:28]:
+> 
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > 
+> > > > On Mon, 2008-12-01 at 16:59 +0530, Arun R Bharadwaj wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > This patch adds uid information in sched_debug for CONFIG_USER_SCHED
+> > > > 
+> > > > I'd much rather have people working at removing USER_SCHED,. but sure,
+> > > > the patch looks sane..
+> > > 
+> > > ok, i have applied it to tip/sched/core.
+> > 
+> > it doesnt build:
+> > 
+> >  kernel/sched_debug.c: In function 'print_cfs_rq':
+> >  kernel/sched_debug.c:165: error: 'struct cfs_rq' has no member named 'tg'
+> > 
+> > please send v2 patch.
+> > 
+> > Ingo
+> 
+> Hi Ingo,
+> 
+> I've posted v2 of the patch.
+> Had missed an '&& #if defined(CONFIG_FAIR_GROUP_SCHED)' last time
+> around.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+applied, thanks!
+
+	Ingo
