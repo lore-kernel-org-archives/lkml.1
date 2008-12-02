@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYLBQ3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYLBQ3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbYLBQ3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYLBQ3I
+	id S1755385AbYLBQ3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYLBQ3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:29:08 -0500
-Received: from kazi.fit.vutbr.cz ([147.229.8.12]:55063 "EHLO kazi.fit.vutbr.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751444AbYLBQ3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:29:08 -0500
-Date: Tue, 2 Dec 2008 17:26:25 +0100
-From: Kasparek Tomas <kasparek@fit.vutbr.cz>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Ian Campbell <ijc@hellion.org.uk>, linux-nfs@vger.kernel.org,
-       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
-       gcosta@redhat.com, "J. Bruce Fields" <bfields@fieldses.org>,
-       Tom Tucker <tom@opengridcomputing.com>
-Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
-	than 120 seconds"
-Message-ID: <20081202162625.GM47559@fit.vutbr.cz>
-References: <1227596962.16868.22.camel@localhost.localdomain> <1227619696.7057.19.camel@heimdal.trondhjem.org> <1227620339.9425.99.camel@zakaz.uk.xensource.com> <1227621434.7057.33.camel@heimdal.trondhjem.org> <1227621877.9425.102.camel@zakaz.uk.xensource.com> <1227737539.31008.2.camel@localhost.localdomain> <1228090631.7112.11.camel@heimdal.trondhjem.org> <1228091380.7112.17.camel@heimdal.trondhjem.org> <20081202152256.GI47559@fit.vutbr.cz> <1228232222.3090.5.camel@heimdal.trondhjem.org>
+	Tue, 2 Dec 2008 11:29:46 -0500
+Received: from smtp-02.mandic.com.br ([200.225.81.133]:60277 "EHLO
+	smtp-02.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbYLBQ3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 11:29:45 -0500
+Message-ID: <49356274.6080400@diamondcut.com.br>
+Date: Tue, 02 Dec 2008 14:29:40 -0200
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228232222.3090.5.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: About git-bisect (was: Linux 2.6.28-rc7)
+References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org> <20081202131442.42e7df48@varda> <alpine.LFD.2.00.0812020748310.3256@nehalem.linux-foundation.org> <20081202165637.09984819@varda> <alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 10:37:02AM -0500, Trond Myklebust wrote:
-> On Tue, 2008-12-02 at 16:22 +0100, Kasparek Tomas wrote:
-> > On Sun, Nov 30, 2008 at 07:29:40PM -0500, Trond Myklebust wrote:
-> > > On Sun, 2008-11-30 at 19:17 -0500, Trond Myklebust wrote:
-> > > > Can you see if the following 3 patches help? They're against 2.6.28-rc6,
-> > > > but afaics the problems are pretty much the same on 2.6.26.
-> > > 
-> > > Sorry... I forgot to add that these 3 patches need to be applied to the
-> > > nfs server, not the client.
-> > 
-> > Hi,
-> > 
-> > I have the problem on client side and can not change server (FreeBSD 7.0). 
-> > these patches does not change the situation (and they are probably not
-> > supposed to do so, just giving it a try). After few minutes I got this on
-> > the client with 2.6.28-rc6 with patches:
-> > 
-> > tcp   0   0 147.229.12.146:674          147.229.176.14:2049     FIN_WAIT2
-> > 
-> > Applying reverse e06799f958bf7f9f8fae15f0c6f519953fb0257c suggested by Ian
-> > does help on the other side (with 2.6.27.4).
+Linus Torvalds wrote:
+> Just do
 > 
-> Then I suggest working around the problem by reducing the value of the
-> sysctl net.ipv4.tcp_fin_timeout on the client.
+> 	git bisect start
+> 	git bisect bad v2.6.27
+> 	git bisect good v2.6.28-rc6-00007-ged31348
+> 
+> and off you go. That would help enormously.
 
-Did tried. The number should be seconds and defaults to 60, These
-connections are still there after several hours. Changing it to 10 (sec)
-and same behaviour. (BTW The server did not changed in last several months)
+Hi Linus, is possible plan something to make faster and easier the way
+to loking for a specific bug?
 
---   
+E.g:
+<https://bugs.launchpad.net/ubuntu/+source/linux/+bug/110784>
 
-  Tomas Kasparek, PhD student  E-mail: kasparek@fit.vutbr.cz
-  CVT FIT VUT Brno, L127       Web:    http://www.fit.vutbr.cz/~kasparek
-  Bozetechova 1, 612 66        Fax:    +420 54114-1270
-  Brno, Czech Republic         Phone:  +420 54114-1220
+In this bug, I think that it appear after ~2.6.22, so is necessary do a
+git-bisect more than 13 times!
 
-  jabber: tomas.kasparek@jabber.cz
-  GPG: 2F1E 1AAF FD3B CFA3 1537  63BD DCBE 18FF A035 53BC
+I need more than 20min to compile each kernel, so is necessary ~260min.
 
+My wife will kill me if I says: Hey baby, wait 260min to me compile a
+lot of kernel here.
+
+Best regards,
+Renato
