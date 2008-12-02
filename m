@@ -1,69 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbYLBF5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYLBGFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbYLBF5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 00:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYLBF5H
+	id S1752868AbYLBGFN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 01:05:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYLBGE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 00:57:07 -0500
-Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:2762 "EHLO
-	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750782AbYLBF5G (ORCPT
+	Tue, 2 Dec 2008 01:04:57 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:38156 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbYLBGE4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 00:57:06 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Tue, 2 Dec 2008 06:56:59 +0100
-User-Agent: KMail/1.9.9
-Cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812012037320.3256@nehalem.linux-foundation.org> <200812020629.26714.elendil@planet.nl>
-In-Reply-To: <200812020629.26714.elendil@planet.nl>
+	Tue, 2 Dec 2008 01:04:56 -0500
+Message-ID: <4934D000.5000304@cosmosbay.com>
+Date: Tue, 02 Dec 2008 07:04:48 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812020657.02173.elendil@planet.nl>
-X-OriginalArrivalTime: 02 Dec 2008 05:57:02.0787 (UTC) FILETIME=[CC3CA130:01C95442]
+To: Michael Chan <mchan@broadcom.com>
+CC: davem@davemloft.net, linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [BUG] linux-2.6.28-rc3 regression: IRQ smp_affinities not respected
+References: <C27F8246C663564A84BB7AB343977242151F4B18B5@IRVEXCHCCR01.corp.ad.broadcom.com> <491154C8.3040401@cosmosbay.com> <492D107B.1060303@cosmosbay.com> <1227719692.13189.7.camel@HP1> <1228173819.15505.15.camel@HP1>
+In-Reply-To: <1228173819.15505.15.camel@HP1>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 02 Dec 2008 07:04:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 December 2008, Frans Pop wrote:
-> +yenta_cardbus 0000:02:06.0: CardBus bridge, secondary bus 0000:03
-> +yenta_cardbus 0000:02:06.0:   IO window: 0x003000-0x0030ff
-> +yenta_cardbus 0000:02:06.0:   IO window: 0x003400-0x0034ff
-> +yenta_cardbus 0000:02:06.0:   PREFETCH window: 0x84400000-0x847fffff
-> +yenta_cardbus 0000:02:06.0:   MEM window: 0x80000000-0x83ffffff
+Michael Chan a écrit :
+> On Wed, 2008-11-26 at 09:14 -0800, Michael Chan wrote:
+>> On Wed, 2008-11-26 at 01:01 -0800, Eric Dumazet wrote:
+>>> Eric Dumazet a écrit :
+>>>> Michael Chan a écrit :
+>>>>> I believe this may be the patch that broke it:
+>>>>>
+>>>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd 
+>>>>>
+>>>>>
+>>>>> I don't remember all the details, but the Broadcom 5708 chip is
+>>>>> affected because it does not support MSI per-vector masking.
+>>>>>
+>>>>> One way to get around is to disable MSI with bnx2 parameter
+>>>>> disable_msi=1.
+>>>>>
+>>>> I tried this MSI disabling and yes, it now works.
+>>>>
+>>>> 16:      42726        128        105        106         89         
+>>>> 89        145        152   IO-APIC-fasteoi   uhci_hcd:usb1, eth0, eth1
+>>>>
+>>> I believe the bnx2 driver doesnt work at all if !disable_msi (default setting)
+>>>
+>>> Doing a "echo 0 >/sys/devices/system/cpu/cpu1/online" just freeze network
+>>>
+>>> No messages logged
+>>>
+>>> If loaded with disable_msi=1, the cpu unplug works as expected.
+>>>
+>>> Thats a pretty serious issue.
+>>>
+>> Yes, that's the same issue and it is serious.  If MSI is being delivered
+>> to CPU 1 and you then take CPU 1 offline, the MSI will not be delivered
+>> to another CPU.
+>>
+>> I think I can detect this problem in bnx2_timer() and try to recover.
+>> I'll post a patch when I have something ready.  Thanks.
+> 
+> [PATCH] bnx2: Add workaround to handle missed MSI.
+> 
+> The bnx2 chips do not support per MSI vector masking.  On 5706/5708, new MSI
+> address/data are stored only when the MSI enable bit is toggled.  As a result,
+> SMP affinity no longer works in the latest kernel.  A more serious problem is
+> that the driver will no longer receive interrupts when the MSI receiving CPU
+> goes offline.
+> 
+> The workaround in this patch only addresses the problem of CPU going offline.
+> When that happens, the driver's timer function will detect that it is making
+> no forward progress on pending interrupt events and will recover from it.
+> 
+> Eric Dumazet reported the problem.
+> 
+> We also found that if an interrupt is internally asserted while MSI and INTA
+> are disabled, the chip will end up in the same state after MSI is re-enabled.
+> The same workaround is needed for this problem. 
+> 
+> Signed-off-by: Michael Chan <mchan@broadcom.com>
+> ---
+>  drivers/net/bnx2.c |   35 ++++++++++++++++++++++++++++++++---
+>  drivers/net/bnx2.h |    6 ++++++
+>  2 files changed, 38 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+> index 182f241..0e2218d 100644
+> --- a/drivers/net/bnx2.c
+> +++ b/drivers/net/bnx2.c
+> @@ -3147,6 +3147,28 @@ bnx2_has_work(struct bnx2_napi *bnapi)
+>  	return 0;
+>  }
+>  
+> +static void
+> +bnx2_chk_missed_msi(struct bnx2 *bp)
+> +{
+> +	struct bnx2_napi *bnapi = &bp->bnx2_napi[0];
+> +	u32 msi_ctrl;
+> +
+> +	if (bnx2_has_work(bnapi)) {
+> +		msi_ctrl = REG_RD(bp, BNX2_PCICFG_MSI_CONTROL);
+> +		if (!(msi_ctrl & BNX2_PCICFG_MSI_CONTROL_ENABLE))
+> +			return;
+> +
+> +		if (bnapi->last_status_idx == bp->idle_chk_status_idx) {
+> +			REG_WR(bp, BNX2_PCICFG_MSI_CONTROL, msi_ctrl &
+> +			       ~BNX2_PCICFG_MSI_CONTROL_ENABLE);
+> +			REG_WR(bp, BNX2_PCICFG_MSI_CONTROL, msi_ctrl);
+> +			bnx2_msi(bp->irq_tbl[0].vector, bnapi);
+> +		}
+> +	}
+> +
+> +	bp->idle_chk_status_idx = bnapi->last_status_idx;
+> +}
+> +
+>  static void bnx2_poll_link(struct bnx2 *bp, struct bnx2_napi *bnapi)
+>  {
+>  	struct status_block *sblk = bnapi->status_blk.msi;
+> @@ -3221,14 +3243,15 @@ static int bnx2_poll(struct napi_struct *napi, int budget)
+>  
+>  		work_done = bnx2_poll_work(bp, bnapi, work_done, budget);
+>  
+> -		if (unlikely(work_done >= budget))
+> -			break;
+> -
+>  		/* bnapi->last_status_idx is used below to tell the hw how
+>  		 * much work has been processed, so we must read it before
+>  		 * checking for more work.
+>  		 */
+>  		bnapi->last_status_idx = sblk->status_idx;
+> +
+> +		if (unlikely(work_done >= budget))
+> +			break;
+> +
+>  		rmb();
+>  		if (likely(!bnx2_has_work(bnapi))) {
+>  			netif_rx_complete(bp->dev, napi);
+> @@ -4581,6 +4604,8 @@ bnx2_init_chip(struct bnx2 *bp)
+>  	for (i = 0; i < BNX2_MAX_MSIX_VEC; i++)
+>  		bp->bnx2_napi[i].last_status_idx = 0;
+>  
+> +	bp->idle_chk_status_idx = 0xffff;
+> +
+>  	bp->rx_mode = BNX2_EMAC_RX_MODE_SORT_MODE;
+>  
+>  	/* Set up how to generate a link change interrupt. */
+> @@ -5729,6 +5754,10 @@ bnx2_timer(unsigned long data)
+>  	if (atomic_read(&bp->intr_sem) != 0)
+>  		goto bnx2_restart_timer;
+>  
+> +	if ((bp->flags & (BNX2_FLAG_USING_MSI | BNX2_FLAG_ONE_SHOT_MSI)) ==
+> +	     BNX2_FLAG_USING_MSI)
+> +		bnx2_chk_missed_msi(bp);
+> +
+>  	bnx2_send_heart_beat(bp);
+>  
+>  	bp->stats_blk->stat_FwRxDrop =
+> diff --git a/drivers/net/bnx2.h b/drivers/net/bnx2.h
+> index 0763108..2f43c45 100644
+> --- a/drivers/net/bnx2.h
+> +++ b/drivers/net/bnx2.h
+> @@ -378,6 +378,9 @@ struct l2_fhdr {
+>   *  pci_config_l definition
+>   *  offset: 0000
+>   */
+> +#define BNX2_PCICFG_MSI_CONTROL				0x00000058
+> +#define BNX2_PCICFG_MSI_CONTROL_ENABLE			 (1L<<16)
+> +
+>  #define BNX2_PCICFG_MISC_CONFIG				0x00000068
+>  #define BNX2_PCICFG_MISC_CONFIG_TARGET_BYTE_SWAP	 (1L<<2)
+>  #define BNX2_PCICFG_MISC_CONFIG_TARGET_MB_WORD_SWAP	 (1L<<3)
+> @@ -6882,6 +6885,9 @@ struct bnx2 {
+>  
+>  	u8			num_tx_rings;
+>  	u8			num_rx_rings;
+> +
+> +	u32			idle_chk_status_idx;
+> +
+>  };
+>  
+>  #define REG_RD(bp, offset)					\
 
-Wild speculation, but could all this possibly also be related to occasional
-"irq 19: nobody cared" errors I'm seeing on resume for ohci1394?
+Thanks a lot Michael
 
-My FireWire controller is sitting behind this bridge after all.
+I tested your patch on my machine.
 
-Here's an example:
-Dec  2 04:57:32 aragorn kernel: irq 19: nobody cared (try booting with the "irqpoll" option)
-Dec  2 04:57:32 aragorn kernel: Pid: 0, comm: swapper Not tainted 2.6.28-rc6 #57
-Dec  2 04:57:32 aragorn kernel: Call Trace:
-Dec  2 04:57:32 aragorn kernel:  <IRQ>  [<ffffffffa01009e1>] ? ohci_irq_handler+0x60/0x7e9 [ohci1394]
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8026aa29>] __report_bad_irq+0x38/0x87
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8026ab86>] note_interrupt+0x10e/0x174
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8026b23e>] handle_fasteoi_irq+0xa7/0xd1
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8020eb87>] do_IRQ+0x73/0xe4
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8020c626>] ret_from_intr+0x0/0xa
-Dec  2 04:57:32 aragorn kernel:  <EOI>  [<ffffffffa0012606>] ? acpi_idle_enter_bm+0x26b/0x2b2 [processor]
-Dec  2 04:57:32 aragorn kernel:  [<ffffffffa00125fc>] ? acpi_idle_enter_bm+0x261/0x2b2 [processor]
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8024f33b>] ? notifier_call_chain+0x33/0x5b
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff803b9ca4>] ? cpuidle_idle_call+0x8c/0xc4
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8020b312>] ? cpu_idle+0x4a/0x9a
-Dec  2 04:57:32 aragorn kernel:  [<ffffffff8042c528>] ? rest_init+0x5c/0x5e
-Dec  2 04:57:32 aragorn kernel: handlers:
-Dec  2 04:57:32 aragorn kernel: [<ffffffffa0100981>] (ohci_irq_handler+0x0/0x7e9 [ohci1394])
-Dec  2 04:57:32 aragorn kernel: Disabling IRQ #19
+I confirm CPU unplug/hotplug works now (If correcting a bug in oprofile first)
+NIC doesnt freeze anymore
 
-I can send full kernel log from the start of that boot if desired.
+Eric
 
-Cheers,
-FJP
