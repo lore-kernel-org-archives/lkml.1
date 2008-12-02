@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYLBOej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYLBOnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbYLBOej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 09:34:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYLBOe3
+	id S1754842AbYLBOnV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 09:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYLBOnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 09:34:29 -0500
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:1830 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbYLBOe2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 09:34:28 -0500
-Subject: Re: MAP_PRIVATE that stays private even on external write
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>
-In-Reply-To: <1228213651.7133.12.camel@twins>
-References: <493508b5$0$200$e4fe514c@news.xs4all.nl>
-	 <1228213651.7133.12.camel@twins>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 15:34:12 +0100
-Message-Id: <1228228452.24000.118.camel@n2o.xs4all.nl>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 2 Dec 2008 09:43:05 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1970 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754280AbYLBOnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 09:43:04 -0500
+Message-ID: <49354970.10804@myri.com>
+Date: Tue, 02 Dec 2008 09:42:56 -0500
+From: Andrew Gallatin <gallatin@myri.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Ben Hutchings <bhutchings@solarflare.com>
+CC: David Miller <davem@davemloft.net>, ossthema@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tklein@de.ibm.com,
+       raisch@de.ibm.com, jb.billaud@gmail.com, hering2@de.ibm.com
+Subject: Re: [PATCH] lro: IP fragment checking
+References: <4933A74F.3050809@de.ibm.com>	<493423D7.5030203@myri.com>	 <20081201.131810.158631503.davem@davemloft.net> <49345CCA.1030209@myri.com>	 <1228169379.3073.13.camel@achroite> <49347B0B.8030705@myri.com> <1228177130.3073.23.camel@achroite>
+In-Reply-To: <1228177130.3073.23.camel@achroite>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 11:27 +0100, Peter Zijlstra wrote:
-> On Tue, 2008-12-02 at 10:06 +0000, Miquel van Smoorenburg wrote:
-> > What I am looking for is a MAP_PRIVATE type flag that, when another
-> > process modifies pages of the file (through mmap() or write())
-> > makes sure that my mapping never sees that.
-> > 
-> > There has been talk of a MAP_SNAPSHOT flag before, e.g.
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0407.1/0416.htm
-> > 
-> > Has anyone ever looked at implementing something like this ?
+Ben Hutchings wrote:
+> On Mon, 2008-12-01 at 19:02 -0500, Andrew Gallatin wrote:
+>> Ben Hutchings wrote:
+>>> On Mon, 2008-12-01 at 16:53 -0500, Andrew Gallatin wrote:
+>>>> David Miller wrote:
+>>>>> From: Andrew Gallatin <gallatin@myri.com>
+>>>>> Date: Mon, 01 Dec 2008 12:50:15 -0500
+>>>>>
+>>>>>> As to whether or not to do it in the drivers/hardware or in the
+>>>>>> LRO code, I favor doing it in the LRO code just so that it is not
+>>>>>> missed in some driver.
+>>>>> Then there is no point in the hardware doing the check, if
+>>>>> we're going to check it anyways.
+>>>>>
+>>>>> That's part of my point about why this check doesn't belong
+>>>>> here.
+>>>> What hardware does an explicit check for fragmentation?
+>>> Any that implements TCP/UDP checksumming properly.
+>> How many do?
 > 
-> I suppose that needs a snapshot filesystem for backing, and we don't
-> have such a creature (yet). I suppose BTRFS might be able to pull that
-> off.
+> Good question. ;-)
+> 
+>>>> In most cases, aren't we just relying on the hardware checksum
+>>>> to be wrong on fragmented packets? That works 99.999% of the time,
+>>>> but the TCP checksum is pretty weak, and it is possible to
+>>>> have a fragmented packet where the first fragment has the same
+>>>> checksum as the entire packet.
+>>> [...]
+>>>
+>>> If your hardware/firmware wrongly claims to be able to verify the
+>>> TCP/UDP checksum for an IP fragment, it seems to me you should deal with
+>>> that in your driver or fix the firmware.
+>> We do partial checksums.
+> 
+> So you should check for IP fragmentation in your get_frag_header() along
+> with all the other checks you've got to do.
 
-That is a different way of looking at it. Interesting.
+Indeed, and that is the patch I intend to submit if the fragment
+check in inet_lro is rejected.  I still think the check belongs
+in the inet lro code though, and I'm worried it is being rejected
+for the wrong reasons..
 
-It won't help me though, as the "file" I was talking about is in
-fact /dev/sdb .
-
-But the current MAP_PRIVATE doesn't need a versioning filesystem either.
-It's just that if you write to the mapping, that never gets visible in
-other mappings of the same file, nor in the file itself.
-
-I'd like to see something like that, but the other way around. If the
-file is modified through a different mapping or write(), modifications
-show up in the file and other shared mappings but not in my private
-mapping. A copy-on-write, but slightly different in what is copied.
-
-Since MAP_PRIVATE|MAP_POPULATE appears to do this, I thought that
-perhaps there is enough infrastructure to do something similar without
-MAP_POPULATE, but I really don't know enough of mm/* .
-
-Mike.
-
+Drew
