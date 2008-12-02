@@ -1,126 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYLBFiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbYLBF5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbYLBFiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 00:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYLBFil
+	id S1752920AbYLBF5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 00:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYLBF5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 00:38:41 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4349 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbYLBFik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 00:38:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,700,1220252400"; 
-   d="scan'208";a="470166047"
-Date: Tue, 2 Dec 2008 17:42:51 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "greg@kroah.com" <greg@kroah.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       "Rose, Gregory V" <gregory.v.rose@intel.com>
-Subject: [SR-IOV driver example 2/3 resend] PF driver: integrate with
-	SR-IOV core
-Message-ID: <20081202094251.GB1974@yzhao12-linux.sh.intel.com>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081202092741.GA1859@yzhao12-linux.sh.intel.com>
+	Tue, 2 Dec 2008 00:57:07 -0500
+Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:2762 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750782AbYLBF5G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 00:57:06 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
+Date: Tue, 2 Dec 2008 06:56:59 +0100
+User-Agent: KMail/1.9.9
+Cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
+       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
+       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
+References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812012037320.3256@nehalem.linux-foundation.org> <200812020629.26714.elendil@planet.nl>
+In-Reply-To: <200812020629.26714.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081202092741.GA1859@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812020657.02173.elendil@planet.nl>
+X-OriginalArrivalTime: 02 Dec 2008 05:57:02.0787 (UTC) FILETIME=[CC3CA130:01C95442]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch integrates the IGB driver with the SR-IOV core. It shows how
-the SR-IOV API is used to support the capability. Obviously people does
-not need to put much effort to integrate the PF driver with SR-IOV core.
-All SR-IOV standard stuff are handled by SR-IOV core and PF driver only
-concerns the device specific resource allocation and deallocation once it
-gets the necessary information (i.e. number of Virtual Functions) from
-the callback function.
+On Tuesday 02 December 2008, Frans Pop wrote:
+> +yenta_cardbus 0000:02:06.0: CardBus bridge, secondary bus 0000:03
+> +yenta_cardbus 0000:02:06.0:   IO window: 0x003000-0x0030ff
+> +yenta_cardbus 0000:02:06.0:   IO window: 0x003400-0x0034ff
+> +yenta_cardbus 0000:02:06.0:   PREFETCH window: 0x84400000-0x847fffff
+> +yenta_cardbus 0000:02:06.0:   MEM window: 0x80000000-0x83ffffff
 
-From: Intel Corporation, LAN Access Division <e1000-devel@lists.sourceforge.net>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Wild speculation, but could all this possibly also be related to occasional
+"irq 19: nobody cared" errors I'm seeing on resume for ohci1394?
 
----
- drivers/net/igb/igb_main.c |   46 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 46 insertions(+), 0 deletions(-)
+My FireWire controller is sitting behind this bridge after all.
 
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index f0361ef..78bda11 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -138,6 +138,7 @@ void igb_set_mc_list_pools(struct igb_adapter *, struct e1000_hw *, int, u16);
- static int igb_vmm_control(struct igb_adapter *, bool);
- static int igb_set_vf_mac(struct net_device *, int, u8*);
- static void igb_mbox_handler(struct igb_adapter *);
-+static int igb_virtual(struct pci_dev *, int);
- 
- static int igb_suspend(struct pci_dev *, pm_message_t);
- #ifdef CONFIG_PM
-@@ -182,6 +183,7 @@ static struct pci_driver igb_driver = {
- #endif
- 	.shutdown = igb_shutdown,
- 	.err_handler = &igb_err_handler,
-+	.virtual = igb_virtual
- };
- 
- static int global_quad_port_a; /* global quad port a indication */
-@@ -5066,4 +5068,48 @@ void igb_set_mc_list_pools(struct igb_adapter *adapter,
- 	wr32(E1000_VMOLR(pool), reg_data);
- }
- 
-+static	int
-+igb_virtual(struct pci_dev *pdev, int nr_virtfn)
-+{
-+	int i;
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+	/* the VFs' MAC addresses are hard-coded */
-+	unsigned char my_mac_addr[6] = {0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0xFF};
-+
-+	/*
-+	 * the 82576 NIC supports 1-PF NIC + 7-VF NICs mode and 8-VF NICs
-+	 * mode. In the 8-VF NICs mode, the PF can't tx/rx packets -- it
-+	 * only behaves as 'VF supervisor'. For now we use the 1-PF NIC +
-+	 * 7-VF NICs mode to preserve PF's tx/rx capability for the debug
-+	 * purpose.
-+	 */
-+	if (nr_virtfn > (MAX_NUM_VFS - 1))
-+		return -EINVAL;
-+
-+	if (nr_virtfn) {
-+		dev_info(&pdev->dev, "SR-IOV is enabled\n");
-+		/*
-+		 * Currently VFs resources are pre-allocated, so just set
-+		 * the MAC addresses of each VF here.
-+		 */
-+		for (i = 0; i < nr_virtfn; i++) {
-+			my_mac_addr[5] = (unsigned char)i;
-+			igb_set_vf_mac(netdev, i, my_mac_addr);
-+			igb_set_vf_vmolr(adapter, i);
-+		}
-+	} else {
-+		/*
-+		 * Since we statically allocate tx/rx queues for the PF
-+		 * and the VFs, so we don't need to free any VF related
-+		 * resources here.
-+		 */
-+		dev_info(&pdev->dev, "SR-IOV is disabled\n");
-+	}
-+
-+	adapter->vfs_allocated_count = nr_virtfn;
-+
-+	return 0;
-+}
-+
- /* igb_main.c */
--- 
-1.5.6.4
+Here's an example:
+Dec  2 04:57:32 aragorn kernel: irq 19: nobody cared (try booting with the "irqpoll" option)
+Dec  2 04:57:32 aragorn kernel: Pid: 0, comm: swapper Not tainted 2.6.28-rc6 #57
+Dec  2 04:57:32 aragorn kernel: Call Trace:
+Dec  2 04:57:32 aragorn kernel:  <IRQ>  [<ffffffffa01009e1>] ? ohci_irq_handler+0x60/0x7e9 [ohci1394]
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8026aa29>] __report_bad_irq+0x38/0x87
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8026ab86>] note_interrupt+0x10e/0x174
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8026b23e>] handle_fasteoi_irq+0xa7/0xd1
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8020eb87>] do_IRQ+0x73/0xe4
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8020c626>] ret_from_intr+0x0/0xa
+Dec  2 04:57:32 aragorn kernel:  <EOI>  [<ffffffffa0012606>] ? acpi_idle_enter_bm+0x26b/0x2b2 [processor]
+Dec  2 04:57:32 aragorn kernel:  [<ffffffffa00125fc>] ? acpi_idle_enter_bm+0x261/0x2b2 [processor]
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8024f33b>] ? notifier_call_chain+0x33/0x5b
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff803b9ca4>] ? cpuidle_idle_call+0x8c/0xc4
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8020b312>] ? cpu_idle+0x4a/0x9a
+Dec  2 04:57:32 aragorn kernel:  [<ffffffff8042c528>] ? rest_init+0x5c/0x5e
+Dec  2 04:57:32 aragorn kernel: handlers:
+Dec  2 04:57:32 aragorn kernel: [<ffffffffa0100981>] (ohci_irq_handler+0x0/0x7e9 [ohci1394])
+Dec  2 04:57:32 aragorn kernel: Disabling IRQ #19
 
+I can send full kernel log from the start of that boot if desired.
+
+Cheers,
+FJP
