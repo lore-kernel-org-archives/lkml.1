@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYLDAxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYLDAyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078AbYLDAxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 19:53:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYLDAxV
+	id S1757786AbYLDAyn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 19:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYLDAxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 19:53:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37203 "EHLO mx1.redhat.com"
+	Wed, 3 Dec 2008 19:53:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37217 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752481AbYLDAxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 19:53:19 -0500
+	id S1756429AbYLDAxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 19:53:23 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <onestero@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 X-Fcc: ~/Mail/linus
-Cc: Jan Kiszka <jan.kiszka@siemens.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: SIGTRAP vs. sys_exit_group race
-In-Reply-To: Oleg Nesterov's message of  Thursday, 16 October 2008 18:57:27 +0200 <20081016165727.GA6442@redhat.com>
-References: <48EA1BE9.1030707@siemens.com>
-	<20081016165727.GA6442@redhat.com>
-X-Shopping-List: (1) Would-be complicators
-   (2) Skeptical demolition
-   (3) Symphonic exotic nutrition
-   (4) Electric compressors
-   (5) Vainglorious prosecutors
-Message-Id: <20081204005203.7AE1CFC053@magilla.sf.frob.com>
-Date: Tue,  2 Dec 2008 20:47:47 -0800 (PST)
+Cc: oleg@redhat.com, ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       sukadev@us.ibm.com
+Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns
+In-Reply-To: Sukadev Bhattiprolu's message of  Tuesday, 25 November 2008 19:46:11 -0800 <20081126034611.GC23238@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com>
+	<20081126034611.GC23238@us.ibm.com>
+Emacs: the prosecution rests its case.
+Message-Id: <20081204005203.8C9ADFC3CD@magilla.sf.frob.com>
+Date: Mon,  1 Dec 2008 19:07:25 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Roland, what do you think?
-> 
-> On 10/06, Jan Kiszka wrote:
-> >
-> > --- a/kernel/signal.c
-> > +++ b/kernel/signal.c
-> > @@ -1528,10 +1528,11 @@ static void ptrace_stop(int exit_code, i
-> >  		spin_unlock_irq(&current->sighand->siglock);
-> >  		arch_ptrace_stop(exit_code, info);
-> >  		spin_lock_irq(&current->sighand->siglock);
-> > -		if (sigkill_pending(current))
-> > -			return;
-> >  	}
-> >
-> > +	if (sigkill_pending(current))
-> > +		return;
-> > +
-> 
-> Personally, I think this change is good anyway. The tracee shouldn't
-> sleep in TASK_TRACED with the pending SIGKILL.
+I don't quarrel with the intent, but I don't like this approach.
+I think we can do it more cleanly.  I don't have it all worked out,
+but a couple of thoughts come to mind.
 
-I think this is actually superfluous since TASK_WAKEKILL (2.6.24?).
-It won't sleep in TASK_TRACED at all, because of signal_pending_state().
+Firstly, it's no problem to split SIGNAL_UNKILLABLE out into multiple
+flags.  It's quite noninvasive, only signal.c looks at those flags.  Then
+we can implement the signal magic cleanly keyed on a few separate flags,
+using different flag combinations for global init and container inits.
 
-> I think we need further changes. If the thread group group was killed
-> by some fatal signal (but not SIGKILL) the tracee will sleep with
-> SIGNAL_GROUP_EXIT, this is not nice too. But imho the patch makes
-> sense anyway.
+I don't mind a feature that lets an unprivileged container init magically
+ignore normal exit signals.  That just does something it could do itself
+with sigaction, except its /proc/pid/status "SigIgn:" line will lie.
+That's OK.  Key that on its own flag and set that in both inits.  Just
+check that flag in prepare_signal() and in get_signal_to_deliver().
 
-When there is no (user-level) SIGKILL and no core dump synchronization, I
-think it's desireable for each thread to stop in exit tracing so it can be
-fully examined.
+It's a different story for the signals that cannot be caught, blocked, or
+ignored, SIGKILL and SIGSTOP.  At least when sent from outside the
+container, circumventing either of those would be a privilege escalation
+from what's always been understood by admins and so on.  
 
-I believe the behavior Jan saw is not new, but was always possible in races
-depending on when signals got sent.  The SIGTRAP (or PTRACE_EVENT_*)
-exit_code might be seen by gdb's wait4 call, but the task can be woken
-again by SIGKILL in the next instant and have the death exit_code seen by
-the next wait4 call (or not, depending on the race).  Since the The size of
-the window where an asynchronous SIGKILL could leave the previous SIGTRAP
-(et al) exit_code to be seen by wait4 before seeing the death code might
-have changed with the introduction of TASK_WAKEWILL, but it was always
-there.
+It's convenient for the implementation that we can treat these differently
+from other signals, precisely because they can never be caught, blocked, or
+ignored.  That is, when we decide in prepare_signal() to queue a SIGKILL or
+SIGSTOP, it can never turn out that we're later going to drop it because it
+went from caught or ignored or blocked to uncaught, unignored, and
+unblocked.  (It's only because of that possibility that there is any need
+to check for a suppressed exit signal in get_signal_to_deliver() rather
+than only in prepare_signal().)  That means that when the decision hinges
+on the namespace correlation of the sender and receiver, you can check that
+when it's handy (current vs p in prepare_signal) rather than trying to
+reconstruct the answer for a queued signal.
+
+Finally, one more thought.  This may be moot for the problem at hand if you
+take the approach I just suggested, but probably should be fixed anyway.
+It seems to me that the si_pid and si_uid fields of siginfo_t ought to be
+translated to the namespaces of the receiver.  I think it makes most sense
+to do this on the front end, i.e. in the callers that fill in the siginfo_t
+in the first place (sys_kill et al, or maybe a few layers down?).
+Currently it's inconsistent, but mostly wrong.  do_notify_parent() and
+do_notify_parent_cldstop() use the receiver's namespace to compute si_pid,
+but the rest of the signal.c routines do not.  A free side effect of doing
+this is that si_pid for a sender whose PID is not visible to the receiver
+(i.e. outside its container) would be distinctively 0 or -1 or something.
+(-1 might be the best choice, since si_[pu]id=0 already arises now in case
+of signal queue exhaustion and the like.)  Hence, possibly one could simply
+use si_pid>0 as a "sent from inside the container" check on a queued siginfo_t.
 
 
 Thanks,
