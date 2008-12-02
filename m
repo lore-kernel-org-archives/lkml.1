@@ -1,192 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYLBHTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbYLBHTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbYLBHTi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 02:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYLBHTZ
+	id S1751870AbYLBHTw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 02:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYLBHTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 02:19:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45981
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750957AbYLBHTY convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 02:19:24 -0500
-Date: Mon, 01 Dec 2008 23:19:24 -0800 (PST)
-Message-Id: <20081201.231924.42426300.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Dec 2008 02:19:30 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45795 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbYLBHT0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 02:19:26 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/2] memcg: mem_cgroup->prev_priority protected by lock.
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20081202161545.abb884e8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081202160949.1CFE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081202161545.abb884e8.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20081202161837.1D04.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue,  2 Dec 2008 16:19:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Tue,  2 Dec 2008 16:11:07 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > 
+> > Currently, mem_cgroup doesn't have own lock and almost its member doesn't need.
+> >  (e.g. info is protected by zone lock, stat is per cpu variable)
+> > 
+> > However, there is one explict exception. mem_cgroup->prev_priorit need lock,
+> > but doesn't protect.
+> > Luckly, this is NOT bug because prev_priority isn't used for current reclaim code.
+> > 
+> > However, we plan to use prev_priority future again.
+> > Therefore, fixing is better.
+> > 
+> > 
+> > In addision, we plan to reuse this lock for another member.
+> > Then "misc_lock" name is better than "prev_priority_lock".
+> > 
+> please use better name...reclaim_param_lock or some ?
 
-1) We still had some problem with that AF_UNIX test case.
+good idea :)
 
-   As I mentioned the other week when this all came up, it is
-   possible to get this test case into a state where the child
-   still running can queue new SCM passed fds to the parent
-   faster than the exit'ing parent can clean them up in UNIX
-   garbage collection.
+Will fix.
 
-   People have even triggered OOM with this situation.
 
-   The solution I designed, and Dann Frazier implemented, is to
-   make threads of control about to hit scm_send() wait until
-   any pending UNIX garbage collection finishes.
 
-2) Make skb_truesize_bug() WARN() so that we can get more information
-   about the cause of the problem, from Arjan.
-
-3) Socket leak in pppol2tp_release(), fix from Frédéric Moulins.
-
-4) update_mtu() method can crash with GRE tunnels over bridging.
-   Fix from Herbert Xu.
-
-5) TCP urgent data should avoid trying to use TSO/GSO.  From Petr
-   Tesarik.
-
-6) Fix hp-plus driver link errors and use of wrong 8390 lib poll
-   handler, from Randy Dunlap.
-
-7) OOPS fix in phonet_address_del(), from Rémi Denis-Courmont.
-
-8) Wireless bug fixes from the wireless crew, via John Linville.
-
-9) Catalin Marinas found a leak in the proto_register() handling.
-
-Please pull, thanks a lot.
-
-The following changes since commit 13d428afc007fcfcd6deeb215618f54cf9c0cae6:
-  Linus Torvalds (1):
-        Linux 2.6.28-rc6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Abhijeet Kolekar (1):
-      mac80211 : Fix setting ad-hoc mode and non-ibss channel
-
-Andreas Petlund (1):
-      pci: Added quirk to disable msi for MCP55 NIC on Asus P5N32-SLI Premium
-
-Arjan van de Ven (1):
-      net: make skb_truesize_bug() call WARN()
-
-Bernard Pidoux (1):
-      rose: zero length frame filtering in af_rose.c
-
-Catalin Marinas (1):
-      net: Fix memory leak in the proto_register function
-
-Cheng Renquan (1):
-      ath5k: fix Security issue in DebugFS part of ath5k
-
-Cord Walter (1):
-      axnet_cs / pcnet_cs: moving PCMCIA_DEVICE_PROD_ID for Netgear FA411
-
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      sungem: Fix PCS_MIICTRL register write in gem_init_phy().
-
-Frédéric Moulins (1):
-      pppol2tp: Add missing sock_put() in pppol2tp_release()
-
-Giuseppe Cavallaro (1):
-      phy: fix phy_id detection also for broken hardware.
-
-Herbert Xu (1):
-      bridge: netfilter: fix update_pmtu crash with GRE
-
-Ingo Molnar (1):
-      net/wireless/reg.c: fix bad WARN_ON in if statement
-
-Jan Engelhardt (1):
-      netfilter: xtables: add missing const qualifier to xt_tgchk_param
-
-Jiri Slaby (2):
-      ATM: horizon, fix hrz_probe fail path
-      MAINTAINERS: add netdev to ATM
-
-Johannes Berg (1):
-      iwlagn: fix DMA sync
-
-Luis R. Rodriguez (2):
-      ath9k: Fix SW-IOMMU bounce buffer starvation
-      ath9k: correct expected max RX buffer size
-
-Martin Xu (1):
-      ath5k: disable beacon filter when station is not associated
-
-Patrick McHardy (3):
-      netfilter: ctnetlink: fix conntrack creation race
-      netfilter: ctnetlink: fix GFP_KERNEL allocation under spinlock
-      macvlan: don't broadcast PAUSE frames to macvlan devices
-
-Petr Tesarik (1):
-      tcp: Do not use TSO/GSO when there is urgent data
-
-Qinghuang Feng (2):
-      driver/net/*: remove redundant argument comments
-      drivers/net/chelsio/sge.c: remove redundant argument comments
-
-Randy Dunlap (2):
-      net/hp-plus: fix link errors
-      net: hp-plus uses eip_poll
-
-Rémi Denis-Courmont (1):
-      Phonet: fix oops in phonet_address_del() on non-Phonet device
-
-Trent Piepho (1):
-      phylib: Add Vitesse VSC8221 SGMII PHY
-
-dann frazier (1):
-      net: Fix soft lockups/OOM issues w/ unix garbage collector
-
- MAINTAINERS                            |    1 +
- drivers/atm/horizon.c                  |    2 +-
- drivers/net/Makefile                   |    2 +-
- drivers/net/chelsio/sge.c              |    4 --
- drivers/net/e1000e/netdev.c            |    1 -
- drivers/net/hp-plus.c                  |    2 +-
- drivers/net/igb/igb_main.c             |    4 --
- drivers/net/ixgbe/ixgbe_main.c         |    1 -
- drivers/net/macvlan.c                  |    3 +
- drivers/net/pcmcia/axnet_cs.c          |    2 +-
- drivers/net/pcmcia/pcnet_cs.c          |    1 -
- drivers/net/phy/phy_device.c           |   13 +++++-
- drivers/net/phy/vitesse.c              |   64 +++++++++++++++++++++++++++----
- drivers/net/pppol2tp.c                 |    1 +
- drivers/net/sis900.c                   |    1 -
- drivers/net/spider_net.c               |    4 --
- drivers/net/sungem.c                   |    2 +-
- drivers/net/wireless/ath5k/base.c      |   35 +++++++++++++++++-
- drivers/net/wireless/ath5k/base.h      |    1 +
- drivers/net/wireless/ath5k/debug.c     |   10 ++--
- drivers/net/wireless/ath9k/beacon.c    |   10 ++--
- drivers/net/wireless/ath9k/recv.c      |   19 +++++++--
- drivers/net/wireless/iwlwifi/iwl-agn.c |    8 ++-
- drivers/pci/quirks.c                   |   17 ++++++++
- include/linux/netfilter/x_tables.h     |    2 +-
- include/net/af_unix.h                  |    1 +
- include/net/request_sock.h             |    1 +
- include/net/timewait_sock.h            |    1 +
- net/bridge/br_netfilter.c              |   13 ++++++
- net/core/skbuff.c                      |    2 +-
- net/core/sock.c                        |   31 ++++++---------
- net/ipv4/tcp_output.c                  |    7 ++-
- net/mac80211/wext.c                    |    8 ++++
- net/netfilter/nf_conntrack_core.c      |    2 -
- net/netfilter/nf_conntrack_netlink.c   |    7 ++-
- net/phonet/pn_dev.c                    |    2 +-
- net/rose/af_rose.c                     |   10 +++++
- net/unix/af_unix.c                     |    2 +
- net/unix/garbage.c                     |   13 +++++-
- net/wireless/reg.c                     |    4 +-
- 40 files changed, 229 insertions(+), 85 deletions(-)
