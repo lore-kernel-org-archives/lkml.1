@@ -1,237 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYLBH5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYLBIA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbYLBH5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 02:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYLBH5S
+	id S1753395AbYLBIA2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 03:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYLBIAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 02:57:18 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51510 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750755AbYLBH5Q (ORCPT
+	Tue, 2 Dec 2008 03:00:17 -0500
+Received: from qb-out-0506.google.com ([72.14.204.234]:62906 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbYLBIAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 02:57:16 -0500
-Date: Tue, 2 Dec 2008 02:57:12 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andres Freund <andres@anarazel.de>
-Cc: Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: EXT4 ENOSPC Bug
-Message-ID: <20081202075712.GA16172@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andres Freund <andres@anarazel.de>,
-	Andreas Dilger <adilger@sun.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-References: <200811291418.24672.andres@anarazel.de> <200812011335.00366.andres@anarazel.de> <20081201194204.GZ3186@webber.adilger.int> <200812012116.08510.andres@anarazel.de>
+	Tue, 2 Dec 2008 03:00:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TO4XcfOzVS9XU09aEvKGpXnwD4dOmt0Atqh/84Lrx7j7vsSyoNFZdTN0IdxkEXq9lI
+         1AB87rtzExlnZ81GAQ20+7JzaGKLC2mLyuEwVZ6gURSjGO15l2xzxkoVBudX72ake8Dz
+         RFTykEDe3l7GJLqkYpSsFEYp4IT3YsTdpOTd8=
+Message-ID: <5d5443650812020000t3ed04d1am4963b9fe914d34a0@mail.gmail.com>
+Date: Tue, 2 Dec 2008 13:30:13 +0530
+From: "Trilok Soni" <soni.trilok@gmail.com>
+To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb
+Cc: "Hans Verkuil" <hverkuil@xs4all.nl>,
+       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
+       v4l <video4linux-list@redhat.com>,
+       "Sakari Ailus" <sakari.ailus@nokia.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <5d5443650812012228u5aad36a2jc3e9e68cd61c27e3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="Nq2Wo0NMKNjxTN9z"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200812012116.08510.andres@anarazel.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <200812011451.06156.hverkuil@xs4all.nl>
+	 <5d5443650812011014q55a96540gc8a4b97be951f2fd@mail.gmail.com>
+	 <20081201202209.5cea1f4b@pedra.chehab.org>
+	 <5d5443650812012228u5aad36a2jc3e9e68cd61c27e3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Tue, Dec 2, 2008 at 11:58 AM, Trilok Soni <soni.trilok@gmail.com> wrote:
+> Hi Mauro,
+>
+>>
+>> This is one of the lack of the features on mercurial. It doesn't have a meta
+>> tag for committer. On mercurial, the -hg user and the author should be the same
+>> person.
+>>
+>> Since we want to identify the patch origin (e.g. whose v4l/dvb maintainer got
+>> the patch), we use the internal "user" meta-tag as the committer, and an extra
+>> tag, at the patch description for the author (From:).
+>>
+>> When creating the -git patch, the "From:" tag is replaced, by script, for
+>> "Author:", I add my SOB there, and, I add myself as the -git committer (on git
+>> we have both meta-tags).
+>
+> Isn't it good time to move v4l2-dvb tree to GIT? I am not aware of any
+> hg-to-git repo. converter, but I can check with hg and git community.
+> It could be difficult at first, but I am very confident that there are
+> many GIT users here than mercurial, and yes your v4l-dvb maintenance
+> process might change due move from GIT, but atleast you will not have
+> to internal user meta-data per patch.
 
-Hi Andres,
+OK, there are tools to convert mercurial to git repo.
 
-What we suspect may be happening is that somehow, there is something
-in your workload which is causing a leak or a double-increment of the
-number of blocks reserved so that delayed allocation will succeed.
-Basically, when the system writes to a block that hasn't been
-previously allocated by filesystme, we reserve a data block so that
-when we finally do the late delayed allocation, we know that a free
-block will be available.  When we do finally determine where the block
-will be located on the filesystem, we decrement the reserved block
-counter.  If somehow the reserved block counter is growing and not
-shrinking when it should, that could lead to the problem which you
-describe.
-
-So.... could you apply this patch, attached below.  You can trigger it
-using the attached program, debug-ioctl.  If the filesystem is
-quiscent, and you've typed sync once or twice, you should get the
-following in your printk logs:
-
-[ 2742.603886] ext4 debug delalloc of dm-4
-[ 2742.603948] ext4: dirty blocks 0 free blocks 7324359
-[ 2742.603960] ext4 debug delalloc done
-
-If you do have some dirty blocks that haen't been flushed out to disk,
-it might look liket this:
-
-[ 2758.653682] ext4 debug delalloc of dm-4
-[ 2758.653697] ext4: dirty blocks 172 free blocks 7324439
-[ 2758.653703] s_dirty list:
-[ 2758.653708] ino 401167: 79 2
-[ 2758.653713] ino 401200: 2 2
-[ 2758.653718] ino 401197: 3 2
-  	       	   ....
-[ 2758.653828] ext4 debug delalloc done
-
-If our theory is correct, I suspect you will start to see the number
-of dirty blocks grown over time, even before you start seeing ENOSPC
-errors (which will happen when the number of dirty blocks exceeds the
-number of free blocks).
-
-In that case, the list of inodes that have data and metadata blocks
-reserved will hopefully tell us soemthing about what might be going
-on.  Just run the debug-ioctl command giving a filename or directory
-within the filesystem where you want to deump out the debugging
-information; it will be dumpd out in the dmesg buffer.
-
-							- Ted
+http://git.or.cz/gitwiki/InterfacesFrontendsAndTools#head-8870e1c81cc93f9a7a7acb5e969924ee60182d6b
+http://hedonismbot.wordpress.com/2008/10/16/hg-fast-export-convert-mercurial-repositories-to-git-repositories/
 
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=debug-delalloc-patch
-
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index ba18b81..43f12f6 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -313,6 +313,8 @@ struct ext4_new_group_data {
- #define EXT4_IOC_FIEMAP_INO		_IOWR('f', 18, struct fiemap_ino)
- #define EXT4_IOC_MOVE_VICTIM		_IOW('f', 19, struct ext4_extents_info)
- 
-+#define EXT4_IOC_DEBUG_DELALLOC		_IO('f', 42)
-+
- /*
-  * ioctl commands in 32 bit emulation
-  */
-diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
-index 15050d3..be60cfc 100644
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -18,6 +18,17 @@
- #include "ext4_jbd2.h"
- #include "ext4.h"
- 
-+static void print_inode_dealloc_info(struct inode *inode)
-+{
-+	if (!EXT4_I(inode)->i_reserved_data_blocks ||
-+	    !EXT4_I(inode)->i_reserved_meta_blocks)
-+		return;
-+
-+	printk(KERN_DEBUG "ino %lu: %u %u\n", inode->i_ino,
-+	       EXT4_I(inode)->i_reserved_data_blocks,
-+	       EXT4_I(inode)->i_reserved_meta_blocks);
-+}
-+
- long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- {
- 	struct inode *inode = filp->f_dentry->d_inode;
-@@ -346,6 +357,42 @@ setversion_out:
- 		return err;
- 	}
- 
-+	case EXT4_IOC_DEBUG_DELALLOC:
-+	{
-+		extern spinlock_t inode_lock;
-+		struct super_block *sb = inode->i_sb;
-+		struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
-+		struct inode *inode;
-+		
-+		printk(KERN_DEBUG "ext4 debug delalloc of %s\n", sb->s_id);
-+		printk(KERN_DEBUG "ext4: dirty blocks %lld free blocks %lld\n",
-+		       percpu_counter_sum(&sbi->s_dirtyblocks_counter),
-+		       percpu_counter_sum(&sbi->s_freeblocks_counter));
-+		spin_lock(&inode_lock);
-+		if (!list_empty(&sb->s_dirty)) {
-+			printk(KERN_DEBUG "s_dirty list:\n");
-+			list_for_each_entry(inode, &sb->s_dirty, i_list) {
-+				print_inode_dealloc_info(inode);
-+			}
-+		}
-+		if (!list_empty(&sb->s_io)) {
-+			printk(KERN_DEBUG "s_io list:\n");
-+			list_for_each_entry(inode, &sb->s_io, i_list) {
-+				print_inode_dealloc_info(inode);
-+			}
-+		}
-+		if (!list_empty(&sb->s_more_io)) {
-+			printk(KERN_DEBUG "s_more_io list:\n");
-+			list_for_each_entry(inode, &sb->s_more_io, i_list) {
-+				print_inode_dealloc_info(inode);
-+			}
-+		}
-+		spin_unlock(&inode_lock);
-+		printk(KERN_DEBUG "ext4 debug delalloc done\n");
-+		return 0;
-+	}
-+
-+
- 	default:
- 		return -ENOTTY;
- 	}
-@@ -389,6 +436,7 @@ long ext4_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 		cmd = EXT4_IOC_SETRSVSZ;
- 		break;
- 	case EXT4_IOC_GROUP_ADD:
-+	case EXT4_IOC_DEBUG_DELALLOC:
- 		break;
- 	default:
- 		return -ENOIOCTLCMD;
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="debug-ioctl.c"
-
-/*
- * trigger the debugging ioctl 
- */
-
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/mount.h>
-
-/* For Linux, define BLKFLSBUF if necessary */
-#if (!defined(EXT4_IOC_DEBUG_DELALLOC) && defined(__linux__))
-#define EXT4_IOC_DEBUG_DELALLOC		_IO('f', 42)
-#endif
-
-const char *progname;
-
-static void usage(void)
-{
-	fprintf(stderr, "Usage: %s disk\n", progname);
-	exit(1);
-}
-
-int main(int argc, char **argv)
-{
-	int	fd;
-
-	progname = argv[0];
-	if (argc != 2)
-		usage();
-
-	fd = open(argv[1], O_RDONLY, 0);
-	if (fd < 0) {
-		perror("open");
-		exit(1);
-	}
-#ifdef EXT4_IOC_DEBUG_DELALLOC
-	if (ioctl(fd, EXT4_IOC_DEBUG_DELALLOC, 0) < 0) {
-		perror("ioctl BLKFLSBUF");
-		exit(1);
-	}
-	return 0;
-#else
-	fprintf(stderr,
-		"EXT4_IOC_DEBUG_DELALLOC ioctl not supported!\n");
-	return 1;
-#endif
-}
-
---Nq2Wo0NMKNjxTN9z--
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
