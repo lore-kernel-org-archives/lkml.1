@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbYLBT2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbYLBT3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbYLBT2Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYLBT2Q
+	id S1755375AbYLBT3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYLBT3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:28:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44157 "EHLO mx3.mail.elte.hu"
+	Tue, 2 Dec 2008 14:29:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47390 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbYLBT2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:28:15 -0500
-Date: Tue, 2 Dec 2008 20:27:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: fix broken flushing in GART nofullflush path
-Message-ID: <20081202192759.GD15342@elte.hu>
-References: <1228245363-14909-1-git-send-email-joerg.roedel@amd.com>
+	id S1751122AbYLBT3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:29:34 -0500
+Message-ID: <49358C29.4010809@redhat.com>
+Date: Tue, 02 Dec 2008 21:27:37 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228245363-14909-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Luis Henriques <henrix@sapo.pt>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
+References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com> <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com> <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com> <20081202190914.GA12115@hades>
+In-Reply-To: <20081202190914.GA12115@hades>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Luis Henriques wrote:
+> Ok, I am not sure but there is a possibility of having the vboxdrv driver
+> loaded. _But_ I was not using, i.e., I do not use VirtualBox.  In my
+> attempts to reproduce the issue, I tried to load this module but, unfortunatly,
+> my distro has this package broken ATM (err... in fact, the problem is not the
+> distro but me - I am using an unstable version).
+>
+> vboxdrv could be a problem if I was using it, but I believe it shouldn't cause
+> this if it is not being used... but it's just a guess.
+>   
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+Let's keep an eye open on it.  If it reproduces, be sure to note what 
+drivers are loaded.  Meanwhile, I don't recommend having different 
+virtualization modules loaded concurrently.
 
-> In the non-default nofullflush case the GART is only flushed when
-> next_bit wraps around. But it can happen that an unmap operation unmaps
-> memory which is behind the current next_bit location. If these addresses
-> are reused it may result in stale GART IO/TLB entries. Fix this by
-> setting the GART next_bit always behind an unmapped location.
-> 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kernel/pci-gart_64.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-applied to tip/x86/iommu, thanks Joerg!
-
-a stale iotlb should not cause any problems in this particular GART case, 
-right? It might be a security leak in a security-domain enforcing iotlb 
-case, but the GART is a DMA bouncing helper in essence. Can you see any 
-failure mode of this bug?
-
-	Ingo
