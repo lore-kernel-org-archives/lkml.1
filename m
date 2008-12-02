@@ -1,104 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYLBKRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbYLBKWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbYLBKRs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 05:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYLBKRg
+	id S1754145AbYLBKWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 05:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYLBKWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 05:17:36 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:55685 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753991AbYLBKRf (ORCPT
+	Tue, 2 Dec 2008 05:22:46 -0500
+Received: from gate1.ipvision.dk ([217.195.186.3]:43836 "EHLO
+	gate1.ipvision.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbYLBKWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 05:17:35 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Subject: [PATCH 2/2] kvm: set owner of cpu and vm file operations
-Date: Tue, 2 Dec 2008 11:17:32 +0100
-User-Agent: KMail/1.9.9
-Cc: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <200812021114.59050.borntraeger@de.ibm.com>
-In-Reply-To: <200812021114.59050.borntraeger@de.ibm.com>
+	Tue, 2 Dec 2008 05:22:45 -0500
+X-Greylist: delayed 2684 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 05:22:45 EST
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
+References: <200812012342.32575.bzolnier@gmail.com>
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Date: Tue, 02 Dec 2008 10:37:45 +0100
+In-Reply-To: <200812012342.32575.bzolnier@gmail.com> (Bartlomiej Zolnierkiewicz's message of "Mon\, 1 Dec 2008 23\:42\:32 +0100")
+Message-ID: <m3y6yyzzme.fsf@ursa.amorsen.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812021117.32521.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+X-Spam-Score: -6.3 (------)
+X-Spam-Report: ALL_TRUSTED=-3.3, AWL=0.049, BAYES_00=-3.099
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a race between a "close of the file descriptors" and module
-unload in the kvm module.
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
 
-You can easily trigger this problem by applying this debug patch:
->--- kvm.orig/virt/kvm/kvm_main.c
->+++ kvm/virt/kvm/kvm_main.c
->@@ -648,10 +648,14 @@ void kvm_free_physmem(struct kvm *kvm)
->                kvm_free_physmem_slot(&kvm->memslots[i], NULL);
-> }
+> Since the following error gets logged by kernel:
 >
->+#include <linux/delay.h>
-> static void kvm_destroy_vm(struct kvm *kvm)
-> {
->        struct mm_struct *mm = kvm->mm;
+> [drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
+> [drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
 >
->+       printk("off1\n");
->+       msleep(5000);
->+       printk("off2\n");
->        spin_lock(&kvm_lock);
->        list_del(&kvm->vm_list);
->        spin_unlock(&kvm_lock);
+> and it also seems that system is more responsive now (it was kind of
+> sluggish previously) my draft theory is that F9 -> F10 triggered some
+> AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
+> but I'll leave figuring this up to the more knowledgeable people... ;)
 
-and killing the userspace, followed by an rmmod.
+I saw those error messages with kernel-2.6.27.5-117.fc10.i686 and
+xorg-x11-drv-ati-6.9.0-54.fc10.i386 on a HP nx8220. It made
+gnome-terminal basically useless, especially with tabs since it took
+several seconds to switch tabs.
 
-The problem is that kvm_destroy_vm can run while the module count
-is 0. That means, you can remove the module while kvm_destroy_vm
-is running. But kvm_destroy_vm is part of the module text. This
-causes a kerneloops. The race exists without the msleep but is much
-harder to trigger.
+With the proprietary ATI driver everything works perfectly, including
+suspend/resume (yay, successful suspend-to-RAM for the first time
+since ACPI!)
 
-This patch requires the fix for anon_inodes (anon_inodes: use fops->owner
-for module refcount).
-With this patch, we can set the owner of all anonymous KVM inodes file
-operations. The VFS will then control the KVM module refcount as long as there
-is an open file. kvm_destroy_vm will be called by the release function of the
-last closed file - before the VFS drops the module refcount. 
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+/Benny
 
----
- virt/kvm/kvm_main.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: kvm/virt/kvm/kvm_main.c
-===================================================================
---- kvm.orig/virt/kvm/kvm_main.c
-+++ kvm/virt/kvm/kvm_main.c
-@@ -1303,7 +1303,7 @@ static int kvm_vcpu_release(struct inode
- 	return 0;
- }
- 
--static const struct file_operations kvm_vcpu_fops = {
-+static struct file_operations kvm_vcpu_fops = {
- 	.release        = kvm_vcpu_release,
- 	.unlocked_ioctl = kvm_vcpu_ioctl,
- 	.compat_ioctl   = kvm_vcpu_ioctl,
-@@ -1697,7 +1697,7 @@ static int kvm_vm_mmap(struct file *file
- 	return 0;
- }
- 
--static const struct file_operations kvm_vm_fops = {
-+static struct file_operations kvm_vm_fops = {
- 	.release        = kvm_vm_release,
- 	.unlocked_ioctl = kvm_vm_ioctl,
- 	.compat_ioctl   = kvm_vm_ioctl,
-@@ -2061,6 +2061,8 @@ int kvm_init(void *opaque, unsigned int 
- 	}
- 
- 	kvm_chardev_ops.owner = module;
-+	kvm_vm_fops.owner = module;
-+	kvm_vcpu_fops.owner = module;
- 
- 	r = misc_register(&kvm_dev);
- 	if (r) {
