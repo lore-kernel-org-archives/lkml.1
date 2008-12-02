@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYLBXZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYLBX0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbYLBXZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYLBXZS
+	id S1754603AbYLBX0w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYLBX0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:25:18 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45366 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752766AbYLBXZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:25:16 -0500
-Date: Wed, 3 Dec 2008 10:25:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nicolas Palix <npalix@diku.dk>
-Cc: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       Julia Lawall <julia@diku.dk>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
-Message-Id: <20081203102508.ce955781.sfr@canb.auug.org.au>
-In-Reply-To: <20081203101901.4f317425.sfr@canb.auug.org.au>
-References: <200812021445.18670.npalix@diku.dk>
-	<20081203101901.4f317425.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Dec_2008_10_25_08_+1100_fqL4vZ/Yw__adOxl"
+	Tue, 2 Dec 2008 18:26:43 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:54769 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbYLBX0n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:26:43 -0500
+X-Greylist: delayed 1489 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 18:26:42 EST
+Date: Wed, 3 Dec 2008 00:01:52 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Pavel Machek <pavel@suse.cz>
+cc: clock@atrey.karlin.mff.cuni.cz, kernel list <linux-kernel@vger.kernel.org>,
+       aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+In-Reply-To: <20081202094059.GA2585@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0812022330160.18533@artax.karlin.mff.cuni.cz>
+References: <20081202094059.GA2585@elf.ucw.cz>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Dec_2008_10_25_08_+1100_fqL4vZ/Yw__adOxl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2 Dec 2008, Pavel Machek wrote:
 
-Hi Nicolas,
+> Actually, it looks like POSIX file interface is on the lowest step of
+> Rusty's scale: one that is impossible to use correctly. Yes, it seems
+> impossible to reliably&safely write file to disk under Linux. Double
+> plus uncool.
+> 
+> So... how to write file to disk and wait for it to reach the stable
+> storage, with proper error handling?
+> 
+> > file
+> 
+> 	...does not work, because it fails to check for errors.
+> 
+> touch file || error_handling.
+> 
+> 	Is not a lot better, unless you mount your filesystems "sync"
+> 	... and noone does that.
+> 
+> dd conv=fsync if=something of=file 2> /dev/zero || error_handling
+> 
+> 	Is a bit better; not much, unless you mount your filesystems
+> 	"dirsync", because you have file data on disk, but they do not have
+> 	directory entry pointing to them. Noone uses dirsync.
+> 
+> 	So you need something like
+> 
+> dd conv=fsync if=something of=file 2> /dev/zero || error_handling
+> fsync . || error_handling
+> fsync .. || error_handling
+> fsync ../.. || error_handling
+> fsync ../../.. || error_handling
+> 
+> 	... which mostly works...
+> 
+> 	If you are alone on the filesystem... fsync only returns
+> 	errors to the first process. So if you have other process that
+> 	does fsync ., maybe it gets "your" error and you do not learn
+> 	of the problem.
+> 
+> Question is... Is there way that I missed and that actually works?
+> 									Pavel	
 
-On Wed, 3 Dec 2008 10:19:01 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> I think this particular patch is also required against Linus' kernel (not
-> just linux-next).
+Hi!
 
-In fact, I think all these patches can apply to Linus' current tree.
+I think you are right about this. There's no way how to fsync directory 
+reliably.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__3_Dec_2008_10_25_08_+1100_fqL4vZ/Yw__adOxl
-Content-Type: application/pgp-signature
+My idea is that when the filesystem hits metadata write error, it should 
+stop commiting any transactions and return error to all writes.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Write errors don't happen because of physical errors on media --- all 
+current disks have sector realocation. Write errors can happen because of 
+bad cabling, voltage drops, firmware bugs, corruption of PCI bus by rogue 
+card, etc. Most of these cases are fixable by the administrator.
 
-iEYEARECAAYFAkk1w9QACgkQjjKRsyhoI8w4AgCgqkCoalI22aHYYEelOXPU/+to
-erIAnjJkpc5f8aUUu7crYn6O2la0MIj0
-=vrfJ
------END PGP SIGNATURE-----
+If you continue operating the filesystem after a write error (it doesn't 
+matter if you report the error to userspace or not), you are risking 
+filesystem damage (for example, cross linked files if there was error 
+writing the bitmap) or security breach (users reading blocks containing 
+deleted data of other users). If you freeze the filesystem on write error 
+and do not allow further writes, the administrator can fix the underlying 
+problem and the computer will run without any data damage and security 
+problems.
 
---Signature=_Wed__3_Dec_2008_10_25_08_+1100_fqL4vZ/Yw__adOxl--
+
+It happened to me just yesterday, my disk was spinning down & up 
+repeatedly and returning errors because of insufficient power. My kernel 
+kicked spadfs filesystem off on the first write error and didn't allow any 
+further commits. I fixed the problem by adding the second power supply and 
+connecting some disks to it --- and now, after the incident, there are 
+zero corruptions. Just imagine what massacre would happen on the 
+filesystem if the kernel didn't kick it off and if it were operting under 
+the condition "some writes get through - some not" unattended for some 
+time.
+
+Mikulas
