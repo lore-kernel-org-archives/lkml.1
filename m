@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYLBLk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYLBLsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbYLBLk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 06:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYLBLkP
+	id S1754241AbYLBLsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 06:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYLBLsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 06:40:15 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54601 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbYLBLkO (ORCPT
+	Tue, 2 Dec 2008 06:48:37 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:37193 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752104AbYLBLsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 06:40:14 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: mengsanshui@yahoo.com.cn
-Subject: Re: question related page frame reclaim on embedded system
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <902363.74520.qm@web15702.mail.cnb.yahoo.com>
-References: <902363.74520.qm@web15702.mail.cnb.yahoo.com>
-Message-Id: <20081202203601.1D24.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 2 Dec 2008 06:48:36 -0500
+Date: Tue, 2 Dec 2008 12:48:33 +0100
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       xemul@openvz.org
+Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns
+Message-ID: <20081202114833.GA1132@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, oleg@redhat.com,
+	ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+	linux-kernel@vger.kernel.org, xemul@openvz.org
+References: <20081126034242.GA23120@us.ibm.com> <20081126034611.GC23238@us.ibm.com> <20081127010101.GA13545@wavehammer.waldi.eu.org> <20081201201506.GB12493@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue,  2 Dec 2008 20:40:10 +0900 (JST)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081201201506.GB12493@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1, I have a question related page frame reclaim .
-> As i understood , under low memory pressure page frame reclaiming will
-> swap  Least Recently Used cache to disk .
-> So my question is assume no swap space ,how to works ?
-> Whether the  Least Recently Used  slab cache , inode cache  etc  will
-> be discard since no swap space .
+On Mon, Dec 01, 2008 at 12:15:06PM -0800, Sukadev Bhattiprolu wrote:
+> Bastian Blank [bastian@waldi.eu.org] wrote:
+> | If I see this correctly this information is already covered in si_code
+> | with SI_USER and SI_TKILL. SI_KERNEL is used for explicit kernel
+> | generated signals.
+> 
+> Yes, but si_code from sys_rt_sigqueueinfo() cannot be trusted.
 
-Yes, page cache and slab cache (include inode cache and dentry cache) can be dropped
-although no swap.
+sys_rt_sigqueueinfo disallows setting si_code to any value which
+describes kernel signals from userspace. So using SI_FROMUSER should be
+sufficient.
 
+> IOW, we need to find the namespace of the sender only if the sender is
+> a user process. If signal is originating from kernel, safely checking
+> namespace becomes more complex.
 
-> 2. BTW ,I have already used my gmail account subscribe the linux kernel mail list .but can not post the question to mail list , i used plain text format . 
-> why ? I have seen many people use account of gmail  to post question .
+Where does this imply checking sender for kernel generated signals?
 
-I don't know.
-I can post by gmail.
+> Yes, current approach is somewhat hacky. We tried other approaches
+> before and they were either intrusive or required non-trivial changes
+> to semantics of signals to global init or both.
 
-But, One caution.
-gmail web interface is a bit silly. it can't post patch because
-it trim tab and space.
+Message-IDs?
 
+> | > +static inline int siginfo_from_ancestor_ns(struct task_struct *t,
+> | > +			siginfo_t *info)
+> | > +{
+> | > +	if (!is_si_special(info) && (info->si_signo & SIG_FROM_USER)) {
+> | > +		/* if t can't see us we are from parent ns */
+> | What?
+> I assume your question is about the comment :-)
 
+Yes.
 
+> Yes, a process can see all its descendants and processes in descendant
+> namespaces. But it can only see its ancestors upto the most recent
+> CLONE_NEWPID. (kind of like chroot in filesystems). So if receiver
+> can't see sender, sender must be an ancestor.
 
+Please add a complete comment to the function which describes the
+function. And don't us "it" for not defined entities.
+
+Bastian
+
+-- 
+I have never understood the female capacity to avoid a direct answer to
+any question.
+		-- Spock, "This Side of Paradise", stardate 3417.3
