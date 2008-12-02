@@ -1,577 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYLBNjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbYLBNns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbYLBNjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYLBNjJ
+	id S1754778AbYLBNns (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYLBNnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:39:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:36401 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754223AbYLBNjF (ORCPT
+	Tue, 2 Dec 2008 08:43:41 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:54644 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbYLBNnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:39:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=oWVVl7qY5bv5jAHZeMBjD3qNW3QyHNEY2xWlpkySAkNRpg7SrZnJYoKxzmFrqaUzH7
-         6iLbNIc5yc28+lJ9dmULnI8UhAqdKajTTMT78hBYvoCTeuCcwTFtu5gZZjzzJcLY+z4P
-         wElYC+AoK/x2veewoR3iwz861ITkpoKsPN9e8=
-Message-ID: <483a38b80812020539v2323a784h7f202749687764db@mail.gmail.com>
-Date: Tue, 2 Dec 2008 22:39:03 +0900
-From: "Kwangwoo Lee" <kwangwoo.lee@gmail.com>
-To: dmitry.torokhov@gmail.com
-Subject: [PATCH] Add tsc2007 based touchscreen driver.
-Cc: linux-kernel@vger.kernel.org
+	Tue, 2 Dec 2008 08:43:39 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <49353B89.6020502@cam.ac.uk>
+Date: Tue, 02 Dec 2008 13:43:37 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: LKML <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dtor@mail.ru>,
+       David Brownell <david-b@pacbell.net>, Jean Delvare <khali@linux-fr.org>,
+       Ben Nizette <bn@niasdigital.com>,
+       LM Sensors <lm-sensors@lm-sensors.org>,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [Industrial I/O] [0/13] RFC: IIO v3 patchset
+References: <4933F291.4020001@cam.ac.uk> <20081201194136.039e201b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081201194136.039e201b@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Dear Alan,
+>> have both functions. The sort of devices we are talking typically
+>> communicate over I2C or SPI buses though drivers for rs232 devices etc are
+>> definitely on the cards. Basically we are interested in devices where direct
+>> memory mapped access is not possible.
+> 
+> We have I2C and SPI drivers so I assume you will use the lower layers of
+> the stacks to do this ?
+Yes, in much the same way that for example hwmon is built on top of these
+(amongst other interfaces)
+> 
+>> For discussion of why these don't fit within existing subsystems see 
+>> http://lkml.org/lkml/2008/5/20/135 and the rest of the associated thread.
+ 
+> I don't see much there which says why you can't unify all this in a user
+> space library.
+Indeed, that was an option considered at the time and the majority of that
+discussion focused on how to do things in a similar way to existing similar
+kernel subsystems.
 
-I'm newbie and I tested this driver on my ARM9 based SoC - MV86XX.
-But the platform codes are not submitted yet.
+Perhaps this question needs further clarification.
 
-The example of platform specific codes are followed:
+Much of the stuff provided in this initial patch set could indeed be provided
+by a fairly complex user space library.
 
-/* TSC2007 Touchscreen */
-#ifdef CONFIG_LCD_CT024TN02
-/* GPIO13:GINT3 = PENIRQ */
-#define TS_PENIRQ_GPIO		GPIO13
-#define TS_CHAINED_GPIO		3
-#else
-/* GPIO5:GINT1 = PENIRQ */
-#define TS_PENIRQ_GPIO		GPIO5
-#define TS_CHAINED_GPIO		1
-#endif
+I get the feeling this rest of this response is going to look pretty familiar.
+Though as I have never attempted to code anything other than simple userspace
+drivers I suspect others may have more detailed responses.  These are in no
+particular order.
 
-static int mv_get_pendown_state(void)
-{
-	int val = 0;
+I believe the principle argument in favour of user space drivers is that of
+enhanced stability as they are unlikely to be able to bring the kernel down.
+This advantage is indeed valid here.
 
-	mv_gpio_set_direction(TS_PENIRQ_GPIO, 0);
-	mv_gpio_mux_ctrl(TS_PENIRQ_GPIO, GPIO_PIN_MODE_GPIO);
+The other advantage is that the number of copies required to get data to and
+from hardware are reduced.  For the devices considered here a userspace driver
+would have to go via one of the chrdev interfaces and neither i2c-dev or
+spidev are able to support mmap ed interfaces.
 
-	val =  mv_gpio_get_value(TS_PENIRQ_GPIO);
-	mv_gpio_mux_ctrl(TS_PENIRQ_GPIO, GPIO_PIN_MODE_INT);
+The problems I can forsee (or have encountered) with user space drivers
+for this sort of device:
+* In many cases the ADCs form part of more complex devices which already
+  have a support within the kernel. (e.g. PMICs such as those supported
+  by the DA903x mfd driver) and as such any additional interface will
+  require at least some kernel parts.  Other places I've seen ADCs that
+  I'd like to have available via a consistent interface, include firewire
+  and usb cameras (aux ADC's and DAC's are common for controlling pan
+  tilt heads etc).  Some of these could be implemented in userspace (and
+  quite possibly should be,) but others would require driver changes that
+  will effectively equal those of adding direct support for the subsystem
+  described in these patches.
 
-	val = val ? 0 : 1;
-	return val;
-}
+* Spidev and i2cdev are fairly restricted interfaces which I have used
+  extensively for initial investigation of sensors. The key thing here
+  is that almost no devices use purely these interfaces. They include
+  interrupt lines etc requiring relatively complex handlers. Thus any
+  driver would probably require at least some kernel space element per
+  chip anyway. Also worth noting that this tends to be the most complex
+  and hence probably error prone part of these drivers.  The spidev
+  documentation talks about the limitations of the driver.
 
-static void mv_clear_penirq(void)
-{
-	mv_gpio_int_clear(TS_CHAINED_GPIO);
-}
+  An example of the problems that would be encountered with the current i2c-dev
+  implementation within a full driver would be a control register read
+  on a VTI SCA3000 (i2c) accelerometer.  This would require an initial 3 byte
+  write followed by a 1 byte read.   In kernel space this whole thing
+  can be set up in a dma capable buffer and done in one go with copies out
+  to userspace only needed if the value is meant to be read by the user.
 
-static int mv_init_ts(void)
-{
-	mv_gpio_set_direction(TS_PENIRQ_GPIO, 0);	/* input */
-	mv_gpio_mux_ctrl(TS_PENIRQ_GPIO, GPIO_PIN_MODE_INT);
+* Need to provide kernel space interfaces. This actually fulls under the RFC
+  question of what the scope of this subsystem should be. For example,
+  things like battery chargers, free fall detectors etc frequently use
+  generic components of the types that IIO will include. The systems that
+  use these sometimes require kernel level access which a userspace driver
+  clearly cannot supply.
 
-	mv_gpio_int_mode(TS_CHAINED_GPIO, GPIO_INT_FALLING_EDGE);
-	mv_gpio_int_clear(TS_CHAINED_GPIO);
-	mv_gpio_int_unmask(TS_CHAINED_GPIO);	
-	return 0;
-}
+* Performance: Thinks like time stamping of data ready signals needs to be
+  as near as possible to the source interrupt.  As for the complex question
+  of which is optimal for the ring buffering functionality, this would need
+  thorough optimization of both approaches before it could be addressed.
+  I'm not aware of any similar comparisons but would be grateful if anyone
+  could direct me to any they know of.  It is also worth noting here that many
+  applications that will use the ring buffered interface will never actually
+  read the contents of the buffer as they are interested in only restricted
+  regions of data (based on some external trigger).
 
-static void mv_exit_ts(void)
-{
-	mv_gpio_mux_ctrl(TS_PENIRQ_GPIO, GPIO_PIN_MODE_GPIO);
-	mv_gpio_int_mask(TS_CHAINED_GPIO);
-}
+In conclusion, I'd be interested in the long run in the possibility of
+moving all the above functionality into userspace but at the moment don't
+believe it to be the sensible option here.
+The alternative of would be to provide only those drivers that would
+benefit from a kernel space driver within this subsystem.
+This would lose the advantages to be gained from a consistent interface.
+This could in turn be made transparent via a userspace library but only
+at the cost of unnecessary complexity.
 
-struct tsc2007_platform_data mv_tsc2007_data = {
-	.model = 2007,
-	.x_plate_ohms = 180,
-	.get_pendown_state = mv_get_pendown_state,
-	.clear_penirq	   = mv_clear_penirq,
-	.init_platform_hw  = mv_init_ts,
-	.exit_platform_hw  = mv_exit_ts,
-};
+> 
+> For RS232/423/.. devices you can go this path if you want (but I would
+> keep it all in userspace anyway) as you can use a line discipline to sit
+> on top of the port and provide another interface (eg the way PPP does)
 
-/* I2C clients */
-static struct i2c_board_info __initdata mv_i2c_clients[] = {
-	[0] = {
-		I2C_BOARD_INFO("tsc2007", 0x90),
-	  	.type		= "tsc2007",
-		.platform_data	= &mv_tsc2007_data,
-		.irq		= IRQ_GPIO,
-	},
-};
+An interesting suggestion. The main reason I'd be interested in bringing
+these into the kernel is to do with the handling of additional interrupt
+lines (which a number of similar devices have).
 
-i2c_register_board_info() should be used.
+Thanks for the comments,
 
-Signed-off-by: Kwangwoo Lee <kwangwoo.lee@gmail.com>
----
- drivers/input/touchscreen/Kconfig   |    9 +
- drivers/input/touchscreen/Makefile  |    1 +
- drivers/input/touchscreen/tsc2007.c |  398 +++++++++++++++++++++++++++++++++++
- include/linux/i2c/tsc2007.h         |   17 ++
- 4 files changed, 425 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/touchscreen/tsc2007.c
- create mode 100644 include/linux/i2c/tsc2007.h
+--
+Jonathan Cameron
 
-diff --git a/drivers/input/touchscreen/Kconfig
-b/drivers/input/touchscreen/Kconfig
-index 3d1ab8f..78abdfb 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -376,4 +376,13 @@ config TOUCHSCREEN_TOUCHIT213
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called touchit213.
 
-+config TOUCHSCREEN_TSC2007
-+	tristate "TSC2007 based touchscreens"
-+	depends on I2C
-+	help
-+	  Say Y here if you have a TSC2007 based touchscreens.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called tsc2007.
-+
- endif
-diff --git a/drivers/input/touchscreen/Makefile
-b/drivers/input/touchscreen/Makefile
-index 15cf290..824999c 100644
---- a/drivers/input/touchscreen/Makefile
-+++ b/drivers/input/touchscreen/Makefile
-@@ -31,3 +31,4 @@ wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9705)	+= wm9705.o
- wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9712)	+= wm9712.o
- wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713)	+= wm9713.o
- obj-$(CONFIG_TOUCHSCREEN_WM97XX_MAINSTONE)	+= mainstone-wm97xx.o
-+obj-$(CONFIG_TOUCHSCREEN_TSC2007)	+= tsc2007.o
-diff --git a/drivers/input/touchscreen/tsc2007.c
-b/drivers/input/touchscreen/tsc2007.c
-new file mode 100644
-index 0000000..85fb520
---- /dev/null
-+++ b/drivers/input/touchscreen/tsc2007.c
-@@ -0,0 +1,398 @@
-+/*
-+ * drivers/input/touchscreen/tsc2007.c
-+ *
-+ * Copyright (c) 2008 MtekVision Co., Ltd.
-+ * 	Kwangwoo Lee <kwlee@mtekvision.com>
-+ *
-+ * Using code from:
-+ *  - ads7846.c
-+ * 	Copyright (c) 2005 David Brownell
-+ * 	Copyright (c) 2006 Nokia Corporation
-+ *  - corgi_ts.c
-+ *	Copyright (C) 2004-2005 Richard Purdie
-+ *  - omap_ts.[hc], ads7846.h, ts_osk.c
-+ *	Copyright (C) 2002 MontaVista Software
-+ *	Copyright (C) 2004 Texas Instruments
-+ *	Copyright (C) 2005 Dirk Behme
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
-+ */
-+
-+#include <linux/hwmon.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/delay.h>
-+#include <linux/input.h>
-+#include <linux/interrupt.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/tsc2007.h>
-+#include <linux/io.h>
-+
-+#include <asm/irq.h>
-+
-+#define TS_POLL_DELAY	(10 * 1000)	/* ns delay before the first sample */
-+#define TS_POLL_PERIOD	(5 * 1000)	/* ns delay between samples */
-+
-+#define TSC2007_MEASURE_TEMP0		(0x0 << 4)
-+#define TSC2007_MEASURE_AUX		(0x2 << 4)
-+#define TSC2007_MEASURE_TEMP1		(0x4 << 4)
-+#define TSC2007_ACTIVATE_XN		(0x8 << 4)
-+#define TSC2007_ACTIVATE_YN		(0x9 << 4)
-+#define TSC2007_ACTIVATE_YP_XN		(0xa << 4)
-+#define TSC2007_SETUP			(0xb << 4)
-+#define TSC2007_MEASURE_X		(0xc << 4)
-+#define TSC2007_MEASURE_Y		(0xd << 4)
-+#define TSC2007_MEASURE_Z1		(0xe << 4)
-+#define TSC2007_MEASURE_Z2		(0xf << 4)
-+
-+#define TSC2007_POWER_OFF_IRQ_EN	(0x0 << 2)
-+#define TSC2007_ADC_ON_IRQ_DIS0		(0x1 << 2)
-+#define TSC2007_ADC_OFF_IRQ_EN		(0x2 << 2)
-+#define TSC2007_ADC_ON_IRQ_DIS1		(0x3 << 2)
-+
-+#define TSC2007_12BIT			(0x0 << 1)
-+#define TSC2007_8BIT			(0x1 << 1)
-+
-+#define	MAX_12BIT			((1 << 12) - 1)
-+
-+#define ADC_ON_12BIT	(TSC2007_12BIT | TSC2007_ADC_ON_IRQ_DIS0)
-+
-+#define READ_Y		(ADC_ON_12BIT | TSC2007_MEASURE_Y)
-+#define READ_Z1		(ADC_ON_12BIT | TSC2007_MEASURE_Z1)
-+#define READ_Z2		(ADC_ON_12BIT | TSC2007_MEASURE_Z2)
-+#define READ_X		(ADC_ON_12BIT | TSC2007_MEASURE_X)
-+#define PWRDOWN		(TSC2007_12BIT | TSC2007_POWER_OFF_IRQ_EN)
-+
-+struct ts_event {
-+	u16	x;
-+	u16	y;
-+	u16	z1, z2;
-+};
-+
-+struct tsc2007 {
-+	struct input_dev	*input;
-+	char			phys[32];
-+	struct hrtimer		timer;
-+	struct ts_event		tc;
-+
-+	struct i2c_client	*client;
-+
-+	spinlock_t		lock;
-+
-+	u16			model;
-+	u16			x_plate_ohms;
-+
-+	unsigned		pendown;
-+	int			irq;
-+
-+	int			(*get_pendown_state)(void);
-+	void			(*clear_penirq)(void);
-+};
-+
-+static int tsc2007_xfer(void *tsc, unsigned char cmd)
-+{
-+	struct tsc2007    *ts     = tsc;
-+	struct i2c_client *client = ts->client;
-+
-+	unsigned char  rbuf[2];
-+	unsigned short val;
-+	int result;
-+
-+	result = i2c_master_send(client, &cmd, 1);
-+	if (result != 1) {
-+		dev_err(&client->dev, "send failed, cmd 0x%x\n", cmd);
-+		goto cmd_fail;
-+	}
-+
-+	result = i2c_master_recv(client, rbuf, 2);
-+	if (result != 2) {
-+		dev_err(&client->dev, "recv failed, cmd 0x%x\n", cmd);
-+		goto cmd_fail;
-+	}
-+
-+	rbuf[1] = (rbuf[1] >> 4) | ((rbuf[0] & 0x0f) << 4);
-+	rbuf[0] = rbuf[0] >> 4;
-+
-+	val = *((unsigned short *) rbuf);
-+	val = be16_to_cpu(val);
-+
-+	dev_dbg(&client->dev, "cmd [0x%x], rbuf [0x%x, 0x%x] => val [%u]\n",
-+		cmd, rbuf[0], rbuf[1], val);
-+
-+	return (int) val;
-+
-+cmd_fail:
-+	return -EIO;
-+}
-+
-+static void tsc2007_send_event(void *tsc)
-+{
-+	struct tsc2007	*ts = tsc;
-+	u32		Rt;
-+	u16		x, y, z1, z2;
-+
-+	x = ts->tc.x;
-+	y = ts->tc.y;
-+	z1 = ts->tc.z1;
-+	z2 = ts->tc.z2;
-+
-+	/* range filtering */
-+	if (x == MAX_12BIT)
-+		x = 0;
-+
-+	if (likely(x && z1)) {
-+		/* compute touch pressure resistance using equation #1 */
-+		Rt = z2;
-+		Rt -= z1;
-+		Rt *= x;
-+		Rt *= ts->x_plate_ohms;
-+		Rt /= z1;
-+		Rt = (Rt + 2047) >> 12;
-+	} else
-+		Rt = 0;
-+
-+	/* Sample found inconsistent by debouncing or pressure is beyond
-+	 * the maximum. Don't report it to user space, repeat at least
-+	 * once more the measurement
-+	 */
-+	if (Rt > MAX_12BIT) {
-+		dev_dbg(&ts->client->dev, "ignored pressure %d\n", Rt);
-+
-+		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
-+			      HRTIMER_MODE_REL);
-+		return;
-+	}
-+
-+	/* NOTE: We can't rely on the pressure to determine the pen down
-+	 * state, even this controller has a pressure sensor.  The pressure
-+	 * value can fluctuate for quite a while after lifting the pen and
-+	 * in some cases may not even settle at the expected value.
-+	 *
-+	 * The only safe way to check for the pen up condition is in the
-+	 * timer by reading the pen signal state (it's a GPIO _and_ IRQ).
-+	 */
-+	if (Rt) {
-+		struct input_dev *input = ts->input;
-+
-+		if (!ts->pendown) {
-+			dev_dbg(&ts->client->dev, "DOWN\n");
-+
-+			input_report_key(input, BTN_TOUCH, 1);
-+			ts->pendown = 1;
-+		}
-+
-+		input_report_abs(input, ABS_X, x);
-+		input_report_abs(input, ABS_Y, y);
-+		input_report_abs(input, ABS_PRESSURE, Rt);
-+
-+		input_sync(input);
-+
-+		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
-+			x, y, Rt);
-+	}
-+
-+	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
-+			HRTIMER_MODE_REL);
-+}
-+
-+static int tsc2007_read_values(struct tsc2007 *tsc)
-+{
-+	struct tsc2007	*ts = tsc;
-+
-+	/* y- still on; turn on only y+ (and ADC) */
-+	ts->tc.y = tsc2007_xfer(ts, READ_Y);
-+
-+	/* turn y- off, x+ on, then leave in lowpower */
-+	ts->tc.x = tsc2007_xfer(ts, READ_X);
-+
-+	/* turn y+ off, x- on; we'll use formula #1 */
-+	ts->tc.z1 = tsc2007_xfer(ts, READ_Z1);
-+	ts->tc.z2 = tsc2007_xfer(ts, READ_Z2);
-+
-+	/* power down */
-+	tsc2007_xfer(ts, PWRDOWN);
-+	return 0;
-+}
-+
-+static enum hrtimer_restart tsc2007_timer(struct hrtimer *handle)
-+{
-+	struct tsc2007	*ts = container_of(handle, struct tsc2007, timer);
-+
-+	spin_lock_irq(&ts->lock);
-+
-+	if (unlikely(!ts->get_pendown_state() && ts->pendown)) {
-+		struct input_dev *input = ts->input;
-+
-+		dev_dbg(&ts->client->dev, "UP\n");
-+
-+		input_report_key(input, BTN_TOUCH, 0);
-+		input_report_abs(input, ABS_PRESSURE, 0);
-+		input_sync(input);
-+
-+		ts->pendown = 0;
-+		enable_irq(ts->irq);
-+	} else {
-+		/* pen is still down, continue with the measurement */
-+		dev_dbg(&ts->client->dev, "pen is still down\n");
-+
-+		tsc2007_read_values(ts);
-+		tsc2007_send_event(ts);
-+	}
-+
-+	spin_unlock_irq(&ts->lock);
-+	return HRTIMER_NORESTART;
-+}
-+
-+static irqreturn_t tsc2007_irq(int irq, void *handle)
-+{
-+	struct tsc2007 *ts = handle;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ts->lock, flags);
-+	if (likely(ts->get_pendown_state())) {
-+		disable_irq(ts->irq);
-+		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
-+					HRTIMER_MODE_REL);
-+	}
-+
-+	if (ts->clear_penirq)
-+		ts->clear_penirq();
-+
-+	spin_unlock_irqrestore(&ts->lock, flags);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int tsc2007_probe(struct i2c_client *client,
-+			const struct i2c_device_id *id)
-+{
-+	struct i2c_adapter	*adapter = to_i2c_adapter(client->dev.parent);
-+	struct tsc2007		*ts;
-+	struct tsc2007_platform_data *pdata;
-+	struct input_dev	*input_dev;
-+	int			err;
-+
-+	pdata = client->dev.platform_data;
-+	if (pdata == NULL) {
-+		dev_err(&client->dev, "platform data is required!\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!i2c_check_functionality(adapter,
-+			I2C_FUNC_I2C | I2C_FUNC_SMBUS_WRITE_BYTE_DATA))
-+		return -EIO;
-+
-+	ts = kzalloc(sizeof(struct tsc2007), GFP_KERNEL);
-+	input_dev = input_allocate_device();
-+	if (!ts || !input_dev) {
-+		err = -ENOMEM;
-+		goto err_free_mem;
-+	}
-+
-+	ts->client = client;
-+	i2c_set_clientdata(client, ts);
-+
-+	ts->input = input_dev;
-+
-+	hrtimer_init(&ts->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	ts->timer.function = tsc2007_timer;
-+
-+	spin_lock_init(&ts->lock);
-+
-+	ts->model 	      = pdata->model;
-+	ts->x_plate_ohms      = pdata->x_plate_ohms;
-+	ts->get_pendown_state = pdata->get_pendown_state;
-+	ts->clear_penirq      = pdata->clear_penirq;
-+
-+	pdata->init_platform_hw();
-+
-+	snprintf(ts->phys, sizeof(ts->phys), "%s/input0", client->dev.bus_id);
-+
-+	input_dev->name = "TSC2007 Touchscreen";
-+	input_dev->phys = ts->phys;
-+
-+	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
-+	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-+
-+	input_set_abs_params(input_dev, ABS_X, 0, MAX_12BIT, 0, 0);
-+	input_set_abs_params(input_dev, ABS_Y, 0, MAX_12BIT, 0, 0);
-+	input_set_abs_params(input_dev, ABS_PRESSURE, 0, MAX_12BIT, 0, 0);
-+
-+	tsc2007_read_values(ts);
-+
-+	ts->irq = client->irq;
-+	if (request_irq(ts->irq, tsc2007_irq, 0,
-+			client->dev.driver->name, ts)) {
-+		dev_err(&client->dev, "irq %d busy?\n", ts->irq);
-+		err = -EBUSY;
-+		goto err_free_mem;
-+	}
-+
-+	err = input_register_device(input_dev);
-+	if (err)
-+		goto err_free_irq;
-+
-+	dev_info(&client->dev, "registered with irq (%d)\n", ts->irq);
-+
-+	return 0;
-+
-+ err_free_irq:
-+	free_irq(ts->irq, ts);
-+ err_free_mem:
-+	input_free_device(input_dev);
-+	kfree(ts);
-+	return err;
-+}
-+
-+static int tsc2007_remove(struct i2c_client *client)
-+{
-+	struct tsc2007	*ts = i2c_get_clientdata(client);
-+	struct tsc2007_platform_data *pdata;
-+
-+	pdata = client->dev.platform_data;
-+	pdata->exit_platform_hw();
-+
-+	input_unregister_device(ts->input);
-+	free_irq(ts->irq, ts);
-+	kfree(ts);
-+
-+	dev_info(&client->dev, "unregistered\n");
-+	return 0;
-+}
-+
-+static struct i2c_device_id tsc2007_idtable[] = {
-+	{ "tsc2007", 0 },
-+	{ }
-+};
-+
-+MODULE_DEVICE_TABLE(i2c, tsc2007_idtable);
-+
-+static struct i2c_driver tsc2007_driver = {
-+	.driver 	= {
-+		.owner		= THIS_MODULE,
-+		.name		= "tsc2007"
-+	},
-+	.id_table	= tsc2007_idtable,
-+	.probe		= tsc2007_probe,
-+	.remove		= tsc2007_remove,
-+};
-+
-+static int __init tsc2007_init(void)
-+{
-+	return i2c_add_driver(&tsc2007_driver);
-+}
-+
-+static void __exit tsc2007_exit(void)
-+{
-+	i2c_del_driver(&tsc2007_driver);
-+}
-+
-+module_init(tsc2007_init);
-+module_exit(tsc2007_exit);
-+
-+MODULE_AUTHOR("Kwangwoo Lee <kwlee@mtekvision.com>");
-+MODULE_DESCRIPTION("TSC2007 TouchScreen Driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/i2c/tsc2007.h b/include/linux/i2c/tsc2007.h
-new file mode 100644
-index 0000000..c6361fb
---- /dev/null
-+++ b/include/linux/i2c/tsc2007.h
-@@ -0,0 +1,17 @@
-+#ifndef __LINUX_I2C_TSC2007_H
-+#define __LINUX_I2C_TSC2007_H
-+
-+/* linux/i2c/tsc2007.h */
-+
-+struct tsc2007_platform_data {
-+	u16	model;				/* 2007. */
-+	u16	x_plate_ohms;
-+
-+	int	(*get_pendown_state)(void);
-+	void	(*clear_penirq)(void);		/* If needed, clear 2nd level
-+						   interrupt source */
-+	int	(*init_platform_hw)(void);
-+	void	(*exit_platform_hw)(void);
-+};
-+
-+#endif
--- 
-1.5.6.5
+ 
+
