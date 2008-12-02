@@ -1,99 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYLBTpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYLBTqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbYLBTpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbYLBTpM
+	id S1755925AbYLBTqa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbYLBTqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:45:12 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:27139 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbYLBTpJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:45:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=nqjJSgazKIlA78WzjJn+5tuCS1okFnNBKMVKNYiis9icNm9UKpCp5U6YTcuCjLm5NR
-         a20Glx5AGCSTiIWjEeF3Uc0kHWhDMvFcbEjBhmCGBwENwzeQ0m1zJUfYdEzb8ImQG/Si
-         2ReD28aoiTWJwnzYy5Jc8U7IerG/hyOdicwVA=
-Date: Tue, 2 Dec 2008 20:45:03 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Alistair John Strachan <alistair@devzero.co.uk>,
-       "Michael B. Trausch" <mike@trausch.us>
-Subject: Re: Linux 2.6.28-rc7
-Message-ID: <20081202204503.57363502@varda>
-In-Reply-To: <alpine.LFD.2.00.0812021120110.3256@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org>
-	<20081202131442.42e7df48@varda>
-	<alpine.LFD.2.00.0812020748310.3256@nehalem.linux-foundation.org>
-	<20081202165637.09984819@varda>
-	<alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org>
-	<20081202194907.4eaffc0a@varda>
-	<alpine.LFD.2.00.0812021120110.3256@nehalem.linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Dec 2008 14:46:22 -0500
+Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:56254 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754413AbYLBTqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:46:21 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Tue, 2 Dec 2008 19:46:10 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Avi Kivity <avi@redhat.com>
+Cc: Steven Rostedt <srostedt@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
+Message-ID: <20081202194610.GA4864@hades>
+References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com> <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com> <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com> <20081202190914.GA12115@hades>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202190914.GA12115@hades>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 2 Dec 2008 11:23:42 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> escribió:
+(I am CC'ing to Steven Rostedt since he might be interested on this)
 
+On Tue, Dec 02, 2008 at 07:09:14PM +0000, Luis Henriques wrote:
+> On Tue, Dec 02, 2008 at 02:23:52PM +0200, Avi Kivity wrote:
+> > Luis Henriques wrote:
+> >> On Sun, Nov 30, 2008 at 10:44:55PM +0200, Avi Kivity wrote:
+> >>   
+> >>> Luis Henriques wrote:
+> >>>     
+> >>>> No, I was not able to reproduce the issue.  Please let me know if you need some
+> >>>> more information on my system (.config, for instance).
+> >>>>         
+> >>> Were you using some other virtualization product?  Were you running   
+> >>> suspend/resume?
+> >>>     
+> >>
+> >> No for both questions.  However, I had compiled support for suspend (not sure if
+> >> this is what you mean by "running suspend/resume") - This is a feature I used
+> >> only once or twice...
+> >>   
+> >
+> > The underlying problem is that an svm instruction has been executed, but  
+> > svm is disabled.  Since kvm enables svm unconditionally on all  
+> > processors on startup, there are only a few paths that can potentially  
+> > trigger this:
+> >
+> > - another virtualization module turned svm off
+> > - cpu hotadd/hotremove (suspend/resume triggers this)
+> > - something did a read-modify-write cycle on cr4 (which contains the svm  
+> > enable bit) while kvm enabled that bit
+> > - core was turned off (does linux power management do that?)
+> >
+> > Anything ring a bell?
 > 
+> Ok, I am not sure but there is a possibility of having the vboxdrv driver
+> loaded. _But_ I was not using, i.e., I do not use VirtualBox.  In my
+> attempts to reproduce the issue, I tried to load this module but, unfortunatly,
+> my distro has this package broken ATM (err... in fact, the problem is not the
+> distro but me - I am using an unstable version).
 > 
-> On Tue, 2 Dec 2008, Alejandro Riveira Fernández wrote:
-> > 
-> >  Here you go 
-> > 
-> >  [alex@varda:kernel/linux-2.6]$ git bisect bad                                   
-> > 31168481c32c8a485e1003af9433124dede57f8d is first bad commit
-> 
-> Excellent. One last step - can you verify that just reverting this commit 
-> makes your problems go away?
-> 
-> IOW, just do
-> 
-> 	git bisect reset
-> 
-> to get out of bisect mode, and then do
-> 
-> 	git revert 31168481c32c8a485e1003af9433124dede57f8d
+> vboxdrv could be a problem if I was using it, but I believe it shouldn't cause
+> this if it is not being used... but it's just a guess.
 
- Well i already sent the result of the revert on another mail;
-it did not help :(
+I have some other information to had to my previous email.  However, I do not
+know whether it is related with my first bug report.
 
- I tried again with what i thought was my "good" commit and the
-bug is there too :/
+It looks like ftrace may stop the CPUs in some situations and I have been
+playing with ftrace for some time.  So, here's what I just did:  started ftrace
+with function tracer and then started kvm.  I got ugly crashes and apparently
+quite easy to reproduce (I get complete freeze or immediate reboot).
 
- could it be that something changed in userspace[1] between the
-day i installed the 2.6.28-rc6-00007-ged31348 and today that
-make this bug trigger? i dunno
+I did not investigated this issue and, again, it may not be related with my
+initial report but there's definitely something wrong here, right?
 
- Next step is try to find an "actually good" kernel and bisect
-again sigh... 2.6.27.6 seems to work ok
+(just to refresh, I am using 2.6.28-rc6-00007-ged31348 in x86_64 machine)
 
-
-
-> 
-> and check that the end result is all good?
-> 
-> That's just to double-check that the revert is sufficient, but also 
-> because "git bisect" is very sensitive to false information (ie if it 
-> happens that a bug sometimes is not entirely repeatable, then a single 
-> wrong "git bisect bad/good" will result in the pinpointed commit being 
-> possibly totally the wrong one).
-> 
-> And Al - can you double-check that commit?
-> 
-> 		Linus
-
- [1] distro updates
+-- 
+Luis Henriques
 
