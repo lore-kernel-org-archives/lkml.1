@@ -1,139 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYLBTDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYLBTJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYLBTDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYLBTD0
+	id S1754859AbYLBTJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbYLBTJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:03:26 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:40960 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbYLBTD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:03:26 -0500
-Subject: Re: [BUG] mmotm-081130: null pointer deref in sigkill_pending()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Ying Han <yinghan@google.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <604427e00812021046p3ebd6e24xf92e6ab29df35686@mail.gmail.com>
-References: <1228223933.30995.28.camel@lts-notebook>
-	 <604427e00812021046p3ebd6e24xf92e6ab29df35686@mail.gmail.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 02 Dec 2008 14:03:21 -0500
-Message-Id: <1228244601.6202.13.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 14:09:31 -0500
+Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:33418 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751252AbYLBTJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:09:30 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Tue, 2 Dec 2008 19:09:14 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
+Message-ID: <20081202190914.GA12115@hades>
+References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com> <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com> <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <493528D8.8010904@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 10:46 -0800, Ying Han wrote:
-> On Tue, Dec 2, 2008 at 5:18 AM, Lee Schermerhorn
-> <Lee.Schermerhorn@hp.com> wrote:
-> > While testing mmotm [11/29, 11/30, likely in 12/01], I came across the
-> > following bug after ~2 hours of heavy stress on x86_64 [same bug/trace
-> > hit on ia64]:
-> >
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
-> > IP: [<ffffffff8024e679>] sigkill_pending+0x19/0x30
-> > PGD 63be12067 PUD 7fd0cc067 PMD 0
-> > Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-> > last sysfs file: /sys/block/hda/removable
-> > CPU 7
-> > Modules linked in: sunrpc ipv6 dm_mirror dm_region_hash dm_log dm_mod rfkill input_polldev pci_slot parport_pc lp parport ide_cd_mod cdrom serio_raw hpilo hpwdt button amd_rng pata_acpi i2c_amd756 libata i2c_core pcspkr mptspi mptscsih sym53c8xx scsi_transport_spi sd_mod scsi_mod mptbase ext3 jbd ehci_hcd ohci_hcd uhci_hcd
-> > Pid: 19530, comm: ps Not tainted 2.6.28-rc6-mmotm-081130-2235 #10
-> > RIP: 0010:[<ffffffff8024e679>]  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
-> > RSP: 0018:ffff8806a64efd38  EFLAGS: 00010246
-> > RAX: 0000000000000000 RBX: 000000000000000e RCX: ffff8805fc96fb00
-> > RDX: ffff8806a64efe38 RSI: 00007fff62423000 RDI: ffff88020c87abe0
-> > RBP: ffff8806a64efd38 R08: 0000000000000000 R09: ffff8806a64efe30
-> > R10: 0000000000000002 R11: 0000000000000000 R12: ffff8805fc96fb00
-> > R13: 0000000000000000 R14: 0000000000000010 R15: ffff8806a64efe30
-> > FS:  00007f32d4ac46f0(0000) GS:ffff8807fed46d80(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 0000000000000038 CR3: 0000000784571000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process ps (pid: 19530, threadinfo ffff8806a64ee000, task ffff88062cf6d7c0)
-> > Stack:
-> >  ffff8806a64efdb8 ffffffff80298986 0000000000000001 ffff88062cf6d7c0
-> >  ffff8803ad100680 ffff88020c87abe0 0000000000000000 ffff8806a64efe38
-> >  ffff8806a64efe30 00000001804f0765 00007fff624236be 0000000000000000
-> > Call Trace:
-> >  [<ffffffff80298986>] __get_user_pages+0x166/0x440
-> >  [<ffffffff80298c92>] get_user_pages+0x32/0x40
-> >  [<ffffffff80298dab>] access_process_vm+0x10b/0x1e0
-> >  [<ffffffff8030bd60>] proc_pid_cmdline+0x90/0x120
-> >  [<ffffffff802ae568>] ? alloc_pages_current+0xa8/0x100
-> >  [<ffffffff8030de5b>] proc_info_read+0x9b/0xe0
-> >  [<ffffffff802c0ba4>] vfs_read+0xc4/0x160
-> >  [<ffffffff802c1000>] sys_read+0x50/0x90
-> >  [<ffffffff8020c3fb>] system_call_fastpath+0x16/0x1b
-> > Code: e8 08 83 e0 01 c3 66 0f 1f 44 00 00 66 0f 1f 44 00 00 f6 87 49 05 00 00 01 55 b8 01 00 00 00 48 89 e5 75 12 48 8b 87 10 05 00 00 <48> 8b 40 38 48 c1 e8 08 83 e0 01 c9 c3 66 2e 0f 1f 84 00 00 00
-> > RIP  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
-> >  RSP <ffff8806a64efd38>
-> > CR2: 0000000000000038
-> > ---[ end trace 80efa2c8bcce4fdc ]---
-> >
-> > Ad hoc instrumentation showed that this is likely the result of the
-> > "make-get_user_pages-interruptible" patch in mmotm.  The test workload
-> > includes a number of tasks that repeatedly run a list of miscellaneous
-> > programs, including ps(1).  Occasionally, ps will catch a task with a
-> > NULL "tsk->signal" [exiting?], resulting in a null pointer deref in
-> > sigkill_pending() called from __get_user_pages().
-> >
-> > Before the aforementioned patch, sigkill_pending() was only called from
-> > ptrace_stop() for tsk == current.  The comment block on ptrace_stop()
-> > says:  "This must be called with current->sighand->siglock held."  So,
-> > it doesn't look safe to call sigkill_pending() from
-> > __get_user_pages()--especially on a task != current--without similar
-> > locking.
-> 
-> >
-> > I'm not sure what the correct fix should be here.
-> I made a fix for the patch as Oleg suggested which replace the
-> sigkill_pending() as fatal_signal_pending().
-> Andrew deleted the original patch from mm tree this morning and i am
-> about the post the new patch with
-> the fix.
+On Tue, Dec 02, 2008 at 02:23:52PM +0200, Avi Kivity wrote:
+> Luis Henriques wrote:
+>> On Sun, Nov 30, 2008 at 10:44:55PM +0200, Avi Kivity wrote:
+>>   
+>>> Luis Henriques wrote:
+>>>     
+>>>> No, I was not able to reproduce the issue.  Please let me know if you need some
+>>>> more information on my system (.config, for instance).
+>>>>         
+>>> Were you using some other virtualization product?  Were you running   
+>>> suspend/resume?
+>>>     
+>>
+>> No for both questions.  However, I had compiled support for suspend (not sure if
+>> this is what you mean by "running suspend/resume") - This is a feature I used
+>> only once or twice...
+>>   
+>
+> The underlying problem is that an svm instruction has been executed, but  
+> svm is disabled.  Since kvm enables svm unconditionally on all  
+> processors on startup, there are only a few paths that can potentially  
+> trigger this:
+>
+> - another virtualization module turned svm off
+> - cpu hotadd/hotremove (suspend/resume triggers this)
+> - something did a read-modify-write cycle on cr4 (which contains the svm  
+> enable bit) while kvm enabled that bit
+> - core was turned off (does linux power management do that?)
+>
+> Anything ring a bell?
 
-OK.  I've been working on a fix, but I'll await yours.  I have found
-another interaction of this patch with munlock of mlocked vmas on exit
-if the task was killed with SIGKILL.  Get_user_pages() fails and we
-don't munlock the pages.   I have a fix for that [another internal
-GUPS_FLAG], as well, but I'll wait until yours shows up in mmotm and
-rebase atop that.  Meanwhile, my fix lets me continue to test on
-mmotm-081201.
+Ok, I am not sure but there is a possibility of having the vboxdrv driver
+loaded. _But_ I was not using, i.e., I do not use VirtualBox.  In my
+attempts to reproduce the issue, I tried to load this module but, unfortunatly,
+my distro has this package broken ATM (err... in fact, the problem is not the
+distro but me - I am using an unstable version).
 
-> >
-> > Related:  the patch and it's update add the following to
-> > __get_user_pages():
-> >
-> >        if (unlikely(sigkill_pending(current) ||
-> >             sigkill_pending(tsk)))
-> >                return i ? i : -ERESTARTSYS;
-> >
-> > As a minimum, I don't think we want to call the second sigkill_pending()
-> > unless tsk != current.
-> In most cases, (current == tsk) in get_user_pages. However in some
-> situation current is calling get_user_pages on behalf of tsk and we
-> want to interrupt the allocation in this case as well.
+vboxdrv could be a problem if I was using it, but I believe it shouldn't cause
+this if it is not being used... but it's just a guess.
 
-Agreed.  It was, in fact, the case where ps(1) was calling
-get_user_pages() to access another [exiting] task's command line
-via /proc that I hit the problem.
-
-> I might change it something like this:
-> 
-> >        if (unlikely(sigkill_pending(current) ||
-> >             ((current != tsk) && sigkill_pending(tsk))))
-> >                return i ? i : -ERESTARTSYS;
-
-Yes, that's what I was thinking.  
-
-Thanks,
-Lee
+-- 
+Luis Henriques
 
