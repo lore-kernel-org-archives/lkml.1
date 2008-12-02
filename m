@@ -1,40 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbYLBUbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYLBUdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbYLBUbQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYLBUa7
+	id S1752792AbYLBUdb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYLBUdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:30:59 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:41941 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbYLBUa7 (ORCPT
+	Tue, 2 Dec 2008 15:33:22 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:37728 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751018AbYLBUdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:30:59 -0500
-Date: Tue, 2 Dec 2008 20:30:55 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Matt_Domsch@dell.com, greg@kroah.com,
-       linux-acpi@vger.kernel.org, rpurdie@rpsys.net, ivdoorn@gmail.com
-Subject: Re: [PATCH 2/2] misc: Add dell-laptop driver
-Message-ID: <20081202203055.GA1456@srcf.ucam.org>
-References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202200544.GA31620@srcf.ucam.org> <20081202122222.5873ee86.akpm@linux-foundation.org>
+	Tue, 2 Dec 2008 15:33:21 -0500
+Date: Tue, 2 Dec 2008 15:33:15 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andres Freund <andres@anarazel.de>
+Cc: Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20081202203315.GA20858@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andres Freund <andres@anarazel.de>,
+	Andreas Dilger <adilger@sun.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+References: <200811291418.24672.andres@anarazel.de> <200812021559.05103.andres@anarazel.de> <20081202164709.GC18162@mit.edu> <200812021847.35771.andres@anarazel.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081202122222.5873ee86.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <200812021847.35771.andres@anarazel.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 12:22:22PM -0800, Andrew Morton wrote:
+On Tue, Dec 02, 2008 at 06:47:24PM +0100, Andres Freund wrote:
+> 
+> I think that I have seen the problem on metadata only changes (find
+> /tmp -type f|xargs touch) as well, but sometimes metadata changes
+> were possible while file creation was not.
 
-> No, acpi.h has a _few_ ACPI=n stubs:
+Hmm...  really?  Was the error message ENOSPC, or something else?
 
-Ah, yes. I'll send a patch for that to Len.
+The only way I can see that it might be ENOSPC would be if we got an
+error in the jbd2 layer, in start_this_handle(), but that would have
+resulted in a kernel printk:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	if (nblocks > journal->j_max_transaction_buffers) {
+		printk(KERN_ERR "JBD: %s wants too many credits (%d > %d)\n",
+		       current->comm, nblocks,
+		       journal->j_max_transaction_buffers);
+		ret = -ENOSPC;
+		goto out;
+	}
+
+
+If that wasn't too long ago, you might want to search your old system
+log files in /var/log for any "JBD" or "ext4" messages.  That might be
+an important clue, although that seems rather unlikely to me.  Or in
+the case where metadata changes were failing, perhaps they were doing
+so with some other error that ENOSPC?
+
+   	   					- Ted
