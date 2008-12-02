@@ -1,124 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbYLBT7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbYLBUAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751954AbYLBT7q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYLBT7i
+	id S1752824AbYLBUAN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYLBT75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:59:38 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:37262 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbYLBT7h (ORCPT
+	Tue, 2 Dec 2008 14:59:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:1606 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbYLBT74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:59:37 -0500
-Date: Tue, 2 Dec 2008 11:59:04 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Bastian Blank <bastian@waldi.eu.org>, oleg@redhat.com,
-       ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, xemul@openvz.org
-Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns
-Message-ID: <20081202195904.GA20077@us.ibm.com>
-References: <20081126034242.GA23120@us.ibm.com> <20081126034611.GC23238@us.ibm.com> <20081127010101.GA13545@wavehammer.waldi.eu.org> <20081201201506.GB12493@us.ibm.com> <20081202114833.GA1132@wavehammer.waldi.eu.org>
+	Tue, 2 Dec 2008 14:59:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=G8QzdyYh0Ddpp8EhkTd9fN4q4l8Zr5IrCsygy0hfvHyWn+RwcNjaTZsd9Vrri8GRCe
+         xzIx3KSyAX58yRPIa/8GgIL84JEu9TRKqLeAu1G1dbAKiri/DcSbFJdK1IIcHN/Jftz9
+         ubQAPrKMoYaIbZLv4YitCgslVtcNq93SwOY+Q=
+Message-ID: <e2e108260812021159r31eb86a1v95d2cbdf7cfdae2d@mail.gmail.com>
+Date: Tue, 2 Dec 2008 20:59:54 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>
+Subject: A question about sparse: how to use __acquires() and __releases() correctly ?
+Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "Alexander Shishkin" <alexander.shishckin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081202114833.GA1132@wavehammer.waldi.eu.org>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bastian Blank [bastian@waldi.eu.org] wrote:
-| On Mon, Dec 01, 2008 at 12:15:06PM -0800, Sukadev Bhattiprolu wrote:
-| > Bastian Blank [bastian@waldi.eu.org] wrote:
-| > | If I see this correctly this information is already covered in si_code
-| > | with SI_USER and SI_TKILL. SI_KERNEL is used for explicit kernel
-| > | generated signals.
-| > 
-| > Yes, but si_code from sys_rt_sigqueueinfo() cannot be trusted.
-| 
-| sys_rt_sigqueueinfo disallows setting si_code to any value which
-| describes kernel signals from userspace. So using SI_FROMUSER should be
-| sufficient.
+Hello,
 
-Hmm, unless I am missing something, sys_rt_sigqueuinfo() does this:
+I'm helping to prepare the SCST source code for inclusion in the Linux
+kernel by a.o. cleaning up sparse warnings. Although most of the SCST
+source code has been annotated by this time it's still not clear to me
+how to use __acquires() and __releases() correctly.
 
-        if (info.si_code >= 0)
-                return -EPERM;
+I will illustrate my questions via the following code from
+net/core/dev.c, Linux kernel version 2.6.27.7:
 
-This does not prevent user from setting si_code to SI_ASYNCIO, which,
-from include/asm-generic/siginfo.h is:
+void dev_seq_stop(struct seq_file *seq, void *v)
+        __releases(dev_base_lock)
+{
+        read_unlock(&dev_base_lock);
+}
 
-#define SI_ASYNCIO      -4              /* sent by AIO completion */
+The command "make C=2 M=net/core" produces the following output for
+the above function (using a sparse binary built from the sparse git
+repository, last updated on August 26, 2008):
 
-Also,
+net/core/dev.c:2579:2: warning: context problem in 'dev_seq_stop':
+'_read_unlock' expected different context
+net/core/dev.c:2579:2:    context 'lock': wanted >= 1, got 0
 
-#define SI_FROMUSER(siptr)      ((siptr)->si_code <= 0)
+My questions are as follows:
+* Which argument type should be passed to __releases() -- a pointer to
+a lock structure or the lock strucure itself ? In the header file
+include/linux/spinlock_api_smp.h a pointer is passed to __acquires()
+and __releases(), while other code (like the above) passes the lock
+structure itself to the __acquires() and __releases() annotations.
+* If the __releases() annotation is used correctly in net/core/dev.c,
+why does sparse complain about a context problem ?
 
-SI_ASYNCIO qualifies as SI_FROMUSER() even when it originates from
-kernel (usb/core/devio.c async_completed())...
+Please keep me in CC -- I'm not subscribed to the LKML.
 
-| 
-| > IOW, we need to find the namespace of the sender only if the sender is
-| > a user process. If signal is originating from kernel, safely checking
-| > namespace becomes more complex.
-| 
-| Where does this imply checking sender for kernel generated signals?
-
-... so what I meant is that in send_signal(), it will be harder to
-determine in the SI_ASYNCIO case whether the signal is from driver or
-rt_sigqueueinfo().
-
-If we know that it came from rt_sigqueueinfo(), we can safely check
-the namespace. If it came from driver we should skip the ns check.
-
-| 
-| > Yes, current approach is somewhat hacky. We tried other approaches
-| > before and they were either intrusive or required non-trivial changes
-| > to semantics of signals to global init or both.
-| 
-| Message-IDs?
-
-Yes, (Eric Biederman, Dec 2007)
-	https://lists.linux-foundation.org/pipermail/containers/2007-December/009152.html
-
-Oleg Nesterov, Aug 2007:
-	http://marc.info/?l=linux-kernel&m=118753610515859
-
-I had sent out a summary of the above attempts to Containers list recently:
-	https://lists.linux-foundation.org/pipermail/containers/2008-November/013991.html
-
-
-
-| 
-| > | > +static inline int siginfo_from_ancestor_ns(struct task_struct *t,
-| > | > +			siginfo_t *info)
-| > | > +{
-| > | > +	if (!is_si_special(info) && (info->si_signo & SIG_FROM_USER)) {
-| > | > +		/* if t can't see us we are from parent ns */
-| > | What?
-| > I assume your question is about the comment :-)
-| 
-| Yes.
-| 
-| > Yes, a process can see all its descendants and processes in descendant
-| > namespaces. But it can only see its ancestors upto the most recent
-| > CLONE_NEWPID. (kind of like chroot in filesystems). So if receiver
-| > can't see sender, sender must be an ancestor.
-| 
-| Please add a complete comment to the function which describes the
-| function. And don't us "it" for not defined entities.
-
-Ah, I see the problem now. The 't' refers to the task parameter - how
-about changing comment to:
-
-	/* If receiver can't see us, we are from parent ns */
-
-
-| 
-| Bastian
-| 
-| -- 
-| I have never understood the female capacity to avoid a direct answer to
-| any question.
-| 		-- Spock, "This Side of Paradise", stardate 3417.3
+Bart.
