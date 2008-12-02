@@ -1,256 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYLBBWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbYLBBWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbYLBBWN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 20:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYLBBV5
+	id S1753028AbYLBBWt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 20:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLBBWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 20:21:57 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34198 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752133AbYLBBV4 (ORCPT
+	Mon, 1 Dec 2008 20:22:40 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1299 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbYLBBWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 20:21:56 -0500
-Date: Tue, 2 Dec 2008 10:21:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       nickpiggin@yahoo.com.au, knikanth@suse.de,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 3/4] memcg: explaing memcg's gfp_mask behavior in
- explicit way.
-Message-Id: <20081202102105.614f19d3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0812020001490.25510@blonde.anvils>
-References: <20081201190021.f3ab1f17.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081201190534.1612b0b0.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0812020001490.25510@blonde.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 20:22:38 -0500
+Date: Tue, 2 Dec 2008 01:22:32 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.28-rc6+] regulator: bugfixes and messaging cleanup
+Message-ID: <20081202012231.GA19108@sirena.org.uk>
+References: <200812011335.43551.david-b@pacbell.net> <20081201225312.GA6699@sirena.org.uk> <200812011558.09154.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812011558.09154.david-b@pacbell.net>
+X-Cookie: He who laughs last didn't get the joke.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008 00:32:29 +0000 (GMT)
-Hugh Dickins <hugh@veritas.com> wrote:
+On Mon, Dec 01, 2008 at 03:58:08PM -0800, David Brownell wrote:
+> On Monday 01 December 2008, Mark Brown wrote:
+> > On Mon, Dec 01, 2008 at 01:35:43PM -0800, David Brownell wrote:
 
-> On Mon, 1 Dec 2008, KAMEZAWA Hiroyuki wrote:
-> > mem_cgroup_xxx_charge(...gfpmask) function take gfpmask as its argument.
-> > But this gfp_t is only used for check GFP_RECALIM_MASK. In other words,
-> > memcg has no interst where the memory should be reclaimed from.
-> > It just see usage of pages.
-> > 
-> > Using bare gfp_t is misleading and this is a patch for explaining
-> > expected behavior in explicit way. (better name/code is welcome.)
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Sorry, but I hate it.  You're spreading mem_cgroup ugliness throughout.
-> 
-> This is a good demonstation of why I wanted to go the opposite way to
-> Nick, why I wanted to push the masking as low as possible; I accept
-> Nick's point, but please, not at the expense of being this ugly.
-> 
-Okay ;)
+> > This could usefuly be split into a patch series, there's rather a lot
+> > of different changes in here...
 
+> At most I'd see two patches:  one with bugfixes, one with messaging
+> fixes that aren't strictly "bug" fixes (i.e. messages worked but
+> violated normal conventions like driver model).
 
-> It's a pity about loop over tmpfs, IIRC without that case you could
-> just remove the gfp_mask argument from every one of them - that is a
-> change I would appreciate!  Or am I forgetting some other cases?
-> 
+I'd expect that, for example, reordering the startup sequence could also
+be usefully pulled out into a separate patch.
 
-Ah, I considered that. putting gfp_mask here is for rememebering
-"this will do page reclaim".
+> > >  	if (id == NULL) {
+> > > -		printk(KERN_ERR "regulator: get() with no identifier\n");
+> > > +		dev_dbg(dev, "regulator_get with no identifier\n");
+> > >  		return regulator;
+> > >  	}
 
-> I think you should remove the arg from every one you can, and change
-> those shmem_getpage() ones to say "gfp & GFP_RECLAIM_MASK" (just as
-> we'll be changing the radix_tree_preload later).
-> 
-I'll look into again 
+> > dev may legally be NULL here
 
-> Hmm, shmem_getpage()'s mem_cgroup_cache_charge(,, gfp & ~__GFP_HIGHMEM)
-> has morphed into mem_cgroup_cache_charge(,, GFP_HIGHUSER_MOVABLE) in
-> mmotm (well, mmo2daysago, I've not looked today).  How come?
-> 
-Maybe my patches/memcg-fix-gfp_mask-of-callers-of-charge.patch.
-Hmm, I'll write replacement patch for this and remove gfp_t.
+> The kerneldoc doesn't mention that at all ... seems like a pretty
+> major interface artifact.  Hmm, for that matter I notice that if
 
-> It used to be the case that the mem_cgroup calls made their own
-> memory allocations, and that could become the case again in future:
-> the gfp mask was passed down for those allocations, and it was almost
-> everywhere GFP_KERNEL.
-> 
-> mem_cgroup charging may need to reclaim some memory from the memcg:
-> it happens that the category of memory it goes for is HIGHUSER_MOVABLE;
-> and it happens that the gfp mask for any incidental allocations it might
-> want to make, also provides the GFP_RECLAIM_MASK flags for that reclaim.
-> But please keep that within mem_cgroup_cache_charge_common or whatever.
-> 
+Well, it matchs the clock API and the fact that there isn't an explicit
+check for a NULL dev along with the check for a NULL id.  :)
 
-Okay. I'll write replacment for memcg-fix-gfp_mask-of-callers-of-charge.patch.
+> you were to run kerneldoc, regulator_register() -- and presumably
+> other functions -- would get lots of errors.
 
--Kame
+I'd not be surprised, I doubt it's ever been checked.
 
-> Hugh
-> 
-> > 
-> >  include/linux/gfp.h |   19 +++++++++++++++++++
-> >  mm/filemap.c        |    2 +-
-> >  mm/memory.c         |   12 +++++++-----
-> >  mm/shmem.c          |    8 ++++----
-> >  mm/swapfile.c       |    2 +-
-> >  mm/vmscan.c         |    3 +--
-> >  6 files changed, 33 insertions(+), 13 deletions(-)
-> > 
-> > Index: mmotm-2.6.28-Nov30/include/linux/gfp.h
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov30.orig/include/linux/gfp.h
-> > +++ mmotm-2.6.28-Nov30/include/linux/gfp.h
-> > @@ -245,4 +245,23 @@ void drain_zone_pages(struct zone *zone,
-> >  void drain_all_pages(void);
-> >  void drain_local_pages(void *dummy);
-> >  
-> > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> > +static inline gfp_t gfp_memcg_mask(gfp_t gfp)
-> > +{
-> > +	gfp_t mask;
-> > +	/*
-> > +	 * Memory Resource Controller memory reclaim is called to reduce usage
-> > +	 * of memory, not to get free memory from specified area.
-> > +	 * Remove zone constraints.
-> > +	 */
-> > +	mask = gfp & GFP_RECLAIM_MASK;
-> > +	return mask | (GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> > +}
-> > +#else
-> > +static inline gfp_t gfp_memcg_mask(gfp_t gfp)
-> > +{
-> > +	return gfp;
-> > +}
-> > +#endif
-> > +
-> >  #endif /* __LINUX_GFP_H */
-> > Index: mmotm-2.6.28-Nov30/mm/filemap.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov30.orig/mm/filemap.c
-> > +++ mmotm-2.6.28-Nov30/mm/filemap.c
-> > @@ -461,7 +461,7 @@ int add_to_page_cache_locked(struct page
-> >  	VM_BUG_ON(!PageLocked(page));
-> >  
-> >  	error = mem_cgroup_cache_charge(page, current->mm,
-> > -					gfp_mask & ~__GFP_HIGHMEM);
-> > +					gfp_memcg_mask(gfp_mask));
-> >  	if (error)
-> >  		goto out;
-> >  
-> > Index: mmotm-2.6.28-Nov30/mm/vmscan.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov30.orig/mm/vmscan.c
-> > +++ mmotm-2.6.28-Nov30/mm/vmscan.c
-> > @@ -1733,8 +1733,7 @@ unsigned long try_to_free_mem_cgroup_pag
-> >  	if (noswap)
-> >  		sc.may_swap = 0;
-> >  
-> > -	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
-> > -			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> > +	sc.gfp_mask = gfp_memcg_mask(gfp_mask);
-> >  	zonelist = NODE_DATA(numa_node_id())->node_zonelists;
-> >  	return do_try_to_free_pages(zonelist, &sc);
-> >  }
-> > Index: mmotm-2.6.28-Nov30/mm/memory.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov30.orig/mm/memory.c
-> > +++ mmotm-2.6.28-Nov30/mm/memory.c
-> > @@ -1913,7 +1913,8 @@ gotten:
-> >  	cow_user_page(new_page, old_page, address, vma);
-> >  	__SetPageUptodate(new_page);
-> >  
-> > -	if (mem_cgroup_newpage_charge(new_page, mm, GFP_HIGHUSER_MOVABLE))
-> > +	if (mem_cgroup_newpage_charge(new_page, mm,
-> > +			gfp_memcg_mask(GFP_HIGHUSER_MOVABLE)))
-> >  		goto oom_free_new;
-> >  
-> >  	/*
-> > @@ -2345,7 +2346,7 @@ static int do_swap_page(struct mm_struct
-> >  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> >  
-> >  	if (mem_cgroup_try_charge_swapin(mm, page,
-> > -				GFP_HIGHUSER_MOVABLE, &ptr) == -ENOMEM) {
-> > +		gfp_memcg_mask(GFP_HIGHUSER_MOVABLE), &ptr) == -ENOMEM) {
-> >  		ret = VM_FAULT_OOM;
-> >  		unlock_page(page);
-> >  		goto out;
-> > @@ -2437,7 +2438,8 @@ static int do_anonymous_page(struct mm_s
-> >  		goto oom;
-> >  	__SetPageUptodate(page);
-> >  
-> > -	if (mem_cgroup_newpage_charge(page, mm, GFP_HIGHUSER_MOVABLE))
-> > +	if (mem_cgroup_newpage_charge(page, mm,
-> > +				gfp_memcg_mask(GFP_HIGHUSER_MOVABLE)))
-> >  		goto oom_free_page;
-> >  
-> >  	entry = mk_pte(page, vma->vm_page_prot);
-> > @@ -2528,8 +2530,8 @@ static int __do_fault(struct mm_struct *
-> >  				ret = VM_FAULT_OOM;
-> >  				goto out;
-> >  			}
-> > -			if (mem_cgroup_newpage_charge(page,
-> > -						mm, GFP_HIGHUSER_MOVABLE)) {
-> > +			if (mem_cgroup_newpage_charge(page, mm,
-> > +					gfp_memcg_mask(GFP_HIGHUSER_MOVABLE))) {
-> >  				ret = VM_FAULT_OOM;
-> >  				page_cache_release(page);
-> >  				goto out;
-> > Index: mmotm-2.6.28-Nov30/mm/swapfile.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov30.orig/mm/swapfile.c
-> > +++ mmotm-2.6.28-Nov30/mm/swapfile.c
-> > @@ -698,7 +698,7 @@ static int unuse_pte(struct vm_area_stru
-> >  	int ret = 1;
-> >  
-> >  	if (mem_cgroup_try_charge_swapin(vma->vm_mm, page,
-> > -					GFP_HIGHUSER_MOVABLE, &ptr))
-> > +				gfp_memcg_mask(GFP_HIGHUSER_MOVABLE), &ptr))
-> >  		ret = -ENOMEM;
-> >  
-> >  	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-> > Index: mmotm-2.6.28-Nov30/mm/shmem.c
-> > ===================================================================
-> > --- mmotm-2.6.28-Nov30.orig/mm/shmem.c
-> > +++ mmotm-2.6.28-Nov30/mm/shmem.c
-> > @@ -924,8 +924,8 @@ found:
-> >  	 * Charge page using GFP_HIGHUSER_MOVABLE while we can wait.
-> >  	 * charged back to the user(not to caller) when swap account is used.
-> >  	 */
-> > -	error = mem_cgroup_cache_charge_swapin(page,
-> > -			current->mm, GFP_HIGHUSER_MOVABLE, true);
-> > +	error = mem_cgroup_cache_charge_swapin(page, current->mm,
-> > +			gfp_memcg_mask(GFP_HIGHUSER_MOVABLE), true);
-> >  	if (error)
-> >  		goto out;
-> >  	error = radix_tree_preload(GFP_KERNEL);
-> > @@ -1267,7 +1267,7 @@ repeat:
-> >  			 * charge against this swap cache here.
-> >  			 */
-> >  			if (mem_cgroup_cache_charge_swapin(swappage,
-> > -						current->mm, gfp, false)) {
-> > +				current->mm, gfp_memcg_mask(gfp), false)) {
-> >  				page_cache_release(swappage);
-> >  				error = -ENOMEM;
-> >  				goto failed;
-> > @@ -1385,7 +1385,7 @@ repeat:
-> >  
-> >  			/* Precharge page while we can wait, compensate after */
-> >  			error = mem_cgroup_cache_charge(filepage, current->mm,
-> > -					GFP_HIGHUSER_MOVABLE);
-> > +					gfp_memcg_mask(GFP_HIGHUSER_MOVABLE));
-> >  			if (error) {
-> >  				page_cache_release(filepage);
-> >  				shmem_unacct_blocks(info->flags, 1);
-> > 
-> 
+> Allowing it to be NULL seems pretty much contrary to the model that
+> a supply name is associated with a device.  I'd call that a bug and
+> fix it ... vs calling it a feature and diverging from standard
+> framework models.
 
+Ideally everything should use a device but sadly it's not universal yet.
+
+> > which is going to cause upset if the 
+> > dev_dbg() is hit.  Things like cpufreq which can use regulators don't
+> > use a struct device (currently!) so it's supported.
+
+> Which cpufreq driver(s) in mainline use regulator code?
+
+None that I am aware of.  However, there's an i.MX31 cpufreq driver
+queued on merging of the clock API support required (plus a non-cpufreq
+implementation of DVFS for the same CPU which also uses the regulator
+API).
+
+> I had commented not long ago that the regulator framework needs
+> updates to support cpufreq.  For example, trying to enable hardware
+> support for DVFS (Dynamic Voltage and Frequency Scaling) on several
+> platforms requires configuring more than one voltage ... floor and
+> ceiling, switched automatically by a CPU signal, for starters.
+
+I'd actually given some consideration to such regulators - while it's a
+*bit* of an abuse of the API the fact that voltages are specified as
+limits could probably be used somewhat idiomatically for the purpose,
+especially if the CPU is controlling things autonomously rather than
+having it done by software.  It does need thought, though - that idea is
+giving me a bit of ick but it does reflect what's going on.
+
+> It would be good to overhaul cpufreq before trying to make it use
+> things like the clock and regulator frameworks.  Fitting into the
+> driver model seems overdue, for one.
+
+Well voulunteered :) .
+
+> > > @@ -971,19 +991,16 @@ static int _regulator_enable(struct regu
+> > >  	int ret = -EINVAL;
+
+> > >  	if (!rdev->constraints) {
+> > > -		printk(KERN_ERR "%s: %s has no constraints\n",
+> > > -		       __func__, rdev->desc->name);
+> > > +		dev_err(&rdev->dev, "%s has no constraints\n",
+> > > +		       rdev->desc->name);
+
+> > Hrm.  You've downgraded most of the diagnostics to dev_dbg()
+
+> No; just ones in the enable/disable paths, and even there just
+> ones where the caller has control over the illegal parameters.
+
+You've adjusted things in the supply registration interface and get() in
+this way as well and at least the change to the "unable to find" message
+in get() may not be directly due to the caller (it could be due to a
+failure on the part of the board code to register the supply name).
+
+> Recall that rdev->constraints can be nulled for various reasons
+> that aren't under control of the regulator client.
+
+Well, clearly.  The client has no direct control over the constraints.
+
+> I think this was as consistent as possible with the basic rule
+> that when the caller could have prevented it, it's their job to
+> handle the fault code they get.
+
+I don't see handling the error code and explaining why it happend as
+being orthogonal here.  My inclination would be to always log at least
+constraint and setup errors (since callers are likely to just fail and
+it's useful to say why), at least until the API becomes more widely used
+since almost everyone is on a learning curve here.  People can enable
+DEBUG but it's nice to just give the error.
+
+I can see logging all the enable and disable errors becoming too spammy,
+though, since they are much more likely to be retried.
+
+> > >  		ret = rdev->desc->ops->enable(rdev);
+> > > -		if (ret < 0) {
+> > > -			printk(KERN_ERR "%s: failed to enable %s: %d\n",
+> > > -			       __func__, rdev->desc->name, ret);
+> > > -			return ret;
+> > > +		if (ret >= 0) {
+
+> > I have to say I'd be happier keeping the logic as it was here.  The
+> > behaviour does stay the same due to fall through but it's not quite so
+> > clear since it's not consistent with the error handling style for the
+> > rest of the function.
+
+> You mean in this case you'd want to see a (needless) GOTO?  I suppose
+
+Yes, it's a bit harder to parse wth the reversed test - the change in
+idiom raises an eyebrow, especially since we fall through into a case
+marked fail for both success and failure.
+
+> it could be done.  If you want consistency, I'd get rid of the unique
+> message for missing constraints, and rely on unique fault codes ...
+
+The point here is the patterns in the code - something that looks
+different breaks the flow.
