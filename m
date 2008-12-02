@@ -1,124 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbYLBS4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYLBTDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbYLBS4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 13:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbYLBS4l
+	id S1754812AbYLBTDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYLBTD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 13:56:41 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:25995 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752416AbYLBS4k (ORCPT
+	Tue, 2 Dec 2008 14:03:26 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:40960 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbYLBTD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 13:56:40 -0500
-Date: Tue, 2 Dec 2008 13:56:34 -0500
-From: "Michael B. Trausch" <mike@trausch.us>
-To: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>,
-       linux-kernel@vger.kernel.org, pazke@ports.donpac.ru
-Subject: Re: Linux 2.6.28-rc7
-Message-ID: <20081202135634.6dd63d1d@zest.spicerack.trausch.us>
-In-Reply-To: <20081202190617.61b61592@varda>
-References: <fa.IDjfwzrT2B02+NHfmYwtICnzOOA@ifi.uio.no>
-	<fa.J8MFTCUT8El3sK8BuYDBvaMRaB8@ifi.uio.no>
-	<fa.q/4H3AtoJGSJ+i8tlXR4X35LFFU@ifi.uio.no>
-	<fa.98CeSgxJ/GGaLLyZ97s1oHgh7hE@ifi.uio.no>
-	<20081202121111.245d2ecc@zest.spicerack.trausch.us>
-	<20081202190617.61b61592@varda>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-X-Face: V.VYf~Py*A]A=Ig&q'ryc:4rZ;J![}&08<H1=7E_.O\dF8Pbw,VE~_9QSzcs]DSM%TGA4j\
- .0/Sz8G(4s<D2VQ/uwq$dEL]LbY/y5TYyD$/6It5Yv#c=zo>wpW.<5dFb>I:aB^uO~EL+FT]m5[I4H
- s,s=
-X-Operating-System: Ubuntu 8.10 (Intrepid Ibex)
+	Tue, 2 Dec 2008 14:03:26 -0500
+Subject: Re: [BUG] mmotm-081130: null pointer deref in sigkill_pending()
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Ying Han <yinghan@google.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <604427e00812021046p3ebd6e24xf92e6ab29df35686@mail.gmail.com>
+References: <1228223933.30995.28.camel@lts-notebook>
+	 <604427e00812021046p3ebd6e24xf92e6ab29df35686@mail.gmail.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 02 Dec 2008 14:03:21 -0500
+Message-Id: <1228244601.6202.13.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/6HpEvdWFtFTFkSNhRpUn4o.";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/6HpEvdWFtFTFkSNhRpUn4o.
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2008-12-02 at 10:46 -0800, Ying Han wrote:
+> On Tue, Dec 2, 2008 at 5:18 AM, Lee Schermerhorn
+> <Lee.Schermerhorn@hp.com> wrote:
+> > While testing mmotm [11/29, 11/30, likely in 12/01], I came across the
+> > following bug after ~2 hours of heavy stress on x86_64 [same bug/trace
+> > hit on ia64]:
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
+> > IP: [<ffffffff8024e679>] sigkill_pending+0x19/0x30
+> > PGD 63be12067 PUD 7fd0cc067 PMD 0
+> > Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+> > last sysfs file: /sys/block/hda/removable
+> > CPU 7
+> > Modules linked in: sunrpc ipv6 dm_mirror dm_region_hash dm_log dm_mod rfkill input_polldev pci_slot parport_pc lp parport ide_cd_mod cdrom serio_raw hpilo hpwdt button amd_rng pata_acpi i2c_amd756 libata i2c_core pcspkr mptspi mptscsih sym53c8xx scsi_transport_spi sd_mod scsi_mod mptbase ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+> > Pid: 19530, comm: ps Not tainted 2.6.28-rc6-mmotm-081130-2235 #10
+> > RIP: 0010:[<ffffffff8024e679>]  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
+> > RSP: 0018:ffff8806a64efd38  EFLAGS: 00010246
+> > RAX: 0000000000000000 RBX: 000000000000000e RCX: ffff8805fc96fb00
+> > RDX: ffff8806a64efe38 RSI: 00007fff62423000 RDI: ffff88020c87abe0
+> > RBP: ffff8806a64efd38 R08: 0000000000000000 R09: ffff8806a64efe30
+> > R10: 0000000000000002 R11: 0000000000000000 R12: ffff8805fc96fb00
+> > R13: 0000000000000000 R14: 0000000000000010 R15: ffff8806a64efe30
+> > FS:  00007f32d4ac46f0(0000) GS:ffff8807fed46d80(0000) knlGS:0000000000000000
+> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > CR2: 0000000000000038 CR3: 0000000784571000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Process ps (pid: 19530, threadinfo ffff8806a64ee000, task ffff88062cf6d7c0)
+> > Stack:
+> >  ffff8806a64efdb8 ffffffff80298986 0000000000000001 ffff88062cf6d7c0
+> >  ffff8803ad100680 ffff88020c87abe0 0000000000000000 ffff8806a64efe38
+> >  ffff8806a64efe30 00000001804f0765 00007fff624236be 0000000000000000
+> > Call Trace:
+> >  [<ffffffff80298986>] __get_user_pages+0x166/0x440
+> >  [<ffffffff80298c92>] get_user_pages+0x32/0x40
+> >  [<ffffffff80298dab>] access_process_vm+0x10b/0x1e0
+> >  [<ffffffff8030bd60>] proc_pid_cmdline+0x90/0x120
+> >  [<ffffffff802ae568>] ? alloc_pages_current+0xa8/0x100
+> >  [<ffffffff8030de5b>] proc_info_read+0x9b/0xe0
+> >  [<ffffffff802c0ba4>] vfs_read+0xc4/0x160
+> >  [<ffffffff802c1000>] sys_read+0x50/0x90
+> >  [<ffffffff8020c3fb>] system_call_fastpath+0x16/0x1b
+> > Code: e8 08 83 e0 01 c3 66 0f 1f 44 00 00 66 0f 1f 44 00 00 f6 87 49 05 00 00 01 55 b8 01 00 00 00 48 89 e5 75 12 48 8b 87 10 05 00 00 <48> 8b 40 38 48 c1 e8 08 83 e0 01 c9 c3 66 2e 0f 1f 84 00 00 00
+> > RIP  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
+> >  RSP <ffff8806a64efd38>
+> > CR2: 0000000000000038
+> > ---[ end trace 80efa2c8bcce4fdc ]---
+> >
+> > Ad hoc instrumentation showed that this is likely the result of the
+> > "make-get_user_pages-interruptible" patch in mmotm.  The test workload
+> > includes a number of tasks that repeatedly run a list of miscellaneous
+> > programs, including ps(1).  Occasionally, ps will catch a task with a
+> > NULL "tsk->signal" [exiting?], resulting in a null pointer deref in
+> > sigkill_pending() called from __get_user_pages().
+> >
+> > Before the aforementioned patch, sigkill_pending() was only called from
+> > ptrace_stop() for tsk == current.  The comment block on ptrace_stop()
+> > says:  "This must be called with current->sighand->siglock held."  So,
+> > it doesn't look safe to call sigkill_pending() from
+> > __get_user_pages()--especially on a task != current--without similar
+> > locking.
+> 
+> >
+> > I'm not sure what the correct fix should be here.
+> I made a fix for the patch as Oleg suggested which replace the
+> sigkill_pending() as fatal_signal_pending().
+> Andrew deleted the original patch from mm tree this morning and i am
+> about the post the new patch with
+> the fix.
 
-On Tue, 2 Dec 2008 19:06:17 +0100
-Alejandro Riveira Fern=C3=A1ndez <ariveira@gmail.com> wrote:
+OK.  I've been working on a fix, but I'll await yours.  I have found
+another interaction of this patch with munlock of mlocked vmas on exit
+if the task was killed with SIGKILL.  Get_user_pages() fails and we
+don't munlock the pages.   I have a fix for that [another internal
+GUPS_FLAG], as well, but I'll wait until yours shows up in mmotm and
+rebase atop that.  Meanwhile, my fix lets me continue to test on
+mmotm-081201.
 
-> El Tue, 2 Dec 2008 12:11:11 -0500
-> "Michael B. Trausch" <mike@trausch.us> escribi=C3=B3:
->=20
-> [...]
-> >=20
-> > Alejandro, can you switch back to VTs again after rebuilding your
-> > NVIDIA module?
-> =20
->   I can switch to VT's and the bug still manifest 2.6.28-rc7
->  =20
->=20
-> >  Also, you seem to have mentioned that you're not using
-> > Ubuntu's packaged NVIDIA driver... this may mean that you've
-> > overwritten and/or moved other files that Ubuntu uses, since the
-> > NVIDIA driver installer does this automatically.
->=20
->   I'm using the nvidia installer for the 180.06 driver yes
->=20
+> >
+> > Related:  the patch and it's update add the following to
+> > __get_user_pages():
+> >
+> >        if (unlikely(sigkill_pending(current) ||
+> >             sigkill_pending(tsk)))
+> >                return i ? i : -ERESTARTSYS;
+> >
+> > As a minimum, I don't think we want to call the second sigkill_pending()
+> > unless tsk != current.
+> In most cases, (current == tsk) in get_user_pages. However in some
+> situation current is calling get_user_pages on behalf of tsk and we
+> want to interrupt the allocation in this case as well.
 
-It may be a bug in the 180.06 driver.  Try 177.80 which comes with
-Ubuntu 8.10.  However...
+Agreed.  It was, in fact, the case where ps(1) was calling
+get_user_pages() to access another [exiting] task's command line
+via /proc that I hit the problem.
 
-> > Can you try using a stock
-> > system, updated kernel, and let DKMS build the NVIDIA module?
-> > You'll need to make some alterations, but I can help with those.
->=20
->  Would the nvidia.com uninstaller leave things as in a stock install?
+> I might change it something like this:
+> 
+> >        if (unlikely(sigkill_pending(current) ||
+> >             ((current != tsk) && sigkill_pending(tsk))))
+> >                return i ? i : -ERESTARTSYS;
 
-Not really.  You'll either need a snapshot of the way things were, or
-to reinstall, to bring it back to normal.  The NVIDIA custom installer
-plays with all sorts of files all over the place, not just the kernel
-configuration.  The main issue is that it will have modified files that
-are under the control of the package manager (or are delegated by the
-package manager to other utilities to manage).
+Yes, that's what I was thinking.  
 
->  Where can i find help about DKMS? also does it work if you use the
->  "vanilla way" of installing kernels? i do:
->   make ; make install ; make modules_install ; and mkinitramfs to
-> install kernels i test
+Thanks,
+Lee
 
-"man dkms" will get you started with learning about DKMS, and you can
-also look it up on Google.
-
-The point of DKMS is to permit you to update your kernel and have it
-manage the binary drivers with source interfaces (or even pure-source
-drivers that aren't in the kernel tree) for you.  As such, it does work
-with a vanilla kernel---this is how I use it because installing new
-kernels doesn't do anything that would confuse dpkg.
-
-On Ubuntu, you probably want to do:
-
- $ make all && make install && make modules_install && \
-   update-initramfs -c -k ${KERNEL_VERSION} && update-grub
-
-That is how I do mine.
-
-update-initramfs and update-grub are utilities provided by
-Debian/Ubuntu.
-
-	--- Mike
-
---=20
-My sigfile ran away and is on hiatus.
-http://www.trausch.us/
-
---Sig_/6HpEvdWFtFTFkSNhRpUn4o.
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkk1hOMACgkQ0kE/IBnFmjBSSACfSv1zQDeaQgWCYxl5XKG8reMA
-0KQAnAxiKb3mgNOOtE1PD/hX0728PCM/
-=xBeI
------END PGP SIGNATURE-----
-
---Sig_/6HpEvdWFtFTFkSNhRpUn4o.--
