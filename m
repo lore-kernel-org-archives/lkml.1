@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYLBQGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbYLBQOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbYLBQGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYLBQGn
+	id S1755151AbYLBQOa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYLBQOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:06:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57565 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750748AbYLBQGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:06:42 -0500
-Date: Tue, 2 Dec 2008 17:05:07 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Pirko <jpirko@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: Re: [PATCH] getrusage: fill ru_maxrss value
-Message-ID: <20081202160507.GA14524@redhat.com>
-References: <20081202131802.5252b96d@psychotron.englab.brq.redhat.com>
+	Tue, 2 Dec 2008 11:14:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56885 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751275AbYLBQOV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 11:14:21 -0500
+Date: Tue, 2 Dec 2008 08:13:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
+	<ariveira@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: Linux 2.6.28-rc7
+In-Reply-To: <20081202165637.09984819@varda>
+Message-ID: <alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org> <20081202131442.42e7df48@varda> <alpine.LFD.2.00.0812020748310.3256@nehalem.linux-foundation.org> <20081202165637.09984819@varda>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202131802.5252b96d@psychotron.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/02, Jiri Pirko wrote:
->
-> Based on the patch previously posted by Frank Mayhar:
-> http://kerneltrap.org/mailarchive/linux-kernel/2007/9/20/264772
->
-> Changed to do not panic and to set the value properly. Also made some
-> modifications as Oleg suggested. maxrss value is set to pages as "time"
-> application converts it co KBs.
->
-> This patch enables "time" application to show maxresident value
-> correctly.
 
-I believe the changelog could be a bit more descriptive ;)
-And I think the patch needs more CCs. (Hugh and Michael cc'ed).
 
-What about exec? Should we preserve signal_struct->maxrss, or should
-we reset it? I don't know what is the right behaviour, but imho it
-should be consistent with task_mem()/xacct_add_tsk(). And since
-bprm_mm_init() does not copy ->hiwater_xxx, perhaps we should reset.
-Or we should change the exec_mmap() path to preserve ->hiwater_xxx,
-I dunno.
+On Tue, 2 Dec 2008, Alejandro Riveira Fernández wrote:
+> 
+>  from my reply to pazke <pazke@ports.donpac.ru>
+>  "
+> I took the sanpshot of the dmesg after loading the module if my word is not
+> enough i can reboot with the module disabled but i do not see the point...
+> The truth is that the bug prevented me from loading/installing the nvidia
+> module becouse i could not use sudo. Only when i rebooted into single mode
+> where the problems went away i could build and install the module...
 
-> Note that even without this patch applied there is a race between two
-> parallel update_hiwater_rss() callers.
->
-> [...snip...]
-> @@ -1051,6 +1051,8 @@ NORET_TYPE void do_exit(long code)
->  	if (tsk->mm) {
->  		update_hiwater_rss(tsk->mm);
->  		update_hiwater_vm(tsk->mm);
-> +
-> +		tsk->signal->maxrss = tsk->mm->hiwater_rss;
+Ahh, ok. I did wonder if something was up from the timing (ie it was 
+loaded almost two minutes after bootup).
 
-Yes. But still it is not good the patch adds new racy calls
-(k_getrusage() too). And in fact I think this code in do_exit()
-should die, and we can update signal->maxrss in exit_mm().
+Since you are apparently a git user, and 2.6.28-rc6-00007-ged31348 was 
+fine, there's really only 270 commits in between that and 2.6.28-rc7. Can 
+I ask you to bisect for a couple of runs, which would cut it down to a 
+handful? (Ie you don't even need to do a full bisect, although that should 
+really only require about 8 reboots).
 
-Unless I missed something, the "if (tsk->mm) {}" code in
-do_exit() is not needed because xacct_add_tsk() is not right
-anyway. What we imho need is get_mm_hiwater_xxx(), can be
-also used by task_mm().
+Just do
 
-I'll send the patch a bit later, then we can tweak this patch.
+	git bisect start
+	git bisect bad v2.6.27
+	git bisect good v2.6.28-rc6-00007-ged31348
 
-Do you agree?
+and off you go. That would help enormously.
 
-(just in case, I don't mean that mm/ uses update_hiwater_xxx()
- "safely", afaics try_to_unmap can race with unmap_region
- for example, but still).
+There are very few console-related changes in that range, and the most 
+notably one is actually radeon-specific so it shouldn't be an issue for 
+you. I'd _suspect_ bca404afdc5206c3bb30168315ee8a98a579ec65 ("fbdev: fix 
+FB console blanking"), but quite frankly, it could be something random 
+that just interacted badly. A bisection would narrow things down.
 
-Oleg.
-
+			Linus
