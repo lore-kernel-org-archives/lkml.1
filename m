@@ -1,112 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbYLBTdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYLBTgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbYLBTdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:33:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbYLBTbY
+	id S1755913AbYLBTgu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYLBTgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:31:24 -0500
-Received: from zbr.yandex.ru ([213.180.219.33]:50739 "EHLO gavana.yandex.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755588AbYLBTaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:30:18 -0500
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [5/5] POHMELFS: VFS changes and make/config files.
-Date: Tue,  2 Dec 2008 22:30:54 +0300
-Message-Id: <12282462551908-git-send-email-zbr@ioremap.net>
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12282462551223-git-send-email-zbr@ioremap.net>
-References: <12282462541461-git-send-email-zbr@ioremap.net>
- <12282462542235-git-send-email-zbr@ioremap.net>
- <12282462541352-git-send-email-zbr@ioremap.net>
- <12282462542094-git-send-email-zbr@ioremap.net>
- <12282462551223-git-send-email-zbr@ioremap.net>
+	Tue, 2 Dec 2008 14:36:41 -0500
+Received: from gv-out-0910.google.com ([216.239.58.185]:64902 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754269AbYLBTgk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:36:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=d+nkvmuaGXEcYsx5pTVl8fW8Z2AxNLZq2LvkHP9Z4jrUXiDMwyau9U0kmESlziy3Tq
+         sDvv8PZtzClly5/vDFwUlTywoiSzal8Fajkl7eM1hxFU2hwmk4Z1Fd05cLr3TCn0NP+1
+         4rd36sf9vNMzYBxHeMb3f5HKUDoDppt63eRT0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Hannes Eder <hannes@hanneseder.net>
+Subject: Re: [PATCH] alim15x3: fix sparse warning
+Date: Tue, 2 Dec 2008 20:29:32 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128-dirty; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       trivial@kernel.org
+References: <493049e1.0ab6660a.0bc3.ffffaf3b@mx.google.com>
+In-Reply-To: <493049e1.0ab6660a.0bc3.ffffaf3b@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812022029.35785.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+On Thursday 27 November 2008, Hannes Eder wrote:
+> Fix this sparse warning:
+> 
+>   drivers/ide/alim15x3.c:594:2: warning: returning void-valued expression
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index abccb5d..c1b2b32 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1557,6 +1557,8 @@ menuconfig NETWORK_FILESYSTEMS
- 
- if NETWORK_FILESYSTEMS
- 
-+source "fs/pohmelfs/Kconfig"
-+
- config NFS_FS
- 	tristate "NFS client support"
- 	depends on INET
-diff --git a/fs/Makefile b/fs/Makefile
-index a1482a5..56fe19c 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
- obj-$(CONFIG_DEBUG_FS)		+= debugfs/
- obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
- obj-$(CONFIG_GFS2_FS)           += gfs2/
-+obj-$(CONFIG_POHMELFS)		+= pohmelfs/
-diff --git a/fs/pohmelfs/Kconfig b/fs/pohmelfs/Kconfig
-new file mode 100644
-index 0000000..82d13ad
---- /dev/null
-+++ b/fs/pohmelfs/Kconfig
-@@ -0,0 +1,23 @@
-+config POHMELFS
-+	tristate "POHMELFS filesystem support"
-+	select CONNECTOR
-+	help
-+	  POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
-+	  This is a network filesystem which supports coherent caching of data and metadata
-+	  on clients.
-+
-+config POHMELFS_DEBUG
-+	bool "POHMELFS debugging"
-+	depends on POHMELFS
-+	default n
-+	help
-+	  Turns on excessive POHMELFS debugging facilities.
-+	  You usually do not want to slow things down noticebly and get really lots of kernel
-+	  messages in syslog.
-+
-+config POHMELFS_CRYPTO
-+	bool "POHMELFS crypto support"
-+	depends on CONFIG_CRYPTO_BLKCIPHER && CONFIG_CRYPTO_HASH
-+	help
-+	  This option allows to encrypt and/or protect with strong cryptographic hash all dataflow
-+	  between server and clients. Each config group can have own keys.
-diff --git a/fs/pohmelfs/Makefile b/fs/pohmelfs/Makefile
-new file mode 100644
-index 0000000..196561c
---- /dev/null
-+++ b/fs/pohmelfs/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_POHMELFS)	+= pohmelfs.o
-+
-+pohmelfs-y := inode.o config.o dir.o net.o path_entry.o trans.o crypto.o lock.o mcache.o
-
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 876bc59..016a00b 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -497,6 +497,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
- 		lru_cache_add(page);
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
- 
- #ifdef CONFIG_NUMA
- struct page *__page_cache_alloc(gfp_t gfp)
-@@ -614,6 +615,7 @@ int __lock_page_killable(struct page *page)
- 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
- 					sync_page_killable, TASK_KILLABLE);
- }
-+EXPORT_SYMBOL_GPL(__lock_page_killable);
- 
- /**
-  * __lock_page_nosync - get a lock on the page, without calling sync_page()
+applied
