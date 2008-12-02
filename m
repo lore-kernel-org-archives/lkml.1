@@ -1,148 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYLBTK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYLBTL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbYLBTK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYLBTKM
+	id S1755271AbYLBTL5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYLBTLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:10:12 -0500
-Received: from mga03.intel.com ([143.182.124.21]:11393 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYLBTKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:10:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,703,1220252400"; 
-   d="scan'208";a="85600802"
-Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and
-	private channels
-From: Dan Williams <dan.j.williams@intel.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
-       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
-In-Reply-To: <Pine.LNX.4.64.0812021820560.5663@axis700.grange>
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
-	 <Pine.LNX.4.64.0812021642120.5663@axis700.grange>
-	 <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com>
-	 <Pine.LNX.4.64.0812021820560.5663@axis700.grange>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 12:10:07 -0700
-Message-Id: <1228245007.8408.20.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 14:11:49 -0500
+Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:3504 "EHLO
+	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbYLBTLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:11:48 -0500
+Date: Tue, 2 Dec 2008 20:10:42 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@suse.cz>,
+       mikulas@artax.karlin.mff.cuni.cz, clock@atrey.karlin.mff.cuni.cz,
+       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+Message-ID: <20081202191038.GE29091@vanheusden.com>
+References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu> <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202163720.GB18162@mit.edu>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Tue Dec  2 21:33:29 CET 2008
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
+	key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 10:27 -0700, Guennadi Liakhovetski wrote:
-> Ooh... Do you really think registering 32 dma-devices is a better solution 
-> than allowing non-equal dma-channels? As I explained in the commit 
-> comment, this is a specialised Image Processing DMA Controller, and each 
-> its channel has a fixed role. So, each client has to get a specific 
-> channel.
-
-I see your point.  Rather than doing driver gymnastics we can simply
-have dmaengine do the following (basically your patch reformatted a
-bit):
-
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index e2ccfd0..66d0ae7 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -445,10 +445,10 @@ static void dma_channel_rebalance(void)
- 		}
- }
- 
--static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_device *dev)
-+static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_device *dev,
-+					  dma_filter_fn fn, void *fn_param)
- {
- 	struct dma_chan *chan;
--	struct dma_chan *ret = NULL;
- 
- 	/* devices with multiple channels need special handling as we need to
- 	 * ensure that all channels are either private or public.
-@@ -471,11 +471,15 @@ static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_devic
- 				 __func__, dma_chan_name(chan));
- 			continue;
- 		}
--		ret = chan;
--		break;
-+		if (fn && !fn(chan, fn_param)) {
-+			pr_debug("%s: %s filter said false\n",
-+				 __func__, dma_chan_name(chan));
-+			continue;
-+		}
-+		return chan;
- 	}
- 
--	return ret;
-+	return NULL;
- }
- 
- /**
-@@ -488,22 +492,13 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- {
- 	struct dma_device *device, *_d;
- 	struct dma_chan *chan = NULL;
--	bool ack;
- 	int err;
- 
- 	/* Find a channel */
- 	mutex_lock(&dma_list_mutex);
- 	list_for_each_entry_safe(device, _d, &dma_device_list, global_node) {
--		chan = private_candidate(mask, device);
--		if (!chan)
--			continue;
--
--		if (fn)
--			ack = fn(chan, fn_param);
--		else
--			ack = true;
--
--		if (ack) {
-+		chan = private_candidate(mask, device, fn, fn_param);
-+		if (chan) {
- 			/* Found a suitable channel, try to grab, prep, and
- 			 * return it.  We first set DMA_PRIVATE to disable
- 			 * balance_ref_count as this channel will not be
-@@ -521,10 +516,8 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- 				       dma_chan_name(chan), err);
- 			else
- 				break;
--		} else
--			pr_debug("%s: %s filter said false\n",
--				 __func__, dma_chan_name(chan));
--		chan = NULL;
-+			chan = NULL;
-+		}
- 	}
- 	mutex_unlock(&dma_list_mutex);
- 
-
-
-> > > Another problem I encountered with my framebuffer is the initialisation
-> > > order. You initialise dmaengine per subsys_initcall(), whereas the only
-> > > way to guarantee the order:
-> > >
-> > > dmaengine
-> > > dma-device driver
-> > > framebuffer
-> > 
-> > hmm... can the framebuffer be moved to late_initcall?
+> > If disk looses data after acknowledging the write, all hope is lost.
+> > Else I expect filesystem to preserve data I successfully synced.
+> >      (In the b-tree split failed case I'd expect transaction commit to
+> >      fail because new data could not be weitten; at that point
+> >      disk+journal should still contain all the data needed for
+> >      recovery of synced/old files, right?)
 > 
-> I assumed, that one wants to register the framebuffer as early as 
-> possible...
+> Not necessarily.  For filesystems that do logical journalling (i.e.,
+> xfs, jfs, et. al), the only thing written in the journal is the
+> logical change (i.e., "new dir entry 'file_that_causes_the_node_split'").
 
-Yes, but I'm hesitant to escalate the initcall level.  It sounds like
-the channel(s?) for the framebuffer are an integral part of the
-framebuffer device so maybe they should not be registered separately?
-But that runs into issues if you want the channels to return to the
-general pool when the framebuffer driver is unloaded.
+> The transaction commits *first*, and then the filesystem tries to
+> write update the filesystem with the change, and it's only then that
+> the write fails.  Data can very easily get lost.
 
---
-Dan
+> Even for ext3/ext4 which is doing physical journalling, it's still the
 
+So do I understand this right that ext3/4 are more robust?
+
+
+Folkert van Heusden
+
+-- 
+MultiTail is a versatile tool for watching logfiles and output of
+commands. Filtering, coloring, merging, diff-view, etc.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
