@@ -1,73 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbYLBK3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYLBKa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbYLBK3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 05:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYLBK32
+	id S1754444AbYLBKa1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 05:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYLBKaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 05:29:28 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:35328 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbYLBK31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 05:29:27 -0500
-Date: Tue, 2 Dec 2008 11:29:25 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Len Brown <lenb@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <david-b@pacbell.net>,
-       lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
-       linux-acpi@vger.kernel.org
-Subject: Re: PATCH: /proc/acpi/alarm: handle day-of-month wraparound on
-	readback
-Message-ID: <20081202102925.GA3194@dose.home.local>
-Mail-Followup-To: Mark Lord <lkml@rtr.ca>, Len Brown <lenb@kernel.org>,
-	Alessandro Zummo <a.zummo@towertech.it>,
-	David Brownell <david-b@pacbell.net>,
-	lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
-	linux-acpi@vger.kernel.org
-References: <200806222042.13929.david-b@pacbell.net> <4934176F.6080900@rtr.ca> <4934188E.6080701@rtr.ca>
+	Tue, 2 Dec 2008 05:30:12 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:49229 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751259AbYLBKaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 05:30:10 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: wli@holomorphy.com
+Subject: [PATCH linux-next] sparc: Add missing of_node_put
+Date: Tue, 2 Dec 2008 11:30:06 +0100
+User-Agent: KMail/1.9.10
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>,
+       Nicolas Palix <npalix@diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4934188E.6080701@rtr.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Length: 3900
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812021130.06197.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 12:02:06 -0500, Mark Lord wrote:
-> Mark Lord wrote:
->> Fix month wrap issue with readback from /proc/acpi/alarm
->> This bug has been around *forever*.
->>
->> $ echo '2008-12-01 10:36:20' > /proc/acpi/alarm
->> $ cat /proc/acpi/alarm
->> 2008-11-01 10:36:20
->>
->> Note how the readback above shows the month incorrectly.
->> But with this patch applied, it shows the correct month (12).
-> ..
->
-> I should add, that the above test requires that the alarm
-> be set for any day of the *next* month from the current month.
-> My MythTV box does a readback test any time it programs a wakeup,
-> and noticed the bug over this past weekend (2008-11-30).
 
-Why not just use the new RTC drivers and /sys/class/rtc/rtc0/wakealarm?
-MythTV already provides seconds since epoch for the wakeup time, so you
-can use this value without converting it:
+of_node_put is needed before discarding a value received from
+of_find_node_by_name, eg in error handling code or when the device
+node is no longer used.
 
-$ cat /usr/local/bin/myth-setwaketime
-#!/bin/sh
+The semantic match that catches the bug is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-SYSFS_WAKE_FILE="/sys/class/rtc/rtc0/wakealarm"
+// <smpl>
+@r exists@
+local idexpression struct device_node *n;
+position p1, p2;
+struct device_node *n1;
+statement S;
+identifier f;
+expression E;
+expression *ptr != NULL;
+@@
 
-echo -n "Wakeup time is "
-date -d @$1
+n@p1 = of_find_node_by_name(...)
+...
+if (!n) S
+... when != of_node_put(n)
+    when != n1 = f(n,...)
+    when != E = n
+    when any
+    when strict
+(
+  return \(0\|<+...n...+>\|ptr\);
+|
+return@p2 ...;
+|
+  of_node_put(n);
+|
+  n1 = f(n,...)
+|
+  E = n
+)
 
-if ! test -w "$SYSFS_WAKE_FILE" ; then
-	exit 1
-fi
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
 
-echo 0 > "$SYSFS_WAKE_FILE"
-echo "$1" > "$SYSFS_WAKE_FILE"
+print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ arch/sparc/kernel/sun4c_irq.c |    2 ++
+ arch/sparc/kernel/sun4d_irq.c |    1 +
+ arch/sparc/kernel/sun4m_irq.c |    2 ++
+ 3 files changed, 5 insertions(+)
+
+diff --git a/arch/sparc/kernel/sun4c_irq.c b/arch/sparc/kernel/sun4c_irq.c
+index 5dc8a57..326b8b1 100644
+--- a/arch/sparc/kernel/sun4c_irq.c
++++ b/arch/sparc/kernel/sun4c_irq.c
+@@ -160,6 +160,7 @@ static void __init sun4c_init_timers(irq_handler_t counter_fn)
+ 	sun4c_timers = (void __iomem *) (unsigned long) addr[0];
+ 
+ 	irq = of_get_property(dp, "intr", NULL);
++	of_node_put(dp);
+ 	if (!irq) {
+ 		prom_printf("sun4c_init_timers: No intr property\n");
+ 		prom_halt();
+@@ -200,6 +201,7 @@ void __init sun4c_init_IRQ(void)
+ 	}
+ 
+ 	addr = of_get_property(dp, "address", NULL);
++	of_node_put(dp);
+ 	if (!addr) {
+ 		prom_printf("sun4c_init_IRQ: No address property\n");
+ 		prom_halt();
+diff --git a/arch/sparc/kernel/sun4d_irq.c b/arch/sparc/kernel/sun4d_irq.c
+index d3cb76c..63bc805 100644
+--- a/arch/sparc/kernel/sun4d_irq.c
++++ b/arch/sparc/kernel/sun4d_irq.c
+@@ -508,6 +508,7 @@ static void __init sun4d_init_timers(irq_handler_t counter_fn)
+ 	 * bootbus.
+ 	 */
+ 	reg = of_get_property(dp, "reg", NULL);
++	of_node_put(dp);
+ 	if (!reg) {
+ 		prom_printf("sun4d_init_timers: No reg property\n");
+ 		prom_halt();
+diff --git a/arch/sparc/kernel/sun4m_irq.c b/arch/sparc/kernel/sun4m_irq.c
+index f103171..a1335c1 100644
+--- a/arch/sparc/kernel/sun4m_irq.c
++++ b/arch/sparc/kernel/sun4m_irq.c
+@@ -374,6 +374,7 @@ static void __init sun4m_init_timers(irq_handler_t counter_fn)
+ 	}
+ 
+ 	addr = of_get_property(dp, "address", &len);
++	of_node_put(dp);
+ 	if (!addr) {
+ 		printk(KERN_ERR "sun4m_init_timers: No 'address' prop.\n");
+ 		return;
+@@ -437,6 +438,7 @@ void __init sun4m_init_IRQ(void)
+ 	}
+ 
+ 	addr = of_get_property(dp, "address", &len);
++	of_node_put(dp);
+ 	if (!addr) {
+ 		printk(KERN_ERR "sun4m_init_IRQ: No 'address' prop.\n");
+ 		return;
