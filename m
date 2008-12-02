@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYLBX3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYLBXbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbYLBX3M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYLBX2y
+	id S1754962AbYLBXbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYLBXbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:28:54 -0500
-Received: from mail.samba.org ([66.70.73.150]:34265 "EHLO lists.samba.org"
+	Tue, 2 Dec 2008 18:31:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51596 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752775AbYLBX2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:28:53 -0500
-X-Greylist: delayed 1314 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 18:28:53 EST
-Date: Tue, 2 Dec 2008 15:07:03 -0800
-From: Jeremy Allison <jra@samba.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Steve French <smfrench@gmail.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>
-Subject: Re: Support for applications which need NFS or CIFS "share_deny"
-	flags on open
-Message-ID: <20081202230703.GB11904@jeremy-desktop>
-Reply-To: Jeremy Allison <jra@samba.org>
-References: <524f69650812020831q4e089b87k9a8306ac37f4234a@mail.gmail.com> <20081202193819.GJ3186@webber.adilger.int>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202193819.GJ3186@webber.adilger.int>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753056AbYLBXbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:31:02 -0500
+Date: Wed, 3 Dec 2008 10:30:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Palix <npalix@diku.dk>
+Cc: Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
+       Stelian Pop <stelian@popies.net>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH linux-next] hwmon/ams: Add missing of_node_put in
+ ams-core.c
+Message-Id: <20081203103051.f2f59c9f.sfr@canb.auug.org.au>
+In-Reply-To: <200812021448.13543.npalix@diku.dk>
+References: <200812021448.13543.npalix@diku.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Dec_2008_10_30_51_+1100_R8tHdBYwG48n87cF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 12:38:20PM -0700, Andreas Dilger wrote:
-> On Dec 02, 2008  10:31 -0600, Steve French wrote:
-> > Some of the Wine community posted last month to the cifs mailing list
-> > asking about a change needed for Wine for working properly over
-> > network mounts, but the change is not really cifs specific and would
-> > help other file systems as well so I wanted to mention it here.   The
-> > original post was:
-> > http://marc.info/?l=linux-cifs-client&m=122505569315992&w=2
-> > 
-> > Support for the flags they suggest would be easy for cifs (the
-> > protocol has a field for this, and cifs clients on various other OS
-> > set it), and should be fairly easy for NFSv4 (the RFC for NFSv4
-> > specifies the "share_deny" field within the NFS open request, and
-> > various clients, but not Linux, set it), and would allow WINE to
-> > function properly over a network mount.
-> > 
-> > >we proffer to add into the file /usr/include/asm-generic/fcntl.h
-> > > following flags:
-> > >
-> > >#define O_DENYREAD      004000000 /* Do not permit read access */
-> > >#define O_DENYWRITE     010000000 /* Do not permit write access */
-> > >#define O_DENYDELETE  020000000 /* Do not permit delete or rename
-> > > operations*/
-> > 
-> > Presumably for applications on local mounts, wine mediates their own
-> > mandatory locks, but this is impossible on network mounts without this
-> > change (and can lead to data corruption).
-> 
-> This is a disaster waiting to happen, and I would be against adding
-> such functionality to Linux.  It would allow userspace applications
-> to implement a denial of service to any file that they can open (e.g.
-> open("/lib/libc-2.7.so", O_DENYREAD) would be really bad :-).
+--Signature=_Wed__3_Dec_2008_10_30_51_+1100_R8tHdBYwG48n87cF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Indeed. If these flags are added it should only be for network
-filesystem access, it would be a real mess for local access.
+On Tue, 2 Dec 2008 14:48:13 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+>
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
+>=20
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+>  drivers/hwmon/ams/ams-core.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/drivers/hwmon/ams/ams-core.c b/drivers/hwmon/ams/ams-core.c
+> index 6c9ace1..e612af9 100644
+> --- a/drivers/hwmon/ams/ams-core.c
+> +++ b/drivers/hwmon/ams/ams-core.c
+> @@ -202,6 +202,7 @@ int __init ams_init(void)
+>  	if (np && of_device_is_compatible(np, "AAPL,accelerometer_1"))
+>  		/* Found I2C motion sensor */
+>  		return ams_i2c_init(np);
+> +	of_node_put(np);
 
-I guess it makes sense for them to be the inverse of the Windows
-CreateFile call FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE
-as by default Linux clients would use all these bits for a normal
-open.
+This is wrong because if CONFIG_SENSORS_AMS_PMU is set, np is used again
+below.
 
-Jeremy.
+>  #endif
+> =20
+>  #ifdef CONFIG_SENSORS_AMS_PMU
+> @@ -209,6 +210,7 @@ int __init ams_init(void)
+>  	if (np && of_device_is_compatible(np, "sms"))
+>  		/* Found PMU motion sensor */
+>  		return ams_pmu_init(np);
+> +	of_node_put(np);
+>  #endif
+>  	return -ENODEV;
+>  }
+
+Also, I don't like this code since each of ams_i2c_init and ams_pmu_init
+keep a reference to np, so they should be doing an of_node_get(np) and
+this code above should be unconditionally doing an of_node_put(np).  This
+is not your problem, though.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Dec_2008_10_30_51_+1100_R8tHdBYwG48n87cF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk1xSsACgkQjjKRsyhoI8xg4QCgidp8doUQip5FfPunS8ODBknh
+oY8An3ABeSbIFNkSTaXR2WTCFToOYqu6
+=Hbe4
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Dec_2008_10_30_51_+1100_R8tHdBYwG48n87cF--
