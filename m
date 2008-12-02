@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbYLBV6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbYLBWBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbYLBV6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYLBV6D
+	id S1753498AbYLBWBg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYLBWB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:58:03 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:52582 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751064AbYLBV6C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:58:02 -0500
-Date: Tue, 2 Dec 2008 16:57:58 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: roel kluin <roel.kluin@gmail.com>, adilger@sun.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] ext3, ext4: do_split() fix loop, with obvious
-	unsigned wrap
-Message-ID: <20081202215758.GE20858@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Bill Davidsen <davidsen@tmr.com>, roel kluin <roel.kluin@gmail.com>,
-	adilger@sun.com, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <49343AD9.4020606@gmail.com> <20081202132441.GC16172@mit.edu> <49356B96.7070900@tmr.com>
+	Tue, 2 Dec 2008 17:01:28 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47918 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751155AbYLBWB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 17:01:28 -0500
+Message-ID: <4935B00D.5010302@redhat.com>
+Date: Tue, 02 Dec 2008 23:00:45 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49356B96.7070900@tmr.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: pavel@suse.cz, jonsmirl@gmail.com, jrm8005@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: In-kernel IR remote control support
+References: <AqQThtpZjFB@christoph>
+In-Reply-To: <AqQThtpZjFB@christoph>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 12:08:38PM -0500, Bill Davidsen wrote:
-> Sorry, you are reading it wrong, the i values inside the loop are  
-> identical to those in the original. The value of i starts at count, and  
-> the test comes *before* the value is used inside the loop. The values of  
-> i inside the loop start at count-1 and go to zero, just as it did in the  
-> original. That's why the "i--" is there, the test is on the  
-> unincremented value range count to one, but the value inside the loop is  
-> correct (or at least is the same as the original patch).
+  Hi,
 
-You're right; my bad.  But with something like this:
+>> Can we merge the common ones into the kernel, while still keeping the
+>> obscure ones in userspace using uinput or something?
+> 
+> Why do you want to complicate things even more.
 
->>> +	for (i = count; i--; ) {
+Reality check please.  It already is that complicated.  We have IR
+kernel drivers today.
 
-...where there is no third part of the for loop, and a decrement in
-the second part of the loop, just for clarity's sake, it's much better
-to write it as a while loop.
+> The decision to include some IR support using the Linux input layer some  
+> time ago has forced *me* to add support for this in LIRC and explain to  
+> people why for some devices they need LIRC drivers, and for some they need  
+> the kernel drivers, and for other configurations they have to explicitly  
+> disable the kernel drivers and replace them by LIRC drivers, etc.
 
-						- Ted
+The only way to get out of this situation long-term is to get advanced
+IR support into the mainline kernel.
+
+It doesn't matter how that actually looks like.  Could be pretty much
+like todays lirc drivers.  Could be some input layer extention for
+receiving/sending raw IR codes.  Could be something completely different
+such as using the tty layer for that.  That has to be discussed and
+agreed on.
+
+What *does* matter is being in mainline.  lirc not being in mainline was
+*the* major reason for me to use the input layer to handle TV card IR
+support.  Having a in-tree driver depending on a out-of-tree subsystem
+for IR is a major pain.
+
+It is certainly a good thing to have only *one* way to handle IR
+remotes.  But the kernel side of that way *must* be in mainline.
+Everything else simply isn't going to fly.
+
+cheers,
+  Gerd
+
+
