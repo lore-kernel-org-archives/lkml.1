@@ -1,97 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYLBDJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYLBDL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbYLBDJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 22:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYLBDJF
+	id S1753536AbYLBDL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 22:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYLBDLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 22:09:05 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:42169 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbYLBDJE (ORCPT
+	Mon, 1 Dec 2008 22:11:17 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:38059 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751485AbYLBDLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 22:09:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=Fa2NS3UEcomVrW+SoPU4ZgpFyIwfOzYopIGM77XZ/s0UH6ifMO0GdEN9JQrURZrZeu
-         srOOOcT69Dd82ropvC4vPOwn+KqdXiTh8nW4+1WUPpZH6mCEcAOR0xFJyqBPdqADscZh
-         XlK7oEeSoOIFxtQM+S21c9aXzPbVaUBBYscpg=
-Message-ID: <7c86c4470812011909k59261f96g4e600badfeb0acb9@mail.gmail.com>
-Date: Tue, 2 Dec 2008 04:09:02 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 21/24] perfmon: Intel architectural PMU support (x86)
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       x86@kernel.org, andi@firstfloor.org, sfr@canb.auug.org.au
-In-Reply-To: <alpine.LFD.2.00.0811261446070.3325@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 1 Dec 2008 22:11:16 -0500
+X-YMail-OSG: KcTAF34VM1lq1j_fVD97SiduKckTvtaQt_zO7LMgzsw_4a_tKqHE6fGKeM29evD1TsHUfSAbmPmIQTcQUmt0fE3leOtGSbFHl7hEsevf870uMHyQyNH3tTu2Zt2PBe8nvElr0gqebpZ0VCx07RWUWIM7VW3y7vTcmeeogY9amnJUfzBi2BPiT6xkpPA-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Changes to Linux/SCSI target mode infrastructure for v2.6.28
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>
+Cc: Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@osdl.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Hannes Reinecke <hare@suse.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+In-Reply-To: <1228183480.13241.163.camel@haakon2.linux-iscsi.org>
+References: <1228182727.13241.160.camel@haakon2.linux-iscsi.org>
+	 <1228183480.13241.163.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 19:10:39 -0800
+Message-Id: <1228187439.13241.176.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <492d0c0e.06e2660a.1583.ffffcc0a@mx.google.com>
-	 <alpine.LFD.2.00.0811261446070.3325@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 26, 2008 at 3:55 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 26 Nov 2008, eranian@googlemail.com wrote:
->
->> +static u64 enable_mask[PFM_MAX_PMCS];
->
-> Why do we need enable_mask twice for AMD and Intel ?
->
->> +static u16 max_enable;
->> +static int pfm_intel_arch_version;
->> +
->> +DEFINE_PER_CPU(u64, saved_global_ctrl);
->
-> static
->
-Why you want this static instead of per-cpu?
+On Mon, 2008-12-01 at 18:04 -0800, Nicholas A. Bellinger wrote:
+> On Mon, 2008-12-01 at 17:52 -0800, Nicholas A. Bellinger wrote:
+> > Greetings Tomo-san and Co,
+> > 
+> > With the ongoing work in Linux/SCSI for v2.6.28 to map target mode
+> > struct scatterlist memory directly down to struct scsi_cmnd without the
+> > need for a intermediate struct bio as with the existing
+> > scsi_execute_async(), I have started the porting process for the
+> > Linux/SCSI subsystem plugin in generic target core v3.0
+> > (lio-core-2.6.git) on v2.6.28-rc6.
+> > 
+> > So far, using struct request for ICF_SCSI_CONTROL_NONSG_IO_CDB is up
+> > using blk_rq_map_kern(), as well as ICF_SCSI_NON_DATA_CDB ops using
+> > struct request.  In order to get the first READ_10s of type
+> > ICF_SCSI_DATA_SG_IO_CDB to work, I had to add a temporary
+> > EXPORT_SYMBOL_GPL() for drivers/scsi/scsi_lib.c:scsi_req_map_sg() in
+> > lio-core-2.6.git for v2.6.28-rc6 in order to get TYPE_DISK up using an
+> > software emulated MPT-Fusion HBA driver with struct request.  I have
+> > been looking at drivers/scsi/scsi_tgt_lib.c() (which currently uses
+> > struct request), and I figure we need something similar for the generic
+> > target infrastructure, although __scsi_get_command() and
+> > __scsi_put_command() are currently used in that code.
+> > 
+> > Below is what my patch looks like so far, I will probably just end up
+> > commiting an temporary ifdef to keep scsi_execute_async() until the
+> > proper pieces are in place and the other issues are resolved below.
+> > >From there I will be able to drop in the proper upstream mapping bits
+> > for struct scatterlist in
+> > drivers/lio-core/target_core_pscsi.c:pscsi_map_task_SG() get rid of
+> > scsi_req_map_sg() usage all together.
+> > 
+> > So far during my initial testing, I am running into a two different
+> > exceptions.  One NULL pointer deference OOPS after half dozen Open/iSCSI
+> > login/logouts in block/elevator.c:elv_dequeue_request().   Here is the
+> > trace from SCSI softirq context:
+> > 
+> > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-0.png
+> > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-1.png
+> > 
+> > The other one is a BUG_ON in blk/blk-timeout.c:177 in blk_add_timeout()
+> > that happens after a few hundred MB of READ_10 traffic, which also
+> > appears to pass through elv_dequeue_request() at some point:
+> > 
+> > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-2.png
+> > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-4.png
+> > 
+> 
+> Ok, I just saw this patch:
+> 
+> [PATCH 2.6.28-rc6] block: internal dequeue shouldn't start timer
+> 
+> at http://lkml.org/lkml/2008/11/27/394.
+> 
+> It sounds very similar and I will try it out and see if it resolves the
+> issues above.
+> 
 
->> +/*
->> + * layout of EAX for CPUID.0xa leaf function
->> + */
->> +struct pmu_eax {
->> +     unsigned int version:8;         /* architectural perfmon version */
->> +     unsigned int num_cnt:8;         /* number of generic counters */
->> +     unsigned int cnt_width:8;       /* width of generic counters */
->> +     unsigned int ebx_length:8;      /* number of architected events */
->> +};
->
-> in arch/x86/include/asm/intel_arch_perfmon.h we have already:
->
-> union cpuid10_eax {
->        struct {
->                unsigned int version_id:8;
->                unsigned int num_counters:8;
->                unsigned int bit_width:8;
->                unsigned int mask_length:8;
->        } split;
->        unsigned int full;
-> };
->
-> Can we either use this or remove it ?
->
+Ok, patch applied and rerunning, this time after ~20 Open/iSCSI
+--login/--logout ops.  The same BUG_ON in blk/blk-timeout.c:177 in
+blk_add_timeout() again triggered again, this time coming from
+blkdev_dequeue_request() -> scsi_request_fn() ->
+__generic_unplugin_device().
 
-Well, I need more than eax. We could rewrite this union to include
-eax, edx,  So I propose we call it union cpuid10 and define it as:
+http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-5.png
 
-union cpuid_eax {
-       struct {
-               unsigned int version_id:8;
-               unsigned int num_counters:8;
-               unsigned int bit_width:8;
-               unsigned int mask_length:8;
-       } split_eax;
-       struct {
-              unsigned int num_counters:5;
-              unsigned int bit_width:8;
-              unsigned int reserved:19;
-       } split_edx;
-       unsigned int full;
-}
+blkdev_dequeue_request() is used in a few other places in drivers/scsi:
+
+target:/mnt/sdb/lio-core-2.6/drivers/scsi# grep blkdev_dequeue_request *
+Binary file built-in.o matches
+scsi_lib.c:	blkdev_dequeue_request(req);
+scsi_lib.c:			blkdev_dequeue_request(req);
+Binary file scsi_lib.o matches
+Binary file scsi_mod.o matches
+scsi_transport_sas.c:		blkdev_dequeue_request(req);
+
+Do these need to be changed to use elv_dequeue_request() as well..?
+
+--nab
+
