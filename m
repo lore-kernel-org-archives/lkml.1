@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYLBVb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbYLBVha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527AbYLBVb2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYLBVbU
+	id S1753387AbYLBVha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYLBVhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:31:20 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36982 "EHLO gate.crashing.org"
+	Tue, 2 Dec 2008 16:37:19 -0500
+Received: from vena.lwn.net ([206.168.112.25]:46695 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbYLBVbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:31:19 -0500
-Subject: Re: [PATCH][for 2.6.28] powerpc: Use physical cpu id when setting
- the processor affinity
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1228246621-25622-1-git-send-email-galak@kernel.crashing.org>
-References: <1228246621-25622-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 08:30:23 +1100
-Message-Id: <1228253423.7356.195.camel@pasglop>
+	id S1750982AbYLBVhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 16:37:17 -0500
+Date: Tue, 2 Dec 2008 14:37:15 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Chris Wright <chrisw@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Wright <chrisw@redhat.com>,
+       Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, avi@redhat.com, dlaor@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com, cl@linux-foundation.org
+Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver.
+Message-ID: <20081202143715.1fa03879@bike.lwn.net>
+In-Reply-To: <20081202212411.GG17607@acer.localdomain>
+References: <1226888432-3662-1-git-send-email-ieidus@redhat.com>
+	<1226888432-3662-2-git-send-email-ieidus@redhat.com>
+	<1226888432-3662-3-git-send-email-ieidus@redhat.com>
+	<1226888432-3662-4-git-send-email-ieidus@redhat.com>
+	<20081128165806.172d1026@lxorguk.ukuu.org.uk>
+	<20081202180724.GC17607@acer.localdomain>
+	<20081202181333.38c7b421@lxorguk.ukuu.org.uk>
+	<20081202212411.GG17607@acer.localdomain>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 13:37 -0600, Kumar Gala wrote:
-> In the CONFIG_SMP case the irq_choose_cpu() code was returning back
-> a logical cpu id not the physical id.  We were writing that directly
-> into the HW register.
+On Tue, 2 Dec 2008 13:24:11 -0800
+Chris Wright <chrisw@redhat.com> wrote:
+
+> > Using current known techniques. A random collision is just as bad
+> > news.  
 > 
-> We need to be calling get_hard_smp_processor_id() so irq_choose_cpu()
-> always returns a physical cpu id.
+> And, just to clarify, your concern would extend to any digest based
+> comparison?  Or are you specifically concerned about sha1?
 
-That will probably do for now but if we ever move that routine to
-generic code, I'd rather have the caller do the conversion.
+Wouldn't this issue just go away if the code simply compared the full
+pages, rather than skipping the hashed 128 bytes at the beginning?
+Given the cost of this whole operation (which, it seems, can involve
+copying one of the pages before testing for equality), skipping the
+comparison of 128 bytes seems like a bit of a premature optimization.
 
-Cheers,
-Ben.
-
-
+jon
