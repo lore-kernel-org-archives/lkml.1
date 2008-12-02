@@ -1,110 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYLBNwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYLBNxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYLBNwf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYLBNwT
+	id S1755323AbYLBNxO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYLBNw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:52:19 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:47132 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753148AbYLBNwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:52:18 -0500
-Subject: Re: [TOMOYO #13 (mmotm 2008-11-19-02-19) 01/11] Introduce
-	security_path_clear() hook.
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
-       crispin@crispincowan.com, casey@schaufler-ca.com, jmorris@namei.org,
-       takedakn@nttdata.co.jp, haradats@nttdata.co.jp
-In-Reply-To: <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp>
-References: <20081120112543.799450455@I-love.SAKURA.ne.jp>
-	 <20081120112727.557697893@I-love.SAKURA.ne.jp>
-	 <1228161612.18720.211.camel@moss-spartans.epoch.ncsc.mil>
-	 <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 02 Dec 2008 08:48:39 -0500
-Message-Id: <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 2 Dec 2008 08:52:58 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:42147 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbYLBNw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 08:52:57 -0500
+Date: Tue, 2 Dec 2008 14:52:51 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg K-H <greg@kroah.com>
+Cc: Jason Baron <jbaron@redhat.com>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] DEBUG_KOBJECT vs. DYNAMIC_PRINTK_DEBUG
+Message-ID: <20081202145251.6555d4cc@gondolin>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 19:39 +0900, Tetsuo Handa wrote:
-> Hello.
-> 
-> Stephen Smalley wrote:
-> > On Thu, 2008-11-20 at 20:25 +0900, Tetsuo Handa wrote:
-> > > plain text document attachment (introduce-security_path_clear.patch)
-> > > To perform DAC performed in vfs_foo() before MAC, we let security_path_foo()
-> > > save a result into our own hash table and return 0, and let security_inode_foo()
-> > > return the saved result. Since security_inode_foo() is not always called after
-> > > security_path_foo(), we need security_path_clear() to clear the hash table.
-> > 
-> > This seems very fragile and unmaintainable to me.  The fact that you
-> > even need a security_path_clear() hook suggests that something is wrong
-> > with the other security_path* hooks. I'd suggest that you explicitly
-> > pass the result of the security_path* hooks down to the security_inode*
-> > hooks instead.  What do others think?
-> 
-> You are recommending us to pass variables required for security_inode_*() via
-> stack memory rather than private hash, aren't you?
+DEBUG_KOBJECT has no effect when DYNAMIC_PRINTK_DEBUG is set
+(and you can get the messages via that feature), so let's make
+it depend on !DYNAMIC_PRINTK_DEBUG.
 
-To be precise, I was recommending passing the return value of
-security_path* down to security_inode* explicitly rather than doing it
-implicitly as you presently do.  Thereby making the actual control flow
-and relationship between the security_path* and security_inode* hooks
-evident.  However, I guess that is moot given your statements below.
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+---
+ lib/Kconfig.debug |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-> I think there are two problems.
-> 
-> One is that the variable passed via stack memory won't be used by SELinux and
-> SMACK and "CONFIG_SECURITY=n kernels", which will be a waste of stack memory.
-
-I'm more concerned with the hook interface being understandable and
-maintainable.
-
-> The other one is that TOMOYO will need another variable for telling how the
-> security_inode_*() are called. Passing the variable via stack memory requires
-> modification of all vfs_*() calls, but TOMOYO doesn't check requests issued
-> by (e.g.) stackable filesystems.
-
-I'm not clear on why that requires a separate argument; if the caller is
-passing in the access decision result as an input, then certain callers
-(e.g. stackable filesystems) can always pass 0 (success).
-
-> By the way, this security_path_clear() is intended to be able to return DAC's
-> error code in priority to MAC's error code, but there are two problems for
-> TOMOYO.
-> One is that pathnames which will be later denied by DAC are appended by
-> TOMOYO's learning mode (i.e. garbage entries appears in the learned policy).
-> The other is that warning messages on pathnames which will be later denied by
-> DAC are generated by TOMOYO's enforcing mode.
-> 
-> Thus, it will be preferable for TOMOYO to "do MAC checks after DAC checks"
-> rather than to "return DAC's error in priority to MAC's error while doing MAC
-> checks before DAC checks".
-
-It sounds like the existing security_path* hooks are not adequate for
-your needs then, and that patch should not in fact be merged.  Yes?
-
-> To do so, "security_path_*() should be replaced by security_path_set(vfsmount)"
-> and "let security_inode_*() do MAC checks using the result of
-> security_path_set()" and "let security_path_clear() clear the result of
-> security_path_set() in case security_inode_*() was not called".
-> 
-> So, I think storing the pathname of "struct vfsmount" in the form of "char *"
-> into private hash at security_path_set() and clearing the private hash at
-> security_path_clear() should be most preferable.
-
-Then I guess you need to redo your patches along those lines and
-re-submit them.  Likely starting with just a patch adding the
-security_path_set/clear hooks, posted to lsm and fsdevel.
-
--- 
-Stephen Smalley
-National Security Agency
-
+--- linux-2.6.orig/lib/Kconfig.debug
++++ linux-2.6/lib/Kconfig.debug
+@@ -450,7 +450,7 @@ config STACKTRACE
+ 
+ config DEBUG_KOBJECT
+ 	bool "kobject debugging"
+-	depends on DEBUG_KERNEL
++	depends on DEBUG_KERNEL && !DYNAMIC_PRINTK_DEBUG
+ 	help
+ 	  If you say Y here, some extra kobject debugging messages will be sent
+ 	  to the syslog. 
