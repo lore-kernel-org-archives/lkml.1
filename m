@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbYLBXKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYLBXMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbYLBXKI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYLBXJx
+	id S1754586AbYLBXMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYLBXMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:09:53 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:63869 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754136AbYLBXJw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:09:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=n+/0jk7vV9/QUft7Z5H4osb/50eqA6mMY2rTB/Gut/RjSrRkhQtDRcWYsOWfXOdu4w
-         ZJxwatOYibGMLtDN2JT+JBylRgzsOXcb8WC1FcQJ1vMCz/ix3+tAMHLF4KnfTBqGq4te
-         +ojIuTI8J4ZsiyNTnkc+TvHglzzUTEY/bUVY0=
-Message-ID: <4935C03A.7030603@gmail.com>
-Date: Wed, 03 Dec 2008 00:09:46 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Matt Mackall <mpm@selenic.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: mmotm 2008-12-01-19-41: early exception (page fault -- deref of 0x20)
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 18:12:21 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48098 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752762AbYLBXMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:12:20 -0500
+Date: Wed, 3 Dec 2008 10:12:10 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Palix <npalix@diku.dk>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH linux-next] drivers/hvc: Add missing of_node_put
+Message-Id: <20081203101210.01e5afab.sfr@canb.auug.org.au>
+In-Reply-To: <200812021438.56071.npalix@diku.dk>
+References: <200812021438.56071.npalix@diku.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-while writing out warning about empty mtrr (or any other in the early stage),
-I'm getting this:
-PANIC: early exception 0e rip 10:ffffffff8025be26 error 0 cr2 20
-Pid: 0, comm: swapper Not tainted 2.6.28-rc6-mm1_64 #484
-Call Trace:
- [<ffffffff80770195>] early_idt_handler+0x55/0x69
- [<ffffffff8025be26>] ? getnstimeofday+0x46/0xc0
- [<ffffffff80258a81>] ktime_get_real+0x11/0x50
- [<ffffffff803aa8d1>] seed_std_data+0x11/0x30
- [<ffffffff8020ff60>] ? show_trace+0x10/0x20
- [<ffffffff803aa900>] seed_random_pools+0x10/0x30
- [<ffffffff8023dda9>] init_oops_id+0x9/0x40
- [<ffffffff8023dde9>] print_oops_end_marker+0x9/0x20
- [<ffffffff8023dfed>] warn_slowpath+0x9d/0xd0
- [<ffffffff802595e4>] ? up+0x34/0x50
- [<ffffffff8023e77d>] ? release_console_sem+0x1bd/0x210
- [<ffffffff80592c38>] ? printk+0x3c/0x44
- [<ffffffff80776e67>] mtrr_trim_uncached_memory+0x166/0x390
- [<ffffffff8077fca0>] ? early_gart_iommu_check+0xaf/0x2a7
- [<ffffffff80772574>] setup_arch+0x3ec/0x6a8
- [<ffffffff80770adf>] start_kernel+0x65/0x3c6
- [<ffffffff8077027d>] x86_64_start_reservations+0x7d/0x89
- [<ffffffff80770384>] x86_64_start_kernel+0xd8/0xdf
-RIP 0x10
+On Tue, 2 Dec 2008 14:38:55 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+>
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
+>=20
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-The clock is still null in kernel/time/timekeeping.c.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-This one is to blame:
-random-add-a-way-to-get-some-random-bits-into-the-entropy-pools-early-on.patch
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk1wMoACgkQjjKRsyhoI8wocgCbBRRR++quM8rPQ8ALskadujgI
+c3gAnjUNkQRwlDZ/aAbsdpdGCnaEslfQ
+=8UdU
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti--
