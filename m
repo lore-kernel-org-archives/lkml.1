@@ -1,258 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYLBHp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYLBHsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbYLBHp0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 02:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYLBHpP
+	id S1753135AbYLBHsv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 02:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYLBHsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 02:45:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52689 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbYLBHpO (ORCPT
+	Tue, 2 Dec 2008 02:48:43 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47476 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYLBHsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 02:45:14 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+	Tue, 2 Dec 2008 02:48:43 -0500
+Date: Tue, 2 Dec 2008 16:47:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] memcg: make memory.swappiness file. take2
-Cc: kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [PATCH 1/2] memcg: mem_cgroup->prev_priority protected by lock.
+ take2
+Message-Id: <20081202164751.0db6ea01.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20081202164334.1D0C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 References: <20081202164334.1D0C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081202164426.1D0F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue,  2 Dec 2008 16:45:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, /proc/sys/vm/swappiness can change swappiness ratio for global reclaim.
-However, memcg reclaim doesn't have tuning parameter for itself.
+On Tue,  2 Dec 2008 16:44:18 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-In general, the optimal swappiness depend on workload.
-(e.g. hpc workload need to low swappiness than the others.)
+> 
+> Currently, mem_cgroup doesn't have own lock and almost its member doesn't need.
+>  (e.g. mem_cgroup->info is protected by zone lock, mem_cgroup->stat is
+>   per cpu variable)
+> 
+> However, there is one explict exception. mem_cgroup->prev_priorit need lock,
+> but doesn't protect.
+> Luckly, this is NOT bug because prev_priority isn't used for current reclaim code.
+> 
+> However, we plan to use prev_priority future again.
+> Therefore, fixing is better.
+> 
+> 
+> In addision, we plan to reuse this lock for another member.
+> Then "reclaim_param_lock" name is better than "prev_priority_lock".
+> 
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Then, per cgroup swappiness improve administrator tunability.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Thank you, I'll queue this.
 
+-Kame
 
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- Documentation/controllers/memory.txt |    6 ++
- include/linux/swap.h                 |    3 -
- mm/memcontrol.c                      |   72 ++++++++++++++++++++++++++++++++---
- mm/vmscan.c                          |    7 +--
- 4 files changed, 78 insertions(+), 10 deletions(-)
-
-Index: b/mm/memcontrol.c
-===================================================================
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -161,6 +161,9 @@ struct mem_cgroup {
- 	unsigned long	last_oom_jiffies;
- 	int		obsolete;
- 	atomic_t	refcnt;
-+
-+	unsigned int	swappiness;
-+
- 	/*
- 	 * statistics. This must be placed at the end of memcg.
- 	 */
-@@ -586,6 +589,22 @@ done:
- 	return ret;
- }
- 
-+static unsigned int get_swappiness(struct mem_cgroup *memcg)
-+{
-+	struct cgroup *cgrp = memcg->css.cgroup;
-+	unsigned int swappiness;
-+
-+	/* root ? */
-+	if (cgrp->parent == NULL)
-+		return vm_swappiness;
-+
-+	spin_lock(&memcg->reclaim_param_lock);
-+	swappiness = memcg->swappiness;
-+	spin_unlock(&memcg->reclaim_param_lock);
-+
-+	return swappiness;
-+}
-+
- /*
-  * Dance down the hierarchy if needed to reclaim memory. We remember the
-  * last child we reclaimed from, so that we don't end up penalizing
-@@ -606,7 +625,8 @@ static int mem_cgroup_hierarchical_recla
- 	 * but there might be left over accounting, even after children
- 	 * have left.
- 	 */
--	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap);
-+	ret = try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
-+					   get_swappiness(root_mem));
- 	if (res_counter_check_under_limit(&root_mem->res))
- 		return 0;
- 
-@@ -620,7 +640,8 @@ static int mem_cgroup_hierarchical_recla
- 			cgroup_unlock();
- 			continue;
- 		}
--		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap);
-+		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
-+						   get_swappiness(next_mem));
- 		if (res_counter_check_under_limit(&root_mem->res))
- 			return 0;
- 		cgroup_lock();
-@@ -1348,7 +1369,8 @@ int mem_cgroup_shrink_usage(struct mm_st
- 	rcu_read_unlock();
- 
- 	do {
--		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask, true);
-+		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask, true,
-+							get_swappiness(mem));
- 		progress += res_counter_check_under_limit(&mem->res);
- 	} while (!progress && --retry);
- 
-@@ -1393,7 +1415,9 @@ static int mem_cgroup_resize_limit(struc
- 			break;
- 
- 		progress = try_to_free_mem_cgroup_pages(memcg,
--				GFP_HIGHUSER_MOVABLE, false);
-+							GFP_HIGHUSER_MOVABLE,
-+							false,
-+							get_swappiness(memcg));
-   		if (!progress)			retry_count--;
- 	}
- 	return ret;
-@@ -1433,7 +1457,8 @@ int mem_cgroup_resize_memsw_limit(struct
- 			break;
- 
- 		oldusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
--		try_to_free_mem_cgroup_pages(memcg, GFP_HIGHUSER_MOVABLE, true);
-+		try_to_free_mem_cgroup_pages(memcg, GFP_HIGHUSER_MOVABLE, true,
-+					     get_swappiness(memcg));
- 		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
- 		if (curusage >= oldusage)
- 			retry_count--;
-@@ -1565,7 +1590,9 @@ try_to_free:
- 			goto out;
- 		}
- 		progress = try_to_free_mem_cgroup_pages(mem,
--						  GFP_HIGHUSER_MOVABLE, false);
-+							GFP_HIGHUSER_MOVABLE,
-+							false,
-+							get_swappiness(mem));
- 		if (!progress) {
- 			nr_retries--;
- 			/* maybe some writeback is necessary */
-@@ -1755,6 +1782,31 @@ static int mem_control_stat_show(struct 
- 	return 0;
- }
- 
-+static u64 mem_cgroup_swappiness_read(struct cgroup *cgrp, struct cftype *cft)
-+{
-+	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-+
-+	return get_swappiness(memcg);
-+}
-+
-+static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
-+				       u64 val)
-+{
-+	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-+
-+	if (val > 100)
-+		return -EINVAL;
-+
-+	if (cgrp->parent == NULL)
-+		return -EBUSY;
-+
-+	spin_lock(&memcg->reclaim_param_lock);
-+	memcg->swappiness = val;
-+	spin_unlock(&memcg->reclaim_param_lock);
-+
-+	return 0;
-+}
-+
- 
- static struct cftype mem_cgroup_files[] = {
- 	{
-@@ -1793,6 +1845,11 @@ static struct cftype mem_cgroup_files[] 
- 		.write_u64 = mem_cgroup_hierarchy_write,
- 		.read_u64 = mem_cgroup_hierarchy_read,
- 	},
-+	{
-+		.name = "swappiness",
-+		.read_u64 = mem_cgroup_swappiness_read,
-+		.write_u64 = mem_cgroup_swappiness_write,
-+	},
- };
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-@@ -1984,6 +2041,9 @@ mem_cgroup_create(struct cgroup_subsys *
- 	mem->last_scanned_child = NULL;
- 	spin_lock_init(&mem->reclaim_param_lock);
- 
-+	if (parent)
-+		mem->swappiness = get_swappiness(parent);
-+
- 	return &mem->css;
- free_out:
- 	for_each_node_state(node, N_POSSIBLE)
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1716,14 +1716,15 @@ unsigned long try_to_free_pages(struct z
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 
- unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
--						gfp_t gfp_mask,
--					   bool noswap)
-+					   gfp_t gfp_mask,
-+					   bool noswap,
-+					   unsigned int swappiness)
- {
- 	struct scan_control sc = {
- 		.may_writepage = !laptop_mode,
- 		.may_swap = 1,
- 		.swap_cluster_max = SWAP_CLUSTER_MAX,
--		.swappiness = vm_swappiness,
-+		.swappiness = swappiness,
- 		.order = 0,
- 		.mem_cgroup = mem_cont,
- 		.isolate_pages = mem_cgroup_isolate_pages,
-Index: b/include/linux/swap.h
-===================================================================
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -214,7 +214,8 @@ static inline void lru_cache_add_active_
- extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
- 					gfp_t gfp_mask);
- extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
--						gfp_t gfp_mask, bool noswap);
-+						  gfp_t gfp_mask, bool noswap,
-+						  unsigned int swappiness);
- extern int __isolate_lru_page(struct page *page, int mode, int file);
- extern unsigned long shrink_all_memory(unsigned long nr_pages);
- extern int vm_swappiness;
-Index: b/Documentation/controllers/memory.txt
-===================================================================
---- a/Documentation/controllers/memory.txt
-+++ b/Documentation/controllers/memory.txt
-@@ -289,6 +289,12 @@ will be charged as a new owner of it.
-   Because rmdir() moves all pages to parent, some out-of-use page caches can be
-   moved to the parent. If you want to avoid that, force_empty will be useful.
- 
-+5.2 swappiness
-+  Similar to /proc/sys/vm/swappiness, but affecting one group only.
-+
-+  The root cgroup can't be changed this parameter.
-+  it always use /proc/sys/vm/swappiness internally.
-+
- 6. Hierarchy support
- 
- The memory controller supports a deep hierarchy and hierarchical accounting.
-
+> ---
+>  mm/memcontrol.c |   18 +++++++++++++++++-
+>  1 file changed, 17 insertions(+), 1 deletion(-)
+> 
+> Index: b/mm/memcontrol.c
+> ===================================================================
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -142,6 +142,11 @@ struct mem_cgroup {
+>  	 */
+>  	struct mem_cgroup_lru_info info;
+>  
+> +	/*
+> +	  protect against reclaim related member.
+> +	*/
+> +	spinlock_t reclaim_param_lock;
+> +
+>  	int	prev_priority;	/* for recording reclaim priority */
+>  
+>  	/*
+> @@ -393,18 +398,28 @@ int mem_cgroup_calc_mapped_ratio(struct 
+>   */
+>  int mem_cgroup_get_reclaim_priority(struct mem_cgroup *mem)
+>  {
+> -	return mem->prev_priority;
+> +	int prev_priority;
+> +
+> +	spin_lock(&mem->reclaim_param_lock);
+> +	prev_priority = mem->prev_priority;
+> +	spin_unlock(&mem->reclaim_param_lock);
+> +
+> +	return prev_priority;
+>  }
+>  
+>  void mem_cgroup_note_reclaim_priority(struct mem_cgroup *mem, int priority)
+>  {
+> +	spin_lock(&mem->reclaim_param_lock);
+>  	if (priority < mem->prev_priority)
+>  		mem->prev_priority = priority;
+> +	spin_unlock(&mem->reclaim_param_lock);
+>  }
+>  
+>  void mem_cgroup_record_reclaim_priority(struct mem_cgroup *mem, int priority)
+>  {
+> +	spin_lock(&mem->reclaim_param_lock);
+>  	mem->prev_priority = priority;
+> +	spin_unlock(&mem->reclaim_param_lock);
+>  }
+>  
+>  /*
+> @@ -1967,6 +1982,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	}
+>  
+>  	mem->last_scanned_child = NULL;
+> +	spin_lock_init(&mem->reclaim_param_lock);
+>  
+>  	return &mem->css;
+>  free_out:
+> 
+> 
+> 
 
