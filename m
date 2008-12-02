@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbYLBKAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYLBKO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881AbYLBKAS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 05:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYLBKAE
+	id S1753890AbYLBKO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 05:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYLBKOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 05:00:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:24273 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751725AbYLBKAA (ORCPT
+	Tue, 2 Dec 2008 05:14:17 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:34346 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbYLBKOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 05:00:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:sender;
-        b=jISJSwvSBIvMOTODIGXaEUzs7SQpA/o9de8eNYl5G4bl7rFfQgPr5sWy+xuMSPikId
-         XYJocb9iHSyF1+9SpUbuwygJEztIZJ4L6RGU52Dbx6Hbt982jYLlUn6494vnRMHLQo+H
-         hKYhTJR1Ev+S/WhG5qtvWM3aDX9CXxQ8ljnz0=
-Date: Tue, 2 Dec 2008 12:00:17 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Tom Zanussi <tzanussi@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [ANNOUNCE] kmemtrace userspace update
-Message-ID: <20081202100016.GA5226@localhost>
+	Tue, 2 Dec 2008 05:14:16 -0500
+Date: Tue, 2 Dec 2008 11:13:59 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Message-ID: <20081202101359.GB4645@gundam.enneenne.com>
+References: <200811270101.mAR114rp016378@imap1.linux-foundation.org> <4930CCA9.9070505@oracle.com> <20081128220659.2d5049e6.akpm@linux-foundation.org> <49317AF9.5030409@oracle.com> <20081130215350.b63ed292.akpm@linux-foundation.org> <20081201135634.GC6932@gundam.enneenne.com> <20081201103741.f70cb84c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081201103741.f70cb84c.akpm@linux-foundation.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: mmotm 2008-11-26-17-00 uploaded (hwmon / dev_attr_name)
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+On Mon, Dec 01, 2008 at 10:37:41AM -0800, Andrew Morton wrote:
 
-I've patched kmemtrace to address Pekka's concerns. Here's the shortlog:
+> I'll sort it out.
 
-Eduard - Gabriel Munteanu (8):
-      addr2line support
-      Add private data pointer argument to hashtable actions.
-      Add stats to hashtable implementation.
-      Hashtable to vector conversion functions.
-      kmemtrace-report: Sort call-site view by fragmentation.
-      kmemtrace-report: addr2line support and output sorting for allocation view.
-      kmemtrace-report: pretty formatting.
-      Add debugging stats to hashtable.
+Ok. :)
 
-http://repo.or.cz/w/kmemtrace-user.git
+> > > drivers/pps/clients/pps-ldisc.c: In function 'pps_tty_dcd_change':
+> > > drivers/pps/clients/pps-ldisc.c:32: warning: cast from pointer to integer of different size
+> > > drivers/pps/clients/pps-ldisc.c: In function 'pps_tty_open':
+> > > drivers/pps/clients/pps-ldisc.c:77: warning: cast to pointer from integer of different size
+> > > drivers/pps/clients/pps-ldisc.c:82: warning: cast from pointer to integer of different size
+> > > drivers/pps/clients/pps-ldisc.c: In function 'pps_tty_close':
+> > > drivers/pps/clients/pps-ldisc.c:91: warning: cast from pointer to integer of different size
+> > > 
+> > > 
+> > > For the ->disc_data warnings you could perhaps just make all the
+> > > relevant scalar types `long', not `int'.
+> > 
+> > But doing like this will breaks 32bit archs... =:-o
+> 
+> I don't think so.  sizeof(long) == sizeof(int) on 32-bit.
 
-The improvements are in terms of usability.
+But "%d" != "%ld". :)
 
-The next thing on my list is integrating Tom's UTT patch and switching
-to variable length packets (Mathieu's idea was we should encode field
-sizes in a header and forego using the same pointer size on all arches).
-Both would entail updating the kernel as well.
+However this is a minor issue... I'm going to propose a patch ASAP.
 
-Feedback is much appreciated.
+Ciao,
 
+Rodolfo
 
-	Cheers,
-	Eduard
+-- 
 
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
