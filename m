@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYLBRrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbYLBR6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYLBRrv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 12:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbYLBRrl
+	id S1755652AbYLBR6U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 12:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYLBR6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 12:47:41 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:44666 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754727AbYLBRrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 12:47:40 -0500
-From: Andres Freund <andres@anarazel.de>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: EXT4 ENOSPC Bug
-Date: Tue, 2 Dec 2008 18:47:24 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.28-rc6-andres-00007-ged31348-dirty; KDE/4.1.80; x86_64; ; )
-Cc: Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-References: <200811291418.24672.andres@anarazel.de> <200812021559.05103.andres@anarazel.de> <20081202164709.GC18162@mit.edu>
-In-Reply-To: <20081202164709.GC18162@mit.edu>
+	Tue, 2 Dec 2008 12:58:09 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:64944 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbYLBR6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 12:58:08 -0500
+Message-ID: <4935771F.6050500@oracle.com>
+Date: Tue, 02 Dec 2008 09:57:51 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1405010.FDNW2tE0uM";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sameo@openedhand.com
+Subject: Re: linux-next: Tree for December 2 (mfd)
+References: <20081202173101.e2b72437.sfr@canb.auug.org.au>
+In-Reply-To: <20081202173101.e2b72437.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812021847.35771.andres@anarazel.de>
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.49357723.0227:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1405010.FDNW2tE0uM
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi,
-
-On Tuesday 02 December 2008 17:47:09 Theodore Tso wrote:
-> You say you are using Postgres, right?  Something you might try to see
-> if it triggers the problem it is creating a new database and then
-> restoring some database dump/backup into that new database.  Some
-> databases expand into a new table space (or whatever terminology
-> Postgres uses) by random writes into a sparse portion of the file.
-> This could be triggering the problem, or at least trigger the problem
-> more quickly.
-I tried that - I have seen no problems so far. But it is not the first time=
- I=20
-did not see the problem for some time.
-
-Btw, postgres just creates the database by copying over a default database.
-
-=46or an easy test with sparse files, I created a big one, set it up as a l=
-oop=20
-device, created a filesystem and ran some stuff in it.
-No Problem so far.
-
-> The other thing I wanted to ask is whether "df" was showing the 37%
-> in-use statistic at the time, or was that after you rebooted.=20
-It definitely was before a reboot. And there were plenty of both, inodes an=
-d=20
-blocks.
-
-I think that I have seen the problem on metadata only changes (find /tmp -t=
-ype=20
-f|xargs touch) as well, but sometimes metadata changes were possible while =
-file=20
-creation was not.
-
-Another Datapoint: File deletion sometimes made it possible to create more=
-=20
-files, but by far not as much as the space freed.
-
-> And although I hate to ask it, you're sure this isn't the standard "delete
-> an in-use file but not get the space back" Unix trap, right?
-There were over 200GB free, so I doubt that. I don't know what could have=20
-caused an allocation of so much space unnoticed in an idle system multiple=
-=20
-times.
-But I do understand the reason for the question ;-)
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20081201:
+> 
+> Today's tree fails the powerpc allyesconfig build.
 
 
-Andres
+allyesconfig on x86_64 fails with:
 
---nextPart1405010.FDNW2tE0uM
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+linux-next-20081202/drivers/mfd/twl4030-core.c:682: undefined reference to `clk_get_rate'
+linux-next-20081202/drivers/mfd/twl4030-core.c:683: undefined reference to `clk_put'
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkk1dK4ACgkQporPraT14ihacQCdHkIhXaNgYpTgrQ5Fk22PbXGu
-i2UAniRSW0lFNCVxCmwEUs1CqO4C6349
-=Nt6t
------END PGP SIGNATURE-----
-
---nextPart1405010.FDNW2tE0uM--
+-- 
+~Randy
