@@ -1,122 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYLBVwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYLBVxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYLBVwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYLBVwO
+	id S1754387AbYLBVxQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYLBVw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:52:14 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:50430 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbYLBVwJ (ORCPT
+	Tue, 2 Dec 2008 16:52:59 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:9758 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbYLBVw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:52:09 -0500
-Date: Tue, 02 Dec 2008 16:51:55 -0500
-From: Jody McIntyre <scjody@sun.com>
-Subject: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
-To: linux-kernel@vger.kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de, mingo@redhat.com
-Message-id: <20081202215154.GL29919@clouds>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 2 Dec 2008 16:52:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=xMZ7h1xQfyobMRT5dSgnkzb5dElh1+noBRIzfrx428SKV1ScHZXqbc8OZR4hk4cYYk
+         etiICUnZaqY0HGWKHFyJcVHVTVDdpNmTGkLJi40tEgP6Ss3nU0Cl7NoyKD3f5QDlzwzT
+         YXYKJ8trA4B1aVV5QuoiI2P3O5wXagoeG20/U=
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       "Renato S. Yamane" <yamane@diamondcut.com.br>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: About git-bisect (was: Linux 2.6.28-rc7)
+References: <bEuTZ-3Ya-5@gated-at.bofh.it> <bECot-57C-1@gated-at.bofh.it>
+	<bEFPF-XO-15@gated-at.bofh.it> <bEFPG-XO-19@gated-at.bofh.it>
+	<bEG8P-1xl-15@gated-at.bofh.it> <bEGiz-1Hw-11@gated-at.bofh.it>
+	<bEGLI-2aS-31@gated-at.bofh.it> <bEGVc-2Bk-11@gated-at.bofh.it>
+From: Francis Moreau <francis.moro@gmail.com>
+Date: Tue, 02 Dec 2008 22:52:49 +0100
+In-Reply-To: <bEGVc-2Bk-11@gated-at.bofh.it> (Linus Torvalds's message of "Tue\, 02 Dec 2008 18\:10\:10 +0100")
+Message-ID: <m2r64q6y8e.fsf@gmail.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1965aae3c98397aad957412413c07e97b1bd4e64 broke compilation on one of my
-systems:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-  CC      arch/x86/kernel/syscall_64.o
-arch/x86/kernel/syscall_64.c:27: error: array index in initializer exceeds array bounds
-arch/x86/kernel/syscall_64.c:27: error: (near initialization for ‘sys_call_table’)
-arch/x86/kernel/syscall_64.c:27: warning: excess elements in array initializer
-arch/x86/kernel/syscall_64.c:27: warning: (near initialization for ‘sys_call_table’)
-make[1]: *** [arch/x86/kernel/syscall_64.o] Error 1
-make: *** [arch/x86/kernel/syscall_64.o] Error 2
+> That said, the _best_ way to speed up your compile (whether bisecting or 
+> not) is to simply only compile the drivers and modules you actually need. 
 
-Reverting only the parts of the commit that change ASM_X86__UNISTD_64_H
-to _ASM_X86_UNISTD_64_H fixes the problem.  Patch below.
+That's interesting because I recently tried to strip down my kernel
+configuration but I met a problem: I usually don't know if I really
+need a feature or not, and that's specially true when configuring the
+network stuffs, since I'm not a network expert...
 
-I have no idea what's going on here.  Compiler bug?
+So I still have 254 modules and after recompiling my kernel, I did:
 
-root@vm1:~/linux-2.6# gcc --version
-gcc (Ubuntu 4.3.2-1ubuntu11) 4.3.2
+	$ touch kernel/sched.c
+	$ time make -j4
+	[...]
+	MODPOST 254 modules
+	[...]
+	Kernel: arch/x86/boot/bzImage is ready  (#109)
+	
+	real    3m23.866s
+	user    0m35.006s
+	sys     0m15.698s
 
-Signed-off-by: Jody McIntyre <scjody@sun.com>
----
- arch/um/sys-x86_64/syscall_table.c |    4 ++--
- arch/x86/include/asm/unistd_64.h   |    6 +++---
- arch/x86/kernel/asm-offsets_64.c   |    2 +-
- arch/x86/kernel/syscall_64.c       |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
-diff --git a/arch/um/sys-x86_64/syscall_table.c b/arch/um/sys-x86_64/syscall_table.c
-index dd21d69..ef42ec0 100644
---- a/arch/um/sys-x86_64/syscall_table.c
-+++ b/arch/um/sys-x86_64/syscall_table.c
-@@ -41,12 +41,12 @@
- #define stub_rt_sigreturn sys_rt_sigreturn
- 
- #define __SYSCALL(nr, sym) extern asmlinkage void sym(void) ;
--#undef _ASM_X86_UNISTD_64_H
-+#undef ASM_X86__UNISTD_64_H
- #include "../../x86/include/asm/unistd_64.h"
- 
- #undef __SYSCALL
- #define __SYSCALL(nr, sym) [ nr ] = sym,
--#undef _ASM_X86_UNISTD_64_H
-+#undef ASM_X86__UNISTD_64_H
- 
- typedef void (*sys_call_ptr_t)(void);
- 
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-index d2e415e..26a7432 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_X86_UNISTD_64_H
--#define _ASM_X86_UNISTD_64_H
-+#ifndef ASM_X86__UNISTD_64_H
-+#define ASM_X86__UNISTD_64_H
- 
- #ifndef __SYSCALL
- #define __SYSCALL(a, b)
-@@ -690,4 +690,4 @@ __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
- #define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
- #endif	/* __KERNEL__ */
- 
--#endif /* _ASM_X86_UNISTD_64_H */
-+#endif /* ASM_X86__UNISTD_64_H */
-diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
-index 7fcf63d..505543a 100644
---- a/arch/x86/kernel/asm-offsets_64.c
-+++ b/arch/x86/kernel/asm-offsets_64.c
-@@ -22,7 +22,7 @@
- 
- #define __NO_STUBS 1
- #undef __SYSCALL
--#undef _ASM_X86_UNISTD_64_H
-+#undef ASM_X86__UNISTD_64_H
- #define __SYSCALL(nr, sym) [nr] = 1,
- static char syscalls[] = {
- #include <asm/unistd.h>
-diff --git a/arch/x86/kernel/syscall_64.c b/arch/x86/kernel/syscall_64.c
-index de87d60..3d1be4f 100644
---- a/arch/x86/kernel/syscall_64.c
-+++ b/arch/x86/kernel/syscall_64.c
-@@ -8,12 +8,12 @@
- #define __NO_STUBS
- 
- #define __SYSCALL(nr, sym) extern asmlinkage void sym(void) ;
--#undef _ASM_X86_UNISTD_64_H
-+#undef ASM_X86__UNISTD_64_H
- #include <asm/unistd_64.h>
- 
- #undef __SYSCALL
- #define __SYSCALL(nr, sym) [nr] = sym,
--#undef _ASM_X86_UNISTD_64_H
-+#undef ASM_X86__UNISTD_64_H
- 
- typedef void (*sys_call_ptr_t)(void);
- 
+and here is the time I get if I recompile the kernel without touching
+any files:
+
+	$ time make -j4
+	  CHK     include/linux/version.h
+	  CHK     include/linux/utsrelease.h
+	  SYMLINK include/asm -> include/asm-x86
+	  CALL    scripts/checksyscalls.sh
+	  CHK     include/linux/compile.h
+	dnsdomainname: Unknown host
+	  CHK     include/linux/version.h
+	make[2]: `scripts/unifdef' is up to date.
+	  Building modules, stage 2.
+	Kernel: arch/x86/boot/bzImage is ready  (#109)
+	  MODPOST 254 modules
+	
+	real      0m53.612s
+	user      0m17.996s
+	sys       0m9.752s
+
+With these figures, I can confirm that doing bisection, even with 5
+reboots, is painful.
+
+> It takes me 16 seconds to compile my kernel (if it's all cached), and 
+> that's largely because I do _not_ compile one of the crazy distro kernels 
+> with thousands of totally irrelevant modules for my setup.
+
+an other reason is perhaps you're using a computer that most common
+mortal don't have ;)
+
+Care to share your network configuration ;) ?
+
+thanks
+
+Francis
