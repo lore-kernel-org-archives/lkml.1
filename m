@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYLBNgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYLBNgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbYLBNgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYLBNgX
+	id S1754012AbYLBNgr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYLBNgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:36:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:27203 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbYLBNgX (ORCPT
+	Tue, 2 Dec 2008 08:36:31 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:20596 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754212AbYLBNg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:36:23 -0500
+	Tue, 2 Dec 2008 08:36:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YMzaNu/TThitgWU0FBbsnApItrS7Ax7/Y6MVP/3jOag8FWa+SV5cDgVeZtECpca1Nb
-         g18WhFX4vIxj7VBKeFDEjQkKKw/DlVBcVD8XeN0LlagoqlcZMSf4oi0JaGZX0BRg8rH6
-         aIrsO/Qw/f2H6BIsi4MvaMul/JjNiWkyDmR1k=
-Message-ID: <3da2c0120812020536h31136aeemf56c2e71c0920c38@mail.gmail.com>
-Date: Tue, 2 Dec 2008 19:06:21 +0530
-From: "sudhir kumar" <imsudhirkumar@gmail.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: BUG: CGROUPS [2.6.28-rc6] Task migration does not clean reference to group
-Cc: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com,
-       bharata@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, skumar@linux.vnet.ibm.com,
-       Peter <a.p.zijlstra@chello.nl>, "Paul Menage" <menage@google.com>,
-       mingo@elte.hu
-In-Reply-To: <49353322.6090802@cn.fujitsu.com>
+         :references:x-google-sender-auth;
+        b=wNSgd3/gHLweMYt2tjXiZLdWlMnJl9KfnJ4zYpu6XRbBnmnFMsjLAcSkbA3ALugNJi
+         JKnRIAGKzgu6jzoOr2dDngQP2GpgIxy5WGTtsy7H+s19r33fV26t7ai0MZqf5HIENSmm
+         BbzHvPBHy1iBJ9Gs4Y4QdUc+K+QQ3kqg5Xogo=
+Message-ID: <30353c3d0812020536t2074842lf4f1a1ef469f914f@mail.gmail.com>
+Date: Tue, 2 Dec 2008 08:36:25 -0500
+From: "David Ellingsworth" <david@identd.dyndns.org>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Promise PDC20376
+Cc: "Mikael Pettersson" <mikpe@it.uu.se>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081202105053.1bd78897@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3da2c0120812020100u66a94f9bk3c0e8a705bb6347e@mail.gmail.com>
-	 <49353322.6090802@cn.fujitsu.com>
+References: <30353c3d0810240704n7476cc50y28b3eb8a5f326626@mail.gmail.com>
+	 <30353c3d0811250616o733fb7f9ob4af96dd604f78ea@mail.gmail.com>
+	 <18732.3809.720247.329641@harpo.it.uu.se>
+	 <30353c3d0812011743we0bdddk2c9c37dd0191cf2a@mail.gmail.com>
+	 <20081202105053.1bd78897@lxorguk.ukuu.org.uk>
+X-Google-Sender-Auth: 06638c4d47060982
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 2, 2008 at 6:37 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> sudhir kumar wrote:
->> Hi,
->> I see an interesting bug in the cgroups. I found that cat /proc/cgroups
->> does not decrease the num_cgroups field when a group is deleted. It looks
->> to me that somewhere we miss to delete the reference, which leads to a failure
->> to unmount the cgroups filesystem.
+On Tue, Dec 2, 2008 at 5:50 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> A small update to this. It seems the above mentioned interrupt fails
+>> somewhere around the 128GB boundary. Interrupt 13h, AH=42 uses a 64
+>> bit sector address and should be capable of addressing the entire
+>> drive. For a SATA controller, this limitation seems relatively
+>> arbitrary. For IDE controllers, a limitation such as this is
+>> apparently common.
 >
-> Ah, it's not a bug. :)
-Oh Sorry!
+> 137GB I would imagine. That is the point at which LBA48 commands must be
+> used not LBA28 and presumably their BIOS code only supports old format
+> commands
 >
->> The steps to produce the bug are:
->>
->> mkdir /cpu
->> mount -t cgroup -ocpu cgroup /cpu
->> cd cpu
->> mkdir group1;
->> cd group1;
->> /./while &              # an infinite loop
->
-> Seems whenever we create a background job, we'll have a pin to the directory where
-> the job is created. So though rmdir() removed the directory, the dentry's refcnt
-Thanks for that.
-Should not rmdir fail in such a case ? Otherwise there is no other way
-for the user than to kill his task and unmount the cgroup fs, in case
-he needs to do so. Or shall we change the pin to point to the target
-directory? No idea if I am demanding too much ;(
 
+Right, with LBA28 addressing you get 2^28 sector addresses = 2^27 KiB
+= 2^17 MiB = 2^7 GiB = 128 GiB which is approximately 137GB. When I
+wrote 128GB I really meant 128 GiB.
 
-Thanks
-Sudhir
+Regards,
+
+David Ellingsworth
+
+P.S. I hate the "new" binary size notations they only cause confusion.
