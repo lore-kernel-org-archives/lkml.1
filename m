@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbYLBU6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYLBU6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbYLBU6f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYLBU6M
+	id S1754585AbYLBU6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYLBU6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:58:12 -0500
-Received: from ik-out-1112.google.com ([66.249.90.179]:48313 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751455AbYLBU6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:58:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=m8KJ3Q8WynO9+7DbCwx1RFNOnJuuouZWmOHK/+QF6k67Ncg6gSBk+DLj79Qn4lPNCO
-         C6GvAAmBWl7McIonzn7uURpOiCGBiuAkMWkS4VK1ZyxopS/MjNP6wdkTgS0GkEGt5EMO
-         yX7Y8lthxfFBtg0TTlq493OWKHEaAmQyegzKI=
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Cc: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: [PATCH] setlocalversion: add git-svn support
-Date: Tue,  2 Dec 2008 21:58:06 +0100
-Message-Id: <1228251486-29275-2-git-send-email-jacmet@sunsite.dk>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1228251486-29275-1-git-send-email-jacmet@sunsite.dk>
-References: <1228251486-29275-1-git-send-email-jacmet@sunsite.dk>
+	Tue, 2 Dec 2008 15:58:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50980 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754387AbYLBU6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 15:58:37 -0500
+Message-ID: <4935A0FF.7070105@redhat.com>
+Date: Tue, 02 Dec 2008 22:56:31 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Steven Rostedt <srostedt@redhat.com>
+CC: Luis Henriques <henrix@sapo.pt>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
+References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com>	 <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com>	 <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com>	 <20081202190914.GA12115@hades>  <20081202194610.GA4864@hades>	 <1228249509.4886.11.camel@localhost.localdomain>	 <49359CDF.5060300@redhat.com> <1228250921.4886.14.camel@localhost.localdomain>
+In-Reply-To: <1228250921.4886.14.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Print svn revision in addition to git info on git-svn repos.
+Steven Rostedt wrote:
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- scripts/setlocalversion |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+  
 
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-index 81d984b..f6946cf 100755
---- a/scripts/setlocalversion
-+++ b/scripts/setlocalversion
-@@ -19,6 +19,11 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
- 		fi
- 	fi
- 
-+	# Is this git on svn?
-+	if git config --get svn-remote.svn.url >/dev/null; then
-+	        printf -- '-svn%s' "`git-svn find-rev $head`"
-+	fi
-+
- 	# Are there uncommitted changes?
- 	git update-index --refresh --unmerged > /dev/null
- 	if git diff-index --name-only HEAD | grep -v "^scripts/package" \
+>> In arch/x86/kvm/svm.c, function svm_vcpu_run(), everything between the 
+>> vmrun instruction and the call to load_host_msrs() is executed without a 
+>> live pda, so no smp_processor_id().  Could easily be fixed by 
+>> rearranging things.
+>>     
+>
+> That would be best, but if you have trouble, you could surround the
+> trouble area with a: tracing_stop(); tracing_start(); That will prevent
+> tracing within those locations. The function tracer will still be
+> called, but it will exit the function without doing anything else.
+>
+> Note: that stops tracing on all CPUS, not just the CPU that called it.
+>   
+
+The vmrun instruction can execute for a long time (hours, if you have a 
+dyntick kernel and no timers scheduled), so that's less than optimal.
+
 -- 
-1.5.6.5
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
