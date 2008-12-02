@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbYLBNTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYLBNYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbYLBNTn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYLBNTe
+	id S1754759AbYLBNYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYLBNYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:19:34 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:32379 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754128AbYLBNTd (ORCPT
+	Tue, 2 Dec 2008 08:24:45 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:55991 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753320AbYLBNYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:19:33 -0500
-Subject: [BUG] mmotm-081130:  null pointer deref in sigkill_pending()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Ying Han <yinghan@google.com>, linux-mm <linux-mm@kvack.org>,
-       Hugh Dickins <hugh@veritas.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 02 Dec 2008 08:18:53 -0500
-Message-Id: <1228223933.30995.28.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 08:24:44 -0500
+Date: Tue, 2 Dec 2008 08:24:41 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: davidsen@tmr.com, adilger@sun.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ext3, ext4: do_split() fix loop, with obvious
+	unsigned wrap
+Message-ID: <20081202132441.GC16172@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	roel kluin <roel.kluin@gmail.com>, davidsen@tmr.com,
+	adilger@sun.com, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <49343AD9.4020606@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49343AD9.4020606@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While testing mmotm [11/29, 11/30, likely in 12/01], I came across the
-following bug after ~2 hours of heavy stress on x86_64 [same bug/trace
-hit on ia64]:
+On Mon, Dec 01, 2008 at 02:28:25PM -0500, roel kluin wrote:
+> Fix loop, with obvious unsigned wrap
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
-IP: [<ffffffff8024e679>] sigkill_pending+0x19/0x30
-PGD 63be12067 PUD 7fd0cc067 PMD 0 
-Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-last sysfs file: /sys/block/hda/removable
-CPU 7 
-Modules linked in: sunrpc ipv6 dm_mirror dm_region_hash dm_log dm_mod rfkill input_polldev pci_slot parport_pc lp parport ide_cd_mod cdrom serio_raw hpilo hpwdt button amd_rng pata_acpi i2c_amd756 libata i2c_core pcspkr mptspi mptscsih sym53c8xx scsi_transport_spi sd_mod scsi_mod mptbase ext3 jbd ehci_hcd ohci_hcd uhci_hcd
-Pid: 19530, comm: ps Not tainted 2.6.28-rc6-mmotm-081130-2235 #10
-RIP: 0010:[<ffffffff8024e679>]  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
-RSP: 0018:ffff8806a64efd38  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 000000000000000e RCX: ffff8805fc96fb00
-RDX: ffff8806a64efe38 RSI: 00007fff62423000 RDI: ffff88020c87abe0
-RBP: ffff8806a64efd38 R08: 0000000000000000 R09: ffff8806a64efe30
-R10: 0000000000000002 R11: 0000000000000000 R12: ffff8805fc96fb00
-R13: 0000000000000000 R14: 0000000000000010 R15: ffff8806a64efe30
-FS:  00007f32d4ac46f0(0000) GS:ffff8807fed46d80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000038 CR3: 0000000784571000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process ps (pid: 19530, threadinfo ffff8806a64ee000, task ffff88062cf6d7c0)
-Stack:
- ffff8806a64efdb8 ffffffff80298986 0000000000000001 ffff88062cf6d7c0
- ffff8803ad100680 ffff88020c87abe0 0000000000000000 ffff8806a64efe38
- ffff8806a64efe30 00000001804f0765 00007fff624236be 0000000000000000
-Call Trace:
- [<ffffffff80298986>] __get_user_pages+0x166/0x440
- [<ffffffff80298c92>] get_user_pages+0x32/0x40
- [<ffffffff80298dab>] access_process_vm+0x10b/0x1e0
- [<ffffffff8030bd60>] proc_pid_cmdline+0x90/0x120
- [<ffffffff802ae568>] ? alloc_pages_current+0xa8/0x100
- [<ffffffff8030de5b>] proc_info_read+0x9b/0xe0
- [<ffffffff802c0ba4>] vfs_read+0xc4/0x160
- [<ffffffff802c1000>] sys_read+0x50/0x90
- [<ffffffff8020c3fb>] system_call_fastpath+0x16/0x1b
-Code: e8 08 83 e0 01 c3 66 0f 1f 44 00 00 66 0f 1f 44 00 00 f6 87 49 05 00 00 01 55 b8 01 00 00 00 48 89 e5 75 12 48 8b 87 10 05 00 00 <48> 8b 40 38 48 c1 e8 08 83 e0 01 c9 c3 66 2e 0f 1f 84 00 00 00 
-RIP  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
- RSP <ffff8806a64efd38>
-CR2: 0000000000000038
----[ end trace 80efa2c8bcce4fdc ]---
+Um, no.  Sorry, I didn't have a chance to reply earlier but this is
+obviously wrong.
 
-Ad hoc instrumentation showed that this is likely the result of the
-"make-get_user_pages-interruptible" patch in mmotm.  The test workload
-includes a number of tasks that repeatedly run a list of miscellaneous
-programs, including ps(1).  Occasionally, ps will catch a task with a
-NULL "tsk->signal" [exiting?], resulting in a null pointer deref in
-sigkill_pending() called from __get_user_pages().  
+> ---
+> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+> index 3e5edc9..b0dcfb3 100644
+> --- a/fs/ext3/namei.c
+> +++ b/fs/ext3/namei.c
+> @@ -1188,7 +1188,7 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+>  	/* Split the existing block in the middle, size-wise */
+>  	size = 0;
+>  	move = 0;
+> -	for (i = count-1; i >= 0; i--) {
+> +	for (i = count; i--; ) {
+>  		/* is more than half of this entry in 2nd half of the block? */
+>  		if (size + map[i].size/2 > blocksize/2)
+>  			break;
 
-Before the aforementioned patch, sigkill_pending() was only called from
-ptrace_stop() for tsk == current.  The comment block on ptrace_stop()
-says:  "This must be called with current->sighand->siglock held."  So,
-it doesn't look safe to call sigkill_pending() from
-__get_user_pages()--especially on a task != current--without similar
-locking.
+Note that i is actually **used** in the loop?  So changing the
+starting value of the counter without also adjusting all of the places
+where i is used will cause the code to break, and in hard to find
+ways...
 
-I'm not sure what the correct fix should be here.
+Given that there are two loop termination conditions, and in fact the
+one in the loop is the one that actually gets used 99% of the time
+(which is why we've never noticed the problem in real life), probably
+the best way of handling this is to recast it not as a for loop, but
+as a while loop.
 
-Related:  the patch and it's update add the following to
-__get_user_pages():
-
-	if (unlikely(sigkill_pending(current) ||
-	     sigkill_pending(tsk)))
-		return i ? i : -ERESTARTSYS;
-
-As a minimum, I don't think we want to call the second sigkill_pending()
-unless tsk != current.
-
-Lee
-
-
+						- Ted
