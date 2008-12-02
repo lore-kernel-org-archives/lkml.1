@@ -1,117 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYLBXz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbYLBX6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYLBXz6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYLBXzu
+	id S1754901AbYLBX6x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:58:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYLBX6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:55:50 -0500
-Received: from vvps-124.rabidhost.com ([208.43.196.46]:38582 "EHLO
-	mail.rabidhost.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752704AbYLBXzt (ORCPT
+	Tue, 2 Dec 2008 18:58:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53016 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753002AbYLBX6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:55:49 -0500
-X-Greylist: delayed 1640 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 18:55:49 EST
-Subject: New Security Features, Please Comment
-From: Geoffrey McRae <geoff@rabidhost.com>
-To: linux-kernel@vger.kernel.org
-Cc: Geoffrey McRae <geoff@rabidhost.com>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 10:28:14 +1100
-Message-Id: <1228260494.24232.21.camel@compy.ivent.com.au>
+	Tue, 2 Dec 2008 18:58:40 -0500
+Date: Tue, 2 Dec 2008 15:58:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitri Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dmonakhov@openvz.org
+Subject: Re: [PATCH] fs: truncate blocks outside i_size after O_DIRECT write
+ error.
+Message-Id: <20081202155837.f977710b.akpm@linux-foundation.org>
+In-Reply-To: <1228051966-23866-1-git-send-email-dmonakhov@openvz.org>
+References: <1228051966-23866-1-git-send-email-dmonakhov@openvz.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is my first patch to the linux kernel, so please forgive me if I
-have broken any posting rules. Also, I am not on the mailing list, so
-please CC me on any replies to this.
+On Sun, 30 Nov 2008 16:32:46 +0300
+Dmitri Monakhov <dmonakhov@openvz.org> wrote:
 
-A side note before I start, the links to the linux howtos on the mailing
-list info page are broken, someone might want to fix that.
+> In case of error extending write may have instantiated a few  blocks
+> outside i_size. We need to trim these blocks. We have to do it *regardless*
+> to blocksize. At least ext2, ext3 and reiserfs interpret
+> (i_size < biggest block) condition as error. Fsck will complain about wrong
+> i_size. Then fsck will fix the error by changing i_size according to the
+> biggest block. This is bad because this blocks contain garbage from previous
+> write attempt. And result in data corruption.
+> 
+> Changes from previous version:
+>  - Move error handling from generic mm code to __blockdev_direct_IO(). As soon
+>    as i remember this is 11'th version of the patch, and now finally it looks
+>    simple and clean.
 
-I posted a message in linux-api yesterday regarding this, but had no
-responses. At this point I am looking for comments regarding these new
-syscalls and the likelyhood of having this patch applied.
+Only 11?  We can do better than that..
 
-As the engineer for a web hosting company I have seen the need for
-grater control over a processes uid/gid. Currently with shared virtual
-hosting solutions, if for security we wish to run a shared CGI language
-(such as PHP) as the user that owns the website we are forced to fork a
-new process per request, then call setuid/gid and then launch the script
-language. This ofcource is resource intensive, but at present there is
-no other solution.
+> ####TESTCASE_BEGIN
+> $touch /mnt/test/BIG_FILE
+> ## at this moment /mnt/test/BIG_FILE size and blocks equal to zero
+> open("/mnt/test/BIG_FILE", O_WRONLY|O_CREAT|O_DIRECT, 0666) = 3
+> write(3, "aaaaaaaaaaaa"..., 104857600) = -1 ENOSPC (No space left on device)
+> ## size and block sould't be changed because write op failed.
+> $stat /mnt/test/BIG_FILE
+> File: `/mnt/test/BIG_FILE'
+> Size: 0 Blocks: 110896 IO Block: 1024 regular empty file
+> <<<<<<<<^^^^^^^^^^^^^^^^^^^^^^^^^^^^^file size is less than biggest block idx
+> Device: fe07h/65031d Inode: 14 Links: 1
+> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
+> Access: 2007-01-24 20:03:38.000000000 +0300
+> Modify: 2007-01-24 20:03:38.000000000 +0300
+> Change: 2007-01-24 20:03:39.000000000 +0300
+> 
+> #fsck.ext3 -f /dev/VG/test
+> e2fsck 1.39 (29-May-2006)
+> Pass 1: Checking inodes, blocks, and sizes
+> Inode 14, i_size is 0, should be 56556544. Fix<y>? yes
+> Pass 2: Checking directory structure
+> ....
+> #####TESTCASE_ENDdiff --git a/fs/direct-io.c b/fs/direct-io.c
+> index af0558d..4e88bea 100644
+> 
+> Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+> ---
+>  fs/direct-io.c |   10 ++++++++++
+>  1 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/direct-io.c b/fs/direct-io.c
+> index af0558d..4e88bea 100644
+> --- a/fs/direct-io.c
+> +++ b/fs/direct-io.c
+> @@ -1209,6 +1209,16 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+>  	retval = direct_io_worker(rw, iocb, inode, iov, offset,
+>  				nr_segs, blkbits, get_block, end_io, dio);
+>  
+> +	/*
+> +	 * In case of error extending write may have instantiated a few
+> +	 * blocks outside i_size. Trim these off again for DIO_LOCKING.
+> +	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this by
+> +	 * it's own meaner.
+> +	 */
+> +	if (unlikely(retval < 0 && (rw & WRITE) && (end > i_size_read(inode))
+> +			&& dio_lock_type == DIO_LOCKING))
+> +		vmtruncate(inode, inode->i_size);
+> +
+>  	if (rw == READ && dio_lock_type == DIO_LOCKING)
+>  		release_i_mutex = 0;
 
-My patch adds four new syscalls to the kernel that allows this issue to
-be overcome, and I am sure that it could find application in many other
-programs. The syscalls are:
+Really we should use i_size_read() in both cases (i_mutex might not be
+held).  How does this look?
 
-* long enable_setpresuid(uid_t start, uid_t end);
+	/*
+	 * In case of error extending write may have instantiated a few
+	 * blocks outside i_size. Trim these off again for DIO_LOCKING.
+	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this by
+	 * it's own meaner.
+	 */
+	if (unlikely(retval < 0 && (rw & WRITE))) {
+		loff_t isize = i_size_read(inode);
 
-This function enables the use of the setpresuid call for the calling
-process, the calling process has to have CAP_SETUID permission to call
-this function. The start and end parameters specify the uid range that
-the setpresuid must be called with.
-
-* long enable_setpresgid(gid_t start, gid_t end);
-
-This function is the same as above, except it enables the setpresgid
-call for the specified gid range.
-
-* long setpresuid(pid_t pid, uid_t ruid, uid_t euid, uid_t suid);
-
-This function changes the specified IMMEDIATE child pid's real, saved
-and effective uid to the specified uid. Returns -EPERM if the
-enable_setpresuid call has not been made first.
-
-* long setpresgid(pid_t pid, gid_t rgid, gid_t egid, gid_t sgid);
-
-This function does the same as above, except it applies to the group of
-the IMMEDIATE child.
-
-The reason for the enable functions is so that the calling app can drop
-root privlages after enabling the setpresuid/setpresgid for a certian
-range of uid/gid numbers. This allows the parent process to change its
-child processes (forked) uid/gid at any time without needing root access
-while being secure so that it can not set its child processes to users
-such as root.
-
-An example of its usage follows...
-
-int main()
-{
-	pid_t child;
-
-	/* enable the setpres* functions for ids 1000-9999 */
-	enable_setpresuid(1000, 9999);
-	enable_setpresgid(1000, 9999);
-
-	/* drop to an un-privlaged user */
-	setresuid(65534, 65534, 65534);
-
-	/* fork a useless child for example sake */
-	child = fork();
-	if (child == 0) {
-		sleep(10);
-		return 0;
+		if (end > isize && dio_lock_type == DIO_LOCKING)
+			vmtruncate(inode, isize);
 	}
 
-	/* change the childs uid/gid to 1000 */
-	setpresuid(child, 1000, 1000, 1000);
-	setpresgid(child, 1000, 1000, 1000);
-
-	/* wait for the child to terminate */
-	wait(NULL);
-	return 0;
-}
-
-For the patch and a bit more information please goto:
-http://www.spacevs.com/rambles/setuid2.php
-
-Even though not stated on the website, this code is released under
-whatever licence is needed to get it into the kernel.
-
--Geoffrey McRae
 
