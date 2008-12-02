@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYLBNtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbYLBNvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbYLBNtl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbYLBNtc
+	id S1755178AbYLBNvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbYLBNuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:49:32 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:36168 "EHLO mgw1.diku.dk"
+	Tue, 2 Dec 2008 08:50:52 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:55037 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752999AbYLBNtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:49:31 -0500
+	id S1752999AbYLBNuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 08:50:51 -0500
 From: Nicolas Palix <npalix@diku.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       dougthompson@xmission.com
-Subject: [PATCH linux-next] drivers/edac/cell_edac.c: Add missing of_node_put
-Date: Tue, 2 Dec 2008 14:49:28 +0100
+To: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH linux-next] framebuffer: Add missing of_node_put in drivers/video/valkyriefb.c
+Date: Tue, 2 Dec 2008 14:50:49 +0100
 User-Agent: KMail/1.9.10
-Cc: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>,
-       Nicolas Palix <npalix@diku.dk>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Julia Lawall <julia@diku.dk>, Nicolas Palix <npalix@diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812021449.29385.npalix@diku.dk>
+Message-Id: <200812021450.49276.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -77,20 +76,25 @@ print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2
 Signed-off-by: Nicolas Palix <npalix@diku.dk>
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/edac/cell_edac.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/valkyriefb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/edac/cell_edac.c b/drivers/edac/cell_edac.c
-index cd2e3b8..cbc448b 100644
---- a/drivers/edac/cell_edac.c
-+++ b/drivers/edac/cell_edac.c
-@@ -139,6 +139,7 @@ static void __devinit cell_edac_init_csrows(struct mem_ctl_info *mci)
- 			continue;
- 		if (of_node_to_nid(np) != priv->node)
- 			continue;
-+		of_node_put(np);
- 		csrow->first_page = r.start >> PAGE_SHIFT;
- 		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
- 		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
+diff --git a/drivers/video/valkyriefb.c b/drivers/video/valkyriefb.c
+index 7b0cef9..62fba43 100644
+--- a/drivers/video/valkyriefb.c
++++ b/drivers/video/valkyriefb.c
+@@ -346,10 +346,12 @@ int __init valkyriefb_init(void)
+ 			return 0;
+ 
+ 		if (of_address_to_resource(dp, 0, &r)) {
++			of_node_put(dp);
+ 			printk(KERN_ERR "can't find address for valkyrie\n");
+ 			return 0;
+ 		}
+ 
++		of_node_put(dp);
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+ 		flags = _PAGE_WRITETHRU;
 -- 
 Nicolas Palix
