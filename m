@@ -1,86 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbYLBQx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751AbYLBQym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbYLBQx0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:53:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYLBQxS
+	id S1755751AbYLBQym (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYLBQye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:53:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44238 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751163AbYLBQxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:53:18 -0500
-Date: Tue, 2 Dec 2008 17:53:08 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: Re: [PATCH] getrusage: fill ru_maxrss value
-Message-ID: <20081202175308.5d9ca9f7@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20081202160507.GA14524@redhat.com>
-References: <20081202131802.5252b96d@psychotron.englab.brq.redhat.com>
-	<20081202160507.GA14524@redhat.com>
+	Tue, 2 Dec 2008 11:54:34 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:51130 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbYLBQye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 11:54:34 -0500
+Date: Tue, 2 Dec 2008 17:55:57 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Renato S. Yamane" <yamane@diamondcut.com.br>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: About git-bisect (was: Linux 2.6.28-rc7)
+Message-ID: <20081202165557.GA10637@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org> <20081202131442.42e7df48@varda> <alpine.LFD.2.00.0812020748310.3256@nehalem.linux-foundation.org> <20081202165637.09984819@varda> <alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org> <49356274.6080400@diamondcut.com.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49356274.6080400@diamondcut.com.br>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008 17:05:07 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
+> 
+> I need more than 20min to compile each kernel, so is necessary ~260min.
 
-> On 12/02, Jiri Pirko wrote:
-> >
-> > Based on the patch previously posted by Frank Mayhar:
-> > http://kerneltrap.org/mailarchive/linux-kernel/2007/9/20/264772
-> >
-> > Changed to do not panic and to set the value properly. Also made some
-> > modifications as Oleg suggested. maxrss value is set to pages as "time"
-> > application converts it co KBs.
-> >
-> > This patch enables "time" application to show maxresident value
-> > correctly.
-> 
-> I believe the changelog could be a bit more descriptive ;)
-> And I think the patch needs more CCs. (Hugh and Michael cc'ed).
-> 
-> What about exec? Should we preserve signal_struct->maxrss, or should
-> we reset it? I don't know what is the right behaviour, but imho it
-> should be consistent with task_mem()/xacct_add_tsk(). And since
-> bprm_mm_init() does not copy ->hiwater_xxx, perhaps we should reset.
-> Or we should change the exec_mmap() path to preserve ->hiwater_xxx,
-> I dunno.
-> 
-> > Note that even without this patch applied there is a race between two
-> > parallel update_hiwater_rss() callers.
-> >
-> > [...snip...]
-> > @@ -1051,6 +1051,8 @@ NORET_TYPE void do_exit(long code)
-> >  	if (tsk->mm) {
-> >  		update_hiwater_rss(tsk->mm);
-> >  		update_hiwater_vm(tsk->mm);
-> > +
-> > +		tsk->signal->maxrss = tsk->mm->hiwater_rss;
-> 
-> Yes. But still it is not good the patch adds new racy calls
-> (k_getrusage() too). And in fact I think this code in do_exit()
-> should die, and we can update signal->maxrss in exit_mm().
-> 
-> Unless I missed something, the "if (tsk->mm) {}" code in
-> do_exit() is not needed because xacct_add_tsk() is not right
-> anyway. What we imho need is get_mm_hiwater_xxx(), can be
-> also used by task_mm().
-> 
-> I'll send the patch a bit later, then we can tweak this patch.
-> 
-> Do you agree?
-Okay.
+You do not need to do a "make clean" between each build, so if none
+of the core files are touched you should be much faster.
+Do you bisect and then type make should be enough.
 
-Jirka
-> 
-> (just in case, I don't mean that mm/ uses update_hiwater_xxx()
->  "safely", afaics try_to_unmap can race with unmap_region
->  for example, but still).
-> 
-> Oleg.
-> 
+	Sam
