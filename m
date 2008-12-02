@@ -1,198 +1,349 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYLBGFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbYLBGPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbYLBGFN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 01:05:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYLBGE5
+	id S1752932AbYLBGPW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 01:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbYLBGPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 01:04:57 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:38156 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbYLBGE4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 01:04:56 -0500
-Message-ID: <4934D000.5000304@cosmosbay.com>
-Date: Tue, 02 Dec 2008 07:04:48 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Tue, 2 Dec 2008 01:15:06 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64802 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064AbYLBGPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 01:15:04 -0500
+Message-ID: <4934D27B.4020904@cn.fujitsu.com>
+Date: Tue, 02 Dec 2008 14:15:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Michael Chan <mchan@broadcom.com>
-CC: davem@davemloft.net, linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [BUG] linux-2.6.28-rc3 regression: IRQ smp_affinities not respected
-References: <C27F8246C663564A84BB7AB343977242151F4B18B5@IRVEXCHCCR01.corp.ad.broadcom.com> <491154C8.3040401@cosmosbay.com> <492D107B.1060303@cosmosbay.com> <1227719692.13189.7.camel@HP1> <1228173819.15505.15.camel@HP1>
-In-Reply-To: <1228173819.15505.15.camel@HP1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 02 Dec 2008 07:04:50 +0100 (CET)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] cgroup: fix pre_destroy and semantics of css->refcnt
+References: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com> <20081201150208.6b24506b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081201150208.6b24506b.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Chan a écrit :
-> On Wed, 2008-11-26 at 09:14 -0800, Michael Chan wrote:
->> On Wed, 2008-11-26 at 01:01 -0800, Eric Dumazet wrote:
->>> Eric Dumazet a écrit :
->>>> Michael Chan a écrit :
->>>>> I believe this may be the patch that broke it:
->>>>>
->>>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ce6fce4295ba727b36fdc73040e444bd1aae64cd 
->>>>>
->>>>>
->>>>> I don't remember all the details, but the Broadcom 5708 chip is
->>>>> affected because it does not support MSI per-vector masking.
->>>>>
->>>>> One way to get around is to disable MSI with bnx2 parameter
->>>>> disable_msi=1.
->>>>>
->>>> I tried this MSI disabling and yes, it now works.
->>>>
->>>> 16:      42726        128        105        106         89         
->>>> 89        145        152   IO-APIC-fasteoi   uhci_hcd:usb1, eth0, eth1
->>>>
->>> I believe the bnx2 driver doesnt work at all if !disable_msi (default setting)
->>>
->>> Doing a "echo 0 >/sys/devices/system/cpu/cpu1/online" just freeze network
->>>
->>> No messages logged
->>>
->>> If loaded with disable_msi=1, the cpu unplug works as expected.
->>>
->>> Thats a pretty serious issue.
->>>
->> Yes, that's the same issue and it is serious.  If MSI is being delivered
->> to CPU 1 and you then take CPU 1 offline, the MSI will not be delivered
->> to another CPU.
->>
->> I think I can detect this problem in bnx2_timer() and try to recover.
->> I'll post a patch when I have something ready.  Thanks.
+KAMEZAWA Hiroyuki wrote:
+> Now, final check of refcnt is done after pre_destroy(), so rmdir() can fail
+> after pre_destroy().
+> memcg set mem->obsolete to be 1 at pre_destroy and this is buggy..
 > 
-> [PATCH] bnx2: Add workaround to handle missed MSI.
+> Several ways to fix this can be considered. This is an idea.
 > 
-> The bnx2 chips do not support per MSI vector masking.  On 5706/5708, new MSI
-> address/data are stored only when the MSI enable bit is toggled.  As a result,
-> SMP affinity no longer works in the latest kernel.  A more serious problem is
-> that the driver will no longer receive interrupts when the MSI receiving CPU
-> goes offline.
+
+I don't see what's the difference with css_under_removal() in this patch and
+cgroup_is_removed() which is currently available.
+
+CGRP_REMOVED flag is set in cgroup_rmdir() when it's confirmed that rmdir can
+be sucessfully performed.
+
+So mem->obsolete can be replaced with:
+
+bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
+{
+	return cgroup_is_removed(mem->css.cgroup);
+}
+
+Or am I missing something?
+
+> Fortunately, the user of css_get()/css_put() is only memcg, now.
+> And it seems assumption on css_ref in cgroup.c is a bit complicated.
+> I'd like to reuse it.
+> This patch changes this css->refcnt usage and action as following
+> 	- css->refcnt is initialized to 1.
 > 
-> The workaround in this patch only addresses the problem of CPU going offline.
-> When that happens, the driver's timer function will detect that it is making
-> no forward progress on pending interrupt events and will recover from it.
+> 	- after pre_destroy, before destroy(), try to drop css->refcnt to 0.
 > 
-> Eric Dumazet reported the problem.
+> 	- css_tryget() is added. This only success when css->refcnt > 0.
 > 
-> We also found that if an interrupt is internally asserted while MSI and INTA
-> are disabled, the chip will end up in the same state after MSI is re-enabled.
-> The same workaround is needed for this problem. 
+> 	- css_is_removed() is added. This checks css->refcnt == 0 and means
+> 	  this cgroup is under destroy() or not.
 > 
-> Signed-off-by: Michael Chan <mchan@broadcom.com>
-> ---
->  drivers/net/bnx2.c |   35 ++++++++++++++++++++++++++++++++---
->  drivers/net/bnx2.h |    6 ++++++
->  2 files changed, 38 insertions(+), 3 deletions(-)
+> 	- css_put() is changed not to call notify_on_release().
+> 	  From documentation, notify_on_release() is called when there is no
+> 	  tasks/children in cgroup. On implementation, notify_on_release is
+> 	  not called if css->refcnt > 0.
+> 	  This is problematic. memcg has css->refcnt by each page even when
+> 	  there are no tasks. release handler will be never called.
+> 	  But, now, rmdir()/pre_destroy() of memcg works well and checking
+> 	  checking css->ref is not (and shouldn't be) necessary for notifying.
 > 
-> diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
-> index 182f241..0e2218d 100644
-> --- a/drivers/net/bnx2.c
-> +++ b/drivers/net/bnx2.c
-> @@ -3147,6 +3147,28 @@ bnx2_has_work(struct bnx2_napi *bnapi)
->  	return 0;
->  }
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
+> 
+> 
+>  include/linux/cgroup.h |   21 +++++++++++++++++--
+>  kernel/cgroup.c        |   53 +++++++++++++++++++++++++++++++++++--------------
+>  mm/memcontrol.c        |   40 +++++++++++++++++++++++++-----------
+>  3 files changed, 85 insertions(+), 29 deletions(-)
+> 
+> Index: mmotm-2.6.28-Nov29/include/linux/cgroup.h
+> ===================================================================
+> --- mmotm-2.6.28-Nov29.orig/include/linux/cgroup.h
+> +++ mmotm-2.6.28-Nov29/include/linux/cgroup.h
+> @@ -54,7 +54,9 @@ struct cgroup_subsys_state {
 >  
-> +static void
-> +bnx2_chk_missed_msi(struct bnx2 *bp)
-> +{
-> +	struct bnx2_napi *bnapi = &bp->bnx2_napi[0];
-> +	u32 msi_ctrl;
-> +
-> +	if (bnx2_has_work(bnapi)) {
-> +		msi_ctrl = REG_RD(bp, BNX2_PCICFG_MSI_CONTROL);
-> +		if (!(msi_ctrl & BNX2_PCICFG_MSI_CONTROL_ENABLE))
-> +			return;
-> +
-> +		if (bnapi->last_status_idx == bp->idle_chk_status_idx) {
-> +			REG_WR(bp, BNX2_PCICFG_MSI_CONTROL, msi_ctrl &
-> +			       ~BNX2_PCICFG_MSI_CONTROL_ENABLE);
-> +			REG_WR(bp, BNX2_PCICFG_MSI_CONTROL, msi_ctrl);
-> +			bnx2_msi(bp->irq_tbl[0].vector, bnapi);
-> +		}
-> +	}
-> +
-> +	bp->idle_chk_status_idx = bnapi->last_status_idx;
+>  	/* State maintained by the cgroup system to allow
+>  	 * subsystems to be "busy". Should be accessed via css_get()
+> -	 * and css_put() */
+> +	 * and css_put(). If this value is 0, css is now under removal and
+> +	 * destroy() will be called soon. (and there is no roll-back.)
+> +	 */
+>  
+>  	atomic_t refcnt;
+>  
+> @@ -86,7 +88,22 @@ extern void __css_put(struct cgroup_subs
+>  static inline void css_put(struct cgroup_subsys_state *css)
+>  {
+>  	if (!test_bit(CSS_ROOT, &css->flags))
+> -		__css_put(css);
+> +		atomic_dec(&css->refcnt);
 > +}
 > +
->  static void bnx2_poll_link(struct bnx2 *bp, struct bnx2_napi *bnapi)
->  {
->  	struct status_block *sblk = bnapi->status_blk.msi;
-> @@ -3221,14 +3243,15 @@ static int bnx2_poll(struct napi_struct *napi, int budget)
->  
->  		work_done = bnx2_poll_work(bp, bnapi, work_done, budget);
->  
-> -		if (unlikely(work_done >= budget))
-> -			break;
-> -
->  		/* bnapi->last_status_idx is used below to tell the hw how
->  		 * much work has been processed, so we must read it before
->  		 * checking for more work.
->  		 */
->  		bnapi->last_status_idx = sblk->status_idx;
+> +/* returns not-zero if success */
+> +static inline int css_tryget(struct cgroup_subsys_state *css)
+> +{
+> +	if (!test_bit(CSS_ROOT, &css->flags))
+> +		return atomic_inc_not_zero(&css->refcnt);
+> +	return 1;
+> +}
 > +
-> +		if (unlikely(work_done >= budget))
+> +static inline bool css_under_removal(struct cgroup_subsys_state *css)
+> +{
+> +	if (test_bit(CSS_ROOT, &css->flags))
+> +		return false;
+> +	return atomic_read(&css->refcnt) == 0;
+>  }
+>  
+>  /* bits in struct cgroup flags field */
+> Index: mmotm-2.6.28-Nov29/kernel/cgroup.c
+> ===================================================================
+> --- mmotm-2.6.28-Nov29.orig/kernel/cgroup.c
+> +++ mmotm-2.6.28-Nov29/kernel/cgroup.c
+> @@ -589,6 +589,32 @@ static void cgroup_call_pre_destroy(stru
+>  	return;
+>  }
+>  
+> +/*
+> + * Try to set all subsys's refcnt to be 0.
+> + * css->refcnt==0 means this subsys will be destroy()'d.
+> + */
+> +static bool cgroup_set_subsys_removed(struct cgroup *cgrp)
+> +{
+> +	struct cgroup_subsys *ss;
+> +	struct cgroup_subsys_state *css, *tmp;
+> +
+> +	for_each_subsys(cgrp->root, ss) {
+> +		css = cgrp->subsys[ss->subsys_id];
+> +		if (!atomic_dec_and_test(&css->refcnt))
+> +			goto rollback;
+> +	}
+> +	return true;
+> +rollback:
+> +	for_each_subsys(cgrp->root, ss) {
+> +		tmp = cgrp->subsys[ss->subsys_id];
+> +		atomic_inc(&tmp->refcnt);
+> +		if (tmp == css)
 > +			break;
+> +	}
+> +	return false;
+> +}
 > +
->  		rmb();
->  		if (likely(!bnx2_has_work(bnapi))) {
->  			netif_rx_complete(bp->dev, napi);
-> @@ -4581,6 +4604,8 @@ bnx2_init_chip(struct bnx2 *bp)
->  	for (i = 0; i < BNX2_MAX_MSIX_VEC; i++)
->  		bp->bnx2_napi[i].last_status_idx = 0;
->  
-> +	bp->idle_chk_status_idx = 0xffff;
 > +
->  	bp->rx_mode = BNX2_EMAC_RX_MODE_SORT_MODE;
+>  static void cgroup_diput(struct dentry *dentry, struct inode *inode)
+>  {
+>  	/* is dentry a directory ? if so, kfree() associated cgroup */
+> @@ -2310,7 +2336,7 @@ static void init_cgroup_css(struct cgrou
+>  			       struct cgroup *cgrp)
+>  {
+>  	css->cgroup = cgrp;
+> -	atomic_set(&css->refcnt, 0);
+> +	atomic_set(&css->refcnt, 1);
+>  	css->flags = 0;
+>  	if (cgrp == dummytop)
+>  		set_bit(CSS_ROOT, &css->flags);
+> @@ -2438,7 +2464,7 @@ static int cgroup_has_css_refs(struct cg
+>  		 * matter, since it can only happen if the cgroup
+>  		 * has been deleted and hence no longer needs the
+>  		 * release agent to be called anyway. */
+> -		if (css && atomic_read(&css->refcnt))
+> +		if (css && (atomic_read(&css->refcnt) > 1))
+>  			return 1;
+>  	}
+>  	return 0;
+> @@ -2465,7 +2491,8 @@ static int cgroup_rmdir(struct inode *un
 >  
->  	/* Set up how to generate a link change interrupt. */
-> @@ -5729,6 +5754,10 @@ bnx2_timer(unsigned long data)
->  	if (atomic_read(&bp->intr_sem) != 0)
->  		goto bnx2_restart_timer;
+>  	/*
+>  	 * Call pre_destroy handlers of subsys. Notify subsystems
+> -	 * that rmdir() request comes.
+> +	 * that rmdir() request comes. pre_destroy() is expected to drop all
+> +	 * extra refcnt to css. (css->refcnt == 1)
+>  	 */
+>  	cgroup_call_pre_destroy(cgrp);
 >  
-> +	if ((bp->flags & (BNX2_FLAG_USING_MSI | BNX2_FLAG_ONE_SHOT_MSI)) ==
-> +	     BNX2_FLAG_USING_MSI)
-> +		bnx2_chk_missed_msi(bp);
+> @@ -2479,8 +2506,15 @@ static int cgroup_rmdir(struct inode *un
+>  		return -EBUSY;
+>  	}
+>  
+> +	/* last check ! */
+> +	if (!cgroup_set_subsys_removed(cgrp)) {
+> +		mutex_unlock(&cgroup_mutex);
+> +		return -EBUSY;
+> +	}
 > +
->  	bnx2_send_heart_beat(bp);
+>  	spin_lock(&release_list_lock);
+>  	set_bit(CGRP_REMOVED, &cgrp->flags);
+> +
+>  	if (!list_empty(&cgrp->release_list))
+>  		list_del(&cgrp->release_list);
+>  	spin_unlock(&release_list_lock);
+> @@ -3003,7 +3037,7 @@ static void check_for_release(struct cgr
+>  	/* All of these checks rely on RCU to keep the cgroup
+>  	 * structure alive */
+>  	if (cgroup_is_releasable(cgrp) && !atomic_read(&cgrp->count)
+> -	    && list_empty(&cgrp->children) && !cgroup_has_css_refs(cgrp)) {
+> +	    && list_empty(&cgrp->children)) {
+>  		/* Control Group is currently removeable. If it's not
+>  		 * already queued for a userspace notification, queue
+>  		 * it now */
+> @@ -3020,17 +3054,6 @@ static void check_for_release(struct cgr
+>  	}
+>  }
 >  
->  	bp->stats_blk->stat_FwRxDrop =
-> diff --git a/drivers/net/bnx2.h b/drivers/net/bnx2.h
-> index 0763108..2f43c45 100644
-> --- a/drivers/net/bnx2.h
-> +++ b/drivers/net/bnx2.h
-> @@ -378,6 +378,9 @@ struct l2_fhdr {
->   *  pci_config_l definition
->   *  offset: 0000
+> -void __css_put(struct cgroup_subsys_state *css)
+> -{
+> -	struct cgroup *cgrp = css->cgroup;
+> -	rcu_read_lock();
+> -	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
+> -		set_bit(CGRP_RELEASABLE, &cgrp->flags);
+> -		check_for_release(cgrp);
+> -	}
+> -	rcu_read_unlock();
+> -}
+> -
+>  /*
+>   * Notify userspace when a cgroup is released, by running the
+>   * configured release agent with the name of the cgroup (path
+> Index: mmotm-2.6.28-Nov29/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.28-Nov29.orig/mm/memcontrol.c
+> +++ mmotm-2.6.28-Nov29/mm/memcontrol.c
+> @@ -154,7 +154,6 @@ struct mem_cgroup {
+>  	 */
+>  	bool use_hierarchy;
+>  	unsigned long	last_oom_jiffies;
+> -	int		obsolete;
+>  	atomic_t	refcnt;
+>  	/*
+>  	 * statistics. This must be placed at the end of memcg.
+> @@ -540,8 +539,14 @@ mem_cgroup_get_first_node(struct mem_cgr
+>  {
+>  	struct cgroup *cgroup;
+>  	struct mem_cgroup *ret;
+> -	bool obsolete = (root_mem->last_scanned_child &&
+> -				root_mem->last_scanned_child->obsolete);
+> +	struct mem_cgroup *last_scan = root_mem->last_scanned_child;
+> +	bool obsolete = false;
+> +
+> +	if (last_scan) {
+> +		if (css_under_removal(&last_scan->css))
+> +			obsolete = true;
+> +	} else
+> +		obsolete = true;
+>  
+>  	/*
+>  	 * Scan all children under the mem_cgroup mem
+> @@ -598,7 +603,7 @@ static int mem_cgroup_hierarchical_recla
+>  	next_mem = mem_cgroup_get_first_node(root_mem);
+>  
+>  	while (next_mem != root_mem) {
+> -		if (next_mem->obsolete) {
+> +		if (css_under_removal(&next_mem->css)) {
+>  			mem_cgroup_put(next_mem);
+>  			cgroup_lock();
+>  			next_mem = mem_cgroup_get_first_node(root_mem);
+> @@ -985,6 +990,7 @@ int mem_cgroup_try_charge_swapin(struct 
+>  {
+>  	struct mem_cgroup *mem;
+>  	swp_entry_t     ent;
+> +	int ret;
+>  
+>  	if (mem_cgroup_disabled())
+>  		return 0;
+> @@ -1003,10 +1009,18 @@ int mem_cgroup_try_charge_swapin(struct 
+>  	ent.val = page_private(page);
+>  
+>  	mem = lookup_swap_cgroup(ent);
+> -	if (!mem || mem->obsolete)
+> +	/*
+> +	 * Because we can't assume "mem" is alive now, use tryget() and
+> +	 * drop extra count later
+> +	 */
+> +	if (!mem || !css_tryget(&mem->css))
+>  		goto charge_cur_mm;
+>  	*ptr = mem;
+> -	return __mem_cgroup_try_charge(NULL, mask, ptr, true);
+> +	ret = __mem_cgroup_try_charge(NULL, mask, ptr, true);
+> +	/* drop extra count */
+> +	css_put(&mem->css);
+> +
+> +	return ret;
+>  charge_cur_mm:
+>  	if (unlikely(!mm))
+>  		mm = &init_mm;
+> @@ -1037,14 +1051,16 @@ int mem_cgroup_cache_charge_swapin(struc
+>  		ent.val = page_private(page);
+>  		if (do_swap_account) {
+>  			mem = lookup_swap_cgroup(ent);
+> -			if (mem && mem->obsolete)
+> +			if (mem && !css_tryget(&mem->css))
+>  				mem = NULL;
+>  			if (mem)
+>  				mm = NULL;
+>  		}
+>  		ret = mem_cgroup_charge_common(page, mm, mask,
+>  				MEM_CGROUP_CHARGE_TYPE_SHMEM, mem);
+> -
+> +		/* drop extra ref */
+> +		if (mem)
+> +			css_put(&mem->css);
+>  		if (!ret && do_swap_account) {
+>  			/* avoid double counting */
+>  			mem = swap_cgroup_record(ent, NULL);
+> @@ -1886,8 +1902,8 @@ static struct mem_cgroup *mem_cgroup_all
+>   * the number of reference from swap_cgroup and free mem_cgroup when
+>   * it goes down to 0.
+>   *
+> - * When mem_cgroup is destroyed, mem->obsolete will be set to 0 and
+> - * entry which points to this memcg will be ignore at swapin.
+> + * When mem_cgroup is destroyed, css_under_removal() is true and entry which
+> + * points to this memcg will be ignore at swapin.
+>   *
+>   * Removal of cgroup itself succeeds regardless of refs from swap.
 >   */
-> +#define BNX2_PCICFG_MSI_CONTROL				0x00000058
-> +#define BNX2_PCICFG_MSI_CONTROL_ENABLE			 (1L<<16)
-> +
->  #define BNX2_PCICFG_MISC_CONFIG				0x00000068
->  #define BNX2_PCICFG_MISC_CONFIG_TARGET_BYTE_SWAP	 (1L<<2)
->  #define BNX2_PCICFG_MISC_CONFIG_TARGET_MB_WORD_SWAP	 (1L<<3)
-> @@ -6882,6 +6885,9 @@ struct bnx2 {
+> @@ -1917,7 +1933,7 @@ static void mem_cgroup_get(struct mem_cg
+>  static void mem_cgroup_put(struct mem_cgroup *mem)
+>  {
+>  	if (atomic_dec_and_test(&mem->refcnt)) {
+> -		if (!mem->obsolete)
+> +		if (!css_under_removal(&mem->css))
+>  			return;
+>  		mem_cgroup_free(mem);
+>  	}
+> @@ -1980,7 +1996,7 @@ static void mem_cgroup_pre_destroy(struc
+>  					struct cgroup *cont)
+>  {
+>  	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+> -	mem->obsolete = 1;
+> +	/* dentry's mutex makes this safe. */
+>  	mem_cgroup_force_empty(mem, false);
+>  }
 >  
->  	u8			num_tx_rings;
->  	u8			num_rx_rings;
-> +
-> +	u32			idle_chk_status_idx;
-> +
->  };
->  
->  #define REG_RD(bp, offset)					\
-
-Thanks a lot Michael
-
-I tested your patch on my machine.
-
-I confirm CPU unplug/hotplug works now (If correcting a bug in oprofile first)
-NIC doesnt freeze anymore
-
-Eric
-
+> 
+> 
