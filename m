@@ -1,92 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYLBKjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYLBKkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbYLBKjn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 05:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYLBKjf
+	id S1754059AbYLBKkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 05:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYLBKkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 05:39:35 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:36346 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbYLBKjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 05:39:33 -0500
-Date: Tue, 2 Dec 2008 10:39:26 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Russ Anderson <rja@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Jones <davej@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/8] badpage: simplify page_alloc flag check+clear
-In-Reply-To: <Pine.LNX.4.64.0812012014150.30344@quilx.com>
-Message-ID: <Pine.LNX.4.64.0812020947440.5306@blonde.anvils>
-References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
- <Pine.LNX.4.64.0812010038220.11401@blonde.site> <Pine.LNX.4.64.0812010843230.15331@quilx.com>
- <Pine.LNX.4.64.0812012349330.18893@blonde.anvils> <Pine.LNX.4.64.0812012014150.30344@quilx.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Dec 2008 05:40:04 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:56148 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752926AbYLBKkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 05:40:01 -0500
+To: sds@tycho.nsa.gov
+Cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
+       crispin@crispincowan.com, casey@schaufler-ca.com, jmorris@namei.org,
+       takedakn@nttdata.co.jp, haradats@nttdata.co.jp,
+       penguin-kernel@I-love.SAKURA.ne.jp
+Subject: Re: [TOMOYO #13 (mmotm 2008-11-19-02-19) 01/11] Introduce security_path_clear() hook.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20081120112543.799450455@I-love.SAKURA.ne.jp>
+	<20081120112727.557697893@I-love.SAKURA.ne.jp>
+	<1228161612.18720.211.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1228161612.18720.211.camel@moss-spartans.epoch.ncsc.mil>
+Message-Id: <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Tue, 2 Dec 2008 19:39:58 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008, Christoph Lameter wrote:
-> On Mon, 1 Dec 2008, Hugh Dickins wrote:
-> > > > PAGE_FLAGS_CHECK_AT_FREE
-> 
-> > > Rename this to PAGE_FLAGS_CLEAR_WHEN_FREE?
-> >
-> > No, that's a list of just the ones it's checking at free;
-> > it then (with this patch) goes on to clear all of them.
-> 
-> But they are always clear on free. The checking is irrelevant.
+Hello.
 
-How about CHECK_PAGE_FLAGS_CLEAR_AT_FREE?
-
+Stephen Smalley wrote:
+> On Thu, 2008-11-20 at 20:25 +0900, Tetsuo Handa wrote:
+> > plain text document attachment (introduce-security_path_clear.patch)
+> > To perform DAC performed in vfs_foo() before MAC, we let security_path_foo()
+> > save a result into our own hash table and return 0, and let security_inode_foo()
+> > return the saved result. Since security_inode_foo() is not always called after
+> > security_path_foo(), we need security_path_clear() to clear the hash table.
 > 
-> > One of the problems with PREP is that it's not obvious that it
-> > means ALLOC: yes, I'd be happier with PAGE_FLAGS_CLEAR_AT_FREE.
-> 
-> Ok.
+> This seems very fragile and unmaintainable to me.  The fact that you
+> even need a security_path_clear() hook suggests that something is wrong
+> with the other security_path* hooks. I'd suggest that you explicitly
+> pass the result of the security_path* hooks down to the security_inode*
+> hooks instead.  What do others think?
 
-If you like the suggestion above, then for this one
-how about CHECK_PAGE_FLAGS_CLEAR_AT_ALLOC?
+You are recommending us to pass variables required for security_inode_*() via
+stack memory rather than private hash, aren't you?
+I think there are two problems.
 
-I just haven't changed those names in the patch, continued to
-use the names from before: they're probably not the names I'd
-have chosen, but it is hard to write a paragraph in a name.
+One is that the variable passed via stack memory won't be used by SELinux and
+SMACK and "CONFIG_SECURITY=n kernels", which will be a waste of stack memory.
 
-The one I really disliked was "PAGE_FLAGS" for an obscure
-subset of page flags, and have got rid of that.
+The other one is that TOMOYO will need another variable for telling how the
+security_inode_*() are called. Passing the variable via stack memory requires
+modification of all vfs_*() calls, but TOMOYO doesn't check requests issued
+by (e.g.) stackable filesystems.
 
-> > > This is equal to
-> > >
-> > > page->flags &=~PAGE_FLAGS_CHECK_AT_PREP;
-> > >
-> > > You can drop the if...
-> >
-> > I was intentionally following the existing style of
-> > 	if (PageDirty(page))
-> > 		__ClearPageDirty(page);
-> > 	if (PageSwapBacked(page))
-> > 		__ClearPageSwapBacked(page);
-> > which is going out of its way to avoid dirtying a cacheline.
-> >
-> > In all the obvious cases, I think the cacheline will already
-> > be dirty; but I guess there's an important case (high order
-> > but not compound?) which has a lot of clean cachelines.
-> 
-> Free or alloc dirties the cacheline of the page struct regardless since
-> the LRU field is always modified.
-> 
-> Well, ok. The not compound high order case may be an exception.
-> 
-> But then lets at least make a single check
-> 
-> If (page->flags & (all the flags including dirty and SwapBacked))
-> 	zap-em.
+By the way, this security_path_clear() is intended to be able to return DAC's
+error code in priority to MAC's error code, but there are two problems for
+TOMOYO.
+One is that pathnames which will be later denied by DAC are appended by
+TOMOYO's learning mode (i.e. garbage entries appears in the learned policy).
+The other is that warning messages on pathnames which will be later denied by
+DAC are generated by TOMOYO's enforcing mode.
 
-That's exactly what I did, isn't it?
+Thus, it will be preferable for TOMOYO to "do MAC checks after DAC checks"
+rather than to "return DAC's error in priority to MAC's error while doing MAC
+checks before DAC checks".
 
-Hugh
+To do so, "security_path_*() should be replaced by security_path_set(vfsmount)"
+and "let security_inode_*() do MAC checks using the result of
+security_path_set()" and "let security_path_clear() clear the result of
+security_path_set() in case security_inode_*() was not called".
+
+So, I think storing the pathname of "struct vfsmount" in the form of "char *"
+into private hash at security_path_set() and clearing the private hash at
+security_path_clear() should be most preferable.
+
+Regards.
