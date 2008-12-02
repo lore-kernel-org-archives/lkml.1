@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751064AbYLBVtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYLBVte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751064AbYLBVtS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYLBVs2
+	id S1752519AbYLBVte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYLBVs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:48:28 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55186 "EHLO e2.ny.us.ibm.com"
+	Tue, 2 Dec 2008 16:48:29 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:49542 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYLBVsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751596AbYLBVsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Dec 2008 16:48:25 -0500
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -16,11 +16,10 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
        James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
        Al Viro <viro@ZenIV.linux.org.uk>,
        David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>,
-       Rajiv Andrade <srajiv@br.ibm.com>
-Subject: [PATCH 1/6] integrity: TPM internel kernel interface
-Date: Tue,  2 Dec 2008 16:47:55 -0500
-Message-Id: <1e02b363572908a21f67ff8abbf2b10190a4f6a6.1228253618.git.zohar@linux.vnet.ibm.com>
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH 4/6] integrity: IMA display
+Date: Tue,  2 Dec 2008 16:47:58 -0500
+Message-Id: <4a75fc985dc650c405238d31e40608456895f53d.1228253619.git.zohar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
 References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
@@ -30,306 +29,430 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds internal kernel support for:
-  - reading/extending a pcr value
-  - looking up the tpm_chip for a given chip number and type
+Make the measurement lists available through securityfs.
 
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Signed-off-by: Rajiv Andrade <srajiv@br.ibm.com>
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index 9c47dc4..17d2849 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -1,11 +1,12 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004,2007,2008 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-  * Dave Safford <safford@watson.ibm.com>
-  * Reiner Sailer <sailer@watson.ibm.com>
-  * Kylene Hall <kjhall@us.ibm.com>
-+ * Debora Velarde <dvelarde@us.ibm.com>
-  *
-  * Maintained by: <tpmdd-devel@lists.sourceforge.net>
-  *
-@@ -28,6 +29,14 @@
- #include <linux/spinlock.h>
- #include <linux/smp_lock.h>
+diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
+index d9d4405..959ae66 100644
+--- a/security/integrity/ima/Makefile
++++ b/security/integrity/ima/Makefile
+@@ -5,5 +5,5 @@
  
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/crypto.h>
-+#include <linux/fs.h>
-+#include <linux/scatterlist.h>
-+#include <linux/rcupdate.h>
-+#include <asm/unaligned.h>
- #include "tpm.h"
+ obj-$(CONFIG_IMA) += ima.o
  
- enum tpm_const {
-@@ -50,6 +59,8 @@ enum tpm_duration {
- static LIST_HEAD(tpm_chip_list);
- static DEFINE_SPINLOCK(driver_lock);
- static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
-+#define TPM_CHIP_NUM_MASK       0x0000ffff
-+#define TPM_CHIP_TYPE_SHIFT     16
+-ima-y := ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
++ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
+ 	 ima_policy.o ima_iint.o
+diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+index b727a5e..795b552 100644
+--- a/security/integrity/ima/ima.h
++++ b/security/integrity/ima/ima.h
+@@ -64,6 +64,9 @@ extern const struct template_operations ima_template_ops;
  
- /*
-  * Array with one entry per ordinal defining the maximum amount
-@@ -366,8 +377,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_duration);
- /*
-  * Internal kernel interface to transmit TPM commands
-  */
--static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
--			    size_t bufsiz)
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz)
- {
- 	ssize_t rc;
- 	u32 count, ordinal;
-@@ -425,6 +435,7 @@ out:
- 	mutex_unlock(&chip->tpm_mutex);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(tpm_transmit);
+ /* Internal IMA function definitions */
+ int ima_init(void);
++void ima_cleanup(void);
++int ima_fs_init(void);
++void ima_fs_cleanup(void);
+ void ima_create_htable(void);
+ int ima_add_template_entry(struct ima_template_entry *entry, int violation);
+ int ima_calc_hash(struct file *file, char *digest);
+@@ -117,6 +120,8 @@ int ima_collect_measurement(void *d);
+ int ima_appraise_measurement(void *d);
+ void ima_store_measurement(void *d);
+ int ima_store_template(void *d);
++void ima_template_show(struct seq_file *m, void *e,
++		       enum integrity_show_type show);
  
- #define TPM_DIGEST_SIZE 20
- #define TPM_ERROR_SIZE 10
-@@ -717,6 +728,7 @@ ssize_t tpm_show_temp_deactivated(struct device * dev,
- }
- EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
+ /* For use with ima_must_measure() */
+ struct ima_measure_data {
+diff --git a/security/integrity/ima/ima_api.c b/security/integrity/ima/ima_api.c
+index 83ab012..f2b53c7 100644
+--- a/security/integrity/ima/ima_api.c
++++ b/security/integrity/ima/ima_api.c
+@@ -21,6 +21,7 @@ const struct template_operations ima_template_ops = {
+ 	.collect_measurement = ima_collect_measurement,
+ 	.store_measurement = ima_store_measurement,
+ 	.store_template = ima_store_template,
++	.display_template = ima_template_show
+ };
  
-+#define READ_PCR_RESULT_SIZE 30
- static const u8 pcrread[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
- 	0, 0, 0, 14,		/* length */
-@@ -772,6 +784,128 @@ out:
- }
- EXPORT_SYMBOL_GPL(tpm_show_pcrs);
- 
-+/*
-+ * tpm_chip_lookup - return tpm_chip for given chip number and type
-+ *
-+ * Must be called with rcu_read_lock.
-+ */
-+static struct tpm_chip *tpm_chip_lookup(int chip_num, int chip_typ)
-+{
-+	struct tpm_chip *pos;
-+	int rc;
-+
-+	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
-+		rc = (chip_num == TPM_ANY_NUM || pos->dev_num == chip_num)
-+		    && (chip_typ == TPM_ANY_TYPE);
-+		if (rc)
-+			return pos;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * tpm_pcr_read - read a pcr value
-+ * @chip_id: 	tpm chip identifier
-+ * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-+ * 		Lower 2 bytes: tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to retrieve
-+ * @res_buf: 	TPM_PCR value
-+ * 		size of res_buf is 20 bytes (or NULL if you don't care)
-+ *
-+ * The TPM driver should be built-in, but for whatever reason it
-+ * isn't, protect against the chip disappearing, by incrementing
-+ * the module usage count.
-+ */
-+int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf)
-+{
-+	u8 data[READ_PCR_RESULT_SIZE];
-+	int rc;
-+	__be32 index;
-+	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+	struct tpm_chip *chip;
-+
-+	rcu_read_lock();
-+	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-+	if (chip == NULL) {
-+		rcu_read_unlock();
-+		return -ENODEV;
-+	}
-+	if (!try_module_get(chip->dev->driver->owner)) {
-+		rcu_read_unlock();
-+		return -ENODEV;
-+	}
-+	rcu_read_unlock();
-+
-+	BUILD_BUG_ON(sizeof(pcrread) > READ_PCR_RESULT_SIZE);
-+	memcpy(data, pcrread, sizeof(pcrread));
-+	index = cpu_to_be32(pcr_idx);
-+	memcpy(data + 10, &index, 4);
-+	rc = tpm_transmit(chip, data, sizeof(data));
-+	if (rc > 0)
-+		rc = get_unaligned_be32((__be32 *) (data + 6));
-+
-+	if (rc == 0 && res_buf)
-+		memcpy(res_buf, data + 10, TPM_DIGEST_SIZE);
-+
-+	module_put(chip->dev->driver->owner);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_read);
-+
-+#define EXTEND_PCR_SIZE 34
-+static const u8 pcrextend[] = {
-+	0, 193,			/* TPM_TAG_RQU_COMMAND */
-+	0, 0, 0, 34,		/* length */
-+	0, 0, 0, 20,		/* TPM_ORD_Extend */
-+	0, 0, 0, 0		/* PCR index */
-+};
-+
-+/**
-+ * tpm_pcr_extend - extend pcr value with hash
-+ * @chip_id: 	tpm chip identifier
-+ * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-+ * 		Lower 2 bytes: tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to extend
-+ * @hash: 	hash value used to extend pcr value
-+ *
-+ * The TPM driver should be built-in, but for whatever reason it
-+ * isn't, protect against the chip disappearing, by incrementing
-+ * the module usage count.
-+ */
-+int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash)
-+{
-+	u8 data[EXTEND_PCR_SIZE];
-+	int rc;
-+	__be32 index;
-+	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+	struct tpm_chip *chip;
-+
-+	rcu_read_lock();
-+	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-+	if (chip == NULL) {
-+		rcu_read_unlock();
-+		return -ENODEV;
-+	}
-+	if (!try_module_get(chip->dev->driver->owner)) {
-+		rcu_read_unlock();
-+		return -ENODEV;
-+	}
-+	rcu_read_unlock();
-+
-+	BUILD_BUG_ON(sizeof(pcrextend) > EXTEND_PCR_SIZE);
-+	memcpy(data, pcrextend, sizeof(pcrextend));
-+	index = cpu_to_be32(pcr_idx);
-+	memcpy(data + 10, &index, 4);
-+	memcpy(data + 14, hash, TPM_DIGEST_SIZE);
-+	rc = tpm_transmit(chip, data, sizeof(data));
-+	if (rc > 0)
-+		rc = get_unaligned_be32((__be32 *) (data + 6));
-+
-+	module_put(chip->dev->driver->owner);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_extend);
-+
- #define  READ_PUBEK_RESULT_SIZE 314
- static const u8 readpubek[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index 8e30df4..e0ffddb 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004, 2007, 2008 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -26,6 +26,7 @@
- #include <linux/miscdevice.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
-+#include <linux/tpm.h>
- 
- enum tpm_timeout {
- 	TPM_TIMEOUT = 5,	/* msecs */
-@@ -128,6 +129,7 @@ extern void tpm_get_timeouts(struct tpm_chip *);
- extern void tpm_gen_interrupt(struct tpm_chip *);
- extern void tpm_continue_selftest(struct tpm_chip *);
- extern unsigned long tpm_calc_ordinal_duration(struct tpm_chip *, u32);
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz);
- extern struct tpm_chip* tpm_register_hardware(struct device *,
- 				 const struct tpm_vendor_specific *);
- extern int tpm_open(struct inode *, struct file *);
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index 717af7a..bc26116 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -642,6 +642,9 @@ static __devexit void tpm_tis_pnp_remove(struct pnp_dev *dev)
- 
- static struct pnp_driver tis_pnp_driver = {
- 	.name = "tpm_tis",
-+	.driver = {
-+		.owner = THIS_MODULE,
-+	},
- 	.id_table = tpm_pnp_tbl,
- 	.probe = tpm_tis_pnp_init,
- 	.suspend = tpm_tis_pnp_suspend,
-diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+ /**
+diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
 new file mode 100644
-index 0000000..355a442
+index 0000000..2627e56
 --- /dev/null
-+++ b/include/linux/tpm.h
-@@ -0,0 +1,49 @@
++++ b/security/integrity/ima/ima_fs.c
+@@ -0,0 +1,339 @@
 +/*
-+ * Copyright (C) 2004,2007,2008 IBM Corporation
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
 + *
 + * Authors:
-+ * Leendert van Doorn <leendert@watson.ibm.com>
-+ * Dave Safford <safford@watson.ibm.com>
-+ * Reiner Sailer <sailer@watson.ibm.com>
 + * Kylene Hall <kjhall@us.ibm.com>
-+ * Debora Velarde <dvelarde@us.ibm.com>
-+ *
-+ * Maintained by: <tpmdd_devel@lists.sourceforge.net>
-+ *
-+ * Device driver for TCG/TCPA TPM (trusted platform module).
-+ * Specifications at www.trustedcomputinggroup.org
++ * Reiner Sailer <sailer@us.ibm.com>
++ * Mimi Zohar <zohar@us.ibm.com>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License as
 + * published by the Free Software Foundation, version 2 of the
 + * License.
 + *
++ * File: ima_fs.c
++ *	implemenents security file system for reporting
++ *	current measurement list and IMA statistics
 + */
-+#ifndef __LINUX_TPM_H__
-+#define __LINUX_TPM_H__
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/rculist.h>
++#include <linux/rcupdate.h>
 +
-+#define PCI_DEVICE_ID_AMD_8111_LPC    0x7468
++#include "../integrity.h"
++#include "ima.h"
 +
-+/*
-+ * Chip type is one of these values in the upper two bytes of chip_id
-+ */
-+enum tpm_chip_type {
-+	TPM_HW_TYPE = 0x0,
-+	TPM_SW_TYPE = 0x1,
-+	TPM_ANY_TYPE = 0xFFFF,
++#define TMPBUFLEN 12
++static ssize_t ima_show_htable_value(char __user *buf, size_t count,
++				     loff_t *ppos, atomic_long_t *val)
++{
++	char tmpbuf[TMPBUFLEN];
++	ssize_t len;
++
++	len = scnprintf(tmpbuf, TMPBUFLEN, "%li\n", atomic_long_read(val));
++	return simple_read_from_buffer(buf, count, ppos, tmpbuf, len);
++}
++
++static ssize_t ima_show_htable_violations(struct file *filp,
++					  char __user *buf,
++					  size_t count, loff_t *ppos)
++{
++	return ima_show_htable_value(buf, count, ppos, &ima_htable.violations);
++}
++
++static struct file_operations ima_htable_violations_ops = {
++	.read = ima_show_htable_violations
 +};
 +
-+/*
-+ * Chip num is this value or a valid tpm idx in lower two bytes of chip_id
-+ */
-+enum tpm_chip_num {
-+	TPM_ANY_NUM = 0xFFFF,
++static ssize_t ima_show_measurements_count(struct file *filp,
++					   char __user *buf,
++					   size_t count, loff_t *ppos)
++{
++	return ima_show_htable_value(buf, count, ppos, &ima_htable.len);
++
++}
++
++static struct file_operations ima_measurements_count_ops = {
++	.read = ima_show_measurements_count
 +};
 +
++/* returns pointer to hlist_node */
++static void *ima_measurements_start(struct seq_file *m, loff_t *pos)
++{
++	struct list_head *lpos;
++	loff_t l = *pos;
++	/* we need a lock since pos could point beyond last element */
++	rcu_read_lock();
++	__list_for_each_rcu(lpos, &ima_measurements) {
++		if (!l--) {
++			rcu_read_unlock();
++			return lpos;
++		}
++	}
++	rcu_read_unlock();
++	return NULL;
++}
 +
-+#if defined(CONFIG_TCG_TPM) || defined(CONFIG_TCG_TPM_MODULE)
++static void *ima_measurements_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	/* lock protects when reading beyond last element
++	 * against concurrent list-extension */
++	struct list_head *lpos = (struct list_head *)v;
 +
-+extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf);
-+extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash);
-+#endif
-+#endif
++	rcu_read_lock();
++	lpos = rcu_dereference(lpos->next);
++	rcu_read_unlock();
++	(*pos)++;
++
++	return (lpos == &ima_measurements) ? NULL : lpos;
++}
++
++static void ima_measurements_stop(struct seq_file *m, void *v)
++{
++}
++
++/* print format:
++ *       32bit-le=pcr#
++ *       char[20]=template digest
++ *       32bit-le=template size
++ *       32bit-le=template name size
++ *       eventdata[n] = template name
++ *
++ */
++static int ima_measurements_show(struct seq_file *m, void *v)
++{
++	/* the list never shrinks, so we don't need a lock here */
++	struct list_head *lpos = v;
++	struct ima_queue_entry *qe;
++	struct ima_template_entry *e;
++	struct ima_inode_measure_entry *entry;
++	struct template_list_entry *template_entry;
++	int templatename_len;
++	int i;
++	u32 pcr = CONFIG_IMA_MEASURE_PCR_IDX;
++	char data[4];
++
++	/* get entry */
++	qe = list_entry(lpos, struct ima_queue_entry, later);
++	e = qe->entry;
++	if (e == NULL)
++		return -1;
++
++	/*
++	 * 1st: PCRIndex
++	 * PCR used is always the same (config option) in
++	 * little-endian format
++	 */
++	memcpy(data, &pcr, 4);
++	for (i = 0; i < 4; i++)
++		seq_putc(m, data[i]);
++
++	/* 2nd: template digest */
++	for (i = 0; i < 20; i++)
++		seq_putc(m, e->digest[i]);
++
++	/* 3rd: template name size */
++	templatename_len = strlen(e->template_name);
++	if (templatename_len > IMA_EVENT_NAME_LEN_MAX)
++		templatename_len = IMA_EVENT_NAME_LEN_MAX;
++
++	memcpy(data, &templatename_len, 4);
++	for (i = 0; i < 4; i++)
++		seq_putc(m, data[i]);
++
++	/* 4th:  template name  */
++	for (i = 0; i < templatename_len; i++)
++		seq_putc(m, e->template_name[i]);
++
++	/* 5th:  template dependent */
++	entry = (struct ima_inode_measure_entry *)e->template;
++	template_entry = integrity_find_get_template(e->template_name);
++	if (template_entry) {
++		const struct template_operations *ops;
++
++		ops = template_entry->template_ops;
++		ops->display_template(m, entry, INTEGRITY_SHOW_BINARY);
++		kref_put(&template_entry->refcount, template_release);
++	} else
++		seq_printf(m, " \n");
++	return 0;
++}
++
++static struct seq_operations ima_measurments_seqops = {
++	.start = ima_measurements_start,
++	.next = ima_measurements_next,
++	.stop = ima_measurements_stop,
++	.show = ima_measurements_show
++};
++
++static int ima_measurements_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &ima_measurments_seqops);
++}
++
++static struct file_operations ima_measurements_ops = {
++	.open = ima_measurements_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = seq_release,
++};
++
++void ima_template_show(struct seq_file *m, void *e,
++		       enum integrity_show_type show)
++{
++	struct ima_inode_measure_entry *entry =
++	    (struct ima_inode_measure_entry *)e;
++	int filename_len;
++	char data[4];
++	int i;
++
++	/* Display file digest */
++	for (i = 0; i < 20; i++) {
++		switch (show) {
++		case INTEGRITY_SHOW_ASCII:
++			seq_printf(m, "%02x", entry->digest[i]);
++			break;
++		case INTEGRITY_SHOW_BINARY:
++			seq_putc(m, entry->digest[i]);
++		default:
++			break;
++		}
++	}
++
++	switch (show) {
++	case INTEGRITY_SHOW_ASCII:
++		seq_printf(m, " %s\n", entry->file_name);
++		break;
++	case INTEGRITY_SHOW_BINARY:
++		filename_len = strlen(entry->file_name);
++		if (filename_len > IMA_EVENT_NAME_LEN_MAX)
++			filename_len = IMA_EVENT_NAME_LEN_MAX;
++
++		memcpy(data, &filename_len, 4);
++		for (i = 0; i < 4; i++)
++			seq_putc(m, data[i]);
++		for (i = 0; i < filename_len; i++)
++			seq_putc(m, entry->file_name[i]);
++	default:
++		break;
++	}
++}
++
++/* print in ascii */
++static int ima_ascii_measurements_show(struct seq_file *m, void *v)
++{
++	/* the list never shrinks, so we don't need a lock here */
++	struct list_head *lpos = v;
++	struct ima_queue_entry *qe;
++	struct ima_template_entry *e;
++	struct ima_inode_measure_entry *entry;
++	struct template_list_entry *template_entry;
++	int i;
++
++	/* get entry */
++	qe = list_entry(lpos, struct ima_queue_entry, later);
++	e = qe->entry;
++	if (e == NULL)
++		return -1;
++
++	/* 1st: PCR used (config option) */
++	seq_printf(m, "%2d ", CONFIG_IMA_MEASURE_PCR_IDX);
++
++	/* 2nd: SHA1 template hash */
++	for (i = 0; i < 20; i++)
++		seq_printf(m, "%02x", e->digest[i]);
++
++	/* 3th:  template name */
++	seq_printf(m, " %s ", e->template_name);
++
++	/* 4th:  filename <= max + \'0' delimiter */
++	entry = (struct ima_inode_measure_entry *)e->template;
++	template_entry = integrity_find_get_template(e->template_name);
++	if (template_entry) {
++		const struct template_operations *ops;
++
++		ops = template_entry->template_ops;
++		ops->display_template(m, entry, INTEGRITY_SHOW_ASCII);
++		kref_put(&template_entry->refcount, template_release);
++	} else
++		seq_printf(m, " \n");
++
++	return 0;
++}
++
++static struct seq_operations ima_ascii_measurements_seqops = {
++	.start = ima_measurements_start,
++	.next = ima_measurements_next,
++	.stop = ima_measurements_stop,
++	.show = ima_ascii_measurements_show
++};
++
++static int ima_ascii_measurements_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &ima_ascii_measurements_seqops);
++}
++
++static struct file_operations ima_ascii_measurements_ops = {
++	.open = ima_ascii_measurements_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = seq_release,
++};
++
++static struct dentry *ima_dir;
++static struct dentry *binary_runtime_measurements;
++static struct dentry *ascii_runtime_measurements;
++static struct dentry *runtime_measurements_count;
++static struct dentry *violations;
++
++int ima_fs_init(void)
++{
++	ima_dir = securityfs_create_dir("ima", NULL);
++	if (!ima_dir || IS_ERR(ima_dir))
++		return -1;
++
++	binary_runtime_measurements =
++	    securityfs_create_file("binary_runtime_measurements",
++				   S_IRUSR | S_IRGRP, ima_dir, NULL,
++				   &ima_measurements_ops);
++	if (!binary_runtime_measurements || IS_ERR(binary_runtime_measurements))
++		goto out;
++
++	ascii_runtime_measurements =
++	    securityfs_create_file("ascii_runtime_measurements",
++				   S_IRUSR | S_IRGRP, ima_dir, NULL,
++				   &ima_ascii_measurements_ops);
++	if (!ascii_runtime_measurements || IS_ERR(ascii_runtime_measurements))
++		goto out;
++
++	runtime_measurements_count =
++	    securityfs_create_file("runtime_measurements_count",
++				   S_IRUSR | S_IRGRP, ima_dir, NULL,
++				   &ima_measurements_count_ops);
++	if (!runtime_measurements_count || IS_ERR(runtime_measurements_count))
++		goto out;
++
++	violations =
++	    securityfs_create_file("violations", S_IRUSR | S_IRGRP,
++				   ima_dir, NULL, &ima_htable_violations_ops);
++	if (!violations || IS_ERR(violations))
++		goto out;
++
++	return 0;
++
++out:
++	securityfs_remove(runtime_measurements_count);
++	securityfs_remove(ascii_runtime_measurements);
++	securityfs_remove(binary_runtime_measurements);
++	securityfs_remove(ima_dir);
++	return -1;
++}
++
++void __exit ima_fs_cleanup(void)
++{
++	securityfs_remove(violations);
++	securityfs_remove(runtime_measurements_count);
++	securityfs_remove(ascii_runtime_measurements);
++	securityfs_remove(binary_runtime_measurements);
++	securityfs_remove(ima_dir);
++}
+diff --git a/security/integrity/ima/ima_init.c b/security/integrity/ima/ima_init.c
+index 374b368..de78f93 100644
+--- a/security/integrity/ima/ima_init.c
++++ b/security/integrity/ima/ima_init.c
+@@ -86,5 +86,11 @@ int ima_init(void)
+ 	ima_create_htable();	/* for measurements */
+ 	ima_add_boot_aggregate();	/* boot aggregate must be first entry */
+ 	ima_init_policy();
+-	return 0;
++
++	return ima_fs_init();
++}
++
++void __exit ima_cleanup(void)
++{
++	ima_fs_cleanup();
+ }
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 2dcc3b5..8672f86 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -265,6 +265,7 @@ static void __exit cleanup_ima(void)
+ {
+ 	integrity_unregister_template("ima");
+ 	unregister_integrity(&ima_integrity_ops);
++	ima_cleanup();
+ }
+ 
+ late_initcall(init_ima);	/* Start IMA after the TPM is available */
 -- 
 1.5.6.5
 
