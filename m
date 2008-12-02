@@ -1,88 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYLBTqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYLBTrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbYLBTqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbYLBTqW
+	id S1755917AbYLBTrt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbYLBTrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:46:22 -0500
-Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:56254 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754413AbYLBTqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:46:21 -0500
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Tue, 2 Dec 2008 19:46:10 +0000
-From: Luis Henriques <henrix@sapo.pt>
-To: Avi Kivity <avi@redhat.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
-Message-ID: <20081202194610.GA4864@hades>
-References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com> <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com> <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com> <20081202190914.GA12115@hades>
+	Tue, 2 Dec 2008 14:47:40 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:4493 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754336AbYLBTrj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:47:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Se9dQTKeGruktbAxVc16QES4zIWKoaJTcNuHZtDxlfcBLuixMtJhWV9lQV67xD/Uu+
+         7dy4b9FjadgZOFbPxJk+1TmjJDEAC79o3ZPU+/2A/5x9Tq/gGmxHbvWDlO5hilNy3oG0
+         Jjsa1Yh2VAi3mQ7vTGvHkxCZP8RzAQ7RpizP8=
+Message-ID: <493590DA.1090504@gmail.com>
+Date: Tue, 02 Dec 2008 20:47:38 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202190914.GA12115@hades>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Theodore Tso <tytso@mit.edu>, adilger@sun.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ext3, ext4: do_split() fix loop, with obvious	unsigned
+ wrap
+References: <49343AD9.4020606@gmail.com> <20081202132441.GC16172@mit.edu> <49356B96.7070900@tmr.com>
+In-Reply-To: <49356B96.7070900@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I am CC'ing to Steven Rostedt since he might be interested on this)
+Bill Davidsen wrote:
 
-On Tue, Dec 02, 2008 at 07:09:14PM +0000, Luis Henriques wrote:
-> On Tue, Dec 02, 2008 at 02:23:52PM +0200, Avi Kivity wrote:
-> > Luis Henriques wrote:
-> >> On Sun, Nov 30, 2008 at 10:44:55PM +0200, Avi Kivity wrote:
-> >>   
-> >>> Luis Henriques wrote:
-> >>>     
-> >>>> No, I was not able to reproduce the issue.  Please let me know if you need some
-> >>>> more information on my system (.config, for instance).
-> >>>>         
-> >>> Were you using some other virtualization product?  Were you running   
-> >>> suspend/resume?
-> >>>     
-> >>
-> >> No for both questions.  However, I had compiled support for suspend (not sure if
-> >> this is what you mean by "running suspend/resume") - This is a feature I used
-> >> only once or twice...
-> >>   
-> >
-> > The underlying problem is that an svm instruction has been executed, but  
-> > svm is disabled.  Since kvm enables svm unconditionally on all  
-> > processors on startup, there are only a few paths that can potentially  
-> > trigger this:
-> >
-> > - another virtualization module turned svm off
-> > - cpu hotadd/hotremove (suspend/resume triggers this)
-> > - something did a read-modify-write cycle on cr4 (which contains the svm  
-> > enable bit) while kvm enabled that bit
-> > - core was turned off (does linux power management do that?)
-> >
-> > Anything ring a bell?
-> 
-> Ok, I am not sure but there is a possibility of having the vboxdrv driver
-> loaded. _But_ I was not using, i.e., I do not use VirtualBox.  In my
-> attempts to reproduce the issue, I tried to load this module but, unfortunatly,
-> my distro has this package broken ATM (err... in fact, the problem is not the
-> distro but me - I am using an unstable version).
-> 
-> vboxdrv could be a problem if I was using it, but I believe it shouldn't cause
-> this if it is not being used... but it's just a guess.
+> the value inside the loop is
+> correct (or at least is the same as the original patch).
 
-I have some other information to had to my previous email.  However, I do not
-know whether it is related with my first bug report.
+I agree, this can be shown with:
 
-It looks like ftrace may stop the CPUs in some situations and I have been
-playing with ftrace for some time.  So, here's what I just did:  started ftrace
-with function tracer and then started kvm.  I got ugly crashes and apparently
-quite easy to reproduce (I get complete freeze or immediate reboot).
+#include <stdio.h>
 
-I did not investigated this issue and, again, it may not be related with my
-initial report but there's definitely something wrong here, right?
+int main()
+{
+	unsigned int i, count = 10;
 
-(just to refresh, I am using 2.6.28-rc6-00007-ged31348 in x86_64 machine)
+	printf ("The original loop:\n");
+        for (i = count-1; i >= 0; i--) {
+		printf ("%u, ", i);
+		if (i == -1) {
+			printf ("which is wrong.\n");
+			break;
+		}
+	}
 
--- 
-Luis Henriques
+        printf ("As suggested by Bill:\n");
+	for (i = count; i--; )
+		printf ("%u, ", i);
+	printf ("...After the loop i=%u\n");
 
+	printf ("Your suggestion:\n");
+	i = count;
+	while (i--)
+		printf ("%u, ", i);
+	printf ("...After the loop i=%u\n");
+
+	return 0;
+}
+> Theodore Tso wrote:
+>> probably
+>> the best way of handling this is to recast it not as a for loop, but
+>> as a while loop.
+
+Ok, with me. As also shown this will give the same results:
+-----------8<--------------->8-------------
+Fix loop, with obvious unsigned wrap
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com> 
+---
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 3e5edc9..0e574d4 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1188,7 +1188,8 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+ 	/* Split the existing block in the middle, size-wise */
+ 	size = 0;
+ 	move = 0;
+-	for (i = count-1; i >= 0; i--) {
++	i = count;
++	while (i--) {
+ 		/* is more than half of this entry in 2nd half of the block? */
+ 		if (size + map[i].size/2 > blocksize/2)
+ 			break;
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index 63adcb7..b8903d4 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1198,7 +1198,8 @@ static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+ 	/* Split the existing block in the middle, size-wise */
+ 	size = 0;
+ 	move = 0;
+-	for (i = count-1; i >= 0; i--) {
++	i = count;
++	while (i--) {
+ 		/* is more than half of this entry in 2nd half of the block? */
+ 		if (size + map[i].size/2 > blocksize/2)
+ 			break;
