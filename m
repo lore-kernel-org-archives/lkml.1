@@ -1,138 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYLBWjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbYLBWmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbYLBWjt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 17:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYLBWjk
+	id S1753312AbYLBWmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:42:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYLBWmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 17:39:40 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43504 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbYLBWjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 17:39:39 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Tue, 2 Dec 2008 23:38:50 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, greg@kroah.com, mingo@elte.hu,
-       jbarnes@virtuousgeek.org, lenb@kernel.org, linux-kernel@vger.kernel.org,
-       tiwai@suse.de, akpm@linux-foundation.org
-References: <200812020320.31876.rjw@sisk.pl> <200812020513.42243.elendil@planet.nl> <alpine.LFD.2.00.0812012026520.3256@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812012026520.3256@nehalem.linux-foundation.org>
+	Tue, 2 Dec 2008 17:42:23 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43175 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbYLBWmW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 17:42:22 -0500
+Date: Tue, 2 Dec 2008 23:44:03 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Theodore Tso <tytso@mit.edu>, Chris Friesen <cfriesen@nortel.com>,
+       mikulas@artax.karlin.mff.cuni.cz, clock@atrey.karlin.mff.cuni.cz,
+       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+Message-ID: <20081202224403.GA8277@elf.ucw.cz>
+References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu> <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu> <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812022338.51284.rjw@sisk.pl>
+In-Reply-To: <20081202205558.GD20858@mit.edu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 2 of December 2008, Linus Torvalds wrote:
+On Tue 2008-12-02 15:55:58, Theodore Tso wrote:
+> On Tue, Dec 02, 2008 at 11:22:58AM -0600, Chris Friesen wrote:
+> > Theodore Tso wrote:
+> >
+> >> Even for ext3/ext4 which is doing physical journalling, it's still the
+> >> case that the journal commits first, and it's only later when the
+> >> write happens that we write out the change.  If the disk fails some of
+> >> the writes, it's possible to lose data, especially if the two blocks
+> >> involved in the node split are far apart, and the write to the
+> >> existing old btree block fails.
+> >
+> > Yikes.  I was under the impression that once the journal hit the platter  
+> > then the data were safe (barring media corruption).
 > 
-> That's why I'd like to see what the layout differences are for Rafael with 
-> and without his patch (and also both before and after hibernate/resume). 
-> Maybe both layouts are "correct", but the non-working one can give us a 
-> clue about what may be triggering the problem.
+> Well, this is a case of media corruption (or a cosmic ray hitting
+> hitting a ribbon cable in the disk controller sending the write to the
+> wrong location on disk, or someone bumping the server causing the disk
+> head to lift up a little higher than normal while it was writing the
+> disk sector, etc.).  But it is a case of the hard drive misbehaving. 
 
-OK
+I could not parse this. Negation seems to be missing somewhere.
 
-Sorry for the delay, it took me more time than expected to generate all the
-data.
+> Heck, if you have a hiccup while writing an inode table block out to
+> disk (for example a power failure at just the wrong time), so the
+> memory (which is more voltage sensitive than hard drives) DMA's
+> garbage which gets written to the inode table, you could lose a large
+> number of adjacent inodes when garbage gets splatted over the inode
+> table.
 
-* dmesg output including one hibernation-resume cycle from 2.6.28-rc7 with the
-  debug patch (appended for completness):
+Ok, "memory failed before disk" is ... bad hardware.
 
-  http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc7/dmesg-rc7-patched-prep.log
+...but... you seem to be saying that modern filesystems can damage
+data even on "sane" hardware.
 
-* dmesg output including one hibernation-resume cycle from 2.6.28-rc7 without
-  the debug patch:
+Lets define sane as:
 
-  http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc7/dmesg-rc7-nopatch-prep.log
+1) if disk says sector was successfully written, it is so, until you
+start writing to that sector again.
 
-* diff between the two:
+	(but disk may say "error writing". Filesystem should propagate
+	that back to the userland, reliably. "Error writing" is
+	extremely rare on modern disks, but can happen if you run out
+	of spare blocks.)
 
-  http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc7/dmesg-rc7_nopatch-rc7_patched.diff
+	(and if you ask for sector write, sector is in undefined 
+	state until drive returns success. Flashes behave like this
+	-- reads return errors. Do disks?)
 
-This part of the diff  (+ is the patched one) seems to be particularly
-interesting to me, especially the overlapping MEM windows for 0000:00:1e.0 and
-0000:03:0b.0 (may that be the reason for the observed failures?):
+2) connection to the disk either works or fails totally. Bit errors
+are reliably detected at connection level.
 
-@@ -276,0 +277,4 @@
-+bad alignment flags 21200 4000000 (0)
-+pci 0000:03:0b.0: BAR 9 bad alignment 0: [0x000000-0x3ffffff]
-+bad alignment flags 20200 4000000 (0)
-+pci 0000:03:0b.0: BAR 10 bad alignment 0: [0x000000-0x3ffffff]
-@@ -288,2 +291,0 @@
--pci 0000:03:0b.0:   PREFETCH window: 0x88000000-0x8bffffff
--pci 0000:03:0b.0:   MEM window: 0x8c000000-0x8fffffff
-@@ -292,2 +294,2 @@
--pci 0000:00:1e.0:   MEM window: 0x8c000000-0x91ffffff
--pci 0000:00:1e.0:   PREFETCH window: 0x00000088000000-0x0000008bffffff
-+pci 0000:00:1e.0:   MEM window: 0x88000000-0x880fffff
-+pci 0000:00:1e.0:   PREFETCH window: disabled
-@@ -312,2 +314,2 @@
--bus: 03 index 1 mmio: [0x8c000000-0x91ffffff]
--bus: 03 index 2 mmio: [0x88000000-0x8bffffff]
-+bus: 03 index 1 mmio: [0x88000000-0x880fffff]
-+bus: 03 index 2 mmio: [0x0-0x0]
-@@ -318,2 +320,2 @@
--bus: 04 index 2 mmio: [0x88000000-0x8bffffff]
--bus: 04 index 3 mmio: [0x8c000000-0x8fffffff]
-+bus: 04 index 2 mmio: [0x0-0x3ffffff]
-+bus: 04 index 3 mmio: [0x0-0x3ffffff]
+3) power may fail any time.
 
-* the output of 'lspci -vv'
+You seem to be saying that ext2/ext3 only work if these are met:
 
-  http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc7/lspci-vv.txt
+1) power may fail any time.
 
-* diff between /proc/iomem between 2.6.28-rc7 without and with the patch
-  (+ is from the patched kernel):
+2) writes are always successful.
 
-diff -U 0 -r rc7-nopatch//iomem rc7-patched//iomem
---- rc7-nopatch//iomem	2008-12-02 22:57:34.000000000 +0100
-+++ rc7-patched//iomem	2008-12-02 23:07:02.000000000 +0100
-@@ -7,2 +7,2 @@
--  00200000-00450496 : Kernel code
--  00450497-00603c37 : Kernel data
-+  00200000-00450526 : Kernel code
-+  00450527-00603c37 : Kernel data
-@@ -14,15 +14,14 @@
--88000000-8bffffff : PCI Bus 0000:03
--  88000000-8bffffff : PCI CardBus 0000:04
--8c000000-91ffffff : PCI Bus 0000:03
--  8c000000-8fffffff : PCI CardBus 0000:04
--  90000000-90003fff : 0000:03:0b.1
--  90004000-90004fff : 0000:03:0b.0
--    90004000-90004fff : yenta_socket
--  90005000-900057ff : 0000:03:0b.1
--    90005000-900057ff : firewire_ohci
--  90005800-900058ff : 0000:03:0b.3
--    90005800-900058ff : mmc0
--92000000-9207ffff : 0000:00:02.1
--92080000-92083fff : 0000:00:1b.0
--  92080000-92083fff : ICH HD audio
--92084000-92084fff : Intel Flush Page
-+88000000-880fffff : PCI Bus 0000:03
-+  88000000-88003fff : 0000:03:0b.1
-+  88004000-88004fff : 0000:03:0b.0
-+    88004000-88004fff : yenta_socket
-+  88005000-880057ff : 0000:03:0b.1
-+    88005000-880057ff : firewire_ohci
-+  88005800-880058ff : 0000:03:0b.3
-+    88005800-880058ff : mmc0
-+88100000-8817ffff : 0000:00:02.1
-+88180000-88183fff : 0000:00:1b.0
-+  88180000-88183fff : ICH HD audio
-+88184000-88184fff : Intel Flush Page
-+88400000-887fffff : PCI CardBus 0000:04
-+88800000-88bfffff : PCI CardBus 0000:04
+3) connection to the disk always works.
 
-All of the files above plus some more data are available from
-http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc7/
+AFAICT it is unsafe to run ext2/ext3 on any media that can be removed
+without unmounting (missing fsync error propagation), and it is unsafe
+to run ext2/ext3 on any flash-based storage with block interface (SD
+cards, flash sticks).
+ 
+> Ext3 tends to recover from this better than other filesystems, thanks
+> to the fact that it does physical block journalling, but you do pay
+> for this in terms of performance if you have a metadata-intensive
+> workload, because you're writing more bytes to the journal for each
+> metadata opeation.
 
-HTH
+And thanks for that! Actually I'd be willing to pay some more
+performance to get reliability up.
 
-Thanks,
-Rafael
+> > It seems like the more I learn about filesystems, the more failure modes  
+> > there are and the fewer guarantees can be made.  It's amazing that  
+> > things work as well as they do...
+> 
+> There are certainly things you can do.  Put your fileservers's on
+> UPS's.  Use RAID.  Make backups.   Do all three.  :-)
+
+I was almost stupid enough to move primary copy of ~ and linux trees
+to SD... I do have UPSes, unfortunately they are li-ion and i'm
+running off them most of the time. I do have backups, but restoring
+them all the time is boring & time consuming. I'll try to stick two
+MMC cards into SD slot to make it RAID 1 :-).
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
