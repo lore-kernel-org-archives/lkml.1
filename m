@@ -1,121 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYLBUXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYLBUYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbYLBUXa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:23:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLBUXE
+	id S1753285AbYLBUYa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYLBUYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:23:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45258 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751632AbYLBUW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:22:59 -0500
-Date: Tue, 2 Dec 2008 12:22:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, Matt_Domsch@dell.com, greg@kroah.com,
-       linux-acpi@vger.kernel.org, rpurdie@rpsys.net, ivdoorn@gmail.com
-Subject: Re: [PATCH 2/2] misc: Add dell-laptop driver
-Message-Id: <20081202122222.5873ee86.akpm@linux-foundation.org>
-In-Reply-To: <20081202200544.GA31620@srcf.ucam.org>
-References: <20081127163357.GA22846@srcf.ucam.org>
-	<20081127163444.GB22846@srcf.ucam.org>
-	<20081202115029.2b9d1153.akpm@linux-foundation.org>
-	<20081202200544.GA31620@srcf.ucam.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 15:24:21 -0500
+Received: from 8bytes.org ([88.198.83.132]:55757 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbYLBUYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 15:24:21 -0500
+Date: Tue, 2 Dec 2008 21:24:18 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: fix broken flushing in GART nofullflush path
+Message-ID: <20081202202417.GM29705@8bytes.org>
+References: <1228245363-14909-1-git-send-email-joerg.roedel@amd.com> <20081202192759.GD15342@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202192759.GD15342@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008 20:05:45 +0000
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> > > +#ifdef CONFIG_ACPI
-> > > +	if (acpi_video_backlight_support())
-> > > +		return 0;
-> > > +#endif
-> > 
-> > Do we need the ifdefs here?  It looks like include/linux/acpi.h tries
-> > to provide a suitable 0-returning stub?
+On Tue, Dec 02, 2008 at 08:27:59PM +0100, Ingo Molnar wrote:
 > 
-> They're protected by #ifdef CONFIG_ACPI_VIDEO, but it looks like acpi.h 
-> is empty if CONFIG_ACPI isn't set?
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > In the non-default nofullflush case the GART is only flushed when
+> > next_bit wraps around. But it can happen that an unmap operation unmaps
+> > memory which is behind the current next_bit location. If these addresses
+> > are reused it may result in stale GART IO/TLB entries. Fix this by
+> > setting the GART next_bit always behind an unmapped location.
+> > 
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > ---
+> >  arch/x86/kernel/pci-gart_64.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> applied to tip/x86/iommu, thanks Joerg!
+> 
+> a stale iotlb should not cause any problems in this particular GART case, 
+> right? It might be a security leak in a security-domain enforcing iotlb 
+> case, but the GART is a DMA bouncing helper in essence. Can you see any 
+> failure mode of this bug?
 
-No, acpi.h has a _few_ ACPI=n stubs:
+It can cause data corruption because the GART redirects the IO to a
+wrong address because of a stale entry in its TLB. I found this bug
+after I fixed the same issue in the AMD IOMMU code (commit 80be308d).
 
-: static inline int early_acpi_boot_init(void)
-: {
-: 	return 0;
-: }
-: static inline int acpi_boot_init(void)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_boot_table_init(void)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_mps_check(void)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_check_resource_conflict(struct resource *res)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_check_region(resource_size_t start, resource_size_t n,
-: 				    const char *name)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_check_mem_region(resource_size_t start,
-: 					resource_size_t n, const char *name)
-: {
-: 	return 0;
-: }
+The reason this was not found earlier is that lazy flushing is not the
+default in GART. But I didn't try to trigger the bug.
 
-So it seems that acpi_video_backlight_support() should be added to this
-list.  Except it already has a stub, in the wrong place.  This whole block:
-
-: #if defined(CONFIG_ACPI_VIDEO) || defined(CONFIG_ACPI_VIDEO_MODULE)
-: 
-: extern long acpi_video_get_capabilities(acpi_handle graphics_dev_handle);
-: extern long acpi_is_video_device(struct acpi_device *device);
-: extern int acpi_video_backlight_support(void);
-: extern int acpi_video_display_switch_support(void);
-: 
-: #else
-: 
-: static inline long acpi_video_get_capabilities(acpi_handle graphics_dev_handle)
-: {
-: 	return 0;
-: }
-: 
-: static inline long acpi_is_video_device(struct acpi_device *device)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_video_backlight_support(void)
-: {
-: 	return 0;
-: }
-: 
-: static inline int acpi_video_display_switch_support(void)
-: {
-: 	return 0;
-: }
-: 
-: #endif /* defined(CONFIG_ACPI_VIDEO) || defined(CONFIG_ACPI_VIDEO_MODULE) */
-: 
-
-needs to be moved outside the `#ifdef CONFIG_ACPI' altogether.  Then you
-can drop the ifdef.
+Joerg
