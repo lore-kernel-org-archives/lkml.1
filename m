@@ -1,152 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYLBDZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYLBDc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYLBDZp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 22:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYLBDZe
+	id S1753394AbYLBDc5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 22:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYLBDcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 22:25:34 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:42554 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751485AbYLBDZd (ORCPT
+	Mon, 1 Dec 2008 22:32:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34489 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751388AbYLBDcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 22:25:33 -0500
-X-YMail-OSG: G9A3RtoVM1kjMvTLXXLz5cGcgM8V2rc2R6XJNg6dVsS5YVTVMR51sAyGH4NU3ClW5.3yR5_blkaTVGAIfqhTbK70VH0Lv.lu24FlhTu0dXEV8wnZB0PBFgNPuimHiiLSEC3zIyg6Njin3Bd7zh1NdEeHAP0EiNBp5sULwQ4hn.Je8dhOwY3SRP1UOzkyamN3PCdQ6jik_hM9XSvPhpGlDowhmoZ5wEelbat4J1_v3w--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Changes to Linux/SCSI target mode infrastructure for v2.6.28
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Tejun Heo <tj@kernel.org>, Mike Anderson <andmike@linux.vnet.ibm.com>,
-       Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@osdl.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Hannes Reinecke <hare@suse.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-In-Reply-To: <1228187439.13241.176.camel@haakon2.linux-iscsi.org>
-References: <1228182727.13241.160.camel@haakon2.linux-iscsi.org>
-	 <1228183480.13241.163.camel@haakon2.linux-iscsi.org>
-	 <1228187439.13241.176.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 19:25:30 -0800
-Message-Id: <1228188330.13241.184.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Dec 2008 22:32:47 -0500
+Date: Mon, 1 Dec 2008 19:32:02 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
+ on Toshiba R500 (bisected)
+In-Reply-To: <200812020320.31876.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812011921520.3256@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-01 at 19:10 -0800, Nicholas A. Bellinger wrote:
-> On Mon, 2008-12-01 at 18:04 -0800, Nicholas A. Bellinger wrote:
-> > On Mon, 2008-12-01 at 17:52 -0800, Nicholas A. Bellinger wrote:
-> > > Greetings Tomo-san and Co,
-> > > 
-> > > With the ongoing work in Linux/SCSI for v2.6.28 to map target mode
-> > > struct scatterlist memory directly down to struct scsi_cmnd without the
-> > > need for a intermediate struct bio as with the existing
-> > > scsi_execute_async(), I have started the porting process for the
-> > > Linux/SCSI subsystem plugin in generic target core v3.0
-> > > (lio-core-2.6.git) on v2.6.28-rc6.
-> > > 
-> > > So far, using struct request for ICF_SCSI_CONTROL_NONSG_IO_CDB is up
-> > > using blk_rq_map_kern(), as well as ICF_SCSI_NON_DATA_CDB ops using
-> > > struct request.  In order to get the first READ_10s of type
-> > > ICF_SCSI_DATA_SG_IO_CDB to work, I had to add a temporary
-> > > EXPORT_SYMBOL_GPL() for drivers/scsi/scsi_lib.c:scsi_req_map_sg() in
-> > > lio-core-2.6.git for v2.6.28-rc6 in order to get TYPE_DISK up using an
-> > > software emulated MPT-Fusion HBA driver with struct request.  I have
-> > > been looking at drivers/scsi/scsi_tgt_lib.c() (which currently uses
-> > > struct request), and I figure we need something similar for the generic
-> > > target infrastructure, although __scsi_get_command() and
-> > > __scsi_put_command() are currently used in that code.
-> > > 
-> > > Below is what my patch looks like so far, I will probably just end up
-> > > commiting an temporary ifdef to keep scsi_execute_async() until the
-> > > proper pieces are in place and the other issues are resolved below.
-> > > >From there I will be able to drop in the proper upstream mapping bits
-> > > for struct scatterlist in
-> > > drivers/lio-core/target_core_pscsi.c:pscsi_map_task_SG() get rid of
-> > > scsi_req_map_sg() usage all together.
-> > > 
-> > > So far during my initial testing, I am running into a two different
-> > > exceptions.  One NULL pointer deference OOPS after half dozen Open/iSCSI
-> > > login/logouts in block/elevator.c:elv_dequeue_request().   Here is the
-> > > trace from SCSI softirq context:
-> > > 
-> > > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-0.png
-> > > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-1.png
-> > > 
-> > > The other one is a BUG_ON in blk/blk-timeout.c:177 in blk_add_timeout()
-> > > that happens after a few hundred MB of READ_10 traffic, which also
-> > > appears to pass through elv_dequeue_request() at some point:
-> > > 
-> > > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-2.png
-> > > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-4.png
-> > > 
-> > 
-> > Ok, I just saw this patch:
-> > 
-> > [PATCH 2.6.28-rc6] block: internal dequeue shouldn't start timer
-> > 
-> > at http://lkml.org/lkml/2008/11/27/394.
-> > 
-> > It sounds very similar and I will try it out and see if it resolves the
-> > issues above.
-> > 
-> 
-> Ok, patch applied and rerunning, this time after ~20 Open/iSCSI
-> --login/--logout ops.  The same BUG_ON in blk/blk-timeout.c:177 in
-> blk_add_timeout() again triggered again, this time coming from
-> blkdev_dequeue_request() -> scsi_request_fn() ->
-> __generic_unplugin_device().
-> 
-> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-5.png
-> 
-> blkdev_dequeue_request() is used in a few other places in drivers/scsi:
-> 
-> target:/mnt/sdb/lio-core-2.6/drivers/scsi# grep blkdev_dequeue_request *
-> Binary file built-in.o matches
-> scsi_lib.c:	blkdev_dequeue_request(req);
-> scsi_lib.c:			blkdev_dequeue_request(req);
-> Binary file scsi_lib.o matches
-> Binary file scsi_mod.o matches
-> scsi_transport_sas.c:		blkdev_dequeue_request(req);
-> 
-> Do these need to be changed to use elv_dequeue_request() as well..?
-> 
 
-Ok, I am up and running using the following patch against v2.6.28-rc6
-(along with Tejun's patch).   Comments please..?
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index f5d3b96..77f1fe0 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1505,7 +1507,7 @@ static void scsi_kill_request(struct request *req, struct request_queue *q)
-        struct scsi_target *starget = scsi_target(sdev);
-        struct Scsi_Host *shost = sdev->host;
- 
--       blkdev_dequeue_request(req);
-+       elv_dequeue_request(req->q, req);
- 
-        if (unlikely(cmd == NULL)) {
-                printk(KERN_CRIT "impossible request in %s.\n",
-@@ -1634,7 +1636,7 @@ static void scsi_request_fn(struct request_queue *q)
-                 * Remove the request from the request list.
-                 */
-                if (!(blk_queue_tagged(q) && !blk_queue_start_tag(q, req)))
--                       blkdev_dequeue_request(req);
-+                       elv_dequeue_request(req->q, req);
-                sdev->device_busy++;
- 
-                spin_unlock(q->queue_lock);
+On Tue, 2 Dec 2008, Rafael J. Wysocki wrote:
+>  			r_size = resource_size(r);
+>  			/* For bridges size != alignment */
+> -			align = resource_alignment(r);
+> +			align = (i < PCI_BRIDGE_RESOURCES) ? r_size : r->start;
 
-Also, blkdev_dequeue_request() is still used in drivers/scsi/scsi_transport_sas.c()..
+Hmm. This means that something set the alignment flags incorrectly. The 
+resource _should_ have IORESOURCE_SIZEALIGN set for a resource with size 
+alignment, and IORESOURCE_STARTALIGN for one that has start alignment.
 
-Thanks,
+Your patch doesn't fix anything, it just hides the bug.
 
---nab
+It would be good to hear what resource this is, and where it got set. So 
+instead of that broken patch that just hides the problem, please try to 
+debug it with something like
 
+	resource_size_t expected_align;
+
+	expected_align = (i < PCI_BRIDGE_RESOURCES) ? r_size : r->start;
+	align = resource_alignment(r);
+	if (align != expected_align) {
+		dev_warn(&dev->dev,
+			"BAR %d %llx-%llx wrong alignment flags %lx %llx (%llx)\n",
+			i,
+			(unsigned long long) r->start,
+			(unsigned long long) r->end,
+			r->flags,
+			(unsigned long long) align,
+			(unsigned long long) expected_align);
+		/* Hacky and wrong, but trying to keep things 
+		align = expected_align;
+	}
+
+or something like that. And then we just need to figure out which setup 
+routine sets the wrong alignment flag,.
+
+		Linus
