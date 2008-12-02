@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYLBQO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYLBQPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYLBQO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLBQOs
+	id S1755543AbYLBQPm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLBQPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:14:48 -0500
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:9665
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751979AbYLBQOr convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:14:47 -0500
-X-Trace: 201576043/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6/None/alistair@devzero.co.uk
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-MUA: KMail/1.10.3 (Linux/2.6.28-rc6-damocles; KDE/4.1.3; x86_64; ; )
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEANPtNEnDlSwG/2dsb2JhbACBbdEXgn8
-X-IronPort-AV: E=Sophos;i="4.33,702,1220223600"; 
-   d="scan'208";a="201576043"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Alejandro Riveira =?iso-8859-1?q?Fern=E1ndez?= 
-	<ariveira@gmail.com>
-Subject: Re: Linux 2.6.28-rc7
-Date: Tue, 2 Dec 2008 16:14:44 +0000
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-damocles; KDE/4.1.3; x86_64; ; )
-Cc: pazke <pazke@ports.donpac.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org> <200812021520.25856.alistair@devzero.co.uk> <20081202165047.3d09bf43@varda>
-In-Reply-To: <20081202165047.3d09bf43@varda>
+	Tue, 2 Dec 2008 11:15:31 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:36540 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbYLBQPa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 11:15:30 -0500
+Date: Tue, 2 Dec 2008 16:15:21 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Cristiano Prisciandaro <cristiano.p@solnet.ch>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
+Message-ID: <20081202161520.GA18252@srcf.ucam.org>
+References: <1227454026.7262.59.camel@localhost> <20081123180409.GB7731@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812021614.44594.alistair@devzero.co.uk>
+In-Reply-To: <20081123180409.GB7731@ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 December 2008 15:50:47 Alejandro Riveira Fernández wrote:
-> El Tue, 2 Dec 2008 15:20:25 +0000
->
-> Alistair John Strachan <alistair@devzero.co.uk> escribió:
-> > (Maybe things have changed over the years, but my understanding was that
-> > for the majority of Xorg drivers, mode setting was still done by the Xorg
-> > driver, not the kernel, and the X server is responsible for restoring the
-> > VT correctly, not the kernel's framebuffer driver. So this may possibly
-> > not be a kernel bug at all.)
->
->  Given that this is easily reproducible i may try to biect rc6 <--> rc7...
-> it may take a few days though
+On Sun, Nov 23, 2008 at 07:04:09PM +0100, Pavel Machek wrote:
 
-Definitely a good course of action. Hardly anything in rc7, and if the bug 
-really is that localised that's good news.
+> Is this really needed? Could we simply talk to the cpu directly,
+> without help of ACPI?
 
-The only frame-buffer commit in rc7 was bca404afdc5206c3bb but this looks 
-unrelated.
+No. The ACPI write ends up talking to the embedded controller and some 
+io ports.
 
 -- 
-Cheers,
-Alistair.
+Matthew Garrett | mjg59@srcf.ucam.org
