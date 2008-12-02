@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYLBNGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbYLBNHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbYLBNGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYLBNCT
+	id S1754944AbYLBNHh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYLBNH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:02:19 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:28609 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754324AbYLBNCQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:02:16 -0500
-X-BigFish: VPS5(z1039oz4015Mzzzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KB92UA-04-VCL-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>, Avi Kivity <avi@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Alexander Graf <agraf@suse.de>,
-       Han Weidong <weidong.han@intel.com>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: [PATCH 0/12] Factor VT-d KVM functions into a generic API (with multiple device assignment support)
-Date: Tue, 2 Dec 2008 14:01:11 +0100
-Message-ID: <1228222883-17207-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-X-OriginalArrivalTime: 02 Dec 2008 13:01:23.0769 (UTC) FILETIME=[142A2A90:01C9547E]
+	Tue, 2 Dec 2008 08:07:28 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50579 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753347AbYLBNH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 08:07:27 -0500
+Message-ID: <49353322.6090802@cn.fujitsu.com>
+Date: Tue, 02 Dec 2008 21:07:46 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: sudhir kumar <imsudhirkumar@gmail.com>
+CC: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com,
+       bharata@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, skumar@linux.vnet.ibm.com,
+       Peter <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
+       mingo@elte.hu
+Subject: Re: BUG: CGROUPS [2.6.28-rc6] Task migration does not clean reference
+ to group
+References: <3da2c0120812020100u66a94f9bk3c0e8a705bb6347e@mail.gmail.com>
+In-Reply-To: <3da2c0120812020100u66a94f9bk3c0e8a705bb6347e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+sudhir kumar wrote:
+> Hi,
+> I see an interesting bug in the cgroups. I found that cat /proc/cgroups
+> does not decrease the num_cgroups field when a group is deleted. It looks
+> to me that somewhere we miss to delete the reference, which leads to a failure
+> to unmount the cgroups filesystem.
 
-this patch series makes the current KVM device passthrough code generic
-enough so that other IOMMU implementation can also plug into this code.
-It works by factoring the functions Vt-d code exports to KVM into a
-generic interface which allows different backends.
+Ah, it's not a bug. :)
 
-This is the second version of the patchset. The most important change to
-the previous version is that this patchset was rebased to the improved
-API from Han Weidong which supports multiple devices per IOMMU domain.
+> The steps to produce the bug are:
+> 
+> mkdir /cpu
+> mount -t cgroup -ocpu cgroup /cpu
+> cd cpu
+> mkdir group1;
+> cd group1;
+> /./while &              # an infinite loop
 
-For completeness, this series also includes the patches from Han with
-some cleanups. So this patchset can be applied on current avi/master
-tree.
+Seems whenever we create a background job, we'll have a pin to the directory where
+the job is created. So though rmdir() removed the directory, the dentry's refcnt
+is still >0, so cgroup_diput() in which number_of_cgroups is decreased is not called.
+This explains why 'num_cgroups' showed in /proc/cgroups is not 1, and why umount failed.
 
-For testing this code can also be pulled against avi/master tree from
+You can try:
+# mount -t ext3 /dev/sda6 /mnt
+# cd /mnt
+# sleep 10000 &
+# cd ..
+# umount /mnt
+umount: /mnt: device is busy
 
-git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-api
+And umount is OK for the below example:
+# mount -t ext3 /dev/sda6 /mnt
+# sleep 10000 &
+# umount /mnt
 
-This a basic implementation of a generic interface. It can and should be
-improved later to support more types of hardware IOMMUs then VT-d and
-AMD IOMMU.
-
-Since I have no VT-d hardware available these patches are only compile
-tested for now.
-
-Please review, comment and test these patches.
-
-Thanks,
-
-Joerg
-
-diffstat:
-
- arch/ia64/Kconfig               |    3 +
- arch/ia64/kvm/Makefile          |    4 +-
- arch/x86/Kconfig                |    3 +
- arch/x86/include/asm/kvm_host.h |    3 +-
- arch/x86/kvm/Makefile           |    4 +-
- drivers/base/Makefile           |    1 +
- drivers/base/iommu.c            |  100 ++++++
- drivers/pci/dmar.c              |   15 +-
- drivers/pci/intel-iommu.c       |  738 +++++++++++++++++++++++++++++++++------
- include/linux/dma_remapping.h   |   21 +-
- include/linux/dmar.h            |    2 +
- include/linux/intel-iommu.h     |   13 +-
- include/linux/iommu.h           |  109 ++++++
- include/linux/kvm.h             |    5 +
- include/linux/kvm_host.h        |   23 +-
- virt/kvm/{vtd.c => iommu.c}     |  131 +++++---
- virt/kvm/kvm_main.c             |   49 +++-
-
-
-
-
+> echo pid > tasks        # pid is of infinite task
+> cd ..                   # we are now in root group
+> echo pid > /tasks       # move the task to root group
+> rmdir group1;           # Succeeds even when I was inside this group
+> in another shell
+> cd ..
+> umount /cpu;    # this fails for me as below
+> [root@malik-laptop /]# umount cpu/
+> umount: cpu/: device is busy
+> 
+> And I see that cat /proc/cgroups shows me still num_cgroups as 2;
+> 
+> I checked it on two kernels.
+> [root@malik-laptop cpu]# uname -a
+> Linux malik-laptop.in.ibm.com 2.6.26 #1 SMP Tue Aug 12 16:39:18 IST
+> 2008 i686 i686 i386 GNU/Linux
+> 
+> [root@e325b sudhir]# uname -a
+> Linux e325b.in.ibm.com 2.6.28-rc6 #1 SMP Mon Dec 1 15:53:09 IST 2008
+> i686 athlon i386 GNU/Linux
+> 
+> A look on /proc/cgroups
+> root@e325b sudhir]# cat /proc/cgroups
+> #subsys_name    hierarchy       num_cgroups     enabled
+> #cpuset  0       1       1
+> #debug   0       1       1
+> #ns      0       1       1
+> #cpu     8       2       1
+> #cpuacct 0       1       1
+> #freezer 0       1       1
+> #
+> 
+> Please let me know if further information is required or I am doing
+> something wrong ?
+> 
+> Thanks
+> Sudhir
