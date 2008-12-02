@@ -1,61 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYLBUtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYLBUvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbYLBUtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbYLBUs5
+	id S1753234AbYLBUvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:51:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYLBUvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:48:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33829 "EHLO mx2.redhat.com"
+	Tue, 2 Dec 2008 15:51:31 -0500
+Received: from mail.atheros.com ([12.36.123.2]:24753 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751017AbYLBUs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:48:57 -0500
-Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
-From: Steven Rostedt <srostedt@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Luis Henriques <henrix@sapo.pt>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <49359CDF.5060300@redhat.com>
-References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com>
-	 <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com>
-	 <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com>
-	 <20081202190914.GA12115@hades>  <20081202194610.GA4864@hades>
-	 <1228249509.4886.11.camel@localhost.localdomain>
-	 <49359CDF.5060300@redhat.com>
+	id S1750955AbYLBUva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 15:51:30 -0500
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: <stable@kernel.org>
+CC: <ath9k-devel@venema.h4ckr.net>, <linux-wireless@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <sfr@canb.auug.org.au>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [PATCH 0/3] ath9k: several fixes ported to 2.6.27
+Date: Tue, 2 Dec 2008 12:51:19 -0800
+Message-ID: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.5.6.rc2.15.g457bb.dirty
+MIME-Version: 1.0
 Content-Type: text/plain
-Organization: Red Hat
-Date: Tue, 02 Dec 2008 15:48:41 -0500
-Message-Id: <1228250921.4886.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This fixes a few issues seen on MacBook Pros:
 
-On Tue, 2008-12-02 at 22:38 +0200, Avi Kivity wrote:
-> Steven Rostedt wrote:
-> > The following must be available without recursion for the function
-> > tracer to work:
-> >
-> >   local_irq_save/restore
-> >   smp_processor_id
-> >   preempt_enable/disable_notrace
-> >   atomic_inc/dec
-> >   
-> 
-> In arch/x86/kvm/svm.c, function svm_vcpu_run(), everything between the 
-> vmrun instruction and the call to load_host_msrs() is executed without a 
-> live pda, so no smp_processor_id().  Could easily be fixed by 
-> rearranging things.
+http://bugzilla.kernel.org/show_bug.cgi?id=11811
 
-That would be best, but if you have trouble, you could surround the
-trouble area with a: tracing_stop(); tracing_start(); That will prevent
-tracing within those locations. The function tracer will still be
-called, but it will exit the function without doing anything else.
+I've ported them to 2.6.27 to help with them being applied sooner.
+I've tried to keep them as small as possible. I don't have the
+ports for 2.6.28 though I think John will be sending them soon
+through his pending-fixes branch.
 
-Note: that stops tracing on all CPUS, not just the CPU that called it.
+These are already applied on wireless-testing.
 
--- Steve
-
-
+  Luis
