@@ -1,64 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYLBNgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYLBNhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYLBNgr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYLBNgb
+	id S1754401AbYLBNhI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbYLBNgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:36:31 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:20596 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754212AbYLBNg2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:36:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wNSgd3/gHLweMYt2tjXiZLdWlMnJl9KfnJ4zYpu6XRbBnmnFMsjLAcSkbA3ALugNJi
-         JKnRIAGKzgu6jzoOr2dDngQP2GpgIxy5WGTtsy7H+s19r33fV26t7ai0MZqf5HIENSmm
-         BbzHvPBHy1iBJ9Gs4Y4QdUc+K+QQ3kqg5Xogo=
-Message-ID: <30353c3d0812020536t2074842lf4f1a1ef469f914f@mail.gmail.com>
-Date: Tue, 2 Dec 2008 08:36:25 -0500
-From: "David Ellingsworth" <david@identd.dyndns.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Promise PDC20376
-Cc: "Mikael Pettersson" <mikpe@it.uu.se>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081202105053.1bd78897@lxorguk.ukuu.org.uk>
+	Tue, 2 Dec 2008 08:36:48 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:42365 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754910AbYLBNgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 08:36:46 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH linux-next] drivers/macintosh: Add missing of_node_put in therm_adt746x.c
+Date: Tue, 2 Dec 2008 14:36:44 +0100
+User-Agent: KMail/1.9.10
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>,
+       Nicolas Palix <npalix@diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <30353c3d0810240704n7476cc50y28b3eb8a5f326626@mail.gmail.com>
-	 <30353c3d0811250616o733fb7f9ob4af96dd604f78ea@mail.gmail.com>
-	 <18732.3809.720247.329641@harpo.it.uu.se>
-	 <30353c3d0812011743we0bdddk2c9c37dd0191cf2a@mail.gmail.com>
-	 <20081202105053.1bd78897@lxorguk.ukuu.org.uk>
-X-Google-Sender-Auth: 06638c4d47060982
+Message-Id: <200812021436.44286.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 2, 2008 at 5:50 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> A small update to this. It seems the above mentioned interrupt fails
->> somewhere around the 128GB boundary. Interrupt 13h, AH=42 uses a 64
->> bit sector address and should be capable of addressing the entire
->> drive. For a SATA controller, this limitation seems relatively
->> arbitrary. For IDE controllers, a limitation such as this is
->> apparently common.
->
-> 137GB I would imagine. That is the point at which LBA48 commands must be
-> used not LBA28 and presumably their BIOS code only supports old format
-> commands
->
 
-Right, with LBA28 addressing you get 2^28 sector addresses = 2^27 KiB
-= 2^17 MiB = 2^7 GiB = 128 GiB which is approximately 137GB. When I
-wrote 128GB I really meant 128 GiB.
+of_node_put is needed before discarding a value received from
+of_find_node_by_name, eg in error handling code or when the device
+node is no longer used.
 
-Regards,
+The semantic match that catches the bug is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-David Ellingsworth
+// <smpl>
+@r exists@
+local idexpression struct device_node *n;
+position p1, p2;
+struct device_node *n1;
+statement S;
+identifier f;
+expression E;
+expression *ptr != NULL;
+@@
 
-P.S. I hate the "new" binary size notations they only cause confusion.
+n@p1 = of_find_node_by_name(...)
+...
+if (!n) S
+... when != of_node_put(n)
+    when != n1 = f(n,...)
+    when != E = n
+    when any
+    when strict
+(
+  return \(0\|<+...n...+>\|ptr\);
+|
+return@p2 ...;
+|
+  of_node_put(n);
+|
+  n1 = f(n,...)
+|
+  E = n
+)
+
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ drivers/macintosh/therm_adt746x.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
+index 22bf981..82607ad 100644
+--- a/drivers/macintosh/therm_adt746x.c
++++ b/drivers/macintosh/therm_adt746x.c
+@@ -554,7 +554,7 @@ thermostat_init(void)
+ 	const u32 *prop;
+ 	int i = 0, offset = 0;
+ 	int err;
+-	
++
+ 	np = of_find_node_by_name(NULL, "fan");
+ 	if (!np)
+ 		return -ENODEV;
+@@ -613,13 +613,13 @@ thermostat_init(void)
+ 	}
+ 
+ 	of_dev = of_platform_device_create(np, "temperatures", NULL);
+-	
++	of_node_put(np);
++
+ 	if (of_dev == NULL) {
+ 		printk(KERN_ERR "Can't register temperatures device !\n");
+-		of_node_put(np);
+ 		return -ENODEV;
+ 	}
+-	
++
+ 	err = device_create_file(&of_dev->dev, &dev_attr_sensor1_temperature);
+ 	err |= device_create_file(&of_dev->dev, &dev_attr_sensor2_temperature);
+ 	err |= device_create_file(&of_dev->dev, &dev_attr_sensor1_limit);
+-- 
+Nicolas Palix
