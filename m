@@ -1,125 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYLBBbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYLBBbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbYLBBbW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 20:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYLBBbN
+	id S1752756AbYLBBbi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 20:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYLBBbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 20:31:13 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:43252 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbYLBBbM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 20:31:12 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=FDwQILddwK3rnjqmc/Qy4tjD6gSeAQS6l8LDsI/McXnx8+9tGq29OTbs0SwYg1ymS
-	46myt5hVbkn9MQaWE0UDQ==
-MIME-Version: 1.0
-In-Reply-To: <492FC1B9.1040403@cn.fujitsu.com>
-References: <492FC1B9.1040403@cn.fujitsu.com>
-Date: Mon, 1 Dec 2008 17:31:10 -0800
-Message-ID: <6599ad830812011731w75eda049tc809856041ecb707@mail.gmail.com>
-Subject: Re: [PATCH 1/3] cgroups: make root_list contains active hierarchies 
-	only
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Dec 2008 20:31:17 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:52753 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752865AbYLBBbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 20:31:15 -0500
+Subject: Re: [RFC v10][PATCH 09/13] Restore open file descriprtors
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Linus Torvalds <torvalds@osdl.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1228165651.2971.99.camel@nimitz>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
+	 <1227747884-14150-10-git-send-email-orenl@cs.columbia.edu>
+	 <20081128112745.GR28946@ZenIV.linux.org.uk>
+	 <1228159324.2971.74.camel@nimitz> <49344C11.6090204@cs.columbia.edu>
+	 <1228164873.2971.95.camel@nimitz> <49345086.4@cs.columbia.edu>
+	 <1228165651.2971.99.camel@nimitz>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 17:31:08 -0800
+Message-Id: <1228181468.2971.146.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 2:02 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Don't link rootnode to the root list, so root_list contains active
-> hierarchies only as the comment indicates. And rename for_each_root()
-> to for_each_active_root().
+On Mon, 2008-12-01 at 13:07 -0800, Dave Hansen wrote:
+> > When a shared object is inserted to the hash we automatically take another
+> > reference to it (according to its type) for as long as it remains in the
+> > hash. See:  'cr_obj_ref_grab()' and 'cr_obj_ref_drop()'.  So by moving that
+> > call higher up, we protect the struct file.
+> 
+> That's kinda (and by kinda I mean really) disgusting.  Hiding that two
+> levels deep in what is effectively the hash table code where no one will
+> ever see it is really bad.  It also makes you lazy thinking that the
+> hash code will just know how to take references on whatever you give to
+> it.
+> 
+> I think cr_obj_ref_grab() is hideous obfuscation and needs to die.
+> Let's just do the get_file() directly, please.
 
-Why is that change an improvement? If you're concerned about the
-comment's accuracy then it would be better to just change it to say "A
-list running through all hierarchies (including the inactive subsystem
-hierarchy)"?
+Well, I at least see why you need it now.  The objhash thing is trying
+to be a pretty generic hash implementation and it does need to free the
+references up when it is destroyed.  Instead of keeping a "hash of
+files" and a "hash of pipes" or other shared objects, there's just a
+single hash for everything.
 
-Also, with this change, "root_count" is no longer the length of the
-"roots" list, but instead is length + 1, which doesn't seem good.
+One alternative here would be to have an ops-style release function that
+gets called instead of what we have now:
+        
+        static void cr_obj_ref_drop(struct cr_objref *obj)
+        {
+                switch (obj->type) {
+                case CR_OBJ_FILE:
+                        fput((struct file *) obj->ptr);
+                        break;
+                default:
+                        BUG();
+                }
+        }
+        
+        static void cr_obj_ref_grab(struct cr_objref *obj)
+        {
+                switch (obj->type) {
+                case CR_OBJ_FILE:
+                        get_file((struct file *) obj->ptr);
+                        break;
+                default:
+                        BUG();
+                }
+        }
 
-Paul
+That would make it something like:
 
->
-> Also remove redundant check in cgroup_kill_sb().
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/cgroup.c |   19 +++++++------------
->  1 files changed, 7 insertions(+), 12 deletions(-)
->
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index fe00b3b..33ba756 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -84,7 +84,7 @@ struct cgroupfs_root {
->        /* Tracks how many cgroups are currently defined in hierarchy.*/
->        int number_of_cgroups;
->
-> -       /* A list running through the mounted hierarchies */
-> +       /* A list running through the active hierarchies */
->        struct list_head root_list;
->
->        /* Hierarchy-specific flags */
-> @@ -149,8 +149,8 @@ static int notify_on_release(const struct cgroup *cgrp)
->  #define for_each_subsys(_root, _ss) \
->  list_for_each_entry(_ss, &_root->subsys_list, sibling)
->
-> -/* for_each_root() allows you to iterate across the active hierarchies */
-> -#define for_each_root(_root) \
-> +/* for_each_active_root() allows you to iterate across the active hierarchies */
-> +#define for_each_active_root(_root) \
->  list_for_each_entry(_root, &roots, root_list)
->
->  /* the list of cgroups eligible for automatic release. Protected by
-> @@ -1114,10 +1114,9 @@ static void cgroup_kill_sb(struct super_block *sb) {
->        }
->        write_unlock(&css_set_lock);
->
-> -       if (!list_empty(&root->root_list)) {
-> -               list_del(&root->root_list);
-> -               root_count--;
-> -       }
-> +       list_del(&root->root_list);
-> +       root_count--;
-> +
->        mutex_unlock(&cgroup_mutex);
->
->        kfree(root);
-> @@ -2561,7 +2560,6 @@ int __init cgroup_init_early(void)
->        INIT_HLIST_NODE(&init_css_set.hlist);
->        css_set_count = 1;
->        init_cgroup_root(&rootnode);
-> -       list_add(&rootnode.root_list, &roots);
->        root_count = 1;
->        init_task.cgroups = &init_css_set;
->
-> @@ -2668,15 +2666,12 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
->
->        mutex_lock(&cgroup_mutex);
->
-> -       for_each_root(root) {
-> +       for_each_active_root(root) {
->                struct cgroup_subsys *ss;
->                struct cgroup *cgrp;
->                int subsys_id;
->                int count = 0;
->
-> -               /* Skip this hierarchy if it has no active subsystems */
-> -               if (!root->actual_subsys_bits)
-> -                       continue;
->                seq_printf(m, "%lu:", root->subsys_bits);
->                for_each_subsys(root, ss)
->                        seq_printf(m, "%s%s", count++ ? "," : "", ss->name);
-> --
-> 1.5.4.rc3
->
->
+struct cr_obj_ops {
+	int type;
+	void (*release)(struct cr_objref *obj);
+};
+
+void cr_release_file(struct cr_objref *obj)
+{
+	struct file *file = obj->ptr;
+	put_file(file);
+}
+
+struct cr_obj_ops cr_file_ops = {
+	.type = CR_OBJ_FILE,
+	.release = cr_release_file,
+};
+
+
+And the add operation becomes:
+
+	get_file(file);
+	new = cr_obj_add_ptr(ctx, file, &objref, &cr_file_ops, 0);
+
+with 'cr_file_ops' basically replacing the CR_OBJ_FILE that got passed
+before.
+
+I like that because it only obfuscates what truly needs to be abstracted
+out: the release side.  Hiding that get_file() is really tricky.
+
+But, I guess we could also just kill cr_obj_ref_grab(), do the
+get_file() explicitly and still keep cr_obj_ref_drop() as it is now.
+
+-- Dave
+
