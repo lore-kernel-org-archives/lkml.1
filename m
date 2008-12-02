@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbYLBVUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYLBVVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753120AbYLBVUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYLBVU1
+	id S1753325AbYLBVVu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYLBVVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:20:27 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:25428 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbYLBVUY (ORCPT
+	Tue, 2 Dec 2008 16:21:42 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:33097 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbYLBVVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:20:24 -0500
-Message-ID: <4935A692.3050300@hp.com>
-Date: Tue, 02 Dec 2008 16:20:18 -0500
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 2 Dec 2008 16:21:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=v+k6Fm2FIE+4HlI8l8Y0R0XNusYE+BX9iTcwI4I79Jic0FHAv+wd1tSHvo5VSkywaH
+         VYB595j2QMBYoDbgm/Sq6M3uTqhYEMKXwDi1U88470EF7g1pSspffS6pMMtO/osY5DWe
+         ACgOcPOFFk8uf09+1dIwUdcQwJYrqvBJ/t+EI=
+Message-ID: <4935A6E7.3070704@gmail.com>
+Date: Tue, 02 Dec 2008 22:21:43 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Steve French <smfrench@gmail.com>
-CC: Jamie Lokier <jamie@shareable.org>, Andreas Dilger <adilger@sun.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>
-Subject: Re: Support for applications which need NFS or CIFS "share_deny"
- flags on open
-References: <524f69650812020831q4e089b87k9a8306ac37f4234a@mail.gmail.com>	 <20081202193819.GJ3186@webber.adilger.int>	 <20081202200621.GA4451@shareable.org> <524f69650812021220n2b7611b9x2eb3b0b6c7ece849@mail.gmail.com>
-In-Reply-To: <524f69650812021220n2b7611b9x2eb3b0b6c7ece849@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: paulus@samba.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2] hv{c,cs,si}_struct make *count signed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve French wrote:
-> On Tue, Dec 2, 2008 at 2:06 PM, Jamie Lokier <jamie@shareable.org> wrote:
->> The bit I find interesting is that other CIFS clients are said to
->> implement these flags.  If that means real unixes, maybe they've
->> worked out a sensible way to handle them?
-> 
-> I thought that MacOS uses these flags (not just Windows, and of course
-> older clients too OS/2, DOS etc.).
+Otherwise count < 0 will fail
 
-The title of their proposal was "client"... as in not the local
-filesystem, but the impression of what wine really wanted is
-for local linux filesystems to implement these non-posix behaviors
-so "wine apps can run just like on windows" on the local machine.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+This was not tested. Is this how it should be fixed?
 
-Thus the strong objection from everyone doing local filesystems.
+the locations where the failures occur are in the functions hv*_close, on:
 
-Passing exclusive DENYREAD DENYWRITE DENYDELETE network
-protocol flags from a linux client to a remote server
-is an entirely different and IMO acceptible thing.
+vi drivers/char/hvcs.c +1251
 
-And AFAIK on unix the only local support would be by doing
-a client-on-server loopback, where the server implements
-these modes as best it can and you are only protected
-against wine apps that are also inside the "share drive".
+vi drivers/char/hvsi.c +911
 
-jim
+vi drivers/char/drivers/char/hvc_console.c +387
 
+diff --git a/drivers/char/hvc_console.h b/drivers/char/hvc_console.h
+index 8297dbc..3c85d78 100644
+--- a/drivers/char/hvc_console.h
++++ b/drivers/char/hvc_console.h
+@@ -48,7 +48,7 @@ struct hvc_struct {
+ 	spinlock_t lock;
+ 	int index;
+ 	struct tty_struct *tty;
+-	unsigned int count;
++	int count;
+ 	int do_wakeup;
+ 	char *outbuf;
+ 	int outbuf_size;
+diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
+index 473d9b1..6e6eb44 100644
+--- a/drivers/char/hvcs.c
++++ b/drivers/char/hvcs.c
+@@ -269,7 +269,7 @@ struct hvcs_struct {
+ 	unsigned int index;
+ 
+ 	struct tty_struct *tty;
+-	unsigned int open_count;
++	int open_count;
+ 
+ 	/*
+ 	 * Used to tell the driver kernel_thread what operations need to take
+diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
+index 59c6f9a..af05528 100644
+--- a/drivers/char/hvsi.c
++++ b/drivers/char/hvsi.c
+@@ -75,7 +75,7 @@ struct hvsi_struct {
+ 	spinlock_t lock;
+ 	int index;
+ 	struct tty_struct *tty;
+-	unsigned int count;
++	int count;
+ 	uint8_t throttle_buf[128];
+ 	uint8_t outbuf[N_OUTBUF]; /* to implement write_room and chars_in_buffer */
+ 	/* inbuf is for packet reassembly. leave a little room for leftovers. */
