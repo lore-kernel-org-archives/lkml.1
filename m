@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbYLBWKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYLBWKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbYLBWKS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 17:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYLBWKD
+	id S1754271AbYLBWKl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYLBWKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 17:10:03 -0500
-Received: from kroah.org ([198.145.64.141]:56579 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751188AbYLBWKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 17:10:01 -0500
-Date: Tue, 2 Dec 2008 13:27:04 -0800
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
-Cc: stable@kernel.org, sfr@canb.auug.org.au, ath9k-devel@venema.h4ckr.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 0/3] ath9k: several fixes ported to 2.6.27
-Message-ID: <20081202212704.GA31723@kroah.com>
-References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com>
+	Tue, 2 Dec 2008 17:10:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:35239 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbYLBWKO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 17:10:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=WCAYNejOCO0GI506UtY9VDbW8b/ON60q2yS6BZLIupxByD3T0q8oWwcoXZ+e++7H5N
+         91GvkHmN3mAjOrGOqrJ/LuD/u2cWAjT4ty8vk7H7CO/ONqNEXrHJEW3bCnbHqqhP5rhU
+         ankbslf+DvQcaR2/rk3pKjVNPKoy2wDVhj3d8=
+Message-ID: <4935B249.6020906@gmail.com>
+Date: Tue, 02 Dec 2008 23:10:17 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: jack@suse.cz
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] udf: in scan_anchors() sector_t last[] is unsigned and cannot
+ be negative.
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 12:51:19PM -0800, Luis R. Rodriguez wrote:
-> This fixes a few issues seen on MacBook Pros:
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=11811
-> 
-> I've ported them to 2.6.27 to help with them being applied sooner.
+sector_t last[] is unsigned and cannot be negative.
 
-What do you mean by "sooner"?  They need to be in Linus's tree before we
-can add them to the 2.6.27-stable tree.  Please let us know when that
-happens, and what the git ids of them are, so we can add them to the
-next -stable release.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Maybe you can suggest a less ugly solution?
 
-thanks,
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index e25e701..d53c6fc 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -721,7 +721,7 @@ static sector_t udf_scan_anchors(struct super_block *sb, sector_t lastblock)
+ 	 *  however, if the disc isn't closed, it could be 512 */
+ 
+ 	for (i = 0; i < ARRAY_SIZE(last); i++) {
+-		if (last[i] < 0)
++		if (last[i] > last[0] + 1)
+ 			continue;
+ 		if (last[i] >= sb->s_bdev->bd_inode->i_size >>
+ 				sb->s_blocksize_bits)
 
-greg k-h
