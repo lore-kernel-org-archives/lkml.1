@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbYLBR6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYLBSAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbYLBR6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 12:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYLBR6J
+	id S1755912AbYLBSAX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 13:00:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYLBSAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 12:58:09 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:64944 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbYLBR6I (ORCPT
+	Tue, 2 Dec 2008 13:00:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51764 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbYLBSAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 12:58:08 -0500
-Message-ID: <4935771F.6050500@oracle.com>
-Date: Tue, 02 Dec 2008 09:57:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 2 Dec 2008 13:00:10 -0500
+Message-ID: <4935778E.1020405@zytor.com>
+Date: Tue, 02 Dec 2008 09:59:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sameo@openedhand.com
-Subject: Re: linux-next: Tree for December 2 (mfd)
-References: <20081202173101.e2b72437.sfr@canb.auug.org.au>
-In-Reply-To: <20081202173101.e2b72437.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: SD/MMC cards: how crappy they are?
+References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com> <20081202165608.GD18162@mit.edu>
+In-Reply-To: <20081202165608.GD18162@mit.edu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49357723.0227:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+Theodore Tso wrote:
 > 
-> Changes since 20081201:
+> If this is your random eject out from your HP laptop problem, note
+> that random ejects while the card is writing can cause corruption of
+> the flash translation layer (FTL), which for some really crappy cards,
+> can permanently damage them; hopefully most of those are gone from the
+> market, but I wouldn't be positive about that.  The better ones will
+> have some kind of journalling scheme for their FTL...
 > 
-> Today's tree fails the powerpc allyesconfig build.
 
+I have seen flash cards die permanently from having a partition table it
+didn't like written to it.  Yes, the microcontroller on the flash card
+tried to interpret the partition table, assumed to be MS-DOS style, and
+would crash.
 
-allyesconfig on x86_64 fails with:
-
-linux-next-20081202/drivers/mfd/twl4030-core.c:682: undefined reference to `clk_get_rate'
-linux-next-20081202/drivers/mfd/twl4030-core.c:683: undefined reference to `clk_put'
-
-
--- 
-~Randy
+	-hpa
