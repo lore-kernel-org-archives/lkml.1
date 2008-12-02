@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYLBXMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbYLBXSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbYLBXMa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYLBXMV
+	id S1754199AbYLBXSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYLBXSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:12:21 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48098 "EHLO smtps.tip.net.au"
+	Tue, 2 Dec 2008 18:18:12 -0500
+Received: from mail.tmr.com ([64.65.253.246]:43946 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752762AbYLBXMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:12:20 -0500
-Date: Wed, 3 Dec 2008 10:12:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nicolas Palix <npalix@diku.dk>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH linux-next] drivers/hvc: Add missing of_node_put
-Message-Id: <20081203101210.01e5afab.sfr@canb.auug.org.au>
-In-Reply-To: <200812021438.56071.npalix@diku.dk>
-References: <200812021438.56071.npalix@diku.dk>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti"
+	id S1750980AbYLBXSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:18:11 -0500
+Message-ID: <4935C219.3070006@tmr.com>
+Date: Tue, 02 Dec 2008 18:17:45 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081112 Fedora/1.1.13-1.fc9 pango-text SeaMonkey/1.1.13
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Bill Davidsen <davidsen@tmr.com>,
+       roel kluin <roel.kluin@gmail.com>, adilger@sun.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ext3, ext4: do_split() fix loop, with obvious	unsigned
+ wrap
+References: <49343AD9.4020606@gmail.com> <20081202132441.GC16172@mit.edu> <49356B96.7070900@tmr.com> <20081202215758.GE20858@mit.edu>
+In-Reply-To: <20081202215758.GE20858@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2 Dec 2008 14:38:55 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+Theodore Tso wrote:
+> On Tue, Dec 02, 2008 at 12:08:38PM -0500, Bill Davidsen wrote:
+>   
+>> Sorry, you are reading it wrong, the i values inside the loop are  
+>> identical to those in the original. The value of i starts at count, and  
+>> the test comes *before* the value is used inside the loop. The values of  
+>> i inside the loop start at count-1 and go to zero, just as it did in the  
+>> original. That's why the "i--" is there, the test is on the  
+>> unincremented value range count to one, but the value inside the loop is  
+>> correct (or at least is the same as the original patch).
+>>     
 >
-> of_node_put is needed before discarding a value received from
-> of_find_node_by_name, eg in error handling code or when the device
-> node is no longer used.
->=20
-> Signed-off-by: Nicolas Palix <npalix@diku.dk>
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> You're right; my bad.  But with something like this:
+>
+>   
+>>>> +	for (i = count; i--; ) {
+>>>>         
+>
+> ...where there is no third part of the for loop, and a decrement in
+> the second part of the loop, just for clarity's sake, it's much better
+> to write it as a while loop.
+>   
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+I seriously disagree on that, writing it as a for makes it totally clear 
+that the index initialization is part of the loop.
+I know, looks funny, not the way we have always done it, not invented 
+here...
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
---Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkk1wMoACgkQjjKRsyhoI8wocgCbBRRR++quM8rPQ8ALskadujgI
-c3gAnjUNkQRwlDZ/aAbsdpdGCnaEslfQ
-=8UdU
------END PGP SIGNATURE-----
-
---Signature=_Wed__3_Dec_2008_10_12_10_+1100_gFO3uuU0vpljGhti--
