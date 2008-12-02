@@ -1,138 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYLBPen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYLBPgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbYLBPen (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 10:34:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYLBPee
+	id S1754686AbYLBPgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 10:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYLBPgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 10:34:34 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41579 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbYLBPed (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 10:34:33 -0500
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>,
-       LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH] IB/ehca: replace modulus operations in flush error completion path
-Date: Tue, 2 Dec 2008 16:31:56 +0100
-User-Agent: KMail/1.9.9
-Cc: raisch@de.ibm.com, hnguyen@de.ibm.com, fenkes@de.ibm.com,
-       alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+	Tue, 2 Dec 2008 10:36:31 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1794 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750799AbYLBPga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 10:36:30 -0500
+Message-ID: <493555F6.2030900@myri.com>
+Date: Tue, 02 Dec 2008 10:36:22 -0500
+From: Andrew Gallatin <gallatin@myri.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ben Hutchings <bhutchings@solarflare.com>
+CC: David Miller <davem@davemloft.net>, ossthema@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tklein@de.ibm.com,
+       raisch@de.ibm.com, jb.billaud@gmail.com, hering2@de.ibm.com
+Subject: Re: [PATCH] lro: IP fragment checking
+References: <4933A74F.3050809@de.ibm.com>	<493423D7.5030203@myri.com>	 <20081201.131810.158631503.davem@davemloft.net> <49345CCA.1030209@myri.com>		 <1228169379.3073.13.camel@achroite> <49347B0B.8030705@myri.com>	 <1228177130.3073.23.camel@achroite> <49354970.10804@myri.com> <1228231128.3075.9.camel@achroite>
+In-Reply-To: <1228231128.3075.9.camel@achroite>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812021631.58810.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the latest flush error completion patch we introduced modulus operation
-to calculate the next index within a qmap. Based on comments from other
-mailing lists we decided to optimize this operation by using an addition and
-an if-statement instead of modulus, even though this is in error path.
+Ben Hutchings wrote:
+> On Tue, 2008-12-02 at 09:42 -0500, Andrew Gallatin wrote:
+>> Ben Hutchings wrote:
+>>> On Mon, 2008-12-01 at 19:02 -0500, Andrew Gallatin wrote:
+>>>> Ben Hutchings wrote:
+> [...]
+>>>>> If your hardware/firmware wrongly claims to be able to verify the
+>>>>> TCP/UDP checksum for an IP fragment, it seems to me you should deal with
+>>>>> that in your driver or fix the firmware.
+>>>> We do partial checksums.
+>>> So you should check for IP fragmentation in your get_frag_header() along
+>>> with all the other checks you've got to do.
+>> Indeed, and that is the patch I intend to submit if the fragment
+>> check in inet_lro is rejected.  I still think the check belongs
+>> in the inet lro code though, and I'm worried it is being rejected
+>> for the wrong reasons..
+> 
+> There's a wide variety of capabilities of different hardware:
+> 
+> 1. No checksum offload. Probably not worth using LRO.
+> 2. Full-checksum generation. Driver passes packets to inet_lro;
+> get_frag_header() or get_skb_header() parses packets to check that they
+> are TCP/IPv4 and to validate the checksum. inet_lro does further checks.
+> 3. L4 packet parsing and checksum validation. Driver passes TCP/IPv4
+> packets to inet_lro. inet_lro does further checks.
+> 4. Hardware/firmware LRO. inet_lro not needed.
+> 
+> You seem to be proposing that a check that is only needed in case (2)
+> should also be applied in case (3).  Maybe it would make more sense to
+> define a generic implementation of get_frag_header() for full-checksum
+> devices, if that's possible?
 
-Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_classes.h |    7 +++++++
- drivers/infiniband/hw/ehca/ehca_qp.c      |   12 ++++++------
- drivers/infiniband/hw/ehca/ehca_reqs.c    |   13 ++++++-------
- 3 files changed, 19 insertions(+), 13 deletions(-)
+Or maybe a generic lro_check_header() that can be called from
+everybody's get_frag_header()/get_skb_header().  I guess what
+bothers me is the division of checks between the get_*_header()
+routine and lro_tcp_ip_checks() and the inevitable code
+duplication in the get_*_header routines.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index 7fc35cf..c825142 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -175,6 +175,13 @@ struct ehca_queue_map {
- 	unsigned int next_wqe_idx;   /* Idx to first wqe to be flushed */
- };
- 
-+/* function to calculate the next index for the qmap */
-+static inline unsigned int next_index(unsigned int cur_index, unsigned int limit)
-+{
-+	unsigned int temp = cur_index + 1;
-+	return (temp == limit) ? 0 : temp;
-+}
-+
- struct ehca_qp {
- 	union {
- 		struct ib_qp ib_qp;
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index cadbf0c..f161cf1 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -1138,14 +1138,14 @@ static int calc_left_cqes(u64 wqe_p, struct ipz_queue *ipz_queue,
- 		return -EFAULT;
- 	}
- 
--	tail_idx = (qmap->tail + 1) % qmap->entries;
-+	tail_idx = next_index(qmap->tail, qmap->entries);
- 	wqe_idx = q_ofs / ipz_queue->qe_size;
- 
- 	/* check all processed wqes, whether a cqe is requested or not */
- 	while (tail_idx != wqe_idx) {
- 		if (qmap->map[tail_idx].cqe_req)
- 			qmap->left_to_poll++;
--		tail_idx = (tail_idx + 1) % qmap->entries;
-+		tail_idx = next_index(tail_idx, qmap->entries);
- 	}
- 	/* save index in queue, where we have to start flushing */
- 	qmap->next_wqe_idx = wqe_idx;
-@@ -1195,14 +1195,14 @@ static int check_for_left_cqes(struct ehca_qp *my_qp, struct ehca_shca *shca)
- 	} else {
- 		spin_lock_irqsave(&my_qp->send_cq->spinlock, flags);
- 		my_qp->sq_map.left_to_poll = 0;
--		my_qp->sq_map.next_wqe_idx = (my_qp->sq_map.tail + 1) %
--						my_qp->sq_map.entries;
-+		my_qp->sq_map.next_wqe_idx = next_index(my_qp->sq_map.tail,
-+							my_qp->sq_map.entries);
- 		spin_unlock_irqrestore(&my_qp->send_cq->spinlock, flags);
- 
- 		spin_lock_irqsave(&my_qp->recv_cq->spinlock, flags);
- 		my_qp->rq_map.left_to_poll = 0;
--		my_qp->rq_map.next_wqe_idx = (my_qp->rq_map.tail + 1) %
--						my_qp->rq_map.entries;
-+		my_qp->rq_map.next_wqe_idx = next_index(my_qp->rq_map.tail,
-+							my_qp->rq_map.entries);
- 		spin_unlock_irqrestore(&my_qp->recv_cq->spinlock, flags);
- 	}
- 
-diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
-index 00a648f..c711268 100644
---- a/drivers/infiniband/hw/ehca/ehca_reqs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
-@@ -726,13 +726,13 @@ repoll:
- 		 * set left_to_poll to 0 because in error state, we will not
- 		 * get any additional CQEs
- 		 */
--		my_qp->sq_map.next_wqe_idx = (my_qp->sq_map.tail + 1) %
--						my_qp->sq_map.entries;
-+		my_qp->sq_map.next_wqe_idx = next_index(my_qp->sq_map.tail,
-+							my_qp->sq_map.entries);
- 		my_qp->sq_map.left_to_poll = 0;
- 		ehca_add_to_err_list(my_qp, 1);
- 
--		my_qp->rq_map.next_wqe_idx = (my_qp->rq_map.tail + 1) %
--						my_qp->rq_map.entries;
-+		my_qp->rq_map.next_wqe_idx = next_index(my_qp->rq_map.tail,
-+							my_qp->rq_map.entries);
- 		my_qp->rq_map.left_to_poll = 0;
- 		if (HAS_RQ(my_qp))
- 			ehca_add_to_err_list(my_qp, 0);
-@@ -860,9 +860,8 @@ static int generate_flush_cqes(struct ehca_qp *my_qp, struct ib_cq *cq,
- 
- 		/* mark as reported and advance next_wqe pointer */
- 		qmap_entry->reported = 1;
--		qmap->next_wqe_idx++;
--		if (qmap->next_wqe_idx == qmap->entries)
--			qmap->next_wqe_idx = 0;
-+		qmap->next_wqe_idx = next_index(qmap->next_wqe_idx,
-+						qmap->entries);
- 		qmap_entry = &qmap->map[qmap->next_wqe_idx];
- 
- 		wc++; nr++;
--- 
-1.5.5
+I still don't understand why an unneeded check for fragmentation
+in case (3) is any more objectionable than the existing tcp
+flags checks in lro_tcp_ip_check(), many of which are surely
+not needed in case (3) either.
 
+Drew
