@@ -1,91 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYLBTdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbYLBTdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYLBTdo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYLBTbj
+	id S1756471AbYLBTdI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:33:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbYLBTbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:31:39 -0500
-Received: from bungle.evilgeniuses.org.uk ([195.10.223.155]:1544 "EHLO
-	bungle.evilgeniuses.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754484AbYLBTbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:31:34 -0500
-Subject: [PATCH] [uvc] The button on the camera is KEY_CAMERA
-From: Bastien Nocera <hadess@hadess.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary="=-bPYNWSZjO6lToD5AODxx"
-Date: Tue, 02 Dec 2008 19:11:40 +0000
-Message-Id: <1228245100.8307.1463.camel@cookie.hadess.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Tue, 2 Dec 2008 14:31:24 -0500
+Received: from zbr.yandex.ru ([213.180.219.33]:50739 "EHLO gavana.yandex.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755588AbYLBTaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:30:18 -0500
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [5/5] POHMELFS: VFS changes and make/config files.
+Date: Tue,  2 Dec 2008 22:30:54 +0300
+Message-Id: <12282462551908-git-send-email-zbr@ioremap.net>
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <12282462551223-git-send-email-zbr@ioremap.net>
+References: <12282462541461-git-send-email-zbr@ioremap.net>
+ <12282462542235-git-send-email-zbr@ioremap.net>
+ <12282462541352-git-send-email-zbr@ioremap.net>
+ <12282462542094-git-send-email-zbr@ioremap.net>
+ <12282462551223-git-send-email-zbr@ioremap.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
---=-bPYNWSZjO6lToD5AODxx
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-2 small bug fixes for the input part of the UVC driver.
-
-Please keep me CC:ed as I'm not subscribed to LKML.
-
-Cheers
-
---=-bPYNWSZjO6lToD5AODxx
-Content-Disposition: attachment; filename="0001--uvc-The-button-on-the-camera-is-KEY_CAMERA.patch"
-Content-Type: text/x-patch; name="0001--uvc-The-button-on-the-camera-is-KEY_CAMERA.patch"; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-
->From df4dfe7370c71647e89acd2db22c46c10ca8faea Mon Sep 17 00:00:00 2001
-From: Bastien Nocera <hadess@hadess.net>
-Date: Tue, 2 Dec 2008 19:08:59 +0000
-Subject: [PATCH] [uvc] The button on the camera is KEY_CAMERA
-
-Not BTN_0. Also call input_sync() on the device once the button
-has been pressed.
----
- drivers/media/video/uvc/uvc_status.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/media/video/uvc/uvc_status.c b/drivers/media/video/uvc/uvc_status.c
-index 5d60b26..ca93245 100644
---- a/drivers/media/video/uvc/uvc_status.c
-+++ b/drivers/media/video/uvc/uvc_status.c
-@@ -48,7 +48,7 @@ static int uvc_input_init(struct uvc_device *dev)
- 	input->dev.parent = &dev->intf->dev;
+diff --git a/fs/Kconfig b/fs/Kconfig
+index abccb5d..c1b2b32 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1557,6 +1557,8 @@ menuconfig NETWORK_FILESYSTEMS
  
- 	set_bit(EV_KEY, input->evbit);
--	set_bit(BTN_0, input->keybit);
-+	set_bit(KEY_CAMERA, input->keybit);
+ if NETWORK_FILESYSTEMS
  
- 	if ((ret = input_register_device(input)) < 0)
- 		goto error;
-@@ -71,8 +71,10 @@ static void uvc_input_cleanup(struct uvc_device *dev)
- static void uvc_input_report_key(struct uvc_device *dev, unsigned int code,
- 	int value)
- {
--	if (dev->input)
-+	if (dev->input) {
- 		input_report_key(dev->input, code, value);
-+		input_sync(dev->input);
-+	}
++source "fs/pohmelfs/Kconfig"
++
+ config NFS_FS
+ 	tristate "NFS client support"
+ 	depends on INET
+diff --git a/fs/Makefile b/fs/Makefile
+index a1482a5..56fe19c 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
+ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+ obj-$(CONFIG_GFS2_FS)           += gfs2/
++obj-$(CONFIG_POHMELFS)		+= pohmelfs/
+diff --git a/fs/pohmelfs/Kconfig b/fs/pohmelfs/Kconfig
+new file mode 100644
+index 0000000..82d13ad
+--- /dev/null
++++ b/fs/pohmelfs/Kconfig
+@@ -0,0 +1,23 @@
++config POHMELFS
++	tristate "POHMELFS filesystem support"
++	select CONNECTOR
++	help
++	  POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
++	  This is a network filesystem which supports coherent caching of data and metadata
++	  on clients.
++
++config POHMELFS_DEBUG
++	bool "POHMELFS debugging"
++	depends on POHMELFS
++	default n
++	help
++	  Turns on excessive POHMELFS debugging facilities.
++	  You usually do not want to slow things down noticebly and get really lots of kernel
++	  messages in syslog.
++
++config POHMELFS_CRYPTO
++	bool "POHMELFS crypto support"
++	depends on CONFIG_CRYPTO_BLKCIPHER && CONFIG_CRYPTO_HASH
++	help
++	  This option allows to encrypt and/or protect with strong cryptographic hash all dataflow
++	  between server and clients. Each config group can have own keys.
+diff --git a/fs/pohmelfs/Makefile b/fs/pohmelfs/Makefile
+new file mode 100644
+index 0000000..196561c
+--- /dev/null
++++ b/fs/pohmelfs/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_POHMELFS)	+= pohmelfs.o
++
++pohmelfs-y := inode.o config.o dir.o net.o path_entry.o trans.o crypto.o lock.o mcache.o
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 876bc59..016a00b 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -497,6 +497,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+ 		lru_cache_add(page);
+ 	return ret;
  }
++EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
  
- #else
-@@ -97,7 +99,7 @@ static void uvc_event_streaming(struct uvc_device *dev, __u8 *data, int len)
- 			return;
- 		uvc_trace(UVC_TRACE_STATUS, "Button (intf %u) %s len %d\n",
- 			data[1], data[3] ? "pressed" : "released", len);
--		uvc_input_report_key(dev, BTN_0, data[3]);
-+		uvc_input_report_key(dev, KEY_CAMERA, data[3]);
- 	} else {
- 		uvc_trace(UVC_TRACE_STATUS, "Stream %u error event %02x %02x "
- 			"len %d.\n", data[1], data[2], data[3], len);
--- 
-1.6.0.4
-
-
---=-bPYNWSZjO6lToD5AODxx--
-
+ #ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+@@ -614,6 +615,7 @@ int __lock_page_killable(struct page *page)
+ 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
+ 					sync_page_killable, TASK_KILLABLE);
+ }
++EXPORT_SYMBOL_GPL(__lock_page_killable);
+ 
+ /**
+  * __lock_page_nosync - get a lock on the page, without calling sync_page()
