@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYLBUYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbYLBUZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbYLBUYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYLBUYV
+	id S1753469AbYLBUZi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYLBUZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:24:21 -0500
-Received: from 8bytes.org ([88.198.83.132]:55757 "EHLO 8bytes.org"
+	Tue, 2 Dec 2008 15:25:28 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45751 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbYLBUYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:24:21 -0500
-Date: Tue, 2 Dec 2008 21:24:18 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: fix broken flushing in GART nofullflush path
-Message-ID: <20081202202417.GM29705@8bytes.org>
-References: <1228245363-14909-1-git-send-email-joerg.roedel@amd.com> <20081202192759.GD15342@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202192759.GD15342@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751017AbYLBUZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 15:25:27 -0500
+Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
+From: Steven Rostedt <srostedt@redhat.com>
+To: Luis Henriques <henrix@sapo.pt>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20081202194610.GA4864@hades>
+References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com>
+	 <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com>
+	 <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com>
+	 <20081202190914.GA12115@hades>  <20081202194610.GA4864@hades>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 02 Dec 2008 15:25:09 -0500
+Message-Id: <1228249509.4886.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 08:27:59PM +0100, Ingo Molnar wrote:
-> 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > In the non-default nofullflush case the GART is only flushed when
-> > next_bit wraps around. But it can happen that an unmap operation unmaps
-> > memory which is behind the current next_bit location. If these addresses
-> > are reused it may result in stale GART IO/TLB entries. Fix this by
-> > setting the GART next_bit always behind an unmapped location.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/kernel/pci-gart_64.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> applied to tip/x86/iommu, thanks Joerg!
-> 
-> a stale iotlb should not cause any problems in this particular GART case, 
-> right? It might be a security leak in a security-domain enforcing iotlb 
-> case, but the GART is a DMA bouncing helper in essence. Can you see any 
-> failure mode of this bug?
+[ added Ingo too ]
 
-It can cause data corruption because the GART redirects the IO to a
-wrong address because of a stale entry in its TLB. I found this bug
-after I fixed the same issue in the AMD IOMMU code (commit 80be308d).
+On Tue, 2008-12-02 at 19:46 +0000, Luis Henriques wrote:
+> (I am CC'ing to Steven Rostedt since he might be interested on this)
+> 
+> On Tue, Dec 02, 2008 at 07:09:14PM +0000, Luis Henriques wrote:
 
-The reason this was not found earlier is that lazy flushing is not the
-default in GART. But I didn't try to trigger the bug.
+> I have some other information to had to my previous email.  However, I do not
+> know whether it is related with my first bug report.
+> 
+> It looks like ftrace may stop the CPUs in some situations and I have been
+> playing with ftrace for some time.  So, here's what I just did:  started ftrace
+> with function tracer and then started kvm.  I got ugly crashes and apparently
+> quite easy to reproduce (I get complete freeze or immediate reboot).
+> 
+> I did not investigated this issue and, again, it may not be related with my
+> initial report but there's definitely something wrong here, right?
+> 
+> (just to refresh, I am using 2.6.28-rc6-00007-ged31348 in x86_64 machine)
+> 
 
-Joerg
+Hi,
+
+ftrace only stops the CPUs on start up or shutdown of the function
+tracer (i.e. echo function > /debugfs/tracing/current_tracer).  It does
+not stop the CPUs at any other time.
+
+Now what ftrace does do, is to call a tracing function at pretty much
+every function call in the kernel. In most places this is fine, but
+there are some cases that this can be an issue. For example, we can not
+trace suspend and resume because on resume smp_processor_id() is
+undefined, which ftrace uses.
+
+The following must be available without recursion for the function
+tracer to work:
+
+  local_irq_save/restore
+  smp_processor_id
+  preempt_enable/disable_notrace
+  atomic_inc/dec
+
+There could be other things that might be causing the crash. Do you have
+a crash dump and config available?
+
+Thanks,
+
+-- Steve
+
+
