@@ -1,128 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYLBSRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYLBSSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYLBSRv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 13:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYLBSRn
+	id S1754578AbYLBSSc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 13:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYLBSSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 13:17:43 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:21999 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbYLBSRm (ORCPT
+	Tue, 2 Dec 2008 13:18:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37530 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753222AbYLBSSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 13:17:42 -0500
-Subject: Re: [patch v2] vmscan: protect zone rotation stats by lru lock
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081202123453.GB6170@cmpxchg.org>
-References: <E1L6y5T-0003q3-M3@cmpxchg.org>
-	 <20081201134112.24c647ff.akpm@linux-foundation.org>
-	 <49345B3B.30703@redhat.com> <1228169385.18834.136.camel@lts-notebook>
-	 <20081202123453.GB6170@cmpxchg.org>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 02 Dec 2008 13:17:38 -0500
-Message-Id: <1228241858.6202.5.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 13:18:22 -0500
+Date: Tue, 2 Dec 2008 10:17:32 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
+       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
+       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
+ on Toshiba R500 (bisected)
+In-Reply-To: <200812021846.51479.elendil@planet.nl>
+Message-ID: <alpine.LFD.2.00.0812020956440.3256@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812020629.26714.elendil@planet.nl> <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org> <200812021846.51479.elendil@planet.nl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 13:34 +0100, Johannes Weiner wrote:
-> On Mon, Dec 01, 2008 at 05:09:45PM -0500, Lee Schermerhorn wrote:
-> > On Mon, 2008-12-01 at 16:46 -0500, Rik van Riel wrote:
-> > > Andrew Morton wrote:
-> > > > On Mon, 01 Dec 2008 03:00:35 +0100
-> > > > Johannes Weiner <hannes@saeurebad.de> wrote:
-> > > > 
-> > > >> The zone's rotation statistics must not be accessed without the
-> > > >> corresponding LRU lock held.  Fix an unprotected write in
-> > > >> shrink_active_list().
-> > > >>
-> > > > 
-> > > > I don't think it really matters.  It's quite common in that code to do
-> > > > unlocked, racy update to statistics such as this.  Because on those
-> > > > rare occasions where a race does happen, there's a small glitch in the
-> > > > reclaim logic which nobody will notice anyway.
-> > > > 
-> > > > Of course, this does need to be done with some care, to ensure the
-> > > > glitch _will_ be small.
-> > > 
-> > > Processing at most SWAP_CLUSTER_MAX pages at once probably
-> > > ensures that glitches will be small most of the time.
-> > > 
-> > > The only way this could be a big problem is if we end up
-> > > racing with the divide-by-two logic in get_scan_ratio,
-> > > leaving the rotated pages a factor two higher than they
-> > > should be.
-> > > 
-> > > Putting all the writes to the stats under the LRU lock
-> > > should ensure that never happens.
-> > 
-> > And he's not actually adding a lock.  Just moving the exiting one up to
-> > include the stats update.  The intervening pagevec, pgmoved and lru
-> > initializations don't need to be under the lock, but that's probably not
-> > a big deal?
-> 
-> I did it like this to keep the diff as simple as possible and to not
-> change existing code flow.
-> 
-> Here is an alternate version that moves the safe stuff out of the
-> locked region.
-> 
-> tbh, I think it's worse.
 
-As I said, I didn't think it was a big deal.  I'm fine with the prior
-version.
 
-Lee
+On Tue, 2 Dec 2008, Frans Pop wrote:
 > 
-> 	Hannes
-> 
-> ---
-> 
-> The zone's rotation statistics must not be modified without the
-> corresponding LRU lock held.  Fix an unprotected write in
-> shrink_active_list().
-> 
-> ---
->  mm/vmscan.c |   16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
-> 
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1249,21 +1249,21 @@ static void shrink_active_list(unsigned 
->  	}
->  
->  	/*
-> +	 * Move the pages to the [file or anon] inactive list.
-> +	 */
-> +
-> +	pagevec_init(&pvec, 1);
-> +	lru = LRU_BASE + file * LRU_FILE;
-> +
-> +	spin_lock_irq(&zone->lru_lock);
-> +	/*
->  	 * Count referenced pages from currently used mappings as
->  	 * rotated, even though they are moved to the inactive list.
->  	 * This helps balance scan pressure between file and anonymous
->  	 * pages in get_scan_ratio.
->  	 */
->  	zone->recent_rotated[!!file] += pgmoved;
-> -
-> -	/*
-> -	 * Move the pages to the [file or anon] inactive list.
-> -	 */
-> -	pagevec_init(&pvec, 1);
-> -
->  	pgmoved = 0;
-> -	lru = LRU_BASE + file * LRU_FILE;
-> -	spin_lock_irq(&zone->lru_lock);
->  	while (!list_empty(&l_inactive)) {
->  		page = lru_to_page(&l_inactive);
->  		prefetchw_prev_lru_page(page, &l_inactive, flags);
+> I could reinstall some intermediate versions and check when that change 
+> got introduced if that would help, or revert to the kernel I was using 
+> before I did the pull today and applied the debug patch (which was plain 
+> rc6 + a few selected bug fix patches that had not yet been merged).
 
+It might be interesting, but probably not very relevant. I don't really 
+think that the resume problem is related to this.
+
+> It did happen once a few days ago, but with the workarounds I had resume 
+> failures were extremely rare. I'll see if I can work out which boot it 
+> was, but that could well be very tricky as a failed resume leaves no 
+> trace.
+
+If you just save the dmesg before each resume try, you'd have at least the 
+dmesg of the bootup that leads to failure. It's _likely_ exactly the same 
+as the ones that don't lead to failures, but..
+
+> The way I "see" the failure is that the wireless led does not come on
+
+Quite frankly, from everything I hear, I personally strongly suspect that 
+it's something timing-related to some driver, and most likely totally 
+unrelated to any PCI resource allocation in any other way. IOW, _if_ the 
+resource allocation makes a difference, it's more likely through just 
+mattering from a timing standpoint.
+
+For example, the bad alignment you get from picking the alignment from the 
+wrong place (with Rafael's patch or with my debugging patch) results in 
+this:
+
+ - PCI init time:
+
+	+pci 0000:02:06.0: BAR 9 0-3ffffff wrong alignment flags 21200 4000000 (0)
+	+pci 0000:02:06.0: BAR 9 bad alignment 0: [0x000000-0x3ffffff]
+
+ - CardBus init time:
+
+	+yenta_cardbus 0000:02:06.0: CardBus bridge, secondary bus 0000:03
+	+yenta_cardbus 0000:02:06.0:   IO window: 0x003000-0x0030ff
+	+yenta_cardbus 0000:02:06.0:   IO window: 0x003400-0x0034ff
+	+yenta_cardbus 0000:02:06.0:   PREFETCH window: 0x84400000-0x847fffff
+	+yenta_cardbus 0000:02:06.0:   MEM window: 0x80000000-0x83ffffff
+
+ie what happened is that when using the wrong alignment, the PCI bus setup 
+code would fail to set up the memory windows (bar 9), but then the cardbus 
+init which happens later will fix that, since it re-does the setup (see 
+"yenta_allocate_resources()": it will re-do "pci_setup_cardbus()" if the 
+resources didn't get set up earlier)
+
+End result? There should be no real difference, but timing does change.
+
+Now, there are _some_ subtle issues that change depending on whether we do 
+the "failure case" in yenta_allocate_resources() or not: for example, the 
+code in yenta_allocate_res() actually knows about the fact that CardBus 
+memory resources have a 4kB granularity, while the generic PCI code uses 
+the resource size as the alignment.
+
+The yenta code also tries to potentially find a smaller resource than the 
+generic PCI resource code did (the generic PCI code just tries to use 
+2*pci_cardbus_io_size and 2*pci_cardbus_mem_size for sizing, while the 
+Yenta code tries to aim for BRIDGE_IO/MEM_MAX but knows to try to make 
+them smaller if it cannot fit.
+
+So the resources can end up being laid out at different points as a 
+result, and again, that can lead to totally independent bugs showing up 
+(overlap with random unknown motherboard resources set up by firmware). 
+But more relevantly, it can simply just cause some timing differences.
+
+Anyway, I'm not at all sure that you and Rafael even necessarily see 
+exactly the same thing. It doesn't look like my debug patch (which tries 
+to emulate Rafael's patch in behavior, in addition to adding the debug 
+printouts) really even matters for you. Because you seemed to be 
+hibernating ok even without that "break alignment in PCI layer" thing.
+
+			Linus
