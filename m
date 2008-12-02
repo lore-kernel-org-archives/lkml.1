@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYLBQr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYLBQrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbYLBQr2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbYLBQrA
+	id S1755866AbYLBQrq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbYLBQrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:47:00 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:39427 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755285AbYLBQq7 (ORCPT
+	Tue, 2 Dec 2008 11:47:15 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:49631 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755529AbYLBQrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:46:59 -0500
-Date: Tue, 2 Dec 2008 22:16:50 +0530
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
-       drzeus-sdhci@drzeus.cx
-Subject: Re: [patch 1/8] SDHCI: Add timeout hooks
-Message-ID: <20081202164650.GA6414@debian>
-References: <20081202154018.906091477@fluff.org.uk> <20081202154112.009165156@fluff.org.uk>
+	Tue, 2 Dec 2008 11:47:13 -0500
+Date: Tue, 2 Dec 2008 11:47:09 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andres Freund <andres@anarazel.de>
+Cc: Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20081202164709.GC18162@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andres Freund <andres@anarazel.de>,
+	Andreas Dilger <adilger@sun.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+References: <200811291418.24672.andres@anarazel.de> <200812012116.08510.andres@anarazel.de> <20081202075712.GA16172@mit.edu> <200812021559.05103.andres@anarazel.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081202154112.009165156@fluff.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: smohideen@mx2.labs.rootshell.ws
+In-Reply-To: <200812021559.05103.andres@anarazel.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 03:40:19PM +0000, Ben Dooks wrote:
-> Some controllers do not provide clock information in their
-> capabilities (in the Samsung case, it is because there are
-> multiple clock sources available to the controller). Add hooks
-> to allow the system to supply clock information.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> 
-> Index: linux.git/drivers/mmc/host/sdhci.c
-> ===================================================================
-> --- linux.git.orig/drivers/mmc/host/sdhci.c	2008-12-01 19:11:54.000000000 +0000
-> +++ linux.git/drivers/mmc/host/sdhci.c	2008-12-01 19:24:14.000000000 +0000
-> @@ -1606,18 +1606,26 @@ int sdhci_add_host(struct sdhci_host *ho
->  
->  	host->max_clk =
->  		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
-> +	host->max_clk *= 1000000;
->  	if (host->max_clk == 0) {
-> -		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
-> -			"frequency.\n", mmc_hostname(mmc));
-> +		if (host->ops->get_max_clock)
-> +			host->max_clk = host->ops->get_max_clock(host);
-> +		else
-> +			printk(KERN_ERR
-> +			       "%s: Hardware doesn't specify base clock "
-> +			       "frequency.\n", mmc_hostname(mmc));
->  		return -ENODEV;
->  	}
-> -	host->max_clk *= 1000000;
->  
->  	host->timeout_clk =
->  		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
->  	if (host->timeout_clk == 0) {
-> -		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
-> -			"frequency.\n", mmc_hostname(mmc));
-> +		if (host->ops->get_timeout_clock)
-> +			host->timeout_clk = host->ops->get_timeout_clock(host);
-> +		else
-> +			printk(KERN_ERR
-> +			       "%s: Hardware doesn't specify timeout clock "
-> +			       "frequency.\n", mmc_hostname(mmc));
->  		return -ENODEV;
->  	}
->  	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
-> Index: linux.git/drivers/mmc/host/sdhci.h
-> ===================================================================
-> --- linux.git.orig/drivers/mmc/host/sdhci.h	2008-12-01 19:11:54.000000000 +0000
-> +++ linux.git/drivers/mmc/host/sdhci.h	2008-12-01 19:17:55.000000000 +0000
-> @@ -267,6 +267,8 @@ struct sdhci_host {
->  
->  struct sdhci_ops {
->  	int		(*enable_dma)(struct sdhci_host *host);
-> +	unsigned int	(*get_max_clock)(struct sdhci_host *host);
-> +	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
->  };
->  
+On Tue, Dec 02, 2008 at 03:58:53PM +0100, Andres Freund wrote:
+> Ok. The system now runs (without problems) with the patch enabled and I can 
+> get the debug output.
+> 30 Minutes after boot the system still returns to zero dirty blocks and the 
+> free blocks seem to stay in a sensible range.
+> I will let it run for a while and report back if either something interesting 
+> happens or the problem reappears and I am seeing no significant amount of dirty 
+> blocks.
 
-	Can we cache the multiple dereferences. Here host->ops can be
-	saved to a local, instead of multiple dereference several time.
+You say you are using Postgres, right?  Something you might try to see
+if it triggers the problem it is creating a new database and then
+restoring some database dump/backup into that new database.  Some
+databases expand into a new table space (or whatever terminology
+Postgres uses) by random writes into a sparse portion of the file.
+This could be triggering the problem, or at least trigger the problem
+more quickly.
 
-	
+The other thing I wanted to ask is whether "df" was showing the 37%
+in-use statistic at the time, or was that after you rebooted.  And
+although I hate to ask it, you're sure this isn't the standard "delete
+an in-use file but not get the space back" Unix trap, right?
+
+Thanks, regards,
+
+						- Ted
