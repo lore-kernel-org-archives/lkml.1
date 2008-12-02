@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYLBO7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYLBPDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbYLBO7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 09:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYLBO7K
+	id S1754955AbYLBPDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 10:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYLBPD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 09:59:10 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:58055 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754529AbYLBO7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 09:59:09 -0500
-From: Andres Freund <andres@anarazel.de>
-To: Theodore Tso <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>
-Subject: Re: EXT4 ENOSPC Bug
-Date: Tue, 2 Dec 2008 15:58:53 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.28-rc6-andres-00007-ged31348-dirty; KDE/4.1.80; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-References: <200811291418.24672.andres@anarazel.de> <200812012116.08510.andres@anarazel.de> <20081202075712.GA16172@mit.edu>
-In-Reply-To: <20081202075712.GA16172@mit.edu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1255987.1abemzJ8u6";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Tue, 2 Dec 2008 10:03:29 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60079 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754407AbYLBPD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 10:03:28 -0500
+Subject: Re: MAP_PRIVATE that stays private even on external write
+From: Peter Zijlstra <peterz@infradead.org>
+To: Miquel van Smoorenburg <miquels@cistron.nl>
+Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
+       hugh <hugh@veritas.com>, riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1228228452.24000.118.camel@n2o.xs4all.nl>
+References: <493508b5$0$200$e4fe514c@news.xs4all.nl>
+	 <1228213651.7133.12.camel@twins> <1228228452.24000.118.camel@n2o.xs4all.nl>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812021559.05103.andres@anarazel.de>
+Date: Tue, 02 Dec 2008 16:02:42 +0100
+Message-Id: <1228230162.2312.40.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1255987.1abemzJ8u6
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 2008-12-02 at 15:34 +0100, Miquel van Smoorenburg wrote:
+> On Tue, 2008-12-02 at 11:27 +0100, Peter Zijlstra wrote:
+> > On Tue, 2008-12-02 at 10:06 +0000, Miquel van Smoorenburg wrote:
+> > > What I am looking for is a MAP_PRIVATE type flag that, when another
+> > > process modifies pages of the file (through mmap() or write())
+> > > makes sure that my mapping never sees that.
+> > > 
+> > > There has been talk of a MAP_SNAPSHOT flag before, e.g.
+> > > http://lkml.indiana.edu/hypermail/linux/kernel/0407.1/0416.htm
+> > > 
+> > > Has anyone ever looked at implementing something like this ?
+> > 
+> > I suppose that needs a snapshot filesystem for backing, and we don't
+> > have such a creature (yet). I suppose BTRFS might be able to pull that
+> > off.
+> 
+> That is a different way of looking at it. Interesting.
+> 
+> It won't help me though, as the "file" I was talking about is in
+> fact /dev/sdb .
+> 
+> But the current MAP_PRIVATE doesn't need a versioning filesystem either.
+> It's just that if you write to the mapping, that never gets visible in
+> other mappings of the same file, nor in the file itself.
+> 
+> I'd like to see something like that, but the other way around. If the
+> file is modified through a different mapping or write(), modifications
+> show up in the file and other shared mappings but not in my private
+> mapping. A copy-on-write, but slightly different in what is copied.
+> 
+> Since MAP_PRIVATE|MAP_POPULATE appears to do this, I thought that
+> perhaps there is enough infrastructure to do something similar without
+> MAP_POPULATE, but I really don't know enough of mm/* .
 
-Hi Ted, Hi Andreas,
+Thing is, MAP_PRIVATE isolates others from your changes, not you from
+other changes.
 
-On Tuesday 02 December 2008 08:57:12 Theodore Tso wrote:
-> So.... could you apply this patch, attached below.  You can trigger it
-> using the attached program, debug-ioctl.  If the filesystem is
-> quiscent, and you've typed sync once or twice, you should get the
-> following in your printk logs:
-Ok. The system now runs (without problems) with the patch enabled and I can=
-=20
-get the debug output.
-30 Minutes after boot the system still returns to zero dirty blocks and the=
-=20
-free blocks seem to stay in a sensible range.
-I will let it run for a while and report back if either something interesti=
-ng=20
-happens or the problem reappears and I am seeing no significant amount of d=
-irty=20
-blocks.
+A valid implementation could map the original file RO and only COW a
+page on the first modification - and this is what I thought linux did.
+Which means your MAP_POPULATE would do a writable get_user_pages() on it
+(and I think that issue was once raised as a bug).
 
-Andres
+Now what you want is to basically snapshot a file. There is always space
+overhead from doing that, that is, new changes need to go somewhere (or
+conversely the old data needs to be kept around).
 
+I guess you could do that by force populating MAP_SNAPSHOT mappings of
+the same file on writeout to that file (when no such page already
+exists), but before doing the writeout. But that sounds a little icky,
+esp. as you force the space overhead (which is the full mmap in the
+worst case) into memory.
 
+Relying on filesystems to be able to keep the snapshot around, pushes
+that overhead into the filesystem (which is typically much larger than
+memory and thus the most suited place for this), which seems like a much
+better solution.
 
---nextPart1255987.1abemzJ8u6
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk1TS4ACgkQporPraT14ihobACfcJNYo+LhCCgD89/gehefDsN5
-InkAniaB8QjY/XoXcn0efhWOpVCeP1sG
-=7pCf
------END PGP SIGNATURE-----
-
---nextPart1255987.1abemzJ8u6--
+Anyway, I think both solution are feasible for implementation, the trick
+would be to convince 1) us that its a good idea and will not be yet
+another unused 'feature' with significant complexity and 2) someone to
+do it.
