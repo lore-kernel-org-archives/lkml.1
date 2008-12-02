@@ -1,156 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYLBSgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYLBSqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbYLBSgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 13:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYLBSgj
+	id S1755279AbYLBSqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 13:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYLBSqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 13:36:39 -0500
-Received: from mailout05.t-online.de ([194.25.134.82]:56011 "EHLO
-	mailout05.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752534AbYLBSgi (ORCPT
+	Tue, 2 Dec 2008 13:46:46 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:40418 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYLBSqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 13:36:38 -0500
-Message-ID: <49358017.7080009@t-online.de>
-Date: Tue, 02 Dec 2008 19:36:07 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Tue, 2 Dec 2008 13:46:44 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=tC5Y/N3jVv0L31ULzNvBDZbAM4jIUwNBp1sW8QNSVmO2iGlsphfpD3LOmRq/kbRMn
+	+p2NP1D8iENMNzc1Ns5Cw==
 MIME-Version: 1.0
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.27.7 built for Geode: Clock drift
-Content-Type: multipart/mixed;
- boundary="------------030900030605000200050105"
-X-ID: Tzg-a+ZbghjzL2ACVDRgrOKrNs05tIka+B0I4d0Pnjeic3BA7YuNCy9SiF9NEKQZKi
-X-TOI-MSGID: dfd373a5-2e19-4e4c-be60-9818ffa63742
+In-Reply-To: <1228223933.30995.28.camel@lts-notebook>
+References: <1228223933.30995.28.camel@lts-notebook>
+Date: Tue, 2 Dec 2008 10:46:41 -0800
+Message-ID: <604427e00812021046p3ebd6e24xf92e6ab29df35686@mail.gmail.com>
+Subject: Re: [BUG] mmotm-081130: null pointer deref in sigkill_pending()
+From: Ying Han <yinghan@google.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>, Hugh Dickins <hugh@veritas.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030900030605000200050105
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Tue, Dec 2, 2008 at 5:18 AM, Lee Schermerhorn
+<Lee.Schermerhorn@hp.com> wrote:
+> While testing mmotm [11/29, 11/30, likely in 12/01], I came across the
+> following bug after ~2 hours of heavy stress on x86_64 [same bug/trace
+> hit on ia64]:
+>
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
+> IP: [<ffffffff8024e679>] sigkill_pending+0x19/0x30
+> PGD 63be12067 PUD 7fd0cc067 PMD 0
+> Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+> last sysfs file: /sys/block/hda/removable
+> CPU 7
+> Modules linked in: sunrpc ipv6 dm_mirror dm_region_hash dm_log dm_mod rfkill input_polldev pci_slot parport_pc lp parport ide_cd_mod cdrom serio_raw hpilo hpwdt button amd_rng pata_acpi i2c_amd756 libata i2c_core pcspkr mptspi mptscsih sym53c8xx scsi_transport_spi sd_mod scsi_mod mptbase ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+> Pid: 19530, comm: ps Not tainted 2.6.28-rc6-mmotm-081130-2235 #10
+> RIP: 0010:[<ffffffff8024e679>]  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
+> RSP: 0018:ffff8806a64efd38  EFLAGS: 00010246
+> RAX: 0000000000000000 RBX: 000000000000000e RCX: ffff8805fc96fb00
+> RDX: ffff8806a64efe38 RSI: 00007fff62423000 RDI: ffff88020c87abe0
+> RBP: ffff8806a64efd38 R08: 0000000000000000 R09: ffff8806a64efe30
+> R10: 0000000000000002 R11: 0000000000000000 R12: ffff8805fc96fb00
+> R13: 0000000000000000 R14: 0000000000000010 R15: ffff8806a64efe30
+> FS:  00007f32d4ac46f0(0000) GS:ffff8807fed46d80(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000038 CR3: 0000000784571000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process ps (pid: 19530, threadinfo ffff8806a64ee000, task ffff88062cf6d7c0)
+> Stack:
+>  ffff8806a64efdb8 ffffffff80298986 0000000000000001 ffff88062cf6d7c0
+>  ffff8803ad100680 ffff88020c87abe0 0000000000000000 ffff8806a64efe38
+>  ffff8806a64efe30 00000001804f0765 00007fff624236be 0000000000000000
+> Call Trace:
+>  [<ffffffff80298986>] __get_user_pages+0x166/0x440
+>  [<ffffffff80298c92>] get_user_pages+0x32/0x40
+>  [<ffffffff80298dab>] access_process_vm+0x10b/0x1e0
+>  [<ffffffff8030bd60>] proc_pid_cmdline+0x90/0x120
+>  [<ffffffff802ae568>] ? alloc_pages_current+0xa8/0x100
+>  [<ffffffff8030de5b>] proc_info_read+0x9b/0xe0
+>  [<ffffffff802c0ba4>] vfs_read+0xc4/0x160
+>  [<ffffffff802c1000>] sys_read+0x50/0x90
+>  [<ffffffff8020c3fb>] system_call_fastpath+0x16/0x1b
+> Code: e8 08 83 e0 01 c3 66 0f 1f 44 00 00 66 0f 1f 44 00 00 f6 87 49 05 00 00 01 55 b8 01 00 00 00 48 89 e5 75 12 48 8b 87 10 05 00 00 <48> 8b 40 38 48 c1 e8 08 83 e0 01 c9 c3 66 2e 0f 1f 84 00 00 00
+> RIP  [<ffffffff8024e679>] sigkill_pending+0x19/0x30
+>  RSP <ffff8806a64efd38>
+> CR2: 0000000000000038
+> ---[ end trace 80efa2c8bcce4fdc ]---
+>
+> Ad hoc instrumentation showed that this is likely the result of the
+> "make-get_user_pages-interruptible" patch in mmotm.  The test workload
+> includes a number of tasks that repeatedly run a list of miscellaneous
+> programs, including ps(1).  Occasionally, ps will catch a task with a
+> NULL "tsk->signal" [exiting?], resulting in a null pointer deref in
+> sigkill_pending() called from __get_user_pages().
+>
+> Before the aforementioned patch, sigkill_pending() was only called from
+> ptrace_stop() for tsk == current.  The comment block on ptrace_stop()
+> says:  "This must be called with current->sighand->siglock held."  So,
+> it doesn't look safe to call sigkill_pending() from
+> __get_user_pages()--especially on a task != current--without similar
+> locking.
 
-Hi folks,
+>
+> I'm not sure what the correct fix should be here.
+I made a fix for the patch as Oleg suggested which replace the
+sigkill_pending() as fatal_signal_pending().
+Andrew deleted the original patch from mm tree this morning and i am
+about the post the new patch with
+the fix.
+>
+> Related:  the patch and it's update add the following to
+> __get_user_pages():
+>
+>        if (unlikely(sigkill_pending(current) ||
+>             sigkill_pending(tsk)))
+>                return i ? i : -ERESTARTSYS;
+>
+> As a minimum, I don't think we want to call the second sigkill_pending()
+> unless tsk != current.
+In most cases, (current == tsk) in get_user_pages. However in some
+situation current is calling get_user_pages on behalf of tsk and we
+want to interrupt the allocation in this case as well.
+I might change it something like this:
 
-If I build a kernel for AMD Geode, then I see a clock drift of appr.
-30 min. to 1 hour per day. If I build the same kernel for i486, then
-the clock drift is gone. Running ntp makes no difference.
+>        if (unlikely(sigkill_pending(current) ||
+>             ((current != tsk) && sigkill_pending(tsk))))
+>                return i ? i : -ERESTARTSYS;
+>
 
-Hardware is a Linutop PC. /proc/cpuinfo says
-
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 5
-model           : 10
-model name      : Geode(TM) Integrated Processor by AMD PCS
-stepping        : 2
-cpu MHz         : 0.000
-cache size      : 128 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu de pse tsc msr cx8 sep pge cmov clflush mmx mmxext 3dnowext 3dnow
-bogomips        : 429.05
-clflush size    : 32
-power management:
-
-BTW, the CPU is running with 500 MHz (AFAIK). 0.000 MHz is surely not
-correct. /proc/cpuinfo reports the same for both kernels.
-
-Attached is the diff of the config files. Please mail if you are
-interested in the complete config files, or if I can help to track
-this down.
-
-
-Regards
-
-Harri
-
---------------030900030605000200050105
-Content-Type: text/x-diff;
- name="config.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="config.diff"
-
---- config-2.6.27.7-486	2008-12-02 03:36:11.000000000 +0100
-+++ config-2.6.27.7-geode	2008-11-23 10:46:54.000000000 +0100
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.27.7
--# Mon Dec  1 22:42:26 2008
-+# Sun Nov 23 05:01:04 2008
- #
- # CONFIG_64BIT is not set
- CONFIG_X86_32=y
-@@ -56,7 +56,7 @@
- CONFIG_EXPERIMENTAL=y
- CONFIG_BROKEN_ON_SMP=y
- CONFIG_INIT_ENV_ARG_LIMIT=32
--CONFIG_LOCALVERSION="-486"
-+CONFIG_LOCALVERSION="-geode"
- # CONFIG_LOCALVERSION_AUTO is not set
- CONFIG_SWAP=y
- CONFIG_SYSVIPC=y
-@@ -197,7 +197,7 @@
- # CONFIG_PARAVIRT_DEBUG is not set
- # CONFIG_MEMTEST is not set
- # CONFIG_M386 is not set
--CONFIG_M486=y
-+# CONFIG_M486 is not set
- # CONFIG_M586 is not set
- # CONFIG_M586TSC is not set
- # CONFIG_M586MMX is not set
-@@ -215,7 +215,7 @@
- # CONFIG_MWINCHIP2 is not set
- # CONFIG_MWINCHIP3D is not set
- # CONFIG_MGEODEGX1 is not set
--# CONFIG_MGEODE_LX is not set
-+CONFIG_MGEODE_LX=y
- # CONFIG_MCYRIXIII is not set
- # CONFIG_MVIAC3_2 is not set
- # CONFIG_MVIAC7 is not set
-@@ -227,15 +227,16 @@
- CONFIG_X86_CMPXCHG=y
- CONFIG_X86_L1_CACHE_SHIFT=7
- CONFIG_X86_XADD=y
--# CONFIG_X86_PPRO_FENCE is not set
--CONFIG_X86_F00F_BUG=y
- CONFIG_X86_WP_WORKS_OK=y
- CONFIG_X86_INVLPG=y
- CONFIG_X86_BSWAP=y
- CONFIG_X86_POPAD_OK=y
--CONFIG_X86_ALIGNMENT_16=y
- CONFIG_X86_INTEL_USERCOPY=y
-+CONFIG_X86_USE_PPRO_CHECKSUM=y
-+CONFIG_X86_USE_3DNOW=y
-+CONFIG_X86_TSC=y
- CONFIG_X86_MINIMUM_CPU_FAMILY=4
-+CONFIG_X86_DEBUGCTLMSR=y
- CONFIG_HPET_TIMER=y
- CONFIG_HPET_EMULATE_RTC=y
- CONFIG_DMI=y
-@@ -423,6 +424,7 @@
- # CONFIG_MCA_PROC_FS is not set
- CONFIG_SCx200=m
- CONFIG_SCx200HR_TIMER=m
-+CONFIG_GEODE_MFGPT_TIMER=y
- # CONFIG_OLPC is not set
- CONFIG_K8_NB=y
- # CONFIG_PCCARD is not set
-@@ -1919,6 +1921,7 @@
- CONFIG_ADVANTECH_WDT=m
- CONFIG_ALIM1535_WDT=m
- CONFIG_ALIM7101_WDT=m
-+CONFIG_GEODE_WDT=m
- CONFIG_SC520_WDT=m
- CONFIG_EUROTECH_WDT=m
- CONFIG_IB700_WDT=m
-
---------------030900030605000200050105--
+> Lee
+>
+>
+>
