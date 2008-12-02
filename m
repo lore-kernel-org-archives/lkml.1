@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbYLBVYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYLBVY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753129AbYLBVYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYLBVYb
+	id S1753833AbYLBVY5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYLBVYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:24:31 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35011 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbYLBVYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:24:30 -0500
-Date: Tue, 2 Dec 2008 13:24:11 -0800
-From: Chris Wright <chrisw@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Chris Wright <chrisw@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
-       avi@redhat.com, dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
-       cl@linux-foundation.org, corbet@lwn.net
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver.
-Message-ID: <20081202212411.GG17607@acer.localdomain>
-References: <1226888432-3662-1-git-send-email-ieidus@redhat.com> <1226888432-3662-2-git-send-email-ieidus@redhat.com> <1226888432-3662-3-git-send-email-ieidus@redhat.com> <1226888432-3662-4-git-send-email-ieidus@redhat.com> <20081128165806.172d1026@lxorguk.ukuu.org.uk> <20081202180724.GC17607@acer.localdomain> <20081202181333.38c7b421@lxorguk.ukuu.org.uk>
+	Tue, 2 Dec 2008 16:24:44 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:14519 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753342AbYLBVYn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 16:24:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SaMtRF7I1e3ExSfjgcj/Y6weDp+v0m3b78SAK45edVK4tjIzf7Qbmt6bzayMrY8na/
+         zfdmEA4tuLPW4ezWTl92EQ4ffhndGvNC9LIxznpE4GDSUTdJIZxOyFwsnwvSaXBzyN0e
+         bVXoVoMCNj2ldNxHgXbTOTka968t2sD4Xs9cI=
+Message-ID: <c62985530812021324m45a26782kd52beca1b6437747@mail.gmail.com>
+Date: Tue, 2 Dec 2008 22:24:42 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 4/5] ftrace: clean up function graph asm
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Steven Rostedt" <srostedt@redhat.com>
+In-Reply-To: <20081202203425.258501817@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081202181333.38c7b421@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081202203404.496794864@goodmis.org>
+	 <20081202203425.258501817@goodmis.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> On Tue, 2 Dec 2008 10:07:24 -0800
-> Chris Wright <chrisw@redhat.com> wrote:
-> > * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > > > +	r = !memcmp(old_digest, sha1_item->sha1val, SHA1_DIGEST_SIZE);
-> > > > +	mutex_unlock(&sha1_lock);
-> > > > +	if (r) {
-> > > > +		char *old_addr, *new_addr;
-> > > > +		old_addr = kmap_atomic(oldpage, KM_USER0);
-> > > > +		new_addr = kmap_atomic(newpage, KM_USER1);
-> > > > +		r = !memcmp(old_addr+PAGEHASH_LEN, new_addr+PAGEHASH_LEN,
-> > > > +			    PAGE_SIZE-PAGEHASH_LEN);
-> > > 
-> > > NAK - this isn't guaranteed to be robust so you could end up merging
-> > > different pages one provided by a malicious attacker.
-> > 
-> > I presume you're referring to the digest comparison.  While there's
-> > theoretical concern of hash collision, it's mitigated by hmac(sha1)
-> > so the attacker can't brute force for known collisions.
-> 
-> Using current known techniques. A random collision is just as bad news.
+2008/12/2 Steven Rostedt <rostedt@goodmis.org>:
+> From: Steven Rostedt <srostedt@redhat.com>
+>
+> Impact: clean up
+>
+> There exists macros for x86 asm to handle x86_64 and i386.
+> This patch updates function graph asm to use them.
+>
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  arch/x86/kernel/ftrace.c |   20 ++++----------------
+>  1 files changed, 4 insertions(+), 16 deletions(-)
+>
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 5883247..1a5b8f8 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -467,28 +467,16 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+>         * ignore such a protection.
+>         */
+>        asm volatile(
+> -#ifdef CONFIG_X86_64
+> -               "1: movq (%[parent_old]), %[old]\n"
+> -               "2: movq %[return_hooker], (%[parent_replaced])\n"
+> -#else
+> -               "1: movl (%[parent_old]), %[old]\n"
+> -               "2: movl %[return_hooker], (%[parent_replaced])\n"
+> -#endif
+> +               "1: " _ASM_MOV " (%[parent_old]), %[old]\n"
+> +               "2: " _ASM_MOV " %[return_hooker], (%[parent_replaced])\n"
+>                "   movl $0, %[faulted]\n"
+>
+>                ".section .fixup, \"ax\"\n"
+>                "3: movl $1, %[faulted]\n"
+>                ".previous\n"
+>
+> -               ".section __ex_table, \"a\"\n"
+> -#ifdef CONFIG_X86_64
+> -               "   .quad 1b, 3b\n"
+> -               "   .quad 2b, 3b\n"
+> -#else
+> -               "   .long 1b, 3b\n"
+> -               "   .long 2b, 3b\n"
+> -#endif
+> -               ".previous\n"
+> +               _ASM_EXTABLE(1b, 3b)
+> +               _ASM_EXTABLE(2b, 3b)
+>
+>                : [parent_replaced] "=r" (parent), [old] "=r" (old),
+>                  [faulted] "=r" (faulted)
+> --
 
-And, just to clarify, your concern would extend to any digest based
-comparison?  Or are you specifically concerned about sha1?
+Thanks Steven. I wasn't aware of _ASM_MOV.
