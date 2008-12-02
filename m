@@ -1,91 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYLBRrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYLBRrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYLBRrK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 12:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbYLBRqz
+	id S1756034AbYLBRrv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 12:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbYLBRrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 12:46:55 -0500
-Received: from cpsmtpo-eml06.KPNXCHANGE.COM ([213.75.38.155]:47647 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754591AbYLBRqz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 12:46:55 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Tue, 2 Dec 2008 18:46:48 +0100
-User-Agent: KMail/1.9.9
-Cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
-References: <200812020320.31876.rjw@sisk.pl> <200812020629.26714.elendil@planet.nl> <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org>
+	Tue, 2 Dec 2008 12:47:41 -0500
+Received: from mail.anarazel.de ([217.115.131.40]:44666 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754727AbYLBRrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 12:47:40 -0500
+From: Andres Freund <andres@anarazel.de>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: EXT4 ENOSPC Bug
+Date: Tue, 2 Dec 2008 18:47:24 +0100
+User-Agent: KMail/1.10.90 (Linux/2.6.28-rc6-andres-00007-ged31348-dirty; KDE/4.1.80; x86_64; ; )
+Cc: Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+References: <200811291418.24672.andres@anarazel.de> <200812021559.05103.andres@anarazel.de> <20081202164709.GC18162@mit.edu>
+In-Reply-To: <20081202164709.GC18162@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed;
+  boundary="nextPart1405010.FDNW2tE0uM";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812021846.51479.elendil@planet.nl>
-X-OriginalArrivalTime: 02 Dec 2008 17:46:51.0813 (UTC) FILETIME=[F5464550:01C954A5]
+Message-Id: <200812021847.35771.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 December 2008, Linus Torvalds wrote:
-> So, it looks like you have MSI enabled in -rc6, and not in -rc3. And
-> yes, for some reason -rc3 will create the prefetchable memory range
-> windows, but -rc6 won't.
+--nextPart1405010.FDNW2tE0uM
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I have no changes in my config that would explain that (checked the diff). 
-The only changes are simple 'make oldconfig' updates.
+Hi,
 
-> I have to admit that I'm not seeing _why_ to that latter one. I don't
-> think we've done any resource allocation changes since -rc3 (the "clean
-> up late e820 resource allocation" thing happened just _before_ -rc3),
-> so I'm really not seeing why -rc3 would act differently from -rc6..
+On Tuesday 02 December 2008 17:47:09 Theodore Tso wrote:
+> You say you are using Postgres, right?  Something you might try to see
+> if it triggers the problem it is creating a new database and then
+> restoring some database dump/backup into that new database.  Some
+> databases expand into a new table space (or whatever terminology
+> Postgres uses) by random writes into a sparse portion of the file.
+> This could be triggering the problem, or at least trigger the problem
+> more quickly.
+I tried that - I have seen no problems so far. But it is not the first time=
+ I=20
+did not see the problem for some time.
 
-I could reinstall some intermediate versions and check when that change 
-got introduced if that would help, or revert to the kernel I was using 
-before I did the pull today and applied the debug patch (which was plain 
-rc6 + a few selected bug fix patches that had not yet been merged).
+Btw, postgres just creates the database by copying over a default database.
 
-> > At the bottom there's a fairly long addition from the few
-> > suspend/resume cycles I did (again, running with the debug patch).
->
-> Sure. Quite frankly, from these messages, I'm not seeing anything
-> really even remotely wrong. And apparently it does actually work for
-> you.
+=46or an easy test with sparse files, I created a big one, set it up as a l=
+oop=20
+device, created a filesystem and ran some stuff in it.
+No Problem so far.
 
-Right. All these resumes were perfect.
+> The other thing I wanted to ask is whether "df" was showing the 37%
+> in-use statistic at the time, or was that after you rebooted.=20
+It definitely was before a reboot. And there were plenty of both, inodes an=
+d=20
+blocks.
 
-> It would perhaps be more interesting to see if there is some dmesg
-> difference in a boot that then ends up _not_ able to resume from
-> hibernation? But apparently that hasn't happened to you lately?
+I think that I have seen the problem on metadata only changes (find /tmp -t=
+ype=20
+f|xargs touch) as well, but sometimes metadata changes were possible while =
+file=20
+creation was not.
 
-It did happen once a few days ago, but with the workarounds I had resume 
-failures were extremely rare. I'll see if I can work out which boot it 
-was, but that could well be very tricky as a failed resume leaves no 
-trace.
+Another Datapoint: File deletion sometimes made it possible to create more=
+=20
+files, but by far not as much as the space freed.
 
-The way I "see" the failure is that the wireless led does not come on
+> And although I hate to ask it, you're sure this isn't the standard "delete
+> an in-use file but not get the space back" Unix trap, right?
+There were over 200GB free, so I doubt that. I don't know what could have=20
+caused an allocation of so much space unnoticed in an idle system multiple=
+=20
+times.
+But I do understand the reason for the question ;-)
 
-> I don't like not knowing why you have prefetchable windows in one, and
-> not in the other, but it is indeed a transparent bridge and so that
-> difference really shouldn't even matter.
 
-/me always likes the use of "should" in such situations ;-)
+Andres
 
-> Do you perhaps dual-boot that laptop? What can sometimes happen is that
-> PCI resources do not get totally reset over a warm-boot.
+--nextPart1405010.FDNW2tE0uM
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-No. I only run Debian testing on that machine. As Debian Lenny is getting 
-close to release there are very few changes in userland ATM. For kernels 
-I essentially follow git starting with -rc2/3 or so of each new minor.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> We've (very occasionally) had situations where PCI resource bugs only
-> happen when you warm-boot from another OS (generally Windows), or when
-> you warm-boot from an earlier version of Linux. Exactly because some
-> firmware didn't fully re-initialize the state of the PCI bus, and
-> because Linux will try to honor everything that the firmware set up..
+iEYEABECAAYFAkk1dK4ACgkQporPraT14ihacQCdHkIhXaNgYpTgrQ5Fk22PbXGu
+i2UAniRSW0lFNCVxCmwEUs1CqO4C6349
+=Nt6t
+-----END PGP SIGNATURE-----
 
-Given the above that does not seem relevant.
+--nextPart1405010.FDNW2tE0uM--
