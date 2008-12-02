@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYLBOM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYLBOej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbYLBOM5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 09:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbYLBOMq
+	id S1754682AbYLBOej (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 09:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYLBOe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 09:12:46 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53380 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbYLBOMo (ORCPT
+	Tue, 2 Dec 2008 09:34:29 -0500
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:1830 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbYLBOe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 09:12:44 -0500
-Date: Tue, 2 Dec 2008 14:12:05 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Russ Anderson <rja@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Jones <davej@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/8] badpage: simplify page_alloc flag check+clear
-In-Reply-To: <Pine.LNX.4.64.0812020710371.9474@quilx.com>
-Message-ID: <Pine.LNX.4.64.0812021357390.28623@blonde.anvils>
-References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
- <Pine.LNX.4.64.0812010038220.11401@blonde.site> <Pine.LNX.4.64.0812010843230.15331@quilx.com>
- <Pine.LNX.4.64.0812012349330.18893@blonde.anvils> <Pine.LNX.4.64.0812012014150.30344@quilx.com>
- <Pine.LNX.4.64.0812020947440.5306@blonde.anvils> <Pine.LNX.4.64.0812020710371.9474@quilx.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Dec 2008 09:34:28 -0500
+Subject: Re: MAP_PRIVATE that stays private even on external write
+From: Miquel van Smoorenburg <miquels@cistron.nl>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>
+In-Reply-To: <1228213651.7133.12.camel@twins>
+References: <493508b5$0$200$e4fe514c@news.xs4all.nl>
+	 <1228213651.7133.12.camel@twins>
+Content-Type: text/plain
+Date: Tue, 02 Dec 2008 15:34:12 +0100
+Message-Id: <1228228452.24000.118.camel@n2o.xs4all.nl>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008, Christoph Lameter wrote:
-> On Tue, 2 Dec 2008, Hugh Dickins wrote:
+On Tue, 2008-12-02 at 11:27 +0100, Peter Zijlstra wrote:
+> On Tue, 2008-12-02 at 10:06 +0000, Miquel van Smoorenburg wrote:
+> > What I am looking for is a MAP_PRIVATE type flag that, when another
+> > process modifies pages of the file (through mmap() or write())
+> > makes sure that my mapping never sees that.
+> > 
+> > There has been talk of a MAP_SNAPSHOT flag before, e.g.
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0407.1/0416.htm
+> > 
+> > Has anyone ever looked at implementing something like this ?
 > 
-> > > But they are always clear on free. The checking is irrelevant.
-> >
-> > How about CHECK_PAGE_FLAGS_CLEAR_AT_FREE?
-> 
-> Strange name.
+> I suppose that needs a snapshot filesystem for backing, and we don't
+> have such a creature (yet). I suppose BTRFS might be able to pull that
+> off.
 
-Looks like I'm not going to be able to satisfy you then.  I didn't
-introduce the names in the patch, so let's leave them as is for now,
-and everybody can muse on what they should get called in the end.
+That is a different way of looking at it. Interesting.
 
-> > > If (page->flags & (all the flags including dirty and SwapBacked))
-> > > 	zap-em.
-> >
-> > That's exactly what I did, isn't it?
-> 
-> Yes but you added another instance of this.
+It won't help me though, as the "file" I was talking about is in
+fact /dev/sdb .
 
-Did I?  Whereabouts?  I wonder if you're thinking of the
-+	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-in prep_new_page(), which replaces the clearing of another
-collection of flags which somehow didn't get named before.
+But the current MAP_PRIVATE doesn't need a versioning filesystem either.
+It's just that if you write to the mapping, that never gets visible in
+other mappings of the same file, nor in the file itself.
 
-That clearing is a temporary measure, to keep the handling
-of PageReserved unchanged in that patch; then it vanishes in the
-next patch, where we treat all bad_page candidates the same way.
+I'd like to see something like that, but the other way around. If the
+file is modified through a different mapping or write(), modifications
+show up in the file and other shared mappings but not in my private
+mapping. A copy-on-write, but slightly different in what is copied.
 
-> Can you consolidate all the check and clears into one?
+Since MAP_PRIVATE|MAP_POPULATE appears to do this, I thought that
+perhaps there is enough infrastructure to do something similar without
+MAP_POPULATE, but I really don't know enough of mm/* .
 
-You mean one test_and_clear_bits() that somehow covers the different
-cases of what we expect at free time and what we need at alloc time?
-I don't think so.
+Mike.
 
-Hugh
