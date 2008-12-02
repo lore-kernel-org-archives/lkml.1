@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYLBAP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYLBATV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbYLBAP7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 19:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYLBAPv
+	id S1753993AbYLBATV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 19:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYLBAS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 19:15:51 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:29596 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529AbYLBAPu (ORCPT
+	Mon, 1 Dec 2008 19:18:59 -0500
+Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:55518 "EHLO
+	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751079AbYLBAS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 19:15:50 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=Gpy/6jXur0UJk2QbdYLTN/CVlUq9wNzoo+DSwJw1GFD3fd5i7CQqXx3b1/fCKM/bn
-	Ym2R2pK9+sRDwv1o8J50Q==
-MIME-Version: 1.0
-In-Reply-To: <492FB3FB.6060806@cn.fujitsu.com>
-References: <492F9D4C.2020204@cn.fujitsu.com> <492FB3FB.6060806@cn.fujitsu.com>
-Date: Mon, 1 Dec 2008 16:15:47 -0800
-Message-ID: <6599ad830812011615qe28ac37q7af73920e0f9a429@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cgroups: cleanup for dummy root
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Dec 2008 19:18:58 -0500
+Subject: Re: [PATCH] lro: IP fragment checking
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Andrew Gallatin <gallatin@myri.com>
+Cc: David Miller <davem@davemloft.net>, ossthema@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tklein@de.ibm.com,
+       raisch@de.ibm.com, jb.billaud@gmail.com, hering2@de.ibm.com
+In-Reply-To: <49347B0B.8030705@myri.com>
+References: <4933A74F.3050809@de.ibm.com>	<493423D7.5030203@myri.com>
+	 <20081201.131810.158631503.davem@davemloft.net> <49345CCA.1030209@myri.com>
+	 <1228169379.3073.13.camel@achroite> <49347B0B.8030705@myri.com>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Tue, 02 Dec 2008 00:18:49 +0000
+Message-Id: <1228177130.3073.23.camel@achroite>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Originating-Smarthost03-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 28, 2008 at 1:03 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->
-> Hmmm...Sorry, this patch is wrong, when a subsystem is inactive thus in
-> rootnode, it may still iterate tasks in dummy top cgroup, though currently
-> no subsystem does so.
+On Mon, 2008-12-01 at 19:02 -0500, Andrew Gallatin wrote:
+> Ben Hutchings wrote:
+> > On Mon, 2008-12-01 at 16:53 -0500, Andrew Gallatin wrote:
+> >> David Miller wrote:
+> >>> From: Andrew Gallatin <gallatin@myri.com>
+> >>> Date: Mon, 01 Dec 2008 12:50:15 -0500
+> >>>
+> >>>> As to whether or not to do it in the drivers/hardware or in the
+> >>>> LRO code, I favor doing it in the LRO code just so that it is not
+> >>>> missed in some driver.
+> >>> Then there is no point in the hardware doing the check, if
+> >>> we're going to check it anyways.
+> >>>
+> >>> That's part of my point about why this check doesn't belong
+> >>> here.
+> >> What hardware does an explicit check for fragmentation?
+> > 
+> > Any that implements TCP/UDP checksumming properly.
+> 
+> How many do?
 
-Right - iterating across the tasks in a cgroup for an unmounted
-subsystem is a completely valid thing to do. I suppose it might make
-sense to optimize that to just scan the tasklist and thread lists in
-that case, to avoid the overhead of maintaining the cg links for the
-unmounted subsystems, but you'd have to change the cgroup iterator
-first, before you stop maintaining the links. Given that I suspect the
-main overhead of maintaining the links is taking css_set_lock, I'm not
-sure how much it hurts to be keeping the links for the inactive
-hierarchies too and keeping the code simpler.
+Good question. ;-)
 
-Paul
+> >> In most cases, aren't we just relying on the hardware checksum
+> >> to be wrong on fragmented packets? That works 99.999% of the time,
+> >> but the TCP checksum is pretty weak, and it is possible to
+> >> have a fragmented packet where the first fragment has the same
+> >> checksum as the entire packet.
+> > [...]
+> > 
+> > If your hardware/firmware wrongly claims to be able to verify the
+> > TCP/UDP checksum for an IP fragment, it seems to me you should deal with
+> > that in your driver or fix the firmware.
+> 
+> We do partial checksums.
+
+So you should check for IP fragmentation in your get_frag_header() along
+with all the other checks you've got to do.
+
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
+
