@@ -1,107 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYLBX0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYLBX3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbYLBX0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYLBX0n
+	id S1754851AbYLBX3M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:29:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYLBX2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:26:43 -0500
-Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:54769 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYLBX0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:26:43 -0500
-X-Greylist: delayed 1489 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 18:26:42 EST
-Date: Wed, 3 Dec 2008 00:01:52 +0100 (CET)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Pavel Machek <pavel@suse.cz>
-cc: clock@atrey.karlin.mff.cuni.cz, kernel list <linux-kernel@vger.kernel.org>,
-       aviro@redhat.com
-Subject: Re: writing file to disk: not as easy as it looks
-In-Reply-To: <20081202094059.GA2585@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0812022330160.18533@artax.karlin.mff.cuni.cz>
-References: <20081202094059.GA2585@elf.ucw.cz>
-X-Personality-Disorder: Schizoid
+	Tue, 2 Dec 2008 18:28:54 -0500
+Received: from mail.samba.org ([66.70.73.150]:34265 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbYLBX2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:28:53 -0500
+X-Greylist: delayed 1314 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 18:28:53 EST
+Date: Tue, 2 Dec 2008 15:07:03 -0800
+From: Jeremy Allison <jra@samba.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Steve French <smfrench@gmail.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>
+Subject: Re: Support for applications which need NFS or CIFS "share_deny"
+	flags on open
+Message-ID: <20081202230703.GB11904@jeremy-desktop>
+Reply-To: Jeremy Allison <jra@samba.org>
+References: <524f69650812020831q4e089b87k9a8306ac37f4234a@mail.gmail.com> <20081202193819.GJ3186@webber.adilger.int>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202193819.GJ3186@webber.adilger.int>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008, Pavel Machek wrote:
+On Tue, Dec 02, 2008 at 12:38:20PM -0700, Andreas Dilger wrote:
+> On Dec 02, 2008  10:31 -0600, Steve French wrote:
+> > Some of the Wine community posted last month to the cifs mailing list
+> > asking about a change needed for Wine for working properly over
+> > network mounts, but the change is not really cifs specific and would
+> > help other file systems as well so I wanted to mention it here.   The
+> > original post was:
+> > http://marc.info/?l=linux-cifs-client&m=122505569315992&w=2
+> > 
+> > Support for the flags they suggest would be easy for cifs (the
+> > protocol has a field for this, and cifs clients on various other OS
+> > set it), and should be fairly easy for NFSv4 (the RFC for NFSv4
+> > specifies the "share_deny" field within the NFS open request, and
+> > various clients, but not Linux, set it), and would allow WINE to
+> > function properly over a network mount.
+> > 
+> > >we proffer to add into the file /usr/include/asm-generic/fcntl.h
+> > > following flags:
+> > >
+> > >#define O_DENYREAD      004000000 /* Do not permit read access */
+> > >#define O_DENYWRITE     010000000 /* Do not permit write access */
+> > >#define O_DENYDELETE  020000000 /* Do not permit delete or rename
+> > > operations*/
+> > 
+> > Presumably for applications on local mounts, wine mediates their own
+> > mandatory locks, but this is impossible on network mounts without this
+> > change (and can lead to data corruption).
+> 
+> This is a disaster waiting to happen, and I would be against adding
+> such functionality to Linux.  It would allow userspace applications
+> to implement a denial of service to any file that they can open (e.g.
+> open("/lib/libc-2.7.so", O_DENYREAD) would be really bad :-).
 
-> Actually, it looks like POSIX file interface is on the lowest step of
-> Rusty's scale: one that is impossible to use correctly. Yes, it seems
-> impossible to reliably&safely write file to disk under Linux. Double
-> plus uncool.
-> 
-> So... how to write file to disk and wait for it to reach the stable
-> storage, with proper error handling?
-> 
-> > file
-> 
-> 	...does not work, because it fails to check for errors.
-> 
-> touch file || error_handling.
-> 
-> 	Is not a lot better, unless you mount your filesystems "sync"
-> 	... and noone does that.
-> 
-> dd conv=fsync if=something of=file 2> /dev/zero || error_handling
-> 
-> 	Is a bit better; not much, unless you mount your filesystems
-> 	"dirsync", because you have file data on disk, but they do not have
-> 	directory entry pointing to them. Noone uses dirsync.
-> 
-> 	So you need something like
-> 
-> dd conv=fsync if=something of=file 2> /dev/zero || error_handling
-> fsync . || error_handling
-> fsync .. || error_handling
-> fsync ../.. || error_handling
-> fsync ../../.. || error_handling
-> 
-> 	... which mostly works...
-> 
-> 	If you are alone on the filesystem... fsync only returns
-> 	errors to the first process. So if you have other process that
-> 	does fsync ., maybe it gets "your" error and you do not learn
-> 	of the problem.
-> 
-> Question is... Is there way that I missed and that actually works?
-> 									Pavel	
+Indeed. If these flags are added it should only be for network
+filesystem access, it would be a real mess for local access.
 
-Hi!
+I guess it makes sense for them to be the inverse of the Windows
+CreateFile call FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE
+as by default Linux clients would use all these bits for a normal
+open.
 
-I think you are right about this. There's no way how to fsync directory 
-reliably.
-
-
-My idea is that when the filesystem hits metadata write error, it should 
-stop commiting any transactions and return error to all writes.
-
-Write errors don't happen because of physical errors on media --- all 
-current disks have sector realocation. Write errors can happen because of 
-bad cabling, voltage drops, firmware bugs, corruption of PCI bus by rogue 
-card, etc. Most of these cases are fixable by the administrator.
-
-If you continue operating the filesystem after a write error (it doesn't 
-matter if you report the error to userspace or not), you are risking 
-filesystem damage (for example, cross linked files if there was error 
-writing the bitmap) or security breach (users reading blocks containing 
-deleted data of other users). If you freeze the filesystem on write error 
-and do not allow further writes, the administrator can fix the underlying 
-problem and the computer will run without any data damage and security 
-problems.
-
-
-It happened to me just yesterday, my disk was spinning down & up 
-repeatedly and returning errors because of insufficient power. My kernel 
-kicked spadfs filesystem off on the first write error and didn't allow any 
-further commits. I fixed the problem by adding the second power supply and 
-connecting some disks to it --- and now, after the incident, there are 
-zero corruptions. Just imagine what massacre would happen on the 
-filesystem if the kernel didn't kick it off and if it were operting under 
-the condition "some writes get through - some not" unattended for some 
-time.
-
-Mikulas
+Jeremy.
