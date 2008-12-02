@@ -1,87 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYLBV0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbYLBV2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbYLBV0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYLBV0a
+	id S1753445AbYLBV2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYLBV2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:26:30 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:45892 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbYLBV02 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:26:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=uM7gqWNLdF/DFVbPuPAjnxnb4S+jxOd155CRxthv+TxsgXOvl8/yz2FVWziM4tH2PQ
-         YwHwxLul4dxHQVJgkK1LtJGBIBdU4hjUeQqPyHJ+3gQjpWbeqw9Gpgi8lRYigWrhAx7e
-         ofzdP9yDgF4a9SKBQCKeBqZUlj0O6BX2w4Fjk=
-Message-ID: <524f69650812021326w26ccceb3qb8d93283aca84558@mail.gmail.com>
-Date: Tue, 2 Dec 2008 15:26:26 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "jim owens" <jowens@hp.com>
-Subject: Re: Support for applications which need NFS or CIFS "share_deny" flags on open
-Cc: "Jamie Lokier" <jamie@shareable.org>, "Andreas Dilger" <adilger@sun.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>
-In-Reply-To: <4935A692.3050300@hp.com>
+	Tue, 2 Dec 2008 16:28:43 -0500
+Received: from mail.gmx.net ([213.165.64.20]:58426 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751064AbYLBV2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 16:28:42 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18kK1wtnbYkG/gC+gxbaBGBBb6HmqU5gBtLVw7f+m
+	/w7iTu0lhIdvEX
+Date: Tue, 2 Dec 2008 22:28:37 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and
+ private channels
+In-Reply-To: <1228245007.8408.20.camel@dwillia2-linux.ch.intel.com>
+Message-ID: <Pine.LNX.4.64.0812022221180.7954@axis700.grange>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com> 
+ <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com> 
+ <Pine.LNX.4.64.0812021642120.5663@axis700.grange> 
+ <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com> 
+ <Pine.LNX.4.64.0812021820560.5663@axis700.grange>
+ <1228245007.8408.20.camel@dwillia2-linux.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <524f69650812020831q4e089b87k9a8306ac37f4234a@mail.gmail.com>
-	 <20081202193819.GJ3186@webber.adilger.int>
-	 <20081202200621.GA4451@shareable.org>
-	 <524f69650812021220n2b7611b9x2eb3b0b6c7ece849@mail.gmail.com>
-	 <4935A692.3050300@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 2, 2008 at 3:20 PM, jim owens <jowens@hp.com> wrote:
-> Steve French wrote:
->>
->> On Tue, Dec 2, 2008 at 2:06 PM, Jamie Lokier <jamie@shareable.org> wrote:
->>>
->>> The bit I find interesting is that other CIFS clients are said to
->>> implement these flags.  If that means real unixes, maybe they've
->>> worked out a sensible way to handle them?
->>
->> I thought that MacOS uses these flags (not just Windows, and of course
->> older clients too OS/2, DOS etc.).
->
-> The title of their proposal was "client"... as in not the local
-> filesystem, but the impression of what wine really wanted is
-> for local linux filesystems to implement these non-posix behaviors
-> so "wine apps can run just like on windows" on the local machine.
->
-> Thus the strong objection from everyone doing local filesystems.
->
-> Passing exclusive DENYREAD DENYWRITE DENYDELETE network
-> protocol flags from a linux client to a remote server
-> is an entirely different and IMO acceptible thing.
->
-> And AFAIK on unix the only local support would be by doing
-> a client-on-server loopback, where the server implements
-> these modes as best it can and you are only protected
-> against wine apps that are also inside the "share drive".
+On Tue, 2 Dec 2008, Dan Williams wrote:
 
-Yes, I think that this is more important for network file systems not
-local file systems (especially since NFSv4 and CIFS and SMB2 all
-support these flags in the protocol definition).  Since wine (or any
-subsystem running on a single local linux system) can handle its own
-locks between application instances, the main problem is that byte
-range locks can't perfectly emulate the application semantics needed
-when applications are running on two different "clients" (in this
-case, one Wine/Linux, and one a Windows client) but mounted to the
-same server
+> On Tue, 2008-12-02 at 10:27 -0700, Guennadi Liakhovetski wrote:
+> > Ooh... Do you really think registering 32 dma-devices is a better solution 
+> > than allowing non-equal dma-channels? As I explained in the commit 
+> > comment, this is a specialised Image Processing DMA Controller, and each 
+> > its channel has a fixed role. So, each client has to get a specific 
+> > channel.
+> 
+> I see your point.  Rather than doing driver gymnastics we can simply
+> have dmaengine do the following (basically your patch reformatted a
+> bit):
 
+Good, so, would you commit it?
 
--- 
-Thanks,
+> diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+> index e2ccfd0..66d0ae7 100644
+> --- a/drivers/dma/dmaengine.c
+> +++ b/drivers/dma/dmaengine.c
+> @@ -445,10 +445,10 @@ static void dma_channel_rebalance(void)
+>  		}
+>  }
+>  
+> -static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_device *dev)
+> +static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_device *dev,
+> +					  dma_filter_fn fn, void *fn_param)
+>  {
+>  	struct dma_chan *chan;
+> -	struct dma_chan *ret = NULL;
+>  
+>  	/* devices with multiple channels need special handling as we need to
+>  	 * ensure that all channels are either private or public.
+> @@ -471,11 +471,15 @@ static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_devic
+>  				 __func__, dma_chan_name(chan));
+>  			continue;
+>  		}
+> -		ret = chan;
+> -		break;
+> +		if (fn && !fn(chan, fn_param)) {
+> +			pr_debug("%s: %s filter said false\n",
+> +				 __func__, dma_chan_name(chan));
+> +			continue;
+> +		}
+> +		return chan;
+>  	}
+>  
+> -	return ret;
+> +	return NULL;
+>  }
+>  
+>  /**
+> @@ -488,22 +492,13 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
+>  {
+>  	struct dma_device *device, *_d;
+>  	struct dma_chan *chan = NULL;
+> -	bool ack;
+>  	int err;
+>  
+>  	/* Find a channel */
+>  	mutex_lock(&dma_list_mutex);
+>  	list_for_each_entry_safe(device, _d, &dma_device_list, global_node) {
+> -		chan = private_candidate(mask, device);
+> -		if (!chan)
+> -			continue;
+> -
+> -		if (fn)
+> -			ack = fn(chan, fn_param);
+> -		else
+> -			ack = true;
+> -
+> -		if (ack) {
+> +		chan = private_candidate(mask, device, fn, fn_param);
+> +		if (chan) {
+>  			/* Found a suitable channel, try to grab, prep, and
+>  			 * return it.  We first set DMA_PRIVATE to disable
+>  			 * balance_ref_count as this channel will not be
+> @@ -521,10 +516,8 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
+>  				       dma_chan_name(chan), err);
+>  			else
+>  				break;
+> -		} else
+> -			pr_debug("%s: %s filter said false\n",
+> -				 __func__, dma_chan_name(chan));
+> -		chan = NULL;
+> +			chan = NULL;
+> +		}
+>  	}
+>  	mutex_unlock(&dma_list_mutex);
+>  
+> 
+> 
+> > > > Another problem I encountered with my framebuffer is the initialisation
+> > > > order. You initialise dmaengine per subsys_initcall(), whereas the only
+> > > > way to guarantee the order:
+> > > >
+> > > > dmaengine
+> > > > dma-device driver
+> > > > framebuffer
+> > > 
+> > > hmm... can the framebuffer be moved to late_initcall?
+> > 
+> > I assumed, that one wants to register the framebuffer as early as 
+> > possible...
+> 
+> Yes, but I'm hesitant to escalate the initcall level.  It sounds like
+> the channel(s?) for the framebuffer are an integral part of the
+> framebuffer device so maybe they should not be registered separately?
+> But that runs into issues if you want the channels to return to the
+> general pool when the framebuffer driver is unloaded.
 
-Steve
+You mean whether it makes sense at all to manage these framebuffer 
+channels outside of the framebuffer driver in a dma driver? I think yes. 
+Simply because these 2 channels used by the fb share code and _registers_ 
+with the rest 30 channels, which are all also quite specialised.
+
+As for excalating the initcall level - the dmaengine init function doesn't 
+do much - it just registers a device class and initialises a mutex - 
+shouldn't be a problem to do it earlier?
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
