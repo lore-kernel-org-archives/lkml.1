@@ -1,79 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYLBRBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYLBRCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbYLBRBm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 12:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYLBRBd
+	id S1755954AbYLBRCa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 12:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYLBRCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 12:01:33 -0500
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:8041 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751163AbYLBRBc (ORCPT
+	Tue, 2 Dec 2008 12:02:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45422 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751334AbYLBRCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 12:01:32 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAF/4NEnCTsYx/2dsb2JhbACBbdB1gn8
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
-Date: Tue, 2 Dec 2008 18:01:38 +0100
-User-Agent: KMail/1.9.9
-Cc: video4linux-list@redhat.com,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source-bounces@linux.davincidsp.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <200812011246.08885.hverkuil@xs4all.nl> <200812011524.43499.laurent.pinchart@skynet.be> <200812011547.27644.hverkuil@xs4all.nl>
-In-Reply-To: <200812011547.27644.hverkuil@xs4all.nl>
-X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+	Tue, 2 Dec 2008 12:02:20 -0500
+Date: Tue, 2 Dec 2008 09:01:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Renato S. Yamane" <yamane@diamondcut.com.br>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: About git-bisect (was: Linux 2.6.28-rc7)
+In-Reply-To: <49356274.6080400@diamondcut.com.br>
+Message-ID: <alpine.LFD.2.00.0812020845500.3256@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org> <20081202131442.42e7df48@varda> <alpine.LFD.2.00.0812020748310.3256@nehalem.linux-foundation.org> <20081202165637.09984819@varda> <alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org>
+ <49356274.6080400@diamondcut.com.br>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812021801.39073.laurent.pinchart@skynet.be>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
 
-On Monday 01 December 2008, Hans Verkuil wrote:
-> On Monday 01 December 2008 15:24:43 Laurent Pinchart wrote:
-[snip]
-> > In a few months time (probably even earlier) the v4l2_device
-> > structure will be reworked (and possible renamed). I'm fine with it
-> > going to linux-next now if we agree on the following.
-> >
-> > - We should only advocate v4l2_device usage for subdevices-aware
-> > video devices. Porting all drivers to v4l2_device is currently
-> > pointless and will only make future transitions more difficult.
+
+On Tue, 2 Dec 2008, Renato S. Yamane wrote:
 >
-> Agreed. For now it is only relevant for drivers that use subdevices.
->
-> > - v4l2_device should be marked as experimental. I don't want to hear
-> > any API/ABI breakage argument in a few months time when the framework
-> > will evolve.
->
-> Am I overlooking something? This API is a kernel API, not a public API.
-> Hence if I (or anyone else for that matter) make future changes then it
-> is my responsibility to adapt all other drivers that are affected at
-> the same time. I don't see how any of this could break compatibility.
-> Except for out-of-kernel drivers, of course. But that's the risk that
-> they always run.
+> Linus Torvalds wrote:
+> > Just do
+> > 
+> > 	git bisect start
+> > 	git bisect bad v2.6.27
+> > 	git bisect good v2.6.28-rc6-00007-ged31348
+> > 
+> > and off you go. That would help enormously.
+> 
+> Hi Linus, is possible plan something to make faster and easier the way
+> to loking for a specific bug?
 
-You're right. It might be useful to state that the API is a work in progress 
-in the documentation, but I'll let you decide on that.
+Well, normally 'git bisect' is pretty optimal, if you don't have "extra" 
+information. 
 
-> Marking this API as experimental seems pointless to me. It either works
-> and so is available for use or it doesn't and then it is a plain old
-> bug that needs to be fixed. I also know already that there will be
-> changes as e.g. sensors require a new ops category and v4l2_device
-> might need a notifier callback as well. However, I'm not going to
-> implement that until there is also a driver that uses it (adding
-> functionality to an internal API just because it might be needed in the
-> future is a really bad idea).
+> E.g: <https://bugs.launchpad.net/ubuntu/+source/linux/+bug/110784>
+> 
+> In this bug, I think that it appear after ~2.6.22, so is necessary do a 
+> git-bisect more than 13 times!
 
-Best regards,
+Well, thirteen kernel compiles and bootups may feel really painful, and I 
+agree that it's not exactly pleasant, but considering that there's almost 
+ten _thousand_ commits there, isnt' it nice to only have to test 13 
+kernels?
 
-Laurent Pinchart
+> I need more than 20min to compile each kernel, so is necessary ~260min.
+> 
+> My wife will kill me if I says: Hey baby, wait 260min to me compile a
+> lot of kernel here.
+
+heh. It will probably take a lot longer than 260 min, if only because you 
+need to reboot and test. And yes, it's painful.
+
+You _can_ speed it up if you already have a good clue about where the bug 
+is, and if you know which files/directories are involved, you can give 
+that pathname list to "git bisect start". IOW, you can do things like
+
+	git bisect start drivers/acpi arch/x86/kernel/acpi
+
+if you are _sure_ that it's really an ACPI issue, for example. But let me 
+be honest: about 50% of the time people have ever tried this, their guess 
+has actually turned out to be wrong, and they actually caused _more_ time 
+to be wasted rather than less. Which is why I do not generally ever 
+suggest using this mode, even if it's better "in theory".
+
+There's another way you can speed up bisection if you have a guess about 
+_when_ it happened (as opposed to where). What you can do, is that when 
+"git bisect" runs and gives you a suggested commit to compile, you can 
+decide that you actually have a better idea, and use "git reset <mycommit>" 
+instead to say "I want to test at _this_ point instead, to narrow it down 
+faster".
+
+However, as with the path-based one, in order for this to actually speed 
+up bisection, you really need to guess right - and you need to understand 
+how bisection works. You don't want to guess at the bad commit - instead, 
+you want to guess at a commit that _limits_ the set of commits to be 
+tested to the bad one in an optimal way.
+
+IOW rather than doing 13 tries, what you can do if you suspect a 
+particular range of commits is to first try a commit just before that 
+range (on the assumption that it will be good), and then if that worked 
+out, try a commit just after the range (on the guess that it will be bad), 
+and now you may have cut down the guesses from ten thousand to just a 
+couple of hundred with just two tries.
+
+Of course, again - if your guesses were bad, you effectively screwed up 
+the 'log2(n)' behavior of "git bisect", and instead of 13 tries you 
+probably now have 14 or 15 instead, because your two first tries were just 
+not very helpful, and lessened the number of commits to try by much less 
+than half each.
+
+The good news, of course, is that if multiple people see the same bug, you 
+can actually distribute the bisection load across machines. That works 
+only if it is really guaranteed to be the same bug, of course. And it 
+won't make it possible to do things in parallel (since each bisection is 
+still dependent on the result from the previous one), but it means that 
+even if you decide that "13 bisections is too much", if you just do four 
+or five, and tell others about your results, now somebody else who thinks 
+that they have the same issue can at least start from your range.
+
+Again, that actually requires that people udnerstand how bisection works, 
+although it can be done blindly by people just doing "git bisect replay" 
+and just assuming that they really see exactly the same issue.
+
+			Linus
