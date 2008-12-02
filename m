@@ -1,65 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYLBW6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYLBW7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYLBW6c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 17:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYLBW6X
+	id S1754793AbYLBW7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYLBW7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 17:58:23 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43795 "EHLO smtps.tip.net.au"
+	Tue, 2 Dec 2008 17:59:13 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:42935 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752720AbYLBW6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 17:58:23 -0500
-Date: Wed, 3 Dec 2008 09:58:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nicolas Palix <npalix@diku.dk>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH linux-next] powerpc/chrp: Add missing of_node_put in
- pci.c
-Message-Id: <20081203095805.7d868849.sfr@canb.auug.org.au>
-In-Reply-To: <200812021434.47010.npalix@diku.dk>
-References: <200812021434.47010.npalix@diku.dk>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi"
+	id S1752667AbYLBW7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 17:59:12 -0500
+Message-ID: <4935BDB9.90806@garzik.org>
+Date: Tue, 02 Dec 2008 17:59:05 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+CC: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>,
+       Rajiv Andrade <srajiv@br.ibm.com>
+Subject: Re: [PATCH 1/6] integrity: TPM internel kernel interface
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <1e02b363572908a21f67ff8abbf2b10190a4f6a6.1228253618.git.zohar@linux.vnet.ibm.com>
+In-Reply-To: <1e02b363572908a21f67ff8abbf2b10190a4f6a6.1228253618.git.zohar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -3.7 (---)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-3.7 points, 5.0 required)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mimi Zohar wrote:
+> This patch adds internal kernel support for:
+>   - reading/extending a pcr value
+>   - looking up the tpm_chip for a given chip number and type
+> 
+> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> Signed-off-by: Rajiv Andrade <srajiv@br.ibm.com>
+> ---
+> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+> index 9c47dc4..17d2849 100644
+> --- a/drivers/char/tpm/tpm.c
+> +++ b/drivers/char/tpm/tpm.c
+> @@ -1,11 +1,12 @@
+>  /*
+> - * Copyright (C) 2004 IBM Corporation
+> + * Copyright (C) 2004,2007,2008 IBM Corporation
+>   *
+>   * Authors:
+>   * Leendert van Doorn <leendert@watson.ibm.com>
+>   * Dave Safford <safford@watson.ibm.com>
+>   * Reiner Sailer <sailer@watson.ibm.com>
+>   * Kylene Hall <kjhall@us.ibm.com>
+> + * Debora Velarde <dvelarde@us.ibm.com>
+>   *
+>   * Maintained by: <tpmdd-devel@lists.sourceforge.net>
+>   *
+> @@ -28,6 +29,14 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/smp_lock.h>
+>  
+> +#include <linux/mm.h>
+> +#include <linux/slab.h>
+> +#include <linux/string.h>
+> +#include <linux/crypto.h>
+> +#include <linux/fs.h>
+> +#include <linux/scatterlist.h>
+> +#include <linux/rcupdate.h>
+> +#include <asm/unaligned.h>
+>  #include "tpm.h"
+>  
+>  enum tpm_const {
+> @@ -50,6 +59,8 @@ enum tpm_duration {
+>  static LIST_HEAD(tpm_chip_list);
+>  static DEFINE_SPINLOCK(driver_lock);
+>  static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
+> +#define TPM_CHIP_NUM_MASK       0x0000ffff
+> +#define TPM_CHIP_TYPE_SHIFT     16
+>  
+>  /*
+>   * Array with one entry per ordinal defining the maximum amount
+> @@ -366,8 +377,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_duration);
+>  /*
+>   * Internal kernel interface to transmit TPM commands
+>   */
+> -static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
+> -			    size_t bufsiz)
+> +ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz)
+>  {
+>  	ssize_t rc;
+>  	u32 count, ordinal;
+> @@ -425,6 +435,7 @@ out:
+>  	mutex_unlock(&chip->tpm_mutex);
+>  	return rc;
+>  }
+> +EXPORT_SYMBOL_GPL(tpm_transmit);
+>  
+>  #define TPM_DIGEST_SIZE 20
+>  #define TPM_ERROR_SIZE 10
+> @@ -717,6 +728,7 @@ ssize_t tpm_show_temp_deactivated(struct device * dev,
+>  }
+>  EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
+>  
+> +#define READ_PCR_RESULT_SIZE 30
+[...]
+> +#ifndef __LINUX_TPM_H__
+> +#define __LINUX_TPM_H__
+> +
+> +#define PCI_DEVICE_ID_AMD_8111_LPC    0x7468
+> +
+> +/*
+> + * Chip type is one of these values in the upper two bytes of chip_id
+> + */
+> +enum tpm_chip_type {
+> +	TPM_HW_TYPE = 0x0,
+> +	TPM_SW_TYPE = 0x1,
+> +	TPM_ANY_TYPE = 0xFFFF,
+> +};
+> +
+> +/*
+> + * Chip num is this value or a valid tpm idx in lower two bytes of chip_id
+> + */
+> +enum tpm_chip_num {
+> +	TPM_ANY_NUM = 0xFFFF,
+> +};
+> +
+> +
+> +#if defined(CONFIG_TCG_TPM) || defined(CONFIG_TCG_TPM_MODULE)
+> +
+> +extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf);
+> +extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash);
+> +#endif
+> +#endif
 
-On Tue, 2 Dec 2008 14:34:46 +0100 Nicolas Palix <npalix@diku.dk> wrote:
->
-> of_node_put is needed before discarding a value received from
-> of_find_node_by_name, eg in error handling code or when the device
-> node is no longer used.
->=20
-> Signed-off-by: Nicolas Palix <npalix@diku.dk>
-> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Minor nits:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+* this is a bit schizophrenic with regards to defining named constants; 
+sometimes enum is used, other times #define is used.  It would be better 
+to just use enum, which is what the current code does (see top of 
+pre-patched tpm.c)
 
---Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi
-Content-Type: application/pgp-signature
+* you really shouldn't hide PCI_DEVICE_ID_xxx constants in places other 
+than pci_ids.h.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+* furthermore, is that constant even used?  used in a later patch?  if 
+the constant is only used once, e.g. in a pci_device_list list, then 
+consider eliminating the constant altogether and directly using the PCI 
+device id hexidecimal number in the target location.
 
-iEYEARECAAYFAkk1vX0ACgkQjjKRsyhoI8yhbwCfYgYc3JfXqy2v7+AwOz5eJ7Ao
-ZucAnR/MiEicPcKWMzgAChoROL9BjRvl
-=6bJ4
------END PGP SIGNATURE-----
+	Jeff
 
---Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi--
+
+
