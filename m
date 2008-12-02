@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbYLBWz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYLBW6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbYLBWz5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 17:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYLBWzo
+	id S1754491AbYLBW6c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYLBW6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 17:55:44 -0500
-Received: from 1wt.eu ([62.212.114.60]:1455 "EHLO 1wt.eu"
+	Tue, 2 Dec 2008 17:58:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43795 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbYLBWzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 17:55:43 -0500
-Date: Tue, 2 Dec 2008 23:55:33 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Roger Heflin <rogerheflin@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e() with tg3 network
-Message-ID: <20081202225533.GA28767@1wt.eu>
-References: <20081120184310.GB27712@xw6200.broadcom.net> <20081120212637.GB23844@1wt.eu> <20081120215318.GB27907@xw6200.broadcom.net> <20081124132744.GB24851@1wt.eu> <20081124215247.GA29696@1wt.eu> <20081125015223.GA9151@xw6200.broadcom.net> <20081125053128.GA32426@1wt.eu> <20081125175413.GA9808@xw6200.broadcom.net> <20081126211220.GA22374@1wt.eu> <20081126225421.GA8906@xw6200.broadcom.net>
+	id S1752720AbYLBW6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 17:58:23 -0500
+Date: Wed, 3 Dec 2008 09:58:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Palix <npalix@diku.dk>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH linux-next] powerpc/chrp: Add missing of_node_put in
+ pci.c
+Message-Id: <20081203095805.7d868849.sfr@canb.auug.org.au>
+In-Reply-To: <200812021434.47010.npalix@diku.dk>
+References: <200812021434.47010.npalix@diku.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081126225421.GA8906@xw6200.broadcom.net>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+--Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I ran a lot of tests last night. I have a few more information.
-The issue sometimes takes longer to reproduce so it caused me
-to identify wrong culprits among the 29 patches affecting tg3
-between 2.6.25 and 2.6.27.7. I was finally able to reproduce
-the issue by running the plain 2.6.25 driver (v3.90) on 2.6.27.7,
-but not at all when running on 2.6.25, even after ten minutes
-(in 2.6.27.7, it takes between 5s and 1mn to get a tx timeout).
+On Tue, 2 Dec 2008 14:34:46 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+>
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
+>=20
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Later, I noticed that 2.6.27's driver uses libphy, which was
-never removed between tests. I wonder if it can interfer with
-my tests. Maybe it initializes the phy differently from plain
-2.6.25, causing delayed issues, I don't know. Unfortunately,
-I cannot run 2.6.27's driver on 2.6.25 because of the libphy
-dependency (that's how I discovered it).
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-I'm also now 100% certain that enabling/disabling FC does not
-change anything with either kernel. So unless the hardware still
-interpretes pause frames when disabled, it should not come from
-there.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I suspect that the switch is getting ill : The problem happens
-more often when it's been transfering at full speed for some
-time. Since it's a cheap one lying on a desk, it might have
-burned out capacitors in it causing some randomly corrupt
-frames to go out from time to time (maybe even pause frames
-preventing the NIC from sending). That was also a problem
-for my tests, because after patching/unpatching and compilation
-phases, it had some time to rest and took longer to reproduce
-the issue.
+--Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi
+Content-Type: application/pgp-signature
 
-I will re-run some tests on 2.6.27 + tg3 v3.90 (from 2.6.25)
-without ever loading libphy from the power up, in order to
-clearly identify if the problem is caused by the driver or
-something else in the kernel. If it's something else, the
-bisect will take a few weeks since I'm not there long enough
-to run about 15 full builds and wait long enough for the
-problem to (not) occur.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-But I'm keeping hope, there's no reason not to find it!
+iEYEARECAAYFAkk1vX0ACgkQjjKRsyhoI8yhbwCfYgYc3JfXqy2v7+AwOz5eJ7Ao
+ZucAnR/MiEicPcKWMzgAChoROL9BjRvl
+=6bJ4
+-----END PGP SIGNATURE-----
 
-Regards,
-Willy
-
+--Signature=_Wed__3_Dec_2008_09_58_05_+1100_K4GmTslo0ueuSKAi--
