@@ -1,1740 +1,1051 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbYLBF3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbYLBFgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbYLBF3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 00:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbYLBF3g
+	id S1753098AbYLBFgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 00:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbYLBFgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 00:29:36 -0500
-Received: from cpsmtpo-eml03.KPNXCHANGE.COM ([213.75.38.152]:43652 "EHLO
-	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750781AbYLBF3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 00:29:32 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Tue, 2 Dec 2008 06:29:24 +0100
-User-Agent: KMail/1.9.9
-Cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
-References: <200812020320.31876.rjw@sisk.pl> <200812020531.53175.elendil@planet.nl> <alpine.LFD.2.00.0812012037320.3256@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812012037320.3256@nehalem.linux-foundation.org>
+	Tue, 2 Dec 2008 00:36:25 -0500
+Received: from mga09.intel.com ([134.134.136.24]:34242 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750781AbYLBFgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 00:36:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,700,1220252400"; 
+   d="scan'208";a="470165551"
+Date: Tue, 2 Dec 2008 17:40:32 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "greg@kroah.com" <greg@kroah.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       "Rose, Gregory V" <gregory.v.rose@intel.com>
+Subject: [SR-IOV driver example 1/3 resend] PF driver: hardware specific
+	operations
+Message-ID: <20081202094032.GA1974@yzhao12-linux.sh.intel.com>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081202092741.GA1859@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_2eMNJ9sjqdvV3Ep"
-Message-Id: <200812020629.26714.elendil@planet.nl>
-X-OriginalArrivalTime: 02 Dec 2008 05:29:27.0347 (UTC) FILETIME=[F1848830:01C9543E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202092741.GA1859@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_2eMNJ9sjqdvV3Ep
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This patch makes the IGB driver allocate hardware resource (rx/tx queues)
+for Virtual Functions. All operations in this patch are hardware specific.
 
-On Tuesday 02 December 2008, Linus Torvalds wrote:
-> That said, if you can show the differences in dmesg from the two cases,
-> it would probably be interesting to see why it happens that way.  Why
-> did we bother setting up that PCI bus window in -rc3 at all? Was it
-> there from the beginning?
+From: Intel Corporation, LAN Access Division <e1000-devel@lists.sourceforge.net>
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-Attached is a full diff between dmesg from -rc3 and -rc6 with your debug 
-patch.
+---
+ drivers/net/igb/Makefile        |    2 +-
+ drivers/net/igb/e1000_82575.c   |    1 +
+ drivers/net/igb/e1000_82575.h   |   61 +++++
+ drivers/net/igb/e1000_defines.h |    7 +
+ drivers/net/igb/e1000_hw.h      |    2 +
+ drivers/net/igb/e1000_regs.h    |   13 +
+ drivers/net/igb/igb.h           |    8 +
+ drivers/net/igb/igb_main.c      |  567 +++++++++++++++++++++++++++++++++++++-
+ drivers/pci/iov.c               |    6 +-
+ 9 files changed, 649 insertions(+), 18 deletions(-)
 
-I've cleaned up the diff a bit to make it more readable (mostly removal of 
-changes that I always get due to random USB load order changes - UHCI 
-still frequently loads before EHCI).
+diff --git a/drivers/net/igb/Makefile b/drivers/net/igb/Makefile
+index 1927b3f..ab3944c 100644
+--- a/drivers/net/igb/Makefile
++++ b/drivers/net/igb/Makefile
+@@ -33,5 +33,5 @@
+ obj-$(CONFIG_IGB) += igb.o
+ 
+ igb-objs := igb_main.o igb_ethtool.o e1000_82575.o \
+-	    e1000_mac.o e1000_nvm.o e1000_phy.o
++	    e1000_mac.o e1000_nvm.o e1000_phy.o e1000_vf.o
+ 
+diff --git a/drivers/net/igb/e1000_82575.c b/drivers/net/igb/e1000_82575.c
+index f5e2e72..bb823ac 100644
+--- a/drivers/net/igb/e1000_82575.c
++++ b/drivers/net/igb/e1000_82575.c
+@@ -87,6 +87,7 @@ static s32 igb_get_invariants_82575(struct e1000_hw *hw)
+ 	case E1000_DEV_ID_82576:
+ 	case E1000_DEV_ID_82576_FIBER:
+ 	case E1000_DEV_ID_82576_SERDES:
++	case E1000_DEV_ID_82576_QUAD_COPPER:
+ 		mac->type = e1000_82576;
+ 		break;
+ 	default:
+diff --git a/drivers/net/igb/e1000_82575.h b/drivers/net/igb/e1000_82575.h
+index c1928b5..8c488ab 100644
+--- a/drivers/net/igb/e1000_82575.h
++++ b/drivers/net/igb/e1000_82575.h
+@@ -170,4 +170,65 @@ struct e1000_adv_tx_context_desc {
+ #define E1000_DCA_TXCTRL_CPUID_SHIFT 24 /* Tx CPUID now in the last byte */
+ #define E1000_DCA_RXCTRL_CPUID_SHIFT 24 /* Rx CPUID now in the last byte */
+ 
++#define MAX_NUM_VFS                   8
++
++#define E1000_DTXSWC_VMDQ_LOOPBACK_EN (1 << 31)  /* global VF LB enable */
++
++/* Easy defines for setting default pool, would normally be left a zero */
++#define E1000_VT_CTL_DEFAULT_POOL_SHIFT 7
++#define E1000_VT_CTL_DEFAULT_POOL_MASK  (0x7 << E1000_VT_CTL_DEFAULT_POOL_SHIFT)
++
++/* Other useful VMD_CTL register defines */
++#define E1000_VT_CTL_DISABLE_DEF_POOL   (1 << 29)
++#define E1000_VT_CTL_VM_REPL_EN         (1 << 30)
++
++/* Per VM Offload register setup */
++#define E1000_VMOLR_LPE        0x00010000 /* Accept Long packet */
++#define E1000_VMOLR_AUPE       0x01000000 /* Accept untagged packets */
++#define E1000_VMOLR_BAM        0x08000000 /* Accept Broadcast packets */
++#define E1000_VMOLR_MPME       0x10000000 /* Multicast promiscuous mode */
++#define E1000_VMOLR_STRVLAN    0x40000000 /* Vlan stripping enable */
++
++#define E1000_P2VMAILBOX_STS   0x00000001 /* Initiate message send to VF */
++#define E1000_P2VMAILBOX_ACK   0x00000002 /* Ack message recv'd from VF */
++#define E1000_P2VMAILBOX_VFU   0x00000004 /* VF owns the mailbox buffer */
++#define E1000_P2VMAILBOX_PFU   0x00000008 /* PF owns the mailbox buffer */
++
++#define E1000_VLVF_ARRAY_SIZE     32
++#define E1000_VLVF_VLANID_MASK    0x00000FFF
++#define E1000_VLVF_POOLSEL_SHIFT  12
++#define E1000_VLVF_POOLSEL_MASK   (0xFF << E1000_VLVF_POOLSEL_SHIFT)
++#define E1000_VLVF_VLANID_ENABLE  0x80000000
++
++#define E1000_VFMAILBOX_SIZE   16 /* 16 32 bit words - 64 bytes */
++
++/* If it's a E1000_VF_* msg then it originates in the VF and is sent to the
++ * PF.  The reverse is true if it is E1000_PF_*.
++ * Message ACK's are the value or'd with 0xF0000000
++ */
++#define E1000_VT_MSGTYPE_ACK      0xF0000000  /* Messages below or'd with
++                                               * this are the ACK */
++#define E1000_VT_MSGTYPE_NACK     0xFF000000  /* Messages below or'd with
++                                               * this are the NACK */
++#define E1000_VT_MSGINFO_SHIFT    16
++/* bits 23:16 are used for exra info for certain messages */
++#define E1000_VT_MSGINFO_MASK     (0xFF << E1000_VT_MSGINFO_SHIFT)
++
++#define E1000_VF_MSGTYPE_REQ_MAC  1 /* VF needs to know its MAC */
++#define E1000_VF_MSGTYPE_VFLR     2 /* VF notifies VFLR to PF */
++#define E1000_VF_SET_MULTICAST    3 /* VF requests PF to set MC addr */
++#define E1000_VF_SET_VLAN         4 /* VF requests PF to set VLAN */
++#define E1000_VF_SET_LPE          5 /* VF requests PF to set VMOLR.LPE */
++
++s32  e1000_send_mail_to_vf(struct e1000_hw *hw, u32 *msg,
++                           u32 vf_number, s16 size);
++s32  e1000_receive_mail_from_vf(struct e1000_hw *hw, u32 *msg,
++                                u32 vf_number, s16 size);
++void e1000_vmdq_loopback_enable_vf(struct e1000_hw *hw);
++void e1000_vmdq_loopback_disable_vf(struct e1000_hw *hw);
++void e1000_vmdq_replication_enable_vf(struct e1000_hw *hw, u32 enables);
++void e1000_vmdq_replication_disable_vf(struct e1000_hw *hw);
++bool e1000_check_for_pf_ack_vf(struct e1000_hw *hw);
++bool e1000_check_for_pf_mail_vf(struct e1000_hw *hw, u32*);
++
+ #endif
+diff --git a/drivers/net/igb/e1000_defines.h b/drivers/net/igb/e1000_defines.h
+index ce70068..08f9db0 100644
+--- a/drivers/net/igb/e1000_defines.h
++++ b/drivers/net/igb/e1000_defines.h
+@@ -389,6 +389,7 @@
+ #define E1000_ICR_RXDMT0        0x00000010 /* rx desc min. threshold (0) */
+ #define E1000_ICR_RXO           0x00000040 /* rx overrun */
+ #define E1000_ICR_RXT0          0x00000080 /* rx timer intr (ring 0) */
++#define E1000_ICR_VMMB          0x00000100 /* VM MB event */
+ #define E1000_ICR_MDAC          0x00000200 /* MDIO access complete */
+ #define E1000_ICR_RXCFG         0x00000400 /* Rx /c/ ordered set */
+ #define E1000_ICR_GPI_EN0       0x00000800 /* GP Int 0 */
+@@ -451,6 +452,7 @@
+ /* Interrupt Mask Set */
+ #define E1000_IMS_TXDW      E1000_ICR_TXDW      /* Transmit desc written back */
+ #define E1000_IMS_LSC       E1000_ICR_LSC       /* Link Status Change */
++#define E1000_IMS_VMMB      E1000_ICR_VMMB      /* Mail box activity */
+ #define E1000_IMS_RXSEQ     E1000_ICR_RXSEQ     /* rx sequence error */
+ #define E1000_IMS_RXDMT0    E1000_ICR_RXDMT0    /* rx desc min. threshold */
+ #define E1000_IMS_RXT0      E1000_ICR_RXT0      /* rx timer intr */
+@@ -768,4 +770,9 @@
+ #define E1000_GEN_CTL_ADDRESS_SHIFT     8
+ #define E1000_GEN_POLL_TIMEOUT          640
+ 
++#define E1000_WRITE_FLUSH(a)	(readl((a)->hw_addr + E1000_STATUS))
++#define E1000_MRQC_ENABLE_MASK	0x00000007
++#define E1000_MRQC_ENABLE_VMDQ	0x00000003
++#define E1000_CTRL_EXT_PFRSTD	0x00004000
++
+ #endif
+diff --git a/drivers/net/igb/e1000_hw.h b/drivers/net/igb/e1000_hw.h
+index 99504a6..b57ecfd 100644
+--- a/drivers/net/igb/e1000_hw.h
++++ b/drivers/net/igb/e1000_hw.h
+@@ -41,6 +41,7 @@ struct e1000_hw;
+ #define E1000_DEV_ID_82576                    0x10C9
+ #define E1000_DEV_ID_82576_FIBER              0x10E6
+ #define E1000_DEV_ID_82576_SERDES             0x10E7
++#define E1000_DEV_ID_82576_QUAD_COPPER        0x10E8
+ #define E1000_DEV_ID_82575EB_COPPER           0x10A7
+ #define E1000_DEV_ID_82575EB_FIBER_SERDES     0x10A9
+ #define E1000_DEV_ID_82575GB_QUAD_COPPER      0x10D6
+@@ -91,6 +92,7 @@ enum e1000_phy_type {
+ 	e1000_phy_gg82563,
+ 	e1000_phy_igp_3,
+ 	e1000_phy_ife,
++	e1000_phy_vf,
+ };
+ 
+ enum e1000_bus_type {
+diff --git a/drivers/net/igb/e1000_regs.h b/drivers/net/igb/e1000_regs.h
+index 95523af..8a39bbc 100644
+--- a/drivers/net/igb/e1000_regs.h
++++ b/drivers/net/igb/e1000_regs.h
+@@ -262,6 +262,19 @@
+ #define E1000_RETA(_i)  (0x05C00 + ((_i) * 4))
+ #define E1000_RSSRK(_i) (0x05C80 + ((_i) * 4)) /* RSS Random Key - RW Array */
+ 
++/* VT Registers */
++#define E1000_MBVFICR   0x00C80 /* Mailbox VF Cause - RWC */
++#define E1000_MBVFIMR   0x00C84 /* Mailbox VF int Mask - RW */
++#define E1000_VFLRE     0x00C88 /* VF Register Events - RWC */
++#define E1000_VFRE      0x00C8C /* VF Receive Enables */
++#define E1000_VFTE      0x00C90 /* VF Transmit Enables */
++#define E1000_DTXSWC    0x03500 /* DMA Tx Switch Control - RW */
++/* These act per VF so an array friendly macro is used */
++#define E1000_P2VMAILBOX(_n)   (0x00C00 + (4 * (_n)))
++#define E1000_VMBMEM(_n)       (0x00800 + (64 * (_n)))
++#define E1000_VMOLR(_n)        (0x05AD0 + (4 * (_n)))
++#define E1000_VLVF(_n)         (0x05D00 + (4 * (_n))) /* VLAN Virtual Machine */
++
+ #define wr32(reg, value) (writel(value, hw->hw_addr + reg))
+ #define rd32(reg) (readl(hw->hw_addr + reg))
+ #define wrfl() ((void)rd32(E1000_STATUS))
+diff --git a/drivers/net/igb/igb.h b/drivers/net/igb/igb.h
+index 4ff6f05..47d474e 100644
+--- a/drivers/net/igb/igb.h
++++ b/drivers/net/igb/igb.h
+@@ -294,6 +294,14 @@ struct igb_adapter {
+ 	unsigned int lro_flushed;
+ 	unsigned int lro_no_desc;
+ #endif
++	unsigned int vfs_allocated_count;
++	struct work_struct msg_task;
++	u32 vf_icr;
++	u32 vflre;
++	unsigned char vf_mac_addresses[8][6];
++	u8 vfta_tracking_entry[128];
++	int int0counter;
++	int int1counter;
+ };
+ 
+ #define IGB_FLAG_HAS_MSI           (1 << 0)
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index 1cbae85..f0361ef 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -62,6 +62,7 @@ static struct pci_device_id igb_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_FIBER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_SERDES), board_82575 },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_QUAD_COPPER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575EB_COPPER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575EB_FIBER_SERDES), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575GB_QUAD_COPPER), board_82575 },
+@@ -126,6 +127,17 @@ static void igb_vlan_rx_register(struct net_device *, struct vlan_group *);
+ static void igb_vlan_rx_add_vid(struct net_device *, u16);
+ static void igb_vlan_rx_kill_vid(struct net_device *, u16);
+ static void igb_restore_vlan(struct igb_adapter *);
++static void igb_msg_task(struct work_struct *);
++int igb_send_msg_to_vf(struct igb_adapter *, u32 *, u32);
++static int igb_get_vf_msg_ack(struct igb_adapter *, u32);
++static int igb_rcv_msg_from_vf(struct igb_adapter *, u32);
++static int igb_set_pf_mac(struct net_device *, int, u8*);
++static void igb_enable_pf_queues(struct igb_adapter *adapter);
++static void igb_set_vf_vmolr(struct igb_adapter *adapter, int vfn);
++void igb_set_mc_list_pools(struct igb_adapter *, struct e1000_hw *, int, u16);
++static int igb_vmm_control(struct igb_adapter *, bool);
++static int igb_set_vf_mac(struct net_device *, int, u8*);
++static void igb_mbox_handler(struct igb_adapter *);
+ 
+ static int igb_suspend(struct pci_dev *, pm_message_t);
+ #ifdef CONFIG_PM
+@@ -169,7 +181,7 @@ static struct pci_driver igb_driver = {
+ 	.resume   = igb_resume,
+ #endif
+ 	.shutdown = igb_shutdown,
+-	.err_handler = &igb_err_handler
++	.err_handler = &igb_err_handler,
+ };
+ 
+ static int global_quad_port_a; /* global quad port a indication */
+@@ -292,6 +304,7 @@ static void igb_assign_vector(struct igb_adapter *adapter, int rx_queue,
+ 	u32 msixbm = 0;
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 ivar, index;
++	u32 rbase_offset = adapter->vfs_allocated_count;
+ 
+ 	switch (hw->mac.type) {
+ 	case e1000_82575:
+@@ -316,9 +329,9 @@ static void igb_assign_vector(struct igb_adapter *adapter, int rx_queue,
+ 		   a vector number along with a "valid" bit.  Sadly, the layout
+ 		   of the table is somewhat counterintuitive. */
+ 		if (rx_queue > IGB_N0_QUEUE) {
+-			index = (rx_queue & 0x7);
++			index = ((rx_queue + rbase_offset) & 0x7);
+ 			ivar = array_rd32(E1000_IVAR0, index);
+-			if (rx_queue < 8) {
++			if ((rx_queue + rbase_offset) < 8) {
+ 				/* vector goes into low byte of register */
+ 				ivar = ivar & 0xFFFFFF00;
+ 				ivar |= msix_vector | E1000_IVAR_VALID;
+@@ -331,9 +344,9 @@ static void igb_assign_vector(struct igb_adapter *adapter, int rx_queue,
+ 			array_wr32(E1000_IVAR0, index, ivar);
+ 		}
+ 		if (tx_queue > IGB_N0_QUEUE) {
+-			index = (tx_queue & 0x7);
++			index = ((tx_queue + rbase_offset) & 0x7);
+ 			ivar = array_rd32(E1000_IVAR0, index);
+-			if (tx_queue < 8) {
++			if ((tx_queue + rbase_offset) < 8) {
+ 				/* vector goes into second byte of register */
+ 				ivar = ivar & 0xFFFF00FF;
+ 				ivar |= (msix_vector | E1000_IVAR_VALID) << 8;
+@@ -419,6 +432,8 @@ static void igb_configure_msix(struct igb_adapter *adapter)
+ 	case e1000_82576:
+ 		tmp = (vector++ | E1000_IVAR_VALID) << 8;
+ 		wr32(E1000_IVAR_MISC, tmp);
++		if (adapter->vfs_allocated_count > 0)
++			wr32(E1000_MBVFIMR, 0xFF);
+ 
+ 		adapter->eims_enable_mask = (1 << (vector)) - 1;
+ 		adapter->eims_other = 1 << (vector - 1);
+@@ -440,6 +455,7 @@ static int igb_request_msix(struct igb_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 	int i, err = 0, vector = 0;
++	u32 rbase_offset = adapter->vfs_allocated_count;
+ 
+ 	vector = 0;
+ 
+@@ -451,7 +467,7 @@ static int igb_request_msix(struct igb_adapter *adapter)
+ 				  &(adapter->tx_ring[i]));
+ 		if (err)
+ 			goto out;
+-		ring->itr_register = E1000_EITR(0) + (vector << 2);
++		ring->itr_register = E1000_EITR(0 + rbase_offset) + (vector << 2);
+ 		ring->itr_val = 976; /* ~4000 ints/sec */
+ 		vector++;
+ 	}
+@@ -466,7 +482,7 @@ static int igb_request_msix(struct igb_adapter *adapter)
+ 				  &(adapter->rx_ring[i]));
+ 		if (err)
+ 			goto out;
+-		ring->itr_register = E1000_EITR(0) + (vector << 2);
++		ring->itr_register = E1000_EITR(0 + rbase_offset) + (vector << 2);
+ 		ring->itr_val = adapter->itr;
+ 		/* overwrite the poll routine for MSIX, we've already done
+ 		 * netif_napi_add */
+@@ -649,7 +665,11 @@ static void igb_irq_enable(struct igb_adapter *adapter)
+ 		wr32(E1000_EIAC, adapter->eims_enable_mask);
+ 		wr32(E1000_EIAM, adapter->eims_enable_mask);
+ 		wr32(E1000_EIMS, adapter->eims_enable_mask);
++#ifdef CONFIG_PCI_IOV
++		wr32(E1000_IMS, (E1000_IMS_LSC | E1000_IMS_VMMB));
++#else
+ 		wr32(E1000_IMS, E1000_IMS_LSC);
++#endif
+ 	} else {
+ 		wr32(E1000_IMS, IMS_ENABLE_MASK);
+ 		wr32(E1000_IAM, IMS_ENABLE_MASK);
+@@ -773,6 +793,14 @@ int igb_up(struct igb_adapter *adapter)
+ 	if (adapter->msix_entries)
+ 		igb_configure_msix(adapter);
+ 
++	if (adapter->vfs_allocated_count > 0) {
++		igb_vmm_control(adapter, true);
++		igb_set_pf_mac(adapter->netdev,
++			       adapter->vfs_allocated_count,
++			       hw->mac.addr);
++		igb_enable_pf_queues(adapter);
++	}
++
+ 	/* Clear any pending interrupts. */
+ 	rd32(E1000_ICR);
+ 	igb_irq_enable(adapter);
+@@ -1189,6 +1217,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
+ 
+ 	INIT_WORK(&adapter->reset_task, igb_reset_task);
+ 	INIT_WORK(&adapter->watchdog_task, igb_watchdog_task);
++	INIT_WORK(&adapter->msg_task, igb_msg_task);
+ 
+ 	/* Initialize link & ring properties that are user-changeable */
+ 	adapter->tx_ring->count = 256;
+@@ -1404,8 +1433,13 @@ static int __devinit igb_sw_init(struct igb_adapter *adapter)
+ 
+ 	/* Number of supported queues. */
+ 	/* Having more queues than CPUs doesn't make sense. */
++#ifdef CONFIG_PCI_IOV
++	adapter->num_rx_queues = 1;
++	adapter->num_tx_queues = 1;
++#else
+ 	adapter->num_rx_queues = min((u32)IGB_MAX_RX_QUEUES, (u32)num_online_cpus());
+ 	adapter->num_tx_queues = min(IGB_MAX_TX_QUEUES, num_online_cpus());
++#endif
+ 
+ 	/* This call may decrease the number of queues depending on
+ 	 * interrupt mode. */
+@@ -1469,6 +1503,14 @@ static int igb_open(struct net_device *netdev)
+ 	 * clean_rx handler before we do so.  */
+ 	igb_configure(adapter);
+ 
++	if (adapter->vfs_allocated_count > 0) {
++		igb_vmm_control(adapter, true);
++		igb_set_pf_mac(netdev,
++			       adapter->vfs_allocated_count,
++			       hw->mac.addr);
++		igb_enable_pf_queues(adapter);
++	}
++
+ 	err = igb_request_irq(adapter);
+ 	if (err)
+ 		goto err_req_irq;
+@@ -1623,9 +1665,10 @@ static void igb_configure_tx(struct igb_adapter *adapter)
+ 	u32 tctl;
+ 	u32 txdctl, txctrl;
+ 	int i;
++	u32 rbase_offset = adapter->vfs_allocated_count;
+ 
+-	for (i = 0; i < adapter->num_tx_queues; i++) {
+-		struct igb_ring *ring = &(adapter->tx_ring[i]);
++	for (i = rbase_offset; i < (adapter->num_tx_queues + rbase_offset); i++) {
++		struct igb_ring *ring = &(adapter->tx_ring[i - rbase_offset]);
+ 
+ 		wr32(E1000_TDLEN(i),
+ 				ring->count * sizeof(struct e1000_tx_desc));
+@@ -1772,6 +1815,8 @@ static void igb_setup_rctl(struct igb_adapter *adapter)
+ 	u32 rctl;
+ 	u32 srrctl = 0;
+ 	int i;
++	u32 rbase_offset = adapter->vfs_allocated_count;
++	u32 vmolr;
+ 
+ 	rctl = rd32(E1000_RCTL);
+ 
+@@ -1794,6 +1839,7 @@ static void igb_setup_rctl(struct igb_adapter *adapter)
+ 		rctl &= ~E1000_RCTL_LPE;
+ 	else
+ 		rctl |= E1000_RCTL_LPE;
++#ifndef CONFIG_PCI_IOV
+ 	if (adapter->rx_buffer_len <= IGB_RXBUFFER_2048) {
+ 		/* Setup buffer sizes */
+ 		rctl &= ~E1000_RCTL_SZ_4096;
+@@ -1818,9 +1864,12 @@ static void igb_setup_rctl(struct igb_adapter *adapter)
+ 			break;
+ 		}
+ 	} else {
++#endif
+ 		rctl &= ~E1000_RCTL_BSEX;
+ 		srrctl = adapter->rx_buffer_len >> E1000_SRRCTL_BSIZEPKT_SHIFT;
++#ifndef CONFIG_PCI_IOV
+ 	}
++#endif
+ 
+ 	/* 82575 and greater support packet-split where the protocol
+ 	 * header is placed in skb->data and the packet data is
+@@ -1836,13 +1885,32 @@ static void igb_setup_rctl(struct igb_adapter *adapter)
+ 		srrctl |= adapter->rx_ps_hdr_size <<
+ 			 E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
+ 		srrctl |= E1000_SRRCTL_DESCTYPE_HDR_SPLIT_ALWAYS;
++#ifdef CONFIG_PCI_IOV
++		srrctl |= 0x80000000;
++#endif
+ 	} else {
+ 		adapter->rx_ps_hdr_size = 0;
+ 		srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
+ 	}
+ 
+-	for (i = 0; i < adapter->num_rx_queues; i++)
++	for (i = rbase_offset; i < (adapter->num_rx_queues + rbase_offset); i++) {
+ 		wr32(E1000_SRRCTL(i), srrctl);
++		if ((rctl & E1000_RCTL_LPE) && adapter->vfs_allocated_count > 0 ) {
++			vmolr = rd32(E1000_VMOLR(i));
++			vmolr |= E1000_VMOLR_LPE;
++			wr32(E1000_VMOLR(i), vmolr);
++		}
++	}
++
++	/* Attention!!!  For SR-IOV PF driver operations you must enable
++	 * queue drop for the queue 0 or the PF driver will *never* receive
++	 * any traffic on it's own default queue, which will be equal to the
++	 * number of VFs enabled.
++	 */
++	if (adapter->vfs_allocated_count > 0) {
++		srrctl = rd32(E1000_SRRCTL(0));
++		wr32(E1000_SRRCTL(0), (srrctl | 0x80000000));
++	}
+ 
+ 	wr32(E1000_RCTL, rctl);
+ }
+@@ -1860,6 +1928,7 @@ static void igb_configure_rx(struct igb_adapter *adapter)
+ 	u32 rctl, rxcsum;
+ 	u32 rxdctl;
+ 	int i;
++	u32 rbase_offset = adapter->vfs_allocated_count;
+ 
+ 	/* disable receives while setting up the descriptors */
+ 	rctl = rd32(E1000_RCTL);
+@@ -1872,8 +1941,8 @@ static void igb_configure_rx(struct igb_adapter *adapter)
+ 
+ 	/* Setup the HW Rx Head and Tail Descriptor Pointers and
+ 	 * the Base and Length of the Rx Descriptor Ring */
+-	for (i = 0; i < adapter->num_rx_queues; i++) {
+-		struct igb_ring *ring = &(adapter->rx_ring[i]);
++	for (i = rbase_offset; i < (adapter->num_rx_queues + rbase_offset); i++) {
++		struct igb_ring *ring = &(adapter->rx_ring[i - rbase_offset]);
+ 		rdba = ring->dma;
+ 		wr32(E1000_RDBAL(i),
+ 				rdba & 0x00000000ffffffffULL);
+@@ -2268,8 +2337,20 @@ static void igb_set_multi(struct net_device *netdev)
+ 		memcpy(mta_list + (i*ETH_ALEN), mc_ptr->dmi_addr, ETH_ALEN);
+ 		mc_ptr = mc_ptr->next;
+ 	}
+-	igb_update_mc_addr_list_82575(hw, mta_list, i, 1,
+-	                              mac->rar_entry_count);
++	if (adapter->vfs_allocated_count > 0) {
++		igb_update_mc_addr_list_82575(hw, mta_list, i,
++					  adapter->vfs_allocated_count + 1,
++					  mac->rar_entry_count);
++		igb_set_mc_list_pools(adapter, hw, i, mac->rar_entry_count);
++	/* TODO - if this is done after VF's are loaded and have their MC
++	 * addresses set then we need to restore their entries in the MTA.
++	 * This means we have to save them in the adapter structure somewhere
++	 * so that we can retrieve them when this particular event occurs
++	 */
++	} else
++		igb_update_mc_addr_list_82575(hw, mta_list, i, 1,
++					  mac->rar_entry_count);
++
+ 	kfree(mta_list);
+ }
+ 
+@@ -3274,6 +3355,22 @@ static irqreturn_t igb_msix_other(int irq, void *data)
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 icr = rd32(E1000_ICR);
+ 
++#ifdef CONFIG_PCI_IOV
++	adapter->int0counter++;
++
++	/* Check for a mailbox event */
++	if (icr & E1000_ICR_VMMB) {
++		adapter->vf_icr = rd32(E1000_MBVFICR);
++		/* Clear the bits */
++		wr32(E1000_MBVFICR, adapter->vf_icr);
++		E1000_WRITE_FLUSH(hw);
++		adapter->vflre = rd32(E1000_VFLRE);
++		wr32(E1000_VFLRE, adapter->vflre);
++		E1000_WRITE_FLUSH(hw);
++		igb_mbox_handler(adapter);
++	}
++#endif
++
+ 	/* reading ICR causes bit 31 of EICR to be cleared */
+ 	if (!(icr & E1000_ICR_LSC))
+ 		goto no_link_interrupt;
+@@ -3283,7 +3380,10 @@ static irqreturn_t igb_msix_other(int irq, void *data)
+ 		mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	
+ no_link_interrupt:
+-	wr32(E1000_IMS, E1000_IMS_LSC);
++	if (adapter->vfs_allocated_count)
++		wr32(E1000_IMS, E1000_IMS_LSC | E1000_IMS_VMMB);
++	else
++		wr32(E1000_IMS, E1000_IMS_LSC);
+ 	wr32(E1000_EIMS, adapter->eims_other);
+ 
+ 	return IRQ_HANDLED;
+@@ -3342,6 +3442,10 @@ static irqreturn_t igb_msix_rx(int irq, void *data)
+ 	 * previous interrupt.
+ 	 */
+ 
++#ifdef CONFIG_PCI_IOV
++	adapter->int1counter++;
++#endif
++
+ 	igb_write_itr(rx_ring);
+ 
+ 	if (netif_rx_schedule_prep(adapter->netdev, &rx_ring->napi))
+@@ -4192,6 +4296,9 @@ static void igb_vlan_rx_add_vid(struct net_device *netdev, u16 vid)
+ 	vfta = array_rd32(E1000_VFTA, index);
+ 	vfta |= (1 << (vid & 0x1F));
+ 	igb_write_vfta(&adapter->hw, index, vfta);
++#ifdef CONFIG_PCI_IOV
++	adapter->vfta_tracking_entry[index] = (u8)vfta;
++#endif
+ }
+ 
+ static void igb_vlan_rx_kill_vid(struct net_device *netdev, u16 vid)
+@@ -4219,6 +4326,9 @@ static void igb_vlan_rx_kill_vid(struct net_device *netdev, u16 vid)
+ 	vfta = array_rd32(E1000_VFTA, index);
+ 	vfta &= ~(1 << (vid & 0x1F));
+ 	igb_write_vfta(&adapter->hw, index, vfta);
++#ifdef CONFIG_PCI_IOV
++	adapter->vfta_tracking_entry[index] = (u8)vfta;
++#endif
+ }
+ 
+ static void igb_restore_vlan(struct igb_adapter *adapter)
+@@ -4529,4 +4639,431 @@ static void igb_io_resume(struct pci_dev *pdev)
+ 
+ }
+ 
++static void igb_set_vf_multicasts(struct igb_adapter *adapter,
++				  u32 *msgbuf, u32 vf)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	int n = (msgbuf[0] & E1000_VT_MSGINFO_MASK) >> E1000_VT_MSGINFO_SHIFT;
++	int i;
++	u32 hash_value;
++	u8 *p = (u8 *)&msgbuf[1];
++
++	/* VFs are limited to using the MTA hash table for their multicast
++	 * addresses */
++	for (i = 0; i < n; i++) {
++		hash_value = igb_hash_mc_addr(hw, p);
++		printk("Adding MC Addr: %2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X\n"
++		       "for VF %d\n",
++		       p[0],
++		       p[1],
++		       p[2],
++		       p[3],
++		       p[4],
++		       p[5],
++		       vf);
++		printk("Hash value = 0x%03X\n", hash_value);
++		igb_mta_set(hw, hash_value);
++		p += ETH_ALEN;
++	}
++}
++
++static void igb_set_vf_vlan(struct igb_adapter *adapter,
++			    u32 *msgbuf, u32 vf)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	int add = (msgbuf[0] & E1000_VT_MSGINFO_MASK) >> E1000_VT_MSGINFO_SHIFT;
++	int vid = (msgbuf[1] & E1000_VLVF_VLANID_MASK);
++	u32 reg, index, vfta;
++	int i;
++
++	if (add) {
++		/* See if a vlan filter for this id is already
++		 * set and enabled */
++		for(i = 0; i < E1000_VLVF_ARRAY_SIZE; i++) {
++			reg = rd32(E1000_VLVF(i));
++			if ((reg & E1000_VLVF_VLANID_ENABLE) &&
++			    vid == (reg & E1000_VLVF_VLANID_MASK))
++				break;
++		}
++		if (i < E1000_VLVF_ARRAY_SIZE) {
++			/* Found an enabled entry with the same VLAN
++			 * ID.  Just enable the pool select bit for
++			 * this requesting VF
++			 */
++			reg |= 1 << (E1000_VLVF_POOLSEL_SHIFT + vf);
++			wr32(E1000_VLVF(i), reg);
++			msgbuf[0] |= E1000_VT_MSGTYPE_ACK;
++		} else {
++			/* Did not find a matching VLAN ID filter entry
++			 * that was also enabled.  Search for a free
++			 * filter entry, i.e. one without the enable
++			 * bit set
++			 */
++			for(i = 0; i < E1000_VLVF_ARRAY_SIZE; i++) {
++				reg = rd32(E1000_VLVF(i));
++				if (!(reg & E1000_VLVF_VLANID_ENABLE))
++					break;
++			}
++			if (i == E1000_VLVF_ARRAY_SIZE) {
++				/* oops, no free entry, send nack */
++				msgbuf[0] |= E1000_VT_MSGTYPE_NACK;
++			} else {
++				/* add VID to filter table */
++				index = (vid >> 5) & 0x7F;
++				vfta = array_rd32(E1000_VFTA, index);
++				vfta |= (1 << (vid & 0x1F));
++				igb_write_vfta(hw, index, vfta);
++				reg |= vid;
++				reg |= 1 << (E1000_VLVF_POOLSEL_SHIFT + vf);
++				reg |= E1000_VLVF_VLANID_ENABLE;
++				wr32(E1000_VLVF(i), reg);
++				msgbuf[0] |= E1000_VT_MSGTYPE_ACK;
++			}
++		}
++	} else {
++		/* Find the vlan filter for this id */
++		for(i = 0; i < E1000_VLVF_ARRAY_SIZE; i++) {
++			reg = rd32(E1000_VLVF(i));
++			if ((reg & E1000_VLVF_VLANID_ENABLE) &&
++			    vid == (reg & E1000_VLVF_VLANID_MASK))
++				break;
++		}
++		if (i == E1000_VLVF_ARRAY_SIZE) {
++			/* oops, not found. send nack */
++			msgbuf[0] |= E1000_VT_MSGTYPE_NACK;
++		} else {
++			u32 pool_sel;
++			/* Check to see if the entry belongs to more than one
++			 * pool.  If so just reset this VF's pool select bit
++			 */
++			/* mask off the pool select bits */
++			pool_sel = (reg & E1000_VLVF_POOLSEL_MASK) >>
++				E1000_VLVF_POOLSEL_SHIFT;
++			/* reset this VF's pool select bit */
++			pool_sel &= ~(1 << vf);
++			/* check if other pools are set */
++			if (pool_sel != 0) {
++				reg &= ~(E1000_VLVF_POOLSEL_MASK);
++				reg |= pool_sel;
++			} else {
++				/* just disable the whole entry */
++				reg = 0;
++				/* remove VID from filter table *IF AND
++				 * ONLY IF!!!* this entry was enabled for
++				 * VFs only through a write to the VFTA
++				 * table a few lines above here in this
++				 * function.  If this VFTA entry was added
++				 * through the rx_add_vid function then
++				 * we can't delete it here. */
++				index = (vid >> 5) & 0x7F;
++				if (adapter->vfta_tracking_entry[index] == 0) {
++					vfta = array_rd32(E1000_VFTA, index);
++					vfta &= ~(1 << (vid & 0x1F));
++					igb_write_vfta(hw, index, vfta);
++				}
++			}
++			wr32(E1000_VLVF(i), reg);
++			msgbuf[0] |= E1000_VT_MSGTYPE_ACK;
++		}
++	}
++}
++
++static void igb_msg_task(struct work_struct *work)
++{
++	struct igb_adapter *adapter;
++	struct e1000_hw *hw;
++	u32 bit, vf, vfr;
++	u32 vflre;
++	u32 vf_icr;
++
++	adapter = container_of(work, struct igb_adapter, msg_task);
++	hw = &adapter->hw;
++
++	vflre = adapter->vflre;
++	vf_icr = adapter->vf_icr;
++
++	/* Now that we have salted away local values of these events
++	 * for processing we can enable the interrupt so more events
++	 * can be captured
++	 */
++
++	wr32(E1000_IMS, E1000_IMS_VMMB);
++
++	if (vflre & 0xFF) {
++		printk("VFLR Event %2.2X\n", vflre);
++		vfr = rd32(E1000_VFRE);
++		wr32(E1000_VFRE, vfr | vflre);
++		E1000_WRITE_FLUSH(hw);
++		vfr = rd32(E1000_VFTE);
++		wr32(E1000_VFTE, vfr | vflre);
++		E1000_WRITE_FLUSH(hw);
++	}
++
++	if (!vf_icr)
++		return;
++
++	/* Check for message acks from VF first as that may affect
++	 * pending messages to the VF
++	 */
++	for (bit = 1, vf = 0; bit < 0x100; bit <<= 1, vf++) {
++		if ((bit << 16) & vf_icr)
++			igb_get_vf_msg_ack(adapter, vf);
++	}
++
++	/* Check for message sent from a VF */
++	for (bit = 1, vf = 0; bit < 0x100; bit <<= 1, vf++) {
++		if (bit & vf_icr)
++			igb_rcv_msg_from_vf(adapter, vf);
++	}
++}
++
++int igb_send_msg_to_vf(struct igb_adapter *adapter, u32 *msg, u32 vfn)
++{
++	struct e1000_hw *hw = &adapter->hw;
++
++	return e1000_send_mail_to_vf(hw, msg, vfn, 16);
++}
++
++static int igb_get_vf_msg_ack(struct igb_adapter *adapter, u32 vf)
++{
++	return 0;
++}
++
++static int igb_rcv_msg_from_vf(struct igb_adapter *adapter, u32 vf)
++{
++	u32 msgbuf[E1000_VFMAILBOX_SIZE];
++	struct net_device *netdev = adapter->netdev;
++	struct e1000_hw *hw = &adapter->hw;
++	u32 reg;
++	s32 retval;
++	int err = 0;
++
++	retval = e1000_receive_mail_from_vf(hw, msgbuf, vf, 16);
++
++	switch ((msgbuf[0] & 0xFFFF)) {
++	case E1000_VF_MSGTYPE_REQ_MAC:
++		{
++			unsigned char *p;
++			msgbuf[0] |= E1000_VT_MSGTYPE_ACK;
++			p = (char *)&msgbuf[1];
++			memcpy(p, adapter->vf_mac_addresses[vf], ETH_ALEN);
++			if ((err = igb_send_msg_to_vf(adapter, msgbuf, vf)
++			     == 0)) {
++				printk(KERN_INFO "Sending MAC Address %2.2x:%2.2x:"
++				       "%2.2x:%2.2x:%2.2x:%2.2x to VF %d\n",
++				       p[0], p[1], p[2], p[3], p[4], p[5], vf);
++				igb_set_vf_mac(netdev,
++					       vf,
++					       adapter->vf_mac_addresses[vf]);
++				igb_set_vf_vmolr(adapter, vf);
++			}
++			else {
++				printk(KERN_ERR "Error %d Sending MAC Address to VF\n",
++				       err);
++			}
++		}
++		break;
++	case E1000_VF_MSGTYPE_VFLR:
++		{
++			u32 vfe = rd32(E1000_VFTE);
++			vfe |= (1 << vf);
++			wr32(E1000_VFTE, vfe);
++			vfe = rd32(E1000_VFRE);
++			vfe |= (1 << vf);
++			wr32(E1000_VFRE, vfe);
++			printk(KERN_INFO "Enabling VFTE and VFRE for vf %d\n",
++			       vf);
++			msgbuf[0] |= E1000_VT_MSGTYPE_ACK;
++			if ((err = igb_send_msg_to_vf(adapter, msgbuf, vf)
++			     != 0))
++				printk(KERN_ERR "Error %d Sending VFLR Ack"
++				       "to VF\n", err);
++		}
++		break;
++	case E1000_VF_SET_MULTICAST:
++		igb_set_vf_multicasts(adapter, msgbuf, vf);
++		break;
++	case E1000_VF_SET_LPE:
++		/* Make sure global LPE is set */
++		reg = rd32(E1000_RCTL);
++		reg |= E1000_RCTL_LPE;
++		wr32(E1000_RCTL, reg);
++		/* Set per VM LPE */
++		reg = rd32(E1000_VMOLR(vf));
++		reg |= E1000_VMOLR_LPE;
++		wr32(E1000_VMOLR(vf), reg);
++		msgbuf[0] |= E1000_VT_MSGTYPE_ACK;
++		if ((err = igb_send_msg_to_vf(adapter, msgbuf, vf) != 0))
++			printk(KERN_ERR "Error %d Sending set VMOLR LPE Ack"
++			       "to VF\n", err);
++		break;
++	case E1000_VF_SET_VLAN:
++		igb_set_vf_vlan(adapter, msgbuf, vf);
++		if ((err = igb_send_msg_to_vf(adapter, msgbuf, vf) != 0))
++			printk(KERN_ERR "Error %d Sending set VLAN ID Ack"
++			       "to VF\n", err);
++		break;
++	default:
++		if ((msgbuf[0] & 0xFF000000) != E1000_VT_MSGTYPE_ACK &&
++		    (msgbuf[0] & 0xFF000000) != E1000_VT_MSGTYPE_NACK)
++			printk(KERN_ERR "Unhandled Msg %8.8x\n", msgbuf[0]);
++		break;
++	}
++
++	return retval;
++}
++
++static void igb_mbox_handler(struct igb_adapter *adapter)
++{
++	schedule_work(&adapter->msg_task);
++}
++
++#define E1000_RAH(_i)	(((_i) <= 15) ? (0x05404 + ((_i) * 8)) : (0x054E4 + ((_i - 16) * 8)))
++
++static int igb_set_pf_mac(struct net_device *netdev, int queue, u8*mac_addr)
++{
++	struct igb_adapter *adapter;
++	struct e1000_hw *hw;
++	u32 reg_data;
++
++	adapter = netdev_priv(netdev);
++	hw = &adapter->hw;
++
++	/* point the pool selector for our default MAC entry to
++	 * the right pool, which is equal to the number of vfs enabled.
++	 */
++	reg_data = rd32(E1000_RAH(0));
++	reg_data |= (1 << (18 + queue));
++	wr32(E1000_RAH(0), reg_data);
++
++	return 0;
++}
++
++static void igb_set_vf_vmolr(struct igb_adapter *adapter, int vfn)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	u32 reg_data;
++
++	reg_data = rd32(E1000_VMOLR(vfn));
++	reg_data |= 0xF << 24; /* aupe, rompe, rope, bam */
++	reg_data |= E1000_VMOLR_STRVLAN; /* Strip vlan tags */
++	wr32(E1000_VMOLR(vfn), reg_data);
++}
++
++static int igb_set_vf_mac(struct net_device *netdev,
++						 int vf,
++						 unsigned char *mac_addr)
++{
++	struct igb_adapter *adapter;
++	struct e1000_hw *hw;
++	u32 reg_data;
++	int rar_entry = vf + 1; /* VF MAC addresses start at entry 1 */
++
++	adapter = netdev_priv(netdev);
++	hw = &adapter->hw;
++
++	igb_rar_set(hw, mac_addr, rar_entry);
++
++	memcpy(adapter->vf_mac_addresses[vf], mac_addr, 6);
++
++	reg_data = rd32(E1000_RAH(rar_entry));
++	reg_data |= (1 << (18 + vf));
++	wr32(E1000_RAH(rar_entry), reg_data);
++
++	return 0;
++}
++
++static int igb_vmm_control(struct igb_adapter *adapter, bool enable)
++{
++	struct e1000_hw *hw;
++	u32 reg_data;
++
++	hw = &adapter->hw;
++
++	if (enable) {
++		/* Enable multi-queue */
++		reg_data = rd32(E1000_MRQC);
++		reg_data &= E1000_MRQC_ENABLE_MASK;
++		reg_data |= E1000_MRQC_ENABLE_VMDQ;
++		wr32(E1000_MRQC, reg_data);
++		/* VF's need PF reset indication before they
++		 * can send/receive mail */
++		reg_data = rd32(E1000_CTRL_EXT);
++		reg_data |= E1000_CTRL_EXT_PFRSTD;
++		wr32(E1000_CTRL_EXT, reg_data);
++
++		/* Set the default pool for the PF's first queue */
++		reg_data = rd32(E1000_VMD_CTL);
++		reg_data &= ~(E1000_VMD_CTL | E1000_VT_CTL_DISABLE_DEF_POOL);
++		reg_data |= adapter->vfs_allocated_count <<
++			E1000_VT_CTL_DEFAULT_POOL_SHIFT;
++		wr32(E1000_VMD_CTL, reg_data);
++
++		e1000_vmdq_loopback_enable_vf(hw);
++		e1000_vmdq_replication_enable_vf(hw, 0xFF);
++	} else {
++		e1000_vmdq_loopback_disable_vf(hw);
++		e1000_vmdq_replication_disable_vf(hw);
++	}
++
++	return 0;
++}
++
++static void igb_enable_pf_queues(struct igb_adapter *adapter)
++{
++	u64 rdba;
++	int i;
++	u32 rbase_offset = adapter->vfs_allocated_count;
++	struct e1000_hw *hw = &adapter->hw;
++	u32 rxdctl;
++
++	for (i = rbase_offset;
++	     i < (adapter->num_rx_queues + rbase_offset); i++) {
++		struct igb_ring *ring = &adapter->rx_ring[i - rbase_offset];
++		rdba = ring->dma;
++
++		rxdctl = rd32(E1000_RXDCTL(i));
++		rxdctl |= E1000_RXDCTL_QUEUE_ENABLE;
++		rxdctl &= 0xFFF00000;
++		rxdctl |= IGB_RX_PTHRESH;
++		rxdctl |= IGB_RX_HTHRESH << 8;
++		rxdctl |= IGB_RX_WTHRESH << 16;
++		wr32(E1000_RXDCTL(i), rxdctl);
++		printk("RXDCTL%d == %8.8x\n", i, rxdctl);
++
++		wr32(E1000_RDBAL(i),
++		                rdba & 0x00000000ffffffffULL);
++		wr32(E1000_RDBAH(i), rdba >> 32);
++		wr32(E1000_RDLEN(i),
++		               ring->count * sizeof(union e1000_adv_rx_desc));
++
++		writel(ring->next_to_use, adapter->hw.hw_addr + ring->tail);
++		writel(ring->next_to_clean, adapter->hw.hw_addr + ring->head);
++	}
++}
++
++void igb_set_mc_list_pools(struct igb_adapter *adapter,
++			   struct e1000_hw *hw,
++			   int entry_count, u16 total_rar_filters)
++{
++	u32 reg_data;
++	int i;
++	int pool = adapter->vfs_allocated_count;
++
++	for (i = adapter->vfs_allocated_count + 1; i < total_rar_filters; i++) {
++		reg_data = rd32(E1000_RAH(i));
++		reg_data |= (1 << (18 + pool));
++		wr32(E1000_RAH(i), reg_data);
++		entry_count--;
++		if (!entry_count)
++			break;
++	}
++
++	reg_data = rd32(E1000_VMOLR(pool));
++	/* Set bit 25 for this pool in the VM Offload register so that
++	 * it can accept packets that match the MTA table */
++	reg_data |= (1 << 25);
++	wr32(E1000_VMOLR(pool), reg_data);
++}
++
+ /* igb_main.c */
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index b4c1b5a..79b49e5 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -487,9 +487,11 @@ void pci_iov_unregister(struct pci_dev *dev)
+ 
+ 	sysfs_remove_group(&dev->dev.kobj, &iov_attr_group);
+ 
+-	mutex_lock(&pdev->iov->physfn->iov->lock);
++	mutex_lock(&dev->iov->physfn->iov->lock);
++
+ 	iov_disable(dev);
+-	mutex_unlock(&pdev->iov->physfn->iov->lock);
++
++	mutex_unlock(&dev->iov->physfn->iov->lock);
+ 
+ 	kobject_uevent(&dev->dev.kobj, KOBJ_CHANGE);
+ }
+-- 
+1.5.6.4
 
-The most interesting points are probably at lines 298-346 and 639-649.
-
-At the bottom there's a fairly long addition from the few suspend/resume 
-cycles I did (again, running with the debug patch).
-
-
---Boundary-00=_2eMNJ9sjqdvV3Ep
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="rc3-rc6.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="rc3-rc6.diff"
-
---- 2.6.28-rc3	2008-11-03 10:51:51.000000000 +0100
-+++ 2.6.28-rc6_linus	2008-12-02 06:12:15.000000000 +0100
-@@ -1,676 +1,1625 @@
- BIOS EBDA/lowmem at: 0009fc00/0009fc00
--Linux version 2.6.28-rc3 (root@faramir) (gcc version 4.3.2 (Debian 4.3.2-1) ) #47 SMP Mon Nov 3 10:30:30 CET 2008
-+Linux version 2.6.28-rc6 (root@faramir) (gcc version 4.3.2 (Debian 4.3.2-1) ) #58 SMP Tue Dec 2 04:56:59 CET 2008
- Command line: root=/dev/mapper/main-root ro vga=791 quiet
- KERNEL supported cpus:
-   Intel GenuineIntel
-   AMD AuthenticAMD
-   Centaur CentaurHauls
- BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-  BIOS-e820: 0000000000100000 - 000000007e7b0000 (usable)
-  BIOS-e820: 000000007e7b0000 - 000000007e7c5400 (reserved)
-  BIOS-e820: 000000007e7c5400 - 000000007e7e7fb8 (ACPI NVS)
-  BIOS-e820: 000000007e7e7fb8 - 000000007f000000 (reserved)
-  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-  BIOS-e820: 00000000fed20000 - 00000000fed9a000 (reserved)
-  BIOS-e820: 00000000feda0000 - 00000000fedc0000 (reserved)
-  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-  BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
-  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
- DMI 2.4 present.
- last_pfn = 0x7e7b0 max_arch_pfn = 0x3ffffffff
- x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
- init_memory_mapping: 0000000000000000-000000007e7b0000
-  0000000000 - 007e600000 page 2M
-  007e600000 - 007e7b0000 page 4k
- kernel direct mapping tables up to 7e7b0000 @ 8000-c000
- last_map_addr: 7e7b0000 end: 7e7b0000
--RAMDISK: 37ab8000 - 37fef345
-+RAMDISK: 37ab8000 - 37fefbd6
- ACPI: RSDP 000F7960, 0024 (r2 HP    )
- ACPI: XSDT 7E7C81C8, 007C (r1 HPQOEM SLIC-MPC        1 HP          1)
- ACPI: FACP 7E7C8084, 00F4 (r4 HP     30C9            3 HP          1)
- ACPI: DSDT 7E7C8538, 13484 (r1 HP       nc2500    10000 MSFT  3000001)
- ACPI: FACS 7E7E7D80, 0040
- ACPI: SLIC 7E7C8244, 0176 (r1 HPQOEM SLIC-MPC        1 HP          1)
- ACPI: HPET 7E7C83BC, 0038 (r1 HP     30C9            1 HP          1)
- ACPI: APIC 7E7C83F4, 0068 (r1 HP     30C9            1 HP          1)
- ACPI: MCFG 7E7C845C, 003C (r1 HP     30C9            1 HP          1)
- ACPI: TCPA 7E7C8498, 0032 (r2 HP     30C9            1 HP          1)
- ACPI: ASF! 7E7C84CC, 0069 (r16 HP     CHIMAYU         1 HP          0)
- ACPI: SSDT 7E7DB9BC, 02BE (r1 HP       HPQPAT        1 MSFT  3000001)
- ACPI: SSDT 7E7DC640, 025F (r1 HP      Cpu0Tst     3000 INTL 20060317)
- ACPI: SSDT 7E7DC89F, 00A6 (r1 HP      Cpu1Tst     3000 INTL 20060317)
- ACPI: SSDT 7E7DC945, 04D7 (r1 HP        CpuPm     3000 INTL 20060317)
--ACPI: DMI detected: Hewlett-Packard
- ACPI: Local APIC address 0xfee00000
- (6 early reservations) ==> bootmem [0000000000 - 007e7b0000]
-   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-   #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
--  #2 [0000200000 - 000074e550]    TEXT DATA BSS ==> [0000200000 - 000074e550]
--  #3 [0037ab8000 - 0037fef345]          RAMDISK ==> [0037ab8000 - 0037fef345]
-+  #2 [0000200000 - 000074c510]    TEXT DATA BSS ==> [0000200000 - 000074c510]
-+  #3 [0037ab8000 - 0037fefbd6]          RAMDISK ==> [0037ab8000 - 0037fefbd6]
-   #4 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
-   #5 [0000008000 - 000000a000]          PGTABLE ==> [0000008000 - 000000a000]
-  [ffffe20000000000-ffffe20001ffffff] PMD -> [ffff880001200000-ffff8800031fffff] on node 0
- Zone PFN ranges:
-   DMA      0x00000000 -> 0x00001000
-   DMA32    0x00001000 -> 0x00100000
-   Normal   0x00100000 -> 0x00100000
- Movable zone start PFN for each node
- early_node_map[2] active PFN ranges
-     0: 0x00000000 -> 0x0000009f
-     0: 0x00000100 -> 0x0007e7b0
- On node 0 totalpages: 517967
-   DMA zone: 64 pages used for memmap
--  DMA zone: 1459 pages reserved
--  DMA zone: 2476 pages, LIFO batch:0
-+  DMA zone: 1457 pages reserved
-+  DMA zone: 2478 pages, LIFO batch:0
-   DMA32 zone: 8031 pages used for memmap
-   DMA32 zone: 505937 pages, LIFO batch:31
-   Normal zone: 0 pages used for memmap
-   Movable zone: 0 pages used for memmap
- ACPI: PM-Timer IO Port: 0x1008
- ACPI: Local APIC address 0xfee00000
- ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
- ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
- ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
- ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
- ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
- IOAPIC[0]: apic_id 1, version 0, address 0xfec00000, GSI 0-23
- ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
- ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
- ACPI: IRQ0 used by override.
- ACPI: IRQ2 used by override.
- ACPI: IRQ9 used by override.
- ACPI: HPET id: 0x8086a201 base: 0xfed00000
- SMP: Allowing 2 CPUs, 0 hotplug CPUs
- PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
- PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
- PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
- Allocating PCI resources starting at 80000000 (gap: 7f000000:7fc00000)
- PERCPU: Allocating 49152 bytes of per cpu data
- NR_CPUS: 8, nr_cpu_ids: 2, nr_node_ids 1
--Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 508413
-+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 508415
- Kernel command line: root=/dev/mapper/main-root ro vga=791 quiet
- Initializing CPU#0
- PID hash table entries: 4096 (order: 12, 32768 bytes)
- Extended CMOS year: 2000
- Fast TSC calibration using PIT
--Detected 1330.160 MHz processor.
-+Detected 1330.139 MHz processor.
- Console: colour dummy device 80x25
- console [tty0] enabled
- Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
- Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
- Checking aperture...
- No AGP bridge found
--Memory: 2024344k/2072256k available (2300k kernel code, 388k absent, 46900k reserved, 1509k data, 324k init)
-+Memory: 2024352k/2072256k available (2302k kernel code, 388k absent, 46892k reserved, 1507k data, 316k init)
- SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
- hpet clockevent registered
- HPET: 3 timers in total, 0 timers will be used for per-cpu timer
--Calibrating delay loop (skipped), value calculated using timer frequency.. 2660.32 BogoMIPS (lpj=5320640)
-+Calibrating delay loop (skipped), value calculated using timer frequency.. 2660.27 BogoMIPS (lpj=5320556)
- Security Framework initialized
- SELinux:  Disabled at boot.
- Mount-cache hash table entries: 256
- CPU: L1 I cache: 32K, L1 D cache: 32K
- CPU: L2 cache: 2048K
- CPU: Physical Processor ID: 0
- CPU: Processor Core ID: 0
- CPU0: Thermal monitoring handled by SMI
- using mwait in idle threads.
- ACPI: Core revision 20080926
- Setting APIC routing to flat
- ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
- CPU0: Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz stepping 0d
- Booting processor 1 APIC 0x1 ip 0x6000
- Initializing CPU#1
--Calibrating delay using timer specific routine.. 2659.99 BogoMIPS (lpj=5319980)
-+Calibrating delay using timer specific routine.. 2659.98 BogoMIPS (lpj=5319962)
- CPU: L1 I cache: 32K, L1 D cache: 32K
- CPU: L2 cache: 2048K
- CPU: Physical Processor ID: 0
- CPU: Processor Core ID: 1
- CPU1: Thermal monitoring enabled (TM2)
- x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
- CPU1: Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz stepping 0d
- checking TSC synchronization [CPU#0 -> CPU#1]: passed.
- Brought up 2 CPUs
--Total of 2 processors activated (5320.31 BogoMIPS).
-+Total of 2 processors activated (5320.25 BogoMIPS).
- CPU0 attaching sched-domain:
-  domain 0: span 0-1 level MC
-   groups: 0 1
- CPU1 attaching sched-domain:
-  domain 0: span 0-1 level MC
-   groups: 1 0
- net_namespace: 1400 bytes
- NET: Registered protocol family 16
- ACPI FADT declares the system doesn't support PCIe ASPM, so disable it
- ACPI: bus type pci registered
- PCI: MCFG configuration 0: base f8000000 segment 0 buses 0 - 63
- PCI: Not using MMCONFIG.
- PCI: Using configuration type 1 for base access
- ACPI: EC: Look up EC in DSDT
- ACPI: EC: non-query interrupt received, switching to interrupt mode
- ACPI: Interpreter enabled
- ACPI: (supports S0 S3 S4 S5)
- ACPI: Using IOAPIC for interrupt routing
- PCI: MCFG configuration 0: base f8000000 segment 0 buses 0 - 63
- PCI: MCFG area at f8000000 reserved in ACPI motherboard resources
- PCI: Using MMCONFIG at f8000000 - fbffffff
- ACPI: EC: GPE = 0x16, I/O: command/status = 0x66, data = 0x62
- ACPI: EC: driver started in interrupt mode
- ACPI: No dock devices found.
- ACPI: PCI Root Bridge [C003] (0000:00)
- pci 0000:00:02.0: reg 10 64bit mmio: [0xe0400000-0xe04fffff]
- pci 0000:00:02.0: reg 18 64bit mmio: [0xd0000000-0xdfffffff]
- pci 0000:00:02.0: reg 20 io port: [0x2000-0x2007]
- pci 0000:00:02.1: reg 10 64bit mmio: [0xe0500000-0xe05fffff]
- pci 0000:00:03.0: reg 10 64bit mmio: [0xe0600000-0xe060000f]
- pci 0000:00:03.0: PME# supported from D0 D3hot D3cold
- pci 0000:00:03.0: PME# disabled
- pci 0000:00:03.2: reg 10 io port: [0x2008-0x200f]
- pci 0000:00:03.2: reg 14 io port: [0x2010-0x2013]
- pci 0000:00:03.2: reg 18 io port: [0x2018-0x201f]
- pci 0000:00:03.2: reg 1c io port: [0x2020-0x2023]
- pci 0000:00:03.2: reg 20 io port: [0x2030-0x203f]
- pci 0000:00:03.3: reg 10 io port: [0x2040-0x2047]
- pci 0000:00:03.3: reg 14 32bit mmio: [0xe0601000-0xe0601fff]
- pci 0000:00:19.0: reg 10 32bit mmio: [0xe0620000-0xe063ffff]
- pci 0000:00:19.0: reg 14 32bit mmio: [0xe0640000-0xe0640fff]
- pci 0000:00:19.0: reg 18 io port: [0x2060-0x207f]
- pci 0000:00:19.0: PME# supported from D0 D3hot D3cold
- pci 0000:00:19.0: PME# disabled
- pci 0000:00:1a.0: reg 20 io port: [0x2080-0x209f]
- pci 0000:00:1a.1: reg 20 io port: [0x20a0-0x20bf]
- pci 0000:00:1a.7: reg 10 32bit mmio: [0xe0641000-0xe06413ff]
- pci 0000:00:1a.7: PME# supported from D0 D3hot D3cold
- pci 0000:00:1a.7: PME# disabled
- pci 0000:00:1b.0: reg 10 64bit mmio: [0xe0644000-0xe0647fff]
- pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
- pci 0000:00:1b.0: PME# disabled
- pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
- pci 0000:00:1c.0: PME# disabled
- pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
- pci 0000:00:1c.1: PME# disabled
- pci 0000:00:1d.0: reg 20 io port: [0x20c0-0x20df]
- pci 0000:00:1d.1: reg 20 io port: [0x20e0-0x20ff]
- pci 0000:00:1d.2: reg 20 io port: [0x2100-0x211f]
- pci 0000:00:1d.7: reg 10 32bit mmio: [0xe0648000-0xe06483ff]
- pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
- pci 0000:00:1d.7: PME# disabled
- pci 0000:00:1f.0: quirk: region 1000-107f claimed by ICH6 ACPI/GPIO/TCO
- pci 0000:00:1f.0: quirk: region 1100-113f claimed by ICH6 GPIO
- pci 0000:00:1f.1: reg 10 io port: [0x00-0x07]
- pci 0000:00:1f.1: reg 14 io port: [0x00-0x03]
- pci 0000:00:1f.1: reg 18 io port: [0x00-0x07]
- pci 0000:00:1f.1: reg 1c io port: [0x00-0x03]
- pci 0000:00:1f.1: reg 20 io port: [0x2120-0x212f]
- pci 0000:10:00.0: reg 10 64bit mmio: [0xe0000000-0xe0001fff]
- pci 0000:10:00.0: PME# supported from D0 D3hot D3cold
- pci 0000:10:00.0: PME# disabled
- pci 0000:00:1c.1: bridge 32bit mmio: [0xe0000000-0xe00fffff]
- pci 0000:02:06.0: reg 10 32bit mmio: [0xe0100000-0xe0100fff]
- pci 0000:02:06.0: supports D1 D2
- pci 0000:02:06.0: PME# supported from D0 D1 D2 D3hot D3cold
- pci 0000:02:06.0: PME# disabled
- pci 0000:02:06.1: reg 10 32bit mmio: [0xe0101000-0xe01017ff]
- pci 0000:02:06.1: supports D1 D2
- pci 0000:02:06.1: PME# supported from D0 D1 D2 D3hot D3cold
- pci 0000:02:06.1: PME# disabled
- pci 0000:02:06.2: reg 10 32bit mmio: [0xe0102000-0xe01020ff]
- pci 0000:02:06.2: supports D1 D2
- pci 0000:02:06.2: PME# supported from D0 D1 D2 D3hot D3cold
- pci 0000:02:06.2: PME# disabled
- pci 0000:02:06.3: reg 10 32bit mmio: [0xe0103000-0xe01030ff]
- pci 0000:02:06.3: supports D1 D2
- pci 0000:02:06.3: PME# supported from D0 D1 D2 D3hot D3cold
- pci 0000:02:06.3: PME# disabled
- pci 0000:00:1e.0: transparent bridge
- pci 0000:00:1e.0: bridge 32bit mmio: [0xe0100000-0xe03fffff]
- bus 00 -> node 0
- ACPI: PCI Interrupt Routing Table [\_SB_.C003._PRT]
- ACPI: PCI Interrupt Routing Table [\_SB_.C003.C0B2._PRT]
- ACPI: PCI Interrupt Routing Table [\_SB_.C003.C11F._PRT]
- ACPI: PCI Interrupt Routing Table [\_SB_.C003.C133._PRT]
- ACPI: PCI Interrupt Link [C12F] (IRQs *10 11)
- ACPI: PCI Interrupt Link [C130] (IRQs *10 11)
- ACPI: PCI Interrupt Link [C131] (IRQs 10 *11)
- ACPI: PCI Interrupt Link [C132] (IRQs 10 11) *5
- ACPI: PCI Interrupt Link [C142] (IRQs *10 11)
- ACPI: PCI Interrupt Link [C143] (IRQs 10 11) *0, disabled.
- ACPI: PCI Interrupt Link [C144] (IRQs 10 *11)
- ACPI Exception (pci_link-0189): AE_NOT_FOUND, Evaluating _PRS [20080926]
- ACPI: Power Resource [C29F] (on)
- ACPI: Power Resource [C1C7] (off)
- ACPI: Power Resource [C3AD] (off)
- ACPI: Power Resource [C3B0] (off)
- ACPI: Power Resource [C3C3] (off)
- ACPI: Power Resource [C3C4] (off)
- ACPI: Power Resource [C3C5] (off)
- ACPI: Power Resource [C3C6] (off)
- ACPI: Power Resource [C3C7] (off)
- usbcore: registered new interface driver usbfs
- usbcore: registered new interface driver hub
- usbcore: registered new device driver usb
- PCI: Using ACPI for IRQ routing
- PCI-GART: No AMD GART found.
- hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
- hpet0: 3 comparators, 64-bit 14.318180 MHz counter
- pnp: PnP ACPI init
- ACPI: bus type pnp registered
- pnp: PnP ACPI: found 14 devices
- ACPI: ACPI bus type pnp unregistered
- system 00:00: iomem range 0x0-0x9ffff could not be reserved
- system 00:00: iomem range 0xe0000-0xfffff could not be reserved
- system 00:00: iomem range 0x100000-0x7e7fffff could not be reserved
- system 00:0a: ioport range 0x500-0x55f has been reserved
- system 00:0a: ioport range 0x800-0x80f has been reserved
- system 00:0a: iomem range 0xffb00000-0xffbfffff has been reserved
- system 00:0a: iomem range 0xfff00000-0xffffffff has been reserved
- system 00:0c: ioport range 0x4d0-0x4d1 has been reserved
- system 00:0c: ioport range 0x2f8-0x2ff has been reserved
- system 00:0c: ioport range 0x3f8-0x3ff has been reserved
- system 00:0c: ioport range 0x1000-0x107f has been reserved
- system 00:0c: ioport range 0x1100-0x113f has been reserved
- system 00:0c: ioport range 0x1200-0x121f has been reserved
- system 00:0c: iomem range 0xf8000000-0xfbffffff has been reserved
- system 00:0c: iomem range 0xfec00000-0xfec000ff has been reserved
- system 00:0c: iomem range 0xfed20000-0xfed3ffff has been reserved
- system 00:0c: iomem range 0xfed45000-0xfed8ffff has been reserved
- system 00:0c: iomem range 0xfed90000-0xfed99fff has been reserved
- system 00:0d: iomem range 0xcee00-0xcffff has been reserved
- system 00:0d: iomem range 0xd2000-0xd3fff has been reserved
- system 00:0d: iomem range 0xfeda0000-0xfedbffff has been reserved
- system 00:0d: iomem range 0xfee00000-0xfee00fff has been reserved
-+pci 0000:02:06.0: BAR 9 0-3ffffff wrong alignment flags 21200 4000000 (0)
-+pci 0000:02:06.0: BAR 9 bad alignment 0: [0x000000-0x3ffffff]
- pci 0000:00:1c.0: PCI bridge, secondary bus 0000:08
- pci 0000:00:1c.0:   IO window: disabled
- pci 0000:00:1c.0:   MEM window: disabled
- pci 0000:00:1c.0:   PREFETCH window: disabled
- pci 0000:00:1c.1: PCI bridge, secondary bus 0000:10
- pci 0000:00:1c.1:   IO window: disabled
- pci 0000:00:1c.1:   MEM window: 0xe0000000-0xe00fffff
- pci 0000:00:1c.1:   PREFETCH window: disabled
- pci 0000:02:06.0: CardBus bridge, secondary bus 0000:03
- pci 0000:02:06.0:   IO window: 0x003000-0x0030ff
- pci 0000:02:06.0:   IO window: 0x003400-0x0034ff
--pci 0000:02:06.0:   PREFETCH window: 0x80000000-0x83ffffff
--pci 0000:02:06.0:   MEM window: 0x84000000-0x87ffffff
-+pci 0000:02:06.0:   MEM window: 0x80000000-0x83ffffff
- pci 0000:00:1e.0: PCI bridge, secondary bus 0000:02
- pci 0000:00:1e.0:   IO window: 0x3000-0x3fff
- pci 0000:00:1e.0:   MEM window: 0xe0100000-0xe03fffff
--pci 0000:00:1e.0:   PREFETCH window: 0x00000080000000-0x00000083ffffff
-+pci 0000:00:1e.0:   PREFETCH window: disabled
- pci 0000:00:1c.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- pci 0000:00:1c.0: setting latency timer to 64
- pci 0000:00:1c.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
- pci 0000:00:1c.1: setting latency timer to 64
- pci 0000:00:1e.0: setting latency timer to 64
- pci 0000:02:06.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
- bus: 00 index 0 io port: [0x00-0xffff]
- bus: 00 index 1 mmio: [0x000000-0xffffffffffffffff]
- bus: 08 index 0 mmio: [0x0-0x0]
- bus: 08 index 1 mmio: [0x0-0x0]
- bus: 08 index 2 mmio: [0x0-0x0]
- bus: 08 index 3 mmio: [0x0-0x0]
- bus: 10 index 0 mmio: [0x0-0x0]
- bus: 10 index 1 mmio: [0xe0000000-0xe00fffff]
- bus: 10 index 2 mmio: [0x0-0x0]
- bus: 10 index 3 mmio: [0x0-0x0]
- bus: 02 index 0 io port: [0x3000-0x3fff]
- bus: 02 index 1 mmio: [0xe0100000-0xe03fffff]
--bus: 02 index 2 mmio: [0x80000000-0x83ffffff]
-+bus: 02 index 2 mmio: [0x0-0x0]
- bus: 02 index 3 io port: [0x00-0xffff]
- bus: 02 index 4 mmio: [0x000000-0xffffffffffffffff]
- bus: 03 index 0 io port: [0x3000-0x30ff]
- bus: 03 index 1 io port: [0x3400-0x34ff]
--bus: 03 index 2 mmio: [0x80000000-0x83ffffff]
--bus: 03 index 3 mmio: [0x84000000-0x87ffffff]
-+bus: 03 index 2 mmio: [0x0-0x3ffffff]
-+bus: 03 index 3 mmio: [0x80000000-0x83ffffff]
- NET: Registered protocol family 2
--Switched to high resolution mode on CPU 1
- IP route cache hash table entries: 65536 (order: 7, 524288 bytes)
- TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
--Switched to high resolution mode on CPU 0
- TCP bind hash table entries: 65536 (order: 9, 2097152 bytes)
- TCP: Hash tables configured (established 262144 bind 65536)
- TCP reno registered
-+Switched to high resolution mode on CPU 1
-+Switched to high resolution mode on CPU 0
- NET: Registered protocol family 1
- checking if image is initramfs... it is
--Freeing initrd memory: 5340k freed
-+Freeing initrd memory: 5342k freed
- audit: initializing netlink socket (disabled)
--type=2000 audit(1225705229.141:1): initialized
-+type=2000 audit(1228190448.133:1): initialized
- VFS: Disk quotas dquot_6.5.1
- Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
- msgmni has been set to 3965
- alg: No test for stdrng (krng)
- io scheduler noop registered
- io scheduler anticipatory registered
- io scheduler deadline registered
- io scheduler cfq registered (default)
- pci 0000:00:02.0: Boot video device
- pcieport-driver 0000:00:1c.0: setting latency timer to 64
- pcieport-driver 0000:00:1c.0: found MSI capability
--pcieport-driver 0000:00:1c.0: irq 47 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.0: irq 511 for MSI/MSI-X
- pci_express 0000:00:1c.0:pcie00: allocate port service
- pci_express 0000:00:1c.0:pcie03: allocate port service
- pcieport-driver 0000:00:1c.1: setting latency timer to 64
- pcieport-driver 0000:00:1c.1: found MSI capability
--pcieport-driver 0000:00:1c.1: irq 46 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.1: irq 510 for MSI/MSI-X
- pci_express 0000:00:1c.1:pcie00: allocate port service
- pci_express 0000:00:1c.1:pcie03: allocate port service
- vesafb: framebuffer at 0xd0000000, mapped to 0xffffc20004100000, using 3072k, total 7616k
- vesafb: mode is 1024x768x16, linelength=2048, pages=3
- vesafb: scrolling: redraw
- vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
- Console: switching to colour frame buffer device 128x48
- fb0: VESA VGA frame buffer device
- Linux agpgart interface v0.103
- Serial: 8250/16550 driver4 ports, IRQ sharing enabled
- serial 0000:00:03.3: PCI INT B -> GSI 17 (level, low) -> IRQ 17
- 0000:00:03.3: ttyS0 at I/O 0x2040 (irq = 17) is a 16550A
- brd: module loaded
- PNP: PS/2 Controller [PNP0303:C29C,PNP0f13:C29D] at 0x60,0x64 irq 1,12
- i8042.c: Detected active multiplexing controller, rev 1.1.
- serio: i8042 KBD port at 0x60,0x64 irq 1
- serio: i8042 AUX0 port at 0x60,0x64 irq 12
- serio: i8042 AUX1 port at 0x60,0x64 irq 12
- serio: i8042 AUX2 port at 0x60,0x64 irq 12
- serio: i8042 AUX3 port at 0x60,0x64 irq 12
- mice: PS/2 mouse device common for all mice
- rtc_cmos 00:06: RTC can wake from S4
- rtc_cmos 00:06: rtc core: registered rtc_cmos as rtc0
--rtc0: alarms up to one month, y3k, 114 bytes nvram, , hpet irqs irqs
-+rtc0: alarms up to one month, y3k, 114 bytes nvram, hpet irqs
- cpuidle: using governor ladder
- cpuidle: using governor menu
- TCP bic registered
- NET: Registered protocol family 17
--rtc_cmos 00:06: setting system clock to 2008-11-03 09:40:30 UTC (1225705230)
--Freeing unused kernel memory: 324k freed
-+rtc_cmos 00:06: setting system clock to 2008-12-02 04:00:49 UTC (1228190449)
-+Freeing unused kernel memory: 316k freed
- input: AT Translated Set 2 keyboard as /class/input/input0
--ACPI: Transitioning device [C3B1] to D3
- fan PNP0C0B:00: registered as cooling_device0
- ACPI: Fan [C3B1] (off)
--ACPI: Transitioning device [C3B2] to D3
- fan PNP0C0B:01: registered as cooling_device1
- ACPI: Fan [C3B2] (off)
--ACPI: Transitioning device [C3C8] to D3
- fan PNP0C0B:02: registered as cooling_device2
- ACPI: Fan [C3C8] (off)
--ACPI: Transitioning device [C3C9] to D3
- fan PNP0C0B:03: registered as cooling_device3
- ACPI: Fan [C3C9] (off)
--ACPI: Transitioning device [C3CA] to D3
- fan PNP0C0B:04: registered as cooling_device4
- ACPI: Fan [C3CA] (off)
--ACPI: Transitioning device [C3CB] to D3
- fan PNP0C0B:05: registered as cooling_device5
- ACPI: Fan [C3CB] (off)
--ACPI: Transitioning device [C3CC] to D3
- fan PNP0C0B:06: registered as cooling_device6
- ACPI: Fan [C3CC] (off)
- ACPI: SSDT 7E7DBD42, 027F (r1 HP      Cpu0Ist     3000 INTL 20060317)
- ACPI: SSDT 7E7DC046, 05FA (r1 HP      Cpu0Cst     3001 INTL 20060317)
- Monitor-Mwait will be used to enter C-1 state
- Monitor-Mwait will be used to enter C-2 state
- Monitor-Mwait will be used to enter C-3 state
- ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
--processor ACPI0007:00: registered as cooling_device7
-+processor ACPI_CPU:00: registered as cooling_device7
- ACPI: Processor [CPU0] (supports 8 throttling states)
- ACPI: SSDT 7E7DBC7A, 00C8 (r1 HP      Cpu1Ist     3000 INTL 20060317)
- ACPI: SSDT 7E7DBFC1, 0085 (r1 HP      Cpu1Cst     3000 INTL 20060317)
- Marking TSC unstable due to TSC halts in idle
- ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
--processor ACPI0007:01: registered as cooling_device8
-+processor ACPI_CPU:01: registered as cooling_device8
- ACPI: Processor [CPU1] (supports 8 throttling states)
- thermal LNXTHERM:01: registered as thermal_zone0
- ACPI: Thermal Zone [TZ6] (25 C)
- thermal LNXTHERM:02: registered as thermal_zone1
--ACPI: Thermal Zone [TZ0] (45 C)
-+ACPI: Thermal Zone [TZ0] (36 C)
- thermal LNXTHERM:03: registered as thermal_zone2
--ACPI: Thermal Zone [TZ1] (47 C)
-+ACPI: Thermal Zone [TZ1] (39 C)
- thermal LNXTHERM:04: registered as thermal_zone3
--ACPI: Thermal Zone [TZ3] (36 C)
-+ACPI: Thermal Zone [TZ3] (26 C)
- thermal LNXTHERM:05: registered as thermal_zone4
--ACPI: Thermal Zone [TZ4] (30 C)
-+ACPI: Thermal Zone [TZ4] (21 C)
- thermal LNXTHERM:06: registered as thermal_zone5
--ACPI: Thermal Zone [TZ5] (26 C)
-+ACPI: Thermal Zone [TZ5] (0 C)
- e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
- e1000e: Copyright (c) 1999-2008 Intel Corporation.
- libata version 3.00 loaded.
- e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
- e1000e 0000:00:19.0: setting latency timer to 64
--e1000e 0000:00:19.0: irq 45 for MSI/MSI-X
-+e1000e 0000:00:19.0: irq 509 for MSI/MSI-X
- SCSI subsystem initialized
- ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
- uhci_hcd: USB Universal Host Controller Interface driver
- ricoh-mmc: Ricoh MMC Controller disabling driver
- ricoh-mmc: Copyright(c) Philip Langdale
- ricoh-mmc: Ricoh MMC controller found at 0000:02:06.3 [1180:0843] (rev 11)
- ricoh-mmc: Controller is now disabled.
- sdhci: Secure Digital Host Controller Interface driver
- sdhci: Copyright(c) Pierre Ossman
- sdhci-pci 0000:02:06.2: SDHCI controller found [1180:0822] (rev 21)
- sdhci-pci 0000:02:06.2: PCI INT C -> GSI 20 (level, low) -> IRQ 20
- mmc0: SDHCI controller on PCI [0000:02:06.2] using PIO
- ohci1394 0000:02:06.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
- ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[e0101000-e01017ff]  Max Packet=[2048]  IR/IT contexts=[4/4]
- 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:1e:68:5e:3b:04
- 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
- 0000:00:19.0: eth0: MAC: 5, PHY: 6, PBA No: ffffff-0ff
- ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 18 (level, low) -> IRQ 18
- ehci_hcd 0000:00:1a.7: setting latency timer to 64
- ehci_hcd 0000:00:1a.7: EHCI Host Controller
- ehci_hcd 0000:00:1a.7: new USB bus registered, assigned bus number 1
- ehci_hcd 0000:00:1a.7: debug port 1
- ehci_hcd 0000:00:1a.7: cache line size of 32 is not supported
- ehci_hcd 0000:00:1a.7: irq 18, io mem 0xe0641000
- ehci_hcd 0000:00:1a.7: USB 2.0 started, EHCI 1.00
- usb usb1: configuration #1 chosen from 1 choice
- hub 1-0:1.0: USB hub found
- hub 1-0:1.0: 4 ports detected
- uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- uhci_hcd 0000:00:1a.0: setting latency timer to 64
- uhci_hcd 0000:00:1a.0: UHCI Host Controller
- uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus number 2
- uhci_hcd 0000:00:1a.0: irq 16, io base 0x00002080
- usb usb2: configuration #1 chosen from 1 choice
- hub 2-0:1.0: USB hub found
- hub 2-0:1.0: 2 ports detected
- ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
- ehci_hcd 0000:00:1d.7: setting latency timer to 64
- ehci_hcd 0000:00:1d.7: EHCI Host Controller
- ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 3
- ehci_hcd 0000:00:1d.7: debug port 1
- ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
- ehci_hcd 0000:00:1d.7: irq 20, io mem 0xe0648000
- ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
- usb usb3: configuration #1 chosen from 1 choice
- hub 3-0:1.0: USB hub found
- hub 3-0:1.0: 6 ports detected
- uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
- uhci_hcd 0000:00:1a.1: setting latency timer to 64
- uhci_hcd 0000:00:1a.1: UHCI Host Controller
- uhci_hcd 0000:00:1a.1: new USB bus registered, assigned bus number 4
- uhci_hcd 0000:00:1a.1: irq 17, io base 0x000020a0
- usb usb4: configuration #1 chosen from 1 choice
- hub 4-0:1.0: USB hub found
- hub 4-0:1.0: 2 ports detected
- uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
- uhci_hcd 0000:00:1d.0: setting latency timer to 64
- uhci_hcd 0000:00:1d.0: UHCI Host Controller
- uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 5
- uhci_hcd 0000:00:1d.0: irq 20, io base 0x000020c0
- usb usb5: configuration #1 chosen from 1 choice
- hub 5-0:1.0: USB hub found
- hub 5-0:1.0: 2 ports detected
- uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 22 (level, low) -> IRQ 22
- uhci_hcd 0000:00:1d.1: setting latency timer to 64
- uhci_hcd 0000:00:1d.1: UHCI Host Controller
- uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 6
- uhci_hcd 0000:00:1d.1: irq 22, io base 0x000020e0
- usb usb6: configuration #1 chosen from 1 choice
- hub 6-0:1.0: USB hub found
- hub 6-0:1.0: 2 ports detected
- uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
- uhci_hcd 0000:00:1d.2: setting latency timer to 64
- uhci_hcd 0000:00:1d.2: UHCI Host Controller
- uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 7
- uhci_hcd 0000:00:1d.2: irq 18, io base 0x00002100
- usb usb7: configuration #1 chosen from 1 choice
- hub 7-0:1.0: USB hub found
- hub 7-0:1.0: 2 ports detected
- pata_acpi 0000:00:03.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
- pata_acpi 0000:00:03.2: setting latency timer to 64
- pata_acpi 0000:00:03.2: PCI INT C disabled
- pata_acpi 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- pata_acpi 0000:00:1f.1: setting latency timer to 64
- pata_acpi 0000:00:1f.1: PCI INT A disabled
- ata_piix 0000:00:1f.1: version 2.12
- ata_piix 0000:00:1f.1: quirky BIOS, skipping spindown on poweroff and hibernation
- ata_piix 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- ata_piix 0000:00:1f.1: setting latency timer to 64
- Uniform Multi-Platform E-IDE driver
- scsi0 : ata_piix
- scsi1 : ata_piix
- ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x2120 irq 14
- ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x2128 irq 15
- ata1.00: ATA-7: SAMSUNG HS122JC, GQ100-04, max UDMA/100
- ata1.00: 234441648 sectors, multi 16: LBA 
- ata1.01: ATAPI: MATSHITADVD-RAM UJ-852S, 1.02, max MWDMA2
- ata1.00: configured for UDMA/100
- ata1.01: configured for MWDMA2
- ata2: port disabled. ignoring.
- isa bounce pool size: 16 pages
- scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HS122JC  GQ10 PQ: 0 ANSI: 5
- scsi 0:0:1:0: CD-ROM            MATSHITA DVD-RAM UJ-852S  1.02 PQ: 0 ANSI: 5
- Driver 'sd' needs updating - please use bus_type methods
- sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
- sd 0:0:0:0: [sda] Write Protect is off
- sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
- sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
- sd 0:0:0:0: [sda] Write Protect is off
- sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
- sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-  sda: sda1 sda2 sda3 sda4 <<4>Driver 'sr' needs updating - please use bus_type methods
-  sda5 sda6 sda7 >
- sd 0:0:0:0: [sda] Attached SCSI disk
- sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
- Uniform CD-ROM driver Revision: 3.20
- sr 0:0:1:0: Attached scsi CD-ROM sr0
- sd 0:0:0:0: Attached scsi generic sg0 type 0
- sr 0:0:1:0: Attached scsi generic sg1 type 5
- Clocksource tsc unstable (delta = -96409064 ns)
- usb 5-2: new full speed USB device using uhci_hcd and address 2
- usb 5-2: configuration #1 chosen from 1 choice
- device-mapper: ioctl: 4.14.0-ioctl (2008-04-23) initialised: dm-devel@redhat.com
- usb 2-1: new full speed USB device using uhci_hcd and address 2
- ieee1394: Host added: ID:BUS[0-00:1023]  GUID[001b249929192210]
- usb 2-1: configuration #1 chosen from 1 choice
- PM: Starting manual resume from disk
- kjournald starting.  Commit interval 5 seconds
- EXT3-fs: mounted filesystem with ordered data mode.
- udevd version 125 started
- input: Power Button (FF) as /class/input/input1
- ACPI: Power Button (FF) [PWRF]
- input: Sleep Button (CM) as /class/input/input2
- ACPI: Sleep Button (CM) [C2BF]
- ACPI: AC Adapter [C23B] (off-line)
- input: Lid Switch as /class/input/input3
- ACPI: Lid Switch [C155]
- Registered led device: hp:red:hddprotection
- leds-hp-disk driver loaded.
- acpi device:02: registered as cooling_device9
- input: Video Bus as /class/input/input4
- ACPI: WMI: Mapper loaded
- ACPI: Video Device [C09A] (multi-head: yes  rom: no  post: no)
- ACPI: Battery Slot [C23D] (battery present)
- agpgart-intel 0000:00:00.0: Intel 965GM Chipset
- agpgart-intel 0000:00:00.0: detected 7676K stolen memory
- agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
- cfg80211: Using static regulatory domain info
- cfg80211: Regulatory domain: EU
- 	(start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
- 	(2402000 KHz - 2482000 KHz @ 40000 KHz), (600 mBi, 2000 mBm)
- 	(5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
- 	(5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
- 	(5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
- 	(5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2000 mBm)
- 	(5490000 KHz - 5710000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
- yenta_cardbus 0000:02:06.0: CardBus bridge found [103c:30c9]
- iTCO_wdt: Intel TCO WatchDog Timer Driver v1.03 (30-Apr-2008)
- iTCO_wdt: Found a ICH8M-E TCO device (Version=2, TCOBASE=0x1060)
- iTCO_wdt: initialized. heartbeat=30 sec (nowayout=0)
-+yenta_cardbus 0000:02:06.0: CardBus bridge, secondary bus 0000:03
-+yenta_cardbus 0000:02:06.0:   IO window: 0x003000-0x0030ff
-+yenta_cardbus 0000:02:06.0:   IO window: 0x003400-0x0034ff
-+yenta_cardbus 0000:02:06.0:   PREFETCH window: 0x84400000-0x847fffff
-+yenta_cardbus 0000:02:06.0:   MEM window: 0x80000000-0x83ffffff
- yenta_cardbus 0000:02:06.0: ISA IRQ mask 0x0cb8, PCI irq 18
- yenta_cardbus 0000:02:06.0: Socket status: 30000006
- pci_bus 0000:02: Raising subordinate bus# of parent bus (#02) from #03 to #06
- yenta_cardbus 0000:02:06.0: pcmcia: parent PCI bridge I/O window: 0x3000 - 0x3fff
- yenta_cardbus 0000:02:06.0: pcmcia: parent PCI bridge Memory window: 0xe0100000 - 0xe03fffff
--yenta_cardbus 0000:02:06.0: pcmcia: parent PCI bridge Memory window: 0x80000000 - 0x83ffffff
- input: PC Speaker as /class/input/input5
- input: PS/2 Generic Mouse as /class/input/input6
- iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux, 1.3.27ks
- iwlagn: Copyright(c) 2003-2008 Intel Corporation
- iwlagn 0000:10:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
- iwlagn 0000:10:00.0: setting latency timer to 64
- iwlagn: Detected Intel Wireless WiFi Link 4965AGN REV=0x4
- iwlagn: Tunable channels: 11 802.11bg, 13 802.11a channels
- iwlagn 0000:10:00.0: PCI INT A disabled
- phy0: Selected rate control algorithm 'iwl-agn-rs'
- HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
- HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
- HDA Intel 0000:00:1b.0: setting latency timer to 64
- Synaptics Touchpad, model: 1, fw: 6.3, id: 0x1a0b1, caps: 0xa04711/0xa00000
- input: SynPS/2 Synaptics TouchPad as /class/input/input7
- EXT3 FS on dm-1, internal journal
- loop: module loaded
- kjournald starting.  Commit interval 5 seconds
- EXT3 FS on dm-5, internal journal
- EXT3-fs: mounted filesystem with ordered data mode.
- kjournald starting.  Commit interval 5 seconds
- EXT3 FS on dm-6, internal journal
- EXT3-fs: mounted filesystem with ordered data mode.
- kjournald starting.  Commit interval 5 seconds
- EXT3 FS on dm-4, internal journal
- EXT3-fs: mounted filesystem with ordered data mode.
- kjournald starting.  Commit interval 5 seconds
- EXT3 FS on dm-2, internal journal
- EXT3-fs: mounted filesystem with ordered data mode.
- kjournald starting.  Commit interval 5 seconds
- EXT3 FS on dm-3, internal journal
- EXT3-fs: mounted filesystem with ordered data mode.
- Adding 2097144k swap on /dev/mapper/main-swap.  Priority:-1 extents:1 across:2097144k
- iwlagn 0000:10:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
- iwlagn 0000:10:00.0: restoring config space at offset 0x1 (was 0x100002, writing 0x100006)
--iwlagn 0000:10:00.0: irq 44 for MSI/MSI-X
-+iwlagn 0000:10:00.0: irq 508 for MSI/MSI-X
- iwlagn 0000:10:00.0: firmware: requesting iwlwifi-4965-2.ucode
- Registered led device: iwl-phy0:radio
- Registered led device: iwl-phy0:assoc
- Registered led device: iwl-phy0:RX
- Registered led device: iwl-phy0:TX
- wlan0: authenticate with AP 00:14:c1:38:e5:15
- wlan0: authenticated
- wlan0: associate with AP 00:14:c1:38:e5:15
- wlan0: RX AssocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
- wlan0: associated
- NET: Registered protocol family 10
- lo: Disabled Privacy Extensions
- RPC: Registered udp transport module.
- RPC: Registered tcp transport module.
- wlan0: no IPv6 routers present
- [drm] Initialized drm 1.1.0 20060810
- pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- pci 0000:00:02.0: setting latency timer to 64
- [drm] Initialized i915 1.6.0 20080730 on minor 0
- CPU0 attaching NULL sched-domain.
- CPU1 attaching NULL sched-domain.
- CPU0 attaching sched-domain:
-  domain 0: span 0-1 level MC
-   groups: 0 1
-   domain 1: span 0-1 level CPU
-    groups: 0-1
- CPU1 attaching sched-domain:
-  domain 0: span 0-1 level MC
-   groups: 1 0
-   domain 1: span 0-1 level CPU
-    groups: 0-1
--hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x006f0900
-+e1000e 0000:00:19.0: PCI INT A disabled
-+PM: Syncing filesystems ... done.
-+Freezing user space processes ... (elapsed 0.00 seconds) done.
-+Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-+Suspending console(s) (use no_console_suspend to debug)
-+pci 0000:00:02.0: PCI INT A disabled
-+sd 0:0:0:0: [sda] Synchronizing SCSI cache
-+sd 0:0:0:0: [sda] Stopping disk
-+ACPI handle has no context!
-+ACPI handle has no context!
-+sdhci-pci 0000:02:06.2: PCI INT C disabled
-+ACPI handle has no context!
-+ACPI handle has no context!
-+iwlagn 0000:10:00.0: PCI INT A disabled
-+ata2: port disabled. ignoring.
-+ata_piix 0000:00:1f.1: PCI INT A disabled
-+ehci_hcd 0000:00:1d.7: PCI INT A disabled
-+uhci_hcd 0000:00:1d.2: PCI INT C disabled
-+uhci_hcd 0000:00:1d.1: PCI INT B disabled
-+uhci_hcd 0000:00:1d.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D3
-+ehci_hcd 0000:00:1a.7: PCI INT C disabled
-+uhci_hcd 0000:00:1a.1: PCI INT B disabled
-+uhci_hcd 0000:00:1a.0: PCI INT A disabled
-+ACPI handle has no context!
-+ACPI: Preparing to enter system sleep state S3
-+Disabling non-boot CPUs ...
-+CPU 1 is now offline
-+SMP alternatives: switching to UP code
-+CPU0 attaching NULL sched-domain.
-+CPU1 attaching NULL sched-domain.
-+CPU0 attaching NULL sched-domain.
-+CPU1 is down
-+ricoh-mmc: Suspending.
-+ricoh-mmc: Controller is now re-enabled.
-+Extended CMOS year: 2000
-+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-+Back to C!
-+Extended CMOS year: 2000
-+ricoh-mmc: Resuming.
-+ricoh-mmc: Controller is now disabled.
-+Enabling non-boot CPUs ...
-+SMP alternatives: switching to SMP code
-+Booting processor 1 APIC 0x1 ip 0x6000
-+Initializing CPU#1
-+Calibrating delay using timer specific routine.. 2660.01 BogoMIPS (lpj=5320031)
-+CPU: L1 I cache: 32K, L1 D cache: 32K
-+CPU: L2 cache: 2048K
-+CPU: Physical Processor ID: 0
-+CPU: Processor Core ID: 1
-+x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-+CPU1: Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz stepping 0d
-+CPU0 attaching NULL sched-domain.
-+Switched to high resolution mode on CPU 1
-+CPU0 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 0 1
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 1 0
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 is up
-+ACPI: Waking up from system sleep state S3
-+APIC error on CPU1: 00(40)
-+ACPI: EC: non-query interrupt received, switching to interrupt mode
-+pci 0000:00:02.0: restoring config space at offset 0x8 (was 0x1, writing 0x2001)
-+pci 0000:00:02.1: restoring config space at offset 0x4 (was 0x4, writing 0xe0500004)
-+pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000, writing 0x900007)
-+pci 0000:00:03.0: restoring config space at offset 0xf (was 0x100, writing 0x1ff)
-+pci 0000:00:03.0: restoring config space at offset 0x4 (was 0xfed12004, writing 0xe0600004)
-+pci 0000:00:03.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+pci 0000:00:03.2: restoring config space at offset 0x8 (was 0x1, writing 0x2031)
-+pci 0000:00:03.2: restoring config space at offset 0x7 (was 0x1, writing 0x2021)
-+pci 0000:00:03.2: restoring config space at offset 0x6 (was 0x1, writing 0x2019)
-+pci 0000:00:03.2: restoring config space at offset 0x5 (was 0x1, writing 0x2011)
-+pci 0000:00:03.2: restoring config space at offset 0x4 (was 0x1, writing 0x2009)
-+pci 0000:00:03.2: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00001)
-+serial 0000:00:03.3: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+serial 0000:00:03.3: restoring config space at offset 0x5 (was 0x0, writing 0xe0601000)
-+serial 0000:00:03.3: restoring config space at offset 0x4 (was 0x1, writing 0x2041)
-+serial 0000:00:03.3: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
-+pci 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
-+pci 0000:00:19.0: restoring config space at offset 0x6 (was 0x1, writing 0x2061)
-+pci 0000:00:19.0: restoring config space at offset 0x5 (was 0x0, writing 0xe0640000)
-+pci 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100003)
-+uhci_hcd 0000:00:1a.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+uhci_hcd 0000:00:1a.0: setting latency timer to 64
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0x8 (was 0x1, writing 0x2081)
-+usb usb2: root hub lost power or was reset
-+uhci_hcd 0000:00:1a.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-+uhci_hcd 0000:00:1a.1: setting latency timer to 64
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0x8 (was 0x1, writing 0x20a1)
-+usb usb4: root hub lost power or was reset
-+ehci_hcd 0000:00:1a.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+ehci_hcd 0000:00:1a.7: setting latency timer to 64
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0641000)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100002)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+HDA Intel 0000:00:1b.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0xf (was 0x100, writing 0x4010a)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x8 (was 0x0, writing 0xfff0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x7 (was 0x0, writing 0x200000f0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x6 (was 0x0, writing 0x80800)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0xf (was 0x200, writing 0x4020a)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x8 (was 0x0, writing 0xe000e000)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+uhci_hcd 0000:00:1d.0: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0x8 (was 0x1, writing 0x20c1)
-+usb usb5: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 22 (level, low) -> IRQ 22
-+uhci_hcd 0000:00:1d.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0xf (was 0x200, writing 0x20b)
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0x8 (was 0x1, writing 0x20e1)
-+usb usb6: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+uhci_hcd 0000:00:1d.2: setting latency timer to 64
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
-+usb usb7: root hub lost power or was reset
-+ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+ehci_hcd 0000:00:1d.7: setting latency timer to 64
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0648000)
-+pci 0000:00:1e.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pci 0000:00:1e.0: restoring config space at offset 0x8 (was 0x0, writing 0xe030e010)
-+pci 0000:00:1e.0: restoring config space at offset 0x7 (was 0x228000f0, writing 0x22803030)
-+pci 0000:00:1e.0: restoring config space at offset 0x1 (was 0x100007, writing 0x100107)
-+pci 0000:00:1e.0: setting latency timer to 64
-+ata_piix 0000:00:1f.1: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x8 (was 0xc01, writing 0x2121)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800005, writing 0x2880005)
-+ata_piix 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+ata_piix 0000:00:1f.1: setting latency timer to 64
-+ata2: port disabled. ignoring.
-+ACPI Exception (exoparg2-0444): AE_AML_PACKAGE_LIMIT, Index (000000005) is beyond end of object [20080926]
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C2C3] (Node ffff88007e01de80), AE_AML_PACKAGE_LIMIT
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C003.C0F6.C3F3._STM] (Node ffff88007e043dc0), AE_AML_PACKAGE_LIMIT
-+ata1: ACPI set timing mode failed (status=0x300b)
-+iwlagn 0000:10:00.0: enabling device (0000 -> 0002)
-+iwlagn 0000:10:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+iwlagn 0000:10:00.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x4 (was 0x4, writing 0xe0000004)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x1 (was 0x100002, writing 0x100006)
-+iwlagn 0000:10:00.0: irq 509 for MSI/MSI-X
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xf (was 0x3000100, writing 0x580010b)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xe (was 0x0, writing 0x34fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xd (was 0x0, writing 0x3400)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xc (was 0x0, writing 0x30fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xb (was 0x0, writing 0x3000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xa (was 0x0, writing 0x83fff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x9 (was 0x0, writing 0x80000000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x8 (was 0x0, writing 0x847ff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x7 (was 0x0, writing 0x84400000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x6 (was 0x0, writing 0xb0060302)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x4 (was 0x0, writing 0xe0100000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x3 (was 0x820000, writing 0x82a800)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100007)
-+ohci1394 0000:02:06.1: restoring config space at offset 0xf (was 0x4020200, writing 0x4020205)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x4 (was 0x0, writing 0xe0101000)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+Registered led device: iwl-phy0:radio
-+Registered led device: iwl-phy0:assoc
-+Registered led device: iwl-phy0:RX
-+Registered led device: iwl-phy0:TX
-+ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[e0101000-e01017ff]  Max Packet=[2048]  IR/IT contexts=[4/4]
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0xf (was 0x300, writing 0x30a)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x4 (was 0x0, writing 0xe0102000)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+sdhci-pci 0000:02:06.2: PCI INT C -> GSI 20 (level, low) -> IRQ 20
-+sd 0:0:0:0: [sda] Starting disk
-+ata1.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-+ata1.01: ACPI cmd ef/03:40:00:00:00:b0 filtered out
-+ata1.00: ACPI cmd ef/03:01:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1: EH complete
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+usb 5-2: reset full speed USB device using uhci_hcd and address 2
-+usb 2-1: reset full speed USB device using uhci_hcd and address 2
-+pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+pci 0000:00:02.0: setting latency timer to 64
-+Restarting tasks ... done.
-+e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
-+e1000e: Copyright (c) 1999-2008 Intel Corporation.
-+e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-+e1000e 0000:00:19.0: setting latency timer to 64
-+e1000e 0000:00:19.0: irq 508 for MSI/MSI-X
-+0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:1e:68:5e:3b:04
-+0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
-+0000:00:19.0: eth0: MAC: 5, PHY: 6, PBA No: ffffff-0ff
-+PM: Syncing filesystems ... done.
-+Freezing user space processes ... (elapsed 0.00 seconds) done.
-+Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-+Suspending console(s) (use no_console_suspend to debug)
-+pci 0000:00:02.0: PCI INT A disabled
-+sd 0:0:0:0: [sda] Synchronizing SCSI cache
-+sd 0:0:0:0: [sda] Stopping disk
-+ACPI handle has no context!
-+ACPI handle has no context!
-+sdhci-pci 0000:02:06.2: PCI INT C disabled
-+ACPI handle has no context!
-+ACPI handle has no context!
-+iwlagn 0000:10:00.0: PCI INT A disabled
-+ata2: port disabled. ignoring.
-+ata_piix 0000:00:1f.1: PCI INT A disabled
-+ehci_hcd 0000:00:1d.7: PCI INT A disabled
-+uhci_hcd 0000:00:1d.2: PCI INT C disabled
-+uhci_hcd 0000:00:1d.1: PCI INT B disabled
-+uhci_hcd 0000:00:1d.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D3
-+ehci_hcd 0000:00:1a.7: PCI INT C disabled
-+uhci_hcd 0000:00:1a.1: PCI INT B disabled
-+uhci_hcd 0000:00:1a.0: PCI INT A disabled
-+e1000e 0000:00:19.0: PME# enabled
-+e1000e 0000:00:19.0: wake-up capability enabled by ACPI
-+e1000e 0000:00:19.0: PME# enabled
-+e1000e 0000:00:19.0: wake-up capability enabled by ACPI
-+e1000e 0000:00:19.0: PCI INT A disabled
-+ACPI handle has no context!
-+ACPI: Preparing to enter system sleep state S3
-+Disabling non-boot CPUs ...
-+CPU 1 is now offline
-+SMP alternatives: switching to UP code
-+CPU0 attaching NULL sched-domain.
-+CPU1 attaching NULL sched-domain.
-+CPU0 attaching NULL sched-domain.
-+CPU1 is down
-+ricoh-mmc: Suspending.
-+ricoh-mmc: Controller is now re-enabled.
-+Extended CMOS year: 2000
-+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-+Back to C!
-+Extended CMOS year: 2000
-+ricoh-mmc: Resuming.
-+ricoh-mmc: Controller is now disabled.
-+Enabling non-boot CPUs ...
-+SMP alternatives: switching to SMP code
-+Booting processor 1 APIC 0x1 ip 0x6000
-+Initializing CPU#1
-+Calibrating delay using timer specific routine.. 2660.06 BogoMIPS (lpj=5320131)
-+CPU: L1 I cache: 32K, L1 D cache: 32K
-+CPU: L2 cache: 2048K
-+CPU: Physical Processor ID: 0
-+CPU: Processor Core ID: 1
-+x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-+CPU1: Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz stepping 0d
-+CPU0 attaching NULL sched-domain.
-+Switched to high resolution mode on CPU 1
-+CPU0 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 0 1
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 1 0
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 is up
-+ACPI: Waking up from system sleep state S3
-+APIC error on CPU1: 00(40)
-+ACPI: EC: non-query interrupt received, switching to interrupt mode
-+pci 0000:00:02.0: restoring config space at offset 0x8 (was 0x1, writing 0x2001)
-+pci 0000:00:02.1: restoring config space at offset 0x4 (was 0x4, writing 0xe0500004)
-+pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000, writing 0x900007)
-+pci 0000:00:03.0: restoring config space at offset 0xf (was 0x100, writing 0x1ff)
-+pci 0000:00:03.0: restoring config space at offset 0x4 (was 0xfed12004, writing 0xe0600004)
-+pci 0000:00:03.0: restoring config space at offset 0x1 (was 0x100006, writing 0x180006)
-+pci 0000:00:03.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+pci 0000:00:03.2: restoring config space at offset 0x8 (was 0x1, writing 0x2031)
-+pci 0000:00:03.2: restoring config space at offset 0x7 (was 0x1, writing 0x2021)
-+pci 0000:00:03.2: restoring config space at offset 0x6 (was 0x1, writing 0x2019)
-+pci 0000:00:03.2: restoring config space at offset 0x5 (was 0x1, writing 0x2011)
-+pci 0000:00:03.2: restoring config space at offset 0x4 (was 0x1, writing 0x2009)
-+pci 0000:00:03.2: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00001)
-+serial 0000:00:03.3: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+serial 0000:00:03.3: restoring config space at offset 0x5 (was 0x0, writing 0xe0601000)
-+serial 0000:00:03.3: restoring config space at offset 0x4 (was 0x1, writing 0x2041)
-+serial 0000:00:03.3: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
-+e1000e 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
-+e1000e 0000:00:19.0: restoring config space at offset 0x6 (was 0x1, writing 0x2061)
-+e1000e 0000:00:19.0: restoring config space at offset 0x5 (was 0x0, writing 0xe0640000)
-+e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100007)
-+e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-+e1000e 0000:00:19.0: setting latency timer to 64
-+e1000e 0000:00:19.0: wake-up capability disabled by ACPI
-+e1000e 0000:00:19.0: PME# disabled
-+e1000e 0000:00:19.0: wake-up capability disabled by ACPI
-+e1000e 0000:00:19.0: PME# disabled
-+e1000e 0000:00:19.0: irq 509 for MSI/MSI-X
-+uhci_hcd 0000:00:1a.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+uhci_hcd 0000:00:1a.0: setting latency timer to 64
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0x8 (was 0x1, writing 0x2081)
-+usb usb2: root hub lost power or was reset
-+uhci_hcd 0000:00:1a.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-+uhci_hcd 0000:00:1a.1: setting latency timer to 64
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0x8 (was 0x1, writing 0x20a1)
-+usb usb4: root hub lost power or was reset
-+ehci_hcd 0000:00:1a.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+ehci_hcd 0000:00:1a.7: setting latency timer to 64
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0641000)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100002)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+HDA Intel 0000:00:1b.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0xf (was 0x100, writing 0x4010a)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x8 (was 0x0, writing 0xfff0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x6 (was 0x0, writing 0x80800)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0xf (was 0x200, writing 0x4020a)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x8 (was 0x0, writing 0xe000e000)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+uhci_hcd 0000:00:1d.0: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0x8 (was 0x1, writing 0x20c1)
-+usb usb5: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 22 (level, low) -> IRQ 22
-+uhci_hcd 0000:00:1d.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0xf (was 0x200, writing 0x20b)
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0x8 (was 0x1, writing 0x20e1)
-+usb usb6: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+uhci_hcd 0000:00:1d.2: setting latency timer to 64
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
-+usb usb7: root hub lost power or was reset
-+ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+ehci_hcd 0000:00:1d.7: setting latency timer to 64
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0648000)
-+pci 0000:00:1e.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pci 0000:00:1e.0: restoring config space at offset 0x8 (was 0x0, writing 0xe030e010)
-+pci 0000:00:1e.0: restoring config space at offset 0x7 (was 0x228000f0, writing 0x22803030)
-+pci 0000:00:1e.0: restoring config space at offset 0x1 (was 0x100007, writing 0x100107)
-+pci 0000:00:1e.0: setting latency timer to 64
-+ata_piix 0000:00:1f.1: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x8 (was 0xc01, writing 0x2121)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800005, writing 0x2880005)
-+ata_piix 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+ata_piix 0000:00:1f.1: setting latency timer to 64
-+ata2: port disabled. ignoring.
-+ACPI Exception (exoparg2-0444): AE_AML_PACKAGE_LIMIT, Index (000000005) is beyond end of object [20080926]
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C2C3] (Node ffff88007e01de80), AE_AML_PACKAGE_LIMIT
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C003.C0F6.C3F3._STM] (Node ffff88007e043dc0), AE_AML_PACKAGE_LIMIT
-+ata1: ACPI set timing mode failed (status=0x300b)
-+iwlagn 0000:10:00.0: enabling device (0000 -> 0002)
-+iwlagn 0000:10:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+iwlagn 0000:10:00.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x4 (was 0x4, writing 0xe0000004)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x1 (was 0x100002, writing 0x100006)
-+iwlagn 0000:10:00.0: irq 508 for MSI/MSI-X
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xf (was 0x3000100, writing 0x580010b)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xe (was 0x0, writing 0x34fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xd (was 0x0, writing 0x3400)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xc (was 0x0, writing 0x30fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xb (was 0x0, writing 0x3000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xa (was 0x0, writing 0x83fff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x9 (was 0x0, writing 0x80000000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x8 (was 0x0, writing 0x847ff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x7 (was 0x0, writing 0x84400000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x6 (was 0x0, writing 0xb0060302)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x4 (was 0x0, writing 0xe0100000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x3 (was 0x820000, writing 0x82a800)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100007)
-+ohci1394 0000:02:06.1: restoring config space at offset 0xf (was 0x4020200, writing 0x4020205)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x4 (was 0x0, writing 0xe0101000)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[e0101000-e01017ff]  Max Packet=[2048]  IR/IT contexts=[4/4]
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0xf (was 0x300, writing 0x30a)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x4 (was 0x0, writing 0xe0102000)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+sdhci-pci 0000:02:06.2: PCI INT C -> GSI 20 (level, low) -> IRQ 20
-+Registered led device: iwl-phy0:radio
-+Registered led device: iwl-phy0:assoc
-+Registered led device: iwl-phy0:RX
-+Registered led device: iwl-phy0:TX
-+sd 0:0:0:0: [sda] Starting disk
-+ata1.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-+ata1.01: ACPI cmd ef/03:40:00:00:00:b0 filtered out
-+ata1.00: ACPI cmd ef/03:01:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1: EH complete
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+usb 5-2: reset full speed USB device using uhci_hcd and address 2
-+usb 2-1: reset full speed USB device using uhci_hcd and address 2
-+pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+pci 0000:00:02.0: setting latency timer to 64
-+Restarting tasks ... done.
-+PM: Syncing filesystems ... done.
-+Freezing user space processes ... (elapsed 0.00 seconds) done.
-+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-+Suspending console(s) (use no_console_suspend to debug)
-+pci 0000:00:02.0: PCI INT A disabled
-+sd 0:0:0:0: [sda] Synchronizing SCSI cache
-+sd 0:0:0:0: [sda] Stopping disk
-+ACPI handle has no context!
-+ACPI handle has no context!
-+sdhci-pci 0000:02:06.2: PCI INT C disabled
-+ACPI handle has no context!
-+ACPI handle has no context!
-+iwlagn 0000:10:00.0: PCI INT A disabled
-+ata2: port disabled. ignoring.
-+ata_piix 0000:00:1f.1: PCI INT A disabled
-+ehci_hcd 0000:00:1d.7: PCI INT A disabled
-+uhci_hcd 0000:00:1d.2: PCI INT C disabled
-+uhci_hcd 0000:00:1d.1: PCI INT B disabled
-+uhci_hcd 0000:00:1d.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D3
-+ehci_hcd 0000:00:1a.7: PCI INT C disabled
-+uhci_hcd 0000:00:1a.1: PCI INT B disabled
-+uhci_hcd 0000:00:1a.0: PCI INT A disabled
-+e1000e 0000:00:19.0: PME# enabled
-+e1000e 0000:00:19.0: wake-up capability enabled by ACPI
-+e1000e 0000:00:19.0: PME# enabled
-+e1000e 0000:00:19.0: wake-up capability enabled by ACPI
-+e1000e 0000:00:19.0: PCI INT A disabled
-+ACPI handle has no context!
-+ACPI: Preparing to enter system sleep state S3
-+Disabling non-boot CPUs ...
-+CPU 1 is now offline
-+SMP alternatives: switching to UP code
-+CPU0 attaching NULL sched-domain.
-+CPU1 attaching NULL sched-domain.
-+CPU0 attaching NULL sched-domain.
-+CPU1 is down
-+ricoh-mmc: Suspending.
-+ricoh-mmc: Controller is now re-enabled.
-+Extended CMOS year: 2000
-+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-+Back to C!
-+Extended CMOS year: 2000
-+ricoh-mmc: Resuming.
-+ricoh-mmc: Controller is now disabled.
-+Enabling non-boot CPUs ...
-+SMP alternatives: switching to SMP code
-+Booting processor 1 APIC 0x1 ip 0x6000
-+Initializing CPU#1
-+Calibrating delay using timer specific routine.. 2660.08 BogoMIPS (lpj=5320176)
-+CPU: L1 I cache: 32K, L1 D cache: 32K
-+CPU: L2 cache: 2048K
-+CPU: Physical Processor ID: 0
-+CPU: Processor Core ID: 1
-+x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-+CPU1: Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz stepping 0d
-+CPU0 attaching NULL sched-domain.
-+Switched to high resolution mode on CPU 1
-+CPU0 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 0 1
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 1 0
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 is up
-+ACPI: Waking up from system sleep state S3
-+APIC error on CPU1: 00(40)
-+ACPI: EC: non-query interrupt received, switching to interrupt mode
-+pci 0000:00:02.0: restoring config space at offset 0x8 (was 0x1, writing 0x2001)
-+pci 0000:00:02.1: restoring config space at offset 0x4 (was 0x4, writing 0xe0500004)
-+pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000, writing 0x900007)
-+pci 0000:00:03.0: restoring config space at offset 0xf (was 0x100, writing 0x1ff)
-+pci 0000:00:03.0: restoring config space at offset 0x4 (was 0xfed12004, writing 0xe0600004)
-+pci 0000:00:03.0: restoring config space at offset 0x1 (was 0x100006, writing 0x180006)
-+pci 0000:00:03.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+pci 0000:00:03.2: restoring config space at offset 0x8 (was 0x1, writing 0x2031)
-+pci 0000:00:03.2: restoring config space at offset 0x7 (was 0x1, writing 0x2021)
-+pci 0000:00:03.2: restoring config space at offset 0x6 (was 0x1, writing 0x2019)
-+pci 0000:00:03.2: restoring config space at offset 0x5 (was 0x1, writing 0x2011)
-+pci 0000:00:03.2: restoring config space at offset 0x4 (was 0x1, writing 0x2009)
-+pci 0000:00:03.2: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00001)
-+serial 0000:00:03.3: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+serial 0000:00:03.3: restoring config space at offset 0x5 (was 0x0, writing 0xe0601000)
-+serial 0000:00:03.3: restoring config space at offset 0x4 (was 0x1, writing 0x2041)
-+serial 0000:00:03.3: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
-+e1000e 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
-+e1000e 0000:00:19.0: restoring config space at offset 0x6 (was 0x1, writing 0x2061)
-+e1000e 0000:00:19.0: restoring config space at offset 0x5 (was 0x0, writing 0xe0640000)
-+e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100007)
-+e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-+e1000e 0000:00:19.0: setting latency timer to 64
-+e1000e 0000:00:19.0: wake-up capability disabled by ACPI
-+e1000e 0000:00:19.0: PME# disabled
-+e1000e 0000:00:19.0: wake-up capability disabled by ACPI
-+e1000e 0000:00:19.0: PME# disabled
-+e1000e 0000:00:19.0: irq 509 for MSI/MSI-X
-+uhci_hcd 0000:00:1a.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+uhci_hcd 0000:00:1a.0: setting latency timer to 64
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0x8 (was 0x1, writing 0x2081)
-+usb usb2: root hub lost power or was reset
-+uhci_hcd 0000:00:1a.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-+uhci_hcd 0000:00:1a.1: setting latency timer to 64
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0x8 (was 0x1, writing 0x20a1)
-+usb usb4: root hub lost power or was reset
-+ehci_hcd 0000:00:1a.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+ehci_hcd 0000:00:1a.7: setting latency timer to 64
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0641000)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100002)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+HDA Intel 0000:00:1b.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0xf (was 0x100, writing 0x4010a)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x8 (was 0x0, writing 0xfff0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x6 (was 0x0, writing 0x80800)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0xf (was 0x200, writing 0x4020a)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x8 (was 0x0, writing 0xe000e000)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+uhci_hcd 0000:00:1d.0: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0x8 (was 0x1, writing 0x20c1)
-+usb usb5: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 22 (level, low) -> IRQ 22
-+uhci_hcd 0000:00:1d.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0xf (was 0x200, writing 0x20b)
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0x8 (was 0x1, writing 0x20e1)
-+usb usb6: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+uhci_hcd 0000:00:1d.2: setting latency timer to 64
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
-+usb usb7: root hub lost power or was reset
-+ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+ehci_hcd 0000:00:1d.7: setting latency timer to 64
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0648000)
-+pci 0000:00:1e.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pci 0000:00:1e.0: restoring config space at offset 0x8 (was 0x0, writing 0xe030e010)
-+pci 0000:00:1e.0: restoring config space at offset 0x7 (was 0x228000f0, writing 0x22803030)
-+pci 0000:00:1e.0: restoring config space at offset 0x1 (was 0x100007, writing 0x100107)
-+pci 0000:00:1e.0: setting latency timer to 64
-+ata_piix 0000:00:1f.1: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x8 (was 0xc01, writing 0x2121)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800005, writing 0x2880005)
-+ata_piix 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+ata_piix 0000:00:1f.1: setting latency timer to 64
-+ata2: port disabled. ignoring.
-+ACPI Exception (exoparg2-0444): AE_AML_PACKAGE_LIMIT, Index (000000005) is beyond end of object [20080926]
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C2C3] (Node ffff88007e01de80), AE_AML_PACKAGE_LIMIT
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C003.C0F6.C3F3._STM] (Node ffff88007e043dc0), AE_AML_PACKAGE_LIMIT
-+ata1: ACPI set timing mode failed (status=0x300b)
-+iwlagn 0000:10:00.0: enabling device (0000 -> 0002)
-+iwlagn 0000:10:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+iwlagn 0000:10:00.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x4 (was 0x4, writing 0xe0000004)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x1 (was 0x100002, writing 0x100006)
-+iwlagn 0000:10:00.0: irq 508 for MSI/MSI-X
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xf (was 0x3000100, writing 0x580010b)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xe (was 0x0, writing 0x34fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xd (was 0x0, writing 0x3400)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xc (was 0x0, writing 0x30fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xb (was 0x0, writing 0x3000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xa (was 0x0, writing 0x83fff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x9 (was 0x0, writing 0x80000000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x8 (was 0x0, writing 0x847ff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x7 (was 0x0, writing 0x84400000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x6 (was 0x0, writing 0xb0060302)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x4 (was 0x0, writing 0xe0100000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x3 (was 0x820000, writing 0x82a800)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100007)
-+ohci1394 0000:02:06.1: restoring config space at offset 0xf (was 0x4020200, writing 0x4020205)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x4 (was 0x0, writing 0xe0101000)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+Registered led device: iwl-phy0:radio
-+Registered led device: iwl-phy0:assoc
-+Registered led device: iwl-phy0:RX
-+Registered led device: iwl-phy0:TX
-+ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[e0101000-e01017ff]  Max Packet=[2048]  IR/IT contexts=[4/4]
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0xf (was 0x300, writing 0x30a)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x4 (was 0x0, writing 0xe0102000)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+sdhci-pci 0000:02:06.2: PCI INT C -> GSI 20 (level, low) -> IRQ 20
-+sd 0:0:0:0: [sda] Starting disk
-+ata1.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-+ata1.01: ACPI cmd ef/03:40:00:00:00:b0 filtered out
-+ata1.00: ACPI cmd ef/03:01:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1: EH complete
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+usb 5-2: reset full speed USB device using uhci_hcd and address 2
-+usb 2-1: reset full speed USB device using uhci_hcd and address 2
-+pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+pci 0000:00:02.0: setting latency timer to 64
-+Restarting tasks ... done.
-+PM: Syncing filesystems ... done.
-+Freezing user space processes ... (elapsed 0.01 seconds) done.
-+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-+Suspending console(s) (use no_console_suspend to debug)
-+pci 0000:00:02.0: PCI INT A disabled
-+sd 0:0:0:0: [sda] Synchronizing SCSI cache
-+sd 0:0:0:0: [sda] Stopping disk
-+ACPI handle has no context!
-+ACPI handle has no context!
-+sdhci-pci 0000:02:06.2: PCI INT C disabled
-+ACPI handle has no context!
-+ACPI handle has no context!
-+iwlagn 0000:10:00.0: PCI INT A disabled
-+ata2: port disabled. ignoring.
-+ata_piix 0000:00:1f.1: PCI INT A disabled
-+ehci_hcd 0000:00:1d.7: PCI INT A disabled
-+uhci_hcd 0000:00:1d.2: PCI INT C disabled
-+uhci_hcd 0000:00:1d.1: PCI INT B disabled
-+uhci_hcd 0000:00:1d.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: PCI INT A disabled
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D3
-+ehci_hcd 0000:00:1a.7: PCI INT C disabled
-+uhci_hcd 0000:00:1a.1: PCI INT B disabled
-+uhci_hcd 0000:00:1a.0: PCI INT A disabled
-+e1000e 0000:00:19.0: PME# enabled
-+e1000e 0000:00:19.0: wake-up capability enabled by ACPI
-+e1000e 0000:00:19.0: PME# enabled
-+e1000e 0000:00:19.0: wake-up capability enabled by ACPI
-+e1000e 0000:00:19.0: PCI INT A disabled
-+ACPI handle has no context!
-+ACPI: Preparing to enter system sleep state S3
-+Disabling non-boot CPUs ...
-+CPU 1 is now offline
-+SMP alternatives: switching to UP code
-+CPU0 attaching NULL sched-domain.
-+CPU1 attaching NULL sched-domain.
-+CPU0 attaching NULL sched-domain.
-+CPU1 is down
-+ricoh-mmc: Suspending.
-+ricoh-mmc: Controller is now re-enabled.
-+Extended CMOS year: 2000
-+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-+Back to C!
-+Extended CMOS year: 2000
-+ricoh-mmc: Resuming.
-+ricoh-mmc: Controller is now disabled.
-+Enabling non-boot CPUs ...
-+SMP alternatives: switching to SMP code
-+Booting processor 1 APIC 0x1 ip 0x6000
-+Initializing CPU#1
-+Calibrating delay using timer specific routine.. 2659.98 BogoMIPS (lpj=5319972)
-+CPU: L1 I cache: 32K, L1 D cache: 32K
-+CPU: L2 cache: 2048K
-+CPU: Physical Processor ID: 0
-+CPU: Processor Core ID: 1
-+x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-+CPU1: Intel(R) Core(TM)2 Duo CPU     U7700  @ 1.33GHz stepping 0d
-+CPU0 attaching NULL sched-domain.
-+Switched to high resolution mode on CPU 1
-+CPU0 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 0 1
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 attaching sched-domain:
-+ domain 0: span 0-1 level MC
-+  groups: 1 0
-+  domain 1: span 0-1 level CPU
-+   groups: 0-1
-+CPU1 is up
-+ACPI: Waking up from system sleep state S3
-+APIC error on CPU1: 00(40)
-+ACPI: EC: non-query interrupt received, switching to interrupt mode
-+pci 0000:00:02.0: restoring config space at offset 0x8 (was 0x1, writing 0x2001)
-+pci 0000:00:02.1: restoring config space at offset 0x4 (was 0x4, writing 0xe0500004)
-+pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000, writing 0x900007)
-+pci 0000:00:03.0: restoring config space at offset 0xf (was 0x100, writing 0x1ff)
-+pci 0000:00:03.0: restoring config space at offset 0x4 (was 0xfed12004, writing 0xe0600004)
-+pci 0000:00:03.0: restoring config space at offset 0x1 (was 0x100006, writing 0x180006)
-+pci 0000:00:03.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+pci 0000:00:03.2: restoring config space at offset 0x8 (was 0x1, writing 0x2031)
-+pci 0000:00:03.2: restoring config space at offset 0x7 (was 0x1, writing 0x2021)
-+pci 0000:00:03.2: restoring config space at offset 0x6 (was 0x1, writing 0x2019)
-+pci 0000:00:03.2: restoring config space at offset 0x5 (was 0x1, writing 0x2011)
-+pci 0000:00:03.2: restoring config space at offset 0x4 (was 0x1, writing 0x2009)
-+pci 0000:00:03.2: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00001)
-+serial 0000:00:03.3: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+serial 0000:00:03.3: restoring config space at offset 0x5 (was 0x0, writing 0xe0601000)
-+serial 0000:00:03.3: restoring config space at offset 0x4 (was 0x1, writing 0x2041)
-+serial 0000:00:03.3: restoring config space at offset 0x1 (was 0xb00000, writing 0xb00007)
-+e1000e 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
-+e1000e 0000:00:19.0: restoring config space at offset 0x6 (was 0x1, writing 0x2061)
-+e1000e 0000:00:19.0: restoring config space at offset 0x5 (was 0x0, writing 0xe0640000)
-+e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100007)
-+e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
-+e1000e 0000:00:19.0: setting latency timer to 64
-+e1000e 0000:00:19.0: wake-up capability disabled by ACPI
-+e1000e 0000:00:19.0: PME# disabled
-+e1000e 0000:00:19.0: wake-up capability disabled by ACPI
-+e1000e 0000:00:19.0: PME# disabled
-+e1000e 0000:00:19.0: irq 509 for MSI/MSI-X
-+uhci_hcd 0000:00:1a.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+uhci_hcd 0000:00:1a.0: setting latency timer to 64
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1a.0: restoring config space at offset 0x8 (was 0x1, writing 0x2081)
-+usb usb2: root hub lost power or was reset
-+uhci_hcd 0000:00:1a.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-+uhci_hcd 0000:00:1a.1: setting latency timer to 64
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0xf (was 0x200, writing 0x20a)
-+uhci_hcd 0000:00:1a.1: restoring config space at offset 0x8 (was 0x1, writing 0x20a1)
-+usb usb4: root hub lost power or was reset
-+ehci_hcd 0000:00:1a.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+ehci_hcd 0000:00:1a.7: setting latency timer to 64
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+ehci_hcd 0000:00:1a.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0641000)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100002)
-+HDA Intel 0000:00:1b.0: power state changed by ACPI to D0
-+HDA Intel 0000:00:1b.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+HDA Intel 0000:00:1b.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0xf (was 0x100, writing 0x4010a)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x8 (was 0x0, writing 0xfff0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x6 (was 0x0, writing 0x80800)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.0: setting latency timer to 64
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0xf (was 0x200, writing 0x4020a)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x8 (was 0x0, writing 0xe000e000)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x7 (was 0x0, writing 0xf0)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
-+pcieport-driver 0000:00:1c.1: restoring config space at offset 0x1 (was 0x100000, writing 0x100407)
-+pcieport-driver 0000:00:1c.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+uhci_hcd 0000:00:1d.0: setting latency timer to 64
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+uhci_hcd 0000:00:1d.0: restoring config space at offset 0x8 (was 0x1, writing 0x20c1)
-+usb usb5: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.1: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 22 (level, low) -> IRQ 22
-+uhci_hcd 0000:00:1d.1: setting latency timer to 64
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0xf (was 0x200, writing 0x20b)
-+uhci_hcd 0000:00:1d.1: restoring config space at offset 0x8 (was 0x1, writing 0x20e1)
-+usb usb6: root hub lost power or was reset
-+uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
-+uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-+uhci_hcd 0000:00:1d.2: setting latency timer to 64
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-+uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
-+usb usb7: root hub lost power or was reset
-+ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
-+ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-+ehci_hcd 0000:00:1d.7: setting latency timer to 64
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ehci_hcd 0000:00:1d.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0648000)
-+pci 0000:00:1e.0: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
-+pci 0000:00:1e.0: restoring config space at offset 0x8 (was 0x0, writing 0xe030e010)
-+pci 0000:00:1e.0: restoring config space at offset 0x7 (was 0x228000f0, writing 0x22803030)
-+pci 0000:00:1e.0: restoring config space at offset 0x1 (was 0x100007, writing 0x100107)
-+pci 0000:00:1e.0: setting latency timer to 64
-+ata_piix 0000:00:1f.1: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x8 (was 0xc01, writing 0x2121)
-+ata_piix 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800005, writing 0x2880005)
-+ata_piix 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+ata_piix 0000:00:1f.1: setting latency timer to 64
-+ata2: port disabled. ignoring.
-+ACPI Exception (exoparg2-0444): AE_AML_PACKAGE_LIMIT, Index (000000005) is beyond end of object [20080926]
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C2C3] (Node ffff88007e01de80), AE_AML_PACKAGE_LIMIT
-+ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.C003.C0F6.C3F3._STM] (Node ffff88007e043dc0), AE_AML_PACKAGE_LIMIT
-+ata1: ACPI set timing mode failed (status=0x300b)
-+iwlagn 0000:10:00.0: enabling device (0000 -> 0002)
-+iwlagn 0000:10:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-+iwlagn 0000:10:00.0: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x4 (was 0x4, writing 0xe0000004)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)
-+iwlagn 0000:10:00.0: restoring config space at offset 0x1 (was 0x100002, writing 0x100006)
-+iwlagn 0000:10:00.0: irq 508 for MSI/MSI-X
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xf (was 0x3000100, writing 0x580010b)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xe (was 0x0, writing 0x34fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xd (was 0x0, writing 0x3400)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xc (was 0x0, writing 0x30fc)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xb (was 0x0, writing 0x3000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0xa (was 0x0, writing 0x83fff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x9 (was 0x0, writing 0x80000000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x8 (was 0x0, writing 0x847ff000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x7 (was 0x0, writing 0x84400000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x6 (was 0x0, writing 0xb0060302)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x4 (was 0x0, writing 0xe0100000)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x3 (was 0x820000, writing 0x82a800)
-+yenta_cardbus 0000:02:06.0: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100007)
-+ohci1394 0000:02:06.1: restoring config space at offset 0xf (was 0x4020200, writing 0x4020205)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x4 (was 0x0, writing 0xe0101000)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+ohci1394 0000:02:06.1: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[e0101000-e01017ff]  Max Packet=[2048]  IR/IT contexts=[4/4]
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0xf (was 0x300, writing 0x30a)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x4 (was 0x0, writing 0xe0102000)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x3 (was 0x800000, writing 0x804010)
-+sdhci-pci 0000:02:06.2: restoring config space at offset 0x1 (was 0x2100000, writing 0x2100006)
-+sdhci-pci 0000:02:06.2: PCI INT C -> GSI 20 (level, low) -> IRQ 20
-+Registered led device: iwl-phy0:radio
-+Registered led device: iwl-phy0:assoc
-+Registered led device: iwl-phy0:RX
-+Registered led device: iwl-phy0:TX
-+sd 0:0:0:0: [sda] Starting disk
-+ata1.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-+ata1.01: ACPI cmd ef/03:40:00:00:00:b0 filtered out
-+ata1.00: ACPI cmd ef/03:01:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
-+ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1.00: configured for UDMA/100
-+ata1.01: configured for MWDMA2
-+ata1: EH complete
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors: (120 GB/111 GiB)
-+sd 0:0:0:0: [sda] Write Protect is off
-+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-+usb 5-2: reset full speed USB device using uhci_hcd and address 2
-+usb 2-1: reset full speed USB device using uhci_hcd and address 2
-+pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-+pci 0000:00:02.0: setting latency timer to 64
-+Restarting tasks ... <7>wlan0: deauthenticated
-+done.
-+wlan0: direct probe to AP 00:14:c1:38:e5:15 try 1
-+wlan0 direct probe responded
-+wlan0: authenticate with AP 00:14:c1:38:e5:15
-+wlan0: authenticated
-+wlan0: associate with AP 00:14:c1:38:e5:15
-+wlan0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-+wlan0: associated
-
---Boundary-00=_2eMNJ9sjqdvV3Ep--
