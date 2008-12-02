@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYLBBC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYLBBMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbYLBBC2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 20:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYLBBCT
+	id S1753320AbYLBBMX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 20:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYLBBMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 20:02:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:39649 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636AbYLBBCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 20:02:18 -0500
-Subject: Re: [Cbe-oss-dev] [Patch 1/3] User OProfile support for the IBM
- CELL processor SPU	event profiling
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Carl Love <cel@us.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
-       cbe-oss-dev <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <1228177110.6509.286.camel@carll-linux-desktop>
-References: <1228177110.6509.286.camel@carll-linux-desktop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-681ddgYCbB7JIyeA0aNK"
-Date: Tue, 02 Dec 2008 12:02:13 +1100
-Message-Id: <1228179733.8004.45.camel@localhost>
+	Mon, 1 Dec 2008 20:12:12 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53506 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbYLBBML (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 20:12:11 -0500
+Subject: Re: [RFC v10][PATCH 09/13] Restore open file descriprtors
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Linus Torvalds <torvalds@osdl.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <49345086.4@cs.columbia.edu>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
+	 <1227747884-14150-10-git-send-email-orenl@cs.columbia.edu>
+	 <20081128112745.GR28946@ZenIV.linux.org.uk>
+	 <1228159324.2971.74.camel@nimitz> <49344C11.6090204@cs.columbia.edu>
+	 <1228164873.2971.95.camel@nimitz>  <49345086.4@cs.columbia.edu>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 17:12:06 -0800
+Message-Id: <1228180326.2971.128.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-12-01 at 16:00 -0500, Oren Laadan wrote:
+> Dave Hansen wrote:
+> > On Mon, 2008-12-01 at 15:41 -0500, Oren Laadan wrote:
+> >>>>> +   fd = cr_attach_file(file);      /* no need to cleanup 'file' below */
+> >>>>> +   if (fd < 0) {
+> >>>>> +           filp_close(file, NULL);
+> >>>>> +           ret = fd;
+> >>>>> +           goto out;
+> >>>>> +   }
+> >>>>> +
+> >>>>> +   /* register new <objref, file> tuple in hash table */
+> >>>>> +   ret = cr_obj_add_ref(ctx, file, parent, CR_OBJ_FILE, 0);
+> >>>>> +   if (ret < 0)
+> >>>>> +           goto out;
+> >>>> Who said that file still exists at that point?
+> >> Correct. This call should move higher up befor ethe call to cr_attach_file()
+> > 
+> > Is that sufficient?  It seems like we're depending on the fd's reference
+> > to the 'struct file' to keep it valid in the hash.  If something happens
+> > to the fd (like the other thread messing with it) the 'struct file' can
+> > still go away.
+> > 
+> > Shouldn't we do another get_file() for the hash's reference?
+> 
+> When a shared object is inserted to the hash we automatically take another
+> reference to it (according to its type) for as long as it remains in the
+> hash. See:  'cr_obj_ref_grab()' and 'cr_obj_ref_drop()'.  So by moving that
+> call higher up, we protect the struct file.
 
---=-681ddgYCbB7JIyeA0aNK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We also need to document that we depend on this reference in the hash to
+keep the object around.  Take a look at cr_read_fd_data().  Once that
+cr_attach_file() has been performed, the only thing keeping the 'file'
+around is the hash reference.  If someone happened to remove it from the
+hash, the vfs_llseek() below would be bogus.
 
-On Mon, 2008-12-01 at 16:18 -0800, Carl Love wrote:
-> This patch adds the SPU event profiling support for the IBM Cell
-> processor to the list of available events. The opcontrol script
-> patches include a test to see if there is a new cell specific file
-> in the kernel oprofile file system.  If the file exists, then the
-> kernel supports SPU event profiling. =20
->=20
-> Signed-off-by: Carl Love <carll@us.ibm.com>
->=20
+I don't know how we document that the hash is one-way: writes only and
+no later deletions.
 
-> Index: oprofile-cvs/doc/oprofile.xml
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- oprofile-cvs.orig/doc/oprofile.xml
-> +++ oprofile-cvs/doc/oprofile.xml
-> @@ -123,6 +123,10 @@ For information on how to use OProfile's
->                         of 2.6.22 or more recent.  Additionally, full sup=
-port of SPE profiling requires a BFD library
->                         from binutils code dated January 2007 or later.  =
-To ensure the proper BFD support exists, run
->                         the <code>configure</code> utility with <code>--w=
-ith-target=3Dcell-be</code>.
-> +
-> +		       Profiling the Cell Broadband Engine using SPU events requires a=
- kernel version of 2.6.TBD or
-                                                                           =
-                                    ^^^
-
-Not sure if you missed that, or it's still TBD, but careful it doesn't
-get merged like that.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-681ddgYCbB7JIyeA0aNK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk0iRUACgkQdSjSd0sB4dJN/gCgiER9/Doa96NK7FRiUspIgUhW
-jpgAn3iCWh+kTg5wUPas1J6h76yMJc7Z
-=Nt6/
------END PGP SIGNATURE-----
-
---=-681ddgYCbB7JIyeA0aNK--
+-- Dave
 
