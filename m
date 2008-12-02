@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYLBVte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYLBVtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbYLBVte (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 16:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYLBVs3
+	id S1754860AbYLBVtu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 16:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYLBVsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 16:48:29 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49542 "EHLO e3.ny.us.ibm.com"
+	Tue, 2 Dec 2008 16:48:30 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34865 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbYLBVsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 16:48:25 -0500
+	id S1751666AbYLBVs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 16:48:26 -0500
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
@@ -17,9 +17,9 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
        Al Viro <viro@ZenIV.linux.org.uk>,
        David Safford <safford@watson.ibm.com>,
        Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH 4/6] integrity: IMA display
-Date: Tue,  2 Dec 2008 16:47:58 -0500
-Message-Id: <4a75fc985dc650c405238d31e40608456895f53d.1228253619.git.zohar@linux.vnet.ibm.com>
+Subject: [PATCH 5/6] integrity: IMA policy
+Date: Tue,  2 Dec 2008 16:47:59 -0500
+Message-Id: <7cdd1813f3e4f7ef9d7db343dc1b67229ab1da04.1228253619.git.zohar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
 References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
@@ -29,430 +29,551 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the measurement lists available through securityfs.
+Support for a user loadable policy through securityfs
+with support for LSM specific policy data.
 
 Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
-diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
-index d9d4405..959ae66 100644
---- a/security/integrity/ima/Makefile
-+++ b/security/integrity/ima/Makefile
-@@ -5,5 +5,5 @@
- 
- obj-$(CONFIG_IMA) += ima.o
- 
--ima-y := ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
-+ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
- 	 ima_policy.o ima_iint.o
+diff --git a/Documentation/ABI/testing/ima_policy b/Documentation/ABI/testing/ima_policy
+new file mode 100644
+index 0000000..6434f0d
+--- /dev/null
++++ b/Documentation/ABI/testing/ima_policy
+@@ -0,0 +1,61 @@
++What:		security/ima/policy
++Date:		May 2008
++Contact:	Mimi Zohar <zohar@us.ibm.com>
++Description:
++		The Trusted Computing Group(TCG) runtime Integrity
++		Measurement Architecture(IMA) maintains a list of hash
++		values of executables and other sensitive system files
++		loaded into the run-time of this system.  At runtime,
++		the policy can be constrained based on LSM specific data.
++		Policies are loaded into the securityfs file ima/policy
++		by opening the file, writing the rules one at a time and
++		then closing the file.  The new policy takes effect after
++		the file ima/policy is closed.
++
++		rule format: action [condition ...]
++
++		action: measure | dont_measure
++		condition:= base | lsm
++			base:	[[func=] [mask=] [fsmagic=] [uid=]]
++			lsm:	[[subj_user=] [subj_role=] [subj_type=]
++				 [obj_user=] [obj_role=] [obj_type=]]
++
++		base: 	func:= [BPRM_CHECK][FILE_MMAP][INODE_PERMISSION]
++			mask:= [MAY_READ] [MAY_WRITE] [MAY_APPEND] [MAY_EXEC]
++			fsmagic:= hex value
++			uid:= decimal value
++		lsm:  	are LSM specific
++
++		default policy:
++			# PROC_SUPER_MAGIC
++			dont_measure fsmagic=0x9fa0
++			# SYSFS_MAGIC
++			dont_measure fsmagic=0x62656572
++			# DEBUGFS_MAGIC
++			dont_measure fsmagic=0x64626720
++			# TMPFS_MAGIC
++			dont_measure fsmagic=0x01021994
++			# SECURITYFS_MAGIC
++			dont_measure fsmagic=0x73636673
++
++			measure func=BPRM_CHECK
++			measure func=FILE_MMAP mask=MAY_EXEC
++			measure func=INODE_PERM mask=MAY_READ uid=0
++
++		The default policy measures all executables in bprm_check,
++		all files mmapped executable in file_mmap, and all files
++		open for read by root in inode_permission.
++
++		Examples of LSM specific definitions:
++
++		SELinux:
++			# SELINUX_MAGIC
++			dont_measure fsmagic=0xF97CFF8C
++
++			dont_measure obj_type=var_log_t
++			dont_measure obj_type=auditd_log_t
++			measure subj_user=system_u func=INODE_PERM mask=MAY_READ
++			measure subj_role=system_r func=INODE_PERM mask=MAY_READ
++
++		Smack:
++			measure subj_user=_ func=INODE_PERM mask=MAY_READ
+diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+index 6c6fcd9..3d5ccdb 100644
+--- a/security/integrity/ima/Kconfig
++++ b/security/integrity/ima/Kconfig
+@@ -32,3 +32,10 @@ config IMA_MEASURE_PCR_IDX
+ 	  IMA_MEASURE_PCR_IDX determines the TPM PCR register index
+ 	  that IMA uses to maintain the integrity aggregate of the
+ 	  measurement list.  If unsure, use the default 10.
++
++config IMA_LSM_RULES
++	bool "Enable LSM measurement policy rules"
++	depends on IMA && (SECURITY_SELINUX || SECURITY_SMACK)
++	default y
++	help
++	  Disabling this option will not enforce LSM based policy rules.
 diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-index b727a5e..795b552 100644
+index 795b552..5bab990 100644
 --- a/security/integrity/ima/ima.h
 +++ b/security/integrity/ima/ima.h
-@@ -64,6 +64,9 @@ extern const struct template_operations ima_template_ops;
- 
- /* Internal IMA function definitions */
- int ima_init(void);
-+void ima_cleanup(void);
-+int ima_fs_init(void);
-+void ima_fs_cleanup(void);
- void ima_create_htable(void);
- int ima_add_template_entry(struct ima_template_entry *entry, int violation);
- int ima_calc_hash(struct file *file, char *digest);
-@@ -117,6 +120,8 @@ int ima_collect_measurement(void *d);
- int ima_appraise_measurement(void *d);
- void ima_store_measurement(void *d);
- int ima_store_template(void *d);
-+void ima_template_show(struct seq_file *m, void *e,
-+		       enum integrity_show_type show);
- 
- /* For use with ima_must_measure() */
- struct ima_measure_data {
-diff --git a/security/integrity/ima/ima_api.c b/security/integrity/ima/ima_api.c
-index 83ab012..f2b53c7 100644
---- a/security/integrity/ima/ima_api.c
-+++ b/security/integrity/ima/ima_api.c
-@@ -21,6 +21,7 @@ const struct template_operations ima_template_ops = {
- 	.collect_measurement = ima_collect_measurement,
- 	.store_measurement = ima_store_measurement,
- 	.store_template = ima_store_template,
-+	.display_template = ima_template_show
+@@ -171,4 +171,26 @@ int ima_add_rule(int, char *subj_user, char *subj_role, char *subj_type,
+ 		 char *func, char *mask, char *fsmagic, char *uid);
+ void ima_init_policy(void);
+ void ima_update_policy(void);
++
++/* LSM based policy rules require audit */
++#ifdef CONFIG_IMA_LSM_RULES
++
++#define security_filter_rule_init security_audit_rule_init
++#define security_filter_rule_match security_audit_rule_match
++
++#else
++
++static inline int security_filter_rule_init(u32 field, u32 op, char *rulestr,
++					    void **lsmrule)
++{
++	return -EINVAL;
++}
++
++static inline int security_filter_rule_match(u32 secid, u32 field, u32 op,
++					     void *lsmrule,
++					     struct audit_context *actx)
++{
++	return -EINVAL;
++}
++#endif
+ #endif
+diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
+index 2627e56..0742520 100644
+--- a/security/integrity/ima/ima_fs.c
++++ b/security/integrity/ima/ima_fs.c
+@@ -280,11 +280,141 @@ static struct file_operations ima_ascii_measurements_ops = {
+ 	.release = seq_release,
  };
  
- /**
-diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
-new file mode 100644
-index 0000000..2627e56
---- /dev/null
-+++ b/security/integrity/ima/ima_fs.c
-@@ -0,0 +1,339 @@
-+/*
-+ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
-+ *
-+ * Authors:
-+ * Kylene Hall <kjhall@us.ibm.com>
-+ * Reiner Sailer <sailer@us.ibm.com>
-+ * Mimi Zohar <zohar@us.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ * File: ima_fs.c
-+ *	implemenents security file system for reporting
-+ *	current measurement list and IMA statistics
-+ */
-+#include <linux/module.h>
-+#include <linux/seq_file.h>
-+#include <linux/rculist.h>
-+#include <linux/rcupdate.h>
-+
-+#include "../integrity.h"
-+#include "ima.h"
-+
-+#define TMPBUFLEN 12
-+static ssize_t ima_show_htable_value(char __user *buf, size_t count,
-+				     loff_t *ppos, atomic_long_t *val)
++static char *get_tag(char *bufStart, char *bufEnd, char delimiter, int *taglen)
 +{
-+	char tmpbuf[TMPBUFLEN];
-+	ssize_t len;
++	char *bufp = bufStart;
++	char *tag;
 +
-+	len = scnprintf(tmpbuf, TMPBUFLEN, "%li\n", atomic_long_read(val));
-+	return simple_read_from_buffer(buf, count, ppos, tmpbuf, len);
-+}
-+
-+static ssize_t ima_show_htable_violations(struct file *filp,
-+					  char __user *buf,
-+					  size_t count, loff_t *ppos)
-+{
-+	return ima_show_htable_value(buf, count, ppos, &ima_htable.violations);
-+}
-+
-+static struct file_operations ima_htable_violations_ops = {
-+	.read = ima_show_htable_violations
-+};
-+
-+static ssize_t ima_show_measurements_count(struct file *filp,
-+					   char __user *buf,
-+					   size_t count, loff_t *ppos)
-+{
-+	return ima_show_htable_value(buf, count, ppos, &ima_htable.len);
-+
-+}
-+
-+static struct file_operations ima_measurements_count_ops = {
-+	.read = ima_show_measurements_count
-+};
-+
-+/* returns pointer to hlist_node */
-+static void *ima_measurements_start(struct seq_file *m, loff_t *pos)
-+{
-+	struct list_head *lpos;
-+	loff_t l = *pos;
-+	/* we need a lock since pos could point beyond last element */
-+	rcu_read_lock();
-+	__list_for_each_rcu(lpos, &ima_measurements) {
-+		if (!l--) {
-+			rcu_read_unlock();
-+			return lpos;
-+		}
++	/* Get start of tag */
++	while (bufp < bufEnd) {
++		if (*bufp == ' ')	/* skip blanks */
++			while ((*bufp == ' ') && (bufp++ < bufEnd)) ;
++		else if (*bufp == '#') {	/* skip comment */
++			while ((*bufp != '\n') && (bufp++ < bufEnd)) ;
++			bufp++;
++		} else if (*bufp == '\n')	/* skip newline */
++			bufp++;
++		else if (*bufp == '\t')	/* skip tabs */
++			bufp++;
++		else
++			break;
 +	}
-+	rcu_read_unlock();
-+	return NULL;
++	if (bufp < bufEnd)
++		tag = bufp;
++	else
++		return NULL;
++
++	/* Get tag */
++	*taglen = 0;
++	while ((bufp < bufEnd) && (*taglen == 0)) {
++		if ((*bufp == delimiter) || (*bufp == '\n')) {
++			*taglen = bufp - tag;
++			*bufp = '\0';
++		}
++		bufp++;
++	}
++	if (*taglen == 0)	/* Didn't find end delimiter */
++		tag = NULL;
++	return tag;
 +}
 +
-+static void *ima_measurements_next(struct seq_file *m, void *v, loff_t *pos)
++static ssize_t ima_write_policy(struct file *file, const char __user *buf,
++				size_t buflen, loff_t *ppos)
 +{
-+	/* lock protects when reading beyond last element
-+	 * against concurrent list-extension */
-+	struct list_head *lpos = (struct list_head *)v;
++	size_t rc = 0, datalen;
++	int action = 0;
++	char *data, *datap, *dataend;
++	char *subj_user = NULL, *subj_role = NULL, *subj_type = NULL;
++	char *obj_user = NULL, *obj_role = NULL, *obj_type = NULL;
++	char *func = NULL, *mask = NULL, *fsmagic = NULL, *uid = NULL;
++	int err = 0;
++	char *tag;
++	int taglen, i;
 +
-+	rcu_read_lock();
-+	lpos = rcu_dereference(lpos->next);
-+	rcu_read_unlock();
-+	(*pos)++;
++	datalen = buflen > 4095 ? 4095 : buflen;
++	data = kmalloc(datalen + 1, GFP_KERNEL);
++	if (!data)
++		rc = -ENOMEM;
 +
-+	return (lpos == &ima_measurements) ? NULL : lpos;
++	if (copy_from_user(data, buf, datalen)) {
++		kfree(data);
++		return -EFAULT;
++	}
++
++	rc = datalen;
++	*(data + datalen) = ' ';
++
++	datap = data;
++	dataend = data + datalen;
++
++	if (strncmp(datap, "measure", 7) == 0) {
++		datap += 8;
++		action = 1;
++	} else if (strncmp(datap, "dont_measure", 12) == 0)
++		datap += 13;
++	else			/* bad format */
++		goto out;
++
++	for (i = 0; i < 6; i++) {
++		tag = get_tag(datap, dataend, ' ', &taglen);
++		if (!tag)
++			break;
++		if (strncmp(tag, "obj_user=", 9) == 0)
++			obj_user = tag + 9;
++		else if (strncmp(tag, "obj_role=", 9) == 0)
++			obj_role = tag + 9;
++		else if (strncmp(tag, "obj_type=", 9) == 0)
++			obj_type = tag + 9;
++		else if (strncmp(tag, "subj_user=", 10) == 0)
++			subj_user = tag + 10;
++		else if (strncmp(tag, "subj_role=", 10) == 0)
++			subj_role = tag + 10;
++		else if (strncmp(tag, "subj_type=", 10) == 0)
++			subj_type = tag + 10;
++		else if (strncmp(tag, "func=", 5) == 0)
++			func = tag + 5;
++		else if (strncmp(tag, "mask=", 5) == 0)
++			mask = tag + 5;
++		else if (strncmp(tag, "fsmagic=", 8) == 0)
++			fsmagic = tag + 8;
++		else if (strncmp(tag, "uid=", 4) == 0)
++			uid = tag + 4;
++		else {		/* bad format */
++			err = 1;
++			break;
++		}
++		datap += taglen + 1;
++	}
++
++	if (!err)
++		ima_add_rule(action, subj_user, subj_role, subj_type,
++			     obj_user, obj_role, obj_type,
++			     func, mask, fsmagic, uid);
++out:
++	if (!data)
++		kfree(data);
++	return rc;
 +}
 +
-+static void ima_measurements_stop(struct seq_file *m, void *v)
+ static struct dentry *ima_dir;
+ static struct dentry *binary_runtime_measurements;
+ static struct dentry *ascii_runtime_measurements;
+ static struct dentry *runtime_measurements_count;
+ static struct dentry *violations;
++static struct dentry *ima_policy;
++
++static int ima_release_policy(struct inode *inode, struct file *file)
 +{
-+}
-+
-+/* print format:
-+ *       32bit-le=pcr#
-+ *       char[20]=template digest
-+ *       32bit-le=template size
-+ *       32bit-le=template name size
-+ *       eventdata[n] = template name
-+ *
-+ */
-+static int ima_measurements_show(struct seq_file *m, void *v)
-+{
-+	/* the list never shrinks, so we don't need a lock here */
-+	struct list_head *lpos = v;
-+	struct ima_queue_entry *qe;
-+	struct ima_template_entry *e;
-+	struct ima_inode_measure_entry *entry;
-+	struct template_list_entry *template_entry;
-+	int templatename_len;
-+	int i;
-+	u32 pcr = CONFIG_IMA_MEASURE_PCR_IDX;
-+	char data[4];
-+
-+	/* get entry */
-+	qe = list_entry(lpos, struct ima_queue_entry, later);
-+	e = qe->entry;
-+	if (e == NULL)
-+		return -1;
-+
-+	/*
-+	 * 1st: PCRIndex
-+	 * PCR used is always the same (config option) in
-+	 * little-endian format
-+	 */
-+	memcpy(data, &pcr, 4);
-+	for (i = 0; i < 4; i++)
-+		seq_putc(m, data[i]);
-+
-+	/* 2nd: template digest */
-+	for (i = 0; i < 20; i++)
-+		seq_putc(m, e->digest[i]);
-+
-+	/* 3rd: template name size */
-+	templatename_len = strlen(e->template_name);
-+	if (templatename_len > IMA_EVENT_NAME_LEN_MAX)
-+		templatename_len = IMA_EVENT_NAME_LEN_MAX;
-+
-+	memcpy(data, &templatename_len, 4);
-+	for (i = 0; i < 4; i++)
-+		seq_putc(m, data[i]);
-+
-+	/* 4th:  template name  */
-+	for (i = 0; i < templatename_len; i++)
-+		seq_putc(m, e->template_name[i]);
-+
-+	/* 5th:  template dependent */
-+	entry = (struct ima_inode_measure_entry *)e->template;
-+	template_entry = integrity_find_get_template(e->template_name);
-+	if (template_entry) {
-+		const struct template_operations *ops;
-+
-+		ops = template_entry->template_ops;
-+		ops->display_template(m, entry, INTEGRITY_SHOW_BINARY);
-+		kref_put(&template_entry->refcount, template_release);
-+	} else
-+		seq_printf(m, " \n");
++	ima_update_policy();
++	securityfs_remove(ima_policy);
++	ima_policy = NULL;
 +	return 0;
 +}
 +
-+static struct seq_operations ima_measurments_seqops = {
-+	.start = ima_measurements_start,
-+	.next = ima_measurements_next,
-+	.stop = ima_measurements_stop,
-+	.show = ima_measurements_show
++static struct file_operations ima_measure_policy_ops = {
++	.write = ima_write_policy,
++	.release = ima_release_policy
++};
+ 
+ int ima_fs_init(void)
+ {
+@@ -319,13 +449,17 @@ int ima_fs_init(void)
+ 	if (!violations || IS_ERR(violations))
+ 		goto out;
+ 
++	ima_policy = securityfs_create_file("policy",
++					    S_IRUSR | S_IRGRP | S_IWUSR,
++					    ima_dir, NULL,
++					    &ima_measure_policy_ops);
+ 	return 0;
+-
+ out:
+ 	securityfs_remove(runtime_measurements_count);
+ 	securityfs_remove(ascii_runtime_measurements);
+ 	securityfs_remove(binary_runtime_measurements);
+ 	securityfs_remove(ima_dir);
++	securityfs_remove(ima_policy);
+ 	return -1;
+ }
+ 
+@@ -336,4 +470,5 @@ void __exit ima_fs_cleanup(void)
+ 	securityfs_remove(ascii_runtime_measurements);
+ 	securityfs_remove(binary_runtime_measurements);
+ 	securityfs_remove(ima_dir);
++	securityfs_remove(ima_policy);
+ }
+diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
+index 260f71c..c887379 100644
+--- a/security/integrity/ima/ima_policy.c
++++ b/security/integrity/ima/ima_policy.c
+@@ -8,6 +8,7 @@
+  *
+  * ima_policy.c
+  * 	- initialize default measure policy rules
++	- load a policy ruleset
+  *
+  */
+ #include <linux/module.h>
+@@ -19,9 +20,18 @@
+ 
+ #include "ima.h"
+ 
++#define MAX_LSM_RULES 6
++enum lsm_rule_types { LSM_OBJ_USER, LSM_OBJ_ROLE, LSM_OBJ_TYPE,
++	LSM_SUBJ_USER, LSM_SUBJ_ROLE, LSM_SUBJ_TYPE
 +};
 +
-+static int ima_measurements_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &ima_measurments_seqops);
-+}
+ struct ima_measure_rule_entry {
+ 	struct list_head list;
+ 	int action;
++	struct {
++		void *rule;
++		int type;	/* audit type */
++	} lsm_field[MAX_LSM_RULES];
+ 	unsigned int flags;
+ 	enum lim_hooks func;
+ 	int mask;
+@@ -55,8 +65,11 @@ static struct ima_measure_rule_entry default_rules[] = {
+ };
+ 
+ static struct list_head measure_default_rules;
++static struct list_head measure_policy_rules;
+ static struct list_head *ima_measure;
+ 
++static DEFINE_MUTEX(ima_measure_mutex);
 +
-+static struct file_operations ima_measurements_ops = {
-+	.open = ima_measurements_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = seq_release,
-+};
-+
-+void ima_template_show(struct seq_file *m, void *e,
-+		       enum integrity_show_type show)
-+{
-+	struct ima_inode_measure_entry *entry =
-+	    (struct ima_inode_measure_entry *)e;
-+	int filename_len;
-+	char data[4];
+ /**
+  * ima_match_rules - determine whether an inode matches the measure rule.
+  * @rule: a pointer to a rule
+@@ -70,6 +83,7 @@ static bool ima_match_rules(struct ima_measure_rule_entry *rule,
+ 			    struct inode *inode, enum lim_hooks func, int mask)
+ {
+ 	struct task_struct *tsk = current;
 +	int i;
+ 
+ 	if ((rule->flags & IMA_FUNC) && rule->func != func)
+ 		return false;
+@@ -80,6 +94,39 @@ static bool ima_match_rules(struct ima_measure_rule_entry *rule,
+ 		return false;
+ 	if ((rule->flags & IMA_UID) && rule->uid != tsk->uid)
+ 		return false;
++	for (i = 0; i < MAX_LSM_RULES; i++) {
++		int rc;
++		u32 osid, sid;
 +
-+	/* Display file digest */
-+	for (i = 0; i < 20; i++) {
-+		switch (show) {
-+		case INTEGRITY_SHOW_ASCII:
-+			seq_printf(m, "%02x", entry->digest[i]);
++		if (!rule->lsm_field[i].rule)
++			continue;
++
++		switch (i) {
++		case LSM_OBJ_USER:
++		case LSM_OBJ_ROLE:
++		case LSM_OBJ_TYPE:
++			security_inode_getsecid(inode, &osid);
++			rc = security_filter_rule_match(osid,
++							rule->lsm_field[i].type,
++							AUDIT_EQUAL,
++							rule->lsm_field[i].rule,
++							NULL);
 +			break;
-+		case INTEGRITY_SHOW_BINARY:
-+			seq_putc(m, entry->digest[i]);
++		case LSM_SUBJ_USER:
++		case LSM_SUBJ_ROLE:
++		case LSM_SUBJ_TYPE:
++			security_task_getsecid(tsk, &sid);
++			rc = security_filter_rule_match(sid,
++							rule->lsm_field[i].type,
++							AUDIT_EQUAL,
++							rule->lsm_field[i].rule,
++							NULL);
 +		default:
 +			break;
 +		}
++		if (!rc)
++			return false;
 +	}
-+
-+	switch (show) {
-+	case INTEGRITY_SHOW_ASCII:
-+		seq_printf(m, " %s\n", entry->file_name);
-+		break;
-+	case INTEGRITY_SHOW_BINARY:
-+		filename_len = strlen(entry->file_name);
-+		if (filename_len > IMA_EVENT_NAME_LEN_MAX)
-+			filename_len = IMA_EVENT_NAME_LEN_MAX;
-+
-+		memcpy(data, &filename_len, 4);
-+		for (i = 0; i < 4; i++)
-+			seq_putc(m, data[i]);
-+		for (i = 0; i < filename_len; i++)
-+			seq_putc(m, entry->file_name[i]);
-+	default:
-+		break;
-+	}
-+}
-+
-+/* print in ascii */
-+static int ima_ascii_measurements_show(struct seq_file *m, void *v)
-+{
-+	/* the list never shrinks, so we don't need a lock here */
-+	struct list_head *lpos = v;
-+	struct ima_queue_entry *qe;
-+	struct ima_template_entry *e;
-+	struct ima_inode_measure_entry *entry;
-+	struct template_list_entry *template_entry;
-+	int i;
-+
-+	/* get entry */
-+	qe = list_entry(lpos, struct ima_queue_entry, later);
-+	e = qe->entry;
-+	if (e == NULL)
-+		return -1;
-+
-+	/* 1st: PCR used (config option) */
-+	seq_printf(m, "%2d ", CONFIG_IMA_MEASURE_PCR_IDX);
-+
-+	/* 2nd: SHA1 template hash */
-+	for (i = 0; i < 20; i++)
-+		seq_printf(m, "%02x", e->digest[i]);
-+
-+	/* 3th:  template name */
-+	seq_printf(m, " %s ", e->template_name);
-+
-+	/* 4th:  filename <= max + \'0' delimiter */
-+	entry = (struct ima_inode_measure_entry *)e->template;
-+	template_entry = integrity_find_get_template(e->template_name);
-+	if (template_entry) {
-+		const struct template_operations *ops;
-+
-+		ops = template_entry->template_ops;
-+		ops->display_template(m, entry, INTEGRITY_SHOW_ASCII);
-+		kref_put(&template_entry->refcount, template_release);
-+	} else
-+		seq_printf(m, " \n");
-+
-+	return 0;
-+}
-+
-+static struct seq_operations ima_ascii_measurements_seqops = {
-+	.start = ima_measurements_start,
-+	.next = ima_measurements_next,
-+	.stop = ima_measurements_stop,
-+	.show = ima_ascii_measurements_show
-+};
-+
-+static int ima_ascii_measurements_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &ima_ascii_measurements_seqops);
-+}
-+
-+static struct file_operations ima_ascii_measurements_ops = {
-+	.open = ima_ascii_measurements_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = seq_release,
-+};
-+
-+static struct dentry *ima_dir;
-+static struct dentry *binary_runtime_measurements;
-+static struct dentry *ascii_runtime_measurements;
-+static struct dentry *runtime_measurements_count;
-+static struct dentry *violations;
-+
-+int ima_fs_init(void)
-+{
-+	ima_dir = securityfs_create_dir("ima", NULL);
-+	if (!ima_dir || IS_ERR(ima_dir))
-+		return -1;
-+
-+	binary_runtime_measurements =
-+	    securityfs_create_file("binary_runtime_measurements",
-+				   S_IRUSR | S_IRGRP, ima_dir, NULL,
-+				   &ima_measurements_ops);
-+	if (!binary_runtime_measurements || IS_ERR(binary_runtime_measurements))
-+		goto out;
-+
-+	ascii_runtime_measurements =
-+	    securityfs_create_file("ascii_runtime_measurements",
-+				   S_IRUSR | S_IRGRP, ima_dir, NULL,
-+				   &ima_ascii_measurements_ops);
-+	if (!ascii_runtime_measurements || IS_ERR(ascii_runtime_measurements))
-+		goto out;
-+
-+	runtime_measurements_count =
-+	    securityfs_create_file("runtime_measurements_count",
-+				   S_IRUSR | S_IRGRP, ima_dir, NULL,
-+				   &ima_measurements_count_ops);
-+	if (!runtime_measurements_count || IS_ERR(runtime_measurements_count))
-+		goto out;
-+
-+	violations =
-+	    securityfs_create_file("violations", S_IRUSR | S_IRGRP,
-+				   ima_dir, NULL, &ima_htable_violations_ops);
-+	if (!violations || IS_ERR(violations))
-+		goto out;
-+
-+	return 0;
-+
-+out:
-+	securityfs_remove(runtime_measurements_count);
-+	securityfs_remove(ascii_runtime_measurements);
-+	securityfs_remove(binary_runtime_measurements);
-+	securityfs_remove(ima_dir);
-+	return -1;
-+}
-+
-+void __exit ima_fs_cleanup(void)
-+{
-+	securityfs_remove(violations);
-+	securityfs_remove(runtime_measurements_count);
-+	securityfs_remove(ascii_runtime_measurements);
-+	securityfs_remove(binary_runtime_measurements);
-+	securityfs_remove(ima_dir);
-+}
-diff --git a/security/integrity/ima/ima_init.c b/security/integrity/ima/ima_init.c
-index 374b368..de78f93 100644
---- a/security/integrity/ima/ima_init.c
-+++ b/security/integrity/ima/ima_init.c
-@@ -86,5 +86,11 @@ int ima_init(void)
- 	ima_create_htable();	/* for measurements */
- 	ima_add_boot_aggregate();	/* boot aggregate must be first entry */
- 	ima_init_policy();
--	return 0;
-+
-+	return ima_fs_init();
-+}
-+
-+void __exit ima_cleanup(void)
-+{
-+	ima_fs_cleanup();
- }
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index 2dcc3b5..8672f86 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -265,6 +265,7 @@ static void __exit cleanup_ima(void)
- {
- 	integrity_unregister_template("ima");
- 	unregister_integrity(&ima_integrity_ops);
-+	ima_cleanup();
+ 	return true;
  }
  
- late_initcall(init_ima);	/* Start IMA after the TPM is available */
+@@ -121,4 +168,164 @@ void ima_init_policy(void)
+ 	for (i = 0; i < ARRAY_SIZE(default_rules); i++)
+ 		list_add_tail(&default_rules[i].list, &measure_default_rules);
+ 	ima_measure = &measure_default_rules;
++
++	INIT_LIST_HEAD(&measure_policy_rules);
++}
++
++/**
++ * ima_update_policy - update default_rules with new measure rules
++ *
++ * Wait to update the default rules with a complete new set of measure rules.
++ */
++void ima_update_policy(void)
++{
++	char *op = "policy_update";
++	char *cause = "already exists";
++	int result = 1;
++
++	if (ima_measure == &measure_default_rules) {
++		ima_measure = &measure_policy_rules;
++		cause = "complete";
++		result = 0;
++	}
++	integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
++			    NULL, op, cause, result);
++}
++
++/**
++ * ima_add_rule - add ima measure rules
++ * @action: integer 1 indicating MEASURE, 0 indicating DONT_MEASURE
++ * @subj_user: pointer to an LSM subject's user value
++ * @subj_role:  pointer to an LSM subject's role value
++ * @subj_type:  pointer to an LSM subject's type value
++ * @obj_user: pointer to an LSM object's user value
++ * @obj_role:  pointer to an LSM object's role value
++ * @obj_type:  pointer to an LSM object's type value
++ * @func: LIM hook identifier
++ * @mask: requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ * @fsmagic: fs magic hex value string
++ * @uid: uid value string
++ *
++ * Returns 0 on success, an error code on failure.
++ */
++int ima_add_rule(int action,
++		 char *subj_user, char *subj_role, char *subj_type,
++		 char *obj_user, char *obj_role, char *obj_type,
++		 char *func, char *mask, char *fsmagic, char *uid)
++{
++	struct ima_measure_rule_entry *entry;
++	int i, result = 0;
++
++	/* Prevent installed policy from changing */
++	if (ima_measure != &measure_default_rules) {
++		integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
++				    NULL, "policy_update", "already exists", 0);
++		return -EACCES;
++	}
++
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	INIT_LIST_HEAD(&entry->list);
++	if (action < 0 || action > 1)
++		result = -EINVAL;
++	else
++		entry->action = action;
++
++	if (!result && subj_user) {
++		i = LSM_SUBJ_USER;
++		entry->lsm_field[i].type = AUDIT_SUBJ_USER;
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, subj_user,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && subj_role) {
++		i = LSM_SUBJ_ROLE;
++		entry->lsm_field[i].type = AUDIT_SUBJ_ROLE;
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, subj_role,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && subj_type) {
++		i = LSM_SUBJ_TYPE;
++		entry->lsm_field[i].type = AUDIT_SUBJ_TYPE;
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, subj_type,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && obj_user) {
++		i = LSM_OBJ_USER;
++		entry->lsm_field[i].type = AUDIT_OBJ_USER;
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, obj_user,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && obj_role) {
++		i = LSM_OBJ_ROLE;
++		entry->lsm_field[i].type = AUDIT_OBJ_ROLE;
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, obj_role,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && obj_type) {
++		i = LSM_OBJ_TYPE;
++		entry->lsm_field[i].type = AUDIT_OBJ_TYPE;
++		result = security_filter_rule_init(entry->lsm_field[i].type,
++						   AUDIT_EQUAL, obj_type,
++						   &entry->lsm_field[i].rule);
++	}
++	if (!result && func) {
++		if (strcmp(func, "PATH_CHECK") == 0)
++			entry->func = PATH_CHECK;
++		else if (strcmp(func, "FILE_MMAP") == 0)
++			entry->func = FILE_MMAP;
++		else if (strcmp(func, "BPRM_CHECK") == 0)
++			entry->func = BPRM_CHECK;
++		else
++			result = -EINVAL;
++		if (!result)
++			entry->flags |= IMA_FUNC;
++	}
++	if (!result && mask) {
++		if (strcmp(mask, "MAY_EXEC") == 0)
++			entry->mask = MAY_EXEC;
++		else if (strcmp(mask, "MAY_WRITE") == 0)
++			entry->mask = MAY_WRITE;
++		else if (strcmp(mask, "MAY_READ") == 0)
++			entry->mask = MAY_READ;
++		else if (strcmp(mask, "MAY_APPEND") == 0)
++			entry->mask = MAY_APPEND;
++		else
++			result = -EINVAL;
++		if (!result)
++			entry->flags |= IMA_MASK;
++	}
++	if (!result && fsmagic) {
++		int rc;
++
++		rc = strict_strtoul(fsmagic, 16, &entry->fsmagic);
++		if (rc)
++			result = -EINVAL;
++		else
++			entry->flags |= IMA_FSMAGIC;
++	}
++	if (!result && uid) {
++		unsigned long lnum;
++		int rc;
++
++		rc = strict_strtoul(uid, 10, &lnum);
++		if (rc)
++			result = -EINVAL;
++		else {
++			entry->uid = (uid_t) lnum;
++			if (entry->uid != lnum)
++				result = -EINVAL;
++			else
++				entry->flags |= IMA_UID;
++		}
++	}
++	if (!result) {
++		mutex_lock(&ima_measure_mutex);
++		list_add_tail(&entry->list, &measure_policy_rules);
++		mutex_unlock(&ima_measure_mutex);
++	}
++	return result;
+ }
 -- 
 1.5.6.5
 
