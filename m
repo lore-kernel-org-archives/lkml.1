@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbYLBKva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYLBKwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbYLBKva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 05:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYLBKvW
+	id S1753320AbYLBKwE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 05:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYLBKvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 05:51:22 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1310 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbYLBKvV (ORCPT
+	Tue, 2 Dec 2008 05:51:52 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55858 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753013AbYLBKvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 05:51:21 -0500
-Date: Tue, 2 Dec 2008 10:51:18 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.28-rc7] regulator: init/link earlier
-Message-ID: <20081202105116.GC7940@sirena.org.uk>
-References: <200812011335.43551.david-b@pacbell.net> <20081201225312.GA6699@sirena.org.uk> <200812012150.13909.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812012150.13909.david-b@pacbell.net>
-X-Cookie: Did I do an INCORRECT THING??
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Tue, 2 Dec 2008 05:51:51 -0500
+Date: Tue, 2 Dec 2008 10:50:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David Ellingsworth" <david@identd.dyndns.org>
+Cc: "Mikael Pettersson" <mikpe@it.uu.se>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Promise PDC20376
+Message-ID: <20081202105053.1bd78897@lxorguk.ukuu.org.uk>
+In-Reply-To: <30353c3d0812011743we0bdddk2c9c37dd0191cf2a@mail.gmail.com>
+References: <30353c3d0810240704n7476cc50y28b3eb8a5f326626@mail.gmail.com>
+	<30353c3d0811250616o733fb7f9ob4af96dd604f78ea@mail.gmail.com>
+	<18732.3809.720247.329641@harpo.it.uu.se>
+	<30353c3d0812011743we0bdddk2c9c37dd0191cf2a@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 09:50:13PM -0800, David Brownell wrote:
+> A small update to this. It seems the above mentioned interrupt fails
+> somewhere around the 128GB boundary. Interrupt 13h, AH=42 uses a 64
+> bit sector address and should be capable of addressing the entire
+> drive. For a SATA controller, this limitation seems relatively
+> arbitrary. For IDE controllers, a limitation such as this is
+> apparently common.
 
-> The regulator core currently initializes as a core_initcall() to be
-> available early ... but then it links way late, throwing away that
-> benefit, so regulators available at e.g. subsys_initcall() are not
-> available to subsystems which need to use them.
-
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+137GB I would imagine. That is the point at which LBA48 commands must be
+used not LBA28 and presumably their BIOS code only supports old format
+commands
