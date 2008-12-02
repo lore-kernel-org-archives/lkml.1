@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYLBR1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbYLBRpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYLBR1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 12:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbYLBR1V
+	id S1755612AbYLBRpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 12:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYLBRpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 12:27:21 -0500
-Received: from mail.gmx.net ([213.165.64.20]:58677 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756132AbYLBR1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 12:27:19 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18nHlJpY38nUsItYIfwPa/Pp1gFZ9j4+QmIOGOBY3
-	Q/cOgqC4ZIGOzo
-Date: Tue, 2 Dec 2008 18:27:26 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dan Williams <dan.j.williams@intel.com>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       maciej.sosnowski@intel.com, hskinnemoen@atmel.com,
-       nicolas.ferre@atmel.com
-Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and
- private channels
-In-Reply-To: <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0812021820560.5663@axis700.grange>
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com> 
- <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com> 
- <Pine.LNX.4.64.0812021642120.5663@axis700.grange>
- <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+	Tue, 2 Dec 2008 12:45:41 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57214 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbYLBRpk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 12:45:40 -0500
+Date: Tue, 2 Dec 2008 17:44:57 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Tony Luck <tony.luck@intel.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@uclinux.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
+       Ingo Molnar <mingo@redhat.com>, Chris Zankel <chris@zankel.net>
+Subject: Re: [RFC 5/8] param: arch_get_boot_command_line()
+Message-ID: <20081202174457.GA26005@flint.arm.linux.org.uk>
+References: <200812012326.03151.rusty@rustcorp.com.au> <20081201131807.GD28971@flint.arm.linux.org.uk> <200812021243.38862.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812021243.38862.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008, Dan Williams wrote:
+On Tue, Dec 02, 2008 at 12:43:37PM +1030, Rusty Russell wrote:
+> A couple of #if 0 around code I don't think can happen (even in the orignal
+> place I moved it from?)
 
-> On Tue, Dec 2, 2008 at 8:52 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> > Hi Dan,
-> >
-> > I think, there is a problem with your dma_request_channel() /
-> > private_candidate() implementation: your current version only tries one
-> > channel from a dma device list, which matched capabilities. If this
-> > channel is not accepted by the client, you do not try other channels from
-> > this device and just go to the next one...
-> >
-> 
-> Which dma driver are you using?
+Looking at just those...
 
-This is the idmac dmaengine driver I submitted a few weeks ago, that I am 
-porting to your modified dmaengine framework. Initial version:
+> @@ -697,32 +693,48 @@ void __init setup_arch(char **cmdline_p)
+>  	 */
+>  	if (tags->hdr.tag != ATAG_CORE)
+>  		convert_to_tag_list(tags);
+> +#if 0
+>  	if (tags->hdr.tag != ATAG_CORE)
+>  		tags = (struct tag *)&init_tags;
+> +#endif
 
-http://marc.info/?l=linux-arm-kernel&m=122607472721145&w=2
+This prevents 'init_tags' from ever being used, which wil happen if
+convert_to_tag_list() doesn't find a param_struct to convert.
 
-BTW - it does look nicer and more simple now, so, in general, I like the 
-change.
+> +
+> +	if (mdesc->fixup)
+> +		mdesc->fixup(mdesc, tags, &meminfo);
+> +
+> +#if 0
+> +	if (tags->hdr.tag == ATAG_CORE) {
+> +#endif
 
-> The dmaengine code assumes that all
-> channels on a device are equal.  It sounds like there are differences
-> between peer-channels on the device in this case.  If the driver
-> registers a device per channel that should give the flexibility you
-> want.
+This may happen if the memory pointed to by 'tags' gets overwritten for
+some reason by a machine specific fixup, but that'll probably never
+happen.
 
-Ooh... Do you really think registering 32 dma-devices is a better solution 
-than allowing non-equal dma-channels? As I explained in the commit 
-comment, this is a specialised Image Processing DMA Controller, and each 
-its channel has a fixed role. So, each client has to get a specific 
-channel.
-
-> > Another problem I encountered with my framebuffer is the initialisation
-> > order. You initialise dmaengine per subsys_initcall(), whereas the only
-> > way to guarantee the order:
-> >
-> > dmaengine
-> > dma-device driver
-> > framebuffer
-> 
-> hmm... can the framebuffer be moved to late_initcall?
-
-I assumed, that one wants to register the framebuffer as early as 
-possible...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
