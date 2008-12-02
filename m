@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYLBQ7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYLBRBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756054AbYLBQ7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbYLBQ7L
+	id S1755941AbYLBRBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 12:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYLBRBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:59:11 -0500
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:65351 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755852AbYLBQ7K (ORCPT
+	Tue, 2 Dec 2008 12:01:33 -0500
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:8041 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751163AbYLBRBc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:59:10 -0500
-Date: Tue, 2 Dec 2008 10:59:02 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Tomas Henzl <thenzl@redhat.com>, gernot.hillier@siemens.com,
-       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com,
-       Thomas Guyot-Sionnest <dermoth@aei.ca>, stable@kernel.org
-Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit 94cf6ba11b068b8a8f68a1e88bffb6827e92124b
-Message-ID: <20081202165902.GA9524@auslistsprd01.us.dell.com>
-References: <48D10E1A.8030804@siemens.com> <48EB6600.9020204@redhat.com> <20081110152006.8982133b.akpm@linux-foundation.org> <1226377257.5014.88.camel@localhost.localdomain> <20081110205453.1c0e4f69.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Dec 2008 12:01:32 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAF/4NEnCTsYx/2dsb2JhbACBbdB1gn8
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
+Date: Tue, 2 Dec 2008 18:01:38 +0100
+User-Agent: KMail/1.9.9
+Cc: video4linux-list@redhat.com,
+       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       davinci-linux-open-source-bounces@linux.davincidsp.com,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+References: <200812011246.08885.hverkuil@xs4all.nl> <200812011524.43499.laurent.pinchart@skynet.be> <200812011547.27644.hverkuil@xs4all.nl>
+In-Reply-To: <200812011547.27644.hverkuil@xs4all.nl>
+X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081110205453.1c0e4f69.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200812021801.39073.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 08:54:53PM -0800, Andrew Morton wrote:
-> On Mon, 10 Nov 2008 20:20:57 -0800 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > Could someone from Adaptec and Dell please verify that this is correct?
-> > Mark Salyzyn no longer works there, but the aacraid@adaptec.com address
-> > is supposed to still be working.
-> 
-> Here is the patch:
-> 
-> 
-> 
-> From: Tomas Henzl <thenzl@redhat.com>
-> 
-> A lot of 64bit machines with Adaptec 2200S and 2120S controllers don't
-> recognize SCSI disks any more with the patch "fix driver failure with Dell
-> PowerEdge Expandable RAID Controller 3/Di", but fail with tons of "aac_srb:
-> aac_fib_send failed with status: 8195" instead. This patch disables the
-> quirk introduced in the change cited above for those two controllers again.
-> 
-> Signed-off-by: Gernot Hillier <gernot.hillier@siemens.com>
-> Signed-off-by: Tomas Henzl <thenzl@redhat.com>
-> Cc: <aacraid@adaptec.com>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Tested-by: Thomas Guyot-Sionnest <dermoth@aei.ca>
-> Cc: <stable@kernel.org>		[2.6.27.x, 2.6.26.x, 2.6.25.x]
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/scsi/aacraid/linit.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -puN drivers/scsi/aacraid/linit.c~aacraid-disable-dell-percraid-quirk-on-adaptec-2200s-and-2120s drivers/scsi/aacraid/linit.c
-> --- a/drivers/scsi/aacraid/linit.c~aacraid-disable-dell-percraid-quirk-on-adaptec-2200s-and-2120s
-> +++ a/drivers/scsi/aacraid/linit.c
-> @@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
->  	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
->  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
->  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
-> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
-> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
-> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
-> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
->  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
->  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
->  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
-> _
+Hi Hans,
 
+On Monday 01 December 2008, Hans Verkuil wrote:
+> On Monday 01 December 2008 15:24:43 Laurent Pinchart wrote:
+[snip]
+> > In a few months time (probably even earlier) the v4l2_device
+> > structure will be reworked (and possible renamed). I'm fine with it
+> > going to linux-next now if we agree on the following.
+> >
+> > - We should only advocate v4l2_device usage for subdevices-aware
+> > video devices. Porting all drivers to v4l2_device is currently
+> > pointless and will only make future transitions more difficult.
+>
+> Agreed. For now it is only relevant for drivers that use subdevices.
+>
+> > - v4l2_device should be marked as experimental. I don't want to hear
+> > any API/ABI breakage argument in a few months time when the framework
+> > will evolve.
+>
+> Am I overlooking something? This API is a kernel API, not a public API.
+> Hence if I (or anyone else for that matter) make future changes then it
+> is my responsibility to adapt all other drivers that are affected at
+> the same time. I don't see how any of this could break compatibility.
+> Except for out-of-kernel drivers, of course. But that's the risk that
+> they always run.
 
-Dell's storage teams have been investigating, to be sure those are the
-only known affected cards.  To the best of everyone's knowledge here,
-this is correct.
+You're right. It might be useful to state that the API is a work in progress 
+in the documentation, but I'll let you decide on that.
 
-Please apply at your earliest convenience.
+> Marking this API as experimental seems pointless to me. It either works
+> and so is available for use or it doesn't and then it is a plain old
+> bug that needs to be fixed. I also know already that there will be
+> changes as e.g. sensors require a new ops category and v4l2_device
+> might need a notifier callback as well. However, I'm not going to
+> implement that until there is also a driver that uses it (adding
+> functionality to an internal API just because it might be needed in the
+> future is a really bad idea).
 
-Thanks,
-Matt
+Best regards,
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Laurent Pinchart
