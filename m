@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYLBDnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbYLBDoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYLBDnW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 22:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYLBDnO
+	id S1753078AbYLBDoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 22:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYLBDnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 22:43:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58258 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751388AbYLBDnN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 22:43:13 -0500
-Date: Mon, 1 Dec 2008 19:42:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <alpine.LFD.2.00.0812011921520.3256@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0812011933050.3256@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812011921520.3256@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 1 Dec 2008 22:43:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41073 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbYLBDnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 22:43:49 -0500
+Message-ID: <4934AEF1.4080009@kernel.org>
+Date: Tue, 02 Dec 2008 12:43:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@osdl.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Hannes Reinecke <hare@suse.de>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Subject: Re: Changes to Linux/SCSI target mode infrastructure for v2.6.28
+References: <1228182727.13241.160.camel@haakon2.linux-iscsi.org>	 <1228183480.13241.163.camel@haakon2.linux-iscsi.org>	 <1228187439.13241.176.camel@haakon2.linux-iscsi.org> <1228188330.13241.184.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1228188330.13241.184.camel@haakon2.linux-iscsi.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Dec 2008 03:43:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Nicholas.
 
-
-On Mon, 1 Dec 2008, Linus Torvalds wrote:
+Nicholas A. Bellinger wrote:
+> Ok, I am up and running using the following patch against v2.6.28-rc6
+> (along with Tejun's patch).   Comments please..?
 > 
-> or something like that. And then we just need to figure out which setup 
-> routine sets the wrong alignment flag,.
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index f5d3b96..77f1fe0 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -1505,7 +1507,7 @@ static void scsi_kill_request(struct request *req, struct request_queue *q)
+>         struct scsi_target *starget = scsi_target(sdev);
+>         struct Scsi_Host *shost = sdev->host;
+>  
+> -       blkdev_dequeue_request(req);
+> +       elv_dequeue_request(req->q, req);
 
-Oh, btw, one more thing: since it apparently sometimes _does_ resume 
-from hibernation without all this, I'd also like to see the actual 
-differences in /proc/ioports and /proc/iomem that happen as a result of 
-the different alignment. 
+I don't think this really matters.  Either one wouldn't really matter.
 
-I also really suspect we should add a whole "alignment" field to "struct 
-resource", instead of the size-vs-start flags. The fact is, some PCI 
-devices have alignment that is neither tied to size or anything else: I 
-think some PCI bus resources are really always 4kB-aligned, for example 
-(and aligning them by size will give a bigger alignment than actually 
-required).
+>         if (unlikely(cmd == NULL)) {
+>                 printk(KERN_CRIT "impossible request in %s.\n",
+> @@ -1634,7 +1636,7 @@ static void scsi_request_fn(struct request_queue *q)
+>                  * Remove the request from the request list.
+>                  */
+>                 if (!(blk_queue_tagged(q) && !blk_queue_start_tag(q, req)))
+> -                       blkdev_dequeue_request(req);
+> +                       elv_dequeue_request(req->q, req);
+>                 sdev->device_busy++;
+>  
+>                 spin_unlock(q->queue_lock);
 
-			Linus
+And this change is incorrect.  Timer should start here.  I don't think
+you're seeing the same problem.  I'll reply to the original message.
+
+Thanks.
+
+-- 
+tejun
