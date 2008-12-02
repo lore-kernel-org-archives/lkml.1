@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYLBSOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYLBSPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbYLBSOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 13:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbYLBSOU
+	id S1755228AbYLBSPs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 13:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYLBSPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 13:14:20 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34010 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752762AbYLBSOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 13:14:19 -0500
-Date: Tue, 2 Dec 2008 18:13:33 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Wright <chrisw@redhat.com>
-Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com,
-       dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
-       cl@linux-foundation.org, corbet@lwn.net
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver.
-Message-ID: <20081202181333.38c7b421@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081202180724.GC17607@acer.localdomain>
-References: <1226888432-3662-1-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-2-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-3-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-4-git-send-email-ieidus@redhat.com>
-	<20081128165806.172d1026@lxorguk.ukuu.org.uk>
-	<20081202180724.GC17607@acer.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Dec 2008 13:15:37 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:39191 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752571AbYLBSPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 13:15:36 -0500
+X-IronPort-AV: E=Sophos;i="4.33,702,1220252400"; 
+   d="scan'208";a="93527792"
+Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
+ than 120 seconds"
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Kasparek Tomas <kasparek@fit.vutbr.cz>
+Cc: Ian Campbell <ijc@hellion.org.uk>, linux-nfs@vger.kernel.org,
+       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
+       gcosta@redhat.com, "J. Bruce Fields" <bfields@fieldses.org>,
+       Tom Tucker <tom@opengridcomputing.com>
+In-Reply-To: <20081202162625.GM47559@fit.vutbr.cz>
+References: <1227596962.16868.22.camel@localhost.localdomain>
+	 <1227619696.7057.19.camel@heimdal.trondhjem.org>
+	 <1227620339.9425.99.camel@zakaz.uk.xensource.com>
+	 <1227621434.7057.33.camel@heimdal.trondhjem.org>
+	 <1227621877.9425.102.camel@zakaz.uk.xensource.com>
+	 <1227737539.31008.2.camel@localhost.localdomain>
+	 <1228090631.7112.11.camel@heimdal.trondhjem.org>
+	 <1228091380.7112.17.camel@heimdal.trondhjem.org>
+	 <20081202152256.GI47559@fit.vutbr.cz>
+	 <1228232222.3090.5.camel@heimdal.trondhjem.org>
+	 <20081202162625.GM47559@fit.vutbr.cz>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 02 Dec 2008 13:10:07 -0500
+Message-Id: <1228241407.3090.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+X-OriginalArrivalTime: 02 Dec 2008 18:11:07.0550 (UTC) FILETIME=[58F61BE0:01C954A9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008 10:07:24 -0800
-Chris Wright <chrisw@redhat.com> wrote:
+On Tue, 2008-12-02 at 17:26 +0100, Kasparek Tomas wrote:
 
-> * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > > +	r = !memcmp(old_digest, sha1_item->sha1val, SHA1_DIGEST_SIZE);
-> > > +	mutex_unlock(&sha1_lock);
-> > > +	if (r) {
-> > > +		char *old_addr, *new_addr;
-> > > +		old_addr = kmap_atomic(oldpage, KM_USER0);
-> > > +		new_addr = kmap_atomic(newpage, KM_USER1);
-> > > +		r = !memcmp(old_addr+PAGEHASH_LEN, new_addr+PAGEHASH_LEN,
-> > > +			    PAGE_SIZE-PAGEHASH_LEN);
-> > 
-> > NAK - this isn't guaranteed to be robust so you could end up merging
-> > different pages one provided by a malicious attacker.
-> 
-> I presume you're referring to the digest comparison.  While there's
-> theoretical concern of hash collision, it's mitigated by hmac(sha1)
-> so the attacker can't brute force for known collisions.
+> Did tried. The number should be seconds and defaults to 60, These
+> connections are still there after several hours. Changing it to 10 (sec)
+> and same behaviour. (BTW The server did not changed in last several months)
 
-Using current known techniques. A random collision is just as bad news.
+Are you seeing the same behaviour with 'netstat -t'?
 
-This code simply isn't fit for the kernel.
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
