@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYLBPgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbYLBPha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbYLBPgn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 10:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYLBPgb
+	id S1752730AbYLBPha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 10:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYLBPhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 10:36:31 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1794 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750799AbYLBPga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 10:36:30 -0500
-Message-ID: <493555F6.2030900@myri.com>
-Date: Tue, 02 Dec 2008 10:36:22 -0500
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Ben Hutchings <bhutchings@solarflare.com>
-CC: David Miller <davem@davemloft.net>, ossthema@de.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tklein@de.ibm.com,
-       raisch@de.ibm.com, jb.billaud@gmail.com, hering2@de.ibm.com
-Subject: Re: [PATCH] lro: IP fragment checking
-References: <4933A74F.3050809@de.ibm.com>	<493423D7.5030203@myri.com>	 <20081201.131810.158631503.davem@davemloft.net> <49345CCA.1030209@myri.com>		 <1228169379.3073.13.camel@achroite> <49347B0B.8030705@myri.com>	 <1228177130.3073.23.camel@achroite> <49354970.10804@myri.com> <1228231128.3075.9.camel@achroite>
-In-Reply-To: <1228231128.3075.9.camel@achroite>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 2 Dec 2008 10:37:12 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:40967 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750977AbYLBPhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 10:37:10 -0500
+X-IronPort-AV: E=Sophos;i="4.33,702,1220252400"; 
+   d="scan'208";a="93481852"
+Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
+ than 120 seconds"
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Kasparek Tomas <kasparek@fit.vutbr.cz>
+Cc: Ian Campbell <ijc@hellion.org.uk>, linux-nfs@vger.kernel.org,
+       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
+       gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Tom Tucker <tom@opengridcomputing.com>
+In-Reply-To: <20081202152256.GI47559@fit.vutbr.cz>
+References: <1225539927.2221.3.camel@localhost.localdomain>
+	 <1225546878.4390.3.camel@heimdal.trondhjem.org>
+	 <1227596962.16868.22.camel@localhost.localdomain>
+	 <1227619696.7057.19.camel@heimdal.trondhjem.org>
+	 <1227620339.9425.99.camel@zakaz.uk.xensource.com>
+	 <1227621434.7057.33.camel@heimdal.trondhjem.org>
+	 <1227621877.9425.102.camel@zakaz.uk.xensource.com>
+	 <1227737539.31008.2.camel@localhost.localdomain>
+	 <1228090631.7112.11.camel@heimdal.trondhjem.org>
+	 <1228091380.7112.17.camel@heimdal.trondhjem.org>
+	 <20081202152256.GI47559@fit.vutbr.cz>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 02 Dec 2008 10:37:02 -0500
+Message-Id: <1228232222.3090.5.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+X-OriginalArrivalTime: 02 Dec 2008 15:37:08.0292 (UTC) FILETIME=[D5EF3840:01C95493]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Hutchings wrote:
-> On Tue, 2008-12-02 at 09:42 -0500, Andrew Gallatin wrote:
->> Ben Hutchings wrote:
->>> On Mon, 2008-12-01 at 19:02 -0500, Andrew Gallatin wrote:
->>>> Ben Hutchings wrote:
-> [...]
->>>>> If your hardware/firmware wrongly claims to be able to verify the
->>>>> TCP/UDP checksum for an IP fragment, it seems to me you should deal with
->>>>> that in your driver or fix the firmware.
->>>> We do partial checksums.
->>> So you should check for IP fragmentation in your get_frag_header() along
->>> with all the other checks you've got to do.
->> Indeed, and that is the patch I intend to submit if the fragment
->> check in inet_lro is rejected.  I still think the check belongs
->> in the inet lro code though, and I'm worried it is being rejected
->> for the wrong reasons..
+On Tue, 2008-12-02 at 16:22 +0100, Kasparek Tomas wrote:
+> On Sun, Nov 30, 2008 at 07:29:40PM -0500, Trond Myklebust wrote:
+> > On Sun, 2008-11-30 at 19:17 -0500, Trond Myklebust wrote:
+> > > Can you see if the following 3 patches help? They're against 2.6.28-rc6,
+> > > but afaics the problems are pretty much the same on 2.6.26.
+> > 
+> > Sorry... I forgot to add that these 3 patches need to be applied to the
+> > nfs server, not the client.
 > 
-> There's a wide variety of capabilities of different hardware:
+> Hi,
 > 
-> 1. No checksum offload. Probably not worth using LRO.
-> 2. Full-checksum generation. Driver passes packets to inet_lro;
-> get_frag_header() or get_skb_header() parses packets to check that they
-> are TCP/IPv4 and to validate the checksum. inet_lro does further checks.
-> 3. L4 packet parsing and checksum validation. Driver passes TCP/IPv4
-> packets to inet_lro. inet_lro does further checks.
-> 4. Hardware/firmware LRO. inet_lro not needed.
+> I have the problem on client side and can not change server (FreeBSD 7.0). 
+> these patches does not change the situation (and they are probably not
+> supposed to do so, just giving it a try). After few minutes I got this on
+> the client with 2.6.28-rc6 with patches:
 > 
-> You seem to be proposing that a check that is only needed in case (2)
-> should also be applied in case (3).  Maybe it would make more sense to
-> define a generic implementation of get_frag_header() for full-checksum
-> devices, if that's possible?
+> tcp   0   0 147.229.12.146:674          147.229.176.14:2049     FIN_WAIT2
+> 
+> Applying reverse e06799f958bf7f9f8fae15f0c6f519953fb0257c suggested by Ian
+> does help on the other side (with 2.6.27.4).
 
-Or maybe a generic lro_check_header() that can be called from
-everybody's get_frag_header()/get_skb_header().  I guess what
-bothers me is the division of checks between the get_*_header()
-routine and lro_tcp_ip_checks() and the inevitable code
-duplication in the get_*_header routines.
+Then I suggest working around the problem by reducing the value of the
+sysctl net.ipv4.tcp_fin_timeout on the client.
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-I still don't understand why an unneeded check for fragmentation
-in case (3) is any more objectionable than the existing tcp
-flags checks in lro_tcp_ip_check(), many of which are surely
-not needed in case (3) either.
-
-Drew
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
