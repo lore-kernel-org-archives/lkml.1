@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYLBNcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbYLBNe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbYLBNcj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLBNcc
+	id S1754502AbYLBNe7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYLBNeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:32:32 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3382 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbYLBNcb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:32:31 -0500
-Date: Tue, 2 Dec 2008 13:32:28 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.28-rc7] regulator: catch some registration errors
-Message-ID: <20081202133228.GD7940@sirena.org.uk>
-References: <200812011335.43551.david-b@pacbell.net> <20081201225312.GA6699@sirena.org.uk> <200812012150.36342.david-b@pacbell.net>
+	Tue, 2 Dec 2008 08:34:50 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:36275 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752637AbYLBNet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 08:34:49 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH linux-next] powerpc/chrp: Add missing of_node_put in pci.c
+Date: Tue, 2 Dec 2008 14:34:46 +0100
+User-Agent: KMail/1.9.10
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>,
+       Nicolas Palix <npalix@diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200812012150.36342.david-b@pacbell.net>
-X-Cookie: Did I do an INCORRECT THING??
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Message-Id: <200812021434.47010.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 09:50:35PM -0800, David Brownell wrote:
 
-> Prevent registration of duplicate "struct regulator" names.
-> They'd be unavailable, and clearly indicate something wrong.
+of_node_put is needed before discarding a value received from
+of_find_node_by_name, eg in error handling code or when the device
+node is no longer used.
 
-This bit is good but...
+The semantic match that catches the bug is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-> Also make sure the consumer device is provided.  It's nonsensical
-> to omit these, and not a documented part of the interface.  Since
-> no code in mainline does such stuff, this is just anti-oops medicine.
+// <smpl>
+@r exists@
+local idexpression struct device_node *n;
+position p1, p2;
+statement S1,S2;
+expression E,E1;
+expression *ptr != NULL;
+@@
 
-...we do still need to cater for cpufreq and other struct deviceless
-consumers.  If you can guarantee that no such consumers will ever exist
-then great but we're not there yet.
+(
+if (!(n@p1 = of_find_node_by_name(...))) S1
+|
+n@p1 = of_find_node_by_name(...)
+)
+<... when != of_node_put(n)
+    when != if (...) { <+... of_node_put(n) ...+> }
+    when != true !n  || ...
+    when != n = E
+    when != E = n
+if (!n || ...) S2
+...>
+(
+  return \(0\|<+...n...+>\|ptr\);
+|
+return@p2 ...;
+|
+n = E1
+|
+E1 = n
+)
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s of_find_node_by_name %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ arch/powerpc/platforms/chrp/pci.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
+index d3cde6b..5a72ee5 100644
+--- a/arch/powerpc/platforms/chrp/pci.c
++++ b/arch/powerpc/platforms/chrp/pci.c
+@@ -141,6 +141,7 @@ hydra_init(void)
+ 		of_node_put(np);
+ 		return 0;
+ 	}
++	of_node_put(np);
+ 	Hydra = ioremap(r.start, r.end-r.start);
+ 	printk("Hydra Mac I/O at %llx\n", (unsigned long long)r.start);
+ 	printk("Hydra Feature_Control was %x",
+-- 
+Nicolas Palix
