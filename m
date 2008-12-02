@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbYLBHTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYLBHUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751870AbYLBHTw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 02:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYLBHTa
+	id S1754445AbYLBHUM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 02:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYLBHTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 02:19:30 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45795 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbYLBHT0 (ORCPT
+	Tue, 2 Dec 2008 02:19:35 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45983
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752801AbYLBHTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 02:19:26 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2] memcg: mem_cgroup->prev_priority protected by lock.
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20081202161545.abb884e8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081202160949.1CFE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081202161545.abb884e8.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20081202161837.1D04.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 2 Dec 2008 02:19:34 -0500
+Date: Mon, 01 Dec 2008 23:19:35 -0800 (PST)
+Message-Id: <20081201.231935.211354491.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue,  2 Dec 2008 16:19:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue,  2 Dec 2008 16:11:07 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > 
-> > Currently, mem_cgroup doesn't have own lock and almost its member doesn't need.
-> >  (e.g. info is protected by zone lock, stat is per cpu variable)
-> > 
-> > However, there is one explict exception. mem_cgroup->prev_priorit need lock,
-> > but doesn't protect.
-> > Luckly, this is NOT bug because prev_priority isn't used for current reclaim code.
-> > 
-> > However, we plan to use prev_priority future again.
-> > Therefore, fixing is better.
-> > 
-> > 
-> > In addision, we plan to reuse this lock for another member.
-> > Then "misc_lock" name is better than "prev_priority_lock".
-> > 
-> please use better name...reclaim_param_lock or some ?
 
-good idea :)
+Two bug sets of fixes:
 
-Will fix.
+1) Several starfire rtc driver bug fixes from Allesandro Zummo.
 
+2) The calculation of the fault fixup offset on sparc64 is upside
+   down.
 
+Please pull, thanks a lot!
 
+The following changes since commit cecf61bdee426a3e0a014f7e26990d09c71ed458:
+  Alessandro Zummo (1):
+        rtc: rtc-sun4v fixes, revised
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+Alessandro Zummo (1):
+      rtc: rtc-starfire fixes
+
+David S. Miller (1):
+      sparc64: Fix offset calculation in compute_size()
+
+ arch/sparc64/lib/user_fixup.c |    2 +-
+ drivers/rtc/rtc-starfire.c    |   66 ++++++++---------------------------------
+ 2 files changed, 14 insertions(+), 54 deletions(-)
