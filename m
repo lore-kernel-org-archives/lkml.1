@@ -1,124 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYLBFFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYLBFTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYLBFFx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 00:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYLBFFm
+	id S1752500AbYLBFTO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 00:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYLBFS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 00:05:42 -0500
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:20726 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751246AbYLBFFl (ORCPT
+	Tue, 2 Dec 2008 00:18:57 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:43305 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbYLBFS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 00:05:41 -0500
-X-YMail-OSG: f3D18BIVM1kaohnTugVCHsZP1c___wnQJmnrIEyiIHM70Wvg8JgWtsZ9N95S8Z.tDBc.u2KSPYyIxIlMJEU1M_eNj.hsuiLHR1v0FjV34VytqLLJXW0D8TAZknOv0cHZBWL5TaBj0yE_x.WWM65cijbUEDqIJz86KCcNpfa0V5I2kVoFNWrcZcc1FTQ-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Changes to Linux/SCSI target mode infrastructure for v2.6.28
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Anderson <andmike@linux.vnet.ibm.com>,
-       Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@osdl.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Hannes Reinecke <hare@suse.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-In-Reply-To: <4934B71C.4030907@kernel.org>
-References: <1228182727.13241.160.camel@haakon2.linux-iscsi.org>
-	 <1228183480.13241.163.camel@haakon2.linux-iscsi.org>
-	 <1228187439.13241.176.camel@haakon2.linux-iscsi.org>
-	 <4934B71C.4030907@kernel.org>
-Content-Type: text/plain
-Date: Mon, 01 Dec 2008 21:05:35 -0800
-Message-Id: <1228194335.6229.17.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 2 Dec 2008 00:18:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oeQt0ToInO6FkbKCDX5XKurr/f5ykaBS52DVxgY8o2L+vFy4eelhzGAnuyLlPCvbPc
+         BgjyVZVKJYKVcnu3BPrggtHC8UePxmYDP5oWU3bAy2ySE6Cax7podR2HGjLxjjPbcRnV
+         6bqjrN8THS539HGl6Mw7rJOsuOTKXJl/M0bfs=
+Message-ID: <21d7e9970812012118r7196a507me0a25fe967f60ff4@mail.gmail.com>
+Date: Tue, 2 Dec 2008 15:18:55 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
+Cc: "Dave Airlie" <airlied@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200812012342.32575.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200812012342.32575.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 13:18 +0900, Tejun Heo wrote:
-> Nicholas A. Bellinger wrote:
-> >>> So far during my initial testing, I am running into a two different
-> >>> exceptions.  One NULL pointer deference OOPS after half dozen Open/iSCSI
-> >>> login/logouts in block/elevator.c:elv_dequeue_request().   Here is the
-> >>> trace from SCSI softirq context:
-> >>>
-> >>> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-0.png
-> >>> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-1.png
-> 
-> Can you build with debug info and find out which line is the offending
-> one?
-
-(gdb) list *(elv_dequeue_request+0x1d)
-0x1320 is in elv_dequeue_request (include/linux/list.h:92).
-87	 * This is only for internal list manipulation where we know
-88	 * the prev/next entries already!
-89	 */
-90	static inline void __list_del(struct list_head * prev, struct
-list_head * next)
-91	{
-92		next->prev = prev;
-93		prev->next = next;
-94	}
-95	
-96	/**
-(gdb) list *(elv_dequeue_request+0x19)
-0x131c is in elv_dequeue_request (block/elevator.c:836).
-831	EXPORT_SYMBOL(elv_next_request);
-832	
-833	void elv_dequeue_request(struct request_queue *q, struct request
-*rq)
-834	{
-835		BUG_ON(list_empty(&rq->queuelist));
-836		BUG_ON(ELV_ON_HASH(rq));
-837	
-838		list_del_init(&rq->queuelist);
-839	
-840		/*
-
-
-> 
-> >>> The other one is a BUG_ON in blk/blk-timeout.c:177 in blk_add_timeout()
-> >>> that happens after a few hundred MB of READ_10 traffic, which also
-> >>> appears to pass through elv_dequeue_request() at some point:
-> >>>
-> >>> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-2.png
-> >>> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-4.png
+On Tue, Dec 2, 2008 at 8:42 AM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
 >
-> Hmmm... this means blk_add_timer() is being called after the request
-> is already completed.  All the problem discovered till now have to do
-> with timeout going off without the low level driver knowing about the
-> request.  I don't have much idea and it'll probably be best to trace
-> what's going on using blktrace or printks.
+> Hi,
+>
+> After Fedora 9 -> Fedora 10 upgrade vanilla kernels which previously
+> worked fine (next-20081128 and next-20081121) started to hang randomly
+> on my Pentium M / 855PM / RV350 laptop.  Since (surprisingly) stock
+> Fedora kernel (2.6.27.5-117.fc10.i686) was not affected I got the idea
+> that either userspace changes uncovered some kernel regression or some
+> Fedora specific patch must be fixing the issue.  Unfortunately vanilla
+> 2.6.27 also freezed so after the usual pain caused by hitting bunch of
+> unrelated problems [1] it turned out that drm-modesetting-radeon.patch
+> is the magic patch and CONFIG_DRM_RADEON_KMS is the magic change.  With
+> the patch and enabling the option next-20081128 works stable again...
+>
+> Since the following error gets logged by kernel:
+>
+> [drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
+> [drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
+>
+> and it also seems that system is more responsive now (it was kind of
+> sluggish previously) my draft theory is that F9 -> F10 triggered some
+> AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
+> but I'll leave figuring this up to the more knowledgeable people... ;)
 
-<nod>, OK.
+Well KMS is a purely Fedora thing, and enabling it completely avoids
+the old driver codepaths so
+while it might fix it, its more by accident than design.
 
->   Maybe this is caused by
-> list corruption as with the first issue or request completion races
-> with requeueing?
+I'm trying to track down the rv3xx hangs with hpa at the moment as he
+sees them also, something in
+ the 2.6.26->2.6.27 timeframe. I'm hoping running the 2.6.26 drm on
+the 2.6.27 will help narrow it down.
 
-Hrmm, yeah, perhaps the use of scsi_req_map_sg() (which obviously still
-has struct bio behind it) is causing the breakage..  I will wait for
-Tomo, Boaz and co to have a look at the original patch to
-lio-core-2.6.git/drivers/lio-core/target_core_pscsi.c and see if I am
-missing something obvious.
+Bisecting 2.6.26->2.6.27 might also help.
 
-Also, with the previous patch to drivers/scsi/scsi_lib.c(), I am able to
-move a few GB of bulk I/O and not hit the BUG_ON in
-blk/blk-timeout.c:177 in blk_add_timeout() mentioned above when feeding
-struct request into struct scsi_device->request_queue with
-blk_execute_rq_nowait() with use_sg > 0 CDBs.  However, I am still
-running into another reproducable BUG_ON in
-block/cfq-iosched.c:cfq_find_next_rq() after extended bulk I/O tests.
-
-Many thanks for your comments,
-
---nab
-
-> 
-
+Dave.
