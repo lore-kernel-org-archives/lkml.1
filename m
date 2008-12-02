@@ -1,112 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbYLBUwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYLBUwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136AbYLBUwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYLBUvk
+	id S1754551AbYLBUwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYLBUvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:51:40 -0500
-Received: from mail.atheros.com ([12.36.123.2]:24786 "EHLO mail.atheros.com"
+	Tue, 2 Dec 2008 15:51:41 -0500
+Received: from mail.atheros.com ([12.36.123.2]:24771 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752260AbYLBUvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:51:38 -0500
+	id S1752082AbYLBUvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 15:51:36 -0500
 From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
 To: <stable@kernel.org>
 CC: <ath9k-devel@venema.h4ckr.net>, <linux-wireless@vger.kernel.org>,
        <linux-kernel@vger.kernel.org>, <sfr@canb.auug.org.au>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [PATCH 1/3] ath9k: Handle -ENOMEM on RX gracefully
-Date: Tue, 2 Dec 2008 12:51:22 -0800
-Message-ID: <1228251082-11677-4-git-send-email-lrodriguez@atheros.com>
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Bennyam Malavazi <Bennyam.Malavazi@atheros.com>
+Subject: [PATCH] ath9k: correct expected max RX buffer size
+Date: Tue, 2 Dec 2008 12:51:21 -0800
+Message-ID: <1228251082-11677-3-git-send-email-lrodriguez@atheros.com>
 X-Mailer: git-send-email 1.5.6.rc2.15.g457bb.dirty
-In-Reply-To: <1228251082-11677-3-git-send-email-lrodriguez@atheros.com>
+In-Reply-To: <1228251082-11677-2-git-send-email-lrodriguez@atheros.com>
 References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com>
  <1228251082-11677-2-git-send-email-lrodriguez@atheros.com>
- <1228251082-11677-3-git-send-email-lrodriguez@atheros.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We would get an oops on RX on -ENOMEM by passing
-NULL to the hardware on ath_rx_buf_link(). The oops
-would look something like this:
+We should only tell the hardware its capable of DMA'ing
+to us only what we asked dev_alloc_skb(). Prior to this
+it is possible a large RX'd frame could have corrupted
+DMA data but for us but we were saved only because we
+were previously also pci_map_single()'ing the same large
+value. The issue prior to this though was we were unmapping
+a smaller amount which the prior DMA patch fixed.
 
-ath_rx_tasklet
-...
-RIP: ath_rx_buf_link
-
-We correct this by handling the allocation for the next
-skb we will put in our RX tail directly on the ath_rx_tasklet()
-*prior* to sending up the last hardware processed
-skb. If we run out of memory this gauranteees we have
-skbs to work with while it simply drops new received
-frames.
-
+Signed-off-by: Bennyam Malavazi <Bennyam.Malavazi@atheros.com>
 Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 ---
- drivers/net/wireless/ath9k/recv.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/net/wireless/ath9k/recv.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/net/wireless/ath9k/recv.c b/drivers/net/wireless/ath9k/recv.c
-index 0941589..a4f92b2 100644
+index 4d23827..0941589 100644
 --- a/drivers/net/wireless/ath9k/recv.c
 +++ b/drivers/net/wireless/ath9k/recv.c
-@@ -441,18 +441,16 @@ static void ath_rx_requeue(struct ath_softc *sc, struct sk_buff *skb)
-  */
- static int ath_rx_indicate(struct ath_softc *sc,
- 			   struct sk_buff *skb,
-+			   struct sk_buff *nskb,
- 			   struct ath_recv_status *status,
- 			   u16 keyix)
- {
- 	struct ath_buf *bf = ATH_RX_CONTEXT(skb)->ctx_rxbuf;
--	struct sk_buff *nskb;
- 	int type;
+@@ -52,7 +52,7 @@ static void ath_rx_buf_link(struct ath_softc *sc, struct ath_buf *bf)
+ 	/* setup rx descriptors */
+ 	ath9k_hw_setuprxdesc(ah,
+ 			     ds,
+-			     skb_tailroom(skb),   /* buffer size */
++			     sc->sc_rxbufsize,
+ 			     0);
  
- 	/* indicate frame to the stack, which will free the old skb. */
- 	type = ath__rx_indicate(sc, skb, status, keyix);
- 
--	/* allocate a new skb and queue it to for H/W processing */
--	nskb = ath_rxbuf_alloc(sc, sc->sc_rxbufsize);
- 	if (nskb != NULL) {
- 		bf->bf_mpdu = nskb;
- 		bf->bf_buf_addr = ath_skb_map_single(sc,
-@@ -741,6 +739,7 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
- 	struct ath_desc *ds;
- 	struct ieee80211_hdr *hdr;
- 	struct sk_buff *skb = NULL;
-+	struct sk_buff *nskb = NULL;
- 	struct ath_recv_status rx_status;
- 	struct ath_hal *ah = sc->sc_ah;
- 	int type, rx_processed = 0;
-@@ -963,6 +962,17 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
- 		 */
- 		if (sc->sc_rxbufsize < ds->ds_rxstat.rs_datalen)
- 			goto rx_next;
-+
-+		/* allocate a new skb and queue it to for H/W processing */
-+		nskb = ath_rxbuf_alloc(sc, sc->sc_rxbufsize);
-+
-+		/* Diregard current RX'd frame and reuse the old skb */
-+		if (!nskb) {
-+			list_move_tail(&bf->list, &sc->sc_rxbuf);
-+			ath_rx_buf_link(sc, bf);
-+			goto rx_next;
-+		}
-+
- 		/*
- 		 * Sync and unmap the frame.  At this point we're
- 		 * committed to passing the sk_buff somewhere so
-@@ -1052,7 +1062,7 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
- 
- 		/* Pass frames up to the stack. */
- 
--		type = ath_rx_indicate(sc, skb,
-+		type = ath_rx_indicate(sc, skb, nskb,
- 			&rx_status, ds->ds_rxstat.rs_keyix);
- 
- 		/*
+ 	if (sc->sc_rxlink == NULL)
 -- 
 1.5.6.rc2.15.g457bb.dirty
 
