@@ -1,163 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbYLBBWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYLBB1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753028AbYLBBWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 20:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLBBWk
+	id S1753345AbYLBB1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 20:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLBB10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 20:22:40 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1299 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbYLBBWi (ORCPT
+	Mon, 1 Dec 2008 20:27:26 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:45937 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbYLBB1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 20:22:38 -0500
-Date: Tue, 2 Dec 2008 01:22:32 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.28-rc6+] regulator: bugfixes and messaging cleanup
-Message-ID: <20081202012231.GA19108@sirena.org.uk>
-References: <200812011335.43551.david-b@pacbell.net> <20081201225312.GA6699@sirena.org.uk> <200812011558.09154.david-b@pacbell.net>
+	Mon, 1 Dec 2008 20:27:25 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 1 Dec 2008 17:27:23 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, ltt-dev@lists.casi.polymtl.ca,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [ltt-dev] [PATCH] Poll : introduce poll_wait_exclusive() new
+ function
+In-Reply-To: <20081128131311.GC10401@Krystal>
+Message-ID: <alpine.DEB.1.10.0812011711280.27086@alien.or.mcafeemobile.com>
+References: <20081124205512.26C1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081124121659.GA18987@Krystal> <20081125194700.26EB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.1.10.0811251316590.32523@alien.or.mcafeemobile.com> <20081126111511.GE14826@Krystal>
+ <alpine.DEB.1.10.0811261559180.11771@alien.or.mcafeemobile.com> <20081128131311.GC10401@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812011558.09154.david-b@pacbell.net>
-X-Cookie: He who laughs last didn't get the joke.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 03:58:08PM -0800, David Brownell wrote:
-> On Monday 01 December 2008, Mark Brown wrote:
-> > On Mon, Dec 01, 2008 at 01:35:43PM -0800, David Brownell wrote:
+On Fri, 28 Nov 2008, Mathieu Desnoyers wrote:
 
-> > This could usefuly be split into a patch series, there's rather a lot
-> > of different changes in here...
+> Nope, sorry, I don't own any machine with such huge amount of CPUs,
+> therefore I can't afford to test that scalability level.
 
-> At most I'd see two patches:  one with bugfixes, one with messaging
-> fixes that aren't strictly "bug" fixes (i.e. messages worked but
-> violated normal conventions like driver model).
+OK, but maybe before trying to push a performance-based patch, some 
+pseudo-real numbers should be given ;)
 
-I'd expect that, for example, reordering the startup sequence could also
-be usefully pulled out into a separate patch.
 
-> > >  	if (id == NULL) {
-> > > -		printk(KERN_ERR "regulator: get() with no identifier\n");
-> > > +		dev_dbg(dev, "regulator_get with no identifier\n");
-> > >  		return regulator;
-> > >  	}
 
-> > dev may legally be NULL here
+> You say that "You've got at least the spinlock protecting the queue
+> where these threads are focusing", you assume we stay limited to the
+> current implementation inability to scale correctly. We could think of a
+> scheme with :
+> 
+> - Per cpu waiters. Waiters are added to their own CPU waiting list.
+> - Per cpu wakeups, where the wakeup will try to wake up a waiter on the
+>   local CPU first.
+> 
+> If there happens to be no waiters for a local CPU wakeup, the wakeup
+> would then be broadcasted to other CPUs, which involves proper locking
+> which I think could be done pretty efficiently so we don't hurt the "add
+> waiter" fastpath.
+> 
+> By doing this, we could end up not even taking a global spinlock in the
+> add waiter/wakeup fastpaths. So then we would have fixed both the
+> thundering herd problem _and_ the global spinlock issue altogether.
+> 
+> Any thought ?
 
-> The kerneldoc doesn't mention that at all ... seems like a pretty
-> major interface artifact.  Hmm, for that matter I notice that if
+That looks fine, but before waving the Thundering Herd flag some 
+performance numbers should be given IMO, considerng also that this is a 
+rather particular use of the poll subsystem.
+Eventually, isn't something like the patch below better than adding custom 
+case names to poll_wait() ALA poll_wait_LONGNAMESFOLLOW()?
+That way you can pass your own queueing function:
 
-Well, it matchs the clock API and the fact that there isn't an explicit
-check for a NULL dev along with the check for a NULL id.  :)
+	poll_wait_qfunc(file, head, pt, add_wait_queue_exclusive);
 
-> you were to run kerneldoc, regulator_register() -- and presumably
-> other functions -- would get lots of errors.
 
-I'd not be surprised, I doubt it's ever been checked.
 
-> Allowing it to be NULL seems pretty much contrary to the model that
-> a supply name is associated with a device.  I'd call that a bug and
-> fix it ... vs calling it a feature and diverging from standard
-> framework models.
+- Davide
 
-Ideally everything should use a device but sadly it's not universal yet.
 
-> > which is going to cause upset if the 
-> > dev_dbg() is hit.  Things like cpufreq which can use regulators don't
-> > use a struct device (currently!) so it's supported.
 
-> Which cpufreq driver(s) in mainline use regulator code?
+---
+ fs/eventpoll.c       |    7 +++++--
+ fs/select.c          |   28 +++++++++++++---------------
+ include/linux/poll.h |   18 +++++++++++++++---
+ 3 files changed, 33 insertions(+), 20 deletions(-)
 
-None that I am aware of.  However, there's an i.MX31 cpufreq driver
-queued on merging of the clock API support required (plus a non-cpufreq
-implementation of DVFS for the same CPU which also uses the regulator
-API).
-
-> I had commented not long ago that the regulator framework needs
-> updates to support cpufreq.  For example, trying to enable hardware
-> support for DVFS (Dynamic Voltage and Frequency Scaling) on several
-> platforms requires configuring more than one voltage ... floor and
-> ceiling, switched automatically by a CPU signal, for starters.
-
-I'd actually given some consideration to such regulators - while it's a
-*bit* of an abuse of the API the fact that voltages are specified as
-limits could probably be used somewhat idiomatically for the purpose,
-especially if the CPU is controlling things autonomously rather than
-having it done by software.  It does need thought, though - that idea is
-giving me a bit of ick but it does reflect what's going on.
-
-> It would be good to overhaul cpufreq before trying to make it use
-> things like the clock and regulator frameworks.  Fitting into the
-> driver model seems overdue, for one.
-
-Well voulunteered :) .
-
-> > > @@ -971,19 +991,16 @@ static int _regulator_enable(struct regu
-> > >  	int ret = -EINVAL;
-
-> > >  	if (!rdev->constraints) {
-> > > -		printk(KERN_ERR "%s: %s has no constraints\n",
-> > > -		       __func__, rdev->desc->name);
-> > > +		dev_err(&rdev->dev, "%s has no constraints\n",
-> > > +		       rdev->desc->name);
-
-> > Hrm.  You've downgraded most of the diagnostics to dev_dbg()
-
-> No; just ones in the enable/disable paths, and even there just
-> ones where the caller has control over the illegal parameters.
-
-You've adjusted things in the supply registration interface and get() in
-this way as well and at least the change to the "unable to find" message
-in get() may not be directly due to the caller (it could be due to a
-failure on the part of the board code to register the supply name).
-
-> Recall that rdev->constraints can be nulled for various reasons
-> that aren't under control of the regulator client.
-
-Well, clearly.  The client has no direct control over the constraints.
-
-> I think this was as consistent as possible with the basic rule
-> that when the caller could have prevented it, it's their job to
-> handle the fault code they get.
-
-I don't see handling the error code and explaining why it happend as
-being orthogonal here.  My inclination would be to always log at least
-constraint and setup errors (since callers are likely to just fail and
-it's useful to say why), at least until the API becomes more widely used
-since almost everyone is on a learning curve here.  People can enable
-DEBUG but it's nice to just give the error.
-
-I can see logging all the enable and disable errors becoming too spammy,
-though, since they are much more likely to be retried.
-
-> > >  		ret = rdev->desc->ops->enable(rdev);
-> > > -		if (ret < 0) {
-> > > -			printk(KERN_ERR "%s: failed to enable %s: %d\n",
-> > > -			       __func__, rdev->desc->name, ret);
-> > > -			return ret;
-> > > +		if (ret >= 0) {
-
-> > I have to say I'd be happier keeping the logic as it was here.  The
-> > behaviour does stay the same due to fall through but it's not quite so
-> > clear since it's not consistent with the error handling style for the
-> > rest of the function.
-
-> You mean in this case you'd want to see a (needless) GOTO?  I suppose
-
-Yes, it's a bit harder to parse wth the reversed test - the change in
-idiom raises an eyebrow, especially since we fall through into a case
-marked fail for both success and failure.
-
-> it could be done.  If you want consistency, I'd get rid of the unique
-> message for missing constraints, and rely on unique fault codes ...
-
-The point here is the patterns in the code - something that looks
-different breaks the flow.
+Index: linux-2.6.mod/fs/select.c
+===================================================================
+--- linux-2.6.mod.orig/fs/select.c	2008-12-01 16:27:15.000000000 -0800
++++ linux-2.6.mod/fs/select.c	2008-12-01 16:47:53.000000000 -0800
+@@ -103,19 +103,6 @@
+  * as all select/poll functions have to call it to add an entry to the
+  * poll table.
+  */
+-static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+-		       poll_table *p);
+-
+-void poll_initwait(struct poll_wqueues *pwq)
+-{
+-	init_poll_funcptr(&pwq->pt, __pollwait);
+-	pwq->error = 0;
+-	pwq->table = NULL;
+-	pwq->inline_index = 0;
+-}
+-
+-EXPORT_SYMBOL(poll_initwait);
+-
+ static void free_poll_entry(struct poll_table_entry *entry)
+ {
+ 	remove_wait_queue(entry->wait_address, &entry->wait);
+@@ -173,7 +160,8 @@
+ 
+ /* Add a new entry */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+-				poll_table *p)
++		       poll_table *p, void (*qfunc)(wait_queue_head_t *,
++						     wait_queue_t *))
+ {
+ 	struct poll_table_entry *entry = poll_get_entry(p);
+ 	if (!entry)
+@@ -182,9 +170,19 @@
+ 	entry->filp = filp;
+ 	entry->wait_address = wait_address;
+ 	init_waitqueue_entry(&entry->wait, current);
+-	add_wait_queue(wait_address, &entry->wait);
++	(*qfunc)(wait_address, &entry->wait);
+ }
+ 
++void poll_initwait(struct poll_wqueues *pwq)
++{
++	init_poll_funcptr(&pwq->pt, __pollwait);
++	pwq->error = 0;
++	pwq->table = NULL;
++	pwq->inline_index = 0;
++}
++
++EXPORT_SYMBOL(poll_initwait);
++
+ /**
+  * poll_select_set_timeout - helper function to setup the timeout value
+  * @to:		pointer to timespec variable for the final timeout
+Index: linux-2.6.mod/include/linux/poll.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/poll.h	2008-12-01 16:27:15.000000000 -0800
++++ linux-2.6.mod/include/linux/poll.h	2008-12-01 16:55:11.000000000 -0800
+@@ -28,16 +28,28 @@
+ /* 
+  * structures and helpers for f_op->poll implementations
+  */
+-typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
++typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *,
++				struct poll_table_struct *,
++				void (*)(wait_queue_head_t *, wait_queue_t *));
+ 
+ typedef struct poll_table_struct {
+ 	poll_queue_proc qproc;
+ } poll_table;
+ 
+-static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
++static inline void poll_wait_qfunc(struct file *filp,
++				   wait_queue_head_t *wait_address,
++				   poll_table *p,
++				   void (*qfunc)(wait_queue_head_t *,
++						 wait_queue_t *))
+ {
+ 	if (p && wait_address)
+-		p->qproc(filp, wait_address, p);
++		p->qproc(filp, wait_address, p, qfunc);
++}
++
++static inline void poll_wait(struct file *filp, wait_queue_head_t *wait_address,
++			     poll_table *p)
++{
++	poll_wait_qfunc(filp, wait_address, p, add_wait_queue);
+ }
+ 
+ static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
+Index: linux-2.6.mod/fs/eventpoll.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventpoll.c	2008-12-01 16:27:15.000000000 -0800
++++ linux-2.6.mod/fs/eventpoll.c	2008-12-01 16:39:02.000000000 -0800
+@@ -655,7 +655,10 @@
+  * target file wakeup lists.
+  */
+ static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
+-				 poll_table *pt)
++				 poll_table *pt,
++				 void (*qfunc)(wait_queue_head_t *,
++					       wait_queue_t *))
++
+ {
+ 	struct epitem *epi = ep_item_from_epqueue(pt);
+ 	struct eppoll_entry *pwq;
+@@ -664,7 +667,7 @@
+ 		init_waitqueue_func_entry(&pwq->wait, ep_poll_callback);
+ 		pwq->whead = whead;
+ 		pwq->base = epi;
+-		add_wait_queue(whead, &pwq->wait);
++		(*qfunc)(whead, &pwq->wait);
+ 		list_add_tail(&pwq->llink, &epi->pwqlist);
+ 		epi->nwait++;
+ 	} else {
