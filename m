@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYLBUdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYLBUeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbYLBUdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYLBUdW
+	id S1753344AbYLBUeh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYLBUe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:33:22 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:37728 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751018AbYLBUdV (ORCPT
+	Tue, 2 Dec 2008 15:34:27 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34745 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbYLBUe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:33:21 -0500
-Date: Tue, 2 Dec 2008 15:33:15 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andres Freund <andres@anarazel.de>
-Cc: Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: EXT4 ENOSPC Bug
-Message-ID: <20081202203315.GA20858@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andres Freund <andres@anarazel.de>,
-	Andreas Dilger <adilger@sun.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-References: <200811291418.24672.andres@anarazel.de> <200812021559.05103.andres@anarazel.de> <20081202164709.GC18162@mit.edu> <200812021847.35771.andres@anarazel.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812021847.35771.andres@anarazel.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Tue, 2 Dec 2008 15:34:27 -0500
+Message-Id: <20081202203404.496794864@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 02 Dec 2008 15:34:04 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/5] ftrace updates for tip
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 06:47:24PM +0100, Andres Freund wrote:
-> 
-> I think that I have seen the problem on metadata only changes (find
-> /tmp -type f|xargs touch) as well, but sometimes metadata changes
-> were possible while file creation was not.
+Ingo,
 
-Hmm...  really?  Was the error message ENOSPC, or something else?
+Here's some more ftrace updates.
 
-The only way I can see that it might be ENOSPC would be if we got an
-error in the jbd2 layer, in start_this_handle(), but that would have
-resulted in a kernel printk:
+The first should help fix the bug in lockdep.
 
-	if (nblocks > journal->j_max_transaction_buffers) {
-		printk(KERN_ERR "JBD: %s wants too many credits (%d > %d)\n",
-		       current->comm, nblocks,
-		       journal->j_max_transaction_buffers);
-		ret = -ENOSPC;
-		goto out;
-	}
+The next are changes to the ring buffer to get ready to have it
+work with splice.
+
+The last are some clean ups for function graph.
 
 
-If that wasn't too long ago, you might want to search your old system
-log files in /var/log for any "JBD" or "ext4" messages.  That might be
-an important clue, although that seems rather unlikely to me.  Or in
-the case where metadata changes were failing, perhaps they were doing
-so with some other error that ENOSPC?
+The following patches are in:
 
-   	   					- Ted
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/devel
+
+
+Steven Rostedt (5):
+      ftrace: replace raw_local_irq_save with local_irq_save
+      ring-buffer: move some metadata into buffer page
+      ring-buffer: read page interface
+      ftrace: clean up function graph asm
+      ftrace: have function graph use mcount caller address
+
+----
+ arch/x86/kernel/entry_32.S  |    1 +
+ arch/x86/kernel/entry_64.S  |    1 +
+ arch/x86/kernel/ftrace.c    |   20 +---
+ include/linux/ring_buffer.h |    5 +
+ kernel/lockdep.c            |    1 +
+ kernel/trace/ring_buffer.c  |  229 ++++++++++++++++++++++++++++++++++++++-----
+ kernel/trace/trace.c        |   12 +-
+ kernel/trace/trace_branch.c |    4 +-
+ kernel/trace/trace_stack.c  |    8 +-
+ 9 files changed, 226 insertions(+), 55 deletions(-)
+-- 
