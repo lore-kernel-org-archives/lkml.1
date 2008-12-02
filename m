@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbYLBXGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYLBXGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbYLBXGZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:06:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYLBXGP
+	id S1753325AbYLBXGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYLBXGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:06:15 -0500
-Received: from gate.crashing.org ([63.228.1.57]:57166 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752647AbYLBXGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:06:15 -0500
-Cc: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel@vger.kernel.org
-Message-Id: <EAAB7B1A-49DC-4D61-A76F-F87C777566D8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1228253423.7356.195.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 2 Dec 2008 18:06:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:42852 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbYLBXGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:06:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=oNIF3i6lr+wCGkNIMQZL8Hhqgovy2UCY5cRfd0fG5UJ5Pu+QnjgJ/kV16MzFzQeWfC
+         R+13J/nSf8AFY0noFWa+4e7RA10lEp7DskNhUefNkGbGJyEcJzgLdnB6yHllyrpXurEt
+         xblLS6Zv0IIexLhqo1zO29yBxkBISmHB9/K80=
+Message-ID: <4935BF7F.4080109@gmail.com>
+Date: Wed, 03 Dec 2008 00:06:39 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] wlan: skb_p80211_to_ether() - payload_length is unsigned,
+ check before subtraction
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH][for 2.6.28] powerpc: Use physical cpu id when setting the processor affinity
-Date: Tue, 2 Dec 2008 17:05:25 -0600
-References: <1228246621-25622-1-git-send-email-galak@kernel.crashing.org> <1228253423.7356.195.camel@pasglop>
-X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+payload_length is unsigned, check before subtraction
 
-On Dec 2, 2008, at 3:30 PM, Benjamin Herrenschmidt wrote:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/staging/wlan-ng/p80211conv.c b/drivers/staging/wlan-ng/p80211conv.c
+index 68121b9..9dd8b77 100644
+--- a/drivers/staging/wlan-ng/p80211conv.c
++++ b/drivers/staging/wlan-ng/p80211conv.c
+@@ -333,11 +333,11 @@ int skb_p80211_to_ether( wlandevice_t *wlandev, UINT32 ethconv, struct sk_buff *
+ 		memcpy(saddr, w_hdr->a3.a2, WLAN_ETHADDR_LEN);
+ 	} else {
+ 		payload_offset = WLAN_HDR_A4_LEN;
+-		payload_length -= ( WLAN_HDR_A4_LEN - WLAN_HDR_A3_LEN );
+-		if (payload_length < 0 ) {
++		if (payload_length < WLAN_HDR_A4_LEN - WLAN_HDR_A3_LEN) {
+ 			WLAN_LOG_ERROR("A4 frame too short!\n");
+ 			return 1;
+ 		}
++		payload_length -= (WLAN_HDR_A4_LEN - WLAN_HDR_A3_LEN);
+ 		memcpy(daddr, w_hdr->a4.a3, WLAN_ETHADDR_LEN);
+ 		memcpy(saddr, w_hdr->a4.a4, WLAN_ETHADDR_LEN);
+ 	}
 
-> On Tue, 2008-12-02 at 13:37 -0600, Kumar Gala wrote:
->> In the CONFIG_SMP case the irq_choose_cpu() code was returning back
->> a logical cpu id not the physical id.  We were writing that directly
->> into the HW register.
->>
->> We need to be calling get_hard_smp_processor_id() so irq_choose_cpu()
->> always returns a physical cpu id.
->
-> That will probably do for now but if we ever move that routine to
-> generic code, I'd rather have the caller do the conversion.
-
-Fair.. I felt at this point matching what the !CONFIG_SMP case of  
-irq_choose_cpu() is doing was the best choice.
-
-- k
