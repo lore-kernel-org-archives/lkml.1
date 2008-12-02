@@ -1,180 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYLBB4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbYLBCAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbYLBB4r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 20:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYLBB4j
+	id S1753859AbYLBCAx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 21:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYLBCAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 20:56:39 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:47795 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbYLBB4i (ORCPT
+	Mon, 1 Dec 2008 21:00:45 -0500
+Received: from mail-gx0-f18.google.com ([209.85.217.18]:47304 "EHLO
+	mail-gx0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbYLBCAo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 20:56:38 -0500
+	Mon, 1 Dec 2008 21:00:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:references:x-google-sender-auth;
-        b=iIGOwT8mbSwGWPy5Gcl6rdd2K+8i7dK261e0MJGRz8SYzs/G4neHQzGJfskA+w9ZyO
-         InbfesXem9aJDmqVZp0/JkddfKV0cbb4MnTmnKm5rvIO/rwObDB7J3ZQBTdgXzQkqORd
-         kWytp82X2k4U+3P/Plgd9pTDJYIA2Q3V936Zg=
-Message-ID: <6540c930812011756x4b458d25l4ed639e79655016e@mail.gmail.com>
-Date: Mon, 1 Dec 2008 23:56:36 -0200
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=I8n+iIe+JkItVmt9VgXDNcU+j9d0RqsU2o10fUpKPGRVBeWIsB03qJq5Vr+o+kY1vQ
+         pJXQWASA332Jn57VFuvehZrdoQd6eJwJ5jGPv7ieHM+fUlWAmJUVTG7a/xWcXaOn6sn8
+         +oBGnnDYD4kUv/vf8xprck+wA/EjmXiBDbyVw=
+Message-ID: <6540c930812011800i62ac8635y30857d71ed266bde@mail.gmail.com>
+Date: Tue, 2 Dec 2008 00:00:43 -0200
 From: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>
 To: "Ivo van Doorn" <ivdoorn@gmail.com>,
        "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>
 Subject: Re: Still some problems with the rt2x00 driver
 Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200811250942.09259.IvDoorn@gmail.com>
+In-Reply-To: <6540c930812011756x4b458d25l4ed639e79655016e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_81279_18137964.1228182996944"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 References: <20080620175729.GA3151@ime.usp.br>
 	 <200808041526.08332.IvDoorn@gmail.com>
 	 <3977BB08-9149-41E4-B187-235F36204E4E@ime.usp.br>
 	 <200811250942.09259.IvDoorn@gmail.com>
-X-Google-Sender-Auth: 9dbdf9e82ac22331
+	 <6540c930812011756x4b458d25l4ed639e79655016e@mail.gmail.com>
+X-Google-Sender-Auth: 600f841a9a24bea0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_81279_18137964.1228182996944
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi again, Ivo.
 
-Hi, Ivo, John and others.
-
-First of all, sorry for the late reply. But I'm still here and I can
-help get things straight. I just had some (once more) health problems
-(I'm not currently that well).
-
-On Tue, Nov 25, 2008 at 6:42 AM, Ivo van Doorn <ivdoorn@gmail.com> wrote:
-> Hi,
+On Mon, Dec 1, 2008 at 11:56 PM, Rogério Brito <rbrito@ime.usp.br> wrote:
+> On Tue, Nov 25, 2008 at 6:42 AM, Ivo van Doorn <ivdoorn@gmail.com> wrote:
+>> For both cases:
+>> Is there anything in the log regading the drivers or mac80211?
 >
->> There are two strange things that I've noticed, though and that I
->> feel need to be fixed:
->
-> For both cases:
-> Is there anything in the log regading the drivers or mac80211?
+> Yes, there are. Here I reproduce the logs from both 2.6.27.x which is
+> an experimental one from the Debian kernel team and the logs from a
+> 2.6.28-rc6 kernel compiled by myself (with some extra debugging
+> enabled).
 
-Yes, there are. Here I reproduce the logs from both 2.6.27.x which is
-an experimental one from the Debian kernel team and the logs from a
-2.6.28-rc6 kernel compiled by myself (with some extra debugging
-enabled).
+Needless to say, if you want me to test anything else here, please let me know.
 
 
-Thanks for your kind help, Rog=E9rio Brito.
+Thanks again, Rogério Brito.
 
---=20
-Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
 http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
 Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
-
-------=_Part_81279_18137964.1228182996944
-Content-Type: text/plain; name=rt2500usb-disassociation.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fo7wdxx30
-Content-Disposition: attachment; filename=rt2500usb-disassociation.txt
-
-WyAgNjQzLjI0NjY1NV0gdXNiIDItMTogVVNCIGRpc2Nvbm5lY3QsIGFkZHJlc3MgMgpbICA2NjMu
-MDkzMTA5XSB1c2IgMi0xOiBuZXcgZnVsbCBzcGVlZCBVU0IgZGV2aWNlIHVzaW5nIG9oY2lfaGNk
-IGFuZCBhZGRyZXNzIDMKWyAgNjYzLjQwOTc5MV0gdXNiIDItMTogY29uZmlndXJhdGlvbiAjMSBj
-aG9zZW4gZnJvbSAxIGNob2ljZQpbICA2NjMuNDIyMDI2XSB1c2IgMi0xOiBOZXcgVVNCIGRldmlj
-ZSBmb3VuZCwgaWRWZW5kb3I9MjAwMSwgaWRQcm9kdWN0PTNjMDAKWyAgNjYzLjQyMjA1OF0gdXNi
-IDItMTogTmV3IFVTQiBkZXZpY2Ugc3RyaW5nczogTWZyPTEsIFByb2R1Y3Q9MiwgU2VyaWFsTnVt
-YmVyPTAKWyAgNjYzLjQyMjA2N10gdXNiIDItMTogUHJvZHVjdDogODAyLjExZyBXTEFOIEFkYXB0
-ZXIgICAgClsgIDY2My40MjIwNzRdIHVzYiAyLTE6IE1hbnVmYWN0dXJlcjogQU5JIApbICA2NjQu
-NjMxNDY4XSBwaHkwOiBTZWxlY3RlZCByYXRlIGNvbnRyb2wgYWxnb3JpdGhtICdwaWQnClsgIDY2
-NS4wNjU5NjddIFJlZ2lzdGVyZWQgbGVkIGRldmljZTogcnQyNTAwdXNiLXBoeTA6cmFkaW8KWyAg
-NjY1LjA2ODg2OV0gdXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgaW50ZXJmYWNlIGRyaXZlciBydDI1
-MDB1c2IKWyAgNjkyLjQyOTg2MV0gQUREUkNPTkYoTkVUREVWX1VQKTogd2xhbjA6IGxpbmsgaXMg
-bm90IHJlYWR5ClsgIDY5NC4xMjU0NjVdIHdsYW4wOiBhdXRoZW50aWNhdGUgd2l0aCBBUCAwMDox
-Mzo0Njo1MToxMDo2NQpbICA2OTQuMTI3NTA4XSB3bGFuMDogYXV0aGVudGljYXRlZApbICA2OTQu
-MTI3NTM2XSB3bGFuMDogYXNzb2NpYXRlIHdpdGggQVAgMDA6MTM6NDY6NTE6MTA6NjUKWyAgNjk0
-LjEzMDUwMl0gd2xhbjA6IFJYIEFzc29jUmVzcCBmcm9tIDAwOjEzOjQ2OjUxOjEwOjY1IChjYXBh
-Yj0weDQzMSBzdGF0dXM9MCBhaWQ9MSkKWyAgNjk0LjEzMDUyMl0gd2xhbjA6IGFzc29jaWF0ZWQK
-WyAgNjk0LjEzODYxMF0gQUREUkNPTkYoTkVUREVWX0NIQU5HRSk6IHdsYW4wOiBsaW5rIGJlY29t
-ZXMgcmVhZHkKWyAgNzA0Ljc5MzA4MF0gd2xhbjA6IG5vIElQdjYgcm91dGVycyBwcmVzZW50Clsg
-MTA5My4zNTk4MThdIFJQQzogUmVnaXN0ZXJlZCB1ZHAgdHJhbnNwb3J0IG1vZHVsZS4KWyAxMDkz
-LjM1OTg0NF0gUlBDOiBSZWdpc3RlcmVkIHRjcCB0cmFuc3BvcnQgbW9kdWxlLgpbIDI0MTguMjk3
-MTA1XSBvbmRlbWFuZCBnb3Zlcm5vciBmYWlsZWQsIHRvbyBsb25nIHRyYW5zaXRpb24gbGF0ZW5j
-eSBvZiBIVywgZmFsbGJhY2sgdG8gcGVyZm9ybWFuY2UgZ292ZXJub3IKWyA0Njc1LjY4NTU2MV0g
-d2xhbjA6IGRpc2Fzc29jaWF0ZWQKWyA0Njc2LjY4NjAwNl0gd2xhbjA6IGFzc29jaWF0ZSB3aXRo
-IEFQIDAwOjEzOjQ2OjUxOjEwOjY1ClsgNDY3Ni42ODg2MDVdIHdsYW4wOiBSWCBSZWFzc29jUmVz
-cCBmcm9tIDAwOjEzOjQ2OjUxOjEwOjY1IChjYXBhYj0weDQzMSBzdGF0dXM9MTcgYWlkPTEpClsg
-NDY3Ni42ODg2MjddIHdsYW4wOiBBUCBkZW5pZWQgYXNzb2NpYXRpb24gKGNvZGU9MTcpClsgNDY3
-Ni44ODUxMzhdIHdsYW4wOiBhc3NvY2lhdGUgd2l0aCBBUCAwMDoxMzo0Njo1MToxMDo2NQpbIDQ2
-NzYuODg3NTIwXSB3bGFuMDogUlggQXNzb2NSZXNwIGZyb20gMDA6MTM6NDY6NTE6MTA6NjUgKGNh
-cGFiPTB4NDMxIHN0YXR1cz0xNyBhaWQ9MTA3MykKWyA0Njc2Ljg4NzUzOV0gd2xhbjA6IEFQIGRl
-bmllZCBhc3NvY2lhdGlvbiAoY29kZT0xNykKWyA0Njc3LjA4NTA5OV0gd2xhbjA6IGFzc29jaWF0
-ZSB3aXRoIEFQIDAwOjEzOjQ2OjUxOjEwOjY1ClsgNDY3Ny4wODc1MzRdIHdsYW4wOiBSWCBBc3Nv
-Y1Jlc3AgZnJvbSAwMDoxMzo0Njo1MToxMDo2NSAoY2FwYWI9MHg0MzEgc3RhdHVzPTE3IGFpZD0x
-MDczKQpbIDQ2NzcuMDg3NTUyXSB3bGFuMDogQVAgZGVuaWVkIGFzc29jaWF0aW9uIChjb2RlPTE3
-KQpbIDQ2NzcuMjg5MjI1XSB3bGFuMDogYXNzb2NpYXRpb24gd2l0aCBBUCAwMDoxMzo0Njo1MTox
-MDo2NSB0aW1lZCBvdXQKCk5vdywgSSBkb24ndCBoYXZlIGFjY2VzcyB0byB0aGUgbmV0d29yay4g
-SSwgbm93LCBpc3N1ZSAiaXdjb25maWcgd2xhbjAgYXAgYW55IgphbmQgaXQgZ29lcyB3b3JraW5n
-IGFnYWluOgoKWyA1ODQxLjI2MDQ3NV0gd2xhbjA6IGF1dGhlbnRpY2F0ZSB3aXRoIEFQIDAwOjEz
-OjQ2OjUxOjEwOjY1ClsgNTg0MS4yNjI1MjldIHdsYW4wOiBhdXRoZW50aWNhdGVkClsgNTg0MS4y
-NjI1NjBdIHdsYW4wOiBhc3NvY2lhdGUgd2l0aCBBUCAwMDoxMzo0Njo1MToxMDo2NQpbIDU4NDEu
-MjY1NDk5XSB3bGFuMDogUlggQXNzb2NSZXNwIGZyb20gMDA6MTM6NDY6NTE6MTA6NjUgKGNhcGFi
-PTB4NDMxIHN0YXR1cz0wIGFpZD0xKQpbIDU4NDEuMjY1NTE5XSB3bGFuMDogYXNzb2NpYXRlZAo=
-
-------=_Part_81279_18137964.1228182996944
-Content-Type: text/plain; name=rt2500usb-disassociation-2.6.28-rc6.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fo7wei5w1
-Content-Disposition: attachment;
- filename=rt2500usb-disassociation-2.6.28-rc6.txt
-
-cGh5MDogSFcgQ09ORklHOiBmcmVxPTI0MzcKcGh5MDogSFcgQ09ORklHOiBmcmVxPTI0NDIKcGh5
-MDogSFcgQ09ORklHOiBmcmVxPTI0NDcKcGh5MDogSFcgQ09ORklHOiBmcmVxPTI0NTIKcGh5MDog
-SFcgQ09ORklHOiBmcmVxPTI0NTcKcGh5MDogSFcgQ09ORklHOiBmcmVxPTI0NjIKcGh5MDogSFcg
-Q09ORklHOiBmcmVxPTI0MTIKcGh5MDogSFcgQ09ORklHOiBmcmVxPTI0MzcKcGh5MCAtPiBydDJ4
-MDBtYWNfY29uZl90eDogSW5mbyAtIENvbmZpZ3VyZWQgVFggcXVldWUgMCAtIENXbWluOiA0LCBD
-V21heDogMTAsIEFpZnM6IDIsIFRYb3A6IDAuCnBoeTAgLT4gcnQyeDAwbWFjX2NvbmZfdHg6IElu
-Zm8gLSBDb25maWd1cmVkIFRYIHF1ZXVlIDEgLSBDV21pbjogNCwgQ1dtYXg6IDEwLCBBaWZzOiAy
-LCBUWG9wOiAwLgp3bGFuMDogYXV0aGVudGljYXRlIHdpdGggQVAgMDA6MTM6NDY6NTE6MTA6NjUK
-d2xhbjA6IGF1dGhlbnRpY2F0ZWQKd2xhbjA6IGFzc29jaWF0ZSB3aXRoIEFQIDAwOjEzOjQ2OjUx
-OjEwOjY1CndsYW4wOiBSWCBBc3NvY1Jlc3AgZnJvbSAwMDoxMzo0Njo1MToxMDo2NSAoY2FwYWI9
-MHg0MzEgc3RhdHVzPTAgYWlkPTEpCndsYW4wOiBhc3NvY2lhdGVkCnBoeTA6IEFsbG9jYXRlZCBT
-VEEgMDA6MTM6NDY6NTE6MTA6NjUKcGh5MDogSW5zZXJ0ZWQgU1RBIDAwOjEzOjQ2OjUxOjEwOjY1
-CndsYW4wOiBzd2l0Y2hlZCB0byBzaG9ydCBiYXJrZXIgcHJlYW1ibGUgKEJTU0lEPTAwOjEzOjQ2
-OjUxOjEwOjY1KQpSUEM6IFJlZ2lzdGVyZWQgdWRwIHRyYW5zcG9ydCBtb2R1bGUuClJQQzogUmVn
-aXN0ZXJlZCB0Y3AgdHJhbnNwb3J0IG1vZHVsZS4KUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6
-MDoxOAp3bGFuMDogZGlzYXNzb2NpYXRlZApwaHkwOiBSZW1vdmVkIFNUQSAwMDoxMzo0Njo1MTox
-MDo2NQpwaHkwOiBEZXN0cm95ZWQgU1RBIDAwOjEzOjQ2OjUxOjEwOjY1CndsYW4wOiBhc3NvY2lh
-dGUgd2l0aCBBUCAwMDoxMzo0Njo1MToxMDo2NQp3bGFuMDogUlggUmVhc3NvY1Jlc3AgZnJvbSAw
-MDoxMzo0Njo1MToxMDo2NSAoY2FwYWI9MHg0MzEgc3RhdHVzPTE3IGFpZD0xKQp3bGFuMDogQVAg
-ZGVuaWVkIGFzc29jaWF0aW9uIChjb2RlPTE3KQp3bGFuMDogYXNzb2NpYXRlIHdpdGggQVAgMDA6
-MTM6NDY6NTE6MTA6NjUKd2xhbjA6IFJYIEFzc29jUmVzcCBmcm9tIDAwOjEzOjQ2OjUxOjEwOjY1
-IChjYXBhYj0weDQzMSBzdGF0dXM9MTcgYWlkPTEwNzMpCndsYW4wOiBBUCBkZW5pZWQgYXNzb2Np
-YXRpb24gKGNvZGU9MTcpCndsYW4wOiBhc3NvY2lhdGUgd2l0aCBBUCAwMDoxMzo0Njo1MToxMDo2
-NQp3bGFuMDogUlggQXNzb2NSZXNwIGZyb20gMDA6MTM6NDY6NTE6MTA6NjUgKGNhcGFiPTB4NDMx
-IHN0YXR1cz0xNyBhaWQ9MTA3MykKd2xhbjA6IEFQIGRlbmllZCBhc3NvY2lhdGlvbiAoY29kZT0x
-NykKd2xhbjA6IGFzc29jaWF0aW9uIHdpdGggQVAgMDA6MTM6NDY6NTE6MTA6NjUgdGltZWQgb3V0
-CgpBZ2FpbiwgaGVyZSBJIGxvc3QgYWNjZXNzIHRvIHRoZSBuZXR3b3JrLiBJc3N1aW5nICJpd2Nv
-bmZpZyB3bGFuMCBhcCBhbnkiCnJlc3RvcmVzIHRoZSBhY2Nlc3MgdG8gdGhlIG5ldHdvcmsuCgpw
-aHkwOiBIVyBDT05GSUc6IGZyZXE9MjQzNwpwaHkwIC0+IHJ0MngwMG1hY19jb25mX3R4OiBJbmZv
-IC0gQ29uZmlndXJlZCBUWCBxdWV1ZSAwIC0gQ1dtaW46IDQsIENXbWF4OiAxMCwgQWlmczogMiwg
-VFhvcDogMC4KcGh5MCAtPiBydDJ4MDBtYWNfY29uZl90eDogSW5mbyAtIENvbmZpZ3VyZWQgVFgg
-cXVldWUgMSAtIENXbWluOiA0LCBDV21heDogMTAsIEFpZnM6IDIsIFRYb3A6IDAuCndsYW4wOiBk
-aXJlY3QgcHJvYmUgdG8gQVAgMDA6MTM6NDY6NTE6MTA6NjUgdHJ5IDEKd2xhbjAgZGlyZWN0IHBy
-b2JlIHJlc3BvbmRlZAp3bGFuMDogYXV0aGVudGljYXRlIHdpdGggQVAgMDA6MTM6NDY6NTE6MTA6
-NjUKd2xhbjA6IGF1dGhlbnRpY2F0ZWQKd2xhbjA6IGFzc29jaWF0ZSB3aXRoIEFQIDAwOjEzOjQ2
-OjUxOjEwOjY1CndsYW4wOiBSWCBBc3NvY1Jlc3AgZnJvbSAwMDoxMzo0Njo1MToxMDo2NSAoY2Fw
-YWI9MHg0MzEgc3RhdHVzPTAgYWlkPTEpCndsYW4wOiBhc3NvY2lhdGVkCnBoeTA6IEFsbG9jYXRl
-ZCBTVEEgMDA6MTM6NDY6NTE6MTA6NjUKcGh5MDogSW5zZXJ0ZWQgU1RBIDAwOjEzOjQ2OjUxOjEw
-OjY1CndsYW4wOiBzd2l0Y2hlZCB0byBzaG9ydCBiYXJrZXIgcHJlYW1ibGUgKEJTU0lEPTAwOjEz
-OjQ2OjUxOjEwOjY1KQoKQWdhaW46Cgp3bGFuMDogZGlzYXNzb2NpYXRlZApwaHkwOiBSZW1vdmVk
-IFNUQSAwMDoxMzo0Njo1MToxMDo2NQpwaHkwOiBEZXN0cm95ZWQgU1RBIDAwOjEzOjQ2OjUxOjEw
-OjY1CndsYW4wOiBhc3NvY2lhdGUgd2l0aCBBUCAwMDoxMzo0Njo1MToxMDo2NQp3bGFuMDogUlgg
-UmVhc3NvY1Jlc3AgZnJvbSAwMDoxMzo0Njo1MToxMDo2NSAoY2FwYWI9MHg0MzEgc3RhdHVzPTE3
-IGFpZD0xKQp3bGFuMDogQVAgZGVuaWVkIGFzc29jaWF0aW9uIChjb2RlPTE3KQp3bGFuMDogYXNz
-b2NpYXRlIHdpdGggQVAgMDA6MTM6NDY6NTE6MTA6NjUKd2xhbjA6IFJYIEFzc29jUmVzcCBmcm9t
-IDAwOjEzOjQ2OjUxOjEwOjY1IChjYXBhYj0weDQzMSBzdGF0dXM9MTcgYWlkPTEwNzMpCndsYW4w
-OiBBUCBkZW5pZWQgYXNzb2NpYXRpb24gKGNvZGU9MTcpCndsYW4wOiBhc3NvY2lhdGUgd2l0aCBB
-UCAwMDoxMzo0Njo1MToxMDo2NQp3bGFuMDogUlggQXNzb2NSZXNwIGZyb20gMDA6MTM6NDY6NTE6
-MTA6NjUgKGNhcGFiPTB4NDMxIHN0YXR1cz0xNyBhaWQ9MTA3MykKd2xhbjA6IEFQIGRlbmllZCBh
-c3NvY2lhdGlvbiAoY29kZT0xNykKd2xhbjA6IGFzc29jaWF0aW9uIHdpdGggQVAgMDA6MTM6NDY6
-NTE6MTA6NjUgdGltZWQgb3V0Cg==
-------=_Part_81279_18137964.1228182996944--
