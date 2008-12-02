@@ -1,77 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYLBCXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbYLBCe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYLBCXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 21:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYLBCXA
+	id S1753631AbYLBCe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 21:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYLBCeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 21:23:00 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:48276 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbYLBCXA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 21:23:00 -0500
-Date: Mon, 1 Dec 2008 20:21:45 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Russ Anderson <rja@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Jones <davej@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/8] badpage: simplify page_alloc flag check+clear
-In-Reply-To: <Pine.LNX.4.64.0812012349330.18893@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0812012014150.30344@quilx.com>
-References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
- <Pine.LNX.4.64.0812010038220.11401@blonde.site> <Pine.LNX.4.64.0812010843230.15331@quilx.com>
- <Pine.LNX.4.64.0812012349330.18893@blonde.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+	Mon, 1 Dec 2008 21:34:50 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:32844 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752624AbYLBCet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 21:34:49 -0500
+Subject: [RFC][PATCH] Catch xtime_nsec underflows and fix them
+From: john stultz <johnstul@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: yanmin_zhang@linux.intel.com, alex.shi@intel.com,
+       Thomas Gleixner <tglx@tglx.de>, Roman Zippel <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 01 Dec 2008 18:34:41 -0800
+Message-Id: <1228185281.7176.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Dec 2008, Hugh Dickins wrote:
+Alex Shi, along with Yanmin Zhang have been noticing occasional time
+inconsistencies recently. Through their great diagnosis, they found that
+the xtime_nsec value used in update_wall_time was occasionally going
+negative. After looking through the code for awhile, I realized we have
+the possibility for an underflow when three conditions are met in
+update_wall_time():
 
-> > Rename this to PAGE_FLAGS_CLEAR_WHEN_FREE?
->
-> No, that's a list of just the ones it's checking at free;
-> it then (with this patch) goes on to clear all of them.
+1) We have accumulated a second's worth of nanoseconds, so we
+incremented xtime.tv_sec and appropriately decrement xtime_nsec. (This
+doesn't cause xtime_nsec to go negative, but it can cause it to be
+small).
 
-But they are always clear on free. The checking is irrelevant.
+2) The remaining offset value is large, but just slightly less then
+cycle_interval.
 
-> One of the problems with PREP is that it's not obvious that it
-> means ALLOC: yes, I'd be happier with PAGE_FLAGS_CLEAR_AT_FREE.
+3) clocksource_adjust() is speeding up the clock, causing a corrective
+amount (compensating for the increase in the multiplier being multiplied
+against the unaccumulated offset value) to be subtracted from
+xtime_nsec.
 
-Ok.
+This can cause xtime_nsec to underflow.
 
->
-> > This is equal to
-> >
-> > page->flags &=~PAGE_FLAGS_CHECK_AT_PREP;
-> >
-> > You can drop the if...
->
-> I was intentionally following the existing style of
-> 	if (PageDirty(page))
-> 		__ClearPageDirty(page);
-> 	if (PageSwapBacked(page))
-> 		__ClearPageSwapBacked(page);
-> which is going out of its way to avoid dirtying a cacheline.
->
-> In all the obvious cases, I think the cacheline will already
-> be dirty; but I guess there's an important case (high order
-> but not compound?) which has a lot of clean cachelines.
+Unfortunately, since we notify the NTP subsystem via second_overflow()
+whenever we accumulate a full second, and this effects the error
+accumulation that has already occured, we cannot simply revert the
+accumulated second from xtime nor move the second accumulation to after
+the clocksource_adjust call without a change in behavior.
 
-Free or alloc dirties the cacheline of the page struct regardless since
-the LRU field is always modified.
 
-Well, ok. The not compound high order case may be an exception.
+This leaves us with (at least) two options:
+1) Simply return from clocksource_adjust() without making a change if we
+notice the adjustment would cause xtime_nsec to go negative.
 
-But then lets at least make a single check
+This would work, but I'm concerned that if a large adjustment was needed
+(due to the error being large), it may be possible to get stuck with an
+ever increasing error that becomes too large to correct (since it may
+always force xtime_nsec negative). This may just be paranoia on my part.
 
-If (page->flags & (all the flags including dirty and SwapBacked))
-	zap-em.
+2) Catch xtime_nsec if it is negative, then add back the amount its
+negative to both xtime_nsec and the error.
+
+This second method is consistent with how we've handled earlier rounding
+issues, and also has the benefit that the error being added is always in
+the oposite direction also always equal or smaller then the correction
+being applied. So the risk of a corner case where things get out of
+control is lessened.
+
+
+This patch fixes bug 11970, as tested by Yanmin Zhang
+http://bugzilla.kernel.org/show_bug.cgi?id=11970
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+
+Index: linux-2.6/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6.orig/kernel/time/timekeeping.c	2008-12-01 18:24:58.000000000 -0800
++++ linux-2.6/kernel/time/timekeeping.c	2008-12-01 18:25:00.000000000 -0800
+@@ -518,6 +518,26 @@ void update_wall_time(void)
+ 	/* correct the clock when NTP error is too big */
+ 	clocksource_adjust(offset);
+ 
++
++	/* Since in the loop above, we accumulate any amount of time
++	 * in xtime_nsec over a second into xtime.tv_sec, its possible for
++	 * xtime_nsec to be fairly small after the loop. Further, if we're
++	 * slightly speeding the clocksource up in clocksource_adjust(),
++	 * its possible the required corrective factor to xtime_nsec could
++	 * cause it to underflow.
++	 * Now, we cannot simply roll the accumulated second back, since
++	 * the NTP subsystem has been notified via second_overflow. So
++	 * instead we push xtime_nsec forward by the amount we underflowed,
++	 * and add that amount into the error.
++	 * We'll correct this error next time through this function, when
++	 * xtime_nsec is not as small.
++	 */
++	if (unlikely((s64)clock->xtime_nsec < 0)) {
++		s64 neg = -(s64)clock->xtime_nsec;
++		clock->xtime_nsec = 0;
++		clock->error += neg << (NTP_SCALE_SHIFT - clock->shift);
++	}
++
+ 	/* store full nanoseconds into xtime after rounding it up and
+ 	 * add the remainder to the error difference.
+ 	 */
 
 
