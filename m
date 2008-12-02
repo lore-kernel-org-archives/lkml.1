@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYLBTa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYLBTbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbYLBTa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYLBTaE
+	id S1755609AbYLBTbF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:31:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbYLBTaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:30:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47401 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbYLBTaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:30:01 -0500
-Message-ID: <49358CC2.6080902@redhat.com>
-Date: Tue, 02 Dec 2008 21:30:10 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Luis Henriques <henrix@sapo.pt>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
-References: <20081130193401.GA7690@hades> <4932F59D.2060002@redhat.com> <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com> <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com> <20081202190914.GA12115@hades>
-In-Reply-To: <20081202190914.GA12115@hades>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 14:30:17 -0500
+Received: from zbr.yandex.ru ([213.180.219.33]:50730 "EHLO gavana.yandex.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755368AbYLBTaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 14:30:14 -0500
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [0/5] New POHMELFS release.
+Date: Tue,  2 Dec 2008 22:30:49 +0300
+Message-Id: <12282462541461-git-send-email-zbr@ioremap.net>
+X-Mailer: git-send-email 1.5.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis Henriques wrote:
-> Ok, I am not sure but there is a possibility of having the vboxdrv driver
-> loaded. _But_ I was not using, i.e., I do not use VirtualBox.  In my
-> attempts to reproduce the issue, I tried to load this module but, unfortunatly,
-> my distro has this package broken ATM (err... in fact, the problem is not the
-> distro but me - I am using an unstable version).
->
-> vboxdrv could be a problem if I was using it, but I believe it shouldn't cause
-> this if it is not being used... but it's just a guess.
->   
+Hello.
 
-Let's keep an eye open on it.  If it reproduces, be sure to note what 
-drivers are loaded.  Meanwhile, I don't recommend having different 
-virtualization modules loaded concurrently.
+This is a new release of the POHMEL filesystem.
+POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+This is a high performance network filesystem with local coherent cache of data
+and metadata. Its main goal is distributed parallel processing of data.
+Network filesystem is a client transport.
 
+POHMELFS protocol was proven to be superior to NFS in lots
+(if not all, then it is in a roadmap) operations [3].
+
+Basic POHMELFS features:
+
+    * Local coherent cache for data and metadata. (Byte-range) locking. Locks were 
+    	prepared to be byte-range, but since all Linux filesystems lock the whole
+	inode, it was decided to lock the whole object during writing. Actual messages
+	are being sent for locking/cache coherency protocol are byte-range, but because
+	the whole inode is locked, lock is cached, so range actually is equal to the
+	inode size. One can simultaneously write into the same page via different offsets
+	from different client, and every time file will be coherent on all clients which
+	do it and on the server itself.
+    * Completely async processing of all events (hard and symlinks are the only exceptions)
+    	including object creation and data reading and writing.
+    * Flexible object architecture optimized for network processing. Ability to create long
+    	pathes to object and remove arbitrary huge directories in single network command.
+    * High performance is one of the main design goals.
+    * Very fast and scalable multithreaded userspace server. Being in userspace it works
+    	with any underlying filesystem and still is much faster than async in-kernel NFS one.
+    * Transactions support. Full failover for all operations. Resending transactions to
+    	different servers on timeout or error.
+    * Client is able to switch between different servers
+    	(if one goes down, client automatically reconnects to second and so on).
+    * Client parallel extensions: ability to write to multiple servers and
+    	balance reading between them.
+    * Client dynamic server reconfiguration: ability to add/remove servers from
+    	working set in run-time.
+    * Strong authentification and possible data encryption in network channel.
+    * Extended attributes support.
+    * Read-only mounts, ability to limit maximum size of the exported directory.
+
+This release brings following features:
+
+    * Optimize locking commands (combine them with inode information update)
+    * Added root capabilities (split from crypto handshake which settles crypto
+    	algorithms used by client and server). This allows to send filesystem
+	statistics from the server.
+    * Read-only and xattrs server extensions. Xattrs processing optimization
+    	when they are not supported by server.
+    * bug fixes
+    * extended email documentation
+
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+
+1. POHMELFS homepage
+http://www.ioremap.net/projects/pohmelfs
+
+2. GIT trees.
+http://www.ioremap.net/cgi-bin/gitweb.cgi
+
+3. POHMELFS vs NFS benchmarks.
+http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_06_13_1.html
+
+(POHMELFS cbc(aes)+hmac(sha1) vs plain NFS)
+http://tservice.net.ru/~s0mbre/blog/devel/fs/2008_07_07.html
