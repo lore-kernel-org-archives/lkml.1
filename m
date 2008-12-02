@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYLBP62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYLBQGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYLBP62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 10:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbYLBP6N
+	id S1755269AbYLBQGx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYLBQGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 10:58:13 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48367 "EHLO e1.ny.us.ibm.com"
+	Tue, 2 Dec 2008 11:06:43 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57565 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755296AbYLBP6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 10:58:11 -0500
-Subject: Re: [Cbe-oss-dev] [Patch 1/3] User OProfile support for the IBM
-	CELL processor SPU	event profiling
-From: Carl Love <cel@us.ibm.com>
-To: michael@ellerman.id.au
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
-       cbe-oss-dev <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <1228179733.8004.45.camel@localhost>
-References: <1228177110.6509.286.camel@carll-linux-desktop>
-	 <1228179733.8004.45.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 07:57:11 -0800
-Message-Id: <1228233431.6509.295.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1750748AbYLBQGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 11:06:42 -0500
+Date: Tue, 2 Dec 2008 17:05:07 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: Re: [PATCH] getrusage: fill ru_maxrss value
+Message-ID: <20081202160507.GA14524@redhat.com>
+References: <20081202131802.5252b96d@psychotron.englab.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202131802.5252b96d@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/02, Jiri Pirko wrote:
+>
+> Based on the patch previously posted by Frank Mayhar:
+> http://kerneltrap.org/mailarchive/linux-kernel/2007/9/20/264772
+>
+> Changed to do not panic and to set the value properly. Also made some
+> modifications as Oleg suggested. maxrss value is set to pages as "time"
+> application converts it co KBs.
+>
+> This patch enables "time" application to show maxresident value
+> correctly.
 
-On Tue, 2008-12-02 at 12:02 +1100, Michael Ellerman wrote:
-> On Mon, 2008-12-01 at 16:18 -0800, Carl Love wrote:
-> > This patch adds the SPU event profiling support for the IBM Cell
-> > processor to the list of available events. The opcontrol script
-> > patches include a test to see if there is a new cell specific file
-> > in the kernel oprofile file system.  If the file exists, then the
-> > kernel supports SPU event profiling.  
-> > 
-> > Signed-off-by: Carl Love <carll@us.ibm.com>
-> > 
-> 
-> > Index: oprofile-cvs/doc/oprofile.xml
-> > ===================================================================
-> > --- oprofile-cvs.orig/doc/oprofile.xml
-> > +++ oprofile-cvs/doc/oprofile.xml
-> > @@ -123,6 +123,10 @@ For information on how to use OProfile's
-> >                         of 2.6.22 or more recent.  Additionally, full support of SPE profiling requires a BFD library
-> >                         from binutils code dated January 2007 or later.  To ensure the proper BFD support exists, run
-> >                         the <code>configure</code> utility with <code>--with-target=cell-be</code>.
-> > +
-> > +		       Profiling the Cell Broadband Engine using SPU events requires a kernel version of 2.6.TBD or
->                                                                                                                ^^^
-> 
-> Not sure if you missed that, or it's still TBD, but careful it doesn't
-> get merged like that.
-> 
-> cheers
-> 
-Michael:
+I believe the changelog could be a bit more descriptive ;)
+And I think the patch needs more CCs. (Hugh and Michael cc'ed).
 
-Yes, I am aware of it.  I felt it was important to post user and kernel
-so everyone knows that user and kernel development is done.  I have
-talked with the OProfile maintainer about these patches already.  The
-plan is to update the user patch with the correct kernel version, once
-we know which version the patches will be going into.  
+What about exec? Should we preserve signal_struct->maxrss, or should
+we reset it? I don't know what is the right behaviour, but imho it
+should be consistent with task_mem()/xacct_add_tsk(). And since
+bprm_mm_init() does not copy ->hiwater_xxx, perhaps we should reset.
+Or we should change the exec_mmap() path to preserve ->hiwater_xxx,
+I dunno.
 
-I should have mentioned this specifically in patch 0/3.  I will need a
-final spin of the user tool patch once the kernel patches are accepted.
+> Note that even without this patch applied there is a race between two
+> parallel update_hiwater_rss() callers.
+>
+> [...snip...]
+> @@ -1051,6 +1051,8 @@ NORET_TYPE void do_exit(long code)
+>  	if (tsk->mm) {
+>  		update_hiwater_rss(tsk->mm);
+>  		update_hiwater_vm(tsk->mm);
+> +
+> +		tsk->signal->maxrss = tsk->mm->hiwater_rss;
 
-Thanks.
+Yes. But still it is not good the patch adds new racy calls
+(k_getrusage() too). And in fact I think this code in do_exit()
+should die, and we can update signal->maxrss in exit_mm().
 
-                Carl Love
+Unless I missed something, the "if (tsk->mm) {}" code in
+do_exit() is not needed because xacct_add_tsk() is not right
+anyway. What we imho need is get_mm_hiwater_xxx(), can be
+also used by task_mm().
 
+I'll send the patch a bit later, then we can tweak this patch.
+
+Do you agree?
+
+(just in case, I don't mean that mm/ uses update_hiwater_xxx()
+ "safely", afaics try_to_unmap can race with unmap_region
+ for example, but still).
+
+Oleg.
 
