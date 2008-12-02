@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYLBNv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYLBNwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYLBNv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 08:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYLBNvR
+	id S1755207AbYLBNwf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 08:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYLBNwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 08:51:17 -0500
-Received: from torres.zugschlus.de ([85.214.68.41]:58288 "EHLO
-	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754073AbYLBNvR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 08:51:17 -0500
-X-Greylist: delayed 1974 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 08:51:16 EST
-Date: Tue, 2 Dec 2008 14:18:21 +0100
-From: Marc Haber <mh+linux-kernel@zugschlus.de>
-To: linux-kernel@vger.kernel.org
-Subject: pl2303 - pl2303_open - failed submitting interrupt urb, error -28
-Message-ID: <20081202131821.GA25217@torres.zugschlus.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 2 Dec 2008 08:52:19 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:47132 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753148AbYLBNwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 08:52:18 -0500
+Subject: Re: [TOMOYO #13 (mmotm 2008-11-19-02-19) 01/11] Introduce
+	security_path_clear() hook.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
+       crispin@crispincowan.com, casey@schaufler-ca.com, jmorris@namei.org,
+       takedakn@nttdata.co.jp, haradats@nttdata.co.jp
+In-Reply-To: <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp>
+References: <20081120112543.799450455@I-love.SAKURA.ne.jp>
+	 <20081120112727.557697893@I-love.SAKURA.ne.jp>
+	 <1228161612.18720.211.camel@moss-spartans.epoch.ncsc.mil>
+	 <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 02 Dec 2008 08:48:39 -0500
+Message-Id: <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-12-02 at 19:39 +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> Stephen Smalley wrote:
+> > On Thu, 2008-11-20 at 20:25 +0900, Tetsuo Handa wrote:
+> > > plain text document attachment (introduce-security_path_clear.patch)
+> > > To perform DAC performed in vfs_foo() before MAC, we let security_path_foo()
+> > > save a result into our own hash table and return 0, and let security_inode_foo()
+> > > return the saved result. Since security_inode_foo() is not always called after
+> > > security_path_foo(), we need security_path_clear() to clear the hash table.
+> > 
+> > This seems very fragile and unmaintainable to me.  The fact that you
+> > even need a security_path_clear() hook suggests that something is wrong
+> > with the other security_path* hooks. I'd suggest that you explicitly
+> > pass the result of the security_path* hooks down to the security_inode*
+> > hooks instead.  What do others think?
+> 
+> You are recommending us to pass variables required for security_inode_*() via
+> stack memory rather than private hash, aren't you?
 
-the following applies to a "vanilla" 2.6.27.7 kernel built and running
-on a Debian unstable system.
+To be precise, I was recommending passing the return value of
+security_path* down to security_inode* explicitly rather than doing it
+implicitly as you presently do.  Thereby making the actual control flow
+and relationship between the security_path* and security_inode* hooks
+evident.  However, I guess that is moot given your statements below.
 
-To obtain out-of-band access to a number of switches and routers, I
-have a seven-port USB hub to which seven identical USB-to-serial
-adaptors using the PL2303 chip and driver are connected. All seven
-work when only one of them is used at a time.
+> I think there are two problems.
+> 
+> One is that the variable passed via stack memory won't be used by SELinux and
+> SMACK and "CONFIG_SECURITY=n kernels", which will be a waste of stack memory.
 
-Cereal is an application which keeps a process (GNU screen) attached
-to the tty at all times to be able to log what happens on the serial
-port. When I start cereal on all seven ports, I start getting
-"pl2303_open - failed submitting interrupt urb, error -28" errors in
-my syslog:
+I'm more concerned with the hook interface being understandable and
+maintainable.
 
-Dec  2 14:07:36 alemana kernel: pl2303 ttyUSB2: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:37 alemana kernel: pl2303 ttyUSB5: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:38 alemana kernel: pl2303 ttyUSB6: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:41 alemana kernel: pl2303 ttyUSB2: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:43 alemana kernel: pl2303 ttyUSB5: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:43 alemana kernel: pl2303 ttyUSB6: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:47 alemana kernel: pl2303 ttyUSB2: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:48 alemana kernel: pl2303 ttyUSB5: pl2303_open - failed submitting interrupt urb, error -28
-Dec  2 14:07:49 alemana kernel: pl2303 ttyUSB6: pl2303_open - failed submitting interrupt urb, error -28
+> The other one is that TOMOYO will need another variable for telling how the
+> security_inode_*() are called. Passing the variable via stack memory requires
+> modification of all vfs_*() calls, but TOMOYO doesn't check requests issued
+> by (e.g.) stackable filesystems.
 
-The corresponding ports are not useable in that case.
+I'm not clear on why that requires a separate argument; if the caller is
+passing in the access decision result as an input, then certain callers
+(e.g. stackable filesystems) can always pass 0 (success).
 
-When one googles for this error message, one finds a thread from 2006
-with Greg KH commenting. In my case, the error doesn't hose the USB
-subsystem, I can unplug the adapters and plug them in again one and a
-time without a problem, and I can even use the ports that don't throw
-this error message.
+> By the way, this security_path_clear() is intended to be able to return DAC's
+> error code in priority to MAC's error code, but there are two problems for
+> TOMOYO.
+> One is that pathnames which will be later denied by DAC are appended by
+> TOMOYO's learning mode (i.e. garbage entries appears in the learned policy).
+> The other is that warning messages on pathnames which will be later denied by
+> DAC are generated by TOMOYO's enforcing mode.
+> 
+> Thus, it will be preferable for TOMOYO to "do MAC checks after DAC checks"
+> rather than to "return DAC's error in priority to MAC's error while doing MAC
+> checks before DAC checks".
 
-As in the 2006 thread, unloading the EHCI driver (ehci_hcd) solves the
-issue, but is of course not an attractive option as soon as one wants
-to use even a USB stick on the same machine.
+It sounds like the existing security_path* hooks are not adequate for
+your needs then, and that patch should not in fact be merged.  Yes?
 
-If it helps, I can give out root access to the box in question to
-anybody who is willing to help and debug. Unfortunately, I cannot
-provide any expertise here, I do not even know what an interrupt urb is.
+> To do so, "security_path_*() should be replaced by security_path_set(vfsmount)"
+> and "let security_inode_*() do MAC checks using the result of
+> security_path_set()" and "let security_path_clear() clear the result of
+> security_path_set() in case security_inode_*() was not called".
+> 
+> So, I think storing the pathname of "struct vfsmount" in the form of "char *"
+> into private hash at security_path_set() and clearing the private hash at
+> security_path_clear() should be most preferable.
 
-Any hints will be appreciated.
-
-Greetings
-Marc
+Then I guess you need to redo your patches along those lines and
+re-submit them.  Likely starting with just a patch adding the
+security_path_set/clear hooks, posted to lsm and fsdevel.
 
 -- 
------------------------------------------------------------------------------
-Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
-Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
-Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
+Stephen Smalley
+National Security Agency
+
