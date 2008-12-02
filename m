@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbYLBWLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbYLBWNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755138AbYLBWLr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 17:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYLBWLZ
+	id S1754074AbYLBWNZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:13:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYLBWNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 17:11:25 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51854 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752566AbYLBWLX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 17:11:23 -0500
-Date: Tue, 2 Dec 2008 22:10:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Wright <chrisw@redhat.com>
-Cc: Chris Wright <chrisw@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
-       avi@redhat.com, dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
-       cl@linux-foundation.org, corbet@lwn.net
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver.
-Message-ID: <20081202221029.513e8774@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081202212411.GG17607@acer.localdomain>
-References: <1226888432-3662-1-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-2-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-3-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-4-git-send-email-ieidus@redhat.com>
-	<20081128165806.172d1026@lxorguk.ukuu.org.uk>
-	<20081202180724.GC17607@acer.localdomain>
-	<20081202181333.38c7b421@lxorguk.ukuu.org.uk>
-	<20081202212411.GG17607@acer.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 17:13:17 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:40265 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbYLBWNQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 17:13:16 -0500
+Date: Tue, 2 Dec 2008 14:12:45 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Bastian Blank <bastian@waldi.eu.org>, oleg@redhat.com,
+       ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, xemul@openvz.org
+Subject: Re: [RFC][PATCH 1/5] pid: Implement ns_of_pid
+Message-ID: <20081202221244.GA991@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com> <20081126034442.GA23238@us.ibm.com> <20081127011910.GD13545@wavehammer.waldi.eu.org> <20081201202422.GD12493@us.ibm.com> <20081202115841.GC1132@wavehammer.waldi.eu.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202115841.GC1132@wavehammer.waldi.eu.org>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008 13:24:11 -0800
-Chris Wright <chrisw@redhat.com> wrote:
+Bastian Blank [bastian@waldi.eu.org] wrote:
+| On Mon, Dec 01, 2008 at 12:24:22PM -0800, Sukadev Bhattiprolu wrote:
+| > Bastian Blank [bastian@waldi.eu.org] wrote:
+| > | On Tue, Nov 25, 2008 at 07:44:42PM -0800, Sukadev Bhattiprolu wrote:
+| > | > +/* ns_of_pid returns the pid namespace in which the specified
+| > | > + * pid was allocated.
+| > | > + */
+| > | > +static inline struct pid_namespace *ns_of_pid(struct pid *pid)
+| > | > +{
+| > | > +	struct pid_namespace *ns = NULL;
+| > | > +	if (pid)
+| > | > +		ns = pid->numbers[pid->level].ns;
+| > | > +	return ns;
+| > | > +}
+| > | > +
+| > | When can the pid argument be null?
+| > Soon after creation but more importantly, after detach_pid()
+| > (release_task).
+| 
+| pid is a function argument and the function does not call detach_pid. So
+| please try again.
 
-> * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > On Tue, 2 Dec 2008 10:07:24 -0800
-> > Chris Wright <chrisw@redhat.com> wrote:
-> > > * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > > > > +	r = !memcmp(old_digest, sha1_item->sha1val, SHA1_DIGEST_SIZE);
-> > > > > +	mutex_unlock(&sha1_lock);
-> > > > > +	if (r) {
-> > > > > +		char *old_addr, *new_addr;
-> > > > > +		old_addr = kmap_atomic(oldpage, KM_USER0);
-> > > > > +		new_addr = kmap_atomic(newpage, KM_USER1);
-> > > > > +		r = !memcmp(old_addr+PAGEHASH_LEN, new_addr+PAGEHASH_LEN,
-> > > > > +			    PAGE_SIZE-PAGEHASH_LEN);
-> > > > 
-> > > > NAK - this isn't guaranteed to be robust so you could end up merging
-> > > > different pages one provided by a malicious attacker.
-> > > 
-> > > I presume you're referring to the digest comparison.  While there's
-> > > theoretical concern of hash collision, it's mitigated by hmac(sha1)
-> > > so the attacker can't brute force for known collisions.
-> > 
-> > Using current known techniques. A random collision is just as bad news.
-> 
-> And, just to clarify, your concern would extend to any digest based
-> comparison?  Or are you specifically concerned about sha1?
+ns_of_pid() like pid_nr(), pid_nr_ns(), pid_task() etc is a low level helper
+unction. ns_of_pid(), like the other helpers can potentially be called for a
+process that has already called detach_pid() (i.e for a task that is exiting
+but not yet waited on).  Hence the 'if (pid)' in ns_of_pid().
 
-Taken off list 
+Sukadev
