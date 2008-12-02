@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYLBMFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYLBMGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbYLBMFJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 07:05:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYLBME5
+	id S1754695AbYLBMGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 07:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYLBMGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 07:04:57 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39913 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753135AbYLBME4 (ORCPT
+	Tue, 2 Dec 2008 07:06:09 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:56946 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753198AbYLBMGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 07:04:56 -0500
-Date: Tue, 2 Dec 2008 13:06:46 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: mtk.manpages@gmail.com, linux-doc@vger.kernel.org,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: fsync.2 does not mention error handling
-Message-ID: <20081202120645.GA5327@elf.ucw.cz>
+	Tue, 2 Dec 2008 07:06:08 -0500
+Date: Tue, 2 Dec 2008 13:06:06 +0100
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       xemul@openvz.org
+Subject: Re: [RFC][PATCH 4/5] Protect cinit from fatal signals
+Message-ID: <20081202120606.GD1132@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, oleg@redhat.com,
+	ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+	linux-kernel@vger.kernel.org, xemul@openvz.org
+References: <20081126034242.GA23120@us.ibm.com> <20081126034634.GD23238@us.ibm.com> <20081127010753.GB13545@wavehammer.waldi.eu.org> <20081201202112.GC12493@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20081201202112.GC12493@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 01, 2008 at 12:21:12PM -0800, Sukadev Bhattiprolu wrote:
+> Container-inits are special in some ways and this change requires SIGKILL
+> to terminate them.
 
-fsync() transfers ("flushes") all modified in-core data of (i.e.,
-modified buffer cache pages for) the file referred to by the file
-descriptor fd to the disk device (or other permanent storage device)
-where that file resides.  The call blocks until the device reports
-that the transfer has completed.  It also flushes metadata information
-associated with the file (see stat(2)).
+No. They have are not special from the outside namespace.
 
-Calling fsync() does not necessarily ensure that the entry in the
-directory containing the file has also reached disk.  For that an
-explicit fsync() on a file descriptor for the directory is also
-needed.
+Also it was discussed to use pid namespaces to preserve the local pid of
+a process during snapshot/restore. This means that every process may get
+the state of a container-init. And then it is not longer a wise idea to
+make them behave different from the outside.
 
-...
-RETURN VALUE         top
+Bastian
 
-On success, these system calls return zero.  On error, -1 is
-returned, and errno is set appropriately.
-
-
---------------
-
-
-I guess it should mention that any errors during fsync are only
-mentioned to the first process calling it... which means that if you
-
-write file
-fsync file
-fsync .
-
-... and someone else does "fsync ." in the meantime, you may get
-success when in fact directory entry of file is not written to the
-disk.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'm a soldier, not a diplomat.  I can only tell the truth.
+		-- Kirk, "Errand of Mercy", stardate 3198.9
