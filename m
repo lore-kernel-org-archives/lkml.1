@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbYLBAO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbYLBAPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbYLBAO2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 19:14:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYLBAOT
+	id S1753000AbYLBAPD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 19:15:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYLBAOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 19:14:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46173
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752021AbYLBAOS (ORCPT
+	Mon, 1 Dec 2008 19:14:53 -0500
+Received: from mga10.intel.com ([192.55.52.92]:49512 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752021AbYLBAOw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 19:14:18 -0500
-Date: Mon, 01 Dec 2008 16:14:18 -0800 (PST)
-Message-Id: <20081201.161418.51389602.davem@davemloft.net>
-To: jengelh@medozas.de
-Cc: john.haxby@oracle.com, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: sg_set_page not usable for .bss?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LNX.1.10.0812020112480.19492@fbirervta.pbzchgretzou.qr>
-References: <alpine.LNX.1.10.0812012338270.22349@fbirervta.pbzchgretzou.qr>
-	<20081201.161026.234536822.davem@davemloft.net>
-	<alpine.LNX.1.10.0812020112480.19492@fbirervta.pbzchgretzou.qr>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 1 Dec 2008 19:14:52 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,698,1220252400"; 
+   d="scan'208";a="645964634"
+Message-ID: <49347E0C.10106@linux.intel.com>
+Date: Tue, 02 Dec 2008 01:15:08 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Jonathan Corbet <corbet@lwn.net>, Al Viro <viro@zeniv.linux.org.uk>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
+References: <20081128192508.GA21369@redhat.com> <4933CBB0.2060003@linux.intel.com> <20081201191555.GA21385@redhat.com>
+In-Reply-To: <20081201191555.GA21385@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Engelhardt <jengelh@medozas.de>
-Date: Tue, 2 Dec 2008 01:13:34 +0100 (CET)
 
+> Perhaps, we can add O_LOCK_FLAGS, then something like
 > 
-> On Tuesday 2008-12-02 01:10, David Miller wrote:
-> >> On Monday 2008-12-01 23:02, John Haxby wrote:
-> >> >>>+	sg_init_table(sg, 2);
-> >> >>>+	sg_set_buf(&sg[0], data, n);
-> >> >>>+	strcpy(digest_password, sysrq_password);
-> >> >>>+	i = strlen(digest_password);
-> >> >>>+	sg_set_buf(&sg[1], digest_password, i);
-> >> >>
-> >> >> Could we directly use sysrq_password instead of copying it to
-> >> >> digest_password first?
-> >> >
-> >> > No :-)   Eventually I discovered the reason my code wasn't working
-> >> > boils down to the definition of sg_set_buf:
-> >> >
-> >> >   sg_set_page(sg, virt_to_page(buf), buflen, offset_in_page(buf))
-> >> >
-> >> > which doesn't work for sysrq_password.   I don't know why I'll
-> >> > double check.
-> >> 
-> >> Well, sysrq_password is in the .bss section, where as digest_password
-> >> is on the heap due to being kmalloc'ed. Maybe that makes a difference?
-> >> Someone more versed with the virtual memory layer might know.
-> >
-> >You can't use these interfaces on kernel image addresses.
-> >
-> Great :-)  So what is the best way to use the SHA1 crypto algo
-> with in-kernel addresses?
+> 	--- a/fs/fcntl.c
+> 	+++ b/fs/fcntl.c
+> 	@@ -175,6 +175,15 @@ static int setfl(int fd, struct file * f
+> 		if (error)
+> 			return error;
+> 	 
+> 	+	spin_lock(&current->files->file_lock);
+> 	+	if (!(filp->f_flags & O_LOCK_FLAGS))
+> 	+		filp->f_flags |= O_LOCK_FLAGS;
+> 	+	else
+> 	+		error = -EAGAIN;
+> 	+	spin_unlock(&current->files->file_lock);
+> 	+	if (error) /* pretend ->f_flags was changed after us */
+> 	+		return 0;
+> 	+
+> 		if ((arg ^ filp->f_flags) & FASYNC) {
+> 			if (filp->f_op && filp->f_op->fasync) {
+> 				error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
+> 	@@ -183,7 +192,8 @@ static int setfl(int fd, struct file * f
+> 			}
+> 		}
+> 	 
+> 	-	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
+> 	+	filp->f_flags = (arg & SETFL_MASK) |
+> 	+			(filp->f_flags & ~(SETFL_MASK | O_LOCK_FLAGS));
+> 	  out:
+> 		return error;
+> 	 }
+> 
+> What do you think?
 
-kmalloc and copy it there, or something like that, you just
-can't use in-kernel addresses, ever.
+Looks reasonable. Just would need to make sure that O_LOCK_FLAGS doesn't
+leak out to user space.
 
+-Andi
+
+>
