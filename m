@@ -1,332 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbYLBPnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYLBPnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751484AbYLBPnH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 10:43:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYLBPk4
+	id S1755571AbYLBPnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 10:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYLBPk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 10:40:56 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:34932 "EHLO
+	Tue, 2 Dec 2008 10:40:57 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:34942 "EHLO
 	teyla.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751146AbYLBPkv (ORCPT
+	with ESMTP id S1751382AbYLBPkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Dec 2008 10:40:51 -0500
-Message-Id: <20081202154112.640260459@fluff.org.uk>
+Message-Id: <20081202154112.967292876@fluff.org.uk>
 References: <20081202154018.906091477@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Dec 2008 15:40:23 +0000
+Date: Tue, 02 Dec 2008 15:40:25 +0000
 From: Ben Dooks <ben-linux@fluff.org>
 To: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
        drzeus-sdhci@drzeus.cx
 Cc: Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 5/8] SDHCI: Samsung SDHCI (HSMMC) driver
-Content-Disposition: inline; filename=simtec/s3c64xx/sdhci-samsung.patch
+Subject: [patch 7/8] SDHCI: Add change_clock callback for glue drivers
+Content-Disposition: inline; filename=simtec/s3c64xx/sdhci-select-clock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for the 'HSMMC' block(s) in the Samsung SoC
-line. These are compatible with the SDHCI driver so add
-the necessary setup and driver binding for the platform
-devices.
+Add a change_clock callback to allow drivers to update
+device specific clock selections and control registers
+when there is a change in clock.
+
+Move the main part of sdhci_set_clock() to a new routine
+which can be called by the glue drivers to do the sdhci
+standard clock management.
+
+Update the sdhci-s3c driver to use this to select the
+appropriate clock source when clocks change.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux.git/drivers/mmc/host/Kconfig
+Index: linux.git/drivers/mmc/host/sdhci-pci.c
 ===================================================================
---- linux.git.orig/drivers/mmc/host/Kconfig	2008-12-01 23:18:20.000000000 +0000
-+++ linux.git/drivers/mmc/host/Kconfig	2008-12-01 23:25:18.000000000 +0000
-@@ -48,6 +48,18 @@ config MMC_SDHCI_PCI
+--- linux.git.orig/drivers/mmc/host/sdhci-pci.c	2008-12-02 14:36:39.000000000 +0000
++++ linux.git/drivers/mmc/host/sdhci-pci.c	2008-12-02 14:36:52.000000000 +0000
+@@ -391,6 +391,7 @@ static int sdhci_pci_enable_dma(struct s
  
- 	  If unsure, say N.
+ static struct sdhci_ops sdhci_pci_ops = {
+ 	.enable_dma	= sdhci_pci_enable_dma,
++	.change_clock	= sdhci_change_clock,
+ };
  
-+config MMC_SDHCI_S3C
-+	tristate "SDHCI support on Samsung S3C SoC"
-+	depends on MMC_SDHCI && (PLAT_S3C24XX || PLAT_S3C64XX)
-+	help
-+	  This selects the Secure Digital Host Controller Interface (SDHCI)
-+	  often referrered to as the HSMMC block in some of the Samsung S3C
-+	  range of SoC.
-+
-+	  If you have a controller with this interface, say Y or M here.
-+
-+	  If unsure, say N.
-+
- config MMC_RICOH_MMC
- 	tristate "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
- 	depends on MMC_SDHCI_PCI
-Index: linux.git/drivers/mmc/host/Makefile
-===================================================================
---- linux.git.orig/drivers/mmc/host/Makefile	2008-12-01 23:18:20.000000000 +0000
-+++ linux.git/drivers/mmc/host/Makefile	2008-12-01 23:25:18.000000000 +0000
-@@ -11,6 +11,7 @@ obj-$(CONFIG_MMC_PXA)		+= pxamci.o
- obj-$(CONFIG_MMC_IMX)		+= imxmmc.o
- obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
- obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
-+obj-$(CONFIG_MMC_SDHCI_S3C)	+= sdhci-s3c.o
- obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
- obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
- obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
+ /*****************************************************************************\
 Index: linux.git/drivers/mmc/host/sdhci-s3c.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux.git/drivers/mmc/host/sdhci-s3c.c	2008-12-02 14:13:21.000000000 +0000
-@@ -0,0 +1,256 @@
-+/* linux/drivers/mmc/host/sdhci-s3c.c
+--- linux.git.orig/drivers/mmc/host/sdhci-s3c.c	2008-12-02 14:36:52.000000000 +0000
++++ linux.git/drivers/mmc/host/sdhci-s3c.c	2008-12-02 14:47:04.000000000 +0000
+@@ -20,6 +20,7 @@
+ 
+ #include <linux/mmc/host.h>
+ 
++#include <plat/regs-sdhci.h>
+ #include <plat/sdhci.h>
+ 
+ #include "sdhci.h"
+@@ -31,6 +32,7 @@ struct sdhci_s3c {
+ 	struct platform_device	*pdev;
+ 	struct resource		*ioarea;
+ 	struct s3c_sdhci_platdata *pdata;
++	unsigned int		cur_clk;
+ 
+ 	struct clk		*clk_io;	/* clock for io bus */
+ 	struct clk		*clk_bus[MAX_BUS_CLK];
+@@ -41,15 +43,46 @@ static inline struct sdhci_s3c *to_s3c(s
+ 	return sdhci_priv(host);
+ }
+ 
++static u32 get_curclk(u32 ctrl2)
++{
++	ctrl2 &= S3C_SDHCI_CTRL2_SELBASECLK_MASK;
++	ctrl2 >>= S3C_SDHCI_CTRL2_SELBASECLK_SHIFT;
++
++	return ctrl2;
++}
++
++/**
++ * sdhci_s3c_check_sclk() - check the clock selection against what we set
++ * @host: The host to check
 + *
-+ * Copyright 2008 Openmoko Inc.
-+ * Copyright 2008 Simtec Electronics
-+ *      Ben Dooks <ben@simtec.co.uk>
-+ *      http://armlinux.simtec.co.uk/
-+ *
-+ * SDHCI (HSMMC) support for Samsung SoC
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * Certain controller resets clear the extra configuration register(s) and
++ * thus we need to check that the controller still has the clock setting
++ * we set for it.
 + */
-+
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/platform_device.h>
-+#include <linux/clk.h>
-+#include <linux/io.h>
-+
-+#include <linux/mmc/host.h>
-+
-+#include <plat/sdhci.h>
-+
-+#include "sdhci.h"
-+
-+#define MAX_BUS_CLK	(4)
-+
-+struct sdhci_s3c {
-+	struct sdhci_host	*host;
-+	struct platform_device	*pdev;
-+	struct resource		*ioarea;
-+	struct s3c_sdhci_platdata *pdata;
-+
-+	struct clk		*clk_io;	/* clock for io bus */
-+	struct clk		*clk_bus[MAX_BUS_CLK];
-+};
-+
-+static inline struct sdhci_s3c *to_s3c(struct sdhci_host *host)
-+{
-+	return sdhci_priv(host);
-+}
-+
-+static unsigned int sdhci_s3c_get_max_clk(struct sdhci_host *host)
++static void sdhci_s3c_check_sclk(struct sdhci_host *host)
 +{
 +	struct sdhci_s3c *ourhost = to_s3c(host);
-+	unsigned int rate;
-+	u32 control2;
-+	int clk;
++	u32 tmp = readl(host->ioaddr + S3C_SDHCI_CONTROL2);
 +
-+	/* note, a reset will reset the clock source */
++	if (get_curclk(tmp) != ourhost->cur_clk) {
++		dev_dbg(&ourhost->pdev->dev, "restored ctrl2 clock setting\n");
 +
-+	control2 = readl(host->ioaddr + 0x80);
-+	clk = clk_get_rate(ourhost->clk_bus[(control2 >> 4) & 3]);
-+
-+	return clk;
++		tmp &= ~S3C_SDHCI_CTRL2_SELBASECLK_MASK;
++		tmp |= ourhost->cur_clk << S3C_SDHCI_CTRL2_SELBASECLK_SHIFT;
++		writel(tmp, host->ioaddr + 0x80);
++	}
 +}
 +
-+static unsigned int sdhci_s3c_get_timeout_clk(struct sdhci_host *host)
+ static unsigned int sdhci_s3c_get_max_clk(struct sdhci_host *host)
+ {
+ 	struct sdhci_s3c *ourhost = to_s3c(host);
+-	unsigned int rate;
+ 	u32 control2;
+ 	int clk;
+ 
+ 	/* note, a reset will reset the clock source */
+ 
++	sdhci_s3c_check_sclk(host);
++
+ 	control2 = readl(host->ioaddr + 0x80);
+ 	clk = clk_get_rate(ourhost->clk_bus[(control2 >> 4) & 3]);
+ 
+@@ -67,13 +100,82 @@ static void sdhci_s3c_set_ios(struct sdh
+ 	struct sdhci_s3c *ourhost = to_s3c(host);
+ 	struct s3c_sdhci_platdata *pdata = ourhost->pdata;
+ 
++	sdhci_s3c_check_sclk(host);
++
+ 	if (pdata->cfg_card)
+ 		pdata->cfg_card(ourhost->pdev, host->ioaddr, ios);
+ }
+ 
++static unsigned int sdhci_s3c_consider_clock(struct sdhci_s3c *ourhost,
++					     unsigned int src,
++					     unsigned int wanted)
 +{
-+	return sdhci_s3c_get_max_clk(host) / 1000000;
++	unsigned long rate;
++	struct clk *clksrc = ourhost->clk_bus[src];
++	int div;
++
++	if (!clksrc)
++		return UINT_MAX;
++
++	rate = clk_get_rate(clksrc);
++
++	for (div = 1; div < 256; div *= 2) {
++		if ((rate / div) <= wanted)
++			break;
++	}
++
++	dev_dbg(&ourhost->pdev->dev, "clk %d: rate %ld, want %d, got %ld\n",
++		src, rate, wanted, rate / div);
++
++	return (wanted - (rate / div));
 +}
 +
-+static void sdhci_s3c_set_ios(struct sdhci_host *host,
-+			      struct mmc_ios *ios)
++static void sdhci_s3c_change_clock(struct sdhci_host *host, unsigned int clock)
 +{
 +	struct sdhci_s3c *ourhost = to_s3c(host);
-+	struct s3c_sdhci_platdata *pdata = ourhost->pdata;
++	unsigned int best = UINT_MAX;
++	unsigned int delta;
++	int best_src = 0;
++	int src;
++	u32 ctrl;
 +
-+	if (pdata->cfg_card)
-+		pdata->cfg_card(ourhost->pdev, host->ioaddr, ios);
-+}
-+
-+static struct sdhci_ops sdhci_s3c_ops = {
-+	.get_max_clock		= sdhci_s3c_get_max_clk,
-+	.get_timeout_clock	= sdhci_s3c_get_timeout_clk,
-+	.set_ios		= sdhci_s3c_set_ios,
-+};
-+
-+static int __devinit sdhci_s3c_probe(struct platform_device *pdev)
-+{
-+	struct s3c_sdhci_platdata *pdata = pdev->dev.platform_data;
-+	struct device *dev = &pdev->dev;
-+	struct sdhci_host *host;
-+	struct sdhci_s3c *sc;
-+	struct resource *res;
-+	int ret, irq, ptr, clks;
-+
-+	if (!pdata) {
-+		dev_err(dev, "no device data specified\n");
-+		return -ENOENT;
-+	}
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0) {
-+		dev_err(dev, "no irq specified\n");
-+		return irq;
-+	}
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(dev, "no memory specified\n");
-+		return -ENOENT;
-+	}
-+
-+	host = sdhci_alloc_host(dev, sizeof(struct sdhci_s3c));
-+	if (IS_ERR(host)) {
-+		dev_err(dev, "sdhci_alloc_host() failed\n");
-+		return PTR_ERR(host);
-+	}
-+
-+	sc = sdhci_priv(host);
-+
-+	sc->host = host;
-+	sc->pdev = pdev;
-+	sc->pdata = pdata;
-+
-+	sc->clk_io = clk_get(dev, "hsmmc");
-+	if (IS_ERR(sc->clk_io)) {
-+		dev_err(dev, "failed to get io clock\n");
-+		ret = PTR_ERR(sc->clk_io);
-+		goto err_io_clk;
-+	}
-+
-+	/* enable the local io clock and keep it running for the moment. */
-+	clk_enable(sc->clk_io);
-+
-+	for (clks = 0, ptr = 0; ptr < MAX_BUS_CLK; ptr++) {
-+		char *name = pdata->clocks[ptr];
-+		struct clk *clk;
-+
-+		if (name == NULL)
-+			continue;
-+
-+		clk = clk_get(dev, name);
-+		if (IS_ERR(clk)) {
-+			dev_err(dev, "failed to get clock %s\n", name);
-+			continue;
++	for (src = 0; src < MAX_BUS_CLK; src++) {
++		delta = sdhci_s3c_consider_clock(ourhost, src, clock);
++		if (delta < best) {
++			best = delta;
++			best_src = src;
 +		}
-+
-+		clks++;
-+		sc->clk_bus[ptr] = clk;
-+		clk_enable(clk);
-+
-+		dev_info(dev, "clock source %d: %s (%ld Hz)\n",
-+			 ptr, name, clk_get_rate(clk));
 +	}
 +
-+	if (clks == 0) {
-+		dev_err(dev, "failed to find any bus clocks\n");
-+		ret = -ENOENT;
-+		goto err_no_busclks;
++	dev_dbg(&ourhost->pdev->dev,
++		"selected source %d, clock %d, delta %d\n",
++		 best_src, clock, best);
++
++	/* turn clock off to card before changing clock source */
++	writew(0, host->ioaddr + SDHCI_CLOCK_CONTROL);
++
++	/* select the new clock source */
++
++	if (ourhost->cur_clk != best_src) {
++		struct clk *clk = ourhost->clk_bus[best_src];
++
++		ourhost->cur_clk = best_src;
++		host->max_clk = clk_get_rate(clk);
++		host->timeout_clk = host->max_clk / 1000000;
++
++		ctrl = readl(host->ioaddr + S3C_SDHCI_CONTROL2);
++		ctrl &= ~S3C_SDHCI_CTRL2_SELBASECLK_MASK;
++		ctrl |= best_src << S3C_SDHCI_CTRL2_SELBASECLK_SHIFT;
++		writel(ctrl, host->ioaddr + S3C_SDHCI_CONTROL2);
 +	}
 +
-+	sc->ioarea = request_mem_region(res->start, resource_size(res),
-+					mmc_hostname(host->mmc));
-+	if (!sc->ioarea) {
-+		dev_err(dev, "failed to reserve register area\n");
-+		ret = -ENXIO;
-+		goto err_req_regs;
-+	}
-+
-+	host->ioaddr = ioremap_nocache(res->start, resource_size(res));
-+	if (!host->ioaddr) {
-+		dev_err(dev, "failed to map registers\n");
-+		ret = -ENXIO;
-+		goto err_req_regs;
-+	}
-+
-+	/* Setup our GPIO */
-+	if (pdata->cfg_gpio)
-+		pdata->cfg_gpio(pdev, pdata->max_width);
-+
-+	host->hw_name = "samsung-hsmmc";
-+	host->ops = &sdhci_s3c_ops;
-+	host->quirks = 0;
-+	host->irq = irq;
-+
-+	/* Setup quirks for the controller */
-+
-+	/* Currently with ADMA enabled we are getting some length
-+	 * interrupts that are not being dealt with, so disable
-+	 * ADMA until this is sorted out. */
-+	host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-+	host->quirks |= SDHCI_QUIRK_32BIT_ADMA_SIZE;
-+
-+	/* It seems we do not get an DATA transfer complete on non-busy
-+	 * transfers, not sure if this is a problem with this specific
-+	 * SDHCI block, or a missing configuration that needs to be set. */
-+	host->quirks |= SDHCI_QUIRK_NO_BUSY_IRQ;
-+
-+	host->quirks |= (SDHCI_QUIRK_32BIT_DMA_ADDR |
-+			 SDHCI_QUIRK_32BIT_DMA_SIZE);
-+
-+	ret = sdhci_add_host(host);
-+	if (ret) {
-+		dev_err(dev, "sdhci_add_host() failed (%d)\n", ret);
-+		goto err_add_host;
-+	}
-+
-+	return 0;
-+
-+ err_add_host:
-+	release_resource(sc->ioarea);
-+	kfree(sc->ioarea);
-+
-+ err_req_regs:
-+	for (ptr = 0; ptr < MAX_BUS_CLK; ptr++) {
-+		if (!sc->clk_bus[ptr])
-+			continue;
-+
-+		clk_disable(sc->clk_bus[ptr]);
-+		clk_put(sc->clk_bus[ptr]);
-+	}
-+
-+ err_no_busclks:
-+	clk_disable(sc->clk_io);
-+	clk_put(sc->clk_io);
-+
-+ err_io_clk:
-+	sdhci_free_host(host);
-+
-+	return ret;
++	sdhci_change_clock(host, clock);
 +}
 +
-+static int __devexit sdhci_s3c_remove(struct platform_device *pdev)
+ static struct sdhci_ops sdhci_s3c_ops = {
+ 	.get_max_clock		= sdhci_s3c_get_max_clk,
+ 	.get_timeout_clock	= sdhci_s3c_get_timeout_clk,
++	.change_clock		= sdhci_s3c_change_clock,
+ 	.set_ios		= sdhci_s3c_set_ios,
+ };
+ 
+Index: linux.git/drivers/mmc/host/sdhci.c
+===================================================================
+--- linux.git.orig/drivers/mmc/host/sdhci.c	2008-12-02 14:36:52.000000000 +0000
++++ linux.git/drivers/mmc/host/sdhci.c	2008-12-02 14:36:52.000000000 +0000
+@@ -907,13 +907,18 @@ static void sdhci_finish_command(struct 
+ 
+ static void sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
++	if (clock == host->clock)
++		return;
++
++	host->ops->change_clock(host, clock);
++}
++
++void sdhci_change_clock(struct sdhci_host *host, unsigned int clock)
 +{
-+	return 0;
-+}
+ 	int div;
+ 	u16 clk;
+ 	unsigned long timeout;
+ 
+-	if (clock == host->clock)
+-		return;
+-
+ 	writew(0, host->ioaddr + SDHCI_CLOCK_CONTROL);
+ 
+ 	if (clock == 0)
+@@ -950,6 +955,8 @@ out:
+ 	host->clock = clock;
+ }
+ 
++EXPORT_SYMBOL_GPL(sdhci_set_clock);
 +
-+static struct platform_driver sdhci_s3c_driver = {
-+	.probe		= sdhci_s3c_probe,
-+	.remove		= __devexit_p(sdhci_s3c_remove),
-+	.driver		= {
-+		.owner	= THIS_MODULE,
-+		.name	= "s3c-sdhci",
-+	},
-+};
+ static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
+ {
+ 	u8 pwr;
+Index: linux.git/drivers/mmc/host/sdhci.h
+===================================================================
+--- linux.git.orig/drivers/mmc/host/sdhci.h	2008-12-02 14:36:52.000000000 +0000
++++ linux.git/drivers/mmc/host/sdhci.h	2008-12-02 14:36:52.000000000 +0000
+@@ -272,6 +272,9 @@ struct sdhci_ops {
+ 	unsigned int	(*get_max_clock)(struct sdhci_host *host);
+ 	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+ 
++	void		(*change_clock)(struct sdhci_host *host,
++					unsigned int clock);
 +
-+static int __init sdhci_s3c_init(void)
-+{
-+	return platform_driver_register(&sdhci_s3c_driver);
-+}
+ 	void		(*set_ios)(struct sdhci_host *host,
+ 				   struct mmc_ios *ios);
+ };
+@@ -281,6 +284,8 @@ extern struct sdhci_host *sdhci_alloc_ho
+ 	size_t priv_size);
+ extern void sdhci_free_host(struct sdhci_host *host);
+ 
++extern void sdhci_change_clock(struct sdhci_host *host, unsigned int clock);
 +
-+static void __exit sdhci_s3c_exit(void)
-+{
-+	platform_driver_unregister(&sdhci_s3c_driver);
-+}
-+
-+module_init(sdhci_s3c_init);
-+module_exit(sdhci_s3c_exit);
-+
-+MODULE_DESCRIPTION("Samsung SDHCI (HSMMC) glue");
-+MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
-+MODULE_LICENSE("GPLv2");
-+MODULE_ALIAS("platform:s3c-sdhci");
+ static inline void *sdhci_priv(struct sdhci_host *host)
+ {
+ 	return (void *)host->private;
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
