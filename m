@@ -1,52 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYLBWst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYLBWvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbYLBWst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 17:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYLBWsl
+	id S1753978AbYLBWvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 17:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYLBWvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 17:48:41 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40302 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbYLBWsk (ORCPT
+	Tue, 2 Dec 2008 17:51:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:40626 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbYLBWvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 17:48:40 -0500
-Date: Tue, 2 Dec 2008 23:50:22 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, Chris Friesen <cfriesen@nortel.com>,
-       mikulas@artax.karlin.mff.cuni.cz, clock@atrey.karlin.mff.cuni.cz,
-       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
-Subject: Re: writing file to disk: not as easy as it looks
-Message-ID: <20081202225022.GA8662@elf.ucw.cz>
-References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu> <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu> <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu> <20081202224403.GA8277@elf.ucw.cz>
+	Tue, 2 Dec 2008 17:51:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=q2IX7dOFPqa1BM5Zltfxp1ybJLsfG6CLENJvOBLmLSAwMUvKxgMS0Zx0+Oc7DsurYE
+         uMClbRYjZhG4EEhxoJo1W04lVjM5eitUqrlMAarIla4LnG8Ip28pfGzZIfQ3osYgp0TK
+         z6KGe3KvkUCWf51/db9UwHaZ9Uk4LlG66chYA=
+Message-ID: <4935BBDA.1020404@gmail.com>
+Date: Tue, 02 Dec 2008 23:51:06 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202224403.GA8277@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: wli@holomorphy.com, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] hugetlb: unsigned ret cannot be negative.
+References: <4931295B.7080105@gmail.com> <20081202140223.7d5f3538.akpm@linux-foundation.org>
+In-Reply-To: <20081202140223.7d5f3538.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Sat, 29 Nov 2008 06:36:59 -0500
+> roel kluin <roel.kluin@gmail.com> wrote:
+> 
+>> unsigned long ret cannot be negative, but ret can get -EFAULT.
+>>
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>> ---
+>> hugetlbfs_read_actor() returns int,
+>> see 
+>> vi fs/hugetlbfs/inode.c +187
+>>
+>> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+>> index 61edc70..0af64e4 100644
+>> --- a/fs/hugetlbfs/inode.c
+>> +++ b/fs/hugetlbfs/inode.c
+>> @@ -252,6 +252,7 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
+>>  	for (;;) {
+>>  		struct page *page;
+>>  		unsigned long nr, ret;
+>> +		int ra;
+>>  
+>>  		/* nr is the maximum number of bytes to copy from this page */
+>>  		nr = huge_page_size(h);
+>> @@ -279,15 +280,16 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
+>>  			/*
+>>  			 * We have the page, copy it to user space buffer.
+>>  			 */
+>> -			ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
+>> +			ra = hugetlbfs_read_actor(page, offset, buf, len, nr);
+>>  		}
+>> -		if (ret < 0) {
+>> +		if (ra < 0) {
 
+> `ra' can obviously be used uninitialised here.  The compiler reports
+> this, too.
 
-...and it is unsafe to run ext2/ext3 on any media that can return
-error on write. That includes perfectly working disk drives that just
-ran out of spare blocks.
+Yes, it was incomplete as well, sorry. This should be OK.
+(checkpatch tested)
+--------------->8----------------8<---------------------
+unsigned long ret cannot be negative, but ret can get -EFAULT.
 
-> AFAICT it is unsafe to run ext2/ext3 on any media that can be removed
-> without unmounting (missing fsync error propagation), and it is
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index 61edc70..07fa7e3 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -252,6 +252,7 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
+ 	for (;;) {
+ 		struct page *page;
+ 		unsigned long nr, ret;
++		int ra;
+ 
+ 		/* nr is the maximum number of bytes to copy from this page */
+ 		nr = huge_page_size(h);
+@@ -274,16 +275,19 @@ static ssize_t hugetlbfs_read(struct file *filp, char __user *buf,
+ 			 */
+ 			ret = len < nr ? len : nr;
+ 			if (clear_user(buf, ret))
+-				ret = -EFAULT;
++				ra = -EFAULT;
++			else
++				ra = 0;
+ 		} else {
+ 			/*
+ 			 * We have the page, copy it to user space buffer.
+ 			 */
+-			ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
++			ra = hugetlbfs_read_actor(page, offset, buf, len, nr);
++			ret = ra;
+ 		}
+-		if (ret < 0) {
++		if (ra < 0) {
+ 			if (retval == 0)
+-				retval = ret;
++				retval = ra;
+ 			if (page)
+ 				page_cache_release(page);
+ 			goto out;
 
-To be fair, bad fsync semantics (error only reported to the first
-person that asks) looks like fundamental Unix problem, nothing ext2/3
-specific...
-
-> to run ext2/ext3 on any flash-based storage with block interface (SD
-> cards, flash sticks).
-
-...and I'm aware of no filesystem that _can_ reliably work on SD
-cards/USB flash sticks...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
