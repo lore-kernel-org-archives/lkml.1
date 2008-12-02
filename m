@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYLBXGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYLBXIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbYLBXGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 18:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYLBXGh
+	id S1754621AbYLBXIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 18:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYLBXIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 18:06:37 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:42852 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbYLBXGf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 18:06:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=oNIF3i6lr+wCGkNIMQZL8Hhqgovy2UCY5cRfd0fG5UJ5Pu+QnjgJ/kV16MzFzQeWfC
-         R+13J/nSf8AFY0noFWa+4e7RA10lEp7DskNhUefNkGbGJyEcJzgLdnB6yHllyrpXurEt
-         xblLS6Zv0IIexLhqo1zO29yBxkBISmHB9/K80=
-Message-ID: <4935BF7F.4080109@gmail.com>
-Date: Wed, 03 Dec 2008 00:06:39 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] wlan: skb_p80211_to_ether() - payload_length is unsigned,
- check before subtraction
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 18:08:30 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33446 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752837AbYLBXI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 18:08:29 -0500
+Date: Wed, 3 Dec 2008 10:08:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Palix <npalix@diku.dk>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH linux-next] drivers/macintosh: Add missing of_node_put
+ in therm_adt746x.c
+Message-Id: <20081203100818.29793232.sfr@canb.auug.org.au>
+In-Reply-To: <200812021436.44286.npalix@diku.dk>
+References: <200812021436.44286.npalix@diku.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Dec_2008_10_08_18_+1100_D_By.6Mrt0gQ0Cs5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-payload_length is unsigned, check before subtraction
+--Signature=_Wed__3_Dec_2008_10_08_18_+1100_D_By.6Mrt0gQ0Cs5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/staging/wlan-ng/p80211conv.c b/drivers/staging/wlan-ng/p80211conv.c
-index 68121b9..9dd8b77 100644
---- a/drivers/staging/wlan-ng/p80211conv.c
-+++ b/drivers/staging/wlan-ng/p80211conv.c
-@@ -333,11 +333,11 @@ int skb_p80211_to_ether( wlandevice_t *wlandev, UINT32 ethconv, struct sk_buff *
- 		memcpy(saddr, w_hdr->a3.a2, WLAN_ETHADDR_LEN);
- 	} else {
- 		payload_offset = WLAN_HDR_A4_LEN;
--		payload_length -= ( WLAN_HDR_A4_LEN - WLAN_HDR_A3_LEN );
--		if (payload_length < 0 ) {
-+		if (payload_length < WLAN_HDR_A4_LEN - WLAN_HDR_A3_LEN) {
- 			WLAN_LOG_ERROR("A4 frame too short!\n");
- 			return 1;
- 		}
-+		payload_length -= (WLAN_HDR_A4_LEN - WLAN_HDR_A3_LEN);
- 		memcpy(daddr, w_hdr->a4.a3, WLAN_ETHADDR_LEN);
- 		memcpy(saddr, w_hdr->a4.a4, WLAN_ETHADDR_LEN);
- 	}
+On Tue, 2 Dec 2008 14:36:44 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+>
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
+>=20
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Dec_2008_10_08_18_+1100_D_By.6Mrt0gQ0Cs5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk1v+IACgkQjjKRsyhoI8w+xgCdE6ylniCLtXz/tuGlFnURN4Qg
+BtUAn2geCSpb8NyGBQ6k5uHgzpBlmBLx
+=Sc/m
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Dec_2008_10_08_18_+1100_D_By.6Mrt0gQ0Cs5--
