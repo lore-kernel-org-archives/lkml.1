@@ -1,45 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYLBA5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYLBBC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYLBA5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Dec 2008 19:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYLBA5J
+	id S1753271AbYLBBC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Dec 2008 20:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYLBBCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Dec 2008 19:57:09 -0500
-Received: from ozlabs.org ([203.10.76.45]:40355 "EHLO ozlabs.org"
+	Mon, 1 Dec 2008 20:02:19 -0500
+Received: from ozlabs.org ([203.10.76.45]:39649 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbYLBA5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Dec 2008 19:57:08 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.28-rc6-git1 -- BUG: unable to handle kernel paging request at ffff8800be8b0019
-Date: Tue, 2 Dec 2008 11:27:02 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: Hugh Dickins <hugh@veritas.com>, penberg@cs.helsinki.fi, rjw@sisk.pl,
-       miles.lane@gmail.com, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, mingo@elte.hu, htejun@gmail.com,
-       vegard.nossum@gmail.com, rostedt@goodmis.org, arjan@infradead.org
-References: <a44ae5cd0811250850g725a5a5nd7d93a23ffd2fce6@mail.gmail.com> <Pine.LNX.4.64.0811271643250.9618@blonde.site> <20081201125103.db4c026f.akpm@linux-foundation.org>
-In-Reply-To: <20081201125103.db4c026f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812021127.03631.rusty@rustcorp.com.au>
+	id S1751636AbYLBBCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Dec 2008 20:02:18 -0500
+Subject: Re: [Cbe-oss-dev] [Patch 1/3] User OProfile support for the IBM
+ CELL processor SPU	event profiling
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Carl Love <cel@us.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
+       cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+In-Reply-To: <1228177110.6509.286.camel@carll-linux-desktop>
+References: <1228177110.6509.286.camel@carll-linux-desktop>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-681ddgYCbB7JIyeA0aNK"
+Date: Tue, 02 Dec 2008 12:02:13 +1100
+Message-Id: <1228179733.8004.45.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 December 2008 07:21:03 Andrew Morton wrote:
-> The fault really lies with include/linux/kallsyms.h, I think:
->
-> #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + (KSYM_NAME_LEN - 1)
-> + \ 2*(BITS_PER_LONG*3/10) + (MODULE_NAME_LEN - 1) + 1)
 
-Hmm... and I recently define MODULE_NAME_LEN in terms of MAX_PARAM_PREFIX_LEN 
-for similar reasons.
+--=-681ddgYCbB7JIyeA0aNK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Perhaps we should move MODULE_NAME_LEN to kernel.h and define everything in 
-terms of that?  It seems to be a common need.
+On Mon, 2008-12-01 at 16:18 -0800, Carl Love wrote:
+> This patch adds the SPU event profiling support for the IBM Cell
+> processor to the list of available events. The opcontrol script
+> patches include a test to see if there is a new cell specific file
+> in the kernel oprofile file system.  If the file exists, then the
+> kernel supports SPU event profiling. =20
+>=20
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+>=20
 
-Rusty.
+> Index: oprofile-cvs/doc/oprofile.xml
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- oprofile-cvs.orig/doc/oprofile.xml
+> +++ oprofile-cvs/doc/oprofile.xml
+> @@ -123,6 +123,10 @@ For information on how to use OProfile's
+>                         of 2.6.22 or more recent.  Additionally, full sup=
+port of SPE profiling requires a BFD library
+>                         from binutils code dated January 2007 or later.  =
+To ensure the proper BFD support exists, run
+>                         the <code>configure</code> utility with <code>--w=
+ith-target=3Dcell-be</code>.
+> +
+> +		       Profiling the Cell Broadband Engine using SPU events requires a=
+ kernel version of 2.6.TBD or
+                                                                           =
+                                    ^^^
+
+Not sure if you missed that, or it's still TBD, but careful it doesn't
+get merged like that.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-681ddgYCbB7JIyeA0aNK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkk0iRUACgkQdSjSd0sB4dJN/gCgiER9/Doa96NK7FRiUspIgUhW
+jpgAn3iCWh+kTg5wUPas1J6h76yMJc7Z
+=Nt6/
+-----END PGP SIGNATURE-----
+
+--=-681ddgYCbB7JIyeA0aNK--
+
