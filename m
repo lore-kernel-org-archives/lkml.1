@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYLBToq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYLBTpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbYLBToq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 14:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYLBToh
+	id S1754413AbYLBTpb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 14:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbYLBTpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 14:44:37 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64195 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbYLBToh (ORCPT
+	Tue, 2 Dec 2008 14:45:12 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:27139 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754497AbYLBTpJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 14:44:37 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=6Mvy9RbFAAAA:8 a=_yJynC5uhYle_ZE7ZdYA:9 a=j_m9tDPm5n--8F6TFLoA:7 a=whJQ8g-gUNUMHjmm5TGR8cRAbaoA:4
-Message-ID: <49358FC7.8070106@gnat.ca>
-Date: Tue, 02 Dec 2008 12:43:03 -0700
-From: "Nathanael D. Noblet" <nathanael@gnat.ca>
-Organization: Gnat Solutions, Inc
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: PS/2 Issues
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 14:45:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=nqjJSgazKIlA78WzjJn+5tuCS1okFnNBKMVKNYiis9icNm9UKpCp5U6YTcuCjLm5NR
+         a20Glx5AGCSTiIWjEeF3Uc0kHWhDMvFcbEjBhmCGBwENwzeQ0m1zJUfYdEzb8ImQG/Si
+         2ReD28aoiTWJwnzYy5Jc8U7IerG/hyOdicwVA=
+Date: Tue, 2 Dec 2008 20:45:03 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Alistair John Strachan <alistair@devzero.co.uk>,
+       "Michael B. Trausch" <mike@trausch.us>
+Subject: Re: Linux 2.6.28-rc7
+Message-ID: <20081202204503.57363502@varda>
+In-Reply-To: <alpine.LFD.2.00.0812021120110.3256@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0812012004370.3256@nehalem.linux-foundation.org>
+	<20081202131442.42e7df48@varda>
+	<alpine.LFD.2.00.0812020748310.3256@nehalem.linux-foundation.org>
+	<20081202165637.09984819@varda>
+	<alpine.LFD.2.00.0812020804590.3256@nehalem.linux-foundation.org>
+	<20081202194907.4eaffc0a@varda>
+	<alpine.LFD.2.00.0812021120110.3256@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-    Total noob here, but I'm having issues with ps2 keyboard/mouse 
-suddenly no longer responding. I use fedora and this has happened for 
-the last three versions however f10 seems to be even more often. Let me 
-describe the situation and what I've done to try to find the cause.
+El Tue, 2 Dec 2008 11:23:42 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> escribió:
+
+> 
+> 
+> On Tue, 2 Dec 2008, Alejandro Riveira Fernández wrote:
+> > 
+> >  Here you go 
+> > 
+> >  [alex@varda:kernel/linux-2.6]$ git bisect bad                                   
+> > 31168481c32c8a485e1003af9433124dede57f8d is first bad commit
+> 
+> Excellent. One last step - can you verify that just reverting this commit 
+> makes your problems go away?
+> 
+> IOW, just do
+> 
+> 	git bisect reset
+> 
+> to get out of bisect mode, and then do
+> 
+> 	git revert 31168481c32c8a485e1003af9433124dede57f8d
+
+ Well i already sent the result of the revert on another mail;
+it did not help :(
+
+ I tried again with what i thought was my "good" commit and the
+bug is there too :/
+
+ could it be that something changed in userspace[1] between the
+day i installed the 2.6.28-rc6-00007-ged31348 and today that
+make this bug trigger? i dunno
+
+ Next step is try to find an "actually good" kernel and bisect
+again sigh... 2.6.27.6 seems to work ok
 
 
-    Periodically my system 'hangs' in that it no longer accepts input 
-from either mouse or keyboard plugged into the PS2 ports. Any music / 
-video playing continues. All apps continue. I can ssh into the box and 
-top reveals no huge spike in load or anything out of the ordinary. I am 
-using an ATI card with the OSS video drivers, but even if I go to init 3 
-I don't regain input response. I was told to see if perhaps any of the 
-events threads were blocked or otherwise not running. So via ssh I 
-prompted a sysrq-t to the logs. This produced this output 
-http://hashbin.com/vPF . As you can see the output is garbled. I've done 
-it a few times and the location of the garbled output is different each 
-time. I've run this system under memtest for hours and hours without any 
-issue.
 
-   Additional information. If I plug in a usb mouse, it works fine and I 
-can reboot the machine cleanly. The problem is easily triggered by 
-running a bittorrent client with many torrents. At least it tends to 
-lock up soon after that. I've also had lockups sooner when sharing via 
-nfs. Even without those programs running I still have lockups 
-periodically, however those programs being active shorten the time 
-between lockups. If I don't run them sometimes I can last a week, 
-sometimes an hour before needing to reboot. I've talked to people on the 
-#fedora-kernel room, but no-one there either had ideas or responded.
+> 
+> and check that the end result is all good?
+> 
+> That's just to double-check that the revert is sufficient, but also 
+> because "git bisect" is very sensitive to false information (ie if it 
+> happens that a bug sometimes is not entirely repeatable, then a single 
+> wrong "git bisect bad/good" will result in the pinpointed commit being 
+> possibly totally the wrong one).
+> 
+> And Al - can you double-check that commit?
+> 
+> 		Linus
 
-   I'm willing to do the work to figure this out, but I have yet to 
-really debug a kernel issue. there is no kernel oops being logged, no 
-errors nothing out of the ordinary, but all of a sudden ps2 input is 
-gone. I'm about to purchase a PS2->usb adapter to run my keyboard and 
-mouse through that to see if they are affected by the issue.
+ [1] distro updates
 
-   Ideas pointers or methods to provide more information would be 
-appreciated.
-
--- 
-Nathanael d. Noblet
