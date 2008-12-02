@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbYLBUGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751065AbYLBUGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474AbYLBUGZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:06:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYLBUF6
+	id S1751065AbYLBUGk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYLBUG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:05:58 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:50675 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYLBUF4 (ORCPT
+	Tue, 2 Dec 2008 15:06:28 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:54447 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508AbYLBUG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:05:56 -0500
-Date: Tue, 2 Dec 2008 20:05:45 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Matt_Domsch@dell.com, greg@kroah.com,
-       linux-acpi@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
-       Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [PATCH 2/2] misc: Add dell-laptop driver
-Message-ID: <20081202200544.GA31620@srcf.ucam.org>
-References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org>
+	Tue, 2 Dec 2008 15:06:26 -0500
+Date: Tue, 2 Dec 2008 20:06:21 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Steve French <smfrench@gmail.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>
+Subject: Re: Support for applications which need NFS or CIFS "share_deny"	flags on open
+Message-ID: <20081202200621.GA4451@shareable.org>
+References: <524f69650812020831q4e089b87k9a8306ac37f4234a@mail.gmail.com> <20081202193819.GJ3186@webber.adilger.int>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081202115029.2b9d1153.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20081202193819.GJ3186@webber.adilger.int>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 11:50:29AM -0800, Andrew Morton wrote:
-> > +struct calling_interface_buffer {
-> > +	u16 class;
-> > +	u16 select;
-> > +	volatile u32 input[4];
-> > +	volatile u32 output[4];
-> > +} __attribute__ ((packed));
+Andreas Dilger wrote:
+> This is a disaster waiting to happen, and I would be against adding
+> such functionality to Linux.  It would allow userspace applications
+> to implement a denial of service to any file that they can open (e.g.
+> open("/lib/libc-2.7.so", O_DENYREAD) would be really bad :-).
 > 
-> We have that little __packed helper for this.
+> It was always also a pain in the ass on Windows systems (back when I used
+> them) that backing up the filesystem would fail because something (app or
+> kernel) had files open in this mode and the backup tool couldn't even read
+> them to do the backup.  In some cases these files were opened very early
+> in boot and the only way to do a full backup was to boot from a separate
+> device and run the backup.  Not my idea of fun.
 
-Ok. I've switched to that, although the __attribute__ notation seems to 
-be the dominant form in the kernel right now.
+It's a pain on Windows, yes.  It's necessary because you can't delete
+or rename over an open file (the unix way), so for files which must be
+updated without any program seeing them as temporarily corrup (.exe,
+.dll, config files, pid files, etc.) to do it on Windows is
+open-with-deny-read and write the new file contents.
 
-> > +static struct dmi_system_id __initdata dell_device_table[] = {
-> 
-> this can be made const.
+> I can't see any reason for O_DENYREAD or O_DENYWRITE that can't be met
+> with existing file locking to maintain coherency if that is really needed.
 
-Done.
+Good point!
 
-> > +	da_num_tokens += tokens;
-> > +}
-> 
-> OK.  No locking is needed for updates to the global state?
+Is there any reason why Wine cannot take an advisory lock _every_ time
+it opens a file?  That would give Windows apps the behaviour they
+expect, including across the network, without DOSing unix apps.
 
-The parse function is called once during module init, before the driver 
-is registered. On the other hand, that makes me realise that we leak it 
-if something else fails, so I've fixed that up as well.
+> As for O_DENYDELETE - wouldn't that be irrelevant if the WINE code keeps
+> an open file reference?  The data would still be accessible until WINE
+> exits, and it wouldn't be a DOS.
 
-> > +#ifdef CONFIG_ACPI
-> > +	if (acpi_video_backlight_support())
-> > +		return 0;
-> > +#endif
-> 
-> Do we need the ifdefs here?  It looks like include/linux/acpi.h tries
-> to provide a suitable 0-returning stub?
+Windows apps do expect a file can't disappear while it's open.  This
+is one way to detect if an app is running, and this particular
+behaviour goes back to the oldest versions of Windows.
 
-They're protected by #ifdef CONFIG_ACPI_VIDEO, but it looks like acpi.h 
-is empty if CONFIG_ACPI isn't set?
+Inside a single WINE instance or on a single host, your suggestion
+works, but what about Windows apps on different hosts over a network share?
 
-> > +			dell_backlight_device = NULL;
-> > +			ret = PTR_ERR(dell_backlight_device);
-> 
-> The above two statements are in the wrong order.
+The bit I find interesting is that other CIFS clients are said to
+implement these flags.  If that means real unixes, maybe they've
+worked out a sensible way to handle them?
 
-Good catch, thanks.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+-- Jamie
