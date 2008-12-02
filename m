@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYLBQ4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbYLBQ6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYLBQ4W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYLBQ4O
+	id S1755815AbYLBQ6k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYLBQ6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:56:14 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:43060 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751510AbYLBQ4O (ORCPT
+	Tue, 2 Dec 2008 11:58:31 -0500
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:3373 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751487AbYLBQ6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:56:14 -0500
-Date: Tue, 2 Dec 2008 11:56:08 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: SD/MMC cards: how crappy they are?
-Message-ID: <20081202165608.GD18162@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@suse.cz>,
-	kernel list <linux-kernel@vger.kernel.org>
-References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com>
+	Tue, 2 Dec 2008 11:58:30 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAF/4NEnCTsYx/2dsb2JhbACBbdB1gn8
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-ng
+Date: Tue, 2 Dec 2008 17:58:35 +0100
+User-Agent: KMail/1.9.9
+Cc: Hans Verkuil <hverkuil@xs4all.nl>, video4linux-list@redhat.com,
+       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       davinci-linux-open-source-bounces@linux.davincidsp.com
+References: <200812011246.08885.hverkuil@xs4all.nl> <200812011524.43499.laurent.pinchart@skynet.be> <20081201130643.661f5743@pedra.chehab.org>
+In-Reply-To: <20081201130643.661f5743@pedra.chehab.org>
+X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <493562A5.40308@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200812021758.35503.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 08:30:29AM -0800, H. Peter Anvin wrote:
-> > ...maybe it was because of powerfail? I'll try to run badblocks to
-> > recover it...
-> > 
-> > ...I did. Badblocks did not help, but cat /dev/zero > /dev/mmc1
-> > did.. And yes, thosse 'temporarily bad blocks' seem very much
-> > powerfail related.
-> > 
-> 
-> Power failures can, indeed, do nasty things to SD/MMC cards, especially
-> power rail sag in the middle of writes.
+Hi Mauro,
 
-If this is your random eject out from your HP laptop problem, note
-that random ejects while the card is writing can cause corruption of
-the flash translation layer (FTL), which for some really crappy cards,
-can permanently damage them; hopefully most of those are gone from the
-market, but I wouldn't be positive about that.  The better ones will
-have some kind of journalling scheme for their FTL...
+On Monday 01 December 2008, Mauro Carvalho Chehab wrote:
+> Hi Hans,
+>
+> On Mon, 1 Dec 2008 15:24:43 +0100
+>
+> Laurent Pinchart <laurent.pinchart@skynet.be> wrote:
+[snip]
 
-Fsck does have a force rewrite option, although it's not the default.
-You have to answer "n" to ignore error, and then yes to "force
-rewrite".  I should perhaps change that; my worry at the time was a
-transient read error tricking e2fsck into blowing away the contents of
-what was actually a good sector.  Of course, that will only help
-blocks which fsck actually tried reading; it won't help data blocks.
+> > In a few months time (probably even earlier) the v4l2_device structure
+> > will be reworked (and possible renamed).
+>
+> Hmm... why? it would be better to try to have the KABI changes for it at
+> the same kernel release if possible.
 
-Badblocks -n will fix the problem, since it will do a non-destructive
-read/write test over the entire disk.  Patches to add an
-forced-rewrite mode to the standard r/o badblocks sweep (so we only
-write to a sector that has a read error) would be gratefully accepted.
+Because Hans is working on more changes.
 
-						- Ted
+> > I'm fine with it going to linux-next now if
+> > we agree on the following.
+> >
+> > - We should only advocate v4l2_device usage for subdevices-aware video
+> > devices. Porting all drivers to v4l2_device is currently pointless and
+> > will only make future transitions more difficult.
+>
+> This makes sense to me.
+>
+> > - v4l2_device should be marked as experimental. I don't want to hear any
+> > API/ABI breakage argument in a few months time when the framework will
+> > evolve.
+>
+> Are you meaning marking this as experimental at Kconfig? This seems too
+> complex, since we'll need to test for some var on every driver that were
+> converted, providing two KABI options for each converted driver (the legacy
+> and the v4l2_device way). This doesn't seem to be a good idea, since will
+> add a lot of extra complexity to debug bugs.
 
+Not at the Kconfig level, just in the documentation (and possible headers).
 
+This is a work in progress. Hans wants the changes to go mainline to get 
+broader testing, which is a valid reason, but I'd like to make sure people 
+understand that more changes are coming.
+
+Best regards,
+
+Laurent Pinchart
