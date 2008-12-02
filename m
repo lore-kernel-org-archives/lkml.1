@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbYLBQrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYLBQr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447AbYLBQrB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 11:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYLBQqu
+	id S1755679AbYLBQr2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 11:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbYLBQrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 11:46:50 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:35048 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbYLBQqt (ORCPT
+	Tue, 2 Dec 2008 11:47:00 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:39427 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755285AbYLBQq7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 11:46:49 -0500
-Date: Tue, 2 Dec 2008 09:46:31 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Karel Zak <kzak@redhat.com>
-Cc: Jamie Lokier <jamie@shareable.org>, Matthew Garrett <mjg@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mingo@redhat.com, val.henson@gmail.com
-Subject: Re: [PATCH v4] relatime: Make relatime smarter
-Message-ID: <20081202164631.GA25548@parisc-linux.org>
-References: <20081127150126.GA20941@srcf.ucam.org> <20081127150341.GB20941@srcf.ucam.org> <20081127163535.775729bf@lxorguk.ukuu.org.uk> <20081127164754.GC22963@srcf.ucam.org> <20081127165929.GA23366@srcf.ucam.org> <20081127170615.GB14991@infradead.org> <20081127175813.GA24354@srcf.ucam.org> <20081128111809.GH6138@shareable.org> <20081128134055.GQ25548@parisc-linux.org> <20081202111025.GI2956@nb.net.home>
+	Tue, 2 Dec 2008 11:46:59 -0500
+Date: Tue, 2 Dec 2008 22:16:50 +0530
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
+       drzeus-sdhci@drzeus.cx
+Subject: Re: [patch 1/8] SDHCI: Add timeout hooks
+Message-ID: <20081202164650.GA6414@debian>
+References: <20081202154018.906091477@fluff.org.uk> <20081202154112.009165156@fluff.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081202111025.GI2956@nb.net.home>
+In-Reply-To: <20081202154112.009165156@fluff.org.uk>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: smohideen@mx2.labs.rootshell.ws
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 12:10:25PM +0100, Karel Zak wrote:
-> On Fri, Nov 28, 2008 at 06:40:55AM -0700, Matthew Wilcox wrote:
-> > On Fri, Nov 28, 2008 at 11:18:09AM +0000, Jamie Lokier wrote:
-> > > Matthew Garrett wrote:
-> > > > The time between atime updates can be configured at boot
-> > > > with the relatime_interval kernel argument, or at runtime through a sysctl.
-> > > 
-> > > Shouldn't it be a per-mount value, with defaults coming from the sysctl?
-> > 
-> > Perhaps a more sensible question would be "Why make it configurable at
+On Tue, Dec 02, 2008 at 03:40:19PM +0000, Ben Dooks wrote:
+> Some controllers do not provide clock information in their
+> capabilities (in the Samsung case, it is because there are
+> multiple clock sources available to the controller). Add hooks
+> to allow the system to supply clock information.
 > 
->  this is GNOME-mentality :-)
-
-Yes, I frequently pal around with terrorists.
-
-> > all?"  What's wrong with hardcoding 24 hours?  Or, to put it another
-> > way, who wants to change it from 24 hours, and why?
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 > 
->  Why do you think that 24 hours is the right default value? Do you
->  have any logical argument for this setting?
+> Index: linux.git/drivers/mmc/host/sdhci.c
+> ===================================================================
+> --- linux.git.orig/drivers/mmc/host/sdhci.c	2008-12-01 19:11:54.000000000 +0000
+> +++ linux.git/drivers/mmc/host/sdhci.c	2008-12-01 19:24:14.000000000 +0000
+> @@ -1606,18 +1606,26 @@ int sdhci_add_host(struct sdhci_host *ho
+>  
+>  	host->max_clk =
+>  		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
+> +	host->max_clk *= 1000000;
+>  	if (host->max_clk == 0) {
+> -		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
+> -			"frequency.\n", mmc_hostname(mmc));
+> +		if (host->ops->get_max_clock)
+> +			host->max_clk = host->ops->get_max_clock(host);
+> +		else
+> +			printk(KERN_ERR
+> +			       "%s: Hardware doesn't specify base clock "
+> +			       "frequency.\n", mmc_hostname(mmc));
+>  		return -ENODEV;
+>  	}
+> -	host->max_clk *= 1000000;
+>  
+>  	host->timeout_clk =
+>  		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
+>  	if (host->timeout_clk == 0) {
+> -		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
+> -			"frequency.\n", mmc_hostname(mmc));
+> +		if (host->ops->get_timeout_clock)
+> +			host->timeout_clk = host->ops->get_timeout_clock(host);
+> +		else
+> +			printk(KERN_ERR
+> +			       "%s: Hardware doesn't specify timeout clock "
+> +			       "frequency.\n", mmc_hostname(mmc));
+>  		return -ENODEV;
+>  	}
+>  	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
+> Index: linux.git/drivers/mmc/host/sdhci.h
+> ===================================================================
+> --- linux.git.orig/drivers/mmc/host/sdhci.h	2008-12-01 19:11:54.000000000 +0000
+> +++ linux.git/drivers/mmc/host/sdhci.h	2008-12-01 19:17:55.000000000 +0000
+> @@ -267,6 +267,8 @@ struct sdhci_host {
+>  
+>  struct sdhci_ops {
+>  	int		(*enable_dma)(struct sdhci_host *host);
+> +	unsigned int	(*get_max_clock)(struct sdhci_host *host);
+> +	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+>  };
+>  
 
-Once a day seems like a good value to me.  It's a good human being
-timescale and still cuts down the number of atime updates by a lot.
+	Can we cache the multiple dereferences. Here host->ops can be
+	saved to a local, instead of multiple dereference several time.
 
-If somebody really cares, they could graph the relatime_update value
-against number of writes performed in a given period and determine a
-better cutoff.  I can think of a hundred better ways to spend my time
-though.
-
-Good job of not answering the question, by the way.  Why _not_ 24 hours?
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	
