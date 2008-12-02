@@ -1,108 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYLBSSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYLBSXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYLBSSc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 13:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYLBSSX
+	id S1755349AbYLBSXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 13:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYLBSXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 13:18:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37530 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753222AbYLBSSW (ORCPT
+	Tue, 2 Dec 2008 13:23:12 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:50611 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYLBSXL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 13:18:22 -0500
-Date: Tue, 2 Dec 2008 10:17:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <200812021846.51479.elendil@planet.nl>
-Message-ID: <alpine.LFD.2.00.0812020956440.3256@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812020629.26714.elendil@planet.nl> <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org> <200812021846.51479.elendil@planet.nl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Dec 2008 13:23:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=syBx6/FGgMNCqnOWn8xM1lw+Yqzb66ddg2RAgVGm29qUQpUgQwPMxknWqc9QiKDeas
+         rBwJs6Ouh4iTL2uTFMOXCOoEIEX/VOvSaV2uHewhuFbiiLGdXdpVQ37yk6WrrniOjy2S
+         qlgANa273OhgHiPpkyEpt9wbptya5p+olV1cA=
+Subject: Re: [i915 drm] irq 16: nobody cared with latest git kernels
+From: Ben Gamari <bgamari@gmail.com>
+To: fredi ml <mailinglists.fredi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Eric Anholt <eric@anholt.net>,
+       dri-devel@lists.sourceforge.net
+In-Reply-To: <f958598b0812020521g64320db0q1cbd4e3c189d6af7@mail.gmail.com>
+References: <f958598b0812020521g64320db0q1cbd4e3c189d6af7@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 02 Dec 2008 13:23:01 -0500
+Message-Id: <1228242181.3578.6.camel@mercury.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This bug was first reported a few weeks ago and it seems still hasn't
+been resolved for some. The bug report can be found here,
+https://bugs.freedesktop.org/show_bug.cgi?id=18609 .
+
+- Ben
 
 
-On Tue, 2 Dec 2008, Frans Pop wrote:
+On Tue, 2008-12-02 at 14:21 +0100, fredi ml wrote:
+> Hi all,
+> lately starting from kernel 2.6.28-rc6-00142-g9bd062d I'm getting this
+> traces: 
 > 
-> I could reinstall some intermediate versions and check when that change 
-> got introduced if that would help, or revert to the kernel I was using 
-> before I did the pull today and applied the debug patch (which was plain 
-> rc6 + a few selected bug fix patches that had not yet been merged).
+> Dec  1 12:09:34 kotys irq 16: nobody cared (try booting with the
+> "irqpoll" option)
+> Dec  1 12:09:34 kotys Pid: 3617, comm: X Not tainted
+> 2.6.28-rc6-00142-g9bd062d #17
+> Dec  1 12:09:34 kotys Call Trace:
+> Dec  1 12:09:34 kotys <IRQ>  [<ffffffff80262a11>] __report_bad_irq
+> +0x3d/0x8c
+> Dec  1 12:09:34 kotys [<ffffffff80262b73>] note_interrupt+0x113/0x178
+> Dec  1 12:09:34 kotys [<ffffffff80263271>] handle_fasteoi_irq
+> +0xa6/0xca
+> Dec  1 12:09:34 kotys [<ffffffff8020d8ab>] do_IRQ+0x7b/0xec
+> Dec  1 12:09:34 kotys [<ffffffff8020b9f6>] ret_from_intr+0x0/0xa
+> Dec  1 12:09:34 kotys <EOI> <3>handlers:
+> Dec  1 12:09:34 kotys [<ffffffffa036f497>] (i915_driver_irq_handler
+> +0x0/0x1f5 [i915])
+> Dec  1 12:09:34 kotys Disabling IRQ #16
+> 
+> -----------
+> Dec  1 19:14:11 kotys irq 16: nobody cared (try booting with the
+> "irqpoll" option)
+> Dec  1 19:14:11 kotys Pid: 4042, comm: firefox Not tainted
+> 2.6.28-rc6-00184-gd9d060a #18
+> Dec  1 19:14:11 kotys Call Trace:
+> Dec  1 19:14:11 kotys <IRQ>  [<ffffffff80262a11>] __report_bad_irq
+> +0x3d/0x8c
+> Dec  1 19:14:11 kotys [<ffffffff80262b73>] note_interrupt+0x113/0x178
+> Dec  1 19:14:11 kotys [<ffffffff80263271>] handle_fasteoi_irq
+> +0xa6/0xca
+> Dec  1 19:14:11 kotys [<ffffffff8020d8ab>] do_IRQ+0x7b/0xec
+> Dec  1 19:14:11 kotys [<ffffffff8020b9f6>] ret_from_intr+0x0/0xa
+> Dec  1 19:14:11 kotys <EOI> <3>handlers:
+> Dec  1 19:14:11 kotys [<ffffffffa036c497>] (i915_driver_irq_handler
+> +0x0/0x1f5 [i915])
+> Dec  1 19:14:11 kotys Disabling IRQ #16
+> 
+> ------------
+> Dec  2 13:31:23 kotys Pid: 6512, comm: ebuild Not tainted 2.6.28-rc7
+> #19
+> Dec  2 13:31:23 kotys Call Trace:
+> Dec  2 13:31:23 kotys <IRQ>  [<ffffffff80262a0d>] __report_bad_irq
+> +0x3d/0x8c
+> Dec  2 13:31:23 kotys [<ffffffff80262b6f>] note_interrupt+0x113/0x178
+> Dec  2 13:31:23 kotys [<ffffffff8026326d>] handle_fasteoi_irq
+> +0xa6/0xca
+> Dec  2 13:31:23 kotys [<ffffffff8020d8ab>] do_IRQ+0x7b/0xec
+> Dec  2 13:31:23 kotys [<ffffffff8020b9f6>] ret_from_intr+0x0/0xa
+> Dec  2 13:31:23 kotys <EOI> <3>handlers:
+> Dec  2 13:31:23 kotys [<ffffffffa036b497>] (i915_driver_irq_handler
+> +0x0/0x1f5 [i915])
+> Dec  2 13:31:23 kotys Disabling IRQ #16
+> 
+> 
+> Actually now that i notice all the log seems the same except the
+> kernel version that's from git. After this traces interrupt 16 is not
+> incrteasing in /proc/interrupts anymore (as suggested by the last log
+> line) and Xorg is all slugish, barely usable. Noticing that there were
+> modifications on the i915 driver i waited till now to report this but
+> none of the last patches got rid of this issue so here is the log.
+> Right now i booted adding irqpoll on the command line and i see in
+> dmesg this one:
+> 
+> Kernel command line: root=/dev/sda2 rootflags=data=writeback irqpoll
+> Misrouted IRQ fixup and polling support enabled
+> This may significantly impact system performance
+> 
+> Though everything seems normal for now. The trace happens usually when
+> the system is under load but it's not that predictable so for now i
+> cant tell if using irqpoll is avoiding hitting this issue. I'll let
+> you know if it happens again.
+> Just ask for info or whatever patches to test ecc. is needed, i'll be
+> glad to help.
+> And of course thank you guys for your work.
+> 
+> Frederik
+> 
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+> Build the coolest Linux based applications with Moblin SDK & win great prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> -- _______________________________________________ Dri-devel mailing list Dri-devel@lists.sourceforge.net https://lists.sourceforge.net/lists/listinfo/dri-devel
 
-It might be interesting, but probably not very relevant. I don't really 
-think that the resume problem is related to this.
-
-> It did happen once a few days ago, but with the workarounds I had resume 
-> failures were extremely rare. I'll see if I can work out which boot it 
-> was, but that could well be very tricky as a failed resume leaves no 
-> trace.
-
-If you just save the dmesg before each resume try, you'd have at least the 
-dmesg of the bootup that leads to failure. It's _likely_ exactly the same 
-as the ones that don't lead to failures, but..
-
-> The way I "see" the failure is that the wireless led does not come on
-
-Quite frankly, from everything I hear, I personally strongly suspect that 
-it's something timing-related to some driver, and most likely totally 
-unrelated to any PCI resource allocation in any other way. IOW, _if_ the 
-resource allocation makes a difference, it's more likely through just 
-mattering from a timing standpoint.
-
-For example, the bad alignment you get from picking the alignment from the 
-wrong place (with Rafael's patch or with my debugging patch) results in 
-this:
-
- - PCI init time:
-
-	+pci 0000:02:06.0: BAR 9 0-3ffffff wrong alignment flags 21200 4000000 (0)
-	+pci 0000:02:06.0: BAR 9 bad alignment 0: [0x000000-0x3ffffff]
-
- - CardBus init time:
-
-	+yenta_cardbus 0000:02:06.0: CardBus bridge, secondary bus 0000:03
-	+yenta_cardbus 0000:02:06.0:   IO window: 0x003000-0x0030ff
-	+yenta_cardbus 0000:02:06.0:   IO window: 0x003400-0x0034ff
-	+yenta_cardbus 0000:02:06.0:   PREFETCH window: 0x84400000-0x847fffff
-	+yenta_cardbus 0000:02:06.0:   MEM window: 0x80000000-0x83ffffff
-
-ie what happened is that when using the wrong alignment, the PCI bus setup 
-code would fail to set up the memory windows (bar 9), but then the cardbus 
-init which happens later will fix that, since it re-does the setup (see 
-"yenta_allocate_resources()": it will re-do "pci_setup_cardbus()" if the 
-resources didn't get set up earlier)
-
-End result? There should be no real difference, but timing does change.
-
-Now, there are _some_ subtle issues that change depending on whether we do 
-the "failure case" in yenta_allocate_resources() or not: for example, the 
-code in yenta_allocate_res() actually knows about the fact that CardBus 
-memory resources have a 4kB granularity, while the generic PCI code uses 
-the resource size as the alignment.
-
-The yenta code also tries to potentially find a smaller resource than the 
-generic PCI resource code did (the generic PCI code just tries to use 
-2*pci_cardbus_io_size and 2*pci_cardbus_mem_size for sizing, while the 
-Yenta code tries to aim for BRIDGE_IO/MEM_MAX but knows to try to make 
-them smaller if it cannot fit.
-
-So the resources can end up being laid out at different points as a 
-result, and again, that can lead to totally independent bugs showing up 
-(overlap with random unknown motherboard resources set up by firmware). 
-But more relevantly, it can simply just cause some timing differences.
-
-Anyway, I'm not at all sure that you and Rafael even necessarily see 
-exactly the same thing. It doesn't look like my debug patch (which tries 
-to emulate Rafael's patch in behavior, in addition to adding the debug 
-printouts) really even matters for you. Because you seemed to be 
-hibernating ok even without that "break alignment in PCI layer" thing.
-
-			Linus
