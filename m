@@ -1,69 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbYLBUXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYLBUXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752983AbYLBUXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 15:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYLBUW6
+	id S1753512AbYLBUXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 15:23:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLBUXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 15:22:58 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:40630 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbYLBUW5 (ORCPT
+	Tue, 2 Dec 2008 15:23:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751632AbYLBUW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 15:22:57 -0500
-Date: Tue, 2 Dec 2008 21:22:54 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [git] m68k
-Message-ID: <Pine.LNX.4.64.0812022117160.24347@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Dec 2008 15:22:59 -0500
+Date: Tue, 2 Dec 2008 12:22:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, Matt_Domsch@dell.com, greg@kroah.com,
+       linux-acpi@vger.kernel.org, rpurdie@rpsys.net, ivdoorn@gmail.com
+Subject: Re: [PATCH 2/2] misc: Add dell-laptop driver
+Message-Id: <20081202122222.5873ee86.akpm@linux-foundation.org>
+In-Reply-To: <20081202200544.GA31620@srcf.ucam.org>
+References: <20081127163357.GA22846@srcf.ucam.org>
+	<20081127163444.GB22846@srcf.ucam.org>
+	<20081202115029.2b9d1153.akpm@linux-foundation.org>
+	<20081202200544.GA31620@srcf.ucam.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Linus,
+On Tue, 2 Dec 2008 20:05:45 +0000
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-[ First pull request, let's hope I got everything right... ]
+> > > +#ifdef CONFIG_ACPI
+> > > +	if (acpi_video_backlight_support())
+> > > +		return 0;
+> > > +#endif
+> > 
+> > Do we need the ifdefs here?  It looks like include/linux/acpi.h tries
+> > to provide a suitable 0-returning stub?
+> 
+> They're protected by #ifdef CONFIG_ACPI_VIDEO, but it looks like acpi.h 
+> is empty if CONFIG_ACPI isn't set?
 
-Please pull from
+No, acpi.h has a _few_ ACPI=n stubs:
 
-    git://git.kernel.org:/pub/scm/linux/kernel/git/geert/linux-m68k.git for-linus
+: static inline int early_acpi_boot_init(void)
+: {
+: 	return 0;
+: }
+: static inline int acpi_boot_init(void)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_boot_table_init(void)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_mps_check(void)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_check_resource_conflict(struct resource *res)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_check_region(resource_size_t start, resource_size_t n,
+: 				    const char *name)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_check_mem_region(resource_size_t start,
+: 					resource_size_t n, const char *name)
+: {
+: 	return 0;
+: }
 
-to receive the following m68k-related updates for 2.6.28:
+So it seems that acpi_video_backlight_support() should be added to this
+list.  Except it already has a stub, in the wrong place.  This whole block:
 
-Finn Thain (1):
-      macfb: Do not overflow fb_fix_screeninfo.id
+: #if defined(CONFIG_ACPI_VIDEO) || defined(CONFIG_ACPI_VIDEO_MODULE)
+: 
+: extern long acpi_video_get_capabilities(acpi_handle graphics_dev_handle);
+: extern long acpi_is_video_device(struct acpi_device *device);
+: extern int acpi_video_backlight_support(void);
+: extern int acpi_video_display_switch_support(void);
+: 
+: #else
+: 
+: static inline long acpi_video_get_capabilities(acpi_handle graphics_dev_handle)
+: {
+: 	return 0;
+: }
+: 
+: static inline long acpi_is_video_device(struct acpi_device *device)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_video_backlight_support(void)
+: {
+: 	return 0;
+: }
+: 
+: static inline int acpi_video_display_switch_support(void)
+: {
+: 	return 0;
+: }
+: 
+: #endif /* defined(CONFIG_ACPI_VIDEO) || defined(CONFIG_ACPI_VIDEO_MODULE) */
+: 
 
-Geert Uytterhoeven (1):
-      m68k: Update defconfigs for 2.6.28-rc7
-
- arch/m68k/configs/amiga_defconfig    |  126 +++++++++++++++++++--------------
- arch/m68k/configs/apollo_defconfig   |  115 +++++++++++++++++-------------
- arch/m68k/configs/atari_defconfig    |  130 +++++++++++++++++++---------------
- arch/m68k/configs/bvme6000_defconfig |  112 +++++++++++++++++-------------
- arch/m68k/configs/hp300_defconfig    |  115 +++++++++++++++++-------------
- arch/m68k/configs/mac_defconfig      |  125 ++++++++++++++++++--------------
- arch/m68k/configs/multi_defconfig    |  129 +++++++++++++++++++---------------
- arch/m68k/configs/mvme147_defconfig  |  112 +++++++++++++++++-------------
- arch/m68k/configs/mvme16x_defconfig  |  112 +++++++++++++++++-------------
- arch/m68k/configs/q40_defconfig      |  125 +++++++++++++++++++--------------
- arch/m68k/configs/sun3_defconfig     |  124 +++++++++++++++++++-------------
- arch/m68k/configs/sun3x_defconfig    |  115 +++++++++++++++++-------------
- drivers/video/macfb.c                |   74 +++++++++----------
- 13 files changed, 863 insertions(+), 651 deletions(-)
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+needs to be moved outside the `#ifdef CONFIG_ACPI' altogether.  Then you
+can drop the ifdef.
