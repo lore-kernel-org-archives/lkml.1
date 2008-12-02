@@ -1,69 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYLBG2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYLBGbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbYLBG2o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 01:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYLBG2e
+	id S1753236AbYLBGbV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 01:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYLBGbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 01:28:34 -0500
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:59117 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbYLBG2d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 01:28:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=poSyNO2ee1oEzpdzDJzu1mQexXabp89UCpsJYkQaVQ0tddtEumW6FIrxmSRua6PABJ
-         Id2b++N2Jw/nzcSpmOpFDDVPWxLlDW2C2kDlE8cI+VE3eLpwCZCwirL7XvlIOKtkJlc6
-         ZWjEQi4mslOri6IF+e8JtGqQvZLIFhSI1rdgY=
-Message-ID: <5d5443650812012228u5aad36a2jc3e9e68cd61c27e3@mail.gmail.com>
-Date: Tue, 2 Dec 2008 11:58:31 +0530
-From: "Trilok Soni" <soni.trilok@gmail.com>
-To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
-Subject: Re: [PULL] http://www.linuxtv.org/hg/~hverkuil/v4l-dvb
-Cc: "Hans Verkuil" <hverkuil@xs4all.nl>,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       v4l <video4linux-list@redhat.com>,
-       "Sakari Ailus" <sakari.ailus@nokia.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081201202209.5cea1f4b@pedra.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200812011451.06156.hverkuil@xs4all.nl>
-	 <5d5443650812011014q55a96540gc8a4b97be951f2fd@mail.gmail.com>
-	 <20081201202209.5cea1f4b@pedra.chehab.org>
+	Tue, 2 Dec 2008 01:31:13 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40401 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbYLBGbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 01:31:12 -0500
+Date: Tue, 2 Dec 2008 17:31:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for December 2
+Message-Id: <20081202173101.e2b72437.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__2_Dec_2008_17_31_01_+1100_YHoGATwpniVknIa1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mauro,
+--Signature=_Tue__2_Dec_2008_17_31_01_+1100_YHoGATwpniVknIa1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> This is one of the lack of the features on mercurial. It doesn't have a meta
-> tag for committer. On mercurial, the -hg user and the author should be the same
-> person.
->
-> Since we want to identify the patch origin (e.g. whose v4l/dvb maintainer got
-> the patch), we use the internal "user" meta-tag as the committer, and an extra
-> tag, at the patch description for the author (From:).
->
-> When creating the -git patch, the "From:" tag is replaced, by script, for
-> "Author:", I add my SOB there, and, I add myself as the -git committer (on git
-> we have both meta-tags).
+Hi all,
 
-Isn't it good time to move v4l2-dvb tree to GIT? I am not aware of any
-hg-to-git repo. converter, but I can check with hg and git community.
-It could be difficult at first, but I am very confident that there are
-many GIT users here than mercurial, and yes your v4l-dvb maintenance
-process might change due move from GIT, but atleast you will not have
-to internal user meta-data per patch.
+Changes since 20081201:
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Today's tree fails the powerpc allyesconfig build.
+
+Undropped trees:
+	sparc
+
+Dropped trees (temporarily):
+	v4l-dvb (build problem)
+	kbuild (build problem)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	cpu_alloc (build problem)
+	perfmon3 (concerns from the x86 team)
+
+The s390 tree gained a conflict against the scsi-rc-tree.
+
+The ftrace tree lost a conflict.
+
+The v4l-dvb tree lost its build failure but gained another and so was
+dropped again.
+
+The acpi tree lost a conflict.
+
+The rr tree lost 3 conflicts.  I also had to revert two commits from this
+tree due to build breakage.
+
+The cifs tree gained a build failure caused by an interaction with the
+net tree.
+
+The security-testing tree gained a conflict against the xfs tree.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 127 trees (counting Linus' and 15 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+CONFLICT (content): Merge conflict in arch/powerpc/configs/ppc44x_defconfig
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+CONFLICT (content): Merge conflict in drivers/char/Makefile
+CONFLICT (content): Merge conflict in drivers/s390/scsi/zfcp_erp.c
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/mtd/maps/integrator-flash.c
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+$ git reset --hard HEAD^
+Merging jfs/next
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in arch/x86/kernel/reboot.c
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/ixgbe/ixgbe_main.c
+CONFLICT (content): Merge conflict in drivers/net/smc91x.c
+Applying net: async_tx merge fix
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/maps/physmap.c
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
+Merging cifs/master
+Applying net: don't remove the NIP6 interfaces yet
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/net/tg3.c
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in fs/ocfs2/namei.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in fs/devpts/inode.c
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (content): Merge conflict in fs/proc/base.c
+CONFLICT (content): Merge conflict in kernel/exit.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+CONFLICT (content): Merge conflict in kernel/sched.c
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging trivial/for-next
+Merging quilt/staging
+Merging scsi-post-merge/master
+Created commit d3e53e4: Revert "cpumask:use-find_last_bit"
+Created commit 1ffe645: Revert "bitmap:find_last_bit"
+
+--Signature=_Tue__2_Dec_2008_17_31_01_+1100_YHoGATwpniVknIa1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk01iUACgkQjjKRsyhoI8xN9gCglCaLAcmF2Erpp47R5Cf/Dw26
+0doAoIVuBg0z+bKW6ZEOGQ0kpoKqILGo
+=fDbY
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Dec_2008_17_31_01_+1100_YHoGATwpniVknIa1--
