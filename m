@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbYLCT7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYLCUAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbYLCT7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYLCTul
+	id S1754568AbYLCUAE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:00:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYLCTun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:41 -0500
-Received: from kroah.org ([198.145.64.141]:59676 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:43 -0500
+Received: from kroah.org ([198.145.64.141]:59687 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754682AbYLCTuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:32 -0500
-Date: Wed, 3 Dec 2008 11:49:10 -0800
+	id S1754690AbYLCTue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:34 -0500
+Date: Wed, 3 Dec 2008 11:49:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Philipp Kohlbecher <xt28@gmx.de>,
+       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 023/104] x86: more general identifier for Phoenix BIOS
-Message-ID: <20081203194910.GX8950@kroah.com>
+Subject: [patch 024/104] x86: always define DECLARE_PCI_UNMAP* macros
+Message-ID: <20081203194914.GY8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-more-general-identifier-for-phoenix-bios.patch"
+Content-Disposition: inline; filename="x86-always-define-declare_pci_unmap-macros.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,39 +39,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Philipp Kohlbecher <xt28@gmx.de>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-commit 0af40a4b1050c050e62eb1dc30b82d5ab22bf221 upstream.
+commit b627c8b17ccacba38c975bc0f69a49fc4e5261c9 upstream.
 
-Impact: widen the reach of the low-memory-protect DMI quirk
+Impact: fix boot crash on AMD IOMMU if CONFIG_GART_IOMMU is off
 
-Phoenix BIOSes variously identify their vendor as "Phoenix Technologies,
-LTD" or "Phoenix Technologies LTD" (without the comma.)
+Currently these macros evaluate to a no-op except the kernel is compiled
+with GART or Calgary support. But we also need these macros when we have
+SWIOTLB, VT-d or AMD IOMMU in the kernel. Since we always compile at
+least with SWIOTLB we can define these macros always.
 
-This patch makes the identification string in the bad_bios_dmi_table
-more general (following a suggestion by Ingo Molnar), so that both
-versions are handled.
+This patch is also for stable backport for the same reason the SWIOTLB
+default selection patch is.
 
-Again, the patched file compiles cleanly and the patch has been tested
-successfully on my machine.
-
-Signed-off-by: Philipp Kohlbecher <xt28@gmx.de>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/setup.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-x86/pci_64.h |   14 --------------
+ 1 file changed, 14 deletions(-)
 
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -604,7 +604,7 @@ static struct dmi_system_id __initdata b
- 		.callback = dmi_low_memory_corruption,
- 		.ident = "Phoenix BIOS",
- 		.matches = {
--			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies, LTD"),
-+			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies"),
- 		},
- 	},
- #endif
+--- a/include/asm-x86/pci_64.h
++++ b/include/asm-x86/pci_64.h
+@@ -34,8 +34,6 @@ extern void pci_iommu_alloc(void);
+  */
+ #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+ 
+-#if defined(CONFIG_GART_IOMMU) || defined(CONFIG_CALGARY_IOMMU)
+-
+ #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	\
+ 	dma_addr_t ADDR_NAME;
+ #define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		\
+@@ -49,18 +47,6 @@ extern void pci_iommu_alloc(void);
+ #define pci_unmap_len_set(PTR, LEN_NAME, VAL)		\
+ 	(((PTR)->LEN_NAME) = (VAL))
+ 
+-#else
+-/* No IOMMU */
+-
+-#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
+-#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)
+-#define pci_unmap_addr(PTR, ADDR_NAME)		(0)
+-#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	do { } while (0)
+-#define pci_unmap_len(PTR, LEN_NAME)		(0)
+-#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	do { } while (0)
+-
+-#endif
+-
+ #endif /* __KERNEL__ */
+ 
+ #endif /* __x8664_PCI_H */
 
