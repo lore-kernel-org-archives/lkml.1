@@ -1,107 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbYLCUhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758409AbYLCUiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762766AbYLCUhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbYLCUVw
+	id S1758409AbYLCUiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760717AbYLCUYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:21:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56091 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758440AbYLCUVt (ORCPT
+	Wed, 3 Dec 2008 15:24:49 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:54553 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758711AbYLCUYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:21:49 -0500
-Date: Wed, 3 Dec 2008 12:20:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: adobriyan@gmail.com, mingo@elte.hu, viro@ZenIV.linux.org.uk,
-       vegard.nossum@gmail.com, ebiederm@xmission.com, Yoshiya.Koyama@hp.com,
-       rjw@sisk.pl, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       kay.sievers@vrfy.org, linux-fsdevel@vger.kernel.org
-Subject: Re: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data to
- userspace
-Message-Id: <20081203122048.b46f9fda.akpm@linux-foundation.org>
-In-Reply-To: <20081203171854.GC17014@kroah.com>
-References: <19f34abd0810251014s7968557br38e43aa0b9cdcf09@mail.gmail.com>
-	<200810252241.53601.rjw@sisk.pl>
-	<m163nggvhq.fsf@frodo.ebiederm.org>
-	<19f34abd0810261408w61b1e2dbvb9a0e16ce5a10022@mail.gmail.com>
-	<19f34abd0811040139t8334502i7a5d8501c5fe95ac@mail.gmail.com>
-	<20081104151234.GH28946@ZenIV.linux.org.uk>
-	<20081106100410.GN4890@elte.hu>
-	<20081107190544.GA1551@kroah.com>
-	<20081107231205.GA2528@x200.localdomain>
-	<20081111141412.b52469d2.akpm@linux-foundation.org>
-	<20081203171854.GC17014@kroah.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 15:24:47 -0500
+Date: Wed, 3 Dec 2008 20:24:30 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Jay Lan <jlan@sgi.com>,
+       Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce get_mm_hiwater_xxx(), fix taskstats->hiwater_xxx
+ accounting
+In-Reply-To: <20081203181220.GA22918@redhat.com>
+Message-ID: <Pine.LNX.4.64.0812031957570.19174@blonde.anvils>
+References: <20081203181220.GA22918@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008 09:18:54 -0800
-Greg KH <greg@kroah.com> wrote:
+On Wed, 3 Dec 2008, Oleg Nesterov wrote:
+> Unless we are going to decrease rss/vm there is no point to call the
+> (racy) update_hiwater_xxx() helpers. Still do_exit() does this, and
 
-> On Tue, Nov 11, 2008 at 02:14:12PM -0800, Andrew Morton wrote:
-> > On Sat, 8 Nov 2008 02:12:05 +0300
-> > Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > 
-> > > On Fri, Nov 07, 2008 at 11:05:44AM -0800, Greg KH wrote:
-> > > > On Thu, Nov 06, 2008 at 11:04:10AM +0100, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> > > > > 
-> > > > > > On Tue, Nov 04, 2008 at 10:39:19AM +0100, Vegard Nossum wrote:
-> > > > > > > On Sun, Oct 26, 2008 at 10:08 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > > > > > > # uname -a
-> > > > > > > Linux localhost.localdomain 2.6.25.11-97.fc9.i686 #1 SMP Mon Jul 21
-> > > > > > > 01:31:09 EDT 2008 i686 i686 i386 GNU/Linux
-> > > > > > > # prelink -mRf /sbin/udevd
-> > > > > > > # ./a.out /proc/564/exe
-> > > > > > > warning: /proc/564/exe: got return value 38, expected 11
-> > > > > > > 2f7362696e2f7564657664005f47387942426e5952446e566f306868202864656c6574656429
-> > > > > > > /sbin/udevd _G8yBBnYRDnVo0hh (deleted)
-> > > > > > > 
-> > > > > > > Yoshiya Koyama reports that the problem exists on RHEL 2.6.9-42.ELsmp too.
-> > > > > > > 
-> > > > > > > I don't think it's exactly the same problem as originally reported,
-> > > > > > > because I definitely wasn't using prelinking (the prelink binary
-> > > > > > > wasn't even installed on the machine until today). But finding the
-> > > > > > > root cause of this may solve both problems.
-> > > > > > 
-> > > > > > switch_names() buggered in case of short names on both sides.  That should
-> > > > > > help:
-> > > > > > 
-> > > > > > >From 2acda856910b774717e0290bbf948c7dee0f2e1a Mon Sep 17 00:00:00 2001
-> > > > > > From: Al Viro <viro@zeniv.linux.org.uk>
-> > > > > > Date: Mon, 3 Nov 2008 15:03:50 -0500
-> > > > > > Subject: [PATCH] fix switch_names() breakage in short-to-short case
-> > > > > > 
-> > > > > > We want ->name.len to match the resulting name on *both*
-> > > > > > source and target
-> > > > > > 
-> > > > > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > > > > 
-> > > > > please credit kmemcheck in the commit message and use an appropriate 
-> > > > > Reported-by line as well. Thanks,
-> > > > 
-> > > > Did this fix ever get merged into Linus's tree?
-> > > 
-> > > So far no.
-> > 
-> > I queued the below for 2.6.28 inclusion and tagged for -stable
-> > backporting.  
+I'm puzzled by this comment.  exit() _is_ about to decrease rss/vm,
+so isn't it right to be calling update_hiwater_xxx()?
+
+There is a question of who's going to be able to see the result from
+this point on: I forget whether I was doing it for my own satisfaction,
+or for a real observer.  Even if there isn't a real observer today,
+I think I'd prefer do_exit() to continue to update_hiwater_xxx(),
+in case an observer is added tomorrow - unless you feel it's
+unjustifiably adding code to and slowing down process exit.
+
+You say "(racy)": in my view, it was only as racy as whatever might
+cause it to be racy.  By that, I mean that if the numbers ended up
+slightly wrong, you could reasonably imagine that the races happened
+in a different sequence which would have ended up with the numbers 
+seen.  Have you noticed something more serious we need to fix?
+
+> the accounting code uses mm->hiwater_xxx directly.
 > 
+> This is not right. fill_pid()->xacct_add_tsk() can be called by
+> taskstats_user_cmd() at any time, not only when the task exits.
+> in that case taskstats->hiwater_xxx can be very wrong.
+
+Here you're very right.  There was no tsacct.c when I added those
+hiwaters in 2.6.15, it's quite wrong to have been using those
+numbers without comparing against current values, well spotted.
+
 > 
-> What ever happened to this patch?  Did it not make it into Linus's tree
-> somehow?
+> Introduce get_mm_hiwater_rss() and get_mm_hiwater_vm() to use instead,
+> and kill the "if (tsk->mm) {}" code in do_exit().
+
+If you're going to add special helper macros (I don't care myself),
+wouldn't it be better to convert fs/proc/task_mmu.c (the original
+consumer) to use them too?
+
+And, as I say, I'd _prefer_ that block to remain in do_exit(),
+but don't have strong evidence why it should.
+
+> The first helper will
+> be also used to actually fill/report rusage->ru_maxrss.
+
+Oh, yes, I noticed a mail yesterday in which you claimed to Cc me,
+but didn't (like we all claim to be attaching missing patches ;)
+I then forgot it, but yes, I am glad to see Jiri putting
+hiwater_rss to more use, fewer ever-0s from /usr/bin/time.
+
+Hugh
+
 > 
-
-Stuck in -mm.  Sent to Al on Dec 1, ignored.  As usual.
-
-Al, what's going on?  Are you thinking that I'm planning on merging
-these myself?  Because if you're on the To: then my intention is that the
-patch be processed by yourself.
-
-
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> 
+> --- K-28/include/linux/sched.h~HIWATER	2008-12-02 17:12:40.000000000 +0100
+> +++ K-28/include/linux/sched.h	2008-12-03 18:17:18.000000000 +0100
+> @@ -388,6 +388,9 @@ extern void arch_unmap_area_topdown(stru
+>  		(mm)->hiwater_vm = (mm)->total_vm;	\
+>  } while (0)
+>  
+> +#define get_mm_hiwater_rss(mm)	max((mm)->hiwater_rss, get_mm_rss(mm))
+> +#define get_mm_hiwater_vm(mm)	max((mm)->hiwater_vm, (mm)->total_vm)
+> +
+>  extern void set_dumpable(struct mm_struct *mm, int value);
+>  extern int get_dumpable(struct mm_struct *mm);
+>  
+> --- K-28/kernel/tsacct.c~HIWATER	2008-10-10 00:13:53.000000000 +0200
+> +++ K-28/kernel/tsacct.c	2008-12-03 18:24:28.000000000 +0100
+> @@ -90,8 +90,8 @@ void xacct_add_tsk(struct taskstats *sta
+>  	mm = get_task_mm(p);
+>  	if (mm) {
+>  		/* adjust to KB unit */
+> -		stats->hiwater_rss   = mm->hiwater_rss * PAGE_SIZE / KB;
+> -		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
+> +		stats->hiwater_rss   = get_mm_hiwater_rss(mm) * PAGE_SIZE / KB;
+> +		stats->hiwater_vm    = get_mm_hiwater_vm(mm)  * PAGE_SIZE / KB;
+>  		mmput(mm);
+>  	}
+>  	stats->read_char	= p->ioac.rchar;
+> --- K-28/kernel/exit.c~HIWATER	2008-12-02 17:12:40.000000000 +0100
+> +++ K-28/kernel/exit.c	2008-12-03 18:21:06.000000000 +0100
+> @@ -1048,10 +1048,7 @@ NORET_TYPE void do_exit(long code)
+>  				preempt_count());
+>  
+>  	acct_update_integrals(tsk);
+> -	if (tsk->mm) {
+> -		update_hiwater_rss(tsk->mm);
+> -		update_hiwater_vm(tsk->mm);
+> -	}
+> +
+>  	group_dead = atomic_dec_and_test(&tsk->signal->live);
+>  	if (group_dead) {
+>  		hrtimer_cancel(&tsk->signal->real_timer);
