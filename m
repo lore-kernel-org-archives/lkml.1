@@ -1,63 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYLCAOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbYLCAO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbYLCAOW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 19:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYLCAOD
+	id S1755620AbYLCAO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 19:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbYLCAOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 19:14:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51108 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752890AbYLCAOB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 19:14:01 -0500
-Date: Tue, 2 Dec 2008 16:13:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: holt@sgi.com
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, ptesarik@suse.cz,
-       tee@sgi.com, holt@sgi.com, peterz@infradead.org, mingo@elte.hu,
-       linux-arch@vger.kernel.org
-Subject: Re: [Patch V3 0/3] Enable irqs when waiting for rwlocks
-Message-Id: <20081202161311.ae3376cb.akpm@linux-foundation.org>
-In-Reply-To: <20081104122405.046233722@attica.americas.sgi.com>
-References: <20081104122405.046233722@attica.americas.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 19:14:41 -0500
+Received: from kroah.org ([198.145.64.141]:37300 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754230AbYLCAOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 19:14:40 -0500
+Date: Tue, 2 Dec 2008 16:12:53 -0800
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
+Cc: stable@kernel.org, sfr@canb.auug.org.au, ath9k-devel@venema.h4ckr.net,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH 1/3] ath9k: Handle -ENOMEM on RX gracefully
+Message-ID: <20081203001253.GC14943@kroah.com>
+References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com> <1228251082-11677-2-git-send-email-lrodriguez@atheros.com> <1228251082-11677-3-git-send-email-lrodriguez@atheros.com> <1228251082-11677-4-git-send-email-lrodriguez@atheros.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1228251082-11677-4-git-send-email-lrodriguez@atheros.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Nov 2008 06:24:05 -0600
-holt@sgi.com wrote:
+I don't see this patch upstream in Linus's tree.  Am I just missing it
+and if so, do you know the git commit id?
 
-> New in V3:
->  * Handle rearrangement of some arch's include/asm directories.
-> 
-> New in V2:
->  * get rid of ugly #ifdef's in kernel/spinlock.h
->  * convert __raw_{read|write}_lock_flags to an inline func
-> 
-> SGI has observed that on large systems, interrupts are not serviced for
-> a long period of time when waiting for a rwlock. The following patch
-> series re-enables irqs while waiting for the lock, resembling the code
-> which is already there for spinlocks.
-> 
-> I only made the ia64 version, because the patch adds some overhead to
-> the fast path. I assume there is currently no demand to have this for
-> other architectures, because the systems are not so large. Of course,
-> the possibility to implement raw_{read|write}_lock_flags for any
-> architecture is still there.
-> 
+thanks,
 
-The patches seem reasonable.  I queued all three with the intention of
-merging #1 and #2 into 2.6.29.  At that stage, architectures can decide
-whether or not they want to do this.  I shall then spam Tony with #3 so
-you can duke it out with him.
+greg k-h
 
-It's a bit regrettable to have different architectures behaving in
-different ways.  It would be interesting to toss an x86_64
-implementation into the grinder, see if it causes any problems, see if
-it produces any tangible benefits.  Then other architectures might
-follow.  Or not, depending on the results ;)
 
+On Tue, Dec 02, 2008 at 12:51:22PM -0800, Luis R. Rodriguez wrote:
+> We would get an oops on RX on -ENOMEM by passing
+> NULL to the hardware on ath_rx_buf_link(). The oops
+> would look something like this:
+> 
+> ath_rx_tasklet
+> ...
+> RIP: ath_rx_buf_link
+> 
+> We correct this by handling the allocation for the next
+> skb we will put in our RX tail directly on the ath_rx_tasklet()
+> *prior* to sending up the last hardware processed
+> skb. If we run out of memory this gauranteees we have
+> skbs to work with while it simply drops new received
+> frames.
+> 
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> ---
+>  drivers/net/wireless/ath9k/recv.c |   18 ++++++++++++++----
+>  1 files changed, 14 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/ath9k/recv.c b/drivers/net/wireless/ath9k/recv.c
+> index 0941589..a4f92b2 100644
+> --- a/drivers/net/wireless/ath9k/recv.c
+> +++ b/drivers/net/wireless/ath9k/recv.c
+> @@ -441,18 +441,16 @@ static void ath_rx_requeue(struct ath_softc *sc, struct sk_buff *skb)
+>   */
+>  static int ath_rx_indicate(struct ath_softc *sc,
+>  			   struct sk_buff *skb,
+> +			   struct sk_buff *nskb,
+>  			   struct ath_recv_status *status,
+>  			   u16 keyix)
+>  {
+>  	struct ath_buf *bf = ATH_RX_CONTEXT(skb)->ctx_rxbuf;
+> -	struct sk_buff *nskb;
+>  	int type;
+>  
+>  	/* indicate frame to the stack, which will free the old skb. */
+>  	type = ath__rx_indicate(sc, skb, status, keyix);
+>  
+> -	/* allocate a new skb and queue it to for H/W processing */
+> -	nskb = ath_rxbuf_alloc(sc, sc->sc_rxbufsize);
+>  	if (nskb != NULL) {
+>  		bf->bf_mpdu = nskb;
+>  		bf->bf_buf_addr = ath_skb_map_single(sc,
+> @@ -741,6 +739,7 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
+>  	struct ath_desc *ds;
+>  	struct ieee80211_hdr *hdr;
+>  	struct sk_buff *skb = NULL;
+> +	struct sk_buff *nskb = NULL;
+>  	struct ath_recv_status rx_status;
+>  	struct ath_hal *ah = sc->sc_ah;
+>  	int type, rx_processed = 0;
+> @@ -963,6 +962,17 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
+>  		 */
+>  		if (sc->sc_rxbufsize < ds->ds_rxstat.rs_datalen)
+>  			goto rx_next;
+> +
+> +		/* allocate a new skb and queue it to for H/W processing */
+> +		nskb = ath_rxbuf_alloc(sc, sc->sc_rxbufsize);
+> +
+> +		/* Diregard current RX'd frame and reuse the old skb */
+> +		if (!nskb) {
+> +			list_move_tail(&bf->list, &sc->sc_rxbuf);
+> +			ath_rx_buf_link(sc, bf);
+> +			goto rx_next;
+> +		}
+> +
+>  		/*
+>  		 * Sync and unmap the frame.  At this point we're
+>  		 * committed to passing the sk_buff somewhere so
+> @@ -1052,7 +1062,7 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
+>  
+>  		/* Pass frames up to the stack. */
+>  
+> -		type = ath_rx_indicate(sc, skb,
+> +		type = ath_rx_indicate(sc, skb, nskb,
+>  			&rx_status, ds->ds_rxstat.rs_keyix);
+>  
+>  		/*
+> -- 
+> 1.5.6.rc2.15.g457bb.dirty
+> 
+> _______________________________________________
+> stable mailing list
+> stable@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable
