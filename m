@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758327AbYLCUJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYLCUKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758327AbYLCUJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:09:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYLCTxD
+	id S1753552AbYLCUKZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:10:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYLCTyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:53:03 -0500
-Received: from kroah.org ([198.145.64.141]:60153 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:23 -0500
+Received: from kroah.org ([198.145.64.141]:60200 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754619AbYLCTw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:52:59 -0500
-Date: Wed, 3 Dec 2008 11:51:37 -0800
+	id S1753638AbYLCTyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:21 -0500
+Date: Wed, 3 Dec 2008 11:52:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 050/104] e1000: Use device_set_wakeup_enable
-Message-ID: <20081203195137.GY8950@kroah.com>
+Subject: [patch 051/104] e1000e: Use device_set_wakeup_enable
+Message-ID: <20081203195237.GZ8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="e1000-use-device_set_wakeup_enable.patch"
+Content-Disposition: inline; filename="e1000e-use-device_set_wakeup_enable.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,7 +42,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit de1264896c8012a261c1cba17e6a61199c276ad3 upstream.
+commit 6ff68026f4757d68461b7fbeca5c944e1f5f8b44 upstream.
 
 Since dev->power.should_wakeup bit is used by the PCI core to
 decide whether the device should wake up the system from sleep
@@ -56,49 +56,49 @@ Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/e1000/e1000_ethtool.c |    8 ++++++--
- drivers/net/e1000/e1000_main.c    |    1 +
+ drivers/net/e1000e/ethtool.c |    8 ++++++--
+ drivers/net/e1000e/netdev.c  |    1 +
  2 files changed, 7 insertions(+), 2 deletions(-)
 
---- a/drivers/net/e1000/e1000_ethtool.c
-+++ b/drivers/net/e1000/e1000_ethtool.c
-@@ -1774,7 +1774,8 @@ static void e1000_get_wol(struct net_dev
+--- a/drivers/net/e1000e/ethtool.c
++++ b/drivers/net/e1000e/ethtool.c
+@@ -1681,7 +1681,8 @@ static void e1000_get_wol(struct net_dev
+ 	wol->supported = 0;
+ 	wol->wolopts = 0;
  
- 	/* this function will set ->supported = 0 and return 1 if wol is not
- 	 * supported by this hardware */
--	if (e1000_wol_exclusion(adapter, wol))
-+	if (e1000_wol_exclusion(adapter, wol) ||
+-	if (!(adapter->flags & FLAG_HAS_WOL))
++	if (!(adapter->flags & FLAG_HAS_WOL) ||
 +	    !device_can_wakeup(&adapter->pdev->dev))
  		return;
  
- 	/* apply any specific unsupported masks here */
-@@ -1811,7 +1812,8 @@ static int e1000_set_wol(struct net_devi
- 	if (wol->wolopts & (WAKE_PHY | WAKE_ARP | WAKE_MAGICSECURE))
+ 	wol->supported = WAKE_UCAST | WAKE_MCAST |
+@@ -1719,7 +1720,8 @@ static int e1000_set_wol(struct net_devi
+ 	if (wol->wolopts & WAKE_MAGICSECURE)
  		return -EOPNOTSUPP;
  
--	if (e1000_wol_exclusion(adapter, wol))
-+	if (e1000_wol_exclusion(adapter, wol) ||
+-	if (!(adapter->flags & FLAG_HAS_WOL))
++	if (!(adapter->flags & FLAG_HAS_WOL) ||
 +	    !device_can_wakeup(&adapter->pdev->dev))
  		return wol->wolopts ? -EOPNOTSUPP : 0;
  
- 	switch (hw->device_id) {
-@@ -1838,6 +1840,8 @@ static int e1000_set_wol(struct net_devi
- 	if (wol->wolopts & WAKE_MAGIC)
- 		adapter->wol |= E1000_WUFC_MAG;
+ 	/* these settings will always override what we currently have */
+@@ -1738,6 +1740,8 @@ static int e1000_set_wol(struct net_devi
+ 	if (wol->wolopts & WAKE_ARP)
+ 		adapter->wol |= E1000_WUFC_ARP;
  
 +	device_set_wakeup_enable(&adapter->pdev->dev, adapter->wol);
 +
  	return 0;
  }
  
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1180,6 +1180,7 @@ static int __devinit e1000_probe(struct 
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -4616,6 +4616,7 @@ static int __devinit e1000_probe(struct 
  
  	/* initialize the wol settings based on the eeprom settings */
  	adapter->wol = adapter->eeprom_wol;
 +	device_set_wakeup_enable(&adapter->pdev->dev, adapter->wol);
  
- 	/* print bus type/speed/width info */
- 	DPRINTK(PROBE, INFO, "(PCI%s:%s:%s) ",
+ 	/* reset the hardware with the new settings */
+ 	e1000e_reset(adapter);
 
