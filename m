@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbYLCO0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbYLCOde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbYLCO0q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 09:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYLCO02
+	id S1752347AbYLCOde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 09:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYLCOdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 09:26:28 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:55569 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbYLCO00 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 09:26:26 -0500
-Date: Wed, 3 Dec 2008 19:50:00 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sameo@openedhand.com
-Subject: Re: linux-next: Tree for December 2 (mfd)
-Message-ID: <20081203142000.GC5400@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081202173101.e2b72437.sfr@canb.auug.org.au> <4935771F.6050500@oracle.com>
+	Wed, 3 Dec 2008 09:33:24 -0500
+Received: from mail.tmr.com ([64.65.253.246]:55219 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbYLCOdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 09:33:23 -0500
+Message-ID: <49369872.20406@tmr.com>
+Date: Wed, 03 Dec 2008 09:32:18 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081112 Fedora/1.1.13-1.fc9 pango-text SeaMonkey/1.1.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4935771F.6050500@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: roel kluin <roel.kluin@gmail.com>, tytso@mit.edu, adilger@sun.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ext3, ext4: do_split() fix loop, with obvious unsigned
+ wrap
+References: <49343AD9.4020606@gmail.com> <20081202220510.ddef1115.akpm@linux-foundation.org>
+In-Reply-To: <20081202220510.ddef1115.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap <randy.dunlap@oracle.com> [2008-12-02 09:57:51]:
-
-> Stephen Rothwell wrote:
-> > Hi all,
-> > 
-> > Changes since 20081201:
-> > 
-> > Today's tree fails the powerpc allyesconfig build.
-> 
-> 
-> allyesconfig on x86_64 fails with:
-> 
-> linux-next-20081202/drivers/mfd/twl4030-core.c:682: undefined reference to `clk_get_rate'
-> linux-next-20081202/drivers/mfd/twl4030-core.c:683: undefined reference to `clk_put'
-
-The x86 allyesconfig build of next-20081203 kernel fails with same build
-failure.
-
-> 
-> 
-> -- 
-> ~Randy
+Andrew Morton wrote:
+> On Mon, 01 Dec 2008 14:28:25 -0500 roel kluin <roel.kluin@gmail.com> wrote:
+>
+>   
+>> Fix loop, with obvious unsigned wrap
+>>
+>>     
+>
+> Please raise separate patches for ext3 and ext4 - their paths into the
+> tree are different.
+>
+>   
+>> --- a/fs/ext3/namei.c
+>> +++ b/fs/ext3/namei.c
+>> @@ -1188,7 +1188,7 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+>>  	/* Split the existing block in the middle, size-wise */
+>>  	size = 0;
+>>  	move = 0;
+>> -	for (i = count-1; i >= 0; i--) {
+>> +	for (i = count; i--; ) {
+>>     
+>
+> So we're replacing an accidental for(;;) with something which can
+> really terminate.  This is potentially a functional change, and it's
+> perhaps telling us that we should replace it with a real for (;;) loop
+> anyway.
+>   
+It's not a "for (;;)" loop, because the index value does change, but 
+clearly in the current implementation the termination condition won't be 
+met by any index value. You still need to bail on index value, and the 
+index is used in the loop.
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
+
+
