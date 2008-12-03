@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYLCWBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYLCWGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbYLCWBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 17:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYLCWBA
+	id S1754926AbYLCWGA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 17:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLCWFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 17:01:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47915 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbYLCWA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 17:00:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wim Van Sebroeck <wim@iguana.be>
-Subject: Regression from 2.6.28-rc7: Commit 7cd5b08be3 breaks startup on Toshiba Portege R500
-Date: Wed, 3 Dec 2008 23:00:18 +0100
-User-Agent: KMail/1.9.9
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 3 Dec 2008 17:05:51 -0500
+Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:35940
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751537AbYLCWFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 17:05:51 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH v2 0/4] sched: track next-highest priority
+To: mingo@elte.hu
+Cc: peterz@infradead.org, rostedt@goodmis.org, ghaskins@novell.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Date: Wed, 03 Dec 2008 17:09:29 -0500
+Message-ID: <20081203220628.11729.42174.stgit@dev.haskins.net>
+In-Reply-To: <20081203204025.GA31376@elte.hu>
+References: <20081203204025.GA31376@elte.hu>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812032300.19110.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Ingo,
+  This version of the patches is logically equivelent to v1 with the following
+  exceptions.
 
-The following commit:
+1) Rebased to tip/master df9fc0207
+2) split v1-1/3 into v2-1/4 (cleanup) and v2-2/4 (changes)
 
-commit 7cd5b08be3c489df11b559fef210b81133764ad4
-Author: Wim Van Sebroeck <wim@iguana.be>
-Date:   Wed Nov 19 19:39:58 2008 +0000
 
-    [WATCHDOG] iTCO_wdt : problem with rebooting on new ICH9 based motherboards
+I talked to Peter today about reviewing/acking these.  I told him to wait for
+v2, so here it is.  Hopefully he will have a chance to look at these soon.
 
-    Bugzilla #9868: On Intel motherboards with the ICH9 based I/O controllers
-    (Like DP35DP and DG33FB) the iTCO timer counts but it doesn't reboot the
-    system after the counter expires.
 
-    This patch fixes this by moving the enabling & disabling of the TCO_EN bit
-    in the SMI_EN register into the start and stop code.
+Thanks guys,
+-Greg
 
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+---
 
-makes CPU fan spin with full speed and causes hald-addon-acpi to take 100% of
-CPU time on Toshiba Portege R500 with openSUSE 11.0 user space.  This starts as
-soon as hal starts or thereabouts and never ends, which makes the current
-mainline unusable on that box.
+Gregory Haskins (4):
+      sched: use highest_prio.next to optimize pull operations
+      sched: use highest_prio.curr for pull threshold
+      sched: track the next-highest priority on each runqueue
+      sched: cleanup inc/dec_rt_tasks
 
-Thanks,
-Rafael
+
+ kernel/sched.c    |    8 ++-
+ kernel/sched_rt.c |  156 +++++++++++++++++++++++++++++++----------------------
+ 2 files changed, 98 insertions(+), 66 deletions(-)
+
+-- 
+Signature
