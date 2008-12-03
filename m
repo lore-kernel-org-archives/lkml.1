@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbYLCUm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbYLCUnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228AbYLCUm4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:42:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762928AbYLCUip
+	id S1760320AbYLCUnn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbYLCUmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:38:45 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:35237 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755081AbYLCUio (ORCPT
+	Wed, 3 Dec 2008 15:42:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54880 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760606AbYLCUmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:38:44 -0500
-Date: Wed, 3 Dec 2008 21:38:41 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: "David S. Miller" <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: m68k 8390 breakage (was: Re: linux-next: Tree for December 3)
-In-Reply-To: <20081203115622.50256091@extreme>
-Message-ID: <Pine.LNX.4.64.0812032135220.10635@anakin>
-References: <20081203183602.c06f8c39.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0812032042480.10635@anakin> <20081203115622.50256091@extreme>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Dec 2008 15:42:16 -0500
+Date: Wed, 3 Dec 2008 12:41:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Yet more ARM breakage in linux-next
+Message-Id: <20081203124109.79f8f15b.akpm@linux-foundation.org>
+In-Reply-To: <20081203192905.GA12502@flint.arm.linux.org.uk>
+References: <20081203192905.GA12502@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008, Stephen Hemminger wrote:
-> On Wed, 3 Dec 2008 20:49:39 +0100 (CET)
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Wed, 3 Dec 2008 19:29:05 +0000
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+
+> This seems to be causing lots of ARM breakage:
 > 
-> > On Wed, 3 Dec 2008, Stephen Rothwell wrote:
-> > > Status of my local build tests will be at
-> > > http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> > > advice about cross compilers/configs that work, we are always open to add
-> > > more builds.
-> > 
-> > Since a few days, m68k defconfig and allmodconfig give:
-> > 
-> > | drivers/net/lib8390.c:1014: undefined reference to `ei_start_xmit'
-> > | drivers/net/lib8390.c:1015: undefined reference to `ei_get_stats'
-> > | drivers/net/lib8390.c:1016: undefined reference to `ei_set_multicast_list'
-> > 
-> > (cfr. e.g. http://kisskb.ellerman.id.au/kisskb/buildresult/58795/)
-> > 
-> > git bisect run on "make ARCH=m68k mac_defconfig vmlinux" tells me:
-> > 
-> > 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab is first bad commit
-> > commit 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab
-> > Author: Stephen Hemminger <shemminger@vyatta.com>
-> > Date:   Tue Nov 25 18:12:49 2008 -0800
-> > 
-> >     8390: add common net_device ops
-> > 
-> >     Fix the defactoring of ei_XXX functions in 8390 and 8390p.
-> >     Remove the tx_timeout hack since no driver including the 3c503
-> >     overrides tx_timeout at this time, looks like a legacy thing.
-> > 
-> >     Also, since several drivers all have same hooks, provide common
-> >     netdev_ops.
-> > 
-> >     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> lib/find_next_bit.c:183: error: implicit declaration of function '__fls'
 > 
-> Which driver is having problem
+> Whoever's responsible,
 
-Oops, the log above is from allmodconfig and indeed doesn't show it.
+git-blame?
 
-mac_defconfig (which has CONFIG_MAC8390=y) shows more info:
+> please fix this ASAP so I can see whether my fixes
+> I merged on Monday fix the previous set of ARM build errors in linux-next.
 
-| drivers/net/lib8390.c:303: warning: '__ei_start_xmit' defined but not used
-| drivers/net/lib8390.c:881: warning: '__ei_get_stats' defined but not used
-| drivers/net/lib8390.c:990: warning: '__ei_set_multicast_list' defined but not
-| ...
-| drivers/built-in.o: In function `ethdev_setup':
-| mac8390.c:(.text+0x29684): undefined reference to `ei_start_xmit'
-| mac8390.c:(.text+0x2968c): undefined reference to `ei_get_stats'
-| mac8390.c:(.text+0x29694): undefined reference to `ei_set_multicast_list'
+commit b032dfc80921daa9c957810fb2e2ff253aaf2ac4
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Wed Dec 3 11:16:59 2008 +1100
 
-defconfig log at http://kisskb.ellerman.id.au/kisskb/buildresult/58646/
+    bitmap:find_last_bit
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
