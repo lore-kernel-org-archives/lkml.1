@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYLCUF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbYLCUFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbYLCUF6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYLCTwo
+	id S1757472AbYLCUFl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYLCTwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:52:44 -0500
-Received: from kroah.org ([198.145.64.141]:59997 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751426AbYLCTwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Dec 2008 14:52:43 -0500
-Date: Wed, 3 Dec 2008 11:51:10 -0800
+Received: from kroah.org ([198.145.64.141]:59985 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755265AbYLCTwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:52:41 -0500
+Date: Wed, 3 Dec 2008 11:51:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, kristen.c.accardi@intel.com, jpk@sgi.com,
+       alan@lxorguk.ukuu.org.uk,
        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
        Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 040/104] PCI: SGI Hotplug: stop managing
-	bss_hotplug_slot->name
-Message-ID: <20081203195110.GO8950@kroah.com>
+Subject: [patch 039/104] PCI: rpaphp: kmalloc/kfree slot->name directly
+Message-ID: <20081203195108.GN8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-sgi-hotplug-stop-managing-bss_hotplug_slot-name.patch"
+Content-Disposition: inline; filename="pci-rpaphp-kmalloc-kfree-slot-name-directly.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,88 +42,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alex Chiang <achiang@hp.com>
 
-commit 85234ce86dfa62b779faa19a70364a06e3f7fc32 upstream.
+commit b2132fecca02fa05d509ba4c8c1e51dee6ccd003 upstream.
 
-We no longer need to manage our version of hotplug_slot->name
-since the PCI and hotplug core manage it on our behalf.
+rpaphp tends to use slot->name directly everywhere, and doesn't
+ever need slot->hotplug_slot->name.
 
-Update the sn_hp_slot_private_alloc() interface to fill in
-the correct name for us, as that function already has all
-the parameters needed to determine the name.
+struct hotplug_slot->name is going away, so convert rpaphp directly
+manipulate its own slot->name everywhere, and don't bother touching
+slot->hotplug_slot->name.
 
-Cc: kristen.c.accardi@intel.com
-Cc: jpk@sgi.com
 Acked-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/hotplug/sgi_hotplug.c |   19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ drivers/pci/hotplug/rpaphp_slot.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
---- a/drivers/pci/hotplug/sgi_hotplug.c
-+++ b/drivers/pci/hotplug/sgi_hotplug.c
-@@ -161,7 +161,8 @@ static int sn_pci_bus_valid(struct pci_b
- }
- 
- static int sn_hp_slot_private_alloc(struct hotplug_slot *bss_hotplug_slot,
--				    struct pci_bus *pci_bus, int device)
-+				    struct pci_bus *pci_bus, int device,
-+				    char *name)
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -43,7 +43,7 @@ static void rpaphp_release_slot(struct h
+ void dealloc_slot_struct(struct slot *slot)
  {
- 	struct pcibus_info *pcibus_info;
- 	struct slot *slot;
-@@ -173,15 +174,9 @@ static int sn_hp_slot_private_alloc(stru
- 		return -ENOMEM;
- 	bss_hotplug_slot->private = slot;
- 
--	bss_hotplug_slot->name = kmalloc(SN_SLOT_NAME_SIZE, GFP_KERNEL);
--	if (!bss_hotplug_slot->name) {
--		kfree(bss_hotplug_slot->private);
--		return -ENOMEM;
--	}
--
- 	slot->device_num = device;
- 	slot->pci_bus = pci_bus;
--	sprintf(bss_hotplug_slot->name, "%04x:%02x:%02x",
-+	sprintf(name, "%04x:%02x:%02x",
- 		pci_domain_nr(pci_bus),
- 		((u16)pcibus_info->pbi_buscommon.bs_persist_busnum),
- 		device + 1);
-@@ -608,7 +603,6 @@ static inline int get_power_status(struc
- static void sn_release_slot(struct hotplug_slot *bss_hotplug_slot)
- {
- 	kfree(bss_hotplug_slot->info);
--	kfree(bss_hotplug_slot->name);
- 	kfree(bss_hotplug_slot->private);
- 	kfree(bss_hotplug_slot);
+ 	kfree(slot->hotplug_slot->info);
+-	kfree(slot->hotplug_slot->name);
++	kfree(slot->name);
+ 	kfree(slot->hotplug_slot);
+ 	kfree(slot);
  }
-@@ -618,6 +612,7 @@ static int sn_hotplug_slot_register(stru
- 	int device;
- 	struct pci_slot *pci_slot;
- 	struct hotplug_slot *bss_hotplug_slot;
-+	char name[SN_SLOT_NAME_SIZE];
- 	int rc = 0;
- 
- 	/*
-@@ -645,16 +640,14 @@ static int sn_hotplug_slot_register(stru
- 		}
- 
- 		if (sn_hp_slot_private_alloc(bss_hotplug_slot,
--					     pci_bus, device)) {
-+					     pci_bus, device, name)) {
- 			rc = -ENOMEM;
- 			goto alloc_err;
- 		}
--
- 		bss_hotplug_slot->ops = &sn_hotplug_slot_ops;
- 		bss_hotplug_slot->release = &sn_release_slot;
- 
--		rc = pci_hp_register(bss_hotplug_slot, pci_bus, device,
--				     bss_hotplug_slot->name);
-+		rc = pci_hp_register(bss_hotplug_slot, pci_bus, device, name);
- 		if (rc)
- 			goto register_err;
- 
+@@ -63,11 +63,9 @@ struct slot *alloc_slot_struct(struct de
+ 					   GFP_KERNEL);
+ 	if (!slot->hotplug_slot->info)
+ 		goto error_hpslot;
+-	slot->hotplug_slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
+-	if (!slot->hotplug_slot->name)
++	slot->name = kstrdup(drc_name, GFP_KERNEL);
++	if (!slot->name)
+ 		goto error_info;	
+-	slot->name = slot->hotplug_slot->name;
+-	strcpy(slot->name, drc_name);
+ 	slot->dn = dn;
+ 	slot->index = drc_index;
+ 	slot->power_domain = power_domain;
 
