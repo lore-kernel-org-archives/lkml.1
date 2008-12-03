@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbYLCUYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYLCUZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760701AbYLCUYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYLCT54
+	id S1758544AbYLCUZB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbYLCT55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:57:56 -0500
-Received: from kroah.org ([198.145.64.141]:56624 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:57:57 -0500
+Received: from kroah.org ([198.145.64.141]:56634 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756095AbYLCT5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:49 -0500
-Date: Wed, 3 Dec 2008 11:56:16 -0800
+	id S1751662AbYLCT5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:57:50 -0500
+Date: Wed, 3 Dec 2008 11:56:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
+       alan@lxorguk.ukuu.org.uk, Frederic Bohe <frederic.bohe@bull.net>,
        Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [patch 085/104] ext4/jbd2: Avoid WARN() messages when failing to
-	write to the superblock
-Message-ID: <20081203195616.GH8950@kroah.com>
+Subject: [patch 086/104] ext4: fix initialization of UNINIT bitmap blocks
+Message-ID: <20081203195618.GI8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-jbd2-avoid-warn-messages-when-failing-to-write-to-the-superblock.patch"
+Content-Disposition: inline; filename="ext4-fix-initialization-of-uninit-bitmap-blocks.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,100 +39,82 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Frederic Bohe <frederic.bohe@bull.net>
 
-(cherry picked from commit 914258bf2cb22bf4336a1b1d90c551b4b11ca5aa)
+(cherry picked from commit c806e68f5647109350ec546fee5b526962970fd2)
 
-This fixes some very common warnings reported by kerneloops.org
+This fixes a bug which caused on-line resizing of filesystems with a
+1k blocksize to fail.  The root cause of this bug was the fact that if
+an uninitalized bitmap block gets read in by userspace (which
+e2fsprogs does try to avoid, but can happen when the blocksize is less
+than the pagesize and an adjacent blocks is read into memory)
+ext4_read_block_bitmap() was erroneously depending on the buffer
+uptodate flag to decide whether it needed to initialize the bitmap
+block in memory --- i.e., to set the standard set of blocks in use by
+a block group (superblock, bitmaps, inode table, etc.).  Essentially,
+ext4_read_block_bitmap() assumed it was the only routine that might
+try to read a block containing a block bitmap, which is simply not
+true.
 
+To fix this, ext4_read_block_bitmap() and ext4_read_inode_bitmap()
+must always initialize uninitialized bitmap blocks.  Once a block or
+inode is allocated out of that bitmap, it will be marked as
+initialized in the block group descriptor, so in general this won't
+result any extra unnecessary work.
+
+Signed-off-by: Frederic Bohe <frederic.bohe@bull.net>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/super.c   |   23 ++++++++++++++++++++++-
- fs/jbd2/journal.c |   27 +++++++++++++++++++++++++--
- 2 files changed, 47 insertions(+), 3 deletions(-)
+ fs/ext4/balloc.c  |    4 +++-
+ fs/ext4/ialloc.c  |    4 +++-
+ fs/ext4/mballoc.c |    4 +++-
+ 3 files changed, 9 insertions(+), 3 deletions(-)
 
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2804,13 +2804,34 @@ static void ext4_commit_super(struct sup
- 
- 	if (!sbh)
- 		return;
-+	if (buffer_write_io_error(sbh)) {
-+		/*
-+		 * Oh, dear.  A previous attempt to write the
-+		 * superblock failed.  This could happen because the
-+		 * USB device was yanked out.  Or it could happen to
-+		 * be a transient write error and maybe the block will
-+		 * be remapped.  Nothing we can do but to retry the
-+		 * write and hope for the best.
-+		 */
-+		printk(KERN_ERR "ext4: previous I/O error to "
-+		       "superblock detected for %s.\n", sb->s_id);
-+		clear_buffer_write_io_error(sbh);
-+		set_buffer_uptodate(sbh);
-+	}
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	ext4_free_blocks_count_set(es, ext4_count_free_blocks(sb));
- 	es->s_free_inodes_count = cpu_to_le32(ext4_count_free_inodes(sb));
- 	BUFFER_TRACE(sbh, "marking dirty");
- 	mark_buffer_dirty(sbh);
--	if (sync)
-+	if (sync) {
- 		sync_dirty_buffer(sbh);
-+		if (buffer_write_io_error(sbh)) {
-+			printk(KERN_ERR "ext4: I/O error while writing "
-+			       "superblock for %s.\n", sb->s_id);
-+			clear_buffer_write_io_error(sbh);
-+			set_buffer_uptodate(sbh);
-+		}
-+	}
- }
- 
- 
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -1259,6 +1259,22 @@ void jbd2_journal_update_superblock(jour
- 		goto out;
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -318,9 +318,11 @@ ext4_read_block_bitmap(struct super_bloc
+ 			    block_group, bitmap_blk);
+ 		return NULL;
  	}
+-	if (bh_uptodate_or_lock(bh))
++	if (buffer_uptodate(bh) &&
++	    !(desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)))
+ 		return bh;
  
-+	if (buffer_write_io_error(bh)) {
-+		/*
-+		 * Oh, dear.  A previous attempt to write the journal
-+		 * superblock failed.  This could happen because the
-+		 * USB device was yanked out.  Or it could happen to
-+		 * be a transient write error and maybe the block will
-+		 * be remapped.  Nothing we can do but to retry the
-+		 * write and hope for the best.
-+		 */
-+		printk(KERN_ERR "JBD2: previous I/O error detected "
-+		       "for journal superblock update for %s.\n",
-+		       journal->j_devname);
-+		clear_buffer_write_io_error(bh);
-+		set_buffer_uptodate(bh);
-+	}
-+
- 	spin_lock(&journal->j_state_lock);
- 	jbd_debug(1,"JBD: updating superblock (start %ld, seq %d, errno %d)\n",
- 		  journal->j_tail, journal->j_tail_sequence, journal->j_errno);
-@@ -1270,9 +1286,16 @@ void jbd2_journal_update_superblock(jour
++	lock_buffer(bh);
+ 	spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
+ 	if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
+ 		ext4_init_block_bitmap(sb, bh, block_group, desc);
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -115,9 +115,11 @@ ext4_read_inode_bitmap(struct super_bloc
+ 			    block_group, bitmap_blk);
+ 		return NULL;
+ 	}
+-	if (bh_uptodate_or_lock(bh))
++	if (buffer_uptodate(bh) &&
++	    !(desc->bg_flags & cpu_to_le16(EXT4_BG_INODE_UNINIT)))
+ 		return bh;
  
- 	BUFFER_TRACE(bh, "marking dirty");
- 	mark_buffer_dirty(bh);
--	if (wait)
-+	if (wait) {
- 		sync_dirty_buffer(bh);
--	else
-+		if (buffer_write_io_error(bh)) {
-+			printk(KERN_ERR "JBD2: I/O error detected "
-+			       "when updating journal superblock for %s.\n",
-+			       journal->j_devname);
-+			clear_buffer_write_io_error(bh);
-+			set_buffer_uptodate(bh);
-+		}
-+	} else
- 		ll_rw_block(SWRITE, 1, &bh);
++	lock_buffer(bh);
+ 	spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
+ 	if (desc->bg_flags & cpu_to_le16(EXT4_BG_INODE_UNINIT)) {
+ 		ext4_init_inode_bitmap(sb, bh, block_group, desc);
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -784,9 +784,11 @@ static int ext4_mb_init_cache(struct pag
+ 		if (bh[i] == NULL)
+ 			goto out;
  
- out:
+-		if (bh_uptodate_or_lock(bh[i]))
++		if (buffer_uptodate(bh[i]) &&
++		    !(desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)))
+ 			continue;
+ 
++		lock_buffer(bh[i]);
+ 		spin_lock(sb_bgl_lock(EXT4_SB(sb), first_group + i));
+ 		if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
+ 			ext4_init_block_bitmap(sb, bh[i],
 
