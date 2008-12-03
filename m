@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761827AbYLCUbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbYLCUcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761827AbYLCUbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbYLCT6f
+	id S1751666AbYLCUcN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYLCT6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:35 -0500
-Received: from kroah.org ([198.145.64.141]:56751 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:37 -0500
+Received: from kroah.org ([198.145.64.141]:56714 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756108AbYLCT6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:58:01 -0500
-Date: Wed, 3 Dec 2008 11:56:40 -0800
+	id S1756097AbYLCT55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:57:57 -0500
+Date: Wed, 3 Dec 2008 11:56:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Sandeen <sandeen@redhat.com>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Arthur Jones <ajones@riverbed.com>
-Subject: [patch 095/104] ext4: wait on all pending commits in ext4_sync_fs()
-Message-ID: <20081203195640.GR8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 092/104] ext4: Fix duplicate entries returned from
+	getdents() system call
+Message-ID: <20081203195634.GO8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-wait-on-all-pending-commits-in-ext4_sync_fs.patch"
+Content-Disposition: inline; filename="ext4-fix-duplicate-entries-returned-from-getdents-system-call.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,69 +42,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 14ce0cb411c88681ab8f3a4c9caa7f42e97a3184)
+(cherry picked from commit 3c37fc86d20fe35be656f070997d62f75c2e4874)
 
-In ext4_sync_fs, we only wait for a commit to finish if we started it,
-but there may be one already in progress which will not be synced.
+Fix a regression caused by commit d0156417, "ext4: fix ext4_dx_readdir
+hash collision handling", where deleting files in a large directory
+(requiring more than one getdents system call), results in some
+filenames being returned twice.  This was caused by a failure to
+update info->curr_hash and info->curr_minor_hash, so that if the
+directory had gotten modified since the last getdents() system call
+(as would be the case if the user is running "rm -r" or "git clean"),
+a directory entry would get returned twice to the userspace.
 
-In the case of a data=ordered umount with pending long symlinks which
-are delayed due to a long list of other I/O on the backing block
-device, this causes the buffer associated with the long symlinks to
-not be moved to the inode dirty list in the second phase of
-fsync_super.  Then, before they can be dirtied again, kjournald exits,
-seeing the UMOUNT flag and the dirty pages are never written to the
-backing block device, causing long symlink corruption and exposing new
-or previously freed block data to userspace.
-
-To ensure all commits are synced, we flush all journal commits now
-when sync_fs'ing ext4.
-
-Signed-off-by: Arthur Jones <ajones@riverbed.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Eric Sandeen <sandeen@redhat.com>
+
+This patch fixes the bug reported by Markus Trippelsdorf at:
+http://bugzilla.kernel.org/show_bug.cgi?id=11844
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Tested-by: Markus Trippelsdorf <markus@trippelsdorf.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/super.c |   19 ++++++++-----------
- 1 file changed, 8 insertions(+), 11 deletions(-)
+ fs/ext4/dir.c |   20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2920,12 +2920,9 @@ int ext4_force_commit(struct super_block
- /*
-  * Ext4 always journals updates to the superblock itself, so we don't
-  * have to propagate any other updates to the superblock on disk at this
-- * point.  Just start an async writeback to get the buffers on their way
-- * to the disk.
-- *
-- * This implicitly triggers the writebehind on sync().
-+ * point.  (We can probably nuke this function altogether, and remove
-+ * any mention to sb->s_dirt in all of fs/ext4; eventual cleanup...)
-  */
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -458,17 +458,8 @@ static int ext4_dx_readdir(struct file *
+ 	if (info->extra_fname) {
+ 		if (call_filldir(filp, dirent, filldir, info->extra_fname))
+ 			goto finished;
 -
- static void ext4_write_super(struct super_block *sb)
- {
- 	if (mutex_trylock(&sb->s_lock) != 0)
-@@ -2935,14 +2932,14 @@ static void ext4_write_super(struct supe
+ 		info->extra_fname = NULL;
+-		info->curr_node = rb_next(info->curr_node);
+-		if (!info->curr_node) {
+-			if (info->next_hash == ~0) {
+-				filp->f_pos = EXT4_HTREE_EOF;
+-				goto finished;
+-			}
+-			info->curr_hash = info->next_hash;
+-			info->curr_minor_hash = 0;
+-		}
++		goto next_node;
+ 	} else if (!info->curr_node)
+ 		info->curr_node = rb_first(&info->root);
  
- static int ext4_sync_fs(struct super_block *sb, int wait)
- {
--	tid_t target;
-+	int ret = 0;
- 
- 	sb->s_dirt = 0;
--	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
--		if (wait)
--			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
--	}
--	return 0;
-+	if (wait)
-+		ret = ext4_force_commit(sb);
-+	else
-+		jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
-+	return ret;
- }
- 
- /*
+@@ -500,9 +491,14 @@ static int ext4_dx_readdir(struct file *
+ 		info->curr_minor_hash = fname->minor_hash;
+ 		if (call_filldir(filp, dirent, filldir, fname))
+ 			break;
+-
++	next_node:
+ 		info->curr_node = rb_next(info->curr_node);
+-		if (!info->curr_node) {
++		if (info->curr_node) {
++			fname = rb_entry(info->curr_node, struct fname,
++					 rb_hash);
++			info->curr_hash = fname->hash;
++			info->curr_minor_hash = fname->minor_hash;
++		} else {
+ 			if (info->next_hash == ~0) {
+ 				filp->f_pos = EXT4_HTREE_EOF;
+ 				break;
 
