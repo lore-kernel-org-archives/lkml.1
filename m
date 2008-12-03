@@ -1,139 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYLCV3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbYLCVa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbYLCV3z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYLCV3T
+	id S1755594AbYLCVa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYLCV3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:29:19 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:55687 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753953AbYLCV3S (ORCPT
+	Wed, 3 Dec 2008 16:29:41 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39112 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754611AbYLCV3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:29:18 -0500
-Date: Wed, 3 Dec 2008 16:29:17 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH-mm] usb: file_storage use unaligned endian helpers
- rather than private versions
-In-Reply-To: <1228270993.5412.4.camel@brick>
-Message-ID: <Pine.LNX.4.44L0.0812031615470.2181-100000@iolanthe.rowland.org>
+	Wed, 3 Dec 2008 16:29:39 -0500
+Message-Id: <1228339777.2982.1288110715@webmail.messagingengine.com>
+X-Sasl-Enc: S0DFJ1+MhF6EWj9MxKyPZvlFM8JweJxXYlMHje0oluvL 1228339777
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Frederic Weisbecker" <fweisbec@gmail.com>, "Ingo Molnar" <mingo@elte.hu>
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Tim Bird" <tim.bird@am.sony.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <49347147.8070405@gmail.com>
+Subject: Re: [PATCH] tracing/function-branch-tracer: support for x86-64
+In-Reply-To: <49347147.8070405@gmail.com>
+Date: Wed, 03 Dec 2008 22:29:37 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008, Harvey Harrison wrote:
-
-> Use the new helpers for unaligned endian access.  Make some small changes
-> to reading 24-bit lba values, read the full 32 bit value and mask.  Produces
-> smaller and faster code on x86 and on powerpc.
+On Tue, 02 Dec 2008 00:20:39 +0100, "Frederic Weisbecker"
+<fweisbec@gmail.com> said:
+> Small note: Ingo, I have only one test box and I had to install a 64 bits
+> distro to
+> make this patch. So I can't verify if it breaks something in x86-32. I
+> don't know
+> what could be broken here but we never know.
+> For further patches, I will use a virtual machine to test under 32.
 > 
-> Coalesce some byte-writes in 32bit writes to allow byteswapping to happen
-> at compile time and become a 32-bit write without swapping if possible (x86
-> especially)
+> --
+> This patch implements the support for function branch tracer under
+> x86-64.
+> Both static and dynamic tracing are supported.
 > 
-> This shrinks the size of file_storage.o by ~64 bytes on x86_32.
+> This causes some small CPP conditional asm on arch/x86/kernel/ftrace.c
+> I wanted to use probe_kernel_read/write to make the return address
+> saving/patching
+> code more generic but it causes tracing recursion.
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> That would be perhaps useful to implement a notrace version of these
+> function for other
+> archs ports.
+> 
+> Note that arch/x86/process_64.c is not traced, as in X86-32. I first
+> thought __switch_to()
+> was responsible of crashes during tracing because I believed current task
+> were changed
+> inside but that's actually not the case (actually yes, but not the
+> "current" pointer).
+> 
+> So I will have to investigate to find the functions that harm here, to
+> enable tracing
+> of the other functions inside (but there is no issue at this time, while
+> process_64.c
+> stays out of -pg flags).
+> 
+> A little possible race condition is fixed inside this patch too. When the
+> tracer allocate
+> a return stack dynamically, the current depth is not initialized before
+> but after.
+> An interrupt could occur at this time and, after seeing that the return
+> stack is
+> allocated, the tracer could try to trace it with a random uninitialized
+> depth. 
+> It's a prevention, even if I hadn't problems with it.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 > ---
-> Alan, what do you think?
+>  arch/x86/Kconfig           |    2 +-
+>  arch/x86/kernel/Makefile   |    1 +
+>  arch/x86/kernel/entry_64.S |   74 ++++++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/kernel/ftrace.c   |   11 ++++++-
+>  kernel/trace/ftrace.c      |    2 +-
+>  5 files changed, 87 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index e7c0a1b..c216882 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -29,7 +29,7 @@ config X86
+>  	select HAVE_FTRACE_MCOUNT_RECORD
+>  	select HAVE_DYNAMIC_FTRACE
+>  	select HAVE_FUNCTION_TRACER
+> -	select HAVE_FUNCTION_GRAPH_TRACER if X86_32
+> +	select HAVE_FUNCTION_GRAPH_TRACER
+>  	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+>  	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+>  	select HAVE_ARCH_KGDB if !X86_VOYAGER
+> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+> index 6bc8aef..5ee1ba6 100644
+> --- a/arch/x86/kernel/Makefile
+> +++ b/arch/x86/kernel/Makefile
+> @@ -18,6 +18,7 @@ endif
+>  ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  # Don't trace __switch_to() but let it for function tracer
+>  CFLAGS_REMOVE_process_32.o = -pg
+> +CFLAGS_REMOVE_process_64.o = -pg
+>  endif
+>  
+>  #
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index 5e63b53..c433d86 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -97,6 +97,12 @@ ftrace_call:
+>  	movq (%rsp), %rax
+>  	addq $0x38, %rsp
+>  
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +.globl ftrace_graph_call
+> +ftrace_graph_call:
+> +	jmp ftrace_stub
+> +#endif
+> +
+>  .globl ftrace_stub
+>  ftrace_stub:
+>  	retq
+> @@ -109,6 +115,12 @@ ENTRY(mcount)
+>  
+>  	cmpq $ftrace_stub, ftrace_trace_function
+>  	jnz trace
+> +
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +	cmpq $ftrace_stub, ftrace_graph_return
+> +	jnz ftrace_graph_caller
+> +#endif
+> +
+>  .globl ftrace_stub
+>  ftrace_stub:
+>  	retq
+> @@ -144,6 +156,68 @@ END(mcount)
+>  #endif /* CONFIG_DYNAMIC_FTRACE */
+>  #endif /* CONFIG_FUNCTION_TRACER */
+>  
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +ENTRY(ftrace_graph_caller)
+> +	cmpl $0, function_trace_stop
+> +	jne ftrace_stub
+> +
+> +	subq $0x38, %rsp
+> +	movq %rax, (%rsp)
+> +	movq %rcx, 8(%rsp)
+> +	movq %rdx, 16(%rsp)
+> +	movq %rsi, 24(%rsp)
+> +	movq %rdi, 32(%rsp)
+> +	movq %r8, 40(%rsp)
+> +	movq %r9, 48(%rsp)
+> +
+> +	leaq 8(%rbp), %rdi
+> +	movq 0x38(%rsp), %rsi
+> +
+> +	call	prepare_ftrace_return
+> +
+> +	movq 48(%rsp), %r9
+> +	movq 40(%rsp), %r8
+> +	movq 32(%rsp), %rdi
+> +	movq 24(%rsp), %rsi
+> +	movq 16(%rsp), %rdx
+> +	movq 8(%rsp), %rcx
+> +	movq (%rsp), %rax
+> +	addq $0x38, %rsp
+> +	retq
+> +END(ftrace_graph_caller)
+> +
+> +
+> +.globl return_to_handler
+> +return_to_handler:
+> +	subq  $80, %rsp
+> +
+> +	movq %rax, (%rsp)
+> +	movq %rcx, 8(%rsp)
+> +	movq %rdx, 16(%rsp)
+> +	movq %rsi, 24(%rsp)
+> +	movq %rdi, 32(%rsp)
+> +	movq %r8, 40(%rsp)
+> +	movq %r9, 48(%rsp)
+> +	movq %r10, 56(%rsp)
+> +	movq %r11, 64(%rsp)
+> +
+> +	call ftrace_return_to_handler
+> +
+> +	movq %rax, 72(%rsp)
+> +	movq 64(%rsp), %r11
+> +	movq 56(%rsp), %r10
+> +	movq 48(%rsp), %r9
+> +	movq 40(%rsp), %r8
+> +	movq 32(%rsp), %rdi
+> +	movq 24(%rsp), %rsi
+> +	movq 16(%rsp), %rdx
+> +	movq 8(%rsp), %rcx
+> +	movq (%rsp), %rax
+> +	addq $72, %rsp
+> +	retq
+> +#endif
+> +
+> +
+>  #ifndef CONFIG_PREEMPT
+>  #define retint_kernel retint_restore_args
+>  #endif
 
-Well, it looks correct... but it's awfully ugly.  Can't we keep the 
-benefits of the new helpers while not messing the code up too much?
+Hi Frederic,
 
-> --- a/drivers/usb/gadget/file_storage.c
-> +++ b/drivers/usb/gadget/file_storage.c
-> @@ -795,37 +795,6 @@ static int fsg_set_halt(struct fsg_dev *fsg, struct usb_ep *ep)
->  	return usb_ep_set_halt(ep);
+The changes to entry_64.S look simple enough. The order of
+saving the registers on the stack is not important in any
+way, right?
+
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 7ef914e..5883247 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -467,8 +467,13 @@ void prepare_ftrace_return(unsigned long *parent,
+> unsigned long self_addr)
+>  	 * ignore such a protection.
+>  	 */
+>  	asm volatile(
+> +#ifdef CONFIG_X86_64
+> +		"1: movq (%[parent_old]), %[old]\n"
+> +		"2: movq %[return_hooker], (%[parent_replaced])\n"
+> +#else
+>  		"1: movl (%[parent_old]), %[old]\n"
+>  		"2: movl %[return_hooker], (%[parent_replaced])\n"
+> +#endif
+
+The following should work in both cases, right?
+
+"1: mov (%[parent_old]), %[old]\n"
+"2: mov %[return_hooker], (%[parent_replaced])\n"
+
+>  		"   movl $0, %[faulted]\n"
+>  
+>  		".section .fixup, \"ax\"\n"
+> @@ -476,8 +481,13 @@ void prepare_ftrace_return(unsigned long *parent,
+> unsigned long self_addr)
+>  		".previous\n"
+
+>  		".section __ex_table, \"a\"\n"
+> +#ifdef CONFIG_X86_64
+> +		"   .quad 1b, 3b\n"
+> +		"   .quad 2b, 3b\n"
+> +#else
+>  		"   .long 1b, 3b\n"
+>  		"   .long 2b, 3b\n"
+> +#endif
+>  		".previous\n"
+
+I think this can be done with:
+
+_ASM_EXTABLE(1b,3b)
+_ASM_EXTABLE(2b,3b)
+
+(from: arch/x86/include/asm/asm.h)
+
+Greetings,
+    Alexander
+
+>  		: [parent_replaced] "=r" (parent), [old] "=r" (old),
+> @@ -509,5 +519,4 @@ void prepare_ftrace_return(unsigned long *parent,
+> unsigned long self_addr)
+>  	ftrace_graph_entry(&trace);
+>  
 >  }
+> -
+>  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 08b536a..1e9379d 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -1673,8 +1673,8 @@ static int alloc_retstack_tasklist(struct
+> ftrace_ret_stack **ret_stack_list)
+>  		}
 >  
-> -
-> -/*-------------------------------------------------------------------------*/
-> -
-> -/* Routines for unaligned data access */
-> -
-> -static u16 get_be16(u8 *buf)
-> -{
-> -	return ((u16) buf[0] << 8) | ((u16) buf[1]);
-> -}
-> -
-> -static u32 get_be32(u8 *buf)
-> -{
-> -	return ((u32) buf[0] << 24) | ((u32) buf[1] << 16) |
-> -			((u32) buf[2] << 8) | ((u32) buf[3]);
-> -}
-> -
-> -static void put_be16(u8 *buf, u16 val)
-> -{
-> -	buf[0] = val >> 8;
-> -	buf[1] = val;
-> -}
-> -
-> -static void put_be32(u8 *buf, u32 val)
-> -{
-> -	buf[0] = val >> 24;
-> -	buf[1] = val >> 16;
-> -	buf[2] = val >> 8;
-> -	buf[3] = val & 0xff;
-> -}
+>  		if (t->ret_stack == NULL) {
+> -			t->ret_stack = ret_stack_list[start++];
+>  			t->curr_ret_stack = -1;
+> +			t->ret_stack = ret_stack_list[start++];
+>  			atomic_set(&t->trace_overrun, 0);
+>  		}
+>  	} while_each_thread(g, t);
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-Suppose instead we do this:
-
-#define get_be16(buf)	load_be16_noalign((be16 *) (buf))
-#define get_be24(buf)	(load_be32_noalign((be32 *) (buf)) >> 8)
-#define get_be32(buf)	load_be32_noalign((be32 *) (buf))
-
-#define put_be16(buf, val)	store_be16_noalign((be16 *) (buf), val)
-#define put_be32(buf, val)	store_be32_noalign((be32 *) (buf), val)
-
-Then almost no more changes would be needed, only the 24-bit
-consolidation stuff.
-
-> @@ -1583,9 +1552,9 @@ static int do_read(struct fsg_dev *fsg)
->  	/* Get the starting Logical Block Address and check that it's
->  	 * not too big */
->  	if (fsg->cmnd[0] == SC_READ_6)
-> -		lba = (fsg->cmnd[1] << 16) | get_be16(&fsg->cmnd[2]);
-> +		lba = load_be32_noalign((__be32 *)&fsg->cmnd[0]) & 0xffffff;
-
-Like this, which would become
-
-		lba = get_be24(&fsg->cmnd[1]);
-
-> @@ -2126,9 +2095,9 @@ static int do_request_sense(struct fsg_dev *fsg, struct fsg_buffhd *bh)
->  static int do_read_capacity(struct fsg_dev *fsg, struct fsg_buffhd *bh)
->  {
->  	struct lun	*curlun = fsg->curlun;
-> -	u32		lba = get_be32(&fsg->cmnd[2]);
-> +	u32		lba = load_be32_noalign((__be32 *)&fsg->cmnd[2]);
->  	int		pmi = fsg->cmnd[8];
-> -	u8		*buf = (u8 *) bh->buf;
-> +	__be32		*buf = (__be32 *)bh->buf;
->  
->  	/* Check the PMI and LBA fields */
->  	if (pmi > 1 || (pmi == 0 && lba != 0)) {
-> @@ -2136,8 +2105,8 @@ static int do_read_capacity(struct fsg_dev *fsg, struct fsg_buffhd *bh)
->  		return -EINVAL;
->  	}
->  
-> -	put_be32(&buf[0], curlun->num_sectors - 1);	// Max logical block
-> -	put_be32(&buf[4], 512);				// Block length
-> +	store_be32_noalign(&buf[0], curlun->num_sectors - 1);	// Max logical block
-> +	store_be32_noalign(&buf[1], 512);			// Block length
->  	return 8;
->  }
->  
-
-I don't like these changes.  You've gone from an array of bytes to an
-array of 32-bit words, which doesn't agree with the data structures
-defined in the SCSI specification.  Besides, with my new macros this
-isn't needed.
-
-What do you think?
-
-Alan Stern
+-- 
+http://www.fastmail.fm - Does exactly what it says on the tin
 
