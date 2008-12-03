@@ -1,92 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbYLCQk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYLCQm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbYLCQk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 11:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYLCQkN
+	id S1753323AbYLCQm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 11:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYLCQmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 11:40:13 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45010 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751005AbYLCQkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 11:40:12 -0500
-Date: Wed, 3 Dec 2008 17:40:10 +0100
-From: Jan Kara <jack@suse.cz>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] udf: in scan_anchors() sector_t last[] is unsigned and
-	cannot be negative.
-Message-ID: <20081203164010.GA12803@duck.suse.cz>
-References: <4935B249.6020906@gmail.com>
+	Wed, 3 Dec 2008 11:42:49 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:44574 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751195AbYLCQms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 11:42:48 -0500
+Date: Wed, 3 Dec 2008 11:42:40 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Chris Friesen <cfriesen@nortel.com>, mikulas@artax.karlin.mff.cuni.cz,
+       clock@atrey.karlin.mff.cuni.cz,
+       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+Message-ID: <20081203164240.GA30610@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Pavel Machek <pavel@suse.cz>, Chris Friesen <cfriesen@nortel.com>,
+	mikulas@artax.karlin.mff.cuni.cz, clock@atrey.karlin.mff.cuni.cz,
+	kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu> <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu> <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu> <20081202224403.GA8277@elf.ucw.cz> <20081203050709.GL20858@mit.edu> <20081203084639.GB1944@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4935B249.6020906@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081203084639.GB1944@ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On Wed, Dec 03, 2008 at 09:46:40AM +0100, Pavel Machek wrote:
+> Yes. fsync() seeems surprisingly high on Rusty's list of broken
+> interfaces classification ('impossible to use correctly').
 
-On Tue 02-12-08 23:10:17, Roel Kluin wrote:
-> sector_t last[] is unsigned and cannot be negative.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-  Hmm, I think it would be a violation of the UDF standard if a we got a
-medium where these numbers would underflow and most of the cases would
-be caught by the following test. But let's make the code clean. I've
-written the following patch (which I think makes the underflow checks
-much more obvious):
+To be fair, fsync() was primarily intended for making sure that the
+data had been written to disk, and not necessarily as a way of making
+sure that write errors would be properly reflected back to the
+application.  As you've pointed out, it's not really adequate for that
+purpose.
 
->From a1ea42b47466b642c65cc6c3ca1a5a5fc18498ba Mon Sep 17 00:00:00 2001
-From: Jan Kara <jack@suse.cz>
-Date: Wed, 3 Dec 2008 17:31:39 +0100
-Subject: [PATCH] udf: Add checks to not underflow sector_t
-
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/udf/super.c |   21 +++++++++++++--------
- 1 files changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index b9dc6ad..3c2d35d 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -731,13 +731,18 @@ static sector_t udf_scan_anchors(struct super_block *sb, sector_t lastblock)
- 	sector_t last[6];
- 	int i;
- 	struct udf_sb_info *sbi = UDF_SB(sb);
--
--	last[0] = lastblock;
--	last[1] = last[0] - 1;
--	last[2] = last[0] + 1;
--	last[3] = last[0] - 2;
--	last[4] = last[0] - 150;
--	last[5] = last[0] - 152;
-+	int last_count = 0;
-+
-+	last[last_count++] = lastblock;
-+	if (lastblock >= 1)
-+		last[last_count++] = lastblock - 1;
-+	last[last_count++] = lastblock + 1;
-+	if (lastblock >= 2)
-+		last[last_count++] = lastblock - 2;
-+	if (lastblock >= 150)
-+		last[last_count++] = lastblock - 150;
-+	if (lastblock >= 152)
-+		last[last_count++] = lastblock - 152;
- 
- 	/*  according to spec, anchor is in either:
- 	 *     block 256
-@@ -745,7 +750,7 @@ static sector_t udf_scan_anchors(struct super_block *sb, sector_t lastblock)
- 	 *     lastblock
- 	 *  however, if the disc isn't closed, it could be 512 */
- 
--	for (i = 0; i < ARRAY_SIZE(last); i++) {
-+	for (i = 0; i < last_count; i++) {
- 		if (last[i] >= sb->s_bdev->bd_inode->i_size >>
- 				sb->s_blocksize_bits)
- 			continue;
--- 
-1.6.0.4
-
+						- Ted
