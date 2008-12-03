@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYLCUZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbYLCUZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbYLCUZB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:25:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbYLCT55
+	id S1760804AbYLCUZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbYLCT57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:57:57 -0500
-Received: from kroah.org ([198.145.64.141]:56634 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:57:59 -0500
+Received: from kroah.org ([198.145.64.141]:56659 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751662AbYLCT5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:50 -0500
-Date: Wed, 3 Dec 2008 11:56:18 -0800
+	id S1755237AbYLCT5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:57:52 -0500
+Date: Wed, 3 Dec 2008 11:56:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Frederic Bohe <frederic.bohe@bull.net>,
+       alan@lxorguk.ukuu.org.uk,
        Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [patch 086/104] ext4: fix initialization of UNINIT bitmap blocks
-Message-ID: <20081203195618.GI8950@kroah.com>
+Subject: [patch 088/104] jbd2: Fix buffer head leak when writing the commit
+	block
+Message-ID: <20081203195622.GK8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-fix-initialization-of-uninit-bitmap-blocks.patch"
+Content-Disposition: inline; filename="jbd2-fix-buffer-head-leak-when-writing-the-commit-block.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,82 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Frederic Bohe <frederic.bohe@bull.net>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit c806e68f5647109350ec546fee5b526962970fd2)
+(cherry picked from commit 45a90bfd90c1215bf824c0f705b409723f52361b)
 
-This fixes a bug which caused on-line resizing of filesystems with a
-1k blocksize to fail.  The root cause of this bug was the fact that if
-an uninitalized bitmap block gets read in by userspace (which
-e2fsprogs does try to avoid, but can happen when the blocksize is less
-than the pagesize and an adjacent blocks is read into memory)
-ext4_read_block_bitmap() was erroneously depending on the buffer
-uptodate flag to decide whether it needed to initialize the bitmap
-block in memory --- i.e., to set the standard set of blocks in use by
-a block group (superblock, bitmaps, inode table, etc.).  Essentially,
-ext4_read_block_bitmap() assumed it was the only routine that might
-try to read a block containing a block bitmap, which is simply not
-true.
+Also make sure the buffer heads are marked clean before submitting bh
+for writing.  The previous code was marking the buffer head dirty,
+which would have forced an unneeded write (and seek) to the journal
+for no good reason.
 
-To fix this, ext4_read_block_bitmap() and ext4_read_inode_bitmap()
-must always initialize uninitialized bitmap blocks.  Once a block or
-inode is allocated out of that bitmap, it will be marked as
-initialized in the block group descriptor, so in general this won't
-result any extra unnecessary work.
-
-Signed-off-by: Frederic Bohe <frederic.bohe@bull.net>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/balloc.c  |    4 +++-
- fs/ext4/ialloc.c  |    4 +++-
- fs/ext4/mballoc.c |    4 +++-
- 3 files changed, 9 insertions(+), 3 deletions(-)
+ fs/jbd2/commit.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -318,9 +318,11 @@ ext4_read_block_bitmap(struct super_bloc
- 			    block_group, bitmap_blk);
- 		return NULL;
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -126,8 +126,7 @@ static int journal_submit_commit_record(
+ 
+ 	JBUFFER_TRACE(descriptor, "submit commit block");
+ 	lock_buffer(bh);
+-	get_bh(bh);
+-	set_buffer_dirty(bh);
++	clear_buffer_dirty(bh);
+ 	set_buffer_uptodate(bh);
+ 	bh->b_end_io = journal_end_buffer_io_sync;
+ 
+@@ -160,7 +159,7 @@ static int journal_submit_commit_record(
+ 		/* And try again, without the barrier */
+ 		lock_buffer(bh);
+ 		set_buffer_uptodate(bh);
+-		set_buffer_dirty(bh);
++		clear_buffer_dirty(bh);
+ 		ret = submit_bh(WRITE, bh);
  	}
--	if (bh_uptodate_or_lock(bh))
-+	if (buffer_uptodate(bh) &&
-+	    !(desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)))
- 		return bh;
- 
-+	lock_buffer(bh);
- 	spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
- 	if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
- 		ext4_init_block_bitmap(sb, bh, block_group, desc);
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -115,9 +115,11 @@ ext4_read_inode_bitmap(struct super_bloc
- 			    block_group, bitmap_blk);
- 		return NULL;
- 	}
--	if (bh_uptodate_or_lock(bh))
-+	if (buffer_uptodate(bh) &&
-+	    !(desc->bg_flags & cpu_to_le16(EXT4_BG_INODE_UNINIT)))
- 		return bh;
- 
-+	lock_buffer(bh);
- 	spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
- 	if (desc->bg_flags & cpu_to_le16(EXT4_BG_INODE_UNINIT)) {
- 		ext4_init_inode_bitmap(sb, bh, block_group, desc);
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -784,9 +784,11 @@ static int ext4_mb_init_cache(struct pag
- 		if (bh[i] == NULL)
- 			goto out;
- 
--		if (bh_uptodate_or_lock(bh[i]))
-+		if (buffer_uptodate(bh[i]) &&
-+		    !(desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)))
- 			continue;
- 
-+		lock_buffer(bh[i]);
- 		spin_lock(sb_bgl_lock(EXT4_SB(sb), first_group + i));
- 		if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
- 			ext4_init_block_bitmap(sb, bh[i],
+ 	*cbh = bh;
 
