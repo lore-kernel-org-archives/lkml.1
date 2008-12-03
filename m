@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763096AbYLCUkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbYLCUlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763096AbYLCUkt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:40:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759758AbYLCUee
+	id S1763304AbYLCUlb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762881AbYLCUib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:34:34 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:34393 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756773AbYLCUec (ORCPT
+	Wed, 3 Dec 2008 15:38:31 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51069 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756931AbYLCUia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:34:32 -0500
-Date: Wed, 3 Dec 2008 20:34:29 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jonathan McDowell <noodles@earth.li>
-Cc: corentincj@iksaif.net, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add EEE Bluetooth ACPI details
-Message-ID: <20081203203429.GA24103@srcf.ucam.org>
-References: <20081203203111.GA28234@earth.li>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203203111.GA28234@earth.li>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 3 Dec 2008 15:38:30 -0500
+Message-Id: <20081203203656.776893226@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Dec 2008 15:36:56 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Eric Biederman <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: [PATCH 0/3] ftrace: updates for tip
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 08:31:11PM +0000, Jonathan McDowell wrote:
-> Although rfkill support for the EEE bluetooth device has been added to
-> 2.6.28-rc the appropriate ACPI accessor definitions were not added, so
-> the support was non functional. The patch below adds the get and set
-> accessors and has been verified to work on an EEE 901.
-> 
-> Signed-off-by: Jonathan McDowell <noodles@earth.li>
+Ingo,
 
-Acked-by: Matthew Garrett <mjg@redhat.com>
+This series has three patches.
 
+The first patch adds a new feature that I've been wanting to have for some
+time and Arjan even requested. That is to pick a function and only
+trace that function and its children. Dynamic ftrace and function
+graph needs to be enabled for this.
+
+To do the above, I added a "trace" flags field in the task structure.
+The second patch uses this for the ftrace pid code. It searches for
+the task based on the pid and sets the trace flag, then in the
+ftrace function caller it only needs to check this flag.
+
+This means we can now trace more than one pid without any more overhead.
+It also means that we should be able to use the name space code that
+the container guys want us to. But since I'm not very up on the
+namespace code, I'm still using just the normal 'pid'. I've Cc'd the
+container folks so perhaps they could write up a patch for me ;-)
+
+Note: When writing to the set_ftrace_pid two things happen.
+ - The task with the matching pid gets the trace flag set.
+ - Any other task has its trace flag cleared.
+ #2 needs to be addressed when converting to pid name spaces.
+ Just because it is not enough to simply find the matching task.
+ It may be good enough to just clear all tasks and then find the
+ one that matches.
+
+The last patch makes the function graph tracer honor the set_ftrace_pid.
+
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/devel
+
+
+Steven Rostedt (3):
+      ftrace: graph of a single function
+      ftrace: use task struct trace flag to filter on pid
+      ftrace: trace single pid for function graph tracer
+
+----
+ include/linux/ftrace.h |   46 +++++++++
+ include/linux/sched.h  |    4 +
+ kernel/trace/ftrace.c  |  257 +++++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/trace/trace.c   |   11 ++
+ kernel/trace/trace.h   |   40 +++++++-
+ 5 files changed, 353 insertions(+), 5 deletions(-)
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
