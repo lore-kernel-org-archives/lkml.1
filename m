@@ -1,124 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYLCEfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYLCEf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbYLCEfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 23:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYLCEfX
+	id S1755488AbYLCEf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 23:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYLCEfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 23:35:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42303 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbYLCEfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 23:35:22 -0500
-Subject: Re: [RFC PATCH 3/3] kernel tracing prototype
-From: Steven Rostedt <srostedt@redhat.com>
-To: Jiaying Zhang <jiayingz@google.com>
-Cc: linux-kernel@vger.kernel.org, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <5df78e1d0812021626y68c7241ahfdba4d37c7840e10@mail.gmail.com>
-References: <5df78e1d0812021626y68c7241ahfdba4d37c7840e10@mail.gmail.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Tue, 02 Dec 2008 23:35:08 -0500
-Message-Id: <1228278908.4886.49.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 2 Dec 2008 23:35:46 -0500
+Received: from an-out-0708.google.com ([209.85.132.248]:59647 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752716AbYLCEfp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 23:35:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nae1fjI6wuX5kgjAqj+VT0nD+AP8pNPYMlvLrqmqFCZtIH+tAbPiuSe7c1hEnzjWyP
+         RJXSeTvamFBdb85ysCwjWlU3TrEL+g4ITbHVW5uVE3uJjBDxq/aKNjViJuvW/sI5Rk7W
+         rgxWJAAXufLyRFN3hHEl58fVTyXOSaoghl5Hc=
+Message-ID: <804dabb00812022035k1876a521qa41cd4634b70f9a2@mail.gmail.com>
+Date: Wed, 3 Dec 2008 12:35:43 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: "Geoffrey McRae" <geoff@rabidhost.com>
+Subject: Re: New Security Features, Please Comment
+Cc: Valdis.Kletnieks@vt.edu, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1228276959.6679.27.camel@lappy.spacevs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1228260494.24232.21.camel@compy.ivent.com.au>
+	 <20081203005338.6472db7a@lxorguk.ukuu.org.uk>
+	 <1228268657.6679.4.camel@lappy.spacevs.com>
+	 <73639.1228272932@turing-police.cc.vt.edu>
+	 <1228276959.6679.27.camel@lappy.spacevs.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 3, 2008 at 12:02 PM, Geoffrey McRae <geoff@rabidhost.com> wrote:
+>
+> My initial concept is to implement a HTTP server that is designed from
+> the ground up to use this new functionallity. Each server that has been
+> pre-forked will just sit there until the parent sets its uid/gid and
+> hands it the request to handle.
+>
 
-On Tue, 2008-12-02 at 16:26 -0800, Jiaying Zhang wrote:
-> Refer to the previous email 
-> "[RFC PATCH 0/3] A couple of feature requests to the unified trace
-> buffer".
-> 
-> A kernel tracing prototype that uses the unified trace buffer to keep
-> the collected trace data.
-> 
+I think the above is the core issue - you have something privileged to
+be executed.   So why not execute it in a small, code-verifiable
+implementation, just like the Privilege Separation idea of SSH?
 
-> Index: linux-2.6.26.2/include/linux/ktrace.h
-> ===================================================================
-> --- /dev/null   1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6.26.2/include/linux/ktrace.h       2008-11-25
-> 11:32:37.000000000 -0800
-> @@ -0,0 +1,73 @@
-> +#ifndef _LINUX_KTRACE_H
-> +#define _LINUX_KTRACE_H
-> +
-> +#include <linux/types.h>
-> +
-> +struct kernel_trace;
-> +
-> +typedef void ktrace_probe_func(struct kernel_trace *, void *,
-> size_t);
-> +
-> +struct kernel_trace {
-> +       const char      *name;
-> +       const char      *format;  /* format string describing variable
-> list */
-> +       u32             enabled:1, event_id:31;
-> +       ktrace_probe_func *func;  /* probe function */
-> +       struct list_head list;  /* list head linked to the hash table
-> entry */
-> +} __attribute__((aligned(8)));
-> +
-> +extern int ktrace_enabled;
-> +
-> +/*
-> + * Make sure the alignment of the structure in the __ktrace section
-> will
-> + * not add unwanted padding between the beginning of the section and
-> the
-> + * structure. Force alignment to the same alignment as the section
-> start.
-> + */
-> +
-> +#define DEFINE_KTRACE_STRUCT(name)     struct ktrace_struct_##name
-> +
-> +#ifdef CONFIG_KTRACE
-> +#define DO_TRACE(name, format, args...)
->            \
-> +       do {
->    \
-> +               static const char __kstrtab_##name[]
->    \
-> +               __attribute__((section("__ktrace_strings")))
->    \
-> +               = #name "\0" format;
->    \
-> +               static struct kernel_trace __ktrace_##name
->    \
-> +               __attribute__((section("__ktrace"), aligned(8))) =
->    \
-> +               { __kstrtab_##name, &__kstrtab_##name[sizeof(#name)],
-> \
-> +               0, 0, NULL, LIST_HEAD_INIT(__ktrace_##name.list) };
-> \
-> +               __ktrace_check_format(format, ## args);
-> \
-> +               if (unlikely(ktrace_enabled) &&
-> \
-> +                               unlikely(__ktrace_##name.enabled))
-> {    \
-> +                       struct ktrace_struct_##name karg = { args };
->    \
-> +                       (*__ktrace_##name.func)
-> \
-> +                       (&__ktrace_##name, &karg, sizeof(karg));
->    \
-> +               }
-> \
+http://www.citi.umich.edu/u/provos/papers/privsep.pdf
 
-This looks like another form of markers/trace-points.  Why not use them?
+Everything is done in userspace.   SInce the privileged component is
+small, it is easy to verify for correctness.   The rest execute with
+lesser privilege.
 
-> +       } while (0)
-> +
-> +#else /* !CONFIG_KTRACE */
-> +#define DO_TRACE(name, format, args...)
-> +#endif
-> +
+Recently, the hypervisor has been used to implement this verifiable
+source code concept:   see:
 
--- Steve
+http://www.ghs.com/news/20081117_integrity_EAL6plus_security.html
 
+where GreenHill achieved EAL6 certification - as it built its entire
+kernel on top of the hypervisor.   (called Separation Kernel,
+conceptually similar to that of Privilege Separation in SSH).
 
+Just my 2cts :-).
+
+-- 
+Regards,
+Peter Teoh
+
+Ernest Hemingway - "Never mistake motion for action."
