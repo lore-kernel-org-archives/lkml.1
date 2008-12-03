@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbYLCKXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751459AbYLCKZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbYLCKXx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 05:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYLCKXp
+	id S1751459AbYLCKZW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 05:25:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYLCKZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 05:23:45 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:54208 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbYLCKXo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 05:23:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=v3HQR25pgiixuA/c8a/4jagZ5nrMYTkWbrgIInKAnOxadqyZwKCdeavycSThHABLpr
-         Y5rotCaf8sK8qQAEQpJriWFZu7F0WBU1zlw5IXQaR0I5yuGHQWYMvsuERZu3GJsIerB3
-         98J/4A0NCgslRx9Y5AXxQJSuUpAWl5LCHazTU=
-Message-ID: <c62985530812030223o4af19ab7idec0894bcdd275d@mail.gmail.com>
-Date: Wed, 3 Dec 2008 11:23:43 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 2/2] tracing/function-graph-tracer: improve duration output
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Tim Bird" <tim.bird@am.sony.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1228299706.9673.115.camel@twins>
+	Wed, 3 Dec 2008 05:25:08 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:42951 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751204AbYLCKZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 05:25:06 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc/powermac: Add missing of_node_put
+Date: Wed, 3 Dec 2008 11:25:03 +0100
+User-Agent: KMail/1.9.10
+Cc: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       Julia Lawall <julia@diku.dk>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200812021445.18670.npalix@diku.dk> <20081203101901.4f317425.sfr@canb.auug.org.au> <20081203102508.ce955781.sfr@canb.auug.org.au>
+In-Reply-To: <20081203102508.ce955781.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4935E19C.3090501@gmail.com> <4935E226.3060906@gmail.com>
-	 <20081203081906.GH21006@elte.hu> <20081203083332.GA5455@elte.hu>
-	 <c62985530812030207l75084154vf1f94fe22ab0448@mail.gmail.com>
-	 <1228299706.9673.115.camel@twins>
+Message-Id: <200812031125.03478.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/3 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> On Wed, 2008-12-03 at 11:07 +0100, Frédéric Weisbecker wrote:
->>
->>
->> >
->> > btw., i tested the graph tracer on a 16-way 64-bit box as well, and
->> the
->> > multi-digit CPU field printout magic works fine there too:
->> >
->> >  9)               |    pick_next_task() {
->> >  9)   0.283 us    |      pick_next_task_fair();
->> >  9)   0.276 us    |      pick_next_task_rt();
->> >  9)   0.273 us    |      pick_next_task_fair();
->> >  9)   0.279 us    |      pick_next_task_idle();
->> >  9)   2.596 us    |    }
->> >  9)   0.566 us    |    __lock_text_start();
->> >  10)   0.299 us    |        }
->> >  10)               |        mm_init() {
->> >  10)               |          pgd_alloc() {
->> >  10)               |            __get_free_pages() {
->> >  10)               |              alloc_pages_current() {
->> >  10)   0.330 us    |                policy_zonelist();
->> >  10)               |                __alloc_pages_internal() {
->> >
->> >        Ingo
->> >
->>
->> Hmm not really, there should be one space more before the 9 to fit the
->> log10(MAX_CPU) here and not break
->> the column.
->
-> It did in my copy of Ingo's email...
+Hi Stephen,
 
+I fix the patch. I also change the "vias == 0" in "vias == NULL".
+Is "!vias" better ?
 
-So perhaps I should drop gmail...... :-(
+On Wednesday 03 December 2008 00:25:08 Stephen Rothwell wrote:
+> Hi Nicolas,
+> 
+> On Wed, 3 Dec 2008 10:19:01 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > I think this particular patch is also required against Linus' kernel (not
+> > just linux-next).
+> 
+> In fact, I think all these patches can apply to Linus' current tree.
+> 
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ arch/powerpc/platforms/powermac/pci.c  |    2 +
+ arch/powerpc/platforms/powermac/time.c |   11 ++++++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+index bcf50d7..800fcce 100644
+--- a/arch/powerpc/platforms/powermac/pci.c
++++ b/arch/powerpc/platforms/powermac/pci.c
+@@ -661,6 +661,7 @@ static void __init init_second_ohare(void)
+ 			pci_find_hose_for_OF_device(np);
+ 		if (!hose) {
+ 			printk(KERN_ERR "Can't find PCI hose for OHare2 !\n");
++			of_node_put(np);
+ 			return;
+ 		}
+ 		early_read_config_word(hose, bus, devfn, PCI_COMMAND, &cmd);
+@@ -669,6 +670,7 @@ static void __init init_second_ohare(void)
+ 		early_write_config_word(hose, bus, devfn, PCI_COMMAND, cmd);
+ 	}
+ 	has_second_ohare = 1;
++	of_node_put(np);
+ }
+ 
+ /*
+diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
+index 59eb840..1810e42 100644
+--- a/arch/powerpc/platforms/powermac/time.c
++++ b/arch/powerpc/platforms/powermac/time.c
+@@ -265,12 +265,15 @@ int __init via_calibrate_decr(void)
+ 	struct resource rsrc;
+ 
+ 	vias = of_find_node_by_name(NULL, "via-cuda");
+-	if (vias == 0)
++	if (vias == NULL)
+ 		vias = of_find_node_by_name(NULL, "via-pmu");
+-	if (vias == 0)
++	if (vias == NULL)
+ 		vias = of_find_node_by_name(NULL, "via");
+-	if (vias == 0 || of_address_to_resource(vias, 0, &rsrc))
++	if (vias == NULL || of_address_to_resource(vias, 0, &rsrc)) {
++	        of_node_put(vias);
+ 		return 0;
++	}
++	of_node_put(vias);
+ 	via = ioremap(rsrc.start, rsrc.end - rsrc.start + 1);
+ 	if (via == NULL) {
+ 		printk(KERN_ERR "Failed to map VIA for timer calibration !\n");
+@@ -297,7 +300,7 @@ int __init via_calibrate_decr(void)
+ 	ppc_tb_freq = (dstart - dend) * 100 / 6;
+ 
+ 	iounmap(via);
+-	
++
+ 	return 1;
+ }
+ #endif
+-- 
+Nicolas Palix
