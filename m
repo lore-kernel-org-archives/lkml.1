@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYLCUbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYLCUbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbYLCUbH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYLCT6c
+	id S1759330AbYLCUbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbYLCT6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:32 -0500
-Received: from kroah.org ([198.145.64.141]:56806 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:33 -0500
+Received: from kroah.org ([198.145.64.141]:56795 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753570AbYLCT6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:58:06 -0500
-Date: Wed, 3 Dec 2008 11:56:48 -0800
+	id S1752709AbYLCT6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:58:05 -0500
+Date: Wed, 3 Dec 2008 11:56:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eugene Dashevsky <eugene@ibrix.com>,
-       Mike Snitzer <msnitzer@ibrix.com>
-Subject: [patch 099/104] ext3: fix ext3_dx_readdir hash collision handling
-Message-ID: <20081203195648.GV8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Frederic Bohe <frederic.bohe@bull.net>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 098/104] ext4: add checksum calculation when clearing
+	UNINIT flag in ext4_new_inode
+Message-ID: <20081203195646.GU8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext3-fix-ext3_dx_readdir-hash-collision-handling.patch"
+Content-Disposition: inline; filename="ext4-add-checksum-calculation-when-clearing-uninit-flag-in-ext4_new_inode.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,61 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eugene Dashevsky <eugene@ibrix.com>
+From: Frederic Bohe <frederic.bohe@bull.net>
 
-commit 6a897cf447a83c9c3fd1b85a1e525c02d6eada7d upstream.
+(cherry picked from commit 23712a9c28b9f80a8cf70c8490358d5f562d2465)
 
-This fixes a bug where readdir() would return a directory entry twice
-if there was a hash collision in an hash tree indexed directory.
+When initializing an uninitialized block group in ext4_new_inode(),
+its block group checksum must be re-calculated.  This fixes a race
+when several threads try to allocate a new inode in an UNINIT'd group.
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Eugene Dashevsky <eugene@ibrix.com>
-Signed-off-by: Mike Snitzer <msnitzer@ibrix.com>
+There is some question whether we need to be initializing the block
+bitmap in ext4_new_inode() at all, but for now, if we are going to
+init the block group, let's eliminate the race.
+
+Signed-off-by: Frederic Bohe <frederic.bohe@bull.net>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Willy Tarreau <w@1wt.eu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext3/dir.c |   20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ fs/ext4/ialloc.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/fs/ext3/dir.c
-+++ b/fs/ext3/dir.c
-@@ -414,7 +414,7 @@ static int call_filldir(struct file * fi
- 				get_dtype(sb, fname->file_type));
- 		if (error) {
- 			filp->f_pos = curr_pos;
--			info->extra_fname = fname->next;
-+			info->extra_fname = fname;
- 			return error;
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -717,6 +717,8 @@ got:
+ 			gdp->bg_flags &= cpu_to_le16(~EXT4_BG_BLOCK_UNINIT);
+ 			free = ext4_free_blocks_after_init(sb, group, gdp);
+ 			gdp->bg_free_blocks_count = cpu_to_le16(free);
++			gdp->bg_checksum = ext4_group_desc_csum(sbi, group,
++								gdp);
  		}
- 		fname = fname->next;
-@@ -453,11 +453,21 @@ static int ext3_dx_readdir(struct file *
- 	 * If there are any leftover names on the hash collision
- 	 * chain, return them first.
- 	 */
--	if (info->extra_fname &&
--	    call_filldir(filp, dirent, filldir, info->extra_fname))
--		goto finished;
-+	if (info->extra_fname) {
-+		if (call_filldir(filp, dirent, filldir, info->extra_fname))
-+			goto finished;
+ 		spin_unlock(sb_bgl_lock(sbi, group));
  
--	if (!info->curr_node)
-+		info->extra_fname = NULL;
-+		info->curr_node = rb_next(info->curr_node);
-+		if (!info->curr_node) {
-+			if (info->next_hash == ~0) {
-+				filp->f_pos = EXT3_HTREE_EOF;
-+				goto finished;
-+			}
-+			info->curr_hash = info->next_hash;
-+			info->curr_minor_hash = 0;
-+		}
-+	} else if (!info->curr_node)
- 		info->curr_node = rb_first(&info->root);
- 
- 	while (1) {
 
