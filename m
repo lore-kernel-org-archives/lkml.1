@@ -1,90 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbYLCQDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751298AbYLCQEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbYLCQDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 11:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLCQDj
+	id S1751298AbYLCQEH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 11:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYLCQDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 11:03:39 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:65070 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbYLCQDi (ORCPT
+	Wed, 3 Dec 2008 11:03:42 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42998 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbYLCQDk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 11:03:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YV+4NDgSnrjEZBSEn8etxPG7CbG0jQm2kS+i/fIPNwDIL0zc1bvzq7VyMQPQ0Nt0eK
-         iEyyehwCuHoKUZUzWbKaE6dFMnfyd6U1GXGlaPFMDRuiUXkRwLoPvEXWbArdZDtfq+lO
-         bJeNQbIMmjXpmQ/cnWupXfBfofiToReeazZ7Y=
-Message-ID: <c62985530812030803s30b76fc6t209dfbef958ba532@mail.gmail.com>
-Date: Wed, 3 Dec 2008 17:03:36 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Subject: Re: Kernel Error Message: modprobe used greatest stack depth
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <804dabb00812030611k222606a6j24097fcdd93862d2@mail.gmail.com>
+	Wed, 3 Dec 2008 11:03:40 -0500
+Date: Wed, 3 Dec 2008 11:01:34 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [PATCH] add tracepoints to track change in napi
+	states on network receive
+Message-ID: <20081203160134.GA6549@hmsreliant.think-freely.org>
+References: <20081202195129.GA30042@hmsreliant.think-freely.org> <20081202200150.GA27282@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <804dabb00812030611k222606a6j24097fcdd93862d2@mail.gmail.com>
+In-Reply-To: <20081202200150.GA27282@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter.
+On Tue, Dec 02, 2008 at 03:01:50PM -0500, Mathieu Desnoyers wrote:
+> * Neil Horman (nhorman@tuxdriver.com) wrote:
+> > Hey there-
+> > 	I thought it would be handy to track the napi receive state of different
+> > network devices using ltt.  This patch adds trace points to indicate when a napi
+> > instance has been scheduled, when its serviced and when it completes.
+> > 
+> 
+> Sounds great, see comments below,
+<snip>
 
-2008/12/3 Peter Teoh <htmldeveloper@gmail.com>:
-> In less than 6 hours since I turned on the machine I have been getting
-> these message (spread over different times) in my dmesg:
->
-> Machine A (AMD Athlon 4200, 3G RAM):
->
-> khelper used greatest stack depth: 7484 bytes left
-> modprobe used greatest stack depth: 7184 bytes left
-> mknod used greatest stack depth: 6976 bytes left
-> showconsole used greatest stack depth: 6904 bytes left
-> modprobe used greatest stack depth: 5600 bytes left
-> mysearch.pl used greatest stack depth: 5536 bytes left
-> mysearch.pl used greatest stack depth: 5496 bytes left
-> firefox-bin used greatest stack depth: 5484 bytes left
-> totem-video-thu used greatest stack depth: 5324 bytes left
-> thunderbird-bin used greatest stack depth: 4864 bytes left
->
-> And another machine (intel, 3G RAM):
->
-> [    0.123030] khelper used greatest stack depth: 2768 bytes left
-> [    3.518510] insmod used greatest stack depth: 2148 bytes left
-> [    6.203832] insmod used greatest stack depth: 1424 bytes left
+Hey,
+	New patch, with previous comments taken into account.
+
+Patch to track the napi receive stat of different network devices using ltt.
+Adds trace points to indicate when a napi instance has been scheduled, when its
+serviced and when it completes
+
+Regards
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
 
-This is the result of CONFIG_DEBUG_STACK_USAGE turned on.
-When a process exits, kernel/exit.c:check_stack_usage() is called.
+ include/linux/netdevice.h |    5 +++++
+ include/trace/netdevice.h |   30 ++++++++++++++++++++++++++++++
+ ltt/probes/net-trace.c    |   22 ++++++++++++++++++++++
+ net/core/dev.c            |    7 ++++++-
+ 4 files changed, 63 insertions(+), 1 deletion(-)
 
 
-> Seemingly harmless, but when it hit firefox, the entire firefox will
-> hang - and it does not respond to any keyboard/mouse input.   Since it
-> has hit two of my machine simultaneously, I don't it should be
-> ignored.
-
-
-
-When firefox exits, this function is called... If you think that
-check_stack_usage()
-could be responsible of this hang, perhaps you can put a printk()
-after its call to check it.
-I don't know, it depends on when it happens.
-
->
-> Can someone help me?
->
-> a.   How do I probe further the cause of the error?
-> b.   Seemingly repeatable ..... how to generate a BUG() stack trace at
-> the point of error - recompiling really needed?
-> c.   Kernel version 2.6.28-rc6, with FTRACE compiled option turned on.
->  HOw do I used FTRACE to de
-
-
-You should first try to find a way to reproduce it..... When does it happen?
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 488c56e..7da71eb 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -43,6 +43,9 @@
+ 
+ #include <net/net_namespace.h>
+ 
++struct napi_struct;
++#include <trace/netdevice.h>
++
+ struct vlan_group;
+ struct ethtool_ops;
+ struct netpoll_info;
+@@ -386,6 +389,7 @@ static inline void napi_complete(struct napi_struct *n)
+ 	local_irq_save(flags);
+ 	__napi_complete(n);
+ 	local_irq_restore(flags);
++	trace_napi_complete(n);
+ }
+ 
+ /**
+@@ -1726,6 +1730,7 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
+ 	return 0;
+ }
+ 
++
+ #endif /* __KERNEL__ */
+ 
+ #endif	/* _LINUX_DEV_H */
+diff --git a/include/trace/netdevice.h b/include/trace/netdevice.h
+new file mode 100644
+index 0000000..ba48f6c
+--- /dev/null
++++ b/include/trace/netdevice.h
+@@ -0,0 +1,30 @@
++#ifndef _INCLUDE_NETDEVICE_H_
++#define _INCLUDE_NETDEVICE_H_
++
++#include <linux/netdevice.h>
++
++/* Tracepoints */
++
++/*
++ * Note these first 2 traces are actually in __napi_schedule and net_rx_action
++ * respectively.  The former is in __napi_schedule because it uses at-most-once
++ * logic and placing it in the calling routine (napi_schedule) would produce
++ * countless trace events that were effectively  no-ops.  napi_poll is
++ * implemented in net_rx_action, because thats where we do our polling on
++ * devices.  The last trace point is in napi_complete, right where you would
++ * think it would be.
++ */
++DEFINE_TRACE(napi_schedule,
++	TPPROTO(struct napi_struct *n),
++	TPARGS(n));
++
++DEFINE_TRACE(napi_poll,
++	TPPROTO(struct napi_struct *n),
++	TPARGS(n));
++
++DEFINE_TRACE(napi_complete,
++	TPPROTO(struct napi_struct *n),
++	TPARGS(n));
++
++#endif
++
+diff --git a/ltt/probes/net-trace.c b/ltt/probes/net-trace.c
+index bac2b21..bd4e621 100644
+--- a/ltt/probes/net-trace.c
++++ b/ltt/probes/net-trace.c
+@@ -9,6 +9,7 @@
+ #include <trace/ipv4.h>
+ #include <trace/ipv6.h>
+ #include <trace/socket.h>
++#include <trace/netdevice.h>
+ 
+ void probe_net_dev_xmit(struct sk_buff *skb)
+ {
+@@ -104,6 +105,27 @@ void probe_socket_call(int call, unsigned long a0)
+ 		"call %d a0 %lu", call, a0);
+ }
+ 
++void probe_napi_schedule(struct napi_struct *n)
++{
++	trace_mark_tp(net_napi_schedule, napi_schedule, probe_napi_schedule,
++		"schedule napi_struct %p name  %s",
++		n, n->dev->name);
++}
++
++void probe_napi_poll(struct napi_struct *n)
++{
++	trace_mark_tp(net_napi_poll, napi_poll, probe_napi_poll,
++		"service napi_struct %p name %s",
++		n, n->dev->name); 
++}
++
++void probe_napi_complete(struct napi_struct *n)
++{
++	trace_mark_tp(net_napi_complete, napi_complete, probe_napi_complete,
++		"complete napi_struct %p name %s",
++		n, n->dev->name);
++}
++
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Mathieu Desnoyers");
+ MODULE_DESCRIPTION("Net Tracepoint Probes");
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 836fe6e..0c55c0f 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -128,6 +128,7 @@
+ #include <linux/jhash.h>
+ #include <linux/random.h>
+ #include <trace/net.h>
++#include <trace/netdevice.h>
+ 
+ #include "net-sysfs.h"
+ 
+@@ -2329,6 +2330,8 @@ void __napi_schedule(struct napi_struct *n)
+ {
+ 	unsigned long flags;
+ 
++	trace_napi_poll(n);
++
+ 	local_irq_save(flags);
+ 	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
+ 	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+@@ -2380,8 +2383,10 @@ static void net_rx_action(struct softirq_action *h)
+ 		 * accidently calling ->poll() when NAPI is not scheduled.
+ 		 */
+ 		work = 0;
+-		if (test_bit(NAPI_STATE_SCHED, &n->state))
++		if (test_bit(NAPI_STATE_SCHED, &n->state)) {
++			trace_napi_poll(n);
+ 			work = n->poll(n, weight);
++		}
+ 
+ 		WARN_ON_ONCE(work > weight);
+ 
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
