@@ -1,123 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbYLCAO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYLCAUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755620AbYLCAO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 19:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbYLCAOl
+	id S1755207AbYLCAUq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 19:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYLCAUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 19:14:41 -0500
-Received: from kroah.org ([198.145.64.141]:37300 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754230AbYLCAOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 19:14:40 -0500
-Date: Tue, 2 Dec 2008 16:12:53 -0800
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
+	Tue, 2 Dec 2008 19:20:35 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:5937 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753114AbYLCAUe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 19:20:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=B1H7UfYdf/cuhKiqGBqZ+5k6a368cwaA277VlajuXhknNHHn9+PgyyxQy5bJ6ViZvP
+         j8JXHQ6LApmBonq3CaCkqwIXlOq94DHUTRZmcqDJrjHlQFfpPyec8fwJhHbupVRM7/Fg
+         aWYhFjdQSc1uPxsKnIMZ/H3arK4wurpYfKjpY=
+Message-ID: <43e72e890812021620lccafachbd8e781d283095b7@mail.gmail.com>
+Date: Tue, 2 Dec 2008 16:20:32 -0800
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "Greg KH" <greg@kroah.com>, "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [stable] [PATCH 1/3] ath9k: Handle -ENOMEM on RX gracefully
 Cc: stable@kernel.org, sfr@canb.auug.org.au, ath9k-devel@venema.h4ckr.net,
        linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 1/3] ath9k: Handle -ENOMEM on RX gracefully
-Message-ID: <20081203001253.GC14943@kroah.com>
-References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com> <1228251082-11677-2-git-send-email-lrodriguez@atheros.com> <1228251082-11677-3-git-send-email-lrodriguez@atheros.com> <1228251082-11677-4-git-send-email-lrodriguez@atheros.com>
+In-Reply-To: <20081203001253.GC14943@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1228251082-11677-4-git-send-email-lrodriguez@atheros.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com>
+	 <1228251082-11677-2-git-send-email-lrodriguez@atheros.com>
+	 <1228251082-11677-3-git-send-email-lrodriguez@atheros.com>
+	 <1228251082-11677-4-git-send-email-lrodriguez@atheros.com>
+	 <20081203001253.GC14943@kroah.com>
+X-Google-Sender-Auth: 2a034d07e302a912
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't see this patch upstream in Linus's tree.  Am I just missing it
-and if so, do you know the git commit id?
+On Tue, Dec 2, 2008 at 4:12 PM, Greg KH <greg@kroah.com> wrote:
+> I don't see this patch upstream in Linus's tree.  Am I just missing it
+> and if so, do you know the git commit id?
 
-thanks,
+Nope sorry, John has yet to send his pending-fixes branch to davem and
+so forth, which would contain it AFAICT. Please correct me if I'm
+wrong John.
 
-greg k-h
-
-
-On Tue, Dec 02, 2008 at 12:51:22PM -0800, Luis R. Rodriguez wrote:
-> We would get an oops on RX on -ENOMEM by passing
-> NULL to the hardware on ath_rx_buf_link(). The oops
-> would look something like this:
-> 
-> ath_rx_tasklet
-> ...
-> RIP: ath_rx_buf_link
-> 
-> We correct this by handling the allocation for the next
-> skb we will put in our RX tail directly on the ath_rx_tasklet()
-> *prior* to sending up the last hardware processed
-> skb. If we run out of memory this gauranteees we have
-> skbs to work with while it simply drops new received
-> frames.
-> 
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> ---
->  drivers/net/wireless/ath9k/recv.c |   18 ++++++++++++++----
->  1 files changed, 14 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/ath9k/recv.c b/drivers/net/wireless/ath9k/recv.c
-> index 0941589..a4f92b2 100644
-> --- a/drivers/net/wireless/ath9k/recv.c
-> +++ b/drivers/net/wireless/ath9k/recv.c
-> @@ -441,18 +441,16 @@ static void ath_rx_requeue(struct ath_softc *sc, struct sk_buff *skb)
->   */
->  static int ath_rx_indicate(struct ath_softc *sc,
->  			   struct sk_buff *skb,
-> +			   struct sk_buff *nskb,
->  			   struct ath_recv_status *status,
->  			   u16 keyix)
->  {
->  	struct ath_buf *bf = ATH_RX_CONTEXT(skb)->ctx_rxbuf;
-> -	struct sk_buff *nskb;
->  	int type;
->  
->  	/* indicate frame to the stack, which will free the old skb. */
->  	type = ath__rx_indicate(sc, skb, status, keyix);
->  
-> -	/* allocate a new skb and queue it to for H/W processing */
-> -	nskb = ath_rxbuf_alloc(sc, sc->sc_rxbufsize);
->  	if (nskb != NULL) {
->  		bf->bf_mpdu = nskb;
->  		bf->bf_buf_addr = ath_skb_map_single(sc,
-> @@ -741,6 +739,7 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
->  	struct ath_desc *ds;
->  	struct ieee80211_hdr *hdr;
->  	struct sk_buff *skb = NULL;
-> +	struct sk_buff *nskb = NULL;
->  	struct ath_recv_status rx_status;
->  	struct ath_hal *ah = sc->sc_ah;
->  	int type, rx_processed = 0;
-> @@ -963,6 +962,17 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
->  		 */
->  		if (sc->sc_rxbufsize < ds->ds_rxstat.rs_datalen)
->  			goto rx_next;
-> +
-> +		/* allocate a new skb and queue it to for H/W processing */
-> +		nskb = ath_rxbuf_alloc(sc, sc->sc_rxbufsize);
-> +
-> +		/* Diregard current RX'd frame and reuse the old skb */
-> +		if (!nskb) {
-> +			list_move_tail(&bf->list, &sc->sc_rxbuf);
-> +			ath_rx_buf_link(sc, bf);
-> +			goto rx_next;
-> +		}
-> +
->  		/*
->  		 * Sync and unmap the frame.  At this point we're
->  		 * committed to passing the sk_buff somewhere so
-> @@ -1052,7 +1062,7 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush)
->  
->  		/* Pass frames up to the stack. */
->  
-> -		type = ath_rx_indicate(sc, skb,
-> +		type = ath_rx_indicate(sc, skb, nskb,
->  			&rx_status, ds->ds_rxstat.rs_keyix);
->  
->  		/*
-> -- 
-> 1.5.6.rc2.15.g457bb.dirty
-> 
-> _______________________________________________
-> stable mailing list
-> stable@linux.kernel.org
-> http://linux.kernel.org/mailman/listinfo/stable
+  Luis
