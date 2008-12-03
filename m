@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbYLCSSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbYLCSTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbYLCSSw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 13:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYLCSSn
+	id S1753749AbYLCSTN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 13:19:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYLCSSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 13:18:43 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:42921 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387AbYLCSSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 13:18:42 -0500
-From: Andres Freund <andres@anarazel.de>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: EXT4 ENOSPC Bug
-Date: Wed, 3 Dec 2008 19:18:33 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.28-rc6-andres-00007-ged31348-dirty; KDE/4.1.80; x86_64; ; )
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Jonathan Bastien-Filiatrault" <joe@x2a.org>,
-       Andreas Dilger <adilger@sun.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-References: <200811291418.24672.andres@anarazel.de> <20081203153441.GD9481@skywalker> <20081203172309.GB30610@mit.edu>
-In-Reply-To: <20081203172309.GB30610@mit.edu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2570269.h9IKZta58x";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Wed, 3 Dec 2008 13:18:47 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:56842 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918AbYLCSSq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 13:18:46 -0500
+Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081203123021.GA30035@infradead.org>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <20081203123021.GA30035@infradead.org>
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 13:18:43 -0500
+Message-Id: <1228328323.2821.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812031918.38067.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2570269.h9IKZta58x
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, 2008-12-03 at 07:30 -0500, Christoph Hellwig wrote: 
+> On Tue, Dec 02, 2008 at 04:47:56PM -0500, Mimi Zohar wrote:
+> > +/*
+> > + * Integrity API calls:
+> > + *
+> > + * @collect_measurement:
+> > + *	Collect template specific measurement data.
+> > + *	@data contains template specific data used for collecting the
+> > + *	measurement.
+> > + * 	Return 0 if operation was successful.
+> > + *
+> > + * @appraise_measurement:
+> > + *	Appraise the integrity of the template specific measurement data.
+> > + *	@data contains template specific data used for appraising the
+> > + *	measurement.
+> > + * 	Return 0 if operation was successful.
+> > + *
+> > + * @store_measurement:
+> > + *	Store the template specific data.
+> > + *	@data contains template specific data used for storing the
+> > + *	measurement.
+> > + *
+> > + * @store_template:
+> > + *	Store the entry containing the template specific data.
+> > + *	@data contains template name, data length, and data.
+> > + *
+> > + * @must_measure:
+> > + *	Measurement decision based on an integrity policy.
+> > + *	@data contains template specific data used for making policy
+> > + * 	decision.
+> > + * 	Return 0 if operation was successful.
+> > + *
+> > + * @display_template:
+> > + *	Display template specific data.
+> > + *
+> > + */
+> 
+> Can you explain what all this template stuff is about?  The only method
+> of these ever called is display_template, and that seems to be better
+> implented directly as a securityfs file, without the indirection.
 
-On Wednesday 03 December 2008 18:23:09 Theodore Tso wrote:
-> On Wed, Dec 03, 2008 at 09:04:41PM +0530, Aneesh Kumar K.V wrote:
-> > Can you make sure you have the below patch in the kernel.
-> > c001077f4003fa75793bb62979baa6241dd8eb19
-Yes, I do have that patch in kernel (verified through git and looking at th=
-e=20
-source). Its a part of linus' tree.
+IMA originally supported measurement and attestation only for file data.
+Templates provide an abstraction to add different types of integrity
+messages to the TPM based measurement list. Each type of integrity code
+knows how to format/display its own messages, while the TPM measurement
+list code remains generic.
 
-> Mmmm, good point, thanks.  I had been assuming this was caused by some
-> failure in the delayed allocation code with block accounting, but we
-> also had a bug fix that was causing a problem with inode allocation.
->
-> That doesn't explain a report of an ENOSPC error with metadata only
-> changes were failing (i.e., touching a file that already exists),
-> although I don't think we've gotten a lot of information about that
-> scenario and it feels a little unconfirmed to me still...
-Unfortunately I am not absolutely sure (I reported this) as well, this is t=
-he=20
-reason I did not report it at first but only after no culprit could be foun=
-d.
+Mimi
 
-Still no luck reproducing it once more.
-
-
-Andres
-
-
---nextPart2570269.h9IKZta58x
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk2zXoACgkQporPraT14igjOQCgpBlMgHrTpxblKo9vXy2DJEcT
-sBkAoJHZ686JapU5G2RB4yUH0H/Kxnvs
-=GDvN
------END PGP SIGNATURE-----
-
---nextPart2570269.h9IKZta58x--
