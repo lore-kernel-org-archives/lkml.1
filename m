@@ -1,279 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYLCDWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYLCDgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbYLCDWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 22:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYLCDWG
+	id S1754774AbYLCDgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 22:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYLCDgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 22:22:06 -0500
-Received: from ozlabs.org ([203.10.76.45]:55516 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbYLCDWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 22:22:04 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC 7/8] Call early_param earlier (take II)
-Date: Wed, 3 Dec 2008 13:51:59 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>
-References: <200812012326.50334.rusty@rustcorp.com.au>
-In-Reply-To: <200812012326.50334.rusty@rustcorp.com.au>
+	Tue, 2 Dec 2008 22:36:05 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:24862 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbYLCDgD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 22:36:03 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=rIa87BTUKVIswYm7DStMGOFO5EbXleRpy6ybsQ2VWCeB48dQ78i5hqeSMUsM40/bA
+	vYQvzI4f/rJxZlxuyumGA==
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <1228272731.4886.26.camel@localhost.localdomain>
+References: <5df78e1d0812021652w74c968bboba5e6457059b569b@mail.gmail.com>
+	 <1228272731.4886.26.camel@localhost.localdomain>
+Date: Tue, 2 Dec 2008 19:35:58 -0800
+Message-ID: <5df78e1d0812021935h56c2e21am88477ad44a57ec78@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/3] A couple of feature requests to the unified trace 
+	buffer
+From: Jiaying Zhang <jiayingz@google.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812031352.00088.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We delete all the arch calls: we call it from start_kernel earlier
-now.  We also no longer take a temporary copy, but parse in place.
+Hi Steve,
 
-Note: IA64 has a comment about machvec parsing before general
-commandline.  I moved machvec_init_from_cmdline() into
-arch_get_boot_command_line(), but that hoists it above various other
-init functions in setup_arch().  Please check.
+Thanks a lot for the quick response!
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Tony Luck <tony.luck@intel.com>
----
- arch/avr32/kernel/setup.c   |    2 --
- arch/ia64/kernel/setup.c    |    2 --
- arch/m68k/kernel/setup.c    |    2 --
- arch/mips/kernel/setup.c    |    2 --
- arch/powerpc/kernel/prom.c  |    1 -
- arch/s390/kernel/setup.c    |    2 --
- arch/sh/kernel/setup.c      |    2 --
- arch/sparc/kernel/setup.c   |    3 ---
- arch/sparc64/kernel/setup.c |    3 ---
- arch/x86/kernel/setup.c     |    3 ---
- include/linux/init.h        |    2 --
- init/main.c                 |   21 ++++-----------------
- 12 files changed, 4 insertions(+), 41 deletions(-)
+On Tue, Dec 2, 2008 at 6:52 PM, Steven Rostedt <srostedt@redhat.com> wrote:
+> Hi Jiaying,
+>
+> On Tue, 2008-12-02 at 16:52 -0800, Jiaying Zhang wrote:
+>> Hi all,
+>>
+>> We have taken Steve's unified trace buffer patches while implementing our
+>> kernel tracing prototype. The unified trace buffer has many features we need
+>> and has simplified our implementation a lot. However, our use of the unified
+>> trace buffer is slightly different from ftrace's cases. We need to trace large
+>> amounts of data in a production environment, so it's critical that we have as
+>> little impact on performance as possible.
+>>
+>> We are particularly concerned about two performance requirements:
+>>
+>> 1. read large amounts of data from the unified trace buffer at little
+>> performance cost.
+>> 2. write to the unified trace buffer with little performance overhead.
+>>
+>> We are considering two approaches to satisfy the first requirement -
+>> mmap vs splice. Right now, we only implemented mmap support, so I am
+>> going to talk about that approach in detail. For the second requirement,
+>> our performance tests suggest the use of inline versions of buffer write
+>> functions for high-throughput kernel events, as described below.
+>
+> If you check out my git tree:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+>
+>  branch: tip/devel
+>
+> You will see that I started writing code to handle "splice". I have a
+> retarded version that works right now (using the term "works" loosely
+> here).
 
-diff --git a/arch/avr32/kernel/setup.c b/arch/avr32/kernel/setup.c
---- a/arch/avr32/kernel/setup.c
-+++ b/arch/avr32/kernel/setup.c
-@@ -580,8 +580,6 @@ void __init setup_arch(void)
- 		       ((cpu_hz + 500) / 1000) % 1000);
- 	}
- 
--	parse_early_param();
--
- 	setup_bootmem();
- 
- #ifdef CONFIG_VT
-diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -533,6 +533,15 @@ void __init arch_get_boot_command_line(v
- {
- 	strlcpy(boot_command_line, __va(ia64_boot_param->command_line),
- 		COMMAND_LINE_SIZE);
-+
-+#ifdef CONFIG_IA64_GENERIC
-+	/* machvec needs to be parsed from the command line
-+	 * before parse_early_param() is called to ensure
-+	 * that ia64_mv is initialised before any command line
-+	 * settings may cause console setup to occur
-+	 */
-+	machvec_init_from_cmdline(boot_command_line);
-+#endif
- }
- 
- void __init setup_arch(void)
-@@ -545,17 +554,6 @@ void __init setup_arch(void)
- 
- 	efi_init();
- 	io_port_init();
--
--#ifdef CONFIG_IA64_GENERIC
--	/* machvec needs to be parsed from the command line
--	 * before parse_early_param() is called to ensure
--	 * that ia64_mv is initialised before any command line
--	 * settings may cause console setup to occur
--	 */
--	machvec_init_from_cmdline(boot_command_line);
--#endif
--
--	parse_early_param();
- 
- 	if (early_console_setup(boot_command_line) == 0)
- 		mark_bsp_online();
-diff --git a/arch/m68k/kernel/setup.c b/arch/m68k/kernel/setup.c
---- a/arch/m68k/kernel/setup.c
-+++ b/arch/m68k/kernel/setup.c
-@@ -268,8 +268,6 @@ void __init setup_arch(void)
- 	init_mm.end_data = (unsigned long) &_edata;
- 	init_mm.brk = (unsigned long) &_end;
- 
--	parse_early_param();
--
- #ifdef CONFIG_DUMMY_CONSOLE
- 	conswitchp = &dummy_con;
- #endif
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -482,8 +482,6 @@ static void __init arch_mem_init(void)
- 	pr_info("Determined physical RAM map:\n");
- 	print_memory_map();
- 
--	parse_early_param();
--
- 	if (usermem) {
- 		pr_info("User-defined physical RAM map:\n");
- 		print_memory_map();
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1188,7 +1188,6 @@ void __init early_init_devtree(void *par
- 
- 	/* Save command line for /proc/cmdline and then parse parameters */
- 	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
--	parse_early_param();
- 
- 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
- 	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
-diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
---- a/arch/s390/kernel/setup.c
-+++ b/arch/s390/kernel/setup.c
-@@ -785,8 +785,6 @@ setup_arch(void)
- 	else
- 		memcpy(&uaccess, &uaccess_std, sizeof(uaccess));
- 
--	parse_early_param();
--
- 	setup_ipl();
- 	setup_memory_end();
- 	setup_addressing_mode();
-diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
---- a/arch/sh/kernel/setup.c
-+++ b/arch/sh/kernel/setup.c
-@@ -382,8 +382,6 @@ void __init setup_arch(void)
- 	if (!memory_end)
- 		memory_end = memory_start + __MEMORY_SIZE;
- 
--	parse_early_param();
--
- 	sh_mv_setup();
- 
- 	/*
-diff --git a/arch/sparc/kernel/setup.c b/arch/sparc/kernel/setup.c
---- a/arch/sparc/kernel/setup.c
-+++ b/arch/sparc/kernel/setup.c
-@@ -214,9 +214,6 @@ void __init setup_arch(void)
- 	unsigned long highest_paddr;
- 
- 	sparc_ttable = (struct tt_entry *) &start;
--
--	/* Initialize PROM console. */
--	parse_early_param();
- 
- 	/* Set sparc_cpu_model */
- 	sparc_cpu_model = sun_unknown;
-diff --git a/arch/sparc64/kernel/setup.c b/arch/sparc64/kernel/setup.c
---- a/arch/sparc64/kernel/setup.c
-+++ b/arch/sparc64/kernel/setup.c
-@@ -283,9 +283,6 @@ void __init arch_get_boot_command_line(v
- 
- void __init setup_arch(void)
- {
--	/* Initialize PROM console. */
--	parse_early_param();
--
- 	boot_flags_init(boot_command_line);
- 	register_console(&prom_early_console);
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -876,8 +876,6 @@ void __init setup_arch(void)
- 	bss_resource.start = virt_to_phys(&__bss_start);
- 	bss_resource.end = virt_to_phys(&__bss_stop)-1;
- 
--	parse_early_param();
--
- #ifdef CONFIG_X86_64
- 	check_efer();
- #endif
-@@ -915,7 +913,6 @@ void __init setup_arch(void)
- 	probe_roms();
- #endif
- 
--	/* after parse_early_param, so could debug it */
- 	insert_resource(&iomem_resource, &code_resource);
- 	insert_resource(&iomem_resource, &data_resource);
- 	insert_resource(&iomem_resource, &bss_resource);
-diff --git a/include/linux/init.h b/include/linux/init.h
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -246,8 +246,6 @@ struct obs_kernel_param {
- #define early_param(str, fn)					\
- 	__setup_param(str, fn, fn, 1)
- 
--/* Relies on boot_command_line being set */
--void __init parse_early_param(void);
- #endif /* __ASSEMBLY__ */
- 
- /**
-diff --git a/init/main.c b/init/main.c
---- a/init/main.c
-+++ b/init/main.c
-@@ -206,7 +206,7 @@ static int __init obsolete_checksetup(ch
- 		int n = strlen(p->str);
- 		if (!strncmp(line, p->str, n)) {
- 			if (p->early) {
--				/* Already done in parse_early_param?
-+				/* Already done in do_early_param?
- 				 * (Needs exact match on param part).
- 				 * Keep iterating, as we can have early
- 				 * params and __setups of same names 8( */
-@@ -523,21 +523,6 @@ static int __init do_early_param(char *p
- 	return 0;
- }
- 
--/* Arch code calls this early on, or if not, just before other parsing. */
--void __init parse_early_param(void)
--{
--	static __initdata int done = 0;
--	static __initdata char tmp_cmdline[COMMAND_LINE_SIZE];
--
--	if (done)
--		return;
--
--	/* All fall through to do_early_param. */
--	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
--	parse_args("early options", tmp_cmdline, NULL, 0, do_early_param, true);
--	done = 1;
--}
--
- /*
-  *	Activate the first processor.
-  */
-@@ -571,6 +556,9 @@ asmlinkage void __init start_kernel(void
- 	parse_args("Core params", boot_command_line, __start___core_param,
- 		   __stop___core_param - __start___core_param,
- 		   unknown_core_ok, true);
-+	/* All fall through to do_early_param. */
-+	parse_args("early options", boot_command_line, NULL, 0, do_early_param,
-+		   true);
- 
- 	smp_setup_processor_id();
- 
-@@ -620,7 +608,6 @@ asmlinkage void __init start_kernel(void
- 	build_all_zonelists();
- 	page_alloc_init();
- 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
--	parse_early_param();
- 	parse_args("Booting kernel", static_command_line, __start___param,
- 		   __stop___param - __start___param,
- 		   &unknown_bootoption, false);
+This is great! I just checked out your git tree and will take a close look.
+Do you plan to support mmap other than splice in the unified trace buffer?
+I am not familiar with splice. Is it superior?
 
+>
+> Also, most of our development is done in the Ingo's tip tree:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+>
+>  branch: master
+>
+> I see in the patches that you based this on 2.6.26.2? Not sure which
+> version of the ring buffer you are using, but there has been lots of
+> improvements to it already.
+
+My patches are based on the unified ring buffer code I checked out
+from git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+a week ago. I saw you posted two new patches today. I haven't merged
+my patches with them yet.
+
+>
+>>
+>> The patches of our changes are sent following this email. We haven't tested
+>> these patches much, and they are probably very buggy. However, we would
+>> like to get some early feedback and see if we are headed in the right direction.
+>> Here is the summary of the changes we made.
+>>
+>> A major feature we would like to include in the unified trace buffer is the
+>> mmap support. Instead of reading one event out of the buffer at a time, we
+>> implemented a debugfs interface that allows a user-level program to mmap the
+>> unified trace buffer and directly copy the trace data to a disk file or socket
+>> descriptor. Compared with reading a single event at a time, this approach
+>> saves a copy from kernel to user-space. It also allows a trace reader to read
+>> bulk data in a single system call. We haven't yet conducted a performance
+>> comparison, but we think the mmap approach will have a significant performance
+>> advantage over the current read interface. To make mmap work, I made several
+>> changes to the unified trace buffer code. The changes include an API that maps
+>> a page offset to a physical page in a trace buffer,  APIs that export the offset
+>> of the current produced/consumed data, and an API to advance the consumed
+>> data pointer. The patch in the next email, "adding mmap support to the unified
+>> trace buffer", contains the described changes. We notice that there are other
+>> alternatives to save kernel to user-space copy, like splice_read. We haven't
+>> explored those approaches yet. Implementations of those interfaces would be
+>> very welcome.
+>
+> As I said above, I'm working on a splice version. I'm very new to the
+> splice_read code so I'm learning as I go along. I can post my retarded
+> patch if you would like. Actually, I'll just push it to my git tree in
+> the branch tip/splice.
+>
+>>
+>> Other helpful features from the unified trace buffer are the inline versions of
+>> buffer write functions, i.e., ring_buffer_lock_reserve and
+>> ring_buffer_unlock_commit. We found that function calls can add noticeable
+>> overhead while tracing high-throughput events. According to our measurement,
+>> the function calls from trace buffer writing alone add roughly 3% overhead
+>> under the tbench benchmark. To see how we can eliminate this overhead,
+>> I tried the inline versions of lock_reserve and unlock_commit (see the second
+>> patch "adding inline buffer write functions to the unified trace buffer"). The
+>> inline functions basically copy the existing code from ring_buffer_lock_reserve
+>> and ring_buffer_unlock_commit. But to make it compile, I also need to move
+>> certain functions to the header file. The side effect is that the interface
+>> becomes less clean.
+>
+> This will be something that we'll need to work with. I'm finding it a
+> bit hard that a function call is that expensive.
+
+I was also surprised to see such noticieable performance difference.
+We will run more benchmarks later and will keep you updated.
+
+>
+>>
+>> We may need more fundamental changes to implement inline versions of
+>> ring buffer write functions while still keep the clean layered design.
+>> Our goal is to enable certain kernel event tracing by default, so we
+>> consider 3% a big saving and we think it is important to make sure that
+>> entering an event into a cpu buffer is really fast.
+>>
+>> I attached our current kernel tracing prototype in the third email to give
+>> you an idea on how we intend to use the unified trace buffer. We will post
+>> the trace prototype alone later, but would love to hear any early feedback.
+>
+> Sure, I'll try to take some time out to look at them. Just a few points
+> on a real post:
+>
+> - base it on tip/master or at least my tree.
+>
+> - do not use "Refer to previous email" in any of the patches.
+>  The patches are brought in individually, and the change log must
+>  be able to stand on its own without needing to refer to any
+>  other patch, website or commit.
+>
+> - Please include a "Signed-off-by: Full Name <email@address>" in every
+>  patch.
+>
+Thanks a lot for your comments! I will keep them in mind in my further posts.
+
+Jiaying
+
+> Other than that, thanks for the work.
+>
+> -- Steve
+>
+>
+>
