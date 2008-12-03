@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbYLCTvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbYLCTwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbYLCTvc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYLCTuG
+	id S1751884AbYLCTwQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbYLCTuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:06 -0500
-Received: from kroah.org ([198.145.64.141]:34501 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:09 -0500
+Received: from kroah.org ([198.145.64.141]:34525 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752503AbYLCTuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:03 -0500
-Date: Wed, 3 Dec 2008 11:48:21 -0800
+	id S1754198AbYLCTuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:05 -0500
+Date: Wed, 3 Dec 2008 11:48:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andiry Xu <andiry.xu@amd.com>,
-       Libin Yang <libin.yang@amd.com>
-Subject: [patch 004/104] USB: fix SB700 usb subsystem hang bug
-Message-ID: <20081203194821.GE8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jay Cliburn <jcliburn@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 006/104] atl1e: fix broken multicast by removing
+	unnecessary crc inversion
+Message-ID: <20081203194826.GG8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-sb700-usb-subsystem-hang-bug.patch"
+Content-Disposition: inline; filename="atl1e-fix-broken-multicast-by-removing-unnecessary-crc-inversion.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,65 +40,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Andiry Xu <andiry.xu@amd.com>
+From: J. K. Cliburn <jcliburn@gmail.com>
 
-commit b09bc6cbae4dd3a2d35722668ef2c502a7b8b093 upstream.
+commit 7ee0fddfe05f105d3346aa8774695e7130697836 upstream.
 
-This patch is required for AMD SB700 south bridge revision A12 and A13 to avoid
-USB subsystem hang symptom. The USB subsystem hang symptom is observed when the
-system has multiple USB devices connected to it. In some cases a USB hub may be
-required to observe this symptom.
+Inverting the crc after calling ether_crc_le() is unnecessary and breaks
+multicast. Remove it.
 
-This patch works around the problem by correcting the internal register setting
-that will help by changing the behavior of the internal logic to avoid the
-USB subsystem hang issue. The change in the behavior of the logic does not
-impact the normal operation of the USB subsystem.
-
-Reported-by: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-Tested-by: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-Signed-off-by: Andiry Xu <andiry.xu@amd.com>
-Signed-off-by: Libin Yang <libin.yang@amd.com>
+Tested-by: David Madore <david.madore@ens.fr>
+Signed-off-by: Jay Cliburn <jcliburn@gmail.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-pci.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ drivers/net/atl1e/atl1e_hw.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
---- a/drivers/usb/host/ehci-pci.c
-+++ b/drivers/usb/host/ehci-pci.c
-@@ -66,6 +66,8 @@ static int ehci_pci_setup(struct usb_hcd
+--- a/drivers/net/atl1e/atl1e_hw.c
++++ b/drivers/net/atl1e/atl1e_hw.c
+@@ -163,9 +163,6 @@ int atl1e_read_mac_addr(struct atl1e_hw 
+  * atl1e_hash_mc_addr
+  *  purpose
+  *      set hash value for a multicast address
+- *      hash calcu processing :
+- *          1. calcu 32bit CRC for multicast address
+- *          2. reverse crc with MSB to LSB
+  */
+ u32 atl1e_hash_mc_addr(struct atl1e_hw *hw, u8 *mc_addr)
  {
- 	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
- 	struct pci_dev		*pdev = to_pci_dev(hcd->self.controller);
-+	struct pci_dev		*p_smbus;
-+	u8			rev;
- 	u32			temp;
- 	int			retval;
+@@ -174,7 +171,6 @@ u32 atl1e_hash_mc_addr(struct atl1e_hw *
+ 	int i;
  
-@@ -166,6 +168,25 @@ static int ehci_pci_setup(struct usb_hcd
- 			pci_write_config_byte(pdev, 0x4b, tmp | 0x20);
- 		}
- 		break;
-+	case PCI_VENDOR_ID_ATI:
-+		/* SB700 old version has a bug in EHCI controller,
-+		 * which causes usb devices lose response in some cases.
-+		 */
-+		if (pdev->device == 0x4396) {
-+			p_smbus = pci_get_device(PCI_VENDOR_ID_ATI,
-+						 PCI_DEVICE_ID_ATI_SBX00_SMBUS,
-+						 NULL);
-+			if (!p_smbus)
-+				break;
-+			rev = p_smbus->revision;
-+			if ((rev == 0x3a) || (rev == 0x3b)) {
-+				u8 tmp;
-+				pci_read_config_byte(pdev, 0x53, &tmp);
-+				pci_write_config_byte(pdev, 0x53, tmp | (1<<3));
-+			}
-+			pci_dev_put(p_smbus);
-+		}
-+		break;
- 	}
+ 	crc32 = ether_crc_le(6, mc_addr);
+-	crc32 = ~crc32;
+ 	for (i = 0; i < 32; i++)
+ 		value |= (((crc32 >> i) & 1) << (31 - i));
  
- 	ehci_reset(ehci);
 
