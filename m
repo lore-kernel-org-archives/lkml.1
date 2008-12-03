@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbYLCMzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbYLCNBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbYLCMzs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYLCMzh
+	id S1753959AbYLCNBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 08:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYLCNBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:55:37 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47038 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752408AbYLCMzg (ORCPT
+	Wed, 3 Dec 2008 08:01:35 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:30373 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbYLCNBe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:55:36 -0500
-Date: Wed, 3 Dec 2008 07:55:34 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: next-20081203 build failure, when building xfs_file.o
-Message-ID: <20081203125534.GA8007@infradead.org>
-References: <20081203183602.c06f8c39.sfr@canb.auug.org.au> <20081203124104.GA5400@linux.vnet.ibm.com>
+	Wed, 3 Dec 2008 08:01:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:user-agent:mime-version:to:cc:subject:references:in-reply-to
+         :content-type:content-transfer-encoding:from:sender:message-id;
+        b=VVoxZFuI8tFhGGdkAb2s7j00DhTaZwYrzj/2G6TcXtbKeQjIih5vutbmyVLEuW6Odb
+         cYjP3ljm1ERN9Aou0bF089ZnzwxCg+l1CsjBMahOiuy71POGE4GX0shJSjrk1ZjebxXm
+         MeI1PNaSP9wYiC4PQw3jxXN/NhqAkymR6GNhA=
+Date: Wed, 03 Dec 2008 13:01:25 +0000
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Matt_Domsch@dell.com, greg@kroah.com, linux-acpi@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>, Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: [PATCH 2/2 update] misc: Add dell-laptop driver
+References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202201645.GB31620@srcf.ucam.org>
+In-Reply-To: <20081202201645.GB31620@srcf.ucam.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203124104.GA5400@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
+From: none <alan-jenkins@tuffmail.co.uk>
+Message-ID: <49368329.19e7300a.0526.5a68@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 06:11:04PM +0530, Kamalesh Babulal wrote:
-> Hi Stephen,
-> 
-> 	next-20081203 kernel build fails on x86 with build failure
-> 
-> In file included from fs/xfs/linux-2.6/xfs_file.c:39:
+Matthew Garrett wrote:
+> misc: Add dell-laptop driver
+>     
+> Add a driver for controling Dell-specific backlight and rfkill interfaces.
+> This driver makes use of the dcdbas interface to the Dell firmware to allow
+> the backlight and rfkill interfaces on Dell systems to be driven through the
+> standardised sysfs interfaces.
+>     
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+>
+> ---
+>
+> Contains Andrew's suggested updates, plus a fix for a leak on the init 
+> error path.
+>   
 
-This is the fix I submitted for it yesterday:
+Sorry, I should have mentioned this in my first message:
 
--- 
+> +	if ((status & (1<<2|1<<8)) == (1<<2|1<<8)) {
+> +		wifi_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_WLAN);
+> +		if (!wifi_rfkill)
+> +			goto err_wifi;
+> +		wifi_rfkill->name = "dell-wifi";
+> +		wifi_rfkill->toggle_radio = dell_wifi_set;
+> +		wifi_rfkill->get_state = dell_wifi_get;
+>   
 
-fix compile on 32 bit systems
+The rfkill doc (and code) say that you also need to initialize
+wifi_rfkill->state to the current state of the hardware.
 
-The recent compat patches make xfs_file.c include xfs_ioctl32.h unconditional,
-which breaks the build on 32 bit systems which don't have the various compat
-defintions.
+> +		ret = rfkill_register(wifi_rfkill);
+> +		if (ret)
+> +			goto err_wifi;
+> +	}
+> +
 
-Remove the include and move the defintion of xfs_file_compat_ioctl to
-xfs_ioctl.h so that we can avoid including all the compat defintions in
-xfs_file.c
-
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: xfs-master/fs/xfs/linux-2.6/xfs_file.c
-===================================================================
---- xfs-master.orig/fs/xfs/linux-2.6/xfs_file.c	2008-12-02 11:43:38.000000000 +0100
-+++ xfs-master/fs/xfs/linux-2.6/xfs_file.c	2008-12-02 11:44:06.000000000 +0100
-@@ -36,9 +36,9 @@
- #include "xfs_inode.h"
- #include "xfs_error.h"
- #include "xfs_rw.h"
--#include "xfs_ioctl32.h"
- #include "xfs_vnodeops.h"
- #include "xfs_da_btree.h"
-+#include "xfs_ioctl.h"
- 
- #include <linux/dcache.h>
- #include <linux/smp_lock.h>
-Index: xfs-master/fs/xfs/linux-2.6/xfs_ioctl.h
-===================================================================
---- xfs-master.orig/fs/xfs/linux-2.6/xfs_ioctl.h	2008-12-02 11:44:10.000000000 +0100
-+++ xfs-master/fs/xfs/linux-2.6/xfs_ioctl.h	2008-12-02 11:44:52.000000000 +0100
-@@ -67,4 +67,16 @@ xfs_attrmulti_attr_remove(
- 	char			*name,
- 	__uint32_t		flags);
- 
-+extern long
-+xfs_file_compat_ioctl(
-+	struct file		*file,
-+	unsigned int		cmd,
-+	unsigned long		arg);
-+
-+extern long
-+xfs_file_compat_ioctl_invis(
-+	struct file		*file,
-+	unsigned int		cmd,
-+	unsigned long		arg);
-+
- #endif
-Index: xfs-master/fs/xfs/linux-2.6/xfs_ioctl32.h
-===================================================================
---- xfs-master.orig/fs/xfs/linux-2.6/xfs_ioctl32.h	2008-12-02 11:44:10.000000000 +0100
-+++ xfs-master/fs/xfs/linux-2.6/xfs_ioctl32.h	2008-12-02 11:44:18.000000000 +0100
-@@ -20,9 +20,6 @@
- 
- #include <linux/compat.h>
- 
--extern long xfs_file_compat_ioctl(struct file *, unsigned, unsigned long);
--extern long xfs_file_compat_invis_ioctl(struct file *, unsigned, unsigned long);
--
- /*
-  * on 32-bit arches, ioctl argument structures may have different sizes
-  * and/or alignment.  We define compat structures which match the
+Regards
+Alan
