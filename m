@@ -1,230 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYLCLVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbYLCL1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbYLCLVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 06:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbYLCLV1
+	id S1752783AbYLCL1o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 06:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYLCL1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 06:21:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45427 "EHLO ogre.sisk.pl"
+	Wed, 3 Dec 2008 06:27:35 -0500
+Received: from smtp.zeuux.org ([210.51.160.52]:52945 "EHLO z.billxu.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752134AbYLCLVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 06:21:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Wed, 3 Dec 2008 12:20:36 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812030840.25539.rjw@sisk.pl> <200812030852.36437.rjw@sisk.pl>
-In-Reply-To: <200812030852.36437.rjw@sisk.pl>
+	id S1751663AbYLCL1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 06:27:34 -0500
+Date: Wed, 3 Dec 2008 19:27:25 +0800
+From: Jianjun Kong <jianjun@zeuux.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>, mingo@redhat.com
+Subject: Re: v2.6.28-rc7: Fail compile arch/x86/kernel/cpu/common.c
+Message-ID: <20081203112725.GA6822@ubuntu>
+References: <20081203070115.GA32403@ubuntu> <20081203073504.GB17580@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200812031220.36711.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081203073504.GB17580@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 3 of December 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 3 of December 2008, Rafael J. Wysocki wrote:
-> > On Wednesday, 3 of December 2008, Linus Torvalds wrote:
-> > > 
-> > > On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
-> > > > 
-> > > > Here's the output of 'lspci -vvxxx':
-> > > 
-> > > Ok, I'm not finding any documented quirks that would be memory regions, 
-> > > and in fact it doesn't look like there is even any remotely likely 32-bit 
-> > > valies that might be pointers in your PCI config space that look remotely 
-> > > like they might be conflicting in the area of MMIO space that we allocate 
-> > > PCI resources from (ie 0x88000000-0x92000000).
-> > > 
-> > > Of course, any odd MMIO regions might be descibed by some insane model 
-> > > that doesn't look like an aligned 32-bit value, but that's unlikely.
-> > > 
-> > > So I'm still not seeing anything wrong in there.
-> > > 
-> > > > I'll run the 'pci=cbmemsize=4M' test tomorrow (need to have some sleep).
-> > > 
-> > > Sure. It will be interesting to see if it makes any difference.
-> > 
-> > It didn't help (failure in the 4th consecutive hibernation/resume cycle).
-> 
-> Moreover, to check if the problem may be related to the prefetch window,
-> I added the appended patch on top of -rc7 (instead of the previous debug
-> patch), which resulted in the following layout in /proc/iomem:
-> 
-> 88000000-8dffffff : PCI Bus 0000:03
->   88000000-8bffffff : PCI CardBus 0000:04
->   8c000000-8c003fff : 0000:03:0b.1
->   8c004000-8c004fff : 0000:03:0b.0
->     8c004000-8c004fff : yenta_socket
->   8c005000-8c0057ff : 0000:03:0b.1
->     8c005000-8c0057ff : firewire_ohci
->   8c005800-8c0058ff : 0000:03:0b.3
->     8c005800-8c0058ff : mmc0
->   8c400000-8c7fffff : PCI CardBus 0000:04
-> 
-> and the first hibernation-resume cycle failed.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  drivers/pci/setup-bus.c |   19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> Index: linux-2.6/drivers/pci/setup-bus.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/setup-bus.c
-> +++ linux-2.6/drivers/pci/setup-bus.c
-> @@ -353,6 +353,25 @@ static int pbus_size_mem(struct pci_bus 
->  			r_size = resource_size(r);
->  			/* For bridges size != alignment */
->  			align = resource_alignment(r);
-> +			if (r->flags & IORESOURCE_PREFETCH) {
-> +				resource_size_t expected_align;
-> +
-> +				expected_align = (i < PCI_BRIDGE_RESOURCES) ?
-> +							r_size : r->start;
-> +				if (align != expected_align) {
-> +					dev_warn(&dev->dev,
-> +						"BAR %d [%llx-%llx] "
-> +						"alignment issue: flags=%lx "
-> +						"align=%llx (%llx)\n", i,
-> +						(unsigned long long)r->start,
-> +						(unsigned long long)r->end,
-> +						r->flags,
-> +						(unsigned long long)align,
-> +						(unsigned long long)expected_align);
-> +					/* Hacky and wrong, but trying to keep things */
-> +					align = expected_align;
-> +				}
-> +			}
->  			order = __ffs(align) - 20;
->  			if (order > 11) {
->  				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
-> --
+On Wed, Dec 03, 2008 at 08:35:04AM +0100, Ingo Molnar wrote:
+>* Jianjun Kong <jianjun@zeuux.org> wrote:
+>> arch/x86/kernel/cpu/common.c: In function ‘early_identify_cpu’:
+>> arch/x86/kernel/cpu/common.c:555: error: ‘boot_cpu_id’ undeclared (first
+>> use in this function)
+>> arch/x86/kernel/cpu/common.c:555: error: (Each undeclared identifier is
+>> reported only once
+>> arch/x86/kernel/cpu/common.c:555: error: for each function it appears
+>> in.)
+>> arch/x86/kernel/cpu/common.c: In function ‘cpu_init’:
+>> arch/x86/kernel/cpu/common.c:1142: error: ‘boot_cpu_id’ undeclared
+>> (first use in this function)
+>> make[2]: *** [arch/x86/kernel/cpu/common.o] Error 1
+>> make[1]: *** [arch/x86/kernel/cpu] Error 2
+>> make: *** [arch/x86/kernel] Error 2
+>
+>i cannot reproduce this build error neither with v2.6.28-rc7 nor 
+>with latest -git (commit f6f7b52), using your config.
+>
+>could you send me your arch/x86/include/asm/smp.h file? Could 
+>you also double-check that you have the kernel source tree 
+>checked out properly? If you track it as a remote as per:
 
-Now _that_ seems interesting.
+My kernel source tree checked out from git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git, and there is no problem of check out.
 
-I noticed that on this particular box my first patch is equivalent to replacing
-IORESOURCE_SIZEALIGN with IORESOURCE_STARTALIGN in two places under the last
-'if()' in pci_bus_size_cardbus(), so I wondered what would happen if we only
-allocated the prefetchable region in there.  Following that, I did:
+This problem is also exist on the latest code of linux-2.6.git.
 
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -432,12 +432,14 @@ static void pci_bus_size_cardbus(struct 
- 	 */
- 	if (ctrl & PCI_CB_BRIDGE_CTL_PREFETCH_MEM0) {
- 		b_res[2].start = 0;
--		b_res[2].end = pci_cardbus_mem_size - 1;
-+		b_res[2].end = pci_cardbus_mem_size * 2 - 1;
- 		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH | IORESOURCE_SIZEALIGN;
- 
-+#if 0
- 		b_res[3].start = 0;
- 		b_res[3].end = pci_cardbus_mem_size - 1;
- 		b_res[3].flags |= IORESOURCE_MEM | IORESOURCE_SIZEALIGN;
-+#endif
- 	} else {
- 		b_res[3].start = 0;
- 		b_res[3].end = pci_cardbus_mem_size * 2 - 1;
+$ cat arch/x86/include/asm/smp.h
 
-(well, I didn't have to allocate twice the size but that was to check if the
-size of the allocation was going to matter), which resulted in the appended
-/proc/iomem.
+#ifndef _ASM_X86_SMP_H
+#define _ASM_X86_SMP_H
+#ifndef __ASSEMBLY__
+#include <linux/cpumask.h>
+#include <linux/init.h>
+#include <asm/percpu.h>
 
-Then, voila!, I'm not able to reproduce the hibernation-resume failure.
+/*
+ * We need the APIC definitions automatically as part of 'smp.h'
+ */
+#ifdef CONFIG_X86_LOCAL_APIC
+# include <asm/mpspec.h>
+# include <asm/apic.h>
+# ifdef CONFIG_X86_IO_APIC
+#  include <asm/io_apic.h>
+# endif
+#endif
+#include <asm/pda.h>
+#include <asm/thread_info.h>
 
-This appears to mean that:
-(1) The sizes of the allocations and the locations of devices in the memory
-    address space don't matter here.
-(2) The presence and size of the prefetchable memory window don't matter here.
-(3) What matters is the presence of non-prefetchable memory window on the
-    supposedly transparent bridge.  Namely, if the window is there, resume from
-    hibernation occasionally fails (again, the size of the window and the
-    location of it in the memory address space doesn't seem to matter).
+extern cpumask_t cpu_callout_map;
+extern cpumask_t cpu_initialized;
+extern cpumask_t cpu_callin_map;
 
-So, apparently, on this box (and I guess on Frans' too) we could avoid the
-problem if we didn't allocate the non-prefetchable memory window in
-pci_bus_size_cardbus(), but I guess that wouldn't be generally correct.
+extern void (*mtrr_hook)(void);
+extern void zap_low_mappings(void);
 
-Also, I would be happy to actually understand _why_ this happens.
+extern int __cpuinit get_local_pda(int cpu);
 
-Thanks,
-Rafael
+extern int smp_num_siblings;
+extern unsigned int num_processors;
+extern cpumask_t cpu_initialized;
 
----
-00000000-0009fbff : System RAM
-0009fc00-0009ffff : reserved
-000e0000-000eedff : reserved
-000eee00-000eefff : ACPI Non-volatile Storage
-000ef000-000fffff : reserved
-00100000-7f74ffff : System RAM
-  00200000-00450486 : Kernel code
-  00450487-00603c37 : Kernel data
-  00678000-00784d3b : Kernel bss
-7f750000-7fffffff : reserved
-  7f750000-7f75ffff : pnp 00:00
-  7f760000-7f7fffff : pnp 00:00
-  7f800000-7fffffff : pnp 00:00
-88000000-8fffffff : PCI Bus 0000:03 <-- the prefetchable window
-  88000000-8fffffff : PCI CardBus 0000:04 <-- the prefetchable window
-90000000-900fffff : PCI Bus 0000:03
-  90000000-90003fff : 0000:03:0b.1
-  90004000-90004fff : 0000:03:0b.0
-    90004000-90004fff : yenta_socket
-  90005000-900057ff : 0000:03:0b.1
-    90005000-900057ff : firewire_ohci
-  90005800-900058ff : 0000:03:0b.3
-    90005800-900058ff : mmc0
-90100000-9017ffff : 0000:00:02.1
-90180000-90183fff : 0000:00:1b.0
-  90180000-90183fff : ICH HD audio
-90184000-90184fff : Intel Flush Page
-90400000-907fffff : PCI CardBus 0000:04 <-- last interesting line
-e0000000-efffffff : 0000:00:02.0
-  e0000000-e07affff : vesafb
-f0000000-f3ffffff : PCI MMCONFIG 0
-  f0000000-f3ffffff : pnp 00:01
-fec00000-fec17fff : reserved
-  fec00000-fec17fff : pnp 00:00
-    fec00000-fec00fff : IOAPIC 0
-fec20000-fec27fff : reserved
-  fec20000-fec27fff : pnp 00:00
-fed00000-fed003ff : HPET 0
-  fed00000-fed003ff : reserved
-fed14000-fed19fff : reserved
-  fed14000-fed19fff : pnp 00:00
-fed1c000-fed8ffff : reserved
-  fed1c000-fed1ffff : pnp 00:00
-  fed20000-fed3ffff : pnp 00:00
-  fed45000-fed8ffff : pnp 00:00
-feda0000-fedbffff : reserved
-  feda0000-fedbffff : pnp 00:00
-fee00000-fee00fff : Local APIC
-  fee00000-fee00fff : reserved
-    fee00000-fee00fff : pnp 00:00
-ff800000-ff8fffff : PCI Bus 0000:02
-  ff8fe000-ff8fffff : 0000:02:00.0
-    ff8fe000-ff8fffff : iwlagn
-ff900000-ff9fffff : PCI Bus 0000:01
-  ff9e0000-ff9fffff : 0000:01:00.0
-    ff9e0000-ff9fffff : e1000e
-ffa00000-ffbfffff : reserved
-  ffa00000-ffbfffff : pnp 00:00
-ffc3f800-ffc3fbff : 0000:00:1f.2
-  ffc3f800-ffc3fbff : ahci
-ffc3fc00-ffc3ffff : 0000:00:1d.7
-  ffc3fc00-ffc3ffff : ehci_hcd
-ffc40000-ffc7ffff : 0000:00:02.0
-ffc80000-ffcfffff : 0000:00:02.0
-ffd00000-ffffffff : reserved
-  ffd00000-ffffffff : pnp 00:00
+DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+DECLARE_PER_CPU(cpumask_t, cpu_core_map);
+DECLARE_PER_CPU(u16, cpu_llc_id);
+#ifdef CONFIG_X86_32
+DECLARE_PER_CPU(int, cpu_number);
+#endif
+
+DECLARE_EARLY_PER_CPU(u16, x86_cpu_to_apicid);
+DECLARE_EARLY_PER_CPU(u16, x86_bios_cpu_apicid);
+
+/* Static state in head.S used to set up a CPU */
+extern struct {
+	void *sp;
+	unsigned short ss;
+} stack_start;
+
+struct smp_ops {
+	void (*smp_prepare_boot_cpu)(void);
+	void (*smp_prepare_cpus)(unsigned max_cpus);
+	void (*smp_cpus_done)(unsigned max_cpus);
+
+	void (*smp_send_stop)(void);
+	void (*smp_send_reschedule)(int cpu);
+
+	int (*cpu_up)(unsigned cpu);
+	int (*cpu_disable)(void);
+	void (*cpu_die)(unsigned int cpu);
+	void (*play_dead)(void);
+
+	void (*send_call_func_ipi)(cpumask_t mask);
+	void (*send_call_func_single_ipi)(int cpu);
+};
+
+/* Globals due to paravirt */
+extern void set_cpu_sibling_map(int cpu);
+
+#ifdef CONFIG_SMP
+#ifndef CONFIG_PARAVIRT
+#define startup_ipi_hook(phys_apicid, start_eip, start_esp) do { } while (0)
+#endif
+extern struct smp_ops smp_ops;
+
+static inline void smp_send_stop(void)
+{
+	smp_ops.smp_send_stop();
+}
+
+static inline void smp_prepare_boot_cpu(void)
+{
+	smp_ops.smp_prepare_boot_cpu();
+}
+
+static inline void smp_prepare_cpus(unsigned int max_cpus)
+{
+	smp_ops.smp_prepare_cpus(max_cpus);
+}
+
+static inline void smp_cpus_done(unsigned int max_cpus)
+{
+	smp_ops.smp_cpus_done(max_cpus);
+}
+
+static inline int __cpu_up(unsigned int cpu)
+{
+	return smp_ops.cpu_up(cpu);
+}
+
+static inline int __cpu_disable(void)
+{
+	return smp_ops.cpu_disable();
+}
+
+static inline void __cpu_die(unsigned int cpu)
+{
+	smp_ops.cpu_die(cpu);
+}
+
+static inline void play_dead(void)
+{
+	smp_ops.play_dead();
+}
+
+static inline void smp_send_reschedule(int cpu)
+{
+	smp_ops.smp_send_reschedule(cpu);
+}
+
+static inline void arch_send_call_function_single_ipi(int cpu)
+{
+	smp_ops.send_call_func_single_ipi(cpu);
+}
+
+static inline void arch_send_call_function_ipi(cpumask_t mask)
+{
+	smp_ops.send_call_func_ipi(mask);
+}
+
+void cpu_disable_common(void);
+void native_smp_prepare_boot_cpu(void);
+void native_smp_prepare_cpus(unsigned int max_cpus);
+void native_smp_cpus_done(unsigned int max_cpus);
+int native_cpu_up(unsigned int cpunum);
+int native_cpu_disable(void);
+void native_cpu_die(unsigned int cpu);
+void native_play_dead(void);
+void play_dead_common(void);
+
+void native_send_call_func_ipi(cpumask_t mask);
+void native_send_call_func_single_ipi(int cpu);
+
+extern void prefill_possible_map(void);
+
+void smp_store_cpu_info(int id);
+#define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
+
+/* We don't mark CPUs online until __cpu_up(), so we need another measure */
+static inline int num_booting_cpus(void)
+{
+	return cpus_weight(cpu_callout_map);
+}
+#else
+static inline void prefill_possible_map(void)
+{
+}
+#endif /* CONFIG_SMP */
+
+extern unsigned disabled_cpus __cpuinitdata;
+
+#ifdef CONFIG_X86_32_SMP
+/*
+ * This function is needed by all SMP systems. It must _always_ be valid
+ * from the initial startup. We map APIC_BASE very early in page_setup(),
+ * so this is correct in the x86 case.
+ */
+#define raw_smp_processor_id() (x86_read_percpu(cpu_number))
+extern int safe_smp_processor_id(void);
+
+#elif defined(CONFIG_X86_64_SMP)
+#define raw_smp_processor_id()	read_pda(cpunumber)
+
+#define stack_smp_processor_id()					\
+({								\
+	struct thread_info *ti;						\
+	__asm__("andq %%rsp,%0; ":"=r" (ti) : "0" (CURRENT_MASK));	\
+	ti->cpu;							\
+})
+#define safe_smp_processor_id()		smp_processor_id()
+
+#else /* !CONFIG_X86_32_SMP && !CONFIG_X86_64_SMP */
+#define cpu_physical_id(cpu)		boot_cpu_physical_apicid
+#define safe_smp_processor_id()		0
+#define stack_smp_processor_id() 	0
+#endif
+
+#ifdef CONFIG_X86_LOCAL_APIC
+
+#ifndef CONFIG_X86_64
+static inline int logical_smp_processor_id(void)
+{
+	/* we don't want to mark this access volatile - bad code generation */
+	return GET_APIC_LOGICAL_ID(*(u32 *)(APIC_BASE + APIC_LDR));
+}
+
+#include <mach_apicdef.h>
+static inline unsigned int read_apic_id(void)
+{
+	unsigned int reg;
+
+	reg = *(u32 *)(APIC_BASE + APIC_ID);
+
+	return GET_APIC_ID(reg);
+}
+#endif
+
+
+# if defined(APIC_DEFINITION) || defined(CONFIG_X86_64)
+extern int hard_smp_processor_id(void);
+# else
+#include <mach_apicdef.h>
+static inline int hard_smp_processor_id(void)
+{
+	/* we don't want to mark this access volatile - bad code generation */
+	return read_apic_id();
+}
+# endif /* APIC_DEFINITION */
+
+#else /* CONFIG_X86_LOCAL_APIC */
+
+# ifndef CONFIG_SMP
+#  define hard_smp_processor_id()	0
+# endif
+
+#endif /* CONFIG_X86_LOCAL_APIC */
+
+#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
+extern unsigned char boot_cpu_id;
+#else
+#define boot_cpu_id	0
+#endif
+
+#endif /* __ASSEMBLY__ */
+#endif /* _ASM_X86_SMP_H */
