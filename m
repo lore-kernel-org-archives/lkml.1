@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbYLCU3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYLCU3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753638AbYLCU3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbYLCT6X
+	id S1756655AbYLCU3t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbYLCT60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:23 -0500
-Received: from kroah.org ([198.145.64.141]:56851 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:26 -0500
+Received: from kroah.org ([198.145.64.141]:56869 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751543AbYLCT6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:58:11 -0500
-Date: Wed, 3 Dec 2008 11:56:57 -0800
+	id S1756125AbYLCT6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:58:13 -0500
+Date: Wed, 3 Dec 2008 11:56:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mingming Cao <cmm@us.ibm.com>
-Subject: [patch 103/104] ext3: fix ext3 block reservation early ENOSPC issue
-Message-ID: <20081203195657.GZ8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, Jan Kara <jack@suse.cz>
+Subject: [patch 104/104] jbd: ordered data integrity fix
+Message-ID: <20081203195659.GA8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext3-fix-ext3-block-reservation-early-enospc-issue.patch"
+Content-Disposition: inline; filename="jbd-ordered-data-integrity-fix.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,63 +39,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mingming Cao <cmm@us.ibm.com>
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 
-commit 46d01a225e694f1a4343beea44f1e85105aedd7e upstream.
+commit 960a22ae60c8a723bd17da3b929fe0bcea6d007e upstream.
 
-We could run into ENOSPC error on ext3, even when there is free blocks on
-the filesystem.
+In ordered mode, if a file data buffer being dirtied exists in the
+committing transaction, we write the buffer to the disk, move it from the
+committing transaction to the running transaction, then dirty it.  But we
+don't have to remove the buffer from the committing transaction when the
+buffer couldn't be written out, otherwise it would miss the error and the
+committing transaction would not abort.
 
-The problem is triggered in the case the goal block group has 0 free
-blocks , and the rest block groups are skipped due to the check of
-"free_blocks < windowsz/2".  Current code could fall back to non
-reservation allocation to prevent early ENOSPC after examing all the block
-groups with reservation on , but this code was bypassed if the reservation
-window is turned off already, which is true in this case.
+This patch adds an error check before removing the buffer from the
+committing transaction.
 
-This patch fixed two issues:
-1) We don't need to turn off block reservation if the goal block group has
-0 free blocks left and continue search for the rest of block groups.
-
-Current code the intention is to turn off the block reservation if the
-goal allocation group has a few (some) free blocks left (not enough for
-make the desired reservation window),to try to allocation in the goal
-block group, to get better locality.  But if the goal blocks have 0 free
-blocks, it should leave the block reservation on, and continues search for
-the next block groups,rather than turn off block reservation completely.
-
-2) we don't need to check the window size if the block reservation is off.
-
-The problem was originally found and fixed in ext4.
-
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Cc: Theodore Ts'o <tytso@mit.edu>
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Acked-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Willy Tarreau <w@1wt.eu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext3/balloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/jbd/transaction.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
---- a/fs/ext3/balloc.c
-+++ b/fs/ext3/balloc.c
-@@ -1547,6 +1547,7 @@ retry_alloc:
- 	 * turn off reservation for this allocation
- 	 */
- 	if (my_rsv && (free_blocks < windowsz)
-+		&& (free_blocks > 0)
- 		&& (rsv_is_empty(&my_rsv->rsv_window)))
- 		my_rsv = NULL;
+--- a/fs/jbd/transaction.c
++++ b/fs/jbd/transaction.c
+@@ -954,9 +954,10 @@ int journal_dirty_data(handle_t *handle,
+ 	journal_t *journal = handle->h_transaction->t_journal;
+ 	int need_brelse = 0;
+ 	struct journal_head *jh;
++	int ret = 0;
  
-@@ -1585,7 +1586,7 @@ retry_alloc:
- 		 * free blocks is less than half of the reservation
- 		 * window size.
- 		 */
--		if (free_blocks <= (windowsz/2))
-+		if (my_rsv && (free_blocks <= (windowsz/2)))
- 			continue;
+ 	if (is_handle_aborted(handle))
+-		return 0;
++		return ret;
  
- 		brelse(bitmap_bh);
+ 	jh = journal_add_journal_head(bh);
+ 	JBUFFER_TRACE(jh, "entry");
+@@ -1067,7 +1068,16 @@ int journal_dirty_data(handle_t *handle,
+ 				   time if it is redirtied */
+ 			}
+ 
+-			/* journal_clean_data_list() may have got there first */
++			/*
++			 * We cannot remove the buffer with io error from the
++			 * committing transaction, because otherwise it would
++			 * miss the error and the commit would not abort.
++			 */
++			if (unlikely(!buffer_uptodate(bh))) {
++				ret = -EIO;
++				goto no_journal;
++			}
++
+ 			if (jh->b_transaction != NULL) {
+ 				JBUFFER_TRACE(jh, "unfile from commit");
+ 				__journal_temp_unlink_buffer(jh);
+@@ -1108,7 +1118,7 @@ no_journal:
+ 	}
+ 	JBUFFER_TRACE(jh, "exit");
+ 	journal_put_journal_head(jh);
+-	return 0;
++	return ret;
+ }
+ 
+ /**
 
