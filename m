@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYLCJDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbYLCJEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbYLCJDv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 04:03:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYLCJDI
+	id S1753312AbYLCJEY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 04:04:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYLCJDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 04:03:08 -0500
-Received: from 8bytes.org ([88.198.83.132]:57584 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752019AbYLCJDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 04:03:06 -0500
-Date: Wed, 3 Dec 2008 10:03:04 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
-       Han Weidong <weidong.han@intel.com>, linux-kernel@vger.kernel.org,
-       Alexander Graf <agraf@suse.de>, iommu@lists.linux-foundation.org,
-       Ingo Molnar <mingo@redhat.com>, Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 0/12] Factor VT-d KVM functions into a generic API (with multiple device assignment support)
-Message-ID: <20081203090304.GJ26275@8bytes.org>
-References: <1228222883-17207-1-git-send-email-joerg.roedel@amd.com> <20081203034405.GA23835@suse.de> <20081203075049.GN29705@8bytes.org> <20081203075302.GA13420@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203075302.GA13420@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 3 Dec 2008 04:03:30 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39952 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751455AbYLCJD0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 04:03:26 -0500
+Subject: Re: [PATCH] Fixup MODULE_DEVICE_TABLE(dmi, ...)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081203004120.460166ac.akpm@linux-foundation.org>
+References: <20081114234131.GA28559@x200.localdomain>
+	 <1226747692.3687.285.camel@macbook.infradead.org>
+	 <20081121015559.GA4478@x200.localdomain>
+	 <20081203004120.460166ac.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 09:03:21 +0000
+Message-Id: <1228295002.27314.6.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 11:53:02PM -0800, Greg KH wrote:
-> On Wed, Dec 03, 2008 at 08:50:49AM +0100, Joerg Roedel wrote:
-> > On Tue, Dec 02, 2008 at 07:44:05PM -0800, Greg KH wrote:
-> > > On Tue, Dec 02, 2008 at 02:01:11PM +0100, Joerg Roedel wrote:
-> > > > Hi,
-> > > > 
-> > > > this patch series makes the current KVM device passthrough code generic
-> > > > enough so that other IOMMU implementation can also plug into this code.
-> > > > It works by factoring the functions Vt-d code exports to KVM into a
-> > > > generic interface which allows different backends.
-> > > > 
-> > > > This is the second version of the patchset. The most important change to
-> > > > the previous version is that this patchset was rebased to the improved
-> > > > API from Han Weidong which supports multiple devices per IOMMU domain.
-> > > > 
-> > > > For completeness, this series also includes the patches from Han with
-> > > > some cleanups. So this patchset can be applied on current avi/master
-> > > > tree.
-> > > 
-> > > Have you tried porting any of the current iommu controllers to this new
-> > > framework to see if it works properly for them?
-> > 
-> > It works currently for VT-d. I also port it to AMD IOMMU currently. With
-> > some extensions (offset for start address, flags and size limitation) it
-> > is also suitable for IOMMUs like GART or similar ones.
-> 
-> What about the Calgary chipset?
+On Wed, 2008-12-03 at 00:41 -0800, Andrew Morton wrote:
+> The changelog is too crappy for me.  Why did that error occur, and how
+> does the patch fix it?
 
-Calgary is quite similar to GART (there is something like the aperture
-and a linear single-level pagetable). So with the before mentioned
-extensions it is also suitable for Calgary.
+Well, you repeated the explanation of what's wrong -- although I don't
+see how it actually causes an _error_; it works here.
 
-Joerg
+The problem is that the MODULE_DEVICE_TABLE(dmi, foo) line expands to...
+
+extern const struct dmi_device_id __mod_dmi_device_table
+      __attribute__ ((unused, alias("foo")));
+
+And 'struct dmi_device_id' doesn't exist -- what we have is 'struct
+dmi_system_id'.
+
+In practice, this doesn't seem to matter because we never ask the
+compiler to look _inside_ that struct -- it's just like a forward
+declaration of 'struct foo' and then using pointers to it.
+
+But it looks like Alexey's managed to find a way to actually make a
+compiler barf on it, so that increases the motivation to fix it
+promptly...
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
