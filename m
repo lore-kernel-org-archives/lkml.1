@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYLCUAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbYLCUBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbYLCUAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYLCTuo
+	id S1751244AbYLCUBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbYLCTwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:44 -0500
-Received: from kroah.org ([198.145.64.141]:59694 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:52:21 -0500
+Received: from kroah.org ([198.145.64.141]:59765 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754121AbYLCTue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:34 -0500
-Date: Wed, 3 Dec 2008 11:49:16 -0800
+	id S1754824AbYLCTwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:52:18 -0500
+Date: Wed, 3 Dec 2008 11:50:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au,
-       ath9k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@Atheros.com>,
-       Maciej Zenczykowski <zenczykowski@gmail.com>,
-       Bennyam Malavazi <Bennyam.Malavazi@Atheros.com>
-Subject: [patch 025/104] ath9k: Fix SW-IOMMU bounce buffer starvation
-Message-ID: <20081203194916.GZ8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stefan Lippers-Hollmann <s.l-h@gmx.de>,
+       Cord Walter <qord@cwalter.net>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 027/104] axnet_cs / pcnet_cs: moving PCMCIA_DEVICE_PROD_ID
+	for Netgear FA411
+Message-ID: <20081203195041.GB8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ath9k-fix-sw-iommu-bounce-buffer-starvation.patch"
+Content-Disposition: inline; filename="axnet_cs-pcnet_cs-moving-pcmcia_device_prod_id-for-netgear-fa411.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,71 +40,96 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Luis R. Rodriguez <lrodriguez@Atheros.com>
+From: Cord Walter <cord.walter@gmx.de>
 
-commit ca0c7e5101fd4f37fed8e851709f08580b92fbb3 upstream.
+commit 208fbec5bec1de4fce48aab41efde11ba25ab04c upstream.
 
-This should fix the SW-IOMMU bounce buffer starvation
-seen ok kernel.org bugzilla 11811:
+Hi,
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11811
+after noticing that my Netgear FA411 (PCMCIA-NIC) [1] stopped working with
+the release of the 2.6.25 kernel (sidux-version), I checked the
+respective driver sources and noticed that the pcnet_cs driver bailed
+out with "use axnet_cs instead" for the Netgear FA411, but axnet_cs
+doesn't claim this ID.
 
-Users on MacBook Pro 3.1/MacBook v2 would see something like:
+I compiled a kernel with the PCMCIA-ID for the netgear card moved to
+axnet_cs from pcnet_cs which worked. I then contacted sidux-kernel
+maintainer Stefan Lippers-Hollmann who turned the info into this patch
+and integrated it into the kernel:
 
-DMA: Out of SW-IOMMU space for 4224 bytes at device 0000:0b:00.0
+<http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/features/2.6.27.4_PCMCIA_move-PCMCIA-ID-for-Netgear-FA411-from-pcnet_cs-to-axnet_cs.patch>
 
-Unfortunately its only easy to trigger on MacBook Pro 3.1/MacBook v2
-so far so its difficult to debug (even with swiotlb=force).
+This works for me and AFAIK there were no reports of any breakage for
+other devices on sidux-support.
 
-We were pci_unmap_single()'ing less bytes than what we called
-for with pci_map_single() and as such we were starving
-the swiotlb from its 64MB amount of bounce buffers. We remain
-consistent and now always use sc->rxbufsize for RX. While at
-it we update the beacon DMA maps as well to only use the data
-portion of the skb, previous to this we were pci_map_single()'ing
-more data for beaconing than what we tell the hardware it can use,
-therefore pushing more iotlb abuse.
+This looks like a trivial patch, but since I have very limited
+experience with kernel modifications  I might be woefully wrong there.
+But if there are no side effects of this patch, is it possible to get it
+into the official kernel?
 
-Still not sure why this is so easily triggerable on
-MacBook Pro 3.1, it may be the hardware configuration
-tends to use more memory > 3GB mark for DMA.
+I can provide more detailed information on the affected hardware if
+necessary.
 
-Signed-off-by: Maciej Zenczykowski <zenczykowski@gmail.com>
-Signed-off-by: Bennyam Malavazi <Bennyam.Malavazi@atheros.com>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+-cord
+
+[1]
+Socket 1 Device 0:      [axnet_cs]              (bus ID: 1.0)
+        Configuration:  state: on
+        Product Name:   NETGEAR FA411 Fast Ethernet
+        Identification: manf_id: 0x0149 card_id: 0x0411
+                        function: 6 (network)
+                        prod_id(1): "NETGEAR" (0x9aa79dc3)
+                        prod_id(2): "FA411" (0x40fad875)
+                        prod_id(3): "Fast Ethernet" (0xb4be14e3)
+                        prod_id(4): --- (---)
+
+From: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Date: Sat, 1 Nov 2008 23:53:04 +0000
+Subject: [patch 027/104] PCMCIA: move PCMCIA ID for Netgear FA411 from pcnet_cs to axnet_cs:
+
+Since kernel 2.6.25, commit 61da96be07ec860e260ca4af0199b9d48d000b80
+(pcnet_cs: if AX88190-based card, printk "use axnet_cs instead" message.),
+pcnet_cs bails out with "use axnet_cs instead" for the Netgear FA411, but
+axnet_cs doesn't claim this ID.
+
+Socket 1 Device 0:      [axnet_cs]              (bus ID: 1.0)
+        Configuration:  state: on
+        Product Name:   NETGEAR FA411 Fast Ethernet
+        Identification: manf_id: 0x0149 card_id: 0x0411
+                        function: 6 (network)
+                        prod_id(1): "NETGEAR" (0x9aa79dc3)
+                        prod_id(2): "FA411" (0x40fad875)
+                        prod_id(3): "Fast Ethernet" (0xb4be14e3)
+                        prod_id(4): --- (---)
+
+Signed-off-by: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Signed-off-by: Cord Walter <qord@cwalter.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath9k/recv.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/pcmcia/axnet_cs.c |    1 +
+ drivers/net/pcmcia/pcnet_cs.c |    1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/wireless/ath9k/recv.c
-+++ b/drivers/net/wireless/ath9k/recv.c
-@@ -1011,7 +1011,7 @@ int ath_rx_tasklet(struct ath_softc *sc,
- 
- 		pci_dma_sync_single_for_cpu(sc->pdev,
- 					    bf->bf_buf_addr,
--					    skb_tailroom(skb),
-+					    sc->sc_rxbufsize,
- 					    PCI_DMA_FROMDEVICE);
- 		pci_unmap_single(sc->pdev,
- 				 bf->bf_buf_addr,
-@@ -1303,8 +1303,7 @@ dma_addr_t ath_skb_map_single(struct ath
- 	 * NB: do NOT use skb->len, which is 0 on initialization.
- 	 * Use skb's entire data area instead.
- 	 */
--	*pa = pci_map_single(sc->pdev, skb->data,
--		skb_end_pointer(skb) - skb->head, direction);
-+	*pa = pci_map_single(sc->pdev, skb->data, sc->sc_rxbufsize, direction);
- 	return *pa;
- }
- 
-@@ -1314,6 +1313,5 @@ void ath_skb_unmap_single(struct ath_sof
- 			  dma_addr_t *pa)
- {
- 	/* Unmap skb's entire data area */
--	pci_unmap_single(sc->pdev, *pa,
--		skb_end_pointer(skb) - skb->head, direction);
-+	pci_unmap_single(sc->pdev, *pa, sc->sc_rxbufsize, direction);
- }
+--- a/drivers/net/pcmcia/axnet_cs.c
++++ b/drivers/net/pcmcia/axnet_cs.c
+@@ -787,6 +787,7 @@ static struct pcmcia_device_id axnet_ids
+ 	PCMCIA_DEVICE_PROD_ID12("IO DATA", "ETXPCM", 0x547e66dc, 0x233adac2),
+ 	PCMCIA_DEVICE_PROD_ID12("Linksys", "EtherFast 10/100 PC Card (PCMPC100 V3)", 0x0733cc81, 0x232019a8),
+ 	PCMCIA_DEVICE_PROD_ID12("MELCO", "LPC3-TX", 0x481e0094, 0xf91af609),
++	PCMCIA_DEVICE_PROD_ID12("NETGEAR", "FA411", 0x9aa79dc3, 0x40fad875),
+ 	PCMCIA_DEVICE_PROD_ID12("PCMCIA", "100BASE", 0x281f1c5d, 0x7c2add04),
+ 	PCMCIA_DEVICE_PROD_ID12("PCMCIA", "FastEtherCard", 0x281f1c5d, 0x7ef26116),
+ 	PCMCIA_DEVICE_PROD_ID12("PCMCIA", "FEP501", 0x281f1c5d, 0x2e272058),
+--- a/drivers/net/pcmcia/pcnet_cs.c
++++ b/drivers/net/pcmcia/pcnet_cs.c
+@@ -1697,7 +1697,6 @@ static struct pcmcia_device_id pcnet_ids
+ 	PCMCIA_DEVICE_PROD_ID12("National Semiconductor", "InfoMover NE4100", 0x36e1191f, 0xa6617ec8),
+ 	PCMCIA_DEVICE_PROD_ID12("NEC", "PC-9801N-J12", 0x18df0ba0, 0xbc912d76),
+ 	PCMCIA_DEVICE_PROD_ID12("NETGEAR", "FA410TX", 0x9aa79dc3, 0x60e5bc0e),
+-	PCMCIA_DEVICE_PROD_ID12("NETGEAR", "FA411", 0x9aa79dc3, 0x40fad875),
+ 	PCMCIA_DEVICE_PROD_ID12("Network Everywhere", "Fast Ethernet 10/100 PC Card", 0x820a67b6, 0x31ed1a5f),
+ 	PCMCIA_DEVICE_PROD_ID12("NextCom K.K.", "Next Hawk", 0xaedaec74, 0xad050ef1),
+ 	PCMCIA_DEVICE_PROD_ID12("PCMCIA", "10/100Mbps Ethernet Card", 0x281f1c5d, 0x6e41773b),
 
