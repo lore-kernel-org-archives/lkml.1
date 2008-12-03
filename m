@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYLCMhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbYLCMiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYLCMhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYLCMh3
+	id S1753122AbYLCMiD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:38:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYLCMhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:37:29 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:21047 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbYLCMh2 (ORCPT
+	Wed, 3 Dec 2008 07:37:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52909 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbYLCMhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:37:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=vnOV+8fBRvliHHKX0nnBy8zDszO30y237qmI1rmHWgezo+dH6u15anNDTf4D9Vw6Rn
-         vSrZ7vQehXzznnjttT+54RmGeNyo48Es9NcKfpzuKfPoFe3w8hQCJ+hslCGva08uDKtn
-         rdbh3RrFP9hVuHbQhoo2wZMn/Lw4U6xqa8hsM=
-Message-ID: <49367D82.8040305@tuffmail.co.uk>
-Date: Wed, 03 Dec 2008 12:37:22 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 3 Dec 2008 07:37:50 -0500
+Date: Wed, 3 Dec 2008 07:37:47 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: New location for generic headers?
+Message-ID: <20081203123747.GA1751@infradead.org>
+References: <20081203003620.GA32069@basil.nowhere.org> <200812031140.02338.arnd@arndb.de> <20081203120110.GA2822@uranus.ravnborg.org> <20081203121955.GJ6703@one.firstfloor.org> <20081203122149.GA27944@infradead.org> <20081203124218.GK6703@one.firstfloor.org>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Matt_Domsch@dell.com, greg@kroah.com, linux-acpi@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>, Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [PATCH 2/2 update] misc: Add dell-laptop driver
-References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202201645.GB31620@srcf.ucam.org>
-In-Reply-To: <20081202201645.GB31620@srcf.ucam.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081203124218.GK6703@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> misc: Add dell-laptop driver
->     
-> Add a driver for controling Dell-specific backlight and rfkill interfaces.
-> This driver makes use of the dcdbas interface to the Dell firmware to allow
-> the backlight and rfkill interfaces on Dell systems to be driven through the
-> standardised sysfs interfaces.
->     
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
->
-> ---
->
-> Contains Andrew's suggested updates, plus a fix for a leak on the init 
-> error path.
->   
+On Wed, Dec 03, 2008 at 01:42:18PM +0100, Andi Kleen wrote:
+> On Wed, Dec 03, 2008 at 07:21:49AM -0500, Christoph Hellwig wrote:
+> > On Wed, Dec 03, 2008 at 01:19:55PM +0100, Andi Kleen wrote:
+> > > The only problem I see is that it would user space use of asm/ 
+> > > without make headers_install impossible.
+> > 
+> > Well, they aren't supposed to do that anyway, so I would consider
+> > breaking it a good idea.
+> 
+> Sorry, but working against your users is never a good strategy.
 
-I see you don't call rfkill_set_default(). Do Dell firmwares support
-persistent rfkill state?
+It's not working against users.  It's just preventing something that
+is a very bad thing already. 
 
-My ill-informed guess is that it shouldn't hurt to call it. If the
-firmware is sane, it will initialize the rfkill to a useful state.
-Otherwise, the radio(s) would be unusable without the platform driver.
-But do feel free to ignore me, if you suspect the firmware of insanity :).
-
-Regards
-Alan
