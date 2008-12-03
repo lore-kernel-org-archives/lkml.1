@@ -1,233 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYLCRZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYLCRaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYLCRZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 12:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYLCRZK
+	id S1754119AbYLCRaL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 12:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYLCR36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 12:25:10 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:44320 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751930AbYLCRZJ (ORCPT
+	Wed, 3 Dec 2008 12:29:58 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:50681 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbYLCR35 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 12:25:09 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Av0EAK9MNklMROB9/2dsb2JhbACBbcRpCIwfgXcBCH8
-Date: Wed, 3 Dec 2008 12:25:07 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [PATCH] add tracepoints to track change in napi
-	states on network receive
-Message-ID: <20081203172507.GA4471@Krystal>
-References: <20081202195129.GA30042@hmsreliant.think-freely.org> <20081202200150.GA27282@Krystal> <20081203160134.GA6549@hmsreliant.think-freely.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 12:29:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Cxxa1NxD0zJGhj2pKOxzlF7f75kJ1+pIwb5jzMwA6fshZ2peOewD50rKP3qgswmTuN
+         dOaPIA433FTG5ik/tbeXYrO8fb0okU47KAP0L9Z64JyUojyR/6quvQUuwqrUPKWEqoAU
+         rpE8IjzezDH5lduukLpjz0D+lMr3e0WJ9V6tc=
+Message-ID: <fbdd0e50812030929s2d573981k46757c1b706f4cd5@mail.gmail.com>
+Date: Wed, 3 Dec 2008 18:29:55 +0100
+From: Geralt <usr.gentoo@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Shebang - why are parameters not splitted on whitespace?
+In-Reply-To: <fbdd0e50812030929q65d2e805y49094dd67209be7e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081203160134.GA6549@hmsreliant.think-freely.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:23:02 up 16 days, 18:03,  2 users,  load average: 0.60, 0.50,
-	0.62
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <fbdd0e50812030714md7dd899xeb8940798632b08b@mail.gmail.com>
+	 <2375c9f90812030756r5b8840e1u3980ddca8df27a6b@mail.gmail.com>
+	 <fbdd0e50812030929q65d2e805y49094dd67209be7e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Neil Horman (nhorman@tuxdriver.com) wrote:
-> On Tue, Dec 02, 2008 at 03:01:50PM -0500, Mathieu Desnoyers wrote:
-> > * Neil Horman (nhorman@tuxdriver.com) wrote:
-> > > Hey there-
-> > > 	I thought it would be handy to track the napi receive state of different
-> > > network devices using ltt.  This patch adds trace points to indicate when a napi
-> > > instance has been scheduled, when its serviced and when it completes.
-> > > 
-> > 
-> > Sounds great, see comments below,
-> <snip>
-> 
-> Hey,
-> 	New patch, with previous comments taken into account.
-> 
-> Patch to track the napi receive stat of different network devices using ltt.
-> Adds trace points to indicate when a napi instance has been scheduled, when its
-> serviced and when it completes
-> 
-> Regards
-> Neil
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  include/linux/netdevice.h |    5 +++++
->  include/trace/netdevice.h |   30 ++++++++++++++++++++++++++++++
->  ltt/probes/net-trace.c    |   22 ++++++++++++++++++++++
->  net/core/dev.c            |    7 ++++++-
->  4 files changed, 63 insertions(+), 1 deletion(-)
-> 
-> 
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index 488c56e..7da71eb 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -43,6 +43,9 @@
->  
->  #include <net/net_namespace.h>
->  
-> +struct napi_struct;
-> +#include <trace/netdevice.h>
-> +
->  struct vlan_group;
->  struct ethtool_ops;
->  struct netpoll_info;
-> @@ -386,6 +389,7 @@ static inline void napi_complete(struct napi_struct *n)
->  	local_irq_save(flags);
->  	__napi_complete(n);
->  	local_irq_restore(flags);
-> +	trace_napi_complete(n);
->  }
->  
->  /**
-> @@ -1726,6 +1730,7 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
->  	return 0;
->  }
->  
-> +
->  #endif /* __KERNEL__ */
->  
->  #endif	/* _LINUX_DEV_H */
-> diff --git a/include/trace/netdevice.h b/include/trace/netdevice.h
-> new file mode 100644
-> index 0000000..ba48f6c
-> --- /dev/null
-> +++ b/include/trace/netdevice.h
-> @@ -0,0 +1,30 @@
-> +#ifndef _INCLUDE_NETDEVICE_H_
-> +#define _INCLUDE_NETDEVICE_H_
-> +
-> +#include <linux/netdevice.h>
-> +
-> +/* Tracepoints */
-> +
-> +/*
-> + * Note these first 2 traces are actually in __napi_schedule and net_rx_action
-> + * respectively.  The former is in __napi_schedule because it uses at-most-once
-> + * logic and placing it in the calling routine (napi_schedule) would produce
-> + * countless trace events that were effectively  no-ops.  napi_poll is
-> + * implemented in net_rx_action, because thats where we do our polling on
-> + * devices.  The last trace point is in napi_complete, right where you would
-> + * think it would be.
-> + */
-> +DEFINE_TRACE(napi_schedule,
-> +	TPPROTO(struct napi_struct *n),
-> +	TPARGS(n));
-> +
-> +DEFINE_TRACE(napi_poll,
-> +	TPPROTO(struct napi_struct *n),
-> +	TPARGS(n));
-> +
-> +DEFINE_TRACE(napi_complete,
-> +	TPPROTO(struct napi_struct *n),
-> +	TPARGS(n));
-> +
-> +#endif
-> +
-> diff --git a/ltt/probes/net-trace.c b/ltt/probes/net-trace.c
-> index bac2b21..bd4e621 100644
-> --- a/ltt/probes/net-trace.c
-> +++ b/ltt/probes/net-trace.c
-> @@ -9,6 +9,7 @@
->  #include <trace/ipv4.h>
->  #include <trace/ipv6.h>
->  #include <trace/socket.h>
-> +#include <trace/netdevice.h>
->  
->  void probe_net_dev_xmit(struct sk_buff *skb)
->  {
-> @@ -104,6 +105,27 @@ void probe_socket_call(int call, unsigned long a0)
->  		"call %d a0 %lu", call, a0);
->  }
->  
-> +void probe_napi_schedule(struct napi_struct *n)
-> +{
-> +	trace_mark_tp(net_napi_schedule, napi_schedule, probe_napi_schedule,
-> +		"schedule napi_struct %p name  %s",
+On Wed, Dec 3, 2008 at 4:56 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Wed, Dec 3, 2008 at 3:14 PM, Geralt <usr.gentoo@googlemail.com> wrote:
+>> Hi,
+>>
+>> I've just noticed, that it's not possible to use more than one
+>> parameter in a shebang on linux, because everything following the
+>> executable path in the shebang is treated as one parameter, so for
+>> example
+>> #!/bin/awk --re-interval -f
+>> in a script called "test.awk" results in a call likes this:
+>> /bin/awk "--re-interval -f" ./test.awk
+>> when running it with "./test.awk".
+>>
+>> Is there any reason why the parameters are not split before passing
+>> them on to the program?
+>
+>
+> Hello,
+>
+> I think this behavior is different on different platforms, you can
+> find some clues
+> in man page of execve(2):
+>
+>       The  semantics  of  the  optional-arg argument of an interpreter script
+>       vary across implementations.  On Linux, the entire string following the
+>       interpreter name is passed as a single argument to the interpreter, and
+>       this string can include white space.  However, behavior differs on some
+>       other  systems.   Some  systems  use the first white space to terminate
+>       optional-arg.  On some systems, an interpreter script can have multiple
+>       arguments,  and  white  spaces  in optional-arg are used to delimit the
+>       arguments
+>
+> It seems that POSIX doesn't specify this.
+>
+> Thanks.
+>
 
-Almost there :)
+Hello,
 
-There is a extra whitespace above,
+I should have anticipated this objection :-). I'm aware that this is
+not consistent among Unix operating systems (you can find more about
+it here [1]), but I was specifically refering to linux in this case
+and why it handles the shebang arguments as one big string and not as
+single arguments for the application.
 
-and also  "schedule napi_struct" should probably be changed into
-napi_struct only, this removes the whitespace and duplicated information
-(I guess we know that given we are in event net_napi_schedule, this will
-have something to do with schedule...). Same applies to trace_mark_tp
-below.
 
-Thanks,
 
-Mathieu
+Geralt.
 
-> +		n, n->dev->name);
-> +}
-> +
-> +void probe_napi_poll(struct napi_struct *n)
-> +{
-> +	trace_mark_tp(net_napi_poll, napi_poll, probe_napi_poll,
-> +		"service napi_struct %p name %s",
-> +		n, n->dev->name); 
-> +}
-> +
-> +void probe_napi_complete(struct napi_struct *n)
-> +{
-> +	trace_mark_tp(net_napi_complete, napi_complete, probe_napi_complete,
-> +		"complete napi_struct %p name %s",
-> +		n, n->dev->name);
-> +}
-> +
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Mathieu Desnoyers");
->  MODULE_DESCRIPTION("Net Tracepoint Probes");
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 836fe6e..0c55c0f 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -128,6 +128,7 @@
->  #include <linux/jhash.h>
->  #include <linux/random.h>
->  #include <trace/net.h>
-> +#include <trace/netdevice.h>
->  
->  #include "net-sysfs.h"
->  
-> @@ -2329,6 +2330,8 @@ void __napi_schedule(struct napi_struct *n)
->  {
->  	unsigned long flags;
->  
-> +	trace_napi_poll(n);
-> +
->  	local_irq_save(flags);
->  	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
->  	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
-> @@ -2380,8 +2383,10 @@ static void net_rx_action(struct softirq_action *h)
->  		 * accidently calling ->poll() when NAPI is not scheduled.
->  		 */
->  		work = 0;
-> -		if (test_bit(NAPI_STATE_SCHED, &n->state))
-> +		if (test_bit(NAPI_STATE_SCHED, &n->state)) {
-> +			trace_napi_poll(n);
->  			work = n->poll(n, weight);
-> +		}
->  
->  		WARN_ON_ONCE(work > weight);
->  
-> -- 
-> /****************************************************
->  * Neil Horman <nhorman@tuxdriver.com>
->  * Software Engineer, Red Hat
->  ****************************************************/
-> 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+[1] http://www.in-ulm.de/~mascheck/various/shebang/
