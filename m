@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbYLCWSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYLCWUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbYLCWSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 17:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbYLCWR5
+	id S1756127AbYLCWUU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 17:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYLCWUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 17:17:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53015 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755255AbYLCWR4 (ORCPT
+	Wed, 3 Dec 2008 17:20:06 -0500
+Received: from mail.somanetworks.com ([216.126.67.42]:42792 "EHLO
+	mail.somanetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbYLCWUE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 17:17:56 -0500
-Date: Wed, 3 Dec 2008 14:17:08 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Wim Van Sebroeck <wim@iguana.be>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression from 2.6.28-rc7: Commit 7cd5b08be3 breaks startup on
- Toshiba Portege R500
-In-Reply-To: <200812032300.19110.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812031412060.3256@nehalem.linux-foundation.org>
-References: <200812032300.19110.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 3 Dec 2008 17:20:04 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Dec 2008 17:20:04 EST
+Date: Wed, 3 Dec 2008 17:15:11 -0500 (EST)
+From: Scott Murray <scottm@somanetworks.com>
+X-X-Sender: scottm@rancor
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, kristen.c.accardi@intel.com,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [patch 034/104] PCI: cpci_hotplug: stop managing
+ hotplug_slot->name
+In-Reply-To: <20081203195057.GI8950@kroah.com>
+Message-ID: <alpine.LFD.1.10.0812031711160.6809@rancor>
+References: <20081203193901.715896543@mini.kroah.org> <20081203195057.GI8950@kroah.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Dec 2008, Greg KH wrote:
+
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+>
+> ------------------
+> From: Alex Chiang <achiang@hp.com>
+>
+> commit d6c479e0b777afcd7a26ca62e122e3f878ccc830 upstream.
+>
+> We no longer need to manage our version of hotplug_slot->name
+> since the PCI and hotplug core manage it on our behalf.
+>
+> Now, we simply advise the PCI core of the name that we would
+> like, and let the core take care of the rest.
+>
+> Cc: kristen.c.accardi@intel.com
+> Cc: scottm@somanetworks.com
+> Acked-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Scott Murray <scottm@somanetworks.com>
+
+Sorry for the extremely late review, I had been swamped and am now in the
+process of switching jobs.  scottm@somanetworks.com will stop working
+soon, I will submit a patch shortly to change it in MAINTAINERS.
+
+Scott
 
 
-On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
-> 
-> commit 7cd5b08be3c489df11b559fef210b81133764ad4
-> Author: Wim Van Sebroeck <wim@iguana.be>
-> Date:   Wed Nov 19 19:39:58 2008 +0000
-> 
->     [WATCHDOG] iTCO_wdt : problem with rebooting on new ICH9 based motherboards
-> 
->     Bugzilla #9868: On Intel motherboards with the ICH9 based I/O controllers
->     (Like DP35DP and DG33FB) the iTCO timer counts but it doesn't reboot the
->     system after the counter expires.
-> 
->     This patch fixes this by moving the enabling & disabling of the TCO_EN bit
->     in the SMI_EN register into the start and stop code.
-> 
->     Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-> 
-> makes CPU fan spin with full speed and causes hald-addon-acpi to take 100% of
-> CPU time on Toshiba Portege R500 with openSUSE 11.0 user space.  This starts as
-> soon as hal starts or thereabouts and never ends, which makes the current
-> mainline unusable on that box.
-
-Hmm. I wonder if the bug is this one-liner (it really looks like an 
-idiotic typo).
-
-Can you test?
-
-		Linus
----
- drivers/watchdog/iTCO_wdt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/watchdog/iTCO_wdt.c b/drivers/watchdog/iTCO_wdt.c
-index 26173a2..5b395a4 100644
---- a/drivers/watchdog/iTCO_wdt.c
-+++ b/drivers/watchdog/iTCO_wdt.c
-@@ -392,7 +392,7 @@ static int iTCO_wdt_stop(void)
- 
- 	/* Bit 13: TCO_EN -> 1 = Enables the TCO logic to generate SMI# */
- 	val32 = inl(SMI_EN);
--	val32 &= 0x00002000;
-+	val32 |= 0x00002000;
- 	outl(val32, SMI_EN);
- 
- 	/* Set the NO_REBOOT bit to prevent later reboots, just for sure */
+-- 
+Scott Murray
+SOMA Networks, Inc.
+Toronto, Ontario
+e-mail: scottm@somanetworks.com
