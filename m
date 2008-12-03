@@ -1,56 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYLCSAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbYLCSBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbYLCSAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 13:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYLCSAf
+	id S1754324AbYLCSBw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 13:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYLCSBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 13:00:35 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41607 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbYLCSAe (ORCPT
+	Wed, 3 Dec 2008 13:01:41 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:49933 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbYLCSBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 13:00:34 -0500
-Message-ID: <4936C927.3030504@zytor.com>
-Date: Wed, 03 Dec 2008 10:00:07 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 3 Dec 2008 13:01:40 -0500
+Date: Wed, 3 Dec 2008 23:31:31 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>, jan.kiszka@web.de
+Cc: Jan Kiszka <jan.kiszka@web.de>, Gian Lorenzo Meocci <glmeocci@gmail.com>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       mbligh@google.com
+Subject: Re: [ltt-dev] trace a futex
+Message-ID: <20081203180131.GA2904@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <8d94e9280812021142j2eb5ca72td730410e97ccd9a1@mail.gmail.com> <20081202195015.GA25792@Krystal> <8d94e9280812021215m6a63d6c2l4e64acd26274953d@mail.gmail.com> <20081202215519.GA734@Krystal> <4935B25F.7010701@web.de> <20081203052640.GA13701@Krystal>
 MIME-Version: 1.0
-To: Jody McIntyre <scjody@sun.com>
-CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
-References: <20081202215154.GL29919@clouds>
-In-Reply-To: <20081202215154.GL29919@clouds>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081203052640.GA13701@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jody McIntyre wrote:
-> 1965aae3c98397aad957412413c07e97b1bd4e64 broke compilation on one of my
-> systems:
+On Wed, Dec 03, 2008 at 12:26:40AM -0500, Mathieu Desnoyers wrote:
+> * Jan Kiszka (jan.kiszka@web.de) wrote:
+> > Mathieu Desnoyers wrote:
+> > > * Gian Lorenzo Meocci (glmeocci@gmail.com) wrote:
+> > >> Hi Mathieu,
+> > >>
+> > >> thanks for your reply.
+> > >>
+> > >> I want specify that:
+> > >> 1) I am already patching glibc (and, of course, nptl/pthread_*)
+> > >> 2) I already add two event to pthread_mutex_lock. The first at the
+> > >> beginning of the function and the second after all return 0 presented
+> > >> on that function. But those two events are not enough to establish if
+> > >> a pthread_mutex_lock has been blocking.
+> > >> In fact I know only the time spent on pthread_mutex_lock. If this time
+> > >> is little probably I hold the mutex otherwise I was been descheduled.
+> > >>
+> > >> So thanks a lot again,
+> > >>
+> > >>
+> > > 
+> > > Ok, then you will probably want to correlate your information with :
+> > > 
+> > > - scheduling activity regarding your threads
+> > > - system call entry events, especially sys_futex. Note that a thread
+> > >   calling sys_futex won't _necessarily_ be put to sleep.. it may still
+> > >   be able to take the lock relatively quickly.
+> > > 
+> > > If you need more than that, we may think of instrumenting futex.c, but I
+> > > am not sure this is required.
+> > 
+> > Haven't checked the state of instrumentation recently: Is the futex
+> > operation visible in the trace now? It used to be not, and we often had
+> > to guess the reason for sys_futex (wake, wait, pi or not pi, etc.) from
+> > the context - or add ad-hoc instrumentation.
+> > 
+> > Jan
+> > 
 > 
->   CC      arch/x86/kernel/syscall_64.o
-> arch/x86/kernel/syscall_64.c:27: error: array index in initializer exceeds array bounds
-> arch/x86/kernel/syscall_64.c:27: error: (near initialization for ‘sys_call_table’)
-> arch/x86/kernel/syscall_64.c:27: warning: excess elements in array initializer
-> arch/x86/kernel/syscall_64.c:27: warning: (near initialization for ‘sys_call_table’)
-> make[1]: *** [arch/x86/kernel/syscall_64.o] Error 1
-> make: *** [arch/x86/kernel/syscall_64.o] Error 2
+> It still isn't instrumented, and I think it would be good to add such
+> instrumentation.
 > 
-> Reverting only the parts of the commit that change ASM_X86__UNISTD_64_H
-> to _ASM_X86_UNISTD_64_H fixes the problem.  Patch below.
+> Have a look at the patch done by K. Prasad for futex.c : it should
+> probably be updated so it uses tracepoints instead of markers. Anyone
+> would like to do this ?
 > 
-> I have no idea what's going on here.  Compiler bug?
+> See http://lkml.org/lkml/2008/4/15/125
+> "[RFC PATCH 0/2] Debugging infrastructure for Futexes using Markers"
 > 
+> Mathieu
+> 
+> -- 
 
-Okay, this makes no sense whatsoever.  Could you send me the following:
+The patches pointed out at http://lkml.org/lkml/2008/4/15/125 aimed to
+introduce static probes in the form of kernel markers in the futex
+subsystem. Apart from tracing function boundaries and return values,
+they were intended to be helpful in gathering performance measurements
+and turn-around times for futex operations.
 
-a. the .config you're using;
-b. what kernel headers do you have in /usr/include
-   (if you installed the old ones with the broken header guards
-   with "make headers_install", then your development environment
-   is broken);
-c. "make arch/x86/kernel/syscall_64.i".
+The patches did not elicit a favourable response then, and haven't been
+converted to tracepoints (owing to the format string parameter
+requirements for trace_mark and the fine-granular information being
+exported by the proposed markers). I doubt if the community opinion has
+changed now to accept the patch, if converted to tracepoints.
 
-	-hpa
+On a related note, just thinking if the proposed marker patch submission
+from Google (http://lwn.net/Articles/298685/) has been sent to/accepted by
+the community folks? It would be interesting to note details such as
+granularity, level of information exported, number and choice of probe
+points in the patch that is accepted by the community.
+
+Thanks,
+K.Prasad
+
+
