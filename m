@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbYLCQ4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYLCQ6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197AbYLCQ4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 11:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYLCQ4I
+	id S1753562AbYLCQ6J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 11:58:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLCQ54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 11:56:08 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43382 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbYLCQ4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 11:56:07 -0500
-Subject: Re: [PATCH 3/6] integrity: IMA as an integrity service provider
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20081203130301.GA9681@infradead.org>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <5bea2422d059b97475d735feb9feb78b57ec8eca.1228253619.git.zohar@linux.vnet.ibm.com>
-	 <1228260925.2971.240.camel@nimitz>  <20081203130301.GA9681@infradead.org>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 08:55:54 -0800
-Message-Id: <1228323355.2971.259.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 3 Dec 2008 11:57:56 -0500
+Received: from usul.saidi.cx ([204.11.33.34]:32823 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751188AbYLCQ54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 11:57:56 -0500
+Message-ID: <4936BA86.7020909@overt.org>
+Date: Wed, 03 Dec 2008 08:57:42 -0800
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Pierre Ossman <drzeus@drzeus.cx>
+CC: linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH] ricoh_mmc: Use suspend/resume_noirq (resend)
+References: <60072.67.164.5.76.1228094920.squirrel@overt.org> <20081203012300.737b5b61.akpm@linux-foundation.org>
+In-Reply-To: <20081203012300.737b5b61.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 08:03 -0500, Christoph Hellwig wrote:
-> On Tue, Dec 02, 2008 at 03:35:25PM -0800, Dave Hansen wrote:
-> > If you're looking for another way to split your patch out, you could
-> > just stick use inode->integrity for the first patch, then introduce your
-> > radix-tree in a subsequent patch.  It would be functionally fine, and
-> > more clearly separate out the ideas.
+Andrew Morton wrote:
+> On Sun, 30 Nov 2008 20:28:40 -0500 (EST) philipl@overt.org wrote:
 > 
-> This was done earlier and is a really bad thing for review.  Just as the
-> breakout happening in this round.
+>> +static struct pm_ext_ops ricoh_mmc_pm_ext_opts = {
+>> +	.suspend_noirq =	ricoh_mmc_suspend_noirq,
+>> +	.resume_noirq =		ricoh_mmc_resume_noirq,
+>> +};
+> 
+> pm_ext_ops got deleted from linux-next.
 
-If Christoph and I tell you conflicting things, it goes without saying
-to listen to Christoph.  :)
+Not in Pierre's tree :-P
 
--- Dave
+I've sent an updated diff against linux-next.
 
+--phil
