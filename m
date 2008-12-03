@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYLCTHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbYLCTI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbYLCTHN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:07:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYLCTG7
+	id S1754595AbYLCTI1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYLCTIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:06:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60575 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752775AbYLCTG4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:06:56 -0500
-Date: Wed, 3 Dec 2008 11:06:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Cc: "Mark Jackson" <mpfj@mimc.co.uk>, linux-kernel@vger.kernel.org,
-       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: Badness at mm/backing-dev.c:179
-Message-Id: <20081203110600.665af037.akpm@linux-foundation.org>
-In-Reply-To: <ac3eb2510812030422n15f1be2cn77aa5f66f1046933@mail.gmail.com>
-References: <49367691.5060007@mimc.co.uk>
-	<ac3eb2510812030422n15f1be2cn77aa5f66f1046933@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 14:08:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53502 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752799AbYLCTIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:08:18 -0500
+Date: Wed, 3 Dec 2008 20:06:48 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, Al Viro <viro@zeniv.linux.org.uk>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
+Message-ID: <20081203190648.GA23893@redhat.com>
+References: <20081128192508.GA21369@redhat.com> <4933CBB0.2060003@linux.intel.com> <20081201191555.GA21385@redhat.com> <20081201123405.51d20d84@bike.lwn.net> <20081202122939.GA3619@redhat.com> <493562B5.5020600@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <493562B5.5020600@linux.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008 13:22:47 +0100 "Kay Sievers" <kay.sievers@vrfy.org> wrote:
+On 12/02, Andi Kleen wrote:
+>
+>> Still I'd like to see the better fix for the long term, the only (afaics)
+>> flag with the "side effect" is FASYNC, perhaps we can move it to (say)
+>> ->f_mode, but this is ugly of course and still need serialization for the
+>> pathes which play with FASYNC.
+>
+> I wonder if we need FASYNC at all. This could be gotten implicitely by
+> looking at the fasync_list
 
-> On Wed, Dec 3, 2008 at 13:07, Mark Jackson <mpfj@mimc.co.uk> wrote:
-> > The following commit causes a "Badness at mm/backing-dev.c:179":-
-> >
-> > f1d0b063d993527754f062c589b73f125024d216 is first bad commit
-> > commit f1d0b063d993527754f062c589b73f125024d216
-> > Author: Kay Sievers <kay.sievers@vrfy.org>
-> > Date:   Tue Dec 2 10:31:50 2008 -0800
-> >
-> >    bdi: register sysfs bdi device only once per queue
-> 
-> > Below is the extract from dmesg:-
-> >
-> > ------------[ cut here ]------------
-> > Badness at mm/backing-dev.c:179
-> 
-> That's a known issue, and will not cause any harm besides printing
-> this warning. Andrew added the warning to catch drivers who use one
-> single request queue for multiple devices. Currently known are mtd and
-> floppy (triggers only if you have more than one device per driver).
-> The drivers need to be changed to use a separate queue per device, to
-> get rid of this warning.
+Only if socket.
 
-Actually, adding that warning wasn't such a great idea - we'll just get
-heaps of email about things we already know about.  I think I'll take
-it out again.
+Serioulsy, I think the best (partial, yes) fix for now is to restore
+lock_kernel() in setfl() and change ioctl_fioxxx() accordingly.
+At least this protect us from tty too.
 
-Which means this stuff won't get fixed for ages :(
+
+I agree with Jonathan, we need the lock to protect ->f_flags, but
+this needs changes. Personally, I do not like the global mutex,
+perhaps we can use some "unused" bit in struct file. Say, ->f_mode
+is never changed (afaics), we can place it here. Now, any code
+which changes ->f_flags can do
+
+	if (test_and_set_bit(FLAGS_LOCK_BIT))
+		return;
+
+	whatever();
+
+	->f_flags = new_flags;
+
+	clear_bit(FLAGS_LOCK_BIT);
+
+No need to disable preemption, we never spin waiting for the
+lock bit. If it is locked - somebody else updates ->f_flags,
+we can pretend it does this after us. This can confuse F_GETFL
+after F_SETFL (if F_SETFL "fails"), but I think in that case
+user-space is wrong anyway, it must not do F_GETFL in parallel.
+
+Not that I think this is very good idea though ;)
+
+Oleg.
+
