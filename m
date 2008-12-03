@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYLCH5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYLCH6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbYLCH5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 02:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYLCH5p
+	id S1755503AbYLCH6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 02:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbYLCH5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 02:57:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54070 "EHLO mx3.mail.elte.hu"
+	Wed, 3 Dec 2008 02:57:55 -0500
+Received: from mail.suse.de ([195.135.220.2]:39658 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751027AbYLCH5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 02:57:44 -0500
-Date: Wed, 3 Dec 2008 08:57:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/5] ftrace updates for tip
-Message-ID: <20081203075737.GB21006@elte.hu>
-References: <20081202203404.496794864@goodmis.org>
+	id S1754737AbYLCH5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 02:57:53 -0500
+Date: Tue, 2 Dec 2008 23:53:02 -0800
+From: Greg KH <gregkh@suse.de>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+       Han Weidong <weidong.han@intel.com>, linux-kernel@vger.kernel.org,
+       Alexander Graf <agraf@suse.de>, iommu@lists.linux-foundation.org,
+       Ingo Molnar <mingo@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH 0/12] Factor VT-d KVM functions into a generic API
+	(with multiple device assignment support)
+Message-ID: <20081203075302.GA13420@suse.de>
+References: <1228222883-17207-1-git-send-email-joerg.roedel@amd.com> <20081203034405.GA23835@suse.de> <20081203075049.GN29705@8bytes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081202203404.496794864@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081203075049.GN29705@8bytes.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> Ingo,
+On Wed, Dec 03, 2008 at 08:50:49AM +0100, Joerg Roedel wrote:
+> On Tue, Dec 02, 2008 at 07:44:05PM -0800, Greg KH wrote:
+> > On Tue, Dec 02, 2008 at 02:01:11PM +0100, Joerg Roedel wrote:
+> > > Hi,
+> > > 
+> > > this patch series makes the current KVM device passthrough code generic
+> > > enough so that other IOMMU implementation can also plug into this code.
+> > > It works by factoring the functions Vt-d code exports to KVM into a
+> > > generic interface which allows different backends.
+> > > 
+> > > This is the second version of the patchset. The most important change to
+> > > the previous version is that this patchset was rebased to the improved
+> > > API from Han Weidong which supports multiple devices per IOMMU domain.
+> > > 
+> > > For completeness, this series also includes the patches from Han with
+> > > some cleanups. So this patchset can be applied on current avi/master
+> > > tree.
+> > 
+> > Have you tried porting any of the current iommu controllers to this new
+> > framework to see if it works properly for them?
 > 
-> Here's some more ftrace updates.
-> 
-> The first should help fix the bug in lockdep.
+> It works currently for VT-d. I also port it to AMD IOMMU currently. With
+> some extensions (offset for start address, flags and size limitation) it
+> is also suitable for IOMMUs like GART or similar ones.
 
-ok.
+What about the Calgary chipset?
 
-> The next are changes to the ring buffer to get ready to have it
-> work with splice.
+thanks,
 
-great!
-
-> The last are some clean ups for function graph.
-
-ok. I'll also pull the followup cleanups that you did based on Andrew's 
-suggestions.
-
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: tip/devel
-> 
-> 
-> Steven Rostedt (5):
->       ftrace: replace raw_local_irq_save with local_irq_save
->       ring-buffer: move some metadata into buffer page
->       ring-buffer: read page interface
->       ftrace: clean up function graph asm
->       ftrace: have function graph use mcount caller address
-> 
-> ----
->  arch/x86/kernel/entry_32.S  |    1 +
->  arch/x86/kernel/entry_64.S  |    1 +
->  arch/x86/kernel/ftrace.c    |   20 +---
->  include/linux/ring_buffer.h |    5 +
->  kernel/lockdep.c            |    1 +
->  kernel/trace/ring_buffer.c  |  229 ++++++++++++++++++++++++++++++++++++++-----
->  kernel/trace/trace.c        |   12 +-
->  kernel/trace/trace_branch.c |    4 +-
->  kernel/trace/trace_stack.c  |    8 +-
->  9 files changed, 226 insertions(+), 55 deletions(-)
-
-pulled into tip/tracing/ftrace, thanks Steve!
-
-	Ingo
+gerg k-h
