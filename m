@@ -1,131 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbYLCVlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbYLCVmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755681AbYLCVlb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYLCVlT
+	id S1752975AbYLCVmV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYLCVmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:41:19 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:28827 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753665AbYLCVlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:41:18 -0500
-X-YMail-OSG: JXhbmN0VM1mubRGA5HIQJPnfmSp6bUZPCKw6ETV1LGhwh4qNcDruFnOkdj1Mm8MnRDFr1mVOYWf1uyt9.TcPuSabHuG1ifG7eZi9DEuVoyvi_B8wTYd58qy4nKP29MdHUovE3.2wePEN91wnUuLn5O7CtOYIxAr7GD_WpvAhmmNr4sEXxpUcGDPKCMk-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct
-	scsi_device->request_queue
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <49366289.2010500@panasas.com>
-References: <1228265348.6229.130.camel@haakon2.linux-iscsi.org>
-	 <49366289.2010500@panasas.com>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 13:40:47 -0800
-Message-Id: <1228340447.4153.53.camel@haakon2.linux-iscsi.org>
+	Wed, 3 Dec 2008 16:42:11 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63873 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752891AbYLCVmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 16:42:10 -0500
+To: shemminger@vyatta.com, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: mmotm 2008-11-26-17-00 uploaded
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200811270101.mAR114rp016378@imap1.linux-foundation.org>
+	<200811282209.FDC95384.tLQJFOFOHFMSOV@I-love.SAKURA.ne.jp>
+	<20081128114257.a651b9ee.akpm@linux-foundation.org>
+	<20081203075254.3bcb3220@extreme>
+In-Reply-To: <20081203075254.3bcb3220@extreme>
+Message-Id: <200812040642.FFB65682.QSVJMHOOFLtFOF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 4 Dec 2008 06:42:06 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 12:42 +0200, Boaz Harrosh wrote:
-> Nicholas A. Bellinger wrote:
-> >>From 1b14b5e1fc9a7074322b1015bb86eca2a8ef4560 Mon Sep 17 00:00:00 2001
-> > From: Nicholas Bellinger <nab@linux-iscsi.org>
-> > Date: Tue, 2 Dec 2008 16:30:51 -0800
-> > Subject: [PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct scsi_device->request_queue
+Hello.
+
+Stephen Hemminger wrote:
+> > > [   24.978638] BUG: unable to handle kernel NULL pointer dereference at 00000004
+> > > [   24.980541] IP: [<c056bfb7>] loopback_get_stats+0x26/0x51
 > > 
-> > This patch begins to remove the usage of scsi_execute_async() from the PSCSI
-> > subsystem plugin for v3.0 generic target core.
+> > At a guess I'd say that local variable `stats' in loopback_get_stats()
+> > is null.
 > > 
-> > It uses blk_get_request() to allocate struct request in pscsi_blk_get_request()
-> > and used by all CDB types and both memory backing types.  struct request is then
-> > released with __blk_put_request() in the struct request->end_io() context in
-> > pscsi_req_done().
-> > 
-> > Also, this patch adds a temporary EXPORT_SYMBOL_GPL() for
-> > scsi/drivers/scsi_lib.c:scsi_req_map_sg() (which will also be going away at
-> > some point).  At that point, the upstream struct scatterlist and/or
-> > struct page -> struct request mapping for usage with struct scsi_device->request_queue
-> > will be dropped into place in drivers/lio-core/target_core_pscsi.c:pscsi_map_task_SG()
-> > 
-> > Tested on v2.6.28-rc7 32-bit x86 with virtual VMware TYPE_DISK on virtual MPT-Fusion
-> > 
-> > Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
-> > ---
-> >  drivers/lio-core/target_core_pscsi.c |  206 +++++++++++++++++++++++++---------
-> >  drivers/lio-core/target_core_pscsi.h |    5 +-
-> >  drivers/scsi/scsi_lib.c              |    6 +-
-> >  3 files changed, 161 insertions(+), 56 deletions(-)
-> > 
+> > but it's a bit hard to see how that change could cause the crash which
+> > you observed.
 > 
-> This patch confuses me. Is this the same one posted few days ago minus the double-free
-> bug? It would be nice if you said that somewhere. Like [PATCH ver2] ...
-> 
+> Could be that some other code is stomping on per-cpu variables?
 
-<nod> sorry for the confusion.
+I don't know what was the cause, but mmotm 2008-12-02-17-08 is working fine.
 
-> But what confuses me are the previous two patches you sent that makes this patch not
-> compile. (Rename of se_task_t->task_buf => se_task_t->task_sg).
-> 
-
-Ok yes, this one is the 2nd rev of the original patch to remove the
-usage of scsi_execute_async().  The other two are for getting rid of the
-casts in between target_core_mod se_task_t scatterlist memory and
-mapping into target core subsystem plugins (PSCSI, IBLOCK, FILEIO)
-following your recommendations. 
-
-> The previous two patches are not bisectable btw. Numbering a patchset could maybe help
-> a little, but will not help here, whichever way you order them they will only compile at
-> the very end (Well not even that, not with this one applied).
-> 
-
-<nod, point taken.
-
-> Sorry but I'm unable to farther review any of the patches. Please re-post everything
-> as a patchset so I can understand whats going on.
-> 
-
-Ok, here commit diffs for the three patches that affect target_core_mod:
-
-[PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct scsi_device->request_queue
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=1b14b5e1fc9a7074322b1015bb86eca2a8ef4560
-
-[PATCH] [Target_Core_Mod]: Convert to se_task_t->task_sg usage in core and subsystem plugins
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=41e98940da5ffaf7e31fce8d1f706e3e0a679654
-
-[PATCH] [Target_Core_Mod]: Update PSCSI, IBLOCK, FILEIO and RAMDISK for se_task_t->task_sg
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=e030ca2b9bbb81402b3ed669bb5e1d54fed0dff7
-
-
-> (And please give the URL of the git tree they are based on in each [PATCH 00/xx] mail.
-> Usually one states what the patchset is based on, eg. "based on scsi-misc as of ..."
-> but we all know where scsi-misc is)
-> 
-
-Ok, these patches are against the development lio-core-2.6.git (v3.0)
-tree (currently at v2.6.28-rc7) which tracks linux-2.6.git.  I will be
-sure to include this in futher postings.  
-
-Also, I am posting the patches related to the generic target core
-(target_core_mod) and plugins that hook into Linux storage subsystems
-(PSCSI, IBLOCK, FILEIO) to start getting some feedback on the current
-work in the v3.0 development tree.  The code in
-lio-core-2.6.git/drivers/lio-core is the ConfigFS enabled generic target
-engine, subsystem plugins, and traditional LIO iSCSI target engine that
-will be submitted for upstream inclusion (most likely in that order) as
-work continues, sometime in the v2.6.29 timeframe.
-
-Many thanks for your comments,
-
---nab
-
-
+Thanks.
