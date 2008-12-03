@@ -1,132 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbYLCAr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYLCAsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbYLCAr0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 19:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYLCArL
+	id S1755907AbYLCAsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 19:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbYLCAsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 19:47:11 -0500
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:40922 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751022AbYLCArK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 19:47:10 -0500
-X-YMail-OSG: 9J8tYM0VM1mgWkzdraZt3nGF4Q4RwAXHMNjrReUiXPilQXDMrouU2oQ734C2MXQOzjCtCqu.ivELQbJ2FzRQvuXXq6oWg_HpTQ7HEmPhiGa9c7tBeaFXFj904SyOQIal8Emsu0ECf1sV3JpRbNzYzx_wWRAgabXtl_kbrxETf0teMRmS1bQIcNAf1xY-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Changes to Linux/SCSI target mode infrastructure for v2.6.28
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Mike Anderson <andmike@linux.vnet.ibm.com>
-Cc: Tejun Heo <tj@kernel.org>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@osdl.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Hannes Reinecke <hare@suse.de>, Boaz Harrosh <bharrosh@panasas.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-In-Reply-To: <1228259916.6229.119.camel@haakon2.linux-iscsi.org>
-References: <1228182727.13241.160.camel@haakon2.linux-iscsi.org>
-	 <1228183480.13241.163.camel@haakon2.linux-iscsi.org>
-	 <1228187439.13241.176.camel@haakon2.linux-iscsi.org>
-	 <4934B71C.4030907@kernel.org>
-	 <1228194335.6229.17.camel@haakon2.linux-iscsi.org>
-	 <20081202064036.GC14025@linux.vnet.ibm.com>
-	 <1228206646.6229.46.camel@haakon2.linux-iscsi.org>
-	 <1228206924.6229.50.camel@haakon2.linux-iscsi.org>
-	 <20081202091335.GA16081@linux.vnet.ibm.com>
-	 <1228259916.6229.119.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 16:47:06 -0800
-Message-Id: <1228265226.6229.127.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 19:48:06 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:51244 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754003AbYLCAsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 19:48:03 -0500
+Date: Tue, 2 Dec 2008 16:47:59 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       tglx@linutronix.de
+Subject: Re: [PATCH -tip] v9 scalable classic RCU implementation
+Message-ID: <20081203004759.GG6719@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081202222157.GA14911@linux.vnet.ibm.com> <20081202233144.GE6703@one.firstfloor.org> <20081202235145.GF6719@linux.vnet.ibm.com> <20081203001811.GF6703@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081203001811.GF6703@one.firstfloor.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-02 at 15:18 -0800, Nicholas A. Bellinger wrote:
-> On Tue, 2008-12-02 at 01:13 -0800, Mike Anderson wrote:
-> > Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> > > On Tue, 2008-12-02 at 00:30 -0800, Nicholas A. Bellinger wrote:
-> > > > On Mon, 2008-12-01 at 22:40 -0800, Mike Anderson wrote:
-> > > > > Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> > > > > > On Tue, 2008-12-02 at 13:18 +0900, Tejun Heo wrote:
-> > > > > > > 
-> > > > > > > >>> The other one is a BUG_ON in blk/blk-timeout.c:177 in blk_add_timeout()
-> > > > > > > >>> that happens after a few hundred MB of READ_10 traffic, which also
-> > > > > > > >>> appears to pass through elv_dequeue_request() at some point:
-> > > > > > > >>>
-> > > > > > > >>> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-2.png
-> > > > > > > >>> http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-4.png
-> > > > > > >
-> > > > > > > Hmmm... this means blk_add_timer() is being called after the request
-> > > > > > > is already completed.
-> > > > > 
-> > > > > or is it possible since elv_dequeue_request BUG_ON check of queuelist did
-> > > > > not trigger a request is on the queuelist with a timeout_list not empty.
-> > > > > 
-> > > > > It would be interesting for a debug run to change the
-> > > > > "BUG_ON(!list_empty(&req->timeout_list))" in blk_add_timer to print out
-> > > > > the cmd_flags plus req->atomic_flags and also add a
-> > > > > "BUG_ON(!list_empty(&rq->timeout_list))" to elv_insert to ensure a request
-> > > > > is never added to the queuelist with a timeout_list not empty.
-> > > > > 
-> > > > 
-> > > > Ok, so blk_dump_rq_flags() is now being called in
-> > > > block/blk-timeout.c:blk_add_timer() for the case
-> > > > BUG_ON(list_empty(&req->timeout_list)) case:
-> > > > 
-> > > > http://linux-iscsi.org/builds/user/nab/2.6.28-rc6-oops-6.png
-> > > > 
-> > > > Hmm, the outputted "sector " range is definately is bogus, as the only
-> > > > READ_10 that have been sent are at LBA offset 0 for 8 * 512 byte sectors
-> > > > for the partition table during Open/iSCSI LUN scanning.
-> > > > 
+On Wed, Dec 03, 2008 at 01:18:12AM +0100, Andi Kleen wrote:
+> On Tue, Dec 02, 2008 at 03:51:45PM -0800, Paul E. McKenney wrote:
+> > On Wed, Dec 03, 2008 at 12:31:44AM +0100, Andi Kleen wrote:
+> > > > o	I now test with a more brutal random-selection online/offline
+> > > > 	script (attached).  Probably more brutal than it needs to be
+> > > > 	on the people reading it as well, but so it goes.
 > > > 
-> > > Also, the following code from block/blk-core.c:blk_dump_rq_flags():
-> > > 
-> > >         if (blk_pc_request(rq)) {
-> > >                 printk(KERN_INFO "  cdb: ");
-> > >                 for (bit = 0; bit < BLK_MAX_CDB; bit++)
-> > >                         printk("%02x ", rq->cmd[bit]);
-> > >                 printk("\n");
-> > >         }
-> > > 
-> > > is not printing out the copied CDB in struct request->cmd[], which makes
-> > > me think the struct request->cmd_flags (that blk_pc_request() is
-> > > checking) are also bogus when blk_add_timer() is being called..
-> > > 
-> > Based on the output from 2.6.28-rc6-oops-6.png the flags value of 82c21
-> > looks like
-> > (__REQ_ALLOCED,__REQ_ELVPRIV,__REQ_DONTPREP,__REQ_STARTED,__REQ_SORTED,__REQ_RW),
-> > but it is late so someone maybe should check my shift counts.
+> > > Does that cover both dynticks on and off? afaik the dynticks off problem
+> > > I ran into on a 16 thread box and we discussed some time ago is still there.
 > > 
-> > The type is also REQ_TYPE_FS so the blk_pc cdb: info will not be printed.
-> > 
-> > I will talk to you more in the morning.
-> > 
+> > The failures I see with this patch I also see with mainline.  Are you
+> > seeing something with this patch that does not happen with mainline?
 > 
-> Ok, after double checking the original patch again, I noticed that
-> struct request was getting released with __blk_put_request() from the
-> struct request->end_io() caller context in pscsi_req_done(), and again
-> after the original target mode CDB was acknowledged from the fabric in
-> pscsi_free_task() with blk_put_request()..  Not good.
-> 
-> Anyways, I removed the extra blk_put_request() in pscsi_free_task() and
-> am running some badblocks tests now.  Things are obviously looking much
-> better.
-> 
+> No, that is in mainline too. Sorry to be misleading. Do you see the
+> same problems in your testing?
 
-Ok, passing badblocks tests now and looking stable on v2.6.28-rc7 using
-Tejun's patch, here the commit diff for the LIO-Core v3.0 PSCSI changes:
+On Power, I see a hang in all three flavors of RCU when CPU hotplug
+is enabled and dynticks is not.  I have not yet seen this hang on x86.
+On Power, the hang occurs in the CPU-offline code, and is identical to
+the hangs I was seeing in 2.6.27, except that "sleep 1" does not hang
+in recent 2.6.28 versions.  So the timeout is apparently failing to fire
+(or being ignored) for some other reason.
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=1b14b5e1fc9a7074322b1015bb86eca2a8ef4560
+Is this similar to what you are seeing on x86?
 
-Now the question becomes, how can we get rid of scsi_req_map_sg() usage
-(and struct bio in between) all together..?
+I am currently undergoing a line-by-line code walkthrough of rcutree on
+the off-chance that all three versions of RCU suffer from the same bug.
+(And I have found a few bugs and spelling errors, but nothing related
+to the problem at hand.)  If I don't find anything, I will start looking
+more closely at the CPU-hotplug code.
 
---nab
-
-
+							Thanx, Paul
