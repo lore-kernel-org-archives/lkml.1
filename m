@@ -1,167 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYLCF0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbYLCF1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbYLCF0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 00:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYLCF0j
+	id S1752108AbYLCF1G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 00:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYLCF0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 00:26:39 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60911 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbYLCF0i (ORCPT
+	Wed, 3 Dec 2008 00:26:44 -0500
+Received: from bc.sympatico.ca ([209.226.175.184]:49573 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752680AbYLCF0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 00:26:38 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-Subject: [PATCH] vmscan: improve reclaim throuput to bail out patch
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20081130150849.8140.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <49316CAF.2010006@redhat.com> <20081130150849.8140.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081203140419.1D44.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed,  3 Dec 2008 14:26:35 +0900 (JST)
+	Wed, 3 Dec 2008 00:26:43 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAA+iNUlMROB9/2dsb2JhbACBbdBggn8
+Date: Wed, 3 Dec 2008 00:26:40 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Gian Lorenzo Meocci <glmeocci@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org, "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [ltt-dev] trace a futex
+Message-ID: <20081203052640.GA13701@Krystal>
+References: <8d94e9280812021142j2eb5ca72td730410e97ccd9a1@mail.gmail.com> <20081202195015.GA25792@Krystal> <8d94e9280812021215m6a63d6c2l4e64acd26274953d@mail.gmail.com> <20081202215519.GA734@Krystal> <4935B25F.7010701@web.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_Krystal-14149-1228282000-0001-2"
+Content-Disposition: inline
+In-Reply-To: <4935B25F.7010701@web.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:22:16 up 16 days,  6:02,  1 user,  load average: 0.62, 0.84,
+	0.92
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I evaluate rvr bailout and skip-freeing patch in this week conteniously.
-I'd like to dump first output here.
+--=_Krystal-14149-1228282000-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+* Jan Kiszka (jan.kiszka@web.de) wrote:
+> Mathieu Desnoyers wrote:
+> > * Gian Lorenzo Meocci (glmeocci@gmail.com) wrote:
+> >> Hi Mathieu,
+> >>
+> >> thanks for your reply.
+> >>
+> >> I want specify that:
+> >> 1) I am already patching glibc (and, of course, nptl/pthread_*)
+> >> 2) I already add two event to pthread_mutex_lock. The first at the
+> >> beginning of the function and the second after all return 0 presented
+> >> on that function. But those two events are not enough to establish if
+> >> a pthread_mutex_lock has been blocking.
+> >> In fact I know only the time spent on pthread_mutex_lock. If this time
+> >> is little probably I hold the mutex otherwise I was been descheduled.
+> >>
+> >> So thanks a lot again,
+> >>
+> >>
+> >=20
+> > Ok, then you will probably want to correlate your information with :
+> >=20
+> > - scheduling activity regarding your threads
+> > - system call entry events, especially sys_futex. Note that a thread
+> >   calling sys_futex won't _necessarily_ be put to sleep.. it may still
+> >   be able to take the lock relatively quickly.
+> >=20
+> > If you need more than that, we may think of instrumenting futex.c, but I
+> > am not sure this is required.
+>=20
+> Haven't checked the state of instrumentation recently: Is the futex
+> operation visible in the trace now? It used to be not, and we often had
+> to guess the reason for sys_futex (wake, wait, pi or not pi, etc.) from
+> the context - or add ad-hoc instrumentation.
+>=20
+> Jan
+>=20
 
+It still isn't instrumented, and I think it would be good to add such
+instrumentation.
 
-Rik, could you please review following?
-==
-vmscan bail out patch move nr_reclaimed variable to struct scan_control.
-Unfortunately, indirect access can easily happen cache miss.
-More unfortunately, Some architecture (e.g. ia64) don't access global
-variable so fast.
+Have a look at the patch done by K. Prasad for futex.c : it should
+probably be updated so it uses tracepoints instead of markers. Anyone
+would like to do this ?
 
-if heavy memory pressure happend, that's ok.
-cache miss already plenty. it is not observable.
+See http://lkml.org/lkml/2008/4/15/125
+"[RFC PATCH 0/2] Debugging infrastructure for Futexes using Markers"
 
-but, if memory pressure is lite, performance degression is obserbable.
+Mathieu
 
+--=20
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
-I compared following three pattern (it was mesured 10 times each)
+--=_Krystal-14149-1228282000-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
-hackbench 125 process 3000
-hackbench 130 process 3000
-hackbench 135 process 3000
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-            2.6.28-rc6                       bail-out
+iD8DBQFJNhiQPyWo/juummgRAioaAJwNlXQKbdPUIIuvNtVOgghOfto1DQCfVhNm
+2DzsULsQ9WgQp1Kw3gKzdh8=
+=h0Bj
+-----END PGP SIGNATURE-----
 
-	125	130	135		125	130	135  
-      ==============================================================
-	71.866	75.86	81.274		93.414	73.254	193.382
-	74.145	78.295	77.27		74.897	75.021	80.17
-	70.305	77.643	75.855		70.134	77.571	79.896
-	74.288	73.986	75.955		77.222	78.48	80.619
-	72.029	79.947	78.312		75.128	82.172	79.708
-	71.499	77.615	77.042		74.177	76.532	77.306
-	76.188	74.471	83.562		73.839	72.43	79.833
-	73.236	75.606	78.743		76.001	76.557	82.726
-	69.427	77.271	76.691		76.236	79.371	103.189
-	72.473	76.978	80.643		69.128	78.932	75.736
-
-avg	72.545	76.767	78.534		76.017	77.03	93.256
-std	1.89	1.71	2.41		6.29	2.79	34.16
-min	69.427	73.986	75.855		69.128	72.43	75.736
-max	76.188	79.947	83.562		93.414	82.172	193.382
-
-
-about 4-5% degression.
-
-Then, this patch introduce temporal local variable.
-
-result:
-
-            2.6.28-rc6                       this patch
-
-num	125	130	135		125	130	135  
-      ==============================================================
-	71.866	75.86	81.274		67.302	68.269	77.161
-	74.145	78.295	77.27   	72.616	72.712	79.06
-	70.305	77.643	75.855  	72.475	75.712	77.735
-	74.288	73.986	75.955  	69.229	73.062	78.814
-	72.029	79.947	78.312  	71.551	74.392	78.564
-	71.499	77.615	77.042  	69.227	74.31	78.837
-	76.188	74.471	83.562  	70.759	75.256	76.6
-	73.236	75.606	78.743  	69.966	76.001	78.464
-	69.427	77.271	76.691  	69.068	75.218	80.321
-	72.473	76.978	80.643  	72.057	77.151	79.068
-                        
-avg	72.545	76.767	78.534 		70.425	74.2083	78.462
-std 	1.89	1.71	2.41    	1.66	2.34	1.00
-min 	69.427	73.986	75.855  	67.302	68.269	76.6
-max 	76.188	79.947	83.562  	72.616	77.151	80.321
-
-
-OK. the degression is disappeared.
-
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/vmscan.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1418,6 +1418,8 @@ static void shrink_zone(int priority, st
- 	unsigned long nr_to_scan;
- 	unsigned long percent[2];	/* anon @ 0; file @ 1 */
- 	enum lru_list l;
-+	unsigned long nr_reclaimed = sc->nr_reclaimed;
-+	unsigned long swap_cluster_max = sc->swap_cluster_max;
- 
- 	get_scan_ratio(zone, sc, percent);
- 
-@@ -1433,7 +1435,7 @@ static void shrink_zone(int priority, st
- 			}
- 			zone->lru[l].nr_scan += scan;
- 			nr[l] = zone->lru[l].nr_scan;
--			if (nr[l] >= sc->swap_cluster_max)
-+			if (nr[l] >= swap_cluster_max)
- 				zone->lru[l].nr_scan = 0;
- 			else
- 				nr[l] = 0;
-@@ -1452,12 +1454,11 @@ static void shrink_zone(int priority, st
- 					nr[LRU_INACTIVE_FILE]) {
- 		for_each_evictable_lru(l) {
- 			if (nr[l]) {
--				nr_to_scan = min(nr[l],
--					(unsigned long)sc->swap_cluster_max);
-+				nr_to_scan = min(nr[l], swap_cluster_max);
- 				nr[l] -= nr_to_scan;
- 
--				sc->nr_reclaimed += shrink_list(l, nr_to_scan,
--							zone, sc, priority);
-+				nr_reclaimed += shrink_list(l, nr_to_scan,
-+							    zone, sc, priority);
- 			}
- 		}
- 		/*
-@@ -1468,11 +1469,13 @@ static void shrink_zone(int priority, st
- 		 * with multiple processes reclaiming pages, the total
- 		 * freeing target can get unreasonably large.
- 		 */
--		if (sc->nr_reclaimed > sc->swap_cluster_max &&
-+		if (nr_reclaimed > swap_cluster_max &&
- 		    priority < DEF_PRIORITY && !current_is_kswapd())
- 			break;
- 	}
- 
-+	sc->nr_reclaimed = nr_reclaimed;
-+
- 	/*
- 	 * Even if we did not try to evict anon pages at all, we want to
- 	 * rebalance the anon lru active/inactive ratio.
-
-
+--=_Krystal-14149-1228282000-0001-2--
