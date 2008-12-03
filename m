@@ -1,139 +1,423 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYLCFYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYLCFZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbYLCFYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 00:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYLCFYd
+	id S1755874AbYLCFZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 00:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYLCFZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 00:24:33 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51336 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750847AbYLCFYc (ORCPT
+	Wed, 3 Dec 2008 00:25:19 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:44672 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbYLCFZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 00:24:32 -0500
-Date: Wed, 3 Dec 2008 00:07:09 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Chris Friesen <cfriesen@nortel.com>, mikulas@artax.karlin.mff.cuni.cz,
-       clock@atrey.karlin.mff.cuni.cz,
-       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
-Subject: Re: writing file to disk: not as easy as it looks
-Message-ID: <20081203050709.GL20858@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Pavel Machek <pavel@suse.cz>, Chris Friesen <cfriesen@nortel.com>,
-	mikulas@artax.karlin.mff.cuni.cz, clock@atrey.karlin.mff.cuni.cz,
-	kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
-References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu> <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu> <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu> <20081202224403.GA8277@elf.ucw.cz>
+	Wed, 3 Dec 2008 00:25:17 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=Exb9h2jG8mx6UY/qxk6hBB5/BANl7XlWaQtJTvuViPAAY9i8cWeKhlYc4CIaMcp/N
+	57BWivVM7UM8/9/VLjyJw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202224403.GA8277@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1228275733.4886.40.camel@localhost.localdomain>
+References: <5df78e1d0812021625q8a0d362i5d7a650543157864@mail.gmail.com>
+	 <5df78e1d0812021655p6819d893v113848ae7bf4b4ee@mail.gmail.com>
+	 <1228275733.4886.40.camel@localhost.localdomain>
+Date: Tue, 2 Dec 2008 21:25:14 -0800
+Message-ID: <5df78e1d0812022125i3bbe44b3r59bcc862d1f932c5@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/3] adding mmap support to the unified trace buffer
+From: Jiaying Zhang <jiayingz@google.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 11:44:03PM +0100, Pavel Machek wrote:
-> > >
-> > > Yikes.  I was under the impression that once the journal hit the platter  
-> > > then the data were safe (barring media corruption).
-> > 
-> > Well, this is a case of media corruption (or a cosmic ray hitting
-> > hitting a ribbon cable in the disk controller sending the write to the
-> > wrong location on disk, or someone bumping the server causing the disk
-> > head to lift up a little higher than normal while it was writing the
-> > disk sector, etc.).  But it is a case of the hard drive misbehaving. 
-> 
-> I could not parse this. Negation seems to be missing somewhere.
+On Tue, Dec 2, 2008 at 7:42 PM, Steven Rostedt <srostedt@redhat.com> wrote:
+>
+> On Tue, 2008-12-02 at 16:55 -0800, Jiaying Zhang wrote:
+>> Refer to the previous email
+>> "[RFC PATCH 0/3] A couple of feature requests to the unified trace buffer".
+>>
+>> Add the mmap support to the unified trace buffer. The patch includes an
+>> API that maps a page offset to a physical page in a trace buffer, APIs
+>> that export the offset of the current produced/consumed data, and an
+>> API to advance the consumed data pointer.
+>>
+>> Index: linux-2.6.26/include/linux/ring_buffer.h
+>> ===================================================================
+>> --- linux-2.6.26.orig/include/linux/ring_buffer.h       2008-12-01
+>> 14:46:11.000000000 -0800
+>> +++ linux-2.6.26/include/linux/ring_buffer.h    2008-12-01
+>> 14:46:30.000000000 -0800
+>> @@ -5,6 +5,7 @@
+>>  #include <linux/seq_file.h>
+>>
+>>  struct ring_buffer;
+>> +struct ring_buffer_per_cpu;
+>>  struct ring_buffer_iter;
+>>
+>>  /*
+>> @@ -108,6 +109,7 @@
+>>
+>>  int ring_buffer_empty(struct ring_buffer *buffer);
+>>  int ring_buffer_empty_cpu(struct ring_buffer *buffer, int cpu);
+>> +int ring_buffer_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer);
+>>
+>>  void ring_buffer_record_disable(struct ring_buffer *buffer);
+>>  void ring_buffer_record_enable(struct ring_buffer *buffer);
+>> @@ -124,4 +126,12 @@
+>>        RB_FL_OVERWRITE         = 1 << 0,
+>>  };
+>>
+>> +struct ring_buffer_per_cpu *ring_buffer_cpu(struct ring_buffer *buffer,
+>> +               int cpu);
+>> +struct page * ring_buffer_get_page(struct ring_buffer_per_cpu *cpu_buffer,
+>> +               pgoff_t pgoff);
+>> +void ring_buffer_advance_reader(struct ring_buffer_per_cpu *cpu_buffer,
+>> +               int count_in);
+>> +u32 ring_buffer_get_produced(struct ring_buffer_per_cpu *cpu_buffer);
+>> +u32 ring_buffer_get_consumed(struct ring_buffer_per_cpu *cpu_buffer);
+>>  #endif /* _LINUX_RING_BUFFER_H */
+>> Index: linux-2.6.26/kernel/ktrace/ring_buffer.c
+>> ===================================================================
+>> --- linux-2.6.26.orig/kernel/ktrace/ring_buffer.c       2008-12-01
+>> 14:46:11.000000000 -0800
+>> +++ linux-2.6.26/kernel/ktrace/ring_buffer.c    2008-12-01
+>> 16:03:01.000000000 -0800
+>> @@ -131,7 +131,6 @@
+>>  {
+>>        if (bpage->page)
+>>                free_page((unsigned long)bpage->page);
+>> -       kfree(bpage);
+>>  }
+>>
+>>  /*
+>> @@ -155,6 +154,7 @@
+>>        spinlock_t                      lock;
+>>        struct lock_class_key           lock_key;
+>>        struct list_head                pages;
+>> +       struct buffer_page              *page_array;
+>>        struct buffer_page              *head_page;     /* read from head */
+>>        struct buffer_page              *tail_page;     /* write to tail */
+>>        struct buffer_page              *commit_page;   /* commited pages */
+>> @@ -186,6 +186,11 @@
+>>        u64                             read_stamp;
+>>  };
+>>
+>> +struct ring_buffer_per_cpu *ring_buffer_cpu(struct ring_buffer
+>> *buffer, int cpu)
+>> +{
+>> +       return buffer->buffers[cpu];
+>> +}
+>> +
+>>  #define RB_WARN_ON(buffer, cond)                               \
+>>        do {                                                    \
+>>                if (unlikely(cond)) {                           \
+>> @@ -238,25 +243,26 @@
+>>        return 0;
+>>  }
+>>
+>> +#define BP_HEADER_SIZE  ALIGN(sizeof(struct buffer_page), cache_line_size())
+>> +
+>>  static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
+>>                             unsigned nr_pages)
+>>  {
+>>        struct list_head *head = &cpu_buffer->pages;
+>> -       struct buffer_page *page, *tmp;
+>> +       struct buffer_page *page;
+>> +       void *array;
+>>        unsigned long addr;
+>>        LIST_HEAD(pages);
+>>        unsigned i;
+>>
+>> +       array = cpu_buffer->page_array;
+>>        for (i = 0; i < nr_pages; i++) {
+>> -               page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
+>> -                                   GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
+>> -               if (!page)
+>> -                       goto free_pages;
+>> -               list_add(&page->list, &pages);
+>> +               page = (struct buffer_page *) (array + i * BP_HEADER_SIZE);
+>> +               list_add_tail(&page->list, &pages);
+>>
+>>                addr = __get_free_page(GFP_KERNEL);
+>>                if (!addr)
+>> -                       goto free_pages;
+>> +                       return -ENOMEM;
+>
+> Hmm, where do you free the page added by __get_free_page?
+>
+>>                page->page = (void *)addr;
+>>        }
+>>
+>> @@ -265,13 +271,6 @@
+>>        rb_check_pages(cpu_buffer);
+>>
+>>        return 0;
+>> -
+>> - free_pages:
+>> -       list_for_each_entry_safe(page, tmp, &pages, list) {
+>> -               list_del_init(&page->list);
+>> -               free_buffer_page(page);
+>
+> free_buffer_page() also frees the real page that was added.
+Ah. Right. My mistake.
 
-I was agreeing with your original statement.  Once the journal hits
-the platter, the data is safe, barring hard drive malfunctions (not
-just media corruption).  I was just listing the many other types of
-hard drive failures that could cause data loss.
+>
+>> -       }
+>> -       return -ENOMEM;
+>>  }
+>>
+>>  static struct ring_buffer_per_cpu *
+>> @@ -292,22 +291,23 @@
+>>        spin_lock_init(&cpu_buffer->lock);
+>>        INIT_LIST_HEAD(&cpu_buffer->pages);
+>>
+>> -       page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
+>> -                           GFP_KERNEL, cpu_to_node(cpu));
+>> -       if (!page)
+>> +       cpu_buffer->page_array = kzalloc_node(BP_HEADER_SIZE * buffer->pages,
+>> +                       GFP_KERNEL, cpu_to_node(cpu));
+>
+> There was talk about buffer->pages * BP_HEADER_SIZE growing larger than
+> what kalloc can handle. This is why I went with the link list.
+>
+>
+>> +       if (!cpu_buffer->page_array)
+>>                goto fail_free_buffer;
+>>
+>> +       page = (struct buffer_page *) ((void *) cpu_buffer->page_array +
+>> +                       BP_HEADER_SIZE * (buffer->pages -1));
+>
+> BTW, one of my patches moves some of the data into the front of the
+> page. That is, each page will now have meta data at the beginning. This
+> is to help with splice, that we do not need to bind the buffer_page with
+> the page itself for later use. What I moved into the page was the
+> timestamp and "commit" which is also the size of data on that page.
+>
+> With that, do you still need to make an array here?
+Probably not. I can instead add a page offset field in the buffer page header.
+That will make this patch much shorter. I will pull your latest
+patches and work
+from that.
 
-> > Heck, if you have a hiccup while writing an inode table block out to
-> > disk (for example a power failure at just the wrong time), so the
-> > memory (which is more voltage sensitive than hard drives) DMA's
-> > garbage which gets written to the inode table, you could lose a large
-> > number of adjacent inodes when garbage gets splatted over the inode
-> > table.
-> 
-> Ok, "memory failed before disk" is ... bad hardware.
+>
+>>        cpu_buffer->reader_page = page;
+>>        addr = __get_free_page(GFP_KERNEL);
+>>        if (!addr)
+>> -               goto fail_free_reader;
+>> +               goto fail_free_array;
+>>        page->page = (void *)addr;
+>> -
+>>        INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
+>>
+>> -       ret = rb_allocate_pages(cpu_buffer, buffer->pages);
+>> +       ret = rb_allocate_pages(cpu_buffer, buffer->pages - 1);
+>>        if (ret < 0)
+>> -               goto fail_free_reader;
+>> +               goto fail_free_array;
+>>
+>>        cpu_buffer->head_page
+>>                = list_entry(cpu_buffer->pages.next, struct buffer_page, list);
+>> @@ -315,8 +315,8 @@
+>>
+>>        return cpu_buffer;
+>>
+>> - fail_free_reader:
+>> -       free_buffer_page(cpu_buffer->reader_page);
+>> + fail_free_array:
+>> +       kfree(cpu_buffer->page_array);
+>
+> Again, you have a huge memory leak here. Nothing freed the allocate
+> pages in the array.
+>
+>>
+>>  fail_free_buffer:
+>>        kfree(cpu_buffer);
+>> @@ -335,6 +335,7 @@
+>>                list_del_init(&page->list);
+>>                free_buffer_page(page);
+>>        }
+>> +       kfree(cpu_buffer->page_array);
+>>        kfree(cpu_buffer);
+>>  }
+>>
+>> @@ -439,7 +440,7 @@
+>>
+>>        for (i = 0; i < nr_pages; i++) {
+>>                BUG_ON(list_empty(&cpu_buffer->pages));
+>> -               p = cpu_buffer->pages.next;
+>> +               p = cpu_buffer->pages.prev;
+>>                page = list_entry(p, struct buffer_page, list);
+>>                list_del_init(&page->list);
+>>                free_buffer_page(page);
+>> @@ -497,7 +498,7 @@
+>>  {
+>>        struct ring_buffer_per_cpu *cpu_buffer;
+>>        unsigned nr_pages, rm_pages, new_pages;
+>> -       struct buffer_page *page, *tmp;
+>> +       struct buffer_page *page, *array;
+>>        unsigned long buffer_size;
+>>        unsigned long addr;
+>>        LIST_HEAD(pages);
+>> @@ -544,23 +545,23 @@
+>
+> Can you run the diff output with '-p' so that we can see the function
+> each change is in.
+>
+>>        new_pages = nr_pages - buffer->pages;
+>>
+>>        for_each_buffer_cpu(buffer, cpu) {
+>> +               cpu_buffer = buffer->buffers[cpu];
+>> +               array = kzalloc_node(BP_HEADER_SIZE * nr_pages,
+>> +                       GFP_KERNEL, cpu_to_node(cpu));
+>
+> There's no error check here.
+>
+>> +               memcpy(array, cpu_buffer->page_array,
+>> +                               BP_HEADER_SIZE * buffer->pages);
+>>                for (i = 0; i < new_pages; i++) {
+>> -                       page = kzalloc_node(ALIGN(sizeof(*page),
+>> -                                                 cache_line_size()),
+>> -                                           GFP_KERNEL, cpu_to_node(cpu));
+>> -                       if (!page)
+>> -                               goto free_pages;
+>> -                       list_add(&page->list, &pages);
+>> +                       page = (struct buffer_page *) ((void *) array +
+>> +                                       (buffer->pages + i) * BP_HEADER_SIZE);
+>
+> This looks totally busted.
+>
+>>                        addr = __get_free_page(GFP_KERNEL);
+>>                        if (!addr)
+>> -                               goto free_pages;
+>> +                               return -ENOMEM;
+>
+> Again, nothing freed the pages that were allocated.
+>
+>>                        page->page = (void *)addr;
+>> +                       list_add_tail(&page->list, &pages);
+>>                }
+>> -       }
+>> -
+>> -       for_each_buffer_cpu(buffer, cpu) {
+>> -               cpu_buffer = buffer->buffers[cpu];
+>>                rb_insert_pages(cpu_buffer, &pages, new_pages);
+>> +               kfree(cpu_buffer->page_array);
+>> +               cpu_buffer->page_array = array;
+>>        }
+>>
+>>        BUG_ON(!list_empty(&pages));
+>> @@ -570,13 +571,6 @@
+>>        mutex_unlock(&buffer->mutex);
+>>
+>>        return size;
+>> -
+>> - free_pages:
+>> -       list_for_each_entry_safe(page, tmp, &pages, list) {
+>> -               list_del_init(&page->list);
+>> -               free_buffer_page(page);
+>> -       }
+>> -       return -ENOMEM;
+>>  }
+>>
+>>  static inline int rb_null_event(struct ring_buffer_event *event)
+>> @@ -1299,6 +1293,11 @@
+>>                  head->read == rb_page_commit(commit)));
+>>  }
+>>
+>> +int ring_buffer_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
+>> +{
+>> +       return rb_per_cpu_empty(cpu_buffer);
+>> +}
+>> +
+>>  /**
+>>  * ring_buffer_record_disable - stop all writes into the buffer
+>>  * @buffer: The ring buffer to stop writes to.
+>> @@ -1638,6 +1637,58 @@
+>>        cpu_buffer->reader_page->read += length;
+>>  }
+>>
+>> +u32 ring_buffer_get_produced(struct ring_buffer_per_cpu *cpu_buffer)
+>> +{
+>> +       struct buffer_page *reader;
+>> +       unsigned pgoff;
+>> +
+>> +       reader = rb_get_reader_page(cpu_buffer);
+>> +       if (!reader)
+>> +               return 0;
+>> +       pgoff = ((void *) reader - (void *) cpu_buffer->page_array) /
+>> +               BP_HEADER_SIZE;
+>> +       return pgoff * BUF_PAGE_SIZE + rb_page_commit(reader);
+>> +}
+>> +
+>> +u32 ring_buffer_get_consumed(struct ring_buffer_per_cpu *cpu_buffer)
+>> +{
+>> +       struct buffer_page *reader;
+>> +       unsigned pgoff;
+>> +
+>> +       reader = rb_get_reader_page(cpu_buffer);
+>> +       if (!reader)
+>> +               return 0;
+>> +       pgoff = ((void *) reader - (void *) cpu_buffer->page_array) /
+>> +               BP_HEADER_SIZE;
+>> +       return pgoff * BUF_PAGE_SIZE + reader->read;
+>> +}
+>
+> Note, the reader page is special. It is not actually in the ring buffer.
+> It sits outside the buffer and the reader can do anything it wants to it
+> (like move it to another file with a splice).  When it is done with the
+> contents on that page, it swaps the reader page with the next page in
+> the ring buffer.
+>
+> In over write mode, the writer (producer) may overwrite the buffer over
+> and over again but it will never touch what is currently on the reader
+> page.
+>
+> This is a must because we are going to make the writer (in the future)
+> lockless) and the reader will still have locks. Only one reader at a
+> time, but we can have many writers. Well, each writer is on its own CPU
+> so it is ok, although the writers are reentrent.
+Yes. I noticed this while implementing the mmap patch. So the current
+mmap can not cross multiple pages. I think the splice approach also
+has this limit. It can copy data only from a single page, i.e., the reader page.
 
-It's PC class hardware.  Live with it.  Back when SGI made their own
-hardware, they noticed this problem, and so they wired up their SGI
-machines with powerfail interrupts, and extra big capacitors in their
-power supplies, and when Irix got a powerfail interrupt, it would
-frantically run around aborting DMA transfers to avoid this particular
-problem.  At least, that's what an old-timer SGI engineer (who is
-unfortunately no longer at SGI) told me.
+Jiaying
 
-PC class hardware don't have power fail interrupts.  Hence, my advice
-to you is that if you use a filesystem that does logical journalling
---- better have a UPS.
-
-> ...but... you seem to be saying that modern filesystems can damage
-> data even on "sane" hardware.
-
-The example I gave was one where a disk failure could cause a file
-that had previously been sucessfully written to disk and fsync()'ed to
-be damaged by another filesystem operation ***in the face of hard
-drive failure***.  Surely that is obvious.  The most obvious case of
-that might be if the disk controller gets confused and slams a data
-block into the wrong location on disk (there's a reason why DIF
-includes the sector number in its checksum and why some enterprise
-databases do the same thing in their tablespace blocks --- it happens
-often enough that paranoid data integrity engineers worry about it).
-
-The example I gave, where a b-tree is doing split, and there is a
-failure writing to the b-tree causing ancillary damage files
-referenced in the b-tree node getting split, can happen with **any**
-filesystem.  The only thing that will save you here would be a
-copy-on-write type filesystem, such as WAFL or btrfs.
-
-> You seem to be saying that ext2/ext3 only work if these are met:
-> 
-> 1) power may fail any time.
-
-Well, ext2/ext3 will work fine if the power is always reliable, too.  :-)
-
-> 2) writes are always successful.
-
-To the extent that write failures while writing filesystem metdata
-can, if you are unluky be catastrophic, yeah.  Fortunally normally
-such write failures are fairly rare, but if you worry about such
-things, RAID is the answer.  As I said, I believe this is going to be
-true for pretty much any update-in-place filesystem.  It's always
-possible to construct failure scenarios if the hardware is unreliable.
-
-> 
-> 3) connection to the disk always works.
-> 
-> AFAICT it is unsafe to run ext2/ext3 on any media that can be removed
-> without unmounting (missing fsync error propagation), and it is unsafe
-> to run ext2/ext3 on any flash-based storage with block interface (SD
-> cards, flash sticks).
-
-The data on the disk before the connection is yanked should be safe
-(although as we mentioned in another thread, the flash drive itself
-may not be happy if you are writing to the Flash Translation Layer at
-the time when power is cut; if that causes a previously written sector
-to disappear, that's an example of a hardware failure that **any**
-filesystem won't necessarily be able to recover from).
-
-Your definition of "safe" seems to include worrying about making sure
-that all processes that may have previously touched a file or a
-directory gets an error when they try to do an fsync() on that file or
-directory, and that given that fsync clears the error condition after
-it returns it,it is therefore "unsafe".  
-
-The reality is that most applications don't proper error checking, and
-even fewer actually call fsync(), so if you are putting your root
-filesytem on a 32G flash card, and it pops out easily due to hardware
-design issues, the question of whether fsync() gets properly progated
-to all potentially interested applications is the ***least*** of your
-worries.
-
-							- Ted
+>
+> -- Steve
+>
+>> +
+>> +void ring_buffer_advance_reader(struct ring_buffer_per_cpu *cpu_buffer,
+>> +               int count)
+>> +{
+>> +       unsigned long flags;
+>> +       struct buffer_page *reader;
+>> +
+>> +       spin_lock_irqsave(&cpu_buffer->lock, flags);
+>> +       reader = cpu_buffer->reader_page;
+>> +       reader->read += count;
+>> +       spin_unlock_irqrestore(&cpu_buffer->lock, flags);
+>> +}
+>> +
+>> +struct page * ring_buffer_get_page(struct ring_buffer_per_cpu *cpu_buffer,
+>> +               pgoff_t pgoff)
+>> +{
+>> +       struct page *page;
+>> +       struct buffer_page *bpage;
+>> +
+>> +       bpage = (struct buffer_page *) ((void *) cpu_buffer->page_array +
+>> +                       pgoff * BP_HEADER_SIZE);
+>> +       page = virt_to_page(bpage->page);
+>> +       if (!page)
+>> +               printk("error: fail to vmalloc page\n");
+>> +       return page;
+>> +}
+>> +
+>>  static void rb_advance_iter(struct ring_buffer_iter *iter)
+>>  {
+>>        struct ring_buffer *buffer;
+>
+>
