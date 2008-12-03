@@ -1,800 +1,1046 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbYLCUTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbYLCUTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759837AbYLCUTh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYLCTzH
+	id S1759922AbYLCUTx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbYLCTzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:55:07 -0500
-Received: from kroah.org ([198.145.64.141]:60557 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752848AbYLCTzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:55:02 -0500
-Date: Wed, 3 Dec 2008 11:53:38 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
-       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
-       Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [patch 074/104] cifs: reinstate sharing of tree connections
-Message-ID: <20081203195338.GW8950@kroah.com>
-References: <20081203193901.715896543@mini.kroah.org>
+	Wed, 3 Dec 2008 14:55:51 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:41087 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755601AbYLCTzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:55:46 -0500
+Date: Wed, 3 Dec 2008 19:55:37 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Brian S. Julin" <bri@abrij.org>
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: [PATCH] misc: Add oqo-wmi driver for model 2 OQO backlight and rfkill control
+Message-ID: <20081203195537.GB22560@srcf.ucam.org>
+References: <20081127190517.GA25429@srcf.ucam.org> <alpine.LFD.2.00.0811281431320.3204@localhost.localdomain> <Pine.LNX.4.64.0811282215160.17453@sheavy.abrij.org> <20081129045045.GA13866@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-reinstate-sharing-of-tree-connections.patch"
-In-Reply-To: <20081203194725.GA8950@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Disposition: inline
+In-Reply-To: <20081129045045.GA13866@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-From: Jeff Layton <jlayton@redhat.com>
-
-commit f1987b44f642e96176adc88b7ce23a1d74806f89 upstream
-
-Use a similar approach to the SMB session sharing. Add a list of tcons
-attached to each SMB session. Move the refcount to non-atomic. Protect
-all of the above with the cifs_tcp_ses_lock. Add functions to
-properly find and put references to the tcons.
-
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-Cc: Suresh Jayaraman <sjayaraman@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+oqo-wmi provides a WMI-based interface to backlight and rfkill control on
+model 2 OQO devices. It was originally written by Brian Julin
+(<bri@abrij.org>) - I've ported it to the rfkill layer and tidied it up a
+little.
+    
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
 ---
- fs/cifs/cifs_debug.c |  236 +++++++++++++++++++++++++++------------------------
- fs/cifs/cifsfs.c     |    8 -
- fs/cifs/cifsglob.h   |   13 +-
- fs/cifs/cifssmb.c    |   43 ++-------
- fs/cifs/connect.c    |   94 +++++++++++++-------
- fs/cifs/misc.c       |   74 +++++++--------
- 6 files changed, 249 insertions(+), 219 deletions(-)
 
---- a/fs/cifs/cifs_debug.c
-+++ b/fs/cifs/cifs_debug.c
-@@ -107,12 +107,13 @@ void cifs_dump_mids(struct TCP_Server_In
- #ifdef CONFIG_PROC_FS
- static int cifs_debug_data_proc_show(struct seq_file *m, void *v)
- {
--	struct list_head *tmp, *tmp2, *tmp3;
-+	struct list_head *tmp1, *tmp2, *tmp3;
- 	struct mid_q_entry *mid_entry;
- 	struct TCP_Server_Info *server;
- 	struct cifsSesInfo *ses;
- 	struct cifsTconInfo *tcon;
--	int i;
-+	int i, j;
-+	__u32 dev_type;
+I've added a MAINTAINERS entry - I'm happy to look after this for now, 
+if Brian doesn't have any objections.
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 618c1ef..c76ef2d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3233,6 +3233,11 @@ L:	orinoco-devel@lists.sourceforge.net
+ W:	http://www.nongnu.org/orinoco/
+ S:	Maintained
  
- 	seq_puts(m,
- 		    "Display Internal CIFS Data Structures for Debugging\n"
-@@ -123,8 +124,8 @@ static int cifs_debug_data_proc_show(str
- 
- 	i = 0;
- 	read_lock(&cifs_tcp_ses_lock);
--	list_for_each(tmp, &cifs_tcp_ses_list) {
--		server = list_entry(tmp, struct TCP_Server_Info,
-+	list_for_each(tmp1, &cifs_tcp_ses_list) {
-+		server = list_entry(tmp1, struct TCP_Server_Info,
- 				    tcp_ses_list);
- 		i++;
- 		list_for_each(tmp2, &server->smb_ses_list) {
-@@ -133,12 +134,12 @@ static int cifs_debug_data_proc_show(str
- 			if ((ses->serverDomain == NULL) ||
- 				(ses->serverOS == NULL) ||
- 				(ses->serverNOS == NULL)) {
--				seq_printf(m, "\nentry for %s not fully "
--					   "displayed\n\t", ses->serverName);
-+				seq_printf(m, "\n%d) entry for %s not fully "
-+					   "displayed\n\t", i, ses->serverName);
- 			} else {
- 				seq_printf(m,
--				    "\n%d) Name: %s  Domain: %s Mounts: %d OS:"
--				    " %s  \n\tNOS: %s\tCapability: 0x%x\n\tSMB"
-+				    "\n%d) Name: %s  Domain: %s Uses: %d OS:"
-+				    " %s\n\tNOS: %s\tCapability: 0x%x\n\tSMB"
- 				    " session status: %d\t",
- 				i, ses->serverName, ses->serverDomain,
- 				ses->ses_count, ses->serverOS, ses->serverNOS,
-@@ -156,14 +157,44 @@ static int cifs_debug_data_proc_show(str
- 				atomic_read(&server->num_waiters));
- #endif
- 
--			seq_puts(m, "\nMIDs:\n");
-+			seq_puts(m, "\n\tShares:");
-+			j = 0;
-+			list_for_each(tmp3, &ses->tcon_list) {
-+				tcon = list_entry(tmp3, struct cifsTconInfo,
-+						  tcon_list);
-+				++j;
-+				dev_type = le32_to_cpu(tcon->fsDevInfo.DeviceType);
-+				seq_printf(m, "\n\t%d) %s Mounts: %d ", j,
-+					   tcon->treeName, tcon->tc_count);
-+				if (tcon->nativeFileSystem) {
-+					seq_printf(m, "Type: %s ",
-+						   tcon->nativeFileSystem);
-+				}
-+				seq_printf(m, "DevInfo: 0x%x Attributes: 0x%x"
-+					"\nPathComponentMax: %d Status: 0x%d",
-+					le32_to_cpu(tcon->fsDevInfo.DeviceCharacteristics),
-+					le32_to_cpu(tcon->fsAttrInfo.Attributes),
-+					le32_to_cpu(tcon->fsAttrInfo.MaxPathNameComponentLength),
-+					tcon->tidStatus);
-+				if (dev_type == FILE_DEVICE_DISK)
-+					seq_puts(m, " type: DISK ");
-+				else if (dev_type == FILE_DEVICE_CD_ROM)
-+					seq_puts(m, " type: CDROM ");
-+				else
-+					seq_printf(m, " type: %d ", dev_type);
++OQO WMI EXTRAS DRIVER
++P:	Matthew Garrett
++M:	mjg59@srcf.ucam.org
++S:	Maintained
 +
-+				if (tcon->need_reconnect)
-+					seq_puts(m, "\tDISCONNECTED ");
-+				seq_putc(m, '\n');
-+			}
+ P54 WIRELESS DRIVER
+ P:	Michael Wu
+ M:	flamingice@sourmilk.net
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 3949a1c..b7af402 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -237,6 +237,19 @@ config ICS932S401
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called ics932s401.
+ 
++config OQO_WMI
++       tristate "OQO WMI extras"
++       depends on ACPI_WMI
++       depends on INPUT
++       depends on RFKILL
++       depends on BACKLIGHT_CLASS_DEVICE
++       help
++         Say Y here if you want to support rfkill and backlight control on
++         series 2 OQO handheld devices.
 +
-+			seq_puts(m, "\n\tMIDs:\n");
- 
- 			spin_lock(&GlobalMid_Lock);
- 			list_for_each(tmp3, &server->pending_mid_q) {
--				mid_entry = list_entry(tmp3, struct
--					mid_q_entry,
-+				mid_entry = list_entry(tmp3, struct mid_q_entry,
- 					qhead);
--				seq_printf(m, "State: %d com: %d pid:"
-+				seq_printf(m, "\tState: %d com: %d pid:"
- 						" %d tsk: %p mid %d\n",
- 						mid_entry->midState,
- 						(int)mid_entry->command,
-@@ -177,41 +208,6 @@ static int cifs_debug_data_proc_show(str
- 	read_unlock(&cifs_tcp_ses_lock);
- 	seq_putc(m, '\n');
- 
--	seq_puts(m, "Shares:");
--
--	i = 0;
--	read_lock(&GlobalSMBSeslock);
--	list_for_each(tmp, &GlobalTreeConnectionList) {
--		__u32 dev_type;
--		i++;
--		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
--		dev_type = le32_to_cpu(tcon->fsDevInfo.DeviceType);
--		seq_printf(m, "\n%d) %s Uses: %d ", i,
--				 tcon->treeName, atomic_read(&tcon->useCount));
--		if (tcon->nativeFileSystem) {
--			seq_printf(m, "Type: %s ",
--					 tcon->nativeFileSystem);
--		}
--		seq_printf(m, "DevInfo: 0x%x Attributes: 0x%x"
--				 "\nPathComponentMax: %d Status: %d",
--			    le32_to_cpu(tcon->fsDevInfo.DeviceCharacteristics),
--			    le32_to_cpu(tcon->fsAttrInfo.Attributes),
--			    le32_to_cpu(tcon->fsAttrInfo.MaxPathNameComponentLength),
--			    tcon->tidStatus);
--		if (dev_type == FILE_DEVICE_DISK)
--			seq_puts(m, " type: DISK ");
--		else if (dev_type == FILE_DEVICE_CD_ROM)
--			seq_puts(m, " type: CDROM ");
--		else
--			seq_printf(m, " type: %d ", dev_type);
--
--		if (tcon->need_reconnect)
--			seq_puts(m, "\tDISCONNECTED ");
--	}
--	read_unlock(&GlobalSMBSeslock);
--
--	seq_putc(m, '\n');
--
- 	/* BB add code to dump additional info such as TCP session info now */
- 	return 0;
- }
-@@ -235,7 +231,9 @@ static ssize_t cifs_stats_proc_write(str
- {
- 	char c;
- 	int rc;
--	struct list_head *tmp;
-+	struct list_head *tmp1, *tmp2, *tmp3;
-+	struct TCP_Server_Info *server;
-+	struct cifsSesInfo *ses;
- 	struct cifsTconInfo *tcon;
- 
- 	rc = get_user(c, buffer);
-@@ -243,33 +241,42 @@ static ssize_t cifs_stats_proc_write(str
- 		return rc;
- 
- 	if (c == '1' || c == 'y' || c == 'Y' || c == '0') {
--		read_lock(&GlobalSMBSeslock);
- #ifdef CONFIG_CIFS_STATS2
- 		atomic_set(&totBufAllocCount, 0);
- 		atomic_set(&totSmBufAllocCount, 0);
- #endif /* CONFIG_CIFS_STATS2 */
--		list_for_each(tmp, &GlobalTreeConnectionList) {
--			tcon = list_entry(tmp, struct cifsTconInfo,
--					cifsConnectionList);
--			atomic_set(&tcon->num_smbs_sent, 0);
--			atomic_set(&tcon->num_writes, 0);
--			atomic_set(&tcon->num_reads, 0);
--			atomic_set(&tcon->num_oplock_brks, 0);
--			atomic_set(&tcon->num_opens, 0);
--			atomic_set(&tcon->num_closes, 0);
--			atomic_set(&tcon->num_deletes, 0);
--			atomic_set(&tcon->num_mkdirs, 0);
--			atomic_set(&tcon->num_rmdirs, 0);
--			atomic_set(&tcon->num_renames, 0);
--			atomic_set(&tcon->num_t2renames, 0);
--			atomic_set(&tcon->num_ffirst, 0);
--			atomic_set(&tcon->num_fnext, 0);
--			atomic_set(&tcon->num_fclose, 0);
--			atomic_set(&tcon->num_hardlinks, 0);
--			atomic_set(&tcon->num_symlinks, 0);
--			atomic_set(&tcon->num_locks, 0);
-+		read_lock(&cifs_tcp_ses_lock);
-+		list_for_each(tmp1, &cifs_tcp_ses_list) {
-+			server = list_entry(tmp1, struct TCP_Server_Info,
-+					    tcp_ses_list);
-+			list_for_each(tmp2, &server->smb_session_list) {
-+				ses = list_entry(tmp2, struct cifsSesInfo,
-+						 smb_session_list);
-+				list_for_each(tmp3, &ses->tcon_list) {
-+					tcon = list_entry(tmp3,
-+							  struct cifsTconInfo,
-+							  tcon_list);
-+					atomic_set(&tcon->num_smbs_sent, 0);
-+					atomic_set(&tcon->num_writes, 0);
-+					atomic_set(&tcon->num_reads, 0);
-+					atomic_set(&tcon->num_oplock_brks, 0);
-+					atomic_set(&tcon->num_opens, 0);
-+					atomic_set(&tcon->num_closes, 0);
-+					atomic_set(&tcon->num_deletes, 0);
-+					atomic_set(&tcon->num_mkdirs, 0);
-+					atomic_set(&tcon->num_rmdirs, 0);
-+					atomic_set(&tcon->num_renames, 0);
-+					atomic_set(&tcon->num_t2renames, 0);
-+					atomic_set(&tcon->num_ffirst, 0);
-+					atomic_set(&tcon->num_fnext, 0);
-+					atomic_set(&tcon->num_fclose, 0);
-+					atomic_set(&tcon->num_hardlinks, 0);
-+					atomic_set(&tcon->num_symlinks, 0);
-+					atomic_set(&tcon->num_locks, 0);
-+				}
-+			}
- 		}
--		read_unlock(&GlobalSMBSeslock);
-+		read_unlock(&cifs_tcp_ses_lock);
- 	}
- 
- 	return count;
-@@ -278,7 +285,9 @@ static ssize_t cifs_stats_proc_write(str
- static int cifs_stats_proc_show(struct seq_file *m, void *v)
- {
- 	int i;
--	struct list_head *tmp;
-+	struct list_head *tmp1, *tmp2, *tmp3;
-+	struct TCP_Server_Info *server;
-+	struct cifsSesInfo *ses;
- 	struct cifsTconInfo *tcon;
- 
- 	seq_printf(m,
-@@ -307,44 +316,55 @@ static int cifs_stats_proc_show(struct s
- 		GlobalCurrentXid, GlobalMaxActiveXid);
- 
- 	i = 0;
--	read_lock(&GlobalSMBSeslock);
--	list_for_each(tmp, &GlobalTreeConnectionList) {
--		i++;
--		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
--		seq_printf(m, "\n%d) %s", i, tcon->treeName);
--		if (tcon->need_reconnect)
--			seq_puts(m, "\tDISCONNECTED ");
--		seq_printf(m, "\nSMBs: %d Oplock Breaks: %d",
--			atomic_read(&tcon->num_smbs_sent),
--			atomic_read(&tcon->num_oplock_brks));
--		seq_printf(m, "\nReads:  %d Bytes: %lld",
--			atomic_read(&tcon->num_reads),
--			(long long)(tcon->bytes_read));
--		seq_printf(m, "\nWrites: %d Bytes: %lld",
--			atomic_read(&tcon->num_writes),
--			(long long)(tcon->bytes_written));
--		seq_printf(m,
--			"\nLocks: %d HardLinks: %d Symlinks: %d",
--			atomic_read(&tcon->num_locks),
--			atomic_read(&tcon->num_hardlinks),
--			atomic_read(&tcon->num_symlinks));
--
--		seq_printf(m, "\nOpens: %d Closes: %d Deletes: %d",
--			atomic_read(&tcon->num_opens),
--			atomic_read(&tcon->num_closes),
--			atomic_read(&tcon->num_deletes));
--		seq_printf(m, "\nMkdirs: %d Rmdirs: %d",
--			atomic_read(&tcon->num_mkdirs),
--			atomic_read(&tcon->num_rmdirs));
--		seq_printf(m, "\nRenames: %d T2 Renames %d",
--			atomic_read(&tcon->num_renames),
--			atomic_read(&tcon->num_t2renames));
--		seq_printf(m, "\nFindFirst: %d FNext %d FClose %d",
--			atomic_read(&tcon->num_ffirst),
--			atomic_read(&tcon->num_fnext),
--			atomic_read(&tcon->num_fclose));
-+	read_lock(&cifs_tcp_ses_lock);
-+	list_for_each(tmp1, &cifs_tcp_ses_list) {
-+		server = list_entry(tmp1, struct TCP_Server_Info,
-+				    tcp_ses_list);
-+		list_for_each(tmp2, &server->smb_ses_list) {
-+			ses = list_entry(tmp2, struct cifsSesInfo,
-+					 smb_ses_list);
-+			list_for_each(tmp3, &ses->tcon_list) {
-+				tcon = list_entry(tmp3,
-+						  struct cifsTconInfo,
-+						  tcon_list);
-+				i++;
-+				seq_printf(m, "\n%d) %s", i, tcon->treeName);
-+				if (tcon->need_reconnect)
-+					seq_puts(m, "\tDISCONNECTED ");
-+				seq_printf(m, "\nSMBs: %d Oplock Breaks: %d",
-+					atomic_read(&tcon->num_smbs_sent),
-+					atomic_read(&tcon->num_oplock_brks));
-+				seq_printf(m, "\nReads:  %d Bytes: %lld",
-+					atomic_read(&tcon->num_reads),
-+					(long long)(tcon->bytes_read));
-+				seq_printf(m, "\nWrites: %d Bytes: %lld",
-+					atomic_read(&tcon->num_writes),
-+					(long long)(tcon->bytes_written));
-+				seq_printf(m, "\nLocks: %d HardLinks: %d "
-+					      "Symlinks: %d",
-+					atomic_read(&tcon->num_locks),
-+					atomic_read(&tcon->num_hardlinks),
-+					atomic_read(&tcon->num_symlinks));
-+				seq_printf(m, "\nOpens: %d Closes: %d"
-+					      "Deletes: %d",
-+					atomic_read(&tcon->num_opens),
-+					atomic_read(&tcon->num_closes),
-+					atomic_read(&tcon->num_deletes));
-+				seq_printf(m, "\nMkdirs: %d Rmdirs: %d",
-+					atomic_read(&tcon->num_mkdirs),
-+					atomic_read(&tcon->num_rmdirs));
-+				seq_printf(m, "\nRenames: %d T2 Renames %d",
-+					atomic_read(&tcon->num_renames),
-+					atomic_read(&tcon->num_t2renames));
-+				seq_printf(m, "\nFindFirst: %d FNext %d "
-+					      "FClose %d",
-+					atomic_read(&tcon->num_ffirst),
-+					atomic_read(&tcon->num_fnext),
-+					atomic_read(&tcon->num_fclose));
-+			}
-+		}
- 	}
--	read_unlock(&GlobalSMBSeslock);
-+	read_unlock(&cifs_tcp_ses_lock);
- 
- 	seq_putc(m, '\n');
- 	return 0;
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -510,10 +510,11 @@ static void cifs_umount_begin(struct sup
- 	tcon = cifs_sb->tcon;
- 	if (tcon == NULL)
- 		return;
--	down(&tcon->tconSem);
--	if (atomic_read(&tcon->useCount) == 1)
++         To compile this driver as a module, choose M here: the module will
++         be called oqo-wmi.
 +
-+	read_lock(&cifs_tcp_ses_lock);
-+	if (tcon->tc_count == 1)
- 		tcon->tidStatus = CifsExiting;
--	up(&tcon->tconSem);
-+	read_unlock(&cifs_tcp_ses_lock);
- 
- 	/* cancel_brl_requests(tcon); */ /* BB mark all brl mids as exiting */
- 	/* cancel_notify_requests(tcon); */
-@@ -1014,7 +1015,6 @@ init_cifs(void)
- 	int rc = 0;
- 	cifs_proc_init();
- 	INIT_LIST_HEAD(&cifs_tcp_ses_list);
--	INIT_LIST_HEAD(&GlobalTreeConnectionList); /* BB to be removed by jl */
- 	INIT_LIST_HEAD(&GlobalOplock_Q);
- #ifdef CONFIG_CIFS_EXPERIMENTAL
- 	INIT_LIST_HEAD(&GlobalDnotifyReqList);
---- a/fs/cifs/cifsglob.h
-+++ b/fs/cifs/cifsglob.h
-@@ -233,16 +233,15 @@ struct cifsSesInfo {
-  * session
-  */
- struct cifsTconInfo {
--	struct list_head cifsConnectionList;
-+	struct list_head tcon_list;
-+	int tc_count;
- 	struct list_head openFileList;
--	struct semaphore tconSem;
- 	struct cifsSesInfo *ses;	/* pointer to session associated with */
- 	char treeName[MAX_TREE_SIZE + 1]; /* UNC name of resource in ASCII */
- 	char *nativeFileSystem;
- 	__u16 tid;		/* The 2 byte tree id */
- 	__u16 Flags;		/* optional support bits */
- 	enum statusEnum tidStatus;
--	atomic_t useCount;	/* how many explicit/implicit mounts to share */
- #ifdef CONFIG_CIFS_STATS
- 	atomic_t num_smbs_sent;
- 	atomic_t num_writes;
-@@ -598,9 +597,13 @@ require use of the stronger protocol */
-  */
- GLOBAL_EXTERN struct list_head		cifs_tcp_ses_list;
- 
--/* protects cifs_tcp_ses_list and srv_count for each tcp session */
+ config MSI_LAPTOP
+         tristate "MSI Laptop Extras"
+         depends on X86
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 39043f8..1109062 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
+ obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
+ obj-$(CONFIG_ICS932S401)	+= ics932s401.o
+ obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
++obj-$(CONFIG_OQO_WMI)		+= oqo-wmi.o
+ obj-$(CONFIG_LKDTM)		+= lkdtm.o
+ obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
+ obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
+diff --git a/drivers/misc/oqo-wmi.c b/drivers/misc/oqo-wmi.c
+new file mode 100644
+index 0000000..940e605
+--- /dev/null
++++ b/drivers/misc/oqo-wmi.c
+@@ -0,0 +1,941 @@
 +/*
-+ * This lock protects the cifs_tcp_ses_list, the list of smb sessions per
-+ * tcp session, and the list of tcon's per smb session. It also protects
-+ * the reference counters for the server, smb session, and tcon. Finally,
-+ * changes to the tcon->tidStatus should be done while holding this lock.
++ *  OQO WMI UPMC Extras
++ *
++ *  Copyright (C) 2008 Brian S. Julin <bri@abrij.org>
++ *
++ *  Based on acer-wmi:
++ *    Copyright (C) 2007-2008	Carlos Corbacho <cathectic@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
- GLOBAL_EXTERN rwlock_t		cifs_tcp_ses_lock;
--GLOBAL_EXTERN struct list_head GlobalTreeConnectionList; /* BB to be removed */
- GLOBAL_EXTERN rwlock_t GlobalSMBSeslock;  /* protects list inserts on 3 above */
- 
- GLOBAL_EXTERN struct list_head GlobalOplock_Q;
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -742,50 +742,31 @@ CIFSSMBTDis(const int xid, struct cifsTc
- 	int rc = 0;
- 
- 	cFYI(1, ("In tree disconnect"));
--	/*
--	 *  If last user of the connection and
--	 *  connection alive - disconnect it
--	 *  If this is the last connection on the server session disconnect it
--	 *  (and inside session disconnect we should check if tcp socket needs
--	 *  to be freed and kernel thread woken up).
--	 */
--	if (tcon)
--		down(&tcon->tconSem);
--	else
--		return -EIO;
- 
--	atomic_dec(&tcon->useCount);
--	if (atomic_read(&tcon->useCount) > 0) {
--		up(&tcon->tconSem);
--		return -EBUSY;
--	}
-+	/* BB: do we need to check this? These should never be NULL. */
-+	if ((tcon->ses == NULL) || (tcon->ses->server == NULL))
-+		return -EIO;
- 
--	/* No need to return error on this operation if tid invalidated and
--	closed on server already e.g. due to tcp session crashing */
--	if (tcon->need_reconnect) {
--		up(&tcon->tconSem);
++
++/*
++ * NOTE: You need to turn SMI on in BIOS (if dmidecode works, you already have)
++ * NOTE: acpi-wmi support mandatory
++ * NOTE: backlight and inputdev support a must, ifdefs will come later
++ */
++
++/*
++ *
++ *  0.3: added WLAN enable switch, restore settings on unload,
++ *       resume/suspend handling
++ *  0.2: Still not production-ready, but added ambient light sensor,
++ *       backlight, and it prints the unit serial number to dmesg (do
++ *       not know where to make that available to userspace yet.)
++ *  0.1: This is a first cut.  Plan to reboot after playing with this.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/dmi.h>
++#include <linux/backlight.h>
++#include <linux/leds.h>
++#include <linux/platform_device.h>
++#include <linux/acpi.h>
++#include <linux/i8042.h>
++#include <linux/input-polldev.h>
++#include <linux/rfkill.h>
++
++#include <acpi/acpi_drivers.h>
++
++MODULE_AUTHOR("Brian Julin");
++MODULE_DESCRIPTION("OQO UPMC WMI Extras Driver");
++MODULE_LICENSE("GPL");
++
++#define OQO_LOGPREFIX "oqo-wmi: "
++#define OQO_ERR KERN_ERR OQO_LOGPREFIX
++#define OQO_NOTICE KERN_NOTICE OQO_LOGPREFIX
++#define OQO_INFO KERN_INFO OQO_LOGPREFIX
++
++#define OQO_KINE_MAXTRY 3
++
++/* Store defined devices globally since we only have one instance. */
++static struct platform_device *oqo_platform_device;
++static struct backlight_device *oqo_backlight_device;
++static struct rfkill *oqo_rfkill;
++static struct input_dev *oqo_kine;
++static struct input_polled_dev *oqo_kine_polled;
++
++/* Likewise store current and original settings globally. */
++struct oqo_settings {
++	int lid_wakes;		/* not sure if ACPI handles/needs help here */
++	int kine_itvl;
++	int bl_bright;
++};
++
++static struct oqo_settings orig, curr;
++
++/* Some of this code is left like in acer-wmi so we can add the older
++   Model 01 and any future models more easily, but we should not expect
++   it to be as complicated as Acer given each model is a leap rather than
++   a subtle variant on the last, so we aren't using "quirks" perse.  Not
++   sure if there is any real difference for our purposes between the o2
++   and e2.
++*/
++struct oqo_model {
++	const char *model;
++	u16 model_subs;
++};
++#define MODEL_SUB_OQO_O2_SMB0 3
++
++static struct oqo_model oqo_models[] = {
++	{
++	 .model = "Model 2",
++	 .model_subs = MODEL_SUB_OQO_O2_SMB0,
++	 },
++	{}
++};
++
++static struct oqo_model *model;
++
++static int force;
++module_param(force, bool, 0644);
++MODULE_PARM_DESC(force, "Force WMI detection even if DMI detection failed");
++
++/*
++ * OQO Model 2 SMBUS registers
++ * We are just using WMI to read the Cx700 smbus, to share the
++ * ACPI mutex (what may also eventually work in VMs/win32)
++ * Using i2c-viapro directly could interfere with PM.
++ */
++
++#define OQO_O2_SMB0_WWAN_DSBL_ADDR	0x19
++#define OQO_O2_SMB0_WWAN_DSBL_MASK	0x02
++#define OQO_O2_SMB0_LUMIN_LO		0x20
++#define OQO_O2_SMB0_LUMIN_HI		0x21
++#define OQO_O2_SMB0_BL_LO		0x26
++#define OQO_O2_SMB0_BL_HI		0x27
++#define OQO_O2_SMB0_ACCEL_POLL_ITVL	0x45
++#define OQO_O2_SMB0_ACCEL_XLO		0x50
++#define OQO_O2_SMB0_ACCEL_XHI		0x51
++#define OQO_O2_SMB0_ACCEL_YLO		0x52
++#define OQO_O2_SMB0_ACCEL_YHI		0x53
++#define OQO_O2_SMB0_ACCEL_ZLO		0x54
++#define OQO_O2_SMB0_ACCEL_ZHI		0x55
++/* These may be handled by ACPI not sure yet. */
++#define OQO_O2_SMB0_LID_WAKES_ADDR	0x58
++#define OQO_O2_SMB0_LID_WAKES_MASK	0x08
++
++#define OQO_O2_SMB0_SERIAL_START	0x70
++#define OQO_O2_SMB0_SERIAL_LEN		11
++
++static char oqo_sn[OQO_O2_SMB0_SERIAL_LEN + 1];
++
++/* Other addresses I have noticed used on the 02 SMBUS (from DSDT and whatnot)
++ *
++ * These are not used because the linux ACPI drivers work fine on them
++ *
++ * 0x0A -- processor sleep mode?
++ * 0x0C -- ACPI events, probably clears when read.
++ * 0x30 -- thermal zone
++ *      There is something going on at 0x31 through 0x34 which is likely
++ *      also thermal.  The values change over time.  Have not figured that
++ *      out yet.
++ * 0x41 -- AC detect
++ * 0x42 -- LID button   ACTUALLY THIS DOES NOT WORK AND NEEDS TO BE FIXED
++ * 0xa0 and 0xa1 -- battery something (presence? state?)
++ * 0xa4 to 0xcf -- battery info (0xc8-0xca contains "OQO")
++ * 0xd4 to 0xef -- other battery stats
++ */
++
++/*
++ * OQO method GUIDs
++ */
++#define OQO_O2_AMW0_GUID "ABBC0F6D-8EA1-11D1-00A0-C90629100000"
++MODULE_ALIAS("wmi:ABBC0F6D-8EA1-11D1-00A0-C90629100000");
++
++/*
++ * Interface type flags
++ */
++enum interface_type {
++	OQO_O2_AMW0,
++};
++
++/* Each low-level interface must define at least some of the following */
++struct wmi_interface {
++	/* The WMI device type */
++	u32 type;
++};
++
++static struct wmi_interface AMW0_interface = {
++	.type = OQO_O2_AMW0,
++};
++
++/* The detected/chosen interface */
++static struct wmi_interface *interface;
++
++static int dmi_matched(const struct dmi_system_id *dmi)
++{
++	model = dmi->driver_data;
 +	/*
-+	 * No need to return error on this operation if tid invalidated and
-+	 * closed on server already e.g. due to tcp session crashing. Also,
-+	 * the tcon is no longer on the list, so no need to take lock before
-+	 * checking this.
++	 * Detect which ACPI-WMI interface we're using.
 +	 */
-+	if (tcon->need_reconnect)
- 		return 0;
--	}
- 
--	if ((tcon->ses == NULL) || (tcon->ses->server == NULL)) {
--		up(&tcon->tconSem);
--		return -EIO;
--	}
- 	rc = small_smb_init(SMB_COM_TREE_DISCONNECT, 0, tcon,
- 			    (void **)&smb_buffer);
--	if (rc) {
--		up(&tcon->tconSem);
-+	if (rc)
- 		return rc;
--	}
- 
- 	rc = SendReceiveNoRsp(xid, tcon->ses, smb_buffer, 0);
- 	if (rc)
- 		cFYI(1, ("Tree disconnect failed %d", rc));
- 
--	up(&tcon->tconSem);
--
- 	/* No need to return error on this operation if tid invalidated and
--	closed on server already e.g. due to tcp session crashing */
-+	   closed on server already e.g. due to tcp session crashing */
- 	if (rc == -EAGAIN)
- 		rc = 0;
- 
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -122,7 +122,7 @@ static int
- cifs_reconnect(struct TCP_Server_Info *server)
- {
- 	int rc = 0;
--	struct list_head *tmp;
-+	struct list_head *tmp, *tmp2;
- 	struct cifsSesInfo *ses;
- 	struct cifsTconInfo *tcon;
- 	struct mid_q_entry *mid_entry;
-@@ -147,13 +147,12 @@ cifs_reconnect(struct TCP_Server_Info *s
- 		ses = list_entry(tmp, struct cifsSesInfo, smb_ses_list);
- 		ses->need_reconnect = true;
- 		ses->ipc_tid = 0;
--	}
--	read_unlock(&cifs_tcp_ses_lock);
--	list_for_each(tmp, &GlobalTreeConnectionList) {
--		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
--		if ((tcon->ses) && (tcon->ses->server == server))
-+		list_for_each(tmp2, &ses->tcon_list) {
-+			tcon = list_entry(tmp2, struct cifsTconInfo, tcon_list);
- 			tcon->need_reconnect = true;
++	if (wmi_has_guid(OQO_O2_AMW0_GUID))
++		interface = &AMW0_interface;
++
++	return 0;
++}
++
++static struct dmi_system_id oqo_dmis[] = {
++	{
++	 .callback = dmi_matched,
++	 .ident = "OQO 02",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "OQO Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "OQO Model 2"),
++		     },
++	 .driver_data = oqo_models + 0,
++	 },
++	{}
++};
++
++/*
++ * AMW0 (V1) interface on OQO Model 2
++ *
++ * wmba: has four functions selected by int arg 1.  arg2 is 3 byte buffer.
++ *       1: performs GETB method on the SMBUS using bytes 0, 1 of Arg2
++ *          returns a buffer object containing a single byte
++ *       2: performs SETB on SMBUS using bytes 0, 1, 2 of Arg2
++ *          returns 0 as int.
++ *       3: dumps 256 values into a given SMBUS register (not used here)
++ *          returns 0 as int.
++ *       4: puts byte 0 of arg2 into some sort of busy flag.  Some ACPI
++ *          funcs check this (==0) to decide if SMBUS operations are safe.
++ *          returns 0 as int.
++ * wmbb: simply returns the busy flag set by wmba #4
++ */
++static acpi_status oqo_smbus_getb(u8 addr, u8 *result)
++{
++	struct acpi_buffer input, res;
++	acpi_status status;
++	union acpi_object *obj;
++	u32 arg2;
++
++	input.length = 4;
++	input.pointer = &arg2;
++	res.length = ACPI_ALLOCATE_BUFFER;
++	res.pointer = NULL;
++
++	arg2 = addr;
++	arg2 <<= 8;
++	arg2 |= 0x12;		/* HOSTCMD */
++
++	status = wmi_evaluate_method(OQO_O2_AMW0_GUID, 1, 1, &input, &res);
++
++	if (status != AE_OK)
++		return status;
++
++	obj = (union acpi_object *)res.pointer;
++	if (!obj)
++		return AE_NULL_OBJECT;
++
++	if (obj->type != ACPI_TYPE_BUFFER
++	    || obj->buffer.length != 1 || obj->buffer.pointer == NULL) {
++		kfree(obj);
++		return AE_TYPE;
++	}
++	*result = ((u8 *) (obj->buffer.pointer))[0];
++	kfree(obj);
++	return status;
++}
++
++static acpi_status oqo_smbus_setb(u8 addr, u8 val)
++{
++	struct acpi_buffer input, res;
++	acpi_status status;
++	union acpi_object *obj;
++	u32 arg2;
++
++	input.length = 4;
++	input.pointer = &arg2;
++	res.length = ACPI_ALLOCATE_BUFFER;
++	res.pointer = NULL;
++
++	arg2 = val;
++	arg2 <<= 8;
++	arg2 |= addr;
++	arg2 <<= 8;
++	arg2 |= 0x12;		/* HOSTCMD */
++
++	status = wmi_evaluate_method(OQO_O2_AMW0_GUID, 1, 2, &input, &res);
++
++	if (status != AE_OK)
++		return status;
++
++	obj = (union acpi_object *)res.pointer;
++	if (!obj)
++		return AE_NULL_OBJECT;
++
++	if (obj->type != ACPI_TYPE_INTEGER) {
++		kfree(obj);
++		return AE_TYPE;
++	}
++	kfree(obj);
++	return status;
++}
++
++/*
++ * We assume we are the only one using this ...ahem... "lock" on
++ * the SMBUS because it would be pathetically noneffective otherwise.
++ *
++ * Nonzero silly_lock will keep certain ACPI routines away from the
++ * SMBUS (if they aren't already on it when you call it.)  Zero
++ *  silly_lock will let them back on
++ *
++ * This is probably useful before sleeping the system, and one
++ * waits until any ACPI funcs would have long finished before
++ * proceeding.  It seems harmless enough and will work to wrap
++ * more accesses with it.
++ */
++static acpi_status oqo_lock_smbus(int silly_lock)
++{
++	struct acpi_buffer input, res;
++	acpi_status status;
++	union acpi_object *obj;
++	u32 arg2;
++
++	input.length = 4;
++	input.pointer = &arg2;
++	res.length = ACPI_ALLOCATE_BUFFER;
++	res.pointer = NULL;
++
++	arg2 = !!silly_lock;
++
++	status = wmi_evaluate_method(OQO_O2_AMW0_GUID, 1, 4, &input, &res);
++
++	if (status != AE_OK)
++		return status;
++
++	obj = (union acpi_object *)res.pointer;
++	if (!obj)
++		return AE_NULL_OBJECT;
++
++	if (obj->type != ACPI_TYPE_INTEGER) {
++		kfree(obj);
++		return AE_TYPE;
++	}
++	kfree(obj);
++	return status;
++}
++
++static int smread_s16(u8 hi_addr, u8 lo_addr)
++{
++	s16 ret = -1;
++	acpi_status status;
++	u8 r;
++
++	/* Keep some ACPI routines off the SMBUS */
++	status = oqo_lock_smbus(1);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	status = oqo_smbus_getb(hi_addr, &r);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	ret = r;
++	ret <<= 8;
++
++	status = oqo_smbus_getb(lo_addr, &r);
++	if (ACPI_FAILURE(status)) {
++		ret = -1;
++		goto skip;
++	}
++
++	ret |= r;
++	ret &= 0x7fff;
++skip:
++	/* Let ACPI routines back on the SMBUS */
++	status = oqo_lock_smbus(0);
++	if (ACPI_FAILURE(status))
++		return -1;
++	return (int)ret;
++}
++
++static int smwrite_s16(u8 hi_addr, u8 lo_addr, s16 val)
++{
++	acpi_status status;
++	u8 r;
++	int ret = -1;
++
++	status = oqo_lock_smbus(1);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	r = (val >> 8) & 0x7f;
++	status = oqo_smbus_setb(hi_addr, r);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	r = val & 0xff;
++	status = oqo_smbus_setb(lo_addr, r);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	ret = 0;
++skip:
++	status = oqo_lock_smbus(0);
++	if (ACPI_FAILURE(status))
++		return -1;
++	return ret;
++}
++
++static int smread_u8(u8 addr)
++{
++	int ret = -1;
++	acpi_status status;
++	u8 r;
++
++	status = oqo_lock_smbus(1);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	status = oqo_smbus_getb(addr, &r);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	ret = r;
++skip:
++	status = oqo_lock_smbus(0);
++	if (ACPI_FAILURE(status))
++		return -1;
++	return (int)ret;
++}
++
++static int smwrite_u8(u8 addr, u8 val)
++{
++	acpi_status status;
++	int ret = -1;
++
++	status = oqo_lock_smbus(1);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	status = oqo_smbus_setb(addr, val);
++	if (ACPI_FAILURE(status))
++		goto skip;
++
++	ret = 0;
++skip:
++	status = oqo_lock_smbus(0);
++	if (ACPI_FAILURE(status))
++		return -1;
++	return ret;
++}
++
++/*
++ * Accelerometer inputdev
++ */
++
++/*
++ * Get a reading of the accelerometer from the firwmware and push
++ * it to an inputdev.
++ *
++ * Also the ambient light detector hitch-hikes on the inputdev, since
++ * it could be useful in some of the same applications for accelerometers.
++ *
++ * Available information and a bit of poking have not found a
++ * way to freeze a snapshot of the accelerometer data, so we have
++ * to do consistency checks to reduce the odds that we mix low
++ * and high bytes from different updates.
++ *
++ * Unfortunately SMBUS access is very slow (11ms) and the firmware API
++ * does not provide 2-byte transfers, so mixed readings happen and
++ * have to be corrected a lot.  (Do not know why; it should be a
++ * multi-kHz.. bus and the reads take only a hundred-ish cycles/byte.
++ * It is not the ACPI function -- it is slow on i2c-viapro as well.)
++ *
++ * Since there is such a big time lag between readings, the axis
++ * are decoupled and reported separately on different timelines as
++ * different events rather than as a set.
++ */
++static acpi_status oqo_read_kine(int *good, s16 *x, s16 *y, s16 *z,
++				 u16 *lumin)
++{
++	u8 hiregs[4] = { OQO_O2_SMB0_ACCEL_XHI,
++		OQO_O2_SMB0_ACCEL_YHI,
++		OQO_O2_SMB0_ACCEL_ZHI,
++		OQO_O2_SMB0_LUMIN_HI
++	};
++	u8 loregs[4] = { OQO_O2_SMB0_ACCEL_XLO,
++		OQO_O2_SMB0_ACCEL_YLO,
++		OQO_O2_SMB0_ACCEL_ZLO,
++		OQO_O2_SMB0_LUMIN_LO
++	};
++
++	short ax[4] = { ABS_X, ABS_Y, ABS_Z, ABS_MISC };
++	u8 realgood = 0;
++	u16 res[4];
++	acpi_status status;
++	int i;
++
++	*good = 0;
++
++	/* Routine: Starting with the lo byte, read lo/hi bytes
++	   alternately until two lo byte readings, match.  Then
++	   take that reading and combine it with the hi reading
++	   sandwiched between.  Errors can still happen when
++	   jittering at wrap boundaries, but should be rare.
++
++	   Don't use this for missile guidance.
++
++	   Userspace post-processing error detection encouraged.
++	 */
++	for (i = 0; i < 4; i++) {
++		int maxtry;
++		u32 log;
++		u8 r, lo, hi;
++
++		lo = loregs[i];
++		hi = hiregs[i];
++		log = 0;
++
++#define LOGRES(reg)  do { \
++			status = oqo_smbus_getb(reg, &r);		\
++			log <<= 8; log |= r; log &= 0xffffff;		\
++			if (ACPI_FAILURE(status))			\
++				goto leave;				\
++		} while (0)
++
++		maxtry = OQO_KINE_MAXTRY + 1;
++		while (maxtry) {
++			LOGRES(lo);
++			if (maxtry <= OQO_KINE_MAXTRY &&
++			    (log >> 16) == (log & 0xff)) {
++				*(res + i) = log & 0xffff;
++				break;
++			}
++			LOGRES(hi);
++			maxtry--;
 +		}
- 	}
-+	read_unlock(&cifs_tcp_ses_lock);
- 	/* do not want to be sending data on a socket we are freeing */
- 	down(&server->tcpSem);
- 	if (server->ssocket) {
-@@ -1451,6 +1450,52 @@ cifs_put_smb_ses(struct cifsSesInfo *ses
- 	cifs_put_tcp_session(server);
- }
- 
-+static struct cifsTconInfo *
-+cifs_find_tcon(struct cifsSesInfo *ses, const char *unc)
-+{
-+	struct list_head *tmp;
-+	struct cifsTconInfo *tcon;
 +
-+	write_lock(&cifs_tcp_ses_lock);
-+	list_for_each(tmp, &ses->tcon_list) {
-+		tcon = list_entry(tmp, struct cifsTconInfo, tcon_list);
-+		if (tcon->tidStatus == CifsExiting)
-+			continue;
-+		if (strncmp(tcon->treeName, unc, MAX_TREE_SIZE))
-+			continue;
++		if (maxtry == OQO_KINE_MAXTRY)
++			realgood |= 1 << i;
 +
-+		++tcon->tc_count;
-+		write_unlock(&cifs_tcp_ses_lock);
-+		return tcon;
++		if (maxtry) {
++			*good |= 1 << i;
++			/* JIC CYA: this bit may be reserved */
++			res[3] &= 0x7fff;
++			input_report_abs(oqo_kine, ax[i], (s16) res[i]);
++		}
++		/* else we had trouble getting the reading to lock
++		   and we skip reporting this axis.
++		 */
 +	}
-+	write_unlock(&cifs_tcp_ses_lock);
-+	return NULL;
++
++	*x = (u16) res[0];
++	*y = (u16) res[1];
++	*z = (u16) res[2];
++	*lumin = (u16) res[3];
++	return status;
++leave:
++	return status;
 +}
 +
-+static void
-+cifs_put_tcon(struct cifsTconInfo *tcon)
-+{
-+	int xid;
-+	struct cifsSesInfo *ses = tcon->ses;
++/*
++ * Generic Device (interface-independent)
++ */
 +
-+	write_lock(&cifs_tcp_ses_lock);
-+	if (--tcon->tc_count > 0) {
-+		write_unlock(&cifs_tcp_ses_lock);
++static void oqo_kine_poll(struct input_polled_dev *dev)
++{
++	s16 x, y, z;
++	u16 lumin;
++	int good;
++	/*      struct timeval tv1, tv2; */
++
++	if (dev != oqo_kine_polled)
 +		return;
-+	}
++	if (orig.kine_itvl < 0)
++		return;
 +
-+	list_del_init(&tcon->tcon_list);
-+	write_unlock(&cifs_tcp_ses_lock);
-+
-+	xid = GetXid();
-+	CIFSSMBTDis(xid, tcon);
-+	_FreeXid(xid);
-+
-+	DeleteTconOplockQEntries(tcon);
-+	tconInfoFree(tcon);
-+	cifs_put_smb_ses(ses);
++	x = y = z = 0;
++	oqo_read_kine(&good, &x, &y, &z, &lumin);
 +}
 +
- int
- get_dfs_path(int xid, struct cifsSesInfo *pSesInfo, const char *old_path,
- 	     const struct nls_table *nls_codepage, unsigned int *pnum_referrals,
-@@ -2206,11 +2251,11 @@ cifs_mount(struct super_block *sb, struc
- 	/* search for existing tcon to this server share */
- 	if (!rc) {
- 		setup_cifs_sb(&volume_info, cifs_sb);
-+		tcon = cifs_find_tcon(pSesInfo, volume_info.UNC);
- 		if (tcon) {
- 			cFYI(1, ("Found match on UNC path"));
--			if (tcon->seal != volume_info.seal)
--				cERROR(1, ("transport encryption setting "
--					   "conflicts with existing tid"));
-+			/* existing tcon already has a reference */
-+			cifs_put_smb_ses(pSesInfo);
- 		} else {
- 			tcon = tconInfoAlloc();
- 			if (tcon == NULL) {
-@@ -2238,6 +2283,10 @@ cifs_mount(struct super_block *sb, struc
- 			if (rc)
- 				goto mount_fail_check;
- 			tcon->seal = volume_info.seal;
-+			tcon->ses = pSesInfo;
-+			write_lock(&cifs_tcp_ses_lock);
-+			list_add(&tcon->tcon_list, &pSesInfo->tcon_list);
-+			write_unlock(&cifs_tcp_ses_lock);
- 		}
- 
- 		/* we can have only one retry value for a connection
-@@ -2263,18 +2312,14 @@ mount_fail_check:
- 		 /* If find_unc succeeded then rc == 0 so we can not end */
- 		/* up accidently freeing someone elses tcon struct */
- 		if (tcon)
--			tconInfoFree(tcon);
--
--		/* should also end up putting our tcp session ref if needed */
--		if (pSesInfo)
-+			cifs_put_tcon(tcon);
-+		else if (pSesInfo)
- 			cifs_put_smb_ses(pSesInfo);
- 		else
- 			cifs_put_tcp_session(srvTcp);
- 		goto out;
- 	}
--	atomic_inc(&tcon->useCount);
- 	cifs_sb->tcon = tcon;
--	tcon->ses = pSesInfo;
- 
- 	/* do not care if following two calls succeed - informational */
- 	if (!tcon->ipc) {
-@@ -3545,24 +3590,10 @@ int
- cifs_umount(struct super_block *sb, struct cifs_sb_info *cifs_sb)
- {
- 	int rc = 0;
--	int xid;
--	struct cifsSesInfo *ses = NULL;
--	struct task_struct *cifsd_task;
- 	char *tmp;
- 
--	xid = GetXid();
--
--	if (cifs_sb->tcon) {
--		ses = cifs_sb->tcon->ses; /* save ptr to ses before delete tcon!*/
--		rc = CIFSSMBTDis(xid, cifs_sb->tcon);
--		if (rc == -EBUSY) {
--			FreeXid(xid);
--			return 0;
--		}
--		DeleteTconOplockQEntries(cifs_sb->tcon);
--		tconInfoFree(cifs_sb->tcon);
--		cifs_put_smb_ses(ses);
--	}
-+	if (cifs_sb->tcon)
-+		cifs_put_tcon(cifs_sb->tcon);
- 
- 	cifs_sb->tcon = NULL;
- 	tmp = cifs_sb->prepath;
-@@ -3570,7 +3601,6 @@ cifs_umount(struct super_block *sb, stru
- 	cifs_sb->prepath = NULL;
- 	kfree(tmp);
- 
--	FreeXid(xid);
- 	return rc;
- }
- 
---- a/fs/cifs/misc.c
-+++ b/fs/cifs/misc.c
-@@ -79,6 +79,7 @@ sesInfoAlloc(void)
- 		ret_buf->status = CifsNew;
- 		++ret_buf->ses_count;
- 		INIT_LIST_HEAD(&ret_buf->smb_ses_list);
-+		INIT_LIST_HEAD(&ret_buf->tcon_list);
- 		init_MUTEX(&ret_buf->sesSem);
- 	}
- 	return ret_buf;
-@@ -107,17 +108,14 @@ tconInfoAlloc(void)
- 	struct cifsTconInfo *ret_buf;
- 	ret_buf = kzalloc(sizeof(struct cifsTconInfo), GFP_KERNEL);
- 	if (ret_buf) {
--		write_lock(&GlobalSMBSeslock);
- 		atomic_inc(&tconInfoAllocCount);
--		list_add(&ret_buf->cifsConnectionList,
--			 &GlobalTreeConnectionList);
- 		ret_buf->tidStatus = CifsNew;
-+		++ret_buf->tc_count;
- 		INIT_LIST_HEAD(&ret_buf->openFileList);
--		init_MUTEX(&ret_buf->tconSem);
-+		INIT_LIST_HEAD(&ret_buf->tcon_list);
- #ifdef CONFIG_CIFS_STATS
- 		spin_lock_init(&ret_buf->stat_lock);
- #endif
--		write_unlock(&GlobalSMBSeslock);
- 	}
- 	return ret_buf;
- }
-@@ -129,10 +127,7 @@ tconInfoFree(struct cifsTconInfo *buf_to
- 		cFYI(1, ("Null buffer passed to tconInfoFree"));
- 		return;
- 	}
--	write_lock(&GlobalSMBSeslock);
- 	atomic_dec(&tconInfoAllocCount);
--	list_del(&buf_to_free->cifsConnectionList);
--	write_unlock(&GlobalSMBSeslock);
- 	kfree(buf_to_free->nativeFileSystem);
- 	kfree(buf_to_free);
- }
-@@ -497,9 +492,10 @@ bool
- is_valid_oplock_break(struct smb_hdr *buf, struct TCP_Server_Info *srv)
- {
- 	struct smb_com_lock_req *pSMB = (struct smb_com_lock_req *)buf;
--	struct list_head *tmp;
--	struct list_head *tmp1;
-+	struct list_head *tmp, *tmp1, *tmp2;
-+	struct cifsSesInfo *ses;
- 	struct cifsTconInfo *tcon;
-+	struct cifsInodeInfo *pCifsInode;
- 	struct cifsFileInfo *netfile;
- 
- 	cFYI(1, ("Checking for oplock break or dnotify response"));
-@@ -554,42 +550,42 @@ is_valid_oplock_break(struct smb_hdr *bu
- 		return false;
- 
- 	/* look up tcon based on tid & uid */
--	read_lock(&GlobalSMBSeslock);
--	list_for_each(tmp, &GlobalTreeConnectionList) {
--		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
--		if ((tcon->tid == buf->Tid) && (srv == tcon->ses->server)) {
-+	read_lock(&cifs_tcp_ses_lock);
-+	list_for_each(tmp, &srv->smb_ses_list) {
-+		ses = list_entry(tmp, struct cifsSesInfo, smb_ses_list);
-+		list_for_each(tmp1, &ses->tcon_list) {
-+			tcon = list_entry(tmp1, struct cifsTconInfo, tcon_list);
-+			if (tcon->tid != buf->Tid)
-+				continue;
++static int __devinit oqo_kine_init(void)
++{
++	int err;
 +
- 			cifs_stats_inc(&tcon->num_oplock_brks);
--			list_for_each(tmp1, &tcon->openFileList) {
--				netfile = list_entry(tmp1, struct cifsFileInfo,
-+			list_for_each(tmp2, &tcon->openFileList) {
-+				netfile = list_entry(tmp2, struct cifsFileInfo,
- 						     tlist);
--				if (pSMB->Fid == netfile->netfid) {
--					struct cifsInodeInfo *pCifsInode;
--					read_unlock(&GlobalSMBSeslock);
--					cFYI(1,
--					    ("file id match, oplock break"));
--					pCifsInode =
--						CIFS_I(netfile->pInode);
--					pCifsInode->clientCanCacheAll = false;
--					if (pSMB->OplockLevel == 0)
--						pCifsInode->clientCanCacheRead
--							= false;
--					pCifsInode->oplockPending = true;
--					AllocOplockQEntry(netfile->pInode,
--							  netfile->netfid,
--							  tcon);
--					cFYI(1,
--					    ("about to wake up oplock thread"));
--					if (oplockThread)
--					    wake_up_process(oplockThread);
--					return true;
--				}
-+				if (pSMB->Fid != netfile->netfid)
-+					continue;
++	oqo_kine = input_allocate_device();
++	if (!oqo_kine)
++		return -ENOMEM;
 +
-+				read_unlock(&cifs_tcp_ses_lock);
-+				cFYI(1, ("file id match, oplock break"));
-+				pCifsInode = CIFS_I(netfile->pInode);
-+				pCifsInode->clientCanCacheAll = false;
-+				if (pSMB->OplockLevel == 0)
-+					pCifsInode->clientCanCacheRead = false;
-+				pCifsInode->oplockPending = true;
-+				AllocOplockQEntry(netfile->pInode,
-+						  netfile->netfid, tcon);
-+				cFYI(1, ("about to wake up oplock thread"));
-+				if (oplockThread)
-+					wake_up_process(oplockThread);
++	oqo_kine->name = "OQO embedded accelerometer";
++	oqo_kine->phys = "platform:oqo-wmi:kine";
++	oqo_kine->id.bustype = 0;
++	oqo_kine->id.vendor = 0;
++	oqo_kine->id.product = 2;
++	oqo_kine->id.version = 0;
++	oqo_kine->evbit[0] = BIT_MASK(EV_ABS);
++	set_bit(ABS_X, oqo_kine->absbit);
++	set_bit(ABS_Y, oqo_kine->absbit);
++	set_bit(ABS_Z, oqo_kine->absbit);
++	set_bit(ABS_MISC, oqo_kine->absbit);
++	oqo_kine->absmin[ABS_X] =
++	    oqo_kine->absmin[ABS_Y] =
++	    oqo_kine->absmin[ABS_Z] = oqo_kine->absmin[ABS_MISC] = -32768;
++	oqo_kine->absmax[ABS_X] =
++	    oqo_kine->absmax[ABS_Y] =
++	    oqo_kine->absmax[ABS_Z] = oqo_kine->absmax[ABS_MISC] = 32767;
 +
-+				return true;
- 			}
--			read_unlock(&GlobalSMBSeslock);
-+			read_unlock(&cifs_tcp_ses_lock);
- 			cFYI(1, ("No matching file for oplock break"));
- 			return true;
- 		}
- 	}
--	read_unlock(&GlobalSMBSeslock);
-+	read_unlock(&cifs_tcp_ses_lock);
- 	cFYI(1, ("Can not process oplock break for non-existent connection"));
- 	return true;
- }
++	memcpy(oqo_kine->dev.bus_id, "kine", 4);
++
++	oqo_kine_polled = input_allocate_polled_device();
++	if (!oqo_kine_polled) {
++		err = -ENOMEM;
++		goto bail0;
++	}
++
++	oqo_kine_polled->poll = oqo_kine_poll;
++	oqo_kine_polled->poll_interval = 250;
++	oqo_kine_polled->input = oqo_kine;
++
++	orig.kine_itvl = -1;	/* prevent callback from running */
++	err = input_register_polled_device(oqo_kine_polled);
++	if (err) {
++		printk(OQO_ERR "Failed to register OQO kine input\n");
++		goto bail1;
++	}
++
++	/* This will allow the callback to run now if successful. */
++	orig.kine_itvl = smread_u8(OQO_O2_SMB0_ACCEL_POLL_ITVL);
++	smwrite_u8(OQO_O2_SMB0_ACCEL_POLL_ITVL, 250);
++	curr.kine_itvl = smread_u8(OQO_O2_SMB0_ACCEL_POLL_ITVL);
++	if (orig.kine_itvl < 0 || curr.kine_itvl != 250) {
++		printk(OQO_ERR "Test communication with kine sensor failed\n");
++		err = -ENODEV;
++		goto bail2;
++	}
++
++	printk(OQO_INFO "Created OQO kine input.\n");
++	printk(OQO_INFO "Firmware interval %ims, driver interval %ims\n",
++	       curr.kine_itvl, oqo_kine_polled->poll_interval);
++	return 0;
++bail2:
++	input_unregister_polled_device(oqo_kine_polled);
++bail1:
++	input_free_polled_device(oqo_kine_polled);	/* frees oqo_kine */
++	return err;
++bail0:
++	input_free_device(oqo_kine);
++	return err;
++}
++
++static void __devexit oqo_kine_fini(void)
++{
++	smwrite_u8(OQO_O2_SMB0_ACCEL_POLL_ITVL, orig.kine_itvl);
++	input_unregister_polled_device(oqo_kine_polled);
++	input_free_polled_device(oqo_kine_polled);
++}
++
++/*
++ * Backlight device
++ */
++static int read_brightness(struct backlight_device *bd)
++{
++	return (int)smread_s16(OQO_O2_SMB0_BL_HI, OQO_O2_SMB0_BL_LO);
++}
++
++static int update_bl_status(struct backlight_device *bd)
++{
++	return smwrite_s16(OQO_O2_SMB0_BL_HI,
++			   OQO_O2_SMB0_BL_LO, (s16) bd->props.brightness);
++}
++
++static struct backlight_ops oqo_bl_ops = {
++	.get_brightness = read_brightness,
++	.update_status = update_bl_status,
++};
++
++static int __devinit oqo_backlight_init(struct device *dev)
++{
++	struct backlight_device *bd;
++
++	/*
++	 * It would be nice if someone would figure out how backlights
++	 * like these, which are not driven through the video hardware,
++	 * are supposed to find their associated fb and bind to it (and
++	 * rebind when fb drivers change.
++	 *
++	 * Most extras backlights just shove a junk name in like we do here,
++	 * and don't end up integrated with fbcon sysfs as a result.
++	 */
++	bd = backlight_device_register("oqo-bl", dev, NULL, &oqo_bl_ops);
++
++	if (IS_ERR(bd)) {
++		printk(OQO_ERR "Could not register OQO backlight device\n");
++		oqo_backlight_device = NULL;
++		return PTR_ERR(bd);
++	}
++
++	oqo_backlight_device = bd;
++	bd->props.max_brightness = 0x7fff;
++	curr.bl_bright = orig.bl_bright = bd->props.brightness =
++	    read_brightness(NULL);
++
++	if (bd->props.brightness < 0)
++		goto fail;
++
++	backlight_update_status(bd);
++	printk(OQO_INFO "Found backlight set at %i\n", bd->props.brightness);
++	return 0;
++
++fail:
++	backlight_device_unregister(oqo_backlight_device);
++	oqo_backlight_device = NULL;
++	return -ENODEV;
++}
++
++static void __devexit oqo_backlight_fini(void)
++{
++	if (!oqo_backlight_device)
++		return;
++	oqo_backlight_device->props.brightness = orig.bl_bright;
++	backlight_update_status(oqo_backlight_device);
++	backlight_device_unregister(oqo_backlight_device);
++}
++
++/*
++ * RFKill device
++ */
++
++static int oqo_rfkill_get(void *data, enum rfkill_state *state)
++{
++	int res;
++
++	res = smread_u8(OQO_O2_SMB0_WWAN_DSBL_ADDR);
++	if (res < 0)
++		return res;
++
++	res &= OQO_O2_SMB0_WWAN_DSBL_MASK;
++
++	if (res)
++		*state = RFKILL_STATE_SOFT_BLOCKED;
++	else
++		*state = RFKILL_STATE_UNBLOCKED;
++
++	return 0;
++}
++
++static int oqo_rfkill_toggle(void *data, enum rfkill_state state)
++{
++	int res;
++
++	res = smread_u8(OQO_O2_SMB0_WWAN_DSBL_ADDR);
++
++	if (state == RFKILL_STATE_UNBLOCKED)
++		res &= ~OQO_O2_SMB0_WWAN_DSBL_MASK;
++	else
++		res |= OQO_O2_SMB0_WWAN_DSBL_MASK;
++
++	return smwrite_u8(OQO_O2_SMB0_WWAN_DSBL_ADDR, res);
++}
++
++static int __devinit oqo_rfkill_init(struct device *dev)
++{
++	int res;
++
++	oqo_rfkill = rfkill_allocate(dev, RFKILL_TYPE_WWAN);
++	if (!oqo_rfkill)
++		return -ENODEV;
++
++	res = smread_u8(OQO_O2_SMB0_WWAN_DSBL_ADDR);
++	res &= OQO_O2_SMB0_WWAN_DSBL_MASK;
++
++	oqo_rfkill->name = "oqo-wwan";
++	if (res)
++		oqo_rfkill->state = RFKILL_STATE_SOFT_BLOCKED;
++	else
++		oqo_rfkill->state = RFKILL_STATE_UNBLOCKED;
++
++	oqo_rfkill->get_state = oqo_rfkill_get;
++	oqo_rfkill->toggle_radio = oqo_rfkill_toggle;
++	oqo_rfkill->user_claim_unsupported = 1;
++
++	res = rfkill_register(oqo_rfkill);
++
++	if (res)
++		rfkill_free(oqo_rfkill);
++
++	return res;
++}
++
++static void __devexit oqo_rfkill_fini(void)
++{
++	if (!oqo_rfkill)
++		return;
++	rfkill_unregister(oqo_rfkill);
++}
++
++/*
++ * Platform device
++ */
++
++static int __devinit oqo_platform_probe(struct platform_device *device)
++{
++	int err;
++	int i;
++	char *troubleok = "trouble, but continuing.\n";
++
++	memset(oqo_sn, 0, OQO_O2_SMB0_SERIAL_LEN + 1);
++	for (i = 0; i < OQO_O2_SMB0_SERIAL_LEN; i++) {
++		err = oqo_smbus_getb(OQO_O2_SMB0_SERIAL_START + i, oqo_sn + i);
++		if (err) {
++			printk(OQO_ERR "Serial number check failed.\n");
++			return err;
++		}
++	}
++	printk(OQO_INFO "Found OQO with serial number %s.\n", oqo_sn);
++
++	err = oqo_backlight_init(&device->dev);
++	if (err)
++		printk(OQO_ERR "Backlight init %s", troubleok);
++
++	err = oqo_rfkill_init(&device->dev);
++	if (err)
++		printk(OQO_ERR "RFKill init %s", troubleok);
++
++	/* LID does not work at all yet, and this may be taken
++	   care of by ACPI.
++	 */
++	orig.lid_wakes = smread_u8(OQO_O2_SMB0_LID_WAKES_ADDR);
++	orig.lid_wakes &= OQO_O2_SMB0_LID_WAKES_MASK;
++	orig.lid_wakes = curr.lid_wakes = !!orig.lid_wakes;
++	if (orig.lid_wakes < 0) {
++		printk(OQO_ERR "Wake on LID event %s", troubleok);
++	} else {
++		printk(OQO_INFO "Wake on LID is %s.\n",
++		       (orig.lid_wakes ? "on" : "off"));
++	}
++
++	err = oqo_kine_init();
++	return err;
++}
++
++static int oqo_platform_remove(struct platform_device *device)
++{
++	oqo_backlight_fini();
++	oqo_rfkill_fini();
++	oqo_kine_fini();
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++
++static int oqo_platform_suspend(struct platform_device *dev, pm_message_t state)
++{
++	if (!interface)
++		return -ENOMEM;
++
++	/* This sticks during boot so do not turn it entirely off */
++	if (oqo_backlight_device) {
++		curr.bl_bright = read_brightness(oqo_backlight_device);
++		smwrite_s16(OQO_O2_SMB0_BL_HI, OQO_O2_SMB0_BL_LO, 256);
++	}
++	return 0;
++}
++
++static int oqo_platform_resume(struct platform_device *device)
++{
++	if (!interface)
++		return -ENOMEM;
++
++	if (oqo_backlight_device) {
++		smwrite_s16(OQO_O2_SMB0_BL_HI,
++			    OQO_O2_SMB0_BL_LO, curr.bl_bright);
++	}
++
++	return 0;
++}
++
++#else
++#define oqo_platform_suspend NULL
++#define oqo_platform_resume  NULL
++#endif
++
++static struct platform_driver oqo_platform_driver = {
++	.driver = {
++		   .name = "oqo-wmi",
++		   .owner = THIS_MODULE,
++		   },
++	.probe = oqo_platform_probe,
++	.remove = oqo_platform_remove,
++	.suspend = oqo_platform_suspend,
++	.resume = oqo_platform_resume,
++};
++
++static int __init oqo_wmi_init(void)
++{
++	int err;
++
++	dmi_check_system(oqo_dmis);
++
++	if (!interface && force) {
++		model = oqo_models;
++		if (wmi_has_guid(OQO_O2_AMW0_GUID))
++			interface = &AMW0_interface;
++	}
++
++	if (!interface) {
++		printk(OQO_ERR "No or unsupported WMI interface. Aborting.\n");
++		printk(OQO_ERR "Hint: Get dmidecode working and try again.\n");
++		printk(OQO_ERR "(Check \"System Management BIOS\" in BIOS)\n");
++		if (!force)
++			printk(OQO_ERR "Use the force option to skip DMI"
++			       " checking\n");
++		return -ENODEV;
++	}
++
++	err = platform_driver_register(&oqo_platform_driver);
++	if (err) {
++		printk(OQO_ERR "platform_driver_register gave %d.\n", err);
++		goto bail0;
++	}
++
++	oqo_platform_device = platform_device_alloc("oqo-wmi", -1);
++	if (!oqo_platform_device) {
++		printk(OQO_ERR "Could not allocate platform device.\n");
++		err = -ENOMEM;
++		goto bail1;
++	}
++
++	err = platform_device_add(oqo_platform_device);
++	if (err) {
++		printk(OQO_ERR "platform_device_add gave %d.\n", err);
++		platform_device_put(oqo_platform_device);
++		goto bail1;
++	}
++
++	return 0;
++
++bail1:
++	platform_driver_unregister(&oqo_platform_driver);
++bail0:
++	return err;
++}
++
++static void __exit oqo_wmi_fini(void)
++{
++	platform_device_del(oqo_platform_device);
++	platform_driver_unregister(&oqo_platform_driver);
++
++	return;
++}
++
++module_init(oqo_wmi_init);
++module_exit(oqo_wmi_fini);
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
