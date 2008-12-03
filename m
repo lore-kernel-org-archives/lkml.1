@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYLCT4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYLCT4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbYLCT4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbYLCTu1
+	id S1755906AbYLCT4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:56:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYLCTu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:27 -0500
-Received: from kroah.org ([198.145.64.141]:59542 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:29 -0500
+Received: from kroah.org ([198.145.64.141]:59556 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754562AbYLCTuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:18 -0500
-Date: Wed, 3 Dec 2008 11:48:47 -0800
+	id S1752037AbYLCTuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:21 -0500
+Date: Wed, 3 Dec 2008 11:48:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Helge Deller <deller@gmx.de>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Matthew Wilcox <matthew@wil.cx>, Kyle McMartin <kyle@mcmartin.ca>
-Subject: [patch 015/104] parisc: fix kernel crash when unwinding a
-	userspace process
-Message-ID: <20081203194847.GP8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Davide Libenzi <davidel@xmailserver.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [patch 016/104] epoll: introduce resource usage limits
+Message-ID: <20081203194849.GQ8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="parisc-fix-kernel-crash-when-unwinding-a-userspace-process.patch"
+Content-Disposition: inline; filename="epoll-introduce-resource-usage-limits.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,135 +40,324 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Helge Deller <deller@gmx.de>
+From: Davide Libenzi <davidel@xmailserver.org>
 
-commit 7a3f5134a8f5bd7fa38b5645eef05e8a4eb62951 upstream.
+commit 7ef9964e6d1b911b78709f144000aacadd0ebc21 upstream.
 
-Any user on existing parisc 32- and 64bit-kernels can easily crash
-the kernel and as such enforce a DSO.
-A simple testcase is available here:
-        http://gsyprf10.external.hp.com/~deller/crash.tgz
+It has been thought that the per-user file descriptors limit would also
+limit the resources that a normal user can request via the epoll
+interface.  Vegard Nossum reported a very simple program (a modified
+version attached) that can make a normal user to request a pretty large
+amount of kernel memory, well within the its maximum number of fds.  To
+solve such problem, default limits are now imposed, and /proc based
+configuration has been introduced.  A new directory has been created,
+named /proc/sys/fs/epoll/ and inside there, there are two configuration
+points:
 
-The problem is introduced by the fact, that the handle_interruption()
-crash handler calls the show_regs() function, which in turn tries to
-unwind the stack by calling parisc_show_stack().  Since the stack contains
-userspace addresses, a try to unwind the stack is dangerous and useless
-and leads to the crash.
+  max_user_instances = Maximum number of devices - per user
 
-The fix is trivial: For userspace processes
-a) avoid to unwind the stack, and
-b) avoid to resolve userspace addresses to kernel symbol names.
+  max_user_watches   = Maximum number of "watched" fds - per user
 
-While touching this code, I converted print_symbol() to %pS
-printk formats and made parisc_show_stack() static.
+The current default for "max_user_watches" limits the memory used by epoll
+to store "watches", to 1/32 of the amount of the low RAM.  As example, a
+256MB 32bit machine, will have "max_user_watches" set to roughly 90000.
+That should be enough to not break existing heavy epoll users.  The
+default value for "max_user_instances" is set to 128, that should be
+enough too.
 
-An initial patch for this was written by Kyle McMartin back in August:
-http://marc.info/?l=linux-parisc&m=121805168830283&w=2
+This also changes the userspace, because a new error code can now come out
+from EPOLL_CTL_ADD (-ENOSPC).  The EMFILE from epoll_create() was already
+listed, so that should be ok.
 
-Compile and run-tested with a 64bit parisc kernel.
-
-Signed-off-by: Helge Deller <deller@gmx.de>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
+[akpm@linux-foundation.org: use get_current_user()]
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>
+Reported-by: Vegard Nossum <vegardno@ifi.uio.no>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/parisc/kernel/traps.c |   41 ++++++++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 21 deletions(-)
+ Documentation/filesystems/proc.txt |   27 +++++++++++
+ fs/eventpoll.c                     |   85 +++++++++++++++++++++++++++++++++----
+ include/linux/sched.h              |    4 +
+ kernel/sysctl.c                    |   10 ++++
+ 4 files changed, 118 insertions(+), 8 deletions(-)
 
---- a/arch/parisc/kernel/traps.c
-+++ b/arch/parisc/kernel/traps.c
-@@ -24,7 +24,6 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/console.h>
--#include <linux/kallsyms.h>
- #include <linux/bug.h>
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -44,6 +44,7 @@ Table of Contents
+   2.14	/proc/<pid>/io - Display the IO accounting fields
+   2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
+   2.16	/proc/<pid>/mountinfo - Information about mounts
++  2.17	/proc/sys/fs/epoll - Configuration options for the epoll interface
  
- #include <asm/assembly.h>
-@@ -51,7 +50,7 @@
- DEFINE_SPINLOCK(pa_dbit_lock);
- #endif
+ ------------------------------------------------------------------------------
+ Preface
+@@ -2471,4 +2472,30 @@ For more information on mount propagatio
  
--void parisc_show_stack(struct task_struct *t, unsigned long *sp,
-+static void parisc_show_stack(struct task_struct *task, unsigned long *sp,
- 	struct pt_regs *regs);
+   Documentation/filesystems/sharedsubtree.txt
  
- static int printbinary(char *buf, unsigned long x, int nbits)
-@@ -121,18 +120,19 @@ static void print_fr(char *level, struct
- 
- void show_regs(struct pt_regs *regs)
- {
--	int i;
-+	int i, user;
- 	char *level;
- 	unsigned long cr30, cr31;
- 
--	level = user_mode(regs) ? KERN_DEBUG : KERN_CRIT;
-+	user = user_mode(regs);
-+	level = user ? KERN_DEBUG : KERN_CRIT;
- 
- 	print_gr(level, regs);
- 
- 	for (i = 0; i < 8; i += 4)
- 		PRINTREGS(level, regs->sr, "sr", RFMT, i);
- 
--	if (user_mode(regs))
-+	if (user)
- 		print_fr(level, regs);
- 
- 	cr30 = mfctl(30);
-@@ -145,14 +145,18 @@ void show_regs(struct pt_regs *regs)
- 	printk("%s CPU: %8d   CR30: " RFMT " CR31: " RFMT "\n",
- 	       level, current_thread_info()->cpu, cr30, cr31);
- 	printk("%s ORIG_R28: " RFMT "\n", level, regs->orig_r28);
--	printk(level);
--	print_symbol(" IAOQ[0]: %s\n", regs->iaoq[0]);
--	printk(level);
--	print_symbol(" IAOQ[1]: %s\n", regs->iaoq[1]);
--	printk(level);
--	print_symbol(" RP(r2): %s\n", regs->gr[2]);
- 
--	parisc_show_stack(current, NULL, regs);
-+	if (user) {
-+		printk("%s IAOQ[0]: " RFMT "\n", level, regs->iaoq[0]);
-+		printk("%s IAOQ[1]: " RFMT "\n", level, regs->iaoq[1]);
-+		printk("%s RP(r2): " RFMT "\n", level, regs->gr[2]);
-+	} else {
-+		printk("%s IAOQ[0]: %pS\n", level, (void *) regs->iaoq[0]);
-+		printk("%s IAOQ[1]: %pS\n", level, (void *) regs->iaoq[1]);
-+		printk("%s RP(r2): %pS\n", level, (void *) regs->gr[2]);
++2.17	/proc/sys/fs/epoll - Configuration options for the epoll interface
++--------------------------------------------------------
 +
-+		parisc_show_stack(current, NULL, regs);
-+	}
++This directory contains configuration options for the epoll(7) interface.
++
++max_user_instances
++------------------
++
++This is the maximum number of epoll file descriptors that a single user can
++have open at a given time. The default value is 128, and should be enough
++for normal users.
++
++max_user_watches
++----------------
++
++Every epoll file descriptor can store a number of files to be monitored
++for event readiness. Each one of these monitored files constitutes a "watch".
++This configuration option sets the maximum number of "watches" that are
++allowed for each user.
++Each "watch" costs roughly 90 bytes on a 32bit kernel, and roughly 160 bytes
++on a 64bit one.
++The current default value for  max_user_watches  is the 1/32 of the available
++low memory, divided for the "watch" cost in bytes.
++
++
+ ------------------------------------------------------------------------------
++
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -102,6 +102,8 @@
+ 
+ #define EP_UNACTIVE_PTR ((void *) -1L)
+ 
++#define EP_ITEM_COST (sizeof(struct epitem) + sizeof(struct eppoll_entry))
++
+ struct epoll_filefd {
+ 	struct file *file;
+ 	int fd;
+@@ -200,6 +202,9 @@ struct eventpoll {
+ 	 * holding ->lock.
+ 	 */
+ 	struct epitem *ovflist;
++
++	/* The user that created the eventpoll descriptor */
++	struct user_struct *user;
+ };
+ 
+ /* Wait structure used by the poll hooks */
+@@ -227,9 +232,17 @@ struct ep_pqueue {
+ };
+ 
+ /*
++ * Configuration options available inside /proc/sys/fs/epoll/
++ */
++/* Maximum number of epoll devices, per user */
++static int max_user_instances __read_mostly;
++/* Maximum number of epoll watched descriptors, per user */
++static int max_user_watches __read_mostly;
++
++/*
+  * This mutex is used to serialize ep_free() and eventpoll_release_file().
+  */
+-static struct mutex epmutex;
++static DEFINE_MUTEX(epmutex);
+ 
+ /* Safe wake up implementation */
+ static struct poll_safewake psw;
+@@ -240,6 +253,33 @@ static struct kmem_cache *epi_cache __re
+ /* Slab cache used to allocate "struct eppoll_entry" */
+ static struct kmem_cache *pwq_cache __read_mostly;
+ 
++#ifdef CONFIG_SYSCTL
++
++#include <linux/sysctl.h>
++
++static int zero;
++
++ctl_table epoll_table[] = {
++	{
++		.procname	= "max_user_instances",
++		.data		= &max_user_instances,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec_minmax,
++		.extra1		= &zero,
++	},
++	{
++		.procname	= "max_user_watches",
++		.data		= &max_user_watches,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec_minmax,
++		.extra1		= &zero,
++	},
++	{ .ctl_name = 0 }
++};
++#endif /* CONFIG_SYSCTL */
++
+ 
+ /* Setup the structure that is used as key for the RB tree */
+ static inline void ep_set_ffd(struct epoll_filefd *ffd,
+@@ -402,6 +442,8 @@ static int ep_remove(struct eventpoll *e
+ 	/* At this point it is safe to free the eventpoll item */
+ 	kmem_cache_free(epi_cache, epi);
+ 
++	atomic_dec(&ep->user->epoll_watches);
++
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_remove(%p, %p)\n",
+ 		     current, ep, file));
+ 
+@@ -449,6 +491,8 @@ static void ep_free(struct eventpoll *ep
+ 
+ 	mutex_unlock(&epmutex);
+ 	mutex_destroy(&ep->mtx);
++	atomic_dec(&ep->user->epoll_devs);
++	free_uid(ep->user);
+ 	kfree(ep);
  }
  
+@@ -532,10 +576,19 @@ void eventpoll_release_file(struct file 
  
-@@ -173,20 +177,15 @@ static void do_show_stack(struct unwind_
- 			break;
- 
- 		if (__kernel_text_address(info->ip)) {
--			printk("%s [<" RFMT ">] ", (i&0x3)==1 ? KERN_CRIT : "", info->ip);
--#ifdef CONFIG_KALLSYMS
--			print_symbol("%s\n", info->ip);
--#else
--			if ((i & 0x03) == 0)
--				printk("\n");
--#endif
-+			printk(KERN_CRIT " [<" RFMT ">] %pS\n",
-+				info->ip, (void *) info->ip);
- 			i++;
- 		}
- 	}
--	printk("\n");
-+	printk(KERN_CRIT "\n");
- }
- 
--void parisc_show_stack(struct task_struct *task, unsigned long *sp,
-+static void parisc_show_stack(struct task_struct *task, unsigned long *sp,
- 	struct pt_regs *regs)
+ static int ep_alloc(struct eventpoll **pep)
  {
- 	struct unwind_frame_info info;
+-	struct eventpoll *ep = kzalloc(sizeof(*ep), GFP_KERNEL);
++	int error;
++	struct user_struct *user;
++	struct eventpoll *ep;
+ 
+-	if (!ep)
+-		return -ENOMEM;
++	user = get_current_user();
++	error = -EMFILE;
++	if (unlikely(atomic_read(&user->epoll_devs) >=
++			max_user_instances))
++		goto free_uid;
++	error = -ENOMEM;
++	ep = kzalloc(sizeof(*ep), GFP_KERNEL);
++	if (unlikely(!ep))
++		goto free_uid;
+ 
+ 	spin_lock_init(&ep->lock);
+ 	mutex_init(&ep->mtx);
+@@ -544,12 +597,17 @@ static int ep_alloc(struct eventpoll **p
+ 	INIT_LIST_HEAD(&ep->rdllist);
+ 	ep->rbr = RB_ROOT;
+ 	ep->ovflist = EP_UNACTIVE_PTR;
++	ep->user = user;
+ 
+ 	*pep = ep;
+ 
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_alloc() ep=%p\n",
+ 		     current, ep));
+ 	return 0;
++
++free_uid:
++	free_uid(user);
++	return error;
+ }
+ 
+ /*
+@@ -703,9 +761,11 @@ static int ep_insert(struct eventpoll *e
+ 	struct epitem *epi;
+ 	struct ep_pqueue epq;
+ 
+-	error = -ENOMEM;
++	if (unlikely(atomic_read(&ep->user->epoll_watches) >=
++		     max_user_watches))
++		return -ENOSPC;
+ 	if (!(epi = kmem_cache_alloc(epi_cache, GFP_KERNEL)))
+-		goto error_return;
++		return -ENOMEM;
+ 
+ 	/* Item initialization follow here ... */
+ 	INIT_LIST_HEAD(&epi->rdllink);
+@@ -735,6 +795,7 @@ static int ep_insert(struct eventpoll *e
+ 	 * install process. Namely an allocation for a wait queue failed due
+ 	 * high memory pressure.
+ 	 */
++	error = -ENOMEM;
+ 	if (epi->nwait < 0)
+ 		goto error_unregister;
+ 
+@@ -765,6 +826,8 @@ static int ep_insert(struct eventpoll *e
+ 
+ 	spin_unlock_irqrestore(&ep->lock, flags);
+ 
++	atomic_inc(&ep->user->epoll_watches);
++
+ 	/* We have to call this outside the lock */
+ 	if (pwake)
+ 		ep_poll_safewake(&psw, &ep->poll_wait);
+@@ -789,7 +852,7 @@ error_unregister:
+ 	spin_unlock_irqrestore(&ep->lock, flags);
+ 
+ 	kmem_cache_free(epi_cache, epi);
+-error_return:
++
+ 	return error;
+ }
+ 
+@@ -1074,6 +1137,7 @@ asmlinkage long sys_epoll_create1(int fl
+ 			      flags & O_CLOEXEC);
+ 	if (fd < 0)
+ 		ep_free(ep);
++	atomic_inc(&ep->user->epoll_devs);
+ 
+ error_return:
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
+@@ -1295,7 +1359,12 @@ asmlinkage long sys_epoll_pwait(int epfd
+ 
+ static int __init eventpoll_init(void)
+ {
+-	mutex_init(&epmutex);
++	struct sysinfo si;
++
++	si_meminfo(&si);
++	max_user_instances = 128;
++	max_user_watches = (((si.totalram - si.totalhigh) / 32) << PAGE_SHIFT) /
++		EP_ITEM_COST;
+ 
+ 	/* Initialize the structure used to perform safe poll wait head wake ups */
+ 	ep_poll_safewake_init(&psw);
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -587,6 +587,10 @@ struct user_struct {
+ 	atomic_t inotify_watches; /* How many inotify watches does this user have? */
+ 	atomic_t inotify_devs;	/* How many inotify devs does this user have opened? */
+ #endif
++#ifdef CONFIG_EPOLL
++	atomic_t epoll_devs;	/* The number of epoll descriptors currently open */
++	atomic_t epoll_watches;	/* The number of file descriptors currently watched */
++#endif
+ #ifdef CONFIG_POSIX_MQUEUE
+ 	/* protected by mq_lock	*/
+ 	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -179,6 +179,9 @@ extern struct ctl_table random_table[];
+ #ifdef CONFIG_INOTIFY_USER
+ extern struct ctl_table inotify_table[];
+ #endif
++#ifdef CONFIG_EPOLL
++extern struct ctl_table epoll_table[];
++#endif
+ 
+ #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
+ int sysctl_legacy_va_layout;
+@@ -1313,6 +1316,13 @@ static struct ctl_table fs_table[] = {
+ 		.child		= inotify_table,
+ 	},
+ #endif	
++#ifdef CONFIG_EPOLL
++	{
++		.procname	= "epoll",
++		.mode		= 0555,
++		.child		= epoll_table,
++	},
++#endif
+ #endif
+ 	{
+ 		.ctl_name	= KERN_SETUID_DUMPABLE,
 
