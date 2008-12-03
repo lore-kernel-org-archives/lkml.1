@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbYLCUMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYLCUNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbYLCUMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYLCTyd
+	id S1758770AbYLCUNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYLCTyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:33 -0500
-Received: from kroah.org ([198.145.64.141]:60281 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:35 -0500
+Received: from kroah.org ([198.145.64.141]:60303 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753689AbYLCTy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:29 -0500
-Date: Wed, 3 Dec 2008 11:52:48 -0800
+	id S1754346AbYLCTyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:31 -0500
+Date: Wed, 3 Dec 2008 11:52:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
-       Shirish S Pargaonkar <shirishp@us.ibm.com>,
-       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
-       Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [patch 056/104] cifs: Fix error in smb_send2
-Message-ID: <20081203195248.GE8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Kou Ishizaki <kou.ishizaki@toshiba.co.jp>,
+       Jeremy Kerr <jk@ozlabs.org>, Andre Detsch <adetsch@br.ibm.com>
+Subject: [patch 058/104] powerpc/spufs: add a missing mutex_unlock
+Message-ID: <20081203195252.GG8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-fix-error-in-smb_send2.patch"
+Content-Disposition: inline; filename="powerpc-spufs-add-a-missing-mutex_unlock.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,64 +39,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Steve French <sfrench@us.ibm.com>
+From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
-Backport of upstream commit 61de800d33af585cb7e6f27b5cdd51029c6855cb
-for -stable.
+commit 6747c2ee8abf749e63fee8cd01a9ee293e6a4247 upstream.
 
-[CIFS] fix error in smb_send2
+A mutex_unlock(&gang->aff_mutex) in spufs_create_context() is missing
+in case spufs_context_open() fails.  As a result, spu_create syscall
+and spu_get_idle() may block.
 
-smb_send2 exit logic was strange, and with the previous change
-could cause us to fail large
-smb writes when all of the smb was not sent as one chunk.
+This patch adds the mutex_unlock.
 
-Acked-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-Cc: Suresh Jayaraman <sjayaraman@suse.de>
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Acked-by: Andre Detsch <adetsch@br.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/cifssmb.c   |    2 +-
- fs/cifs/file.c      |    2 +-
- fs/cifs/transport.c |    7 +++++--
- 3 files changed, 7 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/cell/spufs/inode.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -1534,7 +1534,7 @@ CIFSSMBWrite(const int xid, struct cifsT
- 	__u32 bytes_sent;
- 	__u16 byte_count;
- 
--	/* cFYI(1,("write at %lld %d bytes",offset,count));*/
-+	/* cFYI(1, ("write at %lld %d bytes",offset,count));*/
- 	if (tcon->ses == NULL)
- 		return -ECONNABORTED;
- 
---- a/fs/cifs/file.c
-+++ b/fs/cifs/file.c
-@@ -1813,7 +1813,7 @@ static int cifs_readpages(struct file *f
- 	pTcon = cifs_sb->tcon;
- 
- 	pagevec_init(&lru_pvec, 0);
--		cFYI(DBG2, ("rpages: num pages %d", num_pages));
-+	cFYI(DBG2, ("rpages: num pages %d", num_pages));
- 	for (i = 0; i < num_pages; ) {
- 		unsigned contig_pages;
- 		struct page *tmp_page;
---- a/fs/cifs/transport.c
-+++ b/fs/cifs/transport.c
-@@ -291,8 +291,11 @@ smb_send2(struct TCP_Server_Info *server
- 		if (rc < 0)
- 			break;
- 
--		if (rc >= total_len) {
--			WARN_ON(rc > total_len);
-+		if (rc == total_len) {
-+			total_len = 0;
-+			break;
-+		} else if (rc > total_len) {
-+			cERROR(1, ("sent %d requested %d", rc, total_len));
- 			break;
- 		}
- 		if (rc == 0) {
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -496,6 +496,8 @@ spufs_create_context(struct inode *inode
+ 	ret = spufs_context_open(dget(dentry), mntget(mnt));
+ 	if (ret < 0) {
+ 		WARN_ON(spufs_rmdir(inode, dentry));
++		if (affinity)
++			mutex_unlock(&gang->aff_mutex);
+ 		mutex_unlock(&inode->i_mutex);
+ 		spu_forget(SPUFS_I(dentry->d_inode)->i_ctx);
+ 		goto out;
 
