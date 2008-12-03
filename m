@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYLCT4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbYLCT5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYLCT4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:56:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYLCTu3
+	id S1753755AbYLCT5F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYLCTub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:29 -0500
-Received: from kroah.org ([198.145.64.141]:59556 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:31 -0500
+Received: from kroah.org ([198.145.64.141]:59583 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752037AbYLCTuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:21 -0500
-Date: Wed, 3 Dec 2008 11:48:49 -0800
+	id S1752632AbYLCTuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:23 -0500
+Date: Wed, 3 Dec 2008 11:48:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Davide Libenzi <davidel@xmailserver.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [patch 016/104] epoll: introduce resource usage limits
-Message-ID: <20081203194849.GQ8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>,
+       Greg KH <greg@kroah.com>
+Subject: [patch 017/104] Fix inotify watch removal/umount races
+Message-ID: <20081203194851.GR8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="epoll-introduce-resource-usage-limits.patch"
+Content-Disposition: inline; filename="fix-inotify-watch-removal-umount-races.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,324 +39,566 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Davide Libenzi <davidel@xmailserver.org>
+From: Al Viro <viro@ZenIV.linux.org.uk>
 
-commit 7ef9964e6d1b911b78709f144000aacadd0ebc21 upstream.
+commit 8f7b0ba1c853919b85b54774775f567f30006107 upstream.
 
-It has been thought that the per-user file descriptors limit would also
-limit the resources that a normal user can request via the epoll
-interface.  Vegard Nossum reported a very simple program (a modified
-version attached) that can make a normal user to request a pretty large
-amount of kernel memory, well within the its maximum number of fds.  To
-solve such problem, default limits are now imposed, and /proc based
-configuration has been introduced.  A new directory has been created,
-named /proc/sys/fs/epoll/ and inside there, there are two configuration
-points:
+Inotify watch removals suck violently.
 
-  max_user_instances = Maximum number of devices - per user
+To kick the watch out we need (in this order) inode->inotify_mutex and
+ih->mutex.  That's fine if we have a hold on inode; however, for all
+other cases we need to make damn sure we don't race with umount.  We can
+*NOT* just grab a reference to a watch - inotify_unmount_inodes() will
+happily sail past it and we'll end with reference to inode potentially
+outliving its superblock.
 
-  max_user_watches   = Maximum number of "watched" fds - per user
+Ideally we just want to grab an active reference to superblock if we
+can; that will make sure we won't go into inotify_umount_inodes() until
+we are done.  Cleanup is just deactivate_super().
 
-The current default for "max_user_watches" limits the memory used by epoll
-to store "watches", to 1/32 of the amount of the low RAM.  As example, a
-256MB 32bit machine, will have "max_user_watches" set to roughly 90000.
-That should be enough to not break existing heavy epoll users.  The
-default value for "max_user_instances" is set to 128, that should be
-enough too.
+However, that leaves a messy case - what if we *are* racing with
+umount() and active references to superblock can't be acquired anymore?
+We can bump ->s_count, grab ->s_umount, which will almost certainly wait
+until the superblock is shut down and the watch in question is pining
+for fjords.  That's fine, but there is a problem - we might have hit the
+window between ->s_active getting to 0 / ->s_count - below S_BIAS (i.e.
+the moment when superblock is past the point of no return and is heading
+for shutdown) and the moment when deactivate_super() acquires
+->s_umount.
 
-This also changes the userspace, because a new error code can now come out
-from EPOLL_CTL_ADD (-ENOSPC).  The EMFILE from epoll_create() was already
-listed, so that should be ok.
+We could just do drop_super() yield() and retry, but that's rather
+antisocial and this stuff is luser-triggerable.  OTOH, having grabbed
+->s_umount and having found that we'd got there first (i.e.  that
+->s_root is non-NULL) we know that we won't race with
+inotify_umount_inodes().
 
-[akpm@linux-foundation.org: use get_current_user()]
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-Cc: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-Reported-by: Vegard Nossum <vegardno@ifi.uio.no>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+So we could grab a reference to watch and do the rest as above, just
+with drop_super() instead of deactivate_super(), right? Wrong.  We had
+to drop ih->mutex before we could grab ->s_umount.  So the watch
+could've been gone already.
+
+That still can be dealt with - we need to save watch->wd, do idr_find()
+and compare its result with our pointer.  If they match, we either have
+the damn thing still alive or we'd lost not one but two races at once,
+the watch had been killed and a new one got created with the same ->wd
+at the same address.  That couldn't have happened in inotify_destroy(),
+but inotify_rm_wd() could run into that.  Still, "new one got created"
+is not a problem - we have every right to kill it or leave it alone,
+whatever's more convenient.
+
+So we can use idr_find(...) == watch && watch->inode->i_sb == sb as
+"grab it and kill it" check.  If it's been our original watch, we are
+fine, if it's a newcomer - nevermind, just pretend that we'd won the
+race and kill the fscker anyway; we are safe since we know that its
+superblock won't be going away.
+
+And yes, this is far beyond mere "not very pretty"; so's the entire
+concept of inotify to start with.
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Acked-by: Greg KH <greg@kroah.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/filesystems/proc.txt |   27 +++++++++++
- fs/eventpoll.c                     |   85 +++++++++++++++++++++++++++++++++----
- include/linux/sched.h              |    4 +
- kernel/sysctl.c                    |   10 ++++
- 4 files changed, 118 insertions(+), 8 deletions(-)
+ fs/inotify.c            |  150 ++++++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/inotify.h |   11 +++
+ kernel/audit_tree.c     |   91 +++++++++++++++++------------
+ kernel/auditfilter.c    |   14 ++--
+ 4 files changed, 218 insertions(+), 48 deletions(-)
 
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -44,6 +44,7 @@ Table of Contents
-   2.14	/proc/<pid>/io - Display the IO accounting fields
-   2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
-   2.16	/proc/<pid>/mountinfo - Information about mounts
-+  2.17	/proc/sys/fs/epoll - Configuration options for the epoll interface
+--- a/fs/inotify.c
++++ b/fs/inotify.c
+@@ -106,6 +106,20 @@ void get_inotify_watch(struct inotify_wa
+ }
+ EXPORT_SYMBOL_GPL(get_inotify_watch);
  
- ------------------------------------------------------------------------------
- Preface
-@@ -2471,4 +2472,30 @@ For more information on mount propagatio
++int pin_inotify_watch(struct inotify_watch *watch)
++{
++	struct super_block *sb = watch->inode->i_sb;
++	spin_lock(&sb_lock);
++	if (sb->s_count >= S_BIAS) {
++		atomic_inc(&sb->s_active);
++		spin_unlock(&sb_lock);
++		atomic_inc(&watch->count);
++		return 1;
++	}
++	spin_unlock(&sb_lock);
++	return 0;
++}
++
+ /**
+  * put_inotify_watch - decrements the ref count on a given watch.  cleans up
+  * watch references if the count reaches zero.  inotify_watch is freed by
+@@ -124,6 +138,13 @@ void put_inotify_watch(struct inotify_wa
+ }
+ EXPORT_SYMBOL_GPL(put_inotify_watch);
  
-   Documentation/filesystems/sharedsubtree.txt
- 
-+2.17	/proc/sys/fs/epoll - Configuration options for the epoll interface
-+--------------------------------------------------------
++void unpin_inotify_watch(struct inotify_watch *watch)
++{
++	struct super_block *sb = watch->inode->i_sb;
++	put_inotify_watch(watch);
++	deactivate_super(sb);
++}
 +
-+This directory contains configuration options for the epoll(7) interface.
-+
-+max_user_instances
-+------------------
-+
-+This is the maximum number of epoll file descriptors that a single user can
-+have open at a given time. The default value is 128, and should be enough
-+for normal users.
-+
-+max_user_watches
-+----------------
-+
-+Every epoll file descriptor can store a number of files to be monitored
-+for event readiness. Each one of these monitored files constitutes a "watch".
-+This configuration option sets the maximum number of "watches" that are
-+allowed for each user.
-+Each "watch" costs roughly 90 bytes on a 32bit kernel, and roughly 160 bytes
-+on a 64bit one.
-+The current default value for  max_user_watches  is the 1/32 of the available
-+low memory, divided for the "watch" cost in bytes.
-+
-+
- ------------------------------------------------------------------------------
-+
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -102,6 +102,8 @@
- 
- #define EP_UNACTIVE_PTR ((void *) -1L)
- 
-+#define EP_ITEM_COST (sizeof(struct epitem) + sizeof(struct eppoll_entry))
-+
- struct epoll_filefd {
- 	struct file *file;
- 	int fd;
-@@ -200,6 +202,9 @@ struct eventpoll {
- 	 * holding ->lock.
- 	 */
- 	struct epitem *ovflist;
-+
-+	/* The user that created the eventpoll descriptor */
-+	struct user_struct *user;
- };
- 
- /* Wait structure used by the poll hooks */
-@@ -227,9 +232,17 @@ struct ep_pqueue {
- };
- 
  /*
-+ * Configuration options available inside /proc/sys/fs/epoll/
-+ */
-+/* Maximum number of epoll devices, per user */
-+static int max_user_instances __read_mostly;
-+/* Maximum number of epoll watched descriptors, per user */
-+static int max_user_watches __read_mostly;
-+
+  * inotify_handle_get_wd - returns the next WD for use by the given handle
+  *
+@@ -479,6 +500,112 @@ void inotify_init_watch(struct inotify_w
+ }
+ EXPORT_SYMBOL_GPL(inotify_init_watch);
+ 
 +/*
-  * This mutex is used to serialize ep_free() and eventpoll_release_file().
-  */
--static struct mutex epmutex;
-+static DEFINE_MUTEX(epmutex);
- 
- /* Safe wake up implementation */
- static struct poll_safewake psw;
-@@ -240,6 +253,33 @@ static struct kmem_cache *epi_cache __re
- /* Slab cache used to allocate "struct eppoll_entry" */
- static struct kmem_cache *pwq_cache __read_mostly;
- 
-+#ifdef CONFIG_SYSCTL
++ * Watch removals suck violently.  To kick the watch out we need (in this
++ * order) inode->inotify_mutex and ih->mutex.  That's fine if we have
++ * a hold on inode; however, for all other cases we need to make damn sure
++ * we don't race with umount.  We can *NOT* just grab a reference to a
++ * watch - inotify_unmount_inodes() will happily sail past it and we'll end
++ * with reference to inode potentially outliving its superblock.  Ideally
++ * we just want to grab an active reference to superblock if we can; that
++ * will make sure we won't go into inotify_umount_inodes() until we are
++ * done.  Cleanup is just deactivate_super().  However, that leaves a messy
++ * case - what if we *are* racing with umount() and active references to
++ * superblock can't be acquired anymore?  We can bump ->s_count, grab
++ * ->s_umount, which will almost certainly wait until the superblock is shut
++ * down and the watch in question is pining for fjords.  That's fine, but
++ * there is a problem - we might have hit the window between ->s_active
++ * getting to 0 / ->s_count - below S_BIAS (i.e. the moment when superblock
++ * is past the point of no return and is heading for shutdown) and the
++ * moment when deactivate_super() acquires ->s_umount.  We could just do
++ * drop_super() yield() and retry, but that's rather antisocial and this
++ * stuff is luser-triggerable.  OTOH, having grabbed ->s_umount and having
++ * found that we'd got there first (i.e. that ->s_root is non-NULL) we know
++ * that we won't race with inotify_umount_inodes().  So we could grab a
++ * reference to watch and do the rest as above, just with drop_super() instead
++ * of deactivate_super(), right?  Wrong.  We had to drop ih->mutex before we
++ * could grab ->s_umount.  So the watch could've been gone already.
++ *
++ * That still can be dealt with - we need to save watch->wd, do idr_find()
++ * and compare its result with our pointer.  If they match, we either have
++ * the damn thing still alive or we'd lost not one but two races at once,
++ * the watch had been killed and a new one got created with the same ->wd
++ * at the same address.  That couldn't have happened in inotify_destroy(),
++ * but inotify_rm_wd() could run into that.  Still, "new one got created"
++ * is not a problem - we have every right to kill it or leave it alone,
++ * whatever's more convenient.
++ *
++ * So we can use idr_find(...) == watch && watch->inode->i_sb == sb as
++ * "grab it and kill it" check.  If it's been our original watch, we are
++ * fine, if it's a newcomer - nevermind, just pretend that we'd won the
++ * race and kill the fscker anyway; we are safe since we know that its
++ * superblock won't be going away.
++ *
++ * And yes, this is far beyond mere "not very pretty"; so's the entire
++ * concept of inotify to start with.
++ */
 +
-+#include <linux/sysctl.h>
++/**
++ * pin_to_kill - pin the watch down for removal
++ * @ih: inotify handle
++ * @watch: watch to kill
++ *
++ * Called with ih->mutex held, drops it.  Possible return values:
++ * 0 - nothing to do, it has died
++ * 1 - remove it, drop the reference and deactivate_super()
++ * 2 - remove it, drop the reference and drop_super(); we tried hard to avoid
++ * that variant, since it involved a lot of PITA, but that's the best that
++ * could've been done.
++ */
++static int pin_to_kill(struct inotify_handle *ih, struct inotify_watch *watch)
++{
++	struct super_block *sb = watch->inode->i_sb;
++	s32 wd = watch->wd;
 +
-+static int zero;
++	spin_lock(&sb_lock);
++	if (sb->s_count >= S_BIAS) {
++		atomic_inc(&sb->s_active);
++		spin_unlock(&sb_lock);
++		get_inotify_watch(watch);
++		mutex_unlock(&ih->mutex);
++		return 1;	/* the best outcome */
++	}
++	sb->s_count++;
++	spin_unlock(&sb_lock);
++	mutex_unlock(&ih->mutex); /* can't grab ->s_umount under it */
++	down_read(&sb->s_umount);
++	if (likely(!sb->s_root)) {
++		/* fs is already shut down; the watch is dead */
++		drop_super(sb);
++		return 0;
++	}
++	/* raced with the final deactivate_super() */
++	mutex_lock(&ih->mutex);
++	if (idr_find(&ih->idr, wd) != watch || watch->inode->i_sb != sb) {
++		/* the watch is dead */
++		mutex_unlock(&ih->mutex);
++		drop_super(sb);
++		return 0;
++	}
++	/* still alive or freed and reused with the same sb and wd; kill */
++	get_inotify_watch(watch);
++	mutex_unlock(&ih->mutex);
++	return 2;
++}
 +
-+ctl_table epoll_table[] = {
-+	{
-+		.procname	= "max_user_instances",
-+		.data		= &max_user_instances,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.extra1		= &zero,
-+	},
-+	{
-+		.procname	= "max_user_watches",
-+		.data		= &max_user_watches,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.extra1		= &zero,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+#endif /* CONFIG_SYSCTL */
++static void unpin_and_kill(struct inotify_watch *watch, int how)
++{
++	struct super_block *sb = watch->inode->i_sb;
++	put_inotify_watch(watch);
++	switch (how) {
++	case 1:
++		deactivate_super(sb);
++		break;
++	case 2:
++		drop_super(sb);
++	}
++}
 +
- 
- /* Setup the structure that is used as key for the RB tree */
- static inline void ep_set_ffd(struct epoll_filefd *ffd,
-@@ -402,6 +442,8 @@ static int ep_remove(struct eventpoll *e
- 	/* At this point it is safe to free the eventpoll item */
- 	kmem_cache_free(epi_cache, epi);
- 
-+	atomic_dec(&ep->user->epoll_watches);
-+
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_remove(%p, %p)\n",
- 		     current, ep, file));
- 
-@@ -449,6 +491,8 @@ static void ep_free(struct eventpoll *ep
- 
- 	mutex_unlock(&epmutex);
- 	mutex_destroy(&ep->mtx);
-+	atomic_dec(&ep->user->epoll_devs);
-+	free_uid(ep->user);
- 	kfree(ep);
- }
- 
-@@ -532,10 +576,19 @@ void eventpoll_release_file(struct file 
- 
- static int ep_alloc(struct eventpoll **pep)
- {
--	struct eventpoll *ep = kzalloc(sizeof(*ep), GFP_KERNEL);
-+	int error;
-+	struct user_struct *user;
-+	struct eventpoll *ep;
- 
--	if (!ep)
--		return -ENOMEM;
-+	user = get_current_user();
-+	error = -EMFILE;
-+	if (unlikely(atomic_read(&user->epoll_devs) >=
-+			max_user_instances))
-+		goto free_uid;
-+	error = -ENOMEM;
-+	ep = kzalloc(sizeof(*ep), GFP_KERNEL);
-+	if (unlikely(!ep))
-+		goto free_uid;
- 
- 	spin_lock_init(&ep->lock);
- 	mutex_init(&ep->mtx);
-@@ -544,12 +597,17 @@ static int ep_alloc(struct eventpoll **p
- 	INIT_LIST_HEAD(&ep->rdllist);
- 	ep->rbr = RB_ROOT;
- 	ep->ovflist = EP_UNACTIVE_PTR;
-+	ep->user = user;
- 
- 	*pep = ep;
- 
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_alloc() ep=%p\n",
- 		     current, ep));
- 	return 0;
-+
-+free_uid:
-+	free_uid(user);
-+	return error;
- }
- 
- /*
-@@ -703,9 +761,11 @@ static int ep_insert(struct eventpoll *e
- 	struct epitem *epi;
- 	struct ep_pqueue epq;
- 
--	error = -ENOMEM;
-+	if (unlikely(atomic_read(&ep->user->epoll_watches) >=
-+		     max_user_watches))
-+		return -ENOSPC;
- 	if (!(epi = kmem_cache_alloc(epi_cache, GFP_KERNEL)))
--		goto error_return;
-+		return -ENOMEM;
- 
- 	/* Item initialization follow here ... */
- 	INIT_LIST_HEAD(&epi->rdllink);
-@@ -735,6 +795,7 @@ static int ep_insert(struct eventpoll *e
- 	 * install process. Namely an allocation for a wait queue failed due
- 	 * high memory pressure.
+ /**
+  * inotify_destroy - clean up and destroy an inotify instance
+  * @ih: inotify handle
+@@ -490,11 +617,15 @@ void inotify_destroy(struct inotify_hand
+ 	 * pretty.  We cannot do a simple iteration over the list, because we
+ 	 * do not know the inode until we iterate to the watch.  But we need to
+ 	 * hold inode->inotify_mutex before ih->mutex.  The following works.
++	 *
++	 * AV: it had to become even uglier to start working ;-/
  	 */
-+	error = -ENOMEM;
- 	if (epi->nwait < 0)
- 		goto error_unregister;
+ 	while (1) {
+ 		struct inotify_watch *watch;
+ 		struct list_head *watches;
++		struct super_block *sb;
+ 		struct inode *inode;
++		int how;
  
-@@ -765,6 +826,8 @@ static int ep_insert(struct eventpoll *e
+ 		mutex_lock(&ih->mutex);
+ 		watches = &ih->watches;
+@@ -503,8 +634,10 @@ void inotify_destroy(struct inotify_hand
+ 			break;
+ 		}
+ 		watch = list_first_entry(watches, struct inotify_watch, h_list);
+-		get_inotify_watch(watch);
+-		mutex_unlock(&ih->mutex);
++		sb = watch->inode->i_sb;
++		how = pin_to_kill(ih, watch);
++		if (!how)
++			continue;
  
- 	spin_unlock_irqrestore(&ep->lock, flags);
+ 		inode = watch->inode;
+ 		mutex_lock(&inode->inotify_mutex);
+@@ -518,7 +651,7 @@ void inotify_destroy(struct inotify_hand
  
-+	atomic_inc(&ep->user->epoll_watches);
+ 		mutex_unlock(&ih->mutex);
+ 		mutex_unlock(&inode->inotify_mutex);
+-		put_inotify_watch(watch);
++		unpin_and_kill(watch, how);
+ 	}
+ 
+ 	/* free this handle: the put matching the get in inotify_init() */
+@@ -719,7 +852,9 @@ void inotify_evict_watch(struct inotify_
+ int inotify_rm_wd(struct inotify_handle *ih, u32 wd)
+ {
+ 	struct inotify_watch *watch;
++	struct super_block *sb;
+ 	struct inode *inode;
++	int how;
+ 
+ 	mutex_lock(&ih->mutex);
+ 	watch = idr_find(&ih->idr, wd);
+@@ -727,9 +862,12 @@ int inotify_rm_wd(struct inotify_handle 
+ 		mutex_unlock(&ih->mutex);
+ 		return -EINVAL;
+ 	}
+-	get_inotify_watch(watch);
++	sb = watch->inode->i_sb;
++	how = pin_to_kill(ih, watch);
++	if (!how)
++		return 0;
 +
- 	/* We have to call this outside the lock */
- 	if (pwake)
- 		ep_poll_safewake(&psw, &ep->poll_wait);
-@@ -789,7 +852,7 @@ error_unregister:
- 	spin_unlock_irqrestore(&ep->lock, flags);
+ 	inode = watch->inode;
+-	mutex_unlock(&ih->mutex);
  
- 	kmem_cache_free(epi_cache, epi);
--error_return:
-+
- 	return error;
+ 	mutex_lock(&inode->inotify_mutex);
+ 	mutex_lock(&ih->mutex);
+@@ -740,7 +878,7 @@ int inotify_rm_wd(struct inotify_handle 
+ 
+ 	mutex_unlock(&ih->mutex);
+ 	mutex_unlock(&inode->inotify_mutex);
+-	put_inotify_watch(watch);
++	unpin_and_kill(watch, how);
+ 
+ 	return 0;
+ }
+--- a/include/linux/inotify.h
++++ b/include/linux/inotify.h
+@@ -134,6 +134,8 @@ extern void inotify_remove_watch_locked(
+ 					struct inotify_watch *);
+ extern void get_inotify_watch(struct inotify_watch *);
+ extern void put_inotify_watch(struct inotify_watch *);
++extern int pin_inotify_watch(struct inotify_watch *);
++extern void unpin_inotify_watch(struct inotify_watch *);
+ 
+ #else
+ 
+@@ -228,6 +230,15 @@ static inline void put_inotify_watch(str
+ {
  }
  
-@@ -1074,6 +1137,7 @@ asmlinkage long sys_epoll_create1(int fl
- 			      flags & O_CLOEXEC);
- 	if (fd < 0)
- 		ep_free(ep);
-+	atomic_inc(&ep->user->epoll_devs);
- 
- error_return:
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
-@@ -1295,7 +1359,12 @@ asmlinkage long sys_epoll_pwait(int epfd
- 
- static int __init eventpoll_init(void)
- {
--	mutex_init(&epmutex);
-+	struct sysinfo si;
++extern inline int pin_inotify_watch(struct inotify_watch *watch)
++{
++	return 0;
++}
 +
-+	si_meminfo(&si);
-+	max_user_instances = 128;
-+	max_user_watches = (((si.totalram - si.totalhigh) / 32) << PAGE_SHIFT) /
-+		EP_ITEM_COST;
++extern inline void unpin_inotify_watch(struct inotify_watch *watch)
++{
++}
++
+ #endif	/* CONFIG_INOTIFY */
  
- 	/* Initialize the structure used to perform safe poll wait head wake ups */
- 	ep_poll_safewake_init(&psw);
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -587,6 +587,10 @@ struct user_struct {
- 	atomic_t inotify_watches; /* How many inotify watches does this user have? */
- 	atomic_t inotify_devs;	/* How many inotify devs does this user have opened? */
- #endif
-+#ifdef CONFIG_EPOLL
-+	atomic_t epoll_devs;	/* The number of epoll descriptors currently open */
-+	atomic_t epoll_watches;	/* The number of file descriptors currently watched */
-+#endif
- #ifdef CONFIG_POSIX_MQUEUE
- 	/* protected by mq_lock	*/
- 	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -179,6 +179,9 @@ extern struct ctl_table random_table[];
- #ifdef CONFIG_INOTIFY_USER
- extern struct ctl_table inotify_table[];
- #endif
-+#ifdef CONFIG_EPOLL
-+extern struct ctl_table epoll_table[];
-+#endif
+ #endif	/* __KERNEL __ */
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -1094,8 +1094,8 @@ static void audit_inotify_unregister(str
+ 	list_for_each_entry_safe(p, n, in_list, ilist) {
+ 		list_del(&p->ilist);
+ 		inotify_rm_watch(audit_ih, &p->wdata);
+-		/* the put matching the get in audit_do_del_rule() */
+-		put_inotify_watch(&p->wdata);
++		/* the unpin matching the pin in audit_do_del_rule() */
++		unpin_inotify_watch(&p->wdata);
+ 	}
+ }
  
- #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
- int sysctl_legacy_va_layout;
-@@ -1313,6 +1316,13 @@ static struct ctl_table fs_table[] = {
- 		.child		= inotify_table,
- 	},
- #endif	
-+#ifdef CONFIG_EPOLL
-+	{
-+		.procname	= "epoll",
-+		.mode		= 0555,
-+		.child		= epoll_table,
-+	},
-+#endif
- #endif
- 	{
- 		.ctl_name	= KERN_SETUID_DUMPABLE,
+@@ -1389,9 +1389,13 @@ static inline int audit_del_rule(struct 
+ 				/* Put parent on the inotify un-registration
+ 				 * list.  Grab a reference before releasing
+ 				 * audit_filter_mutex, to be released in
+-				 * audit_inotify_unregister(). */
+-				list_add(&parent->ilist, &inotify_list);
+-				get_inotify_watch(&parent->wdata);
++				 * audit_inotify_unregister().
++				 * If filesystem is going away, just leave
++				 * the sucker alone, eviction will take
++				 * care of it.
++				 */
++				if (pin_inotify_watch(&parent->wdata))
++					list_add(&parent->ilist, &inotify_list);
+ 			}
+ 		}
+ 	}
+--- a/kernel/audit_tree.c
++++ b/kernel/audit_tree.c
+@@ -24,6 +24,7 @@ struct audit_chunk {
+ 	struct list_head trees;		/* with root here */
+ 	int dead;
+ 	int count;
++	atomic_long_t refs;
+ 	struct rcu_head head;
+ 	struct node {
+ 		struct list_head list;
+@@ -56,7 +57,8 @@ static LIST_HEAD(prune_list);
+  * tree is refcounted; one reference for "some rules on rules_list refer to
+  * it", one for each chunk with pointer to it.
+  *
+- * chunk is refcounted by embedded inotify_watch.
++ * chunk is refcounted by embedded inotify_watch + .refs (non-zero refcount
++ * of watch contributes 1 to .refs).
+  *
+  * node.index allows to get from node.list to containing chunk.
+  * MSB of that sucker is stolen to mark taggings that we might have to
+@@ -121,6 +123,7 @@ static struct audit_chunk *alloc_chunk(i
+ 	INIT_LIST_HEAD(&chunk->hash);
+ 	INIT_LIST_HEAD(&chunk->trees);
+ 	chunk->count = count;
++	atomic_long_set(&chunk->refs, 1);
+ 	for (i = 0; i < count; i++) {
+ 		INIT_LIST_HEAD(&chunk->owners[i].list);
+ 		chunk->owners[i].index = i;
+@@ -129,9 +132,8 @@ static struct audit_chunk *alloc_chunk(i
+ 	return chunk;
+ }
+ 
+-static void __free_chunk(struct rcu_head *rcu)
++static void free_chunk(struct audit_chunk *chunk)
+ {
+-	struct audit_chunk *chunk = container_of(rcu, struct audit_chunk, head);
+ 	int i;
+ 
+ 	for (i = 0; i < chunk->count; i++) {
+@@ -141,14 +143,16 @@ static void __free_chunk(struct rcu_head
+ 	kfree(chunk);
+ }
+ 
+-static inline void free_chunk(struct audit_chunk *chunk)
++void audit_put_chunk(struct audit_chunk *chunk)
+ {
+-	call_rcu(&chunk->head, __free_chunk);
++	if (atomic_long_dec_and_test(&chunk->refs))
++		free_chunk(chunk);
+ }
+ 
+-void audit_put_chunk(struct audit_chunk *chunk)
++static void __put_chunk(struct rcu_head *rcu)
+ {
+-	put_inotify_watch(&chunk->watch);
++	struct audit_chunk *chunk = container_of(rcu, struct audit_chunk, head);
++	audit_put_chunk(chunk);
+ }
+ 
+ enum {HASH_SIZE = 128};
+@@ -176,7 +180,7 @@ struct audit_chunk *audit_tree_lookup(co
+ 
+ 	list_for_each_entry_rcu(p, list, hash) {
+ 		if (p->watch.inode == inode) {
+-			get_inotify_watch(&p->watch);
++			atomic_long_inc(&p->refs);
+ 			return p;
+ 		}
+ 	}
+@@ -194,17 +198,49 @@ int audit_tree_match(struct audit_chunk 
+ 
+ /* tagging and untagging inodes with trees */
+ 
+-static void untag_chunk(struct audit_chunk *chunk, struct node *p)
++static struct audit_chunk *find_chunk(struct node *p)
++{
++	int index = p->index & ~(1U<<31);
++	p -= index;
++	return container_of(p, struct audit_chunk, owners[0]);
++}
++
++static void untag_chunk(struct node *p)
+ {
++	struct audit_chunk *chunk = find_chunk(p);
+ 	struct audit_chunk *new;
+ 	struct audit_tree *owner;
+ 	int size = chunk->count - 1;
+ 	int i, j;
+ 
++	if (!pin_inotify_watch(&chunk->watch)) {
++		/*
++		 * Filesystem is shutting down; all watches are getting
++		 * evicted, just take it off the node list for this
++		 * tree and let the eviction logics take care of the
++		 * rest.
++		 */
++		owner = p->owner;
++		if (owner->root == chunk) {
++			list_del_init(&owner->same_root);
++			owner->root = NULL;
++		}
++		list_del_init(&p->list);
++		p->owner = NULL;
++		put_tree(owner);
++		return;
++	}
++
++	spin_unlock(&hash_lock);
++
++	/*
++	 * pin_inotify_watch() succeeded, so the watch won't go away
++	 * from under us.
++	 */
+ 	mutex_lock(&chunk->watch.inode->inotify_mutex);
+ 	if (chunk->dead) {
+ 		mutex_unlock(&chunk->watch.inode->inotify_mutex);
+-		return;
++		goto out;
+ 	}
+ 
+ 	owner = p->owner;
+@@ -221,7 +257,7 @@ static void untag_chunk(struct audit_chu
+ 		inotify_evict_watch(&chunk->watch);
+ 		mutex_unlock(&chunk->watch.inode->inotify_mutex);
+ 		put_inotify_watch(&chunk->watch);
+-		return;
++		goto out;
+ 	}
+ 
+ 	new = alloc_chunk(size);
+@@ -263,7 +299,7 @@ static void untag_chunk(struct audit_chu
+ 	inotify_evict_watch(&chunk->watch);
+ 	mutex_unlock(&chunk->watch.inode->inotify_mutex);
+ 	put_inotify_watch(&chunk->watch);
+-	return;
++	goto out;
+ 
+ Fallback:
+ 	// do the best we can
+@@ -277,6 +313,9 @@ Fallback:
+ 	put_tree(owner);
+ 	spin_unlock(&hash_lock);
+ 	mutex_unlock(&chunk->watch.inode->inotify_mutex);
++out:
++	unpin_inotify_watch(&chunk->watch);
++	spin_lock(&hash_lock);
+ }
+ 
+ static int create_chunk(struct inode *inode, struct audit_tree *tree)
+@@ -387,13 +426,6 @@ static int tag_chunk(struct inode *inode
+ 	return 0;
+ }
+ 
+-static struct audit_chunk *find_chunk(struct node *p)
+-{
+-	int index = p->index & ~(1U<<31);
+-	p -= index;
+-	return container_of(p, struct audit_chunk, owners[0]);
+-}
+-
+ static void kill_rules(struct audit_tree *tree)
+ {
+ 	struct audit_krule *rule, *next;
+@@ -431,17 +463,10 @@ static void prune_one(struct audit_tree 
+ 	spin_lock(&hash_lock);
+ 	while (!list_empty(&victim->chunks)) {
+ 		struct node *p;
+-		struct audit_chunk *chunk;
+ 
+ 		p = list_entry(victim->chunks.next, struct node, list);
+-		chunk = find_chunk(p);
+-		get_inotify_watch(&chunk->watch);
+-		spin_unlock(&hash_lock);
+-
+-		untag_chunk(chunk, p);
+ 
+-		put_inotify_watch(&chunk->watch);
+-		spin_lock(&hash_lock);
++		untag_chunk(p);
+ 	}
+ 	spin_unlock(&hash_lock);
+ 	put_tree(victim);
+@@ -469,7 +494,6 @@ static void trim_marked(struct audit_tre
+ 
+ 	while (!list_empty(&tree->chunks)) {
+ 		struct node *node;
+-		struct audit_chunk *chunk;
+ 
+ 		node = list_entry(tree->chunks.next, struct node, list);
+ 
+@@ -477,14 +501,7 @@ static void trim_marked(struct audit_tre
+ 		if (!(node->index & (1U<<31)))
+ 			break;
+ 
+-		chunk = find_chunk(node);
+-		get_inotify_watch(&chunk->watch);
+-		spin_unlock(&hash_lock);
+-
+-		untag_chunk(chunk, node);
+-
+-		put_inotify_watch(&chunk->watch);
+-		spin_lock(&hash_lock);
++		untag_chunk(node);
+ 	}
+ 	if (!tree->root && !tree->goner) {
+ 		tree->goner = 1;
+@@ -878,7 +895,7 @@ static void handle_event(struct inotify_
+ static void destroy_watch(struct inotify_watch *watch)
+ {
+ 	struct audit_chunk *chunk = container_of(watch, struct audit_chunk, watch);
+-	free_chunk(chunk);
++	call_rcu(&chunk->head, __put_chunk);
+ }
+ 
+ static const struct inotify_operations rtree_inotify_ops = {
 
