@@ -1,120 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbYLCUem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762401AbYLCUe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759737AbYLCUem (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLCUCM
+	id S1762401AbYLCUe7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbYLCUG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:02:12 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:2875 "EHLO kumera.dghda.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755517AbYLCUCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:02:10 -0500
-From: "Duane Griffin" <duaneg@dghda.com>
-To: akpm@linux-foundation.org
-Cc: Andreas Dilger <adilger@sun.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH 6/6] ext4: tighten restrictions on inode flags
-Date: Wed,  3 Dec 2008 19:55:03 +0000
-Message-Id: <1228334103-15948-7-git-send-email-duaneg@dghda.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1228334103-15948-6-git-send-email-duaneg@dghda.com>
-References: <1228334103-15948-1-git-send-email-duaneg@dghda.com>
- <1228334103-15948-2-git-send-email-duaneg@dghda.com>
- <1228334103-15948-3-git-send-email-duaneg@dghda.com>
- <1228334103-15948-4-git-send-email-duaneg@dghda.com>
- <1228334103-15948-5-git-send-email-duaneg@dghda.com>
- <1228334103-15948-6-git-send-email-duaneg@dghda.com>
+	Wed, 3 Dec 2008 15:06:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56126 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756619AbYLCUG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 15:06:58 -0500
+Date: Wed, 3 Dec 2008 12:06:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org, giometti@linux.it
+Subject: Re: [PATCH 1/1 #2] Char: n_tty, include module.h
+Message-Id: <20081203120643.169baeee.akpm@linux-foundation.org>
+In-Reply-To: <20081203153537.4504bdd7@lxorguk.ukuu.org.uk>
+References: <1228317711-1311-1-git-send-email-jirislaby@gmail.com>
+	<20081203153537.4504bdd7@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At the moment there are few restrictions on which flags may be set on
-which inodes. Specifically DIRSYNC may only be set on directories and
-IMMUTABLE and APPEND may not be set on links. Tighten that to disallow
-TOPDIR being set on non-directories and only NODUMP and NOATIME to be
-set on non-regular file, non-directories.
+On Wed, 3 Dec 2008 15:35:37 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Introduces a flags masking function which masks flags based on mode and
-use it during inode creation and when flags are set via the ioctl to
-facilitate future consistency.
+> On Wed,  3 Dec 2008 16:21:51 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+> > Hi,
+> > 
+> > this is a ldisc-n_tty-export-all-n_tty-ldisc-methods.patch fix.
+> 
+> NAK and NAK the patch needing it.
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
----
- fs/ext4/ext4.h   |   17 +++++++++++++++++
- fs/ext4/ialloc.c |   14 +++++---------
- fs/ext4/ioctl.c  |    3 +--
- 3 files changed, 23 insertions(+), 11 deletions(-)
+Late :(
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 63e5163..7b5c86d 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -255,6 +255,23 @@ struct flex_groups {
- 			   EXT4_JOURNAL_DATA_FL | EXT4_NOTAIL_FL|\
- 			   EXT4_DIRSYNC_FL)
- 
-+/* Flags that are appropriate for regular files (all but dir-specific ones). */
-+#define EXT4_REG_FLMASK (~(EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL))
-+
-+/* Flags that are appropriate for non-directories/regular files. */
-+#define EXT4_OTHER_FLMASK (EXT4_NODUMP_FL | EXT4_NOATIME_FL)
-+
-+/* Mask out flags that are inappropriate for the given type of inode. */
-+static inline __u32 ext4_mask_flags(umode_t mode, __u32 flags)
-+{
-+	if (S_ISDIR(mode))
-+		return flags;
-+	else if (S_ISREG(mode))
-+		return flags & EXT4_REG_FLMASK;
-+	else
-+		return flags & EXT4_OTHER_FLMASK;
-+}
-+
- /*
-  * Inode dynamic state flags
-  */
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 6fd3f3c..8efcc5e 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -809,16 +809,12 @@ got:
- 	ei->i_disksize = 0;
- 
- 	/*
--	 * Don't inherit extent flag from directory. We set extent flag on
--	 * newly created directory and file only if -o extent mount option is
--	 * specified
-+	 * Don't inherit extent flag from directory, amongst others. We set
-+	 * extent flag on newly created directory and file only if -o extent
-+	 * mount option is specified
- 	 */
--	ei->i_flags = EXT4_I(dir)->i_flags & EXT4_FL_INHERITED;
--	if (S_ISLNK(mode))
--		ei->i_flags &= ~(EXT4_IMMUTABLE_FL|EXT4_APPEND_FL);
--	/* dirsync only applies to directories */
--	if (!S_ISDIR(mode))
--		ei->i_flags &= ~EXT4_DIRSYNC_FL;
-+	ei->i_flags =
-+		ext4_mask_flags(mode, EXT4_I(dir)->i_flags & EXT4_FL_INHERITED);
- 	ei->i_file_acl = 0;
- 	ei->i_dtime = 0;
- 	ei->i_block_group = group;
-diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
-index dc99b47..2af1132 100644
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -48,8 +48,7 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 		if (err)
- 			return err;
- 
--		if (!S_ISDIR(inode->i_mode))
--			flags &= ~EXT4_DIRSYNC_FL;
-+		flags = ext4_mask_flags(inode->i_mode, flags);
- 
- 		err = -EPERM;
- 		mutex_lock(&inode->i_mutex);
--- 
-1.5.6.4
+> Once PPS is in
 
+PPS can't go in without this?
+
+Perhaps I can drop pps-serial-clients-support.patch, dunno.
+
+> this can be revisted by adding the almost identical N_PPS
+> ldisc into n_tty with a couple of different handlers (notably some of the
+> termios flags need to be handled differently)
