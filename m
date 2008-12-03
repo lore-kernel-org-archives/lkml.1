@@ -1,282 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbYLCOHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbYLCOI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbYLCOHR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 09:07:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYLCOHE
+	id S1752953AbYLCOI1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 09:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLCOIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 09:07:04 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:52642 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYLCOHB (ORCPT
+	Wed, 3 Dec 2008 09:08:19 -0500
+Received: from mga12.intel.com ([143.182.124.36]:11750 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750799AbYLCOIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 09:07:01 -0500
-Date: Wed, 3 Dec 2008 19:36:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 08/11] memcg: make zone_reclaim_stat
-Message-ID: <20081203140655.GG17701@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Rik van Riel <riel@redhat.com>
-References: <20081201205810.1CCA.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081201211646.1CE2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 3 Dec 2008 09:08:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,708,1220252400"; 
+   d="scan'208";a="85965394"
+Message-ID: <493692E2.9050302@linux.intel.com>
+Date: Wed, 03 Dec 2008 15:08:34 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081201211646.1CE2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Robert Richter <robert.richter@amd.com>
+CC: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] oprofile: fix CPU unplug panic in ppro_stop()
+References: <4934D3E1.1000507@cosmosbay.com> <20081202081729.GA5424@elte.hu> <20081203115954.GH11656@erda.amd.com>
+In-Reply-To: <20081203115954.GH11656@erda.amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2008-12-01 21:17:44]:
+Robert Richter wrote:
+> On 02.12.08 09:17:29, Ingo Molnar wrote:
+>> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+>>
+>>> If oprofile statically compiled in kernel, a cpu unplug triggers
+>>> a panic in ppro_stop(), because a NULL pointer is dereferenced.
+>>>
+>>> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+>>> ---
+>>> arch/x86/oprofile/op_model_ppro.c |    4 ++++
+>>> 1 files changed, 4 insertions(+)
+>>> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+>>> index 716d26f..e9f80c7 100644
+>>> --- a/arch/x86/oprofile/op_model_ppro.c
+>>> +++ b/arch/x86/oprofile/op_model_ppro.c
+>>> @@ -156,6 +156,8 @@ static void ppro_start(struct op_msrs const * const msrs)
+>>>  	unsigned int low, high;
+>>>  	int i;
+>>>  
+>>> +	if (!reset_value)
+>>> +		return;
+>>>
+>>> 	for (i = 0; i < num_counters; ++i) {
+>>>  		if (reset_value[i]) {
+>>>  			CTRL_READ(low, high, msrs, i);
+> 
+> The patch fixes the null pointer access and this ok. But the root
+> cause seems to be in the cpu hotplug and initialization
+> code. xxx_start() should not be called before xxx_setup_ctrs() or
+> after xxx_shutdown(). 
 
-> introduce mem_cgroup_per_zone::reclaim_stat member and its statics collecting
-> function.
-> 
-> Now, get_scan_ratio() can calculate correct value although memcg reclaim.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  include/linux/memcontrol.h |   16 ++++++++++++++++
->  mm/memcontrol.c            |   23 +++++++++++++++++++++++
->  mm/swap.c                  |   14 ++++++++++++++
->  mm/vmscan.c                |   27 +++++++++++++--------------
->  4 files changed, 66 insertions(+), 14 deletions(-)
-> 
-> Index: b/include/linux/memcontrol.h
-> ===================================================================
-> --- a/include/linux/memcontrol.h
-> +++ b/include/linux/memcontrol.h
-> @@ -95,6 +95,10 @@ int mem_cgroup_inactive_anon_is_low(stru
->  unsigned long mem_cgroup_zone_nr_pages(struct mem_cgroup *memcg,
->  				       struct zone *zone,
->  				       enum lru_list lru);
-> +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
-> +						      struct zone *zone);
-> +struct zone_reclaim_stat*
-> +mem_cgroup_get_reclaim_stat_by_page(struct page *page);
-> 
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  extern int do_swap_account;
-> @@ -261,6 +265,18 @@ mem_cgroup_zone_nr_pages(struct mem_cgro
->  }
-> 
-> 
-> +static inline struct zone_reclaim_stat*
-> +mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg, struct zone *zone)
-> +{
-> +	return NULL;
-> +}
-> +
-> +static inline struct zone_reclaim_stat*
-> +mem_cgroup_get_reclaim_stat_by_page(struct page *page)
-> +{
-> +	return NULL;
-> +}
-> +
->  #endif /* CONFIG_CGROUP_MEM_CONT */
-> 
->  #endif /* _LINUX_MEMCONTROL_H */
-> Index: b/mm/memcontrol.c
-> ===================================================================
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -103,6 +103,8 @@ struct mem_cgroup_per_zone {
->  	 */
->  	struct list_head	lists[NR_LRU_LISTS];
->  	unsigned long		count[NR_LRU_LISTS];
-> +
-> +	struct zone_reclaim_stat reclaim_stat;
->  };
->  /* Macro for accessing counter */
->  #define MEM_CGROUP_ZSTAT(mz, idx)	((mz)->count[(idx)])
-> @@ -458,6 +460,27 @@ unsigned long mem_cgroup_zone_nr_pages(s
->  	return MEM_CGROUP_ZSTAT(mz, lru);
->  }
-> 
-> +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
-> +						      struct zone *zone)
-> +{
-> +	int nid = zone->zone_pgdat->node_id;
-> +	int zid = zone_idx(zone);
-> +	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(memcg, nid, zid);
-> +
-> +	return &mz->reclaim_stat;
-> +}
-> +
-> +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat_by_page(struct page *page)
-> +{
+Yes, it would be better to fix that. At least it would make
+the code cleaner than the add checks for this backdoor everywhere.
 
-I would prefer to use stat_from_page instead of stat_by_page, by page
-is confusing.
+> Also, running only xxx_start() and xxx_stop() in
+> the cpu notifier functions is not sufficient. There is at least some
+> on_each_cpu code in nmi_setup() that should be called also in the cpu
+> notifier functions. I have to review that code.
 
-> +	struct page_cgroup *pc = lookup_page_cgroup(page);
-> +	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
-> +
-> +	if (!mz)
-> +		return NULL;
-> +
-> +	return &mz->reclaim_stat;
-> +}
-> +
->  unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
->  					struct list_head *dst,
->  					unsigned long *scanned, int order,
-> Index: b/mm/swap.c
-> ===================================================================
-> --- a/mm/swap.c
-> +++ b/mm/swap.c
-> @@ -158,6 +158,7 @@ void activate_page(struct page *page)
->  {
->  	struct zone *zone = page_zone(page);
->  	struct zone_reclaim_stat *reclaim_stat = &zone->reclaim_stat;
-> +	struct zone_reclaim_stat *memcg_reclaim_stat;
-> 
->  	spin_lock_irq(&zone->lru_lock);
->  	if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
-> @@ -172,6 +173,12 @@ void activate_page(struct page *page)
-> 
->  		reclaim_stat->recent_rotated[!!file]++;
->  		reclaim_stat->recent_scanned[!!file]++;
-> +
-> +		memcg_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
-> +		if (memcg_reclaim_stat) {
-> +			memcg_reclaim_stat->recent_rotated[!!file]++;
-> +			memcg_reclaim_stat->recent_scanned[!!file]++;
-> +		}
+AFAIK cpu hotplug has more problems in oprofile anyways. That is why
+I didn't test that case.
 
-Does it make sense to write two inline routines like
+> 
+> [...]
+> 
+>> It was absolutely unnecessary to add kmalloc to this rarely executed 
+>> codepath - and the way it was added was absolutely horrible as well, it 
+>> was tacked on in the middle of an existing codepath, instead of factoring 
+>> it out nicely. Perfmon will eventually replace PMC management anyway, so 
+>> there was no "this way it's cleaner" argument either. So this code should 
+>> have been changed minimally, instead of slapping in a full kmalloc for a 
+>> simple array extension from 2 to 4 entries ...
+> 
+> Ingo, you are right that using kmalloc is unnecessary for
+> reset_value. So, Andi, maybe you could make this code easier?
 
-update_recent_rotated(page)
-{
-        zone = page_zone(page);
+The reason I added the kmalloc is that there's also a varying number
+of separate fixed function counters (although that's not currently
+submitted).
 
-        zone->reclaim_stat->recent_rotated[!!file]++;
-        mem_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
-        if (mem_reclaim_stat)
-                mem_cg_reclaim_stat->recent_rotated[!!file]++;
-        ...
+Also I would prefer to not have a hard coded number for future
+CPUs. Contrary to other people's opinion architectural perfmon is
+not for Nehalem only.
 
-}
-
-and similarly update_recent_reclaimed(page)
-
->  	}
->  	spin_unlock_irq(&zone->lru_lock);
->  }
-> @@ -400,6 +407,7 @@ void ____pagevec_lru_add(struct pagevec 
->  	int i;
->  	struct zone *zone = NULL;
->  	struct zone_reclaim_stat *reclaim_stat = NULL;
-> +	struct zone_reclaim_stat *memcg_reclaim_stat = NULL;
-> 
->  	VM_BUG_ON(is_unevictable_lru(lru));
-> 
-> @@ -413,6 +421,8 @@ void ____pagevec_lru_add(struct pagevec 
->  				spin_unlock_irq(&zone->lru_lock);
->  			zone = pagezone;
->  			reclaim_stat = &zone->reclaim_stat;
-> +			memcg_reclaim_stat =
-> +				mem_cgroup_get_reclaim_stat_by_page(page);
->  			spin_lock_irq(&zone->lru_lock);
->  		}
->  		VM_BUG_ON(PageActive(page));
-> @@ -421,9 +431,13 @@ void ____pagevec_lru_add(struct pagevec 
->  		SetPageLRU(page);
->  		file = is_file_lru(lru);
->  		reclaim_stat->recent_scanned[file]++;
-> +		if (memcg_reclaim_stat)
-> +			memcg_reclaim_stat->recent_scanned[file]++;
->  		if (is_active_lru(lru)) {
->  			SetPageActive(page);
->  			reclaim_stat->recent_rotated[file]++;
-> +			if (memcg_reclaim_stat)
-> +				memcg_reclaim_stat->recent_rotated[file]++;
->  		}
->  		add_page_to_lru_list(zone, page, lru);
->  	}
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -134,6 +134,9 @@ static DECLARE_RWSEM(shrinker_rwsem);
->  static struct zone_reclaim_stat *get_reclaim_stat(struct zone *zone,
->  						  struct scan_control *sc)
->  {
-> +	if (!scan_global_lru(sc))
-> +		mem_cgroup_get_reclaim_stat(sc->mem_cgroup, zone);
-
-What do we gain by just calling mem_cgroup_get_reclaim_stat? Where do
-we return/use this value?
-
-> +
->  	return &zone->reclaim_stat;
->  }
-> 
-> @@ -1141,17 +1144,14 @@ static unsigned long shrink_inactive_lis
->  		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
->  						-count[LRU_INACTIVE_ANON]);
-> 
-> -		if (scan_global_lru(sc)) {
-> +		if (scan_global_lru(sc))
->  			zone->pages_scanned += nr_scan;
-> -			reclaim_stat->recent_scanned[0] +=
-> -						      count[LRU_INACTIVE_ANON];
-> -			reclaim_stat->recent_scanned[0] +=
-> -						      count[LRU_ACTIVE_ANON];
-> -			reclaim_stat->recent_scanned[1] +=
-> -						      count[LRU_INACTIVE_FILE];
-> -			reclaim_stat->recent_scanned[1] +=
-> -						      count[LRU_ACTIVE_FILE];
-> -		}
-> +
-> +		reclaim_stat->recent_scanned[0] += count[LRU_INACTIVE_ANON];
-> +		reclaim_stat->recent_scanned[0] += count[LRU_ACTIVE_ANON];
-> +		reclaim_stat->recent_scanned[1] += count[LRU_INACTIVE_FILE];
-> +		reclaim_stat->recent_scanned[1] += count[LRU_ACTIVE_FILE];
-> +
->  		spin_unlock_irq(&zone->lru_lock);
-> 
->  		nr_scanned += nr_scan;
-> @@ -1209,7 +1209,7 @@ static unsigned long shrink_inactive_lis
->  			SetPageLRU(page);
->  			lru = page_lru(page);
->  			add_page_to_lru_list(zone, page, lru);
-> -			if (PageActive(page) && scan_global_lru(sc)) {
-> +			if (PageActive(page)) {
->  				int file = !!page_is_file_cache(page);
->  				reclaim_stat->recent_rotated[file]++;
->  			}
-> @@ -1289,8 +1289,8 @@ static void shrink_active_list(unsigned 
->  	 */
->  	if (scan_global_lru(sc)) {
->  		zone->pages_scanned += pgscanned;
-> -		reclaim_stat->recent_scanned[!!file] += pgmoved;
->  	}
-> +	reclaim_stat->recent_scanned[!!file] += pgmoved;
-> 
->  	if (file)
->  		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
-> @@ -1323,8 +1323,7 @@ static void shrink_active_list(unsigned 
->  	 * This helps balance scan pressure between file and anonymous
->  	 * pages in get_scan_ratio.
->  	 */
-> -	if (scan_global_lru(sc))
-> -		reclaim_stat->recent_rotated[!!file] += pgmoved;
-> +	reclaim_stat->recent_rotated[!!file] += pgmoved;
-> 
->  	/*
->  	 * Move the pages to the [file or anon] inactive list.
-> 
-> 
-
--- 
-	Balbir
+-Andi
