@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYLCHjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYLCHlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbYLCHjU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 02:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYLCHjB
+	id S1754709AbYLCHlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 02:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYLCHlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 02:39:01 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:49131 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751251AbYLCHjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 02:39:00 -0500
-Date: Wed, 3 Dec 2008 08:38:50 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Philip Langdale <philipl@overt.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       Frank Seidel <fseidel@suse.de>,
-       Mathias Weyland <weyland@library.ethz.ch>
-Subject: Re: [PATCH] ricoh_mmc: Handle newer models of Ricoh controllers 
- (resend)
-Message-ID: <20081203083850.58e968a2@mjolnir.drzeus.cx>
-In-Reply-To: <4935FEDD.3080807@overt.org>
-References: <60069.67.164.5.76.1228094870.squirrel@overt.org>
-	<20081202181043.8173d657.akpm@linux-foundation.org>
-	<4935FEDD.3080807@overt.org>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-31252-1228289937-0001-2"
+	Wed, 3 Dec 2008 02:41:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44701 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbYLCHlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 02:41:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
+Date: Wed, 3 Dec 2008 08:40:24 +0100
+User-Agent: KMail/1.9.9
+Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812030222.28551.rjw@sisk.pl> <alpine.LFD.2.00.0812021751450.3256@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812021751450.3256@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812030840.25539.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wednesday, 3 of December 2008, Linus Torvalds wrote:
+> 
+> On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
+> > 
+> > Here's the output of 'lspci -vvxxx':
+> 
+> Ok, I'm not finding any documented quirks that would be memory regions, 
+> and in fact it doesn't look like there is even any remotely likely 32-bit 
+> valies that might be pointers in your PCI config space that look remotely 
+> like they might be conflicting in the area of MMIO space that we allocate 
+> PCI resources from (ie 0x88000000-0x92000000).
+> 
+> Of course, any odd MMIO regions might be descibed by some insane model 
+> that doesn't look like an aligned 32-bit value, but that's unlikely.
+> 
+> So I'm still not seeing anything wrong in there.
+> 
+> > I'll run the 'pci=cbmemsize=4M' test tomorrow (need to have some sleep).
+> 
+> Sure. It will be interesting to see if it makes any difference.
 
---=_freyr.drzeus.cx-31252-1228289937-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+It didn't help (failure in the 4th consecutive hibernation/resume cycle).
 
-On Tue, 02 Dec 2008 19:37:01 -0800
-Philip Langdale <philipl@overt.org> wrote:
+The patched kernel still hibernates and resumes without problems.
 
->=20
-> Indeed. Pierre, seems like the patch didn't git-apply properly. It's this=
- way in your
-> tree too. Did you apply the previous garbled version?
->=20
-
-Odd.
-
-Anyway, I've queued up the fixed versions instead. Should be hitting
-next in a day or two.
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-31252-1228289937-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkk2N48ACgkQ7b8eESbyJLgD2QCfVfw62+T81Efru+ccJ3lzkwTl
-dlAAn0omQnPxqCx1dwb7Vge0+nxWM/jB
-=7Nwj
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-31252-1228289937-0001-2--
+Thanks,
+Rafael
