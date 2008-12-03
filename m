@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYLCURU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbYLCUQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbYLCURU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYLCTyt
+	id S1759349AbYLCUQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYLCTys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:49 -0500
-Received: from kroah.org ([198.145.64.141]:60470 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:48 -0500
+Received: from kroah.org ([198.145.64.141]:60458 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751775AbYLCTyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:47 -0500
-Date: Wed, 3 Dec 2008 11:53:27 -0800
+	id S1753837AbYLCTyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:46 -0500
+Date: Wed, 3 Dec 2008 11:53:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,17 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
-       Jeff Layton <jlayton@redhat.com>,
        Shirish S Pargaonkar <shirishp@us.ibm.com>,
-       Steve French <sfrench@us.ibm.com>,
-       Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [patch 069/104] cifs: remove unused list, add new cifs sock list
-	to prepare for mount/umount fix
-Message-ID: <20081203195327.GR8950@kroah.com>
+       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>
+Subject: [patch 068/104] cifs: Fix cifs reconnection flags
+Message-ID: <20081203195325.GQ8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-remove-unused-list-add-new-cifs-sock-list-to-prepare-for-mount-umount-fix.patch"
+Content-Disposition: inline; filename="cifs-fix-cifs-reconnection-flags.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,93 +42,514 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Steve French <sfrench@us.ibm.com>
 
-commit fb396016647ae9de5b3bd8c4ee4f7b9cc7148bd5 upstream.
+commit 3b7952109361c684caf0c50474da8662ecc81019 upstream
 
-Also adds two lines missing from the previous patch (for the need reconnect flag in the
-/proc/fs/cifs/DebugData handling)
+[CIFS] Fix cifs reconnection flags
 
-The new global_cifs_sock_list is added, and initialized in init_cifs but not used yet.
-Jeff Layton will be adding code in to use that and to remove the GlobalTcon and GlobalSMBSession
-lists.
+In preparation for Jeff's big umount/mount fixes to remove the possibility of
+various races in cifs mount and linked list handling of sessions, sockets and
+tree connections, this patch cleans up some repetitive code in cifs_mount,
+and addresses a problem with ses->status and tcon->tidStatus in which we
+were overloading the "need_reconnect" state with other status in that
+field.  So the "need_reconnect" flag has been broken out from those
+two state fields (need reconnect was not mutually exclusive from some of the
+other possible tid and ses states).  In addition, a few exit cases in
+cifs_mount were cleaned up, and a problem with a tcon flag (for lease support)
+was not being set consistently for the 2nd mount of the same share
 
 CC: Jeff Layton <jlayton@redhat.com>
 CC: Shirish Pargaonkar <shirishp@us.ibm.com>
 Signed-off-by: Steve French <sfrench@us.ibm.com>
-Cc: Suresh Jayaraman <sjayaraman@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/cifs_debug.c |    4 ++--
- fs/cifs/cifsfs.c     |    6 +++---
- fs/cifs/cifsglob.h   |   23 ++++++++---------------
- 3 files changed, 13 insertions(+), 20 deletions(-)
+ fs/cifs/cifsfs.c   |    2 
+ fs/cifs/cifsglob.h |    5 +
+ fs/cifs/cifssmb.c  |   40 ++++----
+ fs/cifs/connect.c  |  252 ++++++++++++++++++++++++++---------------------------
+ fs/cifs/file.c     |    2 
+ 5 files changed, 155 insertions(+), 146 deletions(-)
 
---- a/fs/cifs/cifs_debug.c
-+++ b/fs/cifs/cifs_debug.c
-@@ -204,7 +204,7 @@ static int cifs_debug_data_proc_show(str
- 		else
- 			seq_printf(m, " type: %d ", dev_type);
- 
--		if (tcon->tidStatus == CifsNeedReconnect)
-+		if (tcon->need_reconnect)
- 			seq_puts(m, "\tDISCONNECTED ");
- 	}
- 	read_unlock(&GlobalSMBSeslock);
-@@ -311,7 +311,7 @@ static int cifs_stats_proc_show(struct s
- 		i++;
- 		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
- 		seq_printf(m, "\n%d) %s", i, tcon->treeName);
--		if (tcon->tidStatus == CifsNeedReconnect)
-+		if (tcon->need_reconnect)
- 			seq_puts(m, "\tDISCONNECTED ");
- 		seq_printf(m, "\nSMBs: %d Oplock Breaks: %d",
- 			atomic_read(&tcon->num_smbs_sent),
 --- a/fs/cifs/cifsfs.c
 +++ b/fs/cifs/cifsfs.c
-@@ -1013,9 +1013,9 @@ init_cifs(void)
- {
- 	int rc = 0;
- 	cifs_proc_init();
--/*	INIT_LIST_HEAD(&GlobalServerList);*/	/* BB not implemented yet */
--	INIT_LIST_HEAD(&GlobalSMBSessionList);
--	INIT_LIST_HEAD(&GlobalTreeConnectionList);
-+	INIT_LIST_HEAD(&global_cifs_sock_list);
-+	INIT_LIST_HEAD(&GlobalSMBSessionList); /* BB to be removed by jl */
-+	INIT_LIST_HEAD(&GlobalTreeConnectionList); /* BB to be removed by jl */
- 	INIT_LIST_HEAD(&GlobalOplock_Q);
- #ifdef CONFIG_CIFS_EXPERIMENTAL
- 	INIT_LIST_HEAD(&GlobalDnotifyReqList);
+@@ -967,7 +967,7 @@ static int cifs_oplock_thread(void *dumm
+ 				not bother sending an oplock release if session
+ 				to server still is disconnected since oplock
+ 				already released by the server in that case */
+-			if (pTcon->tidStatus != CifsNeedReconnect) {
++			if (!pTcon->need_reconnect) {
+ 				rc = CIFSSMBLock(0, pTcon, netfid,
+ 						0 /* len */ , 0 /* offset */, 0,
+ 						0, LOCKING_ANDX_OPLOCK_RELEASE,
 --- a/fs/cifs/cifsglob.h
 +++ b/fs/cifs/cifsglob.h
-@@ -590,22 +590,15 @@ require use of the stronger protocol */
- #define GLOBAL_EXTERN extern
- #endif
+@@ -122,6 +122,8 @@ struct cifs_cred {
+  */
  
--/*
-- * The list of servers that did not respond with NT LM 0.12.
-- * This list helps improve performance and eliminate the messages indicating
-- * that we had a communications error talking to the server in this list.
-- */
--/* Feature not supported */
--/* GLOBAL_EXTERN struct servers_not_supported *NotSuppList; */
+ struct TCP_Server_Info {
++	struct list_head tcp_ses_list;
++	struct list_head smb_ses_list;
+ 	/* 15 character server name + 0x20 16th byte indicating type = srv */
+ 	char server_RFC1001_name[SERVER_NAME_LEN_WITH_NULL];
+ 	char unicode_server_Name[SERVER_NAME_LEN_WITH_NULL * 2];
+@@ -195,6 +197,7 @@ struct cifsUidInfo {
+  */
+ struct cifsSesInfo {
+ 	struct list_head cifsSessionList;
++	struct list_head tcon_list;
+ 	struct semaphore sesSem;
+ #if 0
+ 	struct cifsUidInfo *uidInfo;	/* pointer to user info */
+@@ -216,6 +219,7 @@ struct cifsSesInfo {
+ 	char userName[MAX_USERNAME_SIZE + 1];
+ 	char *domainName;
+ 	char *password;
++	bool need_reconnect:1; /* connection reset, uid now invalid */
+ };
+ /* no more than one of the following three session flags may be set */
+ #define CIFS_SES_NT4 1
+@@ -287,6 +291,7 @@ struct cifsTconInfo {
+ 	bool seal:1;      /* transport encryption for this mounted share */
+ 	bool unix_ext:1;  /* if false disable Linux extensions to CIFS protocol
+ 				for this mount even if server would support */
++	bool need_reconnect:1; /* connection reset, tid now invalid */
+ 	/* BB add field for back pointer to sb struct(s)? */
+ };
+ 
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -190,10 +190,10 @@ small_smb_init(int smb_command, int wct,
+ 		/* need to prevent multiple threads trying to
+ 		simultaneously reconnect the same SMB session */
+ 			down(&tcon->ses->sesSem);
+-			if (tcon->ses->status == CifsNeedReconnect)
++			if (tcon->ses->need_reconnect)
+ 				rc = cifs_setup_session(0, tcon->ses,
+ 							nls_codepage);
+-			if (!rc && (tcon->tidStatus == CifsNeedReconnect)) {
++			if (!rc && (tcon->need_reconnect)) {
+ 				mark_open_files_invalid(tcon);
+ 				rc = CIFSTCon(0, tcon->ses, tcon->treeName,
+ 					      tcon, nls_codepage);
+@@ -295,7 +295,7 @@ smb_init(int smb_command, int wct, struc
+ 	   check for tcp and smb session status done differently
+ 	   for those three - in the calling routine */
+ 	if (tcon) {
+-		if (tcon->tidStatus == CifsExiting) {
++		if (tcon->need_reconnect) {
+ 			/* only tree disconnect, open, and write,
+ 			  (and ulogoff which does not have tcon)
+ 			  are allowed as we start force umount */
+@@ -337,10 +337,10 @@ smb_init(int smb_command, int wct, struc
+ 		/* need to prevent multiple threads trying to
+ 		simultaneously reconnect the same SMB session */
+ 			down(&tcon->ses->sesSem);
+-			if (tcon->ses->status == CifsNeedReconnect)
++			if (tcon->ses->need_reconnect)
+ 				rc = cifs_setup_session(0, tcon->ses,
+ 							nls_codepage);
+-			if (!rc && (tcon->tidStatus == CifsNeedReconnect)) {
++			if (!rc && (tcon->need_reconnect)) {
+ 				mark_open_files_invalid(tcon);
+ 				rc = CIFSTCon(0, tcon->ses, tcon->treeName,
+ 					      tcon, nls_codepage);
+@@ -759,7 +759,7 @@ CIFSSMBTDis(const int xid, struct cifsTc
+ 
+ 	/* No need to return error on this operation if tid invalidated and
+ 	closed on server already e.g. due to tcp session crashing */
+-	if (tcon->tidStatus == CifsNeedReconnect) {
++	if (tcon->need_reconnect) {
+ 		up(&tcon->tconSem);
+ 		return 0;
+ 	}
+@@ -806,32 +806,36 @@ CIFSSMBLogoff(const int xid, struct cifs
+ 		up(&ses->sesSem);
+ 		return -EBUSY;
+ 	}
++
++	if (ses->server == NULL)
++		return -EIO;
++
++	if (ses->need_reconnect)
++		goto session_already_dead; /* no need to send SMBlogoff if uid
++					      already closed due to reconnect */
+ 	rc = small_smb_init(SMB_COM_LOGOFF_ANDX, 2, NULL, (void **)&pSMB);
+ 	if (rc) {
+ 		up(&ses->sesSem);
+ 		return rc;
+ 	}
+ 
+-	if (ses->server) {
+-		pSMB->hdr.Mid = GetNextMid(ses->server);
++	pSMB->hdr.Mid = GetNextMid(ses->server);
+ 
+-		if (ses->server->secMode &
++	if (ses->server->secMode &
+ 		   (SECMODE_SIGN_REQUIRED | SECMODE_SIGN_ENABLED))
+ 			pSMB->hdr.Flags2 |= SMBFLG2_SECURITY_SIGNATURE;
+-	}
+ 
+ 	pSMB->hdr.Uid = ses->Suid;
+ 
+ 	pSMB->AndXCommand = 0xFF;
+ 	rc = SendReceiveNoRsp(xid, ses, (struct smb_hdr *) pSMB, 0);
+-	if (ses->server) {
+-		atomic_dec(&ses->server->socketUseCount);
+-		if (atomic_read(&ses->server->socketUseCount) == 0) {
+-			spin_lock(&GlobalMid_Lock);
+-			ses->server->tcpStatus = CifsExiting;
+-			spin_unlock(&GlobalMid_Lock);
+-			rc = -ESHUTDOWN;
+-		}
++session_already_dead:
++	atomic_dec(&ses->server->socketUseCount);
++	if (atomic_read(&ses->server->socketUseCount) == 0) {
++		spin_lock(&GlobalMid_Lock);
++		ses->server->tcpStatus = CifsExiting;
++		spin_unlock(&GlobalMid_Lock);
++		rc = -ESHUTDOWN;
+ 	}
+ 	up(&ses->sesSem);
+ 
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -147,7 +147,7 @@ cifs_reconnect(struct TCP_Server_Info *s
+ 		ses = list_entry(tmp, struct cifsSesInfo, cifsSessionList);
+ 		if (ses->server) {
+ 			if (ses->server == server) {
+-				ses->status = CifsNeedReconnect;
++				ses->need_reconnect = true;
+ 				ses->ipc_tid = 0;
+ 			}
+ 		}
+@@ -156,7 +156,7 @@ cifs_reconnect(struct TCP_Server_Info *s
+ 	list_for_each(tmp, &GlobalTreeConnectionList) {
+ 		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
+ 		if ((tcon->ses) && (tcon->ses->server == server))
+-			tcon->tidStatus = CifsNeedReconnect;
++			tcon->need_reconnect = true;
+ 	}
+ 	read_unlock(&GlobalSMBSeslock);
+ 	/* do not want to be sending data on a socket we are freeing */
+@@ -1868,6 +1868,92 @@ convert_delimiter(char *path, char delim
+ 	}
+ }
+ 
++static void setup_cifs_sb(struct smb_vol *pvolume_info,
++			  struct cifs_sb_info *cifs_sb)
++{
++	if (pvolume_info->rsize > CIFSMaxBufSize) {
++		cERROR(1, ("rsize %d too large, using MaxBufSize",
++			pvolume_info->rsize));
++		cifs_sb->rsize = CIFSMaxBufSize;
++	} else if ((pvolume_info->rsize) &&
++			(pvolume_info->rsize <= CIFSMaxBufSize))
++		cifs_sb->rsize = pvolume_info->rsize;
++	else /* default */
++		cifs_sb->rsize = CIFSMaxBufSize;
++
++	if (pvolume_info->wsize > PAGEVEC_SIZE * PAGE_CACHE_SIZE) {
++		cERROR(1, ("wsize %d too large, using 4096 instead",
++			  pvolume_info->wsize));
++		cifs_sb->wsize = 4096;
++	} else if (pvolume_info->wsize)
++		cifs_sb->wsize = pvolume_info->wsize;
++	else
++		cifs_sb->wsize = min_t(const int,
++					PAGEVEC_SIZE * PAGE_CACHE_SIZE,
++					127*1024);
++		/* old default of CIFSMaxBufSize was too small now
++		   that SMB Write2 can send multiple pages in kvec.
++		   RFC1001 does not describe what happens when frame
++		   bigger than 128K is sent so use that as max in
++		   conjunction with 52K kvec constraint on arch with 4K
++		   page size  */
++
++	if (cifs_sb->rsize < 2048) {
++		cifs_sb->rsize = 2048;
++		/* Windows ME may prefer this */
++		cFYI(1, ("readsize set to minimum: 2048"));
++	}
++	/* calculate prepath */
++	cifs_sb->prepath = pvolume_info->prepath;
++	if (cifs_sb->prepath) {
++		cifs_sb->prepathlen = strlen(cifs_sb->prepath);
++		/* we can not convert the / to \ in the path
++		separators in the prefixpath yet because we do not
++		know (until reset_cifs_unix_caps is called later)
++		whether POSIX PATH CAP is available. We normalize
++		the / to \ after reset_cifs_unix_caps is called */
++		pvolume_info->prepath = NULL;
++	} else
++		cifs_sb->prepathlen = 0;
++	cifs_sb->mnt_uid = pvolume_info->linux_uid;
++	cifs_sb->mnt_gid = pvolume_info->linux_gid;
++	cifs_sb->mnt_file_mode = pvolume_info->file_mode;
++	cifs_sb->mnt_dir_mode = pvolume_info->dir_mode;
++	cFYI(1, ("file mode: 0x%x  dir mode: 0x%x",
++		cifs_sb->mnt_file_mode, cifs_sb->mnt_dir_mode));
++
++	if (pvolume_info->noperm)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_NO_PERM;
++	if (pvolume_info->setuids)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_SET_UID;
++	if (pvolume_info->server_ino)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_SERVER_INUM;
++	if (pvolume_info->remap)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_MAP_SPECIAL_CHR;
++	if (pvolume_info->no_xattr)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_NO_XATTR;
++	if (pvolume_info->sfu_emul)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_UNX_EMUL;
++	if (pvolume_info->nobrl)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_NO_BRL;
++	if (pvolume_info->cifs_acl)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_CIFS_ACL;
++	if (pvolume_info->override_uid)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_OVERR_UID;
++	if (pvolume_info->override_gid)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_OVERR_GID;
++	if (pvolume_info->dynperm)
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_DYNPERM;
++	if (pvolume_info->direct_io) {
++		cFYI(1, ("mounting share using direct i/o"));
++		cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_DIRECT_IO;
++	}
++
++	if ((pvolume_info->cifs_acl) && (pvolume_info->dynperm))
++		cERROR(1, ("mount option dynperm ignored if cifsacl "
++			   "mount option supported"));
++}
++
+ int
+ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 	   char *mount_data, const char *devname)
+@@ -1973,9 +2059,7 @@ cifs_mount(struct super_block *sb, struc
+ 		goto out;
+ 	}
+ 
+-	if (srvTcp) {
+-		cFYI(1, ("Existing tcp session with server found"));
+-	} else {	/* create socket */
++	if (!srvTcp) {	/* create socket */
+ 		if (volume_info.port)
+ 			sin_server.sin_port = htons(volume_info.port);
+ 		else
+@@ -2051,7 +2135,7 @@ cifs_mount(struct super_block *sb, struc
+ 		cFYI(1, ("Existing smb sess found (status=%d)",
+ 			pSesInfo->status));
+ 		down(&pSesInfo->sesSem);
+-		if (pSesInfo->status == CifsNeedReconnect) {
++		if (pSesInfo->need_reconnect) {
+ 			cFYI(1, ("Session needs reconnect"));
+ 			rc = cifs_setup_session(xid, pSesInfo,
+ 						cifs_sb->local_nls);
+@@ -2101,139 +2185,52 @@ cifs_mount(struct super_block *sb, struc
+ 
+ 	/* search for existing tcon to this server share */
+ 	if (!rc) {
+-		if (volume_info.rsize > CIFSMaxBufSize) {
+-			cERROR(1, ("rsize %d too large, using MaxBufSize",
+-				volume_info.rsize));
+-			cifs_sb->rsize = CIFSMaxBufSize;
+-		} else if ((volume_info.rsize) &&
+-				(volume_info.rsize <= CIFSMaxBufSize))
+-			cifs_sb->rsize = volume_info.rsize;
+-		else /* default */
+-			cifs_sb->rsize = CIFSMaxBufSize;
 -
--/*
-- * The following is a hash table of all the users we know about.
-- */
--GLOBAL_EXTERN struct smbUidInfo *GlobalUidList[UID_HASH];
+-		if (volume_info.wsize > PAGEVEC_SIZE * PAGE_CACHE_SIZE) {
+-			cERROR(1, ("wsize %d too large, using 4096 instead",
+-				  volume_info.wsize));
+-			cifs_sb->wsize = 4096;
+-		} else if (volume_info.wsize)
+-			cifs_sb->wsize = volume_info.wsize;
+-		else
+-			cifs_sb->wsize =
+-				min_t(const int, PAGEVEC_SIZE * PAGE_CACHE_SIZE,
+-					127*1024);
+-			/* old default of CIFSMaxBufSize was too small now
+-			   that SMB Write2 can send multiple pages in kvec.
+-			   RFC1001 does not describe what happens when frame
+-			   bigger than 128K is sent so use that as max in
+-			   conjunction with 52K kvec constraint on arch with 4K
+-			   page size  */
+-
+-		if (cifs_sb->rsize < 2048) {
+-			cifs_sb->rsize = 2048;
+-			/* Windows ME may prefer this */
+-			cFYI(1, ("readsize set to minimum: 2048"));
+-		}
+-		/* calculate prepath */
+-		cifs_sb->prepath = volume_info.prepath;
+-		if (cifs_sb->prepath) {
+-			cifs_sb->prepathlen = strlen(cifs_sb->prepath);
+-			/* we can not convert the / to \ in the path
+-			separators in the prefixpath yet because we do not
+-			know (until reset_cifs_unix_caps is called later)
+-			whether POSIX PATH CAP is available. We normalize
+-			the / to \ after reset_cifs_unix_caps is called */
+-			volume_info.prepath = NULL;
+-		} else
+-			cifs_sb->prepathlen = 0;
+-		cifs_sb->mnt_uid = volume_info.linux_uid;
+-		cifs_sb->mnt_gid = volume_info.linux_gid;
+-		cifs_sb->mnt_file_mode = volume_info.file_mode;
+-		cifs_sb->mnt_dir_mode = volume_info.dir_mode;
+-		cFYI(1, ("file mode: 0x%x  dir mode: 0x%x",
+-			cifs_sb->mnt_file_mode, cifs_sb->mnt_dir_mode));
+-
+-		if (volume_info.noperm)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_NO_PERM;
+-		if (volume_info.setuids)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_SET_UID;
+-		if (volume_info.server_ino)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_SERVER_INUM;
+-		if (volume_info.remap)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_MAP_SPECIAL_CHR;
+-		if (volume_info.no_xattr)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_NO_XATTR;
+-		if (volume_info.sfu_emul)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_UNX_EMUL;
+-		if (volume_info.nobrl)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_NO_BRL;
+-		if (volume_info.cifs_acl)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_CIFS_ACL;
+-		if (volume_info.override_uid)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_OVERR_UID;
+-		if (volume_info.override_gid)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_OVERR_GID;
+-		if (volume_info.dynperm)
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_DYNPERM;
+-		if (volume_info.direct_io) {
+-			cFYI(1, ("mounting share using direct i/o"));
+-			cifs_sb->mnt_cifs_flags |= CIFS_MOUNT_DIRECT_IO;
+-		}
+-
+-		if ((volume_info.cifs_acl) && (volume_info.dynperm))
+-			cERROR(1, ("mount option dynperm ignored if cifsacl "
+-				   "mount option supported"));
+-
++		setup_cifs_sb(&volume_info, cifs_sb);
+ 		tcon =
+ 		    find_unc(sin_server.sin_addr.s_addr, volume_info.UNC,
+ 			     volume_info.username);
+ 		if (tcon) {
+ 			cFYI(1, ("Found match on UNC path"));
+-			/* we can have only one retry value for a connection
+-			   to a share so for resources mounted more than once
+-			   to the same server share the last value passed in
+-			   for the retry flag is used */
+-			tcon->retry = volume_info.retry;
+-			tcon->nocase = volume_info.nocase;
+ 			if (tcon->seal != volume_info.seal)
+ 				cERROR(1, ("transport encryption setting "
+ 					   "conflicts with existing tid"));
+ 		} else {
+ 			tcon = tconInfoAlloc();
+-			if (tcon == NULL)
++			if (tcon == NULL) {
+ 				rc = -ENOMEM;
+-			else {
+-				/* check for null share name ie connecting to
+-				 * dfs root */
+-
+-				/* BB check if this works for exactly length
+-				 * three strings */
+-				if ((strchr(volume_info.UNC + 3, '\\') == NULL)
+-				    && (strchr(volume_info.UNC + 3, '/') ==
+-					NULL)) {
+-/*					rc = connect_to_dfs_path(xid, pSesInfo,
+-						"", cifs_sb->local_nls,
+-						cifs_sb->mnt_cifs_flags &
+-						  CIFS_MOUNT_MAP_SPECIAL_CHR);*/
+-					cFYI(1, ("DFS root not supported"));
+-					rc = -ENODEV;
+-					goto out;
+-				} else {
+-					/* BB Do we need to wrap sesSem around
+-					 * this TCon call and Unix SetFS as
+-					 * we do on SessSetup and reconnect? */
+-					rc = CIFSTCon(xid, pSesInfo,
+-						volume_info.UNC,
+-						tcon, cifs_sb->local_nls);
+-					cFYI(1, ("CIFS Tcon rc = %d", rc));
+-				}
+-				if (!rc) {
+-					atomic_inc(&pSesInfo->inUse);
+-					tcon->retry = volume_info.retry;
+-					tcon->nocase = volume_info.nocase;
+-					tcon->seal = volume_info.seal;
+-				}
++				goto mount_fail_check;
+ 			}
++
++			/* check for null share name ie connect to dfs root */
++
++			/* BB check if works for exactly length 3 strings */
++			if ((strchr(volume_info.UNC + 3, '\\') == NULL)
++			    && (strchr(volume_info.UNC + 3, '/') == NULL)) {
++				/* rc = connect_to_dfs_path(...) */
++				cFYI(1, ("DFS root not supported"));
++				rc = -ENODEV;
++				goto mount_fail_check;
++			} else {
++				/* BB Do we need to wrap sesSem around
++				 * this TCon call and Unix SetFS as
++				 * we do on SessSetup and reconnect? */
++				rc = CIFSTCon(xid, pSesInfo, volume_info.UNC,
++					      tcon, cifs_sb->local_nls);
++				cFYI(1, ("CIFS Tcon rc = %d", rc));
++			}
++			if (!rc) {
++				atomic_inc(&pSesInfo->inUse);
++				tcon->seal = volume_info.seal;
++			} else
++				goto mount_fail_check;
+ 		}
++
++		/* we can have only one retry value for a connection
++		   to a share so for resources mounted more than once
++		   to the same server share the last value passed in
++		   for the retry flag is used */
++		tcon->retry = volume_info.retry;
++		tcon->nocase = volume_info.nocase;
+ 	}
+ 	if (pSesInfo) {
+ 		if (pSesInfo->capabilities & CAP_LARGE_FILES) {
+@@ -2246,6 +2243,7 @@ cifs_mount(struct super_block *sb, struc
+ 	sb->s_time_gran = 100;
  
--/* GLOBAL_EXTERN struct list_head GlobalServerList; BB not implemented yet */
--GLOBAL_EXTERN struct list_head GlobalSMBSessionList;
--GLOBAL_EXTERN struct list_head GlobalTreeConnectionList;
-+/* the list of TCP_Server_Info structures, ie each of the sockets
-+ * connecting our client to a distinct server (ip address), is
-+ * chained together by global_cifs_sock_list. The list of all our SMB
-+ * sessions (and from that the tree connections) can be found
-+ * by iterating over global_cifs_sock_list */
-+GLOBAL_EXTERN struct list_head global_cifs_sock_list;
-+GLOBAL_EXTERN struct list_head GlobalSMBSessionList; /* BB to be removed by jl*/
-+GLOBAL_EXTERN struct list_head GlobalTreeConnectionList; /* BB to be removed */
- GLOBAL_EXTERN rwlock_t GlobalSMBSeslock;  /* protects list inserts on 3 above */
+ /* on error free sesinfo and tcon struct if needed */
++mount_fail_check:
+ 	if (rc) {
+ 		/* if session setup failed, use count is zero but
+ 		we still need to free cifsd thread */
+@@ -3499,6 +3497,7 @@ CIFSTCon(unsigned int xid, struct cifsSe
+ 	/* above now done in SendReceive */
+ 	if ((rc == 0) && (tcon != NULL)) {
+ 		tcon->tidStatus = CifsGood;
++		tcon->need_reconnect = false;
+ 		tcon->tid = smb_buffer_response->Tid;
+ 		bcc_ptr = pByteArea(smb_buffer_response);
+ 		length = strnlen(bcc_ptr, BCC(smb_buffer_response) - 2);
+@@ -3730,6 +3729,7 @@ int cifs_setup_session(unsigned int xid,
+ 	} else {
+ 		cFYI(1, ("CIFS Session Established successfully"));
+ 			pSesInfo->status = CifsGood;
++			pSesInfo->need_reconnect = false;
+ 	}
  
- GLOBAL_EXTERN struct list_head GlobalOplock_Q;
+ ss_err_exit:
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -493,7 +493,7 @@ int cifs_close(struct inode *inode, stru
+ 		if (pTcon) {
+ 			/* no sense reconnecting to close a file that is
+ 			   already closed */
+-			if (pTcon->tidStatus != CifsNeedReconnect) {
++			if (!pTcon->need_reconnect) {
+ 				timeout = 2;
+ 				while ((atomic_read(&pSMBFile->wrtPending) != 0)
+ 					&& (timeout <= 2048)) {
 
