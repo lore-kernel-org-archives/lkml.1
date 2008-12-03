@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbYLCK2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbYLCK3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752049AbYLCK2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 05:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYLCK1y
+	id S1752654AbYLCK3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 05:29:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYLCK30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 05:27:54 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:48409 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbYLCK1W (ORCPT
+	Wed, 3 Dec 2008 05:29:26 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59133 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751192AbYLCK3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 05:27:22 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 2/2] tracing/function-graph-tracer: improve duration
- output
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530812030223o4af19ab7idec0894bcdd275d@mail.gmail.com>
-References: <4935E19C.3090501@gmail.com> <4935E226.3060906@gmail.com>
-	 <20081203081906.GH21006@elte.hu> <20081203083332.GA5455@elte.hu>
-	 <c62985530812030207l75084154vf1f94fe22ab0448@mail.gmail.com>
-	 <1228299706.9673.115.camel@twins>
-	 <c62985530812030223o4af19ab7idec0894bcdd275d@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Dec 2008 11:27:06 +0100
-Message-Id: <1228300026.9673.122.camel@twins>
+	Wed, 3 Dec 2008 05:29:25 -0500
+Date: Wed, 3 Dec 2008 10:29:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Geoffrey McRae <geoff@rabidhost.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: New Security Features, Please Comment
+Message-ID: <20081203102925.1aa97d14@lxorguk.ukuu.org.uk>
+In-Reply-To: <1228268657.6679.4.camel@lappy.spacevs.com>
+References: <1228260494.24232.21.camel@compy.ivent.com.au>
+	<20081203005338.6472db7a@lxorguk.ukuu.org.uk>
+	<1228268657.6679.4.camel@lappy.spacevs.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 11:23 +0100, Frédéric Weisbecker wrote:
-> 2008/12/3 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> > On Wed, 2008-12-03 at 11:07 +0100, Frédéric Weisbecker wrote:
-> >>
-> >>
-> >> >
-> >> > btw., i tested the graph tracer on a 16-way 64-bit box as well, and
-> >> the
-> >> > multi-digit CPU field printout magic works fine there too:
-> >> >
-> >> >  9)               |    pick_next_task() {
-> >> >  9)   0.283 us    |      pick_next_task_fair();
-> >> >  9)   0.276 us    |      pick_next_task_rt();
-> >> >  9)   0.273 us    |      pick_next_task_fair();
-> >> >  9)   0.279 us    |      pick_next_task_idle();
-> >> >  9)   2.596 us    |    }
-> >> >  9)   0.566 us    |    __lock_text_start();
-> >> >  10)   0.299 us    |        }
-> >> >  10)               |        mm_init() {
-> >> >  10)               |          pgd_alloc() {
-> >> >  10)               |            __get_free_pages() {
-> >> >  10)               |              alloc_pages_current() {
-> >> >  10)   0.330 us    |                policy_zonelist();
-> >> >  10)               |                __alloc_pages_internal() {
-> >> >
-> >> >        Ingo
-> >> >
-> >>
-> >> Hmm not really, there should be one space more before the 9 to fit the
-> >> log10(MAX_CPU) here and not break
-> >> the column.
-> >
-> > It did in my copy of Ingo's email...
-> 
-> 
-> So perhaps I should drop gmail...... :-(
+> The idea is to not allow the child to change its own uid, or give the
+> child any elevated privlages so that should the child be compromised via
+> buffer overflow or some other bug, it cant be abused.
 
-I've been told that gmail has ways of extracting email through POP3.
-Perhaps that manages to preserve layout.. if not, I'll file a bug with
-google and get a real mail account pronto :-)
+But the child process can modify itself, it can open files etc.
 
+So as uid 1 I patch my own code to add a function call to a private
+function that will be called regularly. Now as the other uids are
+selected I am able to attack all those users file stores.
+
+I don't think your model actually works.
