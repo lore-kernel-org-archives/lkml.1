@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYLCT6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYLCT6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYLCT6B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:58:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYLCTuf
+	id S1753390AbYLCT6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYLCTuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:35 -0500
-Received: from kroah.org ([198.145.64.141]:59617 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:37 -0500
+Received: from kroah.org ([198.145.64.141]:59625 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752667AbYLCTu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:26 -0500
-Date: Wed, 3 Dec 2008 11:49:01 -0800
+	id S1754641AbYLCTu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:28 -0500
+Date: Wed, 3 Dec 2008 11:49:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Gregor Jasny <gjasny@web.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 019/104] V4L/DVB (9352): Add some missing compat32 ioctls
-Message-ID: <20081203194901.GT8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Matthew Garrett <mjg@redhat.com>,
+       Adel Gadllah <adel.gadllah@gmail.com>, Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 020/104] Input: atkbd - add keymap quirk for Inventec
+	Symphony systems
+Message-ID: <20081203194904.GU8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-dvb-add-some-missing-compat32-ioctls.patch"
+Content-Disposition: inline; filename="input-atkbd-add-keymap-quirk-for-inventec-symphony-systems.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,40 +40,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Gregor Jasny <jasny@vidsoft.de>
+From: Matthew Garrett <mjg@redhat.com>
 
-commit c7f09db6852d85e7f76322815051aad1c88d08cf upstream.
+commit a8215b81cc31cf267506bc6a4a4bfe93f4ca1652 upstream.
 
-This patch adds the missing compat ioctls that are needed to
-operate Skype in combination with libv4l and a MJPEG only camera.
+The Zepto 6615WD laptop (rebranded Inventec Symphony system) needs a
+key release quirk for its volume keys to work. The attached patch adds
+the quirk to the atkbd driver.
 
-If you think it's trivial enough please submit it to -stable, too.
+Fixes: https://bugzilla.redhat.com/show_bug.cgi?id=460237
 
-Signed-off-by: Gregor Jasny <gjasny@web.de>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Adel Gadllah <adel.gadllah@gmail.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/compat_ioctl32.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/input/keyboard/atkbd.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
---- a/drivers/media/video/compat_ioctl32.c
-+++ b/drivers/media/video/compat_ioctl32.c
-@@ -867,6 +867,7 @@ long v4l_compat_ioctl32(struct file *fil
- 	case VIDIOC_STREAMON32:
- 	case VIDIOC_STREAMOFF32:
- 	case VIDIOC_G_PARM:
-+	case VIDIOC_S_PARM:
- 	case VIDIOC_G_STD:
- 	case VIDIOC_S_STD:
- 	case VIDIOC_G_TUNER:
-@@ -885,6 +886,8 @@ long v4l_compat_ioctl32(struct file *fil
- 	case VIDIOC_S_INPUT32:
- 	case VIDIOC_TRY_FMT32:
- 	case VIDIOC_S_HW_FREQ_SEEK:
-+	case VIDIOC_ENUM_FRAMESIZES:
-+	case VIDIOC_ENUM_FRAMEINTERVALS:
- 		ret = do_video_ioctl(file, cmd, arg);
- 		break;
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -868,6 +868,22 @@ static void atkbd_hp_keymap_fixup(struct
+ }
+ 
+ /*
++ * Inventec system with broken key release on volume keys
++ */
++static void atkbd_inventec_keymap_fixup(struct atkbd *atkbd)
++{
++	const unsigned int forced_release_keys[] = {
++		0xae, 0xb0,
++	};
++	int i;
++
++	if (atkbd->set == 2)
++		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
++			__set_bit(forced_release_keys[i],
++				  atkbd->force_release_mask);
++}
++
++/*
+  * atkbd_set_keycode_table() initializes keyboard's keycode table
+  * according to the selected scancode set
+  */
+@@ -1478,6 +1494,15 @@ static struct dmi_system_id atkbd_dmi_qu
+ 		.callback = atkbd_setup_fixup,
+ 		.driver_data = atkbd_hp_keymap_fixup,
+ 	},
++	{
++		.ident = "Inventec Symphony",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "INVENTEC"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "SYMPHONY 6.0/7.0"),
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_inventec_keymap_fixup,
++	},
+ 	{ }
+ };
  
 
