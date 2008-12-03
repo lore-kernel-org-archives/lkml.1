@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYLCX1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYLCX2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYLCX1v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 18:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYLCX1m
+	id S1756749AbYLCX2X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 18:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYLCX2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 18:27:42 -0500
-Received: from an-out-0708.google.com ([209.85.132.247]:14115 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYLCX1l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 18:27:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=q8hQI+h6t2A/zqpBSHzvZTe8D4jfKIN1TTToxfTwbA1k2t2/U370iXGoWgIM5uBEqu
-         E5wkyNZH5uySjjzc0pNVF9l5DRv8lFvNuLEFyUSc/FbKI3MePCpnfZ1nUvZgxFKhRmh1
-         MjNLSLWzhZEfeS2bVGLl4oR1UbHTkxPR38zHI=
-Message-ID: <804dabb00812031527k3fae11dcnef3b1696c3d136f8@mail.gmail.com>
-Date: Thu, 4 Dec 2008 07:27:39 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Geoffrey McRae" <geoff@rabidhost.com>
-Subject: Re: New Security Features, Please Comment
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Nick Andrew" <nick@nick-andrew.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081203230820.4473a162@lxorguk.ukuu.org.uk>
+	Wed, 3 Dec 2008 18:28:13 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45907 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754491AbYLCX2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 18:28:12 -0500
+Date: Wed, 3 Dec 2008 15:19:00 -0800
+From: Greg KH <gregkh@suse.de>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 000/104] 2.6.27-stable review
+Message-ID: <20081203231900.GC632@suse.de>
+References: <20081203194725.GA8950@kroah.com> <493702CC.5030804@msgid.tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1228260494.24232.21.camel@compy.ivent.com.au>
-	 <20081203005338.6472db7a@lxorguk.ukuu.org.uk>
-	 <1228268657.6679.4.camel@lappy.spacevs.com>
-	 <20081203124252.GD11807@mail.local.tull.net>
-	 <1228344292.6993.27.camel@lappy.spacevs.com>
-	 <20081203230820.4473a162@lxorguk.ukuu.org.uk>
+In-Reply-To: <493702CC.5030804@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 4, 2008 at 7:08 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> The children are pre-forked, so the overhead is in the setup... then
->> when the app recieves a request, it sets the child's uid to the uid of
->> the website, and then passes the request to the child, which, now, the
->> child is running as the website owner.
->
-> But the child process may already have been trojanned by a previous user
-> so it gains you nothing.
->
+On Thu, Dec 04, 2008 at 01:06:04AM +0300, Michael Tokarev wrote:
+> Greg KH wrote:
+> []
+> > And yes, there are a lot of patches here, the big series are:
+> ...
+> > 	- ext4 bugfixes
+> 
+> I wonder why updates for ext4, which is still marked
+> "experimental" in kconfig, should go to -stable in
+> the first place...  Given the number of bugs^Wpatches
+> in this part of the kernel, and given the amount
+> of current development in this area.  Just.. curious.
 
-Yes, I thought so too.   The trojanized child, even though most of the
-time unprivileged, can wait for that window of opportunity when its
-privilege is escalated, by polling, and when it received the
-privilege, immediate jump into action.
+Primarily because at least 4 distros are basing their releases off of
+the 2.6.27 kernel tree.  Those distos do have users who are using the
+ext4 file system for their daily use, and so bugfixes for it are worthy
+to keep track of in a centralized place like the -stable tree.
 
-Thanks.
+thanks,
 
--- 
-Regards,
-Peter Teoh
-
-Ernest Hemingway - "Never mistake motion for action."
+greg k-h
