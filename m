@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYLCVkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYLCVlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYLCVkH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYLCVjz
+	id S1755323AbYLCVlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYLCVkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:39:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47873 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751254AbYLCVjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:39:55 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 000/104] 2.6.27-stable review
-Date: Wed, 3 Dec 2008 22:39:13 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-References: <20081203194725.GA8950@kroah.com>
-In-Reply-To: <20081203194725.GA8950@kroah.com>
+	Wed, 3 Dec 2008 16:40:55 -0500
+Received: from fmmailgate05.web.de ([217.72.192.243]:44669 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbYLCVky convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 16:40:54 -0500
+Date: Wed, 03 Dec 2008 22:40:51 +0100
+Message-Id: <529873894@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812032239.14280.rjw@sisk.pl>
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Subject: odd habits with binary blobs.....
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19DYjY69D9KTDoyBpaTHg5jm5tdFWfmWDzHdTyNvsVYg8WVK
+ 2NgArZSwXq8xB/8OXcFnEXhI2LHVz0IKOdNQL+AK/s6W1kJI2s=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+hello, 
 
-On Wednesday, 3 of December 2008, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.27.8 release.
-> There are 104 patches in this series, all will be posted as a response
-> to this one.  If anyone has any issues with these being applied, please
-> let us know.  If anyone is a maintainer of the proper subsystem, and
-> wants to add a Signed-off-by: line to the patch, please respond with it.
-> 
-> And yes, there are a lot of patches here, the big series are:
-> 	- cifs data corruption patches
-> 	- pci hotplug slot patches to fix the most common warning
-> 	  showing up on kerneloops.org
-> 	- ext4 bugfixes
-> 
-> These patches are sent out with a number of different people on the Cc:
-> line.  If you wish to be a reviewer, please email stable@kernel.org to
-> add your name to the list.  If you want to be off the reviewer list,
-> also email us.
-> 
-> Responses should be made by Friday, December 5, 20:00:00 UTC.  Anything
-> received after that time might be too late.
+i gave r1soft`s new/free "hot copy" a try today and .... failed:
 
-The following ACPI commits are also -stable material IMO:
+vserver2:/tmp/usr/sbin # ./hcp-setup
+Gathering kernel information
+Gathering kernel information complete.
+Error: A network error occurred connecting to 'kmod32.r1soft.com'
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=65df78473ffbf3bff5e2034df1638acc4f3ddd50
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=558073dd56707864f09d563b64e7c37c021e89d2
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7b4d469228a92a00e412675817cedd60133de38a
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=40599072dca3ec7d4c9ff8271978be169f974638
+what a pain....trying to setup a linux kernel module, the installer wants to phone home - and fails.
 
-Thanks,
-Rafael
+but it`s even worse - http://wiki.r1soft.com/display/LTR1D/hcp-setup tells:
+
+BUILDING HOT COPY DRIVER FROM SOURCE
+
+hcp-setup will tar up your kernel source tree or headers and upload them to an R1Soft build server over HTTPS using XML-RPC. Once your system's kernel headers or source have been uploaded the R1Soft build server will compile a Hot Copy device driver as a kernel module and hcp-setup will automatically download it to your system.
+
+In order for hcp-setup to work your Linux server must have HTTPS Internet access to kmod32.r1soft.com (32-bit systems) and kmod64.r1soft.com (64-bit systems)
+
+
+how weird is THAT?
+
+did anybody ever come across such "build binary blobs remotely" system ?
+
+
+ok, disqualified.  won`t touch it again, as i also don`t know what REALLY is transferred to the vendor - but i wonder what kernel devs think about such build system and what in-kernel alternative exists for this. (i think it doesn`t exist - but maybe somebody working on that ?)
+
+if someone want`s to take a look or give a comment:
+
+http://wiki.r1soft.com/display/LTR1D/hcp
+http://www.r1soft.com/products/linux-hot-copy/
+
+regards
+roland
+
+____________________________________________________________________
+Psssst! Schon vom neuen WEB.DE MultiMessenger gehört? 
+Der kann`s mit allen: http://www.produkte.web.de/messenger/?did=3123
+
