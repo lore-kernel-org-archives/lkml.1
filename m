@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbYLCUZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbYLCU0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756390AbYLCUZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbYLCT6B
+	id S1760878AbYLCU0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbYLCT6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:01 -0500
-Received: from kroah.org ([198.145.64.141]:56649 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:05 -0500
+Received: from kroah.org ([198.145.64.141]:56667 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754953AbYLCT5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:51 -0500
-Date: Wed, 3 Dec 2008 11:56:20 -0800
+	id S1756102AbYLCT5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:57:54 -0500
+Date: Wed, 3 Dec 2008 11:56:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Sami Liedes <sliedes@cc.hut.fi>, Duane Griffin <duaneg@dghda.com>
-Subject: [patch 087/104] jbd2: abort instead of waiting for nonexistent
-	transaction
-Message-ID: <20081203195620.GJ8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Kalpak Shah <kalpak.shah@sun.com>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 089/104] ext4: fix xattr deadlock
+Message-ID: <20081203195626.GL8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jbd2-abort-instead-of-waiting-for-nonexistent-transaction.patch"
+Content-Disposition: inline; filename="ext4-fix-xattr-deadlock.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,65 +40,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Duane Griffin <duaneg@dghda.com>
+From: Kalpak Shah <kalpak.shah@sun.com>
 
-(cherry picked from commit 23f8b79eae8a74e42a006ffa7c456e295c7e1c0d)
+(cherry picked from commit 4d20c685fa365766a8f13584b4c8178a15ab7103)
 
-The __jbd2_log_wait_for_space function sits in a loop checkpointing
-transactions until there is sufficient space free in the journal.
-However, if there are no transactions to be processed (e.g.  because the
-free space calculation is wrong due to a corrupted filesystem) it will
-never progress.
+ext4_xattr_set_handle() eventually ends up calling
+ext4_mark_inode_dirty() which tries to expand the inode by shifting
+the EAs.  This leads to the xattr_sem being downed again and leading
+to a deadlock.
 
-Check for space being required when no transactions are outstanding and
-abort the journal instead of endlessly looping.
+This patch makes sure that if ext4_xattr_set_handle() is in the
+call-chain, ext4_mark_inode_dirty() will not expand the inode.
 
-This patch fixes the bug reported by Sami Liedes at:
-http://bugzilla.kernel.org/show_bug.cgi?id=10976
-
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
-Cc: Sami Liedes <sliedes@cc.hut.fi>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Kalpak Shah <kalpak.shah@sun.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd2/checkpoint.c |   19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ fs/ext4/xattr.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/fs/jbd2/checkpoint.c
-+++ b/fs/jbd2/checkpoint.c
-@@ -126,14 +126,29 @@ void __jbd2_log_wait_for_space(journal_t
+--- a/fs/ext4/xattr.c
++++ b/fs/ext4/xattr.c
+@@ -959,6 +959,7 @@ ext4_xattr_set_handle(handle_t *handle, 
+ 	struct ext4_xattr_block_find bs = {
+ 		.s = { .not_found = -ENODATA, },
+ 	};
++	unsigned long no_expand;
+ 	int error;
  
- 		/*
- 		 * Test again, another process may have checkpointed while we
--		 * were waiting for the checkpoint lock
-+		 * were waiting for the checkpoint lock. If there are no
-+		 * outstanding transactions there is nothing to checkpoint and
-+		 * we can't make progress. Abort the journal in this case.
- 		 */
- 		spin_lock(&journal->j_state_lock);
-+		spin_lock(&journal->j_list_lock);
- 		nblocks = jbd_space_needed(journal);
- 		if (__jbd2_log_space_left(journal) < nblocks) {
-+			int chkpt = journal->j_checkpoint_transactions != NULL;
+ 	if (!name)
+@@ -966,6 +967,9 @@ ext4_xattr_set_handle(handle_t *handle, 
+ 	if (strlen(name) > 255)
+ 		return -ERANGE;
+ 	down_write(&EXT4_I(inode)->xattr_sem);
++	no_expand = EXT4_I(inode)->i_state & EXT4_STATE_NO_EXPAND;
++	EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
 +
-+			spin_unlock(&journal->j_list_lock);
- 			spin_unlock(&journal->j_state_lock);
--			jbd2_log_do_checkpoint(journal);
-+			if (chkpt) {
-+				jbd2_log_do_checkpoint(journal);
-+			} else {
-+				printk(KERN_ERR "%s: no transactions\n",
-+				       __func__);
-+				jbd2_journal_abort(journal, 0);
-+			}
-+
- 			spin_lock(&journal->j_state_lock);
-+		} else {
-+			spin_unlock(&journal->j_list_lock);
- 		}
- 		mutex_unlock(&journal->j_checkpoint_mutex);
- 	}
+ 	error = ext4_get_inode_loc(inode, &is.iloc);
+ 	if (error)
+ 		goto cleanup;
+@@ -1042,6 +1046,8 @@ ext4_xattr_set_handle(handle_t *handle, 
+ cleanup:
+ 	brelse(is.iloc.bh);
+ 	brelse(bs.bh);
++	if (no_expand == 0)
++		EXT4_I(inode)->i_state &= ~EXT4_STATE_NO_EXPAND;
+ 	up_write(&EXT4_I(inode)->xattr_sem);
+ 	return error;
+ }
 
