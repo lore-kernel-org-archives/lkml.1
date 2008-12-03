@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYLCMtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbYLCMxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYLCMtq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:49:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYLCMth
+	id S1753677AbYLCMxG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:53:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYLCMwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:49:37 -0500
-Received: from vps1.tull.net ([66.180.172.116]:45802 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752320AbYLCMth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:49:37 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Dec 2008 07:49:37 EST
-Date: Wed, 3 Dec 2008 23:42:52 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Geoffrey McRae <geoff@rabidhost.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: New Security Features, Please Comment
-Message-ID: <20081203124252.GD11807@mail.local.tull.net>
-References: <1228260494.24232.21.camel@compy.ivent.com.au> <20081203005338.6472db7a@lxorguk.ukuu.org.uk> <1228268657.6679.4.camel@lappy.spacevs.com>
+	Wed, 3 Dec 2008 07:52:54 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56127 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYLCMwy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 07:52:54 -0500
+Date: Wed, 3 Dec 2008 12:52:53 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: dwmw2@infradead.org, jens.axboe@oracle.com, matthew@wil.cx,
+       joern@logfs.org, James.Bottomley@HansenPartnership.com,
+       djshin90@gmail.com, teheo@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/9] swapfile: change discard pgoff_t to sector_t
+In-Reply-To: <20081202164732.1d6d0997.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0812031251260.6817@blonde.anvils>
+References: <Pine.LNX.4.64.0811252132580.17555@blonde.site>
+ <Pine.LNX.4.64.0811252140230.17555@blonde.site> <Pine.LNX.4.64.0811252145190.20455@blonde.site>
+ <Pine.LNX.4.64.0812010028040.10131@blonde.site> <20081202164732.1d6d0997.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228268657.6679.4.camel@lappy.spacevs.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 12:44:17PM +1100, Geoffrey McRae wrote:
-> On Wed, 2008-12-03 at 00:53 +0000, Alan Cox wrote:
-> > > (such as PHP) as the user that owns the website we are forced to fork a
-> > > new process per request, then call setuid/gid and then launch the script
-> > > language. This ofcource is resource intensive, but at present there is
-> > > no other solution.
+On Tue, 2 Dec 2008, Andrew Morton wrote:
+> On Mon, 1 Dec 2008 00:29:41 +0000 (GMT)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > -		pgoff_t nr_blocks = se->nr_pages << (PAGE_SHIFT - 9);
+> > +		sector_t nr_blocks = se->nr_pages << (PAGE_SHIFT - 9);
+> 
+> but, but, that didn't change anything?  se->nr_pages must be cast to
+> sector_t?
 
-[...]
+I'm squirming, you are right, thanks for fixing it up.
 
-> But once this set is introduced a HTTP server could be written that uses
-> forked children to handle requests, that have their identity swtiched
-> before doing any work, including parsing CGI scripts.
-
-I think we can do that already, using FastCGI.
-
-As I understand it, the traditional CGI server system call flow is:
-
-   accept
-   fork
-    \ setuid(user)
-      exec(cgi script)
-
-And I don't see how your 4 extra system calls would improve that flow.
-
-The FastCGI flow is:
-
-   setuid(user)
-   exec(fastcgi script)
-   loop receiving requests over a pipe and processing
-
-In this case the handling process has already been forked and exec'ed
-so the time-consuming work is done once and the script can then get
-on with the business of processing requests as quickly as possible.
-
-I'm sure there are other execution models where the CGI processors
-are pre-forked. Executing the CGI script (e.g. through a scripting
-language) is presumably the most expensive operation, and doing that
-in advance won't be useful if you have large numbers of distinct users
-but they won't all be running CGIs all the time. In other words, if you
-had 300,000 users and 1 CGI script being run, you won't want to pre-fork
-300,000 processes each with a different uid. But if you had 300,000
-users and 200,000 different CGI scripts, you also have no choice but
-to fork and exec at request time, because there are too many different
-scripts.
-
-Nick.
+Hugh
