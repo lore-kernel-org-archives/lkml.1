@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763203AbYLCUlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763096AbYLCUkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763203AbYLCUlN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbYLCUfn
+	id S1763096AbYLCUkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759758AbYLCUee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:35:43 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:34035 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754878AbYLCUfl (ORCPT
+	Wed, 3 Dec 2008 15:34:34 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:34393 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756773AbYLCUec (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:35:41 -0500
-Message-ID: <4936EE71.5010200@gmail.com>
-Date: Wed, 03 Dec 2008 15:39:13 -0500
-From: Gregory Haskins <gregory.haskins.ml@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 3 Dec 2008 15:34:32 -0500
+Date: Wed, 3 Dec 2008 20:34:29 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jonathan McDowell <noodles@earth.li>
+Cc: corentincj@iksaif.net, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add EEE Bluetooth ACPI details
+Message-ID: <20081203203429.GA24103@srcf.ucam.org>
+References: <20081203203111.GA28234@earth.li>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu, rostedt@goodmis.org,
-       peterz@infradead.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] sched: track next-highest priority (was "Series
- short discription")
-References: <20081111142323.28477.41235.stgit@dev.haskins.net> <4936E587.40700@gmail.com> <4936EC83.2060900@oracle.com>
-In-Reply-To: <4936EC83.2060900@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081203203111.GA28234@earth.li>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> BTW, it sure would be nice if the Subject: gave some idea of
-> the, uh, subject of the patch series.
->
->   
+On Wed, Dec 03, 2008 at 08:31:11PM +0000, Jonathan McDowell wrote:
+> Although rfkill support for the EEE bluetooth device has been added to
+> 2.6.28-rc the appropriate ACPI accessor definitions were not added, so
+> the support was non functional. The patch below adds the get and set
+> accessors and has been verified to work on an EEE 901.
+> 
+> Signed-off-by: Jonathan McDowell <noodles@earth.li>
 
-Hi Randy,
-  Indeed.  I fat-fingered that one on the original patch submission and
-now it persists in the thread for all eternity for all who reply to the
-original ;)
+Acked-by: Matthew Garrett <mjg@redhat.com>
 
-I have fixed it above.  Sorry for the confusion.
-
--Greg
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
