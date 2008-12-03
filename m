@@ -1,93 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYLCPxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYLCPza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbYLCPxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 10:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLCPw6
+	id S1753340AbYLCPza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 10:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYLCPzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 10:52:58 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:45998 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751138AbYLCPw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 10:52:57 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.398
-Date: Wed, 3 Dec 2008 07:52:54 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: mmotm 2008-11-26-17-00 uploaded
-Message-ID: <20081203075254.3bcb3220@extreme>
-In-Reply-To: <20081128114257.a651b9ee.akpm@linux-foundation.org>
-References: <200811270101.mAR114rp016378@imap1.linux-foundation.org>
-	<200811282209.FDC95384.tLQJFOFOHFMSOV@I-love.SAKURA.ne.jp>
-	<20081128114257.a651b9ee.akpm@linux-foundation.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 10:55:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54735 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751098AbYLCPzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 10:55:20 -0500
+Date: Wed, 3 Dec 2008 07:53:53 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
+ on Toshiba R500 (bisected)
+In-Reply-To: <200812031220.36711.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812030735230.3256@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812030840.25539.rjw@sisk.pl> <200812030852.36437.rjw@sisk.pl> <200812031220.36711.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Nov 2008 11:42:57 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Fri, 28 Nov 2008 22:09:06 +0900 Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
-> 
-> > > The mm-of-the-moment snapshot 2008-11-26-17-00 has been uploaded to
-> > I got below bug.
-> > CentOS 5.2 (gcc (GCC) 4.1.2 20071124 (Red Hat 4.1.2-42)) on VMware Workstation 6.5.1.
-> > 
-> > [   24.978638] BUG: unable to handle kernel NULL pointer dereference at 00000004
-> > [   24.980541] IP: [<c056bfb7>] loopback_get_stats+0x26/0x51
-> > [   24.982191] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-> > [   24.982989] last sysfs file: /sys/class/firmware/microcode/loading
-> > [   24.982989] Modules linked in: rfkill input_polldev sbs sbshc battery floppy serio_raw rtc_cmos rtc_core rtc_lib ac button pcnet32 mii i2c_piix4 i2c_core mptspi mptscsih mptbase scsi_transport_spi ext3 jbd mbcache [last unloaded: microcode]
-> > [   24.982989] 
-> > [   24.982989] Pid: 2213, comm: sadc Not tainted (2.6.28-rc6-mm1 #1) VMware Virtual Platform
-> > [   24.982989] EIP: 0060:[<c056bfb7>] EFLAGS: 00010297 CPU: 0
-> > [   24.982989] EIP is at loopback_get_stats+0x26/0x51
-> > [   24.982989] EAX: 00000000 EBX: debf8848 ECX: 00000001 EDX: 00000001
-> > [   24.982989] ESI: 00000000 EDI: 00000000 EBP: de7b9efc ESP: de7b9eec
-> > [   24.982989]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > [   24.982989] Process sadc (pid: 2213, ti=de7b9000 task=de5fc0b0 task.ti=de7b9000)
-> > [   24.982989] Stack:
-> > [   24.982989]  21415ecf debf8800 ddc2fda0 ddc2fda0 de7b9f04 c05a71be de7b9f14 c05a7613
-> > [   24.982989]  c062db2c debf8800 de7b9f54 c049d8be 00001000 b7d58000 ddf08310 ddc2fdc0
-> > [   24.982989]  00000000 00000000 000000c8 00000001 00000000 00000000 00000000 fffffffb
-> > [   24.982989] Call Trace:
-> > [   24.982989]  [<c05a71be>] ? dev_get_stats+0x19/0x1b
-> > [   24.982989]  [<c05a7613>] ? dev_seq_show+0x21/0x80
-> > [   24.982989]  [<c049d8be>] ? seq_read+0x1f2/0x2d8
-> > [   24.982989]  [<c049d6cc>] ? seq_read+0x0/0x2d8
-> > [   24.982989]  [<c04b5b0f>] ? proc_reg_read+0x60/0x74
-> > [   24.982989]  [<c04b5aaf>] ? proc_reg_read+0x0/0x74
-> > [   24.982989]  [<c048a6da>] ? vfs_read+0x6d/0x91
-> > [   24.982989]  [<c048a930>] ? sys_read+0x3b/0x5d
-> > [   24.982989]  [<c04032d1>] ? sysenter_do_call+0x12/0x31
-> > [   24.982989] Code: 66 c0 56 c0 c3 55 83 c9 ff 89 e5 57 31 ff 56 31 f6 53 83 ec 04 8d 58 48 8b 80 20 03 00 00 89 45 f0 eb 0d 8b 45 f0 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba 50 96 79 c0 e8 72 a3 f7 ff 83 f8 1f 89 
-> > [   24.982989] EIP: [<c056bfb7>] loopback_get_stats+0x26/0x51 SS:ESP 0068:de7b9eec
-> > [   25.029067] ---[ end trace a599d5330cca1e8d ]---
-> 
-> At a guess I'd say that local variable `stats' in loopback_get_stats()
-> is null.
-> 
-> That code was recently changed in linux-next:
-> 
-> commit c02373bf2759dd210dc8c72c9c9b4a8f1c279cac
-> Author: Stephen Hemminger <shemminger@vyatta.com>
-> Date:   Wed Nov 19 21:46:18 2008 -0800
-> 
->     netdev: convert loopback to net_device_ops
->     
->     First device to convert over is the loopback device.
->     
->     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> but it's a bit hard to see how that change could cause the crash which
-> you observed.
 
-Could be that some other code is stomping on per-cpu variables?
+On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
+> 
+> Then, voila!, I'm not able to reproduce the hibernation-resume failure.
+> 
+> This appears to mean that:
+> (1) The sizes of the allocations and the locations of devices in the memory
+>     address space don't matter here.
+> (2) The presence and size of the prefetchable memory window don't matter here.
+> (3) What matters is the presence of non-prefetchable memory window on the
+>     supposedly transparent bridge.  Namely, if the window is there, resume from
+>     hibernation occasionally fails (again, the size of the window and the
+>     location of it in the memory address space doesn't seem to matter).
+
+That is indeed rather odd, and very interesting. 
+
+> So, apparently, on this box (and I guess on Frans' too) we could avoid the
+> problem if we didn't allocate the non-prefetchable memory window in
+> pci_bus_size_cardbus(), but I guess that wouldn't be generally correct.
+
+Well, I think that what _would_ be generally correct, and actually pretty 
+simple, is a rather different approach: just not sizing things behind a 
+transparent bridge AT ALL, since it really shouldn't matter.
+
+So if the appended patch fixes things for you, I think this might 
+potentially be the right approach.
+
+NOTE NOTE NOTE! This patch is entirely untested, as usual. I didn't check 
+that this is necessarily the correct place to test for this, but it 
+does make sense. IOW, it _feels_ like the rigth thing. However, even if it 
+fixes things for you, I think we're too late in the 2.6.28 cycle to really 
+apply this.
+
+So it really does make sense to consider a root bridge and a transparent 
+one to be equivalent here, since in both cases any bridge windows should 
+be irrelevant. Which is why I think this patch is interesting.
+
+> Also, I would be happy to actually understand _why_ this happens.
+
+100% agreed. I do _not_ see why it should ever matter how we set up a PCI 
+bridging window - whether prefetchable or not - on a bridge that should be 
+transparent. It sounds really odd. I'm wondering if there is something 
+we're missing here.
+
+But apart from the existence of the bridging window, the only thing that 
+it seems to affect is really just a minor layour issue. So it does seem 
+like it matters. Odd.
+
+			Linus
+
+---
+ drivers/pci/setup-bus.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index ea979f2..586451c 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -467,8 +467,12 @@ void __ref pci_bus_size_bridges(struct pci_bus *bus)
+ 		}
+ 	}
+ 
+-	/* The root bus? */
+-	if (!bus->self)
++	/*
++	 * We don't need to allocate PCI bridging windows
++	 * for a root bus (everything bridged) or for a
++	 * transparent one.
++	 */
++	if (!bus->self || bus->self->transparent)
+ 		return;
+ 
+ 	switch (bus->self->class >> 8) {
