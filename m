@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYLCWHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbYLCWHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbYLCWHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 17:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYLCWGN
+	id S1756566AbYLCWHx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 17:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbYLCWGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 17:06:13 -0500
-Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:35980
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755496AbYLCWGM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 17:06:12 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v2 4/4] sched: use highest_prio.next to optimize pull
-	operations
-To: mingo@elte.hu
-Cc: peterz@infradead.org, rostedt@goodmis.org, ghaskins@novell.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Date: Wed, 03 Dec 2008 17:09:51 -0500
-Message-ID: <20081203220951.11729.90528.stgit@dev.haskins.net>
-In-Reply-To: <20081203220628.11729.42174.stgit@dev.haskins.net>
-References: <20081203220628.11729.42174.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
+	Wed, 3 Dec 2008 17:06:18 -0500
+Received: from hobbit.corpit.ru ([81.13.33.150]:20972 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755681AbYLCWGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 17:06:16 -0500
+Message-ID: <493702CC.5030804@msgid.tls.msk.ru>
+Date: Thu, 04 Dec 2008 01:06:04 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 000/104] 2.6.27-stable review
+References: <20081203194725.GA8950@kroah.com>
+In-Reply-To: <20081203194725.GA8950@kroah.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently take the rq->lock for every cpu in an overload state during
-pull_rt_tasks().  However, we now have enough information via the
-highest_prio.[curr|next] fields to determine if there is any tasks of
-interest to warrant the overhead of the rq->lock, before we actually take
-it.  So we use this information to reduce lock contention during the
-pull for the case where the source-rq doesnt have tasks that preempt
-the current task.
+Greg KH wrote:
+[]
+> And yes, there are a lot of patches here, the big series are:
+...
+> 	- ext4 bugfixes
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+I wonder why updates for ext4, which is still marked
+"experimental" in kconfig, should go to -stable in
+the first place...  Given the number of bugs^Wpatches
+in this part of the kernel, and given the amount
+of current development in this area.  Just.. curious.
 
- kernel/sched_rt.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+Thanks!
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 7431d19..6072f24 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1220,6 +1220,18 @@ static int pull_rt_task(struct rq *this_rq)
- 			continue;
- 
- 		src_rq = cpu_rq(cpu);
-+
-+		/*
-+		 * Don't bother taking the src_rq->lock if the next highest
-+		 * task is known to be lower-priority than our current task.
-+		 * This may look racy, but if this value is about to go
-+		 * logically higher, the src_rq will push this task away.
-+		 * And if its going logically lower, we do not care
-+		 */
-+		if (src_rq->rt.highest_prio.next >=
-+		    this_rq->rt.highest_prio.curr)
-+			continue;
-+
- 		/*
- 		 * We can potentially drop this_rq's lock in
- 		 * double_lock_balance, and another CPU could
-
+/mjt
