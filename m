@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYLDACo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYLDADN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbYLDACo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 19:02:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbYLDACJ
+	id S1757504AbYLDADN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 19:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757285AbYLDACL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 19:02:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48400 "EHLO ogre.sisk.pl"
+	Wed, 3 Dec 2008 19:02:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48403 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756196AbYLDACG convert rfc822-to-8bit (ORCPT
+	id S1756510AbYLDACG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Dec 2008 19:02:06 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Gene Heskett" <gene.heskett@gmail.com>
+       "Al Viro" <viro@zeniv.linux.org.uk>, "Andreas Schwab" <schwab@suse.de>
 References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
 In-Reply-To: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <bfPM5B8Tx2B.A.D7.hqxNJB@chimera>
-Subject: [Bug #11906] 2.6.28-rc2 seems to fail at powering down the monitor when it should
+Message-ID: <bfPM5B8Tx2B.A.Z1.TqxNJB@chimera>
+Subject: [Bug #11925] cdrom: missing compat ioctls
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Wed,  3 Dec 2008 22:57:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +35,12 @@ from 2.6.27.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11906
-Subject		: 2.6.28-rc2 seems to fail at powering down the monitor when it should
-Submitter	: Gene Heskett <gene.heskett@gmail.com>
-Date		: 2008-10-30 6:39 (35 days old)
-References	: http://marc.info/?l=linux-kernel&m=122534879721424&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11925
+Subject		: cdrom: missing compat ioctls
+Submitter	: Andreas Schwab <schwab@suse.de>
+Date		: 2008-10-31 14:02 (34 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=33c2dca4957bd0da3e1af7b96d0758d97e708ef6
+Handled-By	: Andreas Schwab <schwab@suse.de>
+Patch		: http://marc.info/?l=linux-kernel&m=122548923531545&w=2
 
 
