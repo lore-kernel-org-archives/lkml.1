@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYLCMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbYLCMCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbYLCMBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYLCMBJ
+	id S1753602AbYLCMCW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYLCMCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:01:09 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:58292 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYLCMBI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:01:08 -0500
-X-BigFish: VPS-40(zz146fK1432R62a3L98dR936eQ1805Mzzzzz32i6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KBAUP9-02-1UD-01
-Date: Wed, 3 Dec 2008 12:59:54 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <ak@linux.intel.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] oprofile: fix CPU unplug panic in ppro_stop()
-Message-ID: <20081203115954.GH11656@erda.amd.com>
-References: <4934D3E1.1000507@cosmosbay.com> <20081202081729.GA5424@elte.hu>
+	Wed, 3 Dec 2008 07:02:12 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:16630 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbYLCMCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 07:02:11 -0500
+X-Greylist: delayed 1531 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Dec 2008 07:02:10 EST
+Date: Wed, 3 Dec 2008 12:36:36 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Anderson <andmike@linux.vnet.ibm.com>
+Cc: Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH 2.6.28-rc6] block: internal dequeue shouldn't start timer
+Message-ID: <20081203113636.GK18255@kernel.dk>
+References: <492F6DFC.3010103@kernel.org> <20081201234529.GA14025@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081202081729.GA5424@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Dec 2008 12:00:31.0593 (UTC) FILETIME=[BDB61590:01C9553E]
+In-Reply-To: <20081201234529.GA14025@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02.12.08 09:17:29, Ingo Molnar wrote:
-> 
-> * Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
-> > If oprofile statically compiled in kernel, a cpu unplug triggers
-> > a panic in ppro_stop(), because a NULL pointer is dereferenced.
-> >
-> > Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+On Mon, Dec 01 2008, Mike Anderson wrote:
+> Tejun Heo <tj@kernel.org> wrote:
+> > blkdev_dequeue_request() and elv_dequeue_request() are equivalent and
+> > both start the timeout timer.  Barrier code dequeues the original
+> > barrier request but doesn't passes the request itself to lower level
+> > driver, only broken down proxy requests; however, as the original
+> > barrier code goes through the same dequeue path and timeout timer is
+> > started on it.  If barrier sequence takes long enough, this timer
+> > expires but the low level driver has no idea about this request and
+> > oops follows.
+> > 
+> > Timeout timer shouldn't have been started on the original barrier
+> > request as it never goes through actual IO.  This patch unexports
+> > elv_dequeue_request(), which has no external user anyway, and makes it
+> > operate on elevator proper w/o adding the timer and make
+> > blkdev_dequeue_request() call elv_dequeue_request() and add timer.
+> > Internal users which don't pass the request to driver - barrier code
+> > and end_that_request_last() - are converted to use
+> > elv_dequeue_request().
+> > 
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
+> > Cc: Mike Anderson <andmike@linux.vnet.ibm.com>
 > > ---
-> > arch/x86/oprofile/op_model_ppro.c |    4 ++++
-> > 1 files changed, 4 insertions(+)
+> > Mike, this should fix the problem you were seeing (blk_add_timer on
+> > requests w/o REQ_STARTED set).
+> > 
 > 
-> > diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-> > index 716d26f..e9f80c7 100644
-> > --- a/arch/x86/oprofile/op_model_ppro.c
-> > +++ b/arch/x86/oprofile/op_model_ppro.c
-> > @@ -156,6 +156,8 @@ static void ppro_start(struct op_msrs const * const msrs)
-> >  	unsigned int low, high;
-> >  	int i;
-> >  
-> > +	if (!reset_value)
-> > +		return;
-> >
-> > 	for (i = 0; i < num_counters; ++i) {
-> >  		if (reset_value[i]) {
-> >  			CTRL_READ(low, high, msrs, i);
+> Yes this fixed the "w/o REQ_STARTED" error I was seeing on a distro kernel
+> and a mainline system. 
 
-The patch fixes the null pointer access and this ok. But the root
-cause seems to be in the cpu hotplug and initialization
-code. xxx_start() should not be called before xxx_setup_ctrs() or
-after xxx_shutdown(). Also, running only xxx_start() and xxx_stop() in
-the cpu notifier functions is not sufficient. There is at least some
-on_each_cpu code in nmi_setup() that should be called also in the cpu
-notifier functions. I have to review that code.
-
-[...]
-
-> It was absolutely unnecessary to add kmalloc to this rarely executed 
-> codepath - and the way it was added was absolutely horrible as well, it 
-> was tacked on in the middle of an existing codepath, instead of factoring 
-> it out nicely. Perfmon will eventually replace PMC management anyway, so 
-> there was no "this way it's cleaner" argument either. So this code should 
-> have been changed minimally, instead of slapping in a full kmalloc for a 
-> simple array extension from 2 to 4 entries ...
-
-Ingo, you are right that using kmalloc is unnecessary for
-reset_value. So, Andi, maybe you could make this code easier?
-
--Robert
+Thanks Tejun, this makes sense. I'll make sure it goes upstream asap.
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Jens Axboe
 
