@@ -1,95 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbYLCOeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbYLCOsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbYLCOeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 09:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYLCOeI
+	id S1752314AbYLCOsg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 09:48:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYLCOsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 09:34:08 -0500
-Received: from lucidpixels.com ([75.144.35.66]:49319 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751121AbYLCOeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 09:34:07 -0500
-Date: Wed, 3 Dec 2008 09:34:04 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: 3ware 9650SE-16ML w/XFS & RAID6: first impressions
-Message-ID: <alpine.DEB.1.10.0812030930450.22299@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Wed, 3 Dec 2008 09:48:23 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:52196 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbYLCOsW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 09:48:22 -0500
+From: Luotao Fu <l.fu@pengutronix.de>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Luotao Fu <lfu@pengutronix.de>
+Subject: [PATCH]  remove isa stuff from smc91x driver
+Date: Wed,  3 Dec 2008 15:48:21 +0100
+Message-Id: <1228315701-17240-1-git-send-email-l.fu@pengutronix.de>
+X-Mailer: git-send-email 1.5.6.5
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For read speed, it appears that there is some overhead (2x). With software 
-raid6 I used to get 1.0Gbyte/sec read speed, or at least 800MiB/s across the 
-entire array, now I only get 538MiB/s across the entire array. However, 
-write speed is improved. Before it was in the mid 400s for RAID6 and peaking at
-502MiB/s at the outer edge of the drives. For the write speed now, its around 
-620-640MiB/s at the end of the array and 580-620MiB/s going in further and 
-502MiB/s across the entire array. I always heard all of the horror stories with 3ware cards, it turns out they're not so bad after all.
+From: Luotao Fu <lfu@pengutronix.de>
 
-Here is the STR across a RAID6 array of 10 velociraptors configured as RAID6 with storsave=perform and blockdev --setra 65536 and using the XFS filesystem.
+ISA support in smc91x is incomplete. I doubt there're any smc91x isa card.
+This driver is greatly used on arm pxa platforms. Hence we remove the
+isa stuff from smc91x driver.
 
-p34:/t# /usr/bin/time dd if=/dev/zero of=really_big_file bs=1M
-dd: writing `really_big_file': No space left on device
-2288604+0 records in
-2288603+0 records out
-2399774998528 bytes (2.4 TB) copied, 4777.22 s, 502 MB/s
-Command exited with non-zero status 1
-1.47user 3322.83system 1:19:37elapsed 69%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (1major+506minor)pagefaults 0swaps
+Signed-off-by: Luotao Fu <lfu@pengutronix.de>
+---
+ drivers/net/smc91x.c |   36 ------------------------------------
+ drivers/net/smc91x.h |   13 -------------
+ 2 files changed, 0 insertions(+), 49 deletions(-)
 
-p34:/t# /usr/bin/time dd if=really_big_file of=/dev/null bs=1M
-2288603+1 records in
-2288603+1 records out
-2399774998528 bytes (2.4 TB) copied, 4457.55 s, 538 MB/s
-1.66user 1538.87system 1:14:17elapsed 34%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (4major+498minor)pagefaults 0swaps
-p34:/t#
+diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
+index 35c56ab..7827683 100644
+--- a/drivers/net/smc91x.c
++++ b/drivers/net/smc91x.c
+@@ -90,33 +90,6 @@ static const char version[] =
+ 
+ #include "smc91x.h"
+ 
+-#ifdef CONFIG_ISA
+-/*
+- * the LAN91C111 can be at any of the following port addresses.  To change,
+- * for a slightly different card, you can add it to the array.  Keep in
+- * mind that the array must end in zero.
+- */
+-static unsigned int smc_portlist[] __initdata = {
+-	0x200, 0x220, 0x240, 0x260, 0x280, 0x2A0, 0x2C0, 0x2E0,
+-	0x300, 0x320, 0x340, 0x360, 0x380, 0x3A0, 0x3C0, 0x3E0, 0
+-};
+-
+-#ifndef SMC_IOADDR
+-# define SMC_IOADDR		-1
+-#endif
+-static unsigned long io = SMC_IOADDR;
+-module_param(io, ulong, 0400);
+-MODULE_PARM_DESC(io, "I/O base address");
+-
+-#ifndef SMC_IRQ
+-# define SMC_IRQ		-1
+-#endif
+-static int irq = SMC_IRQ;
+-module_param(irq, int, 0400);
+-MODULE_PARM_DESC(irq, "IRQ number");
+-
+-#endif  /* CONFIG_ISA */
+-
+ #ifndef SMC_NOWAIT
+ # define SMC_NOWAIT		0
+ #endif
+@@ -2316,15 +2289,6 @@ static struct platform_driver smc_driver = {
+ 
+ static int __init smc_init(void)
+ {
+-#ifdef MODULE
+-#ifdef CONFIG_ISA
+-	if (io == -1)
+-		printk(KERN_WARNING
+-			"%s: You shouldn't use auto-probing with insmod!\n",
+-			CARDNAME);
+-#endif
+-#endif
+-
+ 	return platform_driver_register(&smc_driver);
+ }
+ 
+diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
+index a07cc93..066bab5 100644
+--- a/drivers/net/smc91x.h
++++ b/drivers/net/smc91x.h
+@@ -286,19 +286,6 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
+ 
+ #define SMC_IRQ_FLAGS		(0)
+ 
+-#elif	defined(CONFIG_ISA)
+-
+-#define SMC_CAN_USE_8BIT	1
+-#define SMC_CAN_USE_16BIT	1
+-#define SMC_CAN_USE_32BIT	0
+-
+-#define SMC_inb(a, r)		inb((a) + (r))
+-#define SMC_inw(a, r)		inw((a) + (r))
+-#define SMC_outb(v, a, r)	outb(v, (a) + (r))
+-#define SMC_outw(v, a, r)	outw(v, (a) + (r))
+-#define SMC_insw(a, r, p, l)	insw((a) + (r), p, l)
+-#define SMC_outsw(a, r, p, l)	outsw((a) + (r), p, l)
+-
+ #elif   defined(CONFIG_M32R)
+ 
+ #define SMC_CAN_USE_8BIT	0
+-- 
+1.5.6.5
 
-So what is the difference between protect, balance and perform?
-
-Protect
-p34:~# /opt/3ware/9500/tw_cli /c0/u1 set storsave=protect
-Setting Command Storsave Policy for unit /c0/u1 to [protect] ... Done.
-
-p34:/t# dd if=/dev/zero of=bigfile bs=1M count=20480
-20480+0 records in
-20480+0 records out
-21474836480 bytes (21 GB) copied, 60.6041 s, 354 MB/s
-
-Balance:
-p34:~# /opt/3ware/9500/tw_cli /c0/u1 set storsave=balance
-Setting Command Storsave Policy for unit /c0/u1 to [balance] ... Done.
-
-# dd if=/dev/zero of=bigfile bs=1M count=20480
-20480+0 records in
-20480+0 records out
-21474836480 bytes (21 GB) copied, 60.4287 s, 355 MB/s
-
-Perform
-p34:~# /opt/3ware/9500/tw_cli /c0/u1 set storsave=perform
-Warning: Unit /c0/u1 storsave policy is set to Performance which may cause data loss in the event of power failure.
-Do you want to continue ? Y|N [N]: Y
-Setting Command Storsave Policy for unit /c0/u1 to [perform] ... Done.
-
-p34:/t# dd if=/dev/zero of=bigfile bs=1M count=20480
-20480+0 records in
-20480+0 records out
-21474836480 bytes (21 GB) copied, 34.4955 s, 623 MB/s
-
---
-
-And yes, I have a BBU attached to this card and everything is on a UPS.
-Something I do not like though is 3ware states "TwinStor" "TwinStor" etc
-etc if you read a file it will read from both drives, maybe it does this but
-I have the I/O results to prove it-- it never breaks the barrier of a 
-single drive's STR. Whereas with SW RAID, you can read 2 or more files
-concurrently and you will get the bandwidth of both drives. I have a lot
-more testing to do, RAID0, RAID5, RAID6, RAID10, not sure when I will get
-to it but just thought I'd post this to show that 3ware cards aren't as
-slow as everyone says, at least not when attached to Velociraptors, a BBU
-and XFS as the filesystem.
-
-Justin.
