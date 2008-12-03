@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYLCGGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbYLCGGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYLCGGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 01:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYLCGGJ
+	id S1752865AbYLCGGj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 01:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbYLCGG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 01:06:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60071 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751977AbYLCGGH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 01:06:07 -0500
-Date: Tue, 2 Dec 2008 22:05:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: roel kluin <roel.kluin@gmail.com>
-Cc: davidsen@tmr.com, tytso@mit.edu, adilger@sun.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] ext3, ext4: do_split() fix loop, with obvious
- unsigned wrap
-Message-Id: <20081202220510.ddef1115.akpm@linux-foundation.org>
-In-Reply-To: <49343AD9.4020606@gmail.com>
-References: <49343AD9.4020606@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 01:06:27 -0500
+Received: from ns1.suse.de ([195.135.220.2]:34830 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754655AbYLCGG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 01:06:26 -0500
+Date: Tue, 2 Dec 2008 19:44:05 -0800
+From: Greg KH <gregkh@suse.de>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Avi Kivity <avi@redhat.com>,
+       David Woodhouse <dwmw2@infradead.org>, Alexander Graf <agraf@suse.de>,
+       Han Weidong <weidong.han@intel.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 0/12] Factor VT-d KVM functions into a generic API
+	(with multiple device assignment support)
+Message-ID: <20081203034405.GA23835@suse.de>
+References: <1228222883-17207-1-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1228222883-17207-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 01 Dec 2008 14:28:25 -0500 roel kluin <roel.kluin@gmail.com> wrote:
-
-> Fix loop, with obvious unsigned wrap
+On Tue, Dec 02, 2008 at 02:01:11PM +0100, Joerg Roedel wrote:
+> Hi,
 > 
+> this patch series makes the current KVM device passthrough code generic
+> enough so that other IOMMU implementation can also plug into this code.
+> It works by factoring the functions Vt-d code exports to KVM into a
+> generic interface which allows different backends.
+> 
+> This is the second version of the patchset. The most important change to
+> the previous version is that this patchset was rebased to the improved
+> API from Han Weidong which supports multiple devices per IOMMU domain.
+> 
+> For completeness, this series also includes the patches from Han with
+> some cleanups. So this patchset can be applied on current avi/master
+> tree.
 
-Please raise separate patches for ext3 and ext4 - their paths into the
-tree are different.
+Have you tried porting any of the current iommu controllers to this new
+framework to see if it works properly for them?
 
-> --- a/fs/ext3/namei.c
-> +++ b/fs/ext3/namei.c
-> @@ -1188,7 +1188,7 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
->  	/* Split the existing block in the middle, size-wise */
->  	size = 0;
->  	move = 0;
-> -	for (i = count-1; i >= 0; i--) {
-> +	for (i = count; i--; ) {
+thanks,
 
-So we're replacing an accidental for(;;) with something which can
-really terminate.  This is potentially a functional change, and it's
-perhaps telling us that we should replace it with a real for (;;) loop
-anyway.
-
-Plus we still have a local unsigned variable called "i".
-
-Ted, could you please take a look at this sometime, work out the best
-course of action?
-
-Thanks.
-
->  		/* is more than half of this entry in 2nd half of the block? */
->  		if (size + map[i].size/2 > blocksize/2)
->  			break;
-> diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-> index 63adcb7..34232c6 100644
-> --- a/fs/ext4/namei.c
-> +++ b/fs/ext4/namei.c
-> @@ -1198,7 +1198,7 @@ static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
->  	/* Split the existing block in the middle, size-wise */
->  	size = 0;
->  	move = 0;
-> -	for (i = count-1; i >= 0; i--) {
-> +	for (i = count; i--; ) {
->  		/* is more than half of this entry in 2nd half of the block? */
->  		if (size + map[i].size/2 > blocksize/2)
->  			break;
-
+greg k-h
