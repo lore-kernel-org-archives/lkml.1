@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYLCAGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbYLCAH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYLCAGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 19:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYLCAGJ
+	id S1755460AbYLCAH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 19:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYLCAHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 19:06:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43767 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752809AbYLCAGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 19:06:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Wed, 3 Dec 2008 01:05:53 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812021518160.3256@nehalem.linux-foundation.org> <200812030100.18400.rjw@sisk.pl>
-In-Reply-To: <200812030100.18400.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 19:07:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58225 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752624AbYLCAHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 19:07:13 -0500
+Date: Wed, 3 Dec 2008 01:18:12 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org,
+       manfred@colorfullife.com, dipankar@in.ibm.com, josht@linux.vnet.ibm.com,
+       schamp@sgi.com, niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       penberg@cs.helsinki.fi, tglx@linutronix.de
+Subject: Re: [PATCH -tip] v9 scalable classic RCU implementation
+Message-ID: <20081203001811.GF6703@one.firstfloor.org>
+References: <20081202222157.GA14911@linux.vnet.ibm.com> <20081202233144.GE6703@one.firstfloor.org> <20081202235145.GF6719@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812030105.53529.rjw@sisk.pl>
+In-Reply-To: <20081202235145.GF6719@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 3 of December 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 3 of December 2008, Linus Torvalds wrote:
+On Tue, Dec 02, 2008 at 03:51:45PM -0800, Paul E. McKenney wrote:
+> On Wed, Dec 03, 2008 at 12:31:44AM +0100, Andi Kleen wrote:
+> > > o	I now test with a more brutal random-selection online/offline
+> > > 	script (attached).  Probably more brutal than it needs to be
+> > > 	on the people reading it as well, but so it goes.
 > > 
-> > So are you saying that the unpatched kernel still reliably doesn't 
-> > hibernate for you, while the (arguably _incorrect_) patched kernel 
-> > reliably does hibernate?
+> > Does that cover both dynticks on and off? afaik the dynticks off problem
+> > I ran into on a 16 thread box and we discussed some time ago is still there.
 > 
-> Yes, I am.
+> The failures I see with this patch I also see with mainline.  Are you
+> seeing something with this patch that does not happen with mainline?
 
-To be more precise, the patched kernel resumes reliably (100% of the time)
-while the plain -rc7 doesn't.  Both hibernate (ie. create the image and save
-it) reliably.
+No, that is in mainline too. Sorry to be misleading. Do you see the
+same problems in your testing?
 
-Thanks,
-Rafael
+-Andi
+
+-- 
+ak@linux.intel.com
