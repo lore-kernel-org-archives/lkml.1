@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYLCDqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYLCDtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbYLCDqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 22:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYLCDqg
+	id S1755251AbYLCDtd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 22:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYLCDtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 22:46:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34203 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbYLCDqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 22:46:36 -0500
-Subject: Re: [RFC PATCH 0/3] A couple of feature requests to the unified
-	trace  buffer
-From: Steven Rostedt <srostedt@redhat.com>
-To: Jiaying Zhang <jiayingz@google.com>
-Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <5df78e1d0812021935h56c2e21am88477ad44a57ec78@mail.gmail.com>
-References: <5df78e1d0812021652w74c968bboba5e6457059b569b@mail.gmail.com>
-	 <1228272731.4886.26.camel@localhost.localdomain>
-	 <5df78e1d0812021935h56c2e21am88477ad44a57ec78@mail.gmail.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Tue, 02 Dec 2008 22:45:44 -0500
-Message-Id: <1228275944.4886.43.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Dec 2008 22:49:25 -0500
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4353 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbYLCDtZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 22:49:25 -0500
+Date: Wed, 3 Dec 2008 04:48:16 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       alex.shi@intel.com, Thomas Gleixner <tglx@tglx.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] Catch xtime_nsec underflows and fix them
+In-Reply-To: <1228273295.2866.189.camel@ymzhang>
+Message-ID: <Pine.LNX.4.64.0812030436590.24668@localhost.localdomain>
+References: <1228185281.7176.37.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0812022118330.24668@localhost.localdomain>
+ <1228273295.2866.189.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-132831531-1228276096=:24668"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Tue, 2008-12-02 at 19:35 -0800, Jiaying Zhang wrote:
+--8323328-132831531-1228276096=:24668
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> > If you check out my git tree:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> >
-> >  branch: tip/devel
-> >
-> > You will see that I started writing code to handle "splice". I have a
-> > retarded version that works right now (using the term "works" loosely
-> > here).
+Hi,
+
+On Wed, 3 Dec 2008, Zhang, Yanmin wrote:
+
+> > This doesn't explain the problem entirely, I considered a negative 
+> > xtime_nsec before, but xtime_nsec+offset should still be positive
+> ﻿xtime_nsec underflows after ﻿clocksource_adjust. Before ﻿clocksource_adjust,
+> ﻿xtime_nsec is a small positive.
 > 
-> This is great! I just checked out your git tree and will take a close look.
-> Do you plan to support mmap other than splice in the unified trace buffer?
-> I am not familiar with splice. Is it superior?
-> 
-> >
-> > Also, most of our development is done in the Ingo's tip tree:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> >
-> >  branch: master
-> >
-> > I see in the patches that you based this on 2.6.26.2? Not sure which
-> > version of the ring buffer you are using, but there has been lots of
-> > improvements to it already.
-> 
-> My patches are based on the unified ring buffer code I checked out
-> from git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> a week ago. I saw you posted two new patches today. I haven't merged
-> my patches with them yet.
+> When ﻿﻿xtime_nsec underflows at the first time, xtime.tv_nsec becomes -1.
+> Later on when the second tick arrives, below statement in the while loop
+>  clock->xtime_nsec += clock->xtime_interval;
+> will cause ﻿clock->xtime_nsec becomes positive again. So the second tick
+> appears a going-backward time.
 
-OK, I was nervous by seeing in your patches:
+Yes, but only by 1nsec, so normally it wouldn't be noticable.
 
-Index: linux-2.6.26.2/include/asm-generic/vmlinux.lds.h
-===================================================================
---- linux-2.6.26.2.orig/include/asm-generic/vmlinux.lds.h
-2008-11-25 11:32:26.000000000 -0800
-+++ linux-2.6.26.2/include/asm-generic/vmlinux.lds.h    2008-11-25
+> >  and 
+> > produce the correct result, at least I can't find anything in 
+> > getnstimeofday().
+> The testing uses vsyscall to get call gettimeofday. vsyscall_gtod_data.wall_time_nsec
+> is a u32 while timespec->tv_nsec is a signed long.
 
+Ok, I was missing this part, I looked at the 32bit version of 
+getnstimeofday() and there xtime.tv_nsec was correctly sign extended.
+To be safe for the future wall_time_nsec should also be a s32.
 
-My splice code is not in git yet. I can put it there tonight. But the
-ring buffer code needed to work with splice is there. The splice work is
-at the ftrace level, but you probably could use the same as well.
-
--- Steve
-
-
+bye, Roman
+--8323328-132831531-1228276096=:24668--
