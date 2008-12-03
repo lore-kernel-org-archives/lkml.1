@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYLCVas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYLCVdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbYLCVas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:30:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYLCVaP
+	id S1754908AbYLCVdr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYLCVdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:30:15 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:59005 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754934AbYLCVaN (ORCPT
+	Wed, 3 Dec 2008 16:33:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39172 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751886AbYLCVdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:30:13 -0500
-Date: Wed, 3 Dec 2008 16:22:55 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: Greg KH <greg@kroah.com>, stable@kernel.org, sfr@canb.auug.org.au,
-       ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 1/3] ath9k: Handle -ENOMEM on RX gracefully
-Message-ID: <20081203212255.GB4263@tuxdriver.com>
-References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com> <1228251082-11677-2-git-send-email-lrodriguez@atheros.com> <1228251082-11677-3-git-send-email-lrodriguez@atheros.com> <1228251082-11677-4-git-send-email-lrodriguez@atheros.com> <20081203001253.GC14943@kroah.com> <43e72e890812021620lccafachbd8e781d283095b7@mail.gmail.com> <20081203002404.GA22789@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203002404.GA22789@tuxdriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 3 Dec 2008 16:33:38 -0500
+Date: Wed, 3 Dec 2008 13:32:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       peterz@infradead.org, arjan@infradead.org, dave@linux.vnet.ibm.com,
+       containers@lists.osdl.org, ebiederm@xmission.com,
+       sukadev@linux.vnet.ibm.com, serue@us.ibm.com, srostedt@redhat.com
+Subject: Re: [PATCH 1/3] ftrace: graph of a single function
+Message-Id: <20081203133242.4e80bbe6.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0812031608560.29045@gandalf.stny.rr.com>
+References: <20081203203656.776893226@goodmis.org>
+	<20081203203828.920111079@goodmis.org>
+	<20081203130741.473c1262.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0812031608560.29045@gandalf.stny.rr.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 07:24:04PM -0500, John W. Linville wrote:
-> On Tue, Dec 02, 2008 at 04:20:32PM -0800, Luis R. Rodriguez wrote:
-> > On Tue, Dec 2, 2008 at 4:12 PM, Greg KH <greg@kroah.com> wrote:
-> > > I don't see this patch upstream in Linus's tree.  Am I just missing it
-> > > and if so, do you know the git commit id?
-> > 
-> > Nope sorry, John has yet to send his pending-fixes branch to davem and
-> > so forth, which would contain it AFAICT. Please correct me if I'm
-> > wrong John.
+On Wed, 3 Dec 2008 16:10:38 -0500 (EST)
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> It has been sent, and Dave sent his pull request to Linus today
-> (or maybe yesterday).  I'll try to dig-up the commit IDs tomorrow.
+> 
+> On Wed, 3 Dec 2008, Andrew Morton wrote:
+> 
+> > On Wed, 03 Dec 2008 15:36:57 -0500
+> > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > +static int g_show(struct seq_file *m, void *v)
+> > > +{
+> > > +	unsigned long *ptr = v;
+> > > +	char str[KSYM_SYMBOL_LEN];
+> > > +
+> > > +	if (!ptr)
+> > > +		return 0;
+> > > +
+> > > +	kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
+> > > +
+> > > +	seq_printf(m, "%s\n", str);
+> > 
+> > Can we use %pF here?
+> 
+> If there's a way to not print the "+offset".
 
-Hmmm...I seem to have sent this to -next instead.  Since it fixes an
-Oops, I guess I can requeue for 2.6.28.
+Could be added, I guess.  I wonder if it would be
+reused elsewhere.
 
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+> blk_unplug looks much nicer than blk_unplug+0x78/0x278
+
+<mutters something about in-kernel pretty-printers>
