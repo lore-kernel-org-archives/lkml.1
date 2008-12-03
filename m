@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbYLCUNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYLCUOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbYLCUNv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYLCTyh
+	id S1756480AbYLCUOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbYLCTyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:37 -0500
-Received: from kroah.org ([198.145.64.141]:60324 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:38 -0500
+Received: from kroah.org ([198.145.64.141]:60371 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754255AbYLCTyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:33 -0500
-Date: Wed, 3 Dec 2008 11:52:54 -0800
+	id S1754096AbYLCTyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:36 -0500
+Date: Wed, 3 Dec 2008 11:53:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,18 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bernhard Walle <bwalle@suse.de>,
-       Wim Van Sebroeck <wim@iguana.be>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Mingarelli <Thomas.Mingarelli@hp.com>,
-       Alan Cox <alan@redhat.com>
-Subject: [patch 059/104] WATCHDOG: hpwdt: set the mapped BIOS address space
-	as executable
-Message-ID: <20081203195254.GH8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: [patch 062/104] ACPI: EC: count interrupts only if called from
+	interrupt handler.
+Message-ID: <20081203195300.GK8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="watchdog-hpwdt-set-the-mapped-bios-address-space-as-executable.patch"
+Content-Disposition: inline; filename="acpi-ec-count-interrupts-only-if-called-from-interrupt-handler.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,99 +41,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Bernhard Walle <bwalle@suse.de>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-commit 060264133b946786b4b28a1ba79e6725eaf258f3 upstream.
+commit 7b4d469228a92a00e412675817cedd60133de38a upstream.
 
-The address provided by the SMBIOS/DMI CRU information is mapped via
-ioremap() in the virtual address space.  However, since the address is
-executed (i.e.  call'd), we need to set that pages as executable.
+fix 2.6.28 EC interrupt storm regression
 
-Without that, I get following oops on a HP ProLiant DL385 G2
-machine with BIOS from 05/29/2008 when I trigger crashdump:
-
-    BUG: unable to handle kernel paging request at ffffc20011090c00
-    IP: [<ffffc20011090c00>] 0xffffc20011090c00
-    PGD 12f813067 PUD 7fe6a067 PMD 7effe067 PTE 80000000fffd3173
-    Oops: 0011 [1] SMP
-    last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
-    CPU 1
-    Modules linked in: autofs4 ipv6 af_packet cpufreq_conservative cpufreq_userspace
-     cpufreq_powersave powernow_k8 fuse loop dm_mod rtc_cmos ipmi_si sg rtc_core i2c
-    _piix4 ipmi_msghandler bnx2 sr_mod container button i2c_core hpilo joydev pcspkr
-     rtc_lib shpchp hpwdt cdrom pci_hotplug usbhid hid ff_memless ohci_hcd ehci_hcd
-    uhci_hcd usbcore edd ext3 mbcache jbd fan ide_pci_generic serverworks ide_core p
-    ata_serverworks pata_acpi cciss ata_generic libata scsi_mod dock thermal process
-    or thermal_sys hwmon
-    Supported: Yes
-    Pid: 0, comm: swapper Not tainted 2.6.27.5-HEAD_20081111100657-default #1
-    RIP: 0010:[<ffffc20011090c00>]  [<ffffc20011090c00>] 0xffffc20011090c00
-    RSP: 0018:ffff88012f6f9e68  EFLAGS: 00010046
-    RAX: 0000000000000d02 RBX: 0000000000000000 RCX: 0000000000000000
-    RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-    RBP: ffff88012f6f9e98 R08: 666666666666660a R09: ffffffffa1006fc0
-    R10: 0000000000000000 R11: ffff88012f6f3ea8 R12: ffffc20011090c00
-    R13: ffff88012f6f9ee8 R14: 000000000000000e R15: 0000000000000000
-    FS:  00007ff70b29a6f0(0000) GS:ffff88012f6512c0(0000) knlGS:0000000000000000
-    CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-    CR2: ffffc20011090c00 CR3: 0000000000201000 CR4: 00000000000006e0
-    DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-    Process swapper (pid: 0, threadinfo ffff88012f6f2000, task ffff88007fa8a1c0)
-    Stack:  ffffffffa0f8502b 0000000000000002 ffffffff80738d50 0000000000000000
-     0000000000000046 0000000000000046 00000000fffffffe ffffffffa0f852ec
-     0000000000000000 ffffffff804ad9a6 0000000000000000 0000000000000000
-    Call Trace:
-    Inexact backtrace:
-
-     <NMI>  [<ffffffffa0f8502b>] ? asminline_call+0x2b/0x55 [hpwdt]
-     [<ffffffffa0f852ec>] hpwdt_pretimeout+0x3c/0xa0 [hpwdt]
-     [<ffffffff804ad9a6>] ? notifier_call_chain+0x29/0x4c
-     [<ffffffff802587e4>] ? notify_die+0x2d/0x32
-     [<ffffffff804abbdc>] ? default_do_nmi+0x53/0x1d9
-     [<ffffffff804abd90>] ? do_nmi+0x2e/0x43
-     [<ffffffff804ab552>] ? nmi+0xa2/0xd0
-     [<ffffffff80221ef9>] ? native_safe_halt+0x2/0x3
-     <<EOE>>  [<ffffffff8021345d>] ? default_idle+0x38/0x54
-     [<ffffffff8021359a>] ? c1e_idle+0x118/0x11c
-     [<ffffffff8020b3b5>] ? cpu_idle+0xa9/0xf1
-
-    Code: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff <55> 50 e8 00 00 00 00 58 48 2d 07 10 40 00 48 8b e8 58 e9 68 02
-    RIP  [<ffffc20011090c00>] 0xffffc20011090c00
-     RSP <ffff88012f6f9e68>
-    CR2: ffffc20011090c00
-    Kernel panic - not syncing: Fatal exception
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-Cc: Ingo Molnar <mingo@elte.hu>
-Acked-by: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
-Cc: Alan Cox <alan@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/hpwdt.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/acpi/ec.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -40,6 +40,7 @@
- #include <linux/bootmem.h>
- #include <linux/slab.h>
- #include <asm/desc.h>
-+#include <asm/cacheflush.h>
- 
- #define PCI_BIOS32_SD_VALUE		0x5F32335F	/* "_32_" */
- #define CRU_BIOS_SIGNATURE_VALUE	0x55524324
-@@ -394,6 +395,8 @@ static void __devinit dmi_find_cru(const
- 				smbios_cru64_ptr->double_offset;
- 			cru_rom_addr = ioremap(cru_physical_address,
- 				smbios_cru64_ptr->double_length);
-+			set_memory_x((unsigned long)cru_rom_addr & PAGE_MASK,
-+				smbios_cru64_ptr->double_length >> PAGE_SHIFT);
- 		}
- 	}
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -219,7 +219,8 @@ static void gpe_transaction(struct acpi_
+ 	goto unlock;
+ err:
+ 	/* false interrupt, state didn't change */
+-	++ec->curr->irq_count;
++	if (in_interrupt())
++		++ec->curr->irq_count;
+ unlock:
+ 	spin_unlock_irqrestore(&ec->curr_lock, flags);
  }
 
