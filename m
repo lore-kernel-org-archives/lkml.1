@@ -1,423 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYLCFZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYLCF0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbYLCFZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 00:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYLCFZT
+	id S1755950AbYLCF0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 00:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYLCF0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 00:25:19 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:44672 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbYLCFZR (ORCPT
+	Wed, 3 Dec 2008 00:26:39 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60911 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbYLCF0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 00:25:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=Exb9h2jG8mx6UY/qxk6hBB5/BANl7XlWaQtJTvuViPAAY9i8cWeKhlYc4CIaMcp/N
-	57BWivVM7UM8/9/VLjyJw==
+	Wed, 3 Dec 2008 00:26:38 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie
+Subject: [PATCH] vmscan: improve reclaim throuput to bail out patch
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20081130150849.8140.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <49316CAF.2010006@redhat.com> <20081130150849.8140.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081203140419.1D44.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <1228275733.4886.40.camel@localhost.localdomain>
-References: <5df78e1d0812021625q8a0d362i5d7a650543157864@mail.gmail.com>
-	 <5df78e1d0812021655p6819d893v113848ae7bf4b4ee@mail.gmail.com>
-	 <1228275733.4886.40.camel@localhost.localdomain>
-Date: Tue, 2 Dec 2008 21:25:14 -0800
-Message-ID: <5df78e1d0812022125i3bbe44b3r59bcc862d1f932c5@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/3] adding mmap support to the unified trace buffer
-From: Jiaying Zhang <jiayingz@google.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
-       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed,  3 Dec 2008 14:26:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 2, 2008 at 7:42 PM, Steven Rostedt <srostedt@redhat.com> wrote:
->
-> On Tue, 2008-12-02 at 16:55 -0800, Jiaying Zhang wrote:
->> Refer to the previous email
->> "[RFC PATCH 0/3] A couple of feature requests to the unified trace buffer".
->>
->> Add the mmap support to the unified trace buffer. The patch includes an
->> API that maps a page offset to a physical page in a trace buffer, APIs
->> that export the offset of the current produced/consumed data, and an
->> API to advance the consumed data pointer.
->>
->> Index: linux-2.6.26/include/linux/ring_buffer.h
->> ===================================================================
->> --- linux-2.6.26.orig/include/linux/ring_buffer.h       2008-12-01
->> 14:46:11.000000000 -0800
->> +++ linux-2.6.26/include/linux/ring_buffer.h    2008-12-01
->> 14:46:30.000000000 -0800
->> @@ -5,6 +5,7 @@
->>  #include <linux/seq_file.h>
->>
->>  struct ring_buffer;
->> +struct ring_buffer_per_cpu;
->>  struct ring_buffer_iter;
->>
->>  /*
->> @@ -108,6 +109,7 @@
->>
->>  int ring_buffer_empty(struct ring_buffer *buffer);
->>  int ring_buffer_empty_cpu(struct ring_buffer *buffer, int cpu);
->> +int ring_buffer_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer);
->>
->>  void ring_buffer_record_disable(struct ring_buffer *buffer);
->>  void ring_buffer_record_enable(struct ring_buffer *buffer);
->> @@ -124,4 +126,12 @@
->>        RB_FL_OVERWRITE         = 1 << 0,
->>  };
->>
->> +struct ring_buffer_per_cpu *ring_buffer_cpu(struct ring_buffer *buffer,
->> +               int cpu);
->> +struct page * ring_buffer_get_page(struct ring_buffer_per_cpu *cpu_buffer,
->> +               pgoff_t pgoff);
->> +void ring_buffer_advance_reader(struct ring_buffer_per_cpu *cpu_buffer,
->> +               int count_in);
->> +u32 ring_buffer_get_produced(struct ring_buffer_per_cpu *cpu_buffer);
->> +u32 ring_buffer_get_consumed(struct ring_buffer_per_cpu *cpu_buffer);
->>  #endif /* _LINUX_RING_BUFFER_H */
->> Index: linux-2.6.26/kernel/ktrace/ring_buffer.c
->> ===================================================================
->> --- linux-2.6.26.orig/kernel/ktrace/ring_buffer.c       2008-12-01
->> 14:46:11.000000000 -0800
->> +++ linux-2.6.26/kernel/ktrace/ring_buffer.c    2008-12-01
->> 16:03:01.000000000 -0800
->> @@ -131,7 +131,6 @@
->>  {
->>        if (bpage->page)
->>                free_page((unsigned long)bpage->page);
->> -       kfree(bpage);
->>  }
->>
->>  /*
->> @@ -155,6 +154,7 @@
->>        spinlock_t                      lock;
->>        struct lock_class_key           lock_key;
->>        struct list_head                pages;
->> +       struct buffer_page              *page_array;
->>        struct buffer_page              *head_page;     /* read from head */
->>        struct buffer_page              *tail_page;     /* write to tail */
->>        struct buffer_page              *commit_page;   /* commited pages */
->> @@ -186,6 +186,11 @@
->>        u64                             read_stamp;
->>  };
->>
->> +struct ring_buffer_per_cpu *ring_buffer_cpu(struct ring_buffer
->> *buffer, int cpu)
->> +{
->> +       return buffer->buffers[cpu];
->> +}
->> +
->>  #define RB_WARN_ON(buffer, cond)                               \
->>        do {                                                    \
->>                if (unlikely(cond)) {                           \
->> @@ -238,25 +243,26 @@
->>        return 0;
->>  }
->>
->> +#define BP_HEADER_SIZE  ALIGN(sizeof(struct buffer_page), cache_line_size())
->> +
->>  static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
->>                             unsigned nr_pages)
->>  {
->>        struct list_head *head = &cpu_buffer->pages;
->> -       struct buffer_page *page, *tmp;
->> +       struct buffer_page *page;
->> +       void *array;
->>        unsigned long addr;
->>        LIST_HEAD(pages);
->>        unsigned i;
->>
->> +       array = cpu_buffer->page_array;
->>        for (i = 0; i < nr_pages; i++) {
->> -               page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
->> -                                   GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
->> -               if (!page)
->> -                       goto free_pages;
->> -               list_add(&page->list, &pages);
->> +               page = (struct buffer_page *) (array + i * BP_HEADER_SIZE);
->> +               list_add_tail(&page->list, &pages);
->>
->>                addr = __get_free_page(GFP_KERNEL);
->>                if (!addr)
->> -                       goto free_pages;
->> +                       return -ENOMEM;
->
-> Hmm, where do you free the page added by __get_free_page?
->
->>                page->page = (void *)addr;
->>        }
->>
->> @@ -265,13 +271,6 @@
->>        rb_check_pages(cpu_buffer);
->>
->>        return 0;
->> -
->> - free_pages:
->> -       list_for_each_entry_safe(page, tmp, &pages, list) {
->> -               list_del_init(&page->list);
->> -               free_buffer_page(page);
->
-> free_buffer_page() also frees the real page that was added.
-Ah. Right. My mistake.
+Hi
 
->
->> -       }
->> -       return -ENOMEM;
->>  }
->>
->>  static struct ring_buffer_per_cpu *
->> @@ -292,22 +291,23 @@
->>        spin_lock_init(&cpu_buffer->lock);
->>        INIT_LIST_HEAD(&cpu_buffer->pages);
->>
->> -       page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
->> -                           GFP_KERNEL, cpu_to_node(cpu));
->> -       if (!page)
->> +       cpu_buffer->page_array = kzalloc_node(BP_HEADER_SIZE * buffer->pages,
->> +                       GFP_KERNEL, cpu_to_node(cpu));
->
-> There was talk about buffer->pages * BP_HEADER_SIZE growing larger than
-> what kalloc can handle. This is why I went with the link list.
->
->
->> +       if (!cpu_buffer->page_array)
->>                goto fail_free_buffer;
->>
->> +       page = (struct buffer_page *) ((void *) cpu_buffer->page_array +
->> +                       BP_HEADER_SIZE * (buffer->pages -1));
->
-> BTW, one of my patches moves some of the data into the front of the
-> page. That is, each page will now have meta data at the beginning. This
-> is to help with splice, that we do not need to bind the buffer_page with
-> the page itself for later use. What I moved into the page was the
-> timestamp and "commit" which is also the size of data on that page.
->
-> With that, do you still need to make an array here?
-Probably not. I can instead add a page offset field in the buffer page header.
-That will make this patch much shorter. I will pull your latest
-patches and work
-from that.
+I evaluate rvr bailout and skip-freeing patch in this week conteniously.
+I'd like to dump first output here.
 
->
->>        cpu_buffer->reader_page = page;
->>        addr = __get_free_page(GFP_KERNEL);
->>        if (!addr)
->> -               goto fail_free_reader;
->> +               goto fail_free_array;
->>        page->page = (void *)addr;
->> -
->>        INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
->>
->> -       ret = rb_allocate_pages(cpu_buffer, buffer->pages);
->> +       ret = rb_allocate_pages(cpu_buffer, buffer->pages - 1);
->>        if (ret < 0)
->> -               goto fail_free_reader;
->> +               goto fail_free_array;
->>
->>        cpu_buffer->head_page
->>                = list_entry(cpu_buffer->pages.next, struct buffer_page, list);
->> @@ -315,8 +315,8 @@
->>
->>        return cpu_buffer;
->>
->> - fail_free_reader:
->> -       free_buffer_page(cpu_buffer->reader_page);
->> + fail_free_array:
->> +       kfree(cpu_buffer->page_array);
->
-> Again, you have a huge memory leak here. Nothing freed the allocate
-> pages in the array.
->
->>
->>  fail_free_buffer:
->>        kfree(cpu_buffer);
->> @@ -335,6 +335,7 @@
->>                list_del_init(&page->list);
->>                free_buffer_page(page);
->>        }
->> +       kfree(cpu_buffer->page_array);
->>        kfree(cpu_buffer);
->>  }
->>
->> @@ -439,7 +440,7 @@
->>
->>        for (i = 0; i < nr_pages; i++) {
->>                BUG_ON(list_empty(&cpu_buffer->pages));
->> -               p = cpu_buffer->pages.next;
->> +               p = cpu_buffer->pages.prev;
->>                page = list_entry(p, struct buffer_page, list);
->>                list_del_init(&page->list);
->>                free_buffer_page(page);
->> @@ -497,7 +498,7 @@
->>  {
->>        struct ring_buffer_per_cpu *cpu_buffer;
->>        unsigned nr_pages, rm_pages, new_pages;
->> -       struct buffer_page *page, *tmp;
->> +       struct buffer_page *page, *array;
->>        unsigned long buffer_size;
->>        unsigned long addr;
->>        LIST_HEAD(pages);
->> @@ -544,23 +545,23 @@
->
-> Can you run the diff output with '-p' so that we can see the function
-> each change is in.
->
->>        new_pages = nr_pages - buffer->pages;
->>
->>        for_each_buffer_cpu(buffer, cpu) {
->> +               cpu_buffer = buffer->buffers[cpu];
->> +               array = kzalloc_node(BP_HEADER_SIZE * nr_pages,
->> +                       GFP_KERNEL, cpu_to_node(cpu));
->
-> There's no error check here.
->
->> +               memcpy(array, cpu_buffer->page_array,
->> +                               BP_HEADER_SIZE * buffer->pages);
->>                for (i = 0; i < new_pages; i++) {
->> -                       page = kzalloc_node(ALIGN(sizeof(*page),
->> -                                                 cache_line_size()),
->> -                                           GFP_KERNEL, cpu_to_node(cpu));
->> -                       if (!page)
->> -                               goto free_pages;
->> -                       list_add(&page->list, &pages);
->> +                       page = (struct buffer_page *) ((void *) array +
->> +                                       (buffer->pages + i) * BP_HEADER_SIZE);
->
-> This looks totally busted.
->
->>                        addr = __get_free_page(GFP_KERNEL);
->>                        if (!addr)
->> -                               goto free_pages;
->> +                               return -ENOMEM;
->
-> Again, nothing freed the pages that were allocated.
->
->>                        page->page = (void *)addr;
->> +                       list_add_tail(&page->list, &pages);
->>                }
->> -       }
->> -
->> -       for_each_buffer_cpu(buffer, cpu) {
->> -               cpu_buffer = buffer->buffers[cpu];
->>                rb_insert_pages(cpu_buffer, &pages, new_pages);
->> +               kfree(cpu_buffer->page_array);
->> +               cpu_buffer->page_array = array;
->>        }
->>
->>        BUG_ON(!list_empty(&pages));
->> @@ -570,13 +571,6 @@
->>        mutex_unlock(&buffer->mutex);
->>
->>        return size;
->> -
->> - free_pages:
->> -       list_for_each_entry_safe(page, tmp, &pages, list) {
->> -               list_del_init(&page->list);
->> -               free_buffer_page(page);
->> -       }
->> -       return -ENOMEM;
->>  }
->>
->>  static inline int rb_null_event(struct ring_buffer_event *event)
->> @@ -1299,6 +1293,11 @@
->>                  head->read == rb_page_commit(commit)));
->>  }
->>
->> +int ring_buffer_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
->> +{
->> +       return rb_per_cpu_empty(cpu_buffer);
->> +}
->> +
->>  /**
->>  * ring_buffer_record_disable - stop all writes into the buffer
->>  * @buffer: The ring buffer to stop writes to.
->> @@ -1638,6 +1637,58 @@
->>        cpu_buffer->reader_page->read += length;
->>  }
->>
->> +u32 ring_buffer_get_produced(struct ring_buffer_per_cpu *cpu_buffer)
->> +{
->> +       struct buffer_page *reader;
->> +       unsigned pgoff;
->> +
->> +       reader = rb_get_reader_page(cpu_buffer);
->> +       if (!reader)
->> +               return 0;
->> +       pgoff = ((void *) reader - (void *) cpu_buffer->page_array) /
->> +               BP_HEADER_SIZE;
->> +       return pgoff * BUF_PAGE_SIZE + rb_page_commit(reader);
->> +}
->> +
->> +u32 ring_buffer_get_consumed(struct ring_buffer_per_cpu *cpu_buffer)
->> +{
->> +       struct buffer_page *reader;
->> +       unsigned pgoff;
->> +
->> +       reader = rb_get_reader_page(cpu_buffer);
->> +       if (!reader)
->> +               return 0;
->> +       pgoff = ((void *) reader - (void *) cpu_buffer->page_array) /
->> +               BP_HEADER_SIZE;
->> +       return pgoff * BUF_PAGE_SIZE + reader->read;
->> +}
->
-> Note, the reader page is special. It is not actually in the ring buffer.
-> It sits outside the buffer and the reader can do anything it wants to it
-> (like move it to another file with a splice).  When it is done with the
-> contents on that page, it swaps the reader page with the next page in
-> the ring buffer.
->
-> In over write mode, the writer (producer) may overwrite the buffer over
-> and over again but it will never touch what is currently on the reader
-> page.
->
-> This is a must because we are going to make the writer (in the future)
-> lockless) and the reader will still have locks. Only one reader at a
-> time, but we can have many writers. Well, each writer is on its own CPU
-> so it is ok, although the writers are reentrent.
-Yes. I noticed this while implementing the mmap patch. So the current
-mmap can not cross multiple pages. I think the splice approach also
-has this limit. It can copy data only from a single page, i.e., the reader page.
 
-Jiaying
 
->
-> -- Steve
->
->> +
->> +void ring_buffer_advance_reader(struct ring_buffer_per_cpu *cpu_buffer,
->> +               int count)
->> +{
->> +       unsigned long flags;
->> +       struct buffer_page *reader;
->> +
->> +       spin_lock_irqsave(&cpu_buffer->lock, flags);
->> +       reader = cpu_buffer->reader_page;
->> +       reader->read += count;
->> +       spin_unlock_irqrestore(&cpu_buffer->lock, flags);
->> +}
->> +
->> +struct page * ring_buffer_get_page(struct ring_buffer_per_cpu *cpu_buffer,
->> +               pgoff_t pgoff)
->> +{
->> +       struct page *page;
->> +       struct buffer_page *bpage;
->> +
->> +       bpage = (struct buffer_page *) ((void *) cpu_buffer->page_array +
->> +                       pgoff * BP_HEADER_SIZE);
->> +       page = virt_to_page(bpage->page);
->> +       if (!page)
->> +               printk("error: fail to vmalloc page\n");
->> +       return page;
->> +}
->> +
->>  static void rb_advance_iter(struct ring_buffer_iter *iter)
->>  {
->>        struct ring_buffer *buffer;
->
->
+Rik, could you please review following?
+==
+vmscan bail out patch move nr_reclaimed variable to struct scan_control.
+Unfortunately, indirect access can easily happen cache miss.
+More unfortunately, Some architecture (e.g. ia64) don't access global
+variable so fast.
+
+if heavy memory pressure happend, that's ok.
+cache miss already plenty. it is not observable.
+
+but, if memory pressure is lite, performance degression is obserbable.
+
+
+I compared following three pattern (it was mesured 10 times each)
+
+hackbench 125 process 3000
+hackbench 130 process 3000
+hackbench 135 process 3000
+
+            2.6.28-rc6                       bail-out
+
+	125	130	135		125	130	135  
+      ==============================================================
+	71.866	75.86	81.274		93.414	73.254	193.382
+	74.145	78.295	77.27		74.897	75.021	80.17
+	70.305	77.643	75.855		70.134	77.571	79.896
+	74.288	73.986	75.955		77.222	78.48	80.619
+	72.029	79.947	78.312		75.128	82.172	79.708
+	71.499	77.615	77.042		74.177	76.532	77.306
+	76.188	74.471	83.562		73.839	72.43	79.833
+	73.236	75.606	78.743		76.001	76.557	82.726
+	69.427	77.271	76.691		76.236	79.371	103.189
+	72.473	76.978	80.643		69.128	78.932	75.736
+
+avg	72.545	76.767	78.534		76.017	77.03	93.256
+std	1.89	1.71	2.41		6.29	2.79	34.16
+min	69.427	73.986	75.855		69.128	72.43	75.736
+max	76.188	79.947	83.562		93.414	82.172	193.382
+
+
+about 4-5% degression.
+
+Then, this patch introduce temporal local variable.
+
+result:
+
+            2.6.28-rc6                       this patch
+
+num	125	130	135		125	130	135  
+      ==============================================================
+	71.866	75.86	81.274		67.302	68.269	77.161
+	74.145	78.295	77.27   	72.616	72.712	79.06
+	70.305	77.643	75.855  	72.475	75.712	77.735
+	74.288	73.986	75.955  	69.229	73.062	78.814
+	72.029	79.947	78.312  	71.551	74.392	78.564
+	71.499	77.615	77.042  	69.227	74.31	78.837
+	76.188	74.471	83.562  	70.759	75.256	76.6
+	73.236	75.606	78.743  	69.966	76.001	78.464
+	69.427	77.271	76.691  	69.068	75.218	80.321
+	72.473	76.978	80.643  	72.057	77.151	79.068
+                        
+avg	72.545	76.767	78.534 		70.425	74.2083	78.462
+std 	1.89	1.71	2.41    	1.66	2.34	1.00
+min 	69.427	73.986	75.855  	67.302	68.269	76.6
+max 	76.188	79.947	83.562  	72.616	77.151	80.321
+
+
+OK. the degression is disappeared.
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/vmscan.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1418,6 +1418,8 @@ static void shrink_zone(int priority, st
+ 	unsigned long nr_to_scan;
+ 	unsigned long percent[2];	/* anon @ 0; file @ 1 */
+ 	enum lru_list l;
++	unsigned long nr_reclaimed = sc->nr_reclaimed;
++	unsigned long swap_cluster_max = sc->swap_cluster_max;
+ 
+ 	get_scan_ratio(zone, sc, percent);
+ 
+@@ -1433,7 +1435,7 @@ static void shrink_zone(int priority, st
+ 			}
+ 			zone->lru[l].nr_scan += scan;
+ 			nr[l] = zone->lru[l].nr_scan;
+-			if (nr[l] >= sc->swap_cluster_max)
++			if (nr[l] >= swap_cluster_max)
+ 				zone->lru[l].nr_scan = 0;
+ 			else
+ 				nr[l] = 0;
+@@ -1452,12 +1454,11 @@ static void shrink_zone(int priority, st
+ 					nr[LRU_INACTIVE_FILE]) {
+ 		for_each_evictable_lru(l) {
+ 			if (nr[l]) {
+-				nr_to_scan = min(nr[l],
+-					(unsigned long)sc->swap_cluster_max);
++				nr_to_scan = min(nr[l], swap_cluster_max);
+ 				nr[l] -= nr_to_scan;
+ 
+-				sc->nr_reclaimed += shrink_list(l, nr_to_scan,
+-							zone, sc, priority);
++				nr_reclaimed += shrink_list(l, nr_to_scan,
++							    zone, sc, priority);
+ 			}
+ 		}
+ 		/*
+@@ -1468,11 +1469,13 @@ static void shrink_zone(int priority, st
+ 		 * with multiple processes reclaiming pages, the total
+ 		 * freeing target can get unreasonably large.
+ 		 */
+-		if (sc->nr_reclaimed > sc->swap_cluster_max &&
++		if (nr_reclaimed > swap_cluster_max &&
+ 		    priority < DEF_PRIORITY && !current_is_kswapd())
+ 			break;
+ 	}
+ 
++	sc->nr_reclaimed = nr_reclaimed;
++
+ 	/*
+ 	 * Even if we did not try to evict anon pages at all, we want to
+ 	 * rebalance the anon lru active/inactive ratio.
+
+
