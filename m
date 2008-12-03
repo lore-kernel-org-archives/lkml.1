@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbYLCMcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYLCMgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbYLCMcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLCMcG
+	id S1753320AbYLCMgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLCMgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:32:06 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:53897 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbYLCMcD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:32:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NLoSbMHBQSXaIzAdtjs4WPsk80/Ni/4YoDOn4R4EY/cr7m4PNf0GrS9FbeaIvfSdnN
-         pdLFPpbVPWut0IweeUoFxuWbhDWI0OOOglhRnrm0e+shK5t84NVlUBcLytPb2XveF/YG
-         CaNrCDjzPvEUzpxgclyJEvbyJ5rnsn9bzJuPM=
-Message-ID: <2375c9f90812030432m771984edkdd0c599bbae9bb3c@mail.gmail.com>
-Date: Wed, 3 Dec 2008 12:32:02 +0000
-From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
-To: "Johannes Weiner" <hannes@cmpxchg.org>
-Subject: Re: [Patch] uml: drop const qualifier for kernel_execve()
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net
-In-Reply-To: <20081203012051.GA8953@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <2375c9f90812021451hfd77292yf2463ca99d07b88e@mail.gmail.com>
-	 <20081203012051.GA8953@cmpxchg.org>
+	Wed, 3 Dec 2008 07:36:41 -0500
+Received: from styx.suse.cz ([82.119.242.94]:33768 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751789AbYLCMgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 07:36:40 -0500
+Subject: Re: [Patch V3 0/3] Enable irqs when waiting for rwlocks
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, tee@sgi.com,
+       mingo@elte.hu, linux-arch@vger.kernel.org
+In-Reply-To: <1228307117.9673.232.camel@twins>
+References: <20081104122405.046233722@attica.americas.sgi.com>
+	 <20081202161311.ae3376cb.akpm@linux-foundation.org>
+	 <20081203113744.GE8970@sgi.com>  <1228307117.9673.232.camel@twins>
+Content-Type: text/plain; charset=utf-8
+Organization: SUSE LINUX
+Date: Wed, 03 Dec 2008 13:36:38 +0100
+Message-Id: <1228307798.1009.1.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mB3CWMdq003320
 
-On Wed, Dec 3, 2008 at 1:20 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:> On Tue, Dec 02, 2008 at 10:51:09PM +0000, AmÃ©rico Wang wrote:>> UML implementation of kernel_execve() should not have const qualifier,>> because it will finally call do_execve() which doesn't have.>> And you made sure that do_execve() is correctly annotated?>
-Yes, I checked that.
-Thanks.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Peter Zijlstra pÃ­Å¡e v St 03. 12. 2008 v 13:25 +0100:
+> On Wed, 2008-12-03 at 05:37 -0600, Robin Holt wrote:
+> > > It's a bit regrettable to have different architectures behaving in
+> > > different ways.  It would be interesting to toss an x86_64
+> > > implementation into the grinder, see if it causes any problems, see if
+> > > it produces any tangible benefits.  Then other architectures might
+> > > follow.  Or not, depending on the results ;)
+> > 
+> > I personally expect SGI to work on this for x86_64 in the future.
+> > Once we actually start testing systems with 128 and above cpus, I
+> > would expect to see these performance issues needing to be addressed.
+> > Until then, it is just a theoretical.
+> 
+> Personally I consider this a ugly hack and would love to see people
+> solve the actual problem and move away from rwlock_t, its utter rubbish.
+
+Me too, but we don't have that clean and nice solution today, but what
+we _do_ have today are the machines which break badly when interrupts
+are disabled for the whole duration of taking a rwlock_t. :(
+
+Feel free to rewrite all users of rwlock_t. I'll appreciate it, oh so
+very much.
+
+Petr
+
