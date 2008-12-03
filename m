@@ -1,78 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbYLCJbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbYLCJi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbYLCJbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 04:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYLCJbI
+	id S1751897AbYLCJi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 04:38:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYLCJiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 04:31:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49100 "EHLO mx2.redhat.com"
+	Wed, 3 Dec 2008 04:38:46 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47353 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbYLCJbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 04:31:07 -0500
-Message-ID: <493651C4.50705@redhat.com>
-Date: Wed, 03 Dec 2008 10:30:44 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1750744AbYLCJiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 04:38:46 -0500
+Message-ID: <49364F93.7030007@windriver.com>
+Date: Wed, 03 Dec 2008 17:21:23 +0800
+From: Wang Liming <liming.wang@windriver.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: "J.R. Mauro" <jrm8005@gmail.com>
-CC: Christoph Bartelmus <lirc@bartelmus.de>, pavel@suse.cz, jonsmirl@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: In-kernel IR remote control support
-References: <AqQThtpZjFB@christoph> <4935B00D.5010302@redhat.com> <3aaafc130812021659x36701b19vc0d22f3c38471b65@mail.gmail.com>
-In-Reply-To: <3aaafc130812021659x36701b19vc0d22f3c38471b65@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/5] ftrace: replace raw_local_irq_save with local_irq_save
+References: <20081202203404.496794864@goodmis.org> <20081202203424.606667175@goodmis.org>
+In-Reply-To: <20081202203424.606667175@goodmis.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Dec 2008 09:37:21.0171 (UTC) FILETIME=[BD6BB630:01C9552A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+hi Ingo,
 
->> The only way to get out of this situation long-term is to get advanced
->> IR support into the mainline kernel.
-> 
-> We at least need a unified place for drivers, or unified support for
-> those drivers that must be put in userspace, a la usbfs and libusb.
+Where could I find define of "local_irq_save" for x86 if 
+CONFIG_TRACE_IRQFLAGS_SUPPORT is not defined?
 
-That isn't good enougth.  That unified place must be mainline (for the
-kernel stuff).  Userland bits can continue to live in the lirc package,
-that isn't a problem.
 
->> It is certainly a good thing to have only *one* way to handle IR
->> remotes.  But the kernel side of that way *must* be in mainline.
->> Everything else simply isn't going to fly.
-> 
-> One way or a hybrid way to address everyone's concerns. I don't see
-> why this has to be ALL kernel or ALL userspace.
-
-It hasn't to be all kernel or all userspace.
-But all kernel bits must be in mainline.
-
-> I would think it could
-> be both and still be clean.
-
-Sure.  We can even support both ways in the very same driver.  I'll grab
-a piece of hardware I know of as example: cx88-based TV cards:
-
- * The hardware gives you the raw IR samples.
- * The kernel takes them, decodes them and sends the input layer way
-   to user.  The remote bundled with the TV card works fine.  Which
-   is what probably 95% of the users need.
- * In theory you can decode *any* remote IR codes.  In practice you
-   can't because there is no way to get the raw IR samples to userspace
-   where lircd can handle them.
-
-Ok, what are the options to fix the latter?
-
- * lirc would do the trick.  Doesn't fly though due to cx88 being
-   mainline and lirc (kernel drivers) being out-of-tree.
- * input layer extension for raw IR codes.  Doesn't exist (yet?).
- * something completely different ...
-
-Then you can have cx88 register both within the input layer (for the
-bundled remote) and in the new raw-ir-codes subsystem.  Someone (say
-lircd) opening the raw IR interface will make the in-kernel decoding
-stop.  You are done ;)
-
-cheers,
-  Gerd
+Liming Wang
