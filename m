@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbYLCUMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbYLCUNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbYLCUMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbYLCTye
+	id S1756435AbYLCUNg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbYLCTyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:34 -0500
-Received: from kroah.org ([198.145.64.141]:60296 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:36 -0500
+Received: from kroah.org ([198.145.64.141]:60341 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753722AbYLCTya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:30 -0500
-Date: Wed, 3 Dec 2008 11:52:50 -0800
+	id S1754288AbYLCTye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:34 -0500
+Date: Wed, 3 Dec 2008 11:52:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeremy Kerr <jk@ozlabs.org>
-Subject: [patch 057/104] powerpc/spufs: Fix spinning in spufs_ps_fault on
-	signal
-Message-ID: <20081203195250.GF8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Bernhard Walle <bwalle@suse.de>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       Thomas Mingarelli <thomas.mingarelli@hp.com>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: [patch 060/104] WATCHDOG: hpwdt: Fix kdump when using hpwdt
+Message-ID: <20081203195256.GI8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-spufs-fix-spinning-in-spufs_ps_fault-on-signal.patch"
+Content-Disposition: inline; filename="watchdog-hpwdt-fix-kdump-when-using-hpwdt.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,42 +41,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jeremy Kerr <jk@ozlabs.org>
+From: Bernhard Walle <bwalle@suse.de>
 
-commit 606572634c3faa5b32a8fc430266e6e9d78d2179 upstream.
+commit 290172e79036fc25a22aaf3da4835ee634886183 upstream.
 
-Currently, we can end up in an infinite loop if we get a signal
-while the kernel has faulted in spufs_ps_fault. Eg:
+When the "hpwdt" module is loaded (even if the /dev/watchdog device is not
+opened), then kdump does not work. The panic kernel either does not start at
+all or crash in various places.
 
- alarm(1);
+The problem is that hpwdt_pretimeout is registered with register_die_notifier()
+with the highest possible priority. Because it returns NOTIFY_STOP, the
+crash_nmi_callback which is also registered with register_die_notifier()
+is never executed. This causes the shutdown of other CPUs to fail.
 
- write(fd, some_spu_psmap_register_address, 4);
+Reverting the order is no option: The crash_nmi_callback executes HLT
+and so never returns normally. Because of that, it must be executed as
+last notifier, which currently is done.
 
-- the write's copy_from_user will fault on the ps mapping, and
-signal_pending will be non-zero. Because returning from the fault
-handler will never clear TIF_SIGPENDING, so we'll just keep faulting,
-resulting in an unkillable process using 100% of CPU.
+So, that patch returns NOTIFY_OK to keep the crash_nmi_callback executed.
 
-This change returns VM_FAULT_SIGBUS if there's a fatal signal pending,
-letting us escape the loop.
-
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+Signed-off-by: Thomas Mingarelli <thomas.mingarelli@hp.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/platforms/cell/spufs/file.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/watchdog/hpwdt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/platforms/cell/spufs/file.c
-+++ b/arch/powerpc/platforms/cell/spufs/file.c
-@@ -390,6 +390,9 @@ static int spufs_ps_fault(struct vm_area
- 	if (offset >= ps_size)
- 		return VM_FAULT_SIGBUS;
+--- a/drivers/watchdog/hpwdt.c
++++ b/drivers/watchdog/hpwdt.c
+@@ -485,7 +485,7 @@ static int hpwdt_pretimeout(struct notif
+ 			"Management Log for details.\n");
+ 	}
  
-+	if (fatal_signal_pending(current))
-+		return VM_FAULT_SIGBUS;
-+
- 	/*
- 	 * Because we release the mmap_sem, the context may be destroyed while
- 	 * we're in spu_wait. Grab an extra reference so it isn't destroyed
+-	return NOTIFY_STOP;
++	return NOTIFY_OK;
+ }
+ 
+ /*
 
