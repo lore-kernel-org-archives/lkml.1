@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbYLCILl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYLCIMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754421AbYLCILl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 03:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYLCILd
+	id S1754489AbYLCIMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 03:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYLCIMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 03:11:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44047 "EHLO mx2.mail.elte.hu"
+	Wed, 3 Dec 2008 03:12:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56143 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbYLCILc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 03:11:32 -0500
-Date: Wed, 3 Dec 2008 09:11:18 +0100
+	id S1751349AbYLCIMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 03:12:12 -0500
+Date: Wed, 3 Dec 2008 09:11:51 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/5] ftrace: updates for tip
-Message-ID: <20081203081118.GD21006@elte.hu>
-References: <20081203045001.367443457@goodmis.org>
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/5] ftrace: print real return in dumpstack for
+	function graph
+Message-ID: <20081203081151.GE21006@elte.hu>
+References: <20081203045001.367443457@goodmis.org> <20081203045043.769665847@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081203045001.367443457@goodmis.org>
+In-Reply-To: <20081203045043.769665847@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,44 +39,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Ingo,
+> This does give a funny side effect in the stack tracer output:
 > 
-> Most of thes patches are improvements to function graph. I'm
-> working on making a way to pick a function to trace, which the
-> patch function entry patch is needed.
+>         Depth   Size      Location    (80 entries)
+>         -----   ----      --------
+>   0)     4144      48   save_stack_trace+0x2f/0x4d
+>   1)     4096     128   ftrace_call+0x5/0x2b
+>   2)     3968      16   mempool_alloc_slab+0x16/0x18
+>   3)     3952     384   return_to_handler+0x0/0x73
+>   4)     3568    -240   stack_trace_call+0x11d/0x209
+>   5)     3808     144   return_to_handler+0x0/0x73
+>   6)     3664    -128   mempool_alloc+0x4d/0xfe
+>   7)     3792     128   return_to_handler+0x0/0x73
+>   8)     3664     -32   scsi_sg_alloc+0x48/0x4a [scsi_mod]
 > 
-> The one ring buffer patch converts all variables called 'page' to
-> 'bpage' as per Andrew's request.
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: tip/devel
-> 
-> 
-> Steven Rostedt (5):
->       ftrace: add ftrace_graph_stop
->       ring-buffer: change page variables to bpage
->       ftrace: print real return in dumpstack for function graph
->       ftrace: function graph return for function entry
->       ftrace: add checks on ret stack in function graph
-> 
-> ----
->  arch/x86/kernel/dumpstack.c    |   34 ++++++++++-
->  arch/x86/kernel/dumpstack.h    |    2 +-
->  arch/x86/kernel/dumpstack_32.c |    5 +-
->  arch/x86/kernel/dumpstack_64.c |    7 +-
->  arch/x86/kernel/entry_32.S     |    3 +
->  arch/x86/kernel/entry_64.S     |    3 +
->  arch/x86/kernel/ftrace.c       |   34 +++++++++--
->  include/linux/ftrace.h         |    4 +-
->  kernel/trace/ftrace.c          |   15 ++++-
->  kernel/trace/ring_buffer.c     |  130 ++++++++++++++++++++--------------------
->  kernel/trace/trace.c           |    4 +-
->  kernel/trace/trace.h           |    2 +-
->  12 files changed, 161 insertions(+), 82 deletions(-)
+> As you can see, the real functions are now negative. This is due
+> to them not being found inside the stack.
 
-pulled into tip/tracing/ftrace, thanks Steve!
+Can we do something to output something less funny?
 
 	Ingo
