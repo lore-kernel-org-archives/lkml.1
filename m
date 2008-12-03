@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbYLCUQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbYLCUPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbYLCUQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:16:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYLCTyn
+	id S1755073AbYLCUPu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYLCTyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:43 -0500
-Received: from kroah.org ([198.145.64.141]:60423 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755488AbYLCTyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Dec 2008 14:54:41 -0500
-Date: Wed, 3 Dec 2008 11:53:21 -0800
+Received: from kroah.org ([198.145.64.141]:60411 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754480AbYLCTyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:40 -0500
+Date: Wed, 3 Dec 2008 11:53:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,123 +22,80 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, dann frazier <dannf@hp.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 066/104] net: Fix soft lockups/OOM issues w/ unix garbage
-	collector (CVE-2008-5300)
-Message-ID: <20081203195321.GO8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jack Morgenstein <jackm@dev.mellanox.co.il>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: [patch 065/104] IB/mlx4: Fix MTT leakage in resize CQ
+Message-ID: <20081203195318.GN8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-fix-soft-lockups-oom-issues-w-unix-garbage-collector.patch"
+Content-Disposition: inline; filename="ib-mlx4-fix-mtt-leakage-in-resize-cq.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: dann frazier <dannf@hp.com>
+From: Jack Morgenstein <jackm@dev.mellanox.co.il>
 
-commit 5f23b734963ec7eaa3ebcd9050da0c9b7d143dd3 upstream.
+commit 42ab01c31526ac1d06d193f81a498bf3cf2acfe4 upstream.
 
-This is an implementation of David Miller's suggested fix in:
-  https://bugzilla.redhat.com/show_bug.cgi?id=470201
+When resizing a CQ, MTTs associated with the old CQE buffer were not
+freed.  As a result, if any app used resize CQ repeatedly, all MTTs
+were eventually exhausted, which led to all memory registration
+operations failing until the driver is reloaded.
 
-It has been updated to use wait_event() instead of
-wait_event_interruptible().
+Once the RESIZE_CQ command returns successfully from FW, FW no longer
+accesses the old CQ buffer, so it is safe to deallocate the MTT
+entries used by the old CQ buffer.
 
-Paraphrasing the description from the above report, it makes sendmsg()
-block while UNIX garbage collection is in progress. This avoids a
-situation where child processes continue to queue new FDs over a
-AF_UNIX socket to a parent which is in the exit path and running
-garbage collection on these FDs. This contention can result in soft
-lockups and oom-killing of unrelated processes.
+Finally, if the RESIZE_CQ command fails, the MTTs allocated for the
+new CQEs buffer also need to be de-allocated.
 
-Signed-off-by: dann frazier <dannf@hp.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This fixes <https://bugs.openfabrics.org/show_bug.cgi?id=1416>.
+
+Signed-off-by: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/af_unix.h |    1 +
- net/unix/af_unix.c    |    2 ++
- net/unix/garbage.c    |   13 ++++++++++---
- 3 files changed, 13 insertions(+), 3 deletions(-)
+ drivers/infiniband/hw/mlx4/cq.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/include/net/af_unix.h
-+++ b/include/net/af_unix.h
-@@ -9,6 +9,7 @@
- extern void unix_inflight(struct file *fp);
- extern void unix_notinflight(struct file *fp);
- extern void unix_gc(void);
-+extern void wait_for_unix_gc(void);
- 
- #define UNIX_HASH_SIZE	256
- 
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -1341,6 +1341,7 @@ static int unix_dgram_sendmsg(struct kio
- 
- 	if (NULL == siocb->scm)
- 		siocb->scm = &tmp_scm;
-+	wait_for_unix_gc();
- 	err = scm_send(sock, msg, siocb->scm);
- 	if (err < 0)
- 		return err;
-@@ -1491,6 +1492,7 @@ static int unix_stream_sendmsg(struct ki
- 
- 	if (NULL == siocb->scm)
- 		siocb->scm = &tmp_scm;
-+	wait_for_unix_gc();
- 	err = scm_send(sock, msg, siocb->scm);
- 	if (err < 0)
- 		return err;
---- a/net/unix/garbage.c
-+++ b/net/unix/garbage.c
-@@ -80,6 +80,7 @@
- #include <linux/file.h>
- #include <linux/proc_fs.h>
- #include <linux/mutex.h>
-+#include <linux/wait.h>
- 
- #include <net/sock.h>
- #include <net/af_unix.h>
-@@ -91,6 +92,7 @@
- static LIST_HEAD(gc_inflight_list);
- static LIST_HEAD(gc_candidates);
- static DEFINE_SPINLOCK(unix_gc_lock);
-+static DECLARE_WAIT_QUEUE_HEAD(unix_gc_wait);
- 
- unsigned int unix_tot_inflight;
- 
-@@ -266,12 +268,16 @@ static void inc_inflight_move_tail(struc
- 		list_move_tail(&u->link, &gc_candidates);
- }
- 
--/* The external entry point: unix_gc() */
-+static bool gc_in_progress = false;
- 
--void unix_gc(void)
-+void wait_for_unix_gc(void)
+--- a/drivers/infiniband/hw/mlx4/cq.c
++++ b/drivers/infiniband/hw/mlx4/cq.c
+@@ -343,6 +343,7 @@ int mlx4_ib_resize_cq(struct ib_cq *ibcq
  {
--	static bool gc_in_progress = false;
-+	wait_event(unix_gc_wait, gc_in_progress == false);
-+}
+ 	struct mlx4_ib_dev *dev = to_mdev(ibcq->device);
+ 	struct mlx4_ib_cq *cq = to_mcq(ibcq);
++	struct mlx4_mtt mtt;
+ 	int outst_cqe;
+ 	int err;
  
-+/* The external entry point: unix_gc() */
-+void unix_gc(void)
-+{
- 	struct unix_sock *u;
- 	struct unix_sock *next;
- 	struct sk_buff_head hitlist;
-@@ -376,6 +382,7 @@ void unix_gc(void)
- 	/* All candidates should have been detached by now. */
- 	BUG_ON(!list_empty(&gc_candidates));
- 	gc_in_progress = false;
-+	wake_up(&unix_gc_wait);
+@@ -376,10 +377,13 @@ int mlx4_ib_resize_cq(struct ib_cq *ibcq
+ 			goto out;
+ 	}
  
-  out:
- 	spin_unlock(&unix_gc_lock);
++	mtt = cq->buf.mtt;
++
+ 	err = mlx4_cq_resize(dev->dev, &cq->mcq, entries, &cq->resize_buf->buf.mtt);
+ 	if (err)
+ 		goto err_buf;
+ 
++	mlx4_mtt_cleanup(dev->dev, &mtt);
+ 	if (ibcq->uobject) {
+ 		cq->buf      = cq->resize_buf->buf;
+ 		cq->ibcq.cqe = cq->resize_buf->cqe;
+@@ -406,6 +410,7 @@ int mlx4_ib_resize_cq(struct ib_cq *ibcq
+ 	goto out;
+ 
+ err_buf:
++	mlx4_mtt_cleanup(dev->dev, &cq->resize_buf->buf.mtt);
+ 	if (!ibcq->uobject)
+ 		mlx4_ib_free_cq_buf(dev, &cq->resize_buf->buf,
+ 				    cq->resize_buf->cqe);
 
