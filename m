@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbYLCNFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYLCNLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbYLCNFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 08:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYLCNFX
+	id S1753496AbYLCNLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 08:11:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYLCNK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 08:05:23 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56973 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYLCNFW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 08:05:22 -0500
-Date: Wed, 3 Dec 2008 13:04:17 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: nickpiggin@yahoo.com.au, davej@redhat.com, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 7/8] badpage: ratelimit print_bad_pte and bad_page
-In-Reply-To: <20081202165654.b84ffdad.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0812031253060.6817@blonde.anvils>
-References: <Pine.LNX.4.64.0812010032210.10131@blonde.site>
- <Pine.LNX.4.64.0812010045520.11401@blonde.site> <20081202165654.b84ffdad.akpm@linux-foundation.org>
+	Wed, 3 Dec 2008 08:10:56 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:24878 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751914AbYLCNK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 08:10:56 -0500
+Date: Wed, 3 Dec 2008 14:10:52 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Bob Tracy <rct@gherkin.frus.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.28-rc7
+Message-ID: <20081203131052.GS18255@kernel.dk>
+References: <1228237136.3331.17.camel@localhost.localdomain> <20081202192834.GA26259@gherkin.frus.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202192834.GA26259@gherkin.frus.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008, Andrew Morton wrote:
-> On Mon, 1 Dec 2008 00:46:53 +0000 (GMT)
-> Hugh Dickins <hugh@veritas.com> wrote:
-> > +	/*
-> > +	 * Allow a burst of 60 reports, then keep quiet for that minute;
-> > +	 * or allow a steady drip of one report per second.
-> > +	 */
-> > +	if (nr_shown == 60) {
-> > +		if (time_before(jiffies, resume)) {
-> > +			nr_unshown++;
-> > +			goto out;
-> > +		}
-> > +		if (nr_unshown) {
-> > +			printk(KERN_EMERG
-> > +				"Bad page state: %lu messages suppressed\n",
-> > +				nr_unshown);
-> > +			nr_unshown = 0;
-> > +		}
-> > +		nr_shown = 0;
-> > +	}
-> > +	if (nr_shown++ == 0)
-> > +		resume = jiffies + 60 * HZ;
-> > +
+On Tue, Dec 02 2008, Bob Tracy wrote:
+> On Tue, Dec 02, 2008 at 10:58:56AM -0600, James Bottomley wrote:
+> > This is quite a hefty update for so late. It includes a slew of block
+> > timer related fixes (we moved to using block timers when the 2.6.28
+> > merge window opened).  The bad news is that I still don't think we have
+> > all the block timer related bugs caught and fixed.  There's also a slew
+> > of zfcp (s390 driver) fixes and a few miscellaneous others (including
+> > another regression bugzilla fix, the hang in starved list processing).
 > 
-> gee, that's pretty elaborate.  There's no way of using the
-> possibly-enhanced ratelimit.h?
+> I'll give this a try.  None of the 2.6.28-rcX versions I've tried have
+> lasted more than a few hours at best before panicing with a block layer
+> timeout.  My test system uses the aic7xxx driver with a 2930U2 adapter.
+> I didn't report the regression relative to 2.6.27 because I figured
+> something this major was going to get caught without another "me too"
+> report that I was too busy to generate and provide the necessary
+> diagnostic and followup on anyway :-).
 
-Thanks a lot for the pointer: I'd browsed around kernel/printk.c and
-not found what I needed, hadn't realized there's a lib/ratelimit.c.
+Please also try -git tomorrow, with this and the block pull hopefully
+going in later today, I hope that's the end of it. If not, please do
+write a proper report!
 
-It looks eerily like what I'm trying to do, just a less specific
-missed/suppressed message, never mind that.  I'll try making a patch
-later to replace this (in its subsequent KERN_ALERT form) by that -
-in doing so, perhaps I'll encounter a problem, but should be good.
+-- 
+Jens Axboe
 
-Hugh
