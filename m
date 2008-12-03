@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYLCUC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYLCUDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbYLCUC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYLCTwZ
+	id S1756933AbYLCUDI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:03:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYLCTw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:52:25 -0500
-Received: from kroah.org ([198.145.64.141]:59829 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:52:29 -0500
+Received: from kroah.org ([198.145.64.141]:59862 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752430AbYLCTwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:52:23 -0500
-Date: Wed, 3 Dec 2008 11:50:48 -0800
+	id S1754936AbYLCTw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:52:27 -0500
+Date: Wed, 3 Dec 2008 11:50:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,170 +22,87 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
+       alan@lxorguk.ukuu.org.uk, kristen.c.accardi@intel.com, matthew@wil.cx,
        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
        Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 030/104] PCI Hotplug: serialize pci_hp_register and
-	pci_hp_deregister
-Message-ID: <20081203195048.GE8950@kroah.com>
+Subject: [patch 032/104] PCI, PCI Hotplug: introduce slot_name helpers
+Message-ID: <20081203195052.GG8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-hotplug-serialize-pci_hp_register-and-pci_hp_deregister.patch"
+Content-Disposition: inline; filename="pci-pci-hotplug-introduce-slot_name-helpers.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+From: Alex Chiang <achiang@hp.com>
 
-commit 95cb9093960b6249fdbe7417bf513a1358aaa51a upstream.
+commit 0ad772ec464d3fcf9d210836b97e654f393606c4 upstream
 
-Convert the pci_hotplug_slot_list_lock, which only protected the
-list of hotplug slots, to a pci_hp_mutex which now protects both
-interfaces.
+In preparation for cleaning up the various hotplug drivers
+such that they don't have to manage their own 'name' parameters
+anymore, we provide the following convenience functions:
 
-Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+	pci_slot_name()
+	hotplug_slot_name()
+
+These helpers will be used by individual hotplug drivers.
+
+Cc: kristen.c.accardi@intel.com
+Cc: matthew@wil.cx
+Acked-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/hotplug/pci_hotplug_core.c |   51 ++++++++++++++++++---------------
- 1 file changed, 28 insertions(+), 23 deletions(-)
+ drivers/pci/slot.c          |    2 +-
+ include/linux/pci.h         |    5 +++++
+ include/linux/pci_hotplug.h |    5 +++++
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -37,6 +37,7 @@
- #include <linux/init.h>
- #include <linux/mount.h>
- #include <linux/namei.h>
-+#include <linux/mutex.h>
- #include <linux/pci.h>
- #include <linux/pci_hotplug.h>
- #include <asm/uaccess.h>
-@@ -61,7 +62,7 @@ static int debug;
- //////////////////////////////////////////////////////////////////
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -116,7 +116,7 @@ static int rename_slot(struct pci_slot *
+ 	int result = 0;
+ 	char *slot_name;
  
- static LIST_HEAD(pci_hotplug_slot_list);
--static DEFINE_SPINLOCK(pci_hotplug_slot_list_lock);
-+static DEFINE_MUTEX(pci_hp_mutex);
+-	if (strcmp(kobject_name(&slot->kobj), name) == 0)
++	if (strcmp(pci_slot_name(slot), name) == 0)
+ 		return result;
  
- /* these strings match up with the values in pci_bus_speed */
- static char *pci_bus_speed_strings[] = {
-@@ -530,16 +531,12 @@ static struct hotplug_slot *get_slot_fro
- 	struct hotplug_slot *slot;
- 	struct list_head *tmp;
+ 	slot_name = make_slot_name(name);
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -64,6 +64,11 @@ struct pci_slot {
+ 	struct kobject kobj;
+ };
  
--	spin_lock(&pci_hotplug_slot_list_lock);
- 	list_for_each (tmp, &pci_hotplug_slot_list) {
- 		slot = list_entry (tmp, struct hotplug_slot, slot_list);
- 		if (strcmp(slot->name, name) == 0)
--			goto out;
-+			return slot;
- 	}
--	slot = NULL;
--out:
--	spin_unlock(&pci_hotplug_slot_list_lock);
--	return slot;
-+	return NULL;
- }
- 
- /**
-@@ -570,9 +567,13 @@ int pci_hp_register(struct hotplug_slot 
- 		return -EINVAL;
- 	}
- 
-+	mutex_lock(&pci_hp_mutex);
++static inline const char *pci_slot_name(const struct pci_slot *slot)
++{
++	return kobject_name(&slot->kobj);
++}
 +
- 	/* Check if we have already registered a slot with the same name. */
--	if (get_slot_from_name(name))
--		return -EEXIST;
-+	if (get_slot_from_name(name)) {
-+		result = -EEXIST;
-+		goto out;
-+	}
+ /* File state for mmap()s on /proc/bus/pci/X/Y */
+ enum pci_mmap_state {
+ 	pci_mmap_io,
+--- a/include/linux/pci_hotplug.h
++++ b/include/linux/pci_hotplug.h
+@@ -165,6 +165,11 @@ struct hotplug_slot {
+ };
+ #define to_hotplug_slot(n) container_of(n, struct hotplug_slot, kobj)
  
- 	/*
- 	 * No problems if we call this interface from both ACPI_PCI_SLOT
-@@ -580,13 +581,15 @@ int pci_hp_register(struct hotplug_slot 
- 	 * pci_slot, the interface will simply bump the refcount.
- 	 */
- 	pci_slot = pci_create_slot(bus, slot_nr, name, slot);
--	if (IS_ERR(pci_slot))
--		return PTR_ERR(pci_slot);
-+	if (IS_ERR(pci_slot)) {
-+		result = PTR_ERR(pci_slot);
-+		goto cleanup;
-+	}
- 
- 	if (pci_slot->hotplug) {
- 		dbg("%s: already claimed\n", __func__);
--		pci_destroy_slot(pci_slot);
--		return -EBUSY;
-+		result = -EBUSY;
-+		goto cleanup;
- 	}
- 
- 	slot->pci_slot = pci_slot;
-@@ -597,21 +600,21 @@ int pci_hp_register(struct hotplug_slot 
- 	 */
- 	if (strcmp(kobject_name(&pci_slot->kobj), name)) {
- 		result = kobject_rename(&pci_slot->kobj, name);
--		if (result) {
--			pci_destroy_slot(pci_slot);
--			return result;
--		}
-+		if (result)
-+			goto cleanup;
- 	}
- 
--	spin_lock(&pci_hotplug_slot_list_lock);
- 	list_add(&slot->slot_list, &pci_hotplug_slot_list);
--	spin_unlock(&pci_hotplug_slot_list_lock);
- 
- 	result = fs_add_slot(pci_slot);
- 	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
- 	dbg("Added slot %s to the list\n", name);
--
-+out:
-+	mutex_unlock(&pci_hp_mutex);
- 	return result;
-+cleanup:
-+	pci_destroy_slot(pci_slot);
-+	goto out;
- }
- 
- /**
-@@ -631,13 +634,14 @@ int pci_hp_deregister(struct hotplug_slo
- 	if (!hotplug)
- 		return -ENODEV;
- 
-+	mutex_lock(&pci_hp_mutex);
- 	temp = get_slot_from_name(hotplug->name);
--	if (temp != hotplug)
-+	if (temp != hotplug) {
-+		mutex_unlock(&pci_hp_mutex);
- 		return -ENODEV;
-+	}
- 
--	spin_lock(&pci_hotplug_slot_list_lock);
- 	list_del(&hotplug->slot_list);
--	spin_unlock(&pci_hotplug_slot_list_lock);
- 
- 	slot = hotplug->pci_slot;
- 	fs_remove_slot(slot);
-@@ -646,6 +650,7 @@ int pci_hp_deregister(struct hotplug_slo
- 	hotplug->release(hotplug);
- 	slot->hotplug = NULL;
- 	pci_destroy_slot(slot);
-+	mutex_unlock(&pci_hp_mutex);
- 
- 	return 0;
- }
++static inline const char *hotplug_slot_name(const struct hotplug_slot *slot)
++{
++	return pci_slot_name(slot->pci_slot);
++}
++
+ extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr,
+ 			   const char *name);
+ extern int pci_hp_deregister(struct hotplug_slot *slot);
 
