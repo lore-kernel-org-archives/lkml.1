@@ -1,66 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYLCVlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbYLCVlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbYLCVlI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYLCVkz
+	id S1755681AbYLCVlb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYLCVlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:40:55 -0500
-Received: from fmmailgate05.web.de ([217.72.192.243]:44669 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbYLCVky convert rfc822-to-8bit (ORCPT
+	Wed, 3 Dec 2008 16:41:19 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:28827 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753665AbYLCVlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:40:54 -0500
-Date: Wed, 03 Dec 2008 22:40:51 +0100
-Message-Id: <529873894@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Subject: odd habits with binary blobs.....
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19DYjY69D9KTDoyBpaTHg5jm5tdFWfmWDzHdTyNvsVYg8WVK
- 2NgArZSwXq8xB/8OXcFnEXhI2LHVz0IKOdNQL+AK/s6W1kJI2s=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Wed, 3 Dec 2008 16:41:18 -0500
+X-YMail-OSG: JXhbmN0VM1mubRGA5HIQJPnfmSp6bUZPCKw6ETV1LGhwh4qNcDruFnOkdj1Mm8MnRDFr1mVOYWf1uyt9.TcPuSabHuG1ifG7eZi9DEuVoyvi_B8wTYd58qy4nKP29MdHUovE3.2wePEN91wnUuLn5O7CtOYIxAr7GD_WpvAhmmNr4sEXxpUcGDPKCMk-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct
+	scsi_device->request_queue
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <49366289.2010500@panasas.com>
+References: <1228265348.6229.130.camel@haakon2.linux-iscsi.org>
+	 <49366289.2010500@panasas.com>
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 13:40:47 -0800
+Message-Id: <1228340447.4153.53.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello, 
+On Wed, 2008-12-03 at 12:42 +0200, Boaz Harrosh wrote:
+> Nicholas A. Bellinger wrote:
+> >>From 1b14b5e1fc9a7074322b1015bb86eca2a8ef4560 Mon Sep 17 00:00:00 2001
+> > From: Nicholas Bellinger <nab@linux-iscsi.org>
+> > Date: Tue, 2 Dec 2008 16:30:51 -0800
+> > Subject: [PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct scsi_device->request_queue
+> > 
+> > This patch begins to remove the usage of scsi_execute_async() from the PSCSI
+> > subsystem plugin for v3.0 generic target core.
+> > 
+> > It uses blk_get_request() to allocate struct request in pscsi_blk_get_request()
+> > and used by all CDB types and both memory backing types.  struct request is then
+> > released with __blk_put_request() in the struct request->end_io() context in
+> > pscsi_req_done().
+> > 
+> > Also, this patch adds a temporary EXPORT_SYMBOL_GPL() for
+> > scsi/drivers/scsi_lib.c:scsi_req_map_sg() (which will also be going away at
+> > some point).  At that point, the upstream struct scatterlist and/or
+> > struct page -> struct request mapping for usage with struct scsi_device->request_queue
+> > will be dropped into place in drivers/lio-core/target_core_pscsi.c:pscsi_map_task_SG()
+> > 
+> > Tested on v2.6.28-rc7 32-bit x86 with virtual VMware TYPE_DISK on virtual MPT-Fusion
+> > 
+> > Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+> > ---
+> >  drivers/lio-core/target_core_pscsi.c |  206 +++++++++++++++++++++++++---------
+> >  drivers/lio-core/target_core_pscsi.h |    5 +-
+> >  drivers/scsi/scsi_lib.c              |    6 +-
+> >  3 files changed, 161 insertions(+), 56 deletions(-)
+> > 
+> 
+> This patch confuses me. Is this the same one posted few days ago minus the double-free
+> bug? It would be nice if you said that somewhere. Like [PATCH ver2] ...
+> 
 
-i gave r1soft`s new/free "hot copy" a try today and .... failed:
+<nod> sorry for the confusion.
 
-vserver2:/tmp/usr/sbin # ./hcp-setup
-Gathering kernel information
-Gathering kernel information complete.
-Error: A network error occurred connecting to 'kmod32.r1soft.com'
+> But what confuses me are the previous two patches you sent that makes this patch not
+> compile. (Rename of se_task_t->task_buf => se_task_t->task_sg).
+> 
 
-what a pain....trying to setup a linux kernel module, the installer wants to phone home - and fails.
+Ok yes, this one is the 2nd rev of the original patch to remove the
+usage of scsi_execute_async().  The other two are for getting rid of the
+casts in between target_core_mod se_task_t scatterlist memory and
+mapping into target core subsystem plugins (PSCSI, IBLOCK, FILEIO)
+following your recommendations. 
 
-but it`s even worse - http://wiki.r1soft.com/display/LTR1D/hcp-setup tells:
+> The previous two patches are not bisectable btw. Numbering a patchset could maybe help
+> a little, but will not help here, whichever way you order them they will only compile at
+> the very end (Well not even that, not with this one applied).
+> 
 
-BUILDING HOT COPY DRIVER FROM SOURCE
+<nod, point taken.
 
-hcp-setup will tar up your kernel source tree or headers and upload them to an R1Soft build server over HTTPS using XML-RPC. Once your system's kernel headers or source have been uploaded the R1Soft build server will compile a Hot Copy device driver as a kernel module and hcp-setup will automatically download it to your system.
+> Sorry but I'm unable to farther review any of the patches. Please re-post everything
+> as a patchset so I can understand whats going on.
+> 
 
-In order for hcp-setup to work your Linux server must have HTTPS Internet access to kmod32.r1soft.com (32-bit systems) and kmod64.r1soft.com (64-bit systems)
+Ok, here commit diffs for the three patches that affect target_core_mod:
+
+[PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct scsi_device->request_queue
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=1b14b5e1fc9a7074322b1015bb86eca2a8ef4560
+
+[PATCH] [Target_Core_Mod]: Convert to se_task_t->task_sg usage in core and subsystem plugins
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=41e98940da5ffaf7e31fce8d1f706e3e0a679654
+
+[PATCH] [Target_Core_Mod]: Update PSCSI, IBLOCK, FILEIO and RAMDISK for se_task_t->task_sg
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=e030ca2b9bbb81402b3ed669bb5e1d54fed0dff7
 
 
-how weird is THAT?
+> (And please give the URL of the git tree they are based on in each [PATCH 00/xx] mail.
+> Usually one states what the patchset is based on, eg. "based on scsi-misc as of ..."
+> but we all know where scsi-misc is)
+> 
 
-did anybody ever come across such "build binary blobs remotely" system ?
+Ok, these patches are against the development lio-core-2.6.git (v3.0)
+tree (currently at v2.6.28-rc7) which tracks linux-2.6.git.  I will be
+sure to include this in futher postings.  
 
+Also, I am posting the patches related to the generic target core
+(target_core_mod) and plugins that hook into Linux storage subsystems
+(PSCSI, IBLOCK, FILEIO) to start getting some feedback on the current
+work in the v3.0 development tree.  The code in
+lio-core-2.6.git/drivers/lio-core is the ConfigFS enabled generic target
+engine, subsystem plugins, and traditional LIO iSCSI target engine that
+will be submitted for upstream inclusion (most likely in that order) as
+work continues, sometime in the v2.6.29 timeframe.
 
-ok, disqualified.  won`t touch it again, as i also don`t know what REALLY is transferred to the vendor - but i wonder what kernel devs think about such build system and what in-kernel alternative exists for this. (i think it doesn`t exist - but maybe somebody working on that ?)
+Many thanks for your comments,
 
-if someone want`s to take a look or give a comment:
+--nab
 
-http://wiki.r1soft.com/display/LTR1D/hcp
-http://www.r1soft.com/products/linux-hot-copy/
-
-regards
-roland
-
-____________________________________________________________________
-Psssst! Schon vom neuen WEB.DE MultiMessenger gehört? 
-Der kann`s mit allen: http://www.produkte.web.de/messenger/?did=3123
 
