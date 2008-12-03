@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763556AbYLCUnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbYLCUm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763556AbYLCUnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763037AbYLCUkl
+	id S1753228AbYLCUm4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:42:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762928AbYLCUip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:40:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41183 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763030AbYLCUkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:40:40 -0500
-Date: Wed, 3 Dec 2008 21:40:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <gregory.haskins.ml@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, rostedt@goodmis.org,
-       peterz@infradead.org, linux-kernel@vger.kernel.org,
-       =linux-rt-users@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] Series short description
-Message-ID: <20081203204025.GA31376@elte.hu>
-References: <20081111142323.28477.41235.stgit@dev.haskins.net> <4936E587.40700@gmail.com>
+	Wed, 3 Dec 2008 15:38:45 -0500
+Received: from wilson.telenet-ops.be ([195.130.132.42]:35237 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbYLCUio (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 15:38:44 -0500
+Date: Wed, 3 Dec 2008 21:38:41 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+cc: "David S. Miller" <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: m68k 8390 breakage (was: Re: linux-next: Tree for December 3)
+In-Reply-To: <20081203115622.50256091@extreme>
+Message-ID: <Pine.LNX.4.64.0812032135220.10635@anakin>
+References: <20081203183602.c06f8c39.sfr@canb.auug.org.au>
+ <Pine.LNX.4.64.0812032042480.10635@anakin> <20081203115622.50256091@extreme>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4936E587.40700@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Gregory Haskins <gregory.haskins.ml@gmail.com> wrote:
-
-> Gregory Haskins wrote:
-> > Hi Ingo, Steven, Peter,
-> >   This series applies roughly to mainline as an enhancement to the sched_rt
-> >   logic.  Peter and I were discussing some of the unecessary overhead in
-> >   pull_rt_tasks() via IRC, and this is my RFC attempt to address the problem.
-> >   
+On Wed, 3 Dec 2008, Stephen Hemminger wrote:
+> On Wed, 3 Dec 2008 20:49:39 +0100 (CET)
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > 
-> Hi Ingo,
->   I was putting together a refresh of this patch and I rebased on
-> tip/sched/devel.  I noticed that sched/devel is on 27-rc8, which is
-> obviously a little stale.  Is this the proper tree to send patches
-> against, or would you prefer a different HEAD?
+> > On Wed, 3 Dec 2008, Stephen Rothwell wrote:
+> > > Status of my local build tests will be at
+> > > http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+> > > advice about cross compilers/configs that work, we are always open to add
+> > > more builds.
+> > 
+> > Since a few days, m68k defconfig and allmodconfig give:
+> > 
+> > | drivers/net/lib8390.c:1014: undefined reference to `ei_start_xmit'
+> > | drivers/net/lib8390.c:1015: undefined reference to `ei_get_stats'
+> > | drivers/net/lib8390.c:1016: undefined reference to `ei_set_multicast_list'
+> > 
+> > (cfr. e.g. http://kisskb.ellerman.id.au/kisskb/buildresult/58795/)
+> > 
+> > git bisect run on "make ARCH=m68k mac_defconfig vmlinux" tells me:
+> > 
+> > 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab is first bad commit
+> > commit 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab
+> > Author: Stephen Hemminger <shemminger@vyatta.com>
+> > Date:   Tue Nov 25 18:12:49 2008 -0800
+> > 
+> >     8390: add common net_device ops
+> > 
+> >     Fix the defactoring of ei_XXX functions in 8390 and 8390p.
+> >     Remove the tx_timeout hack since no driver including the 3c503
+> >     overrides tx_timeout at this time, looks like a legacy thing.
+> > 
+> >     Also, since several drivers all have same hooks, provide common
+> >     netdev_ops.
+> > 
+> >     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> Which driver is having problem
 
-tip/master would be the base to use, or tip/sched/core. The sched/devel 
-branch is indeed stale.
+Oops, the log above is from allmodconfig and indeed doesn't show it.
 
-	Ingo
+mac_defconfig (which has CONFIG_MAC8390=y) shows more info:
+
+| drivers/net/lib8390.c:303: warning: '__ei_start_xmit' defined but not used
+| drivers/net/lib8390.c:881: warning: '__ei_get_stats' defined but not used
+| drivers/net/lib8390.c:990: warning: '__ei_set_multicast_list' defined but not
+| ...
+| drivers/built-in.o: In function `ethdev_setup':
+| mac8390.c:(.text+0x29684): undefined reference to `ei_start_xmit'
+| mac8390.c:(.text+0x2968c): undefined reference to `ei_get_stats'
+| mac8390.c:(.text+0x29694): undefined reference to `ei_set_multicast_list'
+
+defconfig log at http://kisskb.ellerman.id.au/kisskb/buildresult/58646/
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
