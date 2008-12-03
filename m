@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYLCF5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbYLCF5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbYLCF5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 00:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbYLCF5C
+	id S1755444AbYLCF5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 00:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYLCF53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 00:57:02 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33610 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750765AbYLCF5B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 00:57:01 -0500
-Date: Tue, 2 Dec 2008 21:56:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH  0/21] memcg updates 2008/12/03
-Message-Id: <20081202215650.e7621524.akpm@linux-foundation.org>
-In-Reply-To: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 3 Dec 2008 00:57:29 -0500
+Received: from sh.osrg.net ([192.16.179.4]:51271 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754503AbYLCF53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 00:57:29 -0500
+Date: Wed, 3 Dec 2008 14:53:04 +0900
+To: mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: [RESEND] [PATCH] x86: remove dead BIO_VMERGE_BOUNDARY definition
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081203145304E.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008 13:47:18 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+This is for 2.6.29 (against tip/master), a resend of:
 
-> This is memcg update series onto
-> "The mm-of-the-moment snapshot 2008-12-02-17-08"
+http://marc.info/?l=linux-kernel&m=122482703716620&w=2
 
-Complaints...
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] x86: remove dead BIO_VMERGE_BOUNDARY definition
 
-- All these patches had filenames in their Subject: lines.  I turned
-  these all back into sensible-sounding English titles.
+The block layer dropped the virtual merge feature
+(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
+definition is meaningless now.
 
-- I think a lot of authorships got lost.  For example, the way these
-  patches were sent, you will be identified as the author of
-  inactive_anon_is_low-move-to-vmscan.patch, but I don't think you
-  were.  So please work out the correct authorship for
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ arch/x86/include/asm/io.h    |    2 --
+ arch/x86/include/asm/io_64.h |    2 --
+ arch/x86/kernel/pci-dma.c    |    6 ------
+ 3 files changed, 0 insertions(+), 10 deletions(-)
 
-	memcg-revert-gfp-mask-fix.patch
-	memcg-check-group-leader-fix.patch
-	memcg-memoryswap-controller-fix-limit-check.patch
-	memcg-swapout-refcnt-fix.patch
-	memcg-hierarchy-avoid-unnecessary-reclaim.patch
-	inactive_anon_is_low-move-to-vmscan.patch
-	mm-introduce-zone_reclaim-struct.patch
-	mm-add-zone-nr_pages-helper-function.patch
-	mm-make-get_scan_ratio-safe-for-memcg.patch
-	memcg-add-null-check-to-page_cgroup_zoneinfo.patch
-	memcg-add-inactive_anon_is_low.patch
-	memcg-add-mem_cgroup_zone_nr_pages.patch
-	memcg-add-zone_reclaim_stat.patch
-	memcg-remove-mem_cgroup_cal_reclaim.patch
-	memcg-show-reclaim-stat.patch
-	memcg-rename-scan-global-lru.patch
-	memcg-protect-prev_priority.patch
-	memcg-swappiness.patch
-	memcg-explain-details-and-test-document.patch
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index 33513b9..05cfed4 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -80,8 +80,6 @@ static inline void writeq(__u64 val, volatile void __iomem *addr)
+ #define readq			readq
+ #define writeq			writeq
+ 
+-extern int iommu_bio_merge;
+-
+ #ifdef CONFIG_X86_32
+ # include "io_32.h"
+ #else
+diff --git a/arch/x86/include/asm/io_64.h b/arch/x86/include/asm/io_64.h
+index fea325a..563c162 100644
+--- a/arch/x86/include/asm/io_64.h
++++ b/arch/x86/include/asm/io_64.h
+@@ -232,8 +232,6 @@ void memset_io(volatile void __iomem *a, int b, size_t c);
+ 
+ #define flush_write_buffers()
+ 
+-#define BIO_VMERGE_BOUNDARY iommu_bio_merge
+-
+ /*
+  * Convert a virtual cached pointer to an uncached pointer
+  */
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 12eeb4b..da93c65 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -31,11 +31,6 @@ int no_iommu __read_mostly;
+ /* Set this to 1 if there is a HW IOMMU in the system */
+ int iommu_detected __read_mostly = 0;
+ 
+-/* This tells the BIO block layer to assume merging. Default to off
+-   because we cannot guarantee merging later. */
+-int iommu_bio_merge __read_mostly = 0;
+-EXPORT_SYMBOL(iommu_bio_merge);
+-
+ dma_addr_t bad_dma_address __read_mostly = 0;
+ EXPORT_SYMBOL(bad_dma_address);
+ 
+@@ -189,7 +184,6 @@ static __init int iommu_setup(char *p)
+ 		}
+ 
+ 		if (!strncmp(p, "biomerge", 8)) {
+-			iommu_bio_merge = 4096;
+ 			iommu_merge = 1;
+ 			force_iommu = 1;
+ 		}
+-- 
+1.5.5.GIT
 
-  and let me know?
-
-- Sentences start with capital letters.
-
-- Your patches are missing the ^--- after the changelog.  This
-  creates additional work (and potential for mistakes) at the other
-  end.
-
-- I didn't check whether any acked-by's got lost.  They may have been...
