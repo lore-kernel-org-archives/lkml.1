@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbYLCPtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbYLCPuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbYLCPtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 10:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYLCPtI
+	id S1753351AbYLCPuX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 10:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbYLCPuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 10:49:08 -0500
-Received: from kroah.org ([198.145.64.141]:49583 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750955AbYLCPtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 10:49:07 -0500
-Date: Wed, 3 Dec 2008 07:47:25 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: pl2303 - pl2303_open - failed submitting interrupt urb, error
-	-28
-Message-ID: <20081203154725.GB15968@kroah.com>
-References: <20081202131821.GA25217@torres.zugschlus.de> <20081203014208.55dfeb8d.akpm@linux-foundation.org>
+	Wed, 3 Dec 2008 10:50:05 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:49932 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbYLCPuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 10:50:03 -0500
+Date: Wed, 3 Dec 2008 16:50:01 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Pavel Machek <pavel@suse.cz>
+cc: Theodore Tso <tytso@mit.edu>, Chris Friesen <cfriesen@nortel.com>,
+       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+In-Reply-To: <20081203084639.GB1944@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0812031637050.5406@artax.karlin.mff.cuni.cz>
+References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu>
+ <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu>
+ <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu>
+ <20081202224403.GA8277@elf.ucw.cz> <20081203050709.GL20858@mit.edu>
+ <20081203084639.GB1944@ucw.cz>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203014208.55dfeb8d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 01:42:08AM -0800, Andrew Morton wrote:
-> (cc linux-usb)
+> Yes. fsync() seeems surprisingly high on Rusty's list of broken
+> interfaces classification ('impossible to use correctly').
 > 
-> On Tue, 2 Dec 2008 14:18:21 +0100 Marc Haber <mh+linux-kernel@zugschlus.de> wrote:
-> 
-> > Hi,
-> > 
-> > the following applies to a "vanilla" 2.6.27.7 kernel built and running
-> > on a Debian unstable system.
-> > 
-> > To obtain out-of-band access to a number of switches and routers, I
-> > have a seven-port USB hub to which seven identical USB-to-serial
-> > adaptors using the PL2303 chip and driver are connected. All seven
-> > work when only one of them is used at a time.
-> > 
-> > Cereal is an application which keeps a process (GNU screen) attached
-> > to the tty at all times to be able to log what happens on the serial
-> > port. When I start cereal on all seven ports, I start getting
-> > "pl2303_open - failed submitting interrupt urb, error -28" errors in
-> > my syslog:
-> > 
-> > Dec  2 14:07:36 alemana kernel: pl2303 ttyUSB2: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:37 alemana kernel: pl2303 ttyUSB5: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:38 alemana kernel: pl2303 ttyUSB6: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:41 alemana kernel: pl2303 ttyUSB2: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:43 alemana kernel: pl2303 ttyUSB5: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:43 alemana kernel: pl2303 ttyUSB6: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:47 alemana kernel: pl2303 ttyUSB2: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:48 alemana kernel: pl2303 ttyUSB5: pl2303_open - failed submitting interrupt urb, error -28
-> > Dec  2 14:07:49 alemana kernel: pl2303 ttyUSB6: pl2303_open - failed submitting interrupt urb, error -28
-> > 
-> > The corresponding ports are not useable in that case.
-> > 
-> > When one googles for this error message, one finds a thread from 2006
-> > with Greg KH commenting. In my case, the error doesn't hose the USB
-> > subsystem, I can unplug the adapters and plug them in again one and a
-> > time without a problem, and I can even use the ports that don't throw
-> > this error message.
-> > 
-> > As in the 2006 thread, unloading the EHCI driver (ehci_hcd) solves the
-> > issue, but is of course not an attractive option as soon as one wants
-> > to use even a USB stick on the same machine.
+> I wonder if some reasonable solution exists? Mark filesystem as failed
+> on first  write error is one of those (and default for ext2/3?). Did
+> SGI/big unixen solve this somehow?
 
-I would suggest using a USB 1.1 hub instead if you have to use this kind
-of hardware set up.  I think the core is just not able to schedule so
-many interrupt urbs with such a setup, running USB 1.1 devices behind a
-USB 2.0 hub like this is a very difficult thing to do.
+When OS/2 hit write error, it wrote to another location on disk and added 
+this to its sector remap table. It could remap both metadata and data this 
+way. But today it is meaningless, because the same algorithm is 
+implemented in disk firmware. Write errors are reported for disk 
+connection problems, not media problems.
 
-Sorry I don't have a better solution.
+For connection problems, another solution may be to retry writes 
+indefinitely until the admin aborts it or reconnects the disk. But I don't 
+know how common these recoverable disk connection errors are.
 
-thanks,
+> > The reality is that most applications don't proper error checking, and
+> > even fewer actually call fsync(), so if you are putting your root
+> > filesytem on a 32G flash card, and it pops out easily due to hardware
+> > design issues, the question of whether fsync() gets properly progated
+> > to all potentially interested applications is the ***least*** of your
+> > worries.
 
-greg k-h
+If you are running a transaction processing software, then it is a very 
+important worry. All the database software is written with the assumption 
+that when the database returns transaction committed, then the changes are 
+permanent.
+
+Most of the business software can deal with the fact that the server 
+crashes, but can't deal with the fact that database returnes committed 
+status for transaction that wasn't really committed.
+
+Mikulas
