@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYLCXrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbYLCXry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYLCXrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 18:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbYLCXr3
+	id S1757070AbYLCXry (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 18:47:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYLCXrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 18:47:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:44381 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753390AbYLCXr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 18:47:29 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [RFC 7/8] Call early_param earlier.
-Date: Thu, 4 Dec 2008 10:17:23 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200812012326.50334.rusty@rustcorp.com.au> <5294.1228311850@redhat.com>
-In-Reply-To: <5294.1228311850@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 3 Dec 2008 18:47:32 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39179 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755048AbYLCXrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 18:47:31 -0500
+Date: Wed, 3 Dec 2008 15:46:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: rusty@rustcorp.com.au, rmk+lkml@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Subject: Re: Yet more ARM breakage in linux-next
+Message-Id: <20081203154629.bba4e5e4.akpm@linux-foundation.org>
+In-Reply-To: <49371848.2080804@oracle.com>
+References: <20081203192905.GA12502@flint.arm.linux.org.uk>
+	<20081203124109.79f8f15b.akpm@linux-foundation.org>
+	<200812040952.44957.rusty@rustcorp.com.au>
+	<49371848.2080804@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812041017.23599.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 December 2008 00:14:10 David Howells wrote:
-> Rusty Russell <rusty@rustcorp.com.au> wrote:
-> >  	parse_args("Core params", boot_command_line, __start___core_param,
-> >  		   __stop___core_param - __start___core_param,
-> >  		   unknown_core_ok, true);
-> > +	/* All fall through to do_early_param. */
-> > +	parse_args("early options", boot_command_line, NULL, 0, do_early_param,
-> > +		   true);
->
-> Why have two separate lists since they are processed contiguously?
+On Wed, 03 Dec 2008 15:37:44 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-You're right.  I don't think we care about people who have early_param of same
-name as core_param; they deserve horrible death anyway.
+> > (Yes, classic useless kerneldoc documentation doesn't actually *say* 
+> > this clearly).
+>  
+> oh fud.  That's not a fault of kernel-doc, just of whoever wrote it.
+> It's only as good as someone makes it.
 
-param: combine core_param and early_param parsing.
-
-David Howells points out that we can now do early_param and core_param
-in a single pass of parse_args.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Howells <dhowells@redhat.com>
----
- init/main.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/init/main.c b/init/main.c
---- a/init/main.c
-+++ b/init/main.c
-@@ -548,12 +548,10 @@ asmlinkage void __init start_kernel(void
- asmlinkage void __init start_kernel(void)
- {
- 	arch_get_boot_command_line();
--	parse_args("Core params", boot_command_line, __start___core_param,
-+	parse_args("Core and early params", boot_command_line,
-+		   __start___core_param,
- 		   __stop___core_param - __start___core_param,
--		   unknown_core_ok, true);
--	/* All fall through to do_early_param. */
--	parse_args("early options", boot_command_line, NULL, 0, do_early_param,
--		   true);
-+		   do_early_param, true);
- 
- 	smp_setup_processor_id();
- 
+For some reason, the act of typing in some kerneldoc makes people's
+brains turn off.  Perhaps it's because "oh, I am supposed to type some
+documentation here" instead of "gee, I think this code is unclear,
+let's clarify that".
 
