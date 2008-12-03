@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbYLCT7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbYLCUBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbYLCT7B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:59:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYLCTuj
+	id S1756658AbYLCUBi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbYLCTwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:39 -0500
-Received: from kroah.org ([198.145.64.141]:59634 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:52:22 -0500
+Received: from kroah.org ([198.145.64.141]:59794 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751667AbYLCTu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:29 -0500
-Date: Wed, 3 Dec 2008 11:49:06 -0800
+	id S1754803AbYLCTwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:52:20 -0500
+Date: Wed, 3 Dec 2008 11:50:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Manfred Spraul <manfred@colorfullife.com>,
-       Clement Calmels <cboulte@gmail.com>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>
-Subject: [patch 021/104] lib/idr.c: fix rcu related race with idr_find
-Message-ID: <20081203194906.GV8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, kristen.c.accardi@intel.com,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 028/104] PCI Hotplug core: add name param pci_hp_register
+	interface
+Message-ID: <20081203195044.GC8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="lib-idr.c-fix-rcu-related-race-with-idr_find.patch"
+Content-Disposition: inline; filename="pci-hotplug-core-add-name-param-pci_hp_register-interface.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,110 +41,215 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Manfred Spraul <manfred@colorfullife.com>
+From: Alex Chiang <achiang@hp.com>
 
-commit 6ff2d39b91aec3dcae951afa982059e3dd9b49dc upstream.
+commit 1359f2701b96abd9bb69c1273fb995a093b6409a upstream.
 
-2nd part of the fixes needed for
-http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+Update pci_hp_register() to take a const char *name parameter.
 
-When the idr tree is either grown or shrunk, then the update to the number
-of layers and the top pointer were not atomic.  This race caused crashes.
+The motivation for this is to clean up the individual hotplug
+drivers so that each one does not have to manage its own name.
+The PCI core should be the place where we manage the name.
 
-The attached patch fixes that by replicating the layers counter in each
-layer, thus idr_find doesn't need idp->layers anymore.
+We update the interface and all callsites first, in a
+"no functional change" manner, and clean up the drivers later.
 
-Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-Cc: Clement Calmels <cboulte@gmail.com>
-Cc: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Pierre Peiffer <peifferp@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kristen.c.accardi@intel.com
+Acked-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/idr.h |    3 ++-
- lib/idr.c           |   14 ++++++++++++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ drivers/pci/hotplug/acpiphp_core.c      |    3 ++-
+ drivers/pci/hotplug/cpci_hotplug_core.c |    3 ++-
+ drivers/pci/hotplug/cpqphp_core.c       |    3 ++-
+ drivers/pci/hotplug/fakephp.c           |    3 ++-
+ drivers/pci/hotplug/ibmphp_ebda.c       |    3 ++-
+ drivers/pci/hotplug/pci_hotplug_core.c  |   15 ++++++++-------
+ drivers/pci/hotplug/pciehp_core.c       |    3 ++-
+ drivers/pci/hotplug/rpaphp_slot.c       |    2 +-
+ drivers/pci/hotplug/sgi_hotplug.c       |    3 ++-
+ drivers/pci/hotplug/shpchp_core.c       |    3 ++-
+ include/linux/pci_hotplug.h             |    3 ++-
+ 11 files changed, 27 insertions(+), 17 deletions(-)
 
---- a/include/linux/idr.h
-+++ b/include/linux/idr.h
-@@ -52,13 +52,14 @@ struct idr_layer {
- 	unsigned long		 bitmap; /* A zero bit means "space here" */
- 	struct idr_layer	*ary[1<<IDR_BITS];
- 	int			 count;	 /* When zero, we can release it */
-+	int			 layer;	 /* distance from leaf */
- 	struct rcu_head		 rcu_head;
- };
+--- a/drivers/pci/hotplug/acpiphp_core.c
++++ b/drivers/pci/hotplug/acpiphp_core.c
+@@ -340,7 +340,8 @@ int acpiphp_register_hotplug_slot(struct
  
- struct idr {
- 	struct idr_layer *top;
- 	struct idr_layer *id_free;
--	int		  layers;
-+	int		  layers; /* only valid without concurrent changes */
- 	int		  id_free_cnt;
- 	spinlock_t	  lock;
- };
---- a/lib/idr.c
-+++ b/lib/idr.c
-@@ -185,6 +185,7 @@ static int sub_alloc(struct idr *idp, in
- 			new = get_from_free_list(idp);
- 			if (!new)
- 				return -1;
-+			new->layer = l-1;
- 			rcu_assign_pointer(p->ary[m], new);
- 			p->count++;
- 		}
-@@ -210,6 +211,7 @@ build_up:
- 	if (unlikely(!p)) {
- 		if (!(p = get_from_free_list(idp)))
- 			return -1;
-+		p->layer = 0;
- 		layers = 1;
+ 	retval = pci_hp_register(slot->hotplug_slot,
+ 					acpiphp_slot->bridge->pci_bus,
+-					acpiphp_slot->device);
++					acpiphp_slot->device,
++					slot->name);
+ 	if (retval == -EBUSY)
+ 		goto error_hpslot;
+ 	if (retval) {
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -285,7 +285,8 @@ cpci_hp_register_bus(struct pci_bus *bus
+ 		info->attention_status = cpci_get_attention_status(slot);
+ 
+ 		dbg("registering slot %s", slot->hotplug_slot->name);
+-		status = pci_hp_register(slot->hotplug_slot, bus, i);
++		status = pci_hp_register(slot->hotplug_slot, bus, i,
++					 slot->hotplug_slot->name);
+ 		if (status) {
+ 			err("pci_hp_register failed with error %d", status);
+ 			goto error_name;
+--- a/drivers/pci/hotplug/cpqphp_core.c
++++ b/drivers/pci/hotplug/cpqphp_core.c
+@@ -436,7 +436,8 @@ static int ctrl_slot_setup(struct contro
+ 				slot_number);
+ 		result = pci_hp_register(hotplug_slot,
+ 					 ctrl->pci_dev->bus,
+-					 slot->device);
++					 slot->device,
++					 hotplug_slot->name);
+ 		if (result) {
+ 			err("pci_hp_register failed with error %d\n", result);
+ 			goto error_name;
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -126,7 +126,8 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->release = &dummy_release;
+ 	slot->private = dslot;
+ 
+-	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn));
++	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn),
++				 slot->name);
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+ 		goto error_dslot;
+--- a/drivers/pci/hotplug/ibmphp_ebda.c
++++ b/drivers/pci/hotplug/ibmphp_ebda.c
+@@ -1002,7 +1002,8 @@ static int __init ebda_rsrc_controller (
+ 
+ 		snprintf (tmp_slot->hotplug_slot->name, 30, "%s", create_file_name (tmp_slot));
+ 		pci_hp_register(tmp_slot->hotplug_slot,
+-			pci_find_bus(0, tmp_slot->bus), tmp_slot->device);
++			pci_find_bus(0, tmp_slot->bus), tmp_slot->device,
++			tmp_slot->hotplug_slot->name);
  	}
+ 
+ 	print_ebda_hpc ();
+--- a/drivers/pci/hotplug/pciehp_core.c
++++ b/drivers/pci/hotplug/pciehp_core.c
+@@ -221,7 +221,8 @@ static int init_slots(struct controller 
+ duplicate_name:
+ 		retval = pci_hp_register(hotplug_slot,
+ 					 ctrl->pci_dev->subordinate,
+-					 slot->device);
++					 slot->device,
++					 slot->name);
+ 		if (retval) {
+ 			/*
+ 			 * If slot N already exists, we'll try to create
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -547,13 +547,15 @@ out:
+  * @bus: bus this slot is on
+  * @slot: pointer to the &struct hotplug_slot to register
+  * @slot_nr: slot number
++ * @name: name registered with kobject core
+  *
+  * Registers a hotplug slot with the pci hotplug subsystem, which will allow
+  * userspace interaction to the slot.
+  *
+  * Returns 0 if successful, anything else for an error.
+  */
+-int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
++int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
++			const char *name)
+ {
+ 	int result;
+ 	struct pci_slot *pci_slot;
+@@ -569,7 +571,7 @@ int pci_hp_register(struct hotplug_slot 
+ 	}
+ 
+ 	/* Check if we have already registered a slot with the same name. */
+-	if (get_slot_from_name(slot->name))
++	if (get_slot_from_name(name))
+ 		return -EEXIST;
+ 
  	/*
-@@ -237,6 +239,7 @@ build_up:
- 		}
- 		new->ary[0] = p;
- 		new->count = 1;
-+		new->layer = layers-1;
- 		if (p->bitmap == IDR_FULL)
- 			__set_bit(0, &new->bitmap);
- 		p = new;
-@@ -493,17 +496,21 @@ void *idr_find(struct idr *idp, int id)
- 	int n;
- 	struct idr_layer *p;
+@@ -577,7 +579,7 @@ int pci_hp_register(struct hotplug_slot 
+ 	 * driver and call it here again. If we've already created the
+ 	 * pci_slot, the interface will simply bump the refcount.
+ 	 */
+-	pci_slot = pci_create_slot(bus, slot_nr, slot->name);
++	pci_slot = pci_create_slot(bus, slot_nr, name);
+ 	if (IS_ERR(pci_slot))
+ 		return PTR_ERR(pci_slot);
  
--	n = idp->layers * IDR_BITS;
- 	p = rcu_dereference(idp->top);
-+	if (!p)
-+		return NULL;
-+	n = (p->layer+1) * IDR_BITS;
+@@ -593,8 +595,8 @@ int pci_hp_register(struct hotplug_slot 
+ 	/*
+ 	 * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
+ 	 */
+-	if (strcmp(kobject_name(&pci_slot->kobj), slot->name)) {
+-		result = kobject_rename(&pci_slot->kobj, slot->name);
++	if (strcmp(kobject_name(&pci_slot->kobj), name)) {
++		result = kobject_rename(&pci_slot->kobj, name);
+ 		if (result) {
+ 			pci_destroy_slot(pci_slot);
+ 			return result;
+@@ -607,8 +609,7 @@ int pci_hp_register(struct hotplug_slot 
  
- 	/* Mask off upper bits we don't use for the search. */
- 	id &= MAX_ID_MASK;
+ 	result = fs_add_slot(pci_slot);
+ 	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
+-	dbg("Added slot %s to the list\n", slot->name);
+-
++	dbg("Added slot %s to the list\n", name);
  
- 	if (id >= (1 << n))
- 		return NULL;
-+	BUG_ON(n == 0);
+ 	return result;
+ }
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -137,7 +137,7 @@ int rpaphp_register_slot(struct slot *sl
+ 		slotno = PCI_SLOT(PCI_DN(slot->dn->child)->devfn);
+ 	else
+ 		slotno = -1;
+-	retval = pci_hp_register(php_slot, slot->bus, slotno);
++	retval = pci_hp_register(php_slot, slot->bus, slotno, slot->name);
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+ 		return retval;
+--- a/drivers/pci/hotplug/sgi_hotplug.c
++++ b/drivers/pci/hotplug/sgi_hotplug.c
+@@ -653,7 +653,8 @@ static int sn_hotplug_slot_register(stru
+ 		bss_hotplug_slot->ops = &sn_hotplug_slot_ops;
+ 		bss_hotplug_slot->release = &sn_release_slot;
  
- 	while (n > 0 && p) {
- 		n -= IDR_BITS;
-+		BUG_ON(n != p->layer*IDR_BITS);
- 		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
- 	}
- 	return((void *)p);
-@@ -582,8 +589,11 @@ void *idr_replace(struct idr *idp, void 
- 	int n;
- 	struct idr_layer *p, *old_p;
+-		rc = pci_hp_register(bss_hotplug_slot, pci_bus, device);
++		rc = pci_hp_register(bss_hotplug_slot, pci_bus, device,
++				     bss_hotplug_slot->name);
+ 		if (rc)
+ 			goto register_err;
  
--	n = idp->layers * IDR_BITS;
- 	p = idp->top;
-+	if (!p)
-+		return ERR_PTR(-EINVAL);
-+
-+	n = (p->layer+1) * IDR_BITS;
+--- a/drivers/pci/hotplug/shpchp_core.c
++++ b/drivers/pci/hotplug/shpchp_core.c
+@@ -146,7 +146,8 @@ static int init_slots(struct controller 
+ 		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
+ duplicate_name:
+ 		retval = pci_hp_register(slot->hotplug_slot,
+-				ctrl->pci_dev->subordinate, slot->device);
++				ctrl->pci_dev->subordinate, slot->device,
++				hotplug_slot->name);
+ 		if (retval) {
+ 			/*
+ 			 * If slot N already exists, we'll try to create
+--- a/include/linux/pci_hotplug.h
++++ b/include/linux/pci_hotplug.h
+@@ -165,7 +165,8 @@ struct hotplug_slot {
+ };
+ #define to_hotplug_slot(n) container_of(n, struct hotplug_slot, kobj)
  
- 	id &= MAX_ID_MASK;
- 
+-extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr);
++extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr,
++			   const char *name);
+ extern int pci_hp_deregister(struct hotplug_slot *slot);
+ extern int __must_check pci_hp_change_slot_info	(struct hotplug_slot *slot,
+ 						 struct hotplug_slot_info *info);
 
