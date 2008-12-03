@@ -1,64 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbYLCCiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYLCCwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbYLCCiW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 21:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYLCCiN
+	id S1755288AbYLCCwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 21:52:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYLCCwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 21:38:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:50753 "EHLO ozlabs.org"
+	Tue, 2 Dec 2008 21:52:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38343 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbYLCCiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 21:38:13 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Greg Ungerer <gerg@snapgear.com>
-Subject: Re: [RFC 5/8] param: arch_get_boot_command_line()
-Date: Wed, 3 Dec 2008 13:08:05 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
-       David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Tony Luck <tony.luck@intel.com>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@uclinux.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
-       Ingo Molnar <mingo@redhat.com>, Chris Zankel <chris@zankel.net>
-References: <200812012326.03151.rusty@rustcorp.com.au> <4935D8BF.6040208@snapgear.com>
-In-Reply-To: <4935D8BF.6040208@snapgear.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1754119AbYLCCwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 21:52:43 -0500
+Subject: Re: [RFC PATCH 0/3] A couple of feature requests to the unified
+	trace  buffer
+From: Steven Rostedt <srostedt@redhat.com>
+To: Jiaying Zhang <jiayingz@google.com>
+Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <5df78e1d0812021652w74c968bboba5e6457059b569b@mail.gmail.com>
+References: <5df78e1d0812021652w74c968bboba5e6457059b569b@mail.gmail.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 02 Dec 2008 21:52:11 -0500
+Message-Id: <1228272731.4886.26.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812031308.06817.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 December 2008 11:24:23 Greg Ungerer wrote:
-> Hi Rusty,
->
-> Rusty Russell wrote:
-> > This allows us to get the command line before setup_arch(): right at
-> > the beginning of start_kernel().  It also cleans up chaotic
-> > commandline handling.
+Hi Jiaying,
 
-> I don't see any problems with the m68knommu bits.
-> Are you looking for an acked-by?
+On Tue, 2008-12-02 at 16:52 -0800, Jiaying Zhang wrote:
+> Hi all,
+> 
+> We have taken Steve's unified trace buffer patches while implementing our
+> kernel tracing prototype. The unified trace buffer has many features we need
+> and has simplified our implementation a lot. However, our use of the unified
+> trace buffer is slightly different from ftrace's cases. We need to trace large
+> amounts of data in a production environment, so it's critical that we have as
+> little impact on performance as possible.
+> 
+> We are particularly concerned about two performance requirements:
+> 
+> 1. read large amounts of data from the unified trace buffer at little
+> performance cost.
+> 2. write to the unified trace buffer with little performance overhead.
+> 
+> We are considering two approaches to satisfy the first requirement -
+> mmap vs splice. Right now, we only implemented mmap support, so I am
+> going to talk about that approach in detail. For the second requirement,
+> our performance tests suggest the use of inline versions of buffer write
+> functions for high-throughput kernel events, as described below.
 
-Thanks Greg,
+If you check out my git tree:
 
-   There are some minor mods, so I'll repost.  You can ack that :)
+git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 
-I'll also create a git tree for archs to actually boot test.  No doubt 
-there'll be more arch-specific fixes needed.
+  branch: tip/devel
 
-Thanks!
-Rusty.
+You will see that I started writing code to handle "splice". I have a
+retarded version that works right now (using the term "works" loosely
+here).
+
+Also, most of our development is done in the Ingo's tip tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+
+  branch: master
+
+I see in the patches that you based this on 2.6.26.2? Not sure which
+version of the ring buffer you are using, but there has been lots of
+improvements to it already.
+  
+> 
+> The patches of our changes are sent following this email. We haven't tested
+> these patches much, and they are probably very buggy. However, we would
+> like to get some early feedback and see if we are headed in the right direction.
+> Here is the summary of the changes we made.
+> 
+> A major feature we would like to include in the unified trace buffer is the
+> mmap support. Instead of reading one event out of the buffer at a time, we
+> implemented a debugfs interface that allows a user-level program to mmap the
+> unified trace buffer and directly copy the trace data to a disk file or socket
+> descriptor. Compared with reading a single event at a time, this approach
+> saves a copy from kernel to user-space. It also allows a trace reader to read
+> bulk data in a single system call. We haven't yet conducted a performance
+> comparison, but we think the mmap approach will have a significant performance
+> advantage over the current read interface. To make mmap work, I made several
+> changes to the unified trace buffer code. The changes include an API that maps
+> a page offset to a physical page in a trace buffer,  APIs that export the offset
+> of the current produced/consumed data, and an API to advance the consumed
+> data pointer. The patch in the next email, "adding mmap support to the unified
+> trace buffer", contains the described changes. We notice that there are other
+> alternatives to save kernel to user-space copy, like splice_read. We haven't
+> explored those approaches yet. Implementations of those interfaces would be
+> very welcome.
+
+As I said above, I'm working on a splice version. I'm very new to the
+splice_read code so I'm learning as I go along. I can post my retarded
+patch if you would like. Actually, I'll just push it to my git tree in
+the branch tip/splice.
+
+> 
+> Other helpful features from the unified trace buffer are the inline versions of
+> buffer write functions, i.e., ring_buffer_lock_reserve and
+> ring_buffer_unlock_commit. We found that function calls can add noticeable
+> overhead while tracing high-throughput events. According to our measurement,
+> the function calls from trace buffer writing alone add roughly 3% overhead
+> under the tbench benchmark. To see how we can eliminate this overhead,
+> I tried the inline versions of lock_reserve and unlock_commit (see the second
+> patch "adding inline buffer write functions to the unified trace buffer"). The
+> inline functions basically copy the existing code from ring_buffer_lock_reserve
+> and ring_buffer_unlock_commit. But to make it compile, I also need to move
+> certain functions to the header file. The side effect is that the interface
+> becomes less clean.
+
+This will be something that we'll need to work with. I'm finding it a
+bit hard that a function call is that expensive.
+
+> 
+> We may need more fundamental changes to implement inline versions of
+> ring buffer write functions while still keep the clean layered design.
+> Our goal is to enable certain kernel event tracing by default, so we
+> consider 3% a big saving and we think it is important to make sure that
+> entering an event into a cpu buffer is really fast.
+> 
+> I attached our current kernel tracing prototype in the third email to give
+> you an idea on how we intend to use the unified trace buffer. We will post
+> the trace prototype alone later, but would love to hear any early feedback.
+
+Sure, I'll try to take some time out to look at them. Just a few points
+on a real post:
+
+- base it on tip/master or at least my tree.
+
+- do not use "Refer to previous email" in any of the patches.
+  The patches are brought in individually, and the change log must
+  be able to stand on its own without needing to refer to any
+  other patch, website or commit.
+
+- Please include a "Signed-off-by: Full Name <email@address>" in every
+  patch.
+
+Other than that, thanks for the work.
+
+-- Steve
+
+
