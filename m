@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYLCUWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbYLCUWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760247AbYLCUWf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYLCT5o
+	id S1752584AbYLCUWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbYLCT5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:57:44 -0500
-Received: from kroah.org ([198.145.64.141]:56564 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:57:42 -0500
+Received: from kroah.org ([198.145.64.141]:56549 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753236AbYLCT5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:41 -0500
-Date: Wed, 3 Dec 2008 11:56:06 -0800
+	id S1752201AbYLCT5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:57:40 -0500
+Date: Wed, 3 Dec 2008 11:56:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [patch 080/104] ext4: fix #11321: create /proc/ext4/*/stats more
-	carefully
-Message-ID: <20081203195606.GC8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Frederic Bohe <frederic.bohe@bull.net>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 079/104] ext4: Update flex_bg free blocks and free inodes
+	counters when resizing.
+Message-ID: <20081203195604.GB8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-fix-11321-create-proc-ext4-stats-more-carefully.patch"
+Content-Disposition: inline; filename="ext4-update-flex_bg-free-blocks-and-free-inodes-counters-when-resizing.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,87 +41,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alexey Dobriyan <adobriyan@gmail.com>
+From: Frederic Bohe <frederic.bohe@bull.net>
 
-(cherry picked from commit 899fc1a4cf404747de2666534d508804597ee22f)
+(cherry picked from commit c62a11fd9555007b1caab83b5bcbb443a43e32bb)
 
-ext4 creates per-suberblock directory in /proc/ext4/ . Name used as
-basis is taken from bdevname, which, surprise, can contain slash.
+This fixes a bug which prevented the newly created inodes after a
+resize from being used on filesystems with flex_bg.
 
-However, proc while allowing to use proc_create("a/b", parent) form of
-PDE creation, assumes that parent/a was already created.
-
-bdevname in question is 'cciss/c0d0p9', directory is not created and all
-this stuff goes directly into /proc (which is real bug).
-
-Warning comes when _second_ partition is mounted.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11321
-
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Frederic Bohe <frederic.bohe@bull.net>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/mballoc.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ fs/ext4/resize.c |    9 +++++++++
+ fs/ext4/super.c  |    7 +++++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2785,14 +2785,20 @@ static int ext4_mb_init_per_dev_proc(str
- 	mode_t mode = S_IFREG | S_IRUGO | S_IWUSR;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	struct proc_dir_entry *proc;
--	char devname[64];
-+	char devname[BDEVNAME_SIZE], *p;
+--- a/fs/ext4/resize.c
++++ b/fs/ext4/resize.c
+@@ -929,6 +929,15 @@ int ext4_group_add(struct super_block *s
+ 	percpu_counter_add(&sbi->s_freeinodes_counter,
+ 			   EXT4_INODES_PER_GROUP(sb));
  
- 	if (proc_root_ext4 == NULL) {
- 		sbi->s_mb_proc = NULL;
- 		return -EINVAL;
- 	}
- 	bdevname(sb->s_bdev, devname);
-+	p = devname;
-+	while ((p = strchr(p, '/')))
-+		*p = '!';
++	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
++		ext4_group_t flex_group;
++		flex_group = ext4_flex_group(sbi, input->group);
++		sbi->s_flex_groups[flex_group].free_blocks +=
++			input->free_blocks_count;
++		sbi->s_flex_groups[flex_group].free_inodes +=
++			EXT4_INODES_PER_GROUP(sb);
++	}
 +
- 	sbi->s_mb_proc = proc_mkdir(devname, proc_root_ext4);
-+	if (!sbi->s_mb_proc)
-+		goto err_create_dir;
+ 	ext4_journal_dirty_metadata(handle, sbi->s_sbh);
+ 	sb->s_dirt = 1;
  
- 	MB_PROC_HANDLER(EXT4_MB_STATS_NAME, stats);
- 	MB_PROC_HANDLER(EXT4_MB_MAX_TO_SCAN_NAME, max_to_scan);
-@@ -2804,7 +2810,6 @@ static int ext4_mb_init_per_dev_proc(str
- 	return 0;
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1504,8 +1504,11 @@ static int ext4_fill_flex_info(struct su
+ 	sbi->s_log_groups_per_flex = sbi->s_es->s_log_groups_per_flex;
+ 	groups_per_flex = 1 << sbi->s_log_groups_per_flex;
  
- err_out:
--	printk(KERN_ERR "EXT4-fs: Unable to create %s\n", devname);
- 	remove_proc_entry(EXT4_MB_GROUP_PREALLOC, sbi->s_mb_proc);
- 	remove_proc_entry(EXT4_MB_STREAM_REQ, sbi->s_mb_proc);
- 	remove_proc_entry(EXT4_MB_ORDER2_REQ, sbi->s_mb_proc);
-@@ -2813,6 +2818,8 @@ err_out:
- 	remove_proc_entry(EXT4_MB_STATS_NAME, sbi->s_mb_proc);
- 	remove_proc_entry(devname, proc_root_ext4);
- 	sbi->s_mb_proc = NULL;
-+err_create_dir:
-+	printk(KERN_ERR "EXT4-fs: Unable to create %s\n", devname);
- 
- 	return -ENOMEM;
- }
-@@ -2820,12 +2827,15 @@ err_out:
- static int ext4_mb_destroy_per_dev_proc(struct super_block *sb)
- {
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	char devname[64];
-+	char devname[BDEVNAME_SIZE], *p;
- 
- 	if (sbi->s_mb_proc == NULL)
- 		return -EINVAL;
- 
- 	bdevname(sb->s_bdev, devname);
-+	p = devname;
-+	while ((p = strchr(p, '/')))
-+		*p = '!';
- 	remove_proc_entry(EXT4_MB_GROUP_PREALLOC, sbi->s_mb_proc);
- 	remove_proc_entry(EXT4_MB_STREAM_REQ, sbi->s_mb_proc);
- 	remove_proc_entry(EXT4_MB_ORDER2_REQ, sbi->s_mb_proc);
+-	flex_group_count = (sbi->s_groups_count + groups_per_flex - 1) /
+-		groups_per_flex;
++	/* We allocate both existing and potentially added groups */
++	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
++			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
++			      EXT4_DESC_PER_BLOCK_BITS(sb))) /
++			   groups_per_flex;
+ 	sbi->s_flex_groups = kzalloc(flex_group_count *
+ 				     sizeof(struct flex_groups), GFP_KERNEL);
+ 	if (sbi->s_flex_groups == NULL) {
 
