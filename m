@@ -1,110 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbYLCFT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbYLCFVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbYLCFT1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 00:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYLCFTS
+	id S1755691AbYLCFVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 00:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYLCFVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 00:19:18 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:39458 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbYLCFTS (ORCPT
+	Wed, 3 Dec 2008 00:21:32 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60673 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbYLCFVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 00:19:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QNkPlIK2v5DV0kw7yjpnTHb8sv+XrdfnVeWpuUbAlattCiOwTQnSWqbPJppnFACBvL
-         plSguvZi8PrhB6iU6lpyLHp61dMgB0u/JAiGqGKtjHZkxIV3V48ozA14kQYN0PCkzKlq
-         ioc9ptmfV5FYQGt+xJ8tFLeRPvAwNFnqwHlLI=
-Subject: Re: [PATCH] relay: When unsigned ret cannot store a negative value
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: roel kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20081202203734.1e4c9835.akpm@linux-foundation.org>
-References: <493161DE.6000703@gmail.com>
-	 <20081202141042.3e0db395.akpm@linux-foundation.org>
-	 <1228278591.10702.5.camel@charm-linux>
-	 <20081202203734.1e4c9835.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 23:19:14 -0600
-Message-Id: <1228281554.10858.13.camel@charm-linux>
+	Wed, 3 Dec 2008 00:21:31 -0500
+Date: Wed, 3 Dec 2008 14:20:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH  0/21] memcg updates 2008/12/03
+Message-Id: <20081203142040.065c184d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Dec 2008 13:47:18 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-On Tue, 2008-12-02 at 20:37 -0800, Andrew Morton wrote:
-> On Tue, 02 Dec 2008 22:29:51 -0600 Tom Zanussi <zanussi@comcast.net> wrote:
+> This is memcg update series onto
+> "The mm-of-the-moment snapshot 2008-12-02-17-08"
 > 
-> > 
-> > On Tue, 2008-12-02 at 14:10 -0800, Andrew Morton wrote:
-> > > On Sat, 29 Nov 2008 10:38:06 -0500
-> > > roel kluin <roel.kluin@gmail.com> wrote:
-> > > 
-> > > > When unsigned ret cannot store a negative value
-> > > > 
-> > > > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > > > ---
-> > > > UNTESTED! is this the way to go?
-> > > > 
-> > > > diff --git a/kernel/relay.c b/kernel/relay.c
-> > > > index 32b0bef..c9d62e5 100644
-> > > > --- a/kernel/relay.c
-> > > > +++ b/kernel/relay.c
-> > > > @@ -1220,7 +1220,8 @@ static int subbuf_splice_actor(struct file *in,
-> > > >  			       unsigned int flags,
-> > > >  			       int *nonpad_ret)
-> > > >  {
-> > > > -	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages;
-> > > > +	ssize_t ret;
-> > > >  	struct rchan_buf *rbuf = in->private_data;
-> > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > > >  	uint64_t pos = (uint64_t) *ppos;
-> > > > @@ -1289,7 +1290,8 @@ static int subbuf_splice_actor(struct file *in,
-> > > >  	if (!spd.nr_pages)
-> > > >  		return 0;
-> > > >  
-> > > > -	ret = *nonpad_ret = splice_to_pipe(pipe, &spd);
-> > > > +	ret = splice_to_pipe(pipe, &spd);
-> > > > +	*nonpad_ret = ret;
-> > > >  	if (ret < 0 || ret < total_len)
-> > > >  		return ret;
-> > > >  
-> > > 
-> > > Yeah, this code needs help.  subbuf_splice_actor() returns `int', but
-> > > carefully calculates and returns an unsigned type.
-> > > 
-> > > I suspect that quite a bit of code in there (including
-> > > relay_file_splice_read()) should be gone through and have its choice of
-> > > types reviewed and fixed.  Probably by converting things to ssize_t.
-> > > 
-> > > 
-> > 
-> > And maybe generic_file_splice_read() too, from whence it came.
+> including following patches. 18-21 are highly experimenal
+> (so, drop CC: to Andrew)
 > 
-> sure.
+> Bug fixes.
+> 1. memcg-revert-gfp-mask-fix.patch 
+> 2. memcg-check-group-leader-fix.patch
+> 3. memsw_limit_check.patch
+> 4. memcg-swapout-refcnt-fix.patch
+> 5. avoid-unnecessary-reclaim.patch
 > 
-> >  Speaking
-> > of which, is there some reason why this patch:
-> > 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0810.3/0094.html
-> > 
-> > never got picked up?
-> > 
-> 
-> Incompetence I guess.
+> Kosaki's LRU works. (thanks!)
+> 6.  inactive_anon_is_low-move-to-vmscan.patch
+> 7.  introduce-zone_reclaim-struct.patch
+> 8.  make-zone-nr_pages-helper-function.patch
+> 9.  make-get_scan_ratio-to-memcg-safe.patch
+> 10. memcg-add-null-check-to-page_cgroup_zoneinfo.patch
+> 11. memcg-make-inactive_anon_is_low.patch
+> 12. memcg-make-mem_cgroup_zone_nr_pages.patch
+> 13. memcg-make-zone_reclaim_stat.patch
+> 14. memcg-remove-mem_cgroup_cal_reclaim.patch
+> 15. memcg-show-reclaim-stat.patch
+> Cleanup
+> 16. memcg-rename-scan-glonal-lru.patch
+> Bug fix 
+> 16. memcg_prev_priority_protect.patch
+double counts here ..sigh...
 
-No problem, thanks for finally picking it up. :-)
+If mmotm eats too patches to apply this, I'll post again in Friday.
 
-> 
-> Damn man, that's your third email address :(
+BTW, Balbir, "21" (really 22/21) meets your request ?
 
-Yeah, the purpose of the gmail address is to avoid that but I forget to
-use it - will try to be less careless in the future. ;-)
+Thanks,
+-Kame
 
