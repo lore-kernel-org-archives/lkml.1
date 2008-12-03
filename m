@@ -1,85 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbYLDAf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYLDAm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbYLDAf2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 19:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYLDAfR
+	id S1755212AbYLDAm3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 19:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYLDAmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 19:35:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43210 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751640AbYLDAfQ (ORCPT
+	Wed, 3 Dec 2008 19:42:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48711 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752117AbYLDAmR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 19:35:16 -0500
-Date: Wed, 3 Dec 2008 16:34:39 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>, Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [Bug #12162] Commit 7cd5b08be3 breaks startup on Toshiba Portege
- R500
-In-Reply-To: <bfPM5B8Tx2B.A.bmG.moxNJB@chimera>
-Message-ID: <alpine.LFD.2.00.0812031632420.3256@nehalem.linux-foundation.org>
-References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera> <bfPM5B8Tx2B.A.bmG.moxNJB@chimera>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 3 Dec 2008 19:42:17 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.28-rc7-git2: Reported regressions 2.6.26 -> 2.6.27
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <49ZBswjGjrL.A.ECE.BGyNJB@chimera>
+Date: Wed,  3 Dec 2008 23:38:05 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This message contains a list of some regressions introduced between 2.6.26 and
+2.6.27, for which there are no fixes in the mainline I know of.  If any of them
+have been fixed already, please let me know.
 
-Rafael, I'm assuming my one-liner patch fixes your problem too, since you 
-attached the patch to the bugzilla entry. So I committed it as such. But 
-if it doesn't, we'll need to do something else.
+If you know of any other unresolved regressions introduced between 2.6.26
+and 2.6.27, please let me know either and I'll add them to the list.
+Also, please let me know if any of the entries below are invalid.
 
-The commit ended up being as appended..
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
 
-		Linus
----
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 3 Dec 2008 16:20:19 -0800
-Subject: [PATCH] iTCO_wdt: fix typo when setting TCO_EN bit
 
-The code used '&= 0x00002000' when it tried to set the TCO_EN bit, which
-obviously didn't set that bit at all, but instead just reset all the
-other bits in the SMI_EN register.
+Listed regressions statistics:
 
-This bug seemingly caused various random behavior, with Frans Pop
-reporting that X.org just silently hung at startup and Rafael Wysocki
-reports the fan spinning with full speed.
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2008-12-04      202       16          14
+  2008-11-22      199       12          10
+  2008-11-16      199       18          14
+  2008-11-09      196       28          23
+  2008-11-02      195       34          28
+  2008-10-26      190       34          29
+  2008-10-04      181       41          33
+  2008-09-27      173       35          28
+  2008-09-21      169       45          36
+  2008-09-15      163       46          32
+  2008-09-12      163       51          38
+  2008-09-07      150       43          33
+  2008-08-30      135       48          36
+  2008-08-23      122       48          40
+  2008-08-16      103       47          37
+  2008-08-10       80       52          31
+  2008-08-02       47       31          20
 
-See
-	http://lkml.org/lkml/2008/12/3/178
-	http://bugzilla.kernel.org/show_bug.cgi?id=12162
 
-The problem seems to have been triggered by "[WATCHDOG] iTCO_wdt :
-problem with rebooting on new ICH9 based motherboards" (commit
-7cd5b08be3c489df11b559fef210b81133764ad4), but the bogus code existed
-before that too (in the "supermicro_old_pre_stop()" function), it just
-apparently never showed up due to different logic.
+Unresolved regressions
+----------------------
 
-In that commit the broken code got moved around and now gets executed
-much more.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12149
+Subject		: suspend/hibernate issues with ThinkPad T41
+Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+Date		: 2008-12-03 09:59 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122805295416976&w=4
 
-Reported-by: Rafael J. Wysocki <rjw@sisk.pl>
-Tested-by: Frans Pop <elendil@planet.nl>
-Cc: Wim Van Sebroeck <wim@iguana.be>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- drivers/watchdog/iTCO_wdt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/watchdog/iTCO_wdt.c b/drivers/watchdog/iTCO_wdt.c
-index 26173a2..5b395a4 100644
---- a/drivers/watchdog/iTCO_wdt.c
-+++ b/drivers/watchdog/iTCO_wdt.c
-@@ -392,7 +392,7 @@ static int iTCO_wdt_stop(void)
- 
- 	/* Bit 13: TCO_EN -> 1 = Enables the TCO logic to generate SMI# */
- 	val32 = inl(SMI_EN);
--	val32 &= 0x00002000;
-+	val32 |= 0x00002000;
- 	outl(val32, SMI_EN);
- 
- 	/* Set the NO_REBOOT bit to prevent later reboots, just for sure */
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12121
+Subject		: Hibernation regression on Toshiba Portege R500
+Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
+Date		: 2008-11-29 07:00 (5 days old)
+References	: http://marc.info/?l=linux-kernel&m=122818451003644&w=4
+Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12048
+Subject		: Regression in bonding between 2.6.26.8 and 2.6.27.6
+Submitter	: Jesper Krogh <jesper@krogh.cc>
+Date		: 2008-11-16 9:41 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=122682977001048&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12039
+Subject		: Regression: USB/DVB 2.6.26.8 --&gt; 2.6.27.6
+Submitter	: David <david@unsolicited.net>
+Date		: 2008-11-14 20:20 (20 days old)
+References	: http://marc.info/?l=linux-kernel&m=122669568022274&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11983
+Subject		: iwlagn: wrong command queue 31, command id 0x0
+Submitter	: Matt Mackall <mpm@selenic.com>
+Date		: 2008-11-06 4:16 (28 days old)
+References	: http://marc.info/?l=linux-kernel&m=122598672815803&w=4
+		  http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1703
+Handled-By	: reinette chatre <reinette.chatre@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11886
+Subject		: without serial console system doesn't  poweroff
+Submitter	: Daniel Smolik <marvin@mydatex.cz>
+Date		: 2008-10-29 04:06 (36 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11876
+Subject		: RCU hang on cpu re-hotplug with 2.6.27rc8
+Submitter	: Andi Kleen <andi@firstfloor.org>
+Date		: 2008-10-06 23:28 (59 days old)
+References	: http://marc.info/?l=linux-kernel&m=122333610602399&w=2
+Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11795
+Subject		: ks959-sir dongle no longer works under 2.6.27 (REGRESSION)
+Submitter	: Alex Villacis Lasso <avillaci@ceibo.fiec.espol.edu.ec>
+Date		: 2008-10-20 10:49 (45 days old)
+Handled-By	: Samuel Ortiz <samuel@sortiz.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11698
+Subject		: 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
+Submitter	: Soeren Sonnenburg <kernel@nn7.de>
+Date		: 2008-09-29 11:29 (66 days old)
+References	: http://marc.info/?l=linux-kernel&m=122268780926859&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11664
+Subject		: acpi errors and random freeze on sony vaio sr
+Submitter	: Giovanni Pellerano <giovanni.pellerano@gmail.com>
+Date		: 2008-09-28 03:48 (67 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11569
+Subject		: Panic stop CPUs regression
+Submitter	: Andi Kleen <andi@firstfloor.org>
+Date		: 2008-09-02 13:49 (93 days old)
+References	: http://marc.info/?l=linux-kernel&m=122036356127282&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+Subject		: kernel panic: softlockup in tick_periodic() ???
+Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+Date		: 2008-09-11 16:46 (84 days old)
+References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+		  Cyrill Gorcunov <gorcunov@gmail.com>
+		  Ingo Molnar <mingo@elte.hu>
+		  Cyrill Gorcunov <gorcunov@gmail.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11215
+Subject		: INFO: possible recursive locking detected ps2_command
+Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Date		: 2008-07-31 9:41 (126 days old)
+References	: http://marc.info/?l=linux-kernel&m=121749737011637&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
+Subject		: VolanoMark regression with 2.6.27-rc1
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2008-07-31 3:20 (126 days old)
+References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
+Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+		  Peter Zijlstra <a.p.zijlstra@chello.nl>
+		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
+		  Miao Xie <miaox@cn.fujitsu.com>
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12099
+Subject		: Nokia 5310 storage-mode
+Submitter	: Robson Roberto Souza Peixoto <robsonpeixoto@gmail.com>
+Date		: 2008-11-25 01:07 (9 days old)
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+Patch		: http://marc.info/?l=linux-kernel&m=122762731503933&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11865
+Subject		: WOL for E100 Doesn't Work Anymore
+Submitter	: roger <rogerx@sdf.lonestar.org>
+Date		: 2008-10-26 21:56 (39 days old)
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=18646&action=view
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions introduced
+between 2.6.26 and 2.6.27, unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=11167
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
+Rafael
+
