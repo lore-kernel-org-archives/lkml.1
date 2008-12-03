@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYLCU2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYLCU2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbYLCU2e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbYLCT6V
+	id S1761410AbYLCU2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYLCT6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:21 -0500
-Received: from kroah.org ([198.145.64.141]:56779 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:22 -0500
+Received: from kroah.org ([198.145.64.141]:56827 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754442AbYLCT6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:58:04 -0500
-Date: Wed, 3 Dec 2008 11:56:44 -0800
+	id S1754559AbYLCT6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:58:09 -0500
+Date: Wed, 3 Dec 2008 11:56:53 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 097/104] ext4: Mark the buffer_heads as dirty and uptodate
-	after prepare_write
-Message-ID: <20081203195644.GT8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Josef Bacik <jbacik@redhat.com>,
+       linux-ext4@vger.kernel.org, Andreas Dilger <adilger@sun.com>
+Subject: [patch 101/104] ext3: dont try to resize if there are no reserved
+	gdt blocks left
+Message-ID: <20081203195653.GX8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-mark-the-buffer_heads-as-dirty-and-uptodate-after-prepare_write.patch"
+Content-Disposition: inline; filename="ext3-don-t-try-to-resize-if-there-are-no-reserved-gdt-blocks-left.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,32 +40,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Josef Bacik <jbacik@redhat.com>
 
-(cherry picked from commit ed9b3e3379731e9f9d2f73f3d7fd9e7d2ce3df4a)
+commit 972fbf779832e5ad15effa7712789aeff9224c37 upstream.
 
-We need to make sure we mark the buffer_heads as dirty and uptodate
-so that block_write_full_page write them correctly.
+When trying to resize a ext3 fs and you run out of reserved gdt blocks,
+you get an error that doesn't actually tell you what went wrong, it just
+says that the gdb it picked is not correct, which is the case since you
+don't have any reserved gdt blocks left.  This patch adds a check to make
+sure you have reserved gdt blocks to use, and if not prints out a more
+relevant error.
 
-This fixes mmap corruptions that can occur in low memory situations.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Cc: <linux-ext4@vger.kernel.org>
+Cc: Andreas Dilger <adilger@sun.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Willy Tarreau <w@1wt.eu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/inode.c |    2 ++
- 1 file changed, 2 insertions(+)
+ fs/ext3/resize.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -2242,6 +2242,8 @@ static int ext4_da_writepage(struct page
- 			unlock_page(page);
- 			return 0;
- 		}
-+		/* now mark the buffer_heads as dirty and uptodate */
-+		block_commit_write(page, 0, PAGE_CACHE_SIZE);
- 	}
+--- a/fs/ext3/resize.c
++++ b/fs/ext3/resize.c
+@@ -790,7 +790,8 @@ int ext3_group_add(struct super_block *s
  
- 	if (test_opt(inode->i_sb, NOBH) && ext4_should_writeback_data(inode))
+ 	if (reserved_gdb || gdb_off == 0) {
+ 		if (!EXT3_HAS_COMPAT_FEATURE(sb,
+-					     EXT3_FEATURE_COMPAT_RESIZE_INODE)){
++					     EXT3_FEATURE_COMPAT_RESIZE_INODE)
++		    || !le16_to_cpu(es->s_reserved_gdt_blocks)) {
+ 			ext3_warning(sb, __func__,
+ 				     "No reserved GDT blocks, can't resize");
+ 			return -EPERM;
 
