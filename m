@@ -1,109 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYLDHPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYLDHQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYLDHPy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 02:15:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYLDHPn
+	id S1756189AbYLDHQh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 02:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbYLDHQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 02:15:43 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41253 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbYLDHPn (ORCPT
+	Thu, 4 Dec 2008 02:16:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34028 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbYLDHQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 02:15:43 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 08/11] memcg: make zone_reclaim_stat
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20081203140655.GG17701@balbir.in.ibm.com>
-References: <20081201211646.1CE2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081203140655.GG17701@balbir.in.ibm.com>
-Message-Id: <20081204151647.1D78.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 4 Dec 2008 02:16:24 -0500
+Date: Wed, 3 Dec 2008 15:33:08 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Chris Wright <chrisw@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
+       avi@redhat.com, dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
+       cl@linux-foundation.org, corbet@lwn.net
+Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver.
+Message-ID: <20081203143307.GA2068@ucw.cz>
+References: <1226888432-3662-1-git-send-email-ieidus@redhat.com> <1226888432-3662-2-git-send-email-ieidus@redhat.com> <1226888432-3662-3-git-send-email-ieidus@redhat.com> <1226888432-3662-4-git-send-email-ieidus@redhat.com> <20081128165806.172d1026@lxorguk.ukuu.org.uk> <20081202180724.GC17607@acer.localdomain> <20081202181333.38c7b421@lxorguk.ukuu.org.uk> <20081202212411.GG17607@acer.localdomain> <20081202221029.513e8774@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu,  4 Dec 2008 16:15:37 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202221029.513e8774@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
-> > +						      struct zone *zone)
-> > +{
-> > +	int nid = zone->zone_pgdat->node_id;
-> > +	int zid = zone_idx(zone);
-> > +	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(memcg, nid, zid);
-> > +
-> > +	return &mz->reclaim_stat;
-> > +}
-> > +
-> > +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat_by_page(struct page *page)
-> > +{
+On Tue 2008-12-02 22:10:29, Alan Cox wrote:
+> On Tue, 2 Dec 2008 13:24:11 -0800
+> Chris Wright <chrisw@redhat.com> wrote:
 > 
-> I would prefer to use stat_from_page instead of stat_by_page, by page
-> is confusing.
-
-ok.
-will fix.
-
-
-> > @@ -172,6 +173,12 @@ void activate_page(struct page *page)
+> > * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > > On Tue, 2 Dec 2008 10:07:24 -0800
+> > > Chris Wright <chrisw@redhat.com> wrote:
+> > > > * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > > > > > +	r = !memcmp(old_digest, sha1_item->sha1val, SHA1_DIGEST_SIZE);
+> > > > > > +	mutex_unlock(&sha1_lock);
+> > > > > > +	if (r) {
+> > > > > > +		char *old_addr, *new_addr;
+> > > > > > +		old_addr = kmap_atomic(oldpage, KM_USER0);
+> > > > > > +		new_addr = kmap_atomic(newpage, KM_USER1);
+> > > > > > +		r = !memcmp(old_addr+PAGEHASH_LEN, new_addr+PAGEHASH_LEN,
+> > > > > > +			    PAGE_SIZE-PAGEHASH_LEN);
+> > > > > 
+> > > > > NAK - this isn't guaranteed to be robust so you could end up merging
+> > > > > different pages one provided by a malicious attacker.
+> > > > 
+> > > > I presume you're referring to the digest comparison.  While there's
+> > > > theoretical concern of hash collision, it's mitigated by hmac(sha1)
+> > > > so the attacker can't brute force for known collisions.
+> > > 
+> > > Using current known techniques. A random collision is just as bad news.
 > > 
-> >  		reclaim_stat->recent_rotated[!!file]++;
-> >  		reclaim_stat->recent_scanned[!!file]++;
-> > +
-> > +		memcg_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
-> > +		if (memcg_reclaim_stat) {
-> > +			memcg_reclaim_stat->recent_rotated[!!file]++;
-> > +			memcg_reclaim_stat->recent_scanned[!!file]++;
-> > +		}
+> > And, just to clarify, your concern would extend to any digest based
+> > comparison?  Or are you specifically concerned about sha1?
 > 
-> Does it make sense to write two inline routines like
-> 
-> update_recent_rotated(page)
-> {
->         zone = page_zone(page);
-> 
->         zone->reclaim_stat->recent_rotated[!!file]++;
->         mem_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
->         if (mem_reclaim_stat)
->                 mem_cg_reclaim_stat->recent_rotated[!!file]++;
->         ...
-> 
-> }
-> 
-> and similarly update_recent_reclaimed(page)
+> Taken off list 
 
-makes sense. good cleanup.
+Hmmm, list would like to know :-).
 
-will fix.
-
-
-
-> > Index: b/mm/vmscan.c
-> > ===================================================================
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -134,6 +134,9 @@ static DECLARE_RWSEM(shrinker_rwsem);
-> >  static struct zone_reclaim_stat *get_reclaim_stat(struct zone *zone,
-> >  						  struct scan_control *sc)
-> >  {
-> > +	if (!scan_global_lru(sc))
-> > +		mem_cgroup_get_reclaim_stat(sc->mem_cgroup, zone);
-> 
-> What do we gain by just calling mem_cgroup_get_reclaim_stat? Where do
-> we return/use this value?
-
-Agghh.
-My last cleanup is _not_ cleanup..
-
-thanks! will fix.
-
-
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
