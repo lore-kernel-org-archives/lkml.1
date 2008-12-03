@@ -1,313 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYLCV3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYLCV3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYLCV3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYLCV3I
+	id S1755253AbYLCV3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLCV3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:29:08 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:57614 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752828AbYLCV3H (ORCPT
+	Wed, 3 Dec 2008 16:29:11 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:38940 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752848AbYLCV3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:29:07 -0500
-Date: Wed, 3 Dec 2008 21:29:03 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Sven Wegener <sven.wegener@stealer.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: [PATCH] misc: Add dell-wmi driver for hotkey control
-Message-ID: <20081203212903.GA25109@srcf.ucam.org>
-References: <20081203195644.GC22560@srcf.ucam.org> <alpine.LNX.2.00.0812032149470.16637@titan.stealer.net>
+	Wed, 3 Dec 2008 16:29:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=wHOPxa/l5BtbtRQlMdFjOlROBunqOD3Z9EyrvUTZmEoZ34E/6lO8y0DHe6D/3I5BtZ3fEIpb5lW2mzFJQT3rn4Dnzs33tIou8sUyy+tHNyZKWnxAae2iWN6+sg9+SxW+Nb7r2Ieob+72q7XsUNoB6Z7sG3Uz/eGdYUjclGv9LKo=  ;
+X-YMail-OSG: 0yy7IHgVM1menrRWs_igpdrmv59JcF1_BEfYWQdVuUgj3S5lBPPvB.f2cFay2wnX58mwz4rP0b3szba2V98T1lbg9sSGb7WWIugT5U4xq8qECSHXCY6JkF7G7uIFRHjD_.33rHYSrhd46CmHP4jqxa02b7FUacFgdEneMFZrusgtwzhEW19YvOaO8OPH
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.28-rc7] gpio: pca953x handles more chips, i2c fault codes
+Date: Wed, 3 Dec 2008 13:29:04 -0800
+User-Agent: KMail/1.9.10
+Cc: Eric Miao <eric.y.miao@gmail.com>, lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0812032149470.16637@titan.stealer.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Message-Id: <200812031329.04914.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks - updated version follows.
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-commit 6e7b4e08dc924e3ec71f33b9e0e8fda077c2be89
-Author: Matthew Garrett <mjg@redhat.com>
-Date:   Wed Dec 3 19:42:40 2008 +0000
+Minor updates to the pca953x GPIO expander driver:  handle several
+more compatible parts, and stop assuming that the I2C layer's return
+codes are garbage (that's now been fixed).
 
-    misc: add dell-wmi driver
-    
-    Add a WMI driver for Dell laptops. Currently it does nothing but send a
-    generic input event when a button with a picture of a battery on it is
-    pressed, but maybe other uses will appear over time.
-    
-    Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Eric Miao <eric.miao@marvell.com>
+---
+ drivers/gpio/Kconfig   |    7 ++++---
+ drivers/gpio/pca953x.c |   12 +++++++-----
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 618c1ef..fe2c17e 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1371,6 +1371,11 @@ P:	Doug Warzecha
- M:	Douglas_Warzecha@dell.com
- S:	Maintained
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -95,7 +95,7 @@ config GPIO_MAX732X
+ 	  number for these GPIOs.
  
-+DELL WMI EXTRAS DRIVER
-+P:	Matthew Garrett
-+M:	mjg59@srcf.ucam.org
-+S:	Maintained
-+
- DEVICE NUMBER REGISTRY
- P:	Torben Mathiasen
- M:	device@lanana.org
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index fee7304..5837544 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -227,6 +227,16 @@ config HP_WMI
-          To compile this driver as a module, choose M here: the module will
-          be called hp-wmi.
+ config GPIO_PCA953X
+-	tristate "PCA953x, PCA955x, and MAX7310 I/O ports"
++	tristate "PCA953x, PCA955x, TCA64xx, and MAX7310 I/O ports"
+ 	depends on I2C
+ 	help
+ 	  Say yes here to provide access to several register-oriented
+@@ -104,9 +104,10 @@ config GPIO_PCA953X
  
-+config DELL_WMI
-+       tristate "Dell WMI extras"
-+       depends on ACPI_WMI
-+       depends on INPUT
-+       help
-+         Say Y here if you want to support WMI-based hotkeys on Dell laptops.
+ 	  4 bits:	pca9536, pca9537
+ 
+-	  8 bits:	max7310, pca9534, pca9538, pca9554, pca9557
++	  8 bits:	max7310, pca9534, pca9538, pca9554, pca9557,
++	  		tca6408
+ 
+-	  16 bits:	pca9535, pca9539, pca9555
++	  16 bits:	pca9535, pca9539, pca9555, tca6416
+ 
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called pca953x.
+--- a/drivers/gpio/pca953x.c
++++ b/drivers/gpio/pca953x.c
+@@ -33,7 +33,12 @@ static const struct i2c_device_id pca953
+ 	{ "pca9554", 8, },
+ 	{ "pca9555", 16, },
+ 	{ "pca9557", 8, },
 +
-+         To compile this driver as a module, choose M here: the module will
-+         be called dell-wmi.
-+
- config ICS932S401
- 	tristate "Integrated Circuits ICS932S401"
- 	depends on I2C && EXPERIMENTAL
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 817f7f5..5b47819 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
- obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
- obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
- obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
-+obj-$(CONFIG_DELL_WMI)		+= dell-wmi.o
- obj-$(CONFIG_ICS932S401)	+= ics932s401.o
- obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
- obj-$(CONFIG_LKDTM)		+= lkdtm.o
-diff --git a/drivers/misc/dell-wmi.c b/drivers/misc/dell-wmi.c
-new file mode 100644
-index 0000000..2fab941
---- /dev/null
-+++ b/drivers/misc/dell-wmi.c
-@@ -0,0 +1,210 @@
-+/*
-+ * Dell WMI hotkeys
-+ *
-+ * Copyright (C) 2008 Red Hat <mjg@redhat.com>
-+ *
-+ * Portions based on wistron_btns.c:
-+ * Copyright (C) 2005 Miloslav Trmac <mitr@volny.cz>
-+ * Copyright (C) 2005 Bernhard Rosenkraenzer <bero@arklinux.org>
-+ * Copyright (C) 2005 Dmitry Torokhov <dtor@mail.ru>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/input.h>
-+#include <acpi/acpi_drivers.h>
-+#include <linux/acpi.h>
-+#include <linux/string.h>
-+
-+MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
-+MODULE_DESCRIPTION("Dell laptop WMI hotkeys driver");
-+MODULE_LICENSE("GPL");
-+
-+#define DELL_EVENT_GUID "9DBB5994-A997-11DA-B012-B622A1EF5492"
-+
-+MODULE_ALIAS("wmi:"DELL_EVENT_GUID);
-+
-+struct key_entry {
-+	char type;		/* See KE_* below */
-+	u16 code;
-+	u16 keycode;
-+};
-+
-+enum { KE_KEY, KE_SW, KE_END };
-+
-+static struct key_entry dell_wmi_keymap[] = {
-+	{KE_KEY, 0xe045, KEY_PROG1},
-+	{KE_END, 0}
-+};
-+
-+static struct input_dev *dell_wmi_input_dev;
-+
-+static struct key_entry *dell_wmi_get_entry_by_scancode(int code)
-+{
-+	struct key_entry *key;
-+
-+	for (key = dell_wmi_keymap; key->type != KE_END; key++)
-+		if (code == key->code)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static struct key_entry *dell_wmi_get_entry_by_keycode(int keycode)
-+{
-+	struct key_entry *key;
-+
-+	for (key = dell_wmi_keymap; key->type != KE_END; key++)
-+		if (key->type == KE_KEY && keycode == key->keycode)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static int dell_wmi_getkeycode(struct input_dev *dev, int scancode,
-+			       int *keycode)
-+{
-+	struct key_entry *key = dell_wmi_get_entry_by_scancode(scancode);
-+
-+	if (key && key->type == KE_KEY) {
-+		*keycode = key->keycode;
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int dell_wmi_setkeycode(struct input_dev *dev, int scancode, int keycode)
-+{
-+	struct key_entry *key;
-+	int old_keycode;
-+
-+	if (keycode < 0 || keycode > KEY_MAX)
-+		return -EINVAL;
-+
-+	key = dell_wmi_get_entry_by_scancode(scancode);
-+	if (key && key->type == KE_KEY) {
-+		old_keycode = key->keycode;
-+		key->keycode = keycode;
-+		set_bit(keycode, dev->keybit);
-+		if (!dell_wmi_get_entry_by_keycode(old_keycode))
-+			clear_bit(old_keycode, dev->keybit);
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
-+
-+static void dell_wmi_notify(u32 value, void *context)
-+{
-+	struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };
-+	static struct key_entry *key;
-+	union acpi_object *obj;
-+
-+	wmi_get_event_data(value, &response);
-+
-+	obj = (union acpi_object *)response.pointer;
-+
-+	if (obj && obj->type == ACPI_TYPE_BUFFER) {
-+		int *buffer = (int *)obj->buffer.pointer;
-+		key = dell_wmi_get_entry_by_scancode(buffer[1]);
-+		if (key) {
-+			input_report_key(dell_wmi_input_dev, key->keycode, 1);
-+			input_sync(dell_wmi_input_dev);
-+			input_report_key(dell_wmi_input_dev, key->keycode, 0);
-+			input_sync(dell_wmi_input_dev);
-+		} else
-+			printk(KERN_INFO "dell-wmi: Unknown key %x pressed\n",
-+			       buffer[1]);
-+	}
-+}
-+
-+static int __init dell_wmi_input_setup(void)
-+{
-+	struct key_entry *key;
-+	int err;
-+
-+	dell_wmi_input_dev = input_allocate_device();
-+
-+	if (!dell_wmi_input_dev)
-+		return -ENOMEM;
-+
-+	dell_wmi_input_dev->name = "Dell WMI hotkeys";
-+	dell_wmi_input_dev->phys = "wmi/input0";
-+	dell_wmi_input_dev->id.bustype = BUS_HOST;
-+	dell_wmi_input_dev->getkeycode = dell_wmi_getkeycode;
-+	dell_wmi_input_dev->setkeycode = dell_wmi_setkeycode;
-+
-+	for (key = dell_wmi_keymap; key->type != KE_END; key++) {
-+		switch (key->type) {
-+		case KE_KEY:
-+			set_bit(EV_KEY, dell_wmi_input_dev->evbit);
-+			set_bit(key->keycode, dell_wmi_input_dev->keybit);
-+			break;
-+		case KE_SW:
-+			set_bit(EV_SW, dell_wmi_input_dev->evbit);
-+			set_bit(key->keycode, dell_wmi_input_dev->swbit);
-+			break;
-+		}
-+	}
-+
-+	err = input_register_device(dell_wmi_input_dev);
-+
-+	if (err) {
-+		input_free_device(dell_wmi_input_dev);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init dell_wmi_init(void)
-+{
-+	int err;
-+
-+	if (wmi_has_guid(DELL_EVENT_GUID)) {
-+		err = dell_wmi_input_setup();
-+
-+		if (err)
-+			return err;
-+
-+		err = wmi_install_notify_handler(DELL_EVENT_GUID,
-+						 dell_wmi_notify, NULL);
-+		if (err) {
-+			input_unregister_device(dell_wmi_input_dev);
-+			printk(KERN_ERR "dell-wmi: Unable to register"
-+			       " notify handler - %d\n", err);
-+			return err;
-+		}
-+
-+	} else
-+		printk(KERN_WARNING "dell-wmi: No known WMI GUID found\n");
-+
-+	return 0;
-+}
-+
-+static void __exit dell_wmi_exit(void)
-+{
-+	if (wmi_has_guid(DELL_EVENT_GUID)) {
-+		wmi_remove_notify_handler(DELL_EVENT_GUID);
-+		input_unregister_device(dell_wmi_input_dev);
-+	}
-+}
-+
-+module_init(dell_wmi_init);
-+module_exit(dell_wmi_exit);
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ 	{ "max7310", 8, },
++	{ "pca6107", 8, },
++	{ "tca6408", 8, },
++	{ "tca6416", 16, },
++	/* NYET:  { "tca6424", 24, }, */
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, pca953x_id);
+@@ -47,9 +52,6 @@ struct pca953x_chip {
+ 	struct gpio_chip gpio_chip;
+ };
+ 
+-/* NOTE:  we can't currently rely on fault codes to come from SMBus
+- * calls, so we map all errors to EIO here and return zero otherwise.
+- */
+ static int pca953x_write_reg(struct pca953x_chip *chip, int reg, uint16_t val)
+ {
+ 	int ret;
+@@ -61,7 +63,7 @@ static int pca953x_write_reg(struct pca9
+ 
+ 	if (ret < 0) {
+ 		dev_err(&chip->client->dev, "failed writing register\n");
+-		return -EIO;
++		return ret;
+ 	}
+ 
+ 	return 0;
+@@ -78,7 +80,7 @@ static int pca953x_read_reg(struct pca95
+ 
+ 	if (ret < 0) {
+ 		dev_err(&chip->client->dev, "failed reading register\n");
+-		return -EIO;
++		return ret;
+ 	}
+ 
+ 	*val = (uint16_t)ret;
