@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYLCDtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYLCDzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYLCDtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 22:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYLCDtZ
+	id S1754838AbYLCDzm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 22:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYLCDzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 22:49:25 -0500
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4353 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbYLCDtZ (ORCPT
+	Tue, 2 Dec 2008 22:55:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45801 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbYLCDzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 22:49:25 -0500
-Date: Wed, 3 Dec 2008 04:48:16 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       alex.shi@intel.com, Thomas Gleixner <tglx@tglx.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] Catch xtime_nsec underflows and fix them
-In-Reply-To: <1228273295.2866.189.camel@ymzhang>
-Message-ID: <Pine.LNX.4.64.0812030436590.24668@localhost.localdomain>
-References: <1228185281.7176.37.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0812022118330.24668@localhost.localdomain>
- <1228273295.2866.189.camel@ymzhang>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-132831531-1228276096=:24668"
+	Tue, 2 Dec 2008 22:55:33 -0500
+Date: Wed, 3 Dec 2008 12:54:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] cgroup: fix pre_destroy and semantics of
+ css->refcnt
+Message-Id: <20081203125440.482279ed.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <493600A4.6040802@cn.fujitsu.com>
+References: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081201150208.6b24506b.kamezawa.hiroyu@jp.fujitsu.com>
+	<493600A4.6040802@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 03 Dec 2008 11:44:36 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
---8323328-132831531-1228276096=:24668
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-Hi,
-
-On Wed, 3 Dec 2008, Zhang, Yanmin wrote:
-
-> > This doesn't explain the problem entirely, I considered a negative 
-> > xtime_nsec before, but xtime_nsec+offset should still be positive
-> ﻿xtime_nsec underflows after ﻿clocksource_adjust. Before ﻿clocksource_adjust,
-> ﻿xtime_nsec is a small positive.
+> > +/*
+> > + * Try to set all subsys's refcnt to be 0.
+> > + * css->refcnt==0 means this subsys will be destroy()'d.
+> > + */
+> > +static bool cgroup_set_subsys_removed(struct cgroup *cgrp)
+> > +{
+> > +	struct cgroup_subsys *ss;
+> > +	struct cgroup_subsys_state *css, *tmp;
+> > +
+> > +	for_each_subsys(cgrp->root, ss) {
+> > +		css = cgrp->subsys[ss->subsys_id];
+> > +		if (!atomic_dec_and_test(&css->refcnt))
+> > +			goto rollback;
+> > +	}
+> > +	return true;
+> > +rollback:
+> > +	for_each_subsys(cgrp->root, ss) {
+> > +		tmp = cgrp->subsys[ss->subsys_id];
+> > +		atomic_inc(&tmp->refcnt);
+> > +		if (tmp == css)
+> > +			break;
+> > +	}
+> > +	return false;
+> > +}
+> > +
 > 
-> When ﻿﻿xtime_nsec underflows at the first time, xtime.tv_nsec becomes -1.
-> Later on when the second tick arrives, below statement in the while loop
->  clock->xtime_nsec += clock->xtime_interval;
-> will cause ﻿clock->xtime_nsec becomes positive again. So the second tick
-> appears a going-backward time.
+> This function may return false, then causes rmdir() fail. So css_tryget(subsys1)
+> returns 0 doesn't necessarily mean subsys1->destroy() will be called,
+> if subsys2's css's refcnt is >1 when cgroup_set_subsys_removed() is called.
+> 
+> Will this bring up bugs and problems?
+> 
 
-Yes, but only by 1nsec, so normally it wouldn't be noticable.
+current user of css_get() is only memcg, so no problem now.
 
-> >  and 
-> > produce the correct result, at least I can't find anything in 
-> > getnstimeofday().
-> The testing uses vsyscall to get call gettimeofday. vsyscall_gtod_data.wall_time_nsec
-> is a u32 while timespec->tv_nsec is a signed long.
+"css_tryget() fails" means "rmdir" is called against this cgroup. So, not so
+troublesome in genral, I think. (the user will retry rmdir()).
 
-Ok, I was missing this part, I looked at the 32bit version of 
-getnstimeofday() and there xtime.tv_nsec was correctly sign extended.
-To be safe for the future wall_time_nsec should also be a s32.
+To be honest, I don't want to return -EBUSY but wait for success in the kernel.
+and go back to pre_destroy() for this temporal race.
 
-bye, Roman
---8323328-132831531-1228276096=:24668--
+Thanks,
+-Kame
+
+
+
+
+
