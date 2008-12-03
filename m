@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYLCU2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbYLCU3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761410AbYLCU2x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:28:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYLCT6W
+	id S1753638AbYLCU3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbYLCT6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:22 -0500
-Received: from kroah.org ([198.145.64.141]:56827 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:23 -0500
+Received: from kroah.org ([198.145.64.141]:56851 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754559AbYLCT6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:58:09 -0500
-Date: Wed, 3 Dec 2008 11:56:53 -0800
+	id S1751543AbYLCT6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:58:11 -0500
+Date: Wed, 3 Dec 2008 11:56:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Josef Bacik <jbacik@redhat.com>,
-       linux-ext4@vger.kernel.org, Andreas Dilger <adilger@sun.com>
-Subject: [patch 101/104] ext3: dont try to resize if there are no reserved
-	gdt blocks left
-Message-ID: <20081203195653.GX8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mingming Cao <cmm@us.ibm.com>
+Subject: [patch 103/104] ext3: fix ext3 block reservation early ENOSPC issue
+Message-ID: <20081203195657.GZ8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext3-don-t-try-to-resize-if-there-are-no-reserved-gdt-blocks-left.patch"
+Content-Disposition: inline; filename="ext3-fix-ext3-block-reservation-early-enospc-issue.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,39 +38,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Josef Bacik <jbacik@redhat.com>
+From: Mingming Cao <cmm@us.ibm.com>
 
-commit 972fbf779832e5ad15effa7712789aeff9224c37 upstream.
+commit 46d01a225e694f1a4343beea44f1e85105aedd7e upstream.
 
-When trying to resize a ext3 fs and you run out of reserved gdt blocks,
-you get an error that doesn't actually tell you what went wrong, it just
-says that the gdb it picked is not correct, which is the case since you
-don't have any reserved gdt blocks left.  This patch adds a check to make
-sure you have reserved gdt blocks to use, and if not prints out a more
-relevant error.
+We could run into ENOSPC error on ext3, even when there is free blocks on
+the filesystem.
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
-Cc: <linux-ext4@vger.kernel.org>
-Cc: Andreas Dilger <adilger@sun.com>
+The problem is triggered in the case the goal block group has 0 free
+blocks , and the rest block groups are skipped due to the check of
+"free_blocks < windowsz/2".  Current code could fall back to non
+reservation allocation to prevent early ENOSPC after examing all the block
+groups with reservation on , but this code was bypassed if the reservation
+window is turned off already, which is true in this case.
+
+This patch fixed two issues:
+1) We don't need to turn off block reservation if the goal block group has
+0 free blocks left and continue search for the rest of block groups.
+
+Current code the intention is to turn off the block reservation if the
+goal allocation group has a few (some) free blocks left (not enough for
+make the desired reservation window),to try to allocation in the goal
+block group, to get better locality.  But if the goal blocks have 0 free
+blocks, it should leave the block reservation on, and continues search for
+the next block groups,rather than turn off block reservation completely.
+
+2) we don't need to check the window size if the block reservation is off.
+
+The problem was originally found and fixed in ext4.
+
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Cc: Theodore Ts'o <tytso@mit.edu>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Willy Tarreau <w@1wt.eu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext3/resize.c |    3 ++-
+ fs/ext3/balloc.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/ext3/resize.c
-+++ b/fs/ext3/resize.c
-@@ -790,7 +790,8 @@ int ext3_group_add(struct super_block *s
+--- a/fs/ext3/balloc.c
++++ b/fs/ext3/balloc.c
+@@ -1547,6 +1547,7 @@ retry_alloc:
+ 	 * turn off reservation for this allocation
+ 	 */
+ 	if (my_rsv && (free_blocks < windowsz)
++		&& (free_blocks > 0)
+ 		&& (rsv_is_empty(&my_rsv->rsv_window)))
+ 		my_rsv = NULL;
  
- 	if (reserved_gdb || gdb_off == 0) {
- 		if (!EXT3_HAS_COMPAT_FEATURE(sb,
--					     EXT3_FEATURE_COMPAT_RESIZE_INODE)){
-+					     EXT3_FEATURE_COMPAT_RESIZE_INODE)
-+		    || !le16_to_cpu(es->s_reserved_gdt_blocks)) {
- 			ext3_warning(sb, __func__,
- 				     "No reserved GDT blocks, can't resize");
- 			return -EPERM;
+@@ -1585,7 +1586,7 @@ retry_alloc:
+ 		 * free blocks is less than half of the reservation
+ 		 * window size.
+ 		 */
+-		if (free_blocks <= (windowsz/2))
++		if (my_rsv && (free_blocks <= (windowsz/2)))
+ 			continue;
+ 
+ 		brelse(bitmap_bh);
 
