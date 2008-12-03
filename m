@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYLCEf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbYLCEhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbYLCEf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 23:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYLCEfq
+	id S1755276AbYLCEhc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 23:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYLCEhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 23:35:46 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:59647 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752716AbYLCEfp (ORCPT
+	Tue, 2 Dec 2008 23:37:22 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:48609 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751148AbYLCEhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 23:35:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nae1fjI6wuX5kgjAqj+VT0nD+AP8pNPYMlvLrqmqFCZtIH+tAbPiuSe7c1hEnzjWyP
-         RJXSeTvamFBdb85ysCwjWlU3TrEL+g4ITbHVW5uVE3uJjBDxq/aKNjViJuvW/sI5Rk7W
-         rgxWJAAXufLyRFN3hHEl58fVTyXOSaoghl5Hc=
-Message-ID: <804dabb00812022035k1876a521qa41cd4634b70f9a2@mail.gmail.com>
-Date: Wed, 3 Dec 2008 12:35:43 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Geoffrey McRae" <geoff@rabidhost.com>
-Subject: Re: New Security Features, Please Comment
-Cc: Valdis.Kletnieks@vt.edu, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1228276959.6679.27.camel@lappy.spacevs.com>
+	Tue, 2 Dec 2008 23:37:21 -0500
+Date: Tue, 2 Dec 2008 23:37:12 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jonathan Bastien-Filiatrault <joe@x2a.org>
+Cc: Andres Freund <andres@anarazel.de>, Andreas Dilger <adilger@sun.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20081203043712.GJ20858@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jonathan Bastien-Filiatrault <joe@x2a.org>,
+	Andres Freund <andres@anarazel.de>,
+	Andreas Dilger <adilger@sun.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+References: <200811291418.24672.andres@anarazel.de> <200812021559.05103.andres@anarazel.de> <20081202164709.GC18162@mit.edu> <200812021847.35771.andres@anarazel.de> <20081202203315.GA20858@mit.edu> <4935D4C0.7050601@x2a.org> <4935D58B.4020002@x2a.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1228260494.24232.21.camel@compy.ivent.com.au>
-	 <20081203005338.6472db7a@lxorguk.ukuu.org.uk>
-	 <1228268657.6679.4.camel@lappy.spacevs.com>
-	 <73639.1228272932@turing-police.cc.vt.edu>
-	 <1228276959.6679.27.camel@lappy.spacevs.com>
+In-Reply-To: <4935D58B.4020002@x2a.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 3, 2008 at 12:02 PM, Geoffrey McRae <geoff@rabidhost.com> wrote:
->
-> My initial concept is to implement a HTTP server that is designed from
-> the ground up to use this new functionallity. Each server that has been
-> pre-forked will just sit there until the parent sets its uid/gid and
-> hands it the request to handle.
->
+On Tue, Dec 02, 2008 at 07:40:43PM -0500, Jonathan Bastien-Filiatrault wrote:
+> Jonathan Bastien-Filiatrault wrote:
+> > Theodore Tso wrote:
+> > 
+> >> Hmm...  really?  Was the error message ENOSPC, or something else?
+> >>
+> > I can confirm I get a ENOSPC on open/creat. Here is the relevant output
+> > from strace touch test:
+> > 
+> (Sorry for replying to myself)
+> 
+> This happened while compiling a kernel with ccache enabled (with a
+> relatively low hit rate for this specific build). Vuze was also opened,
+> but with no active download.
 
-I think the above is the core issue - you have something privileged to
-be executed.   So why not execute it in a small, code-verifiable
-implementation, just like the Privilege Separation idea of SSH?
+Hmm... I build with ccache all the time.  I normally don't run a
+bittorrent client, though.  What kernel version are you using?
 
-http://www.citi.umich.edu/u/provos/papers/privsep.pdf
+Any chance you can apply the patch which I sent earlier in this
+thread, trigger the debugging ioctl when it happens again?
 
-Everything is done in userspace.   SInce the privileged component is
-small, it is easy to verify for correctness.   The rest execute with
-lesser privilege.
+Thanks,
 
-Recently, the hypervisor has been used to implement this verifiable
-source code concept:   see:
-
-http://www.ghs.com/news/20081117_integrity_EAL6plus_security.html
-
-where GreenHill achieved EAL6 certification - as it built its entire
-kernel on top of the hypervisor.   (called Separation Kernel,
-conceptually similar to that of Privilege Separation in SSH).
-
-Just my 2cts :-).
-
--- 
-Regards,
-Peter Teoh
-
-Ernest Hemingway - "Never mistake motion for action."
+		    	      	    	    - Ted
