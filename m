@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbYLCX6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYLCX7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbYLCX6f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 18:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbYLCX60
+	id S1756128AbYLCX7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 18:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYLCX7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 18:58:26 -0500
-Received: from vpnflf.ccur.com ([12.192.68.2]:59087 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754355AbYLCX6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 18:58:25 -0500
-Date: Wed, 3 Dec 2008 18:58:19 -0500
-From: Joe Korty <joe.korty@ccur.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Change thread_info's flag field back to 32 bits
-Message-ID: <20081203235819.GA17615@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-Mime-Version: 1.0
+	Wed, 3 Dec 2008 18:59:04 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35357 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754619AbYLCX7B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 18:59:01 -0500
+Date: Wed, 3 Dec 2008 17:58:58 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC v10][PATCH 00/13] Kernel based checkpoint/restart
+Message-ID: <20081203235858.GA27709@us.ibm.com>
+References: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1227747884-14150-1-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change x86_64's thread_info 'flags' field back to __u32.
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> Checkpoint-restart (c/r): fixes a couple of bugs and a DoS issue
+> (tested against v2.6.28-rc3).
 
-This was changed to 'unsigned long' when the thread_info*.h
-for i386 and x86_64 were merged.  Change it back.  We can
-do this as only 27 bits of 'flags' are actually used.
+Tests well for me.  Haven't tested mktree yet, will wait until you
+re-send addressing feedback to do that.
 
-This change actually packs down thread_info by 64 bits:
-32 bits are saved by the smaller flags, and 32 bits are
-saved by the following 'mm_segment_t field' becoming
-naturally 64-bit aligned.
-
-Signed-off-by: Joe Korty <joe.korty@ccur.com>
-
-Index: 2.6.28-rc7/arch/x86/include/asm/thread_info.h
-===================================================================
---- 2.6.28-rc7.orig/arch/x86/include/asm/thread_info.h	2008-12-03 17:53:10.000000000 -0500
-+++ 2.6.28-rc7/arch/x86/include/asm/thread_info.h	2008-12-03 18:31:40.000000000 -0500
-@@ -24,7 +24,7 @@
- struct thread_info {
- 	struct task_struct	*task;		/* main task structure */
- 	struct exec_domain	*exec_domain;	/* execution domain */
--	unsigned long		flags;		/* low level flags */
-+	__u32			flags;		/* low level flags */
- 	__u32			status;		/* thread synchronous flags */
- 	__u32			cpu;		/* current CPU */
- 	int			preempt_count;	/* 0 => preemptable,
+thanks,
+-serge
