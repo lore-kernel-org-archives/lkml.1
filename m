@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYLCVXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYLCVZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbYLCVXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 16:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYLCVX2
+	id S1754611AbYLCVZn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 16:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYLCVZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 16:23:28 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:60544 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbYLCVX1 (ORCPT
+	Wed, 3 Dec 2008 16:25:35 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:61859 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752320AbYLCVZe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 16:23:27 -0500
-Date: Wed, 03 Dec 2008 16:23:45 -0500
-From: Jody McIntyre <scjody@sun.com>
-Subject: Re: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
-In-reply-to: <4936E96B.6090706@zytor.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
-Message-id: <20081203212345.GD7080@clouds>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-References: <20081202215154.GL29919@clouds> <4936C927.3030504@zytor.com>
- <20081203195022.GA7080@clouds> <4936E96B.6090706@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 3 Dec 2008 16:25:34 -0500
+Subject: [PATCH] memory hotplug: run lru_add_drain_all() on each cpu
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Reply-To: gerald.schaefer@de.ibm.com
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       y-goto@jp.fujitsu.com, npiggin@suse.de
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 22:25:24 +0100
+Message-Id: <1228339524.6598.11.camel@t60p>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 12:17:47PM -0800, H. Peter Anvin wrote:
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-> I was particularly suspicious because you said "one of my systems",
-> which implies other systems don't behave that way...
+offline_pages() calls lru_add_drain_all() followed by drain_all_pages().
+While drain_all_pages() works on each cpu, lru_add_drain_all() only runs
+on the current cpu for architectures w/o CONFIG_NUMA. This let us run
+into the BUG_ON(!PageBuddy(page)) in __offline_isolated_pages() during
+memory hotplug stress test on s390. The page in question was still on the
+pcp list, because of a race with lru_add_drain_all() and drain_all_pages()
+on different cpus.
 
-I have one other system that can build this kernel, and one that gets
-further.  The differences are gcc version (all distro-supplied),
-.config, and in one case X86_32 vs. X86_64.
+This is fixed with this patch by adding CONFIG_MEMORY_HOTREMOVE to the
+lru_add_drain_all() #ifdef, to let it run on each cpu.
 
-> Now, the syscall_64.i you sent me is the working version, right?  Could
-> you send me the non-working version, too?
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-That's the non-working version.  I just verified:
+---
+ mm/swap.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-root@vm1:~/linux-2.6# make clean && make arch/x86/kernel/syscall_64.o
-[...]
-  CC      arch/x86/kernel/syscall_64.o
-arch/x86/kernel/syscall_64.c:27: error: array index in initializer exceeds array bounds
-arch/x86/kernel/syscall_64.c:27: error: (near initialization for ‘sys_call_table’)
-arch/x86/kernel/syscall_64.c:27: warning: excess elements in array initializer
-arch/x86/kernel/syscall_64.c:27: warning: (near initialization for ‘sys_call_table’)
-make[1]: *** [arch/x86/kernel/syscall_64.o] Error 1
-make: *** [arch/x86/kernel/syscall_64.o] Error 2
-root@vm1:~/linux-2.6# make arch/x86/kernel/syscall_64.i
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    scripts/checksyscalls.sh
-  CPP     arch/x86/kernel/syscall_64.i
+Index: linux-2.6/mm/swap.c
+===================================================================
+--- linux-2.6.orig/mm/swap.c
++++ linux-2.6/mm/swap.c
+@@ -299,7 +299,8 @@ void lru_add_drain(void)
+ 	put_cpu();
+ }
+ 
+-#if defined(CONFIG_NUMA) || defined(CONFIG_UNEVICTABLE_LRU)
++#if defined(CONFIG_NUMA) || defined(CONFIG_UNEVICTABLE_LRU) || \
++    defined(CONFIG_MEMORY_HOTREMOVE)
+ static void lru_add_drain_per_cpu(struct work_struct *dummy)
+ {
+ 	lru_add_drain();
 
-The resulting .i file is identical (checked md5sum) to the one on the
-http site: http://downloads.lustre.org/people/scjody/lkml/syscall_64.i
-
-Cheers,
-Jody
