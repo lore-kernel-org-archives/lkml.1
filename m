@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762401AbYLCUe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762468AbYLCUff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762401AbYLCUe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbYLCUG7
+	id S1762468AbYLCUff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758491AbYLCULi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:06:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56126 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756619AbYLCUG6 (ORCPT
+	Wed, 3 Dec 2008 15:11:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60580 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757707AbYLCULf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:06:58 -0500
-Date: Wed, 3 Dec 2008 12:06:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org, giometti@linux.it
-Subject: Re: [PATCH 1/1 #2] Char: n_tty, include module.h
-Message-Id: <20081203120643.169baeee.akpm@linux-foundation.org>
-In-Reply-To: <20081203153537.4504bdd7@lxorguk.ukuu.org.uk>
-References: <1228317711-1311-1-git-send-email-jirislaby@gmail.com>
-	<20081203153537.4504bdd7@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 15:11:35 -0500
+Date: Wed, 3 Dec 2008 14:13:20 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
+Message-ID: <20081203201320.GA17785@hallyn.com>
+Reply-To: "In-Reply-To:20081203123021.GA30035"@infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008 15:35:37 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Quoting Christoph Hellwig (hch@infradead.org):
+> On Tue, Dec 02, 2008 at 04:47:56PM -0500, Mimi Zohar wrote:
+> > +/*
+> > + * Integrity API calls:
+> > + *
+> > + * @collect_measurement:
+> > + *	Collect template specific measurement data.
+> > + *	@data contains template specific data used for collecting the
+> > + *	measurement.
+> > + * 	Return 0 if operation was successful.
+> > + *
+> > + * @appraise_measurement:
+> > + *	Appraise the integrity of the template specific measurement data.
+> > + *	@data contains template specific data used for appraising the
+> > + *	measurement.
+> > + * 	Return 0 if operation was successful.
+> > + *
+> > + * @store_measurement:
+> > + *	Store the template specific data.
+> > + *	@data contains template specific data used for storing the
+> > + *	measurement.
+> > + *
+> > + * @store_template:
+> > + *	Store the entry containing the template specific data.
+> > + *	@data contains template name, data length, and data.
+> > + *
+> > + * @must_measure:
+> > + *	Measurement decision based on an integrity policy.
+> > + *	@data contains template specific data used for making policy
+> > + * 	decision.
+> > + * 	Return 0 if operation was successful.
 
-> On Wed,  3 Dec 2008 16:21:51 +0100
-> Jiri Slaby <jirislaby@gmail.com> wrote:
+This comment isn't right - return 0 if a measurement must be
+taken, no?
+
+> > + *
+> > + * @display_template:
+> > + *	Display template specific data.
+> > + *
+> > + */
 > 
-> > Hi,
-> > 
-> > this is a ldisc-n_tty-export-all-n_tty-ldisc-methods.patch fix.
-> 
-> NAK and NAK the patch needing it.
+> Can you explain what all this template stuff is about?  The only method
+> of these ever called is display_template,
 
-Late :(
+I'm not sure what you mean here - must_measure for instance is used (in
+patch 3) in the integrity hooks (i.e. file_mmap) to decide whether or not 
+the object (action target) must be measured.
 
-> Once PPS is in
+> and that seems to be better
+> implented directly as a securityfs file, without the indirection.
 
-PPS can't go in without this?
+That comment doesn't make sense to me (unless you're saying to punt
+on the generic integrity infrastructure and hook all of the IMA
+code straight into the kernel) so I suspect I'm misreading
+something.
 
-Perhaps I can drop pps-serial-clients-support.patch, dunno.
-
-> this can be revisted by adding the almost identical N_PPS
-> ldisc into n_tty with a couple of different handlers (notably some of the
-> termios flags need to be handled differently)
+-serge
