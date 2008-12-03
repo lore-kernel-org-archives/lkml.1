@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYLCHlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbYLCHlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYLCHlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 02:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYLCHlJ
+	id S1755762AbYLCHlq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 02:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYLCHlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 02:41:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44701 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751251AbYLCHlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 02:41:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Wed, 3 Dec 2008 08:40:24 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812030222.28551.rjw@sisk.pl> <alpine.LFD.2.00.0812021751450.3256@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812021751450.3256@nehalem.linux-foundation.org>
+	Wed, 3 Dec 2008 02:41:36 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:45576 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753621AbYLCHlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 02:41:35 -0500
+Date: Tue, 2 Dec 2008 23:41:03 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Bastian Blank <bastian@waldi.eu.org>, Greg Kurz <gkurz@fr.ibm.com>,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, ebiederm@xmission.com,
+       containers@lists.osdl.org, roland@redhat.com, xemul@openvz.org
+Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
+Message-ID: <20081203074103.GA8487@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com> <20081126034528.GB23238@us.ibm.com> <20081127011738.GC13545@wavehammer.waldi.eu.org> <1227820765.5108.20.camel@bahia.kalilou.org> <20081201211518.GB15004@us.ibm.com> <20081202115729.GB1132@wavehammer.waldi.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812030840.25539.rjw@sisk.pl>
+In-Reply-To: <20081202115729.GB1132@wavehammer.waldi.eu.org>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 3 of December 2008, Linus Torvalds wrote:
-> 
-> On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
-> > 
-> > Here's the output of 'lspci -vvxxx':
-> 
-> Ok, I'm not finding any documented quirks that would be memory regions, 
-> and in fact it doesn't look like there is even any remotely likely 32-bit 
-> valies that might be pointers in your PCI config space that look remotely 
-> like they might be conflicting in the area of MMIO space that we allocate 
-> PCI resources from (ie 0x88000000-0x92000000).
-> 
-> Of course, any odd MMIO regions might be descibed by some insane model 
-> that doesn't look like an aligned 32-bit value, but that's unlikely.
-> 
-> So I'm still not seeing anything wrong in there.
-> 
-> > I'll run the 'pci=cbmemsize=4M' test tomorrow (need to have some sleep).
-> 
-> Sure. It will be interesting to see if it makes any difference.
+Bastian Blank [bastian@waldi.eu.org] wrote:
+| On Mon, Dec 01, 2008 at 01:15:18PM -0800, Sukadev Bhattiprolu wrote:
+| > Greg Kurz [gkurz@fr.ibm.com] wrote:
+| > | On Thu, 2008-11-27 at 02:17 +0100, Bastian Blank wrote:
+| > | > On Tue, Nov 25, 2008 at 07:45:28PM -0800, Sukadev Bhattiprolu wrote:
+| > | > > Currently task_active_pid_ns is not safe to call after a
+| > | > > task becomes a zombie and exit_task_namespaces is called,
+| > | > > as nsproxy becomes NULL.
+| > | > Why do you need to be able to get the pid namespace from zombie
+| > | > processes?
+| > After exiting namespaces, the process notifies parent. With new changes
+| > to signals (in this patchset), the signal code may need to determine
+| > the namespace of sender (the exiting child in this case).
+| 
+| So the parent of a process with a new pid namespace will never get a
+| SIGCHLD?
 
-It didn't help (failure in the 4th consecutive hibernation/resume cycle).
+I am wondering what I said that leads to that conclusion :-) If parent
+has a handler the handler will be called as usual otherwise SIGCHLD
+will be ignored.
 
-The patched kernel still hibernates and resumes without problems.
+But anyway, an earlier version of my patches checked the pid namespace
+sooner and so I had to generalize task_active_pid_ns().
 
-Thanks,
-Rafael
+With the present order of checks in siginfo_from_ancestor_ns(), we don't
+need to generalize task_active_pid_ns(). SIG_FROM_USER flag will be clear
+when do_notify_parent() calls send_signal().
+
+IOW, while we should eventually generalize task_active_pid_ns(), it is
+not required for this signals patchset and we can ignore patches 1 and 2
+for now.
+
+| 
+| What I read in the kernel source (kernel/signal.c:do_notify_parent,
+| include/asm-generic/siginfo.h:CLD_EXITED) is that the exit signals
+| (SIGCHLD) are describes as sent by the kernel. 
+
+Yes. Are you suggesting a check like
+
+	if (!is_si_special(info) && !SI_FROMKERNEL(info)) ?
+		/* must be from user, safe to check ns */
+
+But SI_ASYNCIO comes from the driver - so its not safe to check pid ns.
+(sent a separate query on SI_ASYNCIO).
+
+| 
+| > | I agree with Eric and Sukadev that task_active_pid_ns() is unsafe. There
+| > | isn't even a /* don't use with zombies */ in pid_namespace.h...
+| > Hmm. Its not unsafe at present. It would become unsafe if the signals code
+| > tries to determine the namespace of sender.
+| 
+| Why? Even now it may be used on zombie tasks.
+
+It used to be unsafe, and iirc was fixed a while ago(in part by moving
+exit_task_namespaces() into exit_notify()).
+
+Are you saying there is another path (outside these signals patches) where
+task_active_pid_ns() is called for zombies ?
