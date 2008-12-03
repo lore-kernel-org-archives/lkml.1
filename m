@@ -1,197 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYLCFQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbYLCFT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbYLCFQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 00:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYLCFQ1
+	id S1755545AbYLCFT1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 00:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYLCFTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 00:16:27 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60492 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbYLCFQ0 (ORCPT
+	Wed, 3 Dec 2008 00:19:18 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:39458 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbYLCFTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 00:16:26 -0500
-Date: Wed, 3 Dec 2008 14:15:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH  22/21] memcg-explain-details-and-test-document.patch
-Message-Id: <20081203141534.39d1fc28.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 3 Dec 2008 00:19:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=QNkPlIK2v5DV0kw7yjpnTHb8sv+XrdfnVeWpuUbAlattCiOwTQnSWqbPJppnFACBvL
+         plSguvZi8PrhB6iU6lpyLHp61dMgB0u/JAiGqGKtjHZkxIV3V48ozA14kQYN0PCkzKlq
+         ioc9ptmfV5FYQGt+xJ8tFLeRPvAwNFnqwHlLI=
+Subject: Re: [PATCH] relay: When unsigned ret cannot store a negative value
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: roel kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20081202203734.1e4c9835.akpm@linux-foundation.org>
+References: <493161DE.6000703@gmail.com>
+	 <20081202141042.3e0db395.akpm@linux-foundation.org>
+	 <1228278591.10702.5.camel@charm-linux>
+	 <20081202203734.1e4c9835.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 02 Dec 2008 23:19:14 -0600
+Message-Id: <1228281554.10858.13.camel@charm-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-just passed spell check. sorry for 22/21.
 
-==
-Documentation for implementation details and how to test.
+On Tue, 2008-12-02 at 20:37 -0800, Andrew Morton wrote:
+> On Tue, 02 Dec 2008 22:29:51 -0600 Tom Zanussi <zanussi@comcast.net> wrote:
+> 
+> > 
+> > On Tue, 2008-12-02 at 14:10 -0800, Andrew Morton wrote:
+> > > On Sat, 29 Nov 2008 10:38:06 -0500
+> > > roel kluin <roel.kluin@gmail.com> wrote:
+> > > 
+> > > > When unsigned ret cannot store a negative value
+> > > > 
+> > > > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > > > ---
+> > > > UNTESTED! is this the way to go?
+> > > > 
+> > > > diff --git a/kernel/relay.c b/kernel/relay.c
+> > > > index 32b0bef..c9d62e5 100644
+> > > > --- a/kernel/relay.c
+> > > > +++ b/kernel/relay.c
+> > > > @@ -1220,7 +1220,8 @@ static int subbuf_splice_actor(struct file *in,
+> > > >  			       unsigned int flags,
+> > > >  			       int *nonpad_ret)
+> > > >  {
+> > > > -	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+> > > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages;
+> > > > +	ssize_t ret;
+> > > >  	struct rchan_buf *rbuf = in->private_data;
+> > > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+> > > >  	uint64_t pos = (uint64_t) *ppos;
+> > > > @@ -1289,7 +1290,8 @@ static int subbuf_splice_actor(struct file *in,
+> > > >  	if (!spd.nr_pages)
+> > > >  		return 0;
+> > > >  
+> > > > -	ret = *nonpad_ret = splice_to_pipe(pipe, &spd);
+> > > > +	ret = splice_to_pipe(pipe, &spd);
+> > > > +	*nonpad_ret = ret;
+> > > >  	if (ret < 0 || ret < total_len)
+> > > >  		return ret;
+> > > >  
+> > > 
+> > > Yeah, this code needs help.  subbuf_splice_actor() returns `int', but
+> > > carefully calculates and returns an unsigned type.
+> > > 
+> > > I suspect that quite a bit of code in there (including
+> > > relay_file_splice_read()) should be gone through and have its choice of
+> > > types reviewed and fixed.  Probably by converting things to ssize_t.
+> > > 
+> > > 
+> > 
+> > And maybe generic_file_splice_read() too, from whence it came.
+> 
+> sure.
+> 
+> >  Speaking
+> > of which, is there some reason why this patch:
+> > 
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0810.3/0094.html
+> > 
+> > never got picked up?
+> > 
+> 
+> Incompetence I guess.
 
-just an example. feel free to modify, add, remove lines.
+No problem, thanks for finally picking it up. :-)
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Damn man, that's your third email address :(
 
- Documentation/controllers/memcg_test.txt |  145 +++++++++++++++++++++++++++++++
- 1 file changed, 145 insertions(+)
-
-Index: mmotm-2.6.28-Dec02/Documentation/controllers/memcg_test.txt
-===================================================================
---- /dev/null
-+++ mmotm-2.6.28-Dec02/Documentation/controllers/memcg_test.txt
-@@ -0,0 +1,145 @@
-+Memory Resource Controller(Memcg)  Implementation Memo.
-+Last Updated: 2009/12/03
-+
-+Because VM is getting complex (one of reasons is memcg...), memcg's behavior
-+is complex. This is a document for memcg's internal behavior and some test
-+patterns tend to be racy.
-+
-+1. charges
-+
-+   a page/swp_entry may be charged (usage += PAGE_SIZE) at
-+
-+	mem_cgroup_newpage_newpage()
-+	  called at new page fault and COW.
-+
-+	mem_cgroup_try_charge_swapin()
-+	  called at do_swap_page() and swapoff.
-+	  followed by charge-commit-cancel protocol.
-+	  (With swap accounting) at commit, charges recorded in swap is removed.
-+
-+	mem_cgroup_cache_charge()
-+	  called at add_to_page_cache()
-+
-+	mem_cgroup_cache_charge_swapin)()
-+	  called by shmem's swapin processing.
-+
-+	mem_cgroup_prepare_migration()
-+	  called before migration. "extra" charge is done
-+	  followed by charge-commit-cancel protocol.
-+	  At commit, charge against oldpage or newpage will be committed.
-+
-+2. uncharge
-+  a page/swp_entry may be uncharged (usage -= PAGE_SIZE) by
-+
-+	mem_cgroup_uncharge_page()
-+	  called when an anonymous page is unmapped. If the page is SwapCache
-+	  uncharge is delayed until mem_cgroup_uncharge_swapcache().
-+
-+	mem_cgroup_uncharge_cache_page()
-+	  called when a page-cache is deleted from radix-tree. If the page is
-+	  SwapCache, uncharge is delayed until mem_cgroup_uncharge_swapcache()
-+
-+	mem_cgroup_uncharge_swapcache()
-+	  called when SwapCache is removed from radix-tree. the charge itself
-+	  is moved to swap_cgroup. (If mem+swap controller is disabled, no
-+	  charge to swap.)
-+
-+	mem_cgroup_uncharge_swap()
-+	  called when swp_entry's refcnt goes down to be 0. charge against swap
-+	  disappears.
-+
-+	mem_cgroup_end_migration(old, new)
-+	at success of migration -> old is uncharged (if necessary), charge
-+	to new is committed. at failure, charge to old is committed.
-+
-+3. charge-commit-cancel
-+	In some case, we can't know this "charge" is valid or not at charge.
-+	To handle such case, there are charge-commit-cancel functions.
-+		mem_cgroup_try_charge_XXX
-+		mem_cgroup_commit_charge_XXX
-+		mem_cgroup_cancel_charge_XXX
-+	these are used in swap-in and migration.
-+
-+	At try_charge(), there are no flags to say "this page is charged".
-+	at this point, usage += PAGE_SIZE.
-+
-+	At commit(), the function checks the page should be charged or not
-+	and set flags or avoid charging.(usage -= PAGE_SIZE)
-+
-+	At cancel(), simply usage -= PAGE_SIZE.
-+
-+4. Typical Tests.
-+
-+  Tests for racy cases.
-+
-+  4.1 small limit to memcg.
-+	When you do test to do racy case, it's good test to set memcg's limit
-+	to be very small rather than GB. Many races found in the test under
-+	xKB or xxMB limits.
-+	(Memory behavior under GB and Memory behavior under MB shows very
-+	 different situation.)
-+
-+  4.2 shmem
-+	Historically, memcg's shmem handling was poor and we saw some amount
-+	of troubles here. This is because shmem is page-cache but can be
-+	SwapCache. Test with shmem/tmpfs is always good test.
-+
-+  4.3 migration
-+	For NUMA, migration is an another special. To do easy test, cpuset
-+	is useful. Following is a sample script to do migration.
-+
-+	mount -t cgroup -o cpuset none /opt/cpuset
-+
-+	mkdir /opt/cpuset/01
-+	echo 1 > /opt/cpuset/01/cpuset.cpus
-+	echo 0 > /opt/cpuset/01/cpuset.mems
-+	echo 1 > /opt/cpuset/01/cpuset.memory_migrate
-+	mkdir /opt/cpuset/02
-+	echo 1 > /opt/cpuset/02/cpuset.cpus
-+	echo 1 > /opt/cpuset/02/cpuset.mems
-+	echo 1 > /opt/cpuset/02/cpuset.memory_migrate
-+
-+	In above set, when you moves a task from 01 to 02, page migration to
-+	node 0 to node 1 will occur. Following is a script to migrate all
-+	under cpuset.
-+	--
-+	move_task()
-+	{
-+	for pid in $1
-+        do
-+                /bin/echo $pid >$2/tasks 2>/dev/null
-+		echo -n $pid
-+		echo -n " "
-+        done
-+	echo END
-+	}
-+
-+	G1_TASK=`cat ${G1}/tasks`
-+	G2_TASK=`cat ${G2}/tasks`
-+	move_task "${G1_TASK}" ${G2} &
-+	--
-+  4.4 memory hotplug.
-+	memory hotplug test is one of good test.
-+	to offline memory, do following.
-+	# echo offline > /sys/devices/system/memory/memoryXXX/state
-+	(XXX is the place of memory)
-+	This is an easy way to test page migration, too.
-+
-+ 4.5 mkdir/rmdir
-+	When using hierarchy, mkdir/rmdir test should be done.
-+	tests like following.
-+
-+	#echo 1 >/opt/cgroup/01/memory/use_hierarchy
-+	#mkdir /opt/cgroup/01/child_a
-+	#mkdir /opt/cgroup/01/child_b
-+
-+	set limit to 01.
-+	add limit to 01/child_b
-+	run jobs under child_a and child_b
-+
-+	create/delete following groups at random while jobs are running.
-+	/opt/cgroup/01/child_a/child_aa
-+	/opt/cgroup/01/child_b/child_bb
-+	/opt/cgroup/01/child_c
-+
-+	running new jobs in new group is also good.
+Yeah, the purpose of the gmail address is to avoid that but I forget to
+use it - will try to be less careless in the future. ;-)
 
