@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYLCUQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYLCURU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYLCUQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYLCTyp
+	id S1753516AbYLCURU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYLCTyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:45 -0500
-Received: from kroah.org ([198.145.64.141]:60436 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:49 -0500
+Received: from kroah.org ([198.145.64.141]:60470 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751603AbYLCTyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:43 -0500
-Date: Wed, 3 Dec 2008 11:53:23 -0800
+	id S1751775AbYLCTyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:47 -0500
+Date: Wed, 3 Dec 2008 11:53:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 067/104] libata: improve phantom device detection
-Message-ID: <20081203195323.GP8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>,
+       Shirish S Pargaonkar <shirishp@us.ibm.com>,
+       Steve French <sfrench@us.ibm.com>,
+       Suresh Jayaraman <sjayaraman@suse.de>
+Subject: [patch 069/104] cifs: remove unused list, add new cifs sock list
+	to prepare for mount/umount fix
+Message-ID: <20081203195327.GR8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-improve-phantom-device-detection.patch"
+Content-Disposition: inline; filename="cifs-remove-unused-list-add-new-cifs-sock-list-to-prepare-for-mount-umount-fix.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,58 +43,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <tj@kernel.org>
+From: Steve French <sfrench@us.ibm.com>
 
-commit 6a6b97d360702b98c02c7fca4c4e088dcf3a2985 upstream.
+commit fb396016647ae9de5b3bd8c4ee4f7b9cc7148bd5 upstream.
 
-Currently libata uses four methods to detect device presence.
+Also adds two lines missing from the previous patch (for the need reconnect flag in the
+/proc/fs/cifs/DebugData handling)
 
-1. PHY status if available.
-2. TF register R/W test (only promotes presence, never demotes)
-3. device signature after reset
-4. IDENTIFY failure detection in SFF state machine
+The new global_cifs_sock_list is added, and initialized in init_cifs but not used yet.
+Jeff Layton will be adding code in to use that and to remove the GlobalTcon and GlobalSMBSession
+lists.
 
-Combination of the above works well in most cases but recently there
-have been a few reports where a phantom device causes unnecessary
-delay during probe.  In both cases, PHY status wasn't available.  In
-one case, it passed #2 and #3 and failed IDENTIFY with ATA_ERR which
-didn't qualify as #4.  The other failed #2 but as it passed #3 and #4,
-it still caused failure.
-
-In both cases, phantom device reported diagnostic failure, so these
-cases can be safely worked around by considering any !ATA_DRQ IDENTIFY
-failure as NODEV_HINT if diagnostic failure is set.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+CC: Jeff Layton <jlayton@redhat.com>
+CC: Shirish Pargaonkar <shirishp@us.ibm.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-sff.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ fs/cifs/cifs_debug.c |    4 ++--
+ fs/cifs/cifsfs.c     |    6 +++---
+ fs/cifs/cifsglob.h   |   23 ++++++++---------------
+ 3 files changed, 13 insertions(+), 20 deletions(-)
 
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -1227,10 +1227,19 @@ fsm_start:
- 			/* ATA PIO protocol */
- 			if (unlikely((status & ATA_DRQ) == 0)) {
- 				/* handle BSY=0, DRQ=0 as error */
--				if (likely(status & (ATA_ERR | ATA_DF)))
-+				if (likely(status & (ATA_ERR | ATA_DF))) {
- 					/* device stops HSM for abort/error */
- 					qc->err_mask |= AC_ERR_DEV;
--				else {
-+
-+					/* If diagnostic failed and this is
-+					 * IDENTIFY, it's likely a phantom
-+					 * device.  Mark hint.
-+					 */
-+					if (qc->dev->horkage &
-+					    ATA_HORKAGE_DIAGNOSTIC)
-+						qc->err_mask |=
-+							AC_ERR_NODEV_HINT;
-+				} else {
- 					/* HSM violation. Let EH handle this.
- 					 * Phantom devices also trigger this
- 					 * condition.  Mark hint.
+--- a/fs/cifs/cifs_debug.c
++++ b/fs/cifs/cifs_debug.c
+@@ -204,7 +204,7 @@ static int cifs_debug_data_proc_show(str
+ 		else
+ 			seq_printf(m, " type: %d ", dev_type);
+ 
+-		if (tcon->tidStatus == CifsNeedReconnect)
++		if (tcon->need_reconnect)
+ 			seq_puts(m, "\tDISCONNECTED ");
+ 	}
+ 	read_unlock(&GlobalSMBSeslock);
+@@ -311,7 +311,7 @@ static int cifs_stats_proc_show(struct s
+ 		i++;
+ 		tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
+ 		seq_printf(m, "\n%d) %s", i, tcon->treeName);
+-		if (tcon->tidStatus == CifsNeedReconnect)
++		if (tcon->need_reconnect)
+ 			seq_puts(m, "\tDISCONNECTED ");
+ 		seq_printf(m, "\nSMBs: %d Oplock Breaks: %d",
+ 			atomic_read(&tcon->num_smbs_sent),
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -1013,9 +1013,9 @@ init_cifs(void)
+ {
+ 	int rc = 0;
+ 	cifs_proc_init();
+-/*	INIT_LIST_HEAD(&GlobalServerList);*/	/* BB not implemented yet */
+-	INIT_LIST_HEAD(&GlobalSMBSessionList);
+-	INIT_LIST_HEAD(&GlobalTreeConnectionList);
++	INIT_LIST_HEAD(&global_cifs_sock_list);
++	INIT_LIST_HEAD(&GlobalSMBSessionList); /* BB to be removed by jl */
++	INIT_LIST_HEAD(&GlobalTreeConnectionList); /* BB to be removed by jl */
+ 	INIT_LIST_HEAD(&GlobalOplock_Q);
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+ 	INIT_LIST_HEAD(&GlobalDnotifyReqList);
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -590,22 +590,15 @@ require use of the stronger protocol */
+ #define GLOBAL_EXTERN extern
+ #endif
+ 
+-/*
+- * The list of servers that did not respond with NT LM 0.12.
+- * This list helps improve performance and eliminate the messages indicating
+- * that we had a communications error talking to the server in this list.
+- */
+-/* Feature not supported */
+-/* GLOBAL_EXTERN struct servers_not_supported *NotSuppList; */
+-
+-/*
+- * The following is a hash table of all the users we know about.
+- */
+-GLOBAL_EXTERN struct smbUidInfo *GlobalUidList[UID_HASH];
+ 
+-/* GLOBAL_EXTERN struct list_head GlobalServerList; BB not implemented yet */
+-GLOBAL_EXTERN struct list_head GlobalSMBSessionList;
+-GLOBAL_EXTERN struct list_head GlobalTreeConnectionList;
++/* the list of TCP_Server_Info structures, ie each of the sockets
++ * connecting our client to a distinct server (ip address), is
++ * chained together by global_cifs_sock_list. The list of all our SMB
++ * sessions (and from that the tree connections) can be found
++ * by iterating over global_cifs_sock_list */
++GLOBAL_EXTERN struct list_head global_cifs_sock_list;
++GLOBAL_EXTERN struct list_head GlobalSMBSessionList; /* BB to be removed by jl*/
++GLOBAL_EXTERN struct list_head GlobalTreeConnectionList; /* BB to be removed */
+ GLOBAL_EXTERN rwlock_t GlobalSMBSeslock;  /* protects list inserts on 3 above */
+ 
+ GLOBAL_EXTERN struct list_head GlobalOplock_Q;
 
