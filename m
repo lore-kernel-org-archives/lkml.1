@@ -1,116 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbYLCQ1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYLCQ1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953AbYLCQ1A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 11:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYLCQ0u
+	id S1753882AbYLCQ1i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 11:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYLCQ12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 11:26:50 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:56670 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbYLCQ0t (ORCPT
+	Wed, 3 Dec 2008 11:27:28 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:2113 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751193AbYLCQ12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 11:26:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CAS+i4UUqgjdjQnpIpJ6Sv5nPe+bzOfhxGyMgNSXjO2VwZPMliiPklncBLEmRs7gXu
-         E5vzPWLfZ1O/jQk1PYARliHSKuwd+JeHKvLwW6fP0Lyp4cjOHgqmaBAxNQi558xwQ81C
-         QL4S+u/ODSm6/A7Ll+4pAckMsK/6awthh2mJc=
-Message-ID: <c62985530812030826g47e2c81ere1c02942f8e8b1a4@mail.gmail.com>
-Date: Wed, 3 Dec 2008 17:26:47 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/2] ftrace: fix race in function graph during fork
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <20081203160547.722050069@goodmis.org>
+	Wed, 3 Dec 2008 11:27:28 -0500
+Date: Wed, 3 Dec 2008 19:27:23 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wolfgang Grandegger <wg@grandegger.com>,
+       linux-kernel Kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc list <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH for 2.6.28] NAND: fsl_upm: fix build problem with
+	2.6.28-rc2
+Message-ID: <20081203162723.GA32301@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081126163840.GA21669@oksana.dev.rtsoft.ru> <4A183575-1142-4EC2-83C4-145E721E6E8D@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-References: <20081203160448.972919719@goodmis.org>
-	 <20081203160547.722050069@goodmis.org>
+In-Reply-To: <4A183575-1142-4EC2-83C4-145E721E6E8D@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/3 Steven Rostedt <rostedt@goodmis.org>:
-> From: Steven Rostedt <srostedt@redhat.com>
+On Wed, Dec 03, 2008 at 09:47:53AM -0600, Kumar Gala wrote:
+[...]
+>> The patch fixes following build error:
+>>
+>>  CC      drivers/mtd/nand/fsl_upm.o
+>> drivers/mtd/nand/fsl_upm.c: In function 'fun_chip_init':
+>> drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 2 of  
+>> 'of_mtd_parse_partitions' from incompatible pointer type
+>> drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 3 of  
+>> 'of_mtd_parse_partitions' from incompatible pointer type
+>> drivers/mtd/nand/fsl_upm.c:168: error: too many arguments to function 
+>> 'of_mtd_parse_partitions'
+>> make[1]: *** [drivers/mtd/nand/fsl_upm.o] Error 1
+>>
+>> The breakage was introduced in  
+>> 69fd3a8d098faf41a04930afa83757c0555ee360
+>> ("[MTD] remove unused mtd parameter in of_mtd_parse_partitions()").
+>>
+>> While at it, also add a check for the of_mtd_parse_partitions() return
+>> value.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+[...]
+> David,
 >
-> Impact: fix
->
-> There is a nasy race in startup of a new process running the
-> function graph tracer. In fork.c:
->
->        total_forks++;
->        spin_unlock(&current->sighand->siglock);
->        write_unlock_irq(&tasklist_lock);
->        ftrace_graph_init_task(p);
->        proc_fork_connector(p);
->        cgroup_post_fork(p);
->        return p;
->
-> The new task is free to run as soon as the tasklist_lock is released.
-> This is before the ftrace_graph_init_task. If the task does run
-> it will be using the same ret_stack and curr_ret_stack as the parent.
-> This will cause horrible crashes that are nasty to debug.
->
-> This patch moves the ftrace_graph_init_task to just after the alloc_pid
-> code. This fixes the above race.
->
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/fork.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index afb376d..91cca76 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1142,6 +1142,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->                }
->        }
->
-> +       ftrace_graph_init_task(p);
-> +
->        p->pid = pid_nr(pid);
->        p->tgid = p->pid;
->        if (clone_flags & CLONE_THREAD)
-> @@ -1150,7 +1152,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->        if (current->nsproxy != p->nsproxy) {
->                retval = ns_cgroup_clone(p, pid);
->                if (retval)
-> -                       goto bad_fork_free_pid;
-> +                       goto bad_fork_free_graph;
->        }
->
->        p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? child_tidptr : NULL;
-> @@ -1243,7 +1245,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->                spin_unlock(&current->sighand->siglock);
->                write_unlock_irq(&tasklist_lock);
->                retval = -ERESTARTNOINTR;
-> -               goto bad_fork_free_pid;
-> +               goto bad_fork_free_graph;
->        }
->
->        if (clone_flags & CLONE_THREAD) {
-> @@ -1276,11 +1278,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->        total_forks++;
->        spin_unlock(&current->sighand->siglock);
->        write_unlock_irq(&tasklist_lock);
-> -       ftrace_graph_init_task(p);
->        proc_fork_connector(p);
->        cgroup_post_fork(p);
->        return p;
->
-> +bad_fork_free_graph:
-> +       ftrace_graph_exit_task(p);
->  bad_fork_free_pid:
->        if (pid != &init_struct_pid)
->                free_pid(pid);
+> what's going on with this patch?
 
+Recently I got email from Andrew's patch tracking system that
+the patch was merged into subsystem tree. Here it is:
 
-Very nice catch! Thanks.
+http://git.infradead.org/mtd-2.6.git?a=commitdiff;h=29b65861fbece04cfdf3fee352d5247369131850
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
