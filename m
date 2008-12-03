@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYLCUOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbYLCUO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756480AbYLCUOk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbYLCTyi
+	id S1759089AbYLCUO6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:14:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYLCTyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:38 -0500
-Received: from kroah.org ([198.145.64.141]:60371 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:39 -0500
+Received: from kroah.org ([198.145.64.141]:60384 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754096AbYLCTyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:36 -0500
-Date: Wed, 3 Dec 2008 11:53:00 -0800
+	id S1754557AbYLCTyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:37 -0500
+Date: Wed, 3 Dec 2008 11:53:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: [patch 062/104] ACPI: EC: count interrupts only if called from
-	interrupt handler.
-Message-ID: <20081203195300.GK8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 063/104] ieee1394: sbp2: another iPod mini quirk entry
+Message-ID: <20081203195302.GL8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-ec-count-interrupts-only-if-called-from-interrupt-handler.patch"
+Content-Disposition: inline; filename="ieee1394-sbp2-another-ipod-mini-quirk-entry.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,31 +38,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 7b4d469228a92a00e412675817cedd60133de38a upstream.
+commit 9e0de91011ef6fe6eb3bb63f7ea15f586955660a upstream.
 
-fix 2.6.28 EC interrupt storm regression
+Add another model ID of a broken firmware to prevent early I/O errors
+by acesses at the end of the disk.  Reported at linux1394-user,
+http://marc.info/?t=122670842900002
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/ec.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/ieee1394/sbp2.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -219,7 +219,8 @@ static void gpe_transaction(struct acpi_
- 	goto unlock;
- err:
- 	/* false interrupt, state didn't change */
--	++ec->curr->irq_count;
-+	if (in_interrupt())
-+		++ec->curr->irq_count;
- unlock:
- 	spin_unlock_irqrestore(&ec->curr_lock, flags);
- }
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -402,6 +402,11 @@ static const struct {
+ 	},
+ 	/* iPod mini */ {
+ 		.firmware_revision	= 0x0a2700,
++		.model_id		= 0x000022,
++		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
++	},
++	/* iPod mini */ {
++		.firmware_revision	= 0x0a2700,
+ 		.model_id		= 0x000023,
+ 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
+ 	},
 
