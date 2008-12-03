@@ -1,203 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYLCEwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbYLCEwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbYLCEwQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 23:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYLCEus
+	id S1756246AbYLCEwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 23:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYLCEut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 23:50:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63723 "EHLO
+	Tue, 2 Dec 2008 23:50:49 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63726 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYLCEup (ORCPT
+	with ESMTP id S1752975AbYLCEup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Dec 2008 23:50:45 -0500
-Message-Id: <20081203045043.769665847@goodmis.org>
+Message-Id: <20081203045044.002248353@goodmis.org>
 References: <20081203045001.367443457@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Dec 2008 23:50:04 -0500
+Date: Tue, 02 Dec 2008 23:50:05 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/5] ftrace: print real return in dumpstack for function graph
-Content-Disposition: inline; filename=0003-ftrace-print-real-return-in-dumpstack-for-function.patch
+Subject: [PATCH 4/5] ftrace: function graph return for function entry
+Content-Disposition: inline; filename=0004-ftrace-function-graph-return-for-function-entry.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: better dumpstack output
+Impact: feature, let entry function decide to trace or not
 
-I noticed in my crash dumps and even in the stack tracer that a
-lot of functions listed in the stack trace are simply
-return_to_handler which is ftrace graphs way to insert its own
-call into the return of a function. But we lose out where
-the actually function was called from.
-
-This patch adds in hooks to the dumpstack mechanism that detects
-this and finds the real function to print. Both are printed to
-let the user know that a hook is still in place.
-
-This does give a funny side effect in the stack tracer output:
-
-        Depth   Size      Location    (80 entries)
-        -----   ----      --------
-  0)     4144      48   save_stack_trace+0x2f/0x4d
-  1)     4096     128   ftrace_call+0x5/0x2b
-  2)     3968      16   mempool_alloc_slab+0x16/0x18
-  3)     3952     384   return_to_handler+0x0/0x73
-  4)     3568    -240   stack_trace_call+0x11d/0x209
-  5)     3808     144   return_to_handler+0x0/0x73
-  6)     3664    -128   mempool_alloc+0x4d/0xfe
-  7)     3792     128   return_to_handler+0x0/0x73
-  8)     3664     -32   scsi_sg_alloc+0x48/0x4a [scsi_mod]
-
-As you can see, the real functions are now negative. This is due
-to them not being found inside the stack.
+This patch lets the graph tracer entry function decide if the tracing
+should be done at the end as well. This requires all function graph
+entry functions return 1 if it should trace, or 0 if the return should
+not be traced.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/dumpstack.c    |   34 +++++++++++++++++++++++++++++++++-
- arch/x86/kernel/dumpstack.h    |    2 +-
- arch/x86/kernel/dumpstack_32.c |    5 ++++-
- arch/x86/kernel/dumpstack_64.c |    7 ++++---
- 4 files changed, 42 insertions(+), 6 deletions(-)
+ arch/x86/kernel/entry_32.S |    3 +++
+ arch/x86/kernel/entry_64.S |    3 +++
+ arch/x86/kernel/ftrace.c   |    7 ++++++-
+ include/linux/ftrace.h     |    2 +-
+ kernel/trace/ftrace.c      |   10 +++++++---
+ kernel/trace/trace.c       |    4 +++-
+ kernel/trace/trace.h       |    2 +-
+ 7 files changed, 24 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
-index 5962176..6b1f6f6 100644
---- a/arch/x86/kernel/dumpstack.c
-+++ b/arch/x86/kernel/dumpstack.c
-@@ -30,6 +30,37 @@ void printk_address(unsigned long address, int reliable)
- 			reliable ? "" : "? ", (void *) address);
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 3497321..d6f0490 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -993,6 +993,9 @@ ENTRY(mcount)
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 	cmpl $ftrace_stub, ftrace_graph_return
+ 	jnz ftrace_graph_caller
++
++	cmpl $ftrace_graph_entry_stub, ftrace_graph_entry
++	jnz ftrace_graph_caller
+ #endif
+ .globl ftrace_stub
+ ftrace_stub:
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 47aa5f0..cef05a2 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -119,6 +119,9 @@ ENTRY(mcount)
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 	cmpq $ftrace_stub, ftrace_graph_return
+ 	jnz ftrace_graph_caller
++
++	cmpq $ftrace_graph_entry_stub, ftrace_graph_entry
++	jnz ftrace_graph_caller
+ #endif
+ 
+ .globl ftrace_stub
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index adba8e9..d278ad2 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -425,6 +425,7 @@ static void pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
+ 	trace->calltime = current->ret_stack[index].calltime;
+ 	trace->overrun = atomic_read(&current->trace_overrun);
+ 	trace->depth = index;
++	barrier();
+ 	current->curr_ret_stack--;
  }
  
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+static void
-+print_ftrace_graph_addr(unsigned long addr, void *data,
-+			const struct stacktrace_ops *ops,
-+			struct thread_info *tinfo, int *graph)
-+{
-+	struct task_struct *task = tinfo->task;
-+	unsigned long ret_addr;
-+	int index = task->curr_ret_stack;
-+
-+	if (addr != (unsigned long)return_to_handler)
-+		return;
-+
-+	if (!task->ret_stack || index < *graph)
-+		return;
-+
-+	index -= *graph;
-+	ret_addr = task->ret_stack[index].ret;
-+
-+	ops->address(data, ret_addr, 1);
-+
-+	(*graph)++;
-+}
-+#else
-+static inline void
-+print_ftrace_graph_addr(unsigned long addr, void *data,
-+			const struct stacktrace_ops *ops,
-+			struct thread_info *tinfo, int *graph)
-+{ }
-+#endif
-+
- /*
-  * x86-64 can have up to three kernel stacks:
-  * process stack
-@@ -54,7 +85,7 @@ unsigned long
- print_context_stack(struct thread_info *tinfo,
- 		unsigned long *stack, unsigned long bp,
- 		const struct stacktrace_ops *ops, void *data,
--		unsigned long *end)
-+		unsigned long *end, int *graph)
- {
- 	struct stack_frame *frame = (struct stack_frame *)bp;
- 
-@@ -70,6 +101,7 @@ print_context_stack(struct thread_info *tinfo,
- 			} else {
- 				ops->address(data, addr, bp == 0);
- 			}
-+			print_ftrace_graph_addr(addr, data, ops, tinfo, graph);
- 		}
- 		stack++;
+@@ -506,7 +507,11 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
  	}
-diff --git a/arch/x86/kernel/dumpstack.h b/arch/x86/kernel/dumpstack.h
-index 3119a80..da87590 100644
---- a/arch/x86/kernel/dumpstack.h
-+++ b/arch/x86/kernel/dumpstack.h
-@@ -18,7 +18,7 @@ extern unsigned long
- print_context_stack(struct thread_info *tinfo,
- 		unsigned long *stack, unsigned long bp,
- 		const struct stacktrace_ops *ops, void *data,
--		unsigned long *end);
-+		unsigned long *end, int *graph);
  
- extern void
- show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
-diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
-index 7b031b1..d593cd1 100644
---- a/arch/x86/kernel/dumpstack_32.c
-+++ b/arch/x86/kernel/dumpstack_32.c
-@@ -23,6 +23,8 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 		unsigned long *stack, unsigned long bp,
- 		const struct stacktrace_ops *ops, void *data)
- {
-+	int graph = 0;
-+
- 	if (!task)
- 		task = current;
+ 	trace.func = self_addr;
+-	ftrace_graph_entry(&trace);
  
-@@ -50,7 +52,8 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 
- 		context = (struct thread_info *)
- 			((unsigned long)stack & (~(THREAD_SIZE - 1)));
--		bp = print_context_stack(context, stack, bp, ops, data, NULL);
-+		bp = print_context_stack(context, stack, bp, ops,
-+					 data, NULL, &graph);
- 
- 		stack = (unsigned long *)context->previous_esp;
- 		if (!stack)
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index 33ff102..c302d07 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -109,6 +109,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 	unsigned long *irqstack_end = (unsigned long *)cpu_pda(cpu)->irqstackptr;
- 	unsigned used = 0;
- 	struct thread_info *tinfo;
-+	int graph = 0;
- 
- 	if (!task)
- 		task = current;
-@@ -149,7 +150,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 				break;
- 
- 			bp = print_context_stack(tinfo, stack, bp, ops,
--							data, estack_end);
-+						 data, estack_end, &graph);
- 			ops->stack(data, "<EOE>");
- 			/*
- 			 * We link to the next stack via the
-@@ -168,7 +169,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 				if (ops->stack(data, "IRQ") < 0)
- 					break;
- 				bp = print_context_stack(tinfo, stack, bp,
--						ops, data, irqstack_end);
-+					ops, data, irqstack_end, &graph);
- 				/*
- 				 * We link to the next stack (which would be
- 				 * the process stack normally) the last
-@@ -186,7 +187,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 	/*
- 	 * This handles the process stack:
- 	 */
--	bp = print_context_stack(tinfo, stack, bp, ops, data, NULL);
-+	bp = print_context_stack(tinfo, stack, bp, ops, data, NULL, &graph);
- 	put_cpu();
++	/* Only trace if the calling function expects to */
++	if (!ftrace_graph_entry(&trace)) {
++		current->curr_ret_stack--;
++		*parent = old;
++	}
  }
- EXPORT_SYMBOL(dump_trace);
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 58ca1c3..469ceb3 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -371,7 +371,7 @@ struct ftrace_graph_ret {
+ #define FTRACE_RETSTACK_ALLOC_SIZE 32
+ /* Type of the callback handlers for tracing function graph*/
+ typedef void (*trace_func_graph_ret_t)(struct ftrace_graph_ret *); /* return */
+-typedef void (*trace_func_graph_ent_t)(struct ftrace_graph_ent *); /* entry */
++typedef int (*trace_func_graph_ent_t)(struct ftrace_graph_ent *); /* entry */
+ 
+ extern int register_ftrace_graph(trace_func_graph_ret_t retfunc,
+ 				trace_func_graph_ent_t entryfunc);
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index a44af05..65b9e86 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1636,11 +1636,15 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
+ 
+ static atomic_t ftrace_graph_active;
+ 
++int ftrace_graph_entry_stub(struct ftrace_graph_ent *trace)
++{
++	return 0;
++}
++
+ /* The callbacks that hook a function */
+ trace_func_graph_ret_t ftrace_graph_return =
+ 			(trace_func_graph_ret_t)ftrace_stub;
+-trace_func_graph_ent_t ftrace_graph_entry =
+-			(trace_func_graph_ent_t)ftrace_stub;
++trace_func_graph_ent_t ftrace_graph_entry = ftrace_graph_entry_stub;
+ 
+ /* Try to assign a return stack array on FTRACE_RETSTACK_ALLOC_SIZE tasks. */
+ static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
+@@ -1738,7 +1742,7 @@ void unregister_ftrace_graph(void)
+ 
+ 	atomic_dec(&ftrace_graph_active);
+ 	ftrace_graph_return = (trace_func_graph_ret_t)ftrace_stub;
+-	ftrace_graph_entry = (trace_func_graph_ent_t)ftrace_stub;
++	ftrace_graph_entry = ftrace_graph_entry_stub;
+ 	ftrace_shutdown(FTRACE_STOP_FUNC_RET);
+ 
+ 	mutex_unlock(&ftrace_sysctl_lock);
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 380de63..8b6409a 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1200,7 +1200,7 @@ function_trace_call(unsigned long ip, unsigned long parent_ip)
+ }
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-void trace_graph_entry(struct ftrace_graph_ent *trace)
++int trace_graph_entry(struct ftrace_graph_ent *trace)
+ {
+ 	struct trace_array *tr = &global_trace;
+ 	struct trace_array_cpu *data;
+@@ -1219,6 +1219,8 @@ void trace_graph_entry(struct ftrace_graph_ent *trace)
+ 	}
+ 	atomic_dec(&data->disabled);
+ 	local_irq_restore(flags);
++
++	return 1;
+ }
+ 
+ void trace_graph_return(struct ftrace_graph_ret *trace)
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index f96f4e7..0565ae9 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -412,7 +412,7 @@ void trace_function(struct trace_array *tr,
+ 		    unsigned long flags, int pc);
+ 
+ void trace_graph_return(struct ftrace_graph_ret *trace);
+-void trace_graph_entry(struct ftrace_graph_ent *trace);
++int trace_graph_entry(struct ftrace_graph_ent *trace);
+ void trace_bts(struct trace_array *tr,
+ 	       unsigned long from,
+ 	       unsigned long to);
 -- 
 1.5.6.5
 
