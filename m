@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbYLCT5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYLCUAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbYLCT5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYLCTud
+	id S1755966AbYLCUAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYLCTuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:33 -0500
-Received: from kroah.org ([198.145.64.141]:59600 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:44 -0500
+Received: from kroah.org ([198.145.64.141]:59694 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754596AbYLCTuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:25 -0500
-Date: Wed, 3 Dec 2008 11:48:59 -0800
+	id S1754121AbYLCTue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:34 -0500
+Date: Wed, 3 Dec 2008 11:49:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Doug Chapman <doug.chapman@hp.com>,
-       Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
-       Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 018/104] IA64: fix boot panic caused by offline CPUs
-Message-ID: <20081203194859.GS8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au,
+       ath9k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@Atheros.com>,
+       Maciej Zenczykowski <zenczykowski@gmail.com>,
+       Bennyam Malavazi <Bennyam.Malavazi@Atheros.com>
+Subject: [patch 025/104] ath9k: Fix SW-IOMMU bounce buffer starvation
+Message-ID: <20081203194916.GZ8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ia64-fix-boot-panic-caused-by-offline-cpus.patch"
+Content-Disposition: inline; filename="ath9k-fix-sw-iommu-bounce-buffer-starvation.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,102 +42,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Doug Chapman <doug.chapman@hp.com>
+From: Luis R. Rodriguez <lrodriguez@Atheros.com>
 
-commit 62ee0540f5e5a804b79cae8b3c0185a85f02436b upstream.
+commit ca0c7e5101fd4f37fed8e851709f08580b92fbb3 upstream.
 
-This fixes a regression introduced by 2c6e6db41f01b6b4eb98809350827c9678996698
-"Minimize per_cpu reservations."  That patch incorrectly used information about
-what CPUs are possible that was not yet initialized by ACPI.  The end result
-was that per_cpu structures for offline CPUs were not initialized causing a
-NULL pointer reference.
+This should fix the SW-IOMMU bounce buffer starvation
+seen ok kernel.org bugzilla 11811:
 
-Since we cannot do the full acpi_boot_init() call any earlier, the simplest
-fix is to just parse the MADT for SAPIC entries early to find the CPU
-info.  This should also allow for some cleanup of the code added by the
-"Minimize per_cpu reservations".  This patch just fixes the regressions, the
-cleanup will come in a later patch.
+http://bugzilla.kernel.org/show_bug.cgi?id=11811
 
-Signed-off-by: Doug Chapman <doug.chapman@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
-CC: Robin Holt <holt@sgi.com>
-Signed-off-by: Tony Luck <tony.luck@intel.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Users on MacBook Pro 3.1/MacBook v2 would see something like:
+
+DMA: Out of SW-IOMMU space for 4224 bytes at device 0000:0b:00.0
+
+Unfortunately its only easy to trigger on MacBook Pro 3.1/MacBook v2
+so far so its difficult to debug (even with swiotlb=force).
+
+We were pci_unmap_single()'ing less bytes than what we called
+for with pci_map_single() and as such we were starving
+the swiotlb from its 64MB amount of bounce buffers. We remain
+consistent and now always use sc->rxbufsize for RX. While at
+it we update the beacon DMA maps as well to only use the data
+portion of the skb, previous to this we were pci_map_single()'ing
+more data for beaconing than what we tell the hardware it can use,
+therefore pushing more iotlb abuse.
+
+Still not sure why this is so easily triggerable on
+MacBook Pro 3.1, it may be the hardware configuration
+tends to use more memory > 3GB mark for DMA.
+
+Signed-off-by: Maciej Zenczykowski <zenczykowski@gmail.com>
+Signed-off-by: Bennyam Malavazi <Bennyam.Malavazi@atheros.com>
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/ia64/kernel/acpi.c  |   29 ++++++++++++++++++++++++-----
- arch/ia64/kernel/setup.c |    7 ++++---
- 2 files changed, 28 insertions(+), 8 deletions(-)
+ drivers/net/wireless/ath9k/recv.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -656,6 +656,30 @@ static int __init acpi_parse_fadt(struct
- 	return 0;
+--- a/drivers/net/wireless/ath9k/recv.c
++++ b/drivers/net/wireless/ath9k/recv.c
+@@ -1011,7 +1011,7 @@ int ath_rx_tasklet(struct ath_softc *sc,
+ 
+ 		pci_dma_sync_single_for_cpu(sc->pdev,
+ 					    bf->bf_buf_addr,
+-					    skb_tailroom(skb),
++					    sc->sc_rxbufsize,
+ 					    PCI_DMA_FROMDEVICE);
+ 		pci_unmap_single(sc->pdev,
+ 				 bf->bf_buf_addr,
+@@ -1303,8 +1303,7 @@ dma_addr_t ath_skb_map_single(struct ath
+ 	 * NB: do NOT use skb->len, which is 0 on initialization.
+ 	 * Use skb's entire data area instead.
+ 	 */
+-	*pa = pci_map_single(sc->pdev, skb->data,
+-		skb_end_pointer(skb) - skb->head, direction);
++	*pa = pci_map_single(sc->pdev, skb->data, sc->sc_rxbufsize, direction);
+ 	return *pa;
  }
  
-+int __init early_acpi_boot_init(void)
-+{
-+	int ret;
-+
-+	/*
-+	 * do a partial walk of MADT to determine how many CPUs
-+	 * we have including offline CPUs
-+	 */
-+	if (acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
-+		printk(KERN_ERR PREFIX "Can't find MADT\n");
-+		return 0;
-+	}
-+
-+	ret = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_SAPIC,
-+		acpi_parse_lsapic, NR_CPUS);
-+	if (ret < 1)
-+		printk(KERN_ERR PREFIX
-+		       "Error parsing MADT - no LAPIC entries\n");
-+
-+	return 0;
-+}
-+
-+
-+
- int __init acpi_boot_init(void)
+@@ -1314,6 +1313,5 @@ void ath_skb_unmap_single(struct ath_sof
+ 			  dma_addr_t *pa)
  {
- 
-@@ -679,11 +703,6 @@ int __init acpi_boot_init(void)
- 		printk(KERN_ERR PREFIX
- 		       "Error parsing LAPIC address override entry\n");
- 
--	if (acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_SAPIC, acpi_parse_lsapic, NR_CPUS)
--	    < 1)
--		printk(KERN_ERR PREFIX
--		       "Error parsing MADT - no LAPIC entries\n");
--
- 	if (acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_NMI, acpi_parse_lapic_nmi, 0)
- 	    < 0)
- 		printk(KERN_ERR PREFIX "Error parsing LAPIC NMI entry\n");
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -549,8 +549,12 @@ setup_arch (char **cmdline_p)
- #ifdef CONFIG_ACPI
- 	/* Initialize the ACPI boot-time table parser */
- 	acpi_table_init();
-+	early_acpi_boot_init();
- # ifdef CONFIG_ACPI_NUMA
- 	acpi_numa_init();
-+#ifdef CONFIG_ACPI_HOTPLUG_CPU
-+	prefill_possible_map();
-+#endif
- 	per_cpu_scan_finalize((cpus_weight(early_cpu_possible_map) == 0 ?
- 		32 : cpus_weight(early_cpu_possible_map)),
- 		additional_cpus > 0 ? additional_cpus : 0);
-@@ -841,9 +845,6 @@ void __init
- setup_per_cpu_areas (void)
- {
- 	/* start_kernel() requires this... */
--#ifdef CONFIG_ACPI_HOTPLUG_CPU
--	prefill_possible_map();
--#endif
+ 	/* Unmap skb's entire data area */
+-	pci_unmap_single(sc->pdev, *pa,
+-		skb_end_pointer(skb) - skb->head, direction);
++	pci_unmap_single(sc->pdev, *pa, sc->sc_rxbufsize, direction);
  }
- 
- /*
 
