@@ -1,75 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYLCT2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYLCT3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbYLCT2X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYLCT2P
+	id S1754527AbYLCT3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYLCT3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:28:15 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:57566 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751305AbYLCT2O (ORCPT
+	Wed, 3 Dec 2008 14:29:14 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39553 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbYLCT3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:28:14 -0500
-Date: Wed, 3 Dec 2008 14:26:06 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [PATCH] add tracepoints to track change in napi
-	states on network receive
-Message-ID: <20081203192606.GC6549@hmsreliant.think-freely.org>
-References: <20081202195129.GA30042@hmsreliant.think-freely.org> <20081202200150.GA27282@Krystal> <20081203160134.GA6549@hmsreliant.think-freely.org> <20081203172507.GA4471@Krystal> <20081203174500.GB6549@hmsreliant.think-freely.org> <20081203181105.GA6794@Krystal> <20081203182133.GB6794@Krystal>
-MIME-Version: 1.0
+	Wed, 3 Dec 2008 14:29:13 -0500
+Date: Wed, 3 Dec 2008 19:29:05 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Yet more ARM breakage in linux-next
+Message-ID: <20081203192905.GA12502@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081203182133.GB6794@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 01:21:33PM -0500, Mathieu Desnoyers wrote:
-> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> > * Neil Horman (nhorman@tuxdriver.com) wrote:
-> > > On Wed, Dec 03, 2008 at 12:25:07PM -0500, Mathieu Desnoyers wrote:
-> > > > Almost there :)
-> > > > 
-> > > > There is a extra whitespace above,
-> > > > 
-> > > > and also  "schedule napi_struct" should probably be changed into
-> > > > napi_struct only, this removes the whitespace and duplicated information
-> > > > (I guess we know that given we are in event net_napi_schedule, this will
-> > > > have something to do with schedule...). Same applies to trace_mark_tp
-> > > > below.
-> > > > 
-> > > > Thanks,
-> > > > 
-> > > > Mathieu
-> > > 
-> > > 
-> > > Sure, here you go, new patch
-> > > 
-> > > Patch to trace napi states for various net devices and their napi instances.
-> > > Traces scheduling, servicing and completion of a napi poll request.
-> > > 
-> > > Regards
-> > > Neil
-> > > 
-> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > > 
-> > 
-> > Actually I notice that you used the old "DEFINE_TRACE" tracepoint API.
-> 
-> The patch has been edited and folded into 
-> lttng-instrumentation-net.patch
-> lttng-instrumentation-net-tracepoints-probes.patch
-> 
-Thanks!
-Neil
+This seems to be causing lots of ARM breakage:
 
+lib/find_next_bit.c:183: error: implicit declaration of function '__fls'
+
+Whoever's responsible, please fix this ASAP so I can see whether my fixes
+I merged on Monday fix the previous set of ARM build errors in linux-next.
+Thanks.
 
 -- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
