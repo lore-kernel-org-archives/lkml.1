@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752301AbYLCKJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbYLCKOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752301AbYLCKJM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 05:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYLCKI6
+	id S1752055AbYLCKOq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 05:14:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYLCKOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 05:08:58 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:60163 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbYLCKI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 05:08:57 -0500
-Subject: Re: [PATCH 4/4] leds: Let GPIO LEDs keep their current state
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Trent Piepho <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20081123123154.GB7310@ucw.cz>
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
-	 <1224889741-4167-4-git-send-email-tpiepho@freescale.com>
-	 <1226933427.17109.15.camel@ted>
-	 <Pine.LNX.4.64.0811201640570.11673@t2.domain.actdsltmp>
-	 <20081123123154.GB7310@ucw.cz>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 10:04:24 +0000
-Message-Id: <1228298664.9126.3.camel@ted>
+	Wed, 3 Dec 2008 05:14:37 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59172 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751121AbYLCKOg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 05:14:36 -0500
+Date: Wed, 3 Dec 2008 10:13:42 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Alexandru Romanescu <a_romanescu@yahoo.co.uk>
+Subject: Re: [PATCH 1/1] ATA: piix, fix pointer deref on suspend
+Message-ID: <20081203101342.5041f3fb@lxorguk.ukuu.org.uk>
+In-Reply-To: <1228292026-23586-1-git-send-email-jirislaby@gmail.com>
+References: <1228292026-23586-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-23 at 13:31 +0100, Pavel Machek wrote:
-> On Thu 2008-11-20 17:05:56, Trent Piepho wrote:
-> > On Mon, 17 Nov 2008, Richard Purdie wrote:
-> > > On Fri, 2008-10-24 at 16:09 -0700, Trent Piepho wrote:
-> > >> +	if (template->keep_state)
-> > >> +		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
-> > >> +	else
-> > >> +		state = template->default_state;
-> > >>
-> > >>  		state = of_get_property(child, "default-state", NULL);
-> > >>  		led.default_state = state && !strcmp(state, "on");
-> > >> +		led.keep_state = state && !strcmp(state, "keep");
-> > >>
-> > >> +++ b/include/linux/leds.h
-> > >> @@ -138,7 +138,8 @@ struct gpio_led {
-> > >>  	const char *default_trigger;
-> > >>  	unsigned 	gpio;
-> > >>  	u8 		active_low;
-> > >> -	u8		default_state;
-> > >> +	u8		default_state;	/* 0 = off, 1 = on */
-> > >> +	u8		keep_state; /* overrides default_state */
-> > >>  };
-> > >
-> > > How about something simpler here, just make default state have three
-> > > different values - "keep", "on" and "off"? I'm not keen on having two
-> > > different state variables like this.
-> > 
-> > I thought of that, but it ends up being more complex.  Instead of just
-> > using:
-> > static const struct gpio_led myled = {
-> >  	.name = "something",
-> >  	.keep_state = 1,
-> > }
-> > 
-> > You'd do something like this:
-> >  	.default_state = LEDS_GPIO_DEFSTATE_KEEP,
-> > 
-> > Is that better?
+On Wed,  3 Dec 2008 09:13:46 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> Hi,
 > 
-> Yes.
+> I've found this issue in the mmotm 2008-12-02-17-08.
+> 
+> --
+> 
+> Commit
+> ata_piix: add borked Tecra M4 to broken suspend list
+> introduced DMI variables checking, but they can be null, so that
+> we possibly dereference null.
+> 
+> Check if they are null and avoid checks in that case.
 
-Yes, agreed, much better.
-
-Richard
-
--- 
-Richard Purdie
-Intel Open Source Technology Centre
-
+Gak.. Add some kind of helper to the dmi code to do this and do the
+comparison.
