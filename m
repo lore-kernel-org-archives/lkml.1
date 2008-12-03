@@ -1,396 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbYLCEvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYLCEwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751930AbYLCEvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 23:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYLCEus
+	id S1756150AbYLCEwQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 23:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYLCEus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 2 Dec 2008 23:50:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39916 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63723 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752288AbYLCEup (ORCPT
+	with ESMTP id S1752928AbYLCEup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Dec 2008 23:50:45 -0500
-Message-Id: <20081203045043.573535694@goodmis.org>
+Message-Id: <20081203045043.769665847@goodmis.org>
 References: <20081203045001.367443457@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Dec 2008 23:50:03 -0500
+Date: Tue, 02 Dec 2008 23:50:04 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/5] ring-buffer: change page variables to bpage
-Content-Disposition: inline; filename=0002-ring-buffer-change-page-variables-to-bpage.patch
+Subject: [PATCH 3/5] ftrace: print real return in dumpstack for function graph
+Content-Disposition: inline; filename=0003-ftrace-print-real-return-in-dumpstack-for-function.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: clean up
+Impact: better dumpstack output
 
-Andrew Morton pointed out that the kernel convention of a variable
-named page should be of type page struct. The ring buffer uses
-a variable named page for a pointer to something else. This patch converts
-those to be called bpage.
+I noticed in my crash dumps and even in the stack tracer that a
+lot of functions listed in the stack trace are simply
+return_to_handler which is ftrace graphs way to insert its own
+call into the return of a function. But we lose out where
+the actually function was called from.
+
+This patch adds in hooks to the dumpstack mechanism that detects
+this and finds the real function to print. Both are printed to
+let the user know that a hook is still in place.
+
+This does give a funny side effect in the stack tracer output:
+
+        Depth   Size      Location    (80 entries)
+        -----   ----      --------
+  0)     4144      48   save_stack_trace+0x2f/0x4d
+  1)     4096     128   ftrace_call+0x5/0x2b
+  2)     3968      16   mempool_alloc_slab+0x16/0x18
+  3)     3952     384   return_to_handler+0x0/0x73
+  4)     3568    -240   stack_trace_call+0x11d/0x209
+  5)     3808     144   return_to_handler+0x0/0x73
+  6)     3664    -128   mempool_alloc+0x4d/0xfe
+  7)     3792     128   return_to_handler+0x0/0x73
+  8)     3664     -32   scsi_sg_alloc+0x48/0x4a [scsi_mod]
+
+As you can see, the real functions are now negative. This is due
+to them not being found inside the stack.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ring_buffer.c |  130 ++++++++++++++++++++++----------------------
- 1 files changed, 65 insertions(+), 65 deletions(-)
+ arch/x86/kernel/dumpstack.c    |   34 +++++++++++++++++++++++++++++++++-
+ arch/x86/kernel/dumpstack.h    |    2 +-
+ arch/x86/kernel/dumpstack_32.c |    5 ++++-
+ arch/x86/kernel/dumpstack_64.c |    7 ++++---
+ 4 files changed, 42 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 50b74d3..7f69cfe 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -208,9 +208,9 @@ struct buffer_page {
- 	struct buffer_data_page *page;	/* Actual data page */
- };
- 
--static void rb_init_page(struct buffer_data_page *page)
-+static void rb_init_page(struct buffer_data_page *bpage)
- {
--	local_set(&page->commit, 0);
-+	local_set(&bpage->commit, 0);
+diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+index 5962176..6b1f6f6 100644
+--- a/arch/x86/kernel/dumpstack.c
++++ b/arch/x86/kernel/dumpstack.c
+@@ -30,6 +30,37 @@ void printk_address(unsigned long address, int reliable)
+ 			reliable ? "" : "? ", (void *) address);
  }
  
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++static void
++print_ftrace_graph_addr(unsigned long addr, void *data,
++			const struct stacktrace_ops *ops,
++			struct thread_info *tinfo, int *graph)
++{
++	struct task_struct *task = tinfo->task;
++	unsigned long ret_addr;
++	int index = task->curr_ret_stack;
++
++	if (addr != (unsigned long)return_to_handler)
++		return;
++
++	if (!task->ret_stack || index < *graph)
++		return;
++
++	index -= *graph;
++	ret_addr = task->ret_stack[index].ret;
++
++	ops->address(data, ret_addr, 1);
++
++	(*graph)++;
++}
++#else
++static inline void
++print_ftrace_graph_addr(unsigned long addr, void *data,
++			const struct stacktrace_ops *ops,
++			struct thread_info *tinfo, int *graph)
++{ }
++#endif
++
  /*
-@@ -298,19 +298,19 @@ struct ring_buffer_iter {
- static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
+  * x86-64 can have up to three kernel stacks:
+  * process stack
+@@ -54,7 +85,7 @@ unsigned long
+ print_context_stack(struct thread_info *tinfo,
+ 		unsigned long *stack, unsigned long bp,
+ 		const struct stacktrace_ops *ops, void *data,
+-		unsigned long *end)
++		unsigned long *end, int *graph)
  {
- 	struct list_head *head = &cpu_buffer->pages;
--	struct buffer_page *page, *tmp;
-+	struct buffer_page *bpage, *tmp;
+ 	struct stack_frame *frame = (struct stack_frame *)bp;
  
- 	if (RB_WARN_ON(cpu_buffer, head->next->prev != head))
- 		return -1;
- 	if (RB_WARN_ON(cpu_buffer, head->prev->next != head))
- 		return -1;
- 
--	list_for_each_entry_safe(page, tmp, head, list) {
-+	list_for_each_entry_safe(bpage, tmp, head, list) {
- 		if (RB_WARN_ON(cpu_buffer,
--			       page->list.next->prev != &page->list))
-+			       bpage->list.next->prev != &bpage->list))
- 			return -1;
- 		if (RB_WARN_ON(cpu_buffer,
--			       page->list.prev->next != &page->list))
-+			       bpage->list.prev->next != &bpage->list))
- 			return -1;
- 	}
- 
-@@ -321,23 +321,23 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 			     unsigned nr_pages)
- {
- 	struct list_head *head = &cpu_buffer->pages;
--	struct buffer_page *page, *tmp;
-+	struct buffer_page *bpage, *tmp;
- 	unsigned long addr;
- 	LIST_HEAD(pages);
- 	unsigned i;
- 
- 	for (i = 0; i < nr_pages; i++) {
--		page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
-+		bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
- 				    GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
--		if (!page)
-+		if (!bpage)
- 			goto free_pages;
--		list_add(&page->list, &pages);
-+		list_add(&bpage->list, &pages);
- 
- 		addr = __get_free_page(GFP_KERNEL);
- 		if (!addr)
- 			goto free_pages;
--		page->page = (void *)addr;
--		rb_init_page(page->page);
-+		bpage->page = (void *)addr;
-+		rb_init_page(bpage->page);
- 	}
- 
- 	list_splice(&pages, head);
-@@ -347,9 +347,9 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 	return 0;
- 
-  free_pages:
--	list_for_each_entry_safe(page, tmp, &pages, list) {
--		list_del_init(&page->list);
--		free_buffer_page(page);
-+	list_for_each_entry_safe(bpage, tmp, &pages, list) {
-+		list_del_init(&bpage->list);
-+		free_buffer_page(bpage);
- 	}
- 	return -ENOMEM;
- }
-@@ -358,7 +358,7 @@ static struct ring_buffer_per_cpu *
- rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer;
--	struct buffer_page *page;
-+	struct buffer_page *bpage;
- 	unsigned long addr;
- 	int ret;
- 
-@@ -373,17 +373,17 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- 	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
- 	INIT_LIST_HEAD(&cpu_buffer->pages);
- 
--	page = kzalloc_node(ALIGN(sizeof(*page), cache_line_size()),
-+	bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
- 			    GFP_KERNEL, cpu_to_node(cpu));
--	if (!page)
-+	if (!bpage)
- 		goto fail_free_buffer;
- 
--	cpu_buffer->reader_page = page;
-+	cpu_buffer->reader_page = bpage;
- 	addr = __get_free_page(GFP_KERNEL);
- 	if (!addr)
- 		goto fail_free_reader;
--	page->page = (void *)addr;
--	rb_init_page(page->page);
-+	bpage->page = (void *)addr;
-+	rb_init_page(bpage->page);
- 
- 	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
- 
-@@ -408,14 +408,14 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- static void rb_free_cpu_buffer(struct ring_buffer_per_cpu *cpu_buffer)
- {
- 	struct list_head *head = &cpu_buffer->pages;
--	struct buffer_page *page, *tmp;
-+	struct buffer_page *bpage, *tmp;
- 
- 	list_del_init(&cpu_buffer->reader_page->list);
- 	free_buffer_page(cpu_buffer->reader_page);
- 
--	list_for_each_entry_safe(page, tmp, head, list) {
--		list_del_init(&page->list);
--		free_buffer_page(page);
-+	list_for_each_entry_safe(bpage, tmp, head, list) {
-+		list_del_init(&bpage->list);
-+		free_buffer_page(bpage);
- 	}
- 	kfree(cpu_buffer);
- }
-@@ -512,7 +512,7 @@ static void rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer);
- static void
- rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- {
--	struct buffer_page *page;
-+	struct buffer_page *bpage;
- 	struct list_head *p;
- 	unsigned i;
- 
-@@ -523,9 +523,9 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- 		if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
- 			return;
- 		p = cpu_buffer->pages.next;
--		page = list_entry(p, struct buffer_page, list);
--		list_del_init(&page->list);
--		free_buffer_page(page);
-+		bpage = list_entry(p, struct buffer_page, list);
-+		list_del_init(&bpage->list);
-+		free_buffer_page(bpage);
- 	}
- 	if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
- 		return;
-@@ -542,7 +542,7 @@ static void
- rb_insert_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 		struct list_head *pages, unsigned nr_pages)
- {
--	struct buffer_page *page;
-+	struct buffer_page *bpage;
- 	struct list_head *p;
- 	unsigned i;
- 
-@@ -553,9 +553,9 @@ rb_insert_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 		if (RB_WARN_ON(cpu_buffer, list_empty(pages)))
- 			return;
- 		p = pages->next;
--		page = list_entry(p, struct buffer_page, list);
--		list_del_init(&page->list);
--		list_add_tail(&page->list, &cpu_buffer->pages);
-+		bpage = list_entry(p, struct buffer_page, list);
-+		list_del_init(&bpage->list);
-+		list_add_tail(&bpage->list, &cpu_buffer->pages);
- 	}
- 	rb_reset_cpu(cpu_buffer);
- 
-@@ -582,7 +582,7 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	unsigned nr_pages, rm_pages, new_pages;
--	struct buffer_page *page, *tmp;
-+	struct buffer_page *bpage, *tmp;
- 	unsigned long buffer_size;
- 	unsigned long addr;
- 	LIST_HEAD(pages);
-@@ -643,17 +643,17 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
- 
- 	for_each_buffer_cpu(buffer, cpu) {
- 		for (i = 0; i < new_pages; i++) {
--			page = kzalloc_node(ALIGN(sizeof(*page),
-+			bpage = kzalloc_node(ALIGN(sizeof(*bpage),
- 						  cache_line_size()),
- 					    GFP_KERNEL, cpu_to_node(cpu));
--			if (!page)
-+			if (!bpage)
- 				goto free_pages;
--			list_add(&page->list, &pages);
-+			list_add(&bpage->list, &pages);
- 			addr = __get_free_page(GFP_KERNEL);
- 			if (!addr)
- 				goto free_pages;
--			page->page = (void *)addr;
--			rb_init_page(page->page);
-+			bpage->page = (void *)addr;
-+			rb_init_page(bpage->page);
+@@ -70,6 +101,7 @@ print_context_stack(struct thread_info *tinfo,
+ 			} else {
+ 				ops->address(data, addr, bp == 0);
+ 			}
++			print_ftrace_graph_addr(addr, data, ops, tinfo, graph);
  		}
+ 		stack++;
  	}
+diff --git a/arch/x86/kernel/dumpstack.h b/arch/x86/kernel/dumpstack.h
+index 3119a80..da87590 100644
+--- a/arch/x86/kernel/dumpstack.h
++++ b/arch/x86/kernel/dumpstack.h
+@@ -18,7 +18,7 @@ extern unsigned long
+ print_context_stack(struct thread_info *tinfo,
+ 		unsigned long *stack, unsigned long bp,
+ 		const struct stacktrace_ops *ops, void *data,
+-		unsigned long *end);
++		unsigned long *end, int *graph);
  
-@@ -674,9 +674,9 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
- 	return size;
- 
-  free_pages:
--	list_for_each_entry_safe(page, tmp, &pages, list) {
--		list_del_init(&page->list);
--		free_buffer_page(page);
-+	list_for_each_entry_safe(bpage, tmp, &pages, list) {
-+		list_del_init(&bpage->list);
-+		free_buffer_page(bpage);
- 	}
- 	mutex_unlock(&buffer->mutex);
- 	return -ENOMEM;
-@@ -688,14 +688,14 @@ static inline int rb_null_event(struct ring_buffer_event *event)
- }
- 
- static inline void *
--__rb_data_page_index(struct buffer_data_page *page, unsigned index)
-+__rb_data_page_index(struct buffer_data_page *bpage, unsigned index)
+ extern void
+ show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
+diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
+index 7b031b1..d593cd1 100644
+--- a/arch/x86/kernel/dumpstack_32.c
++++ b/arch/x86/kernel/dumpstack_32.c
+@@ -23,6 +23,8 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 		unsigned long *stack, unsigned long bp,
+ 		const struct stacktrace_ops *ops, void *data)
  {
--	return page->data + index;
-+	return bpage->data + index;
++	int graph = 0;
++
+ 	if (!task)
+ 		task = current;
+ 
+@@ -50,7 +52,8 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 
+ 		context = (struct thread_info *)
+ 			((unsigned long)stack & (~(THREAD_SIZE - 1)));
+-		bp = print_context_stack(context, stack, bp, ops, data, NULL);
++		bp = print_context_stack(context, stack, bp, ops,
++					 data, NULL, &graph);
+ 
+ 		stack = (unsigned long *)context->previous_esp;
+ 		if (!stack)
+diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
+index 33ff102..c302d07 100644
+--- a/arch/x86/kernel/dumpstack_64.c
++++ b/arch/x86/kernel/dumpstack_64.c
+@@ -109,6 +109,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 	unsigned long *irqstack_end = (unsigned long *)cpu_pda(cpu)->irqstackptr;
+ 	unsigned used = 0;
+ 	struct thread_info *tinfo;
++	int graph = 0;
+ 
+ 	if (!task)
+ 		task = current;
+@@ -149,7 +150,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 				break;
+ 
+ 			bp = print_context_stack(tinfo, stack, bp, ops,
+-							data, estack_end);
++						 data, estack_end, &graph);
+ 			ops->stack(data, "<EOE>");
+ 			/*
+ 			 * We link to the next stack via the
+@@ -168,7 +169,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 				if (ops->stack(data, "IRQ") < 0)
+ 					break;
+ 				bp = print_context_stack(tinfo, stack, bp,
+-						ops, data, irqstack_end);
++					ops, data, irqstack_end, &graph);
+ 				/*
+ 				 * We link to the next stack (which would be
+ 				 * the process stack normally) the last
+@@ -186,7 +187,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 	/*
+ 	 * This handles the process stack:
+ 	 */
+-	bp = print_context_stack(tinfo, stack, bp, ops, data, NULL);
++	bp = print_context_stack(tinfo, stack, bp, ops, data, NULL, &graph);
+ 	put_cpu();
  }
- 
--static inline void *__rb_page_index(struct buffer_page *page, unsigned index)
-+static inline void *__rb_page_index(struct buffer_page *bpage, unsigned index)
- {
--	return page->page->data + index;
-+	return bpage->page->data + index;
- }
- 
- static inline struct ring_buffer_event *
-@@ -771,14 +771,14 @@ static void rb_update_overflow(struct ring_buffer_per_cpu *cpu_buffer)
- }
- 
- static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
--			       struct buffer_page **page)
-+			       struct buffer_page **bpage)
- {
--	struct list_head *p = (*page)->list.next;
-+	struct list_head *p = (*bpage)->list.next;
- 
- 	if (p == &cpu_buffer->pages)
- 		p = p->next;
- 
--	*page = list_entry(p, struct buffer_page, list);
-+	*bpage = list_entry(p, struct buffer_page, list);
- }
- 
- static inline unsigned
-@@ -2239,16 +2239,16 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
- }
- 
- static void rb_remove_entries(struct ring_buffer_per_cpu *cpu_buffer,
--			      struct buffer_data_page *page)
-+			      struct buffer_data_page *bpage)
- {
- 	struct ring_buffer_event *event;
- 	unsigned long head;
- 
- 	__raw_spin_lock(&cpu_buffer->lock);
--	for (head = 0; head < local_read(&page->commit);
-+	for (head = 0; head < local_read(&bpage->commit);
- 	     head += rb_event_length(event)) {
- 
--		event = __rb_data_page_index(page, head);
-+		event = __rb_data_page_index(bpage, head);
- 		if (RB_WARN_ON(cpu_buffer, rb_null_event(event)))
- 			return;
- 		/* Only count data entries */
-@@ -2277,15 +2277,15 @@ static void rb_remove_entries(struct ring_buffer_per_cpu *cpu_buffer,
- void *ring_buffer_alloc_read_page(struct ring_buffer *buffer)
- {
- 	unsigned long addr;
--	struct buffer_data_page *page;
-+	struct buffer_data_page *bpage;
- 
- 	addr = __get_free_page(GFP_KERNEL);
- 	if (!addr)
- 		return NULL;
- 
--	page = (void *)addr;
-+	bpage = (void *)addr;
- 
--	return page;
-+	return bpage;
- }
- 
- /**
-@@ -2337,15 +2337,15 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
- {
- 	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
- 	struct ring_buffer_event *event;
--	struct buffer_data_page *page;
-+	struct buffer_data_page *bpage;
- 	unsigned long flags;
- 	int ret = 0;
- 
- 	if (!data_page)
- 		return 0;
- 
--	page = *data_page;
--	if (!page)
-+	bpage = *data_page;
-+	if (!bpage)
- 		return 0;
- 
- 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-@@ -2372,26 +2372,26 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
- 		if (full)
- 			goto out;
- 		/* The writer is still on the reader page, we must copy */
--		page = cpu_buffer->reader_page->page;
--		memcpy(page->data,
-+		bpage = cpu_buffer->reader_page->page;
-+		memcpy(bpage->data,
- 		       cpu_buffer->reader_page->page->data + read,
--		       local_read(&page->commit) - read);
-+		       local_read(&bpage->commit) - read);
- 
- 		/* consume what was read */
- 		cpu_buffer->reader_page += read;
- 
- 	} else {
- 		/* swap the pages */
--		rb_init_page(page);
--		page = cpu_buffer->reader_page->page;
-+		rb_init_page(bpage);
-+		bpage = cpu_buffer->reader_page->page;
- 		cpu_buffer->reader_page->page = *data_page;
- 		cpu_buffer->reader_page->read = 0;
--		*data_page = page;
-+		*data_page = bpage;
- 	}
- 	ret = 1;
- 
- 	/* update the entry counter */
--	rb_remove_entries(cpu_buffer, page);
-+	rb_remove_entries(cpu_buffer, bpage);
-  out:
- 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- 
+ EXPORT_SYMBOL(dump_trace);
 -- 
 1.5.6.5
 
