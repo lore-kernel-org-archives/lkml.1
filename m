@@ -1,208 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbYLCRrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbYLCRv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbYLCRrX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 12:47:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYLCRrP
+	id S1753414AbYLCRv5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 12:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYLCRvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 12:47:15 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:46113 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYLCRrO (ORCPT
+	Wed, 3 Dec 2008 12:51:46 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:35116 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbYLCRvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 12:47:14 -0500
-Date: Wed, 3 Dec 2008 12:45:00 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [PATCH] add tracepoints to track change in napi
-	states on network receive
-Message-ID: <20081203174500.GB6549@hmsreliant.think-freely.org>
-References: <20081202195129.GA30042@hmsreliant.think-freely.org> <20081202200150.GA27282@Krystal> <20081203160134.GA6549@hmsreliant.think-freely.org> <20081203172507.GA4471@Krystal>
+	Wed, 3 Dec 2008 12:51:45 -0500
+Message-ID: <4936C6FB.4020201@oracle.com>
+Date: Wed, 03 Dec 2008 09:50:51 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203172507.GA4471@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+To: Francis Moreau <francis.moro@gmail.com>
+CC: "Renato S. Yamane" <yamane@diamondcut.com.br>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: About git-bisect (defconfigs)
+References: <bEuTZ-3Ya-5@gated-at.bofh.it> <bECot-57C-1@gated-at.bofh.it>	 <bEFPF-XO-15@gated-at.bofh.it> <bEFPG-XO-19@gated-at.bofh.it>	 <bEG8P-1xl-15@gated-at.bofh.it> <bEGiz-1Hw-11@gated-at.bofh.it>	 <bEGLI-2aS-31@gated-at.bofh.it> <bEGVc-2Bk-11@gated-at.bofh.it>	 <m2r64q6y8e.fsf@gmail.com> <493681B7.20101@diamondcut.com.br> <38b2ab8a0812030924g5391fdbdy15c472a51ab24aef@mail.gmail.com>
+In-Reply-To: <38b2ab8a0812030924g5391fdbdy15c472a51ab24aef@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4936C702.0059:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 12:25:07PM -0500, Mathieu Desnoyers wrote:
-> Almost there :)
+Francis Moreau wrote:
+> On Wed, Dec 3, 2008 at 1:55 PM, Renato S. Yamane
+> <yamane@diamondcut.com.br> wrote:
+>> Francis Moreau wrote:
+>>> Linus Torvalds writes:
+>>>> It takes me 16 seconds to compile my kernel (if it's all cached), and
+>>>> that's largely because I do _not_ compile one of the crazy distro kernels
+>>>> with thousands of totally irrelevant modules for my setup.
+>>> an other reason is perhaps you're using a computer that most common
+>>> mortal don't have ;)
+>>>
+>>> Care to share your network configuration ;) ?
+>> Maybe a repository with .config files used by linux hard-users (as most
+>> developers here) can be very interesting to a lot of people get a starter.
+>>
 > 
-> There is a extra whitespace above,
+> Or perhaps just to keep 'make defconfig' uptodate with sane core values
+> which should fit a desktop config ?
 > 
-> and also  "schedule napi_struct" should probably be changed into
-> napi_struct only, this removes the whitespace and duplicated information
-> (I guess we know that given we are in event net_napi_schedule, this will
-> have something to do with schedule...). Same applies to trace_mark_tp
-> below.
-> 
-> Thanks,
-> 
-> Mathieu
+> BTW does anybody what the status of the defconfig files on x86 ?
+
+I looked at them about 1 week ago.  I know that Ingo or the x86 maintainers
+team update them occasionally, but I'd like to see a few changes or some
+questions answered:
+
+1.  Disable CONFIG_TR.  Token ring is antiquated.  No reason to be in defconfig.
+
+2.  There are several security-related config items that default to =y but the
+kconfig help says:  If unsure, say N here.  Like:
 
 
-Sure, here you go, new patch
-
-Patch to trace napi states for various net devices and their napi instances.
-Traces scheduling, servicing and completion of a napi poll request.
-
-Regards
-Neil
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+CONFIG_NETLABEL=y
+CONFIG_NETWORK_SECMARK=y
+CONFIG_KEYS=y
+CONFIG_SECURITY=y
+CONFIG_SECURITY_NETWORK=y
+CONFIG_SECURITY_SELINUX=y
 
 
- include/linux/netdevice.h |    5 +++++
- include/trace/netdevice.h |   30 ++++++++++++++++++++++++++++++
- ltt/probes/net-trace.c    |   22 ++++++++++++++++++++++
- net/core/dev.c            |    7 ++++++-
- 4 files changed, 63 insertions(+), 1 deletion(-)
+Maybe I just don't understand the current meaning/usage of defconfig.  eh?
 
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 488c56e..7da71eb 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -43,6 +43,9 @@
- 
- #include <net/net_namespace.h>
- 
-+struct napi_struct;
-+#include <trace/netdevice.h>
-+
- struct vlan_group;
- struct ethtool_ops;
- struct netpoll_info;
-@@ -386,6 +389,7 @@ static inline void napi_complete(struct napi_struct *n)
- 	local_irq_save(flags);
- 	__napi_complete(n);
- 	local_irq_restore(flags);
-+	trace_napi_complete(n);
- }
- 
- /**
-@@ -1726,6 +1730,7 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
- 	return 0;
- }
- 
-+
- #endif /* __KERNEL__ */
- 
- #endif	/* _LINUX_DEV_H */
-diff --git a/include/trace/netdevice.h b/include/trace/netdevice.h
-new file mode 100644
-index 0000000..ba48f6c
---- /dev/null
-+++ b/include/trace/netdevice.h
-@@ -0,0 +1,30 @@
-+#ifndef _INCLUDE_NETDEVICE_H_
-+#define _INCLUDE_NETDEVICE_H_
-+
-+#include <linux/netdevice.h>
-+
-+/* Tracepoints */
-+
-+/*
-+ * Note these first 2 traces are actually in __napi_schedule and net_rx_action
-+ * respectively.  The former is in __napi_schedule because it uses at-most-once
-+ * logic and placing it in the calling routine (napi_schedule) would produce
-+ * countless trace events that were effectively  no-ops.  napi_poll is
-+ * implemented in net_rx_action, because thats where we do our polling on
-+ * devices.  The last trace point is in napi_complete, right where you would
-+ * think it would be.
-+ */
-+DEFINE_TRACE(napi_schedule,
-+	TPPROTO(struct napi_struct *n),
-+	TPARGS(n));
-+
-+DEFINE_TRACE(napi_poll,
-+	TPPROTO(struct napi_struct *n),
-+	TPARGS(n));
-+
-+DEFINE_TRACE(napi_complete,
-+	TPPROTO(struct napi_struct *n),
-+	TPARGS(n));
-+
-+#endif
-+
-diff --git a/ltt/probes/net-trace.c b/ltt/probes/net-trace.c
-index bac2b21..e887e70 100644
---- a/ltt/probes/net-trace.c
-+++ b/ltt/probes/net-trace.c
-@@ -9,6 +9,7 @@
- #include <trace/ipv4.h>
- #include <trace/ipv6.h>
- #include <trace/socket.h>
-+#include <trace/netdevice.h>
- 
- void probe_net_dev_xmit(struct sk_buff *skb)
- {
-@@ -104,6 +105,27 @@ void probe_socket_call(int call, unsigned long a0)
- 		"call %d a0 %lu", call, a0);
- }
- 
-+void probe_napi_schedule(struct napi_struct *n)
-+{
-+	trace_mark_tp(net_napi_schedule, napi_schedule, probe_napi_schedule,
-+		"napi_struct %p name  %s",
-+		n, n->dev->name);
-+}
-+
-+void probe_napi_poll(struct napi_struct *n)
-+{
-+	trace_mark_tp(net_napi_poll, napi_poll, probe_napi_poll,
-+		"napi_struct %p name %s",
-+		n, n->dev->name);
-+}
-+
-+void probe_napi_complete(struct napi_struct *n)
-+{
-+	trace_mark_tp(net_napi_complete, napi_complete, probe_napi_complete,
-+		"napi_struct %p name %s",
-+		n, n->dev->name);
-+}
-+
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Mathieu Desnoyers");
- MODULE_DESCRIPTION("Net Tracepoint Probes");
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 836fe6e..0c55c0f 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -128,6 +128,7 @@
- #include <linux/jhash.h>
- #include <linux/random.h>
- #include <trace/net.h>
-+#include <trace/netdevice.h>
- 
- #include "net-sysfs.h"
- 
-@@ -2329,6 +2330,8 @@ void __napi_schedule(struct napi_struct *n)
- {
- 	unsigned long flags;
- 
-+	trace_napi_poll(n);
-+
- 	local_irq_save(flags);
- 	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
- 	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
-@@ -2380,8 +2383,10 @@ static void net_rx_action(struct softirq_action *h)
- 		 * accidently calling ->poll() when NAPI is not scheduled.
- 		 */
- 		work = 0;
--		if (test_bit(NAPI_STATE_SCHED, &n->state))
-+		if (test_bit(NAPI_STATE_SCHED, &n->state)) {
-+			trace_napi_poll(n);
- 			work = n->poll(n, weight);
-+		}
- 
- 		WARN_ON_ONCE(work > weight);
- 
--- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
+Thanks,
+~Randy
