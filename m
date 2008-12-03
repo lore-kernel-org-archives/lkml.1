@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbYLCCzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYLCDAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbYLCCzv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 21:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYLCCzn
+	id S1755228AbYLCDAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 22:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYLCDAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 21:55:43 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47995 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYLCCzm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 21:55:42 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Geoffrey McRae <geoff@rabidhost.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: New Security Features, Please Comment
-In-Reply-To: Your message of "Wed, 03 Dec 2008 12:44:17 +1100."
-             <1228268657.6679.4.camel@lappy.spacevs.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1228260494.24232.21.camel@compy.ivent.com.au> <20081203005338.6472db7a@lxorguk.ukuu.org.uk>
-            <1228268657.6679.4.camel@lappy.spacevs.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1228272932_28627P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 2 Dec 2008 22:00:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59249 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754013AbYLCDAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 22:00:19 -0500
+Message-ID: <4935F63C.9080207@kernel.org>
+Date: Wed, 03 Dec 2008 12:00:12 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Soeren Sonnenburg <kernel@nn7.de>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: ST31500341AS vs ICH10, exception Emask 0x50 SAct 0x1 SErr 0x280900
+ action 0x6 frozen
+References: <1228205289.29251.32.camel@localhost>
+In-Reply-To: <1228205289.29251.32.camel@localhost>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 02 Dec 2008 21:55:32 -0500
-Message-ID: <73639.1228272932@turing-police.cc.vt.edu>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Dec 2008 03:00:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1228272932_28627P
-Content-Type: text/plain; charset=us-ascii
+hello,
 
-On Wed, 03 Dec 2008 12:44:17 +1100, Geoffrey McRae said:
+Soeren Sonnenburg wrote:
+> I just purchased a seagate 1.5TB drive ST31500341AS, with firmware
+> revision CC1G (which according to seagate is not affected by the cache
+> flush bug) and I am getting the errors below (after almost a day of
+> uptime without problems). The drive is replacing a 750G variant from
+> seagate with which I had months of uptime and no errors whatsoever.
+> 
+> I hope anyone has an idea?
+> 
+> - relevant part of hdparm -I and lspci
+> 
+> ATA device, with non-removable media
+> 	Model Number:       ST31500341AS                            
+> 	Firmware Revision:  CC1G    
+> 	Transport:          Serial
+> 
+> 00:1f.2 SATA controller: Intel Corporation 82801JI (ICH10 Family) SATA
+> AHCI Controller
+> 
+> - the error(tm)
+> 
+> ata3.00: exception Emask 0x50 SAct 0x1 SErr 0x280900 action 0x6 frozen
+> ata3.00: irq_stat 0x08000000, interface fatal error
+> ata3: SError: { UnrecovData HostInt 10B8B BadCRC }
 
-> I would welcome more information as to how this can break applications
-> as I am very new to kernel hacking and would like to solve this
-> performance vs security problem once and for all.
+Your machine seems to be suffering genuine link layer problem.  In
+most cases, this indicates hardware problem and in my experience
+common causes are (in the order of ballpark frequency)...
 
-A *lot* of software has implicit assumptions - for instance, that your process
-UID remains constant unless you intentionally did a setuid() call.
+1. inadequate power supply
 
-Read Henry Spencer's (now ancient but still educational) write-up on *some* of
-the things that can happen to set-UID programs:
+2. device and controller don't like each other on 3Gbps
 
-http://www.daemon-systems.org/man/setuid.7.html
+3. cable too long or flaky connector (especially w/ eSATA cables or
+   genders or backplanes)
 
-Now consider that *any* program that gets its UID suddenly changed on it
-just became vulnerable to all that stuff that Henry writes about.
+4. faulty controller or drive
 
-News flash - most programmers who wrote code thinking it would run as the
-same userid the whole time don't do checks for all the sort of stuff that
-Henry warns about when programs suddenly get invoked with more privilege
-than they were designed to handle.
-
-Then there's the opposite case - somebody manages to trick you into nuking the
-permissions on the right process-ID but wrong executable. Hilarity ensues when
-the process is running with *less* privilege than it expected. Go and read up
-on how Sendmail failed back around 2000, and understand *why* it failed. Just
-google for 'sendmail CAP_SETUID' and start reading. Then think what happens if
-somebody manages to get PHP to exec() some other binary (a set-UID one) and
-it's busy running when you whack its UID.
-
-That's just off the top of my head.
-
-Then go look at kernel/sys.c and read the comments just before the functions
-sys_setpgid(), sys_setregid(), and sys_setuid(), and figure out how the
-saved uid enters into things....
-
-There be serious and nasty dragons in there...
-
-
---==_Exmh_1228272932_28627P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJNfUkcC3lWbTT17ARAgA1AJ98wDlxFD9f733OCV87Zf+wROGLSACg6u+d
-qQFNpQxWKFb6X0/VfVJV+6c=
-=2YFL
------END PGP SIGNATURE-----
-
---==_Exmh_1228272932_28627P--
+-- 
+tejun
