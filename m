@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbYLCTt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYLCTuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbYLCTt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYLCTto
+	id S1754593AbYLCTuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYLCTuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:49:44 -0500
-Received: from winston.telenet-ops.be ([195.130.137.75]:55492 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbYLCTtn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:49:43 -0500
-Date: Wed, 3 Dec 2008 20:49:39 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Hemminger <shemminger@vyatta.com>,
-       "David S. Miller" <davem@davemloft.net>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: m68k 8390 breakage (was: Re: linux-next: Tree for December 3)
-In-Reply-To: <20081203183602.c06f8c39.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0812032042480.10635@anakin>
-References: <20081203183602.c06f8c39.sfr@canb.auug.org.au>
+	Wed, 3 Dec 2008 14:50:00 -0500
+Received: from kroah.org ([198.145.64.141]:34447 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754194AbYLCTt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:49:59 -0500
+Date: Wed, 3 Dec 2008 11:48:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       Richard =?iso-8859-1?Q?R=C3=B6jfors?= <richard.rojfors@endian.se>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 001/104] USB: gadget rndis: send notifications
+Message-ID: <20081203194808.GB8950@kroah.com>
+References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="usb-gadget-rndis-send-notifications.patch"
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081203194725.GA8950@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008, Stephen Rothwell wrote:
-> Status of my local build tests will be at
-> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> advice about cross compilers/configs that work, we are always open to add
-> more builds.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-Since a few days, m68k defconfig and allmodconfig give:
+------------------
+From: Richard Röjfors <richard.rojfors@endian.se>
 
-| drivers/net/lib8390.c:1014: undefined reference to `ei_start_xmit'
-| drivers/net/lib8390.c:1015: undefined reference to `ei_get_stats'
-| drivers/net/lib8390.c:1016: undefined reference to `ei_set_multicast_list'
+commit ff3495052af48f7a2bf7961b131dc9e161dae19c upstream.
 
-(cfr. e.g. http://kisskb.ellerman.id.au/kisskb/buildresult/58795/)
+It turns out that atomic_inc_return() returns the *new* value
+not the original one, so the logic in rndis_response_available()
+kept the first RNDIS response notification from getting out.
+This prevented interoperation with MS-Windows (but not Linux).
 
-git bisect run on "make ARCH=m68k mac_defconfig vmlinux" tells me:
+Fix this to make RNDIS behave again.
 
-8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab is first bad commit
-commit 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab
-Author: Stephen Hemminger <shemminger@vyatta.com>
-Date:   Tue Nov 25 18:12:49 2008 -0800
+Signed-off-by: Richard Röjfors <richard.rojfors@endian.se>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-    8390: add common net_device ops
+---
+ drivers/usb/gadget/f_rndis.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    Fix the defactoring of ei_XXX functions in 8390 and 8390p.
-    Remove the tx_timeout hack since no driver including the 3c503
-    overrides tx_timeout at this time, looks like a legacy thing.
+--- a/drivers/usb/gadget/f_rndis.c
++++ b/drivers/usb/gadget/f_rndis.c
+@@ -303,7 +303,7 @@ static void rndis_response_available(voi
+ 	__le32				*data = req->buf;
+ 	int				status;
+ 
+-	if (atomic_inc_return(&rndis->notify_count))
++	if (atomic_inc_return(&rndis->notify_count) != 1)
+ 		return;
+ 
+ 	/* Send RNDIS RESPONSE_AVAILABLE notification; a
 
-    Also, since several drivers all have same hooks, provide common
-    netdev_ops.
-
-    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
