@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYLCUAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbYLCT7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbYLCUAz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbYLCTwS
+	id S1755027AbYLCT7B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:59:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYLCTuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:52:18 -0500
-Received: from kroah.org ([198.145.64.141]:59747 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:39 -0500
+Received: from kroah.org ([198.145.64.141]:59634 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754070AbYLCTwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:52:16 -0500
-Date: Wed, 3 Dec 2008 11:50:37 -0800
+	id S1751667AbYLCTu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:29 -0500
+Date: Wed, 3 Dec 2008 11:49:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, sfr@canb.auug.org.au,
-       ath9k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@Atheros.com>,
-       Bennyam Malavazi <Bennyam.Malavazi@Atheros.com>
-Subject: [patch 026/104] ath9k: correct expected max RX buffer size
-Message-ID: <20081203195037.GA8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Manfred Spraul <manfred@colorfullife.com>,
+       Clement Calmels <cboulte@gmail.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Pierre Peiffer <peifferp@gmail.com>
+Subject: [patch 021/104] lib/idr.c: fix rcu related race with idr_find
+Message-ID: <20081203194906.GV8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ath9k-correct-expected-max-rx-buffer-size.patch"
+Content-Disposition: inline; filename="lib-idr.c-fix-rcu-related-race-with-idr_find.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,35 +41,110 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Luis R. Rodriguez <lrodriguez@atheros.com>
+From: Manfred Spraul <manfred@colorfullife.com>
 
-commit b4b6cda2298b0c9a0af902312184b775b8867c65 upstream
+commit 6ff2d39b91aec3dcae951afa982059e3dd9b49dc upstream.
 
-We should only tell the hardware its capable of DMA'ing
-to us only what we asked dev_alloc_skb(). Prior to this
-it is possible a large RX'd frame could have corrupted
-DMA data but for us but we were saved only because we
-were previously also pci_map_single()'ing the same large
-value. The issue prior to this though was we were unmapping
-a smaller amount which the prior DMA patch fixed.
+2nd part of the fixes needed for
+http://bugzilla.kernel.org/show_bug.cgi?id=11796.
 
-Signed-off-by: Bennyam Malavazi <Bennyam.Malavazi@atheros.com>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+When the idr tree is either grown or shrunk, then the update to the number
+of layers and the top pointer were not atomic.  This race caused crashes.
+
+The attached patch fixes that by replicating the layers counter in each
+layer, thus idr_find doesn't need idp->layers anymore.
+
+Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+Cc: Clement Calmels <cboulte@gmail.com>
+Cc: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Pierre Peiffer <peifferp@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath9k/recv.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/idr.h |    3 ++-
+ lib/idr.c           |   14 ++++++++++++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
---- a/drivers/net/wireless/ath9k/recv.c
-+++ b/drivers/net/wireless/ath9k/recv.c
-@@ -52,7 +52,7 @@ static void ath_rx_buf_link(struct ath_s
- 	/* setup rx descriptors */
- 	ath9k_hw_setuprxdesc(ah,
- 			     ds,
--			     skb_tailroom(skb),   /* buffer size */
-+			     sc->sc_rxbufsize,
- 			     0);
+--- a/include/linux/idr.h
++++ b/include/linux/idr.h
+@@ -52,13 +52,14 @@ struct idr_layer {
+ 	unsigned long		 bitmap; /* A zero bit means "space here" */
+ 	struct idr_layer	*ary[1<<IDR_BITS];
+ 	int			 count;	 /* When zero, we can release it */
++	int			 layer;	 /* distance from leaf */
+ 	struct rcu_head		 rcu_head;
+ };
  
- 	if (sc->sc_rxlink == NULL)
+ struct idr {
+ 	struct idr_layer *top;
+ 	struct idr_layer *id_free;
+-	int		  layers;
++	int		  layers; /* only valid without concurrent changes */
+ 	int		  id_free_cnt;
+ 	spinlock_t	  lock;
+ };
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -185,6 +185,7 @@ static int sub_alloc(struct idr *idp, in
+ 			new = get_from_free_list(idp);
+ 			if (!new)
+ 				return -1;
++			new->layer = l-1;
+ 			rcu_assign_pointer(p->ary[m], new);
+ 			p->count++;
+ 		}
+@@ -210,6 +211,7 @@ build_up:
+ 	if (unlikely(!p)) {
+ 		if (!(p = get_from_free_list(idp)))
+ 			return -1;
++		p->layer = 0;
+ 		layers = 1;
+ 	}
+ 	/*
+@@ -237,6 +239,7 @@ build_up:
+ 		}
+ 		new->ary[0] = p;
+ 		new->count = 1;
++		new->layer = layers-1;
+ 		if (p->bitmap == IDR_FULL)
+ 			__set_bit(0, &new->bitmap);
+ 		p = new;
+@@ -493,17 +496,21 @@ void *idr_find(struct idr *idp, int id)
+ 	int n;
+ 	struct idr_layer *p;
+ 
+-	n = idp->layers * IDR_BITS;
+ 	p = rcu_dereference(idp->top);
++	if (!p)
++		return NULL;
++	n = (p->layer+1) * IDR_BITS;
+ 
+ 	/* Mask off upper bits we don't use for the search. */
+ 	id &= MAX_ID_MASK;
+ 
+ 	if (id >= (1 << n))
+ 		return NULL;
++	BUG_ON(n == 0);
+ 
+ 	while (n > 0 && p) {
+ 		n -= IDR_BITS;
++		BUG_ON(n != p->layer*IDR_BITS);
+ 		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+ 	}
+ 	return((void *)p);
+@@ -582,8 +589,11 @@ void *idr_replace(struct idr *idp, void 
+ 	int n;
+ 	struct idr_layer *p, *old_p;
+ 
+-	n = idp->layers * IDR_BITS;
+ 	p = idp->top;
++	if (!p)
++		return ERR_PTR(-EINVAL);
++
++	n = (p->layer+1) * IDR_BITS;
+ 
+ 	id &= MAX_ID_MASK;
+ 
 
