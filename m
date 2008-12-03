@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbYLCMGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYLCMJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753361AbYLCMGm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYLCMGd
+	id S1753419AbYLCMJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:09:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYLCMIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:06:33 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34977 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbYLCMGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:06:33 -0500
-Date: Wed, 3 Dec 2008 12:06:16 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mbroz@redhat.com, jens.axboe@oracle.com, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: fix setting of max_segment_size and seg_boundary mask
-Message-ID: <20081203120616.GM26097@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mbroz@redhat.com,
-	jens.axboe@oracle.com, neilb@suse.de, linux-kernel@vger.kernel.org
-References: <493324D1.7010202@redhat.com> <20081203143112F.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 3 Dec 2008 07:08:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:50593 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751790AbYLCMIx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 07:08:53 -0500
+Date: Wed, 3 Dec 2008 13:19:55 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: New location for generic headers?
+Message-ID: <20081203121955.GJ6703@one.firstfloor.org>
+References: <20081203003620.GA32069@basil.nowhere.org> <200812031140.02338.arnd@arndb.de> <20081203120110.GA2822@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081203143112F.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <20081203120110.GA2822@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 02:32:00PM +0900, FUJITA Tomonori wrote:
-> On Mon, 01 Dec 2008 00:42:09 +0100
-> Milan Broz <mbroz@redhat.com> wrote:
- 
-> > @@ -314,6 +317,7 @@ void blk_queue_stack_limits(struct request_queue *t, struct request_queue *b)
-> >  	/* zero is "infinity" */
-> >  	t->max_sectors = min_not_zero(t->max_sectors, b->max_sectors);
-> >  	t->max_hw_sectors = min_not_zero(t->max_hw_sectors, b->max_hw_sectors);
-> > +	t->seg_boundary_mask = min_not_zero(t->seg_boundary_mask, b->seg_boundary_mask);
-> >  
-> >  	t->max_phys_segments = min(t->max_phys_segments, b->max_phys_segments);
-> >  	t->max_hw_segments = min(t->max_hw_segments, b->max_hw_segments);
- 
-> Theoretically, blk_queue_stack_limits() better use min_not_zero
-> instead of min for max_phys_segments, max_hw_segments, and
-> max_segment_size?
+> Should we try to get rid of all those silly:
+> #include <asm-generic/foo.h>
+> files we have in arch/$ARCH/include/asm?
+> 
+> We could for example add include/generic/ last in the search path.
+> Or we could add the files in include/asm and add that last in the
+> search path.
+> 
+> Then if we do not find <asm/foo.h> in arch/$ARCH/include/asm/
+> then we search include/asm.
 
-But does zero have any valid use there?
-We left those alone for now, feeling that BUG_ON() might be more appropriate.
- 
-Alasdair
--- 
-agk@redhat.com
+The only problem I see is that it would user space use of asm/ 
+without make headers_install impossible. I suppose that could
+break the setup of a lot of people? I think it would cause
+problems on some of my older boxes at least.
+
+-Andi
