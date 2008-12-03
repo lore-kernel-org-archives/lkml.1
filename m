@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbYLCUeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbYLCUem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759576AbYLCUeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbYLCUCJ
+	id S1759737AbYLCUem (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:34:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLCUCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:02:09 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:2872 "EHLO kumera.dghda.com"
+	Wed, 3 Dec 2008 15:02:12 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:2875 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756547AbYLCUCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:02:07 -0500
+	id S1755517AbYLCUCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 15:02:10 -0500
 From: "Duane Griffin" <duaneg@dghda.com>
 To: akpm@linux-foundation.org
 Cc: Andreas Dilger <adilger@sun.com>,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
        Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH 5/6] ext3: tighten restrictions on inode flags
-Date: Wed,  3 Dec 2008 19:55:02 +0000
-Message-Id: <1228334103-15948-6-git-send-email-duaneg@dghda.com>
+Subject: [PATCH 6/6] ext4: tighten restrictions on inode flags
+Date: Wed,  3 Dec 2008 19:55:03 +0000
+Message-Id: <1228334103-15948-7-git-send-email-duaneg@dghda.com>
 X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1228334103-15948-5-git-send-email-duaneg@dghda.com>
+In-Reply-To: <1228334103-15948-6-git-send-email-duaneg@dghda.com>
 References: <1228334103-15948-1-git-send-email-duaneg@dghda.com>
  <1228334103-15948-2-git-send-email-duaneg@dghda.com>
  <1228334103-15948-3-git-send-email-duaneg@dghda.com>
  <1228334103-15948-4-git-send-email-duaneg@dghda.com>
  <1228334103-15948-5-git-send-email-duaneg@dghda.com>
+ <1228334103-15948-6-git-send-email-duaneg@dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,72 +42,79 @@ facilitate future consistency.
 
 Signed-off-by: Duane Griffin <duaneg@dghda.com>
 ---
- fs/ext3/ialloc.c        |    8 ++------
- fs/ext3/ioctl.c         |    3 +--
- include/linux/ext3_fs.h |   17 +++++++++++++++++
- 3 files changed, 20 insertions(+), 8 deletions(-)
+ fs/ext4/ext4.h   |   17 +++++++++++++++++
+ fs/ext4/ialloc.c |   14 +++++---------
+ fs/ext4/ioctl.c  |    3 +--
+ 3 files changed, 23 insertions(+), 11 deletions(-)
 
-diff --git a/fs/ext3/ialloc.c b/fs/ext3/ialloc.c
-index 33a6bdf..48699ce 100644
---- a/fs/ext3/ialloc.c
-+++ b/fs/ext3/ialloc.c
-@@ -559,12 +559,8 @@ got:
- 	ei->i_dir_start_lookup = 0;
- 	ei->i_disksize = 0;
- 
--	ei->i_flags = EXT3_I(dir)->i_flags & EXT3_FL_INHERITED;
--	if (S_ISLNK(mode))
--		ei->i_flags &= ~(EXT3_IMMUTABLE_FL|EXT3_APPEND_FL);
--	/* dirsync only applies to directories */
--	if (!S_ISDIR(mode))
--		ei->i_flags &= ~EXT3_DIRSYNC_FL;
-+	ei->i_flags =
-+		ext3_mask_flags(mode, EXT3_I(dir)->i_flags & EXT3_FL_INHERITED);
- #ifdef EXT3_FRAGMENTS
- 	ei->i_faddr = 0;
- 	ei->i_frag_no = 0;
-diff --git a/fs/ext3/ioctl.c b/fs/ext3/ioctl.c
-index b7394d0..5e86ce9 100644
---- a/fs/ext3/ioctl.c
-+++ b/fs/ext3/ioctl.c
-@@ -53,8 +53,7 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 			goto flags_out;
- 		}
- 
--		if (!S_ISDIR(inode->i_mode))
--			flags &= ~EXT3_DIRSYNC_FL;
-+		flags = ext3_mask_flags(inode->i_mode, flags);
- 
- 		mutex_lock(&inode->i_mutex);
- 		/* Is it quota file? Do not allow user to mess with it */
-diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
-index 0bcd1b5..dd495b8 100644
---- a/include/linux/ext3_fs.h
-+++ b/include/linux/ext3_fs.h
-@@ -185,6 +185,23 @@ struct ext3_group_desc
- 			   EXT3_NOCOMPR_FL | EXT3_JOURNAL_DATA_FL |\
- 			   EXT3_NOTAIL_FL | EXT3_DIRSYNC_FL)
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index 63e5163..7b5c86d 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -255,6 +255,23 @@ struct flex_groups {
+ 			   EXT4_JOURNAL_DATA_FL | EXT4_NOTAIL_FL|\
+ 			   EXT4_DIRSYNC_FL)
  
 +/* Flags that are appropriate for regular files (all but dir-specific ones). */
-+#define EXT3_REG_FLMASK (~(EXT3_DIRSYNC_FL | EXT3_TOPDIR_FL))
++#define EXT4_REG_FLMASK (~(EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL))
 +
 +/* Flags that are appropriate for non-directories/regular files. */
-+#define EXT3_OTHER_FLMASK (EXT3_NODUMP_FL | EXT3_NOATIME_FL)
++#define EXT4_OTHER_FLMASK (EXT4_NODUMP_FL | EXT4_NOATIME_FL)
 +
 +/* Mask out flags that are inappropriate for the given type of inode. */
-+static inline __u32 ext3_mask_flags(umode_t mode, __u32 flags)
++static inline __u32 ext4_mask_flags(umode_t mode, __u32 flags)
 +{
 +	if (S_ISDIR(mode))
 +		return flags;
 +	else if (S_ISREG(mode))
-+		return flags & EXT3_REG_FLMASK;
++		return flags & EXT4_REG_FLMASK;
 +	else
-+		return flags & EXT3_OTHER_FLMASK;
++		return flags & EXT4_OTHER_FLMASK;
 +}
 +
  /*
   * Inode dynamic state flags
   */
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index 6fd3f3c..8efcc5e 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -809,16 +809,12 @@ got:
+ 	ei->i_disksize = 0;
+ 
+ 	/*
+-	 * Don't inherit extent flag from directory. We set extent flag on
+-	 * newly created directory and file only if -o extent mount option is
+-	 * specified
++	 * Don't inherit extent flag from directory, amongst others. We set
++	 * extent flag on newly created directory and file only if -o extent
++	 * mount option is specified
+ 	 */
+-	ei->i_flags = EXT4_I(dir)->i_flags & EXT4_FL_INHERITED;
+-	if (S_ISLNK(mode))
+-		ei->i_flags &= ~(EXT4_IMMUTABLE_FL|EXT4_APPEND_FL);
+-	/* dirsync only applies to directories */
+-	if (!S_ISDIR(mode))
+-		ei->i_flags &= ~EXT4_DIRSYNC_FL;
++	ei->i_flags =
++		ext4_mask_flags(mode, EXT4_I(dir)->i_flags & EXT4_FL_INHERITED);
+ 	ei->i_file_acl = 0;
+ 	ei->i_dtime = 0;
+ 	ei->i_block_group = group;
+diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
+index dc99b47..2af1132 100644
+--- a/fs/ext4/ioctl.c
++++ b/fs/ext4/ioctl.c
+@@ -48,8 +48,7 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 		if (err)
+ 			return err;
+ 
+-		if (!S_ISDIR(inode->i_mode))
+-			flags &= ~EXT4_DIRSYNC_FL;
++		flags = ext4_mask_flags(inode->i_mode, flags);
+ 
+ 		err = -EPERM;
+ 		mutex_lock(&inode->i_mutex);
 -- 
 1.5.6.4
 
