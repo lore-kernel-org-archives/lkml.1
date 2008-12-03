@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbYLCMac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYLCMb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbYLCMac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLCMaX
+	id S1753929AbYLCMb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLCMbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:30:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59756 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYLCMaW (ORCPT
+	Wed, 3 Dec 2008 07:31:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43176 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYLCMbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:30:22 -0500
-Date: Wed, 3 Dec 2008 07:30:21 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
-Message-ID: <20081203123021.GA30035@infradead.org>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	Wed, 3 Dec 2008 07:31:20 -0500
+Date: Wed, 3 Dec 2008 13:42:18 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: New location for generic headers?
+Message-ID: <20081203124218.GK6703@one.firstfloor.org>
+References: <20081203003620.GA32069@basil.nowhere.org> <200812031140.02338.arnd@arndb.de> <20081203120110.GA2822@uranus.ravnborg.org> <20081203121955.GJ6703@one.firstfloor.org> <20081203122149.GA27944@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20081203122149.GA27944@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 04:47:56PM -0500, Mimi Zohar wrote:
-> +/*
-> + * Integrity API calls:
-> + *
-> + * @collect_measurement:
-> + *	Collect template specific measurement data.
-> + *	@data contains template specific data used for collecting the
-> + *	measurement.
-> + * 	Return 0 if operation was successful.
-> + *
-> + * @appraise_measurement:
-> + *	Appraise the integrity of the template specific measurement data.
-> + *	@data contains template specific data used for appraising the
-> + *	measurement.
-> + * 	Return 0 if operation was successful.
-> + *
-> + * @store_measurement:
-> + *	Store the template specific data.
-> + *	@data contains template specific data used for storing the
-> + *	measurement.
-> + *
-> + * @store_template:
-> + *	Store the entry containing the template specific data.
-> + *	@data contains template name, data length, and data.
-> + *
-> + * @must_measure:
-> + *	Measurement decision based on an integrity policy.
-> + *	@data contains template specific data used for making policy
-> + * 	decision.
-> + * 	Return 0 if operation was successful.
-> + *
-> + * @display_template:
-> + *	Display template specific data.
-> + *
-> + */
+On Wed, Dec 03, 2008 at 07:21:49AM -0500, Christoph Hellwig wrote:
+> On Wed, Dec 03, 2008 at 01:19:55PM +0100, Andi Kleen wrote:
+> > The only problem I see is that it would user space use of asm/ 
+> > without make headers_install impossible.
+> 
+> Well, they aren't supposed to do that anyway, so I would consider
+> breaking it a good idea.
 
-Can you explain what all this template stuff is about?  The only method
-of these ever called is display_template, and that seems to be better
-implented directly as a securityfs file, without the indirection.
+Sorry, but working against your users is never a good strategy.
 
+-Andi
+
+-- 
+ak@linux.intel.com
