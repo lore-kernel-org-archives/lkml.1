@@ -1,538 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbYLCUHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYLCUIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbYLCUHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYLCTwy
+	id S1757996AbYLCUIP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:08:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYLCTw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:52:54 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:41005 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754937AbYLCTwu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:52:50 -0500
-Date: Wed, 3 Dec 2008 19:52:38 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Matt_Domsch@dell.com, greg@kroah.com, linux-acpi@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>, Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [PATCH 2/2 update] misc: Add dell-laptop driver
-Message-ID: <20081203195238.GA22560@srcf.ucam.org>
-References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202201645.GB31620@srcf.ucam.org> <alpine.LFD.2.00.0812031414150.3255@localhost.localdomain>
+	Wed, 3 Dec 2008 14:52:56 -0500
+Received: from kroah.org ([198.145.64.141]:60083 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754763AbYLCTww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:52:52 -0500
+Date: Wed, 3 Dec 2008 11:51:25 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 045/104] x86: Hibernate: Fix breakage on x86_32 with
+	CONFIG_NUMA set
+Message-ID: <20081203195125.GT8950@kroah.com>
+References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812031414150.3255@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Disposition: inline; filename="x86-hibernate-fix-breakage-on-x86_32-with-config_numa-set.patch"
+In-Reply-To: <20081203194725.GA8950@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a driver for controling Dell-specific backlight and rfkill 
-interfaces. This driver makes use of the dcdbas interface to the Dell 
-firmware to allow the backlight and rfkill interfaces on Dell systems to 
-be driven through the standardised sysfs interfaces.
-    
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
+
+------------------
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+backport of commit 97a70e548bd97d5a46ae9d44f24aafcc013fd701 to the 2.6.27 kernel.
+
+The NUMA code on x86_32 creates special memory mapping that allows
+each node's pgdat to be located in this node's memory.  For this
+purpose it allocates a memory area at the end of each node's memory
+and maps this area so that it is accessible with virtual addresses
+belonging to low memory.  As a result, if there is high memory,
+these NUMA-allocated areas are physically located in high memory,
+although they are mapped to low memory addresses.
+
+Our hibernation code does not take that into account and for this
+reason hibernation fails on all x86_32 systems with CONFIG_NUMA=y and
+with high memory present.  Fix this by adding a special mapping for
+the NUMA-allocated memory areas to the temporary page tables created
+during the last phase of resume.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
+ arch/x86/mm/discontig_32.c    |   35 +++++++++++++++++++++++++++++++++++
+ arch/x86/power/hibernate_32.c |    4 ++++
+ include/asm-x86/mmzone_32.h   |    4 ++++
+ 3 files changed, 43 insertions(+)
 
-Includes a MAINTAINERS entry.
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 618c1ef..2de9dca 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1360,6 +1360,11 @@ P:	Maciej W. Rozycki
- M:	macro@linux-mips.org
- S:	Maintained
+--- a/arch/x86/mm/discontig_32.c
++++ b/arch/x86/mm/discontig_32.c
+@@ -222,6 +222,41 @@ static void __init remap_numa_kva(void)
+ 	}
+ }
  
-+DELL LAPTOP DRIVER
-+P:	Matthew Garrett
-+M:	mjg59@srcf.ucam.org
-+S:	Maintained
-+
- DELL LAPTOP SMM DRIVER
- P:	Massimo Dal Zotto
- M:	dz@debian.org
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index fee7304..3949a1c 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -498,6 +498,18 @@ config SGI_GRU_DEBUG
- 	This option enables addition debugging code for the SGI GRU driver. If
- 	you are unsure, say N.
- 
-+config DELL_LAPTOP
-+	tristate "Dell Laptop Extras (EXPERIMENTAL)"
-+	depends on X86
-+	depends on DCDBAS
-+	depends on EXPERIMENTAL
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	depends on RFKILL
-+	default n
-+	---help---
-+	This driver adds support for rfkill and backlight control to Dell
-+	laptops.
-+
- source "drivers/misc/c2port/Kconfig"
- 
- endif # MISC_DEVICES
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 817f7f5..39043f8 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -32,4 +32,5 @@ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
- obj-$(CONFIG_SGI_XP)		+= sgi-xp/
- obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
- obj-$(CONFIG_HP_ILO)		+= hpilo.o
-+obj-$(CONFIG_DELL_LAPTOP)	+= dell-laptop.o
- obj-$(CONFIG_C2PORT)		+= c2port/
-diff --git a/drivers/misc/dell-laptop.c b/drivers/misc/dell-laptop.c
-new file mode 100644
-index 0000000..4d33a20
---- /dev/null
-+++ b/drivers/misc/dell-laptop.c
-@@ -0,0 +1,436 @@
-+/*
-+ *  Driver for Dell laptop extras
-+ *
-+ *  Copyright (c) Red Hat <mjg@redhat.com>
-+ *
-+ *  Based on documentation in the libsmbios package, Copyright (C) 2005 Dell
-+ *  Inc.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
++#ifdef CONFIG_HIBERNATION
++/**
++ * resume_map_numa_kva - add KVA mapping to the temporary page tables created
++ *                       during resume from hibernation
++ * @pgd_base - temporary resume page directory
 + */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/backlight.h>
-+#include <linux/err.h>
-+#include <linux/dmi.h>
-+#include <linux/io.h>
-+#include <linux/rfkill.h>
-+#include <linux/power_supply.h>
-+#include <linux/acpi.h>
-+#include "../firmware/dcdbas.h"
-+
-+#define BRIGHTNESS_TOKEN 0x7d
-+
-+/* This structure will be modified by the firmware when we enter
-+ * system management mode, hence the volatiles */
-+
-+struct calling_interface_buffer {
-+	u16 class;
-+	u16 select;
-+	volatile u32 input[4];
-+	volatile u32 output[4];
-+} __packed;
-+
-+struct calling_interface_token {
-+	u16 tokenID;
-+	u16 location;
-+	union {
-+		u16 value;
-+		u16 stringlength;
-+	};
-+};
-+
-+struct calling_interface_structure {
-+	struct dmi_header header;
-+	u16 cmdIOAddress;
-+	u8 cmdIOCode;
-+	u32 supportedCmds;
-+	struct calling_interface_token tokens[];
-+} __packed;
-+
-+static int da_command_address;
-+static int da_command_code;
-+static int da_num_tokens;
-+static struct calling_interface_token *da_tokens;
-+
-+static struct backlight_device *dell_backlight_device;
-+static struct rfkill *wifi_rfkill;
-+static struct rfkill *bluetooth_rfkill;
-+static struct rfkill *wwan_rfkill;
-+
-+static const struct dmi_system_id __initdata dell_device_table[] = {
-+	{
-+		.ident = "Dell laptop",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_CHASSIS_TYPE, "8"),
-+		},
-+	},
-+	{ }
-+};
-+
-+static void parse_da_table(const struct dmi_header *dm)
++void resume_map_numa_kva(pgd_t *pgd_base)
 +{
-+	/* Final token is a terminator, so we don't want to copy it */
-+	int tokens = (dm->length-11)/sizeof(struct calling_interface_token)-1;
-+	struct calling_interface_structure *table =
-+		container_of(dm, struct calling_interface_structure, header);
++	int node;
 +
-+	/* 4 bytes of table header, plus 7 bytes of Dell header, plus at least
-+	   6 bytes of entry */
++	for_each_online_node(node) {
++		unsigned long start_va, start_pfn, size, pfn;
 +
-+	if (dm->length < 17)
-+		return;
++		start_va = (unsigned long)node_remap_start_vaddr[node];
++		start_pfn = node_remap_start_pfn[node];
++		size = node_remap_size[node];
 +
-+	da_command_address = table->cmdIOAddress;
-+	da_command_code = table->cmdIOCode;
++		printk(KERN_DEBUG "%s: node %d\n", __FUNCTION__, node);
 +
-+	da_tokens = krealloc(da_tokens, (da_num_tokens + tokens) *
-+			     sizeof(struct calling_interface_token),
-+			     GFP_KERNEL);
++		for (pfn = 0; pfn < size; pfn += PTRS_PER_PTE) {
++			unsigned long vaddr = start_va + (pfn << PAGE_SHIFT);
++			pgd_t *pgd = pgd_base + pgd_index(vaddr);
++			pud_t *pud = pud_offset(pgd, vaddr);
++			pmd_t *pmd = pmd_offset(pud, vaddr);
 +
-+	if (!da_tokens)
-+		return;
++			set_pmd(pmd, pfn_pmd(start_pfn + pfn,
++						PAGE_KERNEL_LARGE_EXEC));
 +
-+	memcpy(da_tokens+da_num_tokens, table->tokens,
-+	       sizeof(struct calling_interface_token) * tokens);
-+
-+	da_num_tokens += tokens;
-+}
-+
-+static void find_tokens(const struct dmi_header *dm)
-+{
-+	switch (dm->type) {
-+	case 0xd4: /* Indexed IO */
-+		break;
-+	case 0xd5: /* Protected Area Type 1 */
-+		break;
-+	case 0xd6: /* Protected Area Type 2 */
-+		break;
-+	case 0xda: /* Calling interface */
-+		parse_da_table(dm);
-+		break;
++			printk(KERN_DEBUG "%s: %08lx -> pfn %08lx\n",
++				__FUNCTION__, vaddr, start_pfn + pfn);
++		}
 +	}
 +}
-+
-+static int find_token_location(int tokenid)
-+{
-+	int i;
-+	for (i = 0; i < da_num_tokens; i++) {
-+		if (da_tokens[i].tokenID == tokenid)
-+			return da_tokens[i].location;
-+	}
-+
-+	return -1;
-+}
-+
-+static struct calling_interface_buffer *
-+dell_send_request(struct calling_interface_buffer *buffer, int class,
-+		  int select)
-+{
-+	struct smi_cmd command;
-+
-+	command.magic = SMI_CMD_MAGIC;
-+	command.command_address = da_command_address;
-+	command.command_code = da_command_code;
-+	command.ebx = virt_to_phys(buffer);
-+	command.ecx = 0x42534931;
-+
-+	buffer->class = class;
-+	buffer->select = select;
-+
-+	dcdbas_smi_request(&command);
-+
-+	return buffer;
-+}
-+
-+/* Derived from information in DellWirelessCtl.cpp:
-+   Class 17, select 11 is radio control. It returns an array of 32-bit values.
-+
-+   result[0]: return code
-+   result[1]:
-+     Bit 0:      Hardware switch supported
-+     Bit 1:      Wifi locator supported
-+     Bit 2:      Wifi is supported
-+     Bit 3:      Bluetooth is supported
-+     Bit 4:      WWAN is supported
-+     Bit 5:      Wireless keyboard supported
-+     Bits 6-7:   Reserved
-+     Bit 8:      Wifi is installed
-+     Bit 9:      Bluetooth is installed
-+     Bit 10:     WWAN is installed
-+     Bits 11-15: Reserved
-+     Bit 16:     Hardware switch is on
-+     Bit 17:     Wifi is blocked
-+     Bit 18:     Bluetooth is blocked
-+     Bit 19:     WWAN is blocked
-+     Bits 20-31: Reserved
-+   result[2]: NVRAM size in bytes
-+   result[3]: NVRAM format version number
-+*/
-+
-+static int dell_rfkill_set(int radio, enum rfkill_state state)
-+{
-+	struct calling_interface_buffer buffer;
-+	int disable = (state == RFKILL_STATE_UNBLOCKED) ? 0 : 1;
-+
-+	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
-+	buffer.input[0] = (1 | (radio<<8) | (disable << 16));
-+	dell_send_request(&buffer, 17, 11);
-+
-+	return 0;
-+}
-+
-+static int dell_wifi_set(void *data, enum rfkill_state state)
-+{
-+	return dell_rfkill_set(1, state);
-+}
-+
-+static int dell_bluetooth_set(void *data, enum rfkill_state state)
-+{
-+	return dell_rfkill_set(2, state);
-+}
-+
-+static int dell_wwan_set(void *data, enum rfkill_state state)
-+{
-+	return dell_rfkill_set(3, state);
-+}
-+
-+static int dell_rfkill_get(int bit, enum rfkill_state *state)
-+{
-+	struct calling_interface_buffer buffer;
-+	int status;
-+	int new_state = RFKILL_STATE_HARD_BLOCKED;
-+
-+	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
-+	dell_send_request(&buffer, 17, 11);
-+	status = buffer.output[1];
-+
-+	if (status & (1<<16))
-+		new_state = RFKILL_STATE_SOFT_BLOCKED;
-+
-+	if (status & (1<<bit))
-+		*state = new_state;
-+	else
-+		*state = RFKILL_STATE_UNBLOCKED;
-+
-+	return 0;
-+}
-+
-+static int dell_wifi_get(void *data, enum rfkill_state *state)
-+{
-+	return dell_rfkill_get(17, state);
-+}
-+
-+static int dell_bluetooth_get(void *data, enum rfkill_state *state)
-+{
-+	return dell_rfkill_get(18, state);
-+}
-+
-+static int dell_wwan_get(void *data, enum rfkill_state *state)
-+{
-+	return dell_rfkill_get(19, state);
-+}
-+
-+static int dell_setup_rfkill(void)
-+{
-+	struct calling_interface_buffer buffer;
-+	int status;
-+	int ret;
-+
-+	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
-+	dell_send_request(&buffer, 17, 11);
-+	status = buffer.output[1];
-+
-+	if ((status & (1<<2|1<<8)) == (1<<2|1<<8)) {
-+		wifi_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_WLAN);
-+		if (!wifi_rfkill)
-+			goto err_wifi;
-+		wifi_rfkill->name = "dell-wifi";
-+		wifi_rfkill->toggle_radio = dell_wifi_set;
-+		wifi_rfkill->get_state = dell_wifi_get;
-+		ret = rfkill_register(wifi_rfkill);
-+		if (ret)
-+			goto err_wifi;
-+	}
-+
-+	if ((status & (1<<3|1<<9)) == (1<<3|1<<9)) {
-+		bluetooth_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_BLUETOOTH);
-+		if (!bluetooth_rfkill)
-+			goto err_bluetooth;
-+		bluetooth_rfkill->name = "dell-bluetooth";
-+		bluetooth_rfkill->toggle_radio = dell_bluetooth_set;
-+		bluetooth_rfkill->get_state = dell_bluetooth_get;
-+		ret = rfkill_register(bluetooth_rfkill);
-+		if (ret)
-+			goto err_bluetooth;
-+	}
-+
-+	if ((status & (1<<4|1<<10)) == (1<<4|1<<10)) {
-+		wwan_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_WWAN);
-+		if (!wwan_rfkill)
-+			goto err_wwan;
-+		wwan_rfkill->name = "dell-wwan";
-+		wwan_rfkill->toggle_radio = dell_wwan_set;
-+		wwan_rfkill->get_state = dell_wwan_get;
-+		ret = rfkill_register(wwan_rfkill);
-+		if (ret)
-+			goto err_wwan;
-+	}
-+
-+	return 0;
-+err_wwan:
-+	if (wwan_rfkill)
-+		rfkill_free(wwan_rfkill);
-+	if (bluetooth_rfkill) {
-+		rfkill_unregister(bluetooth_rfkill);
-+		bluetooth_rfkill = NULL;
-+	}
-+err_bluetooth:
-+	if (bluetooth_rfkill)
-+		rfkill_free(bluetooth_rfkill);
-+	if (wifi_rfkill) {
-+		rfkill_unregister(wifi_rfkill);
-+		wifi_rfkill = NULL;
-+	}
-+err_wifi:
-+	if (wifi_rfkill)
-+		rfkill_free(wifi_rfkill);
-+
-+	return ret;
-+}
-+
-+static int dell_send_intensity(struct backlight_device *bd)
-+{
-+	struct calling_interface_buffer buffer;
-+
-+	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
-+	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
-+	buffer.input[1] = bd->props.brightness;
-+
-+	if (buffer.input[0] == -1)
-+		return -ENODEV;
-+
-+	if (power_supply_is_system_supplied() > 0)
-+		dell_send_request(&buffer, 1, 2);
-+	else
-+		dell_send_request(&buffer, 1, 1);
-+
-+	return 0;
-+}
-+
-+static int dell_get_intensity(struct backlight_device *bd)
-+{
-+	struct calling_interface_buffer buffer;
-+
-+	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
-+	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
-+
-+	if (buffer.input[0] == -1)
-+		return -ENODEV;
-+
-+	if (power_supply_is_system_supplied() > 0)
-+		dell_send_request(&buffer, 0, 2);
-+	else
-+		dell_send_request(&buffer, 0, 1);
-+
-+	return buffer.output[1];
-+}
-+
-+static struct backlight_ops dell_ops = {
-+	.get_brightness = dell_get_intensity,
-+	.update_status  = dell_send_intensity,
-+};
-+
-+static int __init dell_init(void)
-+{
-+	struct calling_interface_buffer buffer;
-+	int max_intensity = 0;
-+	int ret;
-+
-+	if (!dmi_check_system(dell_device_table))
-+		return -ENODEV;
-+
-+	dmi_walk(find_tokens);
-+
-+	if (!da_tokens)  {
-+		printk(KERN_INFO "dell-laptop: Unable to find dmi tokens\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = dell_setup_rfkill();
-+
-+	if (ret) {
-+		printk(KERN_WARNING "dell-laptop: Unable to setup rfkill\n");
-+		goto out;
-+	}
-+
-+#ifdef CONFIG_ACPI
-+	/* In the event of an ACPI backlight being available, don't
-+	 * register the platform controller.
-+	 */
-+	if (acpi_video_backlight_support())
-+		return 0;
 +#endif
 +
-+	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
-+	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
+ static unsigned long calculate_numa_remap_pages(void)
+ {
+ 	int nid;
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -12,6 +12,7 @@
+ #include <asm/system.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
++#include <asm/mmzone.h>
+ 
+ /* Defined in hibernate_asm_32.S */
+ extern int restore_image(void);
+@@ -127,6 +128,9 @@ static int resume_physical_mapping_init(
+ 			}
+ 		}
+ 	}
 +
-+	if (buffer.input[0] != -1) {
-+		dell_send_request(&buffer, 0, 2);
-+		max_intensity = buffer.output[3];
-+	}
++	resume_map_numa_kva(pgd_base);
 +
-+	if (max_intensity) {
-+		dell_backlight_device = backlight_device_register(
-+			"dell_backlight",
-+			NULL, NULL,
-+			&dell_ops);
+ 	return 0;
+ }
+ 
+--- a/include/asm-x86/mmzone_32.h
++++ b/include/asm-x86/mmzone_32.h
+@@ -34,10 +34,14 @@ static inline void get_memcfg_numa(void)
+ 
+ extern int early_pfn_to_nid(unsigned long pfn);
+ 
++extern void resume_map_numa_kva(pgd_t *pgd);
 +
-+		if (IS_ERR(dell_backlight_device)) {
-+			ret = PTR_ERR(dell_backlight_device);
-+			dell_backlight_device = NULL;
-+			goto out;
-+		}
+ #else /* !CONFIG_NUMA */
+ 
+ #define get_memcfg_numa get_memcfg_numa_flat
+ 
++static inline void resume_map_numa_kva(pgd_t *pgd) {}
 +
-+		dell_backlight_device->props.max_brightness = max_intensity;
-+		dell_backlight_device->props.brightness =
-+			dell_get_intensity(dell_backlight_device);
-+		backlight_update_status(dell_backlight_device);
-+	}
-+
-+	return 0;
-+out:
-+	if (wifi_rfkill)
-+		rfkill_unregister(wifi_rfkill);
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
-+	if (wwan_rfkill)
-+		rfkill_unregister(wwan_rfkill);
-+	kfree(da_tokens);
-+	return ret;
-+}
-+
-+static void __exit dell_exit(void)
-+{
-+	backlight_device_unregister(dell_backlight_device);
-+	if (wifi_rfkill)
-+		rfkill_unregister(wifi_rfkill);
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
-+	if (wwan_rfkill)
-+		rfkill_unregister(wwan_rfkill);
-+}
-+
-+module_init(dell_init);
-+module_exit(dell_exit);
-+
-+MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
-+MODULE_DESCRIPTION("Dell laptop driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("dmi:*svnDellInc.:*:ct8:*");
+ #endif /* CONFIG_NUMA */
+ 
+ #ifdef CONFIG_DISCONTIGMEM
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
