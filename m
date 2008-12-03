@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYLCMgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYLCMhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbYLCMgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 07:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLCMgl
+	id S1754001AbYLCMhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 07:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYLCMh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 07:36:41 -0500
-Received: from styx.suse.cz ([82.119.242.94]:33768 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751789AbYLCMgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 07:36:40 -0500
-Subject: Re: [Patch V3 0/3] Enable irqs when waiting for rwlocks
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, tee@sgi.com,
-       mingo@elte.hu, linux-arch@vger.kernel.org
-In-Reply-To: <1228307117.9673.232.camel@twins>
-References: <20081104122405.046233722@attica.americas.sgi.com>
-	 <20081202161311.ae3376cb.akpm@linux-foundation.org>
-	 <20081203113744.GE8970@sgi.com>  <1228307117.9673.232.camel@twins>
-Content-Type: text/plain; charset=utf-8
-Organization: SUSE LINUX
-Date: Wed, 03 Dec 2008 13:36:38 +0100
-Message-Id: <1228307798.1009.1.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 3 Dec 2008 07:37:29 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:21047 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752117AbYLCMh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 07:37:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=vnOV+8fBRvliHHKX0nnBy8zDszO30y237qmI1rmHWgezo+dH6u15anNDTf4D9Vw6Rn
+         vSrZ7vQehXzznnjttT+54RmGeNyo48Es9NcKfpzuKfPoFe3w8hQCJ+hslCGva08uDKtn
+         rdbh3RrFP9hVuHbQhoo2wZMn/Lw4U6xqa8hsM=
+Message-ID: <49367D82.8040305@tuffmail.co.uk>
+Date: Wed, 03 Dec 2008 12:37:22 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Matt_Domsch@dell.com, greg@kroah.com, linux-acpi@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>, Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: [PATCH 2/2 update] misc: Add dell-laptop driver
+References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202201645.GB31620@srcf.ucam.org>
+In-Reply-To: <20081202201645.GB31620@srcf.ucam.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra píše v St 03. 12. 2008 v 13:25 +0100:
-> On Wed, 2008-12-03 at 05:37 -0600, Robin Holt wrote:
-> > > It's a bit regrettable to have different architectures behaving in
-> > > different ways.  It would be interesting to toss an x86_64
-> > > implementation into the grinder, see if it causes any problems, see if
-> > > it produces any tangible benefits.  Then other architectures might
-> > > follow.  Or not, depending on the results ;)
-> > 
-> > I personally expect SGI to work on this for x86_64 in the future.
-> > Once we actually start testing systems with 128 and above cpus, I
-> > would expect to see these performance issues needing to be addressed.
-> > Until then, it is just a theoretical.
-> 
-> Personally I consider this a ugly hack and would love to see people
-> solve the actual problem and move away from rwlock_t, its utter rubbish.
+Matthew Garrett wrote:
+> misc: Add dell-laptop driver
+>     
+> Add a driver for controling Dell-specific backlight and rfkill interfaces.
+> This driver makes use of the dcdbas interface to the Dell firmware to allow
+> the backlight and rfkill interfaces on Dell systems to be driven through the
+> standardised sysfs interfaces.
+>     
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+>
+> ---
+>
+> Contains Andrew's suggested updates, plus a fix for a leak on the init 
+> error path.
+>   
 
-Me too, but we don't have that clean and nice solution today, but what
-we _do_ have today are the machines which break badly when interrupts
-are disabled for the whole duration of taking a rwlock_t. :(
+I see you don't call rfkill_set_default(). Do Dell firmwares support
+persistent rfkill state?
 
-Feel free to rewrite all users of rwlock_t. I'll appreciate it, oh so
-very much.
+My ill-informed guess is that it shouldn't hurt to call it. If the
+firmware is sane, it will initialize the rfkill to a useful state.
+Otherwise, the radio(s) would be unusable without the platform driver.
+But do feel free to ignore me, if you suspect the firmware of insanity :).
 
-Petr
-
+Regards
+Alan
