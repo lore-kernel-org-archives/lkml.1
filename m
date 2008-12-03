@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbYLCRgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYLCRh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616AbYLCRgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 12:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYLCRgG
+	id S1753773AbYLCRh4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 12:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYLCRhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 12:36:06 -0500
-Received: from mga03.intel.com ([143.182.124.21]:26460 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbYLCRgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 12:36:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,709,1220252400"; 
-   d="scan'208";a="86044004"
-Subject: Re: Unusually low speeds with ath5k and iwl3945
-From: reinette chatre <reinette.chatre@intel.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Bob Copeland <me@bobcopeland.com>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "wally@theblackmoor.net" <wally@theblackmoor.net>
-In-Reply-To: <1228324148.23040.0.camel@maxim-laptop>
-References: <492719ED.5000006@gmail.com>  <1228323319.12006.3.camel@rc-desk>
-	 <1228324148.23040.0.camel@maxim-laptop>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 09:36:58 -0800
-Message-Id: <1228325818.13338.3.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 12:37:48 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:42500 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbYLCRhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 12:37:47 -0500
+Date: Wed, 3 Dec 2008 18:37:45 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Pavel Machek <pavel@suse.cz>, Theodore Tso <tytso@mit.edu>,
+       Chris Friesen <cfriesen@nortel.com>,
+       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+In-Reply-To: <20081203155449.6ea98768@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0812031754040.25439@artax.karlin.mff.cuni.cz>
+References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu>
+ <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu>
+ <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu>
+ <20081202224403.GA8277@elf.ucw.cz> <20081203050709.GL20858@mit.edu>
+ <20081203084639.GB1944@ucw.cz> <Pine.LNX.4.64.0812031637050.5406@artax.karlin.mff.cuni.cz>
+ <20081203155449.6ea98768@lxorguk.ukuu.org.uk>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 09:09 -0800, Maxim Levitsky wrote:
-> On Wed, 2008-12-03 at 08:55 -0800, reinette chatre wrote:
-> > On Fri, 2008-11-21 at 12:28 -0800, Maxim Levitsky wrote:
-> > 
-> > > sorry for cross-posting, but this issue really spans both iwl3945 and ath5k.
-> > > 
-> > > I have two laptops (acer 5720, and aspire one) and I see some strange speed issues.
-> > > 
-> > > I initially blamed iwl3945, then thought it got fixed, but now I have ath5k, and speeds are low
-> > > and I suspect that both drivers has bugs regarding to speed.
-> > 
-> > We just posted some fixes to iwl3945 rate scaling. Could you please test
-> > with http://marc.info/?l=linux-wireless&m=122824880823630&w=2 ?
-> > 
-> > Thank you
-> > 
-> > Reinette
-> > 
-> > 
-> I''l test this, but for all my tests rate on iwl3945 was already 54M,
-> could this still help?
+On Wed, 3 Dec 2008, Alan Cox wrote:
+
+> > implemented in disk firmware. Write errors are reported for disk 
+> > connection problems, not media problems.
 > 
+> Media errors are reported for writes when the drive knows there are
+> problems. That may be deferred to the cache flush afterwards but the
+> information is still generated and shipped back to us - eventually.
 
-Yes. Please test with netcat as you did previously to see if you get
-better performance.
+It a question, how to process cache flush errors correctly. A cache flush 
+error reported for one filesystem may belong to the data written by other 
+filesystem. So should some flag "there was an error" be set for all 
+partitions and report it to every filesystem when it does cache flush? Or 
+record the time of the last error in the driver and let the filesystem 
+query it (so that the filesystem can tell if the error happened before or 
+after it was mounted).
 
-Thanks
+BTW. how does SCSI report cache flush errors? Does it report them on 
+SYNCHRONIZE CACHE command or does it report them on defered senses?
 
-Reinette
+Another point is that unless the sector remap table is full, there should 
+be no cache flush errors.
 
+> > For connection problems, another solution may be to retry writes 
+> > indefinitely until the admin aborts it or reconnects the disk. But I don't 
+> > know how common these recoverable disk connection errors are.
+> 
+> CRC errors, lost IRQs and the like are retried by the midlayer and
+> drivers and the error handling strategies will also try things like
+> reducing link speeds on repeated CRC errors.
+
+I meant for example loose cable or so --- does it make sense to retry 
+indefinitely (until the admin plugs the cable or unmounts the filesystem) 
+or return error to the filesystem after few retries?
+
+Mikulas
+
+> Alan
+> 
