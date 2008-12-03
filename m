@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbYLCDo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYLCDqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754998AbYLCDo3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 22:44:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYLCDoV
+	id S1754927AbYLCDqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 22:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYLCDqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 22:44:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52552 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbYLCDoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 22:44:20 -0500
-Message-ID: <493600A4.6040802@cn.fujitsu.com>
-Date: Wed, 03 Dec 2008 11:44:36 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] cgroup: fix pre_destroy and semantics of css->refcnt
-References: <20081201145907.e6d63d61.kamezawa.hiroyu@jp.fujitsu.com> <20081201150208.6b24506b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081201150208.6b24506b.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Dec 2008 22:46:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34203 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750859AbYLCDqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Dec 2008 22:46:36 -0500
+Subject: Re: [RFC PATCH 0/3] A couple of feature requests to the unified
+	trace  buffer
+From: Steven Rostedt <srostedt@redhat.com>
+To: Jiaying Zhang <jiayingz@google.com>
+Cc: linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <5df78e1d0812021935h56c2e21am88477ad44a57ec78@mail.gmail.com>
+References: <5df78e1d0812021652w74c968bboba5e6457059b569b@mail.gmail.com>
+	 <1228272731.4886.26.camel@localhost.localdomain>
+	 <5df78e1d0812021935h56c2e21am88477ad44a57ec78@mail.gmail.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 02 Dec 2008 22:45:44 -0500
+Message-Id: <1228275944.4886.43.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/*
-> + * Try to set all subsys's refcnt to be 0.
-> + * css->refcnt==0 means this subsys will be destroy()'d.
-> + */
-> +static bool cgroup_set_subsys_removed(struct cgroup *cgrp)
-> +{
-> +	struct cgroup_subsys *ss;
-> +	struct cgroup_subsys_state *css, *tmp;
-> +
-> +	for_each_subsys(cgrp->root, ss) {
-> +		css = cgrp->subsys[ss->subsys_id];
-> +		if (!atomic_dec_and_test(&css->refcnt))
-> +			goto rollback;
-> +	}
-> +	return true;
-> +rollback:
-> +	for_each_subsys(cgrp->root, ss) {
-> +		tmp = cgrp->subsys[ss->subsys_id];
-> +		atomic_inc(&tmp->refcnt);
-> +		if (tmp == css)
-> +			break;
-> +	}
-> +	return false;
-> +}
-> +
 
-This function may return false, then causes rmdir() fail. So css_tryget(subsys1)
-returns 0 doesn't necessarily mean subsys1->destroy() will be called,
-if subsys2's css's refcnt is >1 when cgroup_set_subsys_removed() is called.
+On Tue, 2008-12-02 at 19:35 -0800, Jiaying Zhang wrote:
 
-Will this bring up bugs and problems?
+> > If you check out my git tree:
+> >
+> > git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> >
+> >  branch: tip/devel
+> >
+> > You will see that I started writing code to handle "splice". I have a
+> > retarded version that works right now (using the term "works" loosely
+> > here).
+> 
+> This is great! I just checked out your git tree and will take a close look.
+> Do you plan to support mmap other than splice in the unified trace buffer?
+> I am not familiar with splice. Is it superior?
+> 
+> >
+> > Also, most of our development is done in the Ingo's tip tree:
+> >
+> > git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> >
+> >  branch: master
+> >
+> > I see in the patches that you based this on 2.6.26.2? Not sure which
+> > version of the ring buffer you are using, but there has been lots of
+> > improvements to it already.
+> 
+> My patches are based on the unified ring buffer code I checked out
+> from git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> a week ago. I saw you posted two new patches today. I haven't merged
+> my patches with them yet.
+
+OK, I was nervous by seeing in your patches:
+
+Index: linux-2.6.26.2/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.26.2.orig/include/asm-generic/vmlinux.lds.h
+2008-11-25 11:32:26.000000000 -0800
++++ linux-2.6.26.2/include/asm-generic/vmlinux.lds.h    2008-11-25
+
+
+My splice code is not in git yet. I can put it there tonight. But the
+ring buffer code needed to work with splice is there. The splice work is
+at the ftrace level, but you probably could use the same as well.
+
+-- Steve
+
 
