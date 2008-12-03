@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbYLCUcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbYLCUcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751666AbYLCUcN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYLCT6h
+	id S1761939AbYLCUcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbYLCUBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:37 -0500
-Received: from kroah.org ([198.145.64.141]:56714 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756097AbYLCT55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:57 -0500
-Date: Wed, 3 Dec 2008 11:56:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [patch 092/104] ext4: Fix duplicate entries returned from
-	getdents() system call
-Message-ID: <20081203195634.GO8950@kroah.com>
-References: <20081203193901.715896543@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-fix-duplicate-entries-returned-from-getdents-system-call.patch"
-In-Reply-To: <20081203194725.GA8950@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 3 Dec 2008 15:01:50 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:2863 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756701AbYLCUBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 15:01:48 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Dec 2008 15:01:48 EST
+From: "Duane Griffin" <duaneg@dghda.com>
+To: akpm@linux-foundation.org
+Cc: Andreas Dilger <adilger@sun.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6][REPOST] ext{2,3,4}: tighten inheritance and setting of inode flags
+Date: Wed,  3 Dec 2008 19:54:57 +0000
+Message-Id: <1228334103-15948-1-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.5.6.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+This patch series prevents the inheritance and setting of flags that are
+inappropriate for specific inode types.
 
-------------------
-From: "Theodore Ts'o" <tytso@mit.edu>
+Flags which should be inherited are listed explicitly so as to prevent
+future flags being overlooked and inherited by accident.
 
-(cherry picked from commit 3c37fc86d20fe35be656f070997d62f75c2e4874)
+It introduces a function to mask flags based on the inode type and uses
+it in inode creation and the SETFLAGS ioctl to help prevent future
+inconsistency.
 
-Fix a regression caused by commit d0156417, "ext4: fix ext4_dx_readdir
-hash collision handling", where deleting files in a large directory
-(requiring more than one getdents system call), results in some
-filenames being returned twice.  This was caused by a failure to
-update info->curr_hash and info->curr_minor_hash, so that if the
-directory had gotten modified since the last getdents() system call
-(as would be the case if the user is running "rm -r" or "git clean"),
-a directory entry would get returned twice to the userspace.
+Patches 1-3 fix the TOPDIR flag inheritance bug reported at
+http://bugzilla.kernel.org/show_bug.cgi?id=9866.
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Patches 4-6 fix a related problem with non-regular file/dir inodes
+inheriting inappropriate flags, discovered while testing. For example,
+on an unpatched system, the following sequence will create an
+un(re)movable device node:
 
-This patch fixes the bug reported by Markus Trippelsdorf at:
-http://bugzilla.kernel.org/show_bug.cgi?id=11844
+mkdir a
+chattr +a a
+touch a/a
+mknod a/b c 1 3
+chattr -a a a/a
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Tested-by: Markus Trippelsdorf <markus@trippelsdorf.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+All attempts to delete, move or modify a/b will fail. Fsck will report
+there is a problem but will not fix it.
 
----
- fs/ext4/dir.c |   20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
-
---- a/fs/ext4/dir.c
-+++ b/fs/ext4/dir.c
-@@ -458,17 +458,8 @@ static int ext4_dx_readdir(struct file *
- 	if (info->extra_fname) {
- 		if (call_filldir(filp, dirent, filldir, info->extra_fname))
- 			goto finished;
--
- 		info->extra_fname = NULL;
--		info->curr_node = rb_next(info->curr_node);
--		if (!info->curr_node) {
--			if (info->next_hash == ~0) {
--				filp->f_pos = EXT4_HTREE_EOF;
--				goto finished;
--			}
--			info->curr_hash = info->next_hash;
--			info->curr_minor_hash = 0;
--		}
-+		goto next_node;
- 	} else if (!info->curr_node)
- 		info->curr_node = rb_first(&info->root);
- 
-@@ -500,9 +491,14 @@ static int ext4_dx_readdir(struct file *
- 		info->curr_minor_hash = fname->minor_hash;
- 		if (call_filldir(filp, dirent, filldir, fname))
- 			break;
--
-+	next_node:
- 		info->curr_node = rb_next(info->curr_node);
--		if (!info->curr_node) {
-+		if (info->curr_node) {
-+			fname = rb_entry(info->curr_node, struct fname,
-+					 rb_hash);
-+			info->curr_hash = fname->hash;
-+			info->curr_minor_hash = fname->minor_hash;
-+		} else {
- 			if (info->next_hash == ~0) {
- 				filp->f_pos = EXT4_HTREE_EOF;
- 				break;
-
+Diffstat from linux-next:
+ fs/ext2/ialloc.c        |    8 ++------
+ fs/ext2/ioctl.c         |    3 +--
+ fs/ext3/ialloc.c        |    8 ++------
+ fs/ext3/ioctl.c         |    3 +--
+ fs/ext4/ext4.h          |   25 +++++++++++++++++++++++++
+ fs/ext4/ialloc.c        |   14 +++++---------
+ fs/ext4/ioctl.c         |    3 +--
+ include/linux/ext2_fs.h |   24 ++++++++++++++++++++++++
+ include/linux/ext3_fs.h |   24 ++++++++++++++++++++++++
+ 9 files changed, 85 insertions(+), 27 deletions(-)
