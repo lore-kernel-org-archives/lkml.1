@@ -1,205 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751298AbYLCQEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYLCQF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751298AbYLCQEH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 11:04:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYLCQDm
+	id S1753536AbYLCQF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 11:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYLCQFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 11:03:42 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:42998 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbYLCQDk (ORCPT
+	Wed, 3 Dec 2008 11:05:50 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57909 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751214AbYLCQFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 11:03:40 -0500
-Date: Wed, 3 Dec 2008 11:01:34 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [PATCH] add tracepoints to track change in napi
-	states on network receive
-Message-ID: <20081203160134.GA6549@hmsreliant.think-freely.org>
-References: <20081202195129.GA30042@hmsreliant.think-freely.org> <20081202200150.GA27282@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202200150.GA27282@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+	Wed, 3 Dec 2008 11:05:49 -0500
+Message-Id: <20081203160448.972919719@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Dec 2008 11:04:49 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/2] ftrace: fixes for tip
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 03:01:50PM -0500, Mathieu Desnoyers wrote:
-> * Neil Horman (nhorman@tuxdriver.com) wrote:
-> > Hey there-
-> > 	I thought it would be handy to track the napi receive state of different
-> > network devices using ltt.  This patch adds trace points to indicate when a napi
-> > instance has been scheduled, when its serviced and when it completes.
-> > 
-> 
-> Sounds great, see comments below,
-<snip>
+Ingo,
 
-Hey,
-	New patch, with previous comments taken into account.
+These two patches are fixes. The first cleans up the stack_trace
+output to print 0's for the return_to_handler function.
 
-Patch to track the napi receive stat of different network devices using ltt.
-Adds trace points to indicate when a napi instance has been scheduled, when its
-serviced and when it completes
+The second is the nasty race we have been hitting. My patches must
+have made the race window bigger for you since the bug was there
+before. It is a nasty race in the fork code. More info in the change log
+of that patch.
 
-Regards
-Neil
+The following patches are in:
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/devel
 
 
- include/linux/netdevice.h |    5 +++++
- include/trace/netdevice.h |   30 ++++++++++++++++++++++++++++++
- ltt/probes/net-trace.c    |   22 ++++++++++++++++++++++
- net/core/dev.c            |    7 ++++++-
- 4 files changed, 63 insertions(+), 1 deletion(-)
+Steven Rostedt (2):
+      trace: fix output of stack trace
+      ftrace: fix race in function graph during fork
 
+----
+ kernel/fork.c              |    9 ++++++---
+ kernel/trace/trace_stack.c |    5 ++++-
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 488c56e..7da71eb 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -43,6 +43,9 @@
- 
- #include <net/net_namespace.h>
- 
-+struct napi_struct;
-+#include <trace/netdevice.h>
-+
- struct vlan_group;
- struct ethtool_ops;
- struct netpoll_info;
-@@ -386,6 +389,7 @@ static inline void napi_complete(struct napi_struct *n)
- 	local_irq_save(flags);
- 	__napi_complete(n);
- 	local_irq_restore(flags);
-+	trace_napi_complete(n);
- }
- 
- /**
-@@ -1726,6 +1730,7 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
- 	return 0;
- }
- 
-+
- #endif /* __KERNEL__ */
- 
- #endif	/* _LINUX_DEV_H */
-diff --git a/include/trace/netdevice.h b/include/trace/netdevice.h
-new file mode 100644
-index 0000000..ba48f6c
---- /dev/null
-+++ b/include/trace/netdevice.h
-@@ -0,0 +1,30 @@
-+#ifndef _INCLUDE_NETDEVICE_H_
-+#define _INCLUDE_NETDEVICE_H_
-+
-+#include <linux/netdevice.h>
-+
-+/* Tracepoints */
-+
-+/*
-+ * Note these first 2 traces are actually in __napi_schedule and net_rx_action
-+ * respectively.  The former is in __napi_schedule because it uses at-most-once
-+ * logic and placing it in the calling routine (napi_schedule) would produce
-+ * countless trace events that were effectively  no-ops.  napi_poll is
-+ * implemented in net_rx_action, because thats where we do our polling on
-+ * devices.  The last trace point is in napi_complete, right where you would
-+ * think it would be.
-+ */
-+DEFINE_TRACE(napi_schedule,
-+	TPPROTO(struct napi_struct *n),
-+	TPARGS(n));
-+
-+DEFINE_TRACE(napi_poll,
-+	TPPROTO(struct napi_struct *n),
-+	TPARGS(n));
-+
-+DEFINE_TRACE(napi_complete,
-+	TPPROTO(struct napi_struct *n),
-+	TPARGS(n));
-+
-+#endif
-+
-diff --git a/ltt/probes/net-trace.c b/ltt/probes/net-trace.c
-index bac2b21..bd4e621 100644
---- a/ltt/probes/net-trace.c
-+++ b/ltt/probes/net-trace.c
-@@ -9,6 +9,7 @@
- #include <trace/ipv4.h>
- #include <trace/ipv6.h>
- #include <trace/socket.h>
-+#include <trace/netdevice.h>
- 
- void probe_net_dev_xmit(struct sk_buff *skb)
- {
-@@ -104,6 +105,27 @@ void probe_socket_call(int call, unsigned long a0)
- 		"call %d a0 %lu", call, a0);
- }
- 
-+void probe_napi_schedule(struct napi_struct *n)
-+{
-+	trace_mark_tp(net_napi_schedule, napi_schedule, probe_napi_schedule,
-+		"schedule napi_struct %p name  %s",
-+		n, n->dev->name);
-+}
-+
-+void probe_napi_poll(struct napi_struct *n)
-+{
-+	trace_mark_tp(net_napi_poll, napi_poll, probe_napi_poll,
-+		"service napi_struct %p name %s",
-+		n, n->dev->name); 
-+}
-+
-+void probe_napi_complete(struct napi_struct *n)
-+{
-+	trace_mark_tp(net_napi_complete, napi_complete, probe_napi_complete,
-+		"complete napi_struct %p name %s",
-+		n, n->dev->name);
-+}
-+
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Mathieu Desnoyers");
- MODULE_DESCRIPTION("Net Tracepoint Probes");
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 836fe6e..0c55c0f 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -128,6 +128,7 @@
- #include <linux/jhash.h>
- #include <linux/random.h>
- #include <trace/net.h>
-+#include <trace/netdevice.h>
- 
- #include "net-sysfs.h"
- 
-@@ -2329,6 +2330,8 @@ void __napi_schedule(struct napi_struct *n)
- {
- 	unsigned long flags;
- 
-+	trace_napi_poll(n);
-+
- 	local_irq_save(flags);
- 	list_add_tail(&n->poll_list, &__get_cpu_var(softnet_data).poll_list);
- 	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
-@@ -2380,8 +2383,10 @@ static void net_rx_action(struct softirq_action *h)
- 		 * accidently calling ->poll() when NAPI is not scheduled.
- 		 */
- 		work = 0;
--		if (test_bit(NAPI_STATE_SCHED, &n->state))
-+		if (test_bit(NAPI_STATE_SCHED, &n->state)) {
-+			trace_napi_poll(n);
- 			work = n->poll(n, weight);
-+		}
- 
- 		WARN_ON_ONCE(work > weight);
- 
 -- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
