@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYLCUf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbYLCUgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYLCUf5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:35:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbYLCULx
+	id S1759940AbYLCUgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbYLCUMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 15:11:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43433 "EHLO mx2.redhat.com"
+	Wed, 3 Dec 2008 15:12:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50882 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756330AbYLCULw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 15:11:52 -0500
-Message-ID: <4936E7D8.20900@redhat.com>
-Date: Wed, 03 Dec 2008 12:11:04 -0800
-From: Ben Woodard <woodard@redhat.com>
-Organization: Red Hat Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081113)
+	id S1757403AbYLCUMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 15:12:44 -0500
+Date: Wed, 3 Dec 2008 15:12:03 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Greg K-H <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] DEBUG_KOBJECT vs. DYNAMIC_PRINTK_DEBUG
+Message-ID: <20081203201203.GA3128@redhat.com>
+References: <20081202145251.6555d4cc@gondolin>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@google.com>,
-       bluesmoke-devel <bluesmoke-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RESEND] driver for i5400 MCH
-References: <20081201194623.3ce28246@pedra.chehab.org> <20081202223347.bf6506f1.akpm@linux-foundation.org>
-In-Reply-To: <20081202223347.bf6506f1.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202145251.6555d4cc@gondolin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, Dec 02, 2008 at 02:52:51PM +0100, Cornelia Huck wrote:
+> DEBUG_KOBJECT has no effect when DYNAMIC_PRINTK_DEBUG is set
+> (and you can get the messages via that feature), so let's make
+> it depend on !DYNAMIC_PRINTK_DEBUG.
+> 
 
-Andrew Morton wrote:
->
->> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
->
-> Both you and Ben Woodard are listed under MODULE_AUTHOR.  Should
-> this patch have Ben's Signed-off-by:?  And/or his From:?
-Go ahead and add a:
-Signed-off-by: Ben Woodard <woodard@redhat.com>
+indeed. you raise the more general question of what do if both 'DEBUG'
+and 'CONFIG_DYNAMIC_PRINTK_DEBUG' are set for a file? I think that in
+general the 'DEBUG' should take precedence, as you point out. However, I
+think we should fix this by reshuffling the logic in
+include/linux/kernel.h by doing:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-Comment: Using GnuPG with Red Hat - http://enigmail.mozdev.org
+if (DEBUG)
+	#define pr_debug printk
+elseif (CONFIG_DYNAMIC_PRINTK_DEBUG)
+	#define pr_debug dynamic_pr_debug()
+else
+	#define pr_debug if (0) blah:
+endif
 
-iD8DBQFJNufYYuGAPpw3tAARAlA5AJ4hNh6Mzzs60atqL06MkoD7RulsbwCdGSP7
-DIQiX8F4+1eQXYeZPSQkc0M=
-=anBc
------END PGP SIGNATURE-----
+make sense? what do you think?
 
+thanks,
+
+-Jason
