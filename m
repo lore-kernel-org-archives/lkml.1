@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbYLCAa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYLCAbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011AbYLCAa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 19:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYLCAaO
+	id S1755303AbYLCAbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 19:31:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYLCAbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 19:30:14 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:43091 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbYLCAaN (ORCPT
+	Tue, 2 Dec 2008 19:31:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59036 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754003AbYLCAbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 19:30:13 -0500
-Date: Tue, 2 Dec 2008 19:24:04 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: Greg KH <greg@kroah.com>, stable@kernel.org, sfr@canb.auug.org.au,
-       ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 1/3] ath9k: Handle -ENOMEM on RX gracefully
-Message-ID: <20081203002404.GA22789@tuxdriver.com>
-References: <1228251082-11677-1-git-send-email-lrodriguez@atheros.com> <1228251082-11677-2-git-send-email-lrodriguez@atheros.com> <1228251082-11677-3-git-send-email-lrodriguez@atheros.com> <1228251082-11677-4-git-send-email-lrodriguez@atheros.com> <20081203001253.GC14943@kroah.com> <43e72e890812021620lccafachbd8e781d283095b7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e890812021620lccafachbd8e781d283095b7@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 2 Dec 2008 19:31:42 -0500
+Date: Tue, 2 Dec 2008 16:30:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: philb@gnu.org, carsten@sol.wohnheim.uni-ulm.de, renau@acm.org,
+       tim@cyberelk.demon.co.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IEEE1284: Use del_timer_sync in parport_wait_event
+Message-Id: <20081202163055.e80e0b81.akpm@linux-foundation.org>
+In-Reply-To: <200811302120.49766.mb@bu3sch.de>
+References: <200811302120.49766.mb@bu3sch.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 04:20:32PM -0800, Luis R. Rodriguez wrote:
-> On Tue, Dec 2, 2008 at 4:12 PM, Greg KH <greg@kroah.com> wrote:
-> > I don't see this patch upstream in Linus's tree.  Am I just missing it
-> > and if so, do you know the git commit id?
+On Sun, 30 Nov 2008 21:20:49 +0100
+Michael Buesch <mb@bu3sch.de> wrote:
+
+> Use del_timer_sync() instead of del_timer() to make sure
+> the timer won't be running when we return from parport_wait_event(),
+> because this would crash due to destruction of timer_list.
 > 
-> Nope sorry, John has yet to send his pending-fixes branch to davem and
-> so forth, which would contain it AFAICT. Please correct me if I'm
-> wrong John.
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> 
+> ---
+> 
+> This is completely untested and just based on a code review.
+> Just think about the following sequence of events:
+> add_timer.
+> down_interruptible is interrupted by a signal.
+> We enter the timer callback handler on another CPU.
+> del_timer, but the timer callback is still running.
+> Return from parport_wait_even, which destroys the automatic variable "timer"
+> while the callback is running on another CPU.
+> 
 
-It has been sent, and Dave sent his pull request to Linus today
-(or maybe yesterday).  I'll try to dig-up the commit IDs tomorrow.
+Yes, I agree.
 
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+> ===================================================================
+> --- linux-2.6.orig/drivers/parport/ieee1284.c	2008-10-24 21:08:12.000000000 +0200
+> +++ linux-2.6/drivers/parport/ieee1284.c	2008-11-30 21:09:25.000000000 +0100
+> @@ -84,7 +84,7 @@ int parport_wait_event (struct parport *
+>  
+>  	add_timer (&timer);
+>  	ret = down_interruptible (&port->physport->ieee1284.irq);
+> -	if (!del_timer (&timer) && !ret)
+> +	if (!del_timer_sync (&timer) && !ret)
+>  		/* Timed out. */
+>  		ret = 1;
+
+Please fix checkpatch errors when altering code.  This function is
+already a mismash of correct and incorrect styles - we might as well
+increase the correctness density.
+
+What we really want in this function is down_interruptible_timeout(). 
+afaict we have all the infrastructure in place to implement that, but
+nobody has typed
+
+static noinline int __sched
+__down_interruptible_timeout(struct semaphore *sem, long jiffies)
+{
+	return __down_common(sem, TASK_INTERRUPTIBLE, jiffies);
+}
+
+and then tested it.
+
+Or convert the whole thing to mutexes and write
+mutex_lock_interruptible_timeout() :)
+
