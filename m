@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbYLCHYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYLCHf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbYLCHYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 02:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYLCHYh
+	id S1754679AbYLCHf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 02:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYLCHfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 02:24:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35654 "EHLO mx3.mail.elte.hu"
+	Wed, 3 Dec 2008 02:35:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46485 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755865AbYLCHYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 02:24:36 -0500
-Date: Wed, 3 Dec 2008 08:24:14 +0100
+	id S1752963AbYLCHfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 02:35:17 -0500
+Date: Wed, 3 Dec 2008 08:35:04 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [RESEND] [PATCH] x86: remove dead BIO_VMERGE_BOUNDARY
-	definition
-Message-ID: <20081203072414.GA17580@elte.hu>
-References: <20081203145304E.fujita.tomonori@lab.ntt.co.jp>
+To: Jianjun Kong <jianjun@zeuux.org>
+Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>, mingo@redhat.com
+Subject: Re: v2.6.28-rc7: Fail compile arch/x86/kernel/cpu/common.c
+Message-ID: <20081203073504.GB17580@elte.hu>
+References: <20081203070115.GA32403@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081203145304E.fujita.tomonori@lab.ntt.co.jp>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081203070115.GA32403@ubuntu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,32 +35,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Jianjun Kong <jianjun@zeuux.org> wrote:
 
-> This is for 2.6.29 (against tip/master), a resend of:
-> 
-> http://marc.info/?l=linux-kernel&m=122482703716620&w=2
->
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] x86: remove dead BIO_VMERGE_BOUNDARY definition
-> 
-> The block layer dropped the virtual merge feature
-> (b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
-> definition is meaningless now.
+> arch/x86/kernel/cpu/common.c: In function ‘early_identify_cpu’:
+> arch/x86/kernel/cpu/common.c:555: error: ‘boot_cpu_id’ undeclared (first
+> use in this function)
+> arch/x86/kernel/cpu/common.c:555: error: (Each undeclared identifier is
+> reported only once
+> arch/x86/kernel/cpu/common.c:555: error: for each function it appears
+> in.)
+> arch/x86/kernel/cpu/common.c: In function ‘cpu_init’:
+> arch/x86/kernel/cpu/common.c:1142: error: ‘boot_cpu_id’ undeclared
+> (first use in this function)
+> make[2]: *** [arch/x86/kernel/cpu/common.o] Error 1
+> make[1]: *** [arch/x86/kernel/cpu] Error 2
+> make: *** [arch/x86/kernel] Error 2
 
-ok - for the previous submission there was some discussion about 
-what the dependencies of this cleanup are, so it got skipped. 
-Looks good.
+i cannot reproduce this build error neither with v2.6.28-rc7 nor 
+with latest -git (commit f6f7b52), using your config.
 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Acked-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  arch/x86/include/asm/io.h    |    2 --
->  arch/x86/include/asm/io_64.h |    2 --
->  arch/x86/kernel/pci-dma.c    |    6 ------
->  3 files changed, 0 insertions(+), 10 deletions(-)
+could you send me your arch/x86/include/asm/smp.h file? Could 
+you also double-check that you have the kernel source tree 
+checked out properly? If you track it as a remote as per:
 
-applied to tip/x86/iommu, thanks!
+  http://people.redhat.com/mingo/tip.git/README
+
+then doing "git checkout linus/master" should succeed without 
+any errors beyond the warning that it is a remote branch:
+
+ ~/tip> git checkout linus/master
+ Note: moving to "linus/master" which isn't a local branch
+ If you want to create a new branch from this checkout, you may do so
+ (now or later) by using -b with the checkout command again. 
+ Example:
+   git checkout -b <new_branch_name>
+ HEAD is now at f6f7b52... Merge git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog
+ ~/tip>
 
 	Ingo
