@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYLCIMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYLCINY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbYLCIMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 03:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYLCIMN
+	id S1753869AbYLCINY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 03:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYLCINQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 03:12:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56143 "EHLO mx3.mail.elte.hu"
+	Wed, 3 Dec 2008 03:13:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44389 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751349AbYLCIMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 03:12:12 -0500
-Date: Wed, 3 Dec 2008 09:11:51 +0100
+	id S1751079AbYLCINP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 03:13:15 -0500
+Date: Wed, 3 Dec 2008 09:13:01 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/5] ftrace: print real return in dumpstack for
-	function graph
-Message-ID: <20081203081151.GE21006@elte.hu>
-References: <20081203045001.367443457@goodmis.org> <20081203045043.769665847@goodmis.org>
+Subject: Re: [PATCH 4/5] ftrace: function graph return for function entry
+Message-ID: <20081203081301.GF21006@elte.hu>
+References: <20081203045001.367443457@goodmis.org> <20081203045044.002248353@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081203045043.769665847@goodmis.org>
+In-Reply-To: <20081203045044.002248353@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,23 +38,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> This does give a funny side effect in the stack tracer output:
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
->         Depth   Size      Location    (80 entries)
->         -----   ----      --------
->   0)     4144      48   save_stack_trace+0x2f/0x4d
->   1)     4096     128   ftrace_call+0x5/0x2b
->   2)     3968      16   mempool_alloc_slab+0x16/0x18
->   3)     3952     384   return_to_handler+0x0/0x73
->   4)     3568    -240   stack_trace_call+0x11d/0x209
->   5)     3808     144   return_to_handler+0x0/0x73
->   6)     3664    -128   mempool_alloc+0x4d/0xfe
->   7)     3792     128   return_to_handler+0x0/0x73
->   8)     3664     -32   scsi_sg_alloc+0x48/0x4a [scsi_mod]
+> Impact: feature, let entry function decide to trace or not
 > 
-> As you can see, the real functions are now negative. This is due
-> to them not being found inside the stack.
+> This patch lets the graph tracer entry function decide if the tracing 
+> should be done at the end as well. This requires all function graph 
+> entry functions return 1 if it should trace, or 0 if the return should 
+> not be traced.
 
-Can we do something to output something less funny?
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index 47aa5f0..cef05a2 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -119,6 +119,9 @@ ENTRY(mcount)
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  	cmpq $ftrace_stub, ftrace_graph_return
+>  	jnz ftrace_graph_caller
+> +
+> +	cmpq $ftrace_graph_entry_stub, ftrace_graph_entry
+> +	jnz ftrace_graph_caller
+
+hm, that's in the hotpath. What's the point of this? Do we want some sort 
+of configuration vector that allows per function graphing versus 
+entry-only traces?
 
 	Ingo
