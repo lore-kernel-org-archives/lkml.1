@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbYLCUIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYLCUId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbYLCUIP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:08:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYLCTw4
+	id S1758073AbYLCUId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbYLCTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:52:56 -0500
-Received: from kroah.org ([198.145.64.141]:60083 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:52:58 -0500
+Received: from kroah.org ([198.145.64.141]:60099 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754763AbYLCTww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:52:52 -0500
-Date: Wed, 3 Dec 2008 11:51:25 -0800
+	id S1755279AbYLCTwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:52:54 -0500
+Date: Wed, 3 Dec 2008 11:51:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 045/104] x86: Hibernate: Fix breakage on x86_32 with
-	CONFIG_NUMA set
-Message-ID: <20081203195125.GT8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 046/104] x86: SB600: skip ACPI IRQ0 override if it is not
+	routed to INT2 of IOAPIC
+Message-ID: <20081203195127.GU8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-hibernate-fix-breakage-on-x86_32-with-config_numa-set.patch"
+Content-Disposition: inline; filename="x86-sb600-skip-acpi-irq0-override-if-it-is-not-routed-to-int2-of-ioapic.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,113 +40,114 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-backport of commit 97a70e548bd97d5a46ae9d44f24aafcc013fd701 to the 2.6.27 kernel.
+commit 26adcfbf00e0726b4469070aa2f530dcf963f484 upstream.
 
-The NUMA code on x86_32 creates special memory mapping that allows
-each node's pgdat to be located in this node's memory.  For this
-purpose it allocates a memory area at the end of each node's memory
-and maps this area so that it is accessible with virtual addresses
-belonging to low memory.  As a result, if there is high memory,
-these NUMA-allocated areas are physically located in high memory,
-although they are mapped to low memory addresses.
+On some more HP laptops BIOS reports an IRQ0 override
+but the SB600 chipset is configured such that timer
+interrupts go to INT0 of IOAPIC.
 
-Our hibernation code does not take that into account and for this
-reason hibernation fails on all x86_32 systems with CONFIG_NUMA=y and
-with high memory present.  Fix this by adding a special mapping for
-the NUMA-allocated memory areas to the temporary page tables created
-during the last phase of resume.
+Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the
+timer override.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+http://bugzilla.kernel.org/show_bug.cgi?id=11715
+http://bugzilla.kernel.org/show_bug.cgi?id=11516
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/discontig_32.c    |   35 +++++++++++++++++++++++++++++++++++
- arch/x86/power/hibernate_32.c |    4 ++++
- include/asm-x86/mmzone_32.h   |    4 ++++
- 3 files changed, 43 insertions(+)
+ arch/x86/kernel/early-quirks.c |   55 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 52 insertions(+), 3 deletions(-)
 
---- a/arch/x86/mm/discontig_32.c
-+++ b/arch/x86/mm/discontig_32.c
-@@ -222,6 +222,41 @@ static void __init remap_numa_kva(void)
- 	}
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -95,7 +95,8 @@ static void __init nvidia_bugs(int num, 
+ 
  }
  
-+#ifdef CONFIG_HIBERNATION
-+/**
-+ * resume_map_numa_kva - add KVA mapping to the temporary page tables created
-+ *                       during resume from hibernation
-+ * @pgd_base - temporary resume page directory
-+ */
-+void resume_map_numa_kva(pgd_t *pgd_base)
+-static u32 ati_ixp4x0_rev(int num, int slot, int func)
++#if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)
++static u32 __init ati_ixp4x0_rev(int num, int slot, int func)
+ {
+ 	u32 d;
+ 	u8  b;
+@@ -115,7 +116,6 @@ static u32 ati_ixp4x0_rev(int num, int s
+ 
+ static void __init ati_bugs(int num, int slot, int func)
+ {
+-#if defined(CONFIG_ACPI) && defined (CONFIG_X86_IO_APIC)
+ 	u32 d;
+ 	u8  b;
+ 
+@@ -138,9 +138,56 @@ static void __init ati_bugs(int num, int
+ 		printk(KERN_INFO "If you got timer trouble "
+ 		       "try acpi_use_timer_override\n");
+ 	}
+-#endif
+ }
+ 
++static u32 __init ati_sbx00_rev(int num, int slot, int func)
 +{
-+	int node;
++	u32 old, d;
 +
-+	for_each_online_node(node) {
-+		unsigned long start_va, start_pfn, size, pfn;
++	d = read_pci_config(num, slot, func, 0x70);
++	old = d;
++	d &= ~(1<<8);
++	write_pci_config(num, slot, func, 0x70, d);
++	d = read_pci_config(num, slot, func, 0x8);
++	d &= 0xff;
++	write_pci_config(num, slot, func, 0x70, old);
 +
-+		start_va = (unsigned long)node_remap_start_vaddr[node];
-+		start_pfn = node_remap_start_pfn[node];
-+		size = node_remap_size[node];
++	return d;
++}
 +
-+		printk(KERN_DEBUG "%s: node %d\n", __FUNCTION__, node);
++static void __init ati_bugs_contd(int num, int slot, int func)
++{
++	u32 d, rev;
 +
-+		for (pfn = 0; pfn < size; pfn += PTRS_PER_PTE) {
-+			unsigned long vaddr = start_va + (pfn << PAGE_SHIFT);
-+			pgd_t *pgd = pgd_base + pgd_index(vaddr);
-+			pud_t *pud = pud_offset(pgd, vaddr);
-+			pmd_t *pmd = pmd_offset(pud, vaddr);
++	if (acpi_use_timer_override)
++		return;
 +
-+			set_pmd(pmd, pfn_pmd(start_pfn + pfn,
-+						PAGE_KERNEL_LARGE_EXEC));
++	rev = ati_sbx00_rev(num, slot, func);
++	if (rev > 0x13)
++		return;
 +
-+			printk(KERN_DEBUG "%s: %08lx -> pfn %08lx\n",
-+				__FUNCTION__, vaddr, start_pfn + pfn);
-+		}
++	/* check for IRQ0 interrupt swap */
++	d = read_pci_config(num, slot, func, 0x64);
++	if (!(d & (1<<14)))
++		acpi_skip_timer_override = 1;
++
++	if (acpi_skip_timer_override) {
++		printk(KERN_INFO "SB600 revision 0x%x\n", rev);
++		printk(KERN_INFO "Ignoring ACPI timer override.\n");
++		printk(KERN_INFO "If you got timer trouble "
++		       "try acpi_use_timer_override\n");
 +	}
++}
++#else
++static void __init ati_bugs(int num, int slot, int func)
++{
++}
++
++static void __init ati_bugs_contd(int num, int slot, int func)
++{
 +}
 +#endif
 +
- static unsigned long calculate_numa_remap_pages(void)
- {
- 	int nid;
---- a/arch/x86/power/hibernate_32.c
-+++ b/arch/x86/power/hibernate_32.c
-@@ -12,6 +12,7 @@
- #include <asm/system.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-+#include <asm/mmzone.h>
+ #define QFLAG_APPLY_ONCE 	0x1
+ #define QFLAG_APPLIED		0x2
+ #define QFLAG_DONE		(QFLAG_APPLY_ONCE|QFLAG_APPLIED)
+@@ -162,6 +209,8 @@ static struct chipset early_qrk[] __init
+ 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, fix_hypertransport_config },
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
+ 	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs },
++	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS,
++	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs_contd },
+ 	{}
+ };
  
- /* Defined in hibernate_asm_32.S */
- extern int restore_image(void);
-@@ -127,6 +128,9 @@ static int resume_physical_mapping_init(
- 			}
- 		}
- 	}
-+
-+	resume_map_numa_kva(pgd_base);
-+
- 	return 0;
- }
- 
---- a/include/asm-x86/mmzone_32.h
-+++ b/include/asm-x86/mmzone_32.h
-@@ -34,10 +34,14 @@ static inline void get_memcfg_numa(void)
- 
- extern int early_pfn_to_nid(unsigned long pfn);
- 
-+extern void resume_map_numa_kva(pgd_t *pgd);
-+
- #else /* !CONFIG_NUMA */
- 
- #define get_memcfg_numa get_memcfg_numa_flat
- 
-+static inline void resume_map_numa_kva(pgd_t *pgd) {}
-+
- #endif /* CONFIG_NUMA */
- 
- #ifdef CONFIG_DISCONTIGMEM
 
