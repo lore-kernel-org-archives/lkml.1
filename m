@@ -1,103 +1,506 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbYLCIte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbYLCI4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbYLCIte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 03:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYLCItX
+	id S1752587AbYLCI4x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 03:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYLCI4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 03:49:23 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:49633 "EHLO
+	Wed, 3 Dec 2008 03:56:43 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:50128 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbYLCItW (ORCPT
+	with ESMTP id S1750859AbYLCI4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 03:49:22 -0500
-Message-ID: <49364808.1070907@nttdata.co.jp>
-Date: Wed, 03 Dec 2008 17:49:12 +0900
+	Wed, 3 Dec 2008 03:56:41 -0500
+Message-ID: <493649C5.2060402@nttdata.co.jp>
+Date: Wed, 03 Dec 2008 17:56:37 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.18) Gecko/20081105 Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: sds@tycho.nsa.gov
-CC: penguin-kernel@I-love.SAKURA.ne.jp, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, hch@lst.de, crispin@crispincowan.com,
-       casey@schaufler-ca.com, jmorris@namei.org, haradats@nttdata.co.jp
-Subject: Re: [TOMOYO #13 (mmotm 2008-11-19-02-19) 01/11] Introduce security_path_clear()
- hook.
-References: <20081120112543.799450455@I-love.SAKURA.ne.jp>	 <20081120112727.557697893@I-love.SAKURA.ne.jp>	 <1228161612.18720.211.camel@moss-spartans.epoch.ncsc.mil>	 <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp> <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil>
-In-Reply-To: <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil>
+To: sds@tycho.nsa.gov, serue@us.ibm.com, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       haradats@nttdata.co.jp
+Subject: [PATCH (mmotm-2008-12-02-17-08)] Introduce security_path_set/clear()
+ hooks.
+References: <20081120112543.799450455@I-love.SAKURA.ne.jp>	 <20081120112727.557697893@I-love.SAKURA.ne.jp>	 <1228161612.18720.211.camel@moss-spartans.epoch.ncsc.mil>	 <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp> <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil> <49364808.1070907@nttdata.co.jp>
+In-Reply-To: <49364808.1070907@nttdata.co.jp>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Dec 2008 08:49:13.0974 (UTC) FILETIME=[04846960:01C95524]
+X-OriginalArrivalTime: 03 Dec 2008 08:56:38.0413 (UTC) FILETIME=[0D6C6BD0:01C95525]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley wrote:
-> To be precise, I was recommending passing the return value of
-> security_path* down to security_inode* explicitly rather than doing it
-> implicitly as you presently do.  Thereby making the actual control flow
-> and relationship between the security_path* and security_inode* hooks
-> evident.  However, I guess that is moot given your statements below.
-I think so too.
+Stephen, Serge,
+Here is the patch for introducing new security_path_set()/clear() hooks.
 
->> I think there are two problems.
->>
->> One is that the variable passed via stack memory won't be used by SELinux and
->> SMACK and "CONFIG_SECURITY=n kernels", which will be a waste of stack memory.
-> 
-> I'm more concerned with the hook interface being understandable and
-> maintainable.
-I see.
+This patch enables LSM module to remember vfsmount's pathname so that it can 
+calculate absolute pathname in security_inode_*(). Since actual MAC can be 
+performed after DAC, there will not be any noise in auditing and learning 
+features. This patch currently assumes that the vfsmount's pathname is stored in 
+hash table in LSM module. (Should I use stack memory?)
 
->> The other one is that TOMOYO will need another variable for telling how the
->> security_inode_*() are called. Passing the variable via stack memory requires
->> modification of all vfs_*() calls, but TOMOYO doesn't check requests issued
->> by (e.g.) stackable filesystems.
-> 
-> I'm not clear on why that requires a separate argument; if the caller is
-> passing in the access decision result as an input, then certain callers
-> (e.g. stackable filesystems) can always pass 0 (success).
-If we use stack memory to pass the access decision result from security_path_*() 
-to security_inode_*(), this method seems possible.
+Since security_inode_*() are not always called after security_path_set(), 
+security_path_clear() hook is needed to free the remembered pathname.
 
->> By the way, this security_path_clear() is intended to be able to return DAC's
->> error code in priority to MAC's error code, but there are two problems for
->> TOMOYO.
->> One is that pathnames which will be later denied by DAC are appended by
->> TOMOYO's learning mode (i.e. garbage entries appears in the learned policy).
->> The other is that warning messages on pathnames which will be later denied by
->> DAC are generated by TOMOYO's enforcing mode.
->>
->> Thus, it will be preferable for TOMOYO to "do MAC checks after DAC checks"
->> rather than to "return DAC's error in priority to MAC's error while doing MAC
->> checks before DAC checks".
-> 
-> It sounds like the existing security_path* hooks are not adequate for
-> your needs then, and that patch should not in fact be merged.  Yes?
-Sorry for confusing you. security_path_*() hooks are adequate for TOMOYO 
-functionality itself. But they are inadequate for performing DAC before MAC, 
-which we eventually want to do. We've reached this "passing vfsmount's pathname" 
-approach after proposing the previous patch. The new approach is a little 
-divergence of the existing approach, which Serge has patiently advised us. 
-It should be more suitable for DAC-before-MAC than the previous patch, we think.
+Andrew,
+If lsm and fs guys accept this patch, please replace 
+introduce-new-lsm-hooks-where-vfsmount-is-available.patch with this patch.
 
->> To do so, "security_path_*() should be replaced by security_path_set(vfsmount)"
->> and "let security_inode_*() do MAC checks using the result of
->> security_path_set()" and "let security_path_clear() clear the result of
->> security_path_set() in case security_inode_*() was not called".
->>
->> So, I think storing the pathname of "struct vfsmount" in the form of "char *"
->> into private hash at security_path_set() and clearing the private hash at
->> security_path_clear() should be most preferable.
-> 
-> Then I guess you need to redo your patches along those lines and
-> re-submit them.  Likely starting with just a patch adding the
-> security_path_set/clear hooks, posted to lsm and fsdevel.
-I'll post it soon.
 
-If we pass the access decision result through stack memory, we don't need 
-security_path_clear() as you mentioned. However, if we pass the vfsmount's 
-pathname, security_path_clear() is still needed in order to free the pathname.
+Otherwise, if we could call DAC functions, such as may_create(), in LSM module, 
+security_path_clear() hook would not be needed. This approach is simple, but it 
+might be objected because of layering. ;-)
 
 Regards,
+
+----- What is this patch for? -----
+
+There are security_inode_*() LSM hooks for attribute-based MAC, but they are not
+suitable for pathname-based MAC because they don't receive "struct vfsmount"
+information.
+
+----- How this patch was developed? -----
+
+Two pathname-based MACs, AppArmor and TOMOYO Linux, are trying to merge
+upstream. But because of "struct vfsmount" problem, they have been unable to
+merge upstream.
+
+Here are the list of approaches and the reasons of denial.
+
+(1) Not using LSM
+ http://lwn.net/Articles/277833/
+
+ This approach was rejected because security modules should use LSM because the
+ whole idea behind LSM was to have a single set of hooks for all security
+ modules; if every module now adds its own set of hooks, that purpose will have
+ been defeated and the kernel will turn into a big mess of security hooks.
+
+(2) Retrieving "struct vfsmount" from "struct task_struct".
+ http://lkml.org/lkml/2007/11/5/388
+
+ Since "struct task_struct" contains list of "struct vfsmount",
+ "struct vfsmount" which corresponds to "struct dentry" can be retrieved from
+ the list unless "mount --bind" is used.
+
+ This approach turned out to cause a critical problem that getting namespace_sem
+ lock from security_inode_*() triggers AB-BA deadlock.
+
+(3) Adding "struct vfsmount" parameter to VFS helper functions.
+ http://lkml.org/lkml/2008/5/29/207
+
+ This approach adds "struct vfsmount" to VFS helper functions (e.g. vfs_mkdir()
+ and vfs_symlink()) and LSM hooks inside VFS helper functions. This approach is
+ helpful for not only AppArmor and TOMOYO Linux 2.x but also SELinux and
+ auditing purpose, for this approach allows existent LSM users to use pathnames
+ in their access control and audit logs.
+
+ This approach was rejected by Al Viro, the VFS maintainer, because he thinks
+ individual filesystem should remain "struct vfsmount"-unaware and VFS helper
+ functions should not receive "struct vfsmount".
+
+ Al Viro also suggested to move existing security_inode_*() to out of VFS
+ helper functions so that security_inode_*() can receive "struct vfsmount"
+ without modifying VFS helper functions, but this suggestion was opposed by
+ Stephen Smalley because changing the order of permission checks (i.e.
+ MAC checks before DAC checks) is not acceptable.
+
+(4) Passing "struct vfsmount" via "struct task_struct".
+ http://lkml.org/lkml/2007/11/16/157
+
+ Since we didn't understand the reason why accessing "struct vfsmount" from
+ LSM hooks inside VFS helper functions is not acceptable, we thought the reason
+ why VFS helper functions don't receive "struct vfsmount" is the amount of
+ modifications needed to do so. Thus, we proposed to pass "struct vfsmount" via
+ "struct task_struct" so that modifications remain minimal.
+
+ This approach was rejected because this is an abuse of "struct task_struct".
+
+(5) Remembering pathname of "struct vfsmount" via "struct task_struct".
+ http://lkml.org/lkml/2008/8/19/16
+
+ Since pathname of a "struct dentry" up to the mount point can be calculated
+ without "struct vfsmount", absolute pathname of a "struct dentry" can be
+ calculated if "struct task_struct" can remember absolute pathname of a
+ "struct vfsmount" which corresponds to "struct dentry".
+ As we now understand that Al Viro is opposing to access "struct vfsmount" from
+ LSM hooks inside VFS helper functions, we gave up delivering "struct vfsmount"
+ to LSM hooks inside VFS helper functions.
+ Kernel 2.6.26 introduced read-only bind mount feature, and hooks for that
+ feature (i.e. mnt_want_write() and mnt_drop_write()) were inserted around
+ VFS helper functions call. Since mnt_want_write() receives "struct vfsmount"
+ which corresponds to "struct dentry" that will be passed to subsequent VFS
+ helper functions call, we associated pathname of "struct vfsmount" with
+ "struct task_struct" instead of associating "struct vfsmount" itself.
+
+ This approach was not explicitly rejected, but there seems to be performance
+ problem.
+
+(6) Introducing new LSM hooks.
+ http://lkml.org/lkml/2008/9/24/48
+
+ We understand that adding new LSM hooks which receive "struct vfsmount" outside
+ VFS helper functions is the most straightforward approach. This approach has
+ less impact to existing LSM module and no impact to VFS helper functions.
+
+(7) Remembering pathname of "struct vfsmount" via new LSM hooks.
+ (this patch)
+
+ We proposed (6) so that we can implement MAC which can take an absolute
+ pathname of a requested file into account. We embedded DAC's code copied from
+ VFS helper functions into (6). But we received a comment that copying DAC's
+ code is not a good thing. Thus, we once gave up doing DAC checks before MAC
+ checks.
+ 
+ But, we do want to do DAC checks before MAC checks so that we can avoid MAC's
+ noisy error messages generated by access requests which will be rejected by
+ DAC.
+ 
+ There are two restrictions for now.
+ 
+ One is that we should avoid accessing "struct vfsmount" inside VFS helper
+ functions and security_inode_*() so that we can keep clear separation between
+ vfsmount-aware layer and vfsmount-unaware layer. Thus, there is no chance to
+ pass "struct vfsmount" parameter to VFS helper functions and
+ security_inode_*().
+
+ The other is that we should avoid copying DAC's code into security_path_*().
+ The security_path_*() which was proposed in (6) allows us to implement MAC
+ which can take an absolute pathname of a requested file into account, but
+ keeps us away from doing DAC checks before MAC checks.
+ 
+ We were using security_path_*(), but we still want to do DAC checks before
+ MAC checks. Thus, we propose this patch which is a variant of (5) (which was
+ not explicitly rejected). This patch introduces
+ security_path_set(struct vfsmount *) and security_path_clear().
+ We want to use these hooks as follows.
+ 
+ (a) Let security_path_set() which are inserted before calling VFS helper
+     functions remember the absolute pathname of "struct vfsmount" and
+     store the result which are in the form of "char *" into private hash.
+ 
+ (b) Let security_inode_*() do MAC using the pathname stored by
+     security_path_set().
+ 
+ (c) Let security_path_clear() which are inserted after calling VFS helper
+     functions clear the pathname from private hash.
+ 
+ This approach is similar to (5), but to avoid performance problem,
+ this patch inserts into minimal locations that TOMOYO Linux needs.
+
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Crispin Cowan <crispin@crispincowan.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Casey Schaufler <casey@schaufler-ca.com>
+Cc: James Morris <jmorris@namei.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/namei.c               |   43 +++++++++++++++++++++++++++++++++++++++++++
+ fs/open.c                |    6 ++++++
+ include/linux/security.h |   24 ++++++++++++++++++++++++
+ net/unix/af_unix.c       |    5 +++++
+ security/Kconfig         |   10 ++++++++++
+ security/capability.c    |   17 +++++++++++++++++
+ security/security.c      |   16 ++++++++++++++++
+ 7 files changed, 121 insertions(+)
+
+--- linux-2.6.28-rc7-mm1.orig/fs/namei.c
++++ linux-2.6.28-rc7-mm1/fs/namei.c
+@@ -1556,12 +1556,15 @@ int may_open(struct nameidata *nd, int a
+ 		 * Refuse to truncate files with mandatory locks held on them.
+ 		 */
+ 		error = locks_verify_locked(inode);
++		if (!error)
++			error = security_path_set(nd->path.mnt);
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+ 
+ 			error = do_truncate(dentry, 0,
+ 					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+ 					    NULL);
++			security_path_clear();
+ 		}
+ 		put_write_access(inode);
+ 		if (error)
+@@ -1586,7 +1589,12 @@ static int __open_namei_create(struct na
+ 
+ 	if (!IS_POSIXACL(dir->d_inode))
+ 		mode &= ~current->fs->umask;
++	error = security_path_set(nd->path.mnt);
++	if (error)
++		goto out_unlock;
+ 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
++	security_path_clear();
++out_unlock:
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	dput(nd->path.dentry);
+ 	nd->path.dentry = path->dentry;
+@@ -1999,6 +2007,9 @@ asmlinkage long sys_mknodat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_set(nd.path.mnt);
++	if (error)
++		goto out_drop_write;
+ 	switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+ 			error = vfs_create(nd.path.dentry->d_inode,dentry,mode,&nd);
+@@ -2011,6 +2022,8 @@ asmlinkage long sys_mknodat(int dfd, con
+ 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
+ 			break;
+ 	}
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2070,7 +2083,12 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_set(nd.path.mnt);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2180,7 +2198,12 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
++	error = security_path_set(nd.path.mnt);
++	if (error)
++		goto exit4;
+ 	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++	security_path_clear();
++exit4:
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+ 	dput(dentry);
+@@ -2265,7 +2288,12 @@ static long do_unlinkat(int dfd, const c
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
++		error = security_path_set(nd.path.mnt);
++		if (error)
++			goto exit3;
+ 		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
++		security_path_clear();
++exit3:
+ 		mnt_drop_write(nd.path.mnt);
+ 	exit2:
+ 		dput(dentry);
+@@ -2346,7 +2374,12 @@ asmlinkage long sys_symlinkat(const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_set(nd.path.mnt);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from);
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2443,7 +2476,12 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_set(nd.path.mnt);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_link(old_path.dentry, nd.path.dentry->d_inode, new_dentry);
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(new_dentry);
+@@ -2677,8 +2715,13 @@ asmlinkage long sys_renameat(int olddfd,
+ 	error = mnt_want_write(oldnd.path.mnt);
+ 	if (error)
+ 		goto exit5;
++	error = security_path_set(oldnd.path.mnt);
++	if (error)
++		goto exit6;
+ 	error = vfs_rename(old_dir->d_inode, old_dentry,
+ 				   new_dir->d_inode, new_dentry);
++	security_path_clear();
++exit6:
+ 	mnt_drop_write(oldnd.path.mnt);
+ exit5:
+ 	dput(new_dentry);
+--- linux-2.6.28-rc7-mm1.orig/fs/open.c
++++ linux-2.6.28-rc7-mm1/fs/open.c
+@@ -272,9 +272,12 @@ static long do_sys_truncate(const char _
+ 		goto put_write_and_out;
+ 
+ 	error = locks_verify_truncate(inode, NULL, length);
++	if (!error)
++		error = security_path_set(path.mnt);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+ 		error = do_truncate(path.dentry, length, 0, NULL);
++		security_path_clear();
+ 	}
+ 
+ put_write_and_out:
+@@ -329,7 +332,10 @@ static long do_sys_ftruncate(unsigned in
+ 
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
++		error = security_path_set(file->f_path.mnt);
++	if (!error)
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
++	security_path_clear();
+ out_putf:
+ 	fput(file);
+ out:
+--- linux-2.6.28-rc7-mm1.orig/include/linux/security.h
++++ linux-2.6.28-rc7-mm1/include/linux/security.h
+@@ -470,6 +470,12 @@ static inline void security_free_mnt_opt
+  *	@inode contains a pointer to the inode.
+  *	@secid contains a pointer to the location where result will be saved.
+  *	In case of failure, @secid will be set to zero.
++ * @path_set:
++ *	Calculate pathname of vfsmount for subsequent vfs operation.
++ *	@vfsmnt contains the vfsmount structure.
++ *	Return 0 on success, negative value otherwise.
++ * @path_clear:
++ *	Clear pathname of vfsmount calculated by @path_set.
+  *
+  * Security hooks for file operations
+  *
+@@ -1331,6 +1337,11 @@ struct security_operations {
+ 				   struct super_block *newsb);
+ 	int (*sb_parse_opts_str) (char *options, struct security_mnt_opts *opts);
+ 
++#ifdef CONFIG_SECURITY_PATH
++	int (*path_set) (struct vfsmount *vfsmnt);
++	void (*path_clear) (void);
++#endif
++
+ 	int (*inode_alloc_security) (struct inode *inode);
+ 	void (*inode_free_security) (struct inode *inode);
+ 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
+@@ -2705,6 +2716,19 @@ static inline void security_skb_classify
+ 
+ #endif	/* CONFIG_SECURITY_NETWORK_XFRM */
+ 
++#ifdef CONFIG_SECURITY_PATH
++int security_path_set(struct vfsmount *vfsmnt);
++void security_path_clear(void);
++#else	/* CONFIG_SECURITY_PATH */
++static inline int security_path_set(struct vfsmount *vfsmnt)
++{
++	return 0;
++}
++static inline void security_path_clear(void)
++{
++}
++#endif	/* CONFIG_SECURITY_PATH */
++
+ #ifdef CONFIG_KEYS
+ #ifdef CONFIG_SECURITY
+ 
+--- linux-2.6.28-rc7-mm1.orig/net/unix/af_unix.c
++++ linux-2.6.28-rc7-mm1/net/unix/af_unix.c
+@@ -836,7 +836,12 @@ static int unix_bind(struct socket *sock
+ 		err = mnt_want_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
++		err = security_path_set(nd.path.mnt);
++		if (err)
++			goto out_mknod_drop_write;
+ 		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
++		security_path_clear();
++out_mknod_drop_write:
+ 		mnt_drop_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
+--- linux-2.6.28-rc7-mm1.orig/security/Kconfig
++++ linux-2.6.28-rc7-mm1/security/Kconfig
+@@ -81,6 +81,16 @@ config SECURITY_NETWORK_XFRM
+ 	  IPSec.
+ 	  If you are unsure how to answer this question, answer N.
+ 
++config SECURITY_PATH
++	bool "Security hooks for pathname based access control"
++	depends on SECURITY
++	help
++	  This adds security_path_set() and security_path_clear()
++	  hooks for pathname based access control.
++	  If enabled, a security module can use these hooks to
++	  implement pathname based access controls.
++	  If you are unsure how to answer this question, answer N.
++
+ config SECURITY_FILE_CAPABILITIES
+ 	bool "File POSIX Capabilities"
+ 	default n
+--- linux-2.6.28-rc7-mm1.orig/security/capability.c
++++ linux-2.6.28-rc7-mm1/security/capability.c
+@@ -263,6 +263,19 @@ static void cap_inode_getsecid(const str
+ 	*secid = 0;
+ }
+ 
++#ifdef CONFIG_SECURITY_PATH
++
++static int cap_path_set(struct vfsmount *vfsmnt)
++{
++	return 0;
++}
++
++static void cap_path_clear(void)
++{
++}
++
++#endif
++
+ static int cap_file_permission(struct file *file, int mask)
+ {
+ 	return 0;
+@@ -883,6 +896,10 @@ void security_fixup_ops(struct security_
+ 	set_to_cap_if_null(ops, inode_setsecurity);
+ 	set_to_cap_if_null(ops, inode_listsecurity);
+ 	set_to_cap_if_null(ops, inode_getsecid);
++#ifdef CONFIG_SECURITY_PATH
++	set_to_cap_if_null(ops, path_set);
++	set_to_cap_if_null(ops, path_clear);
++#endif
+ 	set_to_cap_if_null(ops, file_permission);
+ 	set_to_cap_if_null(ops, file_alloc_security);
+ 	set_to_cap_if_null(ops, file_free_security);
+--- linux-2.6.28-rc7-mm1.orig/security/security.c
++++ linux-2.6.28-rc7-mm1/security/security.c
+@@ -355,6 +355,22 @@ int security_inode_init_security(struct 
+ }
+ EXPORT_SYMBOL(security_inode_init_security);
+ 
++#ifdef CONFIG_SECURITY_PATH
++
++int security_path_set(struct vfsmount *vfsmnt)
++{
++	return security_ops->path_set(vfsmnt);
++}
++EXPORT_SYMBOL(security_path_set);
++
++void security_path_clear(void)
++{
++	return security_ops->path_clear();
++}
++EXPORT_SYMBOL(security_path_clear);
++
++#endif
++
+ int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+ {
+ 	if (unlikely(IS_PRIVATE(dir)))
 
