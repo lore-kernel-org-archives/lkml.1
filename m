@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbYLCUUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYLCUVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbYLCUUY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbYLCT41
+	id S1754954AbYLCUVF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:21:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbYLCT5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:56:27 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:57172 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755846AbYLCT4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:56:25 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.394
-Date: Wed, 3 Dec 2008 11:56:22 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: m68k 8390 breakage (was: Re: linux-next: Tree for December 3)
-Message-ID: <20081203115622.50256091@extreme>
-In-Reply-To: <Pine.LNX.4.64.0812032042480.10635@anakin>
-References: <20081203183602.c06f8c39.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0812032042480.10635@anakin>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 14:57:37 -0500
+Received: from kroah.org ([198.145.64.141]:56495 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754461AbYLCT5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:57:36 -0500
+Date: Wed, 3 Dec 2008 11:55:58 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
+       Suresh Jayaraman <sjayaraman@suse.de>
+Subject: [patch 076/104] cifs: Fix check for tcon seal setting and fix oops
+	on failed mount from earlier patch
+Message-ID: <20081203195558.GY8950@kroah.com>
+References: <20081203193901.715896543@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="cifs-fix-check-for-tcon-seal-setting-and-fix-oops-on-failed-mount-from-earlier-patch.patch"
+In-Reply-To: <20081203194725.GA8950@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008 20:49:39 +0100 (CET)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-> On Wed, 3 Dec 2008, Stephen Rothwell wrote:
-> > Status of my local build tests will be at
-> > http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> > advice about cross compilers/configs that work, we are always open to add
-> > more builds.
-> 
-> Since a few days, m68k defconfig and allmodconfig give:
-> 
-> | drivers/net/lib8390.c:1014: undefined reference to `ei_start_xmit'
-> | drivers/net/lib8390.c:1015: undefined reference to `ei_get_stats'
-> | drivers/net/lib8390.c:1016: undefined reference to `ei_set_multicast_list'
-> 
-> (cfr. e.g. http://kisskb.ellerman.id.au/kisskb/buildresult/58795/)
-> 
-> git bisect run on "make ARCH=m68k mac_defconfig vmlinux" tells me:
-> 
-> 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab is first bad commit
-> commit 8884c092e5e4f9a1b6e44f2e02a3eb5481af87ab
-> Author: Stephen Hemminger <shemminger@vyatta.com>
-> Date:   Tue Nov 25 18:12:49 2008 -0800
-> 
->     8390: add common net_device ops
-> 
->     Fix the defactoring of ei_XXX functions in 8390 and 8390p.
->     Remove the tx_timeout hack since no driver including the 3c503
->     overrides tx_timeout at this time, looks like a legacy thing.
-> 
->     Also, since several drivers all have same hooks, provide common
->     netdev_ops.
-> 
->     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-	
+------------------
+From: Steve French <sfrench@us.ibm.com>
 
-Which driver is having problem
+commit ab3f992983062440b4f37c666dac66d987902d91 upstream
+
+set tcon->ses earlier
+
+If the inital tree connect fails, we'll end up calling cifs_put_smb_ses
+with a NULL pointer. Fix it by setting the tcon->ses earlier.
+
+Acked-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+
+---
+ fs/cifs/connect.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -2256,16 +2256,18 @@ cifs_mount(struct super_block *sb, struc
+ 			cFYI(1, ("Found match on UNC path"));
+ 			/* existing tcon already has a reference */
+ 			cifs_put_smb_ses(pSesInfo);
++			if (tcon->seal != volume_info.seal)
++				cERROR(1, ("transport encryption setting "
++					   "conflicts with existing tid"));
+ 		} else {
+ 			tcon = tconInfoAlloc();
+ 			if (tcon == NULL) {
+ 				rc = -ENOMEM;
+ 				goto mount_fail_check;
+ 			}
++			tcon->ses = pSesInfo;
+ 
+ 			/* check for null share name ie connect to dfs root */
+-
+-			/* BB check if works for exactly length 3 strings */
+ 			if ((strchr(volume_info.UNC + 3, '\\') == NULL)
+ 			    && (strchr(volume_info.UNC + 3, '/') == NULL)) {
+ 				/* rc = connect_to_dfs_path(...) */
+@@ -2283,7 +2285,6 @@ cifs_mount(struct super_block *sb, struc
+ 			if (rc)
+ 				goto mount_fail_check;
+ 			tcon->seal = volume_info.seal;
+-			tcon->ses = pSesInfo;
+ 			write_lock(&cifs_tcp_ses_lock);
+ 			list_add(&tcon->tcon_list, &pSesInfo->tcon_list);
+ 			write_unlock(&cifs_tcp_ses_lock);
+
