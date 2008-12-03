@@ -1,462 +1,585 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYLCA4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbYLCA5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbYLCA4L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Dec 2008 19:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYLCAzy
+	id S1756050AbYLCA5J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Dec 2008 19:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYLCA44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Dec 2008 19:55:54 -0500
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:38249 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753234AbYLCAzw (ORCPT
+	Tue, 2 Dec 2008 19:56:56 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:61166 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbYLCA4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Dec 2008 19:55:52 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Dec 2008 19:55:52 EST
-X-YMail-OSG: _axlGQEVM1lXc4psh.wqc4fiySwr0RKpWLCEz2JiK73tq89zsbiFsyEyMh6gi2extVheTy5ws7rmms5cHC.KPD5RJ3lY2ReGcXVwl8M_K0ZfNs5NXxFs8IyxghBG8THpT4JwOnl8YvvIDZtCHv3LK6.VS4N7ipWr8tCVOYAJbDWKHbXcMS_Ek.w3v8w-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct
-	scsi_device->request_queue
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 02 Dec 2008 16:49:08 -0800
-Message-Id: <1228265348.6229.130.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 2 Dec 2008 19:56:55 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:content-transfer-encoding;
+	b=dFIsuTbKtlmYprBqCJjXCAj0IgXukJ6d8nn01DG44uuG9BgALTR+Zy/vgEmnafJaY
+	18xXqS4ldy2UhflzUa40Q==
+MIME-Version: 1.0
+Date: Tue, 2 Dec 2008 16:56:50 -0800
+Message-ID: <5df78e1d0812021656g6485a5e0iea176a84e4e24c29@mail.gmail.com>
+Subject: [RFC PATCH 2/3] adding inline buffer write functions to the unified 
+	trace buffer
+From: Jiaying Zhang <jiayingz@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: Steven Rostedt <srostedt@redhat.com>, Martin Bligh <mbligh@google.com>,
+       Michael Rubin <mrubin@google.com>, Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 1b14b5e1fc9a7074322b1015bb86eca2a8ef4560 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Tue, 2 Dec 2008 16:30:51 -0800
-Subject: [PATCH] [Target_Core_Mod/PSCSI]: Use struct request to struct scsi_device->request_queue
+Refer to the previous email
+"[RFC PATCH 0/3] A couple of feature requests to the unified trace buffer".
 
-This patch begins to remove the usage of scsi_execute_async() from the PSCSI
-subsystem plugin for v3.0 generic target core.
+Add the inline versions of ring_buffer_lock_reserve and
+ring_buffer_unlock_commit to the unified trace buffer to eliminate function
+call overhead in buffer write. Please refer to the email "[RFC PATCH 0/3]
+A couple of feature requests to the unified trace buffer" for more details.
 
-It uses blk_get_request() to allocate struct request in pscsi_blk_get_request()
-and used by all CDB types and both memory backing types.  struct request is then
-released with __blk_put_request() in the struct request->end_io() context in
-pscsi_req_done().
+Index: linux-2.6.26.2/include/linux/ring_buffer.h
+===================================================================
+--- linux-2.6.26.2.orig/include/linux/ring_buffer.h     2008-11-25
+16:48:38.000000000 -0800
++++ linux-2.6.26.2/include/linux/ring_buffer.h  2008-11-26
+00:22:36.000000000 -0800
+@@ -3,12 +3,64 @@
 
-Also, this patch adds a temporary EXPORT_SYMBOL_GPL() for
-scsi/drivers/scsi_lib.c:scsi_req_map_sg() (which will also be going away at
-some point).  At that point, the upstream struct scatterlist and/or
-struct page -> struct request mapping for usage with struct scsi_device->request_queue
-will be dropped into place in drivers/lio-core/target_core_pscsi.c:pscsi_map_task_SG()
+ #include <linux/mm.h>
+ #include <linux/seq_file.h>
++#include <linux/sched.h>
++#include <asm/local.h>
++
++/*
++ * This hack stolen from mm/slob.c.
++ * We can store per page timing information in the page frame of the page.
++ * Thanks to Peter Zijlstra for suggesting this idea.
++ */
++struct buffer_page {
++       u64              time_stamp;    /* page time stamp */
++       local_t          write;         /* index for next write */
++       local_t          commit;        /* write commited index */
++       unsigned         read;          /* index for next read */
++       struct list_head list;          /* list of free pages */
++       void *page;                     /* Actual data page */
++};
 
-Tested on v2.6.28-rc7 32-bit x86 with virtual VMware TYPE_DISK on virtual MPT-Fusion
+ struct ring_buffer;
+ struct ring_buffer_per_cpu;
+ struct ring_buffer_iter;
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_pscsi.c |  206 +++++++++++++++++++++++++---------
- drivers/lio-core/target_core_pscsi.h |    5 +-
- drivers/scsi/scsi_lib.c              |    6 +-
- 3 files changed, 161 insertions(+), 56 deletions(-)
+ /*
++ * head_page == tail_page && head == tail then buffer is empty.
++ */
++struct ring_buffer_per_cpu {
++       int                             cpu;
++       struct ring_buffer              *buffer;
++       spinlock_t                      lock;
++       struct lock_class_key           lock_key;
++       struct list_head                pages;
++       struct buffer_page              *page_array;
++       struct buffer_page              *head_page;     /* read from head */
++       struct buffer_page              *tail_page;     /* write to tail */
++       struct buffer_page              *commit_page;   /* commited pages */
++       struct buffer_page              *reader_page;
++       unsigned long                   overrun;
++       unsigned long                   entries;
++       u64                             write_stamp;
++       u64                             read_stamp;
++       atomic_t                        record_disabled;
++};
++
++struct ring_buffer {
++       unsigned long                   size;
++       unsigned                        pages;
++       unsigned                        flags;
++       int                             cpus;
++       cpumask_t                       cpumask;
++       atomic_t                        record_disabled;
++
++       struct mutex                    mutex;
++
++       struct ring_buffer_per_cpu      **buffers;
++};
++
++#define BUF_PAGE_SIZE PAGE_SIZE
++
++/*
+ * Don't reference this struct directly, use functions below.
+ */
+ struct ring_buffer_event {
+@@ -83,6 +135,211 @@
+ int ring_buffer_write(struct ring_buffer *buffer,
+                     unsigned long length, void *data);
 
-diff --git a/drivers/lio-core/target_core_pscsi.c b/drivers/lio-core/target_core_pscsi.c
-index ed9f588..bb46e1c 100644
---- a/drivers/lio-core/target_core_pscsi.c
-+++ b/drivers/lio-core/target_core_pscsi.c
-@@ -37,6 +37,7 @@
- #include <linux/spinlock.h>
- #include <linux/smp_lock.h>
- #include <linux/genhd.h>
-+#include <linux/cdrom.h>
- #include <linux/file.h>
- 
- #include <scsi/scsi.h>
-@@ -44,6 +45,7 @@
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_host.h>
- #include <sd.h>
-+#include <sr.h>
- 
- #include <iscsi_linux_os.h>
- #include <iscsi_linux_defs.h>
-@@ -763,11 +765,11 @@ extern void *pscsi_allocate_request (
- 	se_device_t *dev)
- {
- 	pscsi_plugin_task_t *pt;
--	if (!(pt = kmalloc(sizeof(pscsi_plugin_task_t), GFP_KERNEL))) {
--		TRACE_ERROR("Unable to allocate pscsi_plugin_task_t\n");
-+	
-+	if (!(pt = kzalloc(sizeof(pscsi_plugin_task_t), GFP_KERNEL))) {
-+		printk(KERN_ERR "Unable to allocate pscsi_plugin_task_t\n");
- 		return(NULL);
- 	}
--	memset(pt, 0, sizeof(pscsi_plugin_task_t));
- 
- 	return(pt);
- }
-@@ -788,7 +790,44 @@ extern void pscsi_get_evpd_sn (unsigned char *buf, u32 size, se_device_t *dev)
- 	return;
- }
- 
--/*	pscsi_do_task(): (Part of se_subsystem_api_t template)
-+static int pscsi_blk_get_request (se_task_t *task)
++/* Up this if you want to test the TIME_EXTENTS and normalization */
++#define DEBUG_SHIFT 0
++
++static inline u64 ring_buffer_time_stamp(int cpu)
 +{
-+	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
-+	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->iscsi_dev->dev_ptr;
-+
-+	pt->pscsi_req = blk_get_request(pdv->pdv_sd->request_queue,
-+			(pt->pscsi_direction == DMA_TO_DEVICE), GFP_KERNEL);
-+	if (!(pt->pscsi_req) || IS_ERR(pt->pscsi_req)) {
-+		printk(KERN_ERR "PSCSI: blk_get_request() failed: %ld\n",
-+				IS_ERR(pt->pscsi_req));
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
-+	}
-+	/*
-+	 * Defined as "scsi command" in include/linux/blkdev.h.
-+	 */
-+	pt->pscsi_req->cmd_type = REQ_TYPE_BLOCK_PC;
-+	/*
-+	 * Setup the done function pointer for struct request,
-+	 * also set the end_io_data pointer.to se_task_t.
-+	 */
-+	pt->pscsi_req->end_io = pscsi_req_done;
-+	pt->pscsi_req->end_io_data = (void *)task;
-+	/*
-+	 * Load the referenced se_task_t's SCSI CDB into
-+	 * include/linux/blkdev.h:struct request->cmd
-+	 */
-+	pt->pscsi_req->cmd_len = COMMAND_SIZE(pt->pscsi_cdb[0]);
-+	memcpy(pt->pscsi_req->cmd, pt->pscsi_cdb, pt->pscsi_req->cmd_len);
-+	/*
-+	 * Setup pointer for outgoing sense data.
-+	 */
-+	pt->pscsi_req->sense = (void *)&pt->pscsi_sense[0];
-+	pt->pscsi_req->sense_len = 0;
-+
-+	return(0);
++       /* shift to debug/test normalization and TIME_EXTENTS */
++       return sched_clock() << DEBUG_SHIFT;
 +}
 +
-+/*      pscsi_do_task(): (Part of se_subsystem_api_t template)
-  *
-  *
-  */
-@@ -796,17 +835,32 @@ extern int pscsi_do_task (se_task_t *task)
- {
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->iscsi_dev->dev_ptr;
--	int ret;
--	
--	if ((ret = scsi_execute_async((struct scsi_device *)pdv->pdv_sd,
--			   pt->pscsi_cdb, COMMAND_SIZE(pt->pscsi_cdb[0]), pt->pscsi_direction,
--			   pt->pscsi_buf, task->task_size, task->task_sg_num,
--			   (task->se_obj_api->get_device_type(task->se_obj_ptr) == 0) ?
--			   PS_TIMEOUT_DISK : PS_TIMEOUT_OTHER, PS_RETRY,
--			   (void *)task, pscsi_req_done, GFP_KERNEL)) != 0) {
--		TRACE_ERROR("PSCSI Execute(): returned: %d\n", ret);
--		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
--	}	
-+	struct gendisk *gd = NULL;
-+	/*
-+	 * Grab pointer to struct gendisk for TYPE_DISK and TYPE_ROM
-+	 * cases (eg: cases where struct scsi_device has a backing
-+	 * struct block_device.  Also set the struct request->timeout
-+	 * value based on peripheral device type (from SCSI).
-+	 */
-+	if (pdv->pdv_sd->type == TYPE_DISK) {
-+		struct scsi_disk *sdisk = dev_get_drvdata(
-+					&pdv->pdv_sd->sdev_gendev);
-+		gd = sdisk->disk;
-+		pt->pscsi_req->timeout = PS_TIMEOUT_DISK;
-+	} else if (pdv->pdv_sd->type == TYPE_ROM) {
-+		struct scsi_cd *scd = dev_get_drvdata(
-+					&pdv->pdv_sd->sdev_gendev);
-+		gd = scd->disk;
-+		pt->pscsi_req->timeout = PS_TIMEOUT_OTHER;
-+	} else
-+		pt->pscsi_req->timeout = PS_TIMEOUT_OTHER;
++static inline void ring_buffer_normalize_time_stamp(int cpu, u64 *ts)
++{
++       /* Just stupid testing the normalize function and deltas */
++       *ts >>= DEBUG_SHIFT;
++}
 +
-+	pt->pscsi_req->retries = PS_RETRY;
-+	/*
-+	 * Queue the struct request into the struct scsi_device->request_queue.
-+	 */
-+	blk_execute_rq_nowait(pdv->pdv_sd->request_queue, gd,
-+			      pt->pscsi_req, 1, pscsi_req_done);
- 
- 	return(PYX_TRANSPORT_SENT_TO_TRANSPORT);
- }
-@@ -817,7 +871,8 @@ extern int pscsi_do_task (se_task_t *task)
-  */
- extern void pscsi_free_task (se_task_t *task)
- {
--	kfree(task->transport_req);
-+	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
-+	kfree(pt);
- 	return;
- }
- 
-@@ -1099,31 +1154,64 @@ extern void __pscsi_get_dev_info (pscsi_dev_virt_t *pdv, char *b, int *bl)
- 	return;
- }
- 
--/*	pscsi_map_task_SG(): 
-+extern int scsi_req_map_sg(struct request *, struct scatterlist *, int,  unsigned , gfp_t );
 +
-+/*      pscsi_map_task_SG(): 
-  *
-  *
-  */
--extern void pscsi_map_task_SG (se_task_t *task)
-+extern int pscsi_map_task_SG (se_task_t *task)
- {
-         pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
-+	int ret = 0;
++#define RB_EVNT_HDR_SIZE (sizeof(struct ring_buffer_event))
++#define RB_ALIGNMENT_SHIFT     2
++#define RB_ALIGNMENT           (1 << RB_ALIGNMENT_SHIFT)
++#define RB_MAX_SMALL_DATA      28
 +
- 	pt->pscsi_buf = (void *)task->task_buf;
- 
--	return;
-+	if (!task->task_size)
-+		return(0);
-+#if 0
-+	if ((ret = blk_rq_map_sg(pdv->pdv_sd->request_queue,
-+			pt->pscsi_req,
-+			(struct scatterlist *)pt->pscsi_buf)) < 0) {
-+		printk(KERN_ERR "PSCSI: blk_rq_map_sg() returned %d\n", ret);
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
-+	}
-+#else
-+	if ((ret = scsi_req_map_sg(pt->pscsi_req,
-+			(struct scatterlist *)pt->pscsi_buf,
-+			task->task_sg_num, task->task_size,
-+			GFP_KERNEL)) < 0) {
-+		printk(KERN_ERR "PSCSI: scsi_req_map_sg() failed: %d\n", ret);
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
-+	}
-+#endif
-+	return(0);
- }
- 
- /*	pscsi_map_task_non_SG():
-  *
-  *
-  */
--extern void pscsi_map_task_non_SG (se_task_t *task)
-+extern int pscsi_map_task_non_SG (se_task_t *task)
- {
- 	iscsi_cmd_t *cmd = task->iscsi_cmd;
-+	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 	unsigned char *buf = (unsigned char *) T_TASK(cmd)->t_task_buf;
-+	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->iscsi_dev->dev_ptr;
-+	int ret = 0;
- 
--	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 	pt->pscsi_buf = (void *)buf;
- 
--	return;
-+	if (!task->task_size)
-+		return(0);
++static inline unsigned rb_calculate_event_length(unsigned length)
++{
++       struct ring_buffer_event event; /* Used only for sizeof array */
 +
-+	if ((ret = blk_rq_map_kern(pdv->pdv_sd->request_queue,
-+			pt->pscsi_req, pt->pscsi_buf,
-+			task->task_size, GFP_KERNEL)) < 0) {
-+		printk(KERN_ERR "PSCSI: blk_rq_map_kern() failed: %d\n", ret);
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
-+	}
-+	return(0);
- }
- 
- /*	pscsi_CDB_inquiry():
-@@ -1135,9 +1223,10 @@ extern int pscsi_CDB_inquiry (se_task_t *task, u32 size)
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 
- 	pt->pscsi_direction = DMA_FROM_DEVICE;
--	pscsi_map_task_non_SG(task);
-+	if (pscsi_blk_get_request(task) < 0)
-+		return(-1);
- 
--	return(0);
-+	return(pscsi_map_task_non_SG(task));
- }
- 
- extern int pscsi_CDB_none (se_task_t *task, u32 size)
-@@ -1146,7 +1235,7 @@ extern int pscsi_CDB_none (se_task_t *task, u32 size)
- 
- 	pt->pscsi_direction = DMA_NONE;
- 
--	return(0);
-+	return(pscsi_blk_get_request(task));
- }
- 
- /*	pscsi_CDB_read_non_SG():
-@@ -1158,9 +1247,11 @@ extern int pscsi_CDB_read_non_SG (se_task_t *task, u32 size)
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 
- 	pt->pscsi_direction = DMA_FROM_DEVICE;
--	pscsi_map_task_non_SG(task);
- 
--	return(0);
-+	if (pscsi_blk_get_request(task) < 0)
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
++       /* zero length can cause confusions */
++       if (!length)
++               length = 1;
 +
-+	return(pscsi_map_task_non_SG(task));
- }
- 
- /*	pscsi_CDB_read_SG():
-@@ -1172,7 +1263,12 @@ extern int pscsi_CDB_read_SG (se_task_t *task, u32 size)
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 
- 	pt->pscsi_direction = DMA_FROM_DEVICE;
--	pscsi_map_task_SG(task);
++       if (length > RB_MAX_SMALL_DATA)
++               length += sizeof(event.array[0]);
 +
-+	if (pscsi_blk_get_request(task) < 0)
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
++       length += RB_EVNT_HDR_SIZE;
++       length = ALIGN(length, RB_ALIGNMENT);
 +
-+	if (pscsi_map_task_SG(task) < 0)
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
- 
- 	return(task->task_sg_num);
- }
-@@ -1186,9 +1282,11 @@ extern int pscsi_CDB_write_non_SG (se_task_t *task, u32 size)
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 
- 	pt->pscsi_direction = DMA_TO_DEVICE;
--	pscsi_map_task_non_SG(task);
- 
--	return(0);
-+	if (pscsi_blk_get_request(task) < 0)
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
++       return length;
++}
 +
-+	return(pscsi_map_task_non_SG(task));
- }
- 
- /*	pscsi_CDB_write_SG():
-@@ -1200,7 +1298,12 @@ extern int pscsi_CDB_write_SG (se_task_t *task, u32 size)
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
- 
- 	pt->pscsi_direction = DMA_TO_DEVICE;
--	pscsi_map_task_SG(task);
++static inline unsigned rb_page_write(struct buffer_page *bpage)
++{
++       return local_read(&bpage->write);
++}
 +
-+	if (pscsi_blk_get_request(task) < 0)
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
++static inline void *__rb_page_index(struct buffer_page *page, unsigned index)
++{
++       return page->page + index;
++}
 +
-+	if (pscsi_map_task_SG(task) < 0)
-+		return(PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE);
- 	
- 	return(task->task_sg_num);
- }
-@@ -1386,22 +1489,25 @@ extern void pscsi_shutdown_hba (se_hba_t *hba)
-  *
-  *
-  */
--//#warning FIXME: We can do some custom handling of HBA fuckups here.
--extern inline void pscsi_process_SAM_status (se_task_t *task, unsigned char *cdb, int result)
-+static inline void pscsi_process_SAM_status (
-+	se_task_t *task,
-+	pscsi_plugin_task_t *pt)
- {
--	if ((task->task_scsi_status = status_byte(result))) {
-+	if ((task->task_scsi_status = status_byte(pt->pscsi_result))) {
- 		task->task_scsi_status <<= 1;
--		PYXPRINT("Parallel SCSI Status Byte exception - ITT: 0x%08x Task: %p CDB: 0x%02x"
--			" Result: 0x%08x\n", task->iscsi_cmd->init_task_tag, task, cdb[0], result);
-+		PYXPRINT("PSCSI Status Byte exception at task: %p CDB: 0x%02x"
-+			" Result: 0x%08x\n", task, pt->pscsi_cdb[0],
-+			pt->pscsi_result);
- 	}
- 
--	switch (host_byte(result)) {
-+	switch (host_byte(pt->pscsi_result)) {
- 	case DID_OK:
- 		transport_complete_task(task, (!task->task_scsi_status));
- 		break;
- 	default:
--		PYXPRINT("Parallel SCSI Host Byte exception - ITT: 0x%08x Task: %p CDB: 0x%02x"
--			" Result: 0x%08x\n", task->iscsi_cmd->init_task_tag, task, cdb[0], result);
-+		PYXPRINT("PSCSI Host Byte exception at task: %p CDB: 0x%02x"
-+			" Result: 0x%08x\n", task, pt->pscsi_cdb[0],
-+			pt->pscsi_result);
- 		task->task_scsi_status = SAM_STAT_CHECK_CONDITION;
- 		task->task_error_status = PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
- 		task->iscsi_cmd->transport_error_status = PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
-@@ -1412,21 +1518,17 @@ extern inline void pscsi_process_SAM_status (se_task_t *task, unsigned char *cdb
- 	return;
- }
- 
--extern void pscsi_req_done (void *data, char *sense, int result, int data_len)
-+extern void pscsi_req_done (struct request *req, int uptodate)
- {
--	se_task_t *task = (se_task_t *)data;
-+	se_task_t *task = (se_task_t *)req->end_io_data;	
- 	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *)task->transport_req;
--#if 0
--	printk("pscsi_req_done(): result: %08x, sense: %p data_len: %d\n",
--			result, sense, data_len);
--#endif	
--	pt->pscsi_result = result;
--	pt->pscsi_data_len = data_len;
++struct ring_buffer_event *
++rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
++                     unsigned type, unsigned long length);
++
++static inline unsigned rb_page_commit(struct buffer_page *bpage)
++{
++       return local_read(&bpage->commit);
++}
++
++/* Size is determined by what has been commited */
++static inline unsigned rb_page_size(struct buffer_page *bpage)
++{
++       return rb_page_commit(bpage);
++}
++
++static inline unsigned
++rb_commit_index(struct ring_buffer_per_cpu *cpu_buffer)
++{
++       return rb_page_commit(cpu_buffer->commit_page);
++}
++
++static inline unsigned rb_head_size(struct ring_buffer_per_cpu *cpu_buffer)
++{
++       return rb_page_commit(cpu_buffer->head_page);
++}
++
++static inline unsigned
++rb_event_index(struct ring_buffer_event *event)
++{
++       unsigned long addr = (unsigned long)event;
++
++       return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
++}
++
++static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
++                              struct buffer_page **page)
++{
++       struct list_head *p = (*page)->list.next;
++
++       if (p == &cpu_buffer->pages)
++               p = p->next;
++
++       *page = list_entry(p, struct buffer_page, list);
++}
++
++static inline int
++rb_is_commit(struct ring_buffer_per_cpu *cpu_buffer,
++            struct ring_buffer_event *event)
++{
++       unsigned long addr = (unsigned long)event;
++       unsigned long index;
++
++       index = rb_event_index(event);
++       addr &= PAGE_MASK;
++
++       return cpu_buffer->commit_page->page == (void *)addr &&
++               rb_commit_index(cpu_buffer) == index;
++}
++
++static inline void
++rb_set_commit_to_write(struct ring_buffer_per_cpu *cpu_buffer)
++{
++       /*
++        * We only race with interrupts and NMIs on this CPU.
++        * If we own the commit event, then we can commit
++        * all others that interrupted us, since the interruptions
++        * are in stack format (they finish before they come
++        * back to us). This allows us to do a simple loop to
++        * assign the commit to the tail.
++        */
++       while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
++               cpu_buffer->commit_page->commit =
++                       cpu_buffer->commit_page->write;
++               rb_inc_page(cpu_buffer, &cpu_buffer->commit_page);
++               cpu_buffer->write_stamp = cpu_buffer->commit_page->time_stamp;
++               /* add barrier to keep gcc from optimizing too much */
++               barrier();
++       }
++       while (rb_commit_index(cpu_buffer) !=
++              rb_page_write(cpu_buffer->commit_page)) {
++               cpu_buffer->commit_page->commit =
++                       cpu_buffer->commit_page->write;
++               barrier();
++       }
++}
++
++static inline struct ring_buffer_event *
++__ring_buffer_lock_reserve(struct ring_buffer *buffer,
++                        unsigned long length,
++                        unsigned long *flags)
++{
++       struct ring_buffer_per_cpu *cpu_buffer;
++       struct ring_buffer_event *event;
++       struct buffer_page *tail_page;
++       unsigned long tail, write;
++       int cpu;
++
++       if (atomic_read(&buffer->record_disabled))
++               return NULL;
++
++       preempt_disable_notrace();
++
++       cpu = raw_smp_processor_id();
++       if (!cpu_isset(cpu, buffer->cpumask))
++               goto out;
++
++       cpu_buffer = buffer->buffers[cpu];
++       if (atomic_read(&cpu_buffer->record_disabled))
++               goto out;
++
++       length = rb_calculate_event_length(length);
++       tail_page = cpu_buffer->tail_page;
++       if (rb_page_write(tail_page) &&
++                       (rb_page_write(tail_page) + length <= BUF_PAGE_SIZE)) {
++               write = local_add_return(length, &tail_page->write);
++               tail = write - length;
++               event = __rb_page_index(tail_page, tail);
++               event->type = RINGBUF_TYPE_DATA;
++               length -= RB_EVNT_HDR_SIZE;
++               if (length > RB_MAX_SMALL_DATA) {
++                       event->len = 0;
++                       event->array[0] = length;
++               } else
++                       event->len = (length + (RB_ALIGNMENT-1))
++                               >> RB_ALIGNMENT_SHIFT;
++                event->time_delta = ring_buffer_time_stamp(cpu) -
++                        cpu_buffer->write_stamp;
++       } else
++               event = rb_reserve_next_event(cpu_buffer,
++                               RINGBUF_TYPE_DATA, length);
++
++       return event;
++ out:
++       preempt_enable_notrace();
++       return NULL;
++}
++
++static inline int __ring_buffer_unlock_commit(struct ring_buffer *buffer,
++                             struct ring_buffer_event *event,
++                             unsigned long flags)
++{
++       struct ring_buffer_per_cpu *cpu_buffer;
++       int cpu = raw_smp_processor_id();
++
++       cpu_buffer = buffer->buffers[cpu];
++
++       cpu_buffer->entries++;
++       if (!rb_is_commit(cpu_buffer, event))
++               return 0;
++
++       cpu_buffer->write_stamp += event->time_delta;
++       rb_set_commit_to_write(cpu_buffer);
++
++       preempt_enable_notrace();
++       return 0;
++}
++
+ struct ring_buffer_event *
+ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts);
+ struct ring_buffer_event *
+@@ -119,9 +376,6 @@
+ unsigned long ring_buffer_entries(struct ring_buffer *buffer);
+ unsigned long ring_buffer_overruns(struct ring_buffer *buffer);
+
+-u64 ring_buffer_time_stamp(int cpu);
+-void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
 -
--	if (result != 0)
--		memcpy(pt->pscsi_sense, sense, SCSI_SENSE_BUFFERSIZE);
-+
-+	pt->pscsi_result = req->errors;
-+	pt->pscsi_resid = req->data_len;
- 	
--	pscsi_process_SAM_status(task, &pt->pscsi_cdb[0], result);
-+	pscsi_process_SAM_status(task, pt);
-+	__blk_put_request(req->q, req);
-+	pt->pscsi_req = NULL;
-+
- 	return;
- }
+ enum ring_buffer_flags {
+       RB_FL_OVERWRITE         = 1 << 0,
+ };
+Index: linux-2.6.26.2/kernel/ktrace/ring_buffer.c
+===================================================================
+--- linux-2.6.26.2.orig/kernel/ktrace/ring_buffer.c     2008-11-25
+16:48:38.000000000 -0800
++++ linux-2.6.26.2/kernel/ktrace/ring_buffer.c  2008-11-25
+22:31:50.000000000 -0800
+@@ -16,27 +16,6 @@
+ #include <linux/list.h>
+ #include <linux/fs.h>
+
+-/* Up this if you want to test the TIME_EXTENTS and normalization */
+-#define DEBUG_SHIFT 0
 -
-diff --git a/drivers/lio-core/target_core_pscsi.h b/drivers/lio-core/target_core_pscsi.h
-index 980587d..090f0d2 100644
---- a/drivers/lio-core/target_core_pscsi.h
-+++ b/drivers/lio-core/target_core_pscsi.h
-@@ -90,7 +90,7 @@ extern struct scatterlist *pscsi_get_SG (se_task_t *);
- extern u32 pscsi_get_SG_count (se_task_t *);
- extern int pscsi_set_non_SG_buf (unsigned char *, se_task_t *);
- extern void pscsi_shutdown_hba (struct se_hba_s *);
--extern void pscsi_req_done (void *, char *, int, int);
-+extern void pscsi_req_done (struct request *, int);
- #endif
- 
- #include <linux/device.h>
-@@ -104,8 +104,9 @@ typedef struct pscsi_plugin_task_s {
- 	unsigned char pscsi_sense[SCSI_SENSE_BUFFERSIZE];
- 	int	pscsi_direction;
- 	int	pscsi_result;
--	u32	pscsi_data_len;
-+	u32	pscsi_resid;
- 	void	*pscsi_buf;
-+	struct request *pscsi_req;
- } pscsi_plugin_task_t;
- 
- #define PDF_HAS_CHANNEL_ID	0x01
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index f5d3b96..9e03a02 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -303,8 +303,8 @@ static void scsi_bi_endio(struct bio *bio, int error)
-  * request can be sent to the block layer. We do not trust the scatterlist
-  * sent to use, as some ULDs use that struct to only organize the pages.
-  */
--static int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
--			   int nsegs, unsigned bufflen, gfp_t gfp)
-+int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
-+		    int nsegs, unsigned bufflen, gfp_t gfp)
- {
- 	struct request_queue *q = rq->q;
- 	int nr_pages = (bufflen + sgl[0].offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
-@@ -379,6 +379,8 @@ free_bios:
- 	return err;
+-/* FIXME!!! */
+-u64 ring_buffer_time_stamp(int cpu)
+-{
+-       /* shift to debug/test normalization and TIME_EXTENTS */
+-       return sched_clock() << DEBUG_SHIFT;
+-}
+-
+-void ring_buffer_normalize_time_stamp(int cpu, u64 *ts)
+-{
+-       /* Just stupid testing the normalize function and deltas */
+-       *ts >>= DEBUG_SHIFT;
+-}
+-
+-#define RB_EVNT_HDR_SIZE (sizeof(struct ring_buffer_event))
+-#define RB_ALIGNMENT_SHIFT     2
+-#define RB_ALIGNMENT           (1 << RB_ALIGNMENT_SHIFT)
+-#define RB_MAX_SMALL_DATA      28
+-
+ enum {
+       RB_LEN_TIME_EXTEND = 8,
+       RB_LEN_TIME_STAMP = 16,
+@@ -110,20 +89,6 @@
+ #define TS_DELTA_TEST  (~TS_MASK)
+
+ /*
+- * This hack stolen from mm/slob.c.
+- * We can store per page timing information in the page frame of the page.
+- * Thanks to Peter Zijlstra for suggesting this idea.
+- */
+-struct buffer_page {
+-       u64              time_stamp;    /* page time stamp */
+-       local_t          write;         /* index for next write */
+-       local_t          commit;        /* write commited index */
+-       unsigned         read;          /* index for next read */
+-       struct list_head list;          /* list of free pages */
+-       void *page;                     /* Actual data page */
+-};
+-
+-/*
+ * Also stolen from mm/slob.c. Thanks to Mathieu Desnoyers for pointing
+ * this issue out.
+ */
+@@ -143,42 +108,6 @@
+       return 0;
  }
- 
-+EXPORT_SYMBOL_GPL(scsi_req_map_sg);
-+
- /**
-  * scsi_execute_async - insert request
-  * @sdev:	scsi device
--- 
-1.5.4.1
 
+-#define BUF_PAGE_SIZE PAGE_SIZE
+-
+-/*
+- * head_page == tail_page && head == tail then buffer is empty.
+- */
+-struct ring_buffer_per_cpu {
+-       int                             cpu;
+-       struct ring_buffer              *buffer;
+-       spinlock_t                      lock;
+-       struct lock_class_key           lock_key;
+-       struct list_head                pages;
+-       struct buffer_page              *page_array;
+-       struct buffer_page              *head_page;     /* read from head */
+-       struct buffer_page              *tail_page;     /* write to tail */
+-       struct buffer_page              *commit_page;   /* commited pages */
+-       struct buffer_page              *reader_page;
+-       unsigned long                   overrun;
+-       unsigned long                   entries;
+-       u64                             write_stamp;
+-       u64                             read_stamp;
+-       atomic_t                        record_disabled;
+-};
+-
+-struct ring_buffer {
+-       unsigned long                   size;
+-       unsigned                        pages;
+-       unsigned                        flags;
+-       int                             cpus;
+-       cpumask_t                       cpumask;
+-       atomic_t                        record_disabled;
+-
+-       struct mutex                    mutex;
+-
+-       struct ring_buffer_per_cpu      **buffers;
+-};
+-
+ struct ring_buffer_iter {
+       struct ring_buffer_per_cpu      *cpu_buffer;
+       unsigned long                   head;
+@@ -580,11 +509,6 @@
+       return event->type == RINGBUF_TYPE_PADDING;
+ }
 
+-static inline void *__rb_page_index(struct buffer_page *page, unsigned index)
+-{
+-       return page->page + index;
+-}
+-
+ static inline struct ring_buffer_event *
+ rb_reader_event(struct ring_buffer_per_cpu *cpu_buffer)
+ {
+@@ -605,33 +529,6 @@
+       return __rb_page_index(iter->head_page, iter->head);
+ }
 
+-static inline unsigned rb_page_write(struct buffer_page *bpage)
+-{
+-       return local_read(&bpage->write);
+-}
+-
+-static inline unsigned rb_page_commit(struct buffer_page *bpage)
+-{
+-       return local_read(&bpage->commit);
+-}
+-
+-/* Size is determined by what has been commited */
+-static inline unsigned rb_page_size(struct buffer_page *bpage)
+-{
+-       return rb_page_commit(bpage);
+-}
+-
+-static inline unsigned
+-rb_commit_index(struct ring_buffer_per_cpu *cpu_buffer)
+-{
+-       return rb_page_commit(cpu_buffer->commit_page);
+-}
+-
+-static inline unsigned rb_head_size(struct ring_buffer_per_cpu *cpu_buffer)
+-{
+-       return rb_page_commit(cpu_buffer->head_page);
+-}
+-
+ /*
+ * When the tail hits the head and the buffer is in overwrite mode,
+ * the head jumps to the next page and all content on the previous
+@@ -656,39 +553,6 @@
+       }
+ }
+
+-static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
+-                              struct buffer_page **page)
+-{
+-       struct list_head *p = (*page)->list.next;
+-
+-       if (p == &cpu_buffer->pages)
+-               p = p->next;
+-
+-       *page = list_entry(p, struct buffer_page, list);
+-}
+-
+-static inline unsigned
+-rb_event_index(struct ring_buffer_event *event)
+-{
+-       unsigned long addr = (unsigned long)event;
+-
+-       return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
+-}
+-
+-static inline int
+-rb_is_commit(struct ring_buffer_per_cpu *cpu_buffer,
+-            struct ring_buffer_event *event)
+-{
+-       unsigned long addr = (unsigned long)event;
+-       unsigned long index;
+-
+-       index = rb_event_index(event);
+-       addr &= PAGE_MASK;
+-
+-       return cpu_buffer->commit_page->page == (void *)addr &&
+-               rb_commit_index(cpu_buffer) == index;
+-}
+-
+ static inline void
+ rb_set_commit_event(struct ring_buffer_per_cpu *cpu_buffer,
+                   struct ring_buffer_event *event)
+@@ -712,33 +576,6 @@
+       local_set(&cpu_buffer->commit_page->commit, index);
+ }
+
+-static inline void
+-rb_set_commit_to_write(struct ring_buffer_per_cpu *cpu_buffer)
+-{
+-       /*
+-        * We only race with interrupts and NMIs on this CPU.
+-        * If we own the commit event, then we can commit
+-        * all others that interrupted us, since the interruptions
+-        * are in stack format (they finish before they come
+-        * back to us). This allows us to do a simple loop to
+-        * assign the commit to the tail.
+-        */
+-       while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
+-               cpu_buffer->commit_page->commit =
+-                       cpu_buffer->commit_page->write;
+-               rb_inc_page(cpu_buffer, &cpu_buffer->commit_page);
+-               cpu_buffer->write_stamp = cpu_buffer->commit_page->time_stamp;
+-               /* add barrier to keep gcc from optimizing too much */
+-               barrier();
+-       }
+-       while (rb_commit_index(cpu_buffer) !=
+-              rb_page_write(cpu_buffer->commit_page)) {
+-               cpu_buffer->commit_page->commit =
+-                       cpu_buffer->commit_page->write;
+-               barrier();
+-       }
+-}
+-
+ static void rb_reset_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
+ {
+       cpu_buffer->read_stamp = cpu_buffer->reader_page->time_stamp;
+@@ -813,23 +650,6 @@
+       }
+ }
+
+-static inline unsigned rb_calculate_event_length(unsigned length)
+-{
+-       struct ring_buffer_event event; /* Used only for sizeof array */
+-
+-       /* zero length can cause confusions */
+-       if (!length)
+-               length = 1;
+-
+-       if (length > RB_MAX_SMALL_DATA)
+-               length += sizeof(event.array[0]);
+-
+-       length += RB_EVNT_HDR_SIZE;
+-       length = ALIGN(length, RB_ALIGNMENT);
+-
+-       return length;
+-}
+-
+ static struct ring_buffer_event *
+ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+                 unsigned type, unsigned long length, u64 *ts)
+@@ -1011,7 +831,7 @@
+       return ret;
+ }
+
+-static struct ring_buffer_event *
++struct ring_buffer_event *
+ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
+                     unsigned type, unsigned long length)
+ {
