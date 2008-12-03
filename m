@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbYLCPvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYLCPxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753473AbYLCPvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 10:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYLCPvN
+	id S1752814AbYLCPxS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 10:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLCPw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 10:51:13 -0500
-Received: from gate.crashing.org ([63.228.1.57]:56198 "EHLO gate.crashing.org"
+	Wed, 3 Dec 2008 10:52:58 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:45998 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751098AbYLCPvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 10:51:13 -0500
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Wolfgang Grandegger <wg@grandegger.com>,
-       linux-kernel Kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc list <linuxppc-dev@ozlabs.org>, linux-mtd@lists.infradead.org
-Message-Id: <4A183575-1142-4EC2-83C4-145E721E6E8D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20081126163840.GA21669@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	id S1751138AbYLCPw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 10:52:57 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -1.398
+Date: Wed, 3 Dec 2008 07:52:54 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: mmotm 2008-11-26-17-00 uploaded
+Message-ID: <20081203075254.3bcb3220@extreme>
+In-Reply-To: <20081128114257.a651b9ee.akpm@linux-foundation.org>
+References: <200811270101.mAR114rp016378@imap1.linux-foundation.org>
+	<200811282209.FDC95384.tLQJFOFOHFMSOV@I-love.SAKURA.ne.jp>
+	<20081128114257.a651b9ee.akpm@linux-foundation.org>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH for 2.6.28] NAND: fsl_upm: fix build problem with 2.6.28-rc2
-Date: Wed, 3 Dec 2008 09:47:53 -0600
-References: <20081126163840.GA21669@oksana.dev.rtsoft.ru>
-X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 28 Nov 2008 11:42:57 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Nov 26, 2008, at 10:38 AM, Anton Vorontsov wrote:
+> On Fri, 28 Nov 2008 22:09:06 +0900 Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
+> 
+> > > The mm-of-the-moment snapshot 2008-11-26-17-00 has been uploaded to
+> > I got below bug.
+> > CentOS 5.2 (gcc (GCC) 4.1.2 20071124 (Red Hat 4.1.2-42)) on VMware Workstation 6.5.1.
+> > 
+> > [   24.978638] BUG: unable to handle kernel NULL pointer dereference at 00000004
+> > [   24.980541] IP: [<c056bfb7>] loopback_get_stats+0x26/0x51
+> > [   24.982191] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+> > [   24.982989] last sysfs file: /sys/class/firmware/microcode/loading
+> > [   24.982989] Modules linked in: rfkill input_polldev sbs sbshc battery floppy serio_raw rtc_cmos rtc_core rtc_lib ac button pcnet32 mii i2c_piix4 i2c_core mptspi mptscsih mptbase scsi_transport_spi ext3 jbd mbcache [last unloaded: microcode]
+> > [   24.982989] 
+> > [   24.982989] Pid: 2213, comm: sadc Not tainted (2.6.28-rc6-mm1 #1) VMware Virtual Platform
+> > [   24.982989] EIP: 0060:[<c056bfb7>] EFLAGS: 00010297 CPU: 0
+> > [   24.982989] EIP is at loopback_get_stats+0x26/0x51
+> > [   24.982989] EAX: 00000000 EBX: debf8848 ECX: 00000001 EDX: 00000001
+> > [   24.982989] ESI: 00000000 EDI: 00000000 EBP: de7b9efc ESP: de7b9eec
+> > [   24.982989]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > [   24.982989] Process sadc (pid: 2213, ti=de7b9000 task=de5fc0b0 task.ti=de7b9000)
+> > [   24.982989] Stack:
+> > [   24.982989]  21415ecf debf8800 ddc2fda0 ddc2fda0 de7b9f04 c05a71be de7b9f14 c05a7613
+> > [   24.982989]  c062db2c debf8800 de7b9f54 c049d8be 00001000 b7d58000 ddf08310 ddc2fdc0
+> > [   24.982989]  00000000 00000000 000000c8 00000001 00000000 00000000 00000000 fffffffb
+> > [   24.982989] Call Trace:
+> > [   24.982989]  [<c05a71be>] ? dev_get_stats+0x19/0x1b
+> > [   24.982989]  [<c05a7613>] ? dev_seq_show+0x21/0x80
+> > [   24.982989]  [<c049d8be>] ? seq_read+0x1f2/0x2d8
+> > [   24.982989]  [<c049d6cc>] ? seq_read+0x0/0x2d8
+> > [   24.982989]  [<c04b5b0f>] ? proc_reg_read+0x60/0x74
+> > [   24.982989]  [<c04b5aaf>] ? proc_reg_read+0x0/0x74
+> > [   24.982989]  [<c048a6da>] ? vfs_read+0x6d/0x91
+> > [   24.982989]  [<c048a930>] ? sys_read+0x3b/0x5d
+> > [   24.982989]  [<c04032d1>] ? sysenter_do_call+0x12/0x31
+> > [   24.982989] Code: 66 c0 56 c0 c3 55 83 c9 ff 89 e5 57 31 ff 56 31 f6 53 83 ec 04 8d 58 48 8b 80 20 03 00 00 89 45 f0 eb 0d 8b 45 f0 f7 d0 8b 04 88 <03> 78 04 03 30 89 c8 ba 50 96 79 c0 e8 72 a3 f7 ff 83 f8 1f 89 
+> > [   24.982989] EIP: [<c056bfb7>] loopback_get_stats+0x26/0x51 SS:ESP 0068:de7b9eec
+> > [   25.029067] ---[ end trace a599d5330cca1e8d ]---
+> 
+> At a guess I'd say that local variable `stats' in loopback_get_stats()
+> is null.
+> 
+> That code was recently changed in linux-next:
+> 
+> commit c02373bf2759dd210dc8c72c9c9b4a8f1c279cac
+> Author: Stephen Hemminger <shemminger@vyatta.com>
+> Date:   Wed Nov 19 21:46:18 2008 -0800
+> 
+>     netdev: convert loopback to net_device_ops
+>     
+>     First device to convert over is the loopback device.
+>     
+>     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> but it's a bit hard to see how that change could cause the crash which
+> you observed.
 
-> From: Wolfgang Grandegger <wg@grandegger.com>
->
-> The patch fixes following build error:
->
->  CC      drivers/mtd/nand/fsl_upm.o
-> drivers/mtd/nand/fsl_upm.c: In function 'fun_chip_init':
-> drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 2 of  
-> 'of_mtd_parse_partitions' from incompatible pointer type
-> drivers/mtd/nand/fsl_upm.c:168: warning: passing argument 3 of  
-> 'of_mtd_parse_partitions' from incompatible pointer type
-> drivers/mtd/nand/fsl_upm.c:168: error: too many arguments to  
-> function 'of_mtd_parse_partitions'
-> make[1]: *** [drivers/mtd/nand/fsl_upm.o] Error 1
->
-> The breakage was introduced in  
-> 69fd3a8d098faf41a04930afa83757c0555ee360
-> ("[MTD] remove unused mtd parameter in of_mtd_parse_partitions()").
->
-> While at it, also add a check for the of_mtd_parse_partitions() return
-> value.
->
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/mtd/nand/fsl_upm.c |    8 +++++---
-> 1 files changed, 5 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-> index 024e3ff..a83192f 100644
-> --- a/drivers/mtd/nand/fsl_upm.c
-> +++ b/drivers/mtd/nand/fsl_upm.c
-> @@ -163,9 +163,11 @@ static int __devinit fun_chip_init(struct  
-> fsl_upm_nand *fun,
-> 	ret = parse_mtd_partitions(&fun->mtd, part_types, &fun->parts, 0);
->
-> #ifdef CONFIG_MTD_OF_PARTS
-> -	if (ret == 0)
-> -		ret = of_mtd_parse_partitions(fun->dev, &fun->mtd,
-> -					      flash_np, &fun->parts);
-> +	if (ret == 0) {
-> +		ret = of_mtd_parse_partitions(fun->dev, flash_np, &fun->parts);
-> +		if (ret < 0)
-> +			goto err;
-> +	}
-> #endif
-> 	if (ret > 0)
-> 		ret = add_mtd_partitions(&fun->mtd, fun->parts, ret);
-> -- 
-> 1.5.6.5
-
-David,
-
-what's going on with this patch?
-
-- k
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Could be that some other code is stomping on per-cpu variables?
