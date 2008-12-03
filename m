@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYLCWRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbYLCWSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbYLCWRt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 17:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYLCWRk
+	id S1756246AbYLCWSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 17:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbYLCWR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 17:17:40 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51964 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbYLCWRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 17:17:39 -0500
-Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20081203182300.GA31203@infradead.org>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <20081203123021.GA30035@infradead.org>
-	 <1228328323.2821.30.camel@localhost.localdomain>
-	 <20081203182300.GA31203@infradead.org>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 17:17:35 -0500
-Message-Id: <1228342655.2821.64.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Dec 2008 17:17:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53015 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755255AbYLCWR4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 17:17:56 -0500
+Date: Wed, 3 Dec 2008 14:17:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Wim Van Sebroeck <wim@iguana.be>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression from 2.6.28-rc7: Commit 7cd5b08be3 breaks startup on
+ Toshiba Portege R500
+In-Reply-To: <200812032300.19110.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812031412060.3256@nehalem.linux-foundation.org>
+References: <200812032300.19110.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 13:23 -0500, Christoph Hellwig wrote:
-> On Wed, Dec 03, 2008 at 01:18:43PM -0500, Mimi Zohar wrote:
-> > IMA originally supported measurement and attestation only for file data.
-> > Templates provide an abstraction to add different types of integrity
-> > messages to the TPM based measurement list. Each type of integrity code
-> > knows how to format/display its own messages, while the TPM measurement
-> > list code remains generic.
+
+
+On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
 > 
-> I have a bit of a problem parsing the above, and it certainly doesn't
-> look like a justification for keeping all that unused code around.
+> commit 7cd5b08be3c489df11b559fef210b81133764ad4
+> Author: Wim Van Sebroeck <wim@iguana.be>
+> Date:   Wed Nov 19 19:39:58 2008 +0000
+> 
+>     [WATCHDOG] iTCO_wdt : problem with rebooting on new ICH9 based motherboards
+> 
+>     Bugzilla #9868: On Intel motherboards with the ICH9 based I/O controllers
+>     (Like DP35DP and DG33FB) the iTCO timer counts but it doesn't reboot the
+>     system after the counter expires.
+> 
+>     This patch fixes this by moving the enabling & disabling of the TCO_EN bit
+>     in the SMI_EN register into the start and stop code.
+> 
+>     Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+> 
+> makes CPU fan spin with full speed and causes hald-addon-acpi to take 100% of
+> CPU time on Toshiba Portege R500 with openSUSE 11.0 user space.  This starts as
+> soon as hal starts or thereabouts and never ends, which makes the current
+> mainline unusable on that box.
 
-The purpose of LIM is to provide an integrity infrastructure to support 
-different types of integrity data.  IMA implements both the LIM
-API for it's own internal use, and exports it for others to call.
+Hmm. I wonder if the bug is this one-liner (it really looks like an 
+idiotic typo).
 
-As Dave Safford pointed out in http://lkml.org/lkml/2008/11/17/362,
-there are other projects that want to add differently structured
-measurements to the TPM measurement list.  The template abstraction is
-critical to allowing these differently formatted messages to be added to
-the list.
+Can you test?
 
-Mimi
+		Linus
+---
+ drivers/watchdog/iTCO_wdt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-
+diff --git a/drivers/watchdog/iTCO_wdt.c b/drivers/watchdog/iTCO_wdt.c
+index 26173a2..5b395a4 100644
+--- a/drivers/watchdog/iTCO_wdt.c
++++ b/drivers/watchdog/iTCO_wdt.c
+@@ -392,7 +392,7 @@ static int iTCO_wdt_stop(void)
+ 
+ 	/* Bit 13: TCO_EN -> 1 = Enables the TCO logic to generate SMI# */
+ 	val32 = inl(SMI_EN);
+-	val32 &= 0x00002000;
++	val32 |= 0x00002000;
+ 	outl(val32, SMI_EN);
+ 
+ 	/* Set the NO_REBOOT bit to prevent later reboots, just for sure */
