@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbYLCOMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbYLCOMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbYLCOMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 09:12:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYLCOL7
+	id S1751213AbYLCOMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 09:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYLCOMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 09:11:59 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:1546 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbYLCOL7 (ORCPT
+	Wed, 3 Dec 2008 09:12:19 -0500
+Received: from gv-out-0910.google.com ([216.239.58.188]:26853 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbYLCOMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 09:11:59 -0500
+	Wed, 3 Dec 2008 09:12:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=kiUOhe1+reqsq8v2oplHUoCaIKHCXoquJJCeW4bNmgJn6/pikrNkI2D1rQTOHkbC91
-         p5XSX+jbHjHbD0/c4bIcyaayVBLGHPoAEG+uThirwke/7K0etNpr7R5zdlo1f3EnFRNq
-         v+AKsDGqAzfyD9YlwbOJwo33HpJNfAReJ6fV4=
-Message-ID: <804dabb00812030611k222606a6j24097fcdd93862d2@mail.gmail.com>
-Date: Wed, 3 Dec 2008 22:11:57 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Kernel Error Message: modprobe used greatest stack depth
+        h=from:to:subject:date:user-agent:references:in-reply-to:mime-version
+         :content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=EEDwJYqVJetJCwXdgsL9Tp3Qjj1ntuAXNpV3SfLtCEiSEraDOwEE5FqpVh21SjK2RR
+         LOyNsZEsRrtY4am2tcR4zzf5LpKKkVJ2UxpL270bWJfJylGxhxCWtR+Q+YETmMrzOS0c
+         lNUeBwaa+60cNw7+plkvb948+BXRXEGFqPv5g=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Dave Airlie" <airlied@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
+Date: Wed, 3 Dec 2008 15:10:52 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128-dirty; KDE/4.1.3; i686; ; )
+References: <200812012342.32575.bzolnier@gmail.com> <21d7e9970812012118r7196a507me0a25fe967f60ff4@mail.gmail.com>
+In-Reply-To: <21d7e9970812012118r7196a507me0a25fe967f60ff4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200812031510.52685.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In less than 6 hours since I turned on the machine I have been getting
-these message (spread over different times) in my dmesg:
+On Tuesday 02 December 2008, Dave Airlie wrote:
+> On Tue, Dec 2, 2008 at 8:42 AM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+> >
+> > Hi,
+> >
+> > After Fedora 9 -> Fedora 10 upgrade vanilla kernels which previously
+> > worked fine (next-20081128 and next-20081121) started to hang randomly
+> > on my Pentium M / 855PM / RV350 laptop.  Since (surprisingly) stock
+> > Fedora kernel (2.6.27.5-117.fc10.i686) was not affected I got the idea
+> > that either userspace changes uncovered some kernel regression or some
+> > Fedora specific patch must be fixing the issue.  Unfortunately vanilla
+> > 2.6.27 also freezed so after the usual pain caused by hitting bunch of
+> > unrelated problems [1] it turned out that drm-modesetting-radeon.patch
+> > is the magic patch and CONFIG_DRM_RADEON_KMS is the magic change.  With
+> > the patch and enabling the option next-20081128 works stable again...
+> >
+> > Since the following error gets logged by kernel:
+> >
+> > [drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
+> > [drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
+> >
+> > and it also seems that system is more responsive now (it was kind of
+> > sluggish previously) my draft theory is that F9 -> F10 triggered some
+> > AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
+> > but I'll leave figuring this up to the more knowledgeable people... ;)
+> 
+> Well KMS is a purely Fedora thing, and enabling it completely avoids
+> the old driver codepaths so
+> while it might fix it, its more by accident than design.
+> 
+> I'm trying to track down the rv3xx hangs with hpa at the moment as he
+> sees them also, something in
+>  the 2.6.26->2.6.27 timeframe. I'm hoping running the 2.6.26 drm on
+> the 2.6.27 will help narrow it down.
+> 
+> Bisecting 2.6.26->2.6.27 might also help.
 
-Machine A (AMD Athlon 4200, 3G RAM):
+It could be a different issue.  I tried 2.6.26, 2.6.25 and 2.6.24
+and they all hang (they all worked fine with Fedora 9)...
 
-khelper used greatest stack depth: 7484 bytes left
-modprobe used greatest stack depth: 7184 bytes left
-mknod used greatest stack depth: 6976 bytes left
-showconsole used greatest stack depth: 6904 bytes left
-modprobe used greatest stack depth: 5600 bytes left
-mysearch.pl used greatest stack depth: 5536 bytes left
-mysearch.pl used greatest stack depth: 5496 bytes left
-firefox-bin used greatest stack depth: 5484 bytes left
-totem-video-thu used greatest stack depth: 5324 bytes left
-thunderbird-bin used greatest stack depth: 4864 bytes left
+I will try some older kernels but I start thinking that the xorg's ati
+driver update is the main cause (xorg-x11-drv-ati-6.8.0-19.fc9.i386.rpm
+-> xorg-x11-drv-ati-6.9.0-54.fc10.i386.rpm).
 
-And another machine (intel, 3G RAM):
-
-[    0.123030] khelper used greatest stack depth: 2768 bytes left
-[    3.518510] insmod used greatest stack depth: 2148 bytes left
-[    6.203832] insmod used greatest stack depth: 1424 bytes left
-
-Seemingly harmless, but when it hit firefox, the entire firefox will
-hang - and it does not respond to any keyboard/mouse input.   Since it
-has hit two of my machine simultaneously, I don't it should be
-ignored.
-
-Can someone help me?
-
-a.   How do I probe further the cause of the error?
-b.   Seemingly repeatable ..... how to generate a BUG() stack trace at
-the point of error - recompiling really needed?
-c.   Kernel version 2.6.28-rc6, with FTRACE compiled option turned on.
-  HOw do I used FTRACE to de
-
--- 
-Regards,
-Peter Teoh
-
-Ernest Hemingway - "Never mistake motion for action."
+Thanks,
+Bart
