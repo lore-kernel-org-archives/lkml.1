@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbYLCNBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYLCNB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959AbYLCNBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 08:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYLCNBf
+	id S1754478AbYLCNB6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 08:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYLCNBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 3 Dec 2008 08:01:36 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:45200 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752762AbYLCNBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Dec 2008 08:01:35 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:30373 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbYLCNBe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 08:01:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:user-agent:mime-version:to:cc:subject:references:in-reply-to
-         :content-type:content-transfer-encoding:from:sender:message-id;
-        b=VVoxZFuI8tFhGGdkAb2s7j00DhTaZwYrzj/2G6TcXtbKeQjIih5vutbmyVLEuW6Odb
-         cYjP3ljm1ERN9Aou0bF089ZnzwxCg+l1CsjBMahOiuy71POGE4GX0shJSjrk1ZjebxXm
-         MeI1PNaSP9wYiC4PQw3jxXN/NhqAkymR6GNhA=
-Date: Wed, 03 Dec 2008 13:01:25 +0000
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+Date: Wed, 3 Dec 2008 14:00:40 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, mpm@selenic.com, tytso@mit.edu
+Subject: Re: mmotm 2008-12-01-19-41: early exception (page fault -- deref of
+ 0x20)
+In-Reply-To: <20081202153336.7b765ec7.akpm@linux-foundation.org>
+Message-ID: <alpine.LRH.1.10.0812031400040.28179@twin.jikos.cz>
+References: <4935C03A.7030603@gmail.com> <20081202153336.7b765ec7.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Matt_Domsch@dell.com, greg@kroah.com, linux-acpi@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>, Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [PATCH 2/2 update] misc: Add dell-laptop driver
-References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202201645.GB31620@srcf.ucam.org>
-In-Reply-To: <20081202201645.GB31620@srcf.ucam.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: none <alan-jenkins@tuffmail.co.uk>
-Message-ID: <49368329.19e7300a.0526.5a68@mx.google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> misc: Add dell-laptop driver
->     
-> Add a driver for controling Dell-specific backlight and rfkill interfaces.
-> This driver makes use of the dcdbas interface to the Dell firmware to allow
-> the backlight and rfkill interfaces on Dell systems to be driven through the
-> standardised sysfs interfaces.
->     
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
->
-> ---
->
-> Contains Andrew's suggested updates, plus a fix for a leak on the init 
-> error path.
->   
+On Tue, 2 Dec 2008, Andrew Morton wrote:
 
-Sorry, I should have mentioned this in my first message:
+> Presumably your machine picked a different clocksource from Arjan's, 
+> mine and others.  Now, how do we work out what clocksource you're using?
+> dmesg -s 1000000 | grep -i clock
+> nope
+> dmesg -s 1000000 | grep -i using
+> nope
+> hrm.
 
-> +	if ((status & (1<<2|1<<8)) == (1<<2|1<<8)) {
-> +		wifi_rfkill = rfkill_allocate(NULL, RFKILL_TYPE_WLAN);
-> +		if (!wifi_rfkill)
-> +			goto err_wifi;
-> +		wifi_rfkill->name = "dell-wifi";
-> +		wifi_rfkill->toggle_radio = dell_wifi_set;
-> +		wifi_rfkill->get_state = dell_wifi_get;
->   
+cat /sys/devices/system/clocksource/clocksource0/current_clocksource
 
-The rfkill doc (and code) say that you also need to initialize
-wifi_rfkill->state to the current state of the hardware.
+-- 
+Jiri Kosina
+SUSE Labs
 
-> +		ret = rfkill_register(wifi_rfkill);
-> +		if (ret)
-> +			goto err_wifi;
-> +	}
-> +
-
-Regards
-Alan
