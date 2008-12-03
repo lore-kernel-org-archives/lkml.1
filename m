@@ -1,98 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYLCPTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYLCPT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbYLCPTf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 10:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYLCPT0
+	id S1753320AbYLCPT4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 10:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYLCPTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 10:19:26 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:40368 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYLCPTX (ORCPT
+	Wed, 3 Dec 2008 10:19:45 -0500
+Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:44944 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751591AbYLCPTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 10:19:23 -0500
-Date: Wed, 3 Dec 2008 16:19:20 +0100
-From: Luotao Fu <l.fu@pengutronix.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Luotao Fu <l.fu@pengutronix.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]  remove isa stuff from smc91x driver
-Message-ID: <20081203151919.GD5559@pengutronix.de>
-Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Luotao Fu <l.fu@pengutronix.de>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <1228315701-17240-1-git-send-email-l.fu@pengutronix.de> <20081203145235.05e1f461@lxorguk.ukuu.org.uk>
+	Wed, 3 Dec 2008 10:19:44 -0500
+To: linux-kernel@vger.kernel.org
+Subject: .28-rc7-91 Starting X.Org fails and display hangs
+From: Frans Pop <elendil@planet.nl>
+Date: Wed, 3 Dec 2008 16:19:41 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="48TaNjbzBVislYPb"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081203145235.05e1f461@lxorguk.ukuu.org.uk>
-X-PGP-Key-ID: 0xE5325261
-X-URL: http://www.pengutronix.de/
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
-	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 16:15:42 up 1 day,  3:57,  1 user,  load average: 0.00, 0.01, 0.00
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d078
-X-SA-Exim-Mail-From: l.fu@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Message-Id: <200812031619.41679.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Dec 2008 15:19:41.0954 (UTC) FILETIME=[90AE7620:01C9555A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Just booted my HP 2510p with v2.6.28-rc7-91-gf6f7b52 and got a rather 
+nasty failure:
+- last message on console is Starting kdm
+- screen blanks (as normal before switch to kdm on VT7)
+- system is alive: can ssh to it
+- rebooting the system fails; hard poweroff needed
 
---48TaNjbzBVislYPb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+.28-rc6-209 boots without problems.
 
-On Wed, Dec 03, 2008 at 02:52:35PM +0000, Alan Cox wrote:
-> On Wed,  3 Dec 2008 15:48:21 +0100
-> Luotao Fu <l.fu@pengutronix.de> wrote:
->=20
-> > From: Luotao Fu <lfu@pengutronix.de>
-> >=20
-> > ISA support in smc91x is incomplete. I doubt there're any smc91x isa ca=
-rd.
-> > This driver is greatly used on arm pxa platforms. Hence we remove the
-> > isa stuff from smc91x driver.
->=20
-> This makes no sense. It is protected by an ifdef anyway so doesn't affect
-> ARM
+Diff of X.Org logs (see below) shows it just stops at some point. There
+are no changes in the log before the failure point.
 
-The isa part in smc91x does nothing at all. Get you a unused variable warni=
-ng if
-you turn ISA on and compile it. The io table is defined and not used at all.
-Neither does the io address and irq by parameter. I think that these are wa=
-ste
-code and should be removed.
+Diff of dmesg only shows the following missing for the failed boot:
+[drm] Initialized drm 1.1.0 20060810
+pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+pci 0000:00:02.0: setting latency timer to 64
+[drm] Initialized i915 1.6.0 20080730 on minor 0
 
-Cheers
-Luotao Fu
---=20
-   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-5004
-Pengutronix - Linux Solutions for Science and Industry
-Entwicklungszentrum Nord     http://www.pengutronix.de
+But that is probably just because X.Org does not get that far. The diff
+between the X.Org logs shows that drm only gets enabled after the point
+of failure.
 
+I did try reverting:
+commit 9c84ba4e502184d95ab75128d3166f595ea2dea0
+    drivers/gpu/drm/i915/i915_irq.c: fix warning
+commit 151903d5466fbcfb56ce792c3d5ea0ecbae15d07
+    drm/i915: Fix copy'n'pasteo that broke VT switch if flushing was
+              non-empty.
+commit bca404afdc5206c3bb30168315ee8a98a579ec65
+    fbdev: fix FB console blanking
 
---48TaNjbzBVislYPb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+But none of those made any difference. It's only a fairly small set of
+changes and I've been staring at the commit log for other potential
+culprits, but nothing else jumps out at me.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Any suggestions?
 
-iD8DBQFJNqN3iruQY+UyUmERAt+ZAJ4tvdZxWreSNa5CT3QLOgVuec+7+gCeIGzq
-TEVkR6eUO8HA5BgCIkeaBn4=
-=Xt3q
------END PGP SIGNATURE-----
+Cheers,
+FJP
 
---48TaNjbzBVislYPb--
+Extract from good X.Org.log to show failure point:
+[...]
+(II) Loading sub module "int10"
+(II) LoadModule: "int10"
+(II) Reloading /usr/lib/xorg/modules//libint10.so
+(II) intel(0): initializing int10
+(WW) intel(0): Bad V_BIOS checksum
+(II) intel(0): Primary V_BIOS segment is: 0xc000
+(II) intel(0): VESA BIOS detected
+(II) intel(0): VESA VBE Version 3.0
+(II) intel(0): VESA VBE Total Mem: 7616 kB
+(II) intel(0): VESA VBE OEM: Intel(r)GM965/PM965/GL960 Graphics Chip Accelerated VGA BIOS
+(II) intel(0): VESA VBE OEM Software Rev: 1.0
+(II) intel(0): VESA VBE OEM Vendor: Intel Corporation
+(II) intel(0): VESA VBE OEM Product: Intel(r)GM965/PM965/GL960 Graphics Controller
+(II) intel(0): VESA VBE OEM Product Rev: Hardware Version 0.0
+(II) intel(0): found backlight control method /sys/class/backlight/acpi_video0
+(II) intel(0): I2C bus "SDVOCTRL_E for SDVOB" initialized.
+(II) intel(0): I2C device "SDVOCTRL_E for SDVOB:SDVO Controller B" registered at address 0x70.
+(II) intel(0): No SDVO device found on SDVOB
+(II) intel(0): I2C device "SDVOCTRL_E for SDVOB:SDVO Controller B" removed.
+(II) intel(0): I2C bus "SDVOCTRL_E for SDVOB" removed.
+(II) intel(0): I2C bus "SDVOCTRL_E for SDVOC" initialized.
+(II) intel(0): I2C device "SDVOCTRL_E for SDVOC:SDVO Controller C" registered at address 0x72.
+(II) intel(0): No SDVO device found on SDVOC
+(II) intel(0): I2C device "SDVOCTRL_E for SDVOC:SDVO Controller C" removed.
+(II) intel(0): I2C bus "SDVOCTRL_E for SDVOC" removed.
+(II) intel(0): Output TV has no monitor section
+(II) intel(0): EDID vendor "LCD", prod id 22767
+
+[X.Org log stops here for bad boot]
+
+(II) intel(0): Output VGA disconnected
+(II) intel(0): Output LVDS connected
+(II) intel(0): Output TV disconnected
+(II) intel(0): Output LVDS using initial mode 1280x800
+(II) intel(0): Monitoring connected displays enabled
+(II) intel(0): detected 512 kB GTT.
+(II) intel(0): detected 7676 kB stolen memory.
+(==) intel(0): video overlay key set to 0x101fe
+(==) intel(0): Will not try to enable page flipping
+(==) intel(0): Triple buffering disabled
+(==) intel(0): Intel XvMC decoder disabled
+(==) intel(0): Using gamma correction (1.0, 1.0, 1.0)
+(++) intel(0): DPI set to (96, 96)
+(II) Loading sub module "fb"
+(II) LoadModule: "fb"
