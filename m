@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbYLCU1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbYLCU2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758948AbYLCU1q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYLCT6Q
+	id S1761293AbYLCU2J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:28:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYLCT6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:16 -0500
-Received: from kroah.org ([198.145.64.141]:56731 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:18 -0500
+Received: from kroah.org ([198.145.64.141]:56771 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754081AbYLCT57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:59 -0500
-Date: Wed, 3 Dec 2008 11:56:36 -0800
+	id S1755241AbYLCT6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:58:03 -0500
+Date: Wed, 3 Dec 2008 11:56:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,17 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Toshiyuki Okajima <toshi.okajima@jp.fujitsu.com>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Duane Griffin <duaneg@dghda.com>
-Subject: [patch 093/104] jbd2: dont give up looking for space so easily in
-	__jbd2_log_wait_for_space
-Message-ID: <20081203195636.GP8950@kroah.com>
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 096/104] ext4: calculate journal credits correctly
+Message-ID: <20081203195642.GS8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="jbd2-don-t-give-up-looking-for-space-so-easily-in-__jbd2_log_wait_for_space.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ext4-calculate-journal-credits-correctly.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,92 +41,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 8c3f25d8950c3e9fe6c9849f88679b3f2a071550)
+(cherry picked from commit ac51d83705c2a38c71f39cde99708b14e6212a60)
 
-Commit 23f8b79e introducd a regression because it assumed that if
-there were no transactions ready to be checkpointed, that no progress
-could be made on making space available in the journal, and so the
-journal should be aborted.  This assumption is false; it could be the
-case that simply calling jbd2_cleanup_journal_tail() will recover the
-necessary space, or, for small journals, the currently committing
-transaction could be responsible for chewing up the required space in
-the log, so we need to wait for the currently committing transaction
-to finish before trying to force a checkpoint operation.
+This fixes a 2.6.27 regression which was introduced in commit a02908f1.
 
-This patch fixes a bug reported by Mihai Harpau at:
-https://bugzilla.redhat.com/show_bug.cgi?id=469582
+We weren't passing the chunk parameter down to the two subections,
+ext4_indirect_trans_blocks() and ext4_ext_index_trans_blocks(), with
+the result that massively overestimate the amount of credits needed by
+ext4_da_writepages, especially in the non-extents case.  This causes
+failures especially on /boot partitions, which tend to be small and
+non-extent using since GRUB doesn't handle extents.
 
-This patch fixes a bug reported by François Valenduc at:
-http://bugzilla.kernel.org/show_bug.cgi?id=11840
+This patch fixes the bug reported by Joseph Fannin at:
+http://bugzilla.kernel.org/show_bug.cgi?id=11964
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Duane Griffin <duaneg@dghda.com>
-Cc: Toshiyuki Okajima <toshi.okajima@jp.fujitsu.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd2/checkpoint.c |   32 +++++++++++++++++++++++++-------
- 1 file changed, 25 insertions(+), 7 deletions(-)
+ fs/ext4/inode.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/fs/jbd2/checkpoint.c
-+++ b/fs/jbd2/checkpoint.c
-@@ -114,7 +114,7 @@ static int __try_to_free_cp_buf(struct j
-  */
- void __jbd2_log_wait_for_space(journal_t *journal)
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -4444,9 +4444,10 @@ static int ext4_indirect_trans_blocks(st
+ static int ext4_index_trans_blocks(struct inode *inode, int nrblocks, int chunk)
  {
--	int nblocks;
-+	int nblocks, space_left;
- 	assert_spin_locked(&journal->j_state_lock);
- 
- 	nblocks = jbd_space_needed(journal);
-@@ -127,25 +127,43 @@ void __jbd2_log_wait_for_space(journal_t
- 		/*
- 		 * Test again, another process may have checkpointed while we
- 		 * were waiting for the checkpoint lock. If there are no
--		 * outstanding transactions there is nothing to checkpoint and
--		 * we can't make progress. Abort the journal in this case.
-+		 * transactions ready to be checkpointed, try to recover
-+		 * journal space by calling cleanup_journal_tail(), and if
-+		 * that doesn't work, by waiting for the currently committing
-+		 * transaction to complete.  If there is absolutely no way
-+		 * to make progress, this is either a BUG or corrupted
-+		 * filesystem, so abort the journal and leave a stack
-+		 * trace for forensic evidence.
- 		 */
- 		spin_lock(&journal->j_state_lock);
- 		spin_lock(&journal->j_list_lock);
- 		nblocks = jbd_space_needed(journal);
--		if (__jbd2_log_space_left(journal) < nblocks) {
-+		space_left = __jbd2_log_space_left(journal);
-+		if (space_left < nblocks) {
- 			int chkpt = journal->j_checkpoint_transactions != NULL;
-+			tid_t tid = 0;
- 
-+			if (journal->j_committing_transaction)
-+				tid = journal->j_committing_transaction->t_tid;
- 			spin_unlock(&journal->j_list_lock);
- 			spin_unlock(&journal->j_state_lock);
- 			if (chkpt) {
- 				jbd2_log_do_checkpoint(journal);
-+			} else if (jbd2_cleanup_journal_tail(journal) == 0) {
-+				/* We were able to recover space; yay! */
-+				;
-+			} else if (tid) {
-+				jbd2_log_wait_commit(journal, tid);
- 			} else {
--				printk(KERN_ERR "%s: no transactions\n",
--				       __func__);
-+				printk(KERN_ERR "%s: needed %d blocks and "
-+				       "only had %d space available\n",
-+				       __func__, nblocks, space_left);
-+				printk(KERN_ERR "%s: no way to get more "
-+				       "journal space in %s\n", __func__,
-+				       journal->j_devname);
-+				WARN_ON(1);
- 				jbd2_journal_abort(journal, 0);
- 			}
--
- 			spin_lock(&journal->j_state_lock);
- 		} else {
- 			spin_unlock(&journal->j_list_lock);
+ 	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
+-		return ext4_indirect_trans_blocks(inode, nrblocks, 0);
+-	return ext4_ext_index_trans_blocks(inode, nrblocks, 0);
++		return ext4_indirect_trans_blocks(inode, nrblocks, chunk);
++	return ext4_ext_index_trans_blocks(inode, nrblocks, chunk);
+ }
++
+ /*
+  * Account for index blocks, block groups bitmaps and block group
+  * descriptor blocks if modify datablocks and index blocks
 
