@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbYLCU0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbYLCU10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761045AbYLCU0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbYLCT6L
+	id S1757556AbYLCU10 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYLCT6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:58:11 -0500
-Received: from kroah.org ([198.145.64.141]:56702 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:58:13 -0500
+Received: from kroah.org ([198.145.64.141]:56745 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751543AbYLCT54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:57:56 -0500
-Date: Wed, 3 Dec 2008 11:56:30 -0800
+	id S1754993AbYLCT6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:58:00 -0500
+Date: Wed, 3 Dec 2008 11:56:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk,
        Ext4 Developers List <linux-ext4@vger.kernel.org>,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 091/104] ext4: Do mballoc init before doing filesystem
-	recovery
-Message-ID: <20081203195630.GN8950@kroah.com>
+Subject: [patch 094/104] ext4: Convert to host order before using the
+	values.
+Message-ID: <20081203195638.GQ8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-do-mballoc-init-before-doing-filesystem-recovery.patch"
+Content-Disposition: inline; filename="ext4-convert-to-host-order-before-using-the-values.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,59 +43,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit c2774d84fd6cab2bfa2a2fae0b1ca8d8ebde48a2)
+(cherry picked from commit d94e99a64c3beece22dbfb2b335771a59184eb0a)
 
-During filesystem recovery we may be doing a truncate
-which expects some of the mballoc data structures to
-be initialized. So do ext4_mb_init before recovery.
+Use le16_to_cpu to read the s_reserved_gdt_blocks values
+from super block.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Theodore Ts'o <tytso@mit.edu>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/super.c |   25 +++++++++++++++----------
- 1 file changed, 15 insertions(+), 10 deletions(-)
+ fs/ext4/super.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -2449,6 +2449,21 @@ static int ext4_fill_super(struct super_
- 			"available.\n");
- 	}
+@@ -1506,9 +1506,8 @@ static int ext4_fill_flex_info(struct su
  
-+	if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_JOURNAL_DATA) {
-+		printk(KERN_WARNING "EXT4-fs: Ignoring delalloc option - "
-+				"requested data journaling mode\n");
-+		clear_opt(sbi->s_mount_opt, DELALLOC);
-+	} else if (test_opt(sb, DELALLOC))
-+		printk(KERN_INFO "EXT4-fs: delayed allocation enabled\n");
-+
-+	ext4_ext_init(sb);
-+	err = ext4_mb_init(sb, needs_recovery);
-+	if (err) {
-+		printk(KERN_ERR "EXT4-fs: failed to initalize mballoc (%d)\n",
-+		       err);
-+		goto failed_mount4;
-+	}
-+
- 	/*
- 	 * akpm: core read_super() calls in here with the superblock locked.
- 	 * That deadlocks, because orphan cleanup needs to lock the superblock
-@@ -2468,16 +2483,6 @@ static int ext4_fill_super(struct super_
- 	       test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_ORDERED_DATA ? "ordered":
- 	       "writeback");
- 
--	if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_JOURNAL_DATA) {
--		printk(KERN_WARNING "EXT4-fs: Ignoring delalloc option - "
--				"requested data journaling mode\n");
--		clear_opt(sbi->s_mount_opt, DELALLOC);
--	} else if (test_opt(sb, DELALLOC))
--		printk(KERN_INFO "EXT4-fs: delayed allocation enabled\n");
--
--	ext4_ext_init(sb);
--	ext4_mb_init(sb, needs_recovery);
--
- 	lock_kernel();
- 	return 0;
- 
+ 	/* We allocate both existing and potentially added groups */
+ 	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
+-			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
+-			      EXT4_DESC_PER_BLOCK_BITS(sb))) /
+-			   groups_per_flex;
++			((le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks) + 1) <<
++			      EXT4_DESC_PER_BLOCK_BITS(sb))) / groups_per_flex;
+ 	sbi->s_flex_groups = kzalloc(flex_group_count *
+ 				     sizeof(struct flex_groups), GFP_KERNEL);
+ 	if (sbi->s_flex_groups == NULL) {
 
