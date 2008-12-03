@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYLCSJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYLCSLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbYLCSJL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 13:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYLCSI5
+	id S1753929AbYLCSLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 13:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYLCSLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 13:08:57 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:63588 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751349AbYLCSI4 (ORCPT
+	Wed, 3 Dec 2008 13:11:08 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:55836 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751268AbYLCSLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 13:08:56 -0500
+	Wed, 3 Dec 2008 13:11:07 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Av0EAOFYNklMROB9/2dsb2JhbACBbdEygn8
-Date: Wed, 3 Dec 2008 13:08:54 -0500
+X-IronPort-Anti-Spam-Result: Av0EAL9aNklMROB9/2dsb2JhbACBbdE+gn8
+Date: Wed, 3 Dec 2008 13:11:05 -0500
 From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 To: Neil Horman <nhorman@tuxdriver.com>
 Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
 Subject: Re: [ltt-dev] [PATCH] add tracepoints to track change in napi
 	states on network receive
-Message-ID: <20081203180854.GB5957@Krystal>
+Message-ID: <20081203181105.GA6794@Krystal>
 References: <20081202195129.GA30042@hmsreliant.think-freely.org> <20081202200150.GA27282@Krystal> <20081203160134.GA6549@hmsreliant.think-freely.org> <20081203172507.GA4471@Krystal> <20081203174500.GB6549@hmsreliant.think-freely.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,8 +28,8 @@ In-Reply-To: <20081203174500.GB6549@hmsreliant.think-freely.org>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:08:27 up 16 days, 18:48,  2 users,  load average: 0.37, 0.46,
-	0.51
+X-Uptime: 13:10:10 up 16 days, 18:50,  2 users,  load average: 2.86, 1.05,
+	0.70
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -60,15 +60,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > Regards
 > Neil
 > 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
 
-Merged in the LTTng tree, I simply removed one whitespace.
-
-Thanks !
+Actually I notice that you used the old "DEFINE_TRACE" tracepoint API.
+I'll update your patch to the new DECLARE/DEFINE_TRACE tracepoint API.
 
 Mathieu
 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
 > 
 >  include/linux/netdevice.h |    5 +++++
 >  include/trace/netdevice.h |   30 ++++++++++++++++++++++++++++++
