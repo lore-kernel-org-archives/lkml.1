@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYLCT6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYLCT72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbYLCT6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 14:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYLCTuh
+	id S1756217AbYLCT72 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 14:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYLCTuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:50:37 -0500
-Received: from kroah.org ([198.145.64.141]:59625 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:50:40 -0500
+Received: from kroah.org ([198.145.64.141]:59653 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754641AbYLCTu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:50:28 -0500
-Date: Wed, 3 Dec 2008 11:49:04 -0800
+	id S1754667AbYLCTua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:50:30 -0500
+Date: Wed, 3 Dec 2008 11:49:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Matthew Garrett <mjg@redhat.com>,
-       Adel Gadllah <adel.gadllah@gmail.com>, Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 020/104] Input: atkbd - add keymap quirk for Inventec
-	Symphony systems
-Message-ID: <20081203194904.GU8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 022/104] parport_serial: fix array overflow
+Message-ID: <20081203194908.GW8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-atkbd-add-keymap-quirk-for-inventec-symphony-systems.patch"
+Content-Disposition: inline; filename="parport_serial-fix-array-overflow.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,64 +38,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Matthew Garrett <mjg@redhat.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit a8215b81cc31cf267506bc6a4a4bfe93f4ca1652 upstream.
+commit 36be47d6d8d98f54b6c4f891e9f54fb2bf554584 upstream.
 
-The Zepto 6615WD laptop (rebranded Inventec Symphony system) needs a
-key release quirk for its volume keys to work. The attached patch adds
-the quirk to the atkbd driver.
+The netmos_9xx5_combo type assumes that PCI SSID provides always the
+correct value for the number of parallel and serial ports, but there are
+indeed broken devices with wrong numbers, which may result in Oops.
 
-Fixes: https://bugzilla.redhat.com/show_bug.cgi?id=460237
+This patch simply adds the check of the array range.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Adel Gadllah <adel.gadllah@gmail.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Reference: Novell bnc#447067
+	https://bugzilla.novell.com/show_bug.cgi?id=447067
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/keyboard/atkbd.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/parport/parport_serial.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/input/keyboard/atkbd.c
-+++ b/drivers/input/keyboard/atkbd.c
-@@ -868,6 +868,22 @@ static void atkbd_hp_keymap_fixup(struct
+--- a/drivers/parport/parport_serial.c
++++ b/drivers/parport/parport_serial.c
+@@ -70,6 +70,8 @@ static int __devinit netmos_parallel_ini
+ 	 * parallel ports and <S> is the number of serial ports.
+ 	 */
+ 	card->numports = (dev->subsystem_device & 0xf0) >> 4;
++	if (card->numports > ARRAY_SIZE(card->addr))
++		card->numports = ARRAY_SIZE(card->addr);
+ 	return 0;
  }
- 
- /*
-+ * Inventec system with broken key release on volume keys
-+ */
-+static void atkbd_inventec_keymap_fixup(struct atkbd *atkbd)
-+{
-+	const unsigned int forced_release_keys[] = {
-+		0xae, 0xb0,
-+	};
-+	int i;
-+
-+	if (atkbd->set == 2)
-+		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
-+			__set_bit(forced_release_keys[i],
-+				  atkbd->force_release_mask);
-+}
-+
-+/*
-  * atkbd_set_keycode_table() initializes keyboard's keycode table
-  * according to the selected scancode set
-  */
-@@ -1478,6 +1494,15 @@ static struct dmi_system_id atkbd_dmi_qu
- 		.callback = atkbd_setup_fixup,
- 		.driver_data = atkbd_hp_keymap_fixup,
- 	},
-+	{
-+		.ident = "Inventec Symphony",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "INVENTEC"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "SYMPHONY 6.0/7.0"),
-+		},
-+		.callback = atkbd_setup_fixup,
-+		.driver_data = atkbd_inventec_keymap_fixup,
-+	},
- 	{ }
- };
  
 
